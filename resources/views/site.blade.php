@@ -111,8 +111,8 @@
 
                 <div class="actions">
                     <a class="button button-primary" href="{{ route('admin.index') }}">Vào Admin Shell</a>
-                    <a class="button button-secondary" href="{{ route('customer.auth.login') }}">Dang nhap khach hang</a>
-                    <a class="button button-secondary" href="{{ route('customer.auth.register') }}">Dang ky tai khoan</a>
+                    <a class="button button-secondary" href="{{ route('customer.auth.login') }}">Đăng nhập khách hàng</a>
+                    <a class="button button-secondary" href="{{ route('customer.auth.register') }}">Đăng ký tài khoản</a>
                     <a class="button button-secondary" href="/docs/architecture/aio-overall-architecture.svg">Xem sơ đồ kiến trúc</a>
                 </div>
 

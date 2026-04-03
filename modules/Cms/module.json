@@ -2,7 +2,7 @@
   "name": "CMS",
   "key": "cms",
   "version": "0.1.0",
-  "description": "Module quan ly noi dung, trang, bai viet, menu va media cho AIO Platform.",
+  "description": "Module quản lý nội dung, trang, bài viết, menu và media cho AIO Platform.",
   "website_type": ["corporate", "news", "ecommerce", "landingpage"],
   "dependencies": [],
   "permissions": [
@@ -12,14 +12,37 @@
     "cms.publish",
     "cms.delete"
   ],
+  "hooks": [
+    "Modules\\Cms\\Hooks\\CmsLifecycleHook"
+  ],
   "menus": [
     {
       "key": "cms",
       "label": "CMS",
+      "description": "Quản lý trang, bài viết và menu nội dung của website.",
+      "badge": "Module",
+      "color": "geekblue",
       "icon": "read",
-      "route": "/admin/cms"
+      "route": "/admin/cms",
+      "permission": "cms.view"
     }
   ],
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-04-03",
+      "notes": [
+        "Khởi tạo package CMS có migration, seeder và asset publish cơ bản.",
+        "Thêm menu động cho admin shell theo permission cms.view."
+      ]
+    }
+  ],
+  "package": {
+    "migrations": ["database/migrations"],
+    "seeders": ["Modules\\Cms\\Database\\Seeders\\CmsModuleSeeder"],
+    "config": ["config/cms.php"],
+    "assets": ["public"]
+  },
   "lifecycle": {
     "install": true,
     "enable": true,

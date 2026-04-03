@@ -1,0 +1,7 @@
+{
+  "module": "cms",
+  "assets": [
+    "editor.css",
+    "blocks.js"
+  ]
+}

@@ -12,11 +12,11 @@ class ThemeActivationController
 {
     public function __invoke(string $key, ThemeRegistry $themeRegistry): JsonResponse
     {
-        $theme = $this->resolveTheme($key, $themeRegistry);
-
         ThemeInstallation::query()->update([
             'is_active' => false,
         ]);
+
+        $theme = $this->resolveTheme($key, $themeRegistry);
 
         $theme->forceFill([
             'status' => 'active',
@@ -40,7 +40,7 @@ class ThemeActivationController
         ])->save();
 
         return response()->json([
-            'message' => 'Theme activated successfully.',
+            'message' => 'Đã kích hoạt theme.',
         ]);
     }
 

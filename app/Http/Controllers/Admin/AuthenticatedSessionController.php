@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Admin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -25,13 +27,31 @@ class AuthenticatedSessionController
 
         if (! Auth::guard('admin')->attempt($credentials, $remember)) {
             return back()
-                ->withErrors(['email' => 'Thong tin dang nhap admin khong chinh xac.'])
+                ->withErrors(['email' => 'Thông tin đăng nhập admin không chính xác.'])
+                ->onlyInput('email');
+        }
+
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin')->user();
+
+        if (! $admin?->is_active || $admin->isLocked()) {
+            Auth::guard('admin')->logout();
+
+            return back()
+                ->withErrors(['email' => 'Tài khoản admin đang bị khóa hoặc vô hiệu hóa.'])
                 ->onlyInput('email');
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.index'));
+        $admin->forceFill([
+            'last_login_at' => now(),
+        ])->save();
+
+        /** @var Redirector $redirector */
+        $redirector = app('redirect');
+
+        return $redirector->intended(route('admin.index'));
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -41,6 +61,6 @@ class AuthenticatedSessionController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.auth.login');
+        return to_route('admin.auth.login');
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['key', 'name', 'version', 'status', 'website_types', 'dependencies', 'installed_at', 'enabled_at'])]
+#[Fillable(['key', 'name', 'version', 'status', 'website_types', 'dependencies', 'installed_at', 'enabled_at', 'last_upgraded_at'])]
 class ModuleInstallation extends Model
 {
     use HasFactory;
@@ -18,6 +18,7 @@ class ModuleInstallation extends Model
             'dependencies' => 'array',
             'installed_at' => 'datetime',
             'enabled_at' => 'datetime',
+            'last_upgraded_at' => 'datetime',
         ];
     }
 }

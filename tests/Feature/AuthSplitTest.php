@@ -12,6 +12,17 @@ class AuthSplitTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_seeded_admin_defaults_to_active_and_unlocked(): void
+    {
+        $admin = Admin::factory()->create([
+            'email' => 'admin@aio.local',
+        ]);
+
+        $this->assertTrue((bool) $admin->is_active);
+        $this->assertNull($admin->locked_at);
+        $this->assertNull($admin->locked_reason);
+    }
+
     public function test_admin_login_uses_admin_guard_only(): void
     {
         Admin::factory()->create([
@@ -52,6 +63,26 @@ class AuthSplitTest extends TestCase
 
         $loginResponse->assertRedirect('/account');
         $this->assertAuthenticatedAs(Customer::first(), 'customer');
+        $this->assertGuest('admin');
+    }
+
+    public function test_locked_admin_cannot_login(): void
+    {
+        Admin::factory()->create([
+            'email' => 'locked-admin@aio.local',
+            'password' => 'password',
+            'is_active' => false,
+            'locked_at' => now(),
+            'locked_reason' => 'Tam khoa',
+        ]);
+
+        $response = $this->from('/admin/login')->post('/admin/login', [
+            'email' => 'locked-admin@aio.local',
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect('/admin/login');
+        $response->assertSessionHasErrors('email');
         $this->assertGuest('admin');
     }
 }

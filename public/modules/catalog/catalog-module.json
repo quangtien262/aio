@@ -1,0 +1,7 @@
+{
+  "module": "catalog",
+  "assets": [
+    "catalog.css",
+    "catalog.js"
+  ]
+}

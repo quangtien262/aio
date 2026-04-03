@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Core\Modules\ModuleManager;
 use App\Core\Modules\ModuleRegistry;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
@@ -28,6 +29,9 @@ class DatabaseSeeder extends Seeder
         $admin = Admin::factory()->create([
             'name' => 'System Admin',
             'email' => 'admin@aio.local',
+            'is_active' => true,
+            'locked_at' => null,
+            'locked_reason' => null,
         ]);
 
         Customer::factory()->create([
@@ -36,10 +40,12 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $moduleRegistry = app(ModuleRegistry::class);
+        $moduleManager = app(ModuleManager::class);
         $themeRegistry = app(ThemeRegistry::class);
 
+        $defaultInstalledModules = ['cms'];
+
         $permissionKeys = collect(config('aio.core_permissions', []))
-            ->merge($moduleRegistry->permissions())
             ->unique()
             ->values();
 
@@ -61,20 +67,30 @@ class DatabaseSeeder extends Seeder
         $superAdminRole->permissions()->sync($permissions->pluck('id')->all());
         $admin->roles()->syncWithoutDetaching([$superAdminRole->id]);
 
-        $moduleRegistry->all()->each(function (array $module): void {
+        $moduleRegistry->all()->each(function (array $module) use ($defaultInstalledModules, $moduleManager): void {
+            if (in_array($module['key'], $defaultInstalledModules, true)) {
+                $moduleManager->install($module['key']);
+                $moduleManager->enable($module['key']);
+
+                return;
+            }
+
             ModuleInstallation::query()->firstOrCreate(
                 ['key' => $module['key']],
                 [
                     'name' => $module['name'],
-                    'version' => $module['version'],
-                    'status' => $module['key'] === 'cms' ? 'enabled' : 'installed',
+                    'version' => $module['latest_version'],
+                    'status' => 'available',
                     'website_types' => $module['website_types'],
                     'dependencies' => $module['dependencies'],
-                    'installed_at' => now(),
-                    'enabled_at' => $module['key'] === 'cms' ? now() : null,
+                    'installed_at' => null,
+                    'enabled_at' => null,
                 ],
             );
         });
+
+        $allPermissionIds = Permission::query()->pluck('id')->all();
+        $superAdminRole->permissions()->sync($allPermissionIds);
 
         $themeRegistry->all()->each(function (array $theme): void {
             ThemeInstallation::query()->firstOrCreate(

@@ -25,8 +25,8 @@
         <main class="shell">
             <section class="panel">
                 <div class="kicker">Customer Guard</div>
-                <h1>Dang nhap khach hang</h1>
-                <p>Khu vuc danh cho khach dang ky tai khoan tren website.</p>
+                <h1>Đăng nhập khách hàng</h1>
+                <p>Khu vực dành cho khách đăng ký tài khoản trên website.</p>
 
                 @if ($errors->any())
                     <div class="error">{{ $errors->first() }}</div>
@@ -39,15 +39,15 @@
                         <input id="email" name="email" type="email" value="{{ old('email', 'customer@aio.local') }}" required autofocus>
                     </div>
                     <div class="field">
-                        <label for="password">Mat khau</label>
+                        <label for="password">Mật khẩu</label>
                         <input id="password" name="password" type="password" value="password" required>
                     </div>
-                    <button class="button" type="submit">Dang nhap</button>
+                    <button class="button" type="submit">Đăng nhập</button>
                 </form>
 
                 <div class="links">
-                    <a href="{{ route('customer.auth.register') }}">Dang ky tai khoan</a>
-                    <a href="{{ route('admin.auth.login') }}">Dang nhap admin</a>
+                    <a href="{{ route('customer.auth.register') }}">Đăng ký tài khoản</a>
+                    <a href="{{ route('admin.auth.login') }}">Đăng nhập admin</a>
                 </div>
             </section>
         </main>

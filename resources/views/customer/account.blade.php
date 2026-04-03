@@ -20,8 +20,8 @@
         <main class="shell">
             <section class="panel">
                 <div style="text-transform: uppercase; letter-spacing: .14em; font-size: 12px; color: #0f766e; margin-bottom: 10px;">Customer Portal</div>
-                <h1 style="margin: 0 0 10px;">Xin chao, {{ auth('customer')->user()->name }}</h1>
-                <p style="color: #56736c; line-height: 1.7; margin: 0;">Tai khoan customer da duoc tach guard rieng khoi khu vuc admin. Ve sau trang nay se la diem vao cho don hang, profile, loyalty va cac module front-office.</p>
+                <h1 style="margin: 0 0 10px;">Xin chào, {{ auth('customer')->user()->name }}</h1>
+                <p style="color: #56736c; line-height: 1.7; margin: 0;">Tài khoản customer đã được tách guard riêng khỏi khu vực admin. Về sau trang này sẽ là điểm vào cho đơn hàng, profile, loyalty và các module front-office.</p>
 
                 <div class="grid">
                     <div class="card">
@@ -30,7 +30,7 @@
                     </div>
                     <div class="card">
                         <strong>Phone</strong>
-                        <div>{{ auth('customer')->user()->phone ?: 'Chua cap nhat' }}</div>
+                        <div>{{ auth('customer')->user()->phone ?: 'Chưa cập nhật' }}</div>
                     </div>
                     <div class="card">
                         <strong>Guard</strong>
@@ -39,10 +39,10 @@
                 </div>
 
                 <div class="actions">
-                    <a class="button button-secondary" href="{{ route('site.home') }}">Ve website</a>
+                    <a class="button button-secondary" href="{{ route('site.home') }}">Về website</a>
                     <form method="POST" action="{{ route('customer.auth.logout') }}">
                         @csrf
-                        <button class="button" type="submit">Dang xuat</button>
+                        <button class="button" type="submit">Đăng xuất</button>
                     </form>
                 </div>
             </section>

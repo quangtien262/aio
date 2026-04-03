@@ -1,4 +1,6 @@
-import { App, ConfigProvider } from 'antd';
+import App from 'antd/es/app';
+import ConfigProvider from 'antd/es/config-provider';
+import { BrowserRouter } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
 
 export default function AdminApp() {
@@ -14,7 +16,9 @@ export default function AdminApp() {
             }}
         >
             <App>
-                <AdminLayout />
+                <BrowserRouter basename="/admin">
+                    <AdminLayout />
+                </BrowserRouter>
             </App>
         </ConfigProvider>
     );

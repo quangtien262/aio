@@ -29,6 +29,6 @@ class RegisteredUserController
         Auth::guard('customer')->login($customer);
         $request->session()->regenerate();
 
-        return redirect()->route('customer.account');
+        return to_route('customer.account');
     }
 }

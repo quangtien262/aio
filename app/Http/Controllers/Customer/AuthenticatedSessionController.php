@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -25,13 +26,16 @@ class AuthenticatedSessionController
 
         if (! Auth::guard('customer')->attempt($credentials, $remember)) {
             return back()
-                ->withErrors(['email' => 'Thong tin dang nhap khach hang khong chinh xac.'])
+                ->withErrors(['email' => 'Thông tin đăng nhập khách hàng không chính xác.'])
                 ->onlyInput('email');
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('customer.account'));
+        /** @var Redirector $redirector */
+        $redirector = app('redirect');
+
+        return $redirector->intended(route('customer.account'));
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -41,6 +45,6 @@ class AuthenticatedSessionController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('customer.auth.login');
+        return to_route('customer.auth.login');
     }
 }

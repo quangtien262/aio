@@ -1,4 +1,7 @@
-import { Card, Col, Row, Typography } from 'antd';
+import Card from 'antd/es/card';
+import Col from 'antd/es/col';
+import Row from 'antd/es/row';
+import Typography from 'antd/es/typography';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -8,19 +11,19 @@ export default function DashboardPage({ overview }) {
             <Col xs={24} xl={16}>
                 <Card className="hero-card">
                     <Text className="card-label">Base Source Ready</Text>
-                    <Title level={2}>Kien truc da san sang cho mo hinh module hoa va doi theme khong mat data.</Title>
+                    <Title level={2}>Kiến trúc đã sẵn sàng cho mô hình module hóa và đổi theme không mất dữ liệu.</Title>
                     <Paragraph>
-                        Laravel xu ly kernel, auth, settings, permissions va lifecycle. React chi dong vai tro admin shell,
-                        de sau nay tach tiep thanh store, setup wizard, CMS va quan tri theme.
+                        Laravel xử lý kernel, auth, settings, permissions và lifecycle. React chỉ đóng vai trò admin shell,
+                        để sau này tách tiếp thành store, setup wizard, CMS và quản trị theme.
                     </Paragraph>
                 </Card>
             </Col>
             <Col xs={24} xl={8}>
                 <Card>
-                    <Text strong>Trang thai scaffold</Text>
-                    <Paragraph>Laravel 13 da khoi tao vao root project.</Paragraph>
-                    <Paragraph>Vite build rieng cho public va admin React shell.</Paragraph>
-                    <Paragraph>Ant Design la UI framework mac dinh cho khu vuc quan tri.</Paragraph>
+                    <Text strong>Trạng thái scaffold</Text>
+                    <Paragraph>Laravel 13 đã khởi tạo vào root project.</Paragraph>
+                    <Paragraph>Vite build riêng cho public và admin React shell.</Paragraph>
+                    <Paragraph>Ant Design là UI framework mặc định cho khu vực quản trị.</Paragraph>
                     <Paragraph>Admins: {overview?.metrics?.admins ?? 0}</Paragraph>
                     <Paragraph>Customers: {overview?.metrics?.customers ?? 0}</Paragraph>
                     <Paragraph>Roles / Permissions: {overview?.metrics?.roles ?? 0} / {overview?.metrics?.permissions ?? 0}</Paragraph>

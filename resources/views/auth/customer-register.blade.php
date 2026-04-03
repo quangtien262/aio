@@ -24,8 +24,8 @@
         <main class="shell">
             <section class="panel">
                 <div class="kicker">Customer Registration</div>
-                <h1>Tao tai khoan khach hang</h1>
-                <p>Tai khoan nay dung cho khu vuc website va cac module customer-facing.</p>
+                <h1>Tạo tài khoản khách hàng</h1>
+                <p>Tài khoản này dùng cho khu vực website và các module hướng khách hàng.</p>
 
                 @if ($errors->any())
                     <div class="error">{{ $errors->first() }}</div>
@@ -34,7 +34,7 @@
                 <form method="POST" action="{{ route('customer.auth.register.store') }}">
                     @csrf
                     <div class="field">
-                        <label for="name">Ho va ten</label>
+                        <label for="name">Họ và tên</label>
                         <input id="name" name="name" type="text" value="{{ old('name') }}" required>
                     </div>
                     <div class="field">
@@ -42,23 +42,23 @@
                         <input id="email" name="email" type="email" value="{{ old('email') }}" required>
                     </div>
                     <div class="field">
-                        <label for="phone">So dien thoai</label>
+                        <label for="phone">Số điện thoại</label>
                         <input id="phone" name="phone" type="text" value="{{ old('phone') }}">
                     </div>
                     <div class="field">
-                        <label for="password">Mat khau</label>
+                        <label for="password">Mật khẩu</label>
                         <input id="password" name="password" type="password" required>
                     </div>
                     <div class="field">
-                        <label for="password_confirmation">Xac nhan mat khau</label>
+                        <label for="password_confirmation">Xác nhận mật khẩu</label>
                         <input id="password_confirmation" name="password_confirmation" type="password" required>
                     </div>
-                    <button class="button" type="submit">Dang ky</button>
+                    <button class="button" type="submit">Đăng ký</button>
                 </form>
 
                 <div class="links">
-                    <a href="{{ route('customer.auth.login') }}">Da co tai khoan?</a>
-                    <a href="{{ route('admin.auth.login') }}">Khu vuc admin</a>
+                    <a href="{{ route('customer.auth.login') }}">Đã có tài khoản?</a>
+                    <a href="{{ route('admin.auth.login') }}">Khu vực admin</a>
                 </div>
             </section>
         </main>

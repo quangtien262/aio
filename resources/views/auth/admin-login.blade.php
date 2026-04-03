@@ -26,8 +26,8 @@
         <main class="shell">
             <section class="panel">
                 <div class="kicker">Admin Guard</div>
-                <h1>Dang nhap quan tri</h1>
-                <p>Khu vuc danh cho super admin, owner va nhan vien noi bo.</p>
+                <h1>Đăng nhập quản trị</h1>
+                <p>Khu vực dành cho super admin, owner và nhân viên nội bộ.</p>
 
                 @if ($errors->any())
                     <div class="error">{{ $errors->first() }}</div>
@@ -40,18 +40,18 @@
                         <input id="email" name="email" type="email" value="{{ old('email', 'admin@aio.local') }}" required autofocus>
                     </div>
                     <div class="field">
-                        <label for="password">Mat khau</label>
+                        <label for="password">Mật khẩu</label>
                         <input id="password" name="password" type="password" value="password" required>
                     </div>
                     <div class="row">
-                        <label><input type="checkbox" name="remember" value="1"> Ghi nho dang nhap</label>
+                        <label><input type="checkbox" name="remember" value="1"> Ghi nhớ đăng nhập</label>
                     </div>
-                    <button class="button" type="submit">Dang nhap admin</button>
+                    <button class="button" type="submit">Đăng nhập admin</button>
                 </form>
 
                 <div class="links">
                     <a href="{{ route('site.home') }}">Website</a>
-                    <a href="{{ route('customer.auth.login') }}">Dang nhap khach hang</a>
+                    <a href="{{ route('customer.auth.login') }}">Đăng nhập khách hàng</a>
                 </div>
             </section>
         </main>

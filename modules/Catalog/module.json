@@ -1,0 +1,59 @@
+{
+  "name": "Catalog",
+  "key": "catalog",
+  "version": "0.2.0",
+  "description": "Module quản lý danh mục sản phẩm và kho dữ liệu thương mại điện tử cho AIO Platform.",
+  "website_type": ["ecommerce"],
+  "dependencies": ["cms"],
+  "permissions": [
+    "catalog.view",
+    "catalog.create",
+    "catalog.update",
+    "catalog.delete"
+  ],
+  "hooks": [
+    "Modules\\Catalog\\Hooks\\CatalogLifecycleHook"
+  ],
+  "menus": [
+    {
+      "key": "catalog",
+      "label": "Catalog",
+      "description": "Quản lý danh mục, sản phẩm và inventory cho website commerce.",
+      "badge": "Module",
+      "color": "green",
+      "icon": "appstore",
+      "route": "/admin/catalog",
+      "permission": "catalog.view"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.2.0",
+      "date": "2026-04-03",
+      "notes": [
+        "Bổ sung package lifecycle cho catalog: migration, seeder, publish config và asset.",
+        "Mở rộng admin shell với navigation động cho catalog khi module được bật."
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-04-03",
+      "notes": [
+        "Khởi tạo module catalog ban đầu và phụ thuộc vào CMS."
+      ]
+    }
+  ],
+  "package": {
+    "migrations": ["database/migrations"],
+    "seeders": ["Modules\\Catalog\\Database\\Seeders\\CatalogModuleSeeder"],
+    "config": ["config/catalog.php"],
+    "assets": ["public"]
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": true
+  }
+}

@@ -1,52 +1,41 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, App, Button, Card, Layout, Space, Statistic, Tag, Typography } from 'antd';
-import DashboardPage from '../pages/DashboardPage';
-import ModuleStorePage from '../modules/store/pages/ModuleStorePage';
-import SetupWizardPage from '../modules/setup/pages/SetupWizardPage';
-import ThemeManagerPage from '../modules/themes/pages/ThemeManagerPage';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import Alert from 'antd/es/alert';
+import App from 'antd/es/app';
+import Button from 'antd/es/button';
+import Card from 'antd/es/card';
+import Layout from 'antd/es/layout';
+import Space from 'antd/es/space';
+import Tag from 'antd/es/tag';
+import Typography from 'antd/es/typography';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { adminNavigation } from '../shared/config/navigation';
+
+const ModuleRoutePage = lazy(() => import('../pages/modules/ModuleRoutePage'));
+const DashboardRoutePage = lazy(() => import('../pages/routes/DashboardRoutePage'));
+const AccessRoutePage = lazy(() => import('../pages/routes/AccessRoutePage'));
+const AdminAccountsRoutePage = lazy(() => import('../pages/routes/AdminAccountsRoutePage'));
+const ModulesRoutePage = lazy(() => import('../pages/routes/ModulesRoutePage'));
+const ThemesRoutePage = lazy(() => import('../pages/routes/ThemesRoutePage'));
+const SetupRoutePage = lazy(() => import('../pages/routes/SetupRoutePage'));
 
 const { Header, Content, Sider } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
+function renderLazyRouteElement(Component, props, fallbackTitle) {
+    return (
+        <Suspense fallback={<Card loading title={fallbackTitle} />}>
+            <Component {...props} />
+        </Suspense>
+    );
+}
+
 export default function AdminLayout() {
     const { message } = App.useApp();
-    const [overview, setOverview] = useState(null);
+    const [currentAdmin, setCurrentAdmin] = useState(null);
     const [modules, setModules] = useState([]);
-    const [themes, setThemes] = useState([]);
-    const [setup, setSetup] = useState(null);
     const [loadError, setLoadError] = useState(null);
-
-    const loadAdminData = useCallback(async () => {
-        try {
-            setLoadError(null);
-
-            const [overviewResponse, modulesResponse, themesResponse, setupResponse] = await Promise.all([
-                fetch('/admin/api/dashboard', { credentials: 'same-origin' }),
-                fetch('/admin/api/modules', { credentials: 'same-origin' }),
-                fetch('/admin/api/themes', { credentials: 'same-origin' }),
-                fetch('/admin/api/setup', { credentials: 'same-origin' }),
-            ]);
-
-            const [overviewPayload, modulesPayload, themesPayload, setupPayload] = await Promise.all([
-                overviewResponse.json(),
-                modulesResponse.json(),
-                themesResponse.json(),
-                setupResponse.json(),
-            ]);
-
-            setOverview(overviewPayload);
-            setModules(modulesPayload.data ?? []);
-            setThemes(themesPayload.data ?? []);
-            setSetup(setupPayload.data ?? null);
-        } catch (error) {
-            setLoadError(error instanceof Error ? error.message : 'Khong tai duoc du lieu admin.');
-        }
-    }, []);
-
-    useEffect(() => {
-        loadAdminData();
-    }, [loadAdminData]);
+    const [shellReady, setShellReady] = useState(false);
+    const location = useLocation();
 
     const callAdminApi = useCallback(async (url, options = {}) => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -61,8 +50,8 @@ export default function AdminLayout() {
             ...options,
         });
 
-        if (! response.ok) {
-            let errorMessage = 'Khong thuc hien duoc thao tac.';
+        if (!response.ok) {
+            let errorMessage = 'Không thực hiện được thao tác.';
 
             try {
                 const payload = await response.json();
@@ -81,53 +70,87 @@ export default function AdminLayout() {
         return response.json();
     }, []);
 
-    const runAdminAction = useCallback(async (executor, successMessage) => {
+    const hasPermission = useCallback((permission) => (currentAdmin?.permissions ?? []).includes(permission), [currentAdmin]);
+
+    const loadShellData = useCallback(async () => {
+        try {
+            setLoadError(null);
+
+            const mePayload = await callAdminApi('/admin/api/me');
+            const nextCurrentAdmin = mePayload.data ?? null;
+
+            setCurrentAdmin(nextCurrentAdmin);
+
+            if ((nextCurrentAdmin?.permissions ?? []).includes('store.module.view')) {
+                const modulePayload = await callAdminApi('/admin/api/modules');
+                setModules(modulePayload.data ?? []);
+            } else {
+                setModules([]);
+            }
+        } catch (error) {
+            setLoadError(error instanceof Error ? error.message : 'Không tải được dữ liệu admin.');
+        } finally {
+            setShellReady(true);
+        }
+    }, [callAdminApi]);
+
+    useEffect(() => {
+        loadShellData();
+    }, [loadShellData]);
+
+    const runAdminAction = useCallback(async (executor, successMessage, onSuccess) => {
         try {
             await executor();
-            await loadAdminData();
+
+            if (typeof onSuccess === 'function') {
+                await onSuccess();
+            } else {
+                await loadShellData();
+            }
+
             message.success(successMessage);
+            return true;
         } catch (error) {
-            message.error(error instanceof Error ? error.message : 'Khong thuc hien duoc thao tac.');
+            message.error(error instanceof Error ? error.message : 'Không thực hiện được thao tác.');
+            return false;
         }
-    }, [loadAdminData, message]);
+    }, [loadShellData, message]);
 
-    const handleModuleAction = useCallback((moduleKey, action) => {
-        const endpointMap = {
-            install: { url: `/admin/api/modules/${moduleKey}/install`, method: 'POST', success: 'Da cai dat module.' },
-            enable: { url: `/admin/api/modules/${moduleKey}/enable`, method: 'POST', success: 'Da kich hoat module.' },
-            disable: { url: `/admin/api/modules/${moduleKey}/disable`, method: 'POST', success: 'Da tat module.' },
-            uninstall: { url: `/admin/api/modules/${moduleKey}`, method: 'DELETE', success: 'Da go module.' },
-        };
+    const navigationItems = useMemo(() => {
+        return [...adminNavigation, ...(currentAdmin?.module_navigation ?? [])]
+            .filter((item) => !item.permission || hasPermission(item.permission));
+    }, [currentAdmin, hasPermission]);
 
-        const target = endpointMap[action];
+    const defaultRoute = navigationItems[0]?.route ?? '/dashboard';
 
-        if (! target) {
-            return;
+    const normalizeRoute = useCallback((route) => {
+        if (!route) {
+            return '/';
         }
 
-        runAdminAction(() => callAdminApi(target.url, { method: target.method }), target.success);
-    }, [callAdminApi, runAdminAction]);
+        return route.startsWith('/admin') ? route.replace('/admin', '') || '/' : route;
+    }, []);
 
-    const handleThemeActivate = useCallback((themeKey) => {
-        runAdminAction(
-            () => callAdminApi(`/admin/api/themes/${themeKey}/activate`, { method: 'POST' }),
-            'Da kich hoat theme.',
-        );
-    }, [callAdminApi, runAdminAction]);
+    const renderModuleRoutes = useCallback(() => {
+        return (currentAdmin?.module_navigation ?? []).map((item) => {
+            const route = normalizeRoute(item.route);
+            const modulePayload = modules.find((moduleItem) => moduleItem.key === item.module_key) ?? null;
 
-    const handleSetupSave = useCallback((payload) => {
-        runAdminAction(
-            () => callAdminApi('/admin/api/setup', { method: 'PUT', body: JSON.stringify(payload) }),
-            'Da luu cau hinh setup.',
-        );
-    }, [callAdminApi, runAdminAction]);
-
-    const handleSetupStepComplete = useCallback((stepKey) => {
-        runAdminAction(
-            () => callAdminApi(`/admin/api/setup/steps/${stepKey}`, { method: 'POST' }),
-            'Da cap nhat buoc setup.',
-        );
-    }, [callAdminApi, runAdminAction]);
+            return (
+                <Route
+                    key={item.key}
+                    path={route === '/' ? '/' : route.replace(/^\//, '')}
+                    element={renderLazyRouteElement(ModuleRoutePage, {
+                        moduleMenu: item,
+                        modulePayload,
+                        callAdminApi,
+                        runAdminAction,
+                        currentPermissions: currentAdmin?.permissions ?? [],
+                    }, item.label ?? modulePayload?.name ?? 'Module')}
+                />
+            );
+        });
+    }, [callAdminApi, currentAdmin, modules, normalizeRoute, runAdminAction]);
 
     const handleAdminLogout = async () => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -151,20 +174,25 @@ export default function AdminLayout() {
                     <Text className="brand-kicker">AIO Platform</Text>
                     <Title level={3}>HT Viet Nam</Title>
                     <Paragraph>
-                        Base source quan tri module, theme, setup wizard va phan quyen cho he sinh thai website.
+                        Base source quản trị module, theme, setup wizard và phân quyền cho hệ sinh thái website.
                     </Paragraph>
                 </div>
 
                 <Space direction="vertical" size={12} className="nav-stack">
-                    {adminNavigation.map((item) => (
-                        <div className="nav-link" key={item.key}>
-                            <div className="nav-link-label">
-                                <strong>{item.label}</strong>
-                                <span>{item.description}</span>
-                            </div>
-                            <Tag color={item.color}>{item.badge}</Tag>
-                        </div>
-                    ))}
+                    {navigationItems.map((item) => {
+                        const itemRoute = normalizeRoute(item.route);
+                        const isActive = location.pathname === itemRoute;
+
+                        return (
+                            <Link className="nav-link" key={item.key} to={itemRoute}>
+                                <div className="nav-link-label">
+                                    <strong>{item.label}</strong>
+                                    <span>{item.description}</span>
+                                </div>
+                                <Tag color={isActive ? item.color : 'default'}>{item.badge}</Tag>
+                            </Link>
+                        );
+                    })}
                 </Space>
             </Sider>
 
@@ -179,7 +207,7 @@ export default function AdminLayout() {
                             Website
                         </Button>
                         <Button onClick={handleAdminLogout} size="large">
-                            Dang xuat
+                            Đăng xuất
                         </Button>
                         <Button type="primary" href="/docs/architecture/aio-source-code-structure.svg" size="large">
                             Source Diagram
@@ -191,19 +219,21 @@ export default function AdminLayout() {
                     <div className="panel-stack">
                         {loadError ? <Alert type="error" showIcon message={loadError} /> : null}
 
-                        <Card>
-                            <Space size={24} wrap>
-                                <Statistic title="Core Platform" value="Laravel 13" />
-                                <Statistic title="Admin UI" value="React + AntD" />
-                                <Statistic title="Modules Registered" value={overview?.metrics?.modules ?? 0} />
-                                <Statistic title="Themes Registered" value={overview?.metrics?.themes ?? 0} />
-                            </Space>
-                        </Card>
-
-                        <DashboardPage overview={overview} />
-                        <ModuleStorePage modules={modules} onAction={handleModuleAction} />
-                        <ThemeManagerPage themes={themes} onActivate={handleThemeActivate} />
-                        <SetupWizardPage setup={setup} onSaveProfile={handleSetupSave} onCompleteStep={handleSetupStepComplete} />
+                        {!shellReady && !loadError ? (
+                            <Card loading title="Đang khởi tạo admin shell" />
+                        ) : (
+                            <Routes>
+                                <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+                                <Route path="dashboard" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(DashboardRoutePage, { canAccess: true, callAdminApi }, 'Dashboard') : <Navigate to={defaultRoute} replace />} />
+                                <Route path="access" element={hasPermission('rbac.role.view') ? renderLazyRouteElement(AccessRoutePage, { canAccess: true, canManageRoles: hasPermission('rbac.role.manage'), callAdminApi, runAdminAction }, 'Access Control') : <Navigate to={defaultRoute} replace />} />
+                                <Route path="admins" element={hasPermission('admin.account.view') ? renderLazyRouteElement(AdminAccountsRoutePage, { canAccess: true, currentAdmin, permissions: { manage: hasPermission('admin.account.manage'), resetPassword: hasPermission('admin.account.reset_password'), lock: hasPermission('admin.account.lock') }, callAdminApi, runAdminAction }, 'Admin Accounts') : <Navigate to={defaultRoute} replace />} />
+                                <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'Module Store') : <Navigate to={defaultRoute} replace />} />
+                                <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), callAdminApi, runAdminAction }, 'Themes') : <Navigate to={defaultRoute} replace />} />
+                                <Route path="setup" element={hasPermission('setup.view') ? renderLazyRouteElement(SetupRoutePage, { canAccess: true, canComplete: hasPermission('setup.complete'), callAdminApi, runAdminAction }, 'Setup') : <Navigate to={defaultRoute} replace />} />
+                                {renderModuleRoutes()}
+                                <Route path="*" element={<Navigate to={defaultRoute} replace />} />
+                            </Routes>
+                        )}
                     </div>
                 </Content>
             </Layout>

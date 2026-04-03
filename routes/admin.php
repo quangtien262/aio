@@ -1,9 +1,18 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminShellController;
+use App\Http\Controllers\Admin\Api\AccessControlIndexController;
+use App\Http\Controllers\Admin\Api\AdminAccountController;
+use App\Http\Controllers\Admin\Api\AdminCurrentProfileController;
+use App\Http\Controllers\Admin\Api\AdminRoleAssignmentController;
+use App\Http\Controllers\Admin\Api\Catalog\ProductManagementController;
+use App\Http\Controllers\Admin\Api\Catalog\ProductIndexController;
+use App\Http\Controllers\Admin\Api\Cms\PageManagementController;
+use App\Http\Controllers\Admin\Api\Cms\PageIndexController;
 use App\Http\Controllers\Admin\Api\DashboardController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
+use App\Http\Controllers\Admin\Api\RoleManagementController;
 use App\Http\Controllers\Admin\Api\SetupProfileController;
 use App\Http\Controllers\Admin\Api\SetupStepController;
 use App\Http\Controllers\Admin\Api\SetupWizardStateController;
@@ -21,13 +30,47 @@ Route::prefix('admin')
         });
 
         Route::middleware('auth:admin')->group(function (): void {
-            Route::get('/', AdminShellController::class)->name('index');
             Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 
             Route::prefix('api')->name('api.')->group(function (): void {
+                Route::get('/me', AdminCurrentProfileController::class)
+                    ->name('me');
                 Route::get('/dashboard', DashboardController::class)
                     ->middleware('admin.permission:platform.dashboard.view')
                     ->name('dashboard');
+                Route::get('/access', AccessControlIndexController::class)
+                    ->middleware('admin.permission:rbac.role.view')
+                    ->name('access.index');
+                Route::post('/roles', [RoleManagementController::class, 'store'])
+                    ->middleware('admin.permission:rbac.role.manage')
+                    ->name('roles.store');
+                Route::put('/roles/{role}', [RoleManagementController::class, 'update'])
+                    ->middleware('admin.permission:rbac.role.manage')
+                    ->name('roles.update');
+                Route::delete('/roles/{role}', [RoleManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:rbac.role.manage')
+                    ->name('roles.destroy');
+                Route::put('/admins/{admin}/roles', AdminRoleAssignmentController::class)
+                    ->middleware('admin.permission:rbac.permission.assign')
+                    ->name('admins.roles.update');
+                Route::get('/admins', [AdminAccountController::class, 'index'])
+                    ->middleware('admin.permission:admin.account.view')
+                    ->name('admins.index');
+                Route::post('/admins', [AdminAccountController::class, 'store'])
+                    ->middleware('admin.permission:admin.account.manage')
+                    ->name('admins.store');
+                Route::put('/admins/{admin}', [AdminAccountController::class, 'update'])
+                    ->middleware('admin.permission:admin.account.manage')
+                    ->name('admins.update');
+                Route::put('/admins/{admin}/password', [AdminAccountController::class, 'resetPassword'])
+                    ->middleware('admin.permission:admin.account.reset_password')
+                    ->name('admins.password.reset');
+                Route::post('/admins/{admin}/lock', [AdminAccountController::class, 'lock'])
+                    ->middleware('admin.permission:admin.account.lock')
+                    ->name('admins.lock');
+                Route::post('/admins/{admin}/unlock', [AdminAccountController::class, 'unlock'])
+                    ->middleware('admin.permission:admin.account.lock')
+                    ->name('admins.unlock');
                 Route::get('/modules', ModuleRegistryController::class)
                     ->middleware('admin.permission:store.module.view')
                     ->name('modules');
@@ -40,9 +83,36 @@ Route::prefix('admin')
                 Route::post('/modules/{key}/disable', [ModuleLifecycleController::class, 'disable'])
                     ->middleware('admin.permission:store.module.disable')
                     ->name('modules.disable');
+                Route::post('/modules/{key}/upgrade', [ModuleLifecycleController::class, 'upgrade'])
+                    ->middleware('admin.permission:store.module.upgrade')
+                    ->name('modules.upgrade');
                 Route::delete('/modules/{key}', [ModuleLifecycleController::class, 'uninstall'])
                     ->middleware('admin.permission:store.module.uninstall')
                     ->name('modules.uninstall');
+                Route::get('/cms/pages', PageIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.pages.index');
+                Route::post('/cms/pages', [PageManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('cms.pages.store');
+                Route::put('/cms/pages/{page}', [PageManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.pages.update');
+                Route::delete('/cms/pages/{page}', [PageManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.pages.destroy');
+                Route::get('/catalog/products', ProductIndexController::class)
+                    ->middleware('admin.permission:catalog.view')
+                    ->name('catalog.products.index');
+                Route::post('/catalog/products', [ProductManagementController::class, 'store'])
+                    ->middleware('admin.permission:catalog.create')
+                    ->name('catalog.products.store');
+                Route::put('/catalog/products/{product}', [ProductManagementController::class, 'update'])
+                    ->middleware('admin.permission:catalog.update')
+                    ->name('catalog.products.update');
+                Route::delete('/catalog/products/{product}', [ProductManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:catalog.delete')
+                    ->name('catalog.products.destroy');
                 Route::get('/themes', ThemeRegistryController::class)
                     ->middleware('admin.permission:theme.view')
                     ->name('themes');
@@ -59,5 +129,9 @@ Route::prefix('admin')
                     ->middleware('admin.permission:setup.complete')
                     ->name('setup.steps.complete');
             });
+
+            Route::get('/{any?}', AdminShellController::class)
+                ->where('any', '^(?!api(?:/|$)).*')
+                ->name('index');
         });
     });
