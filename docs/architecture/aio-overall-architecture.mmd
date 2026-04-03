@@ -1,0 +1,131 @@
+flowchart TB
+    subgraph U[Người dùng]
+        SA[Super Admin / Chủ hệ thống]
+        AD[Admin nội bộ / Nhân viên]
+        CU[Khách đăng ký trên web]
+        VI[Khách truy cập website]
+    end
+
+    subgraph FE[Tầng giao diện]
+        ADMIN[Admin App<br/>ReactJS + Ant Design]
+        WEB[Public Website Renderer<br/>Theme Engine]
+        STORE[Module/Theme Store Page]
+        WIZARD[Setup Wizard<br/>Khởi tạo website]
+    end
+
+    subgraph APP[Laravel AIO Platform]
+        ROUTER[Web Routes / API Routes / Middleware]
+        AUTH[Xác thực đa guard<br/>admin / customer]
+        RBAC[RBAC + Policies + Data Scope]
+        CORE[Core Platform Services]
+        MOD[Module Manager]
+        THEME[Theme Manager]
+        CMS[CMS / Content Engine]
+        SETTINGS[Settings / Site Profile / Menu / Media]
+        AUDIT[Audit Log / Notifications / Jobs]
+    end
+
+    subgraph MODULES[Business Modules]
+        CRM[CRM / Khách hàng]
+        PM[Quản lý dự án]
+        INV[Kho / Sản phẩm]
+        PUR[Mua hàng]
+        HRM[Nhân sự]
+        SALES[Sale]
+        ACC[Kế toán]
+        OTHER[Module mở rộng khác]
+    end
+
+    subgraph THEMES[Theme Layer]
+        TYPE[Website Type Engine<br/>E-commerce / Dịch vụ / Giới thiệu / Tin tức / Landing page]
+        TPL[Theme Packages]
+        BLOCKS[Block / Component Library]
+        DEMO[Demo Data Mapper]
+    end
+
+    subgraph DATA[Tầng dữ liệu]
+        DB[(MySQL/PostgreSQL)]
+        CACHE[(Redis / Cache / Queue)]
+        FILES[(Local/S3 Media Storage)]
+        SEARCH[(Search Engine tùy chọn)]
+    end
+
+    subgraph DIST[Triển khai cho khách hàng]
+        BASE[Base Source Chuẩn]
+        CLIENT[Source clone cho từng khách hàng]
+        CUSTOM[Custom Module / Custom Theme riêng]
+    end
+
+    SA --> ADMIN
+    AD --> ADMIN
+    AD --> STORE
+    AD --> WIZARD
+    CU --> WEB
+    VI --> WEB
+
+    ADMIN --> ROUTER
+    STORE --> ROUTER
+    WIZARD --> ROUTER
+    WEB --> ROUTER
+
+    ROUTER --> AUTH
+    ROUTER --> RBAC
+    ROUTER --> CORE
+    ROUTER --> CMS
+    ROUTER --> SETTINGS
+    ROUTER --> AUDIT
+    ROUTER --> MOD
+    ROUTER --> THEME
+
+    MOD --> CRM
+    MOD --> PM
+    MOD --> INV
+    MOD --> PUR
+    MOD --> HRM
+    MOD --> SALES
+    MOD --> ACC
+    MOD --> OTHER
+
+    THEME --> TYPE
+    THEME --> TPL
+    THEME --> BLOCKS
+    THEME --> DEMO
+
+    CMS --> TYPE
+    SETTINGS --> THEME
+    RBAC --> MOD
+    AUTH --> DB
+    CORE --> DB
+    CMS --> DB
+    SETTINGS --> DB
+    AUDIT --> DB
+    CRM --> DB
+    PM --> DB
+    INV --> DB
+    PUR --> DB
+    HRM --> DB
+    SALES --> DB
+    ACC --> DB
+    OTHER --> DB
+
+    CORE --> CACHE
+    AUDIT --> CACHE
+    SETTINGS --> FILES
+    CMS --> FILES
+    CRM -. tùy chọn .-> SEARCH
+    CMS -. tùy chọn .-> SEARCH
+
+    BASE --> CLIENT
+    CLIENT --> CUSTOM
+    CLIENT --> MOD
+    CLIENT --> THEME
+
+    classDef blue fill:#e8f1ff,stroke:#2f6feb,color:#0b1f33;
+    classDef green fill:#e8fff1,stroke:#1f8f5f,color:#0b2a1d;
+    classDef orange fill:#fff2e8,stroke:#d97706,color:#3a2500;
+    classDef gray fill:#f3f4f6,stroke:#6b7280,color:#111827;
+
+    class U,FE blue;
+    class APP,MODULES green;
+    class THEMES orange;
+    class DATA,DIST gray;

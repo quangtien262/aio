@@ -1,0 +1,30 @@
+{
+  "name": "CMS",
+  "key": "cms",
+  "version": "0.1.0",
+  "description": "Module quan ly noi dung, trang, bai viet, menu va media cho AIO Platform.",
+  "website_type": ["corporate", "news", "ecommerce", "landingpage"],
+  "dependencies": [],
+  "permissions": [
+    "cms.view",
+    "cms.create",
+    "cms.update",
+    "cms.publish",
+    "cms.delete"
+  ],
+  "menus": [
+    {
+      "key": "cms",
+      "label": "CMS",
+      "icon": "read",
+      "route": "/admin/cms"
+    }
+  ],
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": true
+  }
+}

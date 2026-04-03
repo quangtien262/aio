@@ -1,0 +1,63 @@
+flowchart TB
+    ROOT[aio/]
+
+    ROOT --> APP[app/]
+    ROOT --> BOOT[bootstrap/]
+    ROOT --> CONFIG[config/]
+    ROOT --> DB[database/]
+    ROOT --> DOCS[docs/architecture/]
+    ROOT --> MODULES[modules/]
+    ROOT --> THEMES[themes/]
+    ROOT --> PACKAGES[packages/]
+    ROOT --> RES[resources/]
+    ROOT --> ROUTES[routes/]
+    ROOT --> SCRIPTS[scripts/]
+    ROOT --> STUBS[stubs/]
+    ROOT --> TESTS[tests/]
+
+    APP --> APP_HTTP[Http/Controllers]
+    APP --> APP_CORE[Core/]
+    APP --> APP_MODELS[Models/]
+    APP --> APP_PROVIDERS[Providers/]
+
+    APP_CORE --> CORE_MODULES[Modules/]
+    APP_CORE --> CORE_THEMES[Themes/]
+
+    MODULES --> MOD_CMS[Cms/]
+    THEMES --> THEME_CORP[corporate-starter/]
+
+    PACKAGES --> MODULE_SDK[module-sdk/]
+    PACKAGES --> THEME_SDK[theme-sdk/]
+
+    RES --> ADMIN[admin/src/]
+    RES --> CSS[css/]
+    RES --> JS[js/]
+    RES --> VIEWS[views/]
+
+    ADMIN --> ADMIN_APP[app/]
+    ADMIN --> ADMIN_LAYOUTS[layouts/]
+    ADMIN --> ADMIN_MODULES[modules/]
+    ADMIN --> ADMIN_PAGES[pages/]
+    ADMIN --> ADMIN_SHARED[shared/]
+    ADMIN --> ADMIN_STYLES[styles/]
+
+    ROUTES --> WEB[web.php]
+    ROUTES --> ADMIN_ROUTE[admin.php]
+
+    STUBS --> STUB_MODULE[module/]
+    STUBS --> STUB_THEME[theme/]
+
+    DOCS --> ARCH1[aio-overall-architecture.*]
+    DOCS --> ARCH2[aio-module-store-flow.*]
+    DOCS --> ARCH3[aio-theme-engine-flow.*]
+    DOCS --> ARCH4[aio-source-code-structure.*]
+
+    classDef blue fill:#e8f1ff,stroke:#2f6feb,color:#0b1f33;
+    classDef green fill:#e8fff1,stroke:#1f8f5f,color:#0b2a1d;
+    classDef orange fill:#fff2e8,stroke:#d97706,color:#3a2500;
+    classDef gray fill:#f3f4f6,stroke:#6b7280,color:#111827;
+
+    class ROOT,APP,RES,ROUTES blue;
+    class MODULES,THEMES,PACKAGES,STUBS green;
+    class ADMIN,APP_CORE orange;
+    class DOCS,DB,CONFIG,BOOT,TESTS,SCRIPTS gray;

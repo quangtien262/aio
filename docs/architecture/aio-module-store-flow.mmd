@@ -1,0 +1,98 @@
+flowchart TB
+    subgraph ACTORS[Người dùng và nguồn cung]
+        OWNER[Owner / Admin]
+        STORE_UI[Store Page\nReactJS + Ant Design]
+        REPO[Module Registry / Marketplace]
+    end
+
+    subgraph PLATFORM[Laravel Platform]
+        API[Store API / Middleware]
+        AUTH[Admin Guard + RBAC]
+        CATALOG[Catalog Service]
+        RESOLVER[Dependency Resolver]
+        INSTALLER[Module Installer]
+        LIFECYCLE[Lifecycle Manager]
+        MENU[Menu / Navigation Registry]
+        PERM[Permission Registry]
+        AUDIT[Audit Log / Queue / Notifications]
+    end
+
+    subgraph PACKAGE[Module Package Structure]
+        MANIFEST[module.json]
+        CODE[Code / Service Provider]
+        MIGRATIONS[Migrations / Seeders]
+        ASSETS[Admin Pages / Routes / Config]
+        HOOKS[install enable disable upgrade uninstall]
+    end
+
+    subgraph STATE[Trạng thái module]
+        AVAILABLE[available]
+        INSTALLED[installed]
+        ENABLED[enabled]
+        DISABLED[disabled]
+        UPGRADE[upgrade_pending]
+        REMOVED[removed]
+    end
+
+    subgraph DATA[Dữ liệu hệ thống]
+        MODULE_DB[(modules table)]
+        APP_DB[(business tables)]
+        FILES[(package cache / assets)]
+    end
+
+    OWNER --> STORE_UI
+    STORE_UI --> API
+    STORE_UI --> REPO
+    REPO --> CATALOG
+
+    API --> AUTH
+    API --> CATALOG
+    API --> RESOLVER
+    API --> INSTALLER
+    API --> LIFECYCLE
+    API --> MENU
+    API --> PERM
+    API --> AUDIT
+
+    CATALOG --> AVAILABLE
+    RESOLVER --> MANIFEST
+    RESOLVER --> AVAILABLE
+
+    INSTALLER --> MANIFEST
+    INSTALLER --> CODE
+    INSTALLER --> MIGRATIONS
+    INSTALLER --> ASSETS
+    INSTALLER --> HOOKS
+    INSTALLER --> MODULE_DB
+    INSTALLER --> APP_DB
+    INSTALLER --> FILES
+
+    LIFECYCLE --> INSTALLED
+    LIFECYCLE --> ENABLED
+    LIFECYCLE --> DISABLED
+    LIFECYCLE --> UPGRADE
+    LIFECYCLE --> REMOVED
+
+    MENU --> ENABLED
+    PERM --> ENABLED
+    AUDIT --> MODULE_DB
+
+    AVAILABLE -->|Install| INSTALLED
+    INSTALLED -->|Enable| ENABLED
+    ENABLED -->|Disable| DISABLED
+    DISABLED -->|Enable lại| ENABLED
+    ENABLED -->|Có version mới| UPGRADE
+    UPGRADE -->|Upgrade| ENABLED
+    INSTALLED -->|Uninstall giữ data| REMOVED
+    DISABLED -->|Uninstall giữ data| REMOVED
+    ENABLED -. không cho mặc định .-> REMOVED
+
+    classDef blue fill:#e8f1ff,stroke:#2f6feb,color:#0b1f33;
+    classDef green fill:#e8fff1,stroke:#1f8f5f,color:#0b2a1d;
+    classDef orange fill:#fff2e8,stroke:#d97706,color:#3a2500;
+    classDef gray fill:#f3f4f6,stroke:#6b7280,color:#111827;
+
+    class ACTORS,PLATFORM blue;
+    class PACKAGE green;
+    class STATE orange;
+    class DATA gray;

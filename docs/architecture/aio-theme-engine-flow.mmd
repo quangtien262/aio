@@ -1,0 +1,98 @@
+flowchart TB
+    subgraph SETUP[Khởi tạo website]
+        WIZARD[Setup Wizard]
+        TYPE_PICK[Chọn Website Type]
+        THEME_PICK[Chọn Theme tương thích]
+        PROFILE[Nhập thông tin cơ bản]
+        DEMO_IMPORT[Import demo content tùy chọn]
+    end
+
+    subgraph ENGINE[Theme Engine]
+        TYPE_ENGINE[Website Type Engine]
+        THEME_MANAGER[Theme Manager]
+        THEME_REGISTRY[Theme Registry]
+        BLOCK_REGISTRY[Block / Section Registry]
+        MAPPER[Content Mapper]
+        RENDERER[Public Renderer]
+        SWITCHER[Theme Switch Service]
+        VALIDATOR[Compatibility Validator]
+    end
+
+    subgraph CONTENT[Content và cấu hình]
+        CONTENT_SCHEMA[Content Schema theo loại website]
+        CONTENT_DATA[Posts / Pages / Products / Services / Leads]
+        SITE_SETTINGS[Site Settings / Branding / Menus]
+        THEME_SETTINGS[Theme Settings]
+        MEDIA[Media Library]
+    end
+
+    subgraph THEMES[Theme Packages]
+        ECOM[E-commerce Themes]
+        CORP[Corporate / Service Themes]
+        NEWS[News Themes]
+        LAND[Landing Page Themes]
+    end
+
+    subgraph RULES[Quy tắc đổi giao diện]
+        SAME_TYPE[Chỉ đổi trong cùng Website Type]
+        KEEP_DATA[Giữ nguyên content data]
+        REMAP_BLOCKS[Map lại block và slot hiển thị]
+        KEEP_URL[Giữ URL / slug / SEO mapping]
+        PREVIEW[Preview trước khi publish]
+    end
+
+    subgraph DATA[Tầng dữ liệu]
+        DB[(Database)]
+        FILES[(Media Storage)]
+    end
+
+    WIZARD --> TYPE_PICK
+    TYPE_PICK --> TYPE_ENGINE
+    TYPE_ENGINE --> CONTENT_SCHEMA
+    TYPE_PICK --> THEME_PICK
+    THEME_PICK --> VALIDATOR
+    VALIDATOR --> THEME_MANAGER
+    PROFILE --> SITE_SETTINGS
+    DEMO_IMPORT --> MAPPER
+
+    THEME_MANAGER --> THEME_REGISTRY
+    THEME_MANAGER --> BLOCK_REGISTRY
+    THEME_MANAGER --> THEME_SETTINGS
+    TYPE_ENGINE --> ECOM
+    TYPE_ENGINE --> CORP
+    TYPE_ENGINE --> NEWS
+    TYPE_ENGINE --> LAND
+
+    CONTENT_SCHEMA --> CONTENT_DATA
+    CONTENT_DATA --> MAPPER
+    SITE_SETTINGS --> RENDERER
+    THEME_SETTINGS --> RENDERER
+    MEDIA --> RENDERER
+    MAPPER --> RENDERER
+    THEME_REGISTRY --> RENDERER
+    BLOCK_REGISTRY --> RENDERER
+
+    SWITCHER --> VALIDATOR
+    SWITCHER --> PREVIEW
+    SWITCHER --> SAME_TYPE
+    SWITCHER --> KEEP_DATA
+    SWITCHER --> REMAP_BLOCKS
+    SWITCHER --> KEEP_URL
+    SWITCHER --> THEME_SETTINGS
+    SWITCHER --> RENDERER
+
+    CONTENT_DATA --> DB
+    SITE_SETTINGS --> DB
+    THEME_SETTINGS --> DB
+    CONTENT_SCHEMA --> DB
+    MEDIA --> FILES
+
+    classDef blue fill:#e8f1ff,stroke:#2f6feb,color:#0b1f33;
+    classDef green fill:#e8fff1,stroke:#1f8f5f,color:#0b2a1d;
+    classDef orange fill:#fff2e8,stroke:#d97706,color:#3a2500;
+    classDef gray fill:#f3f4f6,stroke:#6b7280,color:#111827;
+
+    class SETUP,ENGINE blue;
+    class CONTENT,THEMES green;
+    class RULES orange;
+    class DATA gray;

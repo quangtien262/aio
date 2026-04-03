@@ -1,0 +1,28 @@
+{
+  "name": "Corporate Starter",
+  "key": "corporate-starter",
+  "version": "0.1.0",
+  "description": "Theme khoi dau cho website gioi thieu doanh nghiep va dich vu.",
+  "website_type": "corporate",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview.png",
+    "cover": "cover.png"
+  },
+  "blocks": [
+    "hero",
+    "service-grid",
+    "project-showcase",
+    "testimonial",
+    "contact-form"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}

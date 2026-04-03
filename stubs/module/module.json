@@ -1,0 +1,32 @@
+{
+  "name": "{{module_name}}",
+  "key": "{{module_key}}",
+  "version": "0.1.0",
+  "description": "{{module_description}}",
+  "website_type": ["backoffice", "ecommerce", "corporate", "news", "landingpage"],
+  "dependencies": [],
+  "providers": [
+    "Modules\\{{module_name}}\\Providers\\{{module_name}}ServiceProvider"
+  ],
+  "permissions": [
+    "{{module_key}}.view",
+    "{{module_key}}.create",
+    "{{module_key}}.update",
+    "{{module_key}}.delete"
+  ],
+  "menus": [
+    {
+      "key": "{{module_key}}",
+      "label": "{{module_name}}",
+      "icon": "appstore",
+      "route": "/admin/{{module_key}}"
+    }
+  ],
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": true
+  }
+}
