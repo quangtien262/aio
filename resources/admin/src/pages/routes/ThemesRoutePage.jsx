@@ -9,7 +9,7 @@ import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
 
 const { Paragraph, Text } = Typography;
 
-export default function ThemesRoutePage({ canAccess, canActivate, callAdminApi, runAdminAction }) {
+export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDemoData, callAdminApi, runAdminAction }) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const returnTo = searchParams.get('returnTo');
@@ -38,9 +38,9 @@ export default function ThemesRoutePage({ canAccess, canActivate, callAdminApi, 
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <div>
                             <Text className="card-label">Setup Return</Text>
-                            <Paragraph style={{ marginBottom: 0 }}>Sau khi kích hoạt theme xong, hệ thống sẽ tự quay lại Setup Wizard.</Paragraph>
+                            <Paragraph style={{ marginBottom: 0 }}>Sau khi kích hoạt theme xong, hệ thống sẽ tự quay lại Cài đặt website.</Paragraph>
                         </div>
-                        <Button onClick={() => navigate(returnTo)}>Quay lại Setup Wizard</Button>
+                        <Button onClick={() => navigate(returnTo)}>Quay lại Cài đặt website</Button>
                     </Space>
                 </Card>
             ) : null}
@@ -58,7 +58,12 @@ export default function ThemesRoutePage({ canAccess, canActivate, callAdminApi, 
                         }
                     },
                 )}
+                onGenerateDemoData={(themeKey, preset) => runAdminAction(
+                    () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'POST', body: JSON.stringify({ preset }) }),
+                    'Đã tạo data test cho theme.',
+                )}
                 canActivate={canActivate}
+                canGenerateDemoData={canGenerateDemoData}
             />
         </Space>
     );

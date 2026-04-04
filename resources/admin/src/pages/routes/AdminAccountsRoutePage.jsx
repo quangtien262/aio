@@ -38,9 +38,9 @@ export default function AdminAccountsRoutePage({ canAccess, currentAdmin, permis
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <div>
                             <Text className="card-label">Setup Return</Text>
-                            <Paragraph style={{ marginBottom: 0 }}>Sau khi tạo hoặc cập nhật admin xong, hệ thống sẽ tự quay lại Setup Wizard.</Paragraph>
+                            <Paragraph style={{ marginBottom: 0 }}>Sau khi tạo hoặc cập nhật admin xong, hệ thống sẽ tự quay lại Cài đặt website.</Paragraph>
                         </div>
-                        <Button onClick={() => navigate(returnTo)}>Quay lại Setup Wizard</Button>
+                        <Button onClick={() => navigate(returnTo)}>Quay lại Cài đặt website</Button>
                     </Space>
                 </Card>
             ) : null}

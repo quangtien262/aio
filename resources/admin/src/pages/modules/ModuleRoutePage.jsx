@@ -13,7 +13,7 @@ const CatalogManagerPage = lazy(() => import('../../modules/catalog/pages/Catalo
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentPermissions }) {
     const resourceEndpointMap = {
-        catalog: '/admin/api/catalog/products',
+        catalog: null,
     };
 
     const modulePermissions = useMemo(() => ({
@@ -54,6 +54,18 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
         );
     }
 
+    if (modulePayload.key === 'catalog') {
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <CatalogManagerPage
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    currentPermissions={currentPermissions}
+                />
+            </Suspense>
+        );
+    }
+
     if (loading) {
         return <Card loading title={moduleMenu?.label ?? modulePayload.name} />;
     }
@@ -79,14 +91,6 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
                 ? (id) => runAdminAction(() => callAdminApi(`/admin/api/catalog/products/${id}`, { method: 'DELETE' }), 'Đã xóa sản phẩm catalog.', reload)
                 : undefined,
     };
-
-    if (modulePayload.key === 'catalog') {
-        return (
-            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
-                <CatalogManagerPage payload={data} permissions={modulePermissions} {...crudHandlers} />
-            </Suspense>
-        );
-    }
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>

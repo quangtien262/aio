@@ -1,153 +1,32 @@
 @php
-    $heroSlides = [
-        [
-            'eyebrow' => 'Rạng rỡ mỗi ngày',
-            'title' => 'Deal đẹp cho ẩm thực, spa và du lịch cuối tuần',
-            'summary' => 'TH0001 dựng theo phong cách trang deal commerce: nhịp nhanh, nhiều ưu đãi, ưu tiên deal nổi bật và ngành hàng hot.',
-            'badge' => 'Chỉ từ 149K',
-            'cta' => 'Mua ngay',
-            'image' => 'https://picsum.photos/seed/th0001-hero/960/520',
-        ],
-    ];
-
-    $sidePromos = [
-        ['title' => 'Chỉ với 89K', 'subtitle' => 'Combo thư giãn cuối tuần', 'image' => 'https://picsum.photos/seed/th0001-side-1/360/180'],
-        ['title' => 'Du lịch Thái Lan', 'subtitle' => 'Flash sale 6.99M', 'image' => 'https://picsum.photos/seed/th0001-side-2/360/180'],
-        ['title' => 'Deal làm đẹp', 'subtitle' => 'Ưu đãi mới mỗi ngày', 'image' => 'https://picsum.photos/seed/th0001-side-3/360/180'],
-        ['title' => 'Quà xuân bình an', 'subtitle' => 'Voucher từ 85K', 'image' => 'https://picsum.photos/seed/th0001-side-4/360/180'],
-    ];
-
-    $brands = [
-        ['name' => 'OLYMPIA', 'tone' => '#101828'],
-        ['name' => 'GOLDEN MOON', 'tone' => '#8f5f00'],
-        ['name' => 'NATURE BEAUTY', 'tone' => '#1c8c64'],
-        ['name' => 'PREMIER PEARL', 'tone' => '#a66900'],
-        ['name' => 'OLYMPIA FIT', 'tone' => '#0d9488'],
-    ];
-
-    $sidebarCategories = [
-        [
-            'label' => 'Khuyến mãi hot',
-            'icon' => '🔥',
-            'accent' => true,
-            'panel_class' => 'mega-hot',
-            'submenu' => [
-                [
-                    'title' => 'Deal nổi bật',
-                    'items' => ['Bán chạy', 'Hàng mới', 'Giảm giá sốc'],
-                ],
-                [
-                    'title' => 'Theo nhu cầu',
-                    'items' => ['Ăn uống cuối tuần', 'Voucher thư giãn', 'Tour ngắn ngày', 'Combo gia đình'],
-                ],
-                [
-                    'title' => 'Ưu đãi nhanh',
-                    'items' => ['Flash sale 9h', 'Flash sale 12h', 'Mã freeship', 'Quà tặng thành viên'],
-                ],
-            ],
-        ],
-        [
-            'label' => 'Ẩm thực',
-            'icon' => '🍴',
-            'panel_class' => 'mega-food',
-            'submenu' => [
-                [
-                    'title' => 'Loại hình nổi bật',
-                    'items' => ['Buffet', 'Café - Kem - Bánh', 'Ẩm thực Nhật - Hàn', 'Lẩu nướng', 'Nhà hàng gia đình'],
-                ],
-                [
-                    'title' => 'Địa điểm đông khách',
-                    'items' => ['Cầu Giấy', 'Ba Đình', 'Hoàn Kiếm', 'Hai Bà Trưng', 'Nhiều địa điểm'],
-                ],
-                [
-                    'title' => 'Top deal ẩm thực',
-                    'items' => ['Buffet tôm hùm', 'Grill & Chill', 'Set mẹt 4 người', 'Buffet chay cao cấp'],
-                ],
-            ],
-        ],
-        [
-            'label' => 'Spa & Làm đẹp',
-            'icon' => '💆',
-            'panel_class' => 'mega-beauty',
-            'submenu' => [
-                [
-                    'title' => 'Deal hot',
-                    'items' => ['Bán chạy', 'Hàng mới', 'Giảm giá'],
-                ],
-                [
-                    'title' => 'Dịch vụ làm đẹp',
-                    'items' => ['Hair Salon & làm đẹp', 'Chăm sóc cơ thể', 'Thẩm mỹ trị liệu công nghệ cao', 'Phòng tập', 'Tắm trắng', 'Xem thêm'],
-                ],
-                [
-                    'title' => 'Spa & Làm đẹp bán chạy',
-                    'items' => ['Chăm sóc da mặt', 'Trị liệu thâm nám', 'Liệu trình tắm trắng', 'Liệu trình giảm cân', 'Trọn gói triệt lông', 'Trẻ hóa - nâng cơ da', 'Phun thêu thẩm mỹ', 'Chăm sóc nha khoa', 'Massage', 'Hair salon chăm sóc tóc', 'Xem thêm'],
-                ],
-                [
-                    'title' => 'Top deal spa & làm đẹp',
-                    'items' => ['Gội đầu dưỡng sinh', 'Massage cổ vai gáy', 'Triệt lông CN Laser', 'Bọc răng sứ'],
-                ],
-            ],
-        ],
-        ['label' => 'Giải trí & Thể thao', 'icon' => '🎯'],
-        ['label' => 'Tour du lịch', 'icon' => '🧳'],
-        ['label' => 'Buffet', 'icon' => '🍽'],
-        ['label' => 'Massage Nam Nữ', 'icon' => '🧖'],
-        ['label' => 'Nha khoa', 'icon' => '🦷'],
-        ['label' => 'Bệnh viện & Phòng khám', 'icon' => '🏥'],
-        ['label' => 'Hotel & Resort', 'icon' => '🏨'],
-        ['label' => 'Đào tạo & Hội thảo', 'icon' => '🎓'],
-    ];
-
-    $featuredDeals = [
-        ['title' => 'Nikko Hải Phòng - Weekend Buffet Dinner Với Tôm Hùm, Sashimi', 'price' => '933,000đ', 'old_price' => '1,097,712đ', 'discount' => '-15%', 'meta' => '12', 'image' => 'https://picsum.photos/seed/th0001-deal-1/520/360'],
-        ['title' => 'Nikko Hải Phòng - Grill & Chill Với Hải Sản Nướng, Món Nhật', 'price' => '466,000đ', 'old_price' => '549,000đ', 'discount' => '-15%', 'meta' => '5', 'image' => 'https://picsum.photos/seed/th0001-deal-2/520/360'],
-        ['title' => 'Sapa Catcat Hills Resort & Spa 4* - 2N1Đ Phòng Deluxe - 2 Khách', 'price' => '1,850,000đ', 'old_price' => '2,900,000đ', 'discount' => '-36%', 'meta' => '13', 'image' => 'https://picsum.photos/seed/th0001-deal-3/520/360'],
-        ['title' => 'Embellir Spa - Gội Đầu Dưỡng Sinh + Massage Vai Gáy', 'price' => '99,000đ', 'old_price' => '300,000đ', 'discount' => '-67%', 'meta' => '16', 'image' => 'https://picsum.photos/seed/th0001-deal-4/520/360'],
-    ];
-
-    $sections = [
-        [
-            'theme' => 'lime',
-            'title' => 'Ẩm thực',
-            'tabs' => ['Mới nhất', 'Bán chạy', 'Giá tốt'],
-            'filters' => ['Buffet', 'Café - Kem - Bánh', 'Ẩm thực Nhật - Hàn', 'Xem tất cả'],
-            'items' => [
-                ['title' => 'Nikko Hải Phòng - Weekend Buffet Dinner Với Tôm Hùm, Sashimi', 'price' => '933,000đ', 'old_price' => '1,097,712đ', 'discount' => '-15%', 'image' => 'https://picsum.photos/seed/th0001-food-1/640/420', 'tag' => 'E-voucher', 'meta' => '12'],
-                ['title' => 'Nikko Hải Phòng - Grill & Chill Với Hải Sản Nướng, Món Nhật', 'price' => '466,000đ', 'old_price' => '549,000đ', 'discount' => '-15%', 'image' => 'https://picsum.photos/seed/th0001-food-2/640/420', 'tag' => 'E-voucher', 'meta' => '5'],
-                ['title' => 'Thảo Nguyên Xanh - Set Lợn Mẹt / Lẩu Hơi Cho 4 Người', 'price' => '480,000đ', 'old_price' => '560,000đ', 'discount' => '-14%', 'image' => 'https://picsum.photos/seed/th0001-food-3/640/420', 'tag' => 'Cầu Giấy', 'meta' => '425'],
-                ['title' => 'Nhà Hàng Chay Vô Vi - Buffet Chay 50 Món', 'price' => '129,000đ', 'old_price' => '150,000đ', 'discount' => '-14%', 'image' => 'https://picsum.photos/seed/th0001-food-4/640/420', 'tag' => 'Nhiều địa điểm', 'meta' => '17'],
-                ['title' => 'Premier Pearl Vũng Tàu - Buffet Trưa Tại Sky Buffet', 'price' => '200,000đ', 'old_price' => '200,000đ', 'discount' => '-0%', 'image' => 'https://picsum.photos/seed/th0001-food-5/640/420', 'tag' => 'E-voucher', 'meta' => '15'],
-                ['title' => 'Premier Pearl Vũng Tàu - Buffet Trà Chiều Dành Cho 2 Người', 'price' => '390,000đ', 'old_price' => '390,000đ', 'discount' => '-0%', 'image' => 'https://picsum.photos/seed/th0001-food-6/640/420', 'tag' => 'E-voucher', 'meta' => '9'],
-                ['title' => 'Thảo Nguyên Xanh - Set Lẩu Hơi Cho 2 Người', 'price' => '299,000đ', 'old_price' => '380,000đ', 'discount' => '-21%', 'image' => 'https://picsum.photos/seed/th0001-food-7/640/420', 'tag' => 'Hot', 'meta' => '2,154'],
-                ['title' => 'Ẩm Thực Chay Tuệ Biên Hòa - Buffet Chay Buổi Tối Cao Cấp', 'price' => '359,000đ', 'old_price' => '399,000đ', 'discount' => '-10%', 'image' => 'https://picsum.photos/seed/th0001-food-8/640/420', 'tag' => 'Biên Hòa', 'meta' => '6'],
-            ],
-        ],
-        [
-            'theme' => 'pink',
-            'title' => 'Spa & Làm đẹp',
-            'tabs' => ['Mới nhất', 'Bán chạy', 'Giá tốt'],
-            'filters' => ['Hair salon & chăm sóc tóc', 'Điều trị da mặt', 'Massage body / foot', 'Xem tất cả'],
-            'items' => [
-                ['title' => 'Embellir Spa - Gội Đầu Dưỡng Sinh + Massage Vai Cổ Gáy', 'price' => '99,000đ', 'old_price' => '300,000đ', 'discount' => '-67%', 'image' => 'https://picsum.photos/seed/th0001-beauty-1/640/420', 'tag' => 'Ba Đình', 'meta' => '16'],
-                ['title' => 'Golden Moon Spa - 3 Buổi Triệt Lông Nách / Mép', 'price' => '89,000đ', 'old_price' => '500,000đ', 'discount' => '-82%', 'image' => 'https://picsum.photos/seed/th0001-beauty-2/640/420', 'tag' => 'Cầu Giấy', 'meta' => '6'],
-                ['title' => 'Nha Khoa Quốc Tế Việt Mỹ - Bọc Răng Sứ Venus', 'price' => '1,150,000đ', 'old_price' => '3,000,000đ', 'discount' => '-62%', 'image' => 'https://picsum.photos/seed/th0001-beauty-3/640/420', 'tag' => 'Ba Đình', 'meta' => '9'],
-                ['title' => 'Thanh Hiền Luxury Spa - Triệt Lông CN Laser Diode 808NM', 'price' => '148,000đ', 'old_price' => '1,000,000đ', 'discount' => '-85%', 'image' => 'https://picsum.photos/seed/th0001-beauty-4/640/420', 'tag' => 'Hai Bà Trưng', 'meta' => '429'],
-            ],
-        ],
-    ];
+    $homeData = $themeHomeData ?? [];
+    $branding = $homeData['branding'] ?? [];
+    $heroBanner = $homeData['hero_banner'] ?? [];
+    $sidePromos = $homeData['side_banners'] ?? [];
+    $brands = $homeData['brand_highlights'] ?? [];
+    $sidebarCategories = $homeData['product_menu'] ?? [];
+    $featuredDeals = $homeData['featured_products'] ?? [];
+    $featuredTitle = $homeData['featured_title'] ?? 'Sản phẩm nổi bật';
+    $sections = $homeData['sections'] ?? [];
+    $cartSummary = $homeData['cart_summary'] ?? ['count' => 0];
+    $searchCategories = collect($sidebarCategories)->pluck('label')->take(6)->all();
 
     $footerColumns = [
         'Trợ giúp' => ['Chính sách giao hàng', 'Cách thức thanh toán', 'Hotdeal E-voucher', 'Membership'],
         'Giới thiệu' => ['Về chúng tôi', 'Liên hệ', 'Chính sách bảo mật', 'Quy chế hoạt động'],
         'Hợp tác' => ['Thẻ quà tặng', 'Liên hệ hợp tác', 'Tuyển dụng', 'Thông tin báo chí'],
     ];
+
+    $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
+    $formatDiscount = fn ($value) => '-'.(int) $value.'%';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ data_get($siteProfile, 'site_name', 'TH0001 Deal Commerce') }}</title>
+        <title>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'TH0001 Deal Commerce')) }}</title>
+        <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
             :root {
@@ -178,18 +57,19 @@
             .th-accent { color: var(--th-red); }
             .th-header { background: var(--th-surface); }
             .th-header-inner { padding: 12px 0; }
-            .th-logo { font-size: 44px; line-height: 1; font-weight: 900; letter-spacing: -0.06em; color: var(--th-red); font-style: italic; }
-            .th-logo small { font-size: 13px; background: var(--th-red); color: #fff; padding: 2px 6px; border-radius: 999px; vertical-align: super; margin-left: 4px; font-style: normal; }
-            .th-search { flex: 1; display: grid; grid-template-columns: 220px 1fr 52px; border: 2px solid var(--th-red); border-radius: 4px; overflow: hidden; background: #fff; max-width: 720px; }
-            .th-search select, .th-search input, .th-search button { border: 0; height: 44px; font-size: 14px; }
-            .th-search select, .th-search input { padding: 0 14px; background: transparent; }
-            .th-search select { border-right: 1px solid var(--th-line); color: #4f4f4f; }
+            .th-logo { display: flex; align-items: center; gap: 12px; min-width: 220px; }
+            .th-logo img { width: 160px; height: 52px; object-fit: contain; }
+            .th-logo-mark { display: flex; flex-direction: column; font-size: 12px; line-height: 1.35; color: #555; }
+            .th-logo-mark strong { color: var(--th-red); font-size: 16px; }
+            .th-search { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 52px; border: 2px solid var(--th-red); border-radius: 4px; overflow: hidden; background: #fff; max-width: 720px; }
+            .th-search input, .th-search button { border: 0; height: 44px; font-size: 14px; }
+            .th-search input { padding: 0 14px; background: transparent; }
             .th-search button { background: var(--th-red); color: #fff; font-weight: 700; cursor: pointer; }
             .th-cart { min-width: 120px; display: flex; justify-content: flex-end; font-weight: 700; color: #5f5f5f; }
             .th-main-nav { background: var(--th-red); color: #fff; }
-            .th-main-nav-inner { min-height: 42px; }
-            .th-main-nav-menu { display: flex; gap: 28px; font-size: 14px; font-weight: 700; }
-            .th-main-nav-menu a { padding: 11px 0; display: block; }
+            .th-main-nav-inner { min-height: 42px; justify-content: flex-start; }
+            .th-main-nav-menu { display: flex; justify-content: flex-start; gap: 28px; font-size: 14px; font-weight: 700; }
+            .th-main-nav-menu a { padding: 11px 0; display: block; text-align: left; text-transform: uppercase; }
             .th-main-nav-categories { background: rgba(0,0,0,0.08); min-width: 170px; padding: 11px 14px; font-weight: 700; }
             .th-content { padding: 0 0 40px; }
             .th-hero-layout { display: grid; grid-template-columns: 220px 1fr; gap: 16px; margin-top: 0; }
@@ -250,7 +130,7 @@
             .th-deal-body { padding: 12px 12px 14px; }
             .th-deal-title { margin: 0 0 12px; font-size: 15px; line-height: 1.45; min-height: 44px; }
             .th-pricing { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-            .th-price { color: var(--th-red); font-size: 31px; font-weight: 900; letter-spacing: -0.04em; }
+            .th-price { color: var(--th-red); font-size: 20px; font-weight: 900; letter-spacing: -0.04em; }
             .th-price small { font-size: 18px; }
             .th-discount { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 6px; background: var(--th-red); color: #fff; font-size: 13px; font-weight: 800; }
             .th-old-price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: #a8a8a8; font-size: 13px; }
@@ -280,7 +160,7 @@
                 .th-sidebar { display: none; }
                 .th-hero-stack { grid-template-columns: 1fr; }
                 .th-card-grid, .th-category-grid, .th-brand-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-                .th-search { grid-template-columns: 160px 1fr 52px; }
+                .th-search { grid-template-columns: minmax(0, 1fr) 52px; }
                 .th-sidebar-mega { display: none !important; opacity: 0 !important; visibility: hidden !important; }
             }
 
@@ -288,7 +168,6 @@
                 .th-topbar-inner, .th-header-inner, .th-main-nav-inner, .th-footer-inner { flex-direction: column; align-items: stretch; }
                 .th-logo { text-align: center; font-size: 36px; }
                 .th-search { max-width: none; grid-template-columns: 1fr; }
-                .th-search select { border-right: 0; border-bottom: 1px solid var(--th-line); }
                 .th-main-nav-categories { min-width: 0; }
                 .th-main-nav-menu { gap: 16px; overflow-x: auto; }
                 .th-hero-overlay { width: 100%; padding: 24px 18px; }
@@ -296,7 +175,7 @@
                 .th-category-header { align-items: flex-start; padding: 12px 16px; }
                 .th-category-title { min-width: 0; font-size: 22px; }
                 .th-category-tabs, .th-category-filters, .th-inline { gap: 12px; }
-                .th-price { font-size: 28px; }
+                .th-price { font-size: 20px; }
             }
         </style>
     </head>
@@ -319,18 +198,18 @@
 
             <header class="th-header">
                 <div class="th-container th-header-inner">
-                    <div class="th-logo">HOTDEAL<small>vn</small></div>
+                    <a class="th-logo" href="/">
+                        <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'Website logo') }}">
+                        <span class="th-logo-mark">
+                            <strong>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'AIO Commerce')) }}</strong>
+                            <span>Demo theme TH0001</span>
+                        </span>
+                    </a>
                     <div class="th-search">
-                        <select>
-                            <option>Tất cả danh mục</option>
-                            <option>Ẩm thực</option>
-                            <option>Spa & Làm đẹp</option>
-                            <option>Du lịch</option>
-                        </select>
                         <input type="text" placeholder="Tìm kiếm sản phẩm / khuyến mãi">
                         <button>Tìm</button>
                     </div>
-                    <div class="th-cart">🛒 0 GIỎ HÀNG</div>
+                    <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} GIỎ HÀNG</a>
                 </div>
             </header>
 
@@ -338,10 +217,9 @@
                 <div class="th-container th-main-nav-inner">
                     <div class="th-main-nav-categories">DANH MỤC</div>
                     <div class="th-main-nav-menu">
-                        <a href="#featured">DEAL MỚI</a>
-                        <a href="#featured">DEAL BÁN CHẠY</a>
-                        <a href="#food">ẨM THỰC</a>
-                        <a href="#beauty">SPA & LÀM ĐẸP</a>
+                        @foreach (($homeData['top_menu'] ?? []) as $menuItem)
+                            <a href="{{ $menuItem['url'] ?? '#' }}" target="{{ $menuItem['target'] ?? '_self' }}">{{ $menuItem['label'] ?? 'Menu' }}</a>
+                        @endforeach
                     </div>
                 </div>
             </nav>
@@ -352,20 +230,23 @@
                         <aside class="th-sidebar">
                             @foreach ($sidebarCategories as $category)
                                 <div class="th-sidebar-entry">
-                                    <a href="#" class="th-sidebar-item {{ !empty($category['accent']) ? 'is-accent' : '' }}">
+                                    <a href="{{ $category['url'] ?? '#' }}" target="{{ $category['target'] ?? '_self' }}" class="th-sidebar-item {{ !empty($category['highlight']) ? 'is-accent' : '' }}">
                                         <span><span class="th-sidebar-icon">{{ $category['icon'] ?? '◌' }}</span> {{ $category['label'] }}</span>
                                         <span>›</span>
                                     </a>
 
-                                    @if (!empty($category['submenu']))
-                                        <div class="th-sidebar-mega {{ $category['panel_class'] ?? '' }}">
-                                            <div class="th-sidebar-mega-content {{ count($category['submenu']) > 3 ? 'has-four' : '' }}">
-                                                @foreach ($category['submenu'] as $column)
+                                    @if (!empty($category['children']))
+                                        @php
+                                            $submenuColumns = collect($category['children'])->chunk(3);
+                                        @endphp
+                                        <div class="th-sidebar-mega {{ $loop->first ? 'mega-hot' : ($loop->index % 2 === 0 ? 'mega-beauty' : 'mega-food') }}">
+                                            <div class="th-sidebar-mega-content {{ $submenuColumns->count() > 3 ? 'has-four' : '' }}">
+                                                @foreach ($submenuColumns as $chunk)
                                                     <div class="th-sidebar-mega-column">
-                                                        <h4>{{ $column['title'] }}</h4>
+                                                        <h4>{{ $category['label'] }}</h4>
                                                         <ul>
-                                                            @foreach ($column['items'] as $item)
-                                                                <li><a href="#">{{ $item }}</a></li>
+                                                            @foreach ($chunk as $child)
+                                                                <li><a href="{{ $child['url'] ?? ($category['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? 'Nhóm con' }}</a></li>
                                                             @endforeach
                                                         </ul>
                                                     </div>
@@ -374,7 +255,7 @@
 
                                             <div class="th-sidebar-mega-promo">
                                                 @foreach ($sidePromos as $promo)
-                                                    <a href="#">
+                                                    <a href="{{ $promo['link_url'] ?? '#featured' }}">
                                                         <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
                                                         <span>{{ $promo['title'] }} · {{ $promo['subtitle'] }}</span>
                                                     </a>
@@ -389,21 +270,21 @@
                         <div>
                             <div class="th-hero-stack">
                                 <section class="th-hero-card">
-                                    <img src="{{ $heroSlides[0]['image'] }}" alt="{{ $heroSlides[0]['title'] }}">
+                                    <img src="{{ $heroBanner['image'] ?? 'https://picsum.photos/seed/th0001-fallback-hero/960/520' }}" alt="{{ $heroBanner['title'] ?? 'Hero banner' }}">
                                     <div class="th-hero-overlay">
-                                        <span class="th-eyebrow">{{ $heroSlides[0]['eyebrow'] }}</span>
-                                        <h1 class="th-hero-title">{{ $heroSlides[0]['title'] }}</h1>
-                                        <p class="th-hero-summary">{{ $heroSlides[0]['summary'] }}</p>
+                                        <span class="th-eyebrow">{{ $heroBanner['eyebrow'] ?? 'Flash sale' }}</span>
+                                        <h1 class="th-hero-title">{{ $heroBanner['title'] ?? 'Deal nổi bật hôm nay' }}</h1>
+                                        <p class="th-hero-summary">{{ $heroBanner['summary'] ?? 'Dữ liệu banner đang được lấy trực tiếp từ bảng banner riêng.' }}</p>
                                         <div class="th-hero-actions">
-                                            <span class="th-badge-price">{{ $heroSlides[0]['badge'] }}</span>
-                                            <a href="#featured" class="th-hero-button">{{ $heroSlides[0]['cta'] }}</a>
+                                            <span class="th-badge-price">{{ $heroBanner['badge'] ?? 'Ưu đãi mới' }}</span>
+                                            <a href="{{ $heroBanner['link_url'] ?? '#featured' }}" class="th-hero-button">{{ $heroBanner['cta'] ?? 'Mua ngay' }}</a>
                                         </div>
                                     </div>
                                 </section>
 
                                 <div class="th-side-promo-grid">
                                     @foreach ($sidePromos as $promo)
-                                        <a href="#" class="th-side-promo">
+                                        <a href="{{ $promo['link_url'] ?? '#featured' }}" class="th-side-promo">
                                             <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
                                             <span>{{ $promo['title'] }} · {{ $promo['subtitle'] }}</span>
                                         </a>
@@ -425,9 +306,9 @@
                     <section id="featured" class="th-featured-panel">
                         <div class="th-featured-topbar">
                             <div class="th-section-tabs">
-                                <span>Deal nổi bật</span>
-                                <span>Deal hôm nay</span>
-                                <span>Deal dành cho bạn</span>
+                                <span>{{ $featuredTitle }}</span>
+                                <span>Mới cập nhật</span>
+                                <span>Giá tốt</span>
                             </div>
                         </div>
 
@@ -435,18 +316,20 @@
                             @foreach ($featuredDeals as $deal)
                                 <article class="th-deal-card">
                                     <div class="th-deal-image-wrap">
-                                        <img src="{{ $deal['image'] }}" alt="{{ $deal['title'] }}">
-                                        <span class="th-deal-chip">E-voucher</span>
+                                        <a href="{{ $deal['url'] ?? '#' }}">
+                                            <img src="{{ $deal['image'] }}" alt="{{ $deal['title'] }}">
+                                        </a>
+                                        <span class="th-deal-chip">{{ $deal['tag'] ?? 'Sản phẩm' }}</span>
                                     </div>
                                     <div class="th-deal-body">
-                                        <h3 class="th-deal-title">{{ $deal['title'] }}</h3>
+                                        <h3 class="th-deal-title"><a href="{{ $deal['url'] ?? '#' }}">{{ $deal['title'] }}</a></h3>
                                         <div class="th-pricing">
-                                            <span class="th-price">{{ $deal['price'] }}</span>
-                                            <span class="th-discount">{{ $deal['discount'] }}</span>
+                                            <span class="th-price">{{ $formatCurrency($deal['price'] ?? null) }}</span>
+                                            <span class="th-discount">{{ $formatDiscount($deal['discount'] ?? 0) }}</span>
                                         </div>
                                         <div class="th-old-price-row">
-                                            <span class="th-old-price">{{ $deal['old_price'] }}</span>
-                                            <span class="th-stat">👤 {{ $deal['meta'] }}</span>
+                                            <span class="th-old-price">{{ $formatCurrency($deal['old_price'] ?? null) }}</span>
+                                            <span class="th-stat">Tồn kho {{ $deal['meta'] ?? 0 }}</span>
                                         </div>
                                     </div>
                                 </article>
@@ -455,7 +338,7 @@
                     </section>
 
                     @foreach ($sections as $section)
-                        <section id="{{ $loop->first ? 'food' : 'beauty' }}" class="th-category-section">
+                        <section id="section-{{ $section['slug'] }}" class="th-category-section">
                             <div class="th-category-header {{ $section['theme'] === 'pink' ? 'pink' : '' }}">
                                 <div class="th-category-title">
                                     <span class="th-category-title-badge">{{ $section['theme'] === 'pink' ? '✿' : '🍴' }}</span>
@@ -479,19 +362,21 @@
                                 @foreach ($section['items'] as $item)
                                     <article class="th-deal-card">
                                         <div class="th-deal-image-wrap">
-                                            <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
+                                            <a href="{{ $item['url'] ?? '#' }}">
+                                                <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
+                                            </a>
                                             <span class="th-deal-countdown">⏱ Còn 21 ngày</span>
                                             <span class="th-deal-chip">{{ $item['tag'] }}</span>
                                         </div>
                                         <div class="th-deal-body">
-                                            <h3 class="th-deal-title">{{ $item['title'] }}</h3>
+                                            <h3 class="th-deal-title"><a href="{{ $item['url'] ?? '#' }}">{{ $item['title'] }}</a></h3>
                                             <div class="th-pricing">
-                                                <span class="th-price">{{ $item['price'] }}</span>
-                                                <span class="th-discount">{{ $item['discount'] }}</span>
+                                                <span class="th-price">{{ $formatCurrency($item['price'] ?? null) }}</span>
+                                                <span class="th-discount">{{ $formatDiscount($item['discount'] ?? 0) }}</span>
                                             </div>
                                             <div class="th-old-price-row">
-                                                <span class="th-old-price">{{ $item['old_price'] }}</span>
-                                                <span class="th-stat">👤 {{ $item['meta'] }}</span>
+                                                <span class="th-old-price">{{ $formatCurrency($item['old_price'] ?? null) }}</span>
+                                                <span class="th-stat">Tồn kho {{ $item['meta'] ?? 0 }}</span>
                                             </div>
                                         </div>
                                     </article>
@@ -499,7 +384,7 @@
                             </div>
 
                             <div class="th-category-footer">
-                                <a href="#" class="th-more-button">Xem tất cả {{ $section['title'] }} mới nhất</a>
+                                <a href="/danh-muc/{{ $section['slug'] }}" class="th-more-button">Xem tất cả {{ $section['title'] }} mới nhất</a>
                             </div>
                         </section>
                     @endforeach

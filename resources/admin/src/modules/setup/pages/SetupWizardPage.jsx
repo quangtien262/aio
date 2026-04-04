@@ -113,7 +113,7 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
     }, [completedStep, message, searchParams, setSearchParams, setup]);
 
     if (! setup) {
-        return <Card loading title="Setup Wizard" />;
+        return <Card loading title="Cài đặt website" />;
     }
 
     const websiteTypeOptions = setup.website_type_options ?? [];
@@ -123,7 +123,7 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Card title="Setup Wizard State">
+            <Card title="Cài đặt website">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
                     <div>
                         <Text className="card-label">Foundation Progress</Text>

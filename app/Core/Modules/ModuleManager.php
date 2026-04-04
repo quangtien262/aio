@@ -7,6 +7,7 @@ use App\Core\Modules\Support\ModuleLifecycleHooks;
 use App\Core\Modules\Support\ModuleLifecycleRunner;
 use App\Models\ModuleInstallation;
 use App\Models\Permission;
+use App\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -198,5 +199,13 @@ class ModuleManager
                 $permission->roles()->detach();
                 $permission->delete();
             });
+
+        $superAdminRole = Role::query()->where('key', 'super-admin')->first();
+
+        if ($superAdminRole) {
+            $superAdminRole->permissions()->syncWithoutDetaching(
+                Permission::query()->pluck('id')->all(),
+            );
+        }
     }
 }

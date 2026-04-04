@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'channel' => env('SMS_LOG_CHANNEL', 'sms'),
+        'endpoint' => env('SMS_ENDPOINT'),
+        'api_key' => env('SMS_API_KEY'),
+        'from' => env('SMS_FROM', 'TH0001'),
+    ],
+
 ];

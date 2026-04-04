@@ -51,7 +51,7 @@ export const adminNavigation = [
     },
     {
         key: 'setup-wizard',
-        label: 'Setup Wizard',
+        label: 'Cài đặt website',
         section: 'platform',
         route: '/setup',
         permission: 'setup.view',

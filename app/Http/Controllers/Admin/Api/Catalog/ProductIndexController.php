@@ -13,19 +13,35 @@ class ProductIndexController
     public function __invoke(Request $request, AdminDataScope $adminDataScope): JsonResponse
     {
         $admin = $request->user('admin');
-        $query = CatalogProduct::query()->orderBy('name');
+        $query = CatalogProduct::query()->with(['category', 'images'])->orderBy('name');
 
         if ($admin) {
             $adminDataScope->apply($query, $admin);
         }
 
-        $products = $query->get(['id', 'name', 'sku', 'price', 'stock', 'website_key', 'owner_key', 'tenant_key'])
+        $products = $query->get()
             ->map(fn (CatalogProduct $product): array => [
                 'id' => $product->id,
+                'catalog_category_id' => $product->catalog_category_id,
+                'category_name' => $product->category?->name,
                 'name' => $product->name,
+                'slug' => $product->slug,
                 'sku' => $product->sku,
                 'price' => (float) $product->price,
+                'original_price' => $product->original_price !== null ? (float) $product->original_price : null,
                 'stock' => $product->stock,
+                'short_description' => $product->short_description,
+                'detail_content' => $product->detail_content,
+                'highlights' => $product->highlights,
+                'usage_terms' => $product->usage_terms,
+                'usage_location' => $product->usage_location,
+                'image_url' => $product->image_url,
+                'gallery_images' => $product->images->pluck('image_url')->all(),
+                'sold_count' => $product->sold_count,
+                'deal_end_at' => $product->deal_end_at?->toIso8601String(),
+                'is_featured' => $product->is_featured,
+                'sort_order' => $product->sort_order,
+                'is_active' => $product->is_active,
                 'website_key' => $product->website_key,
                 'owner_key' => $product->owner_key,
                 'tenant_key' => $product->tenant_key,

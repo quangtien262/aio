@@ -67,9 +67,9 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <div>
                             <Text className="card-label">Setup Return</Text>
-                            <Paragraph style={{ marginBottom: 0 }}>Sau khi hoàn tất thao tác module cho bước này, hệ thống sẽ tự quay lại Setup Wizard.</Paragraph>
+                            <Paragraph style={{ marginBottom: 0 }}>Sau khi hoàn tất thao tác module cho bước này, hệ thống sẽ tự quay lại Cài đặt website.</Paragraph>
                         </div>
-                        <Button onClick={() => navigate(returnTo)}>Quay lại Setup Wizard</Button>
+                        <Button onClick={() => navigate(returnTo)}>Quay lại Cài đặt website</Button>
                     </Space>
                 </Card>
             ) : null}

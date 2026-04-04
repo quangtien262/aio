@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\Api\AdminCurrentProfileController;
 use App\Http\Controllers\Admin\Api\AdminRoleAssignmentController;
 use App\Http\Controllers\Admin\Api\Catalog\ProductManagementController;
 use App\Http\Controllers\Admin\Api\Catalog\ProductIndexController;
+use App\Http\Controllers\Admin\Api\Catalog\CategoryIndexController as CatalogCategoryIndexController;
+use App\Http\Controllers\Admin\Api\Catalog\CategoryManagementController as CatalogCategoryManagementController;
 use App\Http\Controllers\Admin\Api\Cms\CategoryIndexController;
 use App\Http\Controllers\Admin\Api\Cms\CategoryManagementController;
 use App\Http\Controllers\Admin\Api\Cms\MediaIndexController;
@@ -25,7 +27,10 @@ use App\Http\Controllers\Admin\Api\RoleManagementController;
 use App\Http\Controllers\Admin\Api\SetupProfileController;
 use App\Http\Controllers\Admin\Api\SetupStepController;
 use App\Http\Controllers\Admin\Api\SetupWizardStateController;
+use App\Http\Controllers\Admin\Api\SiteBannerIndexController;
+use App\Http\Controllers\Admin\Api\SiteBannerManagementController;
 use App\Http\Controllers\Admin\Api\ThemeActivationController;
+use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
 use App\Http\Controllers\Admin\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
@@ -170,21 +175,48 @@ Route::prefix('admin')
                 Route::get('/catalog/products', ProductIndexController::class)
                     ->middleware('admin.permission:catalog.view')
                     ->name('catalog.products.index');
+                Route::get('/catalog/categories', CatalogCategoryIndexController::class)
+                    ->middleware('admin.permission:catalog.view')
+                    ->name('catalog.categories.index');
                 Route::post('/catalog/products', [ProductManagementController::class, 'store'])
                     ->middleware('admin.permission:catalog.create')
                     ->name('catalog.products.store');
+                Route::post('/catalog/categories', [CatalogCategoryManagementController::class, 'store'])
+                    ->middleware('admin.permission:catalog.create')
+                    ->name('catalog.categories.store');
                 Route::put('/catalog/products/{product}', [ProductManagementController::class, 'update'])
                     ->middleware('admin.permission:catalog.update')
                     ->name('catalog.products.update');
+                Route::put('/catalog/categories/{category}', [CatalogCategoryManagementController::class, 'update'])
+                    ->middleware('admin.permission:catalog.update')
+                    ->name('catalog.categories.update');
                 Route::delete('/catalog/products/{product}', [ProductManagementController::class, 'destroy'])
                     ->middleware('admin.permission:catalog.delete')
                     ->name('catalog.products.destroy');
+                Route::delete('/catalog/categories/{category}', [CatalogCategoryManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:catalog.delete')
+                    ->name('catalog.categories.destroy');
+                Route::get('/site-banners', SiteBannerIndexController::class)
+                    ->middleware('admin.permission:catalog.view')
+                    ->name('site-banners.index');
+                Route::post('/site-banners', [SiteBannerManagementController::class, 'store'])
+                    ->middleware('admin.permission:catalog.create')
+                    ->name('site-banners.store');
+                Route::put('/site-banners/{banner}', [SiteBannerManagementController::class, 'update'])
+                    ->middleware('admin.permission:catalog.update')
+                    ->name('site-banners.update');
+                Route::delete('/site-banners/{banner}', [SiteBannerManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:catalog.delete')
+                    ->name('site-banners.destroy');
                 Route::get('/themes', ThemeRegistryController::class)
                     ->middleware('admin.permission:theme.view')
                     ->name('themes');
                 Route::post('/themes/{key}/activate', ThemeActivationController::class)
                     ->middleware('admin.permission:theme.activate')
                     ->name('themes.activate');
+                Route::post('/themes/{key}/demo-data', ThemeDemoDataController::class)
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.demo-data');
                 Route::get('/setup', SetupWizardStateController::class)
                     ->middleware('admin.permission:setup.view')
                     ->name('setup');

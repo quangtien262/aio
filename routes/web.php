@@ -30,4 +30,14 @@ Route::middleware('auth:admin')->group(function (): void {
 
 Route::get('/blog', [CmsSiteController::class, 'postsIndex'])->name('site.blog.index');
 Route::get('/blog/{slug}', [CmsSiteController::class, 'post'])->name('site.blog.show');
+Route::get('/gio-hang', [CmsSiteController::class, 'cart'])->name('site.cart.index');
+Route::post('/gio-hang/{slug}', [CmsSiteController::class, 'addToCart'])->name('site.cart.add');
+Route::post('/gio-hang/{slug}/mua-ngay', [CmsSiteController::class, 'buyNow'])->name('site.cart.buy_now');
+Route::post('/gio-hang/cap-nhat/{productId}', [CmsSiteController::class, 'updateCartItem'])->name('site.cart.update');
+Route::post('/gio-hang/xoa/{productId}', [CmsSiteController::class, 'removeCartItem'])->name('site.cart.remove');
+Route::get('/thanh-toan', [CmsSiteController::class, 'checkout'])->name('site.checkout.index');
+Route::post('/thanh-toan', [CmsSiteController::class, 'placeOrder'])->name('site.checkout.store');
+Route::get('/thanh-toan/thanh-cong/{order}', [CmsSiteController::class, 'checkoutSuccess'])->name('site.checkout.success');
+Route::get('/danh-muc/{slug}', [CmsSiteController::class, 'category'])->name('site.catalog.category');
+Route::get('/san-pham/{slug}', [CmsSiteController::class, 'product'])->name('site.catalog.product');
 Route::fallback([CmsSiteController::class, 'page']);
