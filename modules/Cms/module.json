@@ -1,7 +1,7 @@
 {
   "name": "CMS",
   "key": "cms",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Module quản lý nội dung, trang, bài viết, menu và media cho AIO Platform.",
   "website_type": ["corporate", "news", "ecommerce", "landingpage"],
   "dependencies": [],
@@ -10,24 +10,79 @@
     "cms.create",
     "cms.update",
     "cms.publish",
-    "cms.delete"
+    "cms.delete",
+    "cms.post.view",
+    "cms.post.create",
+    "cms.post.update",
+    "cms.post.delete",
+    "cms.category.manage",
+    "cms.menu.manage",
+    "cms.media.manage"
   ],
   "hooks": [
     "Modules\\Cms\\Hooks\\CmsLifecycleHook"
   ],
   "menus": [
     {
-      "key": "cms",
-      "label": "CMS",
-      "description": "Quản lý trang, bài viết và menu nội dung của website.",
-      "badge": "Module",
+      "key": "cms-pages",
+      "label": "Pages",
+      "description": "Quản lý page công khai, SEO cơ bản và preview unpublished.",
+      "badge": "Pages",
       "color": "geekblue",
       "icon": "read",
-      "route": "/admin/cms",
+      "route": "/admin/cms/pages",
+      "permission": "cms.view"
+    },
+    {
+      "key": "cms-posts",
+      "label": "Posts",
+      "description": "Quản lý bài viết, trạng thái xuất bản và gắn category.",
+      "badge": "Posts",
+      "color": "orange",
+      "icon": "profile",
+      "route": "/admin/cms/posts",
+      "permission": "cms.post.view"
+    },
+    {
+      "key": "cms-categories",
+      "label": "Categories",
+      "description": "Quản lý taxonomy cho bài viết và nội dung có phân loại.",
+      "badge": "Taxonomy",
+      "color": "green",
+      "icon": "tags",
+      "route": "/admin/cms/categories",
+      "permission": "cms.view"
+    },
+    {
+      "key": "cms-menus",
+      "label": "Menus",
+      "description": "Xây menu header/footer cho public site theo theme active.",
+      "badge": "Menu",
+      "color": "purple",
+      "icon": "menu",
+      "route": "/admin/cms/menus",
+      "permission": "cms.view"
+    },
+    {
+      "key": "cms-media",
+      "label": "Media",
+      "description": "Media picker cơ bản để chọn ảnh cho page và post.",
+      "badge": "Media",
+      "color": "cyan",
+      "icon": "picture",
+      "route": "/admin/cms/media",
       "permission": "cms.view"
     }
   ],
   "changelog": [
+    {
+      "version": "0.2.0",
+      "date": "2026-04-04",
+      "notes": [
+        "Mở rộng CMS phase 1 với Pages, Posts, Categories, Menus, Media picker, SEO field cơ bản và public render.",
+        "Bổ sung preview unpublished và role cms.publisher mặc định cho module CMS."
+      ]
+    },
     {
       "version": "0.1.0",
       "date": "2026-04-03",

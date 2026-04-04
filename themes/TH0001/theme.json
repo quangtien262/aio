@@ -1,0 +1,32 @@
+{
+  "name": "TH0001 Deal Commerce",
+  "key": "TH0001",
+  "version": "0.1.0",
+  "description": "Theme thương mại điện tử dạng deal marketplace với banner lớn, sidebar danh mục và các block ngành hàng dày nội dung.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-th0001.png",
+    "cover": "cover-th0001.png"
+  },
+  "blocks": [
+    "topbar",
+    "header-search",
+    "category-sidebar",
+    "hero-promo",
+    "brand-strip",
+    "deal-tabs",
+    "deal-section-grid",
+    "footer-commerce"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}

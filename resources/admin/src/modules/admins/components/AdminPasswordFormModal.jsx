@@ -7,7 +7,12 @@ export default function AdminPasswordFormModal({ open, canResetPassword, passwor
 
     const handleSubmit = async () => {
         const payload = await form.validateFields();
-        await onSubmit?.(payload);
+        const didReset = await onSubmit?.(payload);
+
+        if (!didReset) {
+            return;
+        }
+
         form.resetFields();
     };
 
@@ -26,10 +31,26 @@ export default function AdminPasswordFormModal({ open, canResetPassword, passwor
             destroyOnHidden
         >
             <Form form={form} layout="vertical">
-                <Form.Item name="password" label="Mật khẩu mới" rules={[{ required: true, message: 'Nhập mật khẩu mới' }]}>
+                <Form.Item name="password" label="Mật khẩu mới" rules={[{ required: true, message: 'Nhập mật khẩu mới' }, { min: 8, message: 'Mật khẩu phải có ít nhất 8 ký tự' }]}>
                     <Input.Password />
                 </Form.Item>
-                <Form.Item name="password_confirmation" label="Xác nhận mật khẩu" dependencies={['password']} rules={[{ required: true, message: 'Xác nhận mật khẩu' }]}>
+                <Form.Item
+                    name="password_confirmation"
+                    label="Xác nhận mật khẩu"
+                    dependencies={['password']}
+                    rules={[
+                        { required: true, message: 'Xác nhận mật khẩu' },
+                        ({ getFieldValue }) => ({
+                            validator(_, value) {
+                                if (!value || getFieldValue('password') === value) {
+                                    return Promise.resolve();
+                                }
+
+                                return Promise.reject(new Error('Xác nhận mật khẩu không khớp.'));
+                            },
+                        }),
+                    ]}
+                >
                     <Input.Password />
                 </Form.Item>
             </Form>

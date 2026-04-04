@@ -6,8 +6,8 @@ use Illuminate\Contracts\View\View;
 
 class LandingController
 {
-    public function __invoke(): View
+    public function __invoke(CmsSiteController $cmsSiteController): View
     {
-        return view('site');
+        return $cmsSiteController->home();
     }
 }

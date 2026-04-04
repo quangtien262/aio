@@ -58,6 +58,7 @@ export default function ThemeListTable({ themes, selectedThemeKey, onSelectTheme
             columns={columns}
             dataSource={themes}
             pagination={false}
+            scroll={{ x: 720 }}
             rowClassName={(record) => (record.key === selectedThemeKey ? 'ant-table-row-selected' : '')}
             onRow={(record) => ({
                 onClick: () => onSelectTheme?.(record.key),

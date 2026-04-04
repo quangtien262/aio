@@ -4,6 +4,8 @@ namespace Modules\Cms\Hooks;
 
 use App\Core\Modules\Contracts\ModuleLifecycleHook;
 use App\Core\Modules\Support\ModuleLifecycleContext;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\SiteProfile;
 
 class CmsLifecycleHook implements ModuleLifecycleHook
@@ -33,6 +35,8 @@ class CmsLifecycleHook implements ModuleLifecycleHook
             'branding' => $branding,
             'completed_steps' => $completedSteps,
         ])->save();
+
+        $this->ensurePublisherRole();
     }
 
     public function preEnable(ModuleLifecycleContext $context): void
@@ -45,6 +49,8 @@ class CmsLifecycleHook implements ModuleLifecycleHook
             'enabled' => true,
             'enabled_at' => now()->toIso8601String(),
         ]);
+
+        $this->ensurePublisherRole();
     }
 
     public function preDisable(ModuleLifecycleContext $context): void
@@ -78,6 +84,8 @@ class CmsLifecycleHook implements ModuleLifecycleHook
         $profile->forceFill([
             'branding' => $branding,
         ])->save();
+
+        $this->ensurePublisherRole();
     }
 
     public function preUninstall(ModuleLifecycleContext $context): void
@@ -114,5 +122,34 @@ class CmsLifecycleHook implements ModuleLifecycleHook
         $profile->forceFill([
             'branding' => $branding,
         ])->save();
+    }
+
+    private function ensurePublisherRole(): void
+    {
+        $role = Role::query()->firstOrCreate(
+            ['key' => 'cms.publisher'],
+            [
+                'name' => 'CMS Publisher',
+                'description' => 'Quản trị nội dung, xuất bản page/post và vận hành media/menu của CMS.',
+            ],
+        );
+
+        $permissionIds = Permission::query()
+            ->whereIn('key', [
+                'cms.view',
+                'cms.create',
+                'cms.update',
+                'cms.publish',
+                'cms.post.view',
+                'cms.post.create',
+                'cms.post.update',
+                'cms.category.manage',
+                'cms.menu.manage',
+                'cms.media.manage',
+            ])
+            ->pluck('id')
+            ->all();
+
+        $role->permissions()->syncWithoutDetaching($permissionIds);
     }
 }

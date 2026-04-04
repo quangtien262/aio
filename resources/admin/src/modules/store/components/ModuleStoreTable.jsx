@@ -66,6 +66,7 @@ export default function ModuleStoreTable({ modules, selectedModuleKey, onSelectM
             columns={columns}
             dataSource={modules}
             pagination={false}
+            scroll={{ x: 820 }}
             rowClassName={(record) => (record.key === selectedModuleKey ? 'ant-table-row-selected' : '')}
             onRow={(record) => ({
                 onClick: () => onSelectModule?.(record.key),

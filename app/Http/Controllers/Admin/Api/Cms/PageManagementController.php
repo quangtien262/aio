@@ -3,31 +3,35 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Core\Access\AdminDataScope;
+use App\Http\Controllers\Admin\Api\Cms\Concerns\InteractsWithScopedCmsRecords;
 use App\Models\CmsPage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 class PageManagementController
 {
+    use InteractsWithScopedCmsRecords;
+
     public function store(Request $request, AdminDataScope $adminDataScope): JsonResponse
     {
         $validated = $this->validatePayload($request);
         $this->ensureScopedPayloadAllowed($request, $validated);
 
         $page = CmsPage::query()->create($validated);
+        /** @var CmsPage $record */
+        $record = $this->resolveScopedRecord($request, $adminDataScope, new CmsPage(), $page->id);
 
         return response()->json([
             'message' => 'Đã tạo trang CMS.',
-            'data' => $this->serializePage($this->resolveScopedPage($request, $adminDataScope, $page->id)),
+            'data' => $this->serializePage($record),
         ], 201);
     }
 
     public function update(Request $request, AdminDataScope $adminDataScope, int $page): JsonResponse
     {
-        $record = $this->resolveScopedPage($request, $adminDataScope, $page);
+        /** @var CmsPage $record */
+        $record = $this->resolveScopedRecord($request, $adminDataScope, new CmsPage(), $page);
         $validated = $this->validatePayload($request, $record);
         $this->ensureScopedPayloadAllowed($request, $validated);
 
@@ -41,7 +45,8 @@ class PageManagementController
 
     public function destroy(Request $request, AdminDataScope $adminDataScope, int $page): JsonResponse
     {
-        $record = $this->resolveScopedPage($request, $adminDataScope, $page);
+        /** @var CmsPage $record */
+        $record = $this->resolveScopedRecord($request, $adminDataScope, new CmsPage(), $page);
         $record->delete();
 
         return response()->json([
@@ -49,55 +54,23 @@ class PageManagementController
         ]);
     }
 
-    private function resolveScopedPage(Request $request, AdminDataScope $adminDataScope, int $pageId): CmsPage
-    {
-        $query = CmsPage::query();
-
-        if ($admin = $request->user('admin')) {
-            $adminDataScope->apply($query, $admin);
-        }
-
-        return $query->findOrFail($pageId);
-    }
-
     private function validatePayload(Request $request, ?CmsPage $page = null): array
     {
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('cms_pages', 'slug')->ignore($page?->id)],
-            'status' => ['required', 'string', Rule::in(['draft', 'published', 'archived'])],
+            'status' => ['required', 'string', Rule::in(config('cms.workflow.statuses', ['draft', 'published']))],
+            'excerpt' => ['nullable', 'string'],
             'body' => ['nullable', 'string'],
-            'website_key' => ['nullable', 'string', 'max:255'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:1000'],
+            'template' => ['nullable', 'string', 'max:255'],
+            'featured_media_id' => ['nullable', 'integer', Rule::exists('cms_media', 'id')],
+            'publish_at' => ['nullable', 'date'],
+            'website_key' => ['required', 'string', 'max:255'],
             'owner_key' => ['nullable', 'string', 'max:255'],
             'tenant_key' => ['nullable', 'string', 'max:255'],
         ]);
-    }
-
-    private function ensureScopedPayloadAllowed(Request $request, array $validated): void
-    {
-        $admin = $request->user('admin');
-
-        if (! $admin) {
-            return;
-        }
-
-        $scopeMatrix = $admin->scopeMatrix();
-
-        foreach (['website' => 'website_key', 'owner' => 'owner_key', 'tenant' => 'tenant_key'] as $scopeType => $field) {
-            $allowedValues = array_values(array_filter($scopeMatrix[$scopeType] ?? []));
-
-            if ($allowedValues === []) {
-                continue;
-            }
-
-            $value = Arr::get($validated, $field);
-
-            if (! is_string($value) || $value === '' || ! in_array($value, $allowedValues, true)) {
-                throw ValidationException::withMessages([
-                    $field => ['Giá trị scope nằm ngoài phạm vi admin được cấp.'],
-                ]);
-            }
-        }
     }
 
     private function serializePage(CmsPage $page): array
@@ -107,7 +80,13 @@ class PageManagementController
             'title' => $page->title,
             'slug' => $page->slug,
             'status' => $page->status,
+            'excerpt' => $page->excerpt,
             'body' => $page->body,
+            'meta_title' => $page->meta_title,
+            'meta_description' => $page->meta_description,
+            'template' => $page->template,
+            'featured_media_id' => $page->featured_media_id,
+            'publish_at' => $page->publish_at?->toAtomString(),
             'website_key' => $page->website_key,
             'owner_key' => $page->owner_key,
             'tenant_key' => $page->tenant_key,

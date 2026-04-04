@@ -30,7 +30,12 @@ export default function AdminAccountFormModal({ open, canManageAdmins, editingAc
 
     const handleSubmit = async () => {
         const payload = await form.validateFields();
-        await onSubmit?.(payload);
+        const didSave = await onSubmit?.(payload);
+
+        if (!didSave) {
+            return;
+        }
+
         form.resetFields();
     };
 
@@ -57,7 +62,7 @@ export default function AdminAccountFormModal({ open, canManageAdmins, editingAc
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Nhập email admin' }]}>
+                        <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Nhập email admin' }, { type: 'email', message: 'Email admin không hợp lệ' }]}>
                             <Input placeholder="admin@aio.local" />
                         </Form.Item>
                     </Col>
@@ -66,12 +71,28 @@ export default function AdminAccountFormModal({ open, canManageAdmins, editingAc
                 {!editingAccount.id ? (
                     <Row gutter={16}>
                         <Col span={12}>
-                            <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Nhập mật khẩu' }]}>
+                            <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Nhập mật khẩu' }, { min: 8, message: 'Mật khẩu phải có ít nhất 8 ký tự' }]}>
                                 <Input.Password />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item name="password_confirmation" label="Xác nhận mật khẩu" dependencies={['password']} rules={[{ required: true, message: 'Xác nhận mật khẩu' }]}>
+                            <Form.Item
+                                name="password_confirmation"
+                                label="Xác nhận mật khẩu"
+                                dependencies={['password']}
+                                rules={[
+                                    { required: true, message: 'Xác nhận mật khẩu' },
+                                    ({ getFieldValue }) => ({
+                                        validator(_, value) {
+                                            if (!value || getFieldValue('password') === value) {
+                                                return Promise.resolve();
+                                            }
+
+                                            return Promise.reject(new Error('Xác nhận mật khẩu không khớp.'));
+                                        },
+                                    }),
+                                ]}
+                            >
                                 <Input.Password />
                             </Form.Item>
                         </Col>

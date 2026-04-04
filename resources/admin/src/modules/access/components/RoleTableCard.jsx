@@ -60,10 +60,11 @@ export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onE
 
     return (
         <Card
+            className="admin-table-card"
             title="Role Management"
             extra={<Button type="primary" disabled={!canManageRoles} onClick={onCreateRole}>Tạo role</Button>}
         >
-            <Table rowKey="id" columns={roleColumns} dataSource={roles} pagination={false} />
+            <Table rowKey="id" columns={roleColumns} dataSource={roles} pagination={false} scroll={{ x: 760 }} />
         </Card>
     );
 }

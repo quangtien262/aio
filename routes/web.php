@@ -3,6 +3,7 @@
 use App\Http\Controllers\Customer\AuthenticatedSessionController as CustomerAuthenticatedSessionController;
 use App\Http\Controllers\Customer\CustomerAccountController;
 use App\Http\Controllers\Customer\RegisteredUserController;
+use App\Http\Controllers\Site\CmsSiteController;
 use App\Http\Controllers\Site\LandingController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,3 +22,12 @@ Route::middleware('auth:customer')->group(function (): void {
 });
 
 require __DIR__.'/admin.php';
+
+Route::middleware('auth:admin')->group(function (): void {
+    Route::get('/preview/pages/{page}', [CmsSiteController::class, 'previewPage'])->name('site.preview.pages');
+    Route::get('/preview/posts/{post}', [CmsSiteController::class, 'previewPost'])->name('site.preview.posts');
+});
+
+Route::get('/blog', [CmsSiteController::class, 'postsIndex'])->name('site.blog.index');
+Route::get('/blog/{slug}', [CmsSiteController::class, 'post'])->name('site.blog.show');
+Route::fallback([CmsSiteController::class, 'page']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Api;
 
 use App\Core\Modules\ModuleRegistry;
+use App\Models\SiteProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -12,6 +13,7 @@ class AdminCurrentProfileController
     {
         $admin = $request->user('admin');
         $permissions = $admin?->permissions() ?? [];
+        $siteProfile = SiteProfile::query()->first();
 
         return response()->json([
             'data' => [
@@ -23,6 +25,10 @@ class AdminCurrentProfileController
                 'locked_reason' => $admin?->locked_reason,
                 'permissions' => $permissions,
                 'scopes' => $admin?->scopeMatrix() ?? [],
+                'site_profile' => [
+                    'site_name' => $siteProfile?->site_name,
+                    'branding' => $siteProfile?->branding ?? [],
+                ],
                 'module_navigation' => $moduleRegistry->navigationForPermissions($permissions),
             ],
         ]);

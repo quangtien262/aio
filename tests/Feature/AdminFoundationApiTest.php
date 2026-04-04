@@ -14,6 +14,7 @@ use App\Models\Role;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -34,6 +35,9 @@ class AdminFoundationApiTest extends TestCase
             ->assertJsonStructure([
                 'metrics' => ['admins', 'customers', 'roles', 'permissions', 'modules', 'themes'],
                 'setup' => ['website_type', 'active_theme_key', 'is_setup_completed', 'completed_steps'],
+                'active_modules' => [
+                    ['key', 'name', 'description', 'status', 'icon', 'color', 'route', 'website_types', 'installed_version', 'latest_version', 'menus'],
+                ],
             ]);
 
         $this->getJson('/admin/api/modules')
@@ -309,8 +313,8 @@ class AdminFoundationApiTest extends TestCase
         $this->getJson('/admin/api/me')
             ->assertOk()
             ->assertJsonPath('data.email', 'admin@aio.local')
-            ->assertJsonPath('data.module_navigation.0.key', 'cms')
-            ->assertJsonPath('data.module_navigation.0.route', '/admin/cms');
+            ->assertJsonPath('data.module_navigation.0.key', 'cms-pages')
+            ->assertJsonPath('data.module_navigation.0.route', '/admin/cms/pages');
 
         $this->get('/admin/cms')
             ->assertOk()
@@ -366,6 +370,100 @@ class AdminFoundationApiTest extends TestCase
         $this->assertDatabaseHas('admins', [
             'id' => $scopedAdmin->id,
             'is_active' => true,
+        ]);
+
+        $this->assertTrue(Hash::check('new-password123', $scopedAdmin->fresh()->password));
+    }
+
+    public function test_admin_account_validation_rejects_scopes_for_unassigned_roles(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+
+        $accessPayload = $this->getJson('/admin/api/access')
+            ->assertOk()
+            ->json('data');
+
+        $permissionIds = collect($accessPayload['permissions'])
+            ->whereIn('key', ['theme.view', 'setup.view'])
+            ->pluck('id')
+            ->values()
+            ->all();
+
+        $this->postJson('/admin/api/roles', [
+            'name' => 'Scoped Validation Role',
+            'key' => 'scoped-validation-role',
+            'description' => 'Role de test validation admin scope.',
+            'permission_ids' => $permissionIds,
+        ])->assertCreated();
+
+        $role = Role::query()->where('key', 'scoped-validation-role')->firstOrFail();
+
+        $this->postJson('/admin/api/admins', [
+            'name' => 'Broken Scope Admin',
+            'email' => 'broken-scope-admin@aio.local',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'is_active' => true,
+            'role_ids' => [],
+            'scopes' => [
+                [
+                    'role_id' => $role->id,
+                    'scope_type' => 'module',
+                    'scope_value' => 'cms',
+                ],
+            ],
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['scopes']);
+
+        $this->assertDatabaseMissing('admins', [
+            'email' => 'broken-scope-admin@aio.local',
+        ]);
+    }
+
+    public function test_admin_account_validation_rejects_invalid_password_reset_payload(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+        $targetAdmin = Admin::factory()->create([
+            'email' => 'reset-target@aio.local',
+        ]);
+
+        $this->actingAs($admin, 'admin');
+
+        $this->putJson("/admin/api/admins/{$targetAdmin->id}/password", [
+            'password' => 'short',
+            'password_confirmation' => 'different',
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['password']);
+
+        $this->assertFalse(Hash::check('short', $targetAdmin->fresh()->password));
+    }
+
+    public function test_admin_cannot_lock_the_current_authenticated_account(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+
+        $this->postJson("/admin/api/admins/{$admin->id}/lock", [
+            'reason' => 'Should fail for self lock.',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Không thể khóa tài khoản admin đang sử dụng.');
+
+        $this->assertDatabaseHas('admins', [
+            'id' => $admin->id,
+            'is_active' => true,
+            'locked_reason' => null,
         ]);
     }
 

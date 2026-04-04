@@ -7,8 +7,17 @@ use App\Http\Controllers\Admin\Api\AdminCurrentProfileController;
 use App\Http\Controllers\Admin\Api\AdminRoleAssignmentController;
 use App\Http\Controllers\Admin\Api\Catalog\ProductManagementController;
 use App\Http\Controllers\Admin\Api\Catalog\ProductIndexController;
+use App\Http\Controllers\Admin\Api\Cms\CategoryIndexController;
+use App\Http\Controllers\Admin\Api\Cms\CategoryManagementController;
+use App\Http\Controllers\Admin\Api\Cms\MediaIndexController;
+use App\Http\Controllers\Admin\Api\Cms\MediaManagementController;
+use App\Http\Controllers\Admin\Api\Cms\MenuIndexController;
+use App\Http\Controllers\Admin\Api\Cms\MenuLocationController;
+use App\Http\Controllers\Admin\Api\Cms\MenuManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PageManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PageIndexController;
+use App\Http\Controllers\Admin\Api\Cms\PostIndexController;
+use App\Http\Controllers\Admin\Api\Cms\PostManagementController;
 use App\Http\Controllers\Admin\Api\DashboardController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
@@ -101,6 +110,63 @@ Route::prefix('admin')
                 Route::delete('/cms/pages/{page}', [PageManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.delete')
                     ->name('cms.pages.destroy');
+                Route::get('/cms/posts', PostIndexController::class)
+                    ->middleware('admin.permission:cms.post.view')
+                    ->name('cms.posts.index');
+                Route::post('/cms/posts', [PostManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.post.create')
+                    ->name('cms.posts.store');
+                Route::put('/cms/posts/{post}', [PostManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.post.update')
+                    ->name('cms.posts.update');
+                Route::delete('/cms/posts/{post}', [PostManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.post.delete')
+                    ->name('cms.posts.destroy');
+                Route::get('/cms/categories', CategoryIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.categories.index');
+                Route::post('/cms/categories', [CategoryManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.category.manage')
+                    ->name('cms.categories.store');
+                Route::put('/cms/categories/{category}', [CategoryManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.category.manage')
+                    ->name('cms.categories.update');
+                Route::delete('/cms/categories/{category}', [CategoryManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.category.manage')
+                    ->name('cms.categories.destroy');
+                Route::get('/cms/menus', MenuIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.menus.index');
+                Route::get('/cms/menu-locations', [MenuLocationController::class, 'index'])
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.menu-locations.index');
+                Route::post('/cms/menu-locations', [MenuLocationController::class, 'store'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.menu-locations.store');
+                Route::put('/cms/menu-locations/{location}', [MenuLocationController::class, 'update'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.menu-locations.update');
+                Route::delete('/cms/menu-locations/{location}', [MenuLocationController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.menu-locations.destroy');
+                Route::post('/cms/menus', [MenuManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.menus.store');
+                Route::put('/cms/menus/{menu}', [MenuManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.menus.update');
+                Route::delete('/cms/menus/{menu}', [MenuManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.menus.destroy');
+                Route::get('/cms/media', MediaIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.media.index');
+                Route::post('/cms/media', [MediaManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.media.manage')
+                    ->name('cms.media.store');
+                Route::delete('/cms/media/{media}', [MediaManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.media.manage')
+                    ->name('cms.media.destroy');
                 Route::get('/catalog/products', ProductIndexController::class)
                     ->middleware('admin.permission:catalog.view')
                     ->name('catalog.products.index');

@@ -6,7 +6,7 @@ import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 
-export const emptyCmsPageForm = {
+export const emptyCmsPostForm = {
     id: null,
     title: '',
     slug: '',
@@ -15,36 +15,36 @@ export const emptyCmsPageForm = {
     body: '',
     meta_title: '',
     meta_description: '',
-    template: '',
     featured_media_id: null,
+    category_id: null,
     publish_at: null,
     website_key: '',
     owner_key: '',
     tenant_key: '',
 };
 
-export default function CmsPageFormModal({ open, canManage, editingPage, mediaOptions = [], onCancel, onSubmit }) {
+export default function CmsPostFormModal({ open, canManage, editingPost, mediaOptions = [], categoryOptions = [], onCancel, onSubmit }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
-        form.setFieldsValue(editingPage);
-    }, [editingPage, form]);
+        form.setFieldsValue(editingPost);
+    }, [editingPost, form]);
 
     const handleSubmit = async () => {
         const values = await form.validateFields();
 
         await onSubmit?.({
             ...values,
-            website_key: values.website_key || null,
-            owner_key: values.owner_key || null,
-            tenant_key: values.tenant_key || null,
             excerpt: values.excerpt || null,
             body: values.body || null,
             meta_title: values.meta_title || null,
             meta_description: values.meta_description || null,
-            template: values.template || null,
             featured_media_id: values.featured_media_id || null,
+            category_id: values.category_id || null,
             publish_at: values.publish_at || null,
+            website_key: values.website_key || null,
+            owner_key: values.owner_key || null,
+            tenant_key: values.tenant_key || null,
         });
 
         form.resetFields();
@@ -57,43 +57,52 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
 
     return (
         <Modal
-            title={editingPage?.id ? 'Cập nhật trang CMS' : 'Tạo trang CMS'}
+            title={editingPost?.id ? 'Cập nhật bài viết CMS' : 'Tạo bài viết CMS'}
             open={open}
             onCancel={handleCancel}
             onOk={handleSubmit}
             okButtonProps={{ disabled: !canManage }}
-            width={860}
+            width={900}
             destroyOnHidden
         >
-            <Form form={form} layout="vertical" initialValues={editingPage}>
+            <Form form={form} layout="vertical" initialValues={editingPost}>
                 <Row gutter={16}>
                     <Col span={12}>
-                        <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề trang' }]}>
-                            <Input placeholder="VD: Trang giới thiệu" />
+                        <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề bài viết' }]}>
+                            <Input placeholder="Bài viết nổi bật" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug' }]}>
-                            <Input placeholder="trang-gioi-thieu" />
+                        <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug bài viết' }]}>
+                            <Input placeholder="bai-viet-noi-bat" />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-                    <Select
-                        options={[
-                            { label: 'Draft', value: 'draft' },
-                            { label: 'Published', value: 'published' },
-                        ]}
-                    />
-                </Form.Item>
+                <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
+                            <Select options={[{ label: 'Draft', value: 'draft' }, { label: 'Published', value: 'published' }]} />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item name="category_id" label="Category">
+                            <Select allowClear showSearch optionFilterProp="label" options={categoryOptions} />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item name="publish_at" label="Publish At">
+                            <Input type="datetime-local" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
                 <Form.Item name="excerpt" label="Mô tả ngắn">
-                    <Input.TextArea rows={3} placeholder="Tóm tắt ngắn dùng cho hero/SEO/listing" />
+                    <Input.TextArea rows={3} placeholder="Tóm tắt bài viết" />
                 </Form.Item>
 
                 <Form.Item name="body" label="Nội dung">
-                    <Input.TextArea rows={6} placeholder="Nội dung trang CMS" />
+                    <Input.TextArea rows={8} placeholder="Nội dung bài viết" />
                 </Form.Item>
 
                 <Row gutter={16}>
@@ -103,41 +112,19 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="template" label="Template">
-                            <Input placeholder="default / landing / about" />
+                        <Form.Item name="featured_media_id" label="Featured Media">
+                            <Select allowClear showSearch optionFilterProp="label" options={mediaOptions.map((item) => ({ label: item.title, value: item.id }))} />
                         </Form.Item>
                     </Col>
                 </Row>
 
                 <Form.Item name="meta_description" label="SEO Description">
-                    <Input.TextArea rows={3} placeholder="Meta description cơ bản" />
+                    <Input.TextArea rows={3} placeholder="Meta description bài viết" />
                 </Form.Item>
 
                 <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item name="featured_media_id" label="Featured Media">
-                            <Select
-                                allowClear
-                                showSearch
-                                placeholder="Chọn media cơ bản"
-                                optionFilterProp="label"
-                                options={mediaOptions.map((item) => ({
-                                    label: item.title,
-                                    value: item.id,
-                                }))}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item name="publish_at" label="Publish At">
-                            <Input type="datetime-local" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Row gutter={16}>
                     <Col span={8}>
-                        <Form.Item name="website_key" label="Website" rules={[{ required: true, message: 'Nhập website key áp dụng cho nội dung' }]} extra="CMS hiện ưu tiên scope theo website.">
+                        <Form.Item name="website_key" label="Website" rules={[{ required: true, message: 'Nhập website key áp dụng cho bài viết' }]} extra="Scope chính cho CMS ecommerce là website.">
                             <Input placeholder="storefront-main" />
                         </Form.Item>
                     </Col>

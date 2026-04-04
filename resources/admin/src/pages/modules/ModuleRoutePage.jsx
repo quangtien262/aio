@@ -13,7 +13,6 @@ const CatalogManagerPage = lazy(() => import('../../modules/catalog/pages/Catalo
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentPermissions }) {
     const resourceEndpointMap = {
-        cms: '/admin/api/cms/pages',
         catalog: '/admin/api/catalog/products',
     };
 
@@ -38,6 +37,20 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
             <Card>
                 <Empty description="Module chưa sẵn sàng hoặc chưa được đồng bộ dữ liệu." />
             </Card>
+        );
+    }
+
+    if (modulePayload.key === 'cms') {
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <CmsManagerPage
+                    moduleMenu={moduleMenu}
+                    modulePayload={modulePayload}
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    currentPermissions={currentPermissions}
+                />
+            </Suspense>
         );
     }
 
@@ -66,14 +79,6 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
                 ? (id) => runAdminAction(() => callAdminApi(`/admin/api/catalog/products/${id}`, { method: 'DELETE' }), 'Đã xóa sản phẩm catalog.', reload)
                 : undefined,
     };
-
-    if (modulePayload.key === 'cms') {
-        return (
-            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
-                <CmsManagerPage payload={data} permissions={modulePermissions} {...crudHandlers} />
-            </Suspense>
-        );
-    }
 
     if (modulePayload.key === 'catalog') {
         return (

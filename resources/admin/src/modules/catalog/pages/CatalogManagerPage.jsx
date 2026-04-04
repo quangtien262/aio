@@ -107,6 +107,7 @@ export default function CatalogManagerPage({ payload, permissions, onCreate, onU
             </Card>
 
             <Card
+                className="admin-table-card"
                 title={`Catalog Products (${payload?.total ?? 0})`}
                 extra={(
                     <Button type="primary" disabled={!permissions?.create} onClick={openCreateModal}>
@@ -114,7 +115,7 @@ export default function CatalogManagerPage({ payload, permissions, onCreate, onU
                     </Button>
                 )}
             >
-                <Table rowKey="id" columns={columns} dataSource={payload?.items ?? []} pagination={false} />
+                <Table rowKey="id" columns={columns} dataSource={payload?.items ?? []} pagination={false} scroll={{ x: 980 }} />
             </Card>
 
             {modalOpen ? (
