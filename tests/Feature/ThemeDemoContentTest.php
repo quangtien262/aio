@@ -377,10 +377,11 @@ class ThemeDemoContentTest extends TestCase
         $this->assertSame('customer@example.com', $order->customer_email);
         $this->assertSame('bank_transfer', $order->payment_method);
         $this->assertSame(1, $order->items->count());
-        $this->assertNotNull($order->email_sent_at);
+        $this->assertNotNull($order->email_queued_at);
+        $this->assertNull($order->email_sent_at);
         $this->assertNotNull($order->sms_sent_at);
 
-        Mail::assertSent(OrderPlacedMail::class, function (OrderPlacedMail $mail) use ($order): bool {
+        Mail::assertQueued(OrderPlacedMail::class, function (OrderPlacedMail $mail) use ($order): bool {
             return $mail->order->is($order);
         });
 

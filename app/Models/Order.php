@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'subtotal',
     'item_count',
     'placed_at',
+    'email_queued_at',
     'email_sent_at',
     'sms_sent_at',
     'website_key',
@@ -39,6 +40,7 @@ class Order extends Model
         return [
             'subtotal' => 'decimal:2',
             'placed_at' => 'datetime',
+            'email_queued_at' => 'datetime',
             'email_sent_at' => 'datetime',
             'sms_sent_at' => 'datetime',
         ];

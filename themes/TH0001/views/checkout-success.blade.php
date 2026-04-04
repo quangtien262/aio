@@ -138,7 +138,9 @@
                     </div>
                     <div class="order-line">
                         <span class="order-label">Email xác nhận</span>
-                        <span class="order-value">{{ $confirmedOrder->email_sent_at ? 'Da gui' : 'Chua gui' }}</span>
+                        <span class="order-value">
+                            {{ $confirmedOrder->email_sent_at ? 'Da gui' : ($confirmedOrder->email_queued_at ? 'Da dua vao hang doi' : 'Chua xep hang') }}
+                        </span>
                     </div>
                     <div class="order-line">
                         <span class="order-label">SMS xác nhận</span>

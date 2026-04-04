@@ -20,8 +20,8 @@ class OrderConfirmationSender
     {
         if (filled($order->customer_email)) {
             try {
-                Mail::to($order->customer_email)->send(new OrderPlacedMail($order->loadMissing('items')));
-                $order->forceFill(['email_sent_at' => now()])->save();
+                Mail::to($order->customer_email)->queue((new OrderPlacedMail($order->loadMissing('items')))->onQueue('mail')->afterCommit());
+                $order->forceFill(['email_queued_at' => now()])->save();
             } catch (Throwable $exception) {
                 Log::warning('Failed to send order confirmation email', [
                     'order_id' => $order->id,
