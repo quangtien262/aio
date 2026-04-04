@@ -6,6 +6,8 @@ use App\Core\Modules\ModuleRegistry;
 use App\Models\Admin;
 use App\Models\Customer;
 use App\Models\ModuleInstallation;
+use App\Models\NewsletterSubscriber;
+use App\Models\Order;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\SiteProfile;
@@ -49,6 +51,8 @@ class DashboardController
             'metrics' => [
                 'admins' => Admin::query()->count(),
                 'customers' => Customer::query()->count(),
+                'orders' => Order::query()->count(),
+                'newsletter_subscribers' => NewsletterSubscriber::query()->count(),
                 'roles' => Role::query()->count(),
                 'permissions' => Permission::query()->count(),
                 'modules' => ModuleInstallation::query()->count(),

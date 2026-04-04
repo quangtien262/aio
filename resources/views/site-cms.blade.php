@@ -59,7 +59,7 @@
                     @foreach (($menus['primary'] ?? []) as $item)
                         <a href="{{ $item['url'] ?? '#' }}" @if(($item['target'] ?? '') === '_blank') target="_blank" rel="noreferrer" @endif>{{ $item['label'] ?? 'Menu' }}</a>
                     @endforeach
-                    <a href="/blog">Tin tức</a>
+                    <a href="{{ route('site.blog.index') }}">Tin tức</a>
                 </nav>
             </header>
 
@@ -79,7 +79,7 @@
                         @foreach ($listingItems as $post)
                             <article class="site-list-card">
                                 <span class="site-kicker">Post</span>
-                                <h2 style="margin-top:0;"><a href="{{ url('/blog/'.$post->slug) }}">{{ $post->title }}</a></h2>
+                                <h2 style="margin-top:0;"><a href="{{ route('site.blog.show', $post->slug) }}">{{ $post->title }}</a></h2>
                                 <p>{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body ?? ''), 140) }}</p>
                             </article>
                         @endforeach
@@ -98,7 +98,7 @@
                     </section>
 
                     <section class="site-content">
-                        {!! nl2br(e($entry->body ?? 'Nội dung đang được cập nhật.')) !!}
+                        {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
                     </section>
 
                     @if (!empty($latestPosts) && count($latestPosts) > 0)
@@ -106,7 +106,7 @@
                             @foreach ($latestPosts as $post)
                                 <article class="site-list-card">
                                     <span class="site-kicker">Latest Post</span>
-                                    <h3 style="margin-top:0;"><a href="{{ url('/blog/'.$post->slug) }}">{{ $post->title }}</a></h3>
+                                    <h3 style="margin-top:0;"><a href="{{ route('site.blog.show', $post->slug) }}">{{ $post->title }}</a></h3>
                                     <p>{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body ?? ''), 120) }}</p>
                                 </article>
                             @endforeach

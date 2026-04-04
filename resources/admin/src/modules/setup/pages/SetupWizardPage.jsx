@@ -52,6 +52,9 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
     const [primaryColor, setPrimaryColor] = useState('');
     const [logoUrl, setLogoUrl] = useState('');
     const [faviconUrl, setFaviconUrl] = useState('');
+    const [supportHotline, setSupportHotline] = useState('');
+    const [supportEmail, setSupportEmail] = useState('');
+    const [supportLocation, setSupportLocation] = useState('');
     const stepRefs = useRef(new Map());
     const announcedCompletedStepRef = useRef(null);
     const focusStep = searchParams.get('focusStep');
@@ -65,6 +68,9 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
         setPrimaryColor(setup?.branding?.primary_color ?? '#0f766e');
         setLogoUrl(setup?.branding?.logo_url ?? '');
         setFaviconUrl(setup?.branding?.favicon_url ?? '');
+        setSupportHotline(setup?.branding?.support_hotline ?? '');
+        setSupportEmail(setup?.branding?.support_email ?? '');
+        setSupportLocation(setup?.branding?.support_location ?? '');
     }, [setup]);
 
     useEffect(() => {
@@ -180,6 +186,9 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
                     primary_color: primaryColor,
                     logo_url: logoUrl,
                     favicon_url: faviconUrl,
+                    support_hotline: supportHotline,
+                    support_email: supportEmail,
+                    support_location: supportLocation,
                 })}>
                     <Form.Item label="Tên website" required>
                         <Input disabled={!canEditProfile} value={siteName} onChange={(event) => setSiteName(event.target.value)} placeholder="VD: HTV Corporate Site" />
@@ -216,6 +225,15 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
                     </Form.Item>
                     <Form.Item label="Favicon URL">
                         <Input disabled={!canEditProfile} value={faviconUrl} onChange={(event) => setFaviconUrl(event.target.value)} placeholder="https://cdn.example.com/favicon.ico" />
+                    </Form.Item>
+                    <Form.Item label="Hotline hiển thị ở header">
+                        <Input disabled={!canEditProfile} value={supportHotline} onChange={(event) => setSupportHotline(event.target.value)} placeholder="1900 6760 / 0354.466.968" />
+                    </Form.Item>
+                    <Form.Item label="Email chăm sóc khách hàng">
+                        <Input disabled={!canEditProfile} value={supportEmail} onChange={(event) => setSupportEmail(event.target.value)} placeholder="sales@example.com" />
+                    </Form.Item>
+                    <Form.Item label="Vị trí / khu vực hiển thị">
+                        <Input disabled={!canEditProfile} value={supportLocation} onChange={(event) => setSupportLocation(event.target.value)} placeholder="Hà Nội" />
                     </Form.Item>
                     <Button htmlType="submit" type="primary" disabled={!canEditProfile}>
                         Lưu profile và hoàn tất branding
@@ -270,6 +288,18 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
                             placeholderTitle="Favicon placeholder"
                             placeholderHint={branding.favicon_url ? 'Link favicon không tải được.' : 'Chưa có favicon để xem trước.'}
                         />
+                    </div>
+                    <div className="detail-tile">
+                        <Text className="detail-label">Hotline</Text>
+                        <Text strong>{branding.support_hotline || 'Chưa cấu hình'}</Text>
+                    </div>
+                    <div className="detail-tile">
+                        <Text className="detail-label">Email CSKH</Text>
+                        <Text strong>{branding.support_email || 'Chưa cấu hình'}</Text>
+                    </div>
+                    <div className="detail-tile">
+                        <Text className="detail-label">Vị trí hiển thị</Text>
+                        <Text strong>{branding.support_location || 'Chưa cấu hình'}</Text>
                     </div>
                 </div>
             </Card>

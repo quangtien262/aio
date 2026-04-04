@@ -23,6 +23,8 @@ use App\Http\Controllers\Admin\Api\Cms\PostManagementController;
 use App\Http\Controllers\Admin\Api\DashboardController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
+use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
+use App\Http\Controllers\Admin\Api\OrderIndexController;
 use App\Http\Controllers\Admin\Api\RoleManagementController;
 use App\Http\Controllers\Admin\Api\SetupProfileController;
 use App\Http\Controllers\Admin\Api\SetupStepController;
@@ -52,6 +54,12 @@ Route::prefix('admin')
                 Route::get('/dashboard', DashboardController::class)
                     ->middleware('admin.permission:platform.dashboard.view')
                     ->name('dashboard');
+                Route::get('/orders', OrderIndexController::class)
+                    ->middleware('admin.permission:platform.dashboard.view')
+                    ->name('orders.index');
+                Route::get('/newsletter-subscribers', NewsletterSubscriberIndexController::class)
+                    ->middleware('admin.permission:platform.dashboard.view')
+                    ->name('newsletter-subscribers.index');
                 Route::get('/access', AccessControlIndexController::class)
                     ->middleware('admin.permission:rbac.role.view')
                     ->name('access.index');

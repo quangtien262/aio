@@ -9,6 +9,12 @@
     $featuredTitle = $homeData['featured_title'] ?? 'Sản phẩm nổi bật';
     $sections = $homeData['sections'] ?? [];
     $cartSummary = $homeData['cart_summary'] ?? ['count' => 0];
+    $customerAuth = $homeData['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
+    $newsletterState = $homeData['newsletter'] ?? ['is_subscribed' => false];
+    $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
+    $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
+    $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
+    $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $searchCategories = collect($sidebarCategories)->pluck('label')->take(6)->all();
 
     $footerColumns = [
@@ -25,6 +31,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'TH0001 Deal Commerce')) }}</title>
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
@@ -54,6 +61,8 @@
             .th-topbar-inner, .th-header-inner, .th-main-nav-inner, .th-footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
             .th-topbar-inner { padding: 6px 0; }
             .th-inline { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+            .th-inline-action { padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+            .th-inline-form { margin: 0; }
             .th-accent { color: var(--th-red); }
             .th-header { background: var(--th-surface); }
             .th-header-inner { padding: 12px 0; }
@@ -184,14 +193,22 @@
             <div class="th-topbar">
                 <div class="th-container th-topbar-inner">
                     <div class="th-inline">
-                        <span>📍 Hà Nội</span>
-                        <span>📩 Đăng ký bản tin</span>
+                        <span>📍 {{ $contactLocation }}</span>
+                        <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? '📩 Đã đăng ký bản tin' : '📩 Đăng ký bản tin' }}</button>
                     </div>
                     <div class="th-inline">
-                        <span>📞 Hotline: <span class="th-accent">1900 6760 / 0354.466.968</span></span>
-                        <span>✉ Email: cs@th0001.demo</span>
-                        <span>Đăng ký</span>
-                        <span>Đăng nhập</span>
+                        <span>📞 Hotline: <span class="th-accent">{{ $contactHotline }}</span></span>
+                        <span>✉ Email: {{ $contactEmail }}</span>
+                        @if (!empty($customerAuth['is_authenticated']))
+                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                            <form class="th-inline-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
+                                @csrf
+                                <button type="submit" class="th-inline-action">Đăng xuất</button>
+                            </form>
+                        @else
+                            <button type="button" class="th-inline-action" data-open-auth-modal="register">Đăng ký</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="login">Đăng nhập</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -406,17 +423,18 @@
                         @endforeach
 
                         <section class="th-company">
-                            <strong>CÔNG TY CỔ PHẦN TH0001 DEMO</strong>
+                            <strong>{{ mb_strtoupper(data_get($branding, 'company_name', 'TH0001 DEMO'), 'UTF-8') }}</strong>
                             <div class="th-footer-links">
                                 <span>332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM</span>
                                 <span>Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân</span>
-                                <span>Hotline: 1900 6760 / 0354.466.968</span>
-                                <span>Email: cs@th0001.demo</span>
+                                <span>Hotline: {{ $contactHotline }}</span>
+                                <span>Email: {{ $contactEmail }}</span>
                             </div>
                         </section>
                     </div>
                 </div>
             </footer>
         </div>
+        @include('theme-th0001::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
     </body>
 </html>

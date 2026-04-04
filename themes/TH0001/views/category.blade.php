@@ -5,6 +5,12 @@
     $productMenu = $shell['product_menu'] ?? [];
     $sidePromos = $shell['side_banners'] ?? [];
     $cartSummary = $shell['cart_summary'] ?? ['count' => 0];
+    $customerAuth = $shell['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
+    $newsletterState = $shell['newsletter'] ?? ['is_subscribed' => false];
+    $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
+    $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
+    $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
+    $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $activeFilters = $filters ?? [];
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
 
@@ -83,6 +89,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ $category->name }} | {{ data_get($branding, 'company_name', 'TH0001') }}</title>
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
@@ -109,6 +116,8 @@
             .th-topbar-inner, .th-header-inner, .th-main-nav-inner, .th-footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
             .th-topbar-inner { padding: 6px 0; }
             .th-inline { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+            .th-inline-action { padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+            .th-inline-form { margin: 0; }
             .th-accent { color: var(--th-red); }
             .th-header { background: var(--th-surface); }
             .th-header-inner { padding: 12px 0; }
@@ -247,14 +256,22 @@
             <div class="th-topbar">
                 <div class="th-container th-topbar-inner">
                     <div class="th-inline">
-                        <span>📍 Hà Nội</span>
-                        <span>📩 Đăng ký bản tin</span>
+                        <span>📍 {{ $contactLocation }}</span>
+                        <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? '📩 Đã đăng ký bản tin' : '📩 Đăng ký bản tin' }}</button>
                     </div>
                     <div class="th-inline">
-                        <span>📞 Hotline: <span class="th-accent">1900 6760 / 0354.466.968</span></span>
-                        <span>✉ Email: cs@th0001.demo</span>
-                        <span>Đăng ký</span>
-                        <span>Đăng nhập</span>
+                        <span>📞 Hotline: <span class="th-accent">{{ $contactHotline }}</span></span>
+                        <span>✉ Email: {{ $contactEmail }}</span>
+                        @if (!empty($customerAuth['is_authenticated']))
+                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                            <form class="th-inline-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
+                                @csrf
+                                <button type="submit" class="th-inline-action">Đăng xuất</button>
+                            </form>
+                        @else
+                            <button type="button" class="th-inline-action" data-open-auth-modal="register">Đăng ký</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="login">Đăng nhập</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -558,5 +575,6 @@
                 sync();
             });
         </script>
+        @include('theme-th0001::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
     </body>
 </html>

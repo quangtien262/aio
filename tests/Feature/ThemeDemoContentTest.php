@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ContactInquiryMail;
 use App\Mail\OrderPlacedMail;
 use App\Models\Admin;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CatalogProductImage;
+use App\Models\Customer;
 use App\Models\Order;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,6 +65,106 @@ class ThemeDemoContentTest extends TestCase
         $response->assertSee('Điện thoại');
         $response->assertSee('Deal sốc cho điện thoại, laptop và điện gia dụng');
         $response->assertSee('Tin tức');
+    }
+
+    public function test_th0001_cms_pages_and_news_listing_render_with_storefront_shell(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $this->get('/tin-tuc')
+            ->assertOk()
+            ->assertDontSee('Bản tin thương hiệu')
+            ->assertSee('Đọc tiếp')
+            ->assertSee('Lọc tin')
+            ->assertSee('Tất cả chuyên mục');
+
+        $this->get('/gioi-thieu')
+            ->assertOk()
+            ->assertSee('Hồ sơ vận hành')
+            ->assertSee('Đồng bộ CMS và storefront');
+
+        $this->get('/lien-he')
+            ->assertOk()
+            ->assertSee('Liên hệ nhanh')
+            ->assertSee('Gửi yêu cầu liên hệ');
+    }
+
+    public function test_th0001_contact_page_can_queue_contact_inquiry_mail(): void
+    {
+        Mail::fake();
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $this->post('/lien-he', [
+            'name' => 'Nguyen Van A',
+            'email' => 'lead@example.com',
+            'phone' => '0909123456',
+            'subject' => 'Booking campaign',
+            'message' => 'Toi can duoc tu van chien dich truyen thong cho landing page moi.',
+        ])
+            ->assertRedirect('/lien-he')
+            ->assertSessionHas('contact_status');
+
+        Mail::assertQueued(ContactInquiryMail::class, function (ContactInquiryMail $mail): bool {
+            return $mail->payload['email'] === 'lead@example.com'
+                && $mail->payload['subject'] === 'Booking campaign';
+        });
+    }
+
+    public function test_th0001_post_detail_shows_related_posts(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $post = \App\Models\CmsPost::query()->where('status', 'published')->orderBy('id')->firstOrFail();
+        $relatedPost = \App\Models\CmsPost::query()->where('status', 'published')->whereKeyNot($post->id)->orderBy('id')->firstOrFail();
+
+        $this->get('/tin-tuc/'.$post->slug)
+            ->assertOk()
+            ->assertSee('Bài liên quan')
+            ->assertSee($relatedPost->title);
+    }
+
+    public function test_th0001_news_listing_can_search_posts(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $response = $this->get('/tin-tuc?q=landing+page');
+
+        $response
+            ->assertOk()
+            ->assertSee('Cách tối ưu landing page bán điện tử theo mùa')
+            ->assertDontSee('Top deal mới tuần này cho điện tử');
     }
 
     public function test_admin_can_manage_catalog_categories_and_site_banners(): void
@@ -319,6 +421,13 @@ class ThemeDemoContentTest extends TestCase
         ])->assertOk();
 
         $product = CatalogProduct::query()->whereNotNull('slug')->where('is_active', true)->orderBy('id')->firstOrFail();
+        $customer = Customer::factory()->create([
+            'name' => 'Nguyen Van A',
+            'email' => 'customer@example.com',
+            'phone' => '0909123456',
+        ]);
+
+        $this->actingAs($customer, 'customer');
 
         $this->from('/san-pham/'.$product->slug)
             ->post(route('site.cart.add', ['slug' => $product->slug]), [
@@ -379,10 +488,15 @@ class ThemeDemoContentTest extends TestCase
         $this->assertSame(1, $order->items->count());
         $this->assertNotNull($order->email_queued_at);
         $this->assertNull($order->email_sent_at);
-        $this->assertNotNull($order->sms_sent_at);
+        $this->assertNull($order->sms_sent_at);
+        $this->assertSame($customer->id, $order->customer_id);
 
+        Mail::assertQueued(OrderPlacedMail::class, 2);
         Mail::assertQueued(OrderPlacedMail::class, function (OrderPlacedMail $mail) use ($order): bool {
-            return $mail->order->is($order);
+            return $mail->order->is($order) && $mail->audience === 'customer';
+        });
+        Mail::assertQueued(OrderPlacedMail::class, function (OrderPlacedMail $mail) use ($order): bool {
+            return $mail->order->is($order) && $mail->audience === 'admin';
         });
 
         $this->get(route('site.checkout.success', ['order' => $order->id]))

@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\CustomerFavorite;
+use App\Models\NewsletterSubscriber;
+use App\Models\Order;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -27,5 +31,20 @@ class Customer extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(CustomerFavorite::class);
+    }
+
+    public function newsletterSubscriptions(): HasMany
+    {
+        return $this->hasMany(NewsletterSubscriber::class);
     }
 }

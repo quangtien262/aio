@@ -1,12 +1,19 @@
 @php
     $formatCurrency = fn ($value) => number_format((float) $value, 0, ',', '.').'đ';
+    $contactEmail = $branding['support_email'] ?? config('mail.from.address', 'cs@aio.local');
+    $contactHotline = $branding['support_hotline'] ?? '1900 6760';
 @endphp
 <!DOCTYPE html>
 <html lang="vi">
     <body style="font-family: Arial, Helvetica, sans-serif; color: #1f2937; background: #f5f5f5; margin: 0; padding: 24px;">
         <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; padding: 24px;">
-            <h1 style="margin: 0 0 12px; font-size: 24px; color: #3f6a18;">Xác nhận đơn hàng {{ $order->order_code }}</h1>
-            <p style="margin: 0 0 16px; line-height: 1.7;">Cảm ơn {{ $order->customer_name }}. Chúng tôi đã ghi nhận đơn hàng của bạn và sẽ liên hệ theo số {{ $order->customer_phone }} để xác nhận giao nhận hoặc gửi mã voucher.</p>
+            @if ($audience === 'admin')
+                <h1 style="margin: 0 0 12px; font-size: 24px; color: #7c2d12;">Đơn hàng mới {{ $order->order_code }}</h1>
+                <p style="margin: 0 0 16px; line-height: 1.7;">Hệ thống vừa ghi nhận một đơn hàng mới từ {{ $order->customer_name }}. Admin có thể vào khu vực quản trị để theo dõi và xử lý tiếp.</p>
+            @else
+                <h1 style="margin: 0 0 12px; font-size: 24px; color: #3f6a18;">Xác nhận đơn hàng {{ $order->order_code }}</h1>
+                <p style="margin: 0 0 16px; line-height: 1.7;">Cảm ơn {{ $order->customer_name }}. Chúng tôi đã ghi nhận đơn hàng của bạn và sẽ liên hệ theo số {{ $order->customer_phone }} để xác nhận giao nhận hoặc gửi mã voucher.</p>
+            @endif
 
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px;">
                 <tbody>
@@ -22,6 +29,10 @@
                         <td style="padding: 8px 0; color: #6b7280;">Tổng thanh toán</td>
                         <td style="padding: 8px 0; text-align: right; font-weight: 700; color: #ef2b2d;">{{ $formatCurrency($order->subtotal) }}</td>
                     </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: #6b7280;">Liên hệ hỗ trợ</td>
+                        <td style="padding: 8px 0; text-align: right; font-weight: 700;">{{ $contactHotline }} · {{ $contactEmail }}</td>
+                    </tr>
                 </tbody>
             </table>
 
@@ -35,6 +46,10 @@
                     </div>
                 @endforeach
             </div>
+
+            @if ($audience !== 'admin')
+                <p style="margin: 18px 0 0; line-height: 1.7; color: #4b5563;">Nếu cần hỗ trợ nhanh, vui lòng phản hồi email này hoặc liên hệ {{ $contactHotline }}.</p>
+            @endif
         </div>
     </body>
 </html>

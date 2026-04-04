@@ -6,6 +6,12 @@
     $cartItems = $cartSummary['items'] ?? [];
     $form = $checkoutForm ?? [];
     $paymentMethods = $paymentMethods ?? [];
+    $customerAuth = $shell['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
+    $newsletterState = $shell['newsletter'] ?? ['is_subscribed' => false];
+    $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
+    $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
+    $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
+    $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
 @endphp
 <!DOCTYPE html>
@@ -13,6 +19,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>Thanh toán | {{ data_get($branding, 'company_name', 'TH0001') }}</title>
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
@@ -32,6 +39,9 @@
             .wrap { width: min(1200px, calc(100% - 24px)); margin: 0 auto; }
             .utility { background: #f8f8f8; border-bottom: 1px solid var(--th-line); font-size: 13px; color: var(--th-muted); }
             .utility-inner { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; flex-wrap: wrap; }
+            .utility-actions, .utility-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+            .utility-action { padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+            .utility-form { margin: 0; }
             .header { background: #fff; }
             .header-main { display: grid; grid-template-columns: 220px 1fr auto; align-items: center; gap: 18px; padding: 16px 0; }
             .brand img { width: 184px; height: 52px; object-fit: contain; }
@@ -84,9 +94,19 @@
     <body>
         <div class="utility">
             <div class="wrap utility-inner">
-                <div>Hà Nội</div>
-                <div>Hotline: 1900 6760 / 0354.466.968</div>
-                <div>Email: cs@hotdeal.vn</div>
+                <div class="utility-group">
+                    <span>{{ $contactLocation }}</span>
+                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? 'Đã đăng ký bản tin' : 'Đăng ký bản tin' }}</button>
+                </div>
+                <div class="utility-actions">
+                    <span>Hotline: {{ $contactHotline }}</span>
+                    <span>Email: {{ $contactEmail }}</span>
+                    <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                    <form class="utility-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
+                        @csrf
+                        <button type="submit" class="utility-action">Đăng xuất</button>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -201,5 +221,6 @@
                 </aside>
             </section>
         </main>
+        @include('theme-th0001::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
     </body>
 </html>

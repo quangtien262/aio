@@ -19,6 +19,9 @@ class SetupProfileController
             'primary_color' => ['nullable', 'string', 'regex:/^#(?:[0-9a-fA-F]{3}){1,2}$/'],
             'logo_url' => ['nullable', 'url', 'max:2048'],
             'favicon_url' => ['nullable', 'url', 'max:2048'],
+            'support_hotline' => ['nullable', 'string', 'max:120'],
+            'support_email' => ['nullable', 'email', 'max:255'],
+            'support_location' => ['nullable', 'string', 'max:120'],
         ]);
 
         $siteProfile = SiteProfile::query()->firstOrNew();
@@ -37,6 +40,9 @@ class SetupProfileController
             'primary_color' => $validated['primary_color'] ?? null,
             'logo_url' => $validated['logo_url'] ?? null,
             'favicon_url' => $validated['favicon_url'] ?? null,
+            'support_hotline' => $validated['support_hotline'] ?? null,
+            'support_email' => $validated['support_email'] ?? null,
+            'support_location' => $validated['support_location'] ?? null,
         ], fn ($value) => filled($value));
 
         $siteProfile->forceFill([

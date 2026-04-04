@@ -16,13 +16,17 @@ class OrderPlacedMail extends Mailable implements ShouldQueue
 
     public function __construct(
         public readonly Order $order,
+        public readonly string $audience = 'customer',
+        public readonly array $branding = [],
     ) {
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Xac nhan don hang '.$this->order->order_code,
+            subject: $this->audience === 'admin'
+                ? 'Thong bao don hang moi '.$this->order->order_code
+                : 'Xac nhan don hang '.$this->order->order_code,
         );
     }
 

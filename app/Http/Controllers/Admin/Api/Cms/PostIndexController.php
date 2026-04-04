@@ -39,7 +39,7 @@ class PostIndexController
             'website_key' => $post->website_key,
             'owner_key' => $post->owner_key,
             'tenant_key' => $post->tenant_key,
-            'public_url' => url('/blog/'.$post->slug),
+            'public_url' => url('/tin-tuc/'.$post->slug),
             'preview_url' => url('/preview/posts/'.$post->id),
         ])->values()->all();
 

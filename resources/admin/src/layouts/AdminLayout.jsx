@@ -28,6 +28,8 @@ import { adminNavigation, adminNavigationSections } from '../shared/config/navig
 
 const ModuleRoutePage = lazy(() => import('../pages/modules/ModuleRoutePage'));
 const DashboardRoutePage = lazy(() => import('../pages/routes/DashboardRoutePage'));
+const OrdersRoutePage = lazy(() => import('../pages/routes/OrdersRoutePage'));
+const NewsletterSubscribersRoutePage = lazy(() => import('../pages/routes/NewsletterSubscribersRoutePage'));
 const AccessRoutePage = lazy(() => import('../pages/routes/AccessRoutePage'));
 const AdminAccountsRoutePage = lazy(() => import('../pages/routes/AdminAccountsRoutePage'));
 const ModulesRoutePage = lazy(() => import('../pages/routes/ModulesRoutePage'));
@@ -165,6 +167,8 @@ export default function AdminLayout() {
     const resolveNavigationIcon = useCallback((itemKey, iconKey = null) => {
         const iconMap = {
             dashboard: <DashboardOutlined />,
+            orders: <ProfileOutlined />,
+            newsletter: <ReadOutlined />,
             'module-store': <AppstoreOutlined />,
             'theme-manager': <BgColorsOutlined />,
             'access-control': <SafetyCertificateOutlined />,
@@ -456,6 +460,8 @@ export default function AdminLayout() {
                                         <Routes>
                                             <Route path="/" element={<Navigate to={defaultRoute} replace />} />
                                             <Route path="dashboard" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(DashboardRoutePage, { canAccess: true, callAdminApi }, 'Dashboard') : <Navigate to={defaultRoute} replace />} />
+                                            <Route path="orders" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(OrdersRoutePage, { canAccess: true, callAdminApi }, 'Đơn hàng') : <Navigate to={defaultRoute} replace />} />
+                                            <Route path="newsletter" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(NewsletterSubscribersRoutePage, { canAccess: true, callAdminApi }, 'Bản tin') : <Navigate to={defaultRoute} replace />} />
                                             <Route path="access" element={hasPermission('rbac.role.view') ? renderLazyRouteElement(AccessRoutePage, { canAccess: true, canManageRoles: hasPermission('rbac.role.manage'), callAdminApi, runAdminAction }, 'Access Control') : <Navigate to={defaultRoute} replace />} />
                                             <Route path="admins" element={hasPermission('admin.account.view') ? renderLazyRouteElement(AdminAccountsRoutePage, { canAccess: true, currentAdmin, permissions: { manage: hasPermission('admin.account.manage'), resetPassword: hasPermission('admin.account.reset_password'), lock: hasPermission('admin.account.lock') }, callAdminApi, runAdminAction }, 'Admin Accounts') : <Navigate to={defaultRoute} replace />} />
                                             <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'Module Store') : <Navigate to={defaultRoute} replace />} />

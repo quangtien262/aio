@@ -4,24 +4,23 @@ namespace App\Support;
 
 use App\Mail\OrderPlacedMail;
 use App\Models\Order;
-use App\Support\SmsSender;
+use App\Models\SiteProfile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 class OrderConfirmationSender
 {
-    public function __construct(
-        private readonly SmsSender $smsSender,
-    ) {
-    }
-
     public function send(Order $order): void
     {
+        $branding = SiteProfile::query()->first()?->branding ?? [];
+        $adminNotificationEmail = (string) ($branding['support_email'] ?? config('mail.from.address', ''));
+        $queuedEmail = false;
+
         if (filled($order->customer_email)) {
             try {
-                Mail::to($order->customer_email)->queue((new OrderPlacedMail($order->loadMissing('items')))->onQueue('mail')->afterCommit());
-                $order->forceFill(['email_queued_at' => now()])->save();
+                Mail::to($order->customer_email)->queue((new OrderPlacedMail($order->loadMissing('items'), 'customer', $branding))->onQueue('mail')->afterCommit());
+                $queuedEmail = true;
             } catch (Throwable $exception) {
                 Log::warning('Failed to send order confirmation email', [
                     'order_id' => $order->id,
@@ -31,22 +30,21 @@ class OrderConfirmationSender
             }
         }
 
-        try {
-            $message = sprintf(
-                'Don %s da duoc ghi nhan. Tong tam tinh %s. Hotline 19006760 neu can ho tro.',
-                $order->order_code,
-                number_format((float) $order->subtotal, 0, ',', '.').'đ'
-            );
-
-            if ($this->smsSender->send($order->customer_phone, $message)) {
-                $order->forceFill(['sms_sent_at' => now()])->save();
+        if (filled($adminNotificationEmail)) {
+            try {
+                Mail::to($adminNotificationEmail)->queue((new OrderPlacedMail($order->loadMissing('items'), 'admin', $branding))->onQueue('mail')->afterCommit());
+                $queuedEmail = true;
+            } catch (Throwable $exception) {
+                Log::warning('Failed to queue admin order notification email', [
+                    'order_id' => $order->id,
+                    'order_code' => $order->order_code,
+                    'message' => $exception->getMessage(),
+                ]);
             }
-        } catch (Throwable $exception) {
-            Log::warning('Failed to send order confirmation SMS', [
-                'order_id' => $order->id,
-                'order_code' => $order->order_code,
-                'message' => $exception->getMessage(),
-            ]);
+        }
+
+        if ($queuedEmail) {
+            $order->forceFill(['email_queued_at' => now()])->save();
         }
     }
 }

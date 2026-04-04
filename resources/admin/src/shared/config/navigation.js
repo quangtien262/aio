@@ -22,6 +22,20 @@ export const adminNavigation = [
         permission: 'platform.dashboard.view',
     },
     {
+        key: 'orders',
+        label: 'Đơn hàng',
+        section: 'platform',
+        route: '/orders',
+        permission: 'platform.dashboard.view',
+    },
+    {
+        key: 'newsletter',
+        label: 'Bản tin',
+        section: 'platform',
+        route: '/newsletter',
+        permission: 'platform.dashboard.view',
+    },
+    {
         key: 'module-store',
         label: 'Module Store',
         section: 'workspace',

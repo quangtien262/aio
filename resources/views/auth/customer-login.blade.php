@@ -15,6 +15,8 @@
             .field { display: grid; gap: 8px; margin-top: 16px; }
             label { font-weight: 600; font-size: 14px; }
             input { padding: 12px 14px; border: 1px solid #cbdad6; border-radius: 12px; font: inherit; }
+            input.is-invalid { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08); }
+            .field-error { min-height: 18px; font-size: 13px; line-height: 1.4; color: #dc2626; }
             .button { width: 100%; margin-top: 20px; padding: 14px 18px; border: 0; border-radius: 14px; background: #0f766e; color: #fff; font-weight: 700; cursor: pointer; }
             .error { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: #fff2f2; color: #9f2d2d; }
             .links { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; font-size: 14px; }
@@ -32,15 +34,17 @@
                     <div class="error">{{ $errors->first() }}</div>
                 @endif
 
-                <form method="POST" action="{{ route('customer.auth.store') }}">
+                <form method="POST" action="{{ route('customer.auth.store') }}" novalidate data-customer-auth-form="login">
                     @csrf
                     <div class="field">
                         <label for="email">Email</label>
-                        <input id="email" name="email" type="email" value="{{ old('email', 'customer@aio.local') }}" required autofocus>
+                        <input id="email" name="email" type="email" value="{{ old('email', 'customer@aio.local') }}" required autofocus class="{{ $errors->has('email') ? 'is-invalid' : '' }}">
+                        <div class="field-error" data-field-error="email">{{ $errors->first('email') }}</div>
                     </div>
                     <div class="field">
                         <label for="password">Mật khẩu</label>
-                        <input id="password" name="password" type="password" value="password" required>
+                        <input id="password" name="password" type="password" value="password" required class="{{ $errors->has('password') ? 'is-invalid' : '' }}">
+                        <div class="field-error" data-field-error="password">{{ $errors->first('password') }}</div>
                     </div>
                     <button class="button" type="submit">Đăng nhập</button>
                 </form>
@@ -51,5 +55,52 @@
                 </div>
             </section>
         </main>
+        <script>
+            (() => {
+                const form = document.querySelector('[data-customer-auth-form="login"]');
+
+                if (!form) {
+                    return;
+                }
+
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const setFieldError = (field, message) => {
+                    const input = form.querySelector(`[name="${field}"]`);
+                    const error = form.querySelector(`[data-field-error="${field}"]`);
+
+                    input?.classList.toggle('is-invalid', Boolean(message));
+
+                    if (error) {
+                        error.textContent = message || '';
+                    }
+                };
+
+                form.addEventListener('submit', (event) => {
+                    const email = String(form.email.value || '').trim();
+                    const password = String(form.password.value || '').trim();
+                    let hasError = false;
+
+                    setFieldError('email', '');
+                    setFieldError('password', '');
+
+                    if (!email) {
+                        setFieldError('email', 'Vui lòng nhập email.');
+                        hasError = true;
+                    } else if (!emailPattern.test(email)) {
+                        setFieldError('email', 'Email không đúng định dạng.');
+                        hasError = true;
+                    }
+
+                    if (!password) {
+                        setFieldError('password', 'Vui lòng nhập mật khẩu.');
+                        hasError = true;
+                    }
+
+                    if (hasError) {
+                        event.preventDefault();
+                    }
+                });
+            })();
+        </script>
     </body>
 </html>

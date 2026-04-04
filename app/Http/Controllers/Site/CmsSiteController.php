@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Site;
 
 use App\Core\Themes\ThemeRegistry;
+use App\Mail\ContactInquiryMail;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
+use App\Models\CmsCategory;
 use App\Models\Customer;
+use App\Models\CustomerFavorite;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
+use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
@@ -16,9 +20,11 @@ use App\Support\OrderConfirmationSender;
 use App\Support\StorefrontCart;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Mail;
 
 class CmsSiteController
 {
@@ -67,11 +73,55 @@ class CmsSiteController
         return $this->renderContent('page', $page);
     }
 
-    public function postsIndex(): View
+    public function postsIndex(Request $request): View
     {
-        $posts = CmsPost::query()->with(['category', 'featuredMedia'])->where('status', 'published')->latest('publish_at')->paginate(10);
+        $siteProfile = SiteProfile::query()->first();
+        $activeTheme = $this->resolveActiveTheme($siteProfile);
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $menus = $this->resolveMenus($websiteKey);
+        $search = trim((string) $request->query('q', ''));
+        $categorySlug = trim((string) $request->query('category', ''));
 
-        return $this->renderListing('posts', 'Tin tức', 'Danh sách bài viết đã xuất bản.', $posts);
+        $postsQuery = CmsPost::query()->with(['category', 'featuredMedia'])->where('status', 'published');
+        $this->applyWebsiteScope($postsQuery, $websiteKey);
+
+        if ($search !== '') {
+            $postsQuery->where(function (EloquentBuilder $query) use ($search): void {
+                $query->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('excerpt', 'like', '%'.$search.'%')
+                    ->orWhere('body', 'like', '%'.$search.'%');
+            });
+        }
+
+        if ($categorySlug !== '') {
+            $postsQuery->whereHas('category', function (EloquentBuilder $query) use ($categorySlug, $websiteKey): void {
+                $this->applyWebsiteScope($query, $websiteKey);
+                $query->where('slug', $categorySlug);
+            });
+        }
+
+        $posts = $postsQuery->latest('publish_at')->paginate(10)->withQueryString();
+
+        $postCategories = CmsCategory::query()
+            ->whereHas('posts', function (EloquentBuilder $query) use ($websiteKey): void {
+                $query->where('status', 'published');
+                $this->applyWebsiteScope($query, $websiteKey);
+            })
+            ->orderBy('name');
+        $this->applyWebsiteScope($postCategories, $websiteKey);
+
+        $postCategories = $postCategories->get();
+
+        return $this->renderListing('posts', 'Tin tức', 'Danh sách bài viết đã xuất bản.', $posts, [
+            'siteProfile' => $siteProfile,
+            'activeTheme' => $activeTheme,
+            'menus' => $menus,
+            'postFilters' => [
+                'q' => $search,
+                'category' => $categorySlug,
+            ],
+            'postCategories' => $postCategories,
+        ]);
     }
 
     public function post(string $slug): View
@@ -79,6 +129,46 @@ class CmsSiteController
         $post = CmsPost::query()->with(['category', 'featuredMedia'])->where('slug', $slug)->where('status', 'published')->firstOrFail();
 
         return $this->renderContent('post', $post);
+    }
+
+    public function submitContact(Request $request): RedirectResponse|JsonResponse
+    {
+        $payload = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:150'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'subject' => ['nullable', 'string', 'max:150'],
+            'message' => ['required', 'string', 'min:10', 'max:5000'],
+        ]);
+
+        $siteProfile = SiteProfile::query()->first();
+        $branding = array_merge([
+            'company_name' => $siteProfile?->site_name ?? 'AIO Website',
+            'support_hotline' => '1900 6760',
+            'support_email' => config('mail.from.address', 'cs@aio.local'),
+            'support_location' => 'Hà Nội',
+        ], $siteProfile?->branding ?? []);
+
+        $payload['subject'] = trim((string) ($payload['subject'] ?? '')) !== ''
+            ? (string) $payload['subject']
+            : 'Yeu cau tu van tu website';
+        $payload['submitted_at'] = now()->toDateTimeString();
+        $payload['page_url'] = $request->headers->get('referer', $request->fullUrl());
+
+        Mail::to($branding['support_email'])
+            ->queue((new ContactInquiryMail($payload, $branding))->onQueue('mail'));
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Yeu cau lien he da duoc gui thanh cong.',
+                'data' => [
+                    'email' => $payload['email'],
+                    'subject' => $payload['subject'],
+                ],
+            ]);
+        }
+
+        return redirect('/lien-he')->with('contact_status', 'Đã gửi yêu cầu liên hệ. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.');
     }
 
     public function category(Request $request, string $slug): View
@@ -225,6 +315,11 @@ class CmsSiteController
         }
 
         $relatedProducts = $relatedProductsQuery->latest('created_at')->take(8)->get();
+        /** @var Customer|null $customer */
+        $customer = auth('customer')->user();
+        $favoriteProductIds = $customer
+            ? CustomerFavorite::query()->where('customer_id', $customer->id)->pluck('catalog_product_id')->all()
+            : [];
 
         return $this->renderThemeCatalogView('product', $activeTheme, [
             'siteProfile' => $siteProfile,
@@ -239,6 +334,7 @@ class CmsSiteController
             'usageLocationLines' => $this->splitTextLines($product->usage_location),
             'detailParagraphs' => $this->splitTextParagraphs($product->detail_content),
             'relatedProducts' => $relatedProducts->map(fn (CatalogProduct $item): array => $this->mapProductCard($item))->all(),
+            'isFavorite' => in_array($product->id, $favoriteProductIds, true),
         ]);
     }
 
@@ -275,6 +371,13 @@ class CmsSiteController
 
         $this->storefrontCart->add($product, $quantity);
 
+        if (! $request->user('customer')) {
+            return to_route('site.cart.index')
+                ->with('cart_success', 'Sản phẩm đã được thêm vào giỏ. Vui lòng đăng nhập để tiếp tục đặt hàng.')
+                ->with('open_auth_modal', 'login')
+                ->with('post_login_redirect', route('site.checkout.index'));
+        }
+
         return to_route('site.checkout.index')
             ->with('cart_success', 'Đã thêm sản phẩm vào giỏ và chuyển bạn tới bước thanh toán.');
     }
@@ -305,6 +408,13 @@ class CmsSiteController
             return to_route('site.cart.index')->with('cart_success', 'Giỏ hàng đang trống, chưa thể thanh toán.');
         }
 
+        if (! $request->user('customer')) {
+            return to_route('site.cart.index')
+                ->with('cart_success', 'Vui lòng đăng nhập để tiếp tục thanh toán.')
+                ->with('open_auth_modal', 'login')
+                ->with('post_login_redirect', route('site.checkout.index'));
+        }
+
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
@@ -324,6 +434,13 @@ class CmsSiteController
     {
         if (! $this->storefrontCart->hasItems()) {
             return to_route('site.cart.index')->with('cart_success', 'Giỏ hàng đang trống, chưa thể thanh toán.');
+        }
+
+        if (! $request->user('customer')) {
+            return to_route('site.cart.index')
+                ->with('cart_success', 'Vui lòng đăng nhập để hoàn tất đặt hàng.')
+                ->with('open_auth_modal', 'login')
+                ->with('post_login_redirect', route('site.checkout.index'));
         }
 
         $validated = $request->validate([
@@ -382,6 +499,8 @@ class CmsSiteController
 
     public function checkoutSuccess(Order $order): View
     {
+        abort_unless(auth('customer')->id() === $order->customer_id, 403);
+
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
@@ -414,34 +533,48 @@ class CmsSiteController
     {
         $siteProfile = $extra['siteProfile'] ?? SiteProfile::query()->first();
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
+        $menus = $extra['menus'] ?? $this->resolveMenus($this->resolveWebsiteKey($siteProfile));
+        $viewName = $this->resolveThemeCmsView($activeTheme) ?? 'site-cms';
 
-        return view('site-cms', array_merge([
+        if ($contentType === 'page' && ! array_key_exists('latestPosts', $extra)) {
+            $extra['latestPosts'] = CmsPost::query()->where('status', 'published')->latest('publish_at')->take(3)->get();
+        }
+
+        if ($contentType === 'post' && $entry instanceof CmsPost && ! array_key_exists('relatedPosts', $extra)) {
+            $extra['relatedPosts'] = $this->resolveRelatedPosts($entry, $siteProfile);
+        }
+
+        return view($viewName, array_merge([
             'contentType' => $contentType,
             'entry' => $entry,
             'siteProfile' => $siteProfile,
             'activeTheme' => $activeTheme,
-            'menus' => $this->resolveMenus($this->resolveWebsiteKey($siteProfile)),
+            'menus' => $menus,
+            'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             'isPreview' => false,
             'pageTitle' => $entry->meta_title ?: $entry->title,
             'pageDescription' => $entry->meta_description ?: ($entry->excerpt ?? null),
         ], $extra));
     }
 
-    private function renderListing(string $contentType, string $title, string $description, mixed $items): View
+    private function renderListing(string $contentType, string $title, string $description, mixed $items, array $extra = []): View
     {
-        $siteProfile = SiteProfile::query()->first();
-        $activeTheme = $this->resolveActiveTheme($siteProfile);
+        $siteProfile = $extra['siteProfile'] ?? SiteProfile::query()->first();
+        $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
+        $menus = $extra['menus'] ?? $this->resolveMenus($this->resolveWebsiteKey($siteProfile));
+        $viewName = $this->resolveThemeCmsView($activeTheme) ?? 'site-cms';
 
-        return view('site-cms', [
+        return view($viewName, array_merge([
             'contentType' => $contentType,
             'listingItems' => $items,
             'siteProfile' => $siteProfile,
             'activeTheme' => $activeTheme,
-            'menus' => $this->resolveMenus($this->resolveWebsiteKey($siteProfile)),
+            'menus' => $menus,
+            'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             'isPreview' => false,
             'pageTitle' => $title,
             'pageDescription' => $description,
-        ]);
+        ], $extra));
     }
 
     private function resolveMenus(?string $websiteKey = null): array
@@ -481,6 +614,53 @@ class CmsSiteController
         $viewName = "theme-{$themeKey}::home";
 
         return view()->exists($viewName) ? $viewName : null;
+    }
+
+    private function resolveThemeCmsView(?array $activeTheme): ?string
+    {
+        $themeKey = strtolower((string) ($activeTheme['key'] ?? ''));
+
+        if ($themeKey === '') {
+            return null;
+        }
+
+        $viewName = "theme-{$themeKey}::cms";
+
+        return view()->exists($viewName) ? $viewName : null;
+    }
+
+    private function resolveRelatedPosts(CmsPost $post, ?SiteProfile $siteProfile): Collection
+    {
+        $websiteKey = (string) ($post->website_key ?: $this->resolveWebsiteKey($siteProfile));
+
+        $sameCategoryQuery = CmsPost::query()
+            ->with(['category', 'featuredMedia'])
+            ->where('status', 'published')
+            ->whereKeyNot($post->id)
+            ->latest('publish_at');
+        $this->applyWebsiteScope($sameCategoryQuery, $websiteKey);
+
+        if ($post->category_id !== null) {
+            $sameCategoryQuery->where('category_id', $post->category_id);
+        }
+
+        $sameCategory = $sameCategoryQuery->take(3)->get();
+
+        if ($sameCategory->count() >= 3) {
+            return $sameCategory;
+        }
+
+        $fallbackQuery = CmsPost::query()
+            ->with(['category', 'featuredMedia'])
+            ->where('status', 'published')
+            ->whereKeyNot($post->id)
+            ->whereNotIn('id', $sameCategory->pluck('id'))
+            ->latest('publish_at');
+        $this->applyWebsiteScope($fallbackQuery, $websiteKey);
+
+        return $sameCategory
+            ->concat($fallbackQuery->take(3 - $sameCategory->count())->get())
+            ->values();
     }
 
     private function resolveThemeHomeData(?SiteProfile $siteProfile, ?array $activeTheme, array $menus): array
@@ -531,9 +711,23 @@ class CmsSiteController
             'logo_url' => self::DEFAULT_BRAND_ASSET,
             'favicon_url' => self::DEFAULT_BRAND_ASSET,
             'primary_color' => '#ef2b2d',
+            'support_hotline' => '1900 6760',
+            'support_email' => config('mail.from.address', 'cs@aio.local'),
+            'support_location' => 'Hà Nội',
         ], $siteProfile?->branding ?? []);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
+        /** @var Customer|null $customer */
+        $customer = auth('customer')->user();
+        $isSubscribed = $customer
+            ? NewsletterSubscriber::query()->where(function ($query) use ($customer): void {
+                $query->where('customer_id', $customer->id);
+
+                if (filled($customer->email)) {
+                    $query->orWhere('email', $customer->email);
+                }
+            })->exists()
+            : false;
 
         $parentCategories = CatalogCategory::query()
             ->with(['children' => function ($query) use ($websiteKey): void {
@@ -554,6 +748,21 @@ class CmsSiteController
             'product_menu' => $this->resolveProductMenuItems($menus, $parentCategories),
             'side_banners' => $this->resolveSideBanners($websiteKey, $themeKey),
             'cart_summary' => $this->storefrontCart->summary(),
+            'customer_auth' => [
+                'is_authenticated' => $customer !== null,
+                'customer' => $customer ? [
+                    'name' => $customer->name,
+                    'email' => $customer->email,
+                    'phone' => $customer->phone,
+                ] : null,
+                'login_url' => route('customer.auth.login'),
+                'register_url' => route('customer.auth.register'),
+                'account_url' => route('customer.account'),
+                'logout_url' => route('customer.auth.logout'),
+            ],
+            'newsletter' => [
+                'is_subscribed' => $isSubscribed,
+            ],
         ];
     }
 

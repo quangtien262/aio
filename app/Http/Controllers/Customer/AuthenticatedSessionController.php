@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
@@ -15,11 +16,12 @@ class AuthenticatedSessionController
         return view('auth.customer-login');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+            'redirect_to' => ['nullable', 'string', 'max:255'],
         ]);
 
         $remember = $request->boolean('remember');
@@ -35,7 +37,18 @@ class AuthenticatedSessionController
         /** @var Redirector $redirector */
         $redirector = app('redirect');
 
-        return $redirector->intended(route('customer.account'));
+        $redirectTo = $credentials['redirect_to'] ?? route('customer.account');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Đăng nhập thành công.',
+                'data' => [
+                    'redirect_to' => $redirectTo,
+                ],
+            ]);
+        }
+
+        return $redirector->intended($redirectTo);
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -45,6 +58,6 @@ class AuthenticatedSessionController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return to_route('customer.auth.login');
+        return to_route('site.home');
     }
 }

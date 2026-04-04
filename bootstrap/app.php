@@ -20,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(function (Request $request): string {
             return $request->is('admin') || $request->is('admin/*')
                 ? route('admin.auth.login')
-                : route('customer.auth.login');
+                : route('site.home');
         });
 
         $middleware->redirectUsersTo(function (Request $request): string {

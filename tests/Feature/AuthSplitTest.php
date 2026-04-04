@@ -85,4 +85,22 @@ class AuthSplitTest extends TestCase
         $response->assertSessionHasErrors('email');
         $this->assertGuest('admin');
     }
+
+    public function test_guest_accessing_customer_account_is_redirected_to_homepage(): void
+    {
+        $this->get('/account')
+            ->assertRedirect('/');
+    }
+
+    public function test_customer_logout_redirects_to_homepage(): void
+    {
+        $customer = Customer::factory()->create();
+
+        $this->actingAs($customer, 'customer');
+
+        $this->post('/logout')
+            ->assertRedirect('/');
+
+        $this->assertGuest('customer');
+    }
 }
