@@ -65,6 +65,7 @@ class ThemeDemoContentTest extends TestCase
         $response->assertSee('Điện thoại');
         $response->assertSee('Deal sốc cho điện thoại, laptop và điện gia dụng');
         $response->assertSee('Tin tức');
+        $response->assertDontSee('Demo theme TH0001');
     }
 
     public function test_th0001_cms_pages_and_news_listing_render_with_storefront_shell(): void
@@ -82,7 +83,8 @@ class ThemeDemoContentTest extends TestCase
         $this->get('/tin-tuc')
             ->assertOk()
             ->assertDontSee('Bản tin thương hiệu')
-            ->assertSee('Đọc tiếp')
+            ->assertDontSee('Demo theme TH0001')
+            ->assertDontSee('>Đọc tiếp<', false)
             ->assertSee('Lọc tin')
             ->assertSee('Tất cả chuyên mục');
 
@@ -143,6 +145,8 @@ class ThemeDemoContentTest extends TestCase
 
         $this->get('/tin-tuc/'.$post->slug)
             ->assertOk()
+            ->assertDontSee('Đơn vị vận hành storefront và nội dung CMS trên cùng một nền tảng.')
+            ->assertDontSee('Kênh tiếp nhận liên hệ hợp tác, booking truyền thông và CSKH.')
             ->assertSee('Bài liên quan')
             ->assertSee($relatedPost->title);
     }
@@ -163,8 +167,139 @@ class ThemeDemoContentTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Cách tối ưu landing page bán điện tử theo mùa')
-            ->assertDontSee('Top deal mới tuần này cho điện tử');
+            ->assertSee('landing page')
+            ->assertDontSee('Top deal mới tuần này');
+    }
+
+    public function test_th0001_header_search_can_find_products(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $product = CatalogProduct::query()->whereNotNull('sku')->orderBy('id')->firstOrFail();
+
+        $this->get('/tim-kiem?q='.urlencode((string) $product->sku))
+            ->assertOk()
+            ->assertSee('Kết quả cho')
+            ->assertSee($product->name);
+    }
+
+    public function test_th0001_product_search_suggestions_endpoint_returns_matches(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $product = CatalogProduct::query()->whereNotNull('sku')->orderBy('id')->firstOrFail();
+
+        $this->getJson('/tim-kiem/goi-y?q='.urlencode((string) $product->sku))
+            ->assertOk()
+            ->assertJsonFragment([
+                'label' => $product->name,
+                'sku' => $product->sku,
+            ]);
+    }
+
+    public function test_th0001_product_search_can_sort_and_filter_results(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $category = CatalogCategory::query()->where('is_active', true)->orderBy('id')->firstOrFail();
+
+        CatalogProduct::query()->create([
+            'catalog_category_id' => $category->id,
+            'name' => 'SearchSpec Expensive',
+            'slug' => 'searchspec-expensive',
+            'sku' => 'SEARCHSPEC-EXPENSIVE',
+            'price' => 320000,
+            'original_price' => 390000,
+            'stock' => 12,
+            'short_description' => 'SearchSpec premium item',
+            'detail_content' => 'SearchSpec premium item detail',
+            'image_url' => 'https://picsum.photos/seed/searchspec-expensive/640/420',
+            'sold_count' => 15,
+            'is_featured' => true,
+            'sort_order' => 1,
+            'is_active' => true,
+            'website_key' => 'website-main',
+            'owner_key' => 'owner-system',
+            'tenant_key' => 'tenant-a',
+        ]);
+
+        CatalogProduct::query()->create([
+            'catalog_category_id' => $category->id,
+            'name' => 'SearchSpec Mid',
+            'slug' => 'searchspec-mid',
+            'sku' => 'SEARCHSPEC-MID',
+            'price' => 250000,
+            'original_price' => 300000,
+            'stock' => 10,
+            'short_description' => 'SearchSpec medium item',
+            'detail_content' => 'SearchSpec medium item detail',
+            'image_url' => 'https://picsum.photos/seed/searchspec-mid/640/420',
+            'sold_count' => 9,
+            'is_featured' => false,
+            'sort_order' => 2,
+            'is_active' => true,
+            'website_key' => 'website-main',
+            'owner_key' => 'owner-system',
+            'tenant_key' => 'tenant-a',
+        ]);
+
+        CatalogProduct::query()->create([
+            'catalog_category_id' => $category->id,
+            'name' => 'SearchSpec Budget',
+            'slug' => 'searchspec-budget',
+            'sku' => 'SEARCHSPEC-BUDGET',
+            'price' => 150000,
+            'original_price' => 220000,
+            'stock' => 8,
+            'short_description' => 'SearchSpec budget item',
+            'detail_content' => 'SearchSpec budget item detail',
+            'image_url' => 'https://picsum.photos/seed/searchspec-budget/640/420',
+            'sold_count' => 7,
+            'is_featured' => false,
+            'sort_order' => 3,
+            'is_active' => true,
+            'website_key' => 'website-main',
+            'owner_key' => 'owner-system',
+            'tenant_key' => 'tenant-a',
+        ]);
+
+        $response = $this->get('/tim-kiem?'.http_build_query([
+            'q' => 'SearchSpec',
+            'category' => $category->slug,
+            'sort' => 'price_desc',
+            'min_price' => 200000,
+            'max_price' => 400000,
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertSee('Giá cao trước')
+            ->assertSeeInOrder(['SearchSpec Expensive', 'SearchSpec Mid'])
+            ->assertDontSee('SearchSpec Budget');
     }
 
     public function test_admin_can_manage_catalog_categories_and_site_banners(): void

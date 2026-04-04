@@ -130,10 +130,10 @@
                     <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'TH0001') }}">
                 </a>
 
-                <div class="searchbar" role="search">
-                    <input type="text" value="Giỏ hàng của bạn" aria-label="Giỏ hàng" readonly>
-                    <button type="button" aria-label="Tìm kiếm">⌕</button>
-                </div>
+                <form class="searchbar" method="GET" action="{{ route('site.catalog.search') }}" role="search">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Tìm kiếm sản phẩm" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                    <button type="submit" aria-label="Tìm kiếm">⌕</button>
+                </form>
 
                 <a class="cart-link" href="{{ route('site.cart.index') }}">GIỎ HÀNG ({{ $cartSummary['count'] ?? 0 }})</a>
             </div>
@@ -235,6 +235,7 @@
                 </div>
             @endif
         </main>
+        @include('theme-th0001::partials.product-search-autocomplete')
         @include('theme-th0001::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
     </body>
 </html>

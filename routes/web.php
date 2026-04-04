@@ -54,6 +54,8 @@ Route::post('/gio-hang/xoa/{productId}', [CmsSiteController::class, 'removeCartI
 Route::get('/thanh-toan', [CmsSiteController::class, 'checkout'])->name('site.checkout.index');
 Route::post('/thanh-toan', [CmsSiteController::class, 'placeOrder'])->name('site.checkout.store');
 Route::get('/thanh-toan/thanh-cong/{order}', [CmsSiteController::class, 'checkoutSuccess'])->name('site.checkout.success');
+Route::get('/tim-kiem/goi-y', [CmsSiteController::class, 'searchProductSuggestions'])->name('site.catalog.search.suggestions');
+Route::get('/tim-kiem', [CmsSiteController::class, 'searchProducts'])->name('site.catalog.search');
 Route::get('/danh-muc/{slug}', [CmsSiteController::class, 'category'])->name('site.catalog.category');
 Route::get('/san-pham/{slug}', [CmsSiteController::class, 'product'])->name('site.catalog.product');
 Route::fallback([CmsSiteController::class, 'page']);

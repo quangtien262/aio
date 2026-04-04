@@ -219,13 +219,12 @@
                         <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'Website logo') }}">
                         <span class="th-logo-mark">
                             <strong>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'AIO Commerce')) }}</strong>
-                            <span>Demo theme TH0001</span>
                         </span>
                     </a>
-                    <div class="th-search">
-                        <input type="text" placeholder="Tìm kiếm sản phẩm / khuyến mãi">
-                        <button>Tìm</button>
-                    </div>
+                    <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
+                        <input type="search" name="q" value="{{ request('q') }}" placeholder="Tìm kiếm sản phẩm / khuyến mãi" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                        <button type="submit">Tìm</button>
+                    </form>
                     <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} GIỎ HÀNG</a>
                 </div>
             </header>
@@ -435,6 +434,7 @@
                 </div>
             </footer>
         </div>
+        @include('theme-th0001::partials.product-search-autocomplete')
         @include('theme-th0001::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
     </body>
 </html>

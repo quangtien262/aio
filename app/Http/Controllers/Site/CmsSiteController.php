@@ -338,6 +338,148 @@ class CmsSiteController
         ]);
     }
 
+    public function searchProducts(Request $request): View
+    {
+        $siteProfile = SiteProfile::query()->first();
+        $activeTheme = $this->resolveActiveTheme($siteProfile);
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $menus = $this->resolveMenus($websiteKey);
+        $search = trim((string) $request->query('q', ''));
+        $categorySlug = trim((string) $request->query('category', ''));
+        $sort = (string) $request->query('sort', 'default');
+        $allowedSorts = ['default', 'newest', 'price_asc', 'price_desc', 'bestseller'];
+
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'default';
+        }
+
+        $baseProductsQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true);
+        $this->applyWebsiteScope($baseProductsQuery, $websiteKey);
+
+        if ($search !== '') {
+            $baseProductsQuery->where(function (EloquentBuilder $query) use ($search): void {
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('sku', 'like', '%'.$search.'%')
+                    ->orWhere('short_description', 'like', '%'.$search.'%')
+                    ->orWhere('detail_content', 'like', '%'.$search.'%');
+            });
+        }
+
+        if ($categorySlug !== '') {
+            $baseProductsQuery->whereHas('category', function (EloquentBuilder $query) use ($categorySlug, $websiteKey): void {
+                $this->applyWebsiteScope($query, $websiteKey);
+                $query->where('slug', $categorySlug);
+            });
+        }
+
+        $availableMinPrice = (int) floor((float) ((clone $baseProductsQuery)->min('price') ?? 0));
+        $availableMaxPrice = (int) ceil((float) ((clone $baseProductsQuery)->max('price') ?? 0));
+
+        $selectedMinPrice = $request->filled('min_price') ? (int) $request->query('min_price') : $availableMinPrice;
+        $selectedMaxPrice = $request->filled('max_price') ? (int) $request->query('max_price') : $availableMaxPrice;
+
+        if ($availableMaxPrice > 0) {
+            $selectedMinPrice = max($availableMinPrice, min($selectedMinPrice, $availableMaxPrice));
+            $selectedMaxPrice = max($availableMinPrice, min($selectedMaxPrice, $availableMaxPrice));
+        } else {
+            $selectedMinPrice = 0;
+            $selectedMaxPrice = 0;
+        }
+
+        if ($selectedMinPrice > $selectedMaxPrice) {
+            [$selectedMinPrice, $selectedMaxPrice] = [$selectedMaxPrice, $selectedMinPrice];
+        }
+
+        $productsQuery = clone $baseProductsQuery;
+
+        if ($availableMaxPrice > 0) {
+            $productsQuery->whereBetween('price', [$selectedMinPrice, $selectedMaxPrice]);
+        }
+
+        match ($sort) {
+            'bestseller' => $productsQuery->orderByDesc('sold_count')->orderByDesc('created_at'),
+            'price_asc' => $productsQuery->orderBy('price')->orderByDesc('created_at'),
+            'price_desc' => $productsQuery->orderByDesc('price')->orderByDesc('created_at'),
+            'newest', 'default' => $productsQuery->latest('created_at'),
+        };
+
+        $products = $productsQuery->paginate(24)->withQueryString();
+
+        $searchCategories = CatalogCategory::query()
+            ->where('is_active', true)
+            ->whereHas('products', function (EloquentBuilder $query) use ($websiteKey): void {
+                $query->where('is_active', true);
+                $this->applyWebsiteScope($query, $websiteKey);
+            })
+            ->orderBy('sort_order')
+            ->orderBy('name');
+        $this->applyWebsiteScope($searchCategories, $websiteKey);
+
+        $searchCategories = $searchCategories->get(['id', 'name', 'slug']);
+
+        return $this->renderThemeCatalogView('search', $activeTheme, [
+            'siteProfile' => $siteProfile,
+            'activeTheme' => $activeTheme,
+            'menus' => $menus,
+            'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
+            'searchQuery' => $search,
+            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product))->all(),
+            'pagination' => $products,
+            'resultCount' => $products->total(),
+            'searchCategories' => $searchCategories,
+            'searchFilters' => [
+                'q' => $search,
+                'category' => $categorySlug,
+                'sort' => $sort,
+                'min_price' => $selectedMinPrice,
+                'max_price' => $selectedMaxPrice,
+                'available_min_price' => $availableMinPrice,
+                'available_max_price' => $availableMaxPrice,
+            ],
+        ]);
+    }
+
+    public function searchProductSuggestions(Request $request): JsonResponse
+    {
+        $siteProfile = SiteProfile::query()->first();
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $search = trim((string) $request->query('q', ''));
+
+        if (mb_strlen($search) < 2) {
+            return response()->json(['data' => []]);
+        }
+
+        $productsQuery = CatalogProduct::query()->with('category')->where('is_active', true);
+        $this->applyWebsiteScope($productsQuery, $websiteKey);
+
+        $productsQuery->where(function (EloquentBuilder $query) use ($search): void {
+            $query->where('name', 'like', '%'.$search.'%')
+                ->orWhere('sku', 'like', '%'.$search.'%')
+                ->orWhere('short_description', 'like', '%'.$search.'%');
+        });
+
+        $products = $productsQuery
+            ->orderByDesc('is_featured')
+            ->orderByDesc('sold_count')
+            ->orderByDesc('created_at')
+            ->limit(8)
+            ->get();
+
+        return response()->json([
+            'data' => $products->map(function (CatalogProduct $product): array {
+                return [
+                    'label' => $product->name,
+                    'value' => $product->name,
+                    'sku' => $product->sku,
+                    'category' => $product->category?->name,
+                    'price' => (float) $product->price,
+                    'price_label' => number_format((float) $product->price, 0, ',', '.').'đ',
+                    'url' => $this->productUrl($product->slug ?: (string) $product->id),
+                ];
+            })->values()->all(),
+        ]);
+    }
+
     public function cart(Request $request): View
     {
         $siteProfile = SiteProfile::query()->first();

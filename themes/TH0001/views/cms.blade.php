@@ -125,21 +125,25 @@
             }
             .th-cms-meta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; color: #7a7a7a; font-size: 13px; }
             .th-cms-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-            .th-cms-card { overflow: hidden; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+            .th-cms-card { overflow: hidden; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
             .th-cms-card:hover { transform: translateY(-4px); box-shadow: 0 20px 44px rgba(19, 21, 33, 0.12); border-color: #ffd2d2; }
+            .th-cms-card a { cursor: pointer; }
             .th-cms-card-body { padding: 20px; }
             .th-cms-card-title { margin: 0 0 10px; font-size: 20px; line-height: 1.35; }
+            .th-cms-card-title a { transition: color .18s ease; }
+            .th-cms-card:hover .th-cms-card-title a { color: var(--th-red); }
             .th-cms-card-summary { margin: 0 0 18px; color: #666; line-height: 1.7; }
             .th-cms-link { color: var(--th-red); font-weight: 700; }
             .th-cms-listing-head { padding: 24px; }
             .th-cms-listing-head h1 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 42px); line-height: 1.08; }
             .th-cms-listing-head p { margin: 0; color: #666; line-height: 1.75; }
-            .th-news-toolbar { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.7fr) auto auto; gap: 12px; align-items: end; }
+            .th-news-toolbar { display: grid; gap: 12px; }
             .th-news-field { display: grid; gap: 8px; }
             .th-news-field span { font-size: 13px; font-weight: 700; color: #555; }
             .th-news-field input, .th-news-field select {
                 width: 100%; min-height: 46px; padding: 0 14px; border: 1px solid #e5dede; border-radius: 14px; background: #fff; font: inherit;
             }
+            .th-news-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
             .th-news-meta { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: #666; }
             .th-news-meta strong { color: var(--th-red); }
             .th-news-empty { padding: 36px 24px; text-align: center; color: #666; }
@@ -225,13 +229,12 @@
                         <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'Website logo') }}">
                         <span class="th-logo-mark">
                             <strong>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'AIO Commerce')) }}</strong>
-                            <span>Demo theme TH0001</span>
                         </span>
                     </a>
-                    <div class="th-search">
-                        <input type="text" placeholder="Tìm kiếm bài viết, ưu đãi, thông tin thương hiệu">
-                        <button type="button">Tìm</button>
-                    </div>
+                    <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
+                        <input type="search" name="q" value="{{ request('q') }}" placeholder="Tìm kiếm sản phẩm / khuyến mãi" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                        <button type="submit">Tìm</button>
+                    </form>
                     <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} GIỎ HÀNG</a>
                 </div>
             </header>
@@ -269,27 +272,6 @@
                                 <section class="th-cms-panel th-cms-listing-head">
                                     <h1>{{ $pageTitle }}</h1>
                                     <p>{{ $pageDescription }}</p>
-                                    <form method="GET" action="{{ route('site.blog.index') }}" class="th-news-toolbar">
-                                        <label class="th-news-field">
-                                            <span>Tìm bài viết</span>
-                                            <input type="search" name="q" value="{{ $postFilters['q'] ?? '' }}" placeholder="Nhập tiêu đề, mô tả hoặc từ khóa nội dung">
-                                        </label>
-                                        <label class="th-news-field">
-                                            <span>Chuyên mục</span>
-                                            <select name="category">
-                                                <option value="">Tất cả chuyên mục</option>
-                                                @foreach ($postCategories as $category)
-                                                    <option value="{{ $category->slug }}" @selected(($postFilters['category'] ?? '') === $category->slug)>{{ $category->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </label>
-                                        <button type="submit" class="th-cms-button primary">Lọc tin</button>
-                                        @if (filled($postFilters['q'] ?? '') || filled($postFilters['category'] ?? ''))
-                                            <a href="{{ route('site.blog.index') }}" class="th-cms-button secondary">Xóa lọc</a>
-                                        @else
-                                            <button type="button" class="th-cms-button secondary" data-open-newsletter-modal>Nhận bản tin</button>
-                                        @endif
-                                    </form>
                                     <div class="th-news-meta">
                                         <span>Tìm thấy <strong>{{ method_exists($listingItems, 'total') ? $listingItems->total() : $listingCollection->count() }}</strong> bài viết.</span>
                                         @if (filled($postFilters['q'] ?? '') || filled($postFilters['category'] ?? ''))
@@ -302,11 +284,12 @@
                                     <section class="th-cms-card-grid">
                                         @foreach ($listingCollection as $post)
                                             <article class="th-cms-card">
-                                                @if (!empty($post->featuredMedia?->file_url ?? null))
-                                                    <img class="th-cms-card-media" src="{{ $post->featuredMedia->file_url }}" alt="{{ $post->title }}">
-                                                @else
-                                                    <div class="th-cms-card-media is-placeholder">Tin tức</div>
-                                                @endif
+                                                <a href="{{ route('site.blog.show', $post->slug) }}" aria-label="{{ $post->title }}">
+                                                    <img
+                                                        class="th-cms-card-media{{ empty($post->featuredMedia?->file_url ?? null) ? ' is-placeholder' : '' }}"
+                                                        src="{{ $post->featuredMedia?->file_url ?? ('https://picsum.photos/seed/cms-post-'.($post->id ?? 'default').'/960/720') }}"
+                                                        alt="{{ $post->title }}">
+                                                </a>
                                                 <div class="th-cms-card-body">
                                                     <div class="th-cms-meta-row">
                                                         <span>{{ optional($post->publish_at)->format('d/m/Y') ?? 'Đang cập nhật' }}</span>
@@ -314,9 +297,8 @@
                                                             <span>{{ $post->category->name }}</span>
                                                         @endif
                                                     </div>
-                                                    <h3 class="th-cms-card-title">{{ $post->title }}</h3>
+                                                    <h3 class="th-cms-card-title"><a href="{{ route('site.blog.show', $post->slug) }}">{{ $post->title }}</a></h3>
                                                     <p class="th-cms-card-summary">{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body ?? ''), 150) }}</p>
-                                                    <a class="th-cms-link" href="{{ route('site.blog.show', $post->slug) }}">Đọc tiếp</a>
                                                 </div>
                                             </article>
                                         @endforeach
@@ -338,6 +320,32 @@
                             </div>
 
                             <aside class="th-cms-sidebar">
+                                <section class="th-cms-sidebar-card">
+                                    <h3>Tìm kiếm tin tức</h3>
+                                    <form method="GET" action="{{ route('site.blog.index') }}" class="th-news-toolbar">
+                                        <label class="th-news-field">
+                                            <span>Từ khóa</span>
+                                            <input type="search" name="q" value="{{ $postFilters['q'] ?? '' }}" placeholder="Nhập tiêu đề, mô tả hoặc từ khóa nội dung">
+                                        </label>
+                                        <label class="th-news-field">
+                                            <span>Chuyên mục</span>
+                                            <select name="category">
+                                                <option value="">Tất cả chuyên mục</option>
+                                                @foreach ($postCategories as $category)
+                                                    <option value="{{ $category->slug }}" @selected(($postFilters['category'] ?? '') === $category->slug)>{{ $category->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <div class="th-news-actions">
+                                            <button type="submit" class="th-cms-button primary">Lọc tin</button>
+                                            @if (filled($postFilters['q'] ?? '') || filled($postFilters['category'] ?? ''))
+                                                <a href="{{ route('site.blog.index') }}" class="th-cms-button secondary">Xóa lọc</a>
+                                            @else
+                                                <button type="button" class="th-cms-button secondary" data-open-newsletter-modal>Nhận bản tin</button>
+                                            @endif
+                                        </div>
+                                    </form>
+                                </section>
                                 <section class="th-cms-sidebar-card">
                                     <h3>Nhận bản tin ưu đãi</h3>
                                     <p class="th-cms-summary">Đăng ký email để nhận bài viết mới, lịch campaign và gợi ý sản phẩm nổi bật.</p>
@@ -393,24 +401,26 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="th-cms-hero-meta">
-                                <div class="th-cms-stat">
-                                    <strong>{{ data_get($branding, 'company_name', $siteProfile?->site_name ?? 'AIO Commerce') }}</strong>
-                                    <span>Đơn vị vận hành storefront và nội dung CMS trên cùng một nền tảng.</span>
+                            @unless ($isPostDetail)
+                                <div class="th-cms-hero-meta">
+                                    <div class="th-cms-stat">
+                                        <strong>{{ data_get($branding, 'company_name', $siteProfile?->site_name ?? 'AIO Commerce') }}</strong>
+                                        <span>Đơn vị vận hành storefront và nội dung CMS trên cùng một nền tảng.</span>
+                                    </div>
+                                    <div class="th-cms-stat">
+                                        <strong>{{ $contactLocation }}</strong>
+                                        <span>Điểm hiện diện phục vụ tư vấn, trưng bày và hỗ trợ khách hàng.</span>
+                                    </div>
+                                    <div class="th-cms-stat">
+                                        <strong>{{ $contactEmail }}</strong>
+                                        <span>Kênh tiếp nhận liên hệ hợp tác, booking truyền thông và CSKH.</span>
+                                    </div>
+                                    <div class="th-cms-stat">
+                                        <strong>{{ $contactHotline }}</strong>
+                                        <span>Hotline đồng bộ từ cấu hình website để hiển thị trên toàn bộ storefront.</span>
+                                    </div>
                                 </div>
-                                <div class="th-cms-stat">
-                                    <strong>{{ $contactLocation }}</strong>
-                                    <span>Điểm hiện diện phục vụ tư vấn, trưng bày và hỗ trợ khách hàng.</span>
-                                </div>
-                                <div class="th-cms-stat">
-                                    <strong>{{ $contactEmail }}</strong>
-                                    <span>Kênh tiếp nhận liên hệ hợp tác, booking truyền thông và CSKH.</span>
-                                </div>
-                                <div class="th-cms-stat">
-                                    <strong>{{ $contactHotline }}</strong>
-                                    <span>Hotline đồng bộ từ cấu hình website để hiển thị trên toàn bộ storefront.</span>
-                                </div>
-                            </div>
+                            @endunless
                         </section>
 
                         <div class="th-cms-grid">
@@ -632,6 +642,7 @@
             </footer>
         </div>
 
+        @include('theme-th0001::partials.product-search-autocomplete')
         @include('theme-th0001::partials.engagement-modals')
     </body>
 </html>
