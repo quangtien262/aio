@@ -8,6 +8,8 @@ use App\Models\Admin;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CatalogProductImage;
+use App\Models\CmsMenu;
+use App\Models\CmsPage;
 use App\Models\Customer;
 use App\Models\Order;
 use Database\Seeders\DatabaseSeeder;
@@ -68,6 +70,71 @@ class ThemeDemoContentTest extends TestCase
         $response->assertDontSee('Demo theme TH0001');
     }
 
+    public function test_th0001_top_menu_uses_all_primary_navigation_items(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $menu = CmsMenu::query()->where('location', 'primary-navigation')->latest('id')->firstOrFail();
+        $menu->update([
+            'items' => [
+                ['label' => 'Tin tức', 'url' => '/tin-tuc', 'target' => '_self'],
+                ['label' => 'Giới thiệu', 'url' => '/gioi-thieu', 'target' => '_self'],
+                ['label' => 'Liên hệ', 'url' => '/lien-he', 'target' => '_self'],
+                ['label' => 'Test', 'url' => '/test', 'target' => '_self'],
+            ],
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Test');
+
+        $this->get('/tin-tuc')
+            ->assertOk()
+            ->assertSee('Test');
+    }
+
+    public function test_th0001_custom_cms_page_renders_minimal_content_layout(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        CmsPage::query()->updateOrCreate(
+            ['slug' => 'test', 'website_key' => 'website-main'],
+            [
+                'title' => 'test',
+                'status' => 'published',
+                'excerpt' => 'test thôi nhé',
+                'body' => '<p>test thôi nhé</p>',
+                'publish_at' => now(),
+            ],
+        );
+
+        $this->get('/test')
+            ->assertOk()
+            ->assertSee('test')
+            ->assertSee('test thôi nhé')
+            ->assertDontSee('Nội dung CMS')
+            ->assertDontSee('Xem tin mới')
+            ->assertDontSee('Về trang chủ')
+            ->assertDontSee('Thông tin nhanh')
+            ->assertDontSee('Trang thông tin');
+    }
+
     public function test_th0001_cms_pages_and_news_listing_render_with_storefront_shell(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -90,13 +157,16 @@ class ThemeDemoContentTest extends TestCase
 
         $this->get('/gioi-thieu')
             ->assertOk()
-            ->assertSee('Hồ sơ vận hành')
-            ->assertSee('Đồng bộ CMS và storefront');
+            ->assertSee('Giới thiệu')
+            ->assertDontSee('Hồ sơ vận hành')
+            ->assertDontSee('Đồng bộ CMS và storefront');
 
         $this->get('/lien-he')
             ->assertOk()
-            ->assertSee('Liên hệ nhanh')
-            ->assertSee('Gửi yêu cầu liên hệ');
+            ->assertSee('Liên hệ ngay')
+            ->assertSee('Gửi yêu cầu liên hệ')
+            ->assertSee('Hotline')
+            ->assertSee('Email');
     }
 
     public function test_th0001_contact_page_can_queue_contact_inquiry_mail(): void

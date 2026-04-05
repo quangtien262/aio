@@ -1,11 +1,18 @@
 import { Suspense, lazy, useMemo, useState } from 'react';
+import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
+import EditOutlined from '@ant-design/icons/EditOutlined';
+import EyeOutlined from '@ant-design/icons/EyeOutlined';
+import MoreOutlined from '@ant-design/icons/MoreOutlined';
+import PlusOutlined from '@ant-design/icons/PlusOutlined';
+import UploadOutlined from '@ant-design/icons/UploadOutlined';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
+import Dropdown from 'antd/es/dropdown';
 import Empty from 'antd/es/empty';
 import Input from 'antd/es/input';
-import Popconfirm from 'antd/es/popconfirm';
+import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
@@ -131,7 +138,8 @@ const emptyMenu = {
 
 function renderStatusTag(status) {
     const colorMap = { published: 'green', draft: 'default' };
-    return <Tag color={colorMap[status] ?? 'default'}>{status}</Tag>;
+    const labelMap = { published: 'Đã xuất bản', draft: 'Bản nháp' };
+    return <Tag color={colorMap[status] ?? 'default'}>{labelMap[status] ?? status}</Tag>;
 }
 
 function formatPublishAt(value) {
@@ -195,7 +203,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
     const scopeHint = sectionKey === 'cms-media'
         ? 'Media nên gắn website_key để tái sử dụng đúng storefront ecommerce; owner/tenant chỉ dùng khi thật sự cần.'
-        : 'Workflow hiện chỉ dùng Draft/Published và scope chính của CMS là website_key.';
+        : 'Workflow hiện chỉ dùng Bản nháp/Đã xuất bản và scope chính của CMS là website_key.';
 
     const metrics = useMemo(() => {
         if (!data) {
@@ -215,8 +223,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         return [
             { label: 'Tổng bản ghi', value: data.total ?? 0 },
-            { label: 'Published', value: data.metrics?.published ?? 0 },
-            { label: 'Draft', value: data.metrics?.draft ?? 0 },
+            { label: 'Đã xuất bản', value: data.metrics?.published ?? 0 },
+            { label: 'Bản nháp', value: data.metrics?.draft ?? 0 },
         ];
     }, [data, sectionKey]);
 
@@ -258,6 +266,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         await runAdminAction(() => callAdminApi(`${sectionConfig.endpoint}/${recordId}`, { method: 'DELETE' }), `Đã xóa ${sectionConfig.title}.`, reload);
     };
 
+    const confirmDeleteRecord = (recordId) => {
+        Modal.confirm({
+            title: 'Xóa bản ghi này?',
+            content: 'Thao tác này không thể hoàn tác.',
+            okText: 'Xóa',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => handleDeleteRecord(recordId),
+        });
+    };
+
     const handleUploadMedia = async () => {
         if (!mediaFile) {
             return;
@@ -279,16 +298,80 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
     };
 
-    const renderActions = (record) => (
-        <Space wrap>
-            {record.public_url ? <Button size="small" href={record.public_url} target="_blank">Public</Button> : null}
-            {record.preview_url && sectionPermissions.canPublish ? <Button size="small" href={record.preview_url} target="_blank">Preview</Button> : null}
-            <Button size="small" disabled={!sectionPermissions.canUpdate} onClick={() => openEditModal(record)}>Sửa</Button>
-            <Popconfirm title="Xóa bản ghi này?" disabled={!sectionPermissions.canDelete} onConfirm={() => handleDeleteRecord(record.id)}>
-                <Button size="small" danger disabled={!sectionPermissions.canDelete}>Xóa</Button>
-            </Popconfirm>
-        </Space>
-    );
+    const renderActions = (record) => {
+        const actionItems = [];
+
+        if (record.public_url) {
+            actionItems.push({
+                key: 'public',
+                label: 'Mở public',
+                icon: <EyeOutlined />,
+            });
+        }
+
+        if (record.preview_url && sectionPermissions.canPublish) {
+            actionItems.push({
+                key: 'preview',
+                label: 'Xem preview',
+                icon: <EyeOutlined />,
+            });
+        }
+
+        if (sectionKey !== 'cms-media') {
+            actionItems.push({
+                key: 'edit',
+                label: 'Chỉnh sửa',
+                icon: <EditOutlined />,
+                disabled: !sectionPermissions.canUpdate,
+            });
+        } else {
+            actionItems.push({
+                key: 'open',
+                label: 'Mở media',
+                icon: <EyeOutlined />,
+            });
+        }
+
+        actionItems.push({
+            key: 'delete',
+            label: 'Xóa',
+            icon: <DeleteOutlined />,
+            danger: true,
+            disabled: !sectionPermissions.canDelete,
+        });
+
+        const handleActionClick = ({ key }) => {
+            if (key === 'public' && record.public_url) {
+                window.open(record.public_url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            if (key === 'preview' && record.preview_url) {
+                window.open(record.preview_url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            if (key === 'open' && record.file_url) {
+                window.open(record.file_url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            if (key === 'edit') {
+                openEditModal(record);
+                return;
+            }
+
+            if (key === 'delete') {
+                confirmDeleteRecord(record.id);
+            }
+        };
+
+        return (
+            <Dropdown menu={{ items: actionItems, onClick: handleActionClick }} trigger={['click']}>
+                <Button size="small" icon={<MoreOutlined />}>Tác vụ</Button>
+            </Dropdown>
+        );
+    };
 
     const columns = useMemo(() => {
         if (sectionKey === 'cms-pages') {
@@ -351,14 +434,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             {
                 title: 'Tác vụ',
                 key: 'actions',
-                render: (_, record) => (
-                    <Space wrap>
-                        <Button size="small" href={record.file_url} target="_blank">Mở</Button>
-                        <Popconfirm title="Xóa media này?" disabled={!sectionPermissions.canDelete} onConfirm={() => handleDeleteRecord(record.id)}>
-                            <Button size="small" danger disabled={!sectionPermissions.canDelete}>Xóa</Button>
-                        </Popconfirm>
-                    </Space>
-                ),
+                render: (_, record) => renderActions(record),
             },
         ];
     }, [sectionKey, sectionPermissions.canDelete, sectionPermissions.canPublish, sectionPermissions.canUpdate]);
@@ -424,6 +500,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                     editingPage={editingRecord}
                     mediaOptions={data?.media ?? []}
+                    callAdminApi={callAdminApi}
                     onCancel={() => setModalOpen(false)}
                     onSubmit={handleSaveRecord}
                 />
@@ -468,7 +545,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ) : null}
 
             {sectionKey === 'cms-media' ? (
-                <Card title="Upload Media" extra={<Button type="primary" disabled={!sectionPermissions.canCreate || !mediaFile} onClick={handleUploadMedia}>Upload media</Button>}>
+                <Card title="Upload Media" extra={<Button type="primary" icon={<UploadOutlined />} disabled={!sectionPermissions.canCreate || !mediaFile} onClick={handleUploadMedia}>Upload media</Button>}>
                     <Row gutter={[12, 12]}>
                         <Col xs={24} md={8}><Input value={mediaUpload.title} onChange={(event) => setMediaUpload((current) => ({ ...current, title: event.target.value }))} placeholder="Tiêu đề media" /></Col>
                         <Col xs={24} md={8}><Input value={mediaUpload.alt_text} onChange={(event) => setMediaUpload((current) => ({ ...current, alt_text: event.target.value }))} placeholder="Alt text" /></Col>
@@ -480,7 +557,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 </Card>
             ) : null}
 
-            <Card className="admin-table-card" title={`${sectionConfig.title} (${data?.total ?? 0})`} extra={sectionKey !== 'cms-media' ? <Button type="primary" disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{`Tạo ${sectionConfig.title}`}</Button> : null}>
+            <Card className="admin-table-card" title={`${sectionConfig.title} (${data?.total ?? 0})`} extra={sectionKey !== 'cms-media' ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{`Tạo ${sectionConfig.title}`}</Button> : null}>
                 {(data?.items ?? []).length ? (
                     <Table rowKey="id" columns={columns} dataSource={data?.items ?? []} pagination={{ pageSize: 10, hideOnSinglePage: true }} scroll={{ x: 980 }} />
                 ) : (

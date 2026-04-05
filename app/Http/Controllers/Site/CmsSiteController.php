@@ -926,23 +926,7 @@ class CmsSiteController
     private function resolveTopMenuItems(array $menus): array
     {
         $items = collect($menus['primary-navigation'] ?? $menus['primary'] ?? [])
-            ->filter(function (mixed $item): bool {
-                if (! is_array($item)) {
-                    return false;
-                }
-
-                $label = mb_strtolower((string) ($item['label'] ?? ''));
-                $url = mb_strtolower((string) ($item['url'] ?? ''));
-
-                return str_contains($label, 'tin')
-                    || str_contains($label, 'giới')
-                    || str_contains($label, 'gioi')
-                    || str_contains($label, 'liên')
-                    || str_contains($label, 'lien')
-                    || str_contains($url, 'tin-tuc')
-                    || str_contains($url, 'gioi-thieu')
-                    || str_contains($url, 'lien-he');
-            })
+            ->filter(fn (mixed $item): bool => is_array($item))
             ->values();
 
         if ($items->isEmpty()) {

@@ -82,7 +82,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                 <Row gutter={16}>
                     <Col span={8}>
                         <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-                            <Select options={[{ label: 'Draft', value: 'draft' }, { label: 'Published', value: 'published' }]} />
+                            <Select options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]} />
                         </Form.Item>
                     </Col>
                     <Col span={8}>

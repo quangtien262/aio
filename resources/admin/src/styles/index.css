@@ -256,6 +256,58 @@ a {
     height: 100%;
 }
 
+.cms-page-drawer .ant-drawer-body {
+    padding-bottom: 32px;
+}
+
+.cms-editor-shell .ck.ck-editor__main > .ck-editor__editable {
+    min-height: 320px;
+    max-height: 60vh;
+}
+
+.cms-editor-shell .ck.ck-editor__editable.ck-focused {
+    border-color: #1677ff;
+    box-shadow: 0 0 0 1px rgba(22, 119, 255, 0.2);
+}
+
+.cms-editor-hint {
+    margin: -8px 0 20px;
+    color: #5f7a73;
+    font-size: 12px;
+}
+
+.cms-editor-toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+}
+
+.cms-editor-upload-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 12px;
+    padding: 14px 16px;
+    border: 1px solid #dbe7e4;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f8fcfb 0%, #ffffff 100%);
+}
+
+.cms-editor-upload-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #40635a;
+    font-size: 13px;
+}
+
+.cms-editor-upload-copy strong {
+    color: #16302b;
+    font-size: 14px;
+}
+
 .admin-content .ant-card .ant-card-body,
 .admin-page-shell,
 .panel-stack,

@@ -16,6 +16,22 @@
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $searchCategories = collect($sidebarCategories)->pluck('label')->take(6)->all();
+    $heroSlides = collect([$heroBanner])
+        ->merge(
+            collect($sidePromos)->take(3)->map(function (array $promo, int $index): array {
+                return [
+                    'image' => $promo['image'] ?? 'https://picsum.photos/seed/th0001-fallback-hero-'.($index + 1).'/960/520',
+                    'title' => $promo['title'] ?? 'Ưu đãi nổi bật',
+                    'summary' => $promo['subtitle'] ?? 'Khám phá thêm các ưu đãi đang chạy trong storefront TH0001.',
+                    'eyebrow' => 'Ưu đãi nổi bật',
+                    'badge' => 'Khám phá ngay',
+                    'cta' => 'Xem ngay',
+                    'link_url' => $promo['link_url'] ?? '#featured',
+                ];
+            })
+        )
+        ->filter(fn ($slide): bool => is_array($slide) && filled($slide['image'] ?? null))
+        ->values();
 
     $footerColumns = [
         'Trợ giúp' => ['Chính sách giao hàng', 'Cách thức thanh toán', 'Hotdeal E-voucher', 'Membership'],
@@ -110,14 +126,24 @@
             .th-sidebar-mega-promo span { position: absolute; left: 12px; bottom: 10px; right: 12px; color: #fff; font-size: 13px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
             .th-hero-stack { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; }
             .th-hero-card { background: linear-gradient(90deg, #fff3ea 0%, #fff 100%); min-height: 300px; position: relative; overflow: hidden; border: 1px solid #ffd7bd; }
-            .th-hero-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-            .th-hero-overlay { position: relative; z-index: 1; width: min(54%, 420px); padding: 36px 32px; background: linear-gradient(90deg, rgba(255,244,236,0.95) 0%, rgba(255,255,255,0.2) 100%); height: 100%; }
-            .th-eyebrow { display: inline-flex; padding: 6px 12px; border-radius: 999px; background: rgba(239,43,45,0.1); color: var(--th-red); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
-            .th-hero-title { margin: 14px 0 10px; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; color: #ff8c1a; }
-            .th-hero-summary { margin: 0 0 20px; color: #7d675e; line-height: 1.6; }
+            .th-hero-slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .6s ease; }
+            .th-hero-slide.is-active { opacity: 1; pointer-events: auto; z-index: 1; }
+            .th-hero-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+            .th-hero-overlay {position: relative;z-index: 1;width: min(54%, 420px);padding: 36px 32px;background: linear-gradient(90deg, rgb(0 0 0 / 95%) 0%, rgb(255 255 255 / 14%) 100%);height: 100%;}
+            .th-eyebrow { display: inline-flex; padding: 6px 12px; border-radius: 999px; background: rgba(239,43,45,0.1); color: #ff6668; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+            .th-hero-title { margin: 14px 0 10px; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; color: #ffffff; }
+            .th-hero-summary { margin: 0 0 20px; color: #ffffff; line-height: 1.6; }
             .th-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
             .th-badge-price { background: #fff; color: var(--th-red); border-radius: 20px; padding: 10px 14px; font-size: 15px; font-weight: 800; box-shadow: 0 10px 24px rgba(239,43,45,0.14); }
             .th-hero-button { background: linear-gradient(180deg, #ff8e18 0%, #f25c05 100%); color: #fff; border-radius: 999px; padding: 11px 22px; font-weight: 800; text-transform: uppercase; }
+            .th-hero-nav { position: absolute; top: 50%; z-index: 3; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-top: -22px; padding: 0; border: 0; border-radius: 999px; background: rgba(255,255,255,.88); color: #303030; font-size: 28px; line-height: 1; text-align: center; box-shadow: 0 12px 24px rgba(19, 21, 33, 0.16); cursor: pointer; opacity: 0; visibility: hidden; transform: translateY(-50%) scale(.92); transition: opacity .2s ease, visibility .2s ease, transform .2s ease, background .18s ease; }
+            .th-hero-card:hover .th-hero-nav, .th-hero-card:focus-within .th-hero-nav { opacity: 1; visibility: visible; transform: translateY(-50%) scale(1); }
+            .th-hero-nav:hover { background: #fff; transform: translateY(-50%) scale(1.06); }
+            .th-hero-nav-prev { left: 5px; }
+            .th-hero-nav-next { right: 5px; }
+            .th-hero-dots { position: absolute; left: 32px; bottom: 20px; z-index: 3; display: flex; align-items: center; gap: 8px; }
+            .th-hero-dot { width: 10px; height: 10px; border: 0; border-radius: 999px; background: rgba(255,255,255,.55); cursor: pointer; transition: transform .18s ease, background .18s ease; }
+            .th-hero-dot.is-active { background: #fff; transform: scale(1.25); }
             .th-side-promo-grid { display: grid; gap: 8px; }
             .th-side-promo { min-height: 69px; position: relative; overflow: hidden; border: 1px solid var(--th-line); }
             .th-side-promo img { width: 100%; height: 100%; object-fit: cover; }
@@ -285,18 +311,7 @@
 
                         <div>
                             <div class="th-hero-stack">
-                                <section class="th-hero-card">
-                                    <img src="{{ $heroBanner['image'] ?? 'https://picsum.photos/seed/th0001-fallback-hero/960/520' }}" alt="{{ $heroBanner['title'] ?? 'Hero banner' }}">
-                                    <div class="th-hero-overlay">
-                                        <span class="th-eyebrow">{{ $heroBanner['eyebrow'] ?? 'Flash sale' }}</span>
-                                        <h1 class="th-hero-title">{{ $heroBanner['title'] ?? 'Deal nổi bật hôm nay' }}</h1>
-                                        <p class="th-hero-summary">{{ $heroBanner['summary'] ?? 'Dữ liệu banner đang được lấy trực tiếp từ bảng banner riêng.' }}</p>
-                                        <div class="th-hero-actions">
-                                            <span class="th-badge-price">{{ $heroBanner['badge'] ?? 'Ưu đãi mới' }}</span>
-                                            <a href="{{ $heroBanner['link_url'] ?? '#featured' }}" class="th-hero-button">{{ $heroBanner['cta'] ?? 'Mua ngay' }}</a>
-                                        </div>
-                                    </div>
-                                </section>
+                                @include('theme-th0001::partials.home-hero-slider', ['heroSlides' => $heroSlides])
 
                                 <div class="th-side-promo-grid">
                                     @foreach ($sidePromos as $promo)
