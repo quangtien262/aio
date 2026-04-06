@@ -180,6 +180,21 @@ Route::prefix('admin')
                 Route::delete('/cms/media/{media}', [MediaManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.media.manage')
                     ->name('cms.media.destroy');
+                Route::get('/cms/products', ProductIndexController::class)
+                    ->middleware('admin.permission:cms.product.view')
+                    ->name('cms.products.index');
+                Route::get('/cms/product-categories', CatalogCategoryIndexController::class)
+                    ->middleware('admin.permission:cms.product.view')
+                    ->name('cms.product-categories.index');
+                Route::post('/cms/products', [ProductManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.product.create')
+                    ->name('cms.products.store');
+                Route::put('/cms/products/{product}', [ProductManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.product.update')
+                    ->name('cms.products.update');
+                Route::delete('/cms/products/{product}', [ProductManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.product.delete')
+                    ->name('cms.products.destroy');
                 Route::get('/catalog/products', ProductIndexController::class)
                     ->middleware('admin.permission:catalog.view')
                     ->name('catalog.products.index');

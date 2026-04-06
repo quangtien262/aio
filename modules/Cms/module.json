@@ -15,6 +15,10 @@
     "cms.post.create",
     "cms.post.update",
     "cms.post.delete",
+    "cms.product.view",
+    "cms.product.create",
+    "cms.product.update",
+    "cms.product.delete",
     "cms.category.manage",
     "cms.menu.manage",
     "cms.media.manage"
@@ -42,6 +46,16 @@
       "icon": "profile",
       "route": "/admin/cms/posts",
       "permission": "cms.post.view"
+    },
+    {
+      "key": "cms-products",
+      "label": "Products",
+      "description": "Quản lý sản phẩm ecommerce ngay trong workspace CMS.",
+      "badge": "Catalog",
+      "color": "lime",
+      "icon": "shopping",
+      "route": "/admin/cms/products",
+      "permission": "cms.product.view"
     },
     {
       "key": "cms-categories",

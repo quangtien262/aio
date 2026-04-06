@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Admin\Api\Cms;
 
-use App\Core\Access\AdminDataScope;
-use App\Http\Controllers\Admin\Api\Cms\Concerns\InteractsWithScopedCmsRecords;
 use App\Models\CmsPage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,29 +9,23 @@ use Illuminate\Validation\Rule;
 
 class PageManagementController
 {
-    use InteractsWithScopedCmsRecords;
-
-    public function store(Request $request, AdminDataScope $adminDataScope): JsonResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $this->validatePayload($request);
-        $this->ensureScopedPayloadAllowed($request, $validated);
 
         $page = CmsPage::query()->create($validated);
-        /** @var CmsPage $record */
-        $record = $this->resolveScopedRecord($request, $adminDataScope, new CmsPage(), $page->id);
 
         return response()->json([
             'message' => 'Đã tạo trang CMS.',
-            'data' => $this->serializePage($record),
+            'data' => $this->serializePage($page),
         ], 201);
     }
 
-    public function update(Request $request, AdminDataScope $adminDataScope, int $page): JsonResponse
+    public function update(Request $request, int $page): JsonResponse
     {
         /** @var CmsPage $record */
-        $record = $this->resolveScopedRecord($request, $adminDataScope, new CmsPage(), $page);
+        $record = CmsPage::query()->findOrFail($page);
         $validated = $this->validatePayload($request, $record);
-        $this->ensureScopedPayloadAllowed($request, $validated);
 
         $record->update($validated);
 
@@ -43,10 +35,10 @@ class PageManagementController
         ]);
     }
 
-    public function destroy(Request $request, AdminDataScope $adminDataScope, int $page): JsonResponse
+    public function destroy(Request $request, int $page): JsonResponse
     {
         /** @var CmsPage $record */
-        $record = $this->resolveScopedRecord($request, $adminDataScope, new CmsPage(), $page);
+        $record = CmsPage::query()->findOrFail($page);
         $record->delete();
 
         return response()->json([
@@ -67,9 +59,6 @@ class PageManagementController
             'template' => ['nullable', 'string', 'max:255'],
             'featured_media_id' => ['nullable', 'integer', Rule::exists('cms_media', 'id')],
             'publish_at' => ['nullable', 'date'],
-            'website_key' => ['required', 'string', 'max:255'],
-            'owner_key' => ['nullable', 'string', 'max:255'],
-            'tenant_key' => ['nullable', 'string', 'max:255'],
         ]);
     }
 
@@ -87,9 +76,6 @@ class PageManagementController
             'template' => $page->template,
             'featured_media_id' => $page->featured_media_id,
             'publish_at' => $page->publish_at?->toAtomString(),
-            'website_key' => $page->website_key,
-            'owner_key' => $page->owner_key,
-            'tenant_key' => $page->tenant_key,
         ];
     }
 }

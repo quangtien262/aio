@@ -67,6 +67,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     const [messageApi, messageContextHolder] = message.useMessage();
     const [uploadingAsset, setUploadingAsset] = useState(null);
     const editorInstanceRef = useRef(null);
+    const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
     const slugEditedRef = useRef(Boolean(editingPage?.id));
@@ -79,6 +80,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         form.setFieldsValue(editingPage);
         form.setFieldValue('body', editingPage?.body ?? '');
         slugEditedRef.current = Boolean(editingPage?.id || editingPage?.slug);
+        editorSelectionRef.current = null;
     }, [editingPage, form]);
 
     useEffect(() => {
@@ -206,13 +208,52 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         return url;
     };
 
-    const insertHtmlIntoEditor = (html) => {
-        const currentData = form.getFieldValue('body') || '';
-        const nextData = `${currentData}${html}`;
+    const syncEditorBodyToForm = (editor) => {
+        form.setFieldValue('body', editor.getData());
+    };
 
-        form.setFieldValue('body', nextData);
-        editorInstanceRef.current?.setData(nextData);
-        editorInstanceRef.current?.editing?.view?.focus();
+    const captureEditorSelection = (editor) => {
+        const range = editor?.model?.document?.selection?.getFirstRange?.();
+
+        editorSelectionRef.current = range ? range.clone() : null;
+    };
+
+    const insertHtmlIntoEditor = (html) => {
+        const editor = editorInstanceRef.current;
+
+        if (!editor) {
+            const currentData = form.getFieldValue('body') || '';
+
+            form.setFieldValue('body', `${currentData}${html}`);
+            return;
+        }
+
+        editor.model.change((writer) => {
+            const viewFragment = editor.data.processor.toView(html);
+            const modelFragment = editor.data.toModel(viewFragment);
+
+            if (editorSelectionRef.current) {
+                writer.setSelection(editorSelectionRef.current);
+            } else {
+                writer.setSelection(editor.model.document.getRoot(), 'end');
+            }
+
+            editor.model.insertContent(modelFragment, editor.model.document.selection);
+        });
+
+        captureEditorSelection(editor);
+        syncEditorBodyToForm(editor);
+        editor.editing.view.focus();
+    };
+
+    const openAssetPicker = (inputRef) => {
+        const editor = editorInstanceRef.current;
+
+        if (editor) {
+            captureEditorSelection(editor);
+        }
+
+        inputRef.current?.click();
     };
 
     const handleInsertImage = async (event) => {
@@ -262,9 +303,6 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
 
         await onSubmit?.({
             ...values,
-            website_key: values.website_key || null,
-            owner_key: values.owner_key || null,
-            tenant_key: values.tenant_key || null,
             excerpt: values.excerpt || null,
             body: values.body || null,
             meta_title: values.meta_title || null,
@@ -369,24 +407,6 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                     </Col>
                 </Row>
 
-                <Row gutter={16}>
-                    <Col span={8}>
-                        <Form.Item name="website_key" label="Website" rules={[{ required: true, message: 'Nhập website key áp dụng cho nội dung' }]} extra="CMS hiện ưu tiên scope theo website.">
-                            <Input placeholder="storefront-main" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="owner_key" label="Owner (tuỳ chọn)">
-                            <Input placeholder="owner-system" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="tenant_key" label="Tenant (tuỳ chọn)">
-                            <Input placeholder="tenant-a" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
                 <Divider style={{ marginTop: 8 }}>Nội dung chi tiết</Divider>
 
                 <div className="cms-editor-upload-panel">
@@ -397,8 +417,8 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                     <div className="cms-editor-toolbar-row">
                         <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
                         <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
-                        <Button type="default" disabled={!canManage || uploadingAsset === 'video'} loading={uploadingAsset === 'image'} onClick={() => imageInputRef.current?.click()}>Upload ảnh vào nội dung</Button>
-                        <Button type="default" disabled={!canManage || uploadingAsset === 'image'} loading={uploadingAsset === 'video'} onClick={() => videoInputRef.current?.click()}>Upload video vào nội dung</Button>
+                        <Button type="default" disabled={!canManage || uploadingAsset === 'video'} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
+                        <Button type="default" disabled={!canManage || uploadingAsset === 'image'} loading={uploadingAsset === 'video'} onClick={() => openAssetPicker(videoInputRef)}>Upload video vào nội dung</Button>
                     </div>
                 </div>
 
@@ -412,9 +432,15 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                             disabled={!canManage}
                             onReady={(editor) => {
                                 editorInstanceRef.current = editor;
+
+                                captureEditorSelection(editor);
+                                editor.model.document.selection.on('change:range', () => {
+                                    captureEditorSelection(editor);
+                                });
                             }}
                             onChange={(_, editor) => {
-                                form.setFieldValue('body', editor.getData());
+                                captureEditorSelection(editor);
+                                syncEditorBodyToForm(editor);
                             }}
                         />
                     </div>

@@ -21,9 +21,6 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
             ...values,
             parent_id: values.parent_id || null,
             image_url: values.image_url || null,
-            website_key: values.website_key || null,
-            owner_key: values.owner_key || null,
-            tenant_key: values.tenant_key || null,
             is_active: Boolean(values.is_active),
         });
         form.resetFields();
@@ -71,23 +68,6 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
                     <Col span={8}>
                         <Form.Item name="sort_order" label="Thứ tự">
                             <InputNumber min={0} precision={0} style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="website_key" label="Website">
-                            <Input placeholder="website-main" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="owner_key" label="Owner">
-                            <Input placeholder="owner-system" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <Row gutter={16}>
-                    <Col span={8}>
-                        <Form.Item name="tenant_key" label="Tenant">
-                            <Input placeholder="tenant-a" />
                         </Form.Item>
                     </Col>
                     <Col span={8}>

@@ -24,6 +24,7 @@ const CmsPageFormModal = lazy(() => import('../components/CmsPageFormModal'));
 const CmsPostFormModal = lazy(() => import('../components/CmsPostFormModal'));
 const CmsCategoryFormModal = lazy(() => import('../components/CmsCategoryFormModal'));
 const CmsMenuFormModal = lazy(() => import('../components/CmsMenuFormModal'));
+const CatalogProductFormModal = lazy(() => import('../../catalog/components/CatalogProductFormModal'));
 const { Paragraph, Text, Title } = Typography;
 
 const sectionConfigMap = {
@@ -46,6 +47,16 @@ const sectionConfigMap = {
         permissionUpdate: 'cms.post.update',
         permissionDelete: 'cms.post.delete',
         permissionPublish: 'cms.publish',
+    },
+    'cms-products': {
+        title: 'Products',
+        description: 'Quản lý sản phẩm ecommerce ngay trong workspace CMS.',
+        endpoint: '/admin/api/cms/products',
+        permissionView: 'cms.product.view',
+        permissionCreate: 'cms.product.create',
+        permissionUpdate: 'cms.product.update',
+        permissionDelete: 'cms.product.delete',
+        permissionPublish: null,
     },
     'cms-categories': {
         title: 'Categories',
@@ -111,6 +122,29 @@ const emptyPost = {
     website_key: '',
     owner_key: '',
     tenant_key: '',
+};
+
+const emptyProduct = {
+    id: null,
+    catalog_category_id: null,
+    name: '',
+    slug: '',
+    sku: '',
+    price: 0,
+    original_price: null,
+    stock: 0,
+    short_description: '',
+    detail_content: '',
+    highlights: '',
+    usage_terms: '',
+    usage_location: '',
+    image_url: '',
+    gallery_images: [],
+    sold_count: 0,
+    deal_end_at: '',
+    is_featured: false,
+    sort_order: 0,
+    is_active: true,
 };
 
 const emptyCategory = {
@@ -181,7 +215,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const sectionConfig = sectionConfigMap[sectionKey] ?? sectionConfigMap['cms-pages'];
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
-    const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '', website_key: '', owner_key: '', tenant_key: '' });
+    const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
     const [mediaFile, setMediaFile] = useState(null);
 
     const sectionPermissions = useMemo(() => ({
@@ -195,15 +229,27 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: sectionPermissions.canView,
         loader: async () => {
+            if (sectionKey === 'cms-products') {
+                const [productsPayload, categoriesPayload] = await Promise.all([
+                    callAdminApi('/admin/api/cms/products'),
+                    callAdminApi('/admin/api/cms/product-categories'),
+                ]);
+
+                return {
+                    ...(productsPayload.data ?? { items: [], total: 0, metrics: {} }),
+                    categories: categoriesPayload.data?.items ?? [],
+                };
+            }
+
             const payload = await callAdminApi(sectionConfig.endpoint);
             return payload.data ?? null;
         },
         deps: [sectionConfig.endpoint, sectionPermissions.canView],
     });
 
-    const scopeHint = sectionKey === 'cms-media'
-        ? 'Media nên gắn website_key để tái sử dụng đúng storefront ecommerce; owner/tenant chỉ dùng khi thật sự cần.'
-        : 'Workflow hiện chỉ dùng Bản nháp/Đã xuất bản và scope chính của CMS là website_key.';
+    const scopeHint = sectionKey === 'cms-products'
+        ? 'Quản lý sản phẩm được mở ngay trong CMS workspace nhưng vẫn dùng catalog API phía sau.'
+        : 'Source hiện vận hành theo mô hình một website, không còn dùng scope Website/Owner/Tenant trong workflow này.';
 
     const metrics = useMemo(() => {
         if (!data) {
@@ -214,6 +260,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             return [
                 { label: 'Tổng media', value: data.total ?? 0 },
                 { label: 'Tài nguyên sẵn dùng', value: (data.items ?? []).length },
+            ];
+        }
+
+        if (sectionKey === 'cms-products') {
+            return [
+                { label: 'Tổng sản phẩm', value: data.total ?? 0 },
+                { label: 'Còn hàng', value: data.metrics?.in_stock ?? 0 },
+                { label: 'Tồn kho', value: data.metrics?.inventory_units ?? 0 },
             ];
         }
 
@@ -231,6 +285,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const openCreateModal = () => {
         if (sectionKey === 'cms-posts') {
             setEditingRecord(emptyPost);
+        } else if (sectionKey === 'cms-products') {
+            setEditingRecord(emptyProduct);
         } else if (sectionKey === 'cms-categories') {
             setEditingRecord(emptyCategory);
         } else if (sectionKey === 'cms-menus') {
@@ -248,6 +304,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 ...record,
                 publish_at: normalizeDatetimeLocal(record.publish_at),
             }
+            : sectionKey === 'cms-products'
+                ? {
+                    ...record,
+                    deal_end_at: normalizeDatetimeLocal(record.deal_end_at),
+                }
             : record);
         setModalOpen(true);
     };
@@ -294,7 +355,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (didUpload) {
             setMediaFile(null);
-            setMediaUpload({ title: '', alt_text: '', website_key: '', owner_key: '', tenant_key: '' });
+            setMediaUpload({ title: '', alt_text: '' });
         }
     };
 
@@ -396,6 +457,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ];
         }
 
+        if (sectionKey === 'cms-products') {
+            return [
+                { title: 'Sản phẩm', dataIndex: 'name', key: 'name' },
+                { title: 'Danh mục', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa gắn' },
+                { title: 'SKU', dataIndex: 'sku', key: 'sku' },
+                { title: 'Giá', dataIndex: 'price', key: 'price', render: (value) => Number(value ?? 0).toLocaleString('vi-VN') },
+                { title: 'Tồn kho', dataIndex: 'stock', key: 'stock' },
+                { title: 'Đã mua', dataIndex: 'sold_count', key: 'sold_count' },
+                { title: 'Nổi bật', dataIndex: 'is_featured', key: 'is_featured', render: (value) => value ? <Tag color="gold">featured</Tag> : <Tag>normal</Tag> },
+                { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
+            ];
+        }
+
         if (sectionKey === 'cms-categories') {
             return [
                 { title: 'Category', dataIndex: 'name', key: 'name' },
@@ -453,6 +527,25 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         editingPost={editingRecord}
                         mediaOptions={data?.media ?? []}
                         categoryOptions={data?.categories ?? []}
+                        callAdminApi={callAdminApi}
+                        onCancel={() => setModalOpen(false)}
+                        onSubmit={handleSaveRecord}
+                    />
+                </Suspense>
+            );
+        }
+
+        if (sectionKey === 'cms-products') {
+            return (
+                <Suspense fallback={null}>
+                    <CatalogProductFormModal
+                        open={modalOpen}
+                        canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        editingProduct={editingRecord}
+                        categoryOptions={(data?.categories ?? []).map((category) => ({
+                            label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
+                            value: category.id,
+                        }))}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -550,9 +643,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         <Col xs={24} md={8}><Input value={mediaUpload.title} onChange={(event) => setMediaUpload((current) => ({ ...current, title: event.target.value }))} placeholder="Tiêu đề media" /></Col>
                         <Col xs={24} md={8}><Input value={mediaUpload.alt_text} onChange={(event) => setMediaUpload((current) => ({ ...current, alt_text: event.target.value }))} placeholder="Alt text" /></Col>
                         <Col xs={24} md={8}><input type="file" onChange={(event) => setMediaFile(event.target.files?.[0] ?? null)} /></Col>
-                        <Col xs={24} md={8}><Input value={mediaUpload.website_key} onChange={(event) => setMediaUpload((current) => ({ ...current, website_key: event.target.value }))} placeholder="storefront-main" /></Col>
-                        <Col xs={24} md={8}><Input value={mediaUpload.owner_key} onChange={(event) => setMediaUpload((current) => ({ ...current, owner_key: event.target.value }))} placeholder="owner-system" /></Col>
-                        <Col xs={24} md={8}><Input value={mediaUpload.tenant_key} onChange={(event) => setMediaUpload((current) => ({ ...current, tenant_key: event.target.value }))} placeholder="tenant-a" /></Col>
                     </Row>
                 </Card>
             ) : null}

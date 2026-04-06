@@ -35,9 +35,6 @@ const emptyProductForm = {
     is_featured: false,
     sort_order: 0,
     is_active: true,
-    website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyCategoryForm = {
@@ -49,9 +46,6 @@ const emptyCategoryForm = {
     image_url: '',
     sort_order: 0,
     is_active: true,
-    website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyBannerForm = {
@@ -68,9 +62,6 @@ const emptyBannerForm = {
     button_label: '',
     sort_order: 0,
     is_active: true,
-    website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 export default function CatalogManagerPage({ callAdminApi, runAdminAction, currentPermissions }) {
@@ -132,9 +123,6 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             is_featured: Boolean(product.is_featured),
             sort_order: product.sort_order ?? 0,
             is_active: product.is_active ?? true,
-            website_key: product.website_key ?? '',
-            owner_key: product.owner_key ?? '',
-            tenant_key: product.tenant_key ?? '',
         } : emptyProductForm);
         setProductModalOpen(true);
     };
@@ -149,9 +137,6 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             image_url: category.image_url ?? '',
             sort_order: category.sort_order ?? 0,
             is_active: category.is_active ?? true,
-            website_key: category.website_key ?? '',
-            owner_key: category.owner_key ?? '',
-            tenant_key: category.tenant_key ?? '',
         } : emptyCategoryForm);
         setCategoryModalOpen(true);
     };
@@ -171,9 +156,6 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             button_label: banner.button_label ?? '',
             sort_order: banner.sort_order ?? 0,
             is_active: banner.is_active ?? true,
-            website_key: banner.website_key ?? '',
-            owner_key: banner.owner_key ?? '',
-            tenant_key: banner.tenant_key ?? '',
         } : emptyBannerForm);
         setBannerModalOpen(true);
     };
@@ -259,8 +241,8 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Card>
                 <Text className="card-label">Catalog</Text>
-                <Title level={3}>Catalog, Category và Banner theo data scope</Title>
-                <Paragraph style={{ marginBottom: 0 }}>Một màn để sếp chỉnh tay dữ liệu thương mại điện tử của TH0001: danh mục, sản phẩm và banner nhiều vị trí.</Paragraph>
+                <Title level={3}>Catalog, Category và Banner</Title>
+                <Paragraph style={{ marginBottom: 0 }}>Một màn để chỉnh tay dữ liệu thương mại điện tử của TH0001: danh mục, sản phẩm và banner nhiều vị trí.</Paragraph>
             </Card>
 
             <Card>

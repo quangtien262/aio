@@ -2,22 +2,14 @@
 
 namespace App\Http\Controllers\Admin\Api\Catalog;
 
-use App\Core\Access\AdminDataScope;
 use App\Models\CatalogProduct;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ProductIndexController
 {
-    public function __invoke(Request $request, AdminDataScope $adminDataScope): JsonResponse
+    public function __invoke(): JsonResponse
     {
-        $admin = $request->user('admin');
         $query = CatalogProduct::query()->with(['category', 'images'])->orderBy('name');
-
-        if ($admin) {
-            $adminDataScope->apply($query, $admin);
-        }
 
         $products = $query->get()
             ->map(fn (CatalogProduct $product): array => [
@@ -42,32 +34,18 @@ class ProductIndexController
                 'is_featured' => $product->is_featured,
                 'sort_order' => $product->sort_order,
                 'is_active' => $product->is_active,
-                'website_key' => $product->website_key,
-                'owner_key' => $product->owner_key,
-                'tenant_key' => $product->tenant_key,
             ])
             ->values()
             ->all();
-
-        /** @var EloquentBuilder<CatalogProduct> $inStockQuery */
-        $inStockQuery = CatalogProduct::query();
-        /** @var EloquentBuilder<CatalogProduct> $inventoryUnitsQuery */
-        $inventoryUnitsQuery = CatalogProduct::query();
-
-        if ($admin) {
-            $adminDataScope->apply($inStockQuery, $admin);
-            $adminDataScope->apply($inventoryUnitsQuery, $admin);
-        }
 
         return response()->json([
             'data' => [
                 'items' => $products,
                 'total' => count($products),
                 'metrics' => [
-                    'in_stock' => $inStockQuery->where('stock', '>', 0)->count(),
-                    'inventory_units' => (int) $inventoryUnitsQuery->sum('stock'),
+                    'in_stock' => CatalogProduct::query()->where('stock', '>', 0)->count(),
+                    'inventory_units' => (int) CatalogProduct::query()->sum('stock'),
                 ],
-                'scopes' => $admin?->scopeMatrix() ?? [],
             ],
         ]);
     }

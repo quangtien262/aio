@@ -27,9 +27,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'email_queued_at',
     'email_sent_at',
     'sms_sent_at',
-    'website_key',
-    'owner_key',
-    'tenant_key',
 ])]
 class Order extends Model
 {

@@ -20,10 +20,6 @@ use InvalidArgumentException;
 
 class ThemeDemoContentGenerator
 {
-    public const DEMO_OWNER_KEY = 'demo-content';
-    public const DEMO_TENANT_KEY = 'theme-seeder';
-    public const DEFAULT_WEBSITE_KEY = 'website-main';
-
     public function __construct(
         private readonly CmsMenuLocationRegistry $menuLocationRegistry,
     ) {
@@ -56,12 +52,11 @@ class ThemeDemoContentGenerator
             ],
         );
 
-        $websiteKey = (string) data_get($siteProfile->branding, 'website_key', self::DEFAULT_WEBSITE_KEY);
         $timestamp = Carbon::now();
 
-        return DB::transaction(function () use ($preset, $siteProfile, $themeKey, $websiteKey, $timestamp): array {
+        return DB::transaction(function () use ($preset, $siteProfile, $themeKey, $timestamp): array {
             $this->replaceMenuLocations();
-            $this->clearExistingDemoContent($websiteKey);
+            $this->clearExistingDemoContent();
 
             $newsCategory = CmsCategory::query()->create([
                 'name' => 'Tin '.$preset['short_label'],
@@ -69,16 +64,13 @@ class ThemeDemoContentGenerator
                 'description' => 'Chuyên mục cập nhật nội dung demo cho theme '.$themeKey,
                 'meta_title' => 'Tin tức '.$preset['label'],
                 'meta_description' => 'Tin tức và nội dung demo cho '.$preset['label'],
-                'website_key' => $websiteKey,
-                'owner_key' => self::DEMO_OWNER_KEY,
-                'tenant_key' => self::DEMO_TENANT_KEY,
             ]);
 
-            $this->seedPages($preset, $websiteKey, $timestamp);
-            $postCount = $this->seedPosts($preset, $newsCategory->id, $websiteKey, $timestamp);
-            $categoryMap = $this->seedCatalog($preset, $websiteKey, $timestamp);
-            $menuCount = $this->seedMenus($preset, $categoryMap, $websiteKey);
-            $bannerCount = $this->seedBanners($preset, $themeKey, $websiteKey, $timestamp);
+            $this->seedPages($preset, $timestamp);
+            $postCount = $this->seedPosts($preset, $newsCategory->id, $timestamp);
+            $categoryMap = $this->seedCatalog($preset, $timestamp);
+            $menuCount = $this->seedMenus($preset, $categoryMap);
+            $bannerCount = $this->seedBanners($preset, $themeKey, $timestamp);
 
             $siteProfile->forceFill([
                 'website_type' => 'ecommerce',
@@ -91,8 +83,8 @@ class ThemeDemoContentGenerator
                     'pages' => 2,
                     'posts' => $postCount,
                     'menus' => $menuCount,
-                    'catalog_categories' => CatalogCategory::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->count(),
-                    'catalog_products' => CatalogProduct::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->count(),
+                    'catalog_categories' => CatalogCategory::query()->count(),
+                    'catalog_products' => CatalogProduct::query()->count(),
                     'banners' => $bannerCount,
                 ],
             ];
@@ -113,18 +105,18 @@ class ThemeDemoContentGenerator
         $this->menuLocationRegistry->save($locations);
     }
 
-    private function clearExistingDemoContent(string $websiteKey): void
+    private function clearExistingDemoContent(): void
     {
-        SiteBanner::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->where('tenant_key', self::DEMO_TENANT_KEY)->delete();
-        CmsMenu::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->where('tenant_key', self::DEMO_TENANT_KEY)->delete();
-        CmsPost::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->where('tenant_key', self::DEMO_TENANT_KEY)->delete();
-        CmsPage::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->where('tenant_key', self::DEMO_TENANT_KEY)->delete();
-        CmsCategory::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->where('tenant_key', self::DEMO_TENANT_KEY)->delete();
-        CatalogProduct::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->where('tenant_key', self::DEMO_TENANT_KEY)->delete();
-        CatalogCategory::query()->where('website_key', $websiteKey)->where('owner_key', self::DEMO_OWNER_KEY)->where('tenant_key', self::DEMO_TENANT_KEY)->delete();
+        SiteBanner::query()->delete();
+        CmsMenu::query()->delete();
+        CmsPost::query()->delete();
+        CmsPage::query()->delete();
+        CmsCategory::query()->delete();
+        CatalogProduct::query()->delete();
+        CatalogCategory::query()->delete();
     }
 
-    private function seedPages(array $preset, string $websiteKey, Carbon $timestamp): void
+    private function seedPages(array $preset, Carbon $timestamp): void
     {
         $pages = [
             [
@@ -152,14 +144,11 @@ class ThemeDemoContentGenerator
                 'meta_description' => $page['excerpt'],
                 'template' => 'default',
                 'publish_at' => $timestamp->copy()->subDays(10 - $index),
-                'website_key' => $websiteKey,
-                'owner_key' => self::DEMO_OWNER_KEY,
-                'tenant_key' => self::DEMO_TENANT_KEY,
             ]);
         }
     }
 
-    private function seedPosts(array $preset, int $categoryId, string $websiteKey, Carbon $timestamp): int
+    private function seedPosts(array $preset, int $categoryId, Carbon $timestamp): int
     {
         $titles = [
             'Top deal mới tuần này cho '.$preset['short_label'],
@@ -179,9 +168,6 @@ class ThemeDemoContentGenerator
                 'meta_description' => 'Tin tức demo cho '.$preset['label'],
                 'category_id' => $categoryId,
                 'publish_at' => $timestamp->copy()->subDays($index + 1),
-                'website_key' => $websiteKey,
-                'owner_key' => self::DEMO_OWNER_KEY,
-                'tenant_key' => self::DEMO_TENANT_KEY,
             ]);
         }
 
@@ -191,7 +177,7 @@ class ThemeDemoContentGenerator
     /**
      * @return array<int, array{parent: CatalogCategory, children: array<int, CatalogCategory>}>
      */
-    private function seedCatalog(array $preset, string $websiteKey, Carbon $timestamp): array
+    private function seedCatalog(array $preset, Carbon $timestamp): array
     {
         $categoryMap = [];
         $featuredCounter = 0;
@@ -204,9 +190,6 @@ class ThemeDemoContentGenerator
                 'image_url' => $this->imageUrl($preset['key'].'-cat-'.$parentIndex, 320, 320),
                 'sort_order' => $parentIndex,
                 'is_active' => true,
-                'website_key' => $websiteKey,
-                'owner_key' => self::DEMO_OWNER_KEY,
-                'tenant_key' => self::DEMO_TENANT_KEY,
             ]);
 
             $children = [];
@@ -219,9 +202,6 @@ class ThemeDemoContentGenerator
                     'image_url' => $this->imageUrl($preset['key'].'-child-'.$parentIndex.'-'.$childIndex, 320, 320),
                     'sort_order' => $childIndex,
                     'is_active' => true,
-                    'website_key' => $websiteKey,
-                    'owner_key' => self::DEMO_OWNER_KEY,
-                    'tenant_key' => self::DEMO_TENANT_KEY,
                 ]);
 
                 $children[] = $child;
@@ -251,9 +231,6 @@ class ThemeDemoContentGenerator
                         'is_featured' => $isFeatured,
                         'sort_order' => $productIndex,
                         'is_active' => true,
-                        'website_key' => $websiteKey,
-                        'owner_key' => self::DEMO_OWNER_KEY,
-                        'tenant_key' => self::DEMO_TENANT_KEY,
                         'created_at' => $createdAt,
                         'updated_at' => $createdAt,
                     ]);
@@ -280,7 +257,7 @@ class ThemeDemoContentGenerator
         return $categoryMap;
     }
 
-    private function seedMenus(array $preset, array $categoryMap, string $websiteKey): int
+    private function seedMenus(array $preset, array $categoryMap): int
     {
         $productItems = collect($categoryMap)->map(function (array $entry, int $index): array {
             /** @var CatalogCategory $parent */
@@ -310,24 +287,18 @@ class ThemeDemoContentGenerator
                 ['label' => 'Giới thiệu', 'url' => '/gioi-thieu', 'target' => '_self'],
                 ['label' => 'Liên hệ', 'url' => '/lien-he', 'target' => '_self'],
             ],
-            'website_key' => $websiteKey,
-            'owner_key' => self::DEMO_OWNER_KEY,
-            'tenant_key' => self::DEMO_TENANT_KEY,
         ]);
 
         CmsMenu::query()->create([
             'name' => 'Product Navigation',
             'location' => 'product-navigation',
             'items' => $productItems,
-            'website_key' => $websiteKey,
-            'owner_key' => self::DEMO_OWNER_KEY,
-            'tenant_key' => self::DEMO_TENANT_KEY,
         ]);
 
         return 2;
     }
 
-    private function seedBanners(array $preset, string $themeKey, string $websiteKey, Carbon $timestamp): int
+    private function seedBanners(array $preset, string $themeKey, Carbon $timestamp): int
     {
         $records = [
             [
@@ -372,9 +343,6 @@ class ThemeDemoContentGenerator
                 'metadata' => $record['metadata'],
                 'sort_order' => $record['sort_order'],
                 'is_active' => true,
-                'website_key' => $websiteKey,
-                'owner_key' => self::DEMO_OWNER_KEY,
-                'tenant_key' => self::DEMO_TENANT_KEY,
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp,
             ]);

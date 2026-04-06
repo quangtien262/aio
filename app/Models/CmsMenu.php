@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'location', 'items', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['name', 'location', 'items'])]
 class CmsMenu extends Model
 {
     use HasFactory;

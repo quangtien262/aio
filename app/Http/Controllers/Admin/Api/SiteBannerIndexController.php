@@ -2,20 +2,14 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
-use App\Core\Access\AdminDataScope;
 use App\Models\SiteBanner;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class SiteBannerIndexController
 {
-    public function __invoke(Request $request, AdminDataScope $adminDataScope): JsonResponse
+    public function __invoke(): JsonResponse
     {
         $query = SiteBanner::query()->orderBy('placement')->orderBy('sort_order')->orderByDesc('updated_at');
-
-        if ($admin = $request->user('admin')) {
-            $adminDataScope->apply($query, $admin);
-        }
 
         $items = $query->get()->map(fn (SiteBanner $banner): array => [
             'id' => $banner->id,
@@ -31,9 +25,6 @@ class SiteBannerIndexController
             'button_label' => data_get($banner->metadata, 'button_label'),
             'sort_order' => $banner->sort_order,
             'is_active' => $banner->is_active,
-            'website_key' => $banner->website_key,
-            'owner_key' => $banner->owner_key,
-            'tenant_key' => $banner->tenant_key,
         ])->values()->all();
 
         return response()->json([

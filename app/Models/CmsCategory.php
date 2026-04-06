@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'description', 'meta_title', 'meta_description', 'parent_id', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['name', 'slug', 'description', 'meta_title', 'meta_description', 'parent_id'])]
 class CmsCategory extends Model
 {
     use HasFactory;

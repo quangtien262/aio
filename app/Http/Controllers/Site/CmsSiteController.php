@@ -594,8 +594,6 @@ class CmsSiteController
             'payment_method' => ['required', 'in:cod,bank_transfer,pickup'],
         ]);
 
-        $siteProfile = SiteProfile::query()->first();
-        $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $cartSummary = $this->storefrontCart->summary();
         /** @var Customer|null $customer */
         $customer = $request->user('customer');
@@ -614,9 +612,6 @@ class CmsSiteController
             'subtotal' => $cartSummary['subtotal'],
             'item_count' => $cartSummary['count'],
             'placed_at' => now(),
-            'website_key' => $websiteKey,
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ]);
 
         $order->items()->createMany(collect($cartSummary['items'])->map(function (array $item): array {
@@ -917,10 +912,7 @@ class CmsSiteController
 
     private function applyWebsiteScope($query, string $websiteKey): void
     {
-        $query->where(function ($builder) use ($websiteKey): void {
-            $builder->where('website_key', $websiteKey)
-                ->orWhereNull('website_key');
-        });
+        unset($query, $websiteKey);
     }
 
     private function resolveTopMenuItems(array $menus): array

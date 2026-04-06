@@ -31,9 +31,6 @@ export const emptyCatalogProductForm = {
     is_featured: false,
     sort_order: 0,
     is_active: true,
-    website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 export default function CatalogProductFormModal({ open, canManage, editingProduct, categoryOptions = [], onCancel, onSubmit }) {
@@ -63,9 +60,6 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                 .filter(Boolean),
             sold_count: values.sold_count ?? 0,
             deal_end_at: values.deal_end_at || null,
-            website_key: values.website_key || null,
-            owner_key: values.owner_key || null,
-            tenant_key: values.tenant_key || null,
             is_featured: Boolean(values.is_featured),
             is_active: Boolean(values.is_active),
         });
@@ -191,25 +185,6 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                 <Form.Item name="usage_location" label="Địa điểm sử dụng" extra="Ví dụ: tên địa điểm, địa chỉ, hotline.">
                     <TextArea rows={4} placeholder="La Brasserie - Hotel Nikko HaiPhong..." />
                 </Form.Item>
-
-                <Row gutter={16}>
-                    <Col span={8}>
-                        <Form.Item name="website_key" label="Website">
-                            <Input placeholder="website-main" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="owner_key" label="Owner">
-                            <Input placeholder="owner-system" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="tenant_key" label="Tenant">
-                            <Input placeholder="tenant-a" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
                 <Row gutter={16}>
                     <Col span={8}>
                         <Form.Item name="is_featured" valuePropName="checked" label=" " colon={false}>

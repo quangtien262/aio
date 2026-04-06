@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Admin\Api\Cms;
 
-use App\Core\Access\AdminDataScope;
-use App\Http\Controllers\Admin\Api\Cms\Concerns\InteractsWithScopedCmsRecords;
 use App\Models\CmsPost;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,33 +9,29 @@ use Illuminate\Validation\Rule;
 
 class PostManagementController
 {
-    use InteractsWithScopedCmsRecords;
-
-    public function store(Request $request, AdminDataScope $adminDataScope): JsonResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $this->validatePayload($request);
-        $this->ensureScopedPayloadAllowed($request, $validated);
 
         $post = CmsPost::query()->create($validated);
 
         return response()->json(['message' => 'Đã tạo bài viết CMS.', 'data' => $this->serialize($post)], 201);
     }
 
-    public function update(Request $request, AdminDataScope $adminDataScope, int $post): JsonResponse
+    public function update(Request $request, int $post): JsonResponse
     {
         /** @var CmsPost $record */
-        $record = $this->resolveScopedRecord($request, $adminDataScope, new CmsPost(), $post);
+        $record = CmsPost::query()->findOrFail($post);
         $validated = $this->validatePayload($request, $record);
-        $this->ensureScopedPayloadAllowed($request, $validated);
         $record->update($validated);
 
         return response()->json(['message' => 'Đã cập nhật bài viết CMS.', 'data' => $this->serialize($record->fresh())]);
     }
 
-    public function destroy(Request $request, AdminDataScope $adminDataScope, int $post): JsonResponse
+    public function destroy(Request $request, int $post): JsonResponse
     {
         /** @var CmsPost $record */
-        $record = $this->resolveScopedRecord($request, $adminDataScope, new CmsPost(), $post);
+        $record = CmsPost::query()->findOrFail($post);
         $record->delete();
 
         return response()->json(['message' => 'Đã xóa bài viết CMS.']);
@@ -56,9 +50,6 @@ class PostManagementController
             'featured_media_id' => ['nullable', 'integer', Rule::exists('cms_media', 'id')],
             'category_id' => ['nullable', 'integer', Rule::exists('cms_categories', 'id')],
             'publish_at' => ['nullable', 'date'],
-            'website_key' => ['required', 'string', 'max:255'],
-            'owner_key' => ['nullable', 'string', 'max:255'],
-            'tenant_key' => ['nullable', 'string', 'max:255'],
         ]);
     }
 
@@ -76,9 +67,6 @@ class PostManagementController
             'publish_at' => $post->publish_at?->toAtomString(),
             'featured_media_id' => $post->featured_media_id,
             'category_id' => $post->category_id,
-            'website_key' => $post->website_key,
-            'owner_key' => $post->owner_key,
-            'tenant_key' => $post->tenant_key,
         ];
     }
 }

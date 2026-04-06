@@ -2,33 +2,28 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
-use App\Core\Access\AdminDataScope;
 use App\Models\SiteBanner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Validation\ValidationException;
 
 class SiteBannerManagementController
 {
-    public function store(Request $request, AdminDataScope $adminDataScope): JsonResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $this->validatePayload($request);
-        $this->ensureScopedPayloadAllowed($request, $validated);
 
         $record = SiteBanner::query()->create($this->normalizePayload($validated));
 
         return response()->json([
             'message' => 'Đã tạo banner.',
-            'data' => $this->serializeBanner($this->resolveScopedBanner($request, $adminDataScope, $record->id)),
+            'data' => $this->serializeBanner($record),
         ], 201);
     }
 
-    public function update(Request $request, AdminDataScope $adminDataScope, int $banner): JsonResponse
+    public function update(Request $request, int $banner): JsonResponse
     {
-        $record = $this->resolveScopedBanner($request, $adminDataScope, $banner);
+        $record = SiteBanner::query()->findOrFail($banner);
         $validated = $this->validatePayload($request);
-        $this->ensureScopedPayloadAllowed($request, $validated);
 
         $record->update($this->normalizePayload($validated));
 
@@ -38,25 +33,14 @@ class SiteBannerManagementController
         ]);
     }
 
-    public function destroy(Request $request, AdminDataScope $adminDataScope, int $banner): JsonResponse
+    public function destroy(int $banner): JsonResponse
     {
-        $record = $this->resolveScopedBanner($request, $adminDataScope, $banner);
+        $record = SiteBanner::query()->findOrFail($banner);
         $record->delete();
 
         return response()->json([
             'message' => 'Đã xóa banner.',
         ]);
-    }
-
-    private function resolveScopedBanner(Request $request, AdminDataScope $adminDataScope, int $bannerId): SiteBanner
-    {
-        $query = SiteBanner::query();
-
-        if ($admin = $request->user('admin')) {
-            $adminDataScope->apply($query, $admin);
-        }
-
-        return $query->findOrFail($bannerId);
     }
 
     private function validatePayload(Request $request): array
@@ -74,9 +58,6 @@ class SiteBannerManagementController
             'button_label' => ['nullable', 'string', 'max:120'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
-            'website_key' => ['nullable', 'string', 'max:255'],
-            'owner_key' => ['nullable', 'string', 'max:255'],
-            'tenant_key' => ['nullable', 'string', 'max:255'],
         ]);
     }
 
@@ -97,37 +78,7 @@ class SiteBannerManagementController
             ], fn ($value): bool => $value !== null && $value !== ''),
             'sort_order' => (int) ($validated['sort_order'] ?? 0),
             'is_active' => (bool) ($validated['is_active'] ?? true),
-            'website_key' => $validated['website_key'] ?? null,
-            'owner_key' => $validated['owner_key'] ?? null,
-            'tenant_key' => $validated['tenant_key'] ?? null,
         ];
-    }
-
-    private function ensureScopedPayloadAllowed(Request $request, array $validated): void
-    {
-        $admin = $request->user('admin');
-
-        if (! $admin) {
-            return;
-        }
-
-        $scopeMatrix = $admin->scopeMatrix();
-
-        foreach (['website' => 'website_key', 'owner' => 'owner_key', 'tenant' => 'tenant_key'] as $scopeType => $field) {
-            $allowedValues = array_values(array_filter($scopeMatrix[$scopeType] ?? []));
-
-            if ($allowedValues === []) {
-                continue;
-            }
-
-            $value = Arr::get($validated, $field);
-
-            if (! is_string($value) || $value === '' || ! in_array($value, $allowedValues, true)) {
-                throw ValidationException::withMessages([
-                    $field => ['Giá trị scope nằm ngoài phạm vi admin được cấp.'],
-                ]);
-            }
-        }
     }
 
     private function serializeBanner(SiteBanner $banner): array
@@ -146,9 +97,6 @@ class SiteBannerManagementController
             'button_label' => data_get($banner->metadata, 'button_label'),
             'sort_order' => $banner->sort_order,
             'is_active' => $banner->is_active,
-            'website_key' => $banner->website_key,
-            'owner_key' => $banner->owner_key,
-            'tenant_key' => $banner->tenant_key,
         ];
     }
 }

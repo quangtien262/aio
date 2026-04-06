@@ -35,9 +35,6 @@ export default function CmsCategoryFormModal({ open, canManage, editingCategory,
             meta_title: values.meta_title || null,
             meta_description: values.meta_description || null,
             parent_id: values.parent_id || null,
-            website_key: values.website_key || null,
-            owner_key: values.owner_key || null,
-            tenant_key: values.tenant_key || null,
         });
 
         form.resetFields();
@@ -92,24 +89,6 @@ export default function CmsCategoryFormModal({ open, canManage, editingCategory,
                 <Form.Item name="meta_description" label="SEO Description">
                     <Input.TextArea rows={3} placeholder="Meta description category" />
                 </Form.Item>
-
-                <Row gutter={16}>
-                    <Col span={8}>
-                        <Form.Item name="website_key" label="Website">
-                            <Input placeholder="website-main" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="owner_key" label="Owner">
-                            <Input placeholder="owner-system" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="tenant_key" label="Tenant">
-                            <Input placeholder="tenant-a" />
-                        </Form.Item>
-                    </Col>
-                </Row>
             </Form>
         </Modal>
     );

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['parent_id', 'name', 'slug', 'description', 'image_url', 'sort_order', 'is_active', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['parent_id', 'name', 'slug', 'description', 'image_url', 'sort_order', 'is_active'])]
 class CatalogCategory extends Model
 {
     use HasFactory;
