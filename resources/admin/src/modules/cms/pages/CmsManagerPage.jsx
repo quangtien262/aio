@@ -9,6 +9,7 @@ import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
+import Drawer from 'antd/es/drawer';
 import Dropdown from 'antd/es/dropdown';
 import Empty from 'antd/es/empty';
 import Input from 'antd/es/input';
@@ -56,6 +57,16 @@ const sectionConfigMap = {
         permissionCreate: 'cms.product.create',
         permissionUpdate: 'cms.product.update',
         permissionDelete: 'cms.product.delete',
+        permissionPublish: null,
+    },
+    'cms-orders': {
+        title: 'Orders',
+        description: 'Theo dõi đơn hàng từ storefront, khách hàng và line-item ngay trong CMS.',
+        endpoint: '/admin/api/cms/orders',
+        permissionView: 'cms.order.view',
+        permissionCreate: null,
+        permissionUpdate: null,
+        permissionDelete: null,
         permissionPublish: null,
     },
     'cms-categories': {
@@ -215,14 +226,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const sectionConfig = sectionConfigMap[sectionKey] ?? sectionConfigMap['cms-pages'];
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [keyword, setKeyword] = useState('');
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
     const [mediaFile, setMediaFile] = useState(null);
 
     const sectionPermissions = useMemo(() => ({
         canView: (currentPermissions ?? []).includes(sectionConfig.permissionView),
-        canCreate: (currentPermissions ?? []).includes(sectionConfig.permissionCreate),
-        canUpdate: (currentPermissions ?? []).includes(sectionConfig.permissionUpdate),
-        canDelete: (currentPermissions ?? []).includes(sectionConfig.permissionDelete),
+        canCreate: sectionConfig.permissionCreate ? (currentPermissions ?? []).includes(sectionConfig.permissionCreate) : false,
+        canUpdate: sectionConfig.permissionUpdate ? (currentPermissions ?? []).includes(sectionConfig.permissionUpdate) : false,
+        canDelete: sectionConfig.permissionDelete ? (currentPermissions ?? []).includes(sectionConfig.permissionDelete) : false,
         canPublish: sectionConfig.permissionPublish ? (currentPermissions ?? []).includes(sectionConfig.permissionPublish) : false,
     }), [currentPermissions, sectionConfig]);
 
@@ -271,6 +284,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ];
         }
 
+        if (sectionKey === 'cms-orders') {
+            return [
+                { label: 'Tổng đơn', value: data.stats?.total_orders ?? 0 },
+                { label: 'Doanh thu tạm tính', value: `${Number(data.stats?.gross_revenue ?? 0).toLocaleString('vi-VN')}đ` },
+                { label: 'Đơn mới đặt', value: data.stats?.status_counts?.placed ?? 0 },
+            ];
+        }
+
         if (sectionKey === 'cms-categories' || sectionKey === 'cms-menus') {
             return [{ label: 'Tổng bản ghi', value: data.total ?? 0 }];
         }
@@ -281,6 +302,28 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             { label: 'Bản nháp', value: data.metrics?.draft ?? 0 },
         ];
     }, [data, sectionKey]);
+
+    const filteredItems = useMemo(() => {
+        if (sectionKey !== 'cms-orders') {
+            return data?.items ?? [];
+        }
+
+        const normalizedKeyword = keyword.trim().toLowerCase();
+
+        return (data?.orders ?? []).filter((order) => {
+            if (normalizedKeyword === '') {
+                return true;
+            }
+
+            return [
+                order.order_code,
+                order.customer_name,
+                order.customer_phone,
+                order.customer_email,
+                order.delivery_address,
+            ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
+        });
+    }, [data?.items, data?.orders, keyword, sectionKey]);
 
     const openCreateModal = () => {
         if (sectionKey === 'cms-posts') {
@@ -361,6 +404,26 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
     const renderActions = (record) => {
         const actionItems = [];
+
+        if (sectionKey === 'cms-orders') {
+            actionItems.push({
+                key: 'detail',
+                label: 'Xem chi tiết',
+                icon: <EyeOutlined />,
+            });
+
+            const handleOrderActionClick = ({ key }) => {
+                if (key === 'detail') {
+                    setSelectedOrder(record);
+                }
+            };
+
+            return (
+                <Dropdown menu={{ items: actionItems, onClick: handleOrderActionClick }} trigger={['click']}>
+                    <Button size="small" icon={<MoreOutlined />}>Tác vụ</Button>
+                </Dropdown>
+            );
+        }
 
         if (record.public_url) {
             actionItems.push({
@@ -466,6 +529,28 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 { title: 'Tồn kho', dataIndex: 'stock', key: 'stock' },
                 { title: 'Đã mua', dataIndex: 'sold_count', key: 'sold_count' },
                 { title: 'Nổi bật', dataIndex: 'is_featured', key: 'is_featured', render: (value) => value ? <Tag color="gold">featured</Tag> : <Tag>normal</Tag> },
+                { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
+            ];
+        }
+
+        if (sectionKey === 'cms-orders') {
+            return [
+                { title: 'Mã đơn', dataIndex: 'order_code', key: 'order_code', render: (value) => <Text strong>{value}</Text> },
+                {
+                    title: 'Khách hàng',
+                    key: 'customer',
+                    render: (_, record) => (
+                        <Space direction="vertical" size={0}>
+                            <Text strong>{record.customer_name}</Text>
+                            <Text type="secondary">{record.customer_phone}</Text>
+                            <Text type="secondary">{record.customer_email || 'Chưa có email'}</Text>
+                        </Space>
+                    ),
+                },
+                { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (value) => renderOrderStatusTag(value) },
+                { title: 'Thanh toán', dataIndex: 'payment_label', key: 'payment_label' },
+                { title: 'Tổng tiền', dataIndex: 'subtotal', key: 'subtotal', render: (value) => `${Number(value ?? 0).toLocaleString('vi-VN')}đ` },
+                { title: 'Thời gian', dataIndex: 'placed_at', key: 'placed_at', render: formatPublishAt },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
         }
@@ -647,15 +732,99 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 </Card>
             ) : null}
 
-            <Card className="admin-table-card" title={`${sectionConfig.title} (${data?.total ?? 0})`} extra={sectionKey !== 'cms-media' ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{`Tạo ${sectionConfig.title}`}</Button> : null}>
-                {(data?.items ?? []).length ? (
-                    <Table rowKey="id" columns={columns} dataSource={data?.items ?? []} pagination={{ pageSize: 10, hideOnSinglePage: true }} scroll={{ x: 980 }} />
+            <Card
+                className="admin-table-card"
+                title={`${sectionConfig.title} (${sectionKey === 'cms-orders' ? (data?.stats?.total_orders ?? 0) : (data?.total ?? 0)})`}
+                extra={sectionKey === 'cms-orders'
+                    ? <Input allowClear value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Tìm theo mã đơn, khách hàng, điện thoại..." style={{ width: 320 }} />
+                    : sectionKey !== 'cms-media'
+                        ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{`Tạo ${sectionConfig.title}`}</Button>
+                        : null}
+            >
+                {filteredItems.length ? (
+                    <Table
+                        rowKey="id"
+                        columns={columns}
+                        dataSource={filteredItems}
+                        pagination={{ pageSize: 10, hideOnSinglePage: true }}
+                        scroll={{ x: 980 }}
+                        onRow={sectionKey === 'cms-orders' ? (record) => ({ onClick: () => setSelectedOrder(record), style: { cursor: 'pointer' } }) : undefined}
+                    />
                 ) : (
                     <Empty description={`Chưa có dữ liệu cho ${sectionConfig.title}.`} />
                 )}
             </Card>
 
+            <Drawer
+                title={selectedOrder ? `Chi tiết ${selectedOrder.order_code}` : 'Chi tiết đơn hàng'}
+                open={sectionKey === 'cms-orders' && Boolean(selectedOrder)}
+                onClose={() => setSelectedOrder(null)}
+                width={520}
+                destroyOnHidden
+            >
+                {selectedOrder ? (
+                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                        <Card size="small">
+                            <div className="detail-grid detail-grid-2">
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Khách hàng</Text>
+                                    <Text strong>{selectedOrder.customer_name}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Trạng thái</Text>
+                                    {renderOrderStatusTag(selectedOrder.status)}
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Điện thoại</Text>
+                                    <Text strong>{selectedOrder.customer_phone}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Email</Text>
+                                    <Text strong>{selectedOrder.customer_email || 'Chưa có email'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Địa chỉ</Text>
+                                    <Text strong>{selectedOrder.delivery_address}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Mail xác nhận</Text>
+                                    <Text strong>{selectedOrder.email_queued_at ? 'Đã xếp hàng gửi' : 'Chưa xếp hàng'}</Text>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card size="small" title="Sản phẩm trong đơn">
+                            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                {(selectedOrder.items ?? []).map((item) => (
+                                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingBottom: 12, borderBottom: '1px solid #f0f0f0' }}>
+                                        <div>
+                                            <Text strong>{item.product_name}</Text>
+                                            <div><Text type="secondary">Số lượng: {item.quantity}</Text></div>
+                                        </div>
+                                        <Text strong>{`${Number(item.line_total ?? 0).toLocaleString('vi-VN')}đ`}</Text>
+                                    </div>
+                                ))}
+                            </Space>
+                        </Card>
+                    </Space>
+                ) : null}
+            </Drawer>
+
             {renderModal()}
         </Space>
     );
+}
+
+function renderOrderStatusTag(status) {
+    const statusMap = {
+        placed: { color: 'blue', label: 'Mới đặt' },
+        pending: { color: 'gold', label: 'Chờ xử lý' },
+        processing: { color: 'processing', label: 'Đang xử lý' },
+        completed: { color: 'green', label: 'Hoàn tất' },
+        cancelled: { color: 'red', label: 'Đã hủy' },
+    };
+
+    const statusMeta = statusMap[status] ?? { color: 'default', label: status || 'Không rõ' };
+
+    return <Tag color={statusMeta.color}>{statusMeta.label}</Tag>;
 }

@@ -1,3 +1,4 @@
+import Button from 'antd/es/button';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
@@ -11,14 +12,23 @@ const statusColorMap = {
     active: 'green',
 };
 
-export default function ThemeListTable({ themes, selectedThemeKey, onSelectTheme }) {
+export default function ThemeListTable({ themes, selectedThemeKey, onSelectTheme, onOpenPreview }) {
     const columns = [
         {
             title: 'Theme',
             key: 'theme',
             render: (_, theme) => (
                 <Space direction="vertical" size={0}>
-                    <Text strong>{theme.name}</Text>
+                    <Button
+                        type="link"
+                        style={{ padding: 0, justifyContent: 'flex-start', height: 'auto', fontWeight: 600 }}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onOpenPreview?.(theme.key);
+                        }}
+                    >
+                        {theme.name}
+                    </Button>
                     <Text type="secondary">{theme.key}</Text>
                 </Space>
             ),

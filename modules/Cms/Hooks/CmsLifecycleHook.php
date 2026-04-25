@@ -130,7 +130,7 @@ class CmsLifecycleHook implements ModuleLifecycleHook
             ['key' => 'cms.publisher'],
             [
                 'name' => 'CMS Publisher',
-                'description' => 'Quản trị nội dung, xuất bản page/post và vận hành media/menu của CMS.',
+                'description' => 'Quản trị nội dung, sản phẩm, đơn hàng và vận hành media/menu của CMS.',
             ],
         );
 
@@ -147,6 +147,7 @@ class CmsLifecycleHook implements ModuleLifecycleHook
                 'cms.product.create',
                 'cms.product.update',
                 'cms.product.delete',
+                'cms.order.view',
                 'cms.category.manage',
                 'cms.menu.manage',
                 'cms.media.manage',

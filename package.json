@@ -4,7 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite --force"
     },
     "dependencies": {
         "@ckeditor/ckeditor5-react": "^11.1.0",

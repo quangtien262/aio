@@ -19,6 +19,7 @@
     "cms.product.create",
     "cms.product.update",
     "cms.product.delete",
+    "cms.order.view",
     "cms.category.manage",
     "cms.menu.manage",
     "cms.media.manage"
@@ -56,6 +57,16 @@
       "icon": "shopping",
       "route": "/admin/cms/products",
       "permission": "cms.product.view"
+    },
+    {
+      "key": "cms-orders",
+      "label": "Orders",
+      "description": "Theo dõi đơn đặt hàng từ storefront ngay trong workspace CMS.",
+      "badge": "Orders",
+      "color": "blue",
+      "icon": "profile",
+      "route": "/admin/cms/orders",
+      "permission": "cms.order.view"
     },
     {
       "key": "cms-categories",

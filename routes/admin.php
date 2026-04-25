@@ -195,6 +195,9 @@ Route::prefix('admin')
                 Route::delete('/cms/products/{product}', [ProductManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.product.delete')
                     ->name('cms.products.destroy');
+                Route::get('/cms/orders', OrderIndexController::class)
+                    ->middleware('admin.permission:cms.order.view')
+                    ->name('cms.orders.index');
                 Route::get('/catalog/products', ProductIndexController::class)
                     ->middleware('admin.permission:catalog.view')
                     ->name('catalog.products.index');

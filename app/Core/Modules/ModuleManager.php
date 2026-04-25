@@ -8,6 +8,7 @@ use App\Core\Modules\Support\ModuleLifecycleRunner;
 use App\Models\ModuleInstallation;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Support\PermissionLabel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -185,7 +186,7 @@ class ModuleManager
             Permission::query()->updateOrCreate(
                 ['key' => $permissionKey],
                 [
-                    'name' => str($permissionKey)->replace('.', ' ')->title()->toString(),
+                    'name' => PermissionLabel::make($permissionKey),
                     'module_key' => $module['key'],
                 ],
             );

@@ -4,6 +4,7 @@ import Col from 'antd/es/col';
 import Row from 'antd/es/row';
 import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
+import { formatPermissionLabel } from '../utils/permissionLabels';
 
 const { Paragraph, Text, Title } = Typography;
 const RoleTableCard = lazy(() => import('../components/RoleTableCard'));
@@ -24,18 +25,23 @@ export default function AccessControlPage({ accessControl, onCreateRole, onUpdat
     const permissions = accessControl?.permissions ?? [];
     const roles = accessControl?.roles ?? [];
 
-    const permissionOptions = useMemo(() => permissions.map((permission) => ({
-        label: `${permission.name} (${permission.key})`,
-        value: permission.id,
+    const normalizedPermissions = useMemo(() => permissions.map((permission) => ({
+        ...permission,
+        display_name: formatPermissionLabel(permission.key),
     })), [permissions]);
 
-    const groupedPermissions = useMemo(() => permissions.reduce((carry, permission) => {
+    const permissionOptions = useMemo(() => normalizedPermissions.map((permission) => ({
+        label: `${permission.display_name} (${permission.key})`,
+        value: permission.id,
+    })), [normalizedPermissions]);
+
+    const groupedPermissions = useMemo(() => normalizedPermissions.reduce((carry, permission) => {
         const groupKey = permission.module_key ?? 'platform';
         return {
             ...carry,
             [groupKey]: [...(carry[groupKey] ?? []), permission],
         };
-    }, {}), [permissions]);
+    }, {}), [normalizedPermissions]);
 
     const openCreateRole = () => {
         setEditingRole(emptyRoleForm);

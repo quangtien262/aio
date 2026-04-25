@@ -1,8 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
-import Col from 'antd/es/col';
-import Row from 'antd/es/row';
+import Drawer from 'antd/es/drawer';
 import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
 
@@ -14,12 +13,14 @@ const ThemeDemoDataModal = lazy(() => import('../components/ThemeDemoDataModal')
 
 export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoData, canActivate, canGenerateDemoData }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
+    const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
     const [demoThemeKey, setDemoThemeKey] = useState(null);
 
     useEffect(() => {
         if (!themes?.length) {
             setSelectedThemeKey(null);
+            setPreviewThemeKey(null);
             return;
         }
 
@@ -29,11 +30,21 @@ export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoDat
         if (!themes.some((theme) => theme.key === selectedThemeKey)) {
             setSelectedThemeKey(fallbackThemeKey);
         }
-    }, [selectedThemeKey, themes]);
+
+        if (previewThemeKey && !themes.some((theme) => theme.key === previewThemeKey)) {
+            setPreviewThemeKey(null);
+        }
+    }, [previewThemeKey, selectedThemeKey, themes]);
 
     const selectedTheme = useMemo(() => themes.find((theme) => theme.key === selectedThemeKey) ?? null, [selectedThemeKey, themes]);
+    const previewTheme = useMemo(() => themes.find((theme) => theme.key === previewThemeKey) ?? null, [previewThemeKey, themes]);
     const activateTheme = useMemo(() => themes.find((theme) => theme.key === activateThemeKey) ?? null, [activateThemeKey, themes]);
     const demoTheme = useMemo(() => themes.find((theme) => theme.key === demoThemeKey) ?? null, [demoThemeKey, themes]);
+
+    const handleOpenPreview = (themeKey) => {
+        setSelectedThemeKey(themeKey);
+        setPreviewThemeKey(themeKey);
+    };
 
     return (
         <Card
@@ -47,27 +58,29 @@ export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoDat
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label">Theme Activation</Text>
                 <Paragraph style={{ marginBottom: 0 }}>
-                    Tách riêng danh sách theme, panel preview/chi tiết và hộp thoại kích hoạt để admin shell chỉ tải phần cần dùng. Data test phục vụ review nhanh giao diện TH0001 với dữ liệu thật.
+                    Danh sách theme và preview được tách riêng để chỉ mở chi tiết khi cần. Bấm vào tiêu đề theme để xem preview trong drawer và thao tác kích hoạt nhanh.
                 </Paragraph>
             </Space>
 
-            <Row gutter={[16, 16]}>
-                <Col xs={24} xl={15}>
-                    <Suspense fallback={<Card loading title="Theme List" />}>
-                        <ThemeListTable themes={themes} selectedThemeKey={selectedThemeKey} onSelectTheme={setSelectedThemeKey} />
-                    </Suspense>
-                </Col>
+            <Suspense fallback={<Card loading title="Theme List" />}>
+                <ThemeListTable themes={themes} selectedThemeKey={selectedThemeKey} onSelectTheme={setSelectedThemeKey} onOpenPreview={handleOpenPreview} />
+            </Suspense>
 
-                <Col xs={24} xl={9}>
-                    <Suspense fallback={<Card loading title="Theme Preview" />}>
-                        <ThemePreviewDetailsPanel
-                            theme={selectedTheme}
-                            canActivate={canActivate}
-                            onOpenActivateDialog={(theme) => setActivateThemeKey(theme.key)}
-                        />
-                    </Suspense>
-                </Col>
-            </Row>
+            <Drawer
+                title={previewTheme ? `Theme Preview: ${previewTheme.name}` : 'Theme Preview'}
+                open={Boolean(previewTheme)}
+                width={520}
+                onClose={() => setPreviewThemeKey(null)}
+                destroyOnHidden
+            >
+                <Suspense fallback={<Card loading title="Theme Preview" />}>
+                    <ThemePreviewDetailsPanel
+                        theme={previewTheme}
+                        canActivate={canActivate}
+                        onOpenActivateDialog={(theme) => setActivateThemeKey(theme.key)}
+                    />
+                </Suspense>
+            </Drawer>
 
             {activateThemeKey ? (
                 <Suspense fallback={null}>

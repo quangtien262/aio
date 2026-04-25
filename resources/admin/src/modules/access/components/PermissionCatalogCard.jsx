@@ -12,13 +12,14 @@ export default function PermissionCatalogCard({ groupedPermissions }) {
                 {Object.entries(groupedPermissions).map(([groupKey, items]) => (
                     <div key={groupKey}>
                         <Text strong>{groupKey}</Text>
-                        <div style={{ marginTop: 8 }}>
+                        <Space direction="vertical" size={8} style={{ width: '100%', marginTop: 8 }}>
                             {items.map((permission) => (
-                                <Tag key={permission.id} style={{ marginBottom: 8 }}>
-                                    {permission.key}
-                                </Tag>
+                                <Space key={permission.id} size={8} wrap>
+                                    <Tag>{permission.display_name ?? permission.name ?? permission.key}</Tag>
+                                    <Text type="secondary">{permission.key}</Text>
+                                </Space>
                             ))}
-                        </div>
+                        </Space>
                     </div>
                 ))}
             </Space>

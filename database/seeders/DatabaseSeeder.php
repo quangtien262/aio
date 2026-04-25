@@ -8,6 +8,7 @@ use App\Models\ModuleInstallation;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\SiteProfile;
+use App\Support\PermissionLabel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -27,7 +28,7 @@ class DatabaseSeeder extends Seeder
             Permission::query()->updateOrCreate(
                 ['key' => $permissionKey],
                 [
-                    'name' => str($permissionKey)->replace('.', ' ')->title()->toString(),
+                    'name' => PermissionLabel::make($permissionKey),
                     'module_key' => str($permissionKey)->before('.')->toString(),
                 ],
             );
@@ -47,7 +48,7 @@ class DatabaseSeeder extends Seeder
     private function seedDefaultAdmin(): void
     {
         $admin = Admin::query()->updateOrCreate(
-            ['email' => 'admin@aio.local'],
+            ['email' => 'admin@htvietnam.vn'],
             [
                 'name' => 'System Admin',
                 'password' => Hash::make('password'),
