@@ -57,21 +57,21 @@ function resolveModuleIcon(iconKey) {
     return iconMap[iconKey] ?? AppstoreOutlined;
 }
 
+function resolveWebsiteTypes(websiteTypes) {
+    const normalizedTypes = Array.isArray(websiteTypes) ? websiteTypes : [];
+
+    return {
+        visible: normalizedTypes.slice(0, 3),
+        hiddenCount: Math.max(normalizedTypes.length - 3, 0),
+    };
+}
+
 export default function DashboardPage({ overview }) {
     const navigate = useNavigate();
     const activeModules = overview?.active_modules ?? [];
 
     return (
-        <Space direction="vertical" size={20} style={{ width: '100%' }}>
-            <Card className="dashboard-hero-card">
-                <Text className="card-label">Trang chủ</Text>
-                <Title level={2}>Chọn module để đi vào đúng workspace quản trị của từng khối chức năng.</Title>
-                <Paragraph>
-                    Dashboard này chỉ làm nhiệm vụ điều hướng. Mỗi card là một workspace module đang bật;
-                    khi mở vào module, hệ thống mới hiển thị danh sách tính năng và màn quản trị chi tiết bên trong.
-                </Paragraph>
-            </Card>
-
+        <Space direction="vertical" size={18} style={{ width: '100%' }}>
             <div className="dashboard-module-heading">
                 <div>
                     <Text className="card-label">Danh sách module</Text>
@@ -87,55 +87,70 @@ export default function DashboardPage({ overview }) {
                         const accentColor = resolveModuleColor(moduleCard.color);
                         const moduleRoute = normalizeAdminRoute(moduleCard.route);
                         const featureCount = moduleCard.menus?.length ?? 0;
+                        const menuPreview = (moduleCard.menus ?? []).slice(0, 3).map((menu) => menu.label).filter(Boolean);
+                        const { visible: websiteTypes, hiddenCount: hiddenWebsiteTypeCount } = resolveWebsiteTypes(moduleCard.website_types);
                         const workspaceLabel = moduleCard.key === 'cms' ? 'CMS Workspace' : 'Module Workspace';
-                        const launcherTitle = moduleCard.key === 'cms' ? 'Vào trung tâm quản trị CMS' : 'Mở workspace module';
-                        const launcherDescription = moduleCard.key === 'cms'
-                            ? 'Quản lý nội dung, đơn hàng, bản tin và cấu hình website trong cùng một workspace.'
-                            : 'Mở không gian quản trị riêng để xem các tính năng bên trong module này.';
 
                         return (
                             <Card
                                 key={moduleCard.key}
                                 className="dashboard-module-card"
-                                styles={{ body: { padding: 22 } }}
+                                styles={{ body: { padding: 18 } }}
                                 style={{ '--dashboard-accent': accentColor }}
                             >
                                 <div className="dashboard-module-card-top">
-                                    <div className="dashboard-module-icon-wrap">
-                                        <div className="dashboard-module-icon">
-                                            <IconComponent />
+                                    <div className="dashboard-module-card-head">
+                                        <div className="dashboard-module-icon-wrap">
+                                            <div className="dashboard-module-icon">
+                                                <IconComponent />
+                                            </div>
+                                        </div>
+
+                                        <div className="dashboard-module-copy">
+                                            <div className="dashboard-module-kicker">{workspaceLabel}</div>
+
+                                            <div className="dashboard-module-title-row">
+                                                <Title level={4} style={{ margin: 0 }}>{moduleCard.name}</Title>
+                                                <Tag color="green">active</Tag>
+                                            </div>
+
+                                            <Paragraph className="dashboard-module-description" ellipsis={{ rows: 2, expandable: false }}>
+                                                {moduleCard.description || 'Module đang hoạt động trong workspace hiện tại.'}
+                                            </Paragraph>
                                         </div>
                                     </div>
 
-                                    <div className="dashboard-module-copy">
-                                        <div className="dashboard-module-kicker">{workspaceLabel}</div>
-
-                                        <div className="dashboard-module-title-row">
-                                            <Title level={4} style={{ margin: 0 }}>{moduleCard.name}</Title>
-                                            <Tag color="green">active</Tag>
+                                    <div className="dashboard-module-stats">
+                                        <div className="dashboard-module-stat">
+                                            <Text type="secondary">Tính năng</Text>
+                                            <Text strong>{featureCount}</Text>
                                         </div>
-
-                                        <Paragraph className="dashboard-module-description">
-                                            {moduleCard.description || 'Module đang hoạt động trong workspace hiện tại.'}
-                                        </Paragraph>
-
-                                        <Space wrap size={[8, 8]} className="dashboard-module-meta">
-                                            <Tag color="processing">{`${featureCount} tính năng`}</Tag>
-                                            {(moduleCard.website_types ?? []).map((type) => (
-                                                <Tag key={`${moduleCard.key}-${type}`}>{type}</Tag>
-                                            ))}
+                                        <div className="dashboard-module-stat">
+                                            <Text type="secondary">Phiên bản</Text>
                                             <Tag color="blue">v{moduleCard.installed_version ?? moduleCard.latest_version}</Tag>
-                                        </Space>
+                                        </div>
                                     </div>
+
+                                    {menuPreview.length ? (
+                                        <div className="dashboard-module-menu-preview">
+                                            {menuPreview.map((menuLabel) => (
+                                                <span key={`${moduleCard.key}-${menuLabel}`} className="dashboard-module-menu-chip">{menuLabel}</span>
+                                            ))}
+                                        </div>
+                                    ) : null}
+
+                                    <Space wrap size={[8, 8]} className="dashboard-module-meta">
+                                        {websiteTypes.map((type) => (
+                                            <Tag key={`${moduleCard.key}-${type}`}>{type}</Tag>
+                                        ))}
+                                        {hiddenWebsiteTypeCount > 0 ? <Tag>{`+${hiddenWebsiteTypeCount}`}</Tag> : null}
+                                    </Space>
                                 </div>
 
                                 <div className="dashboard-module-footer">
-                                    <div className="dashboard-module-footer-copy">
-                                        <Text strong>{launcherTitle}</Text>
-                                        <Text type="secondary">
-                                            {launcherDescription}
-                                        </Text>
-                                    </div>
+                                    <Text type="secondary" className="dashboard-module-footer-hint">
+                                        Mở workspace để xem toàn bộ tính năng của module này.
+                                    </Text>
 
                                     <Button
                                         type="primary"

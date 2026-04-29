@@ -31,6 +31,7 @@ export default function NewsletterSubscribersRoutePage({ canAccess, callAdminApi
 
             return payload.data ?? { stats: {}, subscribers: [] };
         },
+        cacheKey: 'admin.route.newsletter',
     });
 
     const filteredSubscribers = useMemo(() => {
@@ -46,7 +47,7 @@ export default function NewsletterSubscribersRoutePage({ canAccess, callAdminApi
         });
     }, [data?.subscribers, keyword]);
 
-    if (loading) {
+    if (loading && !data) {
         return <Card loading title="Newsletter" />;
     }
 

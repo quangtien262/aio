@@ -1,0 +1,82 @@
+{
+  "name": "Project",
+  "key": "project",
+  "version": "0.1.0",
+  "description": "Module quản lý dự án với dự án, công việc, checklist, files, báo cáo và lịch sử hoạt động.",
+  "website_type": ["backoffice", "corporate", "ecommerce", "news", "landingpage"],
+  "dependencies": [],
+  "permissions": [
+    "project.view",
+    "project.create",
+    "project.update",
+    "project.delete",
+    "project.member.manage",
+    "project.task.view",
+    "project.task.create",
+    "project.task.update",
+    "project.task.delete",
+    "project.checklist.manage",
+    "project.file.manage",
+    "project.report.view",
+    "project.report.create",
+    "project.report.update",
+    "project.report.delete",
+    "project.activity.view"
+  ],
+  "hooks": [
+    "Modules\\Project\\Hooks\\ProjectLifecycleHook"
+  ],
+  "menus": [
+    {
+      "key": "project-projects",
+      "label": "Dự án",
+      "description": "Quản lý danh sách dự án và đi vào workspace chi tiết từng dự án.",
+      "badge": "Projects",
+      "color": "blue",
+      "icon": "apartment",
+      "route": "/admin/project/projects",
+      "permission": "project.view"
+    },
+    {
+      "key": "project-tasks",
+      "label": "Công việc",
+      "description": "Theo dõi toàn bộ công việc của module dự án theo trạng thái và ưu tiên.",
+      "badge": "Tasks",
+      "color": "orange",
+      "icon": "profile",
+      "route": "/admin/project/tasks",
+      "permission": "project.task.view"
+    },
+    {
+      "key": "project-reports",
+      "label": "Báo cáo",
+      "description": "Quản lý báo cáo tiến độ và tổng hợp cập nhật từ các dự án.",
+      "badge": "Reports",
+      "color": "green",
+      "icon": "read",
+      "route": "/admin/project/reports",
+      "permission": "project.report.view"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-04-29",
+      "notes": [
+        "Khởi tạo module Project phase 1 với dự án, công việc, checklist, files, báo cáo và lịch sử hoạt động.",
+        "Thiết kế theo hướng cài đặt được qua App Store và workspace admin riêng cho module Project."
+      ]
+    }
+  ],
+  "package": {
+    "migrations": ["database/migrations"],
+    "seeders": ["Modules\\Project\\Database\\Seeders\\ProjectModuleSeeder"]
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": true
+  }
+}

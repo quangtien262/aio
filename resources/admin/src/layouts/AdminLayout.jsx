@@ -36,7 +36,7 @@ const ModulesRoutePage = lazy(() => import('../pages/routes/ModulesRoutePage'));
 const ThemesRoutePage = lazy(() => import('../pages/routes/ThemesRoutePage'));
 const SetupRoutePage = lazy(() => import('../pages/routes/SetupRoutePage'));
 
-const { Header, Content, Sider } = Layout;
+const { Header, Content } = Layout;
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 
@@ -106,16 +106,20 @@ export default function AdminLayout() {
             const nextCurrentAdmin = mePayload.data ?? null;
 
             setCurrentAdmin(nextCurrentAdmin);
+            setShellReady(true);
 
             if ((nextCurrentAdmin?.permissions ?? []).includes('store.module.view')) {
-                const modulePayload = await callAdminApi('/admin/api/modules');
-                setModules(modulePayload.data ?? []);
+                try {
+                    const modulePayload = await callAdminApi('/admin/api/modules');
+                    setModules(modulePayload.data ?? []);
+                } catch {
+                    setModules([]);
+                }
             } else {
                 setModules([]);
             }
         } catch (error) {
             setLoadError(error instanceof Error ? error.message : 'Không tải được dữ liệu admin.');
-        } finally {
             setShellReady(true);
         }
     }, [callAdminApi]);
@@ -201,7 +205,7 @@ export default function AdminLayout() {
             return (
                 <Route
                     key={item.key}
-                    path={route === '/' ? '/' : route.replace(/^\//, '')}
+                    path={route === '/' ? '/' : `${route.replace(/^\//, '')}/*`}
                     element={renderLazyRouteElement(ModuleRoutePage, {
                         moduleMenu: item,
                         modulePayload,
@@ -279,9 +283,57 @@ export default function AdminLayout() {
         ].filter(Boolean);
     }, [activeTopSectionKey, availableTopSections, currentNavigationItem]);
 
+    const shellLoadingTitle = useMemo(() => {
+        const normalizedPath = location.pathname.replace(/^\/admin/, '') || '/';
+        const matchedItem = navigationItems.find((item) => {
+            const route = normalizeRoute(item.route);
+
+            return normalizedPath === route || (route !== '/' && normalizedPath.startsWith(`${route}/`));
+        });
+
+        if (matchedItem?.label) {
+            return matchedItem.label;
+        }
+
+        if (normalizedPath === '/dashboard' || normalizedPath === '/') {
+            return 'Trang chủ';
+        }
+
+        return 'Đang tải trang';
+    }, [location.pathname, navigationItems, normalizeRoute]);
+
     const siteBranding = currentAdmin?.site_profile?.branding ?? {};
     const sidebarLogoUrl = brandLogoFailed ? '' : (siteBranding.logo_url ?? '');
     const sidebarIdentity = siteBranding.company_name || currentAdmin?.site_profile?.site_name || 'AIO Platform';
+    const brandInitials = useMemo(() => {
+        const normalizedIdentity = String(sidebarIdentity).trim();
+
+        if (!normalizedIdentity) {
+            return 'AP';
+        }
+
+        const initials = normalizedIdentity
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part.charAt(0).toUpperCase())
+            .join('');
+
+        return initials || normalizedIdentity.slice(0, 2).toUpperCase() || 'AP';
+    }, [sidebarIdentity]);
+    const fallbackBrandLogoUrl = useMemo(() => {
+        const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="144" height="48" viewBox="0 0 144 48" fill="none">
+                <rect width="144" height="48" rx="14" fill="#0F4C81"/>
+                <rect x="4" y="4" width="40" height="40" rx="12" fill="#ffffff" fill-opacity="0.16"/>
+                <path d="M112 15c5.523 0 10 4.477 10 10s-4.477 10-10 10c-2.53 0-4.841-.94-6.602-2.488l2.23-2.558A6.964 6.964 0 0 0 112 32a7 7 0 1 0 0-14 6.97 6.97 0 0 0-5.162 2.273l-2.224-2.563A9.963 9.963 0 0 1 112 15Z" fill="#FF7A00"/>
+                <text x="24" y="30" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">${brandInitials}</text>
+                <text x="56" y="29" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">${sidebarIdentity}</text>
+            </svg>`;
+
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    }, [brandInitials, sidebarIdentity]);
+    const headerLogoUrl = sidebarLogoUrl || fallbackBrandLogoUrl;
 
     const navigateToMenuItem = useCallback((key) => {
         const target = navigationMenuItems.find((item) => item.key === key);
@@ -353,44 +405,40 @@ export default function AdminLayout() {
         }
     };
 
+    const desktopWorkspaceMenuItems = sideMenuItems.map((item) => ({
+        key: item.key,
+        label: item.label,
+        icon: item.icon,
+    }));
+
     return (
         <Layout className="admin-shell">
             <Header className="admin-top-header">
-                {isMobile ? (
-                    <Button
-                        type="text"
-                        className="admin-mobile-nav-trigger"
-                        icon={<MenuOutlined />}
-                        onClick={() => setMobileNavigationOpen(true)}
-                        aria-label="Mở điều hướng admin"
-                    />
-                ) : null}
+                <div className="admin-top-header-main">
+                    {isMobile ? (
+                        <Button
+                            type="text"
+                            className="admin-mobile-nav-trigger"
+                            icon={<MenuOutlined />}
+                            onClick={() => setMobileNavigationOpen(true)}
+                            aria-label="Mở điều hướng admin"
+                        />
+                    ) : null}
 
-                <div className="admin-header-brand" onClick={() => navigate(defaultRoute)} role="button" tabIndex={0}>
-                    {sidebarLogoUrl ? (
+                    <div className="admin-header-brand" onClick={() => navigate(defaultRoute)} role="button" tabIndex={0}>
                         <img
-                            className="sidebar-brand-logo"
-                            src={sidebarLogoUrl}
+                            className="sidebar-brand-logo admin-header-brand-logo"
+                            src={headerLogoUrl}
                             alt={sidebarIdentity}
                             loading="lazy"
-                            onError={() => setBrandLogoFailed(true)}
+                            onError={() => {
+                                if (sidebarLogoUrl) {
+                                    setBrandLogoFailed(true);
+                                }
+                            }}
                         />
-                    ) : (
-                        <div className="sidebar-brand-fallback admin-header-brand-fallback">
-                            <Text>{sidebarIdentity}</Text>
-                        </div>
-                    )}
+                    </div>
                 </div>
-
-                {!isMobile ? (
-                    <Menu
-                        mode="horizontal"
-                        className="admin-top-menu"
-                        selectedKeys={[activeTopSectionKey]}
-                        items={topMenuItems}
-                        onClick={handleTopMenuClick}
-                    />
-                ) : null}
 
                 <Space className="admin-header-actions">
                     {isMobile ? (
@@ -401,13 +449,31 @@ export default function AdminLayout() {
                         <>
                             <Button href="/">Website</Button>
                             <Button onClick={handleAdminLogout}>Đăng xuất</Button>
-                            <Button type="primary" href="/docs/architecture/aio-source-code-structure.svg">
-                                Source Diagram
-                            </Button>
                         </>
                     )}
                 </Space>
             </Header>
+
+            {!isMobile ? (
+                <Header className="admin-sub-header">
+                    <Menu
+                        mode="horizontal"
+                        className="admin-section-menu"
+                        selectedKeys={[activeTopSectionKey]}
+                        items={topMenuItems}
+                        onClick={handleTopMenuClick}
+                    />
+
+                    <Menu
+                        mode="horizontal"
+                        className="admin-workspace-menu"
+                        selectedKeys={selectedMenuKey ? [selectedMenuKey] : []}
+                        items={desktopWorkspaceMenuItems}
+                        onClick={({ key }) => navigateToMenuItem(key)}
+                        overflowedIndicator={<MoreOutlined />}
+                    />
+                </Header>
+            ) : null}
 
             <Drawer
                 title="Điều hướng admin"
@@ -437,50 +503,36 @@ export default function AdminLayout() {
                 </Space>
             </Drawer>
 
-            <Layout>
-                <Sider width={272} theme="light" className="admin-sider admin-left-sider" breakpoint="lg" collapsedWidth={0} collapsed={isMobile} trigger={null}>
-                    <div className="nav-stack nav-stack-wide">
-                        <Menu
-                            mode="inline"
-                            className="admin-side-menu"
-                            selectedKeys={selectedMenuKey ? [selectedMenuKey] : []}
-                            items={sideMenuItems}
-                            onClick={({ key }) => navigateToMenuItem(key)}
-                        />
+            <Layout className="admin-main-layout">
+                <Content className="admin-content">
+                    <div className="panel-stack">
+                        {loadError ? <Alert type="error" showIcon message={loadError} /> : null}
+
+                        {!shellReady && !loadError ? (
+                            <Card loading title={shellLoadingTitle} />
+                        ) : (
+                            <>
+                                {!isMobile ? <Breadcrumb className="admin-breadcrumb" items={breadcrumbItems} /> : null}
+
+                                <div className="admin-page-shell">
+                                    <Routes>
+                                        <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+                                        <Route path="dashboard" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(DashboardRoutePage, { canAccess: true, callAdminApi }, 'Dashboard') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="orders" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(OrdersRoutePage, { canAccess: true, callAdminApi }, 'Đơn hàng') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="newsletter" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(NewsletterSubscribersRoutePage, { canAccess: true, callAdminApi }, 'Bản tin') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="access" element={hasPermission('rbac.role.view') ? renderLazyRouteElement(AccessRoutePage, { canAccess: true, canManageRoles: hasPermission('rbac.role.manage'), callAdminApi, runAdminAction }, 'Access Control') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="admins" element={hasPermission('admin.account.view') ? renderLazyRouteElement(AdminAccountsRoutePage, { canAccess: true, currentAdmin, permissions: { manage: hasPermission('admin.account.manage'), resetPassword: hasPermission('admin.account.reset_password'), lock: hasPermission('admin.account.lock') }, callAdminApi, runAdminAction }, 'Admin Accounts') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'App Store') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), canGenerateDemoData: hasPermission('theme.customize'), callAdminApi, runAdminAction }, 'Themes') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="setup" element={hasPermission('setup.view') ? renderLazyRouteElement(SetupRoutePage, { canAccess: true, canComplete: hasPermission('setup.complete'), callAdminApi, runAdminAction }, 'Setup') : <Navigate to={defaultRoute} replace />} />
+                                        {renderModuleRoutes()}
+                                        <Route path="*" element={<Navigate to={defaultRoute} replace />} />
+                                    </Routes>
+                                </div>
+                            </>
+                        )}
                     </div>
-                </Sider>
-
-                <Layout className="admin-main-layout">
-                    <Content className="admin-content">
-                        <div className="panel-stack">
-                            {loadError ? <Alert type="error" showIcon message={loadError} /> : null}
-
-                            {!shellReady && !loadError ? (
-                                <Card loading title="Đang khởi tạo admin shell" />
-                            ) : (
-                                <>
-                                    {!isMobile ? <Breadcrumb className="admin-breadcrumb" items={breadcrumbItems} /> : null}
-
-                                    <div className="admin-page-shell">
-                                        <Routes>
-                                            <Route path="/" element={<Navigate to={defaultRoute} replace />} />
-                                            <Route path="dashboard" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(DashboardRoutePage, { canAccess: true, callAdminApi }, 'Dashboard') : <Navigate to={defaultRoute} replace />} />
-                                            <Route path="orders" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(OrdersRoutePage, { canAccess: true, callAdminApi }, 'Đơn hàng') : <Navigate to={defaultRoute} replace />} />
-                                            <Route path="newsletter" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(NewsletterSubscribersRoutePage, { canAccess: true, callAdminApi }, 'Bản tin') : <Navigate to={defaultRoute} replace />} />
-                                            <Route path="access" element={hasPermission('rbac.role.view') ? renderLazyRouteElement(AccessRoutePage, { canAccess: true, canManageRoles: hasPermission('rbac.role.manage'), callAdminApi, runAdminAction }, 'Access Control') : <Navigate to={defaultRoute} replace />} />
-                                            <Route path="admins" element={hasPermission('admin.account.view') ? renderLazyRouteElement(AdminAccountsRoutePage, { canAccess: true, currentAdmin, permissions: { manage: hasPermission('admin.account.manage'), resetPassword: hasPermission('admin.account.reset_password'), lock: hasPermission('admin.account.lock') }, callAdminApi, runAdminAction }, 'Admin Accounts') : <Navigate to={defaultRoute} replace />} />
-                                            <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'App Store') : <Navigate to={defaultRoute} replace />} />
-                                            <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), canGenerateDemoData: hasPermission('theme.customize'), callAdminApi, runAdminAction }, 'Themes') : <Navigate to={defaultRoute} replace />} />
-                                            <Route path="setup" element={hasPermission('setup.view') ? renderLazyRouteElement(SetupRoutePage, { canAccess: true, canComplete: hasPermission('setup.complete'), callAdminApi, runAdminAction }, 'Setup') : <Navigate to={defaultRoute} replace />} />
-                                            {renderModuleRoutes()}
-                                            <Route path="*" element={<Navigate to={defaultRoute} replace />} />
-                                        </Routes>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </Content>
-                </Layout>
+                </Content>
             </Layout>
         </Layout>
     );

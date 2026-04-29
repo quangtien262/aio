@@ -11,9 +11,10 @@ export default function AccessRoutePage({ canAccess, canManageRoles, callAdminAp
 
             return payload.data ?? null;
         },
+        cacheKey: 'admin.route.access',
     });
 
-    if (loading) {
+    if (loading && !data) {
         return <Card loading title="Access Control" />;
     }
 

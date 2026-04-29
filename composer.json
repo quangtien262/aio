@@ -22,10 +22,16 @@
         "psr-4": {
             "App\\": "app/",
             "Modules\\": "modules/",
+            "Modules\\Catalog\\Database\\Seeders\\": "modules/Catalog/database/seeders/",
+            "Modules\\Cms\\Database\\Seeders\\": "modules/Cms/database/seeders/",
+            "Modules\\Project\\Database\\Seeders\\": "modules/Project/database/seeders/",
             "Themes\\": "themes/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "exclude-from-classmap": [
+            "modules/*/database/seeders/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

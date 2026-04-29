@@ -49,6 +49,7 @@ export default function OrdersRoutePage({ canAccess, callAdminApi }) {
 
             return payload.data ?? { stats: {}, orders: [] };
         },
+        cacheKey: 'admin.route.orders',
     });
 
     const filteredOrders = useMemo(() => {
@@ -69,7 +70,7 @@ export default function OrdersRoutePage({ canAccess, callAdminApi }) {
         });
     }, [data?.orders, keyword]);
 
-    if (loading) {
+    if (loading && !data) {
         return <Card loading title="Đơn hàng" />;
     }
 

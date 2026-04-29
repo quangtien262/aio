@@ -1,8 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export default function useAdminRouteResource({ enabled = true, loader, deps = [] }) {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(enabled);
+function resolveInitialData(initialData, cacheKey) {
+    if (initialData !== null && initialData !== undefined) {
+        return initialData;
+    }
+
+    if (!cacheKey || typeof window === 'undefined') {
+        return null;
+    }
+
+    try {
+        const cachedPayload = window.sessionStorage.getItem(cacheKey);
+
+        return cachedPayload ? JSON.parse(cachedPayload) : null;
+    } catch {
+        return null;
+    }
+}
+
+export default function useAdminRouteResource({ enabled = true, loader, deps = [], initialData = null, cacheKey = null }) {
+    const initialDataRef = useRef(undefined);
+
+    if (initialDataRef.current === undefined) {
+        initialDataRef.current = resolveInitialData(initialData, cacheKey);
+    }
+
+    const [data, setData] = useState(initialDataRef.current);
+    const [loading, setLoading] = useState(enabled && initialDataRef.current === null);
     const [error, setError] = useState(null);
     const loaderRef = useRef(loader);
 
@@ -35,14 +59,31 @@ export default function useAdminRouteResource({ enabled = true, loader, deps = [
         }
     }, [enabled]);
 
+    const mutateData = (updater) => {
+        setData((currentData) => (typeof updater === 'function' ? updater(currentData) : updater));
+    };
+
     useEffect(() => {
         reload();
     }, [reload, ...deps]);
+
+    useEffect(() => {
+        if (!cacheKey || typeof window === 'undefined' || data === null || data === undefined) {
+            return;
+        }
+
+        try {
+            window.sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch {
+            // Ignore storage failures and keep the route functional.
+        }
+    }, [cacheKey, data]);
 
     return {
         data,
         loading,
         error,
         reload,
+        mutateData,
     };
 }

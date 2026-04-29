@@ -12,6 +12,7 @@ import SetupRoutePage from '../routes/SetupRoutePage';
 const { Paragraph, Title, Text } = Typography;
 const CmsManagerPage = lazy(() => import('../../modules/cms/pages/CmsManagerPage'));
 const CatalogManagerPage = lazy(() => import('../../modules/catalog/pages/CatalogManagerPage'));
+const ProjectManagerPage = lazy(() => import('../../modules/project/pages/ProjectManagerPage'));
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentPermissions }) {
     const resourceEndpointMap = {
@@ -80,6 +81,20 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
         return (
             <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
                 <CatalogManagerPage
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    currentPermissions={currentPermissions}
+                />
+            </Suspense>
+        );
+    }
+
+    if (modulePayload.key === 'project') {
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <ProjectManagerPage
+                    moduleMenu={moduleMenu}
+                    modulePayload={modulePayload}
                     callAdminApi={callAdminApi}
                     runAdminAction={runAdminAction}
                     currentPermissions={currentPermissions}

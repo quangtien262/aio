@@ -14,6 +14,7 @@ export default function SetupRoutePage({ canAccess, canComplete, callAdminApi, r
 
             return payload.data ?? null;
         },
+        cacheKey: 'admin.route.setup',
     });
 
     const pushSetupStepFeedback = (stepKey) => {
@@ -24,7 +25,7 @@ export default function SetupRoutePage({ canAccess, canComplete, callAdminApi, r
         navigate({ pathname: location.pathname, search: `?${nextParams.toString()}` }, { replace: true });
     };
 
-    if (loading) {
+    if (loading && !data) {
         return <Card loading title="Setup" />;
     }
 

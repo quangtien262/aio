@@ -22,9 +22,10 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
 
             return payload.data ?? [];
         },
+        cacheKey: 'admin.route.modules',
     });
 
-    if (loading) {
+    if (loading && !data) {
         return <Card loading title="App Store" />;
     }
 

@@ -21,9 +21,10 @@ export default function AdminAccountsRoutePage({ canAccess, currentAdmin, permis
 
             return payload.data ?? null;
         },
+        cacheKey: 'admin.route.admin-accounts',
     });
 
-    if (loading) {
+    if (loading && !data) {
         return <Card loading title="Admin Accounts" />;
     }
 

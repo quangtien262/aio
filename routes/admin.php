@@ -25,6 +25,19 @@ use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
 use App\Http\Controllers\Admin\Api\OrderIndexController;
+use App\Http\Controllers\Admin\Api\Project\ProjectChecklistManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectDetailController;
+use App\Http\Controllers\Admin\Api\Project\ProjectFileManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectIndexController;
+use App\Http\Controllers\Admin\Api\Project\ProjectManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectMemberManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectReportIndexController;
+use App\Http\Controllers\Admin\Api\Project\ProjectReportManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectTaskChecklistManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectTaskCommentManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectTaskIndexController;
+use App\Http\Controllers\Admin\Api\Project\ProjectTaskManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectTaskTimeEntryManagementController;
 use App\Http\Controllers\Admin\Api\RoleManagementController;
 use App\Http\Controllers\Admin\Api\SetupProfileController;
 use App\Http\Controllers\Admin\Api\SetupStepController;
@@ -111,6 +124,96 @@ Route::prefix('admin')
                 Route::delete('/modules/{key}', [ModuleLifecycleController::class, 'uninstall'])
                     ->middleware('admin.permission:store.module.uninstall')
                     ->name('modules.uninstall');
+                Route::get('/project/projects', ProjectIndexController::class)
+                    ->middleware('admin.permission:project.view')
+                    ->name('project.projects.index');
+                Route::post('/project/projects', [ProjectManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.create')
+                    ->name('project.projects.store');
+                Route::get('/project/projects/{project}', ProjectDetailController::class)
+                    ->middleware('admin.permission:project.view')
+                    ->name('project.projects.show');
+                Route::put('/project/projects/{project}', [ProjectManagementController::class, 'update'])
+                    ->middleware('admin.permission:project.update')
+                    ->name('project.projects.update');
+                Route::delete('/project/projects/{project}', [ProjectManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.delete')
+                    ->name('project.projects.destroy');
+                Route::get('/project/tasks', ProjectTaskIndexController::class)
+                    ->middleware('admin.permission:project.task.view')
+                    ->name('project.tasks.index');
+                Route::post('/project/projects/{project}/tasks', [ProjectTaskManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.task.create')
+                    ->name('project.tasks.store');
+                Route::put('/project/tasks/{task}', [ProjectTaskManagementController::class, 'update'])
+                    ->middleware('admin.permission:project.task.update')
+                    ->name('project.tasks.update');
+                Route::delete('/project/tasks/{task}', [ProjectTaskManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.task.delete')
+                    ->name('project.tasks.destroy');
+                Route::post('/project/tasks/{task}/checklists', [ProjectTaskChecklistManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.checklist.manage')
+                    ->name('project.task-checklists.store');
+                Route::put('/project/task-checklists/{checklist}', [ProjectTaskChecklistManagementController::class, 'update'])
+                    ->middleware('admin.permission:project.checklist.manage')
+                    ->name('project.task-checklists.update');
+                Route::delete('/project/task-checklists/{checklist}', [ProjectTaskChecklistManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.checklist.manage')
+                    ->name('project.task-checklists.destroy');
+                Route::post('/project/tasks/{task}/comments', [ProjectTaskCommentManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.task.update')
+                    ->name('project.task-comments.store');
+                Route::put('/project/task-comments/{comment}', [ProjectTaskCommentManagementController::class, 'update'])
+                    ->middleware('admin.permission:project.task.update')
+                    ->name('project.task-comments.update');
+                Route::delete('/project/task-comments/{comment}', [ProjectTaskCommentManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.task.update')
+                    ->name('project.task-comments.destroy');
+                Route::post('/project/tasks/{task}/time-entries', [ProjectTaskTimeEntryManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.task.update')
+                    ->name('project.task-time-entries.store');
+                Route::put('/project/task-time-entries/{entry}', [ProjectTaskTimeEntryManagementController::class, 'update'])
+                    ->middleware('admin.permission:project.task.update')
+                    ->name('project.task-time-entries.update');
+                Route::delete('/project/task-time-entries/{entry}', [ProjectTaskTimeEntryManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.task.update')
+                    ->name('project.task-time-entries.destroy');
+                Route::post('/project/projects/{project}/checklists', [ProjectChecklistManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.checklist.manage')
+                    ->name('project.checklists.store');
+                Route::put('/project/checklists/{checklist}', [ProjectChecklistManagementController::class, 'update'])
+                    ->middleware('admin.permission:project.checklist.manage')
+                    ->name('project.checklists.update');
+                Route::delete('/project/checklists/{checklist}', [ProjectChecklistManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.checklist.manage')
+                    ->name('project.checklists.destroy');
+                Route::post('/project/projects/{project}/members', [ProjectMemberManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.member.manage')
+                    ->name('project.members.store');
+                Route::delete('/project/members/{member}', [ProjectMemberManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.member.manage')
+                    ->name('project.members.destroy');
+                Route::post('/project/projects/{project}/files', [ProjectFileManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.file.manage')
+                    ->name('project.files.store');
+                Route::get('/project/files/{file}/download', [ProjectFileManagementController::class, 'download'])
+                    ->middleware('admin.permission:project.view')
+                    ->name('project.files.download');
+                Route::delete('/project/files/{file}', [ProjectFileManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.file.manage')
+                    ->name('project.files.destroy');
+                Route::get('/project/reports', ProjectReportIndexController::class)
+                    ->middleware('admin.permission:project.report.view')
+                    ->name('project.reports.index');
+                Route::post('/project/projects/{project}/reports', [ProjectReportManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.report.create')
+                    ->name('project.reports.store');
+                Route::put('/project/reports/{report}', [ProjectReportManagementController::class, 'update'])
+                    ->middleware('admin.permission:project.report.update')
+                    ->name('project.reports.update');
+                Route::delete('/project/reports/{report}', [ProjectReportManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.report.delete')
+                    ->name('project.reports.destroy');
                 Route::get('/cms/pages', PageIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.pages.index');

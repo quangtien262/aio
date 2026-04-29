@@ -21,9 +21,10 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
 
             return payload.data ?? [];
         },
+        cacheKey: 'admin.route.themes',
     });
 
-    if (loading) {
+    if (loading && !data) {
         return <Card loading title="Themes" />;
     }
 
