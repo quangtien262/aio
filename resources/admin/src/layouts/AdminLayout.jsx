@@ -221,6 +221,8 @@ export default function AdminLayout() {
             section: item.section ?? 'workspace',
             icon: resolveNavigationIcon(item.key, item.icon),
             route: normalizeRoute(item.route),
+            source: item.source ?? 'static',
+            moduleKey: item.module_key ?? null,
         }));
     }, [navigationItems, normalizeRoute, resolveNavigationIcon]);
 
@@ -252,14 +254,17 @@ export default function AdminLayout() {
     const effectiveSectionKey = isMobile ? (mobileSectionKey ?? activeTopSectionKey) : activeTopSectionKey;
 
     const sideMenuItems = useMemo(() => {
-        return navigationMenuItems
-            .filter((item) => item.section === effectiveSectionKey)
+        const scopedItems = currentNavigationItem?.source === 'module'
+            ? navigationMenuItems.filter((item) => item.source === 'module' && item.moduleKey === currentNavigationItem.moduleKey)
+            : navigationMenuItems.filter((item) => item.section === effectiveSectionKey && item.source !== 'module');
+
+        return scopedItems
             .map((item) => ({
                 key: item.key,
                 icon: item.icon,
                 label: item.label,
             }));
-    }, [effectiveSectionKey, navigationMenuItems]);
+    }, [currentNavigationItem, effectiveSectionKey, navigationMenuItems]);
 
     const selectedMenuKey = useMemo(() => {
         return currentNavigationItem?.key ?? null;
@@ -464,7 +469,7 @@ export default function AdminLayout() {
                                             <Route path="newsletter" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(NewsletterSubscribersRoutePage, { canAccess: true, callAdminApi }, 'Bản tin') : <Navigate to={defaultRoute} replace />} />
                                             <Route path="access" element={hasPermission('rbac.role.view') ? renderLazyRouteElement(AccessRoutePage, { canAccess: true, canManageRoles: hasPermission('rbac.role.manage'), callAdminApi, runAdminAction }, 'Access Control') : <Navigate to={defaultRoute} replace />} />
                                             <Route path="admins" element={hasPermission('admin.account.view') ? renderLazyRouteElement(AdminAccountsRoutePage, { canAccess: true, currentAdmin, permissions: { manage: hasPermission('admin.account.manage'), resetPassword: hasPermission('admin.account.reset_password'), lock: hasPermission('admin.account.lock') }, callAdminApi, runAdminAction }, 'Admin Accounts') : <Navigate to={defaultRoute} replace />} />
-                                            <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'Module Store') : <Navigate to={defaultRoute} replace />} />
+                                            <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'App Store') : <Navigate to={defaultRoute} replace />} />
                                             <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), canGenerateDemoData: hasPermission('theme.customize'), callAdminApi, runAdminAction }, 'Themes') : <Navigate to={defaultRoute} replace />} />
                                             <Route path="setup" element={hasPermission('setup.view') ? renderLazyRouteElement(SetupRoutePage, { canAccess: true, canComplete: hasPermission('setup.complete'), callAdminApi, runAdminAction }, 'Setup') : <Navigate to={defaultRoute} replace />} />
                                             {renderModuleRoutes()}

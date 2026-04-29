@@ -69,6 +69,26 @@
       "permission": "cms.order.view"
     },
     {
+      "key": "cms-newsletter",
+      "label": "Bản tin",
+      "description": "Quản lý danh sách đăng ký nhận tin từ website ngay trong CMS workspace.",
+      "badge": "Newsletter",
+      "color": "cyan",
+      "icon": "read",
+      "route": "/admin/cms/newsletter",
+      "permission": "platform.dashboard.view"
+    },
+    {
+      "key": "cms-setup",
+      "label": "Cài đặt website",
+      "description": "Cấu hình website, branding và setup flow ngay trong không gian CMS.",
+      "badge": "Setup",
+      "color": "purple",
+      "icon": "setting",
+      "route": "/admin/cms/setup",
+      "permission": "setup.view"
+    },
+    {
       "key": "cms-categories",
       "label": "Categories",
       "description": "Quản lý taxonomy cho bài viết và nội dung có phân loại.",

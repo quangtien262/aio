@@ -30,7 +30,7 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
     const changelogModule = useMemo(() => modules.find((moduleCard) => moduleCard.key === changelogModuleKey) ?? null, [modules, changelogModuleKey]);
 
     return (
-        <Card title="Module Store Flow">
+        <Card title="App Store Flow">
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label">Module Lifecycle</Text>
                 <Paragraph style={{ marginBottom: 0 }}>

@@ -25,7 +25,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
     });
 
     if (loading) {
-        return <Card loading title="Module Store" />;
+        return <Card loading title="App Store" />;
     }
 
     if (error) {

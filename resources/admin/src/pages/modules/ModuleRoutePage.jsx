@@ -6,6 +6,8 @@ import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
+import NewsletterSubscribersRoutePage from '../routes/NewsletterSubscribersRoutePage';
+import SetupRoutePage from '../routes/SetupRoutePage';
 
 const { Paragraph, Title, Text } = Typography;
 const CmsManagerPage = lazy(() => import('../../modules/cms/pages/CmsManagerPage'));
@@ -41,6 +43,26 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
     }
 
     if (modulePayload.key === 'cms') {
+        if (moduleMenu?.key === 'cms-newsletter') {
+            return (
+                <NewsletterSubscribersRoutePage
+                    canAccess
+                    callAdminApi={callAdminApi}
+                />
+            );
+        }
+
+        if (moduleMenu?.key === 'cms-setup') {
+            return (
+                <SetupRoutePage
+                    canAccess
+                    canComplete={(currentPermissions ?? []).includes('setup.complete')}
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                />
+            );
+        }
+
         return (
             <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
                 <CmsManagerPage
