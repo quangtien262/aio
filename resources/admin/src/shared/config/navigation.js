@@ -1,7 +1,7 @@
 export const adminNavigationSections = [
     {
         key: 'platform',
-        label: 'Nền tảng',
+        label: 'Trang chủ',
     },
     {
         key: 'workspace',

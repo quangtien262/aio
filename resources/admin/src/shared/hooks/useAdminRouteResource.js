@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-function resolveInitialData(initialData, cacheKey) {
+function resolveInitialData(enabled, initialData, cacheKey) {
+    if (!enabled) {
+        return null;
+    }
+
     if (initialData !== null && initialData !== undefined) {
         return initialData;
     }
@@ -22,7 +26,7 @@ export default function useAdminRouteResource({ enabled = true, loader, deps = [
     const initialDataRef = useRef(undefined);
 
     if (initialDataRef.current === undefined) {
-        initialDataRef.current = resolveInitialData(initialData, cacheKey);
+        initialDataRef.current = resolveInitialData(enabled, initialData, cacheKey);
     }
 
     const [data, setData] = useState(initialDataRef.current);
@@ -78,6 +82,18 @@ export default function useAdminRouteResource({ enabled = true, loader, deps = [
             // Ignore storage failures and keep the route functional.
         }
     }, [cacheKey, data]);
+
+    useEffect(() => {
+        if (enabled || !cacheKey || typeof window === 'undefined') {
+            return;
+        }
+
+        try {
+            window.sessionStorage.removeItem(cacheKey);
+        } catch {
+            // Ignore storage failures and keep the route functional.
+        }
+    }, [cacheKey, enabled]);
 
     return {
         data,

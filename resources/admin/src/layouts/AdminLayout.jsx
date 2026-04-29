@@ -40,6 +40,21 @@ const { Header, Content } = Layout;
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 
+const sectionMetaMap = {
+    platform: {
+        kicker: 'Core',
+        description: 'Trang chủ launcher, App Store và các điểm vào nền tảng.',
+    },
+    workspace: {
+        kicker: 'Workspace',
+        description: 'Các không gian vận hành website, module và theme đang bật.',
+    },
+    security: {
+        kicker: 'Security',
+        description: 'RBAC, tài khoản admin và quyền truy cập nội bộ.',
+    },
+};
+
 function renderLazyRouteElement(Component, props, fallbackTitle) {
     return (
         <Suspense fallback={<Card loading title={fallbackTitle} />}>
@@ -255,6 +270,34 @@ export default function AdminLayout() {
         }));
     }, [availableTopSections]);
 
+    const sectionDropdownItems = useMemo(() => {
+        return availableTopSections.map((section) => {
+            const sectionMeta = sectionMetaMap[section.key] ?? {
+                kicker: 'Section',
+                description: 'Đi vào đúng nhóm chức năng quản trị tương ứng.',
+            };
+            const sectionItemCount = navigationMenuItems.filter((item) => item.section === section.key).length;
+
+            return {
+                key: section.key,
+                label: (
+                    <div className="admin-section-switcher-item">
+                        <div className="admin-section-switcher-item-kicker">{sectionMeta.kicker}</div>
+                        <div className="admin-section-switcher-item-title-row">
+                            <span className="admin-section-switcher-item-title">{section.label}</span>
+                            <span className="admin-section-switcher-item-count">{sectionItemCount}</span>
+                        </div>
+                        <div className="admin-section-switcher-item-description">{sectionMeta.description}</div>
+                    </div>
+                ),
+            };
+        });
+    }, [availableTopSections, navigationMenuItems]);
+
+    const activeTopSection = useMemo(() => {
+        return availableTopSections.find((section) => section.key === activeTopSectionKey) ?? null;
+    }, [activeTopSectionKey, availableTopSections]);
+
     const effectiveSectionKey = isMobile ? (mobileSectionKey ?? activeTopSectionKey) : activeTopSectionKey;
 
     const sideMenuItems = useMemo(() => {
@@ -275,13 +318,15 @@ export default function AdminLayout() {
     }, [currentNavigationItem]);
 
     const breadcrumbItems = useMemo(() => {
-        const activeSection = availableTopSections.find((section) => section.key === activeTopSectionKey);
-
         return [
-            activeSection ? { title: activeSection.label } : null,
+            activeTopSection ? { title: activeTopSection.label } : null,
             currentNavigationItem ? { title: currentNavigationItem.label } : null,
         ].filter(Boolean);
-    }, [activeTopSectionKey, availableTopSections, currentNavigationItem]);
+    }, [activeTopSection, currentNavigationItem]);
+
+    const shouldShowBreadcrumb = useMemo(() => {
+        return !isMobile && currentNavigationItem?.key !== 'dashboard';
+    }, [currentNavigationItem, isMobile]);
 
     const shellLoadingTitle = useMemo(() => {
         const normalizedPath = location.pathname.replace(/^\/admin/, '') || '/';
@@ -446,24 +491,43 @@ export default function AdminLayout() {
                             <Button type="text" className="admin-mobile-action-trigger" icon={<MoreOutlined />} aria-label="Mở tác vụ admin" />
                         </Dropdown>
                     ) : (
-                        <>
-                            <Button href="/">Website</Button>
-                            <Button onClick={handleAdminLogout}>Đăng xuất</Button>
-                        </>
+                        <Space size={10} className="admin-header-actions-desktop">
+                            <Dropdown
+                                menu={{
+                                    items: sectionDropdownItems,
+                                    selectable: true,
+                                    selectedKeys: [activeTopSectionKey],
+                                    onClick: handleTopMenuClick,
+                                }}
+                                trigger={['click']}
+                                placement="bottomRight"
+                                overlayClassName="admin-section-switcher-overlay"
+                                popupRender={(menuNode) => (
+                                    <div className="admin-section-switcher-panel">
+                                        <div className="admin-section-switcher-panel-head">
+                                            <span className="admin-section-switcher-panel-kicker">Workspace Switcher</span>
+                                            <strong>{activeTopSection?.label ?? 'Điều hướng'}</strong>
+                                            <span className="admin-section-switcher-panel-description">Chuyển nhanh giữa các nhóm chức năng quản trị chính.</span>
+                                        </div>
+                                        <div className="admin-section-switcher-panel-body">{menuNode}</div>
+                                    </div>
+                                )}
+                            >
+                                <Button type="text" className="admin-section-dropdown-trigger">
+                                    <span className="admin-section-dropdown-pill" aria-hidden="true" />
+                                    <span className="admin-section-dropdown-label">{activeTopSection?.label ?? 'Điều hướng'}</span>
+                                    <span className="admin-section-dropdown-caret" aria-hidden="true" />
+                                </Button>
+                            </Dropdown>
+                            <Button href="/" className="admin-header-utility-button">Website</Button>
+                            <Button onClick={handleAdminLogout} className="admin-header-utility-button">Đăng xuất</Button>
+                        </Space>
                     )}
                 </Space>
             </Header>
 
             {!isMobile ? (
                 <Header className="admin-sub-header">
-                    <Menu
-                        mode="horizontal"
-                        className="admin-section-menu"
-                        selectedKeys={[activeTopSectionKey]}
-                        items={topMenuItems}
-                        onClick={handleTopMenuClick}
-                    />
-
                     <Menu
                         mode="horizontal"
                         className="admin-workspace-menu"
@@ -512,7 +576,7 @@ export default function AdminLayout() {
                             <Card loading title={shellLoadingTitle} />
                         ) : (
                             <>
-                                {!isMobile ? <Breadcrumb className="admin-breadcrumb" items={breadcrumbItems} /> : null}
+                                {shouldShowBreadcrumb ? <Breadcrumb className="admin-breadcrumb" items={breadcrumbItems} /> : null}
 
                                 <div className="admin-page-shell">
                                     <Routes>
