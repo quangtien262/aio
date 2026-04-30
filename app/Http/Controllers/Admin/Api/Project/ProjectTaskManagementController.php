@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Api\Project;
 use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Support\ProjectActivityLogger;
+use App\Support\ProjectTaskStatusManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,6 +15,7 @@ class ProjectTaskManagementController
     public function store(Request $request, int $project): JsonResponse
     {
         $parent = Project::query()->findOrFail($project);
+        ProjectTaskStatusManager::ensureProjectStatuses($parent);
         $validated = $this->validatePayload($request, $parent);
 
         $task = $parent->tasks()->create([
@@ -62,7 +64,11 @@ class ProjectTaskManagementController
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'task_status_id' => ['required', 'integer', Rule::exists('pro__task_statuses', 'id')],
+            'task_status_id' => [
+                'required',
+                'integer',
+                Rule::exists('pro__task_statuses', 'id')->where(fn ($query) => $query->where('project_id', $project->id)),
+            ],
             'priority_id' => ['required', 'integer', Rule::exists('pro__priorities', 'id')],
             'assignee_admin_id' => ['nullable', 'integer', Rule::exists('admins', 'id')],
             'start_date' => ['nullable', 'date'],

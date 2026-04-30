@@ -33,7 +33,7 @@ class ProjectDetailController
         return response()->json([
             'data' => [
                 'project' => ProjectDataSerializer::projectDetail($record),
-                'references' => ProjectDataSerializer::references(),
+                'references' => ProjectDataSerializer::references($record),
             ],
         ]);
     }

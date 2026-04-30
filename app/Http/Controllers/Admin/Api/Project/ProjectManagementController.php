@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Api\Project;
 
 use App\Models\Project;
 use App\Support\ProjectActivityLogger;
+use App\Support\ProjectTaskStatusManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -18,6 +19,8 @@ class ProjectManagementController
             ...$validated,
             'code' => $validated['code'] ?? $this->generateCode(),
         ]);
+
+        ProjectTaskStatusManager::ensureProjectStatuses($project);
 
         if (! empty($validated['member_admin_ids'] ?? [])) {
             foreach ($validated['member_admin_ids'] as $adminId) {

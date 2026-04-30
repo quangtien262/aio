@@ -37,6 +37,7 @@ use App\Http\Controllers\Admin\Api\Project\ProjectTaskChecklistManagementControl
 use App\Http\Controllers\Admin\Api\Project\ProjectTaskCommentManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectTaskIndexController;
 use App\Http\Controllers\Admin\Api\Project\ProjectTaskManagementController;
+use App\Http\Controllers\Admin\Api\Project\ProjectTaskStatusManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectTaskTimeEntryManagementController;
 use App\Http\Controllers\Admin\Api\RoleManagementController;
 use App\Http\Controllers\Admin\Api\SetupProfileController;
@@ -139,6 +140,18 @@ Route::prefix('admin')
                 Route::delete('/project/projects/{project}', [ProjectManagementController::class, 'destroy'])
                     ->middleware('admin.permission:project.delete')
                     ->name('project.projects.destroy');
+                Route::post('/project/projects/{project}/task-statuses', [ProjectTaskStatusManagementController::class, 'store'])
+                    ->middleware('admin.permission:project.update')
+                    ->name('project.task-statuses.store');
+                Route::put('/project/task-statuses/{status}', [ProjectTaskStatusManagementController::class, 'update'])
+                    ->middleware('admin.permission:project.update')
+                    ->name('project.task-statuses.update');
+                Route::delete('/project/task-statuses/{status}', [ProjectTaskStatusManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:project.update')
+                    ->name('project.task-statuses.destroy');
+                Route::put('/project/projects/{project}/task-statuses/reorder', [ProjectTaskStatusManagementController::class, 'reorder'])
+                    ->middleware('admin.permission:project.update')
+                    ->name('project.task-statuses.reorder');
                 Route::get('/project/tasks', ProjectTaskIndexController::class)
                     ->middleware('admin.permission:project.task.view')
                     ->name('project.tasks.index');

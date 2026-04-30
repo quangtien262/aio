@@ -69,18 +69,12 @@ if (! class_exists(__NAMESPACE__.'\\ProjectModuleSeeder', false)) {
 
         private function seedTaskStatuses(): void
         {
-            $statuses = [
-                ['name' => 'Chưa bắt đầu', 'color' => 'default', 'sort_order' => 1, 'is_done' => false],
-                ['name' => 'Đang làm', 'color' => 'processing', 'sort_order' => 2, 'is_done' => false],
-                ['name' => 'Đang review', 'color' => 'warning', 'sort_order' => 3, 'is_done' => false],
-                ['name' => 'Hoàn thành', 'color' => 'success', 'sort_order' => 4, 'is_done' => true],
-                ['name' => 'Dừng/Hủy', 'color' => 'error', 'sort_order' => 5, 'is_done' => false],
-            ];
+            $statuses = \App\Support\ProjectTaskStatusManager::defaultDefinitions();
 
             foreach ($statuses as $status) {
                 DB::table('pro__task_statuses')->updateOrInsert(
-                    ['name' => $status['name']],
-                    [...$status, 'is_active' => true, 'updated_at' => now(), 'created_at' => now()],
+                    ['project_id' => null, 'name' => $status['name']],
+                    [...$status, 'project_id' => null, 'is_active' => true, 'updated_at' => now(), 'created_at' => now()],
                 );
             }
         }

@@ -2,6 +2,9 @@ import { DndContext, DragOverlay, MeasuringStrategy, PointerSensor, pointerWithi
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import HolderOutlined from '@ant-design/icons/HolderOutlined';
+import LeftOutlined from '@ant-design/icons/LeftOutlined';
+import RightOutlined from '@ant-design/icons/RightOutlined';
+import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
@@ -29,6 +32,7 @@ import ProjectFormDrawer from '../components/ProjectFormDrawer';
 import ProjectTaskDetailDrawer from '../components/ProjectTaskDetailDrawer';
 import ProjectReportDrawer from '../components/ProjectReportDrawer';
 import ProjectTaskDrawer from '../components/ProjectTaskDrawer';
+import ProjectTaskStatusSettingsModal from '../components/ProjectTaskStatusSettingsModal';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -184,25 +188,36 @@ function ProjectKanbanTaskCardBody({ task, canManageTasks, onEdit, onOpenDetail,
     );
 }
 
-function ProjectKanbanColumn({ status, count, isDropTarget, children }) {
+function ProjectKanbanColumn({ status, count, isDropTarget, collapsed, onToggleCollapse, children }) {
     const { setNodeRef } = useDroppable({
         id: `status-${status.id}`,
         data: { type: 'status', statusId: status.id },
     });
 
     return (
-        <div ref={setNodeRef} className={`project-kanban-column${isDropTarget ? ' is-drop-target' : ''}`} style={{ '--project-kanban-accent': resolveSemanticColor(status.color, '#5b7fad') }}>
+        <div ref={setNodeRef} className={`project-kanban-column${isDropTarget ? ' is-drop-target' : ''}${collapsed ? ' is-collapsed' : ''}`} style={{ '--project-kanban-accent': resolveSemanticColor(status.color, '#5b7fad') }}>
             <Card className="project-kanban-column-card" styles={{ body: { padding: 0 } }}>
                 <div className="project-kanban-column-head">
                     <div className="project-kanban-column-headcopy">
                         <strong>{status.name}</strong>
                         <span>{count ? `${count} nhiệm vụ` : 'Không có nhiệm vụ'}</span>
                     </div>
-                    <span className="project-kanban-column-count">{count > 99 ? '99+' : count}</span>
+                    <div className="project-kanban-column-headactions">
+                        <span className="project-kanban-column-count">{count > 99 ? '99+' : count}</span>
+                        <Button
+                            type="text"
+                            size="small"
+                            className="project-kanban-column-toggle"
+                            icon={collapsed ? <RightOutlined /> : <LeftOutlined />}
+                            onClick={onToggleCollapse}
+                        />
+                    </div>
                 </div>
-                <Space direction="vertical" size={12} style={{ width: '100%' }} className="project-kanban-column-body">
-                    {children}
-                </Space>
+                {!collapsed ? (
+                    <Space direction="vertical" size={12} style={{ width: '100%' }} className="project-kanban-column-body">
+                        {children}
+                    </Space>
+                ) : null}
             </Card>
         </div>
     );
@@ -253,6 +268,8 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
     const [taskDetailOpen, setTaskDetailOpen] = useState(false);
     const [taskDetailId, setTaskDetailId] = useState(null);
     const [taskViewMode, setTaskViewMode] = useState('kanban');
+    const [statusSettingsOpen, setStatusSettingsOpen] = useState(false);
+    const [collapsedStatusIds, setCollapsedStatusIds] = useState([]);
     const [draggingTaskId, setDraggingTaskId] = useState(null);
     const [dropStatusId, setDropStatusId] = useState(null);
     const [placeholderTaskId, setPlaceholderTaskId] = useState(null);
@@ -327,6 +344,11 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
     const projectItems = data?.items ?? [];
     const projectReferences = data?.references ?? {};
     const taskStatuses = references.task_statuses ?? [];
+    const orderedTaskStatuses = useMemo(() => [...taskStatuses].sort((left, right) => {
+        const orderDiff = (left.sort_order ?? 0) - (right.sort_order ?? 0);
+
+        return orderDiff || left.id - right.id;
+    }), [taskStatuses]);
     const projectTasks = optimisticTasks ?? project?.tasks ?? [];
     const activeDraggedTask = useMemo(() => projectTasks.find((task) => task.id === draggingTaskId) ?? null, [draggingTaskId, projectTasks]);
     const selectedTask = useMemo(() => projectTasks.find((task) => task.id === taskDetailId) ?? project?.tasks?.find((task) => task.id === taskDetailId) ?? null, [project, projectTasks, taskDetailId]);
@@ -355,6 +377,10 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     useEffect(() => {
         setOptimisticTasks(null);
+    }, [project?.id]);
+
+    useEffect(() => {
+        setCollapsedStatusIds([]);
     }, [project?.id]);
 
     const openCreateProject = () => {
@@ -560,7 +586,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                 return sourceTasks;
             }
 
-            const reorderedTasks = reorderProjectTasks(sourceTasks, taskId, nextStatusId, overTaskId, taskStatuses);
+            const reorderedTasks = reorderProjectTasks(sourceTasks, taskId, nextStatusId, overTaskId, orderedTaskStatuses);
 
             if (areTaskLayoutsEqual(sourceTasks, reorderedTasks)) {
                 return sourceTasks;
@@ -710,6 +736,176 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                 },
             };
         });
+    };
+
+    const applyProjectTaskStatuses = (items) => {
+        const nextStatuses = [...(items ?? [])].sort((left, right) => {
+            const orderDiff = (left.sort_order ?? 0) - (right.sort_order ?? 0);
+
+            return orderDiff || left.id - right.id;
+        });
+        const statusMap = new Map(nextStatuses.map((status) => [status.id, status]));
+
+        mutateData((currentData) => {
+            if (!currentData?.project) {
+                return currentData;
+            }
+
+            return {
+                ...currentData,
+                references: {
+                    ...(currentData.references ?? {}),
+                    task_statuses: nextStatuses,
+                },
+                project: {
+                    ...currentData.project,
+                    tasks: (currentData.project.tasks ?? []).map((task) => {
+                        const status = statusMap.get(task.task_status_id);
+
+                        if (!status) {
+                            return task;
+                        }
+
+                        return {
+                            ...task,
+                            status: {
+                                ...(task.status ?? {}),
+                                id: status.id,
+                                name: status.name,
+                                color: status.color,
+                                is_done: status.is_done,
+                            },
+                        };
+                    }),
+                },
+            };
+        });
+
+        setOptimisticTasks((currentTasks) => currentTasks ? currentTasks.map((task) => {
+            const status = statusMap.get(task.task_status_id);
+
+            if (!status) {
+                return task;
+            }
+
+            return {
+                ...task,
+                status: {
+                    ...(task.status ?? {}),
+                    id: status.id,
+                    name: status.name,
+                    color: status.color,
+                    is_done: status.is_done,
+                },
+            };
+        }) : currentTasks);
+
+        setCollapsedStatusIds((currentIds) => currentIds.filter((statusId) => statusMap.has(statusId)));
+    };
+
+    const createTaskStatus = async (values) => {
+        if (!project) {
+            return;
+        }
+
+        let nextStatuses = null;
+
+        await runAdminAction(
+            async () => {
+                const response = await callAdminApi(`/admin/api/project/projects/${project.id}/task-statuses`, {
+                    method: 'POST',
+                    body: JSON.stringify(values),
+                });
+
+                nextStatuses = response?.data?.items ?? null;
+
+                return response;
+            },
+            'Đã thêm trạng thái.',
+            () => {
+                if (nextStatuses) {
+                    applyProjectTaskStatuses(nextStatuses);
+                }
+            },
+        );
+    };
+
+    const updateTaskStatus = async (status, values) => {
+        let nextStatuses = null;
+
+        await runAdminAction(
+            async () => {
+                const response = await callAdminApi(`/admin/api/project/task-statuses/${status.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(values),
+                });
+
+                nextStatuses = response?.data?.items ?? null;
+
+                return response;
+            },
+            'Đã cập nhật trạng thái.',
+            () => {
+                if (nextStatuses) {
+                    applyProjectTaskStatuses(nextStatuses);
+                }
+            },
+        );
+    };
+
+    const deleteTaskStatus = async (status) => {
+        let nextStatuses = null;
+
+        await runAdminAction(
+            async () => {
+                const response = await callAdminApi(`/admin/api/project/task-statuses/${status.id}`, {
+                    method: 'DELETE',
+                });
+
+                nextStatuses = response?.data?.items ?? null;
+
+                return response;
+            },
+            'Đã xóa trạng thái.',
+            () => {
+                if (nextStatuses) {
+                    applyProjectTaskStatuses(nextStatuses);
+                }
+            },
+        );
+    };
+
+    const reorderTaskStatuses = async (statusIds) => {
+        if (!project) {
+            return;
+        }
+
+        let nextStatuses = null;
+
+        await runAdminAction(
+            async () => {
+                const response = await callAdminApi(`/admin/api/project/projects/${project.id}/task-statuses/reorder`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status_ids: statusIds }),
+                });
+
+                nextStatuses = response?.data?.items ?? null;
+
+                return response;
+            },
+            'Đã cập nhật thứ tự trạng thái.',
+            () => {
+                if (nextStatuses) {
+                    applyProjectTaskStatuses(nextStatuses);
+                }
+            },
+        );
+    };
+
+    const toggleCollapsedStatus = (statusId) => {
+        setCollapsedStatusIds((currentIds) => currentIds.includes(statusId)
+            ? currentIds.filter((id) => id !== statusId)
+            : [...currentIds, statusId]);
     };
 
     const updateTaskRecord = async (task, overrides, successMessage = 'Đã cập nhật công việc.') => {
@@ -1171,7 +1367,10 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                                     <Card>
                                         <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
                                             <Segmented options={[{ label: 'Bảng', value: 'table' }, { label: 'Kanban', value: 'kanban' }]} value={taskViewMode} onChange={setTaskViewMode} />
-                                            {permissions.canManageTasks ? <Button type="primary" onClick={() => { setEditingTask(null); setTaskDrawerOpen(true); }}>Thêm nhiệm vụ</Button> : null}
+                                            <Space wrap>
+                                                {permissions.canUpdateProject ? <Button icon={<SettingOutlined />} onClick={() => setStatusSettingsOpen(true)}>Cài đặt trạng thái</Button> : null}
+                                                {permissions.canManageTasks ? <Button type="primary" onClick={() => { setEditingTask(null); setTaskDrawerOpen(true); }}>Thêm nhiệm vụ</Button> : null}
+                                            </Space>
                                         </Space>
                                     </Card>
 
@@ -1187,13 +1386,16 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                                             onDragEnd={handleTaskDragEnd}
                                             onDragCancel={handleTaskDragCancel}
                                         >
+                                        <div className="project-kanban-board-wrap">
                                         <div className="project-kanban-board">
-                                            {(references.task_statuses ?? []).map((status) => (
+                                            {orderedTaskStatuses.map((status) => (
                                                 <ProjectKanbanColumn
                                                     key={status.id}
                                                     status={status}
                                                     count={groupedProjectTasks[status.id]?.length ?? 0}
                                                     isDropTarget={dropStatusId === status.id}
+                                                    collapsed={collapsedStatusIds.includes(status.id)}
+                                                    onToggleCollapse={() => toggleCollapsedStatus(status.id)}
                                                 >
                                                     <SortableContext items={(groupedProjectTasks[status.id] ?? []).map((task) => `task-${task.id}`)} strategy={verticalListSortingStrategy}>
                                                     {(groupedProjectTasks[status.id] ?? []).length ? (groupedProjectTasks[status.id] ?? []).map((task) => (
@@ -1214,6 +1416,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                                                     </SortableContext>
                                                 </ProjectKanbanColumn>
                                             ))}
+                                        </div>
                                         </div>
                                         <DragOverlay>
                                             {activeDraggedTask ? (
@@ -1493,6 +1696,17 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                 onUploadFile={uploadDetailFile}
                 onDeleteFile={deleteDetailFile}
                 onMarkDone={(task, doneStatusId) => updateTaskRecord(task, { task_status_id: doneStatusId, progress: 100, completed_at: dayjs().format('YYYY-MM-DD') }, 'Đã hoàn thành công việc.')}
+            />
+
+            <ProjectTaskStatusSettingsModal
+                open={statusSettingsOpen}
+                onClose={() => setStatusSettingsOpen(false)}
+                statuses={orderedTaskStatuses}
+                canManage={permissions.canUpdateProject}
+                onCreate={createTaskStatus}
+                onUpdate={updateTaskStatus}
+                onDelete={deleteTaskStatus}
+                onReorder={reorderTaskStatuses}
             />
 
             <ProjectReportDrawer

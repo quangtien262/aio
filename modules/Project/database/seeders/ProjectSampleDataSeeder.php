@@ -17,6 +17,7 @@ use App\Models\ProjectTaskStatus;
 use App\Models\ProjectTaskTimeEntry;
 use App\Models\ProjectType;
 use App\Support\ProjectActivityLogger;
+use App\Support\ProjectTaskStatusManager;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -64,6 +65,8 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
         ]);
         $project->save();
 
+        ProjectTaskStatusManager::ensureProjectStatuses($project);
+
         $this->resetProjectChildren($project);
 
         ProjectMember::query()->create([
@@ -79,7 +82,7 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
                 'project_id' => $project->id,
                 'title' => $taskDefinition['title'],
                 'description' => $taskDefinition['description'],
-                'task_status_id' => $this->resolveTaskStatusId($taskDefinition['status']),
+                'task_status_id' => $this->resolveTaskStatusId($project, $taskDefinition['status']),
                 'priority_id' => $this->resolvePriorityId($taskDefinition['priority']),
                 'assignee_admin_id' => $admin->id,
                 'created_by_admin_id' => $admin->id,
@@ -237,9 +240,9 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
             ?? throw new RuntimeException("Không tìm thấy priority [{$name}].");
     }
 
-    private function resolveTaskStatusId(string $name): int
+    private function resolveTaskStatusId(Project $project, string $name): int
     {
-        return ProjectTaskStatus::query()->where('name', $name)->value('id')
+        return ProjectTaskStatus::query()->where('project_id', $project->id)->where('name', $name)->value('id')
             ?? throw new RuntimeException("Không tìm thấy task status [{$name}].");
     }
 

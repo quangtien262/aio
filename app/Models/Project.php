@@ -57,6 +57,11 @@ class Project extends Model
         return $this->hasMany(ProjectTask::class);
     }
 
+    public function taskStatuses(): HasMany
+    {
+        return $this->hasMany(ProjectTaskStatus::class);
+    }
+
     public function checklists(): HasMany
     {
         return $this->hasMany(ProjectChecklist::class);

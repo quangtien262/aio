@@ -17,11 +17,16 @@ use App\Models\ProjectTaskComment;
 use App\Models\ProjectTaskStatus;
 use App\Models\ProjectTaskTimeEntry;
 use App\Models\ProjectType;
+use App\Support\ProjectTaskStatusManager;
 
 class ProjectDataSerializer
 {
-    public static function references(): array
+    public static function references(?Project $project = null): array
     {
+        if ($project) {
+            ProjectTaskStatusManager::ensureProjectStatuses($project);
+        }
+
         return [
             'project_statuses' => ProjectStatus::query()->where('is_active', true)->orderBy('sort_order')->get()->map(fn (ProjectStatus $status): array => [
                 'id' => $status->id,
@@ -42,8 +47,9 @@ class ProjectDataSerializer
                 'color' => $priority->color,
                 'sort_order' => $priority->sort_order,
             ])->values()->all(),
-            'task_statuses' => ProjectTaskStatus::query()->where('is_active', true)->orderBy('sort_order')->get()->map(fn (ProjectTaskStatus $status): array => [
+            'task_statuses' => self::taskStatusCollection($project)->map(fn (ProjectTaskStatus $status): array => [
                 'id' => $status->id,
+                'project_id' => $status->project_id,
                 'name' => $status->name,
                 'color' => $status->color,
                 'sort_order' => $status->sort_order,
@@ -55,6 +61,17 @@ class ProjectDataSerializer
                 'email' => $admin->email,
             ])->values()->all(),
         ];
+    }
+
+    private static function taskStatusCollection(?Project $project)
+    {
+        $query = ProjectTaskStatus::query()->where('is_active', true)->orderBy('sort_order');
+
+        if ($project) {
+            return $query->where('project_id', $project->id)->get();
+        }
+
+        return $query->whereNull('project_id')->get();
     }
 
     public static function projectSummary(Project $project): array
