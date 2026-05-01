@@ -39,6 +39,7 @@ require __DIR__.'/admin.php';
 Route::middleware('auth:admin')->group(function (): void {
     Route::get('/preview/pages/{page}', [CmsSiteController::class, 'previewPage'])->name('site.preview.pages');
     Route::get('/preview/posts/{post}', [CmsSiteController::class, 'previewPost'])->name('site.preview.posts');
+	Route::get('/preview/products/{product}', [CmsSiteController::class, 'previewProduct'])->name('site.preview.products');
 });
 
 Route::get('/tin-tuc', [CmsSiteController::class, 'postsIndex'])->name('site.blog.index');

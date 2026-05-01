@@ -122,6 +122,9 @@ Route::prefix('admin')
                 Route::post('/modules/{key}/upgrade', [ModuleLifecycleController::class, 'upgrade'])
                     ->middleware('admin.permission:store.module.upgrade')
                     ->name('modules.upgrade');
+                Route::post('/modules/{key}/demo-data', [ModuleLifecycleController::class, 'demoData'])
+                    ->middleware('admin.permission:store.module.upgrade')
+                    ->name('modules.demo-data');
                 Route::delete('/modules/{key}', [ModuleLifecycleController::class, 'uninstall'])
                     ->middleware('admin.permission:store.module.uninstall')
                     ->name('modules.uninstall');
@@ -356,9 +359,12 @@ Route::prefix('admin')
                 Route::post('/themes/{key}/activate', ThemeActivationController::class)
                     ->middleware('admin.permission:theme.activate')
                     ->name('themes.activate');
-                Route::post('/themes/{key}/demo-data', ThemeDemoDataController::class)
+                Route::post('/themes/{key}/demo-data', [ThemeDemoDataController::class, 'store'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.demo-data');
+                Route::delete('/themes/{key}/demo-data', [ThemeDemoDataController::class, 'destroy'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.demo-data.destroy');
                 Route::get('/setup', SetupWizardStateController::class)
                     ->middleware('admin.permission:setup.view')
                     ->name('setup');

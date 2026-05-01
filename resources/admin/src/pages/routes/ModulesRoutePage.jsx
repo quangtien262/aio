@@ -33,12 +33,13 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
         return <Alert type="error" showIcon message={error} />;
     }
 
-    const onAction = (moduleKey, action) => {
+    const onAction = (moduleKey, action, payload = null) => {
         const endpointMap = {
             install: { url: `/admin/api/modules/${moduleKey}/install`, method: 'POST', success: 'Đã cài đặt module.' },
             enable: { url: `/admin/api/modules/${moduleKey}/enable`, method: 'POST', success: 'Đã kích hoạt module.' },
             disable: { url: `/admin/api/modules/${moduleKey}/disable`, method: 'POST', success: 'Đã tắt module.' },
             upgrade: { url: `/admin/api/modules/${moduleKey}/upgrade`, method: 'POST', success: 'Đã nâng cấp module.' },
+            'demo-data': { url: `/admin/api/modules/${moduleKey}/demo-data`, method: 'POST', success: 'Đã tạo data test cho module.' },
             uninstall: { url: `/admin/api/modules/${moduleKey}`, method: 'DELETE', success: 'Đã gỡ module.' },
         };
 
@@ -48,9 +49,16 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
             return;
         }
 
+        const successMessage = action === 'demo-data'
+            ? (payload?.remove_existing === false ? 'Đã thêm mới một batch data test cho module.' : 'Đã thay thế data demo cũ bằng batch mới.')
+            : target.success;
+
         return runAdminAction(async () => {
-            await callAdminApi(target.url, { method: target.method });
-        }, target.success, async () => {
+            await callAdminApi(target.url, {
+                method: target.method,
+                body: payload ? JSON.stringify(payload) : undefined,
+            });
+        }, successMessage, async () => {
             await reload();
             await refreshShell?.();
 

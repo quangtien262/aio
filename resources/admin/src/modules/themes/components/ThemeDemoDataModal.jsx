@@ -47,7 +47,7 @@ export default function ThemeDemoDataModal({ open, theme, canGenerateDemoData, o
                 <Alert
                     type="info"
                     showIcon
-                    message="Hệ thống sẽ tạo menu, sản phẩm, tin tức, trang giới thiệu và banner demo cho website hiện tại. Dữ liệu test cũ do hệ thống sinh ra sẽ được thay thế."
+                    message="Hệ thống sẽ tạo menu, sản phẩm, tin tức, trang giới thiệu và banner demo cho website hiện tại. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau."
                 />
 
                 <div>

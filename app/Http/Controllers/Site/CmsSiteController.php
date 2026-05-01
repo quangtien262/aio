@@ -297,15 +297,26 @@ class CmsSiteController
 
     public function product(string $slug): View
     {
+        $product = $this->resolveProductPreviewModel($slug, false);
+
+        return $this->renderProductDetailView($product, false);
+    }
+
+    public function previewProduct(Request $request, CatalogProduct $product): View
+    {
+        abort_unless(in_array('cms.product.view', $request->user('admin')?->permissions() ?? [], true), 403);
+
+        $product = $this->resolveProductPreviewModel((string) $product->getKey(), true);
+
+        return $this->renderProductDetailView($product, true);
+    }
+
+    private function renderProductDetailView(CatalogProduct $product, bool $isPreview): View
+    {
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
-
-        $productQuery = CatalogProduct::query()->with(['category.parent', 'images']);
-        $this->applyWebsiteScope($productQuery, $websiteKey);
-
-        $product = $productQuery->where('slug', $slug)->where('is_active', true)->firstOrFail();
 
         $relatedProductsQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true)->where('id', '!=', $product->id);
         $this->applyWebsiteScope($relatedProductsQuery, $websiteKey);
@@ -335,6 +346,7 @@ class CmsSiteController
             'detailParagraphs' => $this->splitTextParagraphs($product->detail_content),
             'relatedProducts' => $relatedProducts->map(fn (CatalogProduct $item): array => $this->mapProductCard($item))->all(),
             'isFavorite' => in_array($product->id, $favoriteProductIds, true),
+            'isPreview' => $isPreview,
         ]);
     }
 
@@ -1221,6 +1233,20 @@ class CmsSiteController
         $this->applyWebsiteScope($query, $websiteKey);
 
         return $query->firstOrFail();
+    }
+
+    private function resolveProductPreviewModel(string $identifier, bool $allowInactive): CatalogProduct
+    {
+        $siteProfile = SiteProfile::query()->first();
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $query = CatalogProduct::query()->with(['category.parent', 'images']);
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        if ($allowInactive && ctype_digit($identifier)) {
+            return $query->whereKey((int) $identifier)->firstOrFail();
+        }
+
+        return $query->where('slug', $identifier)->where('is_active', true)->firstOrFail();
     }
 
     private function validateCartQuantity(Request $request, CatalogProduct $product): int

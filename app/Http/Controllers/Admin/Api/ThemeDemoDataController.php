@@ -10,7 +10,7 @@ use InvalidArgumentException;
 
 class ThemeDemoDataController
 {
-    public function __invoke(Request $request, string $key, ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $generator): JsonResponse
+    public function store(Request $request, string $key, ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $generator): JsonResponse
     {
         abort_if($themeRegistry->all()->firstWhere('key', $key) === null, 404, 'Theme not found.');
 
@@ -28,6 +28,18 @@ class ThemeDemoDataController
 
         return response()->json([
             'message' => 'Đã tạo data test cho theme.',
+            'data' => $result,
+        ]);
+    }
+
+    public function destroy(string $key, ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $generator): JsonResponse
+    {
+        abort_if($themeRegistry->all()->firstWhere('key', $key) === null, 404, 'Theme not found.');
+
+        $result = $generator->delete($key);
+
+        return response()->json([
+            'message' => 'Đã xóa data test cho theme.',
             'data' => $result,
         ]);
     }

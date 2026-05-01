@@ -1,10 +1,10 @@
 import { DndContext, DragOverlay, MeasuringStrategy, PointerSensor, pointerWithin, useDroppable, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import HolderOutlined from '@ant-design/icons/HolderOutlined';
 import LeftOutlined from '@ant-design/icons/LeftOutlined';
 import RightOutlined from '@ant-design/icons/RightOutlined';
 import SettingOutlined from '@ant-design/icons/SettingOutlined';
+import VerticalAlignTopOutlined from '@ant-design/icons/VerticalAlignTopOutlined';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
@@ -25,6 +25,7 @@ import Table from 'antd/es/table';
 import Tabs from 'antd/es/tabs';
 import Tag from 'antd/es/tag';
 import Timeline from 'antd/es/timeline';
+import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
 import Upload from 'antd/es/upload';
 import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
@@ -145,7 +146,37 @@ function areTaskLayoutsEqual(leftTasks, rightTasks) {
     });
 }
 
-function ProjectKanbanTaskCardBody({ task, canManageTasks, onEdit, onOpenDetail, dragHandleProps = null }) {
+function areStatusIdListsEqual(leftIds, rightIds) {
+    if (leftIds.length !== rightIds.length) {
+        return false;
+    }
+
+    return leftIds.every((value, index) => value === rightIds[index]);
+}
+
+function extractEntityId(identifier, prefix) {
+    if (typeof identifier !== 'string' || !identifier.startsWith(prefix)) {
+        return null;
+    }
+
+    const numericId = Number.parseInt(identifier.slice(prefix.length), 10);
+
+    return Number.isNaN(numericId) ? null : numericId;
+}
+
+function sortTasksBySortOrder(tasks) {
+    return [...tasks].sort((left, right) => {
+        const orderDiff = (left.sort_order ?? 0) - (right.sort_order ?? 0);
+
+        return orderDiff || left.id - right.id;
+    });
+}
+
+function renderProjectDetailTabLabel(label) {
+    return <span className="project-detail-tab-label">{label}</span>;
+}
+
+function ProjectKanbanTaskCardBody({ task, canManageTasks, onOpenDetail, onPushTop, isTopTask = false }) {
     return (
         <div className="project-task-card-shell">
             <div className="project-task-card-topline">
@@ -153,22 +184,39 @@ function ProjectKanbanTaskCardBody({ task, canManageTasks, onEdit, onOpenDetail,
                 <span className="project-task-progress">{task.progress ?? 0}%</span>
             </div>
 
-            {canManageTasks && dragHandleProps ? (
-                <button type="button" className="project-task-title-dragger" aria-label="Kéo thả công việc bằng tiêu đề" {...dragHandleProps}>
-                    <span className="project-task-title-wrap">
+            <div className="project-task-title-row">
+                {onOpenDetail ? (
+                    <button
+                        type="button"
+                        className="project-task-title-trigger"
+                        onClick={onOpenDetail}
+                    >
+                        <span className="project-task-title-wrap">
+                            <strong className="project-task-title">{task.title}</strong>
+                            <Text type="secondary" className="project-task-description">{task.description || 'Chưa có mô tả.'}</Text>
+                        </span>
+                    </button>
+                ) : (
+                    <div className="project-task-title-static">
                         <strong className="project-task-title">{task.title}</strong>
                         <Text type="secondary" className="project-task-description">{task.description || 'Chưa có mô tả.'}</Text>
-                    </span>
-                    <span className="project-task-drag-handle" aria-hidden="true">
-                        <HolderOutlined />
-                    </span>
-                </button>
-            ) : (
-                <div className="project-task-title-static">
-                    <strong className="project-task-title">{task.title}</strong>
-                    <Text type="secondary" className="project-task-description">{task.description || 'Chưa có mô tả.'}</Text>
-                </div>
-            )}
+                    </div>
+                )}
+
+                {canManageTasks && onPushTop ? (
+                    <Tooltip title="Đẩy lên đầu">
+                        <button
+                            type="button"
+                            className="project-task-top-action"
+                            aria-label={`Đẩy công việc ${task.title} lên đầu cột`}
+                            onClick={onPushTop}
+                            disabled={isTopTask}
+                        >
+                            <VerticalAlignTopOutlined />
+                        </button>
+                    </Tooltip>
+                ) : null}
+            </div>
 
             <div className="project-task-meta-line">
                 <span>{task.due_date ? `Hạn ${dayjs(task.due_date).format('DD/MM/YYYY')}` : 'Chưa có deadline'}</span>
@@ -179,10 +227,6 @@ function ProjectKanbanTaskCardBody({ task, canManageTasks, onEdit, onOpenDetail,
                     <span className="project-task-assignee-avatar">{resolveNameInitial(task.assignee?.name)}</span>
                     <span className="project-task-assignee-name">{task.assignee?.name || 'Chưa phân công'}</span>
                 </div>
-                <Space size={4}>
-                    {onOpenDetail ? <Button size="small" type="text" onClick={onOpenDetail}>Chi tiết</Button> : null}
-                    {canManageTasks && onEdit ? <Button size="small" type="text" onClick={onEdit}>Cập nhật</Button> : null}
-                </Space>
             </div>
         </div>
     );
@@ -223,7 +267,7 @@ function ProjectKanbanColumn({ status, count, isDropTarget, collapsed, onToggleC
     );
 }
 
-function ProjectKanbanTaskCard({ task, canManageTasks, isMoving, isDragging, onEdit, onOpenDetail }) {
+function ProjectKanbanTaskCard({ task, canManageTasks, isMoving, isDragging, isTopTask, onOpenDetail, onPushTop }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
         id: `task-${task.id}`,
         disabled: !canManageTasks || isMoving,
@@ -239,7 +283,7 @@ function ProjectKanbanTaskCard({ task, canManageTasks, isMoving, isDragging, onE
         transition,
         '--project-task-accent': resolveSemanticColor(task.priority?.color, '#ef4444'),
     };
-    const dragHandleProps = canManageTasks && !isMoving ? { ...listeners, ...attributes } : null;
+    const cardInteractionProps = canManageTasks && !isMoving ? { ...listeners, ...attributes } : {};
 
     return (
         <Card
@@ -248,8 +292,15 @@ function ProjectKanbanTaskCard({ task, canManageTasks, isMoving, isDragging, onE
             style={style}
             styles={{ body: { padding: 14 } }}
             className={`project-task-card${isDragging ? ' is-dragging' : ''}${isMoving ? ' is-moving' : ''}`}
+            {...cardInteractionProps}
         >
-            <ProjectKanbanTaskCardBody task={task} canManageTasks={canManageTasks} onEdit={onEdit} onOpenDetail={onOpenDetail} dragHandleProps={dragHandleProps} />
+            <ProjectKanbanTaskCardBody
+                task={task}
+                canManageTasks={canManageTasks}
+                onOpenDetail={onOpenDetail}
+                onPushTop={onPushTop}
+                isTopTask={isTopTask}
+            />
         </Card>
     );
 }
@@ -280,7 +331,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
     const [newChecklist, setNewChecklist] = useState({ title: '', assigned_admin_id: null });
     const [newMember, setNewMember] = useState({ admin_id: null, role: 'member' });
     const [projectFilter, setProjectFilter] = useState({ search: '', project_status_id: null, project_type_id: null });
-    const [taskFilter, setTaskFilter] = useState({ search: '', project_id: null });
+    const [taskFilter, setTaskFilter] = useState({ search: '', project_id: null, status_name: null, assignee_admin_id: null });
     const [reportFilter, setReportFilter] = useState({ project_id: null });
 
     const permissions = useMemo(() => ({
@@ -325,6 +376,8 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                 const query = new URLSearchParams();
                 if (taskFilter.search) query.set('search', taskFilter.search);
                 if (taskFilter.project_id) query.set('project_id', String(taskFilter.project_id));
+                if (taskFilter.status_name) query.set('status_name', String(taskFilter.status_name));
+                if (taskFilter.assignee_admin_id) query.set('assignee_admin_id', String(taskFilter.assignee_admin_id));
                 const payload = await callAdminApi(`/admin/api/project/tasks${query.toString() ? `?${query.toString()}` : ''}`);
 
                 return payload.data ?? null;
@@ -349,10 +402,15 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         return orderDiff || left.id - right.id;
     }), [taskStatuses]);
+    const defaultCollapsedStatusIds = useMemo(
+        () => orderedTaskStatuses.filter((status) => status.is_collapsed_by_default).map((status) => status.id),
+        [orderedTaskStatuses],
+    );
     const projectTasks = optimisticTasks ?? project?.tasks ?? [];
     const activeDraggedTask = useMemo(() => projectTasks.find((task) => task.id === draggingTaskId) ?? null, [draggingTaskId, projectTasks]);
     const selectedTask = useMemo(() => projectTasks.find((task) => task.id === taskDetailId) ?? project?.tasks?.find((task) => task.id === taskDetailId) ?? null, [project, projectTasks, taskDetailId]);
-    const groupedProjectTasks = useMemo(() => projectTasks.reduce((result, task) => {
+    const groupedProjectTasks = useMemo(() => {
+        const groupedTasks = projectTasks.reduce((result, task) => {
         const statusId = task.task_status_id;
 
         if (!result[statusId]) {
@@ -362,26 +420,40 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
         result[statusId].push(task);
 
         return result;
-    }, {}), [projectTasks]);
-    const taskProjectOptions = useMemo(() => {
-        const registry = new Map();
+    }, {});
 
-        (data?.items ?? []).forEach((item) => {
-            if (item.project?.id && item.project?.name) {
-                registry.set(item.project.id, { value: item.project.id, label: item.project.name });
-            }
+        Object.keys(groupedTasks).forEach((statusId) => {
+            groupedTasks[statusId] = sortTasksBySortOrder(groupedTasks[statusId]);
         });
 
-        return Array.from(registry.values());
-    }, [data]);
+        return groupedTasks;
+    }, [projectTasks]);
+    const taskProjectOptions = useMemo(() => {
+        return (references.projects ?? []).map((item) => ({
+            value: item.id,
+            label: item.code ? `${item.name} (${item.code})` : item.name,
+        }));
+    }, [references.projects]);
+    const taskStatusFilterOptions = useMemo(() => {
+        return (references.task_filter_statuses ?? []).map((item) => ({
+            value: item.name,
+            label: item.name,
+        }));
+    }, [references.task_filter_statuses]);
+    const taskAssigneeOptions = useMemo(() => {
+        return (references.admins ?? []).map((item) => ({
+            value: item.id,
+            label: `${item.name} (${item.email})`,
+        }));
+    }, [references.admins]);
 
     useEffect(() => {
         setOptimisticTasks(null);
     }, [project?.id]);
 
     useEffect(() => {
-        setCollapsedStatusIds([]);
-    }, [project?.id]);
+        setCollapsedStatusIds((currentIds) => (areStatusIdListsEqual(currentIds, defaultCollapsedStatusIds) ? currentIds : defaultCollapsedStatusIds));
+    }, [project?.id, defaultCollapsedStatusIds]);
 
     const openCreateProject = () => {
         setEditingProject(null);
@@ -545,7 +617,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
     };
 
     const handleTaskDragStart = (event) => {
-        const taskId = event.active.data.current?.taskId ?? null;
+        const taskId = event.active.data.current?.taskId ?? extractEntityId(event.active.id, 'task-');
 
         setDraggingTaskId(taskId);
         setOptimisticTasks(project?.tasks ?? []);
@@ -558,14 +630,16 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
         }
 
         const overData = event.over.data.current;
-        const nextStatusId = overData?.type === 'status' ? overData.statusId : overData?.statusId ?? null;
-        const overTaskId = overData?.type === 'task' ? overData.taskId : null;
+        const overStatusIdFromId = extractEntityId(event.over.id, 'status-');
+        const overTaskIdFromId = extractEntityId(event.over.id, 'task-');
+        const nextStatusId = overData?.type === 'status' ? overData.statusId : overData?.statusId ?? overStatusIdFromId ?? null;
+        const overTaskId = overData?.type === 'task' ? overData.taskId : overTaskIdFromId;
 
         setDropStatusId(nextStatusId);
         setPlaceholderStatusId(nextStatusId);
         setPlaceholderTaskId(overTaskId);
 
-        const taskId = event.active.data.current?.taskId ?? null;
+        const taskId = event.active.data.current?.taskId ?? extractEntityId(event.active.id, 'task-');
         if (!taskId || !nextStatusId) {
             return;
         }
@@ -597,10 +671,15 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
     };
 
     const handleTaskDragEnd = async (event) => {
-        const taskId = event.active.data.current?.taskId ?? null;
+        const taskId = event.active.data.current?.taskId ?? extractEntityId(event.active.id, 'task-');
         const overData = event.over?.data.current;
-        const nextStatusId = overData?.type === 'status' ? overData.statusId : overData?.statusId ?? null;
-        const overTaskId = overData?.type === 'task' ? overData.taskId : null;
+        const fallbackStatusId = dropStatusId ?? placeholderStatusId ?? null;
+        const overStatusIdFromId = extractEntityId(event.over?.id, 'status-');
+        const overTaskIdFromId = extractEntityId(event.over?.id, 'task-');
+        const nextStatusId = overData?.type === 'status' ? overData.statusId : overData?.statusId ?? overStatusIdFromId ?? fallbackStatusId;
+        const overTaskId = overData?.type === 'task'
+            ? overData.taskId
+            : (overTaskIdFromId ?? (nextStatusId === placeholderStatusId ? placeholderTaskId : null));
 
         setDraggingTaskId(null);
         setDropStatusId(null);
@@ -906,6 +985,76 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
         setCollapsedStatusIds((currentIds) => currentIds.includes(statusId)
             ? currentIds.filter((id) => id !== statusId)
             : [...currentIds, statusId]);
+    };
+
+    const pushTaskToTop = async (task) => {
+        if (!task || !permissions.canManageTasks || movingTaskId) {
+            return;
+        }
+
+        const currentBucket = groupedProjectTasks[task.task_status_id] ?? [];
+        const currentTopTask = currentBucket[0] ?? null;
+
+        if (!currentTopTask || currentTopTask.id === task.id) {
+            return;
+        }
+
+        const previousTasks = projectTasks;
+        const nextTasks = reorderProjectTasks(projectTasks, task.id, task.task_status_id, currentTopTask.id, orderedTaskStatuses);
+        let nextTask = null;
+
+        setMovingTaskId(task.id);
+        setOptimisticTasks(nextTasks);
+
+        try {
+            const didSucceed = await runAdminAction(
+                async () => {
+                    const response = await callAdminApi(`/admin/api/project/tasks/${task.id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            title: task.title,
+                            description: task.description,
+                            task_status_id: task.task_status_id,
+                            priority_id: task.priority_id,
+                            assignee_admin_id: task.assignee_admin_id,
+                            start_date: task.start_date,
+                            due_date: task.due_date,
+                            completed_at: task.completed_at ? dayjs(task.completed_at).format('YYYY-MM-DD') : null,
+                            sort_order: 1,
+                            progress: task.progress,
+                        }),
+                    });
+
+                    nextTask = response?.data ?? null;
+
+                    return response;
+                },
+                'Đã đẩy công việc lên đầu cột.',
+                () => {
+                    mutateData((currentData) => {
+                        if (!currentData?.project) {
+                            return currentData;
+                        }
+
+                        return {
+                            ...currentData,
+                            project: {
+                                ...currentData.project,
+                                tasks: nextTasks.map((item) => (item.id === nextTask?.id ? { ...item, ...nextTask } : item)),
+                            },
+                        };
+                    });
+
+                    setOptimisticTasks(null);
+                },
+            );
+
+            if (!didSucceed) {
+                setOptimisticTasks(previousTasks);
+            }
+        } finally {
+            setMovingTaskId(null);
+        }
     };
 
     const updateTaskRecord = async (task, overrides, successMessage = 'Đã cập nhật công việc.') => {
@@ -1329,16 +1478,18 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
             <Space direction="vertical" size={16} style={{ width: '100%' }}>
                 <Card>
                     <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
-                            <Button onClick={() => navigate('/project/projects')}>Quay lại</Button>
-                            {permissions.canUpdateProject ? <Button onClick={() => { setEditingProject(project); setProjectDrawerOpen(true); }}>Sửa dự án</Button> : null}
+                        <Space wrap style={{ width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Space size={12} align="center">
+                                <Button
+                                    icon={<LeftOutlined />}
+                                    aria-label="Quay lại danh sách dự án"
+                                    onClick={() => navigate('/project/projects')}
+                                />
+                                <Title level={2} style={{ margin: 0 }}>{project.name}</Title>
+                            </Space>
                         </Space>
 
-                        <div>
-                            <Text className="card-label">Project Workspace</Text>
-                            <Title level={2} style={{ margin: '6px 0' }}>{project.name}</Title>
-                            <Paragraph style={{ marginBottom: 0 }}>{project.description || 'Chưa có mô tả cho dự án này.'}</Paragraph>
-                        </div>
+                        <Paragraph style={{ marginBottom: 0 }}>{project.description || 'Chưa có mô tả cho dự án này.'}</Paragraph>
 
                         <Space wrap>
                             <Tag color={resolveTagColor(project.status?.color)}>{project.status?.name}</Tag>
@@ -1346,22 +1497,16 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                             <Tag>{project.code}</Tag>
                             <Tag>{project.project_type?.name || 'Chưa gán loại'}</Tag>
                         </Space>
-
-                        <Row gutter={[16, 16]}>
-                            <Col xs={12} md={6}><Card><Statistic title="Tiến độ" value={project.progress ?? 0} suffix="%" /></Card></Col>
-                            <Col xs={12} md={6}><Card><Statistic title="Công việc" value={project.tasks?.length ?? 0} /></Card></Col>
-                            <Col xs={12} md={6}><Card><Statistic title="Files" value={project.files?.length ?? 0} /></Card></Col>
-                            <Col xs={12} md={6}><Card><Statistic title="Báo cáo" value={project.reports?.length ?? 0} /></Card></Col>
-                        </Row>
                     </Space>
                 </Card>
 
                 <Tabs
+                    className="project-detail-tabs"
                     defaultActiveKey="tasks"
                     items={[
                         {
                             key: 'tasks',
-                            label: `Nhiệm vụ (${project.tasks?.length ?? 0})`,
+                            label: renderProjectDetailTabLabel(`Nhiệm vụ (${project.tasks?.length ?? 0})`),
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     <Card>
@@ -1398,7 +1543,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                                                     onToggleCollapse={() => toggleCollapsedStatus(status.id)}
                                                 >
                                                     <SortableContext items={(groupedProjectTasks[status.id] ?? []).map((task) => `task-${task.id}`)} strategy={verticalListSortingStrategy}>
-                                                    {(groupedProjectTasks[status.id] ?? []).length ? (groupedProjectTasks[status.id] ?? []).map((task) => (
+                                                        {(groupedProjectTasks[status.id] ?? []).length ? (groupedProjectTasks[status.id] ?? []).map((task, index) => (
                                                             <div key={`task-slot-${task.id}`}>
                                                             {draggingTaskId && placeholderStatusId === status.id && placeholderTaskId === task.id && draggingTaskId !== task.id ? <div className="project-task-placeholder" /> : null}
                                                             <ProjectKanbanTaskCard
@@ -1407,8 +1552,10 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                                                                 canManageTasks={permissions.canManageTasks}
                                                                 isMoving={movingTaskId === task.id}
                                                                 isDragging={draggingTaskId === task.id}
+                                                                isTopTask={index === 0}
                                                                 onOpenDetail={() => openTaskDetail(task)}
                                                                 onEdit={() => { setEditingTask(task); setTaskDrawerOpen(true); }}
+                                                                onPushTop={() => pushTaskToTop(task)}
                                                             />
                                                             </div>
                                                         )) : <Empty description="Không có công việc" image={Empty.PRESENTED_IMAGE_SIMPLE} />}
@@ -1434,7 +1581,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                         },
                         {
                             key: 'members',
-                            label: `Thành viên (${project.members?.length ?? 0})`,
+                            label: renderProjectDetailTabLabel(`Thành viên (${project.members?.length ?? 0})`),
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     {permissions.canManageMembers ? (
@@ -1463,7 +1610,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                         },
                         {
                             key: 'files',
-                            label: `Files (${project.files?.length ?? 0})`,
+                            label: renderProjectDetailTabLabel(`Files (${project.files?.length ?? 0})`),
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     {permissions.canManageFiles ? (
@@ -1491,7 +1638,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                         },
                         {
                             key: 'checklists',
-                            label: `Checklist (${(project.checklists ?? []).filter((item) => item.is_completed).length}/${project.checklists?.length ?? 0})`,
+                            label: renderProjectDetailTabLabel(`Checklist (${(project.checklists ?? []).filter((item) => item.is_completed).length}/${project.checklists?.length ?? 0})`),
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     {permissions.canManageChecklist ? (
@@ -1536,7 +1683,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                         },
                         {
                             key: 'reports',
-                            label: `Báo cáo (${project.reports?.length ?? 0})`,
+                            label: renderProjectDetailTabLabel(`Báo cáo (${project.reports?.length ?? 0})`),
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     {permissions.canManageReports ? <Card><Button type="primary" onClick={() => { setEditingReport(null); setReportDrawerOpen(true); }}>Thêm báo cáo</Button></Card> : null}
@@ -1546,7 +1693,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                         },
                         {
                             key: 'history',
-                            label: `Lịch sử (${project.activities?.length ?? 0})`,
+                            label: renderProjectDetailTabLabel(`Lịch sử (${project.activities?.length ?? 0})`),
                             children: permissions.canViewActivity ? (
                                 <Card>
                                     {(project.activities ?? []).length ? (
@@ -1566,16 +1713,101 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                         },
                         {
                             key: 'info',
-                            label: 'Thông tin',
+                            label: renderProjectDetailTabLabel('Thông tin'),
                             children: (
-                                <Card>
-                                    <div className="detail-grid detail-grid-2">
-                                        <div className="detail-tile"><Text className="detail-label">Mã dự án</Text><Text strong>{project.code}</Text></div>
-                                        <div className="detail-tile"><Text className="detail-label">Người quản lý</Text><Text strong>{project.manager?.name || '-'}</Text></div>
-                                        <div className="detail-tile"><Text className="detail-label">Ngày bắt đầu</Text><Text strong>{project.start_date ? dayjs(project.start_date).format('DD/MM/YYYY') : '-'}</Text></div>
-                                        <div className="detail-tile"><Text className="detail-label">Ngày hoàn thành</Text><Text strong>{project.due_date ? dayjs(project.due_date).format('DD/MM/YYYY') : '-'}</Text></div>
-                                    </div>
-                                </Card>
+                                <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                                    {permissions.canUpdateProject ? (
+                                        <Card>
+                                            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+                                                <Button onClick={() => { setEditingProject(project); setProjectDrawerOpen(true); }}>Sửa dự án</Button>
+                                            </Space>
+                                        </Card>
+                                    ) : null}
+
+                                    <Card>
+                                        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                                            <div className="detail-grid detail-grid-2">
+                                                <div className="detail-tile detail-tile-wide">
+                                                    <Text className="detail-label">Tên dự án</Text>
+                                                    <Text strong>{project.name}</Text>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Mã dự án</Text>
+                                                    <Text strong>{project.code || '-'}</Text>
+                                                </div>
+                                                <div className="detail-tile detail-tile-wide">
+                                                    <Text className="detail-label">Mô tả</Text>
+                                                    <Text>{project.description || 'Chưa có mô tả cho dự án này.'}</Text>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Loại dự án</Text>
+                                                    <Tag color={resolveTagColor(project.project_type?.color)}>{project.project_type?.name || 'Chưa gán loại'}</Tag>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Trạng thái</Text>
+                                                    <Tag color={resolveTagColor(project.status?.color)}>{project.status?.name || '-'}</Tag>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Ưu tiên</Text>
+                                                    <Tag color={resolveTagColor(project.priority?.color)}>{project.priority?.name || '-'}</Tag>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Người quản lý</Text>
+                                                    <Space direction="vertical" size={2}>
+                                                        <Text strong>{project.manager?.name || '-'}</Text>
+                                                        <Text type="secondary">{project.manager?.email || 'Chưa gán người quản lý'}</Text>
+                                                    </Space>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Ngày bắt đầu</Text>
+                                                    <Text strong>{project.start_date ? dayjs(project.start_date).format('DD/MM/YYYY') : '-'}</Text>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Ngày hoàn thành dự kiến</Text>
+                                                    <Text strong>{project.due_date ? dayjs(project.due_date).format('DD/MM/YYYY') : '-'}</Text>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Ngày hoàn thành thực tế</Text>
+                                                    <Text strong>{project.completed_at ? dayjs(project.completed_at).format('DD/MM/YYYY') : '-'}</Text>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Tiến độ</Text>
+                                                    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                                                        <Text strong>{project.progress ?? 0}%</Text>
+                                                        <Progress percent={project.progress ?? 0} size="small" />
+                                                    </Space>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Màu nhận diện</Text>
+                                                    <Space size={10} align="center">
+                                                        <span style={{ width: 18, height: 18, borderRadius: 999, display: 'inline-block', background: project.color || '#1677ff', border: '1px solid rgba(15, 23, 42, 0.12)' }} />
+                                                        <Text strong>{project.color || '#1677ff'}</Text>
+                                                    </Space>
+                                                </div>
+                                                <div className="detail-tile detail-tile-wide">
+                                                    <Text className="detail-label">Thành viên dự án</Text>
+                                                    {(project.members ?? []).length ? (
+                                                        <Space wrap>
+                                                            {(project.members ?? []).map((member) => (
+                                                                <Tag key={member.id}>{member.admin?.name || 'Chưa gán admin'}{member.role ? ` • ${member.role}` : ''}</Tag>
+                                                            ))}
+                                                        </Space>
+                                                    ) : (
+                                                        <Text type="secondary">Chưa có thành viên dự án.</Text>
+                                                    )}
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Ngày tạo</Text>
+                                                    <Text strong>{project.created_at ? dayjs(project.created_at).format('DD/MM/YYYY HH:mm') : '-'}</Text>
+                                                </div>
+                                                <div className="detail-tile">
+                                                    <Text className="detail-label">Cập nhật lần cuối</Text>
+                                                    <Text strong>{project.updated_at ? dayjs(project.updated_at).format('DD/MM/YYYY HH:mm') : '-'}</Text>
+                                                </div>
+                                            </div>
+                                        </Space>
+                                    </Card>
+                                </Space>
                             ),
                         },
                     ]}
@@ -1608,6 +1840,22 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                             options={taskProjectOptions}
                             value={taskFilter.project_id}
                             onChange={(value) => setTaskFilter((prev) => ({ ...prev, project_id: value }))}
+                        />
+                        <Select
+                            allowClear
+                            placeholder="Lọc theo trạng thái"
+                            style={{ width: 220 }}
+                            options={taskStatusFilterOptions}
+                            value={taskFilter.status_name}
+                            onChange={(value) => setTaskFilter((prev) => ({ ...prev, status_name: value }))}
+                        />
+                        <Select
+                            allowClear
+                            placeholder="Lọc theo người thực hiện"
+                            style={{ width: 280 }}
+                            options={taskAssigneeOptions}
+                            value={taskFilter.assignee_admin_id}
+                            onChange={(value) => setTaskFilter((prev) => ({ ...prev, assignee_admin_id: value }))}
                         />
                     </Space>
                 </Card>
@@ -1684,6 +1932,11 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                 canManageFiles={permissions.canManageFiles}
                 canViewActivity={permissions.canViewActivity}
                 onUpdateTask={(task, overrides) => updateTaskRecord(task, overrides)}
+                onEditTask={(task) => {
+                    setTaskDetailOpen(false);
+                    setEditingTask(task);
+                    setTaskDrawerOpen(true);
+                }}
                 onCreateTaskChecklist={createTaskDetailChecklist}
                 onToggleTaskChecklist={toggleTaskDetailChecklist}
                 onDeleteTaskChecklist={deleteTaskDetailChecklist}

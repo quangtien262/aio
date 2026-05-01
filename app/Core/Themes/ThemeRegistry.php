@@ -2,6 +2,7 @@
 
 namespace App\Core\Themes;
 
+use App\Models\ThemeDemoRecord;
 use App\Models\ThemeInstallation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -11,13 +12,18 @@ class ThemeRegistry
     public function all(): Collection
     {
         $installations = ThemeInstallation::query()->get()->keyBy('key');
+        $demoCounts = ThemeDemoRecord::query()
+            ->selectRaw('theme_key, COUNT(*) as aggregate_count')
+            ->groupBy('theme_key')
+            ->pluck('aggregate_count', 'theme_key');
 
         return collect(File::directories(base_path('themes')))
             ->map(fn (string $path): ?array => $this->readManifest($path))
             ->filter()
-            ->map(function (array $payload) use ($installations): array {
+            ->map(function (array $payload) use ($installations, $demoCounts): array {
                 $manifest = ThemeManifest::fromArray($payload);
                 $installation = $installations->get($manifest->key);
+                $demoRecordCount = (int) ($demoCounts[$manifest->key] ?? 0);
 
                 return [
                     'key' => $manifest->key,
@@ -35,6 +41,8 @@ class ThemeRegistry
                     'is_active' => (bool) $installation?->is_active,
                     'installed_at' => $installation?->installed_at,
                     'activated_at' => $installation?->activated_at,
+                    'has_demo_data' => $demoRecordCount > 0,
+                    'demo_record_count' => $demoRecordCount,
                 ];
             })
             ->values();

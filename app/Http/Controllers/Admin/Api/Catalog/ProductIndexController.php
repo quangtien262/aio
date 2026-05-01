@@ -34,6 +34,8 @@ class ProductIndexController
                 'is_featured' => $product->is_featured,
                 'sort_order' => $product->sort_order,
                 'is_active' => $product->is_active,
+                'public_url' => $product->slug ? url('/san-pham/'.$product->slug) : null,
+                'preview_url' => url('/preview/products/'.$product->id),
             ])
             ->values()
             ->all();

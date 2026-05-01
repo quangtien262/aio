@@ -41,6 +41,7 @@ return new class extends Migration
             $table->string('color', 32)->default('blue');
             $table->unsignedInteger('sort_order')->default(0);
             $table->boolean('is_done')->default(false);
+            $table->boolean('is_collapsed_by_default')->default(false)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

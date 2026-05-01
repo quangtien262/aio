@@ -14,9 +14,17 @@ class ProductManagementController
     public function store(Request $request): JsonResponse
     {
         $validated = $this->validatePayload($request);
+        $shouldGenerateDefaultSku = trim((string) ($validated['sku'] ?? '')) === '';
 
-        $product = DB::transaction(function () use ($validated): CatalogProduct {
+        $product = DB::transaction(function () use ($validated, $shouldGenerateDefaultSku): CatalogProduct {
             $product = CatalogProduct::query()->create($this->normalizePayload($validated));
+
+            if ($shouldGenerateDefaultSku) {
+                $product->update([
+                    'sku' => $this->defaultSku($product->id),
+                ]);
+            }
+
             $this->syncGalleryImages($product, $validated['gallery_images'] ?? []);
 
             return $product;
@@ -60,7 +68,7 @@ class ProductManagementController
             'catalog_category_id' => ['nullable', 'integer', 'exists:catalog_categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('catalog_products', 'slug')->ignore($product?->id)],
-            'sku' => ['required', 'string', 'max:255', Rule::unique('catalog_products', 'sku')->ignore($product?->id)],
+            'sku' => ['nullable', 'string', 'max:255', Rule::unique('catalog_products', 'sku')->ignore($product?->id)],
             'price' => ['required', 'numeric', 'min:0'],
             'original_price' => ['nullable', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
@@ -109,9 +117,11 @@ class ProductManagementController
     private function normalizePayload(array $validated): array
     {
         $name = trim((string) ($validated['name'] ?? ''));
+        $sku = trim((string) ($validated['sku'] ?? ''));
 
         return array_merge($validated, [
             'slug' => trim((string) ($validated['slug'] ?? '')) !== '' ? $validated['slug'] : Str::slug($name),
+            'sku' => $sku !== '' ? $sku : 'TMP-'.Str::upper(Str::random(16)),
             'detail_content' => $this->normalizeTextBlock($validated['detail_content'] ?? null),
             'highlights' => $this->normalizeTextBlock($validated['highlights'] ?? null),
             'usage_terms' => $this->normalizeTextBlock($validated['usage_terms'] ?? null),
@@ -146,5 +156,10 @@ class ProductManagementController
         $text = trim((string) ($value ?? ''));
 
         return $text === '' ? null : preg_replace("/\r\n?|\n/", PHP_EOL, $text);
+    }
+
+    private function defaultSku(int $id): string
+    {
+        return 'PRO'.$id;
     }
 }

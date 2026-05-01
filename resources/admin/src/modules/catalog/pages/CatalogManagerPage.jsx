@@ -169,7 +169,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
     const productColumns = [
         { title: 'Tên', dataIndex: 'name', key: 'name' },
         { title: 'Danh mục', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa gắn' },
-        { title: 'SKU', dataIndex: 'sku', key: 'sku' },
+        { title: 'Mã sản phẩm', dataIndex: 'sku', key: 'sku' },
         { title: 'Giá', dataIndex: 'price', key: 'price', render: (value) => Number(value ?? 0).toLocaleString('vi-VN') },
         { title: 'Tồn', dataIndex: 'stock', key: 'stock' },
         { title: 'Đã mua', dataIndex: 'sold_count', key: 'sold_count' },
@@ -320,6 +320,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                         canManage={editingProduct.id ? permissions.catalogUpdate : permissions.catalogCreate}
                         editingProduct={editingProduct}
                         categoryOptions={categoryOptions}
+                        callAdminApi={callAdminApi}
                         onCancel={() => {
                             setProductModalOpen(false);
                             setEditingProduct(emptyProductForm);

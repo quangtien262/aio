@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['project_id', 'name', 'color', 'sort_order', 'is_done', 'is_active'])]
+#[Fillable(['project_id', 'name', 'color', 'sort_order', 'is_done', 'is_collapsed_by_default', 'is_active'])]
 class ProjectTaskStatus extends Model
 {
     use HasFactory;
@@ -20,6 +20,7 @@ class ProjectTaskStatus extends Model
         return [
             'project_id' => 'integer',
             'is_done' => 'boolean',
+            'is_collapsed_by_default' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

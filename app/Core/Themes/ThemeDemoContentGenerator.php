@@ -5,15 +5,16 @@ namespace App\Core\Themes;
 use App\Core\Cms\CmsMenuLocationRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
-use App\Models\CatalogProductImage;
 use App\Models\CmsCategory;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
+use App\Models\ThemeDemoRecord;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -56,7 +57,7 @@ class ThemeDemoContentGenerator
 
         return DB::transaction(function () use ($preset, $siteProfile, $themeKey, $timestamp): array {
             $this->replaceMenuLocations();
-            $this->clearExistingDemoContent();
+            $purged = $this->purgeDemoContent();
 
             $newsCategory = CmsCategory::query()->create([
                 'name' => 'Tin '.$preset['short_label'],
@@ -65,11 +66,17 @@ class ThemeDemoContentGenerator
                 'meta_title' => 'Tin tức '.$preset['label'],
                 'meta_description' => 'Tin tức và nội dung demo cho '.$preset['label'],
             ]);
+            $this->recordDemoModel($newsCategory, $themeKey, $preset['key']);
 
-            $this->seedPages($preset, $timestamp);
-            $postCount = $this->seedPosts($preset, $newsCategory->id, $timestamp);
-            $categoryMap = $this->seedCatalog($preset, $timestamp);
-            $menuCount = $this->seedMenus($preset, $categoryMap);
+            $pageSlugs = [
+                'about' => $this->demoSlug($themeKey, 'gioi-thieu'),
+                'contact' => $this->demoSlug($themeKey, 'lien-he'),
+            ];
+
+            $pageCount = $this->seedPages($preset, $timestamp, $themeKey, $pageSlugs);
+            $postCount = $this->seedPosts($preset, $newsCategory->id, $timestamp, $themeKey);
+            $categoryMap = $this->seedCatalog($preset, $timestamp, $themeKey);
+            $menuCount = $this->seedMenus($preset, $categoryMap, $themeKey, $pageSlugs);
             $bannerCount = $this->seedBanners($preset, $themeKey, $timestamp);
 
             $siteProfile->forceFill([
@@ -80,15 +87,23 @@ class ThemeDemoContentGenerator
             return [
                 'preset' => Arr::only($preset, ['key', 'label', 'description']),
                 'counts' => [
-                    'pages' => 2,
+                    'pages' => $pageCount,
                     'posts' => $postCount,
                     'menus' => $menuCount,
                     'catalog_categories' => CatalogCategory::query()->count(),
                     'catalog_products' => CatalogProduct::query()->count(),
                     'banners' => $bannerCount,
                 ],
+                'purged' => $purged,
             ];
         });
+    }
+
+    public function delete(string $themeKey): array
+    {
+        return DB::transaction(fn (): array => [
+            'counts' => $this->purgeDemoContent($themeKey),
+        ]);
     }
 
     private function replaceMenuLocations(): void
@@ -105,36 +120,75 @@ class ThemeDemoContentGenerator
         $this->menuLocationRegistry->save($locations);
     }
 
-    private function clearExistingDemoContent(): void
+    private function purgeDemoContent(?string $themeKey = null): array
     {
-        SiteBanner::query()->delete();
-        CmsMenu::query()->delete();
-        CmsPost::query()->delete();
-        CmsPage::query()->delete();
-        CmsCategory::query()->delete();
-        CatalogProduct::query()->delete();
-        CatalogCategory::query()->delete();
+        $query = ThemeDemoRecord::query();
+
+        if ($themeKey !== null) {
+            $query->where('theme_key', $themeKey);
+        }
+
+        $records = $query->get();
+
+        if ($records->isEmpty()) {
+            return [
+                'banners' => 0,
+                'menus' => 0,
+                'posts' => 0,
+                'pages' => 0,
+                'catalog_products' => 0,
+                'catalog_categories' => 0,
+                'cms_categories' => 0,
+            ];
+        }
+
+        $deleteMap = [
+            SiteBanner::class => ['model' => SiteBanner::class, 'key' => 'banners'],
+            CmsMenu::class => ['model' => CmsMenu::class, 'key' => 'menus'],
+            CmsPost::class => ['model' => CmsPost::class, 'key' => 'posts'],
+            CmsPage::class => ['model' => CmsPage::class, 'key' => 'pages'],
+            CatalogProduct::class => ['model' => CatalogProduct::class, 'key' => 'catalog_products'],
+            CatalogCategory::class => ['model' => CatalogCategory::class, 'key' => 'catalog_categories'],
+            CmsCategory::class => ['model' => CmsCategory::class, 'key' => 'cms_categories'],
+        ];
+
+        $counts = array_fill_keys(array_column($deleteMap, 'key'), 0);
+
+        foreach ($deleteMap as $modelType => $config) {
+            $ids = $records->where('model_type', $modelType)->pluck('model_id')->all();
+
+            if ($ids === []) {
+                continue;
+            }
+
+            $counts[$config['key']] = $config['model']::query()->whereKey($ids)->count();
+            $config['model']::query()->whereKey($ids)->delete();
+        }
+
+        ThemeDemoRecord::query()->whereKey($records->pluck('id')->all())->delete();
+
+        return $counts;
     }
 
-    private function seedPages(array $preset, Carbon $timestamp): void
+    private function seedPages(array $preset, Carbon $timestamp, string $themeKey, array $pageSlugs): int
     {
         $pages = [
             [
                 'title' => 'Giới thiệu',
-                'slug' => 'gioi-thieu',
+                'slug' => $pageSlugs['about'],
                 'excerpt' => 'Hồ sơ năng lực demo cho '.$preset['label'],
                 'body' => '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Website demo này được tạo để review theme '.$preset['theme_flavor'].' và khả năng mapping dữ liệu thật từ CMS/Catalog.</p>',
             ],
             [
                 'title' => 'Liên hệ',
-                'slug' => 'lien-he',
+                'slug' => $pageSlugs['contact'],
                 'excerpt' => 'Kênh liên hệ tư vấn và CSKH',
                 'body' => '<h2>Liên hệ tư vấn</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Địa chỉ: '.$preset['address'].'</p>',
             ],
         ];
 
         foreach ($pages as $index => $page) {
-            CmsPage::query()->create([
+            $record = CmsPage::query()->create([
                 'title' => $page['title'],
                 'slug' => $page['slug'],
                 'status' => 'published',
@@ -145,10 +199,14 @@ class ThemeDemoContentGenerator
                 'template' => 'default',
                 'publish_at' => $timestamp->copy()->subDays(10 - $index),
             ]);
+
+            $this->recordDemoModel($record, $themeKey, $preset['key']);
         }
+
+        return count($pages);
     }
 
-    private function seedPosts(array $preset, int $categoryId, Carbon $timestamp): int
+    private function seedPosts(array $preset, int $categoryId, Carbon $timestamp, string $themeKey): int
     {
         $titles = [
             'Top deal mới tuần này cho '.$preset['short_label'],
@@ -158,9 +216,9 @@ class ThemeDemoContentGenerator
         ];
 
         foreach ($titles as $index => $title) {
-            CmsPost::query()->create([
+            $record = CmsPost::query()->create([
                 'title' => $title,
-                'slug' => Str::slug($title),
+                'slug' => $this->demoSlug($themeKey, $title),
                 'status' => 'published',
                 'excerpt' => 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block tin tức của theme.',
                 'body' => '<p>'.$preset['description'].'</p><p>Bài viết demo số '.($index + 1).' dùng để hiển thị tin mới trên website.</p>',
@@ -169,6 +227,8 @@ class ThemeDemoContentGenerator
                 'category_id' => $categoryId,
                 'publish_at' => $timestamp->copy()->subDays($index + 1),
             ]);
+
+            $this->recordDemoModel($record, $themeKey, $preset['key']);
         }
 
         return count($titles);
@@ -177,7 +237,7 @@ class ThemeDemoContentGenerator
     /**
      * @return array<int, array{parent: CatalogCategory, children: array<int, CatalogCategory>}>
      */
-    private function seedCatalog(array $preset, Carbon $timestamp): array
+    private function seedCatalog(array $preset, Carbon $timestamp, string $themeKey): array
     {
         $categoryMap = [];
         $featuredCounter = 0;
@@ -191,6 +251,7 @@ class ThemeDemoContentGenerator
                 'sort_order' => $parentIndex,
                 'is_active' => true,
             ]);
+            $this->recordDemoModel($parent, $themeKey, $preset['key']);
 
             $children = [];
             foreach ($department['children'] as $childIndex => $childName) {
@@ -203,6 +264,7 @@ class ThemeDemoContentGenerator
                     'sort_order' => $childIndex,
                     'is_active' => true,
                 ]);
+                $this->recordDemoModel($child, $themeKey, $preset['key']);
 
                 $children[] = $child;
 
@@ -234,9 +296,10 @@ class ThemeDemoContentGenerator
                         'created_at' => $createdAt,
                         'updated_at' => $createdAt,
                     ]);
+                    $this->recordDemoModel($product, $themeKey, $preset['key']);
 
                     foreach ($this->buildGalleryImages($preset, $parentIndex, $childIndex, $productIndex) as $galleryIndex => $galleryImage) {
-                        CatalogProductImage::query()->create([
+                        $product->images()->create([
                             'catalog_product_id' => $product->id,
                             'image_url' => $galleryImage,
                             'sort_order' => $galleryIndex,
@@ -257,7 +320,7 @@ class ThemeDemoContentGenerator
         return $categoryMap;
     }
 
-    private function seedMenus(array $preset, array $categoryMap): int
+    private function seedMenus(array $preset, array $categoryMap, string $themeKey, array $pageSlugs): int
     {
         $productItems = collect($categoryMap)->map(function (array $entry, int $index): array {
             /** @var CatalogCategory $parent */
@@ -279,21 +342,23 @@ class ThemeDemoContentGenerator
             ];
         })->all();
 
-        CmsMenu::query()->create([
+        $primaryMenu = CmsMenu::query()->create([
             'name' => 'Primary Navigation',
             'location' => 'primary-navigation',
             'items' => [
                 ['label' => 'Tin tức', 'url' => '/tin-tuc', 'target' => '_self'],
-                ['label' => 'Giới thiệu', 'url' => '/gioi-thieu', 'target' => '_self'],
-                ['label' => 'Liên hệ', 'url' => '/lien-he', 'target' => '_self'],
+                ['label' => 'Giới thiệu', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                ['label' => 'Liên hệ', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
             ],
         ]);
+        $this->recordDemoModel($primaryMenu, $themeKey, $preset['key']);
 
-        CmsMenu::query()->create([
+        $productMenu = CmsMenu::query()->create([
             'name' => 'Product Navigation',
             'location' => 'product-navigation',
             'items' => $productItems,
         ]);
+        $this->recordDemoModel($productMenu, $themeKey, $preset['key']);
 
         return 2;
     }
@@ -332,7 +397,7 @@ class ThemeDemoContentGenerator
         }
 
         foreach ($records as $record) {
-            SiteBanner::query()->create([
+            $banner = SiteBanner::query()->create([
                 'theme_key' => $themeKey,
                 'placement' => $record['placement'],
                 'title' => $record['title'],
@@ -346,9 +411,24 @@ class ThemeDemoContentGenerator
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp,
             ]);
+            $this->recordDemoModel($banner, $themeKey, $preset['key']);
         }
 
         return count($records);
+    }
+
+    private function recordDemoModel(Model $model, string $themeKey, string $presetKey): void
+    {
+        ThemeDemoRecord::query()->updateOrCreate(
+            [
+                'model_type' => $model::class,
+                'model_id' => $model->getKey(),
+            ],
+            [
+                'theme_key' => $themeKey,
+                'preset_key' => $presetKey,
+            ],
+        );
     }
 
     private function buildProductName(array $preset, string $departmentName, string $childName, int $productIndex): string
@@ -356,6 +436,11 @@ class ThemeDemoContentGenerator
         $suffixes = ['Pro', 'Max', 'Plus', 'Edition'];
 
         return trim($childName.' '.$preset['product_prefix'].' '.$suffixes[$productIndex - 1].' '.(64 + ($productIndex * 64)).'GB');
+    }
+
+    private function demoSlug(string $themeKey, string $value): string
+    {
+        return Str::slug('demo-'.$themeKey.'-'.$value);
     }
 
     private function buildPrice(int $parentIndex, int $childIndex, int $productIndex): int

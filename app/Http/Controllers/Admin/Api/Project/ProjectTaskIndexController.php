@@ -23,6 +23,16 @@ class ProjectTaskIndexController
             $query->where('project_id', (int) $request->integer('project_id'));
         }
 
+        if ($statusName = trim((string) $request->string('status_name'))) {
+            $query->whereHas('status', function ($builder) use ($statusName): void {
+                $builder->where('name', $statusName);
+            });
+        }
+
+        if ($request->filled('assignee_admin_id')) {
+            $query->where('assignee_admin_id', (int) $request->integer('assignee_admin_id'));
+        }
+
         $items = $query->get()->map(fn (ProjectTask $task): array => [
             ...ProjectDataSerializer::task($task),
             'project' => $task->project ? [

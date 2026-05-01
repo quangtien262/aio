@@ -1,5 +1,9 @@
+import { useState } from 'react';
+import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
+import Checkbox from 'antd/es/checkbox';
+import Modal from 'antd/es/modal';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
@@ -20,14 +24,49 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
     const canDisable = permissions?.disable ?? false;
     const canUpgrade = permissions?.upgrade ?? false;
     const canUninstall = permissions?.uninstall ?? false;
+    const canGenerateDemoData = permissions?.demoData ?? false;
+    const [demoModalOpen, setDemoModalOpen] = useState(false);
+    const [removeExistingDemoData, setRemoveExistingDemoData] = useState(true);
+    const [submittingDemoData, setSubmittingDemoData] = useState(false);
 
     if (!moduleCard) {
         return <Card title="Module Lifecycle" loading />;
     }
 
+    const openDemoDataModal = () => {
+        setRemoveExistingDemoData(true);
+        setDemoModalOpen(true);
+    };
+
+    const closeDemoDataModal = () => {
+        if (submittingDemoData) {
+            return;
+        }
+
+        setDemoModalOpen(false);
+        setRemoveExistingDemoData(true);
+    };
+
+    const handleGenerateDemoData = async () => {
+        setSubmittingDemoData(true);
+
+        try {
+            const didSucceed = await onAction?.(moduleCard.key, 'demo-data', {
+                remove_existing: removeExistingDemoData,
+            });
+
+            if (didSucceed !== false) {
+                closeDemoDataModal();
+            }
+        } finally {
+            setSubmittingDemoData(false);
+        }
+    };
+
     return (
-        <Card title="Module Lifecycle">
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+        <>
+            <Card title="Module Lifecycle">
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
                 <div>
                     <Space>
                         <Title level={4} style={{ margin: 0 }}>{moduleCard.name}</Title>
@@ -73,6 +112,11 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
                             Nâng cấp
                         </Button>
                     ) : null}
+                    {moduleCard.key === 'project' && moduleCard.is_installed ? (
+                        <Button size="small" disabled={!canGenerateDemoData} onClick={openDemoDataModal}>
+                            Tạo data test
+                        </Button>
+                    ) : null}
                     {moduleCard.is_installed ? (
                         <Button danger size="small" disabled={!canUninstall || !moduleCard.available_actions?.uninstall} onClick={() => onAction?.(moduleCard.key, 'uninstall')}>
                             Gỡ bỏ
@@ -90,7 +134,39 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
                         </Paragraph>
                     ) : null
                 ))}
-            </Space>
-        </Card>
+                </Space>
+            </Card>
+
+            <Modal
+                title={moduleCard.key === 'project' ? `Tạo data test: ${moduleCard.name}` : 'Tạo data test'}
+                open={demoModalOpen}
+                onCancel={closeDemoDataModal}
+                onOk={handleGenerateDemoData}
+                okText="Tạo dữ liệu"
+                cancelText="Hủy"
+                confirmLoading={submittingDemoData}
+                okButtonProps={{ disabled: !canGenerateDemoData }}
+                destroyOnHidden
+            >
+                <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Alert
+                        type="warning"
+                        showIcon
+                        message="Dữ liệu demo Project có thể ghi đè hoặc tạo thêm batch mới tùy lựa chọn bên dưới. Hãy kiểm tra kỹ trước khi thực hiện."
+                    />
+
+                    <div>
+                        <Text strong>Chế độ tạo data test</Text>
+                        <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                            Bật checkbox nếu muốn xóa toàn bộ data demo Project cũ rồi tạo lại 2 dự án mẫu chuẩn. Bỏ chọn nếu muốn giữ nguyên data demo cũ và thêm mới một batch 2 dự án demo khác.
+                        </Paragraph>
+                    </div>
+
+                    <Checkbox checked={removeExistingDemoData} onChange={(event) => setRemoveExistingDemoData(event.target.checked)}>
+                        Xóa data demo cũ trước khi tạo mới
+                    </Checkbox>
+                </Space>
+            </Modal>
+        </>
     );
 }

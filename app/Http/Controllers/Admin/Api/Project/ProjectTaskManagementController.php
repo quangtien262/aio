@@ -9,6 +9,7 @@ use App\Support\ProjectTaskStatusManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class ProjectTaskManagementController
 {
@@ -36,8 +37,16 @@ class ProjectTaskManagementController
     {
         $record = ProjectTask::query()->with('project')->findOrFail($task);
         $validated = $this->validatePayload($request, $record->project, $record);
+        $originalStatusId = $record->task_status_id;
+        $requestedSortOrder = $validated['sort_order'] ?? null;
 
-        $record->update($validated);
+        DB::transaction(function () use ($record, $validated, $originalStatusId, $requestedSortOrder): void {
+            $record->update($validated);
+
+            if ($requestedSortOrder !== null || $originalStatusId !== $record->task_status_id) {
+                $this->syncTaskOrdering($record->fresh(), $originalStatusId, $requestedSortOrder);
+            }
+        });
 
         ProjectActivityLogger::log($record->project, 'task', $record->id, 'updated', 'Đã cập nhật công việc.', $request->user('admin'), ['title' => $record->title]);
 
@@ -77,5 +86,56 @@ class ProjectTaskManagementController
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'progress' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
+    }
+
+    private function syncTaskOrdering(ProjectTask $record, int $originalStatusId, ?int $requestedSortOrder): void
+    {
+        if ($originalStatusId !== $record->task_status_id) {
+            $this->normalizeStatusTasks($record->project_id, $originalStatusId);
+        }
+
+        $siblings = ProjectTask::query()
+            ->where('project_id', $record->project_id)
+            ->where('task_status_id', $record->task_status_id)
+            ->where('id', '!=', $record->id)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $insertIndex = $requestedSortOrder !== null
+            ? max(0, min($requestedSortOrder - 1, $siblings->count()))
+            : $siblings->count();
+
+        $orderedTasks = $siblings->values();
+        $orderedTasks->splice($insertIndex, 0, [$record]);
+
+        $orderedTasks->values()->each(function (ProjectTask $task, int $index): void {
+            $nextSortOrder = $index + 1;
+
+            if ($task->sort_order === $nextSortOrder) {
+                return;
+            }
+
+            $task->updateQuietly(['sort_order' => $nextSortOrder]);
+        });
+    }
+
+    private function normalizeStatusTasks(int $projectId, int $statusId): void
+    {
+        ProjectTask::query()
+            ->where('project_id', $projectId)
+            ->where('task_status_id', $statusId)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->each(function (ProjectTask $task, int $index): void {
+                $nextSortOrder = $index + 1;
+
+                if ($task->sort_order === $nextSortOrder) {
+                    return;
+                }
+
+                $task->updateQuietly(['sort_order' => $nextSortOrder]);
+            });
     }
 }

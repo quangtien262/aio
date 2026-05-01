@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Drawer from 'antd/es/drawer';
+import Popconfirm from 'antd/es/popconfirm';
 import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
 
@@ -11,7 +12,7 @@ const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDe
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
 const ThemeDemoDataModal = lazy(() => import('../components/ThemeDemoDataModal'));
 
-export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoData, canActivate, canGenerateDemoData }) {
+export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoData, onDeleteDemoData, canActivate, canGenerateDemoData }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
     const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
@@ -50,9 +51,21 @@ export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoDat
         <Card
             title="Theme Engine Flow"
             extra={(
-                <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setDemoThemeKey(selectedTheme?.key ?? null)}>
-                    Tạo data test
-                </Button>
+                <Space>
+                    <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setDemoThemeKey(selectedTheme?.key ?? null)}>
+                        Tạo data test
+                    </Button>
+                    <Popconfirm
+                        title="Xóa toàn bộ data test đã được hệ thống đánh dấu?"
+                        description="Thao tác này chỉ xóa dữ liệu test do hệ thống tạo và đã được gắn marker demo."
+                        onConfirm={() => onDeleteDemoData?.(selectedTheme?.key ?? null)}
+                        disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}
+                    >
+                        <Button danger disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}>
+                            Xóa data test
+                        </Button>
+                    </Popconfirm>
+                </Space>
             )}
         >
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>

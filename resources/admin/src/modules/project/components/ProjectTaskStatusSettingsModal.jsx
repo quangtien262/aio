@@ -8,6 +8,7 @@ import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } 
 import { CSS } from '@dnd-kit/utilities';
 import Button from 'antd/es/button';
 import Checkbox from 'antd/es/checkbox';
+import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import Modal from 'antd/es/modal';
 import Popconfirm from 'antd/es/popconfirm';
@@ -44,7 +45,6 @@ const doneStatusTooltip = 'Khi bật, trạng thái này sẽ được xem là c
 function SortableStatusRow({
     status,
     index,
-    total,
     canManage,
     busyKey,
     handleEdit,
@@ -77,6 +77,7 @@ function SortableStatusRow({
                 <div className="project-status-settings-name-row">
                     <strong>{status.name}</strong>
                     {status.is_done ? <Tag color="success">Cột hoàn thành</Tag> : null}
+                    {status.is_collapsed_by_default ? <Tag>Mặc định đóng</Tag> : <Tag color="blue">Mặc định mở</Tag>}
                 </div>
                 <div className="project-status-settings-meta-row">
                     <Tag color={status.color || 'default'}>{status.color || 'default'}</Tag>
@@ -84,7 +85,6 @@ function SortableStatusRow({
                 </div>
             </div>
             <Space size={6} className="project-status-settings-actions">
-                <Text type="secondary" className="project-status-settings-position">#{index + 1}/{total}</Text>
                 <Button icon={<EditOutlined />} onClick={() => handleEdit(status)} disabled={!canManage || busyKey === `edit-${status.id}`}>
                     Sửa
                 </Button>
@@ -109,7 +109,7 @@ export default function ProjectTaskStatusSettingsModal({
     const [busyKey, setBusyKey] = useState(null);
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingStatus, setEditingStatus] = useState(null);
-    const [editorValues, setEditorValues] = useState({ name: '', color: 'default', is_done: false });
+    const [editorValues, setEditorValues] = useState({ name: '', color: 'default', is_done: false, is_collapsed_by_default: false });
     const [localStatuses, setLocalStatuses] = useState([]);
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -146,7 +146,7 @@ export default function ProjectTaskStatusSettingsModal({
 
     const openCreateEditor = () => {
         setEditingStatus(null);
-        setEditorValues({ name: '', color: 'default', is_done: false });
+        setEditorValues({ name: '', color: 'default', is_done: false, is_collapsed_by_default: false });
         setEditorOpen(true);
     };
 
@@ -156,6 +156,7 @@ export default function ProjectTaskStatusSettingsModal({
             name: status.name,
             color: status.color || 'default',
             is_done: Boolean(status.is_done),
+            is_collapsed_by_default: Boolean(status.is_collapsed_by_default),
         });
         setEditorOpen(true);
     };
@@ -163,7 +164,7 @@ export default function ProjectTaskStatusSettingsModal({
     const closeEditor = () => {
         setEditorOpen(false);
         setEditingStatus(null);
-        setEditorValues({ name: '', color: 'default', is_done: false });
+        setEditorValues({ name: '', color: 'default', is_done: false, is_collapsed_by_default: false });
     };
 
     const handleSubmitEditor = async () => {
@@ -179,12 +180,14 @@ export default function ProjectTaskStatusSettingsModal({
                     name: editorValues.name.trim(),
                     color: editorValues.color || 'default',
                     is_done: Boolean(editorValues.is_done),
+                    is_collapsed_by_default: Boolean(editorValues.is_collapsed_by_default),
                 });
             } else {
                 await onCreate({
                     name: editorValues.name.trim(),
                     color: editorValues.color || 'default',
                     is_done: Boolean(editorValues.is_done),
+                    is_collapsed_by_default: Boolean(editorValues.is_collapsed_by_default),
                 });
             }
 
@@ -266,7 +269,6 @@ export default function ProjectTaskStatusSettingsModal({
                                         key={status.id}
                                         status={status}
                                         index={index}
-                                        total={displayStatuses.length}
                                         canManage={canManage && !busyKey?.startsWith('reorder-')}
                                         busyKey={busyKey}
                                         handleEdit={openEditEditor}
@@ -290,30 +292,50 @@ export default function ProjectTaskStatusSettingsModal({
                 destroyOnHidden
             >
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    <Input
-                        placeholder="Tên trạng thái"
-                        value={editorValues.name}
-                        onChange={(event) => updateEditorValues({ name: event.target.value })}
-                        disabled={busyKey === 'create' || Boolean(editingStatus && busyKey === `save-${editingStatus.id}`)}
-                    />
-                    <Select
-                        value={editorValues.color}
-                        options={colorOptions}
-                        onChange={(value) => updateEditorValues({ color: value })}
-                        disabled={busyKey === 'create' || Boolean(editingStatus && busyKey === `save-${editingStatus.id}`)}
-                    />
-                    <Checkbox
-                        checked={editorValues.is_done}
-                        onChange={(event) => updateEditorValues({ is_done: event.target.checked })}
-                        disabled={busyKey === 'create' || Boolean(editingStatus && busyKey === `save-${editingStatus.id}`)}
-                    >
-                        <Space size={6}>
-                            <span>Cột hoàn thành</span>
-                            <Tooltip title={doneStatusTooltip}>
-                                <InfoCircleOutlined className="project-status-settings-help" />
-                            </Tooltip>
-                        </Space>
-                    </Checkbox>
+                    <Form layout="vertical">
+                        <Form.Item label="Tên trạng thái" style={{ marginBottom: 16 }}>
+                            <Input
+                                placeholder="Nhập tên trạng thái"
+                                value={editorValues.name}
+                                onChange={(event) => updateEditorValues({ name: event.target.value })}
+                                disabled={busyKey === 'create' || Boolean(editingStatus && busyKey === `save-${editingStatus.id}`)}
+                            />
+                        </Form.Item>
+                        <Form.Item label="Màu sắc" style={{ marginBottom: 16 }}>
+                            <Select
+                                value={editorValues.color}
+                                options={colorOptions}
+                                onChange={(value) => updateEditorValues({ color: value })}
+                                disabled={busyKey === 'create' || Boolean(editingStatus && busyKey === `save-${editingStatus.id}`)}
+                            />
+                        </Form.Item>
+                        <Form.Item label="Trạng thái cột" style={{ marginBottom: 12 }}>
+                            <Checkbox
+                                checked={editorValues.is_collapsed_by_default}
+                                onChange={(event) => updateEditorValues({ is_collapsed_by_default: event.target.checked })}
+                                disabled={busyKey === 'create' || Boolean(editingStatus && busyKey === `save-${editingStatus.id}`)}
+                            >
+                                Mặc định đóng cột
+                            </Checkbox>
+                            <div>
+                                <Text type="secondary">Mặc định là mở. Bật tùy chọn này nếu muốn cột được thu gọn sẵn khi vào board.</Text>
+                            </div>
+                        </Form.Item>
+                        <Form.Item label="Quy tắc hoàn thành" style={{ marginBottom: 0 }}>
+                            <Checkbox
+                                checked={editorValues.is_done}
+                                onChange={(event) => updateEditorValues({ is_done: event.target.checked })}
+                                disabled={busyKey === 'create' || Boolean(editingStatus && busyKey === `save-${editingStatus.id}`)}
+                            >
+                                <Space size={6}>
+                                    <span>Cột hoàn thành</span>
+                                    <Tooltip title={doneStatusTooltip}>
+                                        <InfoCircleOutlined className="project-status-settings-help" />
+                                    </Tooltip>
+                                </Space>
+                            </Checkbox>
+                        </Form.Item>
+                    </Form>
                 </Space>
             </Modal>
         </Modal>

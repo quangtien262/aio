@@ -67,6 +67,7 @@ export default function ProjectTaskDetailDrawer({
     canManageFiles,
     canViewActivity,
     onUpdateTask,
+    onEditTask,
     onCreateTaskChecklist,
     onToggleTaskChecklist,
     onDeleteTaskChecklist,
@@ -337,6 +338,7 @@ export default function ProjectTaskDetailDrawer({
             destroyOnClose={false}
             extra={
                 <Space>
+                    {canManageTasks ? <Button icon={<EditOutlined />} onClick={() => onEditTask?.(task)}>Sửa</Button> : null}
                     {canManageTasks && doneStatus && !task.status?.is_done ? <Button type="primary" onClick={() => onMarkDone(task, doneStatus.id)}>Hoàn thành</Button> : null}
                     <Button onClick={onClose}>Đóng</Button>
                 </Space>

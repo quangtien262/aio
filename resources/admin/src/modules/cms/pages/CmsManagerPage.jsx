@@ -12,9 +12,11 @@ import Col from 'antd/es/col';
 import Drawer from 'antd/es/drawer';
 import Dropdown from 'antd/es/dropdown';
 import Empty from 'antd/es/empty';
+import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
+import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
@@ -181,6 +183,9 @@ const emptyMenu = {
     tenant_key: '',
 };
 
+const BULK_KEEP_VALUE = '__KEEP__';
+const BULK_CLEAR_VALUE = '__CLEAR__';
+
 function renderStatusTag(status) {
     const colorMap = { published: 'green', draft: 'default' };
     const labelMap = { published: 'Đã xuất bản', draft: 'Bản nháp' };
@@ -224,10 +229,19 @@ function formatBytes(size) {
 export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminAction, currentPermissions }) {
     const sectionKey = moduleMenu?.key ?? 'cms-pages';
     const sectionConfig = sectionConfigMap[sectionKey] ?? sectionConfigMap['cms-pages'];
+    const [bulkProductEditForm] = Form.useForm();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [selectedProductRowKeys, setSelectedProductRowKeys] = useState([]);
+    const [bulkProductEditOpen, setBulkProductEditOpen] = useState(false);
     const [keyword, setKeyword] = useState('');
+    const [productCategoryFilter, setProductCategoryFilter] = useState('all');
+    const [productFeaturedFilter, setProductFeaturedFilter] = useState('all');
+    const [productActiveFilter, setProductActiveFilter] = useState('all');
+    const [productPublishFilter, setProductPublishFilter] = useState('all');
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
     const [mediaFile, setMediaFile] = useState(null);
 
@@ -261,7 +275,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     });
 
     const scopeHint = sectionKey === 'cms-products'
-        ? 'Quản lý sản phẩm được mở ngay trong CMS workspace nhưng vẫn dùng catalog API phía sau.'
+        ? null
         : 'Source hiện vận hành theo mô hình một website, không còn dùng scope Website/Owner/Tenant trong workflow này.';
 
     const metrics = useMemo(() => {
@@ -303,27 +317,65 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         ];
     }, [data, sectionKey]);
 
-    const filteredItems = useMemo(() => {
-        if (sectionKey !== 'cms-orders') {
-            return data?.items ?? [];
+    const productCategoryOptions = useMemo(() => (data?.categories ?? []).map((category) => ({
+        label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
+        value: category.id,
+    })), [data?.categories]);
+
+    const selectedProducts = useMemo(() => {
+        if (sectionKey !== 'cms-products') {
+            return [];
         }
 
+        return (data?.items ?? []).filter((product) => selectedProductRowKeys.includes(product.id));
+    }, [data?.items, sectionKey, selectedProductRowKeys]);
+
+    const filteredItems = useMemo(() => {
         const normalizedKeyword = keyword.trim().toLowerCase();
 
-        return (data?.orders ?? []).filter((order) => {
-            if (normalizedKeyword === '') {
-                return true;
-            }
+        if (sectionKey === 'cms-orders') {
+            return (data?.orders ?? []).filter((order) => {
+                if (normalizedKeyword === '') {
+                    return true;
+                }
 
-            return [
-                order.order_code,
-                order.customer_name,
-                order.customer_phone,
-                order.customer_email,
-                order.delivery_address,
-            ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
-        });
-    }, [data?.items, data?.orders, keyword, sectionKey]);
+                return [
+                    order.order_code,
+                    order.customer_name,
+                    order.customer_phone,
+                    order.customer_email,
+                    order.delivery_address,
+                ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
+            });
+        }
+
+        if (sectionKey === 'cms-products') {
+            return (data?.items ?? []).filter((product) => {
+                const matchesKeyword = normalizedKeyword === '' || [
+                    product.name,
+                    product.slug,
+                    product.category_name,
+                    product.sku,
+                    product.short_description,
+                ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
+                const matchesCategory = productCategoryFilter === 'all' || String(product.catalog_category_id ?? '') === String(productCategoryFilter);
+                const matchesFeatured = productFeaturedFilter === 'all'
+                    || (productFeaturedFilter === 'featured' && product.is_featured)
+                    || (productFeaturedFilter === 'normal' && !product.is_featured);
+                const matchesActive = productActiveFilter === 'all'
+                    || (productActiveFilter === 'active' && product.is_active)
+                    || (productActiveFilter === 'inactive' && !product.is_active);
+                const isPublicProduct = Boolean(product.public_url) && Boolean(product.is_active);
+                const matchesPublish = productPublishFilter === 'all'
+                    || (productPublishFilter === 'public' && isPublicProduct)
+                    || (productPublishFilter === 'private' && !isPublicProduct);
+
+                return matchesKeyword && matchesCategory && matchesFeatured && matchesActive && matchesPublish;
+            });
+        }
+
+        return data?.items ?? [];
+    }, [data?.items, data?.orders, keyword, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, sectionKey]);
 
     const openCreateModal = () => {
         if (sectionKey === 'cms-posts') {
@@ -356,6 +408,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         setModalOpen(true);
     };
 
+    const openPostDetailsDrawer = (record) => {
+        setSelectedPost(record);
+    };
+
+    const handleEditPostFromDrawer = () => {
+        if (!selectedPost) {
+            return;
+        }
+
+        setSelectedPost(null);
+        openEditModal(selectedPost);
+    };
+
     const handleSaveRecord = async (payload) => {
         const didSave = editingRecord?.id
             ? await runAdminAction(() => callAdminApi(`${sectionConfig.endpoint}/${editingRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }), `Đã cập nhật ${sectionConfig.title}.`, reload)
@@ -368,6 +433,106 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
     const handleDeleteRecord = async (recordId) => {
         await runAdminAction(() => callAdminApi(`${sectionConfig.endpoint}/${recordId}`, { method: 'DELETE' }), `Đã xóa ${sectionConfig.title}.`, reload);
+    };
+
+    const buildBulkProductPayload = (product, values) => ({
+        catalog_category_id: values.catalog_category_id === BULK_KEEP_VALUE
+            ? product.catalog_category_id
+            : values.catalog_category_id === BULK_CLEAR_VALUE
+                ? null
+                : values.catalog_category_id,
+        name: product.name,
+        slug: product.slug,
+        sku: product.sku,
+        price: product.price,
+        original_price: product.original_price,
+        stock: product.stock,
+        short_description: product.short_description,
+        detail_content: product.detail_content,
+        highlights: product.highlights,
+        usage_terms: product.usage_terms,
+        usage_location: product.usage_location,
+        image_url: product.image_url,
+        gallery_images: product.gallery_images ?? [],
+        sold_count: product.sold_count,
+        deal_end_at: product.deal_end_at,
+        is_featured: values.is_featured === BULK_KEEP_VALUE ? product.is_featured : values.is_featured === 'true',
+        sort_order: product.sort_order,
+        is_active: values.is_active === BULK_KEEP_VALUE ? product.is_active : values.is_active === 'true',
+    });
+
+    const handleBulkDeleteProducts = async () => {
+        const ids = [...selectedProductRowKeys];
+
+        const didDelete = await runAdminAction(async () => {
+            for (const id of ids) {
+                await callAdminApi(`${sectionConfig.endpoint}/${id}`, { method: 'DELETE' });
+            }
+        }, `Đã xóa ${ids.length} sản phẩm.`, reload);
+
+        if (didDelete) {
+            setSelectedProductRowKeys([]);
+        }
+    };
+
+    const confirmBulkDeleteProducts = () => {
+        if (!selectedProductRowKeys.length) {
+            return;
+        }
+
+        Modal.confirm({
+            title: `Xóa ${selectedProductRowKeys.length} sản phẩm đã chọn?`,
+            content: 'Thao tác này không thể hoàn tác.',
+            okText: 'Xóa tất cả',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: handleBulkDeleteProducts,
+        });
+    };
+
+    const openBulkEditProducts = () => {
+        if (!selectedProductRowKeys.length) {
+            return;
+        }
+
+        bulkProductEditForm.setFieldsValue({
+            catalog_category_id: BULK_KEEP_VALUE,
+            is_featured: BULK_KEEP_VALUE,
+            is_active: BULK_KEEP_VALUE,
+        });
+        setBulkProductEditOpen(true);
+    };
+
+    const handleBulkEditProducts = async () => {
+        const values = await bulkProductEditForm.validateFields();
+
+        if (
+            values.catalog_category_id === BULK_KEEP_VALUE
+            && values.is_featured === BULK_KEEP_VALUE
+            && values.is_active === BULK_KEEP_VALUE
+        ) {
+            Modal.warning({
+                title: 'Chưa có thay đổi để áp dụng',
+                content: 'Chọn ít nhất một trường cần cập nhật cho các sản phẩm đã chọn.',
+            });
+            return;
+        }
+
+        const products = [...selectedProducts];
+        const didUpdate = await runAdminAction(async () => {
+            for (const product of products) {
+                await callAdminApi(`${sectionConfig.endpoint}/${product.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(buildBulkProductPayload(product, values)),
+                });
+            }
+        }, `Đã cập nhật ${products.length} sản phẩm.`, reload);
+
+        if (didUpdate) {
+            setBulkProductEditOpen(false);
+            setSelectedProductRowKeys([]);
+            bulkProductEditForm.resetFields();
+        }
     };
 
     const confirmDeleteRecord = (recordId) => {
@@ -433,7 +598,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             });
         }
 
-        if (record.preview_url && sectionPermissions.canPublish) {
+        if (record.preview_url && (sectionPermissions.canPublish || sectionKey === 'cms-products')) {
             actionItems.push({
                 key: 'preview',
                 label: 'Xem preview',
@@ -481,6 +646,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             }
 
             if (key === 'edit') {
+                if (sectionKey === 'cms-posts') {
+                    openPostDetailsDrawer(record);
+                    return;
+                }
+
                 openEditModal(record);
                 return;
             }
@@ -496,6 +666,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             </Dropdown>
         );
     };
+
+    const productRowSelection = sectionKey === 'cms-products' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
+        ? {
+            selectedRowKeys: selectedProductRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedProductRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
 
     const columns = useMemo(() => {
         if (sectionKey === 'cms-pages') {
@@ -522,13 +700,33 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-products') {
             return [
-                { title: 'Sản phẩm', dataIndex: 'name', key: 'name' },
-                { title: 'Danh mục', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa gắn' },
-                { title: 'SKU', dataIndex: 'sku', key: 'sku' },
+                {
+                    title: 'Sản phẩm',
+                    dataIndex: 'name',
+                    key: 'name',
+                    render: (value, record) => (
+                        <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => setSelectedProduct(record)}>
+                            <Space direction="vertical" size={4} align="start">
+                                <Space size={8} wrap>
+                                    <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                                    {record.is_featured ? <Tag color="gold">Nổi bật</Tag> : null}
+                                </Space>
+                                <Text type="secondary">{record.category_name || 'Chưa gắn danh mục'}</Text>
+                            </Space>
+                        </Button>
+                    ),
+                },
                 { title: 'Giá', dataIndex: 'price', key: 'price', render: (value) => Number(value ?? 0).toLocaleString('vi-VN') },
-                { title: 'Tồn kho', dataIndex: 'stock', key: 'stock' },
-                { title: 'Đã mua', dataIndex: 'sold_count', key: 'sold_count' },
-                { title: 'Nổi bật', dataIndex: 'is_featured', key: 'is_featured', render: (value) => value ? <Tag color="gold">featured</Tag> : <Tag>normal</Tag> },
+                {
+                    title: 'Kho / Đã mua',
+                    key: 'inventory',
+                    render: (_, record) => (
+                        <Space direction="vertical" size={0}>
+                            <Text strong>{`Kho: ${record.stock ?? 0}`}</Text>
+                            <Text type="secondary">{`Đã mua: ${record.sold_count ?? 0}`}</Text>
+                        </Space>
+                    ),
+                },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
         }
@@ -627,10 +825,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingProduct={editingRecord}
-                        categoryOptions={(data?.categories ?? []).map((category) => ({
-                            label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
-                            value: category.id,
-                        }))}
+                        categoryOptions={productCategoryOptions}
+                        callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -700,11 +896,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Card className="hero-card">
-                <Text className="card-label">CMS Workspace</Text>
-                <Title level={3}>{sectionConfig.title}</Title>
-                <Paragraph style={{ marginBottom: 0 }}>{sectionConfig.description}</Paragraph>
-            </Card>
+            {sectionKey !== 'cms-products' ? (
+                <Card className="hero-card">
+                    <Text className="card-label">CMS Workspace</Text>
+                    <Title level={3}>{sectionConfig.title}</Title>
+                    <Paragraph style={{ marginBottom: 0 }}>{sectionConfig.description}</Paragraph>
+                </Card>
+            ) : null}
 
             {metrics.length ? (
                 <Row gutter={[12, 12]}>
@@ -716,9 +914,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             </Card>
                         </Col>
                     ))}
-                    <Col xs={24}>
+                    {scopeHint ? (
+                        <Col xs={24}>
                         <Alert type="info" showIcon message={scopeHint} />
-                    </Col>
+                        </Col>
+                    ) : null}
                 </Row>
             ) : null}
 
@@ -737,22 +937,148 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 title={`${sectionConfig.title} (${sectionKey === 'cms-orders' ? (data?.stats?.total_orders ?? 0) : (data?.total ?? 0)})`}
                 extra={sectionKey === 'cms-orders'
                     ? <Input allowClear value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Tìm theo mã đơn, khách hàng, điện thoại..." style={{ width: 320 }} />
-                    : sectionKey !== 'cms-media'
+                    : sectionKey !== 'cms-media' && sectionKey !== 'cms-products'
                         ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{`Tạo ${sectionConfig.title}`}</Button>
                         : null}
             >
-                {filteredItems.length ? (
+                {sectionKey === 'cms-products' ? (
+                    <Row gutter={[16, 16]} align="top">
+                        <Col xs={24} xl={7}>
+                            <Card size="small" title="Tìm kiếm và lọc" className="admin-table-filters">
+                                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Tìm kiếm</Text>
+                                        <Input
+                                            allowClear
+                                            value={keyword}
+                                            onChange={(event) => setKeyword(event.target.value)}
+                                            placeholder="Tìm theo tên, slug, danh mục, mã sản phẩm..."
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Danh mục</Text>
+                                        <Select
+                                            value={productCategoryFilter}
+                                            onChange={setProductCategoryFilter}
+                                            options={[{ label: 'Tất cả danh mục', value: 'all' }, ...productCategoryOptions]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Nổi bật</Text>
+                                        <Select
+                                            value={productFeaturedFilter}
+                                            onChange={setProductFeaturedFilter}
+                                            options={[
+                                                { label: 'Mọi loại', value: 'all' },
+                                                { label: 'Nổi bật', value: 'featured' },
+                                                { label: 'Thường', value: 'normal' },
+                                            ]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Kích hoạt</Text>
+                                        <Select
+                                            value={productActiveFilter}
+                                            onChange={setProductActiveFilter}
+                                            options={[
+                                                { label: 'Mọi trạng thái', value: 'all' },
+                                                { label: 'Đang kích hoạt', value: 'active' },
+                                                { label: 'Đã tắt', value: 'inactive' },
+                                            ]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Public</Text>
+                                        <Select
+                                            value={productPublishFilter}
+                                            onChange={setProductPublishFilter}
+                                            options={[
+                                                { label: 'Mọi trạng thái public', value: 'all' },
+                                                { label: 'Đang public', value: 'public' },
+                                                { label: 'Chưa public', value: 'private' },
+                                            ]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space wrap>
+                                        <Dropdown
+                                            trigger={['click']}
+                                            menu={{
+                                                items: [
+                                                    {
+                                                        key: 'bulk-edit',
+                                                        label: 'Sửa đã chọn',
+                                                        icon: <EditOutlined />,
+                                                        disabled: !sectionPermissions.canUpdate || !selectedProductRowKeys.length,
+                                                    },
+                                                    {
+                                                        key: 'bulk-delete',
+                                                        label: 'Xóa đã chọn',
+                                                        icon: <DeleteOutlined />,
+                                                        danger: true,
+                                                        disabled: !sectionPermissions.canDelete || !selectedProductRowKeys.length,
+                                                    },
+                                                ],
+                                                onClick: ({ key }) => {
+                                                    if (key === 'bulk-edit') {
+                                                        openBulkEditProducts();
+                                                    }
+
+                                                    if (key === 'bulk-delete') {
+                                                        confirmBulkDeleteProducts();
+                                                    }
+                                                },
+                                            }}
+                                        >
+                                            <Button icon={<MoreOutlined />} disabled={!selectedProductRowKeys.length}>
+                                                Thao tác đã chọn
+                                            </Button>
+                                        </Dropdown>
+                                        {selectedProductRowKeys.length ? (
+                                            <Text type="secondary">Đã chọn {selectedProductRowKeys.length} sản phẩm.</Text>
+                                        ) : null}
+                                    </Space>
+                                </Space>
+                            </Card>
+                        </Col>
+                        <Col xs={24} xl={17}>
+                            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{`Tạo ${sectionConfig.title}`}</Button>
+                                </div>
+                                {filteredItems.length ? (
+                                    <Table
+                                        rowKey="id"
+                                        rowSelection={productRowSelection}
+                                        columns={columns}
+                                        dataSource={filteredItems}
+                                        pagination={{ pageSize: 10, hideOnSinglePage: true }}
+                                        scroll={{ x: 980 }}
+                                    />
+                                ) : (
+                                    <Empty description={`Chưa có dữ liệu cho ${sectionConfig.title}.`} />
+                                )}
+                            </Space>
+                        </Col>
+                    </Row>
+                ) : null}
+
+                {sectionKey !== 'cms-products' && filteredItems.length ? (
                     <Table
                         rowKey="id"
+                        rowSelection={productRowSelection}
                         columns={columns}
                         dataSource={filteredItems}
                         pagination={{ pageSize: 10, hideOnSinglePage: true }}
                         scroll={{ x: 980 }}
                         onRow={sectionKey === 'cms-orders' ? (record) => ({ onClick: () => setSelectedOrder(record), style: { cursor: 'pointer' } }) : undefined}
                     />
-                ) : (
+                ) : sectionKey !== 'cms-products' ? (
                     <Empty description={`Chưa có dữ liệu cho ${sectionConfig.title}.`} />
-                )}
+                ) : null}
             </Card>
 
             <Drawer
@@ -804,6 +1130,214 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         <Text strong>{`${Number(item.line_total ?? 0).toLocaleString('vi-VN')}đ`}</Text>
                                     </div>
                                 ))}
+                            </Space>
+                        </Card>
+                    </Space>
+                ) : null}
+            </Drawer>
+
+            <Modal
+                title={`Cập nhật ${selectedProductRowKeys.length} sản phẩm đã chọn`}
+                open={sectionKey === 'cms-products' && bulkProductEditOpen}
+                onCancel={() => {
+                    setBulkProductEditOpen(false);
+                    bulkProductEditForm.resetFields();
+                }}
+                onOk={handleBulkEditProducts}
+                okText="Lưu thay đổi"
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Form form={bulkProductEditForm} layout="vertical">
+                    <Form.Item name="catalog_category_id" label="Danh mục">
+                        <Select
+                            options={[
+                                { label: 'Giữ nguyên danh mục hiện tại', value: BULK_KEEP_VALUE },
+                                { label: 'Bỏ danh mục', value: BULK_CLEAR_VALUE },
+                                ...productCategoryOptions,
+                            ]}
+                        />
+                    </Form.Item>
+                    <Form.Item name="is_featured" label="Nổi bật">
+                        <Select
+                            options={[
+                                { label: 'Giữ nguyên trạng thái hiện tại', value: BULK_KEEP_VALUE },
+                                { label: 'Đánh dấu nổi bật', value: 'true' },
+                                { label: 'Bỏ nổi bật', value: 'false' },
+                            ]}
+                        />
+                    </Form.Item>
+                    <Form.Item name="is_active" label="Trạng thái hiển thị" style={{ marginBottom: 0 }}>
+                        <Select
+                            options={[
+                                { label: 'Giữ nguyên trạng thái hiện tại', value: BULK_KEEP_VALUE },
+                                { label: 'Kích hoạt sản phẩm', value: 'true' },
+                                { label: 'Tắt sản phẩm', value: 'false' },
+                            ]}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Drawer
+                title={selectedPost?.title ?? 'Chi tiết bài viết'}
+                open={sectionKey === 'cms-posts' && Boolean(selectedPost)}
+                onClose={() => setSelectedPost(null)}
+                width={760}
+                destroyOnHidden
+                extra={sectionPermissions.canUpdate ? (
+                    <Button type="primary" icon={<EditOutlined />} onClick={handleEditPostFromDrawer}>
+                        Sửa bài viết
+                    </Button>
+                ) : null}
+            >
+                {selectedPost ? (
+                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                        <Card size="small">
+                            <div className="detail-grid detail-grid-2">
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Trạng thái</Text>
+                                    {renderStatusTag(selectedPost.status)}
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Danh mục</Text>
+                                    <Text strong>{selectedPost.category_name || 'Chưa phân loại'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Slug</Text>
+                                    <Text strong>{selectedPost.slug || 'Chưa có'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Thời gian xuất bản</Text>
+                                    <Text strong>{formatPublishAt(selectedPost.publish_at)}</Text>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {selectedPost.featured_media_url ? (
+                            <img
+                                src={selectedPost.featured_media_url}
+                                alt={selectedPost.title}
+                                style={{ width: '100%', maxHeight: 320, objectFit: 'cover', borderRadius: 16, border: '1px solid #dbe7e4' }}
+                            />
+                        ) : null}
+
+                        <Card size="small" title="Mô tả ngắn">
+                            <Paragraph style={{ marginBottom: 0 }}>
+                                {selectedPost.excerpt || 'Chưa có mô tả ngắn.'}
+                            </Paragraph>
+                        </Card>
+
+                        <Card size="small" title="SEO">
+                            <div className="detail-grid detail-grid-2">
+                                <div className="detail-tile">
+                                    <Text className="detail-label">SEO title</Text>
+                                    <Text strong>{selectedPost.meta_title || 'Chưa có'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">SEO description</Text>
+                                    <Text strong>{selectedPost.meta_description || 'Chưa có'}</Text>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card size="small" title="Nội dung chi tiết">
+                            {selectedPost.body ? (
+                                <div dangerouslySetInnerHTML={{ __html: selectedPost.body }} />
+                            ) : (
+                                <Paragraph style={{ marginBottom: 0 }}>Chưa có nội dung chi tiết.</Paragraph>
+                            )}
+                        </Card>
+                    </Space>
+                ) : null}
+            </Drawer>
+
+            <Drawer
+                title={selectedProduct?.name ?? 'Chi tiết sản phẩm'}
+                open={sectionKey === 'cms-products' && Boolean(selectedProduct)}
+                onClose={() => setSelectedProduct(null)}
+                width={620}
+                destroyOnHidden
+            >
+                {selectedProduct ? (
+                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                        {selectedProduct.image_url ? (
+                            <img
+                                src={selectedProduct.image_url}
+                                alt={selectedProduct.name}
+                                style={{ width: '100%', maxHeight: 280, objectFit: 'cover', borderRadius: 16, border: '1px solid #dbe7e4' }}
+                            />
+                        ) : null}
+
+                        <Card size="small">
+                            <div className="detail-grid detail-grid-2">
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Danh mục</Text>
+                                    <Text strong>{selectedProduct.category_name || 'Chưa gắn'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Mã sản phẩm</Text>
+                                    <Text strong>{selectedProduct.sku || 'Chưa có'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Giá bán</Text>
+                                    <Text strong>{`${Number(selectedProduct.price ?? 0).toLocaleString('vi-VN')}đ`}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Giá gốc</Text>
+                                    <Text strong>{selectedProduct.original_price ? `${Number(selectedProduct.original_price).toLocaleString('vi-VN')}đ` : 'Chưa có'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Tồn kho</Text>
+                                    <Text strong>{selectedProduct.stock ?? 0}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Đã mua</Text>
+                                    <Text strong>{selectedProduct.sold_count ?? 0}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Nổi bật</Text>
+                                    {selectedProduct.is_featured ? <Tag color="gold">featured</Tag> : <Tag>normal</Tag>}
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Hạn deal</Text>
+                                    <Text strong>{formatPublishAt(selectedProduct.deal_end_at)}</Text>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card size="small" title="Mô tả ngắn">
+                            <Paragraph style={{ marginBottom: 0 }}>
+                                {selectedProduct.short_description || 'Chưa có mô tả ngắn.'}
+                            </Paragraph>
+                        </Card>
+
+                        <Card size="small" title="Chi tiết sản phẩm">
+                            <Paragraph style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
+                                {selectedProduct.detail_content || 'Chưa có nội dung chi tiết.'}
+                            </Paragraph>
+                        </Card>
+
+                        <Card size="small" title="Thông tin sử dụng">
+                            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                <div>
+                                    <Text className="detail-label">Điểm nổi bật</Text>
+                                    <Paragraph style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
+                                        {selectedProduct.highlights || 'Chưa cấu hình'}
+                                    </Paragraph>
+                                </div>
+                                <div>
+                                    <Text className="detail-label">Điều kiện áp dụng</Text>
+                                    <Paragraph style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
+                                        {selectedProduct.usage_terms || 'Chưa cấu hình'}
+                                    </Paragraph>
+                                </div>
+                                <div>
+                                    <Text className="detail-label">Khu vực áp dụng</Text>
+                                    <Paragraph style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
+                                        {selectedProduct.usage_location || 'Chưa cấu hình'}
+                                    </Paragraph>
+                                </div>
                             </Space>
                         </Card>
                     </Space>

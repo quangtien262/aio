@@ -26,6 +26,7 @@ class ProjectTaskStatusManagementController
             ],
             'color' => ['nullable', 'string', 'max:32'],
             'is_done' => ['nullable', 'boolean'],
+            'is_collapsed_by_default' => ['nullable', 'boolean'],
         ]);
 
         $status = $record->taskStatuses()->create([
@@ -33,6 +34,7 @@ class ProjectTaskStatusManagementController
             'color' => $validated['color'] ?? 'default',
             'sort_order' => (($record->taskStatuses()->max('sort_order') ?? 0) + 1),
             'is_done' => (bool) ($validated['is_done'] ?? false),
+            'is_collapsed_by_default' => (bool) ($validated['is_collapsed_by_default'] ?? false),
             'is_active' => true,
         ]);
 
@@ -69,6 +71,7 @@ class ProjectTaskStatusManagementController
             ],
             'color' => ['nullable', 'string', 'max:32'],
             'is_done' => ['nullable', 'boolean'],
+            'is_collapsed_by_default' => ['nullable', 'boolean'],
         ]);
 
         $nextIsDone = (bool) ($validated['is_done'] ?? false);
@@ -83,6 +86,7 @@ class ProjectTaskStatusManagementController
             'name' => $validated['name'],
             'color' => $validated['color'] ?? 'default',
             'is_done' => $nextIsDone,
+            'is_collapsed_by_default' => (bool) ($validated['is_collapsed_by_default'] ?? false),
         ]);
 
         if ($nextIsDone) {

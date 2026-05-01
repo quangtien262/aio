@@ -28,6 +28,23 @@ class ProjectDataSerializer
         }
 
         return [
+            'projects' => Project::query()->orderBy('name')->get()->map(fn (Project $project): array => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'code' => $project->code,
+            ])->values()->all(),
+            'task_filter_statuses' => ProjectTaskStatus::query()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->unique(fn (ProjectTaskStatus $status) => mb_strtolower(trim($status->name)))
+                ->map(fn (ProjectTaskStatus $status): array => [
+                    'name' => $status->name,
+                    'color' => $status->color,
+                ])
+                ->values()
+                ->all(),
             'project_statuses' => ProjectStatus::query()->where('is_active', true)->orderBy('sort_order')->get()->map(fn (ProjectStatus $status): array => [
                 'id' => $status->id,
                 'name' => $status->name,
@@ -54,6 +71,7 @@ class ProjectDataSerializer
                 'color' => $status->color,
                 'sort_order' => $status->sort_order,
                 'is_done' => $status->is_done,
+                'is_collapsed_by_default' => $status->is_collapsed_by_default,
             ])->values()->all(),
             'admins' => Admin::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Admin $admin): array => [
                 'id' => $admin->id,

@@ -62,6 +62,12 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
                 onGenerateDemoData={(themeKey, preset) => runAdminAction(
                     () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'POST', body: JSON.stringify({ preset }) }),
                     'Đã tạo data test cho theme.',
+                    reload,
+                )}
+                onDeleteDemoData={(themeKey) => runAdminAction(
+                    () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'DELETE' }),
+                    'Đã xóa data test cho theme.',
+                    reload,
                 )}
                 canActivate={canActivate}
                 canGenerateDemoData={canGenerateDemoData}

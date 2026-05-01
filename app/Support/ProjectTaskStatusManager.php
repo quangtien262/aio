@@ -11,11 +11,11 @@ class ProjectTaskStatusManager
     public static function defaultDefinitions(): array
     {
         return [
-            ['name' => 'Chưa bắt đầu', 'color' => 'default', 'sort_order' => 1, 'is_done' => false],
-            ['name' => 'Đang làm', 'color' => 'processing', 'sort_order' => 2, 'is_done' => false],
-            ['name' => 'Đang review', 'color' => 'warning', 'sort_order' => 3, 'is_done' => false],
-            ['name' => 'Hoàn thành', 'color' => 'success', 'sort_order' => 4, 'is_done' => true],
-            ['name' => 'Dừng/Hủy', 'color' => 'error', 'sort_order' => 5, 'is_done' => false],
+            ['name' => 'Chưa bắt đầu', 'color' => 'default', 'sort_order' => 1, 'is_done' => false, 'is_collapsed_by_default' => false],
+            ['name' => 'Đang làm', 'color' => 'processing', 'sort_order' => 2, 'is_done' => false, 'is_collapsed_by_default' => false],
+            ['name' => 'Đang review', 'color' => 'warning', 'sort_order' => 3, 'is_done' => false, 'is_collapsed_by_default' => false],
+            ['name' => 'Hoàn thành', 'color' => 'success', 'sort_order' => 4, 'is_done' => true, 'is_collapsed_by_default' => false],
+            ['name' => 'Dừng/Hủy', 'color' => 'error', 'sort_order' => 5, 'is_done' => false, 'is_collapsed_by_default' => false],
         ];
     }
 
@@ -50,6 +50,7 @@ class ProjectTaskStatusManager
                 'color' => $template->color,
                 'sort_order' => $template->sort_order,
                 'is_done' => $template->is_done,
+                'is_collapsed_by_default' => $template->is_collapsed_by_default,
                 'is_active' => $template->is_active,
             ]);
         }

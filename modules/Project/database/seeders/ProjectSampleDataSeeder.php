@@ -26,6 +26,19 @@ use RuntimeException;
 if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
     class ProjectSampleDataSeeder extends Seeder
     {
+        private const DEMO_PROJECT_CODE_PREFIX = 'AIO-PRO-DEMO-';
+
+        private bool $removeExisting = true;
+
+        public function configure(array $options = []): static
+        {
+            if (array_key_exists('remove_existing', $options)) {
+                $this->removeExisting = (bool) $options['remove_existing'];
+            }
+
+            return $this;
+        }
+
         public function run(): void
         {
             $admin = Admin::query()->where('is_active', true)->orderBy('id')->first();
@@ -35,15 +48,70 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
         }
 
         DB::transaction(function () use ($admin): void {
-            foreach ($this->projectDefinitions() as $definition) {
+            $definitions = $this->projectDefinitions();
+
+            if ($this->removeExisting) {
+                $this->purgeDemoProjects();
+            } else {
+                $definitions = $this->makeBatchDefinitions($definitions, $this->nextBatchNumber());
+            }
+
+            foreach ($definitions as $definition) {
                 $this->seedProject($definition, $admin);
             }
         });
         }
 
+    private function purgeDemoProjects(): void
+    {
+        Project::withTrashed()
+            ->where('code', 'like', self::DEMO_PROJECT_CODE_PREFIX.'%')
+            ->get()
+            ->each(function (Project $project): void {
+                $this->resetProjectChildren($project);
+                $project->taskStatuses()->delete();
+                $project->forceDelete();
+            });
+    }
+
+    private function nextBatchNumber(): int
+    {
+        $maxBatch = 1;
+
+        foreach (Project::withTrashed()->where('code', 'like', self::DEMO_PROJECT_CODE_PREFIX.'%')->pluck('code') as $code) {
+            if (preg_match('/-B(\d+)$/', $code, $matches) === 1) {
+                $maxBatch = max($maxBatch, (int) $matches[1]);
+                continue;
+            }
+
+            $maxBatch = max($maxBatch, 1);
+        }
+
+        return $maxBatch + 1;
+    }
+
+    private function makeBatchDefinitions(array $definitions, int $batchNumber): array
+    {
+        return array_map(function (array $definition) use ($batchNumber): array {
+            unset($definition['fixed_id']);
+            $definition['code'] = sprintf('%s-B%02d', $definition['code'], $batchNumber);
+            $definition['name'] = sprintf('%s (Demo %02d)', $definition['name'], $batchNumber);
+            $definition['meta'] = [
+                ...($definition['meta'] ?? []),
+                'demo_batch' => $batchNumber,
+            ];
+
+            return $definition;
+        }, $definitions);
+    }
+
     private function seedProject(array $definition, Admin $admin): void
     {
         $project = Project::withTrashed()->firstOrNew(['code' => $definition['code']]);
+
+        if (! $project->exists && isset($definition['fixed_id']) && ! Project::withTrashed()->whereKey($definition['fixed_id'])->exists()) {
+            $project->forceFill(['id' => $definition['fixed_id']]);
+        }
 
         if ($project->exists && $project->trashed()) {
             $project->restore();
@@ -250,6 +318,7 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
     {
         return [
             [
+                'fixed_id' => 11,
                 'code' => 'AIO-PRO-DEMO-01',
                 'name' => 'Triển khai website corporate 2026',
                 'description' => 'Bộ dữ liệu mẫu để test full UI module Project với luồng website, checklist, report và file đính kèm.',
@@ -265,8 +334,14 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
                 'tasks' => [
                     ['key' => 'brief', 'title' => 'Chốt sitemap và thông điệp trang chủ', 'description' => 'Hoàn tất cấu trúc nội dung và key message cho hero section.', 'status' => 'Hoàn thành', 'priority' => 'High', 'start_date' => '2026-04-01', 'due_date' => '2026-04-05', 'completed_at' => '2026-04-05 10:00:00', 'progress' => 100],
                     ['key' => 'design', 'title' => 'Thiết kế UI kit landing page', 'description' => 'Xây dựng palette, typography và component nền cho trang corporate.', 'status' => 'Đang review', 'priority' => 'High', 'start_date' => '2026-04-06', 'due_date' => '2026-04-18', 'completed_at' => null, 'progress' => 85],
+                    ['key' => 'content', 'title' => 'Biên tập nội dung section giới thiệu', 'description' => 'Chốt nội dung cho about, năng lực và CTA liên hệ.', 'status' => 'Hoàn thành', 'priority' => 'Medium', 'start_date' => '2026-04-07', 'due_date' => '2026-04-14', 'completed_at' => '2026-04-14 16:00:00', 'progress' => 100],
                     ['key' => 'build', 'title' => 'Tích hợp module CMS cho landing page', 'description' => 'Binding block nội dung, SEO fields và banner từ CMS workspace.', 'status' => 'Đang làm', 'priority' => 'Urgent', 'start_date' => '2026-04-12', 'due_date' => '2026-05-02', 'completed_at' => null, 'progress' => 58],
+                    ['key' => 'seo', 'title' => 'Thiết lập SEO tổng thể cho landing', 'description' => 'Khai báo title, description, OG image và schema cơ bản.', 'status' => 'Đang review', 'priority' => 'Medium', 'start_date' => '2026-04-15', 'due_date' => '2026-04-24', 'completed_at' => null, 'progress' => 72],
+                    ['key' => 'media', 'title' => 'Chuẩn hóa ảnh banner và gallery', 'description' => 'Tối ưu crop, dung lượng và phiên bản mobile cho các banner chính.', 'status' => 'Đang làm', 'priority' => 'Medium', 'start_date' => '2026-04-16', 'due_date' => '2026-04-28', 'completed_at' => null, 'progress' => 44],
+                    ['key' => 'form', 'title' => 'Tích hợp form liên hệ và email thông báo', 'description' => 'Nối form liên hệ với mail template và validate dữ liệu nhập.', 'status' => 'Đang làm', 'priority' => 'High', 'start_date' => '2026-04-18', 'due_date' => '2026-04-30', 'completed_at' => null, 'progress' => 61],
+                    ['key' => 'staging', 'title' => 'Deploy staging cho khách duyệt', 'description' => 'Publish bản staging và chốt danh sách feedback cuối.', 'status' => 'Chưa bắt đầu', 'priority' => 'High', 'start_date' => '2026-05-02', 'due_date' => '2026-05-07', 'completed_at' => null, 'progress' => 0],
                     ['key' => 'qa', 'title' => 'QA responsive và tối ưu tốc độ', 'description' => 'Kiểm tra mobile/tablet và tối ưu LCP trước khi nghiệm thu.', 'status' => 'Chưa bắt đầu', 'priority' => 'Medium', 'start_date' => '2026-05-03', 'due_date' => '2026-05-10', 'completed_at' => null, 'progress' => 0],
+                    ['key' => 'launch', 'title' => 'Go-live và bàn giao vận hành', 'description' => 'Đưa site production, chốt checklist bàn giao và tài khoản liên quan.', 'status' => 'Chưa bắt đầu', 'priority' => 'High', 'start_date' => '2026-05-11', 'due_date' => '2026-05-15', 'completed_at' => null, 'progress' => 0],
                 ],
                 'checklists' => [
                     ['title' => 'Khóa sitemap với team content', 'description' => 'Xác nhận trang chủ, giới thiệu, dịch vụ, liên hệ.', 'is_completed' => true],
@@ -301,6 +376,7 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
                 ],
             ],
             [
+                'fixed_id' => 12,
                 'code' => 'AIO-PRO-DEMO-02',
                 'name' => 'Chuẩn hóa vận hành App Store',
                 'description' => 'Dữ liệu demo cho luồng project nội bộ, tập trung vào quy trình module lifecycle và tài liệu vận hành.',
@@ -315,8 +391,15 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
                 'meta' => ['owner_team' => 'Platform'],
                 'tasks' => [
                     ['key' => 'audit', 'title' => 'Audit module lifecycle hiện tại', 'description' => 'Rà soát install, enable, upgrade, uninstall theo từng module.', 'status' => 'Đang làm', 'priority' => 'Medium', 'start_date' => '2026-04-20', 'due_date' => '2026-04-29', 'completed_at' => null, 'progress' => 40],
-                    ['key' => 'docs', 'title' => 'Viết tài liệu chuẩn release module', 'description' => 'Định nghĩa checklist release và rollback cho app store.', 'status' => 'Chưa bắt đầu', 'priority' => 'Medium', 'start_date' => '2026-04-30', 'due_date' => '2026-05-08', 'completed_at' => null, 'progress' => 0],
+                    ['key' => 'docs', 'title' => 'Viết tài liệu chuẩn release module', 'description' => 'Định nghĩa checklist release và rollback cho app store.', 'status' => 'Đang review', 'priority' => 'Medium', 'start_date' => '2026-04-30', 'due_date' => '2026-05-08', 'completed_at' => null, 'progress' => 78],
                     ['key' => 'policy', 'title' => 'Đề xuất policy versioning', 'description' => 'Quy ước semver và chiến lược compatibility cho module.', 'status' => 'Chưa bắt đầu', 'priority' => 'Low', 'start_date' => '2026-05-01', 'due_date' => '2026-05-10', 'completed_at' => null, 'progress' => 0],
+                    ['key' => 'ux', 'title' => 'Rà soát lại UI action panel App Store', 'description' => 'Tinh gọn action chính, trạng thái module và thông điệp blocker.', 'status' => 'Đang làm', 'priority' => 'Medium', 'start_date' => '2026-04-28', 'due_date' => '2026-05-05', 'completed_at' => null, 'progress' => 52],
+                    ['key' => 'permission', 'title' => 'Chuẩn hóa permission cho module lifecycle', 'description' => 'Rà soát quyền view/install/enable/upgrade/uninstall cho từng role.', 'status' => 'Đang làm', 'priority' => 'High', 'start_date' => '2026-04-29', 'due_date' => '2026-05-06', 'completed_at' => null, 'progress' => 47],
+                    ['key' => 'seed-demo', 'title' => 'Thiết kế luồng tạo data test cho module', 'description' => 'Bổ sung trigger tạo sample data ngay trong App Store cho module cần demo.', 'status' => 'Đang review', 'priority' => 'High', 'start_date' => '2026-04-30', 'due_date' => '2026-05-04', 'completed_at' => null, 'progress' => 83],
+                    ['key' => 'qa-store', 'title' => 'Kiểm thử reinstall và upgrade flow', 'description' => 'Chạy lại install/enable/upgrade nhiều vòng để bắt lỗi side effect.', 'status' => 'Chưa bắt đầu', 'priority' => 'Medium', 'start_date' => '2026-05-05', 'due_date' => '2026-05-12', 'completed_at' => null, 'progress' => 0],
+                    ['key' => 'telemetry', 'title' => 'Bổ sung log lifecycle quan trọng', 'description' => 'Ghi lại install, upgrade, seed demo data và lỗi runtime chính.', 'status' => 'Chưa bắt đầu', 'priority' => 'Low', 'start_date' => '2026-05-06', 'due_date' => '2026-05-14', 'completed_at' => null, 'progress' => 0],
+                    ['key' => 'training', 'title' => 'Soạn tài liệu onboarding cho admin', 'description' => 'Tổng hợp ảnh chụp màn hình và hướng dẫn thao tác module store.', 'status' => 'Chưa bắt đầu', 'priority' => 'Medium', 'start_date' => '2026-05-07', 'due_date' => '2026-05-15', 'completed_at' => null, 'progress' => 0],
+                    ['key' => 'rollout', 'title' => 'Lập kế hoạch rollout theo nhóm website', 'description' => 'Xác định module nào bật mặc định cho từng loại website.', 'status' => 'Chưa bắt đầu', 'priority' => 'Medium', 'start_date' => '2026-05-08', 'due_date' => '2026-05-18', 'completed_at' => null, 'progress' => 0],
                 ],
                 'checklists' => [
                     ['title' => 'Liệt kê module core hiện có', 'description' => 'Catalog, CMS, Theme, Project.', 'is_completed' => true],
@@ -340,48 +423,6 @@ if (! class_exists(__NAMESPACE__.'\\ProjectSampleDataSeeder', false)) {
                 'activities' => [
                     ['entity_type' => 'project', 'entity_key' => null, 'action' => 'created', 'description' => 'Khởi tạo dự án chuẩn hóa App Store nội bộ.'],
                     ['entity_type' => 'task', 'entity_key' => 'audit', 'action' => 'started', 'description' => 'Bắt đầu audit lifecycle của các module hiện hữu.'],
-                ],
-            ],
-            [
-                'code' => 'AIO-PRO-DEMO-03',
-                'name' => 'Chiến dịch ra mắt module Project',
-                'description' => 'Bộ dữ liệu demo dạng marketing/completed để kiểm tra các trạng thái hoàn tất và báo cáo tổng kết.',
-                'project_type' => 'Marketing',
-                'project_status' => 'Hoàn thành',
-                'priority' => 'High',
-                'start_date' => '2026-03-01',
-                'due_date' => '2026-04-10',
-                'completed_at' => '2026-04-10',
-                'progress' => 100,
-                'color' => '#7c3aed',
-                'meta' => ['campaign' => 'Project launch'],
-                'tasks' => [
-                    ['key' => 'plan', 'title' => 'Lập media plan cho đợt launch', 'description' => 'Chốt kênh truyền thông, ngân sách và timeline triển khai.', 'status' => 'Hoàn thành', 'priority' => 'High', 'start_date' => '2026-03-01', 'due_date' => '2026-03-05', 'completed_at' => '2026-03-05 09:00:00', 'progress' => 100],
-                    ['key' => 'content', 'title' => 'Soạn landing nội dung giới thiệu module', 'description' => 'Viết copy về tính năng, lợi ích và luồng quản trị dự án.', 'status' => 'Hoàn thành', 'priority' => 'High', 'start_date' => '2026-03-06', 'due_date' => '2026-03-18', 'completed_at' => '2026-03-18 15:00:00', 'progress' => 100],
-                    ['key' => 'announce', 'title' => 'Phát hành thông báo nội bộ', 'description' => 'Gửi thông báo tới admin users và team vận hành.', 'status' => 'Hoàn thành', 'priority' => 'Medium', 'start_date' => '2026-03-20', 'due_date' => '2026-03-25', 'completed_at' => '2026-03-25 11:30:00', 'progress' => 100],
-                ],
-                'checklists' => [
-                    ['title' => 'Chốt landing page launch', 'description' => 'Đã publish nội dung và visual chính thức.', 'is_completed' => true],
-                    ['title' => 'Gửi recap sau chiến dịch', 'description' => 'Báo cáo số liệu và insight sau launch.', 'is_completed' => true],
-                ],
-                'task_checklists' => [
-                    ['task_key' => 'content', 'title' => 'Publish landing launch', 'description' => 'Đảm bảo copy và CTA đã lên production.', 'is_completed' => true],
-                ],
-                'task_comments' => [
-                    ['task_key' => 'announce', 'content' => 'Thông báo nội bộ đã gửi, phản hồi ban đầu khá tích cực.', 'created_at' => '2026-03-25 13:00:00'],
-                ],
-                'task_time_entries' => [
-                    ['task_key' => 'content', 'tracked_at' => '2026-03-14 14:00:00', 'duration_minutes' => 180, 'note' => 'Hoàn thiện copy giới thiệu module Project.'],
-                ],
-                'files' => [
-                    ['title' => 'Tổng hợp campaign', 'filename' => 'campaign-summary.txt', 'task_key' => null, 'content' => "Campaign summary\n- Reach nội bộ tốt\n- Adoption tích cực\n- Đề xuất follow-up training\n"],
-                ],
-                'reports' => [
-                    ['title' => 'Báo cáo tổng kết chiến dịch', 'report_date' => '2026-04-10', 'summary' => 'Chiến dịch launch hoàn tất, phản hồi nội bộ tích cực.', 'content' => 'Tỷ lệ quan tâm tốt. Đề xuất tiếp tục bằng workshop onboarding cho admin mới.'],
-                ],
-                'activities' => [
-                    ['entity_type' => 'project', 'entity_key' => null, 'action' => 'completed', 'description' => 'Đã hoàn tất chiến dịch ra mắt module Project.'],
-                    ['entity_type' => 'task', 'entity_key' => 'announce', 'action' => 'completed', 'description' => 'Thông báo nội bộ đã phát hành tới toàn bộ admin users.'],
                 ],
             ],
         ];
