@@ -45,6 +45,16 @@ class MenuManagementController
             'items.*.label' => ['required', 'string', 'max:255'],
             'items.*.url' => ['nullable', 'string', 'max:2000'],
             'items.*.target' => ['nullable', 'string', 'max:50'],
+            'items.*.link_type' => ['nullable', 'string', 'max:50'],
+            'items.*.link_value' => ['nullable', 'string', 'max:255'],
+            'items.*.custom_url' => ['nullable', 'string', 'max:2000'],
+            'items.*.children' => ['nullable', 'array'],
+            'items.*.children.*.label' => ['required', 'string', 'max:255'],
+            'items.*.children.*.url' => ['nullable', 'string', 'max:2000'],
+            'items.*.children.*.target' => ['nullable', 'string', 'max:50'],
+            'items.*.children.*.link_type' => ['nullable', 'string', 'max:50'],
+            'items.*.children.*.link_value' => ['nullable', 'string', 'max:255'],
+            'items.*.children.*.custom_url' => ['nullable', 'string', 'max:2000'],
         ]);
     }
 

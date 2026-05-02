@@ -117,7 +117,8 @@
             .nav-category-panel { position: absolute; top: 100%; left: 0; width: 220px; background: #fff; border: 1px solid var(--th-line); z-index: 30; display: none; }
             .nav-category-wrap:hover .nav-category-panel { display: block; }
             .nav-links { display: flex; justify-content: flex-start; gap: 28px; flex-wrap: wrap; }
-            .nav-links a { text-align: left; text-transform: uppercase; }
+            .nav-links a { text-align: left; text-transform: uppercase; transition: color .18s ease; }
+            .nav-links a:hover { color: #fff2bf; }
             .nav-category-panel .th-sidebar-entry { position: static; }
             .nav-category-panel .th-sidebar-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 14px; border-bottom: 1px solid var(--th-line); font-size: 14px; color: #4f4f4f; background: #fff; transition: background .16s ease, color .16s ease; }
             .nav-category-panel .th-sidebar-entry:last-child .th-sidebar-item { border-bottom: 0; }

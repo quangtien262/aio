@@ -53,7 +53,8 @@
             .nav-inner { display: flex; align-items: center; justify-content: flex-start; gap: 28px; min-height: 42px; font-size: 14px; font-weight: 700; }
             .nav-category { background: rgba(0, 0, 0, .16); padding: 12px 18px; min-width: 210px; }
             .nav-links { display: flex; justify-content: flex-start; gap: 28px; flex-wrap: wrap; }
-            .nav-links a { text-transform: uppercase; }
+            .nav-links a { text-transform: uppercase; transition: color .18s ease; }
+            .nav-links a:hover { color: #fff2bf; }
             .breadcrumb { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 18px 0; font-size: 13px; color: var(--th-muted); }
             .flash-banner { margin: 0 0 18px; padding: 14px 16px; border: 1px solid #c9e6b0; background: #f5ffe9; color: #3f6a18; font-size: 14px; }
             .error-banner { margin: 0 0 18px; padding: 14px 16px; border: 1px solid #f2c5c5; background: #fff2f2; color: #9a2b2b; font-size: 14px; }

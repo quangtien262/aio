@@ -82,8 +82,8 @@ const sectionConfigMap = {
         permissionPublish: null,
     },
     'cms-menus': {
-        title: 'Menus',
-        description: 'Quản lý menu primary/footer để render ra public site.',
+        title: 'Chi tiết menu',
+        description: 'Xem và chỉnh cấu trúc menu hiển thị trên website theo từng vị trí.',
         endpoint: '/admin/api/cms/menus',
         permissionView: 'cms.view',
         permissionCreate: 'cms.menu.manage',
@@ -177,7 +177,7 @@ const emptyMenu = {
     id: null,
     name: '',
     location: 'primary',
-    items: [{ label: '', url: '', target: '_self' }],
+    items: [{ label: '', url: '', target: '_self', link_type: 'custom', link_value: null, custom_url: '', children: [] }],
     website_key: '',
     owner_key: '',
     tenant_key: '',
@@ -185,6 +185,10 @@ const emptyMenu = {
 
 const BULK_KEEP_VALUE = '__KEEP__';
 const BULK_CLEAR_VALUE = '__CLEAR__';
+
+function countMenuItems(items = []) {
+    return (items ?? []).reduce((total, item) => total + 1 + countMenuItems(item?.children ?? []), 0);
+}
 
 function renderStatusTag(status) {
     const colorMap = { published: 'green', draft: 'default' };
@@ -244,6 +248,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productPublishFilter, setProductPublishFilter] = useState('all');
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
     const [mediaFile, setMediaFile] = useState(null);
+    const createButtonLabel = sectionKey === 'cms-menus' ? 'Thêm menu' : `Tạo ${sectionConfig.title}`;
 
     const sectionPermissions = useMemo(() => ({
         canView: (currentPermissions ?? []).includes(sectionConfig.permissionView),
@@ -274,10 +279,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         deps: [sectionConfig.endpoint, sectionPermissions.canView],
     });
 
-    const scopeHint = sectionKey === 'cms-products'
-        ? null
-        : 'Source hiện vận hành theo mô hình một website, không còn dùng scope Website/Owner/Tenant trong workflow này.';
-
     const metrics = useMemo(() => {
         if (!data) {
             return [];
@@ -307,11 +308,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         if (sectionKey === 'cms-categories' || sectionKey === 'cms-menus') {
-            return [{ label: 'Tổng bản ghi', value: data.total ?? 0 }];
+            return [];
         }
 
         return [
-            { label: 'Tổng bản ghi', value: data.total ?? 0 },
             { label: 'Đã xuất bản', value: data.metrics?.published ?? 0 },
             { label: 'Bản nháp', value: data.metrics?.draft ?? 0 },
         ];
@@ -689,7 +689,48 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-posts') {
             return [
-                { title: 'Post', dataIndex: 'title', key: 'title' },
+                {
+                    title: 'Post',
+                    dataIndex: 'title',
+                    key: 'title',
+                    render: (value, record) => (
+                        <Space size={12} align="start">
+                            <Button type="text" style={{ padding: 0, width: 56, height: 56 }} onClick={() => openPostDetailsDrawer(record)}>
+                                {record.featured_media_url ? (
+                                    <img
+                                        src={record.featured_media_url}
+                                        alt={value}
+                                        style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 12, border: '1px solid #dbe7e4', display: 'block' }}
+                                    />
+                                ) : (
+                                    <div
+                                        style={{
+                                            width: 56,
+                                            height: 56,
+                                            borderRadius: 12,
+                                            border: '1px solid #dbe7e4',
+                                            background: '#f4f7f6',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#8aa19a',
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        No Img
+                                    </div>
+                                )}
+                            </Button>
+                            <Space direction="vertical" size={2} align="start">
+                                <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openPostDetailsDrawer(record)}>
+                                    <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                                </Button>
+                                <Text type="secondary">{record.category_name || 'Chưa phân loại'}</Text>
+                            </Space>
+                        </Space>
+                    ),
+                },
                 { title: 'Slug', dataIndex: 'slug', key: 'slug' },
                 { title: 'Category', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa phân loại' },
                 { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
@@ -765,9 +806,18 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-menus') {
             return [
-                { title: 'Menu', dataIndex: 'name', key: 'name' },
+                {
+                    title: 'Menu',
+                    dataIndex: 'name',
+                    key: 'name',
+                    render: (value, record) => (
+                        <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openEditModal(record)}>
+                            <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                        </Button>
+                    ),
+                },
                 { title: 'Location', dataIndex: 'location', key: 'location', render: (value) => <Tag>{value}</Tag> },
-                { title: 'Items', key: 'items', render: (_, record) => (record.items ?? []).length },
+                { title: 'Items', key: 'items', render: (_, record) => countMenuItems(record.items ?? []) },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
         }
@@ -857,6 +907,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingMenu={editingRecord}
                         locationOptions={data?.locations ?? []}
+                        linkOptions={data?.linkOptions ?? {}}
                         callAdminApi={callAdminApi}
                         runAdminAction={runAdminAction}
                         onLocationsChanged={reload}
@@ -896,14 +947,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            {sectionKey !== 'cms-products' ? (
-                <Card className="hero-card">
-                    <Text className="card-label">CMS Workspace</Text>
-                    <Title level={3}>{sectionConfig.title}</Title>
-                    <Paragraph style={{ marginBottom: 0 }}>{sectionConfig.description}</Paragraph>
-                </Card>
-            ) : null}
-
             {metrics.length ? (
                 <Row gutter={[12, 12]}>
                     {metrics.map((item) => (
@@ -914,11 +957,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             </Card>
                         </Col>
                     ))}
-                    {scopeHint ? (
-                        <Col xs={24}>
-                        <Alert type="info" showIcon message={scopeHint} />
-                        </Col>
-                    ) : null}
                 </Row>
             ) : null}
 
@@ -938,7 +976,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 extra={sectionKey === 'cms-orders'
                     ? <Input allowClear value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Tìm theo mã đơn, khách hàng, điện thoại..." style={{ width: 320 }} />
                     : sectionKey !== 'cms-media' && sectionKey !== 'cms-products'
-                        ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{`Tạo ${sectionConfig.title}`}</Button>
+                        ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                         : null}
             >
                 {sectionKey === 'cms-products' ? (

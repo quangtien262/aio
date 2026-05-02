@@ -80,7 +80,8 @@
             .th-main-nav-categories-wrap { position: relative; }
             .th-main-nav-categories { background: rgba(0,0,0,0.08); min-width: 210px; padding: 11px 14px; font-weight: 700; }
             .th-main-nav-menu { display: flex; justify-content: flex-start; gap: 28px; font-size: 14px; font-weight: 700; }
-            .th-main-nav-menu a { padding: 11px 0; display: block; text-transform: uppercase; }
+            .th-main-nav-menu a { padding: 11px 0; display: block; text-transform: uppercase; transition: color .18s ease; }
+            .th-main-nav-menu a:hover { color: #fff2bf; }
             .th-category-panel { position: absolute; top: 100%; left: 0; width: 220px; background: #fff; border: 1px solid var(--th-line); z-index: 30; display: none; }
             .th-main-nav-categories-wrap:hover .th-category-panel { display: block; }
             .th-sidebar-entry { position: static; }

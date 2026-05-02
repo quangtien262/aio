@@ -94,7 +94,8 @@
             .th-main-nav { background: var(--th-red); color: #fff; }
             .th-main-nav-inner { min-height: 42px; justify-content: flex-start; }
             .th-main-nav-menu { display: flex; justify-content: flex-start; gap: 28px; font-size: 14px; font-weight: 700; }
-            .th-main-nav-menu a { padding: 11px 0; display: block; text-align: left; text-transform: uppercase; }
+            .th-main-nav-menu a { padding: 11px 0; display: block; text-align: left; text-transform: uppercase; transition: color .18s ease; }
+            .th-main-nav-menu a:hover { color: #fff2bf; }
             .th-main-nav-categories { background: rgba(0,0,0,0.08); min-width: 170px; padding: 11px 14px; font-weight: 700; }
             .th-content { padding: 0 0 40px; }
             .th-hero-layout { display: grid; grid-template-columns: 220px 1fr; gap: 16px; margin-top: 0; }

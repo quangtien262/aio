@@ -50,7 +50,8 @@
             .nav-inner { display: flex; align-items: center; justify-content: flex-start; gap: 28px; min-height: 42px; font-size: 14px; font-weight: 700; }
             .nav-category { background: rgba(0, 0, 0, .16); padding: 12px 18px; min-width: 210px; }
             .nav-links { display: flex; justify-content: flex-start; gap: 28px; flex-wrap: wrap; }
-            .nav-links a { text-transform: uppercase; }
+            .nav-links a { text-transform: uppercase; transition: color .18s ease; }
+            .nav-links a:hover { color: #fff2bf; }
             .success-card { margin: 28px 0 36px; background: #fff; border: 1px solid var(--th-line); padding: 28px; }
             .success-card h1 { margin: 0 0 12px; font-size: 32px; text-transform: uppercase; color: #3f6a18; }
             .success-card p { margin: 0 0 18px; color: #555; line-height: 1.7; }
