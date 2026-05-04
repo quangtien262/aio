@@ -394,7 +394,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openEditModal = (record) => {
-        setEditingRecord(sectionKey === 'cms-pages' || sectionKey === 'cms-posts'
+        setEditingRecord(sectionKey === 'cms-posts'
             ? {
                 ...record,
                 publish_at: normalizeDatetimeLocal(record.publish_at),
@@ -646,11 +646,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             }
 
             if (key === 'edit') {
-                if (sectionKey === 'cms-posts') {
-                    openPostDetailsDrawer(record);
-                    return;
-                }
-
                 openEditModal(record);
                 return;
             }
@@ -681,7 +676,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 { title: 'Title', dataIndex: 'title', key: 'title' },
                 { title: 'Slug', dataIndex: 'slug', key: 'slug' },
                 { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
-                { title: 'Publish At', dataIndex: 'publish_at', key: 'publish_at', render: formatPublishAt },
                 { title: 'SEO', key: 'seo', render: (_, record) => record.meta_title || record.meta_description ? <Text type="secondary">{record.meta_title || record.meta_description}</Text> : 'Chưa có' },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];

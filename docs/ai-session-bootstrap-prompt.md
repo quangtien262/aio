@@ -32,6 +32,7 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 
 - Hệ thống website sẽ có nhiều loại giao diện/theme có thể cài đặt và chuyển đổi linh hoạt.
 - Khi đổi theme, dữ liệu website không được mất.
+- Theme không chỉ quản lý giao diện mà còn là nơi chứa phần copy/public content theo từng locale cho storefront.
 - Việc đổi theme phải có kiểm soát theo **đúng loại website**, ví dụ:
   - thương mại điện tử
   - website dịch vụ
@@ -43,6 +44,27 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
   - chọn loại website
   - chọn theme phù hợp
   - nhập các cấu hình nền tảng ban đầu
+
+## 2.1. Định hướng đa ngôn ngữ và theme translation
+
+- Hệ thống storefront hiện đi theo kiến trúc locale động, lấy registry từ bảng `system_locales` thay vì hardcode cố định `vi/en` trong code.
+- `vi` hiện là `source locale`, `default locale` và `fallback locale` an toàn cho storefront. `en` đang được seed active/published để giữ tương thích với storefront hiện tại và các test/backward compatibility.
+- Route public storefront vẫn đi theo dạng prefix locale như `/{locale}`, nhưng tập locale runtime phải lấy từ locale registry đang active/published thay vì giả định sẵn 2 ngôn ngữ.
+- Phần đa ngôn ngữ nên tách làm 2 lớp rõ ràng:
+  - `static theme copy`: text tĩnh của giao diện như nút, heading, label, empty state, CTA
+  - `business content`: dữ liệu nghiệp vụ/CMS hiển thị trên storefront như menu, page, post, category, product, banner, site profile
+- Static copy của theme vẫn đi theo file dictionary trong theme, nhưng locale built-in nào được hỗ trợ phải khai báo ở theme manifest qua `localization.default_locale` và `localization.supported_locales`.
+- Business content translation không hardcode trong Blade/component mà được map ra key chuẩn để có thể override theo locale. Locale dùng để editor/override phải tách khỏi khái niệm locale storefront đang bật thực tế.
+- Tư duy đúng là: theme quyết định cách render, còn dữ liệu business/CMS phải có cơ chế dịch độc lập để khi đổi theme vẫn giữ được nội dung đã nhập.
+- Cần phân biệt rõ 2 lớp locale:
+  - `runtime storefront locales`: locale đang active để render route public và redirect từ homepage
+  - `editable locales`: locale mà admin được phép chuẩn bị/cập nhật nội dung dịch, kể cả locale built-in hoặc preset chưa cần public ngay
+- Fallback cần đi theo hướng an toàn:
+  - ưu tiên override do user nhập trong admin
+  - nếu chưa có override thì dùng default translation entry được build từ dữ liệu gốc
+  - nếu locale editor mới chưa dịch đủ thì storefront vẫn phải rơi về source/fallback locale an toàn
+- `/admin/themes` hiện là điểm quản trị locale storefront luôn: user có thể bật/tắt locale, publish/draft, đổi default locale và thêm locale custom. Workspace switcher ở admin phải phản ánh nhanh locale storefront đang xem mà không lẫn với shell admin language.
+- Admin UI nội bộ hiện vẫn ưu tiên tiếng Việt; phần đa ngôn ngữ vừa làm tập trung vào storefront/theme content, không phải dịch toàn bộ shell quản trị.
 
 ## 3. Mô hình tài khoản và phân quyền
 
@@ -80,6 +102,7 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 - Tư duy đúng của dự án là: **core platform + module ecosystem + theme ecosystem**.
 - Module phải đủ độc lập để có thể cài/xóa tùy ý qua store/install flow.
 - Theme phải đổi được linh hoạt trong cùng nhóm website mà không làm hỏng dữ liệu business/CMS.
+- Với đa ngôn ngữ storefront, cần giữ tách biệt giữa `theme static translation` và `content translation override`, không trộn lẫn vào cùng một nguồn dữ liệu mơ hồ.
 - Admin dùng React như một phần của Laravel app, không tách hẳn thành frontend project độc lập.
 - Admin UI ưu tiên **drawer** cho form tạo/sửa nội dung CMS thay vì modal nếu cùng pattern hiện có.
 - Giữ style thay đổi nhỏ, đúng codebase hiện tại, không refactor rộng nếu user không yêu cầu.
@@ -130,6 +153,42 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 - `/admin/themes` đã đổi để preview theme chỉ mở khi click vào tiêu đề theme
 - Preview hiển thị bằng drawer
 - Nút `Kích hoạt theme` đã được đẩy lên đầu drawer để thao tác nhanh hơn
+- `/admin/themes` hiện là nơi quản lý cả locale storefront lẫn translation của theme cho storefront
+- Locale manager drawer mới cho phép:
+  - xem `default`, `source`, `fallback` locale hiện tại
+  - bật/tắt trạng thái `active` và `published` của từng locale storefront
+  - đổi `default locale` động
+  - thêm locale custom ngoài built-in locale của theme
+  - nhìn rõ locale nào được theme hỗ trợ sẵn qua metadata trong theme manifest
+- Drawer translation hỗ trợ các flow chính:
+  - chọn locale động theo danh sách locale editor/runtime từ backend, không hardcode `vi/en`
+  - chuyển nhanh giữa `static` và `business content`
+  - search theo keyword/key
+  - phân trang để tải nhanh
+  - filter theo entity để dễ tìm đúng nhóm dữ liệu cần dịch
+  - edit từng entry bằng modal gọn thay vì render full form quá nặng
+- Với `business content`, hệ thống đã có lớp chuẩn hóa key để user dịch lại dữ liệu storefront mà không sửa trực tiếp record gốc. Các nhóm chính đã phủ gồm:
+  - `site_profile`
+  - `site_banner`
+  - `cms_menu`
+  - `cms_page`
+  - `cms_post`
+  - `cms_category`
+  - `catalog_category`
+  - `catalog_product`
+- File/hàm quan trọng cần nhớ khi tiếp tục phần này:
+  - `app/Support/BusinessContentTranslationService.php`
+  - `app/Http/Controllers/Admin/Api/ThemeTranslationIndexController.php`
+  - `resources/admin/src/modules/themes/components/ThemeTranslationDrawer.jsx`
+  - `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`
+- Hướng xử lý đúng cho phần dịch lại data ngôn ngữ của theme là:
+  - không chỉnh tay text trong Blade cho từng locale nếu đó là business content
+  - chuẩn hóa key translation trước, rồi expose ra admin để user override
+  - hỗ trợ save/load override nhanh theo locale để user có thể tinh chỉnh bất kỳ locale đích nào mà không chạm dữ liệu gốc tiếng Việt
+  - ưu tiên UX đủ nhanh cho dữ liệu lớn: search, pagination, entity filter, edit từng dòng
+- Đã có test/backstop cho phần này:
+  - `tests/Feature/ThemeContentTranslationTest.php`
+  - `tests/browser/admin-theme-translations.spec.js`
 
 ### Setup
 - `/admin/setup` đã được format lại cho gọn hơn, theo layout nhóm section rõ ràng

@@ -106,20 +106,20 @@
             <div class="wrap utility-inner">
                 <div class="utility-group">
                     <span>{{ $contactLocation }}</span>
-                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? 'Đã đăng ký bản tin' : 'Đăng ký bản tin' }}</button>
+                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('common.newsletter_subscribed') : __('common.newsletter_subscribe') }}</button>
                 </div>
                 <div class="utility-actions">
-                    <span>Hotline: {{ $contactHotline }}</span>
-                    <span>Email: {{ $contactEmail }}</span>
+                    <span>@themeT('common.hotline_label', 'Hotline'): {{ $contactHotline }}</span>
+                    <span>@themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
                     @if (!empty($customerAuth['is_authenticated']))
-                        <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                        <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài khoản')</a>
                         <form class="utility-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
                             @csrf
-                            <button type="submit" class="utility-action">Đăng xuất</button>
+                            <button type="submit" class="utility-action">@themeT('common.logout', 'Đăng xuất')</button>
                         </form>
                     @else
-                        <button type="button" class="utility-action" data-open-auth-modal="register">Đăng ký</button>
-                        <button type="button" class="utility-action" data-open-auth-modal="login" data-auth-redirect="{{ route('site.checkout.index') }}">Đăng nhập</button>
+                        <button type="button" class="utility-action" data-open-auth-modal="register">@themeT('common.register', 'Đăng ký')</button>
+                        <button type="button" class="utility-action" data-open-auth-modal="login" data-auth-redirect="{{ route('site.checkout.index') }}">@themeT('common.login', 'Đăng nhập')</button>
                     @endif
                 </div>
             </div>
@@ -127,25 +127,25 @@
 
         <header class="header">
             <div class="wrap header-main">
-                <a class="brand" href="/">
+                <a class="brand" href="{{ route('site.home') }}">
                     <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'TH0001') }}">
                 </a>
 
                 <form class="searchbar" method="GET" action="{{ route('site.catalog.search') }}" role="search">
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Tìm kiếm sản phẩm" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
-                    <button type="submit" aria-label="Tìm kiếm">⌕</button>
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                    <button type="submit" aria-label="@themeT('common.search_button', 'Tìm kiếm')">⌕</button>
                 </form>
 
-                <a class="cart-link" href="{{ route('site.cart.index') }}">GIỎ HÀNG ({{ $cartSummary['count'] ?? 0 }})</a>
+                <a class="cart-link" href="{{ route('site.cart.index') }}">@themeT('common.cart_label', 'GIỎ HÀNG') ({{ $cartSummary['count'] ?? 0 }})</a>
             </div>
         </header>
 
         <nav class="nav">
             <div class="wrap nav-inner">
-                <div class="nav-category">DANH MỤC</div>
+                <div class="nav-category">@themeT('common.categories', 'DANH MỤC')</div>
                 <div class="nav-links">
                     @foreach ($topMenu as $item)
-                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? 'Menu' }}</a>
+                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
                     @endforeach
                 </div>
             </div>
@@ -153,9 +153,9 @@
 
         <main class="wrap">
             <div class="breadcrumb">
-                <a href="/">Trang chủ</a>
+                <a href="{{ route('site.home') }}">@themeT('common.home', 'Trang chủ')</a>
                 <span>›</span>
-                <span>Giỏ hàng</span>
+                <span>@themeT('cart.breadcrumb', 'Giỏ hàng')</span>
             </div>
 
             @if (session('cart_success'))
@@ -169,7 +169,7 @@
             @if ($cartItems !== [])
                 <section class="cart-layout">
                     <div class="cart-panel">
-                        <h1 class="cart-title">Giỏ hàng của bạn</h1>
+                        <h1 class="cart-title">@themeT('cart.title', 'Giỏ hàng của bạn')</h1>
                         <div class="cart-table">
                             @foreach ($cartItems as $item)
                                 <article class="cart-row">
@@ -179,7 +179,7 @@
 
                                     <div class="cart-copy">
                                         <h3><a href="{{ $item['url'] ?? '#' }}">{{ $item['title'] }}</a></h3>
-                                        <div class="cart-meta">Tồn kho khả dụng: {{ $item['stock'] ?? 'Không giới hạn' }}</div>
+                                        <div class="cart-meta">{{ __('cart.stock_available', ['count' => $item['stock'] ?? __('cart.stock_unlimited')]) }}</div>
                                         <div class="cart-price-row">
                                             <span class="cart-price">{{ $formatCurrency($item['price'] ?? null) }}</span>
                                             @if (($item['old_price'] ?? null) !== null)
@@ -189,15 +189,15 @@
                                     </div>
 
                                     <div class="cart-actions">
-                                        <div class="cart-total">Tạm tính: {{ $formatCurrency(((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 0))) }}</div>
+                                        <div class="cart-total">{{ __('cart.item_subtotal', ['amount' => $formatCurrency(((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 0)))]) }}</div>
                                         <form method="POST" action="{{ route('site.cart.update', ['productId' => $item['product_id']]) }}" class="quantity-form">
                                             @csrf
                                             <input class="quantity-input" type="number" name="quantity" min="1" max="{{ max(1, (int) ($item['stock'] ?? 99)) }}" value="{{ $item['quantity'] }}">
-                                            <button type="submit" class="update-button">Cập nhật</button>
+                                            <button type="submit" class="update-button">@themeT('cart.update', 'Cập nhật')</button>
                                         </form>
                                         <form method="POST" action="{{ route('site.cart.remove', ['productId' => $item['product_id']]) }}">
                                             @csrf
-                                            <button type="submit" class="remove-button">Xóa khỏi giỏ</button>
+                                            <button type="submit" class="remove-button">@themeT('cart.remove', 'Xóa khỏi giỏ')</button>
                                         </form>
                                     </div>
                                 </article>
@@ -206,34 +206,32 @@
                     </div>
 
                     <aside class="summary-panel">
-                        <h2>Tóm tắt đơn hàng</h2>
-                        <div class="checkout-note">Bạn có thể chỉnh số lượng ngay tại đây, sau đó chuyển sang bước thanh toán để nhập thông tin nhận hàng và xác nhận đơn.</div>
+                        <h2>@themeT('cart.summary_title', 'Tóm tắt đơn hàng')</h2>
+                        <div class="checkout-note">@themeT('cart.summary_note', 'Bạn có thể chỉnh số lượng ngay tại đây, sau đó chuyển sang bước thanh toán để nhập thông tin nhận hàng và xác nhận đơn.')</div>
                         <div class="summary-list">
                             <div class="summary-line">
-                                <span>Số sản phẩm</span>
+                                <span>@themeT('cart.product_count', 'Số sản phẩm')</span>
                                 <strong>{{ $cartSummary['count'] ?? 0 }}</strong>
                             </div>
                             <div class="summary-line">
-                                <span>Mặt hàng khác nhau</span>
+                                <span>@themeT('cart.unique_count', 'Mặt hàng khác nhau')</span>
                                 <strong>{{ $cartSummary['unique_count'] ?? 0 }}</strong>
                             </div>
                             <div class="summary-line">
-                                <span>Tạm tính</span>
+                                <span>@themeT('cart.subtotal', 'Tạm tính')</span>
                                 <strong>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
                             </div>
                         </div>
                         @if (!empty($customerAuth['is_authenticated']))
-                            <a href="{{ route('site.checkout.index') }}" class="primary-button">Tiến hành thanh toán</a>
+                            <a href="{{ route('site.checkout.index') }}" class="primary-button">@themeT('cart.checkout', 'Tiến hành thanh toán')</a>
                         @else
-                            <button type="button" class="primary-button" data-open-auth-modal="login" data-auth-redirect="{{ route('site.checkout.index') }}">Đăng nhập để thanh toán</button>
+                            <button type="button" class="primary-button" data-open-auth-modal="login" data-auth-redirect="{{ route('site.checkout.index') }}">@themeT('cart.login_to_checkout', 'Đăng nhập để thanh toán')</button>
                         @endif
-                        <a href="/" class="ghost-button">Tiếp tục mua sắm</a>
+                        <a href="{{ route('site.home') }}" class="ghost-button">@themeT('cart.continue_shopping', 'Tiếp tục mua sắm')</a>
                     </aside>
                 </section>
             @else
-                <div class="empty-state">
-                    Giỏ hàng hiện đang trống. Hãy quay lại danh mục hoặc trang sản phẩm để thêm deal vào giỏ trước khi mua.
-                </div>
+                <div class="empty-state">@themeT('cart.empty', 'Giỏ hàng hiện đang trống. Hãy quay lại danh mục hoặc trang sản phẩm để thêm deal vào giỏ trước khi mua.')</div>
             @endif
         </main>
         @include('theme-th0001::partials.product-search-autocomplete')

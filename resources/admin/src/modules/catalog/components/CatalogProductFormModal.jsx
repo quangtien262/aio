@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
+import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Checkbox from 'antd/es/checkbox';
@@ -16,6 +17,7 @@ import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
+import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
 import {
@@ -76,6 +78,8 @@ export const emptyCatalogProductForm = {
     stock: 0,
     short_description: '',
     detail_content: '',
+    meta_title: '',
+    meta_description: '',
     highlights: '',
     usage_terms: '',
     usage_location: '',
@@ -579,6 +583,8 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
             original_price: values.original_price ?? null,
             short_description: values.short_description || null,
             detail_content: values.detail_content || null,
+            meta_title: values.meta_title || null,
+            meta_description: values.meta_description || null,
             highlights: values.highlights || null,
             usage_terms: values.usage_terms || null,
             usage_location: values.usage_location || null,
@@ -640,16 +646,17 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>
-                                <Form.Item name="image_url" label="Ảnh cover sản phẩm">
-                                    <Input placeholder="https://cdn.example.com/product.jpg" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={12}>
                                 <Form.Item name="short_description" label="Mô tả ngắn">
                                     <Input.TextArea rows={3} placeholder="Mô tả cho card và detail page" />
                                 </Form.Item>
                             </Col>
                         </Row>
+                    </Card>
+
+                    <Card size="small" className="cms-post-form-card" title="Ảnh cover sản phẩm">
+                        <Form.Item name="image_url" label="URL ảnh cover" style={{ marginBottom: 0 }}>
+                            <Input placeholder="https://cdn.example.com/product.jpg" />
+                        </Form.Item>
                     </Card>
 
                     <Card size="small" className="cms-post-form-card" title="Giá bán và tồn kho">
@@ -697,7 +704,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                         </Row>
                     </Card>
 
-                    <Card size="small" className="cms-post-form-card" title="Gallery và điều kiện hiển thị">
+                    <Card size="small" className="cms-post-form-card" title="Gallery ảnh sản phẩm">
                         <Form.Item name="gallery_images" label="Gallery ảnh sản phẩm" style={{ marginBottom: 16 }}>
                             <div className="cms-featured-media-shell">
                                 <Radio.Group
@@ -774,6 +781,24 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                             </div>
                         </Form.Item>
 
+                    </Card>
+
+                    <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
+                        <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_title" label="SEO Title">
+                                    <TextArea rows={3} placeholder="SEO title" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
+                                    <TextArea rows={3} placeholder="Meta description sản phẩm" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Card size="small" className="cms-post-form-card" title="Điểm nổi bật và điều kiện sử dụng">
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
                                 <Form.Item name="highlights" label="Điểm nổi bật" extra="Mỗi dòng là một ý nổi bật hiển thị dạng bullet.">
@@ -793,13 +818,20 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                         </Row>
                     </Card>
 
-                    <Card size="small" className="cms-post-form-card cms-post-form-card-editor" title="Nội dung chi tiết sản phẩm">
+                    <Card
+                        size="small"
+                        className="cms-post-form-card cms-post-form-card-editor"
+                        title={(
+                            <Space size={8}>
+                                <span>Nội dung chi tiết sản phẩm</span>
+                                <Tooltip title="Sau khi upload, hình ảnh hoặc video sẽ được chèn ngay vào vị trí nội dung hiện tại. Video YouTube có thể nhúng nhanh bằng nút riêng, không cần mở toolbar media của CKEditor.">
+                                    <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
+                                </Tooltip>
+                            </Space>
+                        )}
+                    >
                         <div className="cms-editor-upload-panel">
-                            <div className="cms-editor-upload-copy">
-                                <strong>Chèn hình ảnh và video vào nội dung</strong>
-                                <span>Dùng các nút bên dưới để upload media vào CMS rồi chèn trực tiếp vào mô tả sản phẩm.</span>
-                            </div>
-                            <div className="cms-editor-toolbar-row">
+                            <Space wrap className="cms-editor-toolbar-row" size={12}>
                                 <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
                                 <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
                                 <Button type="default" disabled={!canManage || uploadingAsset === 'video' || !callAdminApi} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
@@ -815,7 +847,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 }}>
                                     Nhúng video YouTube
                                 </Button>
-                            </div>
+                            </Space>
                         </div>
 
                         <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>

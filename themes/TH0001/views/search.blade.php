@@ -6,6 +6,8 @@
     $cartSummary = $shell['cart_summary'] ?? ['count' => 0];
     $customerAuth = $shell['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
     $newsletterState = $shell['newsletter'] ?? ['is_subscribed' => false];
+    $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
+    $t = fn (string $key, string $default) => $themeTranslator->bladeText('TH0001', app()->getLocale(), $key, $default);
     $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
     $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
@@ -35,7 +37,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $searchQuery !== '' ? 'Tìm kiếm: '.$searchQuery : 'Tìm kiếm sản phẩm' }} | {{ data_get($branding, 'company_name', 'TH0001') }}</title>
+        <title>{{ $searchQuery !== '' ? str_replace(':query', $searchQuery, $t('search.title_query', 'Kết quả cho ":query"')) : $t('search.title_default', 'Tìm kiếm sản phẩm') }} | {{ data_get($branding, 'company_name', 'TH0001') }}</title>
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
@@ -141,20 +143,20 @@
                 <div class="th-container th-topbar-inner">
                     <div class="th-inline">
                         <span>📍 {{ $contactLocation }}</span>
-                        <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? '📩 Đã đăng ký bản tin' : '📩 Đăng ký bản tin' }}</button>
+                        <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('common.newsletter_subscribed') : __('common.newsletter_subscribe') }}</button>
                     </div>
                     <div class="th-inline">
-                        <span>📞 Hotline: <span class="th-accent">{{ $contactHotline }}</span></span>
-                        <span>✉ Email: {{ $contactEmail }}</span>
+                        <span>📞 @themeT('common.hotline_label', 'Hotline'): <span class="th-accent">{{ $contactHotline }}</span></span>
+                        <span>✉ @themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
                         @if (!empty($customerAuth['is_authenticated']))
-                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài khoản')</a>
                             <form class="th-inline-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
                                 @csrf
-                                <button type="submit" class="th-inline-action">Đăng xuất</button>
+                                <button type="submit" class="th-inline-action">@themeT('common.logout', 'Đăng xuất')</button>
                             </form>
                         @else
-                            <button type="button" class="th-inline-action" data-open-auth-modal="register">Đăng ký</button>
-                            <button type="button" class="th-inline-action" data-open-auth-modal="login">Đăng nhập</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="register">@themeT('common.register', 'Đăng ký')</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="login">@themeT('common.login', 'Đăng nhập')</button>
                         @endif
                     </div>
                 </div>
@@ -169,26 +171,26 @@
                         </span>
                     </a>
                     <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
-                        <input type="search" name="q" value="{{ $searchQuery }}" placeholder="Tìm kiếm sản phẩm / khuyến mãi" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
-                        <button type="submit">Tìm</button>
+                        <input type="search" name="q" value="{{ $searchQuery }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                        <button type="submit">@themeT('common.search_button', 'Tìm')</button>
                     </form>
-                    <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} GIỎ HÀNG</a>
+                    <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} @themeT('common.cart_label', 'GIỎ HÀNG')</a>
                 </div>
             </header>
 
             <nav class="th-main-nav">
                 <div class="th-container th-main-nav-inner">
                     <div class="th-main-nav-categories-wrap">
-                        <div class="th-main-nav-categories">DANH MỤC</div>
+                        <div class="th-main-nav-categories">@themeT('common.categories', 'DANH MỤC')</div>
                         <div class="th-category-panel">
                             @foreach ($productMenu as $item)
-                                <a href="{{ $item['url'] ?? '#' }}" class="th-sidebar-item">{{ $item['label'] ?? 'Danh mục' }}</a>
+                                <a href="{{ $item['url'] ?? '#' }}" class="th-sidebar-item">{{ $item['label'] ?? __('common.category') }}</a>
                             @endforeach
                         </div>
                     </div>
                     <div class="th-main-nav-menu">
                         @foreach ($topMenu as $item)
-                            <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? 'Menu' }}</a>
+                            <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
                         @endforeach
                     </div>
                 </div>
@@ -197,52 +199,52 @@
             <main>
                 <div class="th-container">
                     <div class="breadcrumb">
-                        <a href="{{ route('site.home') }}">Trang chủ</a>
+                        <a href="{{ route('site.home') }}">@themeT('common.home', 'Trang chủ')</a>
                         <span>/</span>
-                        <span>Tìm kiếm sản phẩm</span>
+                        <span>@themeT('search.breadcrumb', 'Tìm kiếm sản phẩm')</span>
                     </div>
 
                     <section class="search-hero">
-                        <h1>{{ $searchQuery !== '' ? 'Kết quả cho "'.$searchQuery.'"' : 'Tìm kiếm sản phẩm' }}</h1>
-                        <p>Tìm theo tên sản phẩm, SKU hoặc nội dung mô tả để điều hướng nhanh tới deal phù hợp.</p>
-                        <div class="search-summary">Tìm thấy {{ $resultCount ?? $productCollection->count() }} sản phẩm.</div>
+                        <h1>{{ $searchQuery !== '' ? __('search.title_query', ['query' => $searchQuery]) : __('search.title_default') }}</h1>
+                        <p>@themeT('search.intro', 'Tìm theo tên sản phẩm, SKU hoặc nội dung mô tả để điều hướng nhanh tới deal phù hợp.')</p>
+                        <div class="search-summary">{{ __('search.result_count', ['count' => $resultCount ?? $productCollection->count()]) }}</div>
 
                         <form method="GET" action="{{ route('site.catalog.search') }}" class="search-toolbar">
                             <label class="search-field">
-                                <span>Từ khóa</span>
-                                <input type="search" name="q" value="{{ $searchFilters['q'] ?? '' }}" placeholder="Tên sản phẩm, SKU, mô tả" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                                <span>@themeT('search.keyword', 'Từ khóa')</span>
+                                <input type="search" name="q" value="{{ $searchFilters['q'] ?? '' }}" placeholder="@themeT('search.keyword_placeholder', 'Tên sản phẩm, SKU, mô tả')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
                             </label>
                             <label class="search-field">
-                                <span>Danh mục</span>
+                                <span>@themeT('blog.category', 'Chuyên mục')</span>
                                 <select name="category">
-                                    <option value="">Tất cả danh mục</option>
+                                    <option value="">@themeT('blog.all_categories', 'Tất cả chuyên mục')</option>
                                     @foreach ($searchCategories as $category)
                                         <option value="{{ $category->slug }}" @selected(($searchFilters['category'] ?? '') === $category->slug)>{{ $category->name }}</option>
                                     @endforeach
                                 </select>
                             </label>
                             <label class="search-field">
-                                <span>Sắp xếp</span>
+                                <span>@themeT('search.sort', 'Sắp xếp')</span>
                                 <select name="sort">
-                                    <option value="default" @selected(($searchFilters['sort'] ?? 'default') === 'default')>Mặc định</option>
-                                    <option value="newest" @selected(($searchFilters['sort'] ?? '') === 'newest')>Mới nhất</option>
-                                    <option value="price_asc" @selected(($searchFilters['sort'] ?? '') === 'price_asc')>Giá thấp trước</option>
-                                    <option value="price_desc" @selected(($searchFilters['sort'] ?? '') === 'price_desc')>Giá cao trước</option>
-                                    <option value="bestseller" @selected(($searchFilters['sort'] ?? '') === 'bestseller')>Bán chạy</option>
+                                    <option value="default" @selected(($searchFilters['sort'] ?? 'default') === 'default')>{{ __('search.sort_default') }}</option>
+                                    <option value="newest" @selected(($searchFilters['sort'] ?? '') === 'newest')>{{ __('search.sort_newest') }}</option>
+                                    <option value="price_asc" @selected(($searchFilters['sort'] ?? '') === 'price_asc')>{{ __('search.sort_price_asc') }}</option>
+                                    <option value="price_desc" @selected(($searchFilters['sort'] ?? '') === 'price_desc')>{{ __('search.sort_price_desc') }}</option>
+                                    <option value="bestseller" @selected(($searchFilters['sort'] ?? '') === 'bestseller')>{{ __('search.sort_bestseller') }}</option>
                                 </select>
                             </label>
                             <label class="search-field">
-                                <span>Giá từ</span>
+                                <span>@themeT('search.price_from', 'Giá từ')</span>
                                 <input type="number" min="0" step="1000" name="min_price" value="{{ $searchFilters['min_price'] ?? 0 }}" placeholder="0">
                             </label>
                             <label class="search-field">
-                                <span>Giá đến</span>
+                                <span>@themeT('search.price_to', 'Giá đến')</span>
                                 <input type="number" min="0" step="1000" name="max_price" value="{{ $searchFilters['max_price'] ?? 0 }}" placeholder="0">
                             </label>
                             <div class="search-actions">
-                                <button type="submit" class="search-button">Áp dụng</button>
+                                <button type="submit" class="search-button">@themeT('search.apply', 'Áp dụng')</button>
                                 @if ($hasActiveFilters)
-                                    <a href="{{ route('site.catalog.search') }}" class="search-reset">Xóa lọc</a>
+                                    <a href="{{ route('site.catalog.search') }}" class="search-reset">@themeT('search.clear', 'Xóa lọc')</a>
                                 @endif
                             </div>
                         </form>
@@ -250,16 +252,16 @@
                         @if ($hasActiveFilters)
                             <div class="search-filter-chips">
                                 @if (filled($searchFilters['q'] ?? ''))
-                                    <span class="search-filter-chip">Từ khóa: {{ $searchFilters['q'] }}</span>
+                                    <span class="search-filter-chip">{{ __('search.chip_keyword', ['value' => $searchFilters['q']]) }}</span>
                                 @endif
                                 @if (filled($searchFilters['category'] ?? ''))
-                                    <span class="search-filter-chip">Danh mục: {{ optional($searchCategories->firstWhere('slug', $searchFilters['category']))->name ?? $searchFilters['category'] }}</span>
+                                    <span class="search-filter-chip">{{ __('search.chip_category', ['value' => optional($searchCategories->firstWhere('slug', $searchFilters['category']))->name ?? $searchFilters['category']]) }}</span>
                                 @endif
                                 @if (($searchFilters['sort'] ?? 'default') !== 'default')
-                                    <span class="search-filter-chip">Sắp xếp: {{ match($searchFilters['sort']) { 'newest' => 'Mới nhất', 'price_asc' => 'Giá thấp trước', 'price_desc' => 'Giá cao trước', 'bestseller' => 'Bán chạy', default => 'Mặc định' } }}</span>
+                                    <span class="search-filter-chip">{{ __('search.chip_sort', ['value' => match($searchFilters['sort']) { 'newest' => __('search.sort_newest'), 'price_asc' => __('search.sort_price_asc'), 'price_desc' => __('search.sort_price_desc'), 'bestseller' => __('search.sort_bestseller'), default => __('search.sort_default') }]) }}</span>
                                 @endif
                                 @if (($searchFilters['available_max_price'] ?? 0) > 0)
-                                    <span class="search-filter-chip">Giá: {{ number_format((int) ($searchFilters['min_price'] ?? 0), 0, ',', '.') }}đ - {{ number_format((int) ($searchFilters['max_price'] ?? 0), 0, ',', '.') }}đ</span>
+                                    <span class="search-filter-chip">{{ __('search.chip_price', ['min' => number_format((int) ($searchFilters['min_price'] ?? 0), 0, ',', '.'), 'max' => number_format((int) ($searchFilters['max_price'] ?? 0), 0, ',', '.')]) }}</span>
                                 @endif
                             </div>
                         @endif
@@ -269,22 +271,22 @@
                         <section class="product-grid">
                             @foreach ($productCollection as $product)
                                 <article class="product-card">
-                                    <a href="{{ $product['url'] }}">
+                                    <a href="{{ data_get($product, 'url') }}">
                                         <div class="product-media">
-                                            <img src="{{ $product['image'] }}" alt="{{ $product['title'] }}">
-                                            <span class="product-badge">{{ $product['tag'] }}</span>
+                                            <img src="{{ data_get($product, 'image') }}" alt="{{ data_get($product, 'title') }}">
+                                            <span class="product-badge">{{ data_get($product, 'tag') }}</span>
                                         </div>
                                         <div class="product-body">
-                                            <h3 class="product-title">{{ $product['title'] }}</h3>
+                                            <h3 class="product-title">{{ data_get($product, 'title') }}</h3>
                                             <div class="product-pricing">
-                                                <span class="price">{{ $formatCurrency($product['price']) }}</span>
-                                                @if (($product['discount'] ?? 0) > 0)
-                                                    <span class="discount">-{{ (int) $product['discount'] }}%</span>
+                                                <span class="price">{{ $formatCurrency(data_get($product, 'price')) }}</span>
+                                                @if ((int) data_get($product, 'discount', 0) > 0)
+                                                    <span class="discount">-{{ (int) data_get($product, 'discount', 0) }}%</span>
                                                 @endif
                                             </div>
                                             <div class="old-price-row">
-                                                <span class="old-price">{{ $product['old_price'] ? $formatCurrency($product['old_price']) : 'Giá tốt hôm nay' }}</span>
-                                                <span>{{ (int) ($product['meta'] ?? 0) }} SP</span>
+                                                <span class="old-price">{{ data_get($product, 'old_price') ? $formatCurrency(data_get($product, 'old_price')) : __('search.old_price_fallback') }}</span>
+                                                <span>{{ __('search.stock_suffix', ['count' => (int) data_get($product, 'meta', 0)]) }}</span>
                                             </div>
                                         </div>
                                     </a>
@@ -294,15 +296,15 @@
 
                         @if ($pagination && (method_exists($pagination, 'previousPageUrl') || method_exists($pagination, 'nextPageUrl')))
                             <div class="search-pagination">
-                                <a href="{{ $pagination->previousPageUrl() ?: '#' }}" class="search-page-link {{ $pagination->previousPageUrl() ? '' : 'is-disabled' }}">Trang trước</a>
-                                <span>Trang {{ $pagination->currentPage() }} / {{ $pagination->lastPage() }}</span>
-                                <a href="{{ $pagination->nextPageUrl() ?: '#' }}" class="search-page-link {{ $pagination->nextPageUrl() ? '' : 'is-disabled' }}">Trang sau</a>
+                                <a href="{{ $pagination->previousPageUrl() ?: '#' }}" class="search-page-link {{ $pagination->previousPageUrl() ? '' : 'is-disabled' }}">@themeT('search.prev_page', 'Trang trước')</a>
+                                <span>{{ __('search.page_of', ['current' => $pagination->currentPage(), 'last' => $pagination->lastPage()]) }}</span>
+                                <a href="{{ $pagination->nextPageUrl() ?: '#' }}" class="search-page-link {{ $pagination->nextPageUrl() ? '' : 'is-disabled' }}">@themeT('search.next_page', 'Trang sau')</a>
                             </div>
                         @endif
                     @else
                         <section class="empty-state">
-                            <h3>Chưa có sản phẩm phù hợp</h3>
-                            <p>Hãy thử từ khóa khác như tên sản phẩm, SKU hoặc danh mục.</p>
+                            <h3>@themeT('search.empty_title', 'Chưa có sản phẩm phù hợp')</h3>
+                            <p>@themeT('search.empty_summary', 'Hãy thử từ khóa khác như tên sản phẩm, SKU hoặc danh mục.')</p>
                         </section>
                     @endif
                 </div>
@@ -314,33 +316,33 @@
                         <div class="th-company">
                             <strong>{{ data_get($branding, 'company_name', $siteProfile?->site_name ?? 'AIO Website') }}</strong>
                             <div>{{ $contactLocation }}</div>
-                            <div>Hotline: {{ $contactHotline }}</div>
-                            <div>Email: {{ $contactEmail }}</div>
+                            <div>@themeT('common.hotline_label', 'Hotline'): {{ $contactHotline }}</div>
+                            <div>@themeT('common.email_label', 'Email'): {{ $contactEmail }}</div>
                         </div>
                         <div class="th-footer-card">
-                            <h4>Khám phá</h4>
+                            <h4>@themeT('search.discover', 'Khám phá')</h4>
                             <div class="th-footer-links">
-                                <a href="{{ route('site.blog.index') }}">Tin tức</a>
-                                <a href="/gioi-thieu">Giới thiệu</a>
-                                <a href="/lien-he">Liên hệ</a>
+                                <a href="{{ route('site.blog.index') }}">{{ $t('menu.default.blog', 'Tin tức') }}</a>
+                                <a href="{{ url('/'.app()->getLocale().'/gioi-thieu') }}">{{ $t('menu.default.about', 'Giới thiệu') }}</a>
+                                <a href="{{ url('/'.app()->getLocale().'/lien-he') }}">{{ $t('menu.default.contact', 'Liên hệ') }}</a>
                             </div>
                         </div>
                         <div class="th-footer-card">
-                            <h4>Tài khoản</h4>
+                            <h4>@themeT('search.account_title', 'Tài khoản')</h4>
                             <div class="th-footer-links">
                                 @if (!empty($customerAuth['is_authenticated']))
-                                    <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Trang tài khoản</a>
+                                    <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('search.account_page', 'Trang tài khoản')</a>
                                 @else
-                                    <button type="button" class="th-inline-action" data-open-auth-modal="login">Đăng nhập</button>
-                                    <button type="button" class="th-inline-action" data-open-auth-modal="register">Đăng ký</button>
+                                    <button type="button" class="th-inline-action" data-open-auth-modal="login">@themeT('common.login', 'Đăng nhập')</button>
+                                    <button type="button" class="th-inline-action" data-open-auth-modal="register">@themeT('common.register', 'Đăng ký')</button>
                                 @endif
                             </div>
                         </div>
                         <div class="th-footer-card">
-                            <h4>Bản tin</h4>
+                            <h4>@themeT('search.newsletter_title', 'Bản tin')</h4>
                             <div class="th-footer-links">
-                                <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? 'Đã đăng ký' : 'Đăng ký nhận bản tin' }}</button>
-                                <span>Cập nhật ưu đãi và nội dung mới mỗi tuần.</span>
+                                <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('search.newsletter_subscribed') : __('search.newsletter_subscribe') }}</button>
+                                <span>@themeT('search.newsletter_summary', 'Cập nhật ưu đãi và nội dung mới mỗi tuần.')</span>
                             </div>
                         </div>
                     </div>

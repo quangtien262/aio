@@ -55,6 +55,12 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "test:translations:ci": [
+            "@php artisan config:clear --ansi",
+            "@php artisan migrate:fresh --seed --force",
+            "@php artisan test tests/Feature/ThemeContentTranslationTest.php",
+            "npm run test:browser:admin-translations:ci"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

@@ -5,18 +5,22 @@ import Drawer from 'antd/es/drawer';
 import Popconfirm from 'antd/es/popconfirm';
 import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
+import ThemeTranslationDrawer from '../components/ThemeTranslationDrawer';
 
 const { Paragraph, Text } = Typography;
 const ThemeListTable = lazy(() => import('../components/ThemeListTable'));
 const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDetailsPanel'));
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
 const ThemeDemoDataModal = lazy(() => import('../components/ThemeDemoDataModal'));
+const ThemeLocaleDrawer = lazy(() => import('../components/ThemeLocaleDrawer'));
 
-export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoData, onDeleteDemoData, canActivate, canGenerateDemoData }) {
+export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoData, onDeleteDemoData, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
     const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
     const [demoThemeKey, setDemoThemeKey] = useState(null);
+    const [translationThemeKey, setTranslationThemeKey] = useState(null);
+    const [localeThemeKey, setLocaleThemeKey] = useState(null);
 
     useEffect(() => {
         if (!themes?.length) {
@@ -41,6 +45,8 @@ export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoDat
     const previewTheme = useMemo(() => themes.find((theme) => theme.key === previewThemeKey) ?? null, [previewThemeKey, themes]);
     const activateTheme = useMemo(() => themes.find((theme) => theme.key === activateThemeKey) ?? null, [activateThemeKey, themes]);
     const demoTheme = useMemo(() => themes.find((theme) => theme.key === demoThemeKey) ?? null, [demoThemeKey, themes]);
+    const translationTheme = useMemo(() => themes.find((theme) => theme.key === translationThemeKey) ?? null, [themes, translationThemeKey]);
+    const localeTheme = useMemo(() => themes.find((theme) => theme.key === localeThemeKey) ?? null, [localeThemeKey, themes]);
 
     const handleOpenPreview = (themeKey) => {
         setSelectedThemeKey(themeKey);
@@ -52,6 +58,12 @@ export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoDat
             title="Theme Engine Flow"
             extra={(
                 <Space>
+                    <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setLocaleThemeKey(selectedTheme?.key ?? null)}>
+                        Quản lý ngôn ngữ
+                    </Button>
+                    <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setTranslationThemeKey(selectedTheme?.key ?? null)}>
+                        Frontend translations (default {defaultFrontendLocale.toUpperCase()}, xem {frontendLocale.toUpperCase()})
+                    </Button>
                     <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setDemoThemeKey(selectedTheme?.key ?? null)}>
                         Tạo data test
                     </Button>
@@ -126,6 +138,31 @@ export default function ThemeManagerPage({ themes, onActivate, onGenerateDemoDat
 
                             return didGenerate;
                         }}
+                    />
+                </Suspense>
+            ) : null}
+
+            {translationThemeKey ? (
+                <ThemeTranslationDrawer
+                    open={Boolean(translationThemeKey)}
+                    theme={translationTheme}
+                    locale={frontendLocale}
+                    canManageTranslations={canGenerateDemoData}
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    onClose={() => setTranslationThemeKey(null)}
+                />
+            ) : null}
+
+            {localeThemeKey ? (
+                <Suspense fallback={null}>
+                    <ThemeLocaleDrawer
+                        open={Boolean(localeThemeKey)}
+                        theme={localeTheme}
+                        canManageLocales={canGenerateDemoData}
+                        callAdminApi={callAdminApi}
+                        runAdminAction={runAdminAction}
+                        onClose={() => setLocaleThemeKey(null)}
                     />
                 </Suspense>
             ) : null}

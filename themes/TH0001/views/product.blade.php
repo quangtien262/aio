@@ -7,6 +7,8 @@
     $cartSummary = $shell['cart_summary'] ?? ['count' => 0];
     $customerAuth = $shell['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
     $newsletterState = $shell['newsletter'] ?? ['is_subscribed' => false];
+    $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
+    $t = fn (string $key, string $default) => $themeTranslator->bladeText('TH0001', app()->getLocale(), $key, $default);
     $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
     $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
@@ -15,9 +17,9 @@
     $highlights = $productHighlights ?? [];
     $detailParagraphsList = $detailParagraphs ?? [];
     $footerColumns = [
-        'Trợ giúp' => ['Chính sách giao hàng', 'Cách thức thanh toán', 'Hotdeal E-voucher', 'Membership'],
-        'Giới thiệu' => ['Về chúng tôi', 'Liên hệ', 'Chính sách bảo mật', 'Quy chế hoạt động'],
-        'Hợp tác' => ['Thẻ quà tặng', 'Liên hệ hợp tác', 'Tuyển dụng', 'Thông tin báo chí'],
+        $t('footer.help_title', 'Trợ giúp') => [$t('footer.shipping_policy', 'Chính sách giao hàng'), $t('footer.payment_methods', 'Cách thức thanh toán'), $t('footer.evouchers', 'Hotdeal E-voucher'), $t('footer.membership', 'Membership')],
+        $t('footer.about_title', 'Giới thiệu') => [$t('footer.about_us', 'Về chúng tôi'), $t('footer.contact', 'Liên hệ'), $t('footer.privacy_policy', 'Chính sách bảo mật'), $t('footer.operating_regulations', 'Quy chế hoạt động')],
+        $t('footer.partnership_title', 'Hợp tác') => [$t('footer.gift_cards', 'Thẻ quà tặng'), $t('footer.partner_contact', 'Liên hệ hợp tác'), $t('footer.careers', 'Tuyển dụng'), $t('footer.press_info', 'Thông tin báo chí')],
     ];
     $primaryImage = $gallery[0]['url'] ?? ($product['image'] ?? 'https://picsum.photos/seed/th0001-product-fallback/960/720');
     $discount = (int) ($product['discount'] ?? 0);
@@ -31,29 +33,29 @@
     $orderGuideSteps = [
         [
             'step' => '01',
-            'title' => 'Chọn gói phù hợp',
-            'body' => 'Chọn số lượng, xem kỹ giá bán, mức giảm và thời hạn áp dụng trước khi xác nhận đơn hàng.',
+            'title' => __('product.guide_step_1_title'),
+            'body' => __('product.guide_step_1_body'),
         ],
         [
             'step' => '02',
-            'title' => 'Xác nhận và thanh toán',
-            'body' => 'Bấm Mua ngay hoặc quét QRPay để thanh toán nhanh. Hệ thống sẽ ghi nhận đơn ngay sau khi giao dịch hoàn tất.',
+            'title' => __('product.guide_step_2_title'),
+            'body' => __('product.guide_step_2_body'),
         ],
         [
             'step' => '03',
-            'title' => 'Nhận voucher / thông tin đơn',
-            'body' => 'Mã đơn hoặc E-Voucher sẽ được gửi về email, tài khoản hoặc trang quản lý đơn hàng của bạn.',
+            'title' => __('product.guide_step_3_title'),
+            'body' => __('product.guide_step_3_body'),
         ],
         [
             'step' => '04',
-            'title' => 'Sử dụng và được hỗ trợ',
-            'body' => 'Xuất trình voucher khi sử dụng dịch vụ. Nếu cần đổi lịch hoặc hỗ trợ phát sinh, liên hệ hotline để được xử lý nhanh.',
+            'title' => __('product.guide_step_4_title'),
+            'body' => __('product.guide_step_4_body'),
         ],
     ];
     $orderGuideNotes = [
-        'Ưu tiên kiểm tra thời hạn deal, điều kiện áp dụng và số lượng còn lại trước khi thanh toán.',
-        'Với E-Voucher, khách hàng nên lưu lại mã đơn trong email hoặc chụp màn hình để dùng khi cần.',
-        'Nếu thanh toán thành công nhưng chưa nhận thông tin đơn, vui lòng chờ vài phút rồi kiểm tra lại email / tài khoản.',
+        __('product.guide_note_1'),
+        __('product.guide_note_2'),
+        __('product.guide_note_3'),
     ];
 
     if ($highlights === [] && filled($productModel->short_description)) {
@@ -62,8 +64,8 @@
 
     if ($detailParagraphsList === []) {
         $detailParagraphsList = [
-            $productModel->short_description ?: 'Sản phẩm đang dùng mô tả mặc định. Sếp có thể cập nhật nội dung chi tiết ngay trong admin Catalog.',
-            'Trang chi tiết này đã hỗ trợ gallery nhiều ảnh, nội dung dạng deal và các block thông tin dài để theme TH0001 bám sát bố cục trang deal thương mại điện tử.',
+            $productModel->short_description ?: __('product.detail_default_1'),
+            __('product.detail_default_2'),
         ];
     }
 @endphp
@@ -267,20 +269,20 @@
             <div class="wrap utility-inner">
                 <div class="utility-group">
                     <span>{{ $contactLocation }}</span>
-                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? 'Đã đăng ký bản tin' : 'Đăng ký bản tin' }}</button>
+                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('common.newsletter_subscribed') : __('common.newsletter_subscribe') }}</button>
                 </div>
                 <div class="utility-actions">
-                    <span>Hotline: {{ $contactHotline }}</span>
-                    <span>Email: {{ $contactEmail }}</span>
+                    <span>@themeT('common.hotline_label', 'Hotline'): {{ $contactHotline }}</span>
+                    <span>@themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
                     @if (!empty($customerAuth['is_authenticated']))
-                        <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                        <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài khoản')</a>
                         <form class="utility-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
                             @csrf
-                            <button type="submit" class="utility-action">Đăng xuất</button>
+                            <button type="submit" class="utility-action">@themeT('common.logout', 'Đăng xuất')</button>
                         </form>
                     @else
-                        <button type="button" class="utility-action" data-open-auth-modal="register">Đăng ký</button>
-                        <button type="button" class="utility-action" data-open-auth-modal="login">Đăng nhập</button>
+                        <button type="button" class="utility-action" data-open-auth-modal="register">@themeT('common.register', 'Đăng ký')</button>
+                        <button type="button" class="utility-action" data-open-auth-modal="login">@themeT('common.login', 'Đăng nhập')</button>
                     @endif
                 </div>
             </div>
@@ -288,28 +290,28 @@
 
         <header class="header">
             <div class="wrap header-main">
-                <a class="brand" href="/">
+                <a class="brand" href="{{ route('site.home') }}">
                     <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'TH0001') }}">
                 </a>
 
                 <form class="searchbar" method="GET" action="{{ route('site.catalog.search') }}" role="search">
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Tìm kiếm sản phẩm" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
-                    <button type="submit" aria-label="Tìm kiếm">⌕</button>
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                    <button type="submit" aria-label="{{ $t('common.search_button', 'Tìm kiếm') }}">⌕</button>
                 </form>
 
-                <a class="cart-link" href="{{ route('site.cart.index') }}">GIỎ HÀNG ({{ $cartSummary['count'] ?? 0 }})</a>
+                <a class="cart-link" href="{{ route('site.cart.index') }}">@themeT('common.cart_label', 'GIỎ HÀNG') ({{ $cartSummary['count'] ?? 0 }})</a>
             </div>
         </header>
 
         <nav class="nav">
             <div class="wrap nav-inner">
                 <div class="nav-category-wrap">
-                    <div class="nav-category">DANH MỤC</div>
+                    <div class="nav-category">@themeT('common.categories', 'DANH MỤC')</div>
                     <div class="nav-category-panel">
                         @foreach ($productMenu as $item)
                             <div class="th-sidebar-entry">
                                 <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}" class="th-sidebar-item {{ !empty($item['highlight']) ? 'is-accent' : '' }}">
-                                    <span><span class="th-sidebar-icon">{{ $item['icon'] ?? '◌' }}</span> {{ $item['label'] ?? 'Danh mục' }}</span>
+                                    <span><span class="th-sidebar-icon">{{ $item['icon'] ?? '◌' }}</span> {{ $item['label'] ?? __('common.category') }}</span>
                                     <span>›</span>
                                 </a>
 
@@ -321,10 +323,10 @@
                                         <div class="th-sidebar-mega-content {{ $submenuColumns->count() > 3 ? 'has-four' : '' }}">
                                             @foreach ($submenuColumns as $chunk)
                                                 <div class="th-sidebar-mega-column">
-                                                    <h4>{{ $item['label'] ?? 'Danh mục' }}</h4>
+                                                    <h4>{{ $item['label'] ?? __('common.category') }}</h4>
                                                     <ul>
                                                         @foreach ($chunk as $child)
-                                                            <li><a href="{{ $child['url'] ?? ($item['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? 'Nhóm con' }}</a></li>
+                                                            <li><a href="{{ $child['url'] ?? ($item['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a></li>
                                                         @endforeach
                                                     </ul>
                                                 </div>
@@ -347,7 +349,7 @@
                 </div>
                 <div class="nav-links">
                     @foreach ($topMenu as $item)
-                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? 'Menu' }}</a>
+                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
                     @endforeach
                 </div>
             </div>
@@ -359,14 +361,14 @@
             @endif
 
             <div class="breadcrumb">
-                <a href="/">Trang chủ</a>
+                <a href="{{ route('site.home') }}">@themeT('common.home', 'Trang chủ')</a>
                 @if ($productModel->category?->parent)
                     <span>›</span>
-                    <a href="/danh-muc/{{ $productModel->category->parent->slug }}">{{ $productModel->category->parent->name }}</a>
+                    <a href="{{ route('site.catalog.category', ['slug' => $productModel->category->parent->slug]) }}">{{ $productModel->category->parent->name }}</a>
                 @endif
                 @if ($productModel->category)
                     <span>›</span>
-                    <a href="/danh-muc/{{ $productModel->category->slug }}">{{ $productModel->category->name }}</a>
+                    <a href="{{ route('site.catalog.category', ['slug' => $productModel->category->slug]) }}">{{ $productModel->category->name }}</a>
                 @endif
                 <span>›</span>
                 <span>{{ $product['title'] }}</span>
@@ -378,9 +380,9 @@
                         <img id="th-product-main-image" src="{{ $primaryImage }}" alt="{{ $product['title'] }}">
                     </div>
                     @if (count($gallery) > 1)
-                        <div class="gallery-thumbs" aria-label="Gallery ảnh sản phẩm">
+                        <div class="gallery-thumbs" aria-label="@themeT('product.gallery_aria', 'Gallery ảnh sản phẩm')">
                             @foreach ($gallery as $index => $image)
-                                <button type="button" class="gallery-thumb {{ $index === 0 ? 'is-active' : '' }}" data-gallery-thumb data-image-url="{{ $image['url'] }}" data-image-alt="{{ $image['alt'] }}" aria-label="Ảnh {{ $index + 1 }}">
+                                <button type="button" class="gallery-thumb {{ $index === 0 ? 'is-active' : '' }}" data-gallery-thumb data-image-url="{{ $image['url'] }}" data-image-alt="{{ $image['alt'] }}" aria-label="{{ __('product.gallery_image', ['index' => $index + 1]) }}">
                                     <img src="{{ $image['url'] }}" alt="{{ $image['alt'] }}">
                                 </button>
                             @endforeach
@@ -390,12 +392,12 @@
 
                 <div class="panel info-panel" id="deal-purchase">
                     <h1 class="title">{{ $product['title'] }}</h1>
-                    <div class="share">Chia sẻ deal</div>
-                    <div class="summary">{{ $productModel->short_description ?: 'Voucher ưu đãi đang được hiển thị theo cấu trúc catalog thật trong hệ thống AIO.' }}</div>
+                    <div class="share">@themeT('product.share', 'Chia sẻ deal')</div>
+                    <div class="summary">{{ $productModel->short_description ?: __('product.summary_fallback') }}</div>
 
                     <div class="price-box">
                         @if (($product['old_price'] ?? null) !== null)
-                            <div class="price-note">Giá gốc: <span class="origin-price">{{ $formatCurrency($product['old_price']) }}</span></div>
+                            <div class="price-note">@themeT('product.origin_price', 'Giá gốc:') <span class="origin-price">{{ $formatCurrency($product['old_price']) }}</span></div>
                         @endif
                         <div class="price-line">
                             <span class="deal-price">{{ $formatCurrency($product['price'] ?? null) }}</span>
@@ -409,39 +411,39 @@
                         @csrf
                         <div class="offer-row">
                             <div class="benefit-box">
-                                <div class="moneyback">Hoàn đến {{ number_format(max(1000, (int) round((float) ($product['price'] ?? 0) * 0.015)), 0, ',', '.') }}đ vào tài khoản</div>
+                                <div class="moneyback">{{ __('product.moneyback', ['amount' => number_format(max(1000, (int) round((float) ($product['price'] ?? 0) * 0.015)), 0, ',', '.').'đ']) }}</div>
                                 <div class="purchase-line">
-                                    <label for="deal-quantity">Số lượng</label>
+                                    <label for="deal-quantity">@themeT('product.quantity', 'Số lượng')</label>
                                     <select id="deal-quantity" name="quantity">
                                         @foreach (range(1, $maxPurchaseQuantity) as $qty)
                                             <option value="{{ $qty }}">{{ $qty }}</option>
                                         @endforeach
                                     </select>
-                                    <span>E-Voucher</span>
+                                    <span>@themeT('product.evouchers', 'E-Voucher')</span>
                                 </div>
                             </div>
 
                             <div class="qr-box">
                                 <img src="https://quickchart.io/qr?size=180&text={{ $qrPayload }}" alt="QR {{ $product['title'] }}">
-                                <div>Quét mua bằng QRPay</div>
+                                <div>@themeT('product.qrpay', 'Quét mua bằng QRPay')</div>
                             </div>
                         </div>
 
                         <div class="cta-row">
-                            <button type="submit" class="btn-primary" formaction="{{ route('site.cart.buy_now', ['slug' => $productModel->slug]) }}">MUA NGAY →</button>
-                            <button type="submit" class="btn-secondary">THÊM VÀO GIỎ HÀNG</button>
+                            <button type="submit" class="btn-primary" formaction="{{ route('site.cart.buy_now', ['slug' => $productModel->slug]) }}">@themeT('product.buy_now', 'MUA NGAY →')</button>
+                            <button type="submit" class="btn-secondary">@themeT('product.add_to_cart', 'THÊM VÀO GIỎ HÀNG')</button>
                             @if (!empty($customerAuth['is_authenticated']))
-                                <button type="submit" class="btn-favorite {{ !empty($isFavorite) ? 'is-active' : '' }}" formaction="{{ route('site.favorite.toggle', ['product' => $productModel->slug]) }}">{{ !empty($isFavorite) ? 'Đã lưu yêu thích' : 'Lưu yêu thích' }}</button>
+                                <button type="submit" class="btn-favorite {{ !empty($isFavorite) ? 'is-active' : '' }}" formaction="{{ route('site.favorite.toggle', ['product' => $productModel->slug]) }}">{{ !empty($isFavorite) ? __('product.favorite_saved') : __('product.favorite_save') }}</button>
                             @else
-                                <button type="button" class="btn-favorite" data-open-auth-modal="login">Đăng nhập để lưu yêu thích</button>
+                                <button type="button" class="btn-favorite" data-open-auth-modal="login">@themeT('product.login_to_favorite', 'Đăng nhập để lưu yêu thích')</button>
                             @endif
                         </div>
                     </form>
 
                     <div class="stats">
-                        <span><strong>{{ number_format($soldCount, 0, ',', '.') }}</strong> đã mua</span>
-                        <span><strong>{{ number_format((int) ($product['meta'] ?? 0), 0, ',', '.') }}</strong> còn lại</span>
-                        <span data-countdown-wrapper data-deadline="{{ $deadline }}"><strong data-countdown-label>{{ $deadline ? 'Đang tính' : 'Không giới hạn' }}</strong></span>
+                        <span>{{ __('product.sold', ['count' => number_format($soldCount, 0, ',', '.')]) }}</span>
+                        <span>{{ __('product.remaining', ['count' => number_format((int) ($product['meta'] ?? 0), 0, ',', '.')]) }}</span>
+                        <span data-countdown-wrapper data-deadline="{{ $deadline }}"><strong data-countdown-label>{{ $deadline ? __('product.counting') : __('product.unlimited') }}</strong></span>
                     </div>
                 </div>
             </section>
@@ -449,7 +451,7 @@
             <section class="content-grid">
                 <div class="info-stack">
                     <section class="section-panel">
-                        <h2 class="section-title">Điểm nổi bật</h2>
+                        <h2 class="section-title">@themeT('product.highlights', 'Điểm nổi bật')</h2>
                         <div class="section-body">
                             <ul class="bullet-list">
                                 @foreach ($highlights as $item)
@@ -461,8 +463,8 @@
 
                     <section class="section-panel" id="th-detail-tabs">
                         <div class="tabs" role="tablist">
-                            <button type="button" class="tab-button is-active" data-tab-button data-tab-target="detail-copy-panel" role="tab" aria-selected="true">THÔNG TIN CHI TIẾT</button>
-                            <button type="button" class="tab-button" data-tab-button data-tab-target="order-guide-panel" role="tab" aria-selected="false">HƯỚNG DẪN ĐẶT HÀNG</button>
+                            <button type="button" class="tab-button is-active" data-tab-button data-tab-target="detail-copy-panel" role="tab" aria-selected="true">@themeT('product.detail_tab', 'THÔNG TIN CHI TIẾT')</button>
+                            <button type="button" class="tab-button" data-tab-button data-tab-target="order-guide-panel" role="tab" aria-selected="false">@themeT('product.order_guide_tab', 'HƯỚNG DẪN ĐẶT HÀNG')</button>
                         </div>
 
                         <div id="detail-copy-panel" class="tab-panel is-active" data-tab-panel>
@@ -477,18 +479,18 @@
                             <div class="guide-intro">
                                 <div class="guide-hero">
                                     <div class="guide-hero-copy">
-                                        <h3>Đặt hàng nhanh, nhận voucher gọn, sử dụng thuận tiện</h3>
-                                        <p>Quy trình mua deal trên TH0001 được tối ưu theo hướng ít bước, dễ kiểm tra và thuận tiện khi dùng tại cửa hàng hoặc nhận E-Voucher online.</p>
+                                        <h3>{{ __('product.guide_step_4_title') }}</h3>
+                                        <p>{{ $t('product.guide_intro', 'Quy trình mua deal trên TH0001 được tối ưu theo hướng ít bước, dễ kiểm tra và thuận tiện khi dùng tại cửa hàng hoặc nhận E-Voucher online.') }}</p>
                                         <div class="guide-badges">
-                                            <span class="guide-badge">Xác nhận đơn nhanh</span>
-                                            <span class="guide-badge">Thanh toán linh hoạt</span>
-                                            <span class="guide-badge">Hỗ trợ sau mua</span>
+                                            <span class="guide-badge">{{ $t('product.guide_badge_quick_confirm', 'Xác nhận đơn nhanh') }}</span>
+                                            <span class="guide-badge">{{ $t('product.guide_badge_flexible_payment', 'Thanh toán linh hoạt') }}</span>
+                                            <span class="guide-badge">{{ $t('product.guide_badge_post_support', 'Hỗ trợ sau mua') }}</span>
                                         </div>
                                     </div>
 
                                     <div class="guide-side-card">
-                                        <strong>Lưu ý trước khi thanh toán</strong>
-                                        <p>Hãy kiểm tra kỹ giá bán, số lượng, thời hạn ưu đãi và thông tin nhận voucher để tránh phát sinh thay đổi sau khi đơn đã được xác nhận.</p>
+                                        <strong>{{ $t('product.guide_checkout_notice_title', 'Lưu ý trước khi thanh toán') }}</strong>
+                                        <p>{{ $t('product.guide_checkout_notice_body', 'Hãy kiểm tra kỹ giá bán, số lượng, thời hạn ưu đãi và thông tin nhận voucher để tránh phát sinh thay đổi sau khi đơn đã được xác nhận.') }}</p>
                                     </div>
                                 </div>
 
@@ -504,7 +506,7 @@
 
                                 <div class="guide-grid">
                                     <section class="guide-note-card">
-                                        <h4>Những điều nên kiểm tra</h4>
+                                        <h4>{{ $t('product.guide_note_title', 'Những điều nên kiểm tra') }}</h4>
                                         <ul class="guide-note-list">
                                             @foreach ($orderGuideNotes as $note)
                                                 <li>{{ $note }}</li>
@@ -513,17 +515,17 @@
                                     </section>
 
                                     <aside class="guide-support-card">
-                                        <h4>Hỗ trợ đơn hàng</h4>
+                                        <h4>{{ $t('product.guide_support_title', 'Hỗ trợ đơn hàng') }}</h4>
                                         <div class="guide-support-block">
-                                            <strong>Thanh toán</strong>
-                                            <span>Quét QRPay hoặc làm theo hướng dẫn trên website để hệ thống ghi nhận giao dịch.</span>
+                                            <strong>{{ $t('product.guide_support_payment_title', 'Thanh toán') }}</strong>
+                                            <span>{{ $t('product.guide_support_payment_body', 'Quét QRPay hoặc làm theo hướng dẫn trên website để hệ thống ghi nhận giao dịch.') }}</span>
                                         </div>
                                         <div class="guide-support-block">
-                                            <strong>Nhận voucher</strong>
-                                            <span>Mã voucher hoặc thông tin đơn sẽ được gửi về email / tài khoản ngay sau khi xử lý thành công.</span>
+                                            <strong>{{ $t('product.guide_support_voucher_title', 'Nhận voucher') }}</strong>
+                                            <span>{{ $t('product.guide_support_voucher_body', 'Mã voucher hoặc thông tin đơn sẽ được gửi về email / tài khoản ngay sau khi xử lý thành công.') }}</span>
                                         </div>
                                         <div class="guide-support-block">
-                                            <strong>Liên hệ nhanh</strong>
+                                            <strong>{{ $t('product.guide_support_contact_title', 'Liên hệ nhanh') }}</strong>
                                             <span>Hotline: {{ $contactHotline }}<br>Email: {{ $contactEmail }}</span>
                                         </div>
                                     </aside>
@@ -534,7 +536,7 @@
                 </div>
 
                 <aside class="sidebar-card">
-                    <h3>Sản phẩm liên quan</h3>
+                    <h3>{{ $t('product.related_products', 'Sản phẩm liên quan') }}</h3>
                     @if ($relatedProducts !== [])
                         <div class="sidebar-related">
                             @foreach (array_slice($relatedProducts, 0, 4) as $item)
@@ -557,7 +559,7 @@
                         </div>
                     @else
                         <div class="detail-copy">
-                            <p>Chưa có sản phẩm liên quan trong cùng danh mục.</p>
+                            <p>{{ $t('product.related_empty', 'Chưa có sản phẩm liên quan trong cùng danh mục.') }}</p>
                         </div>
                     @endif
                 </aside>
@@ -633,13 +635,13 @@
                 const deadline = countdownNode.dataset.deadline ? new Date(countdownNode.dataset.deadline) : null;
 
                 if (!deadline || Number.isNaN(deadline.getTime())) {
-                    countdownLabel.textContent = 'Không giới hạn thời gian';
+                    countdownLabel.textContent = @json($t('product.countdown_unlimited', 'Không giới hạn thời gian'));
                 } else {
                     const tick = () => {
                         const diff = deadline.getTime() - Date.now();
 
                         if (diff <= 0) {
-                            countdownLabel.textContent = 'Ưu đãi đã kết thúc';
+                            countdownLabel.textContent = @json($t('product.countdown_finished', 'Ưu đãi đã kết thúc'));
                             return;
                         }
 
@@ -649,7 +651,11 @@
                         const minutes = Math.floor((totalSeconds % 3600) / 60);
                         const seconds = totalSeconds % 60;
 
-                        countdownLabel.textContent = `${days} ngày ${String(hours).padStart(2, '0')} : ${String(minutes).padStart(2, '0')} : ${String(seconds).padStart(2, '0')}`;
+                        countdownLabel.textContent = @json($t('product.countdown_format', ':days ngày :hours : :minutes : :seconds'))
+                            .replace(':days', days)
+                            .replace(':hours', String(hours).padStart(2, '0'))
+                            .replace(':minutes', String(minutes).padStart(2, '0'))
+                            .replace(':seconds', String(seconds).padStart(2, '0'));
                     };
 
                     tick();

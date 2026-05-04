@@ -11,6 +11,8 @@
     $cartSummary = $homeData['cart_summary'] ?? ['count' => 0];
     $customerAuth = $homeData['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
     $newsletterState = $homeData['newsletter'] ?? ['is_subscribed' => false];
+    $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
+    $t = fn (string $key, string $default) => $themeTranslator->bladeText('TH0001', app()->getLocale(), $key, $default);
     $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
     $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
@@ -34,9 +36,9 @@
         ->values();
 
     $footerColumns = [
-        'Trợ giúp' => ['Chính sách giao hàng', 'Cách thức thanh toán', 'Hotdeal E-voucher', 'Membership'],
-        'Giới thiệu' => ['Về chúng tôi', 'Liên hệ', 'Chính sách bảo mật', 'Quy chế hoạt động'],
-        'Hợp tác' => ['Thẻ quà tặng', 'Liên hệ hợp tác', 'Tuyển dụng', 'Thông tin báo chí'],
+        $t('footer.help_title', 'Trợ giúp') => [$t('footer.shipping_policy', 'Chính sách giao hàng'), $t('footer.payment_methods', 'Cách thức thanh toán'), $t('footer.evouchers', 'Hotdeal E-voucher'), $t('footer.membership', 'Membership')],
+        $t('footer.about_title', 'Giới thiệu') => [$t('footer.about_us', 'Về chúng tôi'), $t('footer.contact', 'Liên hệ'), $t('footer.privacy_policy', 'Chính sách bảo mật'), $t('footer.operating_regulations', 'Quy chế hoạt động')],
+        $t('footer.partnership_title', 'Hợp tác') => [$t('footer.gift_cards', 'Thẻ quà tặng'), $t('footer.partner_contact', 'Liên hệ hợp tác'), $t('footer.careers', 'Tuyển dụng'), $t('footer.press_info', 'Thông tin báo chí')],
     ];
 
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
@@ -221,20 +223,20 @@
                 <div class="th-container th-topbar-inner">
                     <div class="th-inline">
                         <span>📍 {{ $contactLocation }}</span>
-                        <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? '📩 Đã đăng ký bản tin' : '📩 Đăng ký bản tin' }}</button>
+                        <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('common.newsletter_subscribed') : __('common.newsletter_subscribe') }}</button>
                     </div>
                     <div class="th-inline">
-                        <span>📞 Hotline: <span class="th-accent">{{ $contactHotline }}</span></span>
-                        <span>✉ Email: {{ $contactEmail }}</span>
+                        <span>📞 @themeT('common.hotline_label', 'Hotline'): <span class="th-accent">{{ $contactHotline }}</span></span>
+                        <span>✉ @themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
                         @if (!empty($customerAuth['is_authenticated']))
-                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài khoản')</a>
                             <form class="th-inline-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
                                 @csrf
-                                <button type="submit" class="th-inline-action">Đăng xuất</button>
+                                <button type="submit" class="th-inline-action">@themeT('common.logout', 'Đăng xuất')</button>
                             </form>
                         @else
-                            <button type="button" class="th-inline-action" data-open-auth-modal="register">Đăng ký</button>
-                            <button type="button" class="th-inline-action" data-open-auth-modal="login">Đăng nhập</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="register">@themeT('common.register', 'Đăng ký')</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="login">@themeT('common.login', 'Đăng nhập')</button>
                         @endif
                     </div>
                 </div>
@@ -242,26 +244,26 @@
 
             <header class="th-header">
                 <div class="th-container th-header-inner">
-                    <a class="th-logo" href="/">
+                    <a class="th-logo" href="{{ route('site.home') }}">
                         <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'Website logo') }}">
                         <span class="th-logo-mark">
                             <strong>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'AIO Commerce')) }}</strong>
                         </span>
                     </a>
                     <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
-                        <input type="search" name="q" value="{{ request('q') }}" placeholder="Tìm kiếm sản phẩm / khuyến mãi" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
-                        <button type="submit">Tìm</button>
+                        <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                        <button type="submit">@themeT('common.search_button', 'Tìm')</button>
                     </form>
-                    <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} GIỎ HÀNG</a>
+                    <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} @themeT('common.cart_label', 'GIỎ HÀNG')</a>
                 </div>
             </header>
 
             <nav class="th-main-nav">
                 <div class="th-container th-main-nav-inner">
-                    <div class="th-main-nav-categories">DANH MỤC</div>
+                    <div class="th-main-nav-categories">@themeT('common.categories', 'DANH MỤC')</div>
                     <div class="th-main-nav-menu">
                         @foreach (($homeData['top_menu'] ?? []) as $menuItem)
-                            <a href="{{ $menuItem['url'] ?? '#' }}" target="{{ $menuItem['target'] ?? '_self' }}">{{ $menuItem['label'] ?? 'Menu' }}</a>
+                            <a href="{{ $menuItem['url'] ?? '#' }}" target="{{ $menuItem['target'] ?? '_self' }}">{{ $menuItem['label'] ?? __('common.menu') }}</a>
                         @endforeach
                     </div>
                 </div>
@@ -289,7 +291,7 @@
                                                         <h4>{{ $category['label'] }}</h4>
                                                         <ul>
                                                             @foreach ($chunk as $child)
-                                                                <li><a href="{{ $child['url'] ?? ($category['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? 'Nhóm con' }}</a></li>
+                                                                <li><a href="{{ $child['url'] ?? ($category['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a></li>
                                                             @endforeach
                                                         </ul>
                                                     </div>
@@ -339,8 +341,8 @@
                         <div class="th-featured-topbar">
                             <div class="th-section-tabs">
                                 <span>{{ $featuredTitle }}</span>
-                                <span>Mới cập nhật</span>
-                                <span>Giá tốt</span>
+                                <span>@themeT('home.updated_tab', 'Mới cập nhật')</span>
+                                <span>@themeT('home.good_price_tab', 'Giá tốt')</span>
                             </div>
                         </div>
 
@@ -361,7 +363,7 @@
                                         </div>
                                         <div class="th-old-price-row">
                                             <span class="th-old-price">{{ $formatCurrency($deal['old_price'] ?? null) }}</span>
-                                            <span class="th-stat">Tồn kho {{ $deal['meta'] ?? 0 }}</span>
+                                            <span class="th-stat">{{ str_replace(':count', (string) ($deal['meta'] ?? 0), $t('home.stock', 'Tồn kho :count')) }}</span>
                                         </div>
                                     </div>
                                 </article>
@@ -397,7 +399,7 @@
                                             <a href="{{ $item['url'] ?? '#' }}">
                                                 <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
                                             </a>
-                                            <span class="th-deal-countdown">⏱ Còn 21 ngày</span>
+                                            <span class="th-deal-countdown">{{ str_replace(':days', '21', $t('home.deal_days_left', '⏱ Còn :days ngày')) }}</span>
                                             <span class="th-deal-chip">{{ $item['tag'] }}</span>
                                         </div>
                                         <div class="th-deal-body">
@@ -408,7 +410,7 @@
                                             </div>
                                             <div class="th-old-price-row">
                                                 <span class="th-old-price">{{ $formatCurrency($item['old_price'] ?? null) }}</span>
-                                                <span class="th-stat">Tồn kho {{ $item['meta'] ?? 0 }}</span>
+                                                <span class="th-stat">{{ str_replace(':count', (string) ($item['meta'] ?? 0), $t('home.stock', 'Tồn kho :count')) }}</span>
                                             </div>
                                         </div>
                                     </article>
@@ -416,7 +418,7 @@
                             </div>
 
                             <div class="th-category-footer">
-                                <a href="/danh-muc/{{ $section['slug'] }}" class="th-more-button">Xem tất cả {{ $section['title'] }} mới nhất</a>
+                                <a href="{{ $section['url'] ?? route('site.catalog.category', ['slug' => $section['slug']]) }}" class="th-more-button">{{ str_replace(':title', $section['title'], __('home.view_all_latest')) }}</a>
                             </div>
                         </section>
                     @endforeach

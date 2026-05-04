@@ -9,6 +9,7 @@ readonly class ThemeManifest
      * @param  array{thumbnail?:string,cover?:string}  $preview
      * @param  array<string, bool>  $supports
      * @param  array{content_path?:string,settings_path?:string}  $demo
+     * @param  array{default_locale?:string,supported_locales?:array<int,string>}  $localization
      */
     public function __construct(
         public string $name,
@@ -21,11 +22,12 @@ readonly class ThemeManifest
         public array $preview = [],
         public array $supports = [],
         public array $demo = [],
+          public array $localization = [],
     ) {
     }
 
     /**
-     * @param  array{name:string,key:string,version:string,description?:string,website_type:string,blocks?:array<int,string>,parent?:string|null,preview?:array{thumbnail?:string,cover?:string},supports?:array<string,bool>,demo?:array{content_path?:string,settings_path?:string}}  $payload
+      * @param  array{name:string,key:string,version:string,description?:string,website_type:string,blocks?:array<int,string>,parent?:string|null,preview?:array{thumbnail?:string,cover?:string},supports?:array<string,bool>,demo?:array{content_path?:string,settings_path?:string},localization?:array{default_locale?:string,supported_locales?:array<int,string>}}  $payload
      */
     public static function fromArray(array $payload): self
     {
@@ -40,6 +42,7 @@ readonly class ThemeManifest
             preview: $payload['preview'] ?? [],
             supports: $payload['supports'] ?? [],
             demo: $payload['demo'] ?? [],
+            localization: $payload['localization'] ?? [],
         );
     }
 }

@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
+import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
-import Collapse from 'antd/es/collapse';
-import DatePicker from 'antd/es/date-picker';
-import Divider from 'antd/es/divider';
 import Drawer from 'antd/es/drawer';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
@@ -16,6 +14,7 @@ import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
+import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
 import {
@@ -70,16 +69,6 @@ function toSlug(value) {
         .trim()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
-}
-
-function normalizePublishAtValue(value) {
-    if (!value) {
-        return null;
-    }
-
-    const dateValue = dayjs(value);
-
-    return dateValue.isValid() ? dateValue : null;
 }
 
 function getYoutubeEmbedUrl(value) {
@@ -142,11 +131,8 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
     const editorInstanceKey = useMemo(() => `${editingPost?.id ?? 'new'}:${editingPost?.slug ?? 'blank'}:${open ? 'open' : 'closed'}`, [editingPost?.id, editingPost?.slug, open]);
 
     useEffect(() => {
-        const normalizedPublishAt = normalizePublishAtValue(editingPost?.publish_at) ?? (!editingPost?.id ? dayjs() : null);
-
         form.setFieldsValue({
             ...editingPost,
-            publish_at: normalizedPublishAt,
         });
         form.setFieldValue('body', editingPost?.body ?? '');
         slugEditedRef.current = Boolean(editingPost?.id || editingPost?.slug);
@@ -462,7 +448,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             meta_description: values.meta_description || null,
             featured_media_id: values.featured_media_id || null,
             category_id: values.category_id || null,
-            publish_at: values.publish_at ? values.publish_at.format('YYYY-MM-DDTHH:mm:ss') : null,
+            publish_at: values.status === 'published' ? dayjs().format('YYYY-MM-DDTHH:mm:ss') : null,
         });
 
         form.resetFields();
@@ -586,137 +572,125 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
 
                     <Card size="small" className="cms-post-form-card" title="Xuất bản và hiển thị">
                         <Row gutter={16}>
-                            <Col xs={24} md={8}>
+                            <Col xs={24} md={12}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
                                     <Select options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]} />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={8}>
-                                <Form.Item name="category_id" label="Danh mục">
+                            <Col xs={24} md={12}>
+                                <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 0 }}>
                                     <Select allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={8}>
-                                <Form.Item name="publish_at" label="Publish At">
-                                    <DatePicker
-                                        showTime
-                                        format="DD/MM/YYYY HH:mm"
-                                        placeholder="Chọn thời gian xuất bản"
-                                        style={{ width: '100%' }}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24}>
-                                <br/>
-                                <Form.Item name="featured_media_id" label="Ảnh đại diện bài viết" style={{ marginBottom: 0 }}>
-                                    <div className="cms-featured-media-shell">
-                                        <Radio.Group
-                                            value={featuredMediaMode}
-                                            onChange={(event) => setFeaturedMediaMode(event.target.value)}
-                                            optionType="button"
-                                            buttonStyle="solid"
-                                            className="cms-featured-media-mode"
-                                            options={[
-                                                { label: 'Upload ảnh trực tiếp', value: 'upload' },
-                                                { label: 'Chọn từ danh sách có sẵn', value: 'library' },
-                                                { label: 'Nhập từ URL', value: 'url' },
-                                            ]}
-                                        />
-
-                                        {featuredMediaMode === 'upload' ? (
-                                            <div className="cms-featured-media-action-card">
-                                                <input ref={featuredMediaInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUploadFeaturedMedia} />
-                                                <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                                    <Space wrap>
-                                                        <Button
-                                                            type="primary"
-                                                            disabled={!canManage}
-                                                            loading={uploadingAsset === 'featured-image'}
-                                                            onClick={() => featuredMediaInputRef.current?.click()}
-                                                        >
-                                                            Upload ảnh trực tiếp
-                                                        </Button>
-                                                        <Text type="secondary">Ảnh upload xong sẽ tự được gán làm ảnh đại diện.</Text>
-                                                    </Space>
-                                                    {renderFeaturedMediaPreview()}
-                                                </Space>
-                                            </div>
-                                        ) : null}
-
-                                        {featuredMediaMode === 'library' ? (
-                                            <div className="cms-featured-media-action-card">
-                                                <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                                    <Space wrap>
-                                                        <Button type="primary" onClick={() => setFeaturedMediaLibraryOpen(true)}>
-                                                            Mở thư viện media
-                                                        </Button>
-                                                        <Text type="secondary">Chọn lại từ media CMS đã có sẵn.</Text>
-                                                    </Space>
-                                                    {renderFeaturedMediaPreview()}
-                                                </Space>
-                                            </div>
-                                        ) : null}
-
-                                        {featuredMediaMode === 'url' ? (
-                                            <div className="cms-featured-media-action-card">
-                                                <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                                    <Input
-                                                        value={featuredMediaUrl}
-                                                        onChange={(event) => setFeaturedMediaUrl(event.target.value)}
-                                                        placeholder="https://example.com/featured-image.jpg"
-                                                    />
-                                                    <Space wrap>
-                                                        <Button
-                                                            type="primary"
-                                                            disabled={!canManage}
-                                                            loading={uploadingAsset === 'featured-url'}
-                                                            onClick={handleCreateFeaturedMediaFromUrl}
-                                                        >
-                                                            Lưu URL và gán ảnh
-                                                        </Button>
-                                                        <Text type="secondary">URL sẽ được lưu vào CMS media để tái sử dụng về sau.</Text>
-                                                    </Space>
-                                                    {renderFeaturedMediaPreview()}
-                                                </Space>
-                                            </div>
-                                        ) : null}
-                                    </div>
                                 </Form.Item>
                             </Col>
                         </Row>
                     </Card>
 
-                    <Collapse
-                        className="cms-post-seo-collapse"
-                        items={[
-                            {
-                                key: 'seo',
-                                label: 'SEO cơ bản',
-                                children: (
-                                    <Row gutter={16}>
-                                        <Col xs={24} md={12}>
-                                            <Form.Item name="meta_title" label="SEO Title">
-                                                <Input placeholder="SEO title" />
-                                            </Form.Item>
-                                        </Col>
-                                        <Col xs={24} md={12}>
-                                            <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
-                                                <Input.TextArea rows={3} placeholder="Meta description bài viết" />
-                                            </Form.Item>
-                                        </Col>
-                                    </Row>
-                                ),
-                            },
-                        ]}
-                    />
+                    <Card size="small" className="cms-post-form-card" title="Ảnh đại diện bài viết">
+                        <Form.Item name="featured_media_id" style={{ marginBottom: 0 }}>
+                            <div className="cms-featured-media-shell">
+                                <Radio.Group
+                                    value={featuredMediaMode}
+                                    onChange={(event) => setFeaturedMediaMode(event.target.value)}
+                                    optionType="button"
+                                    buttonStyle="solid"
+                                    className="cms-featured-media-mode"
+                                    options={[
+                                        { label: 'Upload ảnh trực tiếp', value: 'upload' },
+                                        { label: 'Chọn từ danh sách có sẵn', value: 'library' },
+                                        { label: 'Nhập từ URL', value: 'url' },
+                                    ]}
+                                />
 
-                    <Card size="small" className="cms-post-form-card cms-post-form-card-editor" title="Nội dung chi tiết">
-                        <div className="cms-editor-upload-panel">
-                            <div className="cms-editor-upload-copy">
-                                <strong>Chèn hình ảnh và video vào nội dung</strong>
-                                <span>Dùng các nút bên dưới để upload media vào CMS rồi chèn trực tiếp vào bài viết.</span>
+                                {featuredMediaMode === 'upload' ? (
+                                    <div className="cms-featured-media-action-card">
+                                        <input ref={featuredMediaInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUploadFeaturedMedia} />
+                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                                            <Space wrap>
+                                                <Button
+                                                    type="primary"
+                                                    disabled={!canManage}
+                                                    loading={uploadingAsset === 'featured-image'}
+                                                    onClick={() => featuredMediaInputRef.current?.click()}
+                                                >
+                                                    Upload ảnh trực tiếp
+                                                </Button>
+                                                <Text type="secondary">Ảnh upload xong sẽ tự được gán làm ảnh đại diện.</Text>
+                                            </Space>
+                                            {renderFeaturedMediaPreview()}
+                                        </Space>
+                                    </div>
+                                ) : null}
+
+                                {featuredMediaMode === 'library' ? (
+                                    <div className="cms-featured-media-action-card">
+                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                                            <Space wrap>
+                                                <Button type="primary" onClick={() => setFeaturedMediaLibraryOpen(true)}>
+                                                    Mở thư viện media
+                                                </Button>
+                                                <Text type="secondary">Chọn lại từ media CMS đã có sẵn.</Text>
+                                            </Space>
+                                            {renderFeaturedMediaPreview()}
+                                        </Space>
+                                    </div>
+                                ) : null}
+
+                                {featuredMediaMode === 'url' ? (
+                                    <div className="cms-featured-media-action-card">
+                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                                            <Input
+                                                value={featuredMediaUrl}
+                                                onChange={(event) => setFeaturedMediaUrl(event.target.value)}
+                                                placeholder="https://example.com/featured-image.jpg"
+                                            />
+                                            <Space wrap>
+                                                <Button
+                                                    type="primary"
+                                                    disabled={!canManage}
+                                                    loading={uploadingAsset === 'featured-url'}
+                                                    onClick={handleCreateFeaturedMediaFromUrl}
+                                                >
+                                                    Lưu URL và gán ảnh
+                                                </Button>
+                                                <Text type="secondary">URL sẽ được lưu vào CMS media để tái sử dụng về sau.</Text>
+                                            </Space>
+                                            {renderFeaturedMediaPreview()}
+                                        </Space>
+                                    </div>
+                                ) : null}
                             </div>
-                            <div className="cms-editor-toolbar-row">
+                        </Form.Item>
+                    </Card>
+
+                    <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
+                        <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_title" label="SEO Title">
+                                    <Input.TextArea rows={3} placeholder="SEO title" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
+                                    <Input.TextArea rows={3} placeholder="Meta description bài viết" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Card
+                        size="small"
+                        className="cms-post-form-card cms-post-form-card-editor"
+                        title={(
+                            <Space size={8}>
+                                <span>Nội dung chi tiết</span>
+                                <Tooltip title="Sau khi upload, hình ảnh hoặc video sẽ được chèn ngay vào vị trí nội dung hiện tại. Video YouTube có thể nhúng nhanh bằng nút riêng, không cần mở toolbar media của CKEditor.">
+                                    <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
+                                </Tooltip>
+                            </Space>
+                        )}
+                    >
+                        <div className="cms-editor-upload-panel">
+                            <Space wrap className="cms-editor-toolbar-row" size={12}>
                                 <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
                                 <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
                                 <Button type="default" disabled={!canManage || uploadingAsset === 'video'} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
@@ -732,7 +706,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                                 }}>
                                     Nhúng video YouTube
                                 </Button>
-                            </div>
+                            </Space>
                         </div>
 
                         <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
@@ -761,8 +735,6 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                         <Form.Item name="body" hidden>
                             <Input.TextArea />
                         </Form.Item>
-                        <Divider style={{ margin: '16px 0 12px' }} />
-                        <div className="cms-editor-hint">Sau khi upload, hình ảnh hoặc video sẽ được chèn ngay vào vị trí nội dung hiện tại. Video YouTube có thể nhúng nhanh bằng nút riêng, không cần mở toolbar media của CKEditor.</div>
                     </Card>
                 </div>
             </Form>

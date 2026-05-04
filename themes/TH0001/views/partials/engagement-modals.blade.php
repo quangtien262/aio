@@ -2,6 +2,23 @@
     $customerAuth = $customerAuth ?? ['is_authenticated' => false];
     $newsletterState = $newsletterState ?? ['is_subscribed' => false];
     $postLoginRedirect = $postLoginRedirect ?? request()->fullUrl();
+    $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
+    $themeText = static fn (string $key, string $default): string => $themeTranslator->bladeText('TH0001', app()->getLocale(), $key, $default);
+    $themeMessages = [
+        'required_email' => $themeText('modal.error.required_email', 'Vui lòng nhập email.'),
+        'invalid_email' => $themeText('modal.error.invalid_email', 'Email không đúng định dạng.'),
+        'required_password' => $themeText('modal.error.required_password', 'Vui lòng nhập mật khẩu.'),
+        'required_name' => $themeText('modal.error.required_name', 'Vui lòng nhập họ và tên.'),
+        'phone_too_long' => $themeText('modal.error.phone_too_long', 'Số điện thoại không được quá 30 ký tự.'),
+        'password_too_short' => $themeText('modal.error.password_too_short', 'Mật khẩu phải có ít nhất 8 ký tự.'),
+        'required_password_confirmation' => $themeText('modal.error.required_password_confirmation', 'Vui lòng xác nhận mật khẩu.'),
+        'password_confirmation_mismatch' => $themeText('modal.error.password_confirmation_mismatch', 'Xác nhận mật khẩu không khớp.'),
+        'newsletter_failed' => $themeText('modal.error.newsletter_failed', 'Không thể đăng ký bản tin.'),
+        'newsletter_success' => $themeText('modal.success.newsletter', 'Đăng ký nhận bản tin thành công.'),
+        'generic_invalid' => $themeText('modal.error.generic_invalid', 'Vui lòng kiểm tra lại thông tin đã nhập.'),
+        'generic_action_failed' => $themeText('modal.error.generic_action_failed', 'Không thực hiện được thao tác.'),
+        'newsletter_invalid' => $themeText('modal.error.newsletter_invalid', 'Vui lòng kiểm tra lại email đã nhập.'),
+    ];
 @endphp
 <div id="th-modal-root"
     data-authenticated="{{ !empty($customerAuth['is_authenticated']) ? '1' : '0' }}"
@@ -15,74 +32,74 @@
 
 <div class="th-modal-overlay" data-th-modal-overlay hidden>
     <div class="th-modal-card" role="dialog" aria-modal="true" aria-labelledby="th-modal-title">
-        <button type="button" class="th-modal-close" data-th-modal-close aria-label="Đóng">×</button>
+        <button type="button" class="th-modal-close" data-th-modal-close aria-label="@themeT('modal.close', 'Đóng')">×</button>
 
         <section class="th-modal-panel" data-th-modal-panel="login" hidden>
-            <h3 id="th-modal-title">Đăng nhập để tiếp tục mua hàng</h3>
-            <p>Đăng nhập nhanh để thanh toán, theo dõi đơn hàng và lưu sản phẩm yêu thích.</p>
+            <h3 id="th-modal-title">@themeT('modal.login_title', 'Đăng nhập để tiếp tục mua hàng')</h3>
+            <p>@themeT('modal.login_summary', 'Đăng nhập nhanh để thanh toán, theo dõi đơn hàng và lưu sản phẩm yêu thích.')</p>
             <form data-th-auth-form="login" novalidate>
                 <input type="hidden" name="redirect_to" value="{{ $postLoginRedirect }}">
                 <label class="th-modal-field">
-                    <span>Email</span>
+                    <span>@themeT('modal.email', 'Email')</span>
                     <input type="email" name="email" required>
                     <small class="th-modal-field-error" data-th-field-error="email"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>Mật khẩu</span>
+                    <span>@themeT('modal.password', 'Mật khẩu')</span>
                     <input type="password" name="password" required>
                     <small class="th-modal-field-error" data-th-field-error="password"></small>
                 </label>
-                <button type="submit" class="th-modal-submit">Đăng nhập</button>
+                <button type="submit" class="th-modal-submit">@themeT('modal.login_submit', 'Đăng nhập')</button>
             </form>
-            <button type="button" class="th-modal-switch" data-th-modal-switch="register">Chưa có tài khoản? Đăng ký ngay</button>
+            <button type="button" class="th-modal-switch" data-th-modal-switch="register">@themeT('modal.switch_to_register', 'Chưa có tài khoản? Đăng ký ngay')</button>
         </section>
 
         <section class="th-modal-panel" data-th-modal-panel="register" hidden>
-            <h3>Đăng ký tài khoản khách hàng</h3>
-            <p>Tạo tài khoản để thanh toán nhanh hơn và dùng chung cho mọi theme của website.</p>
+            <h3>@themeT('modal.register_title', 'Đăng ký tài khoản khách hàng')</h3>
+            <p>@themeT('modal.register_summary', 'Tạo tài khoản để thanh toán nhanh hơn và dùng chung cho mọi theme của website.')</p>
             <form data-th-auth-form="register" novalidate>
                 <input type="hidden" name="redirect_to" value="{{ $postLoginRedirect }}">
                 <label class="th-modal-field">
-                    <span>Họ và tên</span>
+                    <span>@themeT('modal.full_name', 'Họ và tên')</span>
                     <input type="text" name="name" required>
                     <small class="th-modal-field-error" data-th-field-error="name"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>Email</span>
+                    <span>@themeT('modal.email', 'Email')</span>
                     <input type="email" name="email" required>
                     <small class="th-modal-field-error" data-th-field-error="email"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>Số điện thoại</span>
+                    <span>@themeT('modal.phone', 'Số điện thoại')</span>
                     <input type="text" name="phone">
                     <small class="th-modal-field-error" data-th-field-error="phone"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>Mật khẩu</span>
+                    <span>@themeT('modal.password', 'Mật khẩu')</span>
                     <input type="password" name="password" required>
                     <small class="th-modal-field-error" data-th-field-error="password"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>Xác nhận mật khẩu</span>
+                    <span>@themeT('modal.password_confirmation', 'Xác nhận mật khẩu')</span>
                     <input type="password" name="password_confirmation" required>
                     <small class="th-modal-field-error" data-th-field-error="password_confirmation"></small>
                 </label>
-                <button type="submit" class="th-modal-submit">Đăng ký</button>
+                <button type="submit" class="th-modal-submit">@themeT('modal.register_submit', 'Đăng ký')</button>
             </form>
-            <button type="button" class="th-modal-switch" data-th-modal-switch="login">Đã có tài khoản? Đăng nhập</button>
+            <button type="button" class="th-modal-switch" data-th-modal-switch="login">@themeT('modal.switch_to_login', 'Đã có tài khoản? Đăng nhập')</button>
         </section>
 
         <section class="th-modal-panel" data-th-modal-panel="newsletter" hidden>
-            <div class="th-modal-kicker">Newsletter</div>
-            <h3>Đăng ký nhận bản tin</h3>
-            <p>{{ !empty($newsletterState['is_subscribed']) ? 'Email của bạn đã đăng ký nhận bản tin. Có thể nhập email khác nếu muốn đổi.' : 'Nhập email để nhận cập nhật ưu đãi, bài viết và sản phẩm mới.' }}</p>
+            <div class="th-modal-kicker">@themeT('modal.newsletter_kicker', 'Newsletter')</div>
+            <h3>@themeT('modal.newsletter_title', 'Đăng ký nhận bản tin')</h3>
+            <p>{{ !empty($newsletterState['is_subscribed']) ? $themeText('modal.newsletter_summary_subscribed', 'Email của bạn đã đăng ký nhận bản tin. Có thể nhập email khác nếu muốn đổi.') : $themeText('modal.newsletter_summary_unsubscribed', 'Nhập email để nhận cập nhật ưu đãi, bài viết và sản phẩm mới.') }}</p>
             <form data-th-newsletter-form novalidate>
                 <label class="th-modal-field">
-                    <span>Email</span>
+                    <span>@themeT('modal.email', 'Email')</span>
                     <input type="email" name="email" value="{{ $customerAuth['customer']['email'] ?? '' }}" {{ !empty($customerAuth['is_authenticated']) ? 'readonly' : '' }} required>
                     <small class="th-modal-field-error" data-th-field-error="email"></small>
                 </label>
-                <button type="submit" class="th-modal-submit">Xác nhận đăng ký</button>
+                <button type="submit" class="th-modal-submit">@themeT('modal.newsletter_submit', 'Xác nhận đăng ký')</button>
             </form>
         </section>
 
@@ -199,6 +216,7 @@
 <script>
     (() => {
         const root = document.getElementById('th-modal-root');
+        const messages = @json($themeMessages);
 
         if (!root) {
             return;
@@ -247,41 +265,41 @@
 
             if (mode === 'login') {
                 if (!String(payload.email || '').trim()) {
-                    errors.email = 'Vui lòng nhập email.';
+                    errors.email = messages.required_email;
                 } else if (!emailPattern.test(String(payload.email).trim())) {
-                    errors.email = 'Email không đúng định dạng.';
+                    errors.email = messages.invalid_email;
                 }
 
                 if (!String(payload.password || '').trim()) {
-                    errors.password = 'Vui lòng nhập mật khẩu.';
+                    errors.password = messages.required_password;
                 }
             }
 
             if (mode === 'register') {
                 if (!String(payload.name || '').trim()) {
-                    errors.name = 'Vui lòng nhập họ và tên.';
+                    errors.name = messages.required_name;
                 }
 
                 if (!String(payload.email || '').trim()) {
-                    errors.email = 'Vui lòng nhập email.';
+                    errors.email = messages.required_email;
                 } else if (!emailPattern.test(String(payload.email).trim())) {
-                    errors.email = 'Email không đúng định dạng.';
+                    errors.email = messages.invalid_email;
                 }
 
                 if (String(payload.phone || '').trim() && String(payload.phone || '').trim().length > 30) {
-                    errors.phone = 'Số điện thoại không được quá 30 ký tự.';
+                    errors.phone = messages.phone_too_long;
                 }
 
                 if (!String(payload.password || '').trim()) {
-                    errors.password = 'Vui lòng nhập mật khẩu.';
+                    errors.password = messages.required_password;
                 } else if (String(payload.password).length < 8) {
-                    errors.password = 'Mật khẩu phải có ít nhất 8 ký tự.';
+                    errors.password = messages.password_too_short;
                 }
 
                 if (!String(payload.password_confirmation || '').trim()) {
-                    errors.password_confirmation = 'Vui lòng xác nhận mật khẩu.';
+                    errors.password_confirmation = messages.required_password_confirmation;
                 } else if (payload.password !== payload.password_confirmation) {
-                    errors.password_confirmation = 'Xác nhận mật khẩu không khớp.';
+                    errors.password_confirmation = messages.password_confirmation_mismatch;
                 }
             }
 
@@ -293,9 +311,9 @@
             const errors = {};
 
             if (!String(payload.email || '').trim()) {
-                errors.email = 'Vui lòng nhập email.';
+                errors.email = messages.required_email;
             } else if (!emailPattern.test(String(payload.email).trim())) {
-                errors.email = 'Email không đúng định dạng.';
+                errors.email = messages.invalid_email;
             }
 
             return { payload, errors };
@@ -369,13 +387,13 @@
                         const payload = await response.json();
 
                         if (!response.ok) {
-                            throw new Error(payload.message || 'Không thể đăng ký bản tin.');
+                            throw new Error(payload.message || messages.newsletter_failed);
                         }
 
-                        alert(payload.message || 'Đăng ký nhận bản tin thành công.');
+                        alert(payload.message || messages.newsletter_success);
                         window.location.reload();
                     } catch (error) {
-                        alert(error.message || 'Không thể đăng ký bản tin.');
+                        alert(error.message || messages.newsletter_failed);
                     }
 
                     return;
@@ -419,16 +437,16 @@
 
                         if (Object.keys(serverErrors).length > 0) {
                             Object.entries(serverErrors).forEach(([field, message]) => setFieldError(form, field, message));
-                            showMessage(body.message || 'Vui lòng kiểm tra lại thông tin đã nhập.');
+                            showMessage(body.message || messages.generic_invalid);
                             return;
                         }
 
-                        throw new Error(body.message || 'Không thực hiện được thao tác.');
+                        throw new Error(body.message || messages.generic_action_failed);
                     }
 
                     window.location.href = body.data?.redirect_to || activeRedirect || window.location.href;
                 } catch (error) {
-                    showMessage(error.message || 'Không thực hiện được thao tác.');
+                    showMessage(error.message || messages.generic_action_failed);
                 }
             });
         });
@@ -466,17 +484,17 @@
 
                     if (Object.keys(serverErrors).length > 0) {
                         Object.entries(serverErrors).forEach(([field, message]) => setFieldError(newsletterForm, field, message));
-                        showMessage(body.message || 'Vui lòng kiểm tra lại email đã nhập.');
+                        showMessage(body.message || messages.newsletter_invalid);
                         return;
                     }
 
-                    throw new Error(body.message || 'Không thể đăng ký bản tin.');
+                    throw new Error(body.message || messages.newsletter_failed);
                 }
 
-                showMessage(body.message || 'Đăng ký nhận bản tin thành công.');
+                showMessage(body.message || messages.newsletter_success);
                 window.setTimeout(() => window.location.reload(), 900);
             } catch (error) {
-                showMessage(error.message || 'Không thể đăng ký bản tin.');
+                showMessage(error.message || messages.newsletter_failed);
             }
         });
 

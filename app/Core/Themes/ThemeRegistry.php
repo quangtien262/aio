@@ -36,6 +36,10 @@ class ThemeRegistry
                     'preview' => $manifest->preview,
                     'supports' => $manifest->supports,
                     'demo' => $manifest->demo,
+                    'localization' => [
+                        'default_locale' => $manifest->localization['default_locale'] ?? config('localization.default_locale', 'vi'),
+                        'supported_locales' => array_values($manifest->localization['supported_locales'] ?? [config('localization.default_locale', 'vi')]),
+                    ],
                     'status' => $installation?->status ?? 'available',
                     'is_installed' => (bool) $installation,
                     'is_active' => (bool) $installation?->is_active,

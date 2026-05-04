@@ -717,7 +717,9 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                                                 <Text strong>{item.label || 'Chưa có label'}</Text>
                                                             </Space>
                                                             {isChild ? <Tag color="blue">Cấp 2</Tag> : <Tag color="green">Cấp 1</Tag>}
-                                                            <Tag>{linkTypeLabel(item.link_type)}</Tag>
+                                                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                                                {linkTypeLabel(item.link_type)}
+                                                            </Text>
                                                             {dropMode === 'inside' ? <Tag color="processing">Thả vào trong</Tag> : null}
                                                             {dropMode === 'before' ? <Tag color="gold">Chèn phía trên</Tag> : null}
                                                             {dropMode === 'after' ? <Tag color="purple">Chèn phía dưới</Tag> : null}
@@ -725,10 +727,19 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                                     </Space>
 
                                                     <Space size={4} wrap>
-                                                        {showChildrenEditor && !isChild ? <Button type="text" icon={<PlusOutlined />} onClick={() => openItemEditor({ mode: 'create', isChild: true, parentIndex: path[0] })}>Thêm cấp 2</Button> : null}
-                                                        <Button type="text" icon={<EditOutlined />} onClick={() => openItemEditor({ mode: 'edit', path, isChild })}>Sửa</Button>
+                                                        {showChildrenEditor && !isChild ? (
+                                                            <Button
+                                                                type="text"
+                                                                icon={<PlusOutlined />}
+                                                                style={{ color: '#0f766e' }}
+                                                                onClick={() => openItemEditor({ mode: 'create', isChild: true, parentIndex: path[0] })}
+                                                            >
+                                                                Thêm cấp 2
+                                                            </Button>
+                                                        ) : null}
+                                                        <Button type="text" icon={<EditOutlined />} style={{ color: '#2563eb' }} onClick={() => openItemEditor({ mode: 'edit', path, isChild })}>Sửa</Button>
                                                         <Popconfirm title="Xóa item menu này?" onConfirm={() => handleDeleteItem(path)}>
-                                                            <Button danger type="text" icon={<DeleteOutlined />}>Xóa</Button>
+                                                            <Button type="text" icon={<DeleteOutlined />} style={{ color: '#3f3f46' }}>Xóa</Button>
                                                         </Popconfirm>
                                                     </Space>
                                                 </div>

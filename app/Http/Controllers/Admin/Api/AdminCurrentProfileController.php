@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Api;
 
 use App\Core\Modules\ModuleRegistry;
 use App\Models\SiteProfile;
+use App\Support\FrontendLocalization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -28,6 +29,13 @@ class AdminCurrentProfileController
                 'site_profile' => [
                     'site_name' => $siteProfile?->site_name,
                     'branding' => $siteProfile?->branding ?? [],
+                ],
+                'frontend_localization' => [
+                    'default_locale' => FrontendLocalization::defaultLocale(),
+                    'fallback_locale' => FrontendLocalization::fallbackLocale(),
+                    'source_locale' => FrontendLocalization::sourceLocale(),
+                    'active_locales' => FrontendLocalization::supportedLocales(),
+                    'locales' => FrontendLocalization::localeOptions(),
                 ],
                 'module_navigation' => $moduleRegistry->navigationForPermissions($permissions),
             ],

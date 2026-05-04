@@ -6,6 +6,34 @@ import tailwindcss from '@tailwindcss/vite';
 function resolveAdminManualChunk(id) {
     const normalizedId = id.replace(/\\/g, '/');
 
+    if (normalizedId.includes('/resources/admin/src/modules/themes/components/ThemeTranslationDrawer.jsx')) {
+        return 'admin-theme-translations';
+    }
+
+    if (normalizedId.includes('/resources/admin/src/modules/cms/pages/CmsManagerPage.jsx')) {
+        return 'admin-cms-page';
+    }
+
+    if (normalizedId.includes('/resources/admin/src/modules/cms/components/CmsPageFormModal.jsx')) {
+        return 'admin-cms-page-form';
+    }
+
+    if (normalizedId.includes('/resources/admin/src/modules/cms/components/CmsPostFormModal.jsx')) {
+        return 'admin-cms-post-form';
+    }
+
+    if (normalizedId.includes('/resources/admin/src/modules/cms/components/CmsCategoryFormModal.jsx')) {
+        return 'admin-cms-category-form';
+    }
+
+    if (normalizedId.includes('/resources/admin/src/modules/cms/components/CmsMenuFormModal.jsx')) {
+        return 'admin-cms-menu-form';
+    }
+
+    if (normalizedId.includes('/resources/admin/src/modules/catalog/components/CatalogProductFormModal.jsx')) {
+        return 'admin-cms-product-form';
+    }
+
     const featureChunkMap = [
         { segment: '/resources/admin/src/modules/access/', chunk: 'admin-access' },
         { segment: '/resources/admin/src/modules/admins/', chunk: 'admin-admins' },

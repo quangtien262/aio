@@ -182,7 +182,7 @@ function ProfilePage({ customer, newsletter, onSaveProfile, saving }) {
     );
 }
 
-export default function CustomerLayout() {
+export default function CustomerLayout({ apiBase = '/account/api' }) {
     const { message } = App.useApp();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -241,7 +241,7 @@ export default function CustomerLayout() {
         try {
             setLoading(true);
             setError(null);
-            const payload = await callCustomerApi('/account/api/overview');
+            const payload = await callCustomerApi(`${apiBase}/overview`);
             setData(payload.data ?? null);
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Không tải được dữ liệu tài khoản.');
@@ -257,7 +257,7 @@ export default function CustomerLayout() {
     const handleSaveProfile = async (payload) => {
         try {
             setSaving(true);
-            await callCustomerApi('/account/api/profile', { method: 'PUT', body: JSON.stringify(payload) });
+            await callCustomerApi(`${apiBase}/profile`, { method: 'PUT', body: JSON.stringify(payload) });
             await loadOverview();
             message.success('Đã cập nhật thông tin cá nhân.');
         } catch (nextError) {

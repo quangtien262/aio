@@ -9,7 +9,7 @@ import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
 
 const { Paragraph, Text } = Typography;
 
-export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDemoData, callAdminApi, runAdminAction }) {
+export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const returnTo = searchParams.get('returnTo');
@@ -19,7 +19,10 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
         loader: async () => {
             const payload = await callAdminApi('/admin/api/themes');
 
-            return payload.data ?? [];
+            return {
+                themes: payload.data ?? [],
+                meta: payload.meta ?? {},
+            };
         },
         cacheKey: 'admin.route.themes',
     });
@@ -47,7 +50,9 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
             ) : null}
 
             <ThemeManagerPage
-                themes={data}
+                themes={data?.themes ?? []}
+                frontendLocale={frontendLocale}
+                defaultFrontendLocale={defaultFrontendLocale ?? data?.meta?.default_locale ?? 'vi'}
                 onActivate={(themeKey) => runAdminAction(
                     () => callAdminApi(`/admin/api/themes/${themeKey}/activate`, { method: 'POST' }),
                     'Đã kích hoạt theme.',
@@ -71,6 +76,8 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
                 )}
                 canActivate={canActivate}
                 canGenerateDemoData={canGenerateDemoData}
+                callAdminApi={callAdminApi}
+                runAdminAction={runAdminAction}
             />
         </Space>
     );

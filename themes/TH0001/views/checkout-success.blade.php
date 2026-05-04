@@ -83,15 +83,15 @@
             <div class="wrap utility-inner">
                 <div class="utility-group">
                     <span>{{ $contactLocation }}</span>
-                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? 'Đã đăng ký bản tin' : 'Đăng ký bản tin' }}</button>
+                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('common.newsletter_subscribed') : __('common.newsletter_subscribe') }}</button>
                 </div>
                 <div class="utility-actions">
-                    <span>Hotline: {{ $contactHotline }}</span>
-                    <span>Email: {{ $contactEmail }}</span>
-                    <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                    <span>@themeT('common.hotline_label', 'Hotline'): {{ $contactHotline }}</span>
+                    <span>@themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
+                    <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài khoản')</a>
                     <form class="utility-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
                         @csrf
-                        <button type="submit" class="utility-action">Đăng xuất</button>
+                        <button type="submit" class="utility-action">@themeT('common.logout', 'Đăng xuất')</button>
                     </form>
                 </div>
             </div>
@@ -99,25 +99,25 @@
 
         <header class="header">
             <div class="wrap header-main">
-                <a class="brand" href="/">
+                <a class="brand" href="{{ route('site.home') }}">
                     <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'TH0001') }}">
                 </a>
 
                 <form class="searchbar" method="GET" action="{{ route('site.catalog.search') }}" role="search">
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Tìm kiếm sản phẩm" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
-                    <button type="submit" aria-label="Tìm kiếm">⌕</button>
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                    <button type="submit" aria-label="@themeT('common.search_button', 'Tìm kiếm')">⌕</button>
                 </form>
 
-                <a class="cart-link" href="{{ route('site.cart.index') }}">GIỎ HÀNG ({{ $cartSummary['count'] ?? 0 }})</a>
+                <a class="cart-link" href="{{ route('site.cart.index') }}">@themeT('common.cart_label', 'GIỎ HÀNG') ({{ $cartSummary['count'] ?? 0 }})</a>
             </div>
         </header>
 
         <nav class="nav">
             <div class="wrap nav-inner">
-                <div class="nav-category">DANH MỤC</div>
+                <div class="nav-category">@themeT('common.categories', 'DANH MỤC')</div>
                 <div class="nav-links">
                     @foreach ($topMenu as $item)
-                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? 'Menu' }}</a>
+                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
                     @endforeach
                 </div>
             </div>
@@ -125,45 +125,45 @@
 
         <main class="wrap">
             <section class="success-card">
-                <h1>Đặt hàng thành công</h1>
-                <p>Đơn hàng của bạn đã được ghi nhận. Bộ phận chăm sóc khách hàng sẽ liên hệ theo số điện thoại bạn cung cấp để xác nhận thời gian giao nhận hoặc gửi mã voucher.</p>
+                <h1>@themeT('checkout_success.title', 'Đặt hàng thành công')</h1>
+                <p>@themeT('checkout_success.summary', 'Đơn hàng của bạn đã được ghi nhận. Bộ phận chăm sóc khách hàng sẽ liên hệ theo số điện thoại bạn cung cấp để xác nhận thời gian giao nhận hoặc gửi mã voucher.')</p>
 
                 <div class="order-grid">
                     <div class="order-line">
-                        <span class="order-label">Mã đơn hàng</span>
+                        <span class="order-label">@themeT('checkout_success.order_code', 'Mã đơn hàng')</span>
                         <span class="order-value">{{ $confirmedOrder->order_code }}</span>
                     </div>
                     <div class="order-line">
-                        <span class="order-label">Thời gian tạo đơn</span>
+                        <span class="order-label">@themeT('checkout_success.placed_at', 'Thời gian tạo đơn')</span>
                         <span class="order-value">{{ $confirmedOrder->placed_at?->format('Y-m-d H:i:s') }}</span>
                     </div>
                     <div class="order-line">
-                        <span class="order-label">Khách hàng</span>
+                        <span class="order-label">@themeT('checkout_success.customer', 'Khách hàng')</span>
                         <span class="order-value">{{ $confirmedOrder->customer_name }}</span>
                     </div>
                     <div class="order-line">
-                        <span class="order-label">Điện thoại</span>
+                        <span class="order-label">@themeT('checkout_success.phone', 'Điện thoại')</span>
                         <span class="order-value">{{ $confirmedOrder->customer_phone }}</span>
                     </div>
                     <div class="order-line">
-                        <span class="order-label">Địa chỉ nhận hàng / nhận mã</span>
+                        <span class="order-label">@themeT('checkout_success.address', 'Địa chỉ nhận hàng / nhận mã')</span>
                         <span class="order-value">{{ $confirmedOrder->delivery_address }}</span>
                     </div>
                     <div class="order-line">
-                        <span class="order-label">Phương thức thanh toán</span>
+                        <span class="order-label">@themeT('checkout_success.payment_method', 'Phương thức thanh toán')</span>
                         <span class="order-value">{{ $confirmedOrder->payment_label }}</span>
                     </div>
                     <div class="order-line">
-                        <span class="order-label">Tổng thanh toán</span>
+                        <span class="order-label">@themeT('checkout_success.total', 'Tổng thanh toán')</span>
                         <span class="order-value">{{ $formatCurrency($confirmedOrder->subtotal) }}</span>
                     </div>
                     <div class="order-line">
-                        <span class="order-label">Email xác nhận</span>
-                        <span class="order-value">{{ $confirmedOrder->email_sent_at ? 'Da gui' : ($confirmedOrder->email_queued_at ? 'Da dua vao hang doi' : 'Chua xep hang') }}</span>
+                        <span class="order-label">@themeT('checkout_success.email_status', 'Email xác nhận')</span>
+                        <span class="order-value">{{ $confirmedOrder->email_sent_at ? __('checkout_success.email_sent') : ($confirmedOrder->email_queued_at ? __('checkout_success.email_queued') : __('checkout_success.email_pending')) }}</span>
                     </div>
                     <div class="order-line">
-                        <span class="order-label">SMS xác nhận</span>
-                        <span class="order-value">Tạm dừng</span>
+                        <span class="order-label">@themeT('checkout_success.sms_status', 'SMS xác nhận')</span>
+                        <span class="order-value">@themeT('checkout_success.sms_paused', 'Tạm dừng')</span>
                     </div>
                 </div>
 
@@ -172,7 +172,7 @@
                         <div class="order-item">
                             <div>
                                 <strong>{{ $item->product_name }}</strong>
-                                <span>Số lượng: {{ $item->quantity }}</span>
+                                <span>{{ __('checkout.quantity', ['count' => $item->quantity]) }}</span>
                             </div>
                             <div class="order-value">{{ $formatCurrency($item->line_total) }}</div>
                         </div>
@@ -180,8 +180,8 @@
                 </div>
 
                 <div class="cta-row">
-                    <a href="/" class="cta-link primary">Tiếp tục mua sắm</a>
-                    <a href="tel:{{ preg_replace('/\D+/', '', $contactHotline) }}" class="cta-link secondary">Gọi hotline hỗ trợ</a>
+                    <a href="{{ route('site.home') }}" class="cta-link primary">@themeT('checkout_success.continue_shopping', 'Tiếp tục mua sắm')</a>
+                    <a href="tel:{{ preg_replace('/\D+/', '', $contactHotline) }}" class="cta-link secondary">@themeT('checkout_success.hotline_support', 'Gọi hotline hỗ trợ')</a>
                 </div>
             </section>
         </main>

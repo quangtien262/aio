@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('subtotal', 12, 2)->default(0);
             $table->unsignedInteger('item_count')->default(0);
             $table->timestamp('placed_at')->nullable()->index();
+            $table->timestamp('email_queued_at')->nullable();
             $table->timestamp('email_sent_at')->nullable();
             $table->timestamp('sms_sent_at')->nullable();
             $table->string('website_key')->nullable()->index();

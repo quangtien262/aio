@@ -3,7 +3,7 @@ import ConfigProvider from 'antd/es/config-provider';
 import { BrowserRouter } from 'react-router-dom';
 import CustomerLayout from '../layouts/CustomerLayout';
 
-export default function CustomerApp() {
+export default function CustomerApp({ basename = '/account', apiBase = '/account/api' }) {
     return (
         <ConfigProvider
             theme={{
@@ -17,8 +17,8 @@ export default function CustomerApp() {
             }}
         >
             <App>
-                <BrowserRouter basename="/account">
-                    <CustomerLayout />
+                <BrowserRouter basename={basename}>
+                    <CustomerLayout apiBase={apiBase} />
                 </BrowserRouter>
             </App>
         </ConfigProvider>

@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
+import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
 import Button from 'antd/es/button';
+import Card from 'antd/es/card';
 import Col from 'antd/es/col';
 import Drawer from 'antd/es/drawer';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
-import Divider from 'antd/es/divider';
 import message from 'antd/es/message';
+import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
+import Tooltip from 'antd/es/tooltip';
 import {
     BlockQuote,
     Bold,
@@ -44,7 +47,6 @@ export const emptyCmsPageForm = {
     meta_description: '',
     template: '',
     featured_media_id: null,
-    publish_at: null,
     website_key: '',
     owner_key: '',
     tenant_key: '',
@@ -62,10 +64,48 @@ function toSlug(value) {
         .replace(/^-+|-+$/g, '');
 }
 
+function getYoutubeEmbedUrl(value) {
+    const trimmedValue = String(value ?? '').trim();
+
+    if (!trimmedValue) {
+        return null;
+    }
+
+    try {
+        const parsedUrl = new URL(trimmedValue);
+        const hostname = parsedUrl.hostname.replace(/^www\./, '').toLowerCase();
+        let videoId = '';
+
+        if (hostname === 'youtu.be') {
+            videoId = parsedUrl.pathname.split('/').filter(Boolean)[0] ?? '';
+        } else if (hostname === 'youtube.com' || hostname === 'm.youtube.com' || hostname === 'music.youtube.com') {
+            if (parsedUrl.pathname === '/watch') {
+                videoId = parsedUrl.searchParams.get('v') ?? '';
+            } else if (parsedUrl.pathname.startsWith('/shorts/')) {
+                videoId = parsedUrl.pathname.split('/').filter(Boolean)[1] ?? '';
+            } else if (parsedUrl.pathname.startsWith('/embed/')) {
+                videoId = parsedUrl.pathname.split('/').filter(Boolean)[1] ?? '';
+            }
+        }
+
+        if (!videoId) {
+            return null;
+        }
+
+        const safeVideoId = videoId.replace(/[^a-zA-Z0-9_-]/g, '');
+
+        return safeVideoId ? `https://www.youtube.com/embed/${safeVideoId}` : null;
+    } catch {
+        return null;
+    }
+}
+
 export default function CmsPageFormModal({ open, canManage, editingPage, mediaOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [uploadingAsset, setUploadingAsset] = useState(null);
+    const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
+    const [youtubeUrl, setYoutubeUrl] = useState('');
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
@@ -298,6 +338,20 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         }
     };
 
+    const handleInsertYoutubeEmbed = () => {
+        const embedUrl = getYoutubeEmbedUrl(youtubeUrl);
+
+        if (!embedUrl) {
+            messageApi.warning('Nhập đúng link YouTube trước khi nhúng.');
+            return;
+        }
+
+        insertHtmlIntoEditor(`<div class="cms-inline-video cms-inline-youtube" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:16px;"><iframe src="${embedUrl}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"></iframe></div>`);
+        setYoutubeEmbedOpen(false);
+        setYoutubeUrl('');
+        messageApi.success('Đã nhúng video YouTube vào nội dung.');
+    };
+
     const handleSubmit = async () => {
         const values = await form.validateFields();
 
@@ -309,7 +363,6 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
             meta_description: values.meta_description || null,
             template: values.template || null,
             featured_media_id: values.featured_media_id || null,
-            publish_at: values.publish_at || null,
         });
 
         form.resetFields();
@@ -342,52 +395,44 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         >
             {messageContextHolder}
             <Form form={form} layout="vertical" initialValues={editingPage}>
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề trang' }]}>
-                            <Input placeholder="VD: Trang giới thiệu" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug' }]}>
-                            <Input placeholder="trang-gioi-thieu" onChange={handleSlugChange} />
-                        </Form.Item>
-                    </Col>
-                </Row>
+                <div className="cms-post-form-shell">
+                    <Card size="small" className="cms-post-form-card" title="Thông tin cơ bản">
+                        <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề trang' }]}>
+                                    <Input placeholder="VD: Trang giới thiệu" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug' }]}>
+                                    <Input placeholder="trang-gioi-thieu" onChange={handleSlugChange} />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
+                                    <Select
+                                        options={[
+                                            { label: 'Bản nháp', value: 'draft' },
+                                            { label: 'Đã xuất bản', value: 'published' },
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="template" label="Template">
+                                    <Input placeholder="default / landing / about" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24}>
+                                <Form.Item name="excerpt" label="Mô tả ngắn" style={{ marginBottom: 0 }}>
+                                    <Input.TextArea rows={3} placeholder="Tóm tắt ngắn dùng cho hero/SEO/listing" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
 
-                <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-                    <Select
-                        options={[
-                            { label: 'Bản nháp', value: 'draft' },
-                            { label: 'Đã xuất bản', value: 'published' },
-                        ]}
-                    />
-                </Form.Item>
-
-                <Form.Item name="excerpt" label="Mô tả ngắn">
-                    <Input.TextArea rows={3} placeholder="Tóm tắt ngắn dùng cho hero/SEO/listing" />
-                </Form.Item>
-
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item name="meta_title" label="SEO Title">
-                            <Input placeholder="SEO title" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item name="template" label="Template">
-                            <Input placeholder="default / landing / about" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Form.Item name="meta_description" label="SEO Description">
-                    <Input.TextArea rows={3} placeholder="Meta description cơ bản" />
-                </Form.Item>
-
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item name="featured_media_id" label="Featured Media">
+                    <Card size="small" className="cms-post-form-card" title="Ảnh đại diện bài viết">
+                        <Form.Item name="featured_media_id" label="Chọn media đại diện" style={{ marginBottom: 0 }}>
                             <Select
                                 allowClear
                                 showSearch
@@ -399,57 +444,107 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                                 }))}
                             />
                         </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item name="publish_at" label="Publish At">
-                            <Input type="datetime-local" />
+                    </Card>
+
+                    <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
+                        <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_title" label="SEO Title">
+                                    <Input.TextArea rows={3} placeholder="SEO title" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
+                                    <Input.TextArea rows={3} placeholder="Meta description cơ bản" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Card
+                        size="small"
+                        className="cms-post-form-card cms-post-form-card-editor"
+                        title={(
+                            <Space size={8}>
+                                <span>Nội dung chi tiết</span>
+                                <Tooltip title="Sau khi upload, hình ảnh hoặc video sẽ được chèn ngay vào vị trí nội dung hiện tại. Video YouTube có thể nhúng nhanh bằng nút riêng, không cần mở toolbar media của CKEditor.">
+                                    <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
+                                </Tooltip>
+                            </Space>
+                        )}
+                    >
+                        <div className="cms-editor-upload-panel">
+                            <Space wrap className="cms-editor-toolbar-row" size={12}>
+                                <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
+                                <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
+                                <Button type="default" disabled={!canManage || uploadingAsset === 'video'} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
+                                <Button type="default" disabled={!canManage || uploadingAsset === 'image'} loading={uploadingAsset === 'video'} onClick={() => openAssetPicker(videoInputRef)}>Upload video vào nội dung</Button>
+                                <Button type="default" disabled={!canManage || Boolean(uploadingAsset)} onClick={() => {
+                                    const editor = editorInstanceRef.current;
+
+                                    if (editor) {
+                                        captureEditorSelection(editor);
+                                    }
+
+                                    setYoutubeEmbedOpen(true);
+                                }}>
+                                    Nhúng video YouTube
+                                </Button>
+                            </Space>
+                        </div>
+
+                        <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
+                            <div className="cms-editor-shell">
+                                <CKEditor
+                                    key={editorInstanceKey}
+                                    editor={ClassicEditor}
+                                    config={editorConfig}
+                                    data={editorInitialData}
+                                    disabled={!canManage}
+                                    onReady={(editor) => {
+                                        editorInstanceRef.current = editor;
+
+                                        captureEditorSelection(editor);
+                                        editor.model.document.selection.on('change:range', () => {
+                                            captureEditorSelection(editor);
+                                        });
+                                    }}
+                                    onChange={(_, editor) => {
+                                        captureEditorSelection(editor);
+                                        syncEditorBodyToForm(editor);
+                                    }}
+                                />
+                            </div>
                         </Form.Item>
-                    </Col>
-                </Row>
-
-                <Divider style={{ marginTop: 8 }}>Nội dung chi tiết</Divider>
-
-                <div className="cms-editor-upload-panel">
-                    <div className="cms-editor-upload-copy">
-                        <strong>Chèn hình ảnh và video vào nội dung</strong>
-                        <span>Dùng các nút bên dưới để upload media vào CMS rồi chèn trực tiếp vào bài soạn.</span>
-                    </div>
-                    <div className="cms-editor-toolbar-row">
-                        <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
-                        <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
-                        <Button type="default" disabled={!canManage || uploadingAsset === 'video'} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
-                        <Button type="default" disabled={!canManage || uploadingAsset === 'image'} loading={uploadingAsset === 'video'} onClick={() => openAssetPicker(videoInputRef)}>Upload video vào nội dung</Button>
-                    </div>
+                        <Form.Item name="body" hidden>
+                            <Input.TextArea />
+                        </Form.Item>
+                    </Card>
                 </div>
-
-                <Form.Item label="Nội dung">
-                    <div className="cms-editor-shell">
-                        <CKEditor
-                            key={editorInstanceKey}
-                            editor={ClassicEditor}
-                            config={editorConfig}
-                            data={editorInitialData}
-                            disabled={!canManage}
-                            onReady={(editor) => {
-                                editorInstanceRef.current = editor;
-
-                                captureEditorSelection(editor);
-                                editor.model.document.selection.on('change:range', () => {
-                                    captureEditorSelection(editor);
-                                });
-                            }}
-                            onChange={(_, editor) => {
-                                captureEditorSelection(editor);
-                                syncEditorBodyToForm(editor);
-                            }}
-                        />
-                    </div>
-                </Form.Item>
-                <Form.Item name="body" hidden>
-                    <Input.TextArea />
-                </Form.Item>
-                <div className="cms-editor-hint">Sau khi upload, hình ảnh hoặc video sẽ được chèn ngay vào vị trí nội dung hiện tại. Với video ngoài hệ thống, anh vẫn có thể dán URL nếu toolbar media hỗ trợ nguồn đó.</div>
             </Form>
+
+            <Modal
+                title="Nhúng video từ YouTube"
+                open={youtubeEmbedOpen}
+                onCancel={() => {
+                    setYoutubeEmbedOpen(false);
+                    setYoutubeUrl('');
+                }}
+                onOk={handleInsertYoutubeEmbed}
+                okText="Nhúng vào nội dung"
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    <Input.TextArea
+                        rows={4}
+                        value={youtubeUrl}
+                        onChange={(event) => setYoutubeUrl(event.target.value)}
+                        onPressEnter={handleInsertYoutubeEmbed}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                </Space>
+            </Modal>
         </Drawer>
     );
 }

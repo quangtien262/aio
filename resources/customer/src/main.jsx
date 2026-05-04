@@ -4,8 +4,13 @@ import 'antd/dist/reset.css';
 import CustomerApp from './app/CustomerApp';
 import './styles/index.css';
 
-ReactDOM.createRoot(document.getElementById('customer-root')).render(
+const customerRoot = document.getElementById('customer-root');
+
+ReactDOM.createRoot(customerRoot).render(
     <React.StrictMode>
-        <CustomerApp />
+        <CustomerApp
+            basename={customerRoot?.dataset.basename || '/account'}
+            apiBase={customerRoot?.dataset.apiBase || '/account/api'}
+        />
     </React.StrictMode>
 );

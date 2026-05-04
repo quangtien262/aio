@@ -35,6 +35,22 @@ php artisan key:generate
 npm install
 npm run dev
 php artisan serve
+
+### Translation Smoke Tests
+
+For the admin `Frontend translations` flow, run the focused backend and browser checks below:
+
+```bash
+php artisan test tests/Feature/ThemeContentTranslationTest.php
+npm run test:browser:install
+npm run test:browser:admin-translations
+```
+
+For CI or a clean local verification pass, use the single command below. It refreshes the database, seeds demo data, runs the focused feature test, builds assets, serves Laravel locally, and executes the Playwright smoke spec:
+
+```bash
+composer test:translations:ci
+```
 ```
 
 ## Tài liệu sơ đồ

@@ -97,15 +97,15 @@
             <div class="wrap utility-inner">
                 <div class="utility-group">
                     <span>{{ $contactLocation }}</span>
-                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? 'Đã đăng ký bản tin' : 'Đăng ký bản tin' }}</button>
+                    <button type="button" class="utility-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('common.newsletter_subscribed') : __('common.newsletter_subscribe') }}</button>
                 </div>
                 <div class="utility-actions">
-                    <span>Hotline: {{ $contactHotline }}</span>
-                    <span>Email: {{ $contactEmail }}</span>
-                    <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>
+                    <span>@themeT('common.hotline_label', 'Hotline'): {{ $contactHotline }}</span>
+                    <span>@themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
+                    <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài khoản')</a>
                     <form class="utility-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
                         @csrf
-                        <button type="submit" class="utility-action">Đăng xuất</button>
+                        <button type="submit" class="utility-action">@themeT('common.logout', 'Đăng xuất')</button>
                     </form>
                 </div>
             </div>
@@ -113,25 +113,25 @@
 
         <header class="header">
             <div class="wrap header-main">
-                <a class="brand" href="/">
+                <a class="brand" href="{{ route('site.home') }}">
                     <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'TH0001') }}">
                 </a>
 
                 <form class="searchbar" method="GET" action="{{ route('site.catalog.search') }}" role="search">
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Tìm kiếm sản phẩm" aria-label="Tìm kiếm sản phẩm" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
-                    <button type="submit" aria-label="Tìm kiếm">⌕</button>
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                    <button type="submit" aria-label="@themeT('common.search_button', 'Tìm kiếm')">⌕</button>
                 </form>
 
-                <a class="cart-link" href="{{ route('site.cart.index') }}">GIỎ HÀNG ({{ $cartSummary['count'] ?? 0 }})</a>
+                <a class="cart-link" href="{{ route('site.cart.index') }}">@themeT('common.cart_label', 'GIỎ HÀNG') ({{ $cartSummary['count'] ?? 0 }})</a>
             </div>
         </header>
 
         <nav class="nav">
             <div class="wrap nav-inner">
-                <div class="nav-category">DANH MỤC</div>
+                <div class="nav-category">@themeT('common.categories', 'DANH MỤC')</div>
                 <div class="nav-links">
                     @foreach ($topMenu as $item)
-                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? 'Menu' }}</a>
+                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
                     @endforeach
                 </div>
             </div>
@@ -139,11 +139,11 @@
 
         <main class="wrap">
             <div class="breadcrumb">
-                <a href="/">Trang chủ</a>
+                <a href="{{ route('site.home') }}">@themeT('common.home', 'Trang chủ')</a>
                 <span>›</span>
-                <a href="{{ route('site.cart.index') }}">Giỏ hàng</a>
+                <a href="{{ route('site.cart.index') }}">@themeT('cart.breadcrumb', 'Giỏ hàng')</a>
                 <span>›</span>
-                <span>Thanh toán</span>
+                <span>@themeT('checkout.breadcrumb', 'Thanh toán')</span>
             </div>
 
             @if ($errors->any())
@@ -153,33 +153,33 @@
             <section class="checkout-layout">
                 <form method="POST" action="{{ route('site.checkout.store') }}" class="checkout-panel">
                     @csrf
-                    <h1 class="checkout-title">Thanh toán đơn hàng</h1>
+                    <h1 class="checkout-title">@themeT('checkout.title', 'Thanh toán đơn hàng')</h1>
 
-                    <h2 class="section-title">Thông tin nhận hàng</h2>
+                    <h2 class="section-title">@themeT('checkout.shipping_info', 'Thông tin nhận hàng')</h2>
                     <div class="form-grid">
                         <div class="field">
-                            <label for="customer_name">Họ và tên</label>
+                            <label for="customer_name">@themeT('checkout.name', 'Họ và tên')</label>
                             <input id="customer_name" name="customer_name" value="{{ $form['customer_name'] ?? '' }}" required>
                         </div>
                         <div class="field">
-                            <label for="customer_phone">Số điện thoại</label>
+                            <label for="customer_phone">@themeT('checkout.phone', 'Số điện thoại')</label>
                             <input id="customer_phone" name="customer_phone" value="{{ $form['customer_phone'] ?? '' }}" required>
                         </div>
                         <div class="field full">
-                            <label for="customer_email">Email</label>
+                            <label for="customer_email">@themeT('modal.email', 'Email')</label>
                             <input id="customer_email" type="email" name="customer_email" value="{{ $form['customer_email'] ?? '' }}">
                         </div>
                         <div class="field full">
-                            <label for="delivery_address">Địa chỉ nhận hàng / nhận mã</label>
+                            <label for="delivery_address">@themeT('checkout.address', 'Địa chỉ nhận hàng / nhận mã')</label>
                             <textarea id="delivery_address" name="delivery_address" required>{{ $form['delivery_address'] ?? '' }}</textarea>
                         </div>
                         <div class="field full">
-                            <label for="note">Ghi chú cho đơn hàng</label>
+                            <label for="note">@themeT('checkout.note', 'Ghi chú cho đơn hàng')</label>
                             <textarea id="note" name="note">{{ $form['note'] ?? '' }}</textarea>
                         </div>
                     </div>
 
-                    <h2 class="section-title">Phương thức thanh toán</h2>
+                    <h2 class="section-title">@themeT('checkout.payment_method', 'Phương thức thanh toán')</h2>
                     <div class="payment-grid">
                         @foreach ($paymentMethods as $value => $paymentMethod)
                             <label class="payment-option">
@@ -193,30 +193,30 @@
                     </div>
 
                     <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
-                        <button type="submit" class="submit-button">Xác nhận đặt hàng</button>
-                        <a href="{{ route('site.cart.index') }}" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border:1px solid #b9d99c;color:#4e9620;font-weight:700;">Quay lại giỏ hàng</a>
+                        <button type="submit" class="submit-button">@themeT('checkout.submit', 'Xác nhận đặt hàng')</button>
+                        <a href="{{ route('site.cart.index') }}" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border:1px solid #b9d99c;color:#4e9620;font-weight:700;">@themeT('checkout.back_to_cart', 'Quay lại giỏ hàng')</a>
                     </div>
                 </form>
 
                 <aside class="summary-panel">
-                    <h2>Đơn hàng của bạn</h2>
+                    <h2>@themeT('checkout.summary_title', 'Đơn hàng của bạn')</h2>
                     <div class="summary-items">
                         @foreach ($cartItems as $item)
                             <div class="summary-item">
                                 <div>
                                     <strong>{{ $item['title'] }}</strong>
-                                    <span>Số lượng: {{ $item['quantity'] }}</span>
+                                    <span>{{ __('checkout.quantity', ['count' => $item['quantity']]) }}</span>
                                 </div>
                                 <div class="summary-price">{{ $formatCurrency(((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 0))) }}</div>
                             </div>
                         @endforeach
                     </div>
                     <div class="summary-line">
-                        <span>Tổng số sản phẩm</span>
+                        <span>@themeT('checkout.total_products', 'Tổng số sản phẩm')</span>
                         <strong>{{ $cartSummary['count'] ?? 0 }}</strong>
                     </div>
                     <div class="summary-line">
-                        <span>Tạm tính</span>
+                        <span>@themeT('cart.subtotal', 'Tạm tính')</span>
                         <strong>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
                     </div>
                 </aside>

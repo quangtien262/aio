@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Core\Themes\ThemeTranslationService;
+use App\Support\FrontendLocalization;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +24,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        app()->setLocale(FrontendLocalization::defaultLocale());
+        URL::defaults(FrontendLocalization::routeParameterDefaults(FrontendLocalization::defaultLocale()));
+        Blade::directive('themeT', function (string $expression): string {
+            return "<?php echo e(app(".ThemeTranslationService::class."::class)->bladeText((string) data_get(\$activeTheme ?? [], 'key', 'TH0001'), app()->getLocale(), {$expression})); ?>";
+        });
+
         $migrationPaths = collect(File::directories(base_path('modules')))
             ->map(fn (string $modulePath): string => $modulePath.DIRECTORY_SEPARATOR.'database'.DIRECTORY_SEPARATOR.'migrations')
             ->filter(fn (string $path): bool => File::isDirectory($path))
@@ -39,6 +49,12 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 $this->loadViewsFrom($viewsPath, 'theme-'.strtolower(basename($themePath)));
+
+                $langPath = $themePath.DIRECTORY_SEPARATOR.'lang';
+
+                if (File::isDirectory($langPath)) {
+                    $this->loadJsonTranslationsFrom($langPath);
+                }
             });
     }
 }

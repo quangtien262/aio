@@ -24,6 +24,8 @@ class ProductIndexController
                 'stock' => $product->stock,
                 'short_description' => $product->short_description,
                 'detail_content' => $product->detail_content,
+                'meta_title' => $product->meta_title,
+                'meta_description' => $product->meta_description,
                 'highlights' => $product->highlights,
                 'usage_terms' => $product->usage_terms,
                 'usage_location' => $product->usage_location,

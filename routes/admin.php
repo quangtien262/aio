@@ -48,6 +48,9 @@ use App\Http\Controllers\Admin\Api\SiteBannerManagementController;
 use App\Http\Controllers\Admin\Api\ThemeActivationController;
 use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
+use App\Http\Controllers\Admin\Api\ThemeLocaleController;
+use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
+use App\Http\Controllers\Admin\Api\ThemeTranslationManagementController;
 use App\Http\Controllers\Admin\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
 
@@ -110,6 +113,21 @@ Route::prefix('admin')
                 Route::get('/modules', ModuleRegistryController::class)
                     ->middleware('admin.permission:store.module.view')
                     ->name('modules');
+                Route::get('/themes/{key}/translations', ThemeTranslationIndexController::class)
+                    ->middleware('admin.permission:theme.view')
+                    ->name('themes.translations.index');
+                Route::put('/themes/{key}/translations/{locale}', [ThemeTranslationManagementController::class, 'update'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.translations.update');
+                Route::get('/themes/locales', [ThemeLocaleController::class, 'index'])
+                    ->middleware('admin.permission:theme.view')
+                    ->name('themes.locales.index');
+                Route::post('/themes/locales', [ThemeLocaleController::class, 'store'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.locales.store');
+                Route::put('/themes/locales/{code}', [ThemeLocaleController::class, 'update'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.locales.update');
                 Route::post('/modules/{key}/install', [ModuleLifecycleController::class, 'install'])
                     ->middleware('admin.permission:store.module.install')
                     ->name('modules.install');

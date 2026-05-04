@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Core\Themes\ThemeRegistry;
+use App\Core\Themes\ThemeTranslationService;
 use App\Mail\ContactInquiryMail;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -16,6 +17,8 @@ use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
+use App\Support\FrontendLocalization;
+use App\Support\BusinessContentTranslationService;
 use App\Support\OrderConfirmationSender;
 use App\Support\StorefrontCart;
 use Illuminate\Contracts\View\View;
@@ -33,6 +36,8 @@ class CmsSiteController
 
     public function __construct(
         private readonly ThemeRegistry $themeRegistry,
+        private readonly ThemeTranslationService $themeTranslationService,
+        private readonly BusinessContentTranslationService $businessContentTranslationService,
         private readonly StorefrontCart $storefrontCart,
         private readonly OrderConfirmationSender $orderConfirmationSender,
     ) {
@@ -66,8 +71,10 @@ class CmsSiteController
         return view('site');
     }
 
-    public function page(string $slug): View
+    public function page(Request $request): View
     {
+        $slug = (string) $request->route('slug');
+
         $page = CmsPage::query()->with('featuredMedia')->where('slug', $slug)->where('status', 'published')->firstOrFail();
 
         return $this->renderContent('page', $page);
@@ -111,6 +118,12 @@ class CmsSiteController
         $this->applyWebsiteScope($postCategories, $websiteKey);
 
         $postCategories = $postCategories->get();
+        $postCategories = $postCategories->map(function (CmsCategory $category) use ($websiteKey): CmsCategory {
+            $localized = clone $category;
+            $localized->name = $this->contentText($websiteKey, sprintf('cms_category.%d.name', $category->id), $category->name);
+
+            return $localized;
+        });
 
         return $this->renderListing('posts', 'Tin tức', 'Danh sách bài viết đã xuất bản.', $posts, [
             'siteProfile' => $siteProfile,
@@ -124,8 +137,10 @@ class CmsSiteController
         ]);
     }
 
-    public function post(string $slug): View
+    public function post(Request $request): View
     {
+        $slug = (string) $request->route('slug');
+
         $post = CmsPost::query()->with(['category', 'featuredMedia'])->where('slug', $slug)->where('status', 'published')->firstOrFail();
 
         return $this->renderContent('post', $post);
@@ -168,11 +183,14 @@ class CmsSiteController
             ]);
         }
 
-        return redirect('/lien-he')->with('contact_status', 'Đã gửi yêu cầu liên hệ. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.');
+        return app(\Illuminate\Routing\Redirector::class)->to($request->headers->get('referer', route('site.home')))
+            ->with('contact_status', 'Đã gửi yêu cầu liên hệ. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.');
     }
 
-    public function category(Request $request, string $slug): View
+    public function category(Request $request): View
     {
+        $slug = (string) $request->route('slug');
+
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
@@ -187,6 +205,7 @@ class CmsSiteController
         $category = $categoryQuery->where('slug', $slug)->where('is_active', true)->firstOrFail();
         $sidebarRootCategory = $this->resolveTopAncestorCategory($category, $websiteKey);
         $sidebarCategories = $this->resolveCategorySidebarItems($sidebarRootCategory, $category, $websiteKey);
+        $category = $this->localizeCategoryModel($category, $websiteKey);
 
         $categoryIds = $category->children->pluck('id')->prepend($category->id)->all();
         $baseProductsQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true)->whereIn('catalog_category_id', $categoryIds);
@@ -287,7 +306,7 @@ class CmsSiteController
             $this->applyWebsiteScope($productCountQuery, $websiteKey);
 
             return [
-                'label' => $item->name,
+                'label' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $item->id), $item->name),
                 'url' => $this->categoryUrl($item->slug),
                 'count' => $productCountQuery->count(),
                 'active' => $item->id === $currentCategory->id,
@@ -295,8 +314,10 @@ class CmsSiteController
         })->all();
     }
 
-    public function product(string $slug): View
+    public function product(Request $request): View
     {
+        $slug = (string) $request->route('slug');
+
         $product = $this->resolveProductPreviewModel($slug, false);
 
         return $this->renderProductDetailView($product, false);
@@ -317,6 +338,7 @@ class CmsSiteController
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
+        $product = $this->localizeProductModel($product, $websiteKey);
 
         $relatedProductsQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true)->where('id', '!=', $product->id);
         $this->applyWebsiteScope($relatedProductsQuery, $websiteKey);
@@ -427,7 +449,8 @@ class CmsSiteController
             ->orderBy('name');
         $this->applyWebsiteScope($searchCategories, $websiteKey);
 
-        $searchCategories = $searchCategories->get(['id', 'name', 'slug']);
+        $searchCategories = $searchCategories->get(['id', 'name', 'slug'])
+            ->map(fn (CatalogCategory $category): CatalogCategory => $this->localizeCategoryModel($category, $websiteKey));
 
         return $this->renderThemeCatalogView('search', $activeTheme, [
             'siteProfile' => $siteProfile,
@@ -479,6 +502,9 @@ class CmsSiteController
 
         return response()->json([
             'data' => $products->map(function (CatalogProduct $product): array {
+                $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
+                $product = $this->localizeProductModel($product, $websiteKey);
+
                 return [
                     'label' => $product->name,
                     'value' => $product->name,
@@ -508,8 +534,10 @@ class CmsSiteController
         ]);
     }
 
-    public function addToCart(Request $request, string $slug): RedirectResponse
+    public function addToCart(Request $request): RedirectResponse
     {
+        $slug = (string) $request->route('slug');
+
         $product = $this->resolvePurchasableProduct($slug);
         $quantity = $this->validateCartQuantity($request, $product);
 
@@ -518,8 +546,10 @@ class CmsSiteController
         return back()->with('cart_success', 'Đã thêm '.$quantity.' sản phẩm vào giỏ hàng.');
     }
 
-    public function buyNow(Request $request, string $slug): RedirectResponse
+    public function buyNow(Request $request): RedirectResponse
     {
+        $slug = (string) $request->route('slug');
+
         $product = $this->resolvePurchasableProduct($slug);
         $quantity = $this->validateCartQuantity($request, $product);
 
@@ -536,8 +566,10 @@ class CmsSiteController
             ->with('cart_success', 'Đã thêm sản phẩm vào giỏ và chuyển bạn tới bước thanh toán.');
     }
 
-    public function updateCartItem(Request $request, int $productId): RedirectResponse
+    public function updateCartItem(Request $request): RedirectResponse
     {
+        $productId = (int) $request->route('productId');
+
         $validated = $request->validate([
             'quantity' => ['required', 'integer', 'min:1', 'max:99'],
         ]);
@@ -549,8 +581,10 @@ class CmsSiteController
         return back()->with('cart_success', 'Đã cập nhật số lượng sản phẩm trong giỏ hàng.');
     }
 
-    public function removeCartItem(int $productId): RedirectResponse
+    public function removeCartItem(Request $request): RedirectResponse
     {
+        $productId = (int) $request->route('productId');
+
         $this->storefrontCart->remove($productId);
 
         return back()->with('cart_success', 'Đã xóa sản phẩm khỏi giỏ hàng.');
@@ -680,13 +714,23 @@ class CmsSiteController
 
     private function renderContent(string $contentType, object $entry, array $extra = []): View
     {
-        $siteProfile = $extra['siteProfile'] ?? SiteProfile::query()->first();
+        $siteProfile = $this->localizeSiteProfile($extra['siteProfile'] ?? SiteProfile::query()->first());
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
-        $menus = $extra['menus'] ?? $this->resolveMenus($this->resolveWebsiteKey($siteProfile));
+        $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
         $viewName = $this->resolveThemeCmsView($activeTheme) ?? 'site-cms';
 
+        if ($entry instanceof CmsPage) {
+            $entry = $this->localizePageModel($entry, $websiteKey);
+        }
+
+        if ($entry instanceof CmsPost) {
+            $entry = $this->localizePostModel($entry, $websiteKey);
+        }
+
         if ($contentType === 'page' && ! array_key_exists('latestPosts', $extra)) {
-            $extra['latestPosts'] = CmsPost::query()->where('status', 'published')->latest('publish_at')->take(3)->get();
+            $extra['latestPosts'] = CmsPost::query()->where('status', 'published')->latest('publish_at')->take(3)->get()
+                ->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
         }
 
         if ($contentType === 'post' && $entry instanceof CmsPost && ! array_key_exists('relatedPosts', $extra)) {
@@ -708,10 +752,17 @@ class CmsSiteController
 
     private function renderListing(string $contentType, string $title, string $description, mixed $items, array $extra = []): View
     {
-        $siteProfile = $extra['siteProfile'] ?? SiteProfile::query()->first();
+        $siteProfile = $this->localizeSiteProfile($extra['siteProfile'] ?? SiteProfile::query()->first());
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
-        $menus = $extra['menus'] ?? $this->resolveMenus($this->resolveWebsiteKey($siteProfile));
+        $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
         $viewName = $this->resolveThemeCmsView($activeTheme) ?? 'site-cms';
+
+        if (is_object($items) && method_exists($items, 'getCollection') && method_exists($items, 'setCollection')) {
+            $items->setCollection($items->getCollection()->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey)));
+        } elseif ($items instanceof Collection) {
+            $items = $items->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
+        }
 
         return view($viewName, array_merge([
             'contentType' => $contentType,
@@ -721,8 +772,10 @@ class CmsSiteController
             'menus' => $menus,
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             'isPreview' => false,
-            'pageTitle' => $title,
-            'pageDescription' => $description,
+            'pageTitle' => $contentType === 'posts' ? $this->themeText('menu.default.blog', $title, 'TH0001') : $title,
+            'pageDescription' => $contentType === 'posts'
+                ? $this->themeText('cms.posts.description', $description, 'TH0001')
+                : $description,
         ], $extra));
     }
 
@@ -762,7 +815,7 @@ class CmsSiteController
 
         $viewName = "theme-{$themeKey}::home";
 
-        return view()->exists($viewName) ? $viewName : null;
+        return app(\Illuminate\Contracts\View\Factory::class)->exists($viewName) ? $viewName : null;
     }
 
     private function resolveThemeCmsView(?array $activeTheme): ?string
@@ -775,7 +828,7 @@ class CmsSiteController
 
         $viewName = "theme-{$themeKey}::cms";
 
-        return view()->exists($viewName) ? $viewName : null;
+        return app(\Illuminate\Contracts\View\Factory::class)->exists($viewName) ? $viewName : null;
     }
 
     private function resolveRelatedPosts(CmsPost $post, ?SiteProfile $siteProfile): Collection
@@ -796,7 +849,7 @@ class CmsSiteController
         $sameCategory = $sameCategoryQuery->take(3)->get();
 
         if ($sameCategory->count() >= 3) {
-            return $sameCategory;
+            return $sameCategory->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey));
         }
 
         $fallbackQuery = CmsPost::query()
@@ -809,6 +862,7 @@ class CmsSiteController
 
         return $sameCategory
             ->concat($fallbackQuery->take(3 - $sameCategory->count())->get())
+            ->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))
             ->values();
     }
 
@@ -846,8 +900,8 @@ class CmsSiteController
             'side_banners' => $sideBanners,
             'featured_products' => $featuredProducts,
             'featured_title' => collect($featuredProducts)->contains(fn (array $product): bool => (bool) ($product['is_featured'] ?? false))
-                ? 'Sản phẩm nổi bật'
-                : 'Sản phẩm mới nhất',
+                ? $this->themeText('theme.fallback.featured_products', 'Sản phẩm nổi bật', $themeKey)
+                : $this->themeText('theme.fallback.latest_products', 'Sản phẩm mới nhất', $themeKey),
             'sections' => $sections,
             'brand_highlights' => $this->resolveBrandHighlights($parentCategories),
         ];
@@ -855,6 +909,8 @@ class CmsSiteController
 
     private function resolveThemeShellData(?SiteProfile $siteProfile, ?array $activeTheme, array $menus): array
     {
+        $siteProfile = $this->localizeSiteProfile($siteProfile);
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $branding = array_merge([
             'company_name' => $siteProfile?->site_name ?? 'AIO Website',
             'logo_url' => self::DEFAULT_BRAND_ASSET,
@@ -864,7 +920,13 @@ class CmsSiteController
             'support_email' => config('mail.from.address', 'cs@aio.local'),
             'support_location' => 'Hà Nội',
         ], $siteProfile?->branding ?? []);
-        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+
+        foreach (['company_name', 'slogan', 'support_location'] as $field) {
+            if (filled($branding[$field] ?? null)) {
+                $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
+            }
+        }
+
         $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
         /** @var Customer|null $customer */
         $customer = auth('customer')->user();
@@ -929,47 +991,69 @@ class CmsSiteController
 
     private function resolveTopMenuItems(array $menus): array
     {
+        $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
         $items = collect($menus['primary-navigation'] ?? $menus['primary'] ?? [])
             ->filter(fn (mixed $item): bool => is_array($item))
             ->values();
 
         if ($items->isEmpty()) {
             return [
-                ['label' => 'Tin tức', 'url' => '/tin-tuc', 'target' => '_self'],
-                ['label' => 'Giới thiệu', 'url' => '/gioi-thieu', 'target' => '_self'],
-                ['label' => 'Liên hệ', 'url' => '/lien-he', 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.blog', 'Tin tức', 'TH0001'), 'url' => route('site.blog.index'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.about', 'Giới thiệu', 'TH0001'), 'url' => $this->localizedStaticPageUrl('gioi-thieu'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.contact', 'Liên hệ', 'TH0001'), 'url' => $this->localizedStaticPageUrl('lien-he'), 'target' => '_self'],
             ];
         }
 
-        return $items->all();
+        return $items->values()->map(fn (array $item, int $index): array => [
+            'label' => $this->contentText($websiteKey, sprintf('cms_menu.primary-navigation.%d.label', $index), (string) ($item['label'] ?? '')),
+            'url' => $this->localizedUrl((string) ($item['url'] ?? '#')),
+            'target' => $item['target'] ?? '_self',
+        ])->all();
     }
 
     private function resolveProductMenuItems(array $menus, Collection $parentCategories): array
     {
+        $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
         $configured = collect($menus['product-navigation'] ?? [])->filter(fn (mixed $item): bool => is_array($item))->values();
+        $validCategorySlugs = $parentCategories
+            ->flatMap(fn (CatalogCategory $parent): array => array_merge([$parent->slug], $parent->children->pluck('slug')->all()))
+            ->filter(fn (mixed $slug): bool => is_string($slug) && $slug !== '')
+            ->values()
+            ->all();
 
         if ($configured->isNotEmpty()) {
-            return $configured->map(function (array $item, int $index): array {
+            return $configured->map(function (array $item, int $index) use ($validCategorySlugs, $websiteKey): array {
+                $children = collect($item['children'] ?? [])->filter(fn (mixed $child): bool => is_array($child))->values()->map(fn (array $child, int $childIndex): array => [
+                    'label' => $this->contentText($websiteKey, sprintf('cms_menu.product-navigation.%d.children.%d.label', $index, $childIndex), (string) ($child['label'] ?? '')),
+                    'url' => $this->localizedUrl((string) ($child['url'] ?? '#')),
+                    'target' => $child['target'] ?? '_self',
+                ])->values()->all();
+                $resolvedUrl = $this->localizedUrl((string) ($item['url'] ?? '#'));
+
+                if ($this->hasMissingCategorySlug($resolvedUrl, $validCategorySlugs) && ($children[0]['url'] ?? null)) {
+                    $resolvedUrl = $children[0]['url'];
+                }
+
                 return [
-                    'label' => $item['label'] ?? 'Danh mục',
-                    'url' => $item['url'] ?? '#',
+                    'label' => $this->contentText($websiteKey, sprintf('cms_menu.product-navigation.%d.label', $index), (string) ($item['label'] ?? 'Danh mục')),
+                    'url' => $resolvedUrl,
                     'target' => $item['target'] ?? '_self',
                     'icon' => $item['icon'] ?? ($index === 0 ? '🔥' : '▣'),
                     'highlight' => (bool) ($item['highlight'] ?? false),
-                    'children' => collect($item['children'] ?? [])->filter(fn (mixed $child): bool => is_array($child))->values()->all(),
+                    'children' => $children,
                 ];
             })->all();
         }
 
-        return $parentCategories->map(function (CatalogCategory $parent, int $index): array {
+        return $parentCategories->map(function (CatalogCategory $parent, int $index) use ($websiteKey): array {
             return [
-                'label' => $parent->name,
+                'label' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $parent->id), $parent->name),
                 'url' => $this->categoryUrl($parent->slug),
                 'target' => '_self',
                 'icon' => $index === 0 ? '🔥' : '▣',
                 'highlight' => $index === 0,
                 'children' => $parent->children->map(fn (CatalogCategory $child): array => [
-                    'label' => $child->name,
+                    'label' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $child->id), $child->name),
                     'url' => $this->categoryUrl($child->slug),
                     'target' => '_self',
                 ])->all(),
@@ -993,24 +1077,24 @@ class CmsSiteController
 
         if (! $banner) {
             return [
-                'eyebrow' => 'Flash sale',
-                'title' => 'Deal sốc cho sản phẩm mới',
-                'summary' => 'Tạo data test từ trang quản lý theme để đổ nội dung thật cho TH0001.',
-                'badge' => 'Chỉ từ 199K',
-                'cta' => 'Mua ngay',
+                'eyebrow' => $this->themeText('theme.fallback.hero_eyebrow', 'Flash sale', $themeKey),
+                'title' => $this->themeText('theme.fallback.hero_title', 'Deal sốc cho sản phẩm mới', $themeKey),
+                'summary' => $this->themeText('theme.fallback.hero_summary', 'Tạo data test từ trang quản lý theme để đổ nội dung thật cho TH0001.', $themeKey),
+                'badge' => $this->themeText('theme.fallback.hero_badge', 'Chỉ từ 199K', $themeKey),
+                'cta' => $this->themeText('theme.fallback.hero_cta', 'Mua ngay', $themeKey),
                 'image' => 'https://picsum.photos/seed/th0001-default-hero/960/520',
                 'link_url' => '#featured',
             ];
         }
 
         return [
-            'eyebrow' => data_get($banner->metadata, 'eyebrow', 'Flash sale'),
-            'title' => $banner->title ?? 'Deal nổi bật',
-            'summary' => data_get($banner->metadata, 'summary', $banner->subtitle ?? ''),
-            'badge' => $banner->badge ?? 'Ưu đãi hot',
-            'cta' => data_get($banner->metadata, 'button_label', 'Mua ngay'),
+            'eyebrow' => $this->contentText($websiteKey, sprintf('site_banner.%d.metadata.eyebrow', $banner->id), (string) data_get($banner->metadata, 'eyebrow', 'Flash sale')),
+            'title' => $this->contentText($websiteKey, sprintf('site_banner.%d.title', $banner->id), $banner->title ?? 'Deal nổi bật'),
+            'summary' => $this->contentText($websiteKey, sprintf('site_banner.%d.metadata.summary', $banner->id), (string) data_get($banner->metadata, 'summary', $banner->subtitle ?? '')),
+            'badge' => $this->contentText($websiteKey, sprintf('site_banner.%d.badge', $banner->id), $banner->badge ?? 'Ưu đãi hot'),
+            'cta' => $this->contentText($websiteKey, sprintf('site_banner.%d.metadata.button_label', $banner->id), (string) data_get($banner->metadata, 'button_label', 'Mua ngay')),
             'image' => $banner->image_url,
-            'link_url' => $banner->link_url ?: '#featured',
+            'link_url' => $this->localizedUrl((string) ($banner->link_url ?: '#featured')),
         ];
     }
 
@@ -1027,10 +1111,10 @@ class CmsSiteController
         $this->applyWebsiteScope($query, $websiteKey);
 
         $items = $query->take(4)->get()->map(fn (SiteBanner $banner): array => [
-            'title' => $banner->title ?? 'Banner phụ',
-            'subtitle' => $banner->subtitle ?? '',
+            'title' => $this->contentText($websiteKey, sprintf('site_banner.%d.title', $banner->id), $banner->title ?? $this->themeText('theme.fallback.side_banner_title', 'Banner phụ', $themeKey)),
+            'subtitle' => $this->contentText($websiteKey, sprintf('site_banner.%d.subtitle', $banner->id), $banner->subtitle ?? ''),
             'image' => $banner->image_url,
-            'link_url' => $banner->link_url ?: '#featured',
+            'link_url' => $this->localizedUrl((string) ($banner->link_url ?: '#featured')),
         ])->all();
 
         if ($items !== []) {
@@ -1038,10 +1122,10 @@ class CmsSiteController
         }
 
         return [
-            ['title' => 'Voucher cuối tuần', 'subtitle' => 'Ưu đãi theo preset', 'image' => 'https://picsum.photos/seed/th0001-default-side-1/360/180', 'link_url' => '#featured'],
-            ['title' => 'Hot trend', 'subtitle' => 'Block phụ 2', 'image' => 'https://picsum.photos/seed/th0001-default-side-2/360/180', 'link_url' => '#featured'],
-            ['title' => 'Top sản phẩm', 'subtitle' => 'Block phụ 3', 'image' => 'https://picsum.photos/seed/th0001-default-side-3/360/180', 'link_url' => '#featured'],
-            ['title' => 'Combo mới', 'subtitle' => 'Block phụ 4', 'image' => 'https://picsum.photos/seed/th0001-default-side-4/360/180', 'link_url' => '#featured'],
+            ['title' => $this->themeText('theme.fallback.side_banner_voucher', 'Voucher cuối tuần', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_voucher_subtitle', 'Ưu đãi theo preset', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-1/360/180', 'link_url' => '#featured'],
+            ['title' => $this->themeText('theme.fallback.side_banner_hot', 'Hot trend', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_hot_subtitle', 'Block phụ 2', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-2/360/180', 'link_url' => '#featured'],
+            ['title' => $this->themeText('theme.fallback.side_banner_top', 'Top sản phẩm', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_top_subtitle', 'Block phụ 3', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-3/360/180', 'link_url' => '#featured'],
+            ['title' => $this->themeText('theme.fallback.side_banner_combo', 'Combo mới', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_combo_subtitle', 'Block phụ 4', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-4/360/180', 'link_url' => '#featured'],
         ];
     }
 
@@ -1073,10 +1157,11 @@ class CmsSiteController
 
             return [
                 'theme' => $index % 2 === 0 ? 'lime' : 'pink',
-                'title' => $parent->name,
+                'title' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $parent->id), $parent->name),
                 'slug' => $parent->slug,
+                'url' => $this->categoryUrl($parent->slug),
                 'tabs' => ['Mới nhất', 'Bán chạy', 'Giá tốt'],
-                'filters' => $parent->children->take(4)->pluck('name')->all(),
+                'filters' => $parent->children->take(4)->map(fn (CatalogCategory $child): string => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $child->id), $child->name))->all(),
                 'items' => $productsQuery->take(8)->get()->map(fn (CatalogProduct $product): array => $this->mapProductCard($product))->all(),
             ];
         })->filter(fn (array $section): bool => $section['items'] !== [])->values()->all();
@@ -1085,15 +1170,18 @@ class CmsSiteController
     private function resolveBrandHighlights(Collection $parentCategories): array
     {
         $tones = ['#101828', '#8f5f00', '#1c8c64', '#a66900', '#0d9488'];
+        $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
 
         return $parentCategories->take(5)->values()->map(fn (CatalogCategory $category, int $index): array => [
-            'name' => $category->name,
+            'name' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $category->id), $category->name),
             'tone' => $tones[$index % count($tones)],
         ])->all();
     }
 
     private function mapProductCard(CatalogProduct $product): array
     {
+        $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
+        $product = $this->localizeProductModel($product, $websiteKey);
         $originalPrice = $product->original_price !== null ? (float) $product->original_price : null;
         $price = (float) $product->price;
         $discount = ($originalPrice !== null && $originalPrice > 0 && $originalPrice > $price)
@@ -1106,7 +1194,7 @@ class CmsSiteController
             'old_price' => $originalPrice,
             'discount' => $discount,
             'image' => $this->resolveProductPrimaryImage($product),
-            'tag' => $product->category?->name ?: 'Sản phẩm mới',
+            'tag' => $product->category?->name ?: $this->themeText('theme.fallback.new_product', 'Sản phẩm mới', 'TH0001'),
             'meta' => $product->stock,
             'is_featured' => $product->is_featured,
             'url' => $this->productUrl($product->slug ?: (string) $product->id),
@@ -1168,7 +1256,7 @@ class CmsSiteController
         if ($themeKey !== '') {
             $viewName = "theme-{$themeKey}::{$viewKey}";
 
-            if (view()->exists($viewName)) {
+            if (app(\Illuminate\Contracts\View\Factory::class)->exists($viewName)) {
                 return view($viewName, $data);
             }
         }
@@ -1178,12 +1266,171 @@ class CmsSiteController
 
     private function categoryUrl(string $slug): string
     {
-        return '/danh-muc/'.$slug;
+        return route('site.catalog.category', ['slug' => $slug]);
     }
 
     private function productUrl(string $slug): string
     {
-        return '/san-pham/'.$slug;
+        return route('site.catalog.product', ['slug' => $slug]);
+    }
+
+    private function localizedStaticPageUrl(string $slug): string
+    {
+        return url('/'.$this->currentLocale().'/'.ltrim($slug, '/'));
+    }
+
+    private function hasMissingCategorySlug(string $url, array $validSlugs): bool
+    {
+        $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
+
+        if ($path === '') {
+            return false;
+        }
+
+        $segments = explode('/', $path);
+
+        if (FrontendLocalization::isSupported($segments[0] ?? null)) {
+            array_shift($segments);
+        }
+
+        if (! in_array($segments[0] ?? null, FrontendLocalization::segmentValues('category'), true)) {
+            return false;
+        }
+
+        $slug = $segments[1] ?? null;
+
+        return ! is_string($slug) || ! in_array($slug, $validSlugs, true);
+    }
+
+    private function localizedUrl(string $url): string
+    {
+        $value = trim($url);
+
+        if ($value === '') {
+            return '#';
+        }
+
+        if (str_starts_with($value, '#') || preg_match('/^(?:[a-z][a-z0-9+.-]*:)?\/\//i', $value) || preg_match('/^(mailto:|tel:|javascript:)/i', $value)) {
+            return $value;
+        }
+
+        $trimmed = ltrim($value, '/');
+
+        if ($trimmed === '') {
+            return route('site.home');
+        }
+
+        $segments = explode('/', $trimmed);
+
+        if (FrontendLocalization::isSupported($segments[0] ?? null)) {
+            return url('/'.$trimmed);
+        }
+
+        return url('/'.$this->currentLocale().'/'.$trimmed);
+    }
+
+    private function currentLocale(): string
+    {
+        return app()->getLocale();
+    }
+
+    private function themeText(string $key, string $default, ?string $themeKey = null): string
+    {
+        return $this->themeTranslationService->bladeText($themeKey ?: 'TH0001', $this->currentLocale(), $key, $default);
+    }
+
+    private function contentText(string $websiteKey, string $key, ?string $default): string
+    {
+        return $this->businessContentTranslationService->text($websiteKey, $key, $default);
+    }
+
+    private function localizeSiteProfile(?SiteProfile $siteProfile): ?SiteProfile
+    {
+        if (! $siteProfile) {
+            return null;
+        }
+
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $localized = clone $siteProfile;
+        $localized->site_name = $this->contentText($websiteKey, 'site_profile.site_name', $siteProfile->site_name);
+
+        $branding = $siteProfile->branding ?? [];
+        foreach (['company_name', 'slogan', 'support_location'] as $field) {
+            if (filled($branding[$field] ?? null)) {
+                $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
+            }
+        }
+
+        $localized->setAttribute('branding', $branding);
+
+        return $localized;
+    }
+
+    private function localizeCategoryModel(CatalogCategory $category, string $websiteKey): CatalogCategory
+    {
+        $localized = clone $category;
+        $localized->name = $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $category->id), $category->name);
+        $localized->description = $this->contentText($websiteKey, sprintf('catalog_category.%d.description', $category->id), $category->description);
+
+        if ($category->relationLoaded('parent') && $category->parent) {
+            $localized->setRelation('parent', $this->localizeCategoryModel($category->parent, $websiteKey));
+        }
+
+        if ($category->relationLoaded('children')) {
+            $localized->setRelation('children', $category->children->map(fn (CatalogCategory $child): CatalogCategory => $this->localizeCategoryModel($child, $websiteKey)));
+        }
+
+        return $localized;
+    }
+
+    private function localizeProductModel(CatalogProduct $product, string $websiteKey): CatalogProduct
+    {
+        $localized = clone $product;
+        $localized->name = $this->contentText($websiteKey, sprintf('catalog_product.%d.name', $product->id), $product->name);
+        $localized->short_description = $this->contentText($websiteKey, sprintf('catalog_product.%d.short_description', $product->id), $product->short_description);
+        $localized->detail_content = $this->contentText($websiteKey, sprintf('catalog_product.%d.detail_content', $product->id), $product->detail_content);
+        $localized->highlights = $this->contentText($websiteKey, sprintf('catalog_product.%d.highlights', $product->id), $product->highlights);
+        $localized->usage_terms = $this->contentText($websiteKey, sprintf('catalog_product.%d.usage_terms', $product->id), $product->usage_terms);
+        $localized->usage_location = $this->contentText($websiteKey, sprintf('catalog_product.%d.usage_location', $product->id), $product->usage_location);
+
+        if ($product->relationLoaded('category') && $product->category) {
+            $localized->setRelation('category', $this->localizeCategoryModel($product->category, $websiteKey));
+        }
+
+        return $localized;
+    }
+
+    private function localizePageModel(CmsPage $page, string $websiteKey): CmsPage
+    {
+        $localized = clone $page;
+        $localized->title = $this->contentText($websiteKey, sprintf('cms_page.%d.title', $page->id), $page->title);
+        $localized->excerpt = $this->contentText($websiteKey, sprintf('cms_page.%d.excerpt', $page->id), $page->excerpt);
+        $localized->body = $this->contentText($websiteKey, sprintf('cms_page.%d.body', $page->id), $page->body);
+        $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_page.%d.meta_title', $page->id), $page->meta_title);
+        $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_page.%d.meta_description', $page->id), $page->meta_description);
+
+        return $localized;
+    }
+
+    private function localizePostModel(CmsPost $post, string $websiteKey): CmsPost
+    {
+        $localized = clone $post;
+        $localized->title = $this->contentText($websiteKey, sprintf('cms_post.%d.title', $post->id), $post->title);
+        $localized->excerpt = $this->contentText($websiteKey, sprintf('cms_post.%d.excerpt', $post->id), $post->excerpt);
+        $localized->body = $this->contentText($websiteKey, sprintf('cms_post.%d.body', $post->id), $post->body);
+        $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_post.%d.meta_title', $post->id), $post->meta_title);
+        $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_post.%d.meta_description', $post->id), $post->meta_description);
+
+        if ($post->relationLoaded('category') && $post->category) {
+            $localizedCategory = clone $post->category;
+            $localizedCategory->name = $this->contentText($websiteKey, sprintf('cms_category.%d.name', $post->category->id), $post->category->name);
+            $localizedCategory->description = $this->contentText($websiteKey, sprintf('cms_category.%d.description', $post->category->id), $post->category->description);
+            $localizedCategory->meta_title = $this->contentText($websiteKey, sprintf('cms_category.%d.meta_title', $post->category->id), $post->category->meta_title);
+            $localizedCategory->meta_description = $this->contentText($websiteKey, sprintf('cms_category.%d.meta_description', $post->category->id), $post->category->meta_description);
+            $localized->setRelation('category', $localizedCategory);
+        }
+
+        return $localized;
     }
 
     /**

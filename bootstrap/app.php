@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\EnsureAdminHasPermission;
+use App\Http\Middleware\SetFrontendLocale;
+use App\Support\FrontendLocalization;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,18 +17,19 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin.permission' => EnsureAdminHasPermission::class,
+            'frontend.locale' => SetFrontendLocale::class,
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request): string {
             return $request->is('admin') || $request->is('admin/*')
                 ? route('admin.auth.login')
-                : route('site.home');
+                : route('site.home', FrontendLocalization::routeParameterDefaults($request->session()->get('frontend_locale')));
         });
 
         $middleware->redirectUsersTo(function (Request $request): string {
             return $request->is('admin') || $request->is('admin/*')
                 ? route('admin.index')
-                : route('customer.account');
+                : route('customer.account', FrontendLocalization::routeParameterDefaults($request->session()->get('frontend_locale')));
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {

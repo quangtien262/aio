@@ -66,6 +66,7 @@ function renderLazyRouteElement(Component, props, fallbackTitle) {
 export default function AdminLayout() {
     const { message } = App.useApp();
     const screens = useBreakpoint();
+    const [frontendLocale, setFrontendLocale] = useState(() => window.localStorage.getItem('aio.frontendLocale') || 'vi');
     const [currentAdmin, setCurrentAdmin] = useState(null);
     const [modules, setModules] = useState([]);
     const [loadError, setLoadError] = useState(null);
@@ -76,6 +77,9 @@ export default function AdminLayout() {
     const location = useLocation();
     const navigate = useNavigate();
     const isMobile = !screens.lg;
+    const frontendLocaleRecords = currentAdmin?.frontend_localization?.locales ?? [];
+    const frontendLocaleOptions = frontendLocaleRecords.filter((localeItem) => localeItem.is_active).map((localeItem) => localeItem.code);
+    const defaultFrontendLocale = currentAdmin?.frontend_localization?.default_locale ?? 'vi';
 
     const callAdminApi = useCallback(async (url, options = {}) => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -153,6 +157,55 @@ export default function AdminLayout() {
         }
     }, [isMobile]);
 
+    useEffect(() => {
+        window.localStorage.setItem('aio.frontendLocale', frontendLocale);
+    }, [frontendLocale]);
+
+    useEffect(() => {
+        if (!frontendLocaleOptions.length) {
+            return;
+        }
+
+        if (!frontendLocaleOptions.includes(frontendLocale)) {
+            setFrontendLocale(defaultFrontendLocale);
+        }
+    }, [defaultFrontendLocale, frontendLocale, frontendLocaleOptions]);
+
+    useEffect(() => {
+        const handleLocalizationChanged = (event) => {
+            const detail = event.detail ?? {};
+            const nextLocales = detail.locales ?? [];
+            const nextActiveLocales = nextLocales.filter((localeItem) => localeItem.is_active).map((localeItem) => localeItem.code);
+            const nextDefaultLocale = detail.default_locale ?? defaultFrontendLocale;
+
+            setCurrentAdmin((current) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    frontend_localization: {
+                        ...(current.frontend_localization ?? {}),
+                        default_locale: nextDefaultLocale,
+                        fallback_locale: detail.fallback_locale ?? current.frontend_localization?.fallback_locale,
+                        source_locale: detail.source_locale ?? current.frontend_localization?.source_locale,
+                        locales: nextLocales.length ? nextLocales : (current.frontend_localization?.locales ?? []),
+                        active_locales: nextActiveLocales.length ? nextActiveLocales : (current.frontend_localization?.active_locales ?? []),
+                    },
+                };
+            });
+
+            setFrontendLocale((current) => (nextActiveLocales.includes(current) ? current : nextDefaultLocale));
+        };
+
+        window.addEventListener('aio:frontend-localization-changed', handleLocalizationChanged);
+
+        return () => {
+            window.removeEventListener('aio:frontend-localization-changed', handleLocalizationChanged);
+        };
+    }, [defaultFrontendLocale]);
+
     const runAdminAction = useCallback(async (executor, successMessage, onSuccess) => {
         try {
             await executor();
@@ -215,7 +268,14 @@ export default function AdminLayout() {
     const renderModuleRoutes = useCallback(() => {
         return (currentAdmin?.module_navigation ?? []).map((item) => {
             const route = normalizeRoute(item.route);
-            const modulePayload = modules.find((moduleItem) => moduleItem.key === item.module_key) ?? null;
+            const modulePayload = modules.find((moduleItem) => moduleItem.key === item.module_key)
+                ?? (item.module_key
+                    ? {
+                        key: item.module_key,
+                        name: item.label ?? item.module_key,
+                        description: item.description ?? '',
+                    }
+                    : null);
 
             return (
                 <Route
@@ -508,6 +568,23 @@ export default function AdminLayout() {
                                             <span className="admin-section-switcher-panel-kicker">Workspace Switcher</span>
                                             <strong>{activeTopSection?.label ?? 'Điều hướng'}</strong>
                                             <span className="admin-section-switcher-panel-description">Chuyển nhanh giữa các nhóm chức năng quản trị chính.</span>
+                                            <Space size={8} wrap>
+                                                <Text type="secondary">Frontend locale</Text>
+                                                {(frontendLocaleOptions.length ? frontendLocaleOptions : [frontendLocale]).map((localeOption) => (
+                                                    <Button
+                                                        key={localeOption}
+                                                        size="small"
+                                                        type={frontendLocale === localeOption ? 'primary' : 'default'}
+                                                        onClick={(event) => {
+                                                            event.preventDefault();
+                                                            event.stopPropagation();
+                                                            setFrontendLocale(localeOption);
+                                                        }}
+                                                    >
+                                                        {localeOption.toUpperCase()}
+                                                    </Button>
+                                                ))}
+                                            </Space>
                                         </div>
                                         <div className="admin-section-switcher-panel-body">{menuNode}</div>
                                     </div>
@@ -587,7 +664,7 @@ export default function AdminLayout() {
                                         <Route path="access" element={hasPermission('rbac.role.view') ? renderLazyRouteElement(AccessRoutePage, { canAccess: true, canManageRoles: hasPermission('rbac.role.manage'), callAdminApi, runAdminAction }, 'Access Control') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="admins" element={hasPermission('admin.account.view') ? renderLazyRouteElement(AdminAccountsRoutePage, { canAccess: true, currentAdmin, permissions: { manage: hasPermission('admin.account.manage'), resetPassword: hasPermission('admin.account.reset_password'), lock: hasPermission('admin.account.lock') }, callAdminApi, runAdminAction }, 'Admin Accounts') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall'), demoData: hasPermission('store.module.upgrade') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'App Store') : <Navigate to={defaultRoute} replace />} />
-                                        <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), canGenerateDemoData: hasPermission('theme.customize'), callAdminApi, runAdminAction }, 'Themes') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), canGenerateDemoData: hasPermission('theme.customize'), callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }, 'Themes') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="setup" element={hasPermission('setup.view') ? renderLazyRouteElement(SetupRoutePage, { canAccess: true, canComplete: hasPermission('setup.complete'), callAdminApi, runAdminAction }, 'Setup') : <Navigate to={defaultRoute} replace />} />
                                         {renderModuleRoutes()}
                                         <Route path="*" element={<Navigate to={defaultRoute} replace />} />

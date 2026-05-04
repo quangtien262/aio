@@ -14,9 +14,11 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('status')->default('draft');
             $table->text('body')->nullable();
-            $table->string('website_key')->nullable()->index();
-            $table->string('owner_key')->nullable()->index();
-            $table->string('tenant_key')->nullable()->index();
+
+            $table->string('website_key')->nullable();
+            $table->string('owner_key')->nullable();
+            $table->string('tenant_key')->nullable();
+
             $table->timestamps();
         });
     }
