@@ -7,6 +7,7 @@
 /vendor
 /node_modules
 /public/build
+/public/theme-demo/curated
 /storage/*.key
 /storage/logs
 /storage/framework/cache
