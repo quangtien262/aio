@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Site;
 
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Core\Themes\ThemeTranslationService;
 use App\Mail\ContactInquiryMail;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
+use App\Models\CmsFeaturedCategory;
+use App\Models\CmsSidePromo;
 use App\Models\Customer;
 use App\Models\CustomerFavorite;
 use App\Models\CmsMenu;
@@ -26,8 +29,10 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class CmsSiteController
 {
@@ -36,6 +41,7 @@ class CmsSiteController
 
     public function __construct(
         private readonly ThemeRegistry $themeRegistry,
+        private readonly ThemeDemoContentGenerator $themeDemoContentGenerator,
         private readonly ThemeTranslationService $themeTranslationService,
         private readonly BusinessContentTranslationService $businessContentTranslationService,
         private readonly StorefrontCart $storefrontCart,
@@ -78,6 +84,30 @@ class CmsSiteController
         $page = CmsPage::query()->with('featuredMedia')->where('slug', $slug)->where('status', 'published')->firstOrFail();
 
         return $this->renderContent('page', $page);
+    }
+
+    public function switchThemePreset(Request $request, string $locale, string $preset): RedirectResponse
+    {
+        abort_unless(app()->environment('local') || $request->user('admin') !== null, 403);
+
+        abort_unless($this->themeRegistry->all()->firstWhere('key', 'SER0100') !== null, 404);
+
+        $servicePresetKeys = collect($this->themeDemoContentGenerator->servicePresets())
+            ->pluck('key')
+            ->filter(fn (mixed $value): bool => is_string($value) && $value !== '')
+            ->all();
+
+        abort_unless(in_array($preset, $servicePresetKeys, true), 404);
+
+        try {
+            $this->storefrontCart->clear();
+            $this->themeDemoContentGenerator->generate('SER0100', $preset);
+        } catch (InvalidArgumentException) {
+            abort(422, 'Preset demo content không hợp lệ.');
+        }
+
+        return to_route('site.home', ['locale' => $this->currentLocale()])
+            ->with('cart_success', 'Đã chuyển preset demo storefront.');
     }
 
     public function postsIndex(Request $request): View
@@ -152,7 +182,9 @@ class CmsSiteController
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:150'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'source' => ['nullable', 'string', 'in:contact,quote_modal'],
             'subject' => ['nullable', 'string', 'max:150'],
+            'route_summary' => ['nullable', 'string', 'max:255'],
             'message' => ['required', 'string', 'min:10', 'max:5000'],
         ]);
 
@@ -164,18 +196,40 @@ class CmsSiteController
             'support_location' => 'Hà Nội',
         ], $siteProfile?->branding ?? []);
 
+        $source = (string) ($payload['source'] ?? 'contact');
+
         $payload['subject'] = trim((string) ($payload['subject'] ?? '')) !== ''
             ? (string) $payload['subject']
-            : 'Yeu cau tu van tu website';
+            : ($source === 'quote_modal' ? 'Yeu cau bao gia tu website' : 'Yeu cau tu van tu website');
         $payload['submitted_at'] = now()->toDateTimeString();
         $payload['page_url'] = $request->headers->get('referer', $request->fullUrl());
+
+        if ($source === 'quote_modal') {
+            Order::query()->create([
+                'order_code' => 'QTE'.now()->format('ymdHis').str_pad((string) random_int(0, 999), 3, '0', STR_PAD_LEFT),
+                'customer_id' => $request->user('customer')?->id,
+                'status' => 'pending',
+                'customer_name' => $payload['name'],
+                'customer_phone' => $payload['phone'] ?? null,
+                'customer_email' => $payload['email'],
+                'delivery_address' => trim((string) ($payload['route_summary'] ?? $payload['page_url'] ?? 'Bao gia tu website')),
+                'note' => trim("Yeu cau bao gia tu menu\nLộ trình: ".($payload['route_summary'] ?? '-') ."\n\n".($payload['message'] ?? '') ."\n\nTrang gui: ".($payload['page_url'] ?? '-')),
+                'payment_method' => 'quote_request',
+                'payment_label' => 'Yêu cầu báo giá',
+                'subtotal' => 0,
+                'item_count' => 0,
+                'placed_at' => now(),
+            ]);
+        }
 
         Mail::to($branding['support_email'])
             ->queue((new ContactInquiryMail($payload, $branding))->onQueue('mail'));
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Yeu cau lien he da duoc gui thanh cong.',
+                'message' => $source === 'quote_modal'
+                    ? 'Yeu cau bao gia da duoc gui va luu thanh cong.'
+                    : 'Yeu cau lien he da duoc gui thanh cong.',
                 'data' => [
                     'email' => $payload['email'],
                     'subject' => $payload['subject'],
@@ -391,11 +445,17 @@ class CmsSiteController
         $this->applyWebsiteScope($baseProductsQuery, $websiteKey);
 
         if ($search !== '') {
-            $baseProductsQuery->where(function (EloquentBuilder $query) use ($search): void {
+            $matchingProductIds = $this->resolveAccentInsensitiveProductIds($search, $websiteKey, true);
+
+            $baseProductsQuery->where(function (EloquentBuilder $query) use ($search, $matchingProductIds): void {
                 $query->where('name', 'like', '%'.$search.'%')
                     ->orWhere('sku', 'like', '%'.$search.'%')
                     ->orWhere('short_description', 'like', '%'.$search.'%')
                     ->orWhere('detail_content', 'like', '%'.$search.'%');
+
+                if ($matchingProductIds !== []) {
+                    $query->orWhereIn('id', $matchingProductIds);
+                }
             });
         }
 
@@ -487,10 +547,16 @@ class CmsSiteController
         $productsQuery = CatalogProduct::query()->with('category')->where('is_active', true);
         $this->applyWebsiteScope($productsQuery, $websiteKey);
 
-        $productsQuery->where(function (EloquentBuilder $query) use ($search): void {
+        $matchingProductIds = $this->resolveAccentInsensitiveProductIds($search, $websiteKey, false);
+
+        $productsQuery->where(function (EloquentBuilder $query) use ($search, $matchingProductIds): void {
             $query->where('name', 'like', '%'.$search.'%')
                 ->orWhere('sku', 'like', '%'.$search.'%')
                 ->orWhere('short_description', 'like', '%'.$search.'%');
+
+            if ($matchingProductIds !== []) {
+                $query->orWhereIn('id', $matchingProductIds);
+            }
         });
 
         $products = $productsQuery
@@ -764,6 +830,16 @@ class CmsSiteController
             $items = $items->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
         }
 
+        if ($contentType === 'posts' && ! array_key_exists('latestPosts', $extra)) {
+            $latestPostsQuery = CmsPost::query()->where('status', 'published')->latest('publish_at');
+            $this->applyWebsiteScope($latestPostsQuery, $websiteKey);
+
+            $extra['latestPosts'] = $latestPostsQuery
+                ->take(3)
+                ->get()
+                ->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
+        }
+
         return view($viewName, array_merge([
             'contentType' => $contentType,
             'listingItems' => $items,
@@ -868,7 +944,13 @@ class CmsSiteController
 
     private function resolveThemeHomeData(?SiteProfile $siteProfile, ?array $activeTheme, array $menus): array
     {
-        if (($activeTheme['key'] ?? null) !== 'TH0001') {
+        $themeKey = (string) ($activeTheme['key'] ?? '');
+
+        if ($themeKey === 'SER0100') {
+            return $this->resolveServiceThemeHomeData($siteProfile, $activeTheme, $menus);
+        }
+
+        if ($themeKey !== 'TH0001') {
             return [];
         }
 
@@ -890,20 +972,182 @@ class CmsSiteController
         $parentCategories = $parentCategories->take(10)->get();
 
         $heroBanner = $this->resolveHeroBanner($websiteKey, $themeKey);
-        $sideBanners = $this->resolveSideBanners($websiteKey, $themeKey);
+        $sideBanners = $this->resolveSidePromos($websiteKey, $themeKey);
         $featuredProducts = $this->resolveFeaturedProducts($websiteKey);
         $sections = $this->resolveSections($parentCategories, $websiteKey);
 
         return [
             ...$shellData,
             'hero_banner' => $heroBanner,
+            'hero_slides' => $this->resolveHeroSlides($websiteKey, $themeKey),
             'side_banners' => $sideBanners,
+            'secondary_side_promos' => $this->resolveSidePromos($websiteKey, $themeKey, 'home-secondary-side-promos'),
             'featured_products' => $featuredProducts,
             'featured_title' => collect($featuredProducts)->contains(fn (array $product): bool => (bool) ($product['is_featured'] ?? false))
                 ? $this->themeText('theme.fallback.featured_products', 'Sản phẩm nổi bật', $themeKey)
                 : $this->themeText('theme.fallback.latest_products', 'Sản phẩm mới nhất', $themeKey),
             'sections' => $sections,
-            'brand_highlights' => $this->resolveBrandHighlights($parentCategories),
+            'featured_categories' => $this->resolveFeaturedCategories($websiteKey, $parentCategories),
+            'footer_featured_categories' => $this->resolveFeaturedCategories($websiteKey, $parentCategories, 'footer-featured-categories', false),
+            'brand_highlights' => $this->resolveFeaturedCategories($websiteKey, $parentCategories),
+            'hero_slide_defaults' => $this->resolveCommerceHeroSlideDefaults($websiteKey, $themeKey),
+            'footer_columns' => $this->resolveCommerceFooterColumns($websiteKey, $themeKey),
+            'company_footer' => $this->resolveCommerceCompanyFooter($websiteKey, $themeKey),
+        ];
+    }
+
+    private function resolveServiceThemeHomeData(?SiteProfile $siteProfile, ?array $activeTheme, array $menus): array
+    {
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $shellData = $this->resolveThemeShellData($siteProfile, $activeTheme, $menus);
+        $themeKey = (string) ($activeTheme['key'] ?? 'SER0100');
+
+        $parentCategories = CatalogCategory::query()
+            ->with(['children' => function ($query) use ($websiteKey): void {
+                $this->applyWebsiteScope($query, $websiteKey);
+                $query->where('is_active', true)->orderBy('sort_order')->orderBy('name');
+            }])
+            ->whereNull('parent_id')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name');
+        $this->applyWebsiteScope($parentCategories, $websiteKey);
+
+        $parentCategories = $parentCategories->take(6)->get();
+        $featuredServices = $this->resolveFeaturedProducts($websiteKey);
+        $latestPosts = $this->resolveLatestPostHighlights($websiteKey);
+
+        return [
+            ...$shellData,
+            'hero_banner' => $this->resolveHeroBanner($websiteKey, $themeKey),
+            'hero_slides' => $this->resolveHeroSlides($websiteKey, $themeKey),
+            'side_banners' => $this->resolveSidePromos($websiteKey, $themeKey),
+            'secondary_side_promos' => $this->resolveSidePromos($websiteKey, $themeKey, 'home-secondary-side-promos'),
+            'service_categories' => $this->resolveServiceCategories($parentCategories, $websiteKey),
+            'featured_services' => $featuredServices,
+            'featured_title' => $this->themeText('theme.fallback.featured_services', 'Goi dich vu noi bat', $themeKey),
+            'service_routes' => $this->resolveServiceRoutes($featuredServices),
+            'service_metrics' => $this->resolveServiceMetrics($websiteKey, $themeKey),
+            'quote_panel' => $this->resolveServiceQuotePanel($websiteKey, $themeKey),
+            'service_highlights' => $this->resolveServiceHighlights($parentCategories),
+            'footer_featured_categories' => $this->resolveFeaturedCategories($websiteKey, $parentCategories, 'footer-featured-categories', false),
+            'latest_posts_section' => [
+                'kicker' => $this->themeBlockText($websiteKey, $themeKey, 'latest_posts.kicker', 'Tin mới'),
+                'title' => $this->themeBlockText($websiteKey, $themeKey, 'latest_posts.title', 'Tin mới'),
+                'summary' => $this->themeBlockText(
+                    $websiteKey,
+                    $themeKey,
+                    'latest_posts.summary',
+                    'Khối này lấy bài viết mới nhất từ CMS. Sếp có thể đổi đoạn mô tả này trong phần nội dung website để phù hợp với từng preset hoặc thương hiệu.'
+                ),
+            ],
+            'latest_posts' => $latestPosts,
+        ];
+    }
+
+    private function resolveHeroSlides(string $websiteKey, string $themeKey): array
+    {
+        $query = SiteBanner::query()
+            ->where('is_active', true)
+            ->where('placement', 'hero-slider')
+            ->where(function (EloquentBuilder $builder) use ($themeKey): void {
+                $builder->where('theme_key', $themeKey)->orWhereNull('theme_key');
+            })
+            ->orderByRaw('CASE WHEN theme_key = ? THEN 0 ELSE 1 END', [$themeKey])
+            ->orderBy('sort_order')
+            ->orderBy('id');
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        $items = $query->take(8)->get()->map(function (SiteBanner $banner) use ($websiteKey, $themeKey): array {
+            $eyebrowKey = sprintf('site_banner.%d.metadata.eyebrow', $banner->id);
+            $titleKey = sprintf('site_banner.%d.title', $banner->id);
+            $summaryKey = sprintf('site_banner.%d.metadata.summary', $banner->id);
+            $badgeKey = sprintf('site_banner.%d.badge', $banner->id);
+            $ctaKey = sprintf('site_banner.%d.metadata.button_label', $banner->id);
+
+            return [
+                'image' => $banner->image_url,
+                'alt' => $this->contentText($websiteKey, $titleKey, $banner->title ?? $this->themeText('theme.fallback.hero_title', 'Hero slide', $themeKey)),
+                'kicker' => $this->contentText($websiteKey, $eyebrowKey, (string) data_get($banner->metadata, 'eyebrow', '')),
+                'eyebrow' => $this->contentText($websiteKey, $eyebrowKey, (string) data_get($banner->metadata, 'eyebrow', '')),
+                'title' => $this->contentText($websiteKey, $titleKey, $banner->title ?? ''),
+                'summary' => $this->contentText($websiteKey, $summaryKey, (string) data_get($banner->metadata, 'summary', $banner->subtitle ?? '')),
+                'badge' => $this->contentText($websiteKey, $badgeKey, $banner->badge ?? ''),
+                'cta' => $this->contentText($websiteKey, $ctaKey, (string) data_get($banner->metadata, 'button_label', 'Mua ngay')),
+                'position' => (string) data_get($banner->metadata, 'image_position', 'center'),
+                'show_caption' => (bool) data_get($banner->metadata, 'show_caption', true),
+                'link_url' => $banner->link_url ? $this->localizedUrl((string) $banner->link_url) : null,
+                'translation_keys' => [
+                    'eyebrow' => $eyebrowKey,
+                    'title' => $titleKey,
+                    'summary' => $summaryKey,
+                    'badge' => $badgeKey,
+                    'cta' => $ctaKey,
+                ],
+                'edit_fields' => [
+                    ['key' => $eyebrowKey, 'label' => 'Nhãn slide', 'group' => 'content', 'entity' => 'banner'],
+                    ['key' => $titleKey, 'label' => 'Tiêu đề slide', 'group' => 'content', 'entity' => 'banner'],
+                    ['key' => $summaryKey, 'label' => 'Mô tả slide', 'group' => 'content', 'entity' => 'banner'],
+                    ['key' => $badgeKey, 'label' => 'Badge slide', 'group' => 'content', 'entity' => 'banner'],
+                    ['key' => $ctaKey, 'label' => 'CTA slide', 'group' => 'content', 'entity' => 'banner'],
+                ],
+            ];
+        })->values()->all();
+
+        if ($items !== []) {
+            return $items;
+        }
+
+        if ($themeKey !== 'SER0100') {
+            return [];
+        }
+
+        return [
+            [
+                'image' => asset('theme-demo/service/ser-tour-ops-hero.svg'),
+                'alt' => 'Tour ops và vận hành tuyến',
+                'kicker' => 'Tour ops',
+                'eyebrow' => 'Tour ops',
+                'title' => 'Vận hành tour đoàn gọn và rõ',
+                'summary' => 'Nhìn nhanh block vận hành, hỗ trợ chốt tuyến tour và shuttle nội đô trong cùng một màn hình.',
+                'badge' => '',
+                'cta' => 'Xem chi tiết',
+                'position' => 'center',
+            ],
+            [
+                'image' => asset('theme-demo/service/service-banner-1.svg'),
+                'alt' => 'Đưa đón sân bay đúng giờ',
+                'kicker' => 'Airport pickup',
+                'eyebrow' => 'Airport pickup',
+                'title' => 'Đưa đón đúng giờ cho khách lẻ và đoàn nhỏ',
+                'summary' => 'Phù hợp cho lead hotline, chuyển đổi nhanh và các tuyến pickup cần thông tin rõ ràng.',
+                'badge' => '',
+                'cta' => 'Xem chi tiết',
+                'position' => 'left center',
+            ],
+            [
+                'image' => asset('theme-demo/service/service-banner-2.svg'),
+                'alt' => 'City transfer và VIP charter',
+                'kicker' => 'City transfer',
+                'eyebrow' => 'City transfer',
+                'title' => 'Banner phụ cho tuyến nội đô và VIP charter',
+                'summary' => 'Giữ nhịp visual đều tay hơn bộ card cũ nhưng vẫn đồng nhất tông màu của theme.',
+                'badge' => '',
+                'cta' => 'Xem chi tiết',
+                'position' => 'left center',
+            ],
+            [
+                'image' => asset('theme-demo/service/service-hero-main.svg'),
+                'alt' => 'Hero điều phối xe dịch vụ',
+                'kicker' => 'Điều phối nhanh',
+                'eyebrow' => 'Điều phối nhanh',
+                'title' => 'Đi xe sân bay và shuttle doanh nghiệp',
+                'summary' => 'Tập trung lead nóng, lịch xe trong ngày và nhu cầu đặt chuyến gấp của doanh nghiệp.',
+                'badge' => '',
+                'cta' => 'Xem chi tiết',
+                'position' => 'right center',
+                'show_caption' => false,
+            ],
         ];
     }
 
@@ -911,6 +1155,7 @@ class CmsSiteController
     {
         $siteProfile = $this->localizeSiteProfile($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
         $branding = array_merge([
             'company_name' => $siteProfile?->site_name ?? 'AIO Website',
             'logo_url' => self::DEFAULT_BRAND_ASSET,
@@ -921,13 +1166,16 @@ class CmsSiteController
             'support_location' => 'Hà Nội',
         ], $siteProfile?->branding ?? []);
 
-        foreach (['company_name', 'slogan', 'support_location'] as $field) {
-            if (filled($branding[$field] ?? null)) {
-                $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
+        if ($themeKey === 'TH0001') {
+            $branding = $this->resolveCommerceBranding($siteProfile, $branding, $websiteKey);
+        } elseif (! $this->isDemoPresetBranding($branding)) {
+            foreach (['company_name', 'slogan', 'support_location'] as $field) {
+                if (filled($branding[$field] ?? null)) {
+                    $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
+                }
             }
         }
 
-        $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
         /** @var Customer|null $customer */
         $customer = auth('customer')->user();
         $isSubscribed = $customer
@@ -955,9 +1203,11 @@ class CmsSiteController
 
         return [
             'branding' => $branding,
-            'top_menu' => $this->resolveTopMenuItems($menus),
+            'top_menu' => $this->resolveTopMenuItems($menus, $themeKey),
             'product_menu' => $this->resolveProductMenuItems($menus, $parentCategories),
-            'side_banners' => $this->resolveSideBanners($websiteKey, $themeKey),
+            'preset_switcher' => $this->resolvePresetSwitcher($siteProfile, $activeTheme),
+            'side_banners' => $this->resolveSidePromos($websiteKey, $themeKey),
+            'secondary_side_promos' => $this->resolveSidePromos($websiteKey, $themeKey, 'home-secondary-side-promos'),
             'cart_summary' => $this->storefrontCart->summary(),
             'customer_auth' => [
                 'is_authenticated' => $customer !== null,
@@ -984,19 +1234,75 @@ class CmsSiteController
         return (string) ($branding['website_key'] ?? self::DEFAULT_WEBSITE_KEY);
     }
 
+    private function resolvePresetSwitcher(?SiteProfile $siteProfile, ?array $activeTheme): array
+    {
+        $themeKey = (string) ($activeTheme['key'] ?? '');
+        $enabled = $themeKey === 'SER0100' && (app()->environment('local') || auth('admin')->check());
+
+        if (! $enabled) {
+            return [
+                'enabled' => false,
+                'current_key' => null,
+                'current_label' => null,
+                'options' => [],
+            ];
+        }
+
+        $branding = (array) ($siteProfile?->branding ?? []);
+        $currentKey = $this->resolveCurrentServicePresetKey($branding);
+        $servicePresets = collect($this->themeDemoContentGenerator->servicePresets());
+        $currentPreset = $servicePresets->firstWhere('key', $currentKey);
+
+        return [
+            'enabled' => true,
+            'current_key' => $currentKey,
+            'current_label' => is_array($currentPreset) ? ($currentPreset['label'] ?? null) : null,
+            'options' => $servicePresets->map(fn (array $preset): array => [
+                'key' => $preset['key'],
+                'label' => $preset['label'],
+                'description' => $preset['description'],
+                'is_active' => $preset['key'] === $currentKey,
+                'switch_url' => route('site.theme.preset.switch', [
+                    'locale' => $this->currentLocale(),
+                    'preset' => $preset['key'],
+                ]),
+            ])->all(),
+        ];
+    }
+
+    private function resolveCurrentServicePresetKey(array $branding): ?string
+    {
+        $presetKey = $branding['demo_preset_key'] ?? null;
+
+        if (is_string($presetKey) && $presetKey !== '') {
+            return $presetKey;
+        }
+
+        $companyName = trim((string) ($branding['company_name'] ?? ''));
+
+        if ($companyName === '') {
+            return null;
+        }
+
+        $matchedPreset = collect($this->themeDemoContentGenerator->servicePresets())
+            ->first(fn (array $preset): bool => ($preset['label'] ?? null) === $companyName || ($preset['company_name'] ?? null) === $companyName);
+
+        return is_array($matchedPreset) ? (string) ($matchedPreset['key'] ?? '') : null;
+    }
+
     private function applyWebsiteScope($query, string $websiteKey): void
     {
         unset($query, $websiteKey);
     }
 
-    private function resolveTopMenuItems(array $menus): array
+    private function resolveTopMenuItems(array $menus, ?string $themeKey = null): array
     {
         $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
         $items = collect($menus['primary-navigation'] ?? $menus['primary'] ?? [])
             ->filter(fn (mixed $item): bool => is_array($item))
             ->values();
 
-        if ($items->isEmpty()) {
+        if ($items->isEmpty() || ($themeKey === 'TH0001' && $this->shouldUseCommerceTopMenuFallback($items->all()))) {
             return [
                 ['label' => $this->themeText('menu.default.blog', 'Tin tức', 'TH0001'), 'url' => route('site.blog.index'), 'target' => '_self'],
                 ['label' => $this->themeText('menu.default.about', 'Giới thiệu', 'TH0001'), 'url' => $this->localizedStaticPageUrl('gioi-thieu'), 'target' => '_self'],
@@ -1084,6 +1390,13 @@ class CmsSiteController
                 'cta' => $this->themeText('theme.fallback.hero_cta', 'Mua ngay', $themeKey),
                 'image' => 'https://picsum.photos/seed/th0001-default-hero/960/520',
                 'link_url' => '#featured',
+                'edit_fields' => [
+                    ['slot' => 'eyebrow', 'key' => 'theme.fallback.hero_eyebrow', 'label' => 'Hero eyebrow', 'group' => 'static'],
+                    ['slot' => 'title', 'key' => 'theme.fallback.hero_title', 'label' => 'Tiêu đề hero', 'group' => 'static'],
+                    ['slot' => 'summary', 'key' => 'theme.fallback.hero_summary', 'label' => 'Mô tả hero', 'group' => 'static'],
+                    ['slot' => 'badge', 'key' => 'theme.fallback.hero_badge', 'label' => 'Badge hero', 'group' => 'static'],
+                    ['slot' => 'cta', 'key' => 'theme.fallback.hero_cta', 'label' => 'CTA hero', 'group' => 'static'],
+                ],
             ];
         }
 
@@ -1095,6 +1408,13 @@ class CmsSiteController
             'cta' => $this->contentText($websiteKey, sprintf('site_banner.%d.metadata.button_label', $banner->id), (string) data_get($banner->metadata, 'button_label', 'Mua ngay')),
             'image' => $banner->image_url,
             'link_url' => $this->localizedUrl((string) ($banner->link_url ?: '#featured')),
+            'edit_fields' => [
+                ['slot' => 'eyebrow', 'key' => sprintf('site_banner.%d.metadata.eyebrow', $banner->id), 'label' => 'Hero eyebrow', 'group' => 'content', 'entity' => 'banner'],
+                ['slot' => 'title', 'key' => sprintf('site_banner.%d.title', $banner->id), 'label' => 'Tiêu đề hero', 'group' => 'content', 'entity' => 'banner'],
+                ['slot' => 'summary', 'key' => sprintf('site_banner.%d.metadata.summary', $banner->id), 'label' => 'Mô tả hero', 'group' => 'content', 'entity' => 'banner'],
+                ['slot' => 'badge', 'key' => sprintf('site_banner.%d.badge', $banner->id), 'label' => 'Badge hero', 'group' => 'content', 'entity' => 'banner'],
+                ['slot' => 'cta', 'key' => sprintf('site_banner.%d.metadata.button_label', $banner->id), 'label' => 'CTA hero', 'group' => 'content', 'entity' => 'banner'],
+            ],
         ];
     }
 
@@ -1127,6 +1447,44 @@ class CmsSiteController
             ['title' => $this->themeText('theme.fallback.side_banner_top', 'Top sản phẩm', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_top_subtitle', 'Block phụ 3', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-3/360/180', 'link_url' => '#featured'],
             ['title' => $this->themeText('theme.fallback.side_banner_combo', 'Combo mới', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_combo_subtitle', 'Block phụ 4', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-4/360/180', 'link_url' => '#featured'],
         ];
+    }
+
+    private function resolveSidePromos(string $websiteKey, string $themeKey, string $location = 'home-hero-side-promos'): array
+    {
+        $query = CmsSidePromo::query()
+            ->where('location', $location)
+            ->orderByDesc('id');
+
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        $group = $query->first();
+
+        if ($group && is_array($group->items) && $group->items !== []) {
+            $items = collect($group->items)
+                ->sortBy(fn (array $item, int $index): int => (int) ($item['sort_order'] ?? $index))
+                ->values()
+                ->map(function (array $item, int $index) use ($websiteKey, $group): array {
+                    return [
+                        'badge' => $this->contentText($websiteKey, sprintf('cms_side_promo.%s.%d.badge', $group->location, $index), (string) ($item['badge'] ?? '')),
+                        'title' => $this->contentText($websiteKey, sprintf('cms_side_promo.%s.%d.title', $group->location, $index), (string) ($item['title'] ?? '')),
+                        'subtitle' => $this->contentText($websiteKey, sprintf('cms_side_promo.%s.%d.subtitle', $group->location, $index), (string) ($item['subtitle'] ?? '')),
+                        'cta_label' => $this->contentText($websiteKey, sprintf('cms_side_promo.%s.%d.cta_label', $group->location, $index), (string) ($item['cta_label'] ?? '')),
+                        'image' => (string) ($item['image'] ?? ''),
+                        'sort_order' => (int) ($item['sort_order'] ?? $index),
+                        'link_url' => $this->localizedUrl((string) ($item['url'] ?? $item['custom_url'] ?? '#featured')),
+                        'target' => (string) ($item['target'] ?? '_self'),
+                    ];
+                })
+                ->filter(fn (array $item): bool => filled($item['title']) && filled($item['image']))
+                ->values()
+                ->all();
+
+            if ($items !== []) {
+                return $items;
+            }
+        }
+
+        return $this->resolveSideBanners($websiteKey, $themeKey);
     }
 
     private function resolveFeaturedProducts(string $websiteKey): array
@@ -1167,15 +1525,299 @@ class CmsSiteController
         })->filter(fn (array $section): bool => $section['items'] !== [])->values()->all();
     }
 
+    private function resolveFeaturedCategories(string $websiteKey, Collection $parentCategories, string $location = 'home-featured-categories', bool $fallbackToBrandHighlights = true): array
+    {
+        $query = CmsFeaturedCategory::query()
+            ->where('location', $location)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id');
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        $record = $query->first();
+        $items = collect($record?->items ?? [])->values()->filter(fn (mixed $item): bool => is_array($item) && filled($item['label'] ?? null));
+
+        if ($items->isNotEmpty()) {
+            return $items->map(function (array $item, int $index) use ($websiteKey, $location): array {
+                return [
+                    'name' => $this->contentText($websiteKey, sprintf('cms_featured_category.%s.%d.label', $location, $index), (string) ($item['label'] ?? '')),
+                    'url' => $this->localizedUrl((string) ($item['url'] ?? '#')),
+                    'target' => $item['target'] ?? '_self',
+                    'tone' => $this->resolveFeaturedCategoryTone($index),
+                ];
+            })->all();
+        }
+
+        return $fallbackToBrandHighlights ? $this->resolveBrandHighlights($parentCategories) : [];
+    }
+
     private function resolveBrandHighlights(Collection $parentCategories): array
     {
-        $tones = ['#101828', '#8f5f00', '#1c8c64', '#a66900', '#0d9488'];
         $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
 
         return $parentCategories->take(5)->values()->map(fn (CatalogCategory $category, int $index): array => [
             'name' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $category->id), $category->name),
-            'tone' => $tones[$index % count($tones)],
+            'url' => $this->categoryUrl($category->slug),
+            'target' => '_self',
+            'tone' => $this->resolveFeaturedCategoryTone($index),
         ])->all();
+    }
+
+    private function resolveFeaturedCategoryTone(int $index): string
+    {
+        $tones = ['#101828', '#8f5f00', '#1c8c64', '#a66900', '#0d9488'];
+
+        return $tones[$index % count($tones)];
+    }
+
+    private function resolveServiceCategories(Collection $parentCategories, string $websiteKey): array
+    {
+        return $parentCategories->map(function (CatalogCategory $parent) use ($websiteKey): array {
+            $resolvedWebsiteKey = $websiteKey;
+
+            return [
+                'name' => $parent->name,
+                'url' => $this->categoryUrl($parent->slug),
+                'summary' => $this->contentText(
+                    $resolvedWebsiteKey,
+                    sprintf('catalog_category.%d.description', $parent->id),
+                    (string) ($parent->description ?? '')
+                ),
+                'children' => $parent->children->map(fn (CatalogCategory $child): array => [
+                    'name' => $this->contentText($resolvedWebsiteKey, sprintf('catalog_category.%d.name', $child->id), $child->name),
+                    'url' => $this->categoryUrl($child->slug),
+                ])->all(),
+            ];
+        })->values()->all();
+    }
+
+    private function resolveServiceRoutes(array $featuredServices): array
+    {
+        return collect($featuredServices)->take(6)->values()->map(function (array $service): array {
+            return [
+                'title' => $service['title'] ?? '',
+                'summary' => $service['tag'] ?? '',
+                'price' => $service['price'] ?? null,
+                'url' => $service['url'] ?? '#',
+            ];
+        })->all();
+    }
+
+    private function resolveServiceMetrics(string $websiteKey, string $themeKey): array
+    {
+        $categoryCountQuery = CatalogCategory::query()->where('is_active', true);
+        $productCountQuery = CatalogProduct::query()->where('is_active', true);
+        $postCountQuery = CmsPost::query()->where('status', 'published');
+
+        $this->applyWebsiteScope($categoryCountQuery, $websiteKey);
+        $this->applyWebsiteScope($productCountQuery, $websiteKey);
+        $this->applyWebsiteScope($postCountQuery, $websiteKey);
+
+        return [
+            $this->resolveServiceMetricEntry($websiteKey, $themeKey, 0, (string) max(12, $categoryCountQuery->count() * 2), '+', 'gói dịch vụ và tuyến tham khảo'),
+            $this->resolveServiceMetricEntry($websiteKey, $themeKey, 1, (string) max(24, $productCountQuery->count()), '+', 'mẫu nội dung catalog đang hiển thị'),
+            $this->resolveServiceMetricEntry($websiteKey, $themeKey, 2, (string) max(3, $postCountQuery->count()), '+', 'bài viết hướng dẫn và cẩm nang'),
+            $this->resolveServiceMetricEntry($websiteKey, $themeKey, 3, '24', '/7', 'hỗ trợ lead demo trong giao diện'),
+        ];
+    }
+
+    private function resolveServiceMetricEntry(string $websiteKey, string $themeKey, int $index, string $defaultValue, string $defaultSuffix, string $defaultLabel): array
+    {
+        return [
+            'value' => $this->themeBlockText($websiteKey, $themeKey, sprintf('service_metrics.%d.value', $index), $defaultValue),
+            'suffix' => $this->themeBlockText($websiteKey, $themeKey, sprintf('service_metrics.%d.suffix', $index), $defaultSuffix),
+            'label' => $this->themeBlockText($websiteKey, $themeKey, sprintf('service_metrics.%d.label', $index), $defaultLabel),
+        ];
+    }
+
+    private function resolveServiceQuotePanel(string $websiteKey, string $themeKey): array
+    {
+        $defaults = [
+            [
+                'title' => 'Loại xe phổ biến',
+                'summary' => '4 chỗ, 7 chỗ, 16 chỗ, 29 chỗ, 45 chỗ, shuttle, cargo nhẹ.',
+            ],
+            [
+                'title' => 'Thông tin cần có',
+                'summary' => 'Số khách, điểm đón, điểm đến, ngày đi và số điện thoại liên hệ.',
+            ],
+            [
+                'title' => 'Cam kết phản hồi',
+                'summary' => 'CTA xuất hiện xuyên suốt từ trang chủ, trang danh mục, trang chi tiết và bước gửi yêu cầu.',
+            ],
+            [
+                'title' => 'Kênh ưu tiên',
+                'summary' => 'Hotline, email, trang liên hệ và form lưu nhu cầu để điều phối viên gọi lại.',
+            ],
+        ];
+
+        return [
+            'badge' => $this->themeBlockText($websiteKey, $themeKey, 'quote_panel.badge', 'Báo giá trong ngày'),
+            'items' => collect($defaults)->map(function (array $item, int $index) use ($websiteKey, $themeKey): array {
+                return [
+                    'title' => $this->themeBlockText($websiteKey, $themeKey, sprintf('quote_panel.items.%d.title', $index), $item['title']),
+                    'summary' => $this->themeBlockText($websiteKey, $themeKey, sprintf('quote_panel.items.%d.summary', $index), $item['summary']),
+                ];
+            })->all(),
+        ];
+    }
+
+    private function resolveCommerceHeroSlideDefaults(string $websiteKey, string $themeKey): array
+    {
+        return [
+            'eyebrow' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.eyebrow', 'Ưu đãi nổi bật'),
+            'badge' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.badge', 'Khám phá ngay'),
+            'cta' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.cta', 'Xem ngay'),
+        ];
+    }
+
+    private function resolveCommerceFooterColumns(string $websiteKey, string $themeKey): array
+    {
+        $defaults = [
+            [
+                'title' => 'Trợ giúp',
+                'links' => ['Chính sách giao hàng', 'Cách thức thanh toán', 'Hotdeal E-voucher', 'Membership'],
+            ],
+            [
+                'title' => 'Giới thiệu',
+                'links' => ['Về chúng tôi', 'Liên hệ', 'Chính sách bảo mật', 'Quy chế hoạt động'],
+            ],
+            [
+                'title' => 'Hợp tác',
+                'links' => ['Thẻ quà tặng', 'Liên hệ hợp tác', 'Tuyển dụng', 'Thông tin báo chí'],
+            ],
+        ];
+
+        return collect($defaults)->map(function (array $column, int $index) use ($websiteKey, $themeKey): array {
+            return [
+                'title' => $this->themeBlockText($websiteKey, $themeKey, sprintf('footer.columns.%d.title', $index), $column['title']),
+                'links' => collect($column['links'])->map(
+                    fn (string $link, int $linkIndex): string => $this->themeBlockText($websiteKey, $themeKey, sprintf('footer.columns.%d.links.%d', $index, $linkIndex), $link)
+                )->all(),
+            ];
+        })->all();
+    }
+
+    private function resolveCommerceCompanyFooter(string $websiteKey, string $themeKey): array
+    {
+        return [
+            'address_line_1' => $this->themeBlockText($websiteKey, $themeKey, 'company_footer.address_line_1', '332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM'),
+            'address_line_2' => $this->themeBlockText($websiteKey, $themeKey, 'company_footer.address_line_2', 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân'),
+        ];
+    }
+
+    private function resolveCommerceBranding(?SiteProfile $siteProfile, array $branding, string $websiteKey): array
+    {
+        if ($this->shouldUseCommerceBrandingFallback($siteProfile, $branding)) {
+            $branding = array_merge($branding, [
+                'company_name' => 'TH0001 Deal Commerce',
+                'slogan' => 'Deal ngon mỗi ngày, mua nhanh giá tốt',
+                'logo_url' => self::DEFAULT_BRAND_ASSET,
+                'favicon_url' => self::DEFAULT_BRAND_ASSET,
+                'primary_color' => '#ef2b2d',
+                'support_hotline' => '1900 6760 / 0354.466.968',
+                'support_email' => 'cs@th0001.demo',
+                'support_location' => 'TP.HCM & Hà Nội',
+            ]);
+        }
+
+        foreach (['company_name', 'slogan', 'support_location'] as $field) {
+            if (filled($branding[$field] ?? null)) {
+                $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
+            }
+        }
+
+        return $branding;
+    }
+
+    private function shouldUseCommerceBrandingFallback(?SiteProfile $siteProfile, array $branding): bool
+    {
+        if ($this->isDemoPresetBranding($branding)) {
+            return true;
+        }
+
+        if (($siteProfile?->website_type ?? null) !== 'ecommerce') {
+            return true;
+        }
+
+        $signals = [
+            $siteProfile?->site_name,
+            $branding['company_name'] ?? null,
+            $branding['slogan'] ?? null,
+            $branding['support_location'] ?? null,
+        ];
+
+        return collect($signals)
+            ->filter(fn (mixed $value): bool => filled($value))
+            ->contains(fn (mixed $value): bool => preg_match('/viet\s*tour|tour|coach|airport|shuttle|fleet|route|bao\s*gia|dua\s*don|van\s*hanh|charter/i', (string) $value) === 1);
+    }
+
+    private function shouldUseCommerceTopMenuFallback(array $items): bool
+    {
+        return collect($items)->contains(function (mixed $item): bool {
+            if (! is_array($item)) {
+                return false;
+            }
+
+            $signals = [
+                $item['label'] ?? null,
+                $item['url'] ?? null,
+            ];
+
+            return collect($signals)
+                ->filter(fn (mixed $value): bool => filled($value))
+                ->contains(function (mixed $value): bool {
+                    $normalizedValue = $this->normalizeSearchText((string) $value);
+
+                    return preg_match('/bao\s*gia|fleet|airport|shuttle|charter|tour|coach|xe|tuyen|route|demo\s*ser0100/', $normalizedValue) === 1;
+                });
+        });
+    }
+
+    private function themeBlockText(string $websiteKey, string $themeKey, string $blockKey, ?string $default): string
+    {
+        return $this->contentText(
+            $websiteKey,
+            app(\App\Support\ThemeBlockRegistry::class)->contentKey($themeKey, $blockKey),
+            $default,
+        );
+    }
+
+    private function resolveServiceHighlights(Collection $parentCategories): array
+    {
+        $defaults = [
+            ['title' => 'Bao gia nhanh', 'summary' => 'Noi bat CTA goi hotline, nhan lich trinh va yeu cau tu van ngay tren hero.'],
+            ['title' => 'Fleet ro rang', 'summary' => 'Danh muc va goi dich vu hien thi theo so cho, nhu cau va hanh trinh de ra quyet dinh nhanh hon.'],
+            ['title' => 'Noi dung tao trust', 'summary' => 'Co san block chi so van hanh, bai viet huong dan va vi tri lien he cho doanh nghiep dich vu.'],
+        ];
+
+        if ($parentCategories->isEmpty()) {
+            return $defaults;
+        }
+
+        return $parentCategories->take(3)->values()->map(function (CatalogCategory $category, int $index) use ($defaults): array {
+            return [
+                'title' => $category->name,
+                'summary' => $category->children->pluck('name')->take(3)->implode(', ') ?: $defaults[$index]['summary'],
+            ];
+        })->all();
+    }
+
+    private function resolveLatestPostHighlights(string $websiteKey): array
+    {
+        $query = CmsPost::query()->with('featuredMedia')->where('status', 'published')->latest('publish_at');
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        return $query->take(3)->get()->map(function (CmsPost $post) use ($websiteKey): array {
+            $post = $this->localizePostModel($post, $websiteKey);
+
+            return [
+                'title' => $post->title,
+                'excerpt' => $post->excerpt ?: mb_strimwidth(strip_tags((string) $post->body), 0, 180, '...'),
+                'url' => route('site.blog.show', ['slug' => $post->slug]),
+                'image' => $post->featuredMedia?->url,
+                'published_at' => $post->publish_at?->format('d/m/Y'),
+            ];
+        })->all();
     }
 
     private function mapProductCard(CatalogProduct $product): array
@@ -1238,6 +1880,58 @@ class CmsSiteController
             ->filter(fn (string $line): bool => $line !== '')
             ->values()
             ->all();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function resolveAccentInsensitiveProductIds(string $search, string $websiteKey, bool $includeDetailContent): array
+    {
+        $normalizedSearch = $this->normalizeSearchText($search);
+
+        if ($normalizedSearch === '') {
+            return [];
+        }
+
+        $query = CatalogProduct::query()
+            ->select(['id', 'name', 'sku', 'short_description', 'detail_content'])
+            ->where('is_active', true);
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        return $query->get()
+            ->filter(function (CatalogProduct $product) use ($normalizedSearch, $includeDetailContent): bool {
+                $haystacks = [
+                    $product->name,
+                    $product->sku,
+                    $product->short_description,
+                ];
+
+                if ($includeDetailContent) {
+                    $haystacks[] = $product->detail_content;
+                }
+
+                foreach ($haystacks as $haystack) {
+                    if (str_contains($this->normalizeSearchText((string) $haystack), $normalizedSearch)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            })
+            ->pluck('id')
+            ->map(fn ($id): int => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    private function normalizeSearchText(string $value): string
+    {
+        return Str::of($value)
+            ->lower()
+            ->ascii()
+            ->replaceMatches('/\s+/', ' ')
+            ->trim()
+            ->value();
     }
 
     private function splitTextParagraphs(?string $value): array
@@ -1355,9 +2049,11 @@ class CmsSiteController
         $localized->site_name = $this->contentText($websiteKey, 'site_profile.site_name', $siteProfile->site_name);
 
         $branding = $siteProfile->branding ?? [];
-        foreach (['company_name', 'slogan', 'support_location'] as $field) {
-            if (filled($branding[$field] ?? null)) {
-                $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
+        if (! $this->isDemoPresetBranding($branding)) {
+            foreach (['company_name', 'slogan', 'support_location'] as $field) {
+                if (filled($branding[$field] ?? null)) {
+                    $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
+                }
             }
         }
 
@@ -1381,6 +2077,11 @@ class CmsSiteController
         }
 
         return $localized;
+    }
+
+    private function isDemoPresetBranding(array $branding): bool
+    {
+        return filled($branding['demo_preset_key'] ?? null);
     }
 
     private function localizeProductModel(CatalogProduct $product, string $websiteKey): CatalogProduct

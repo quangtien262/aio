@@ -50,7 +50,7 @@ const emptyCategoryForm = {
 
 const emptyBannerForm = {
     id: null,
-    theme_key: 'TH0001',
+    theme_key: '',
     placement: 'hero-side',
     title: '',
     subtitle: '',
@@ -60,6 +60,8 @@ const emptyBannerForm = {
     eyebrow: '',
     summary: '',
     button_label: '',
+    image_position: 'center',
+    show_caption: true,
     sort_order: 0,
     is_active: true,
 };
@@ -82,15 +84,17 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: true,
         loader: async () => {
-            const [productsPayload, categoriesPayload, bannersPayload] = await Promise.all([
+            const [productsPayload, categoriesPayload, mediaPayload, bannersPayload] = await Promise.all([
                 callAdminApi('/admin/api/catalog/products'),
                 callAdminApi('/admin/api/catalog/categories'),
+                callAdminApi('/admin/api/cms/media'),
                 callAdminApi('/admin/api/site-banners'),
             ]);
 
             return {
                 products: productsPayload.data ?? { items: [], total: 0, metrics: {} },
                 categories: categoriesPayload.data ?? { items: [], total: 0 },
+                media: mediaPayload.data ?? { items: [], total: 0 },
                 banners: bannersPayload.data ?? { items: [], total: 0 },
             };
         },
@@ -100,6 +104,10 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
         value: category.id,
     })), [data?.categories?.items]);
+
+    const bannerItems = data?.banners?.items ?? [];
+    const sliderBanners = useMemo(() => bannerItems.filter((banner) => banner.placement === 'hero-slider'), [bannerItems]);
+    const otherBanners = useMemo(() => bannerItems.filter((banner) => banner.placement !== 'hero-slider'), [bannerItems]);
 
     const openProductModal = (product = null) => {
         setEditingProduct(product ? {
@@ -141,11 +149,13 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         setCategoryModalOpen(true);
     };
 
-    const openBannerModal = (banner = null) => {
+    const openBannerModal = (banner = null, defaultPlacement = null) => {
+        const placement = defaultPlacement ?? banner?.placement ?? 'hero-side';
+
         setEditingBanner(banner ? {
             id: banner.id,
-            theme_key: banner.theme_key ?? 'TH0001',
-            placement: banner.placement ?? 'hero-side',
+            theme_key: banner.theme_key ?? '',
+            placement,
             title: banner.title ?? '',
             subtitle: banner.subtitle ?? '',
             image_url: banner.image_url ?? '',
@@ -154,9 +164,15 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             eyebrow: banner.eyebrow ?? '',
             summary: banner.summary ?? '',
             button_label: banner.button_label ?? '',
+            image_position: banner.image_position ?? 'center',
+            show_caption: banner.show_caption ?? true,
             sort_order: banner.sort_order ?? 0,
             is_active: banner.is_active ?? true,
-        } : emptyBannerForm);
+        } : {
+            ...emptyBannerForm,
+            placement,
+            theme_key: placement === 'hero-slider' ? 'SER0100' : '',
+        });
         setBannerModalOpen(true);
     };
 
@@ -229,6 +245,44 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         },
     ];
 
+    const slideBannerColumns = [
+        {
+            title: 'Ảnh',
+            dataIndex: 'image_url',
+            key: 'image_url',
+            render: (value, banner) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 240 }}>
+                    <img
+                        src={value}
+                        alt={banner.title || 'Slide banner'}
+                        style={{ width: 96, height: 56, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(217, 226, 236, 0.92)' }}
+                    />
+                    <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 700 }}>{banner.title || 'Chưa có tiêu đề'}</div>
+                        <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: 12 }}>{banner.eyebrow || 'Không có caption nhỏ'}</div>
+                    </div>
+                </div>
+            ),
+        },
+        { title: 'Theme', dataIndex: 'theme_key', key: 'theme_key', render: (value) => value || 'global' },
+        { title: 'Caption', dataIndex: 'show_caption', key: 'show_caption', render: (value) => value ? <Tag color="green">visible</Tag> : <Tag>hidden</Tag> },
+        { title: 'Focal point', dataIndex: 'image_position', key: 'image_position', render: (value) => value || 'center' },
+        { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
+        { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', render: (value) => value ? <Tag color="green">active</Tag> : <Tag>hidden</Tag> },
+        {
+            title: 'Tác vụ',
+            key: 'actions',
+            render: (_, banner) => (
+                <Space wrap>
+                    <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openBannerModal(banner, 'hero-slider')}>Sửa</Button>
+                    <Popconfirm title="Xóa slide banner này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: `/admin/api/site-banners/${banner.id}`, method: 'DELETE', successMessage: 'Đã xóa slide banner.' })}>
+                        <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
+                    </Popconfirm>
+                </Space>
+            ),
+        },
+    ];
+
     if (loading) {
         return <Card loading title="Catalog" />;
     }
@@ -241,8 +295,8 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Card>
                 <Text className="card-label">Catalog</Text>
-                <Title level={3}>Catalog, Category và Banner</Title>
-                <Paragraph style={{ marginBottom: 0 }}>Một màn để chỉnh tay dữ liệu thương mại điện tử của TH0001: danh mục, sản phẩm và banner nhiều vị trí.</Paragraph>
+                <Title level={3}>Catalog, Category, Banner và Slide Hero</Title>
+                <Paragraph style={{ marginBottom: 0 }}>Dùng chung một nguồn dữ liệu banner cho nhiều theme, đồng thời có khu riêng để quản lý slide banner hình ảnh cho hero storefront.</Paragraph>
             </Card>
 
             <Card>
@@ -252,7 +306,8 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                         { label: 'In stock', value: data?.products?.metrics?.in_stock ?? 0 },
                         { label: 'Inventory units', value: data?.products?.metrics?.inventory_units ?? 0 },
                         { label: 'Danh mục', value: data?.categories?.total ?? 0 },
-                        { label: 'Banner', value: data?.banners?.total ?? 0 },
+                        { label: 'Slide banner', value: sliderBanners.length },
+                        { label: 'Banner khác', value: otherBanners.length },
                     ].map((item) => (
                         <div key={item.label} className="metric-tile">
                             <Text className="metric-label">{item.label}</Text>
@@ -296,16 +351,33 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                             ),
                         },
                         {
+                            key: 'hero-slides',
+                            label: `Slide banner (${sliderBanners.length})`,
+                            children: (
+                                <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                                    <Paragraph style={{ marginBottom: 0 }}>
+                                        Khu này quản lý riêng banner hình ảnh cho slider hero dùng chung giữa các theme. Chọn `theme_key` để ràng cho một theme cụ thể, hoặc để trống để dùng như dữ liệu global.
+                                    </Paragraph>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                        <Button type="primary" disabled={!permissions.catalogCreate} onClick={() => openBannerModal(null, 'hero-slider')}>
+                                            Tạo slide banner
+                                        </Button>
+                                    </div>
+                                    <Table rowKey="id" columns={slideBannerColumns} dataSource={sliderBanners} pagination={false} scroll={{ x: 1180 }} />
+                                </Space>
+                            ),
+                        },
+                        {
                             key: 'banners',
-                            label: `Banner (${data?.banners?.total ?? 0})`,
+                            label: `Banner khác (${otherBanners.length})`,
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Button type="primary" disabled={!permissions.catalogCreate} onClick={() => openBannerModal()}>
+                                        <Button type="primary" disabled={!permissions.catalogCreate} onClick={() => openBannerModal(null, 'hero-side')}>
                                             Tạo banner
                                         </Button>
                                     </div>
-                                    <Table rowKey="id" columns={bannerColumns} dataSource={data?.banners?.items ?? []} pagination={false} scroll={{ x: 1100 }} />
+                                    <Table rowKey="id" columns={bannerColumns} dataSource={otherBanners} pagination={false} scroll={{ x: 1100 }} />
                                 </Space>
                             ),
                         },
@@ -351,6 +423,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                         canManage={editingCategory.id ? permissions.catalogUpdate : permissions.catalogCreate}
                         editingCategory={editingCategory}
                         categoryOptions={categoryOptions.filter((option) => option.value !== editingCategory.id)}
+                        callAdminApi={callAdminApi}
                         onCancel={() => {
                             setCategoryModalOpen(false);
                             setEditingCategory(emptyCategoryForm);
@@ -379,6 +452,8 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                     <SiteBannerFormModal
                         open={bannerModalOpen}
                         canManage={editingBanner.id ? permissions.catalogUpdate : permissions.catalogCreate}
+                        mediaOptions={data?.media?.items ?? []}
+                        callAdminApi={callAdminApi}
                         editingBanner={editingBanner}
                         onCancel={() => {
                             setBannerModalOpen(false);

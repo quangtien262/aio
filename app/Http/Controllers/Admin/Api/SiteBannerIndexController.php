@@ -23,6 +23,8 @@ class SiteBannerIndexController
             'eyebrow' => data_get($banner->metadata, 'eyebrow'),
             'summary' => data_get($banner->metadata, 'summary'),
             'button_label' => data_get($banner->metadata, 'button_label'),
+            'image_position' => data_get($banner->metadata, 'image_position', 'center'),
+            'show_caption' => (bool) data_get($banner->metadata, 'show_caption', true),
             'sort_order' => $banner->sort_order,
             'is_active' => $banner->is_active,
         ])->values()->all();

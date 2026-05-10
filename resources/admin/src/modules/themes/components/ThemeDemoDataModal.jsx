@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import Alert from 'antd/es/alert';
 import Form from 'antd/es/form';
 import Modal from 'antd/es/modal';
@@ -5,7 +6,7 @@ import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
 
-const PRESET_OPTIONS = [
+const COMMERCE_PRESET_OPTIONS = [
     { label: 'Điện máy công nghệ', value: 'electronics-superstore', description: 'Điện thoại, laptop, điện lạnh, gia dụng.' },
     { label: 'Điện thoại và phụ kiện', value: 'phones-accessories', description: 'Showroom smartphone, gear, bảo hành.' },
     { label: 'Máy tính và workstation', value: 'computer-workstation', description: 'PC, laptop, màn hình, server mini.' },
@@ -16,10 +17,33 @@ const PRESET_OPTIONS = [
     { label: 'Phụ kiện công nghệ', value: 'tech-accessories', description: 'Gaming gear, sạc nhanh, smart-home.' },
 ];
 
+const SERVICE_PRESET_OPTIONS = [
+    { label: 'Nhà xe sân bay và city transfer', value: 'ser-airport-city', description: 'Đưa đón sân bay, city transfer, khách gia đình và khách công tác.' },
+    { label: 'Nhà xe du lịch và xe đoàn', value: 'ser-tour-coach', description: 'Xe 16-45 chỗ, tour công ty, trường học, đoàn khách.' },
+    { label: 'Shuttle doanh nghiệp và hàng nhẹ', value: 'ser-business-cargo', description: 'Shuttle theo hợp đồng, chở nhân sự và vận chuyển hàng nhẹ.' },
+];
+
 const { Paragraph, Text } = Typography;
 
-export default function ThemeDemoDataModal({ open, theme, canGenerateDemoData, onCancel, onSubmit }) {
+export default function ThemeDemoDataModal({ open, theme, mode = 'generate', canGenerateDemoData, onCancel, onSubmit }) {
     const [form] = Form.useForm();
+    const presetOptions = useMemo(() => {
+        if ((theme?.website_type ?? '').toLowerCase() === 'service') {
+            return SERVICE_PRESET_OPTIONS;
+        }
+
+        return COMMERCE_PRESET_OPTIONS;
+    }, [theme?.website_type]);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        form.setFieldsValue({
+            preset: presetOptions[0]?.value,
+        });
+    }, [form, open, presetOptions]);
 
     const handleOk = async () => {
         const values = await form.validateFields();
@@ -32,14 +56,14 @@ export default function ThemeDemoDataModal({ open, theme, canGenerateDemoData, o
 
     return (
         <Modal
-            title={theme ? `Tạo data test: ${theme.name}` : 'Tạo data test'}
+            title={theme ? `${mode === 'rebuild' ? 'Rebuild curated local demo' : 'Tạo data test'}: ${theme.name}` : mode === 'rebuild' ? 'Rebuild curated local demo' : 'Tạo data test'}
             open={open}
             onCancel={() => {
                 form.resetFields();
                 onCancel?.();
             }}
             onOk={handleOk}
-            okText="Tạo dữ liệu"
+            okText={mode === 'rebuild' ? 'Rebuild dữ liệu local' : 'Tạo dữ liệu'}
             okButtonProps={{ disabled: !theme || !canGenerateDemoData }}
             destroyOnHidden
         >
@@ -47,7 +71,13 @@ export default function ThemeDemoDataModal({ open, theme, canGenerateDemoData, o
                 <Alert
                     type="info"
                     showIcon
-                    message="Hệ thống sẽ tạo menu, sản phẩm, tin tức, trang giới thiệu và banner demo cho website hiện tại. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau."
+                    message={
+                        mode === 'rebuild'
+                            ? 'Hệ thống sẽ regenerate lại bộ demo data theo preset đã chọn và buộc toàn bộ ảnh demo đi qua local curated asset pool trong repo. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
+                            : (theme?.website_type ?? '').toLowerCase() === 'service'
+                                ? 'Hệ thống sẽ tạo menu, gói dịch vụ, cẩm nang, trang giới thiệu và banner demo cho website hiện tại. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
+                                : 'Hệ thống sẽ tạo menu, sản phẩm, tin tức, trang giới thiệu và banner demo cho website hiện tại. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
+                    }
                 />
 
                 <div>
@@ -55,14 +85,14 @@ export default function ThemeDemoDataModal({ open, theme, canGenerateDemoData, o
                     <Paragraph style={{ marginBottom: 0 }}>{theme?.name ?? 'Chưa chọn theme'}</Paragraph>
                 </div>
 
-                <Form form={form} layout="vertical" initialValues={{ preset: 'electronics-superstore' }}>
+                <Form form={form} layout="vertical" initialValues={{ preset: presetOptions[0]?.value }}>
                     <Form.Item
                         name="preset"
                         label="Ngành dữ liệu mẫu"
                         rules={[{ required: true, message: 'Chọn loại dữ liệu test cần tạo' }]}
                     >
                         <Select
-                            options={PRESET_OPTIONS}
+                            options={presetOptions}
                             optionRender={(option) => (
                                 <div>
                                     <div>{option.data.label}</div>

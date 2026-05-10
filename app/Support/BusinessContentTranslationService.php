@@ -2,9 +2,12 @@
 
 namespace App\Support;
 
+use App\Support\ThemeBlockRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
+use App\Models\CmsFeaturedCategory;
+use App\Models\CmsSidePromo;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
@@ -19,10 +22,14 @@ class BusinessContentTranslationService
 {
     private const CACHE_TTL_SECONDS = 3600;
 
-    public function editableEntries(string $websiteKey, string $locale): array
+    public function __construct(private readonly ThemeBlockRegistry $themeBlockRegistry)
+    {
+    }
+
+    public function editableEntries(string $websiteKey, string $locale, ?string $themeKey = null): array
     {
         $resolvedLocale = FrontendLocalization::resolveEditableLocale($locale);
-        $defaults = $this->defaultEntries($websiteKey);
+        $defaults = $this->defaultEntries($websiteKey, $themeKey);
         $overrides = $this->overrides($websiteKey, $resolvedLocale);
 
         return collect($defaults)
@@ -69,10 +76,10 @@ class BusinessContentTranslationService
         return $this->localizedDefaultValue($value, $locale);
     }
 
-    public function saveOverrides(string $websiteKey, string $locale, array $entries): void
+    public function saveOverrides(string $websiteKey, string $locale, array $entries, ?string $themeKey = null): void
     {
         $resolvedLocale = FrontendLocalization::resolveEditableLocale($locale);
-        $baseline = collect($this->editableEntries($websiteKey, $resolvedLocale))
+        $baseline = collect($this->editableEntries($websiteKey, $resolvedLocale, $themeKey))
             ->mapWithKeys(fn (array $entry): array => [$entry['key'] => $entry['default_value']])
             ->all();
 
@@ -118,25 +125,27 @@ class BusinessContentTranslationService
         return Cache::remember(
             $this->cacheKey($websiteKey, $locale),
             now()->addSeconds(self::CACHE_TTL_SECONDS),
-            fn (): array => ThemeTranslation::query()
-                ->where('theme_key', $this->contentThemeKey($websiteKey))
-                ->where('locale', $locale)
-                ->where('group', 'content')
-                ->pluck('value', 'translation_key')
-                ->all(),
+            function () use ($websiteKey, $locale): array {
+                return ThemeTranslation::query()
+                    ->where('theme_key', $this->contentThemeKey($websiteKey))
+                    ->where('locale', $locale)
+                    ->where('group', 'content')
+                    ->pluck('value', 'translation_key')
+                    ->all();
+            },
         );
     }
 
-    private function defaultEntries(string $websiteKey): array
+    private function defaultEntries(string $websiteKey, ?string $themeKey = null): array
     {
         return Cache::remember(
-            $this->defaultEntriesCacheKey($websiteKey),
+            $this->defaultEntriesCacheKey($websiteKey, $themeKey),
             now()->addSeconds(self::CACHE_TTL_SECONDS),
-            fn (): array => $this->buildDefaultEntries($websiteKey),
+            fn (): array => $this->buildDefaultEntries($websiteKey, $themeKey),
         );
     }
 
-    private function buildDefaultEntries(string $websiteKey): array
+    private function buildDefaultEntries(string $websiteKey, ?string $themeKey = null): array
     {
         $entries = collect();
         $siteProfile = SiteProfile::query()->first();
@@ -179,6 +188,37 @@ class BusinessContentTranslationService
                         'source_value' => (string) ($child['label'] ?? ''),
                     ]);
                 });
+            });
+        });
+
+        CmsFeaturedCategory::query()->orderBy('location')->orderBy('id')->get()->each(function (CmsFeaturedCategory $group) use ($entries): void {
+            collect($group->items ?? [])->values()->each(function (array $item, int $index) use ($entries, $group): void {
+                $entries->push([
+                    'key' => sprintf('cms_featured_category.%s.%d.label', $group->location, $index),
+                    'label' => sprintf('Featured category / %s / Item %d', $group->location, $index + 1),
+                    'source_value' => (string) ($item['label'] ?? ''),
+                ]);
+            });
+        });
+
+        CmsSidePromo::query()->orderBy('location')->orderBy('id')->get()->each(function (CmsSidePromo $group) use ($entries): void {
+            collect($group->items ?? [])->values()->each(function (array $item, int $index) use ($entries, $group): void {
+                foreach ([
+                    'badge' => sprintf('Side promo / %s / Item %d / Badge', $group->location, $index + 1),
+                    'title' => sprintf('Side promo / %s / Item %d / Title', $group->location, $index + 1),
+                    'subtitle' => sprintf('Side promo / %s / Item %d / Subtitle', $group->location, $index + 1),
+                    'cta_label' => sprintf('Side promo / %s / Item %d / CTA', $group->location, $index + 1),
+                ] as $field => $label) {
+                    if (! filled($item[$field] ?? null)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'key' => sprintf('cms_side_promo.%s.%d.%s', $group->location, $index, $field),
+                        'label' => $label,
+                        'source_value' => (string) $item[$field],
+                    ]);
+                }
             });
         });
 
@@ -299,6 +339,10 @@ class BusinessContentTranslationService
             }
         });
 
+        foreach ($this->themeBlockRegistry->editableEntries((string) $themeKey, $websiteKey) as $entry) {
+            $entries->push($entry);
+        }
+
         return $entries
             ->filter(fn (array $entry): bool => trim((string) ($entry['source_value'] ?? '')) !== '')
             ->unique('key')
@@ -325,11 +369,12 @@ class BusinessContentTranslationService
         return sprintf('business-content-translations:%s:%s', strtolower($websiteKey), strtolower($locale));
     }
 
-    private function defaultEntriesCacheKey(string $websiteKey): string
+    private function defaultEntriesCacheKey(string $websiteKey, ?string $themeKey = null): string
     {
         return sprintf(
-            'business-content-default-entries:%s:%s',
+            'business-content-default-entries:%s:%s:%s',
             strtolower($websiteKey),
+            strtolower(trim((string) $themeKey)) ?: 'all',
             $this->defaultEntriesSignature(),
         );
     }

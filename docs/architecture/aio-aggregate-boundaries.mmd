@@ -1,0 +1,110 @@
+flowchart TB
+  subgraph Access[Access & Platform]
+    Admin[Admin]
+    Role[Role]
+    Permission[Permission]
+    AdminRoleScope[AdminRoleScope]
+    ModuleInstallation[ModuleInstallation]
+    ThemeInstallation[ThemeInstallation]
+    SiteProfile[SiteProfile]
+    SystemLocale[SystemLocale]
+    ThemeTranslation[ThemeTranslation]
+    ThemeDemoRecord[ThemeDemoRecord]
+  end
+
+  subgraph CMS[CMS Aggregate]
+    CmsPage[CmsPage]
+    CmsPost[CmsPost]
+    CmsCategory[CmsCategory]
+    CmsMenu[CmsMenu]
+    CmsMedia[CmsMedia]
+  end
+
+  subgraph Catalog[Catalog Aggregate]
+    CatalogCategory[CatalogCategory]
+    CatalogProduct[CatalogProduct]
+    CatalogProductImage[CatalogProductImage]
+  end
+
+  subgraph Commerce[Commerce Aggregate]
+    Customer[Customer]
+    Order[Order]
+    OrderItem[OrderItem]
+    NewsletterSubscriber[NewsletterSubscriber]
+    CustomerFavorite[CustomerFavorite]
+    SiteBanner[SiteBanner]
+  end
+
+  subgraph Project[Project Aggregate]
+    ProjectRoot[Project]
+    ProjectMember[ProjectMember]
+    ProjectTaskStatus[ProjectTaskStatus]
+    ProjectTask[ProjectTask]
+    ProjectChecklist[ProjectChecklist]
+    ProjectTaskChecklist[ProjectTaskChecklist]
+    ProjectTaskComment[ProjectTaskComment]
+    ProjectTaskTimeEntry[ProjectTaskTimeEntry]
+    ProjectFile[ProjectFile]
+    ProjectReport[ProjectReport]
+    ProjectActivity[ProjectActivity]
+    ProjectStatus[ProjectStatus ref]
+    ProjectType[ProjectType ref]
+    ProjectPriority[ProjectPriority ref]
+  end
+
+  Admin --> Role
+  Role --> Permission
+  Admin --> AdminRoleScope
+  SiteProfile --> ThemeInstallation
+  ThemeInstallation --> ThemeTranslation
+  ThemeInstallation --> ThemeDemoRecord
+  SystemLocale --> ThemeTranslation
+
+  CmsPage --> CmsMedia
+  CmsPost --> CmsCategory
+  CmsPost --> CmsMedia
+  CmsCategory --> CmsCategory
+  CmsMenu --> SiteProfile
+
+  CatalogCategory --> CatalogCategory
+  CatalogProduct --> CatalogCategory
+  CatalogProduct --> CatalogProductImage
+
+  Customer --> Order
+  Order --> OrderItem
+  OrderItem --> CatalogProduct
+  Customer --> NewsletterSubscriber
+  Customer --> CustomerFavorite
+  CustomerFavorite --> CatalogProduct
+  SiteProfile --> SiteBanner
+  ThemeInstallation --> SiteBanner
+
+  ProjectRoot --> ProjectMember
+  ProjectRoot --> ProjectTaskStatus
+  ProjectRoot --> ProjectTask
+  ProjectRoot --> ProjectChecklist
+  ProjectRoot --> ProjectTaskChecklist
+  ProjectRoot --> ProjectTaskComment
+  ProjectRoot --> ProjectTaskTimeEntry
+  ProjectRoot --> ProjectFile
+  ProjectRoot --> ProjectReport
+  ProjectRoot --> ProjectActivity
+  ProjectRoot --> ProjectStatus
+  ProjectRoot --> ProjectType
+  ProjectRoot --> ProjectPriority
+  ProjectTask --> ProjectTaskChecklist
+  ProjectTask --> ProjectTaskComment
+  ProjectTask --> ProjectTaskTimeEntry
+  ProjectTask --> ProjectFile
+  ProjectTask --> ProjectTaskStatus
+  ProjectTask --> ProjectPriority
+  Admin --> ProjectRoot
+  Admin --> ProjectMember
+  Admin --> ProjectTask
+  Admin --> ProjectChecklist
+  Admin --> ProjectTaskChecklist
+  Admin --> ProjectTaskComment
+  Admin --> ProjectTaskTimeEntry
+  Admin --> ProjectFile
+  Admin --> ProjectReport
+  Admin --> ProjectActivity

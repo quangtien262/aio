@@ -109,6 +109,26 @@
       "permission": "cms.view"
     },
     {
+      "key": "cms-featured-categories",
+      "label": "Danh mục nổi bật",
+      "description": "Quản lý các khối danh mục nổi bật dùng chung cho storefront theo từng vị trí.",
+      "badge": "Featured",
+      "color": "gold",
+      "icon": "appstore",
+      "route": "/admin/cms/featured-categories",
+      "permission": "cms.view"
+    },
+    {
+      "key": "cms-side-promos",
+      "label": "Side Promos",
+      "description": "Quản lý block promo dọc cạnh hero theo từng vị trí storefront.",
+      "badge": "Hero",
+      "color": "volcano",
+      "icon": "picture",
+      "route": "/admin/cms/side-promos",
+      "permission": "cms.view"
+    },
+    {
       "key": "cms-media",
       "label": "Media",
       "description": "Media picker cơ bản để chọn ảnh cho page và post.",

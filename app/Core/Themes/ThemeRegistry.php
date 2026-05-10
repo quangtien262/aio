@@ -6,6 +6,7 @@ use App\Models\ThemeDemoRecord;
 use App\Models\ThemeInstallation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\URL;
 
 class ThemeRegistry
 {
@@ -34,6 +35,7 @@ class ThemeRegistry
                     'blocks' => $manifest->blocks,
                     'parent' => $manifest->parent,
                     'preview' => $manifest->preview,
+                    'preview_urls' => $this->resolvePreviewUrls($manifest->key, $manifest->preview),
                     'supports' => $manifest->supports,
                     'demo' => $manifest->demo,
                     'localization' => [
@@ -64,5 +66,33 @@ class ThemeRegistry
         $decoded = json_decode(File::get($manifestPath), true);
 
         return $decoded;
+    }
+
+    /**
+     * @param  array{thumbnail?:string,cover?:string}  $preview
+     * @return array{thumbnail:?string,cover:?string}
+     */
+    private function resolvePreviewUrls(string $themeKey, array $preview): array
+    {
+        return [
+            'thumbnail' => $this->resolvePreviewUrl($themeKey, $preview['thumbnail'] ?? null),
+            'cover' => $this->resolvePreviewUrl($themeKey, $preview['cover'] ?? null),
+        ];
+    }
+
+    private function resolvePreviewUrl(string $themeKey, ?string $fileName): ?string
+    {
+        if (! is_string($fileName) || trim($fileName) === '') {
+            return null;
+        }
+
+        $relativePath = 'theme-previews/'.$themeKey.'/'.$fileName;
+        $absolutePath = public_path(str_replace('/', DIRECTORY_SEPARATOR, $relativePath));
+
+        if (! File::exists($absolutePath)) {
+            return null;
+        }
+
+        return URL::to($relativePath);
     }
 }

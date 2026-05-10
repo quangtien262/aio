@@ -7,9 +7,12 @@ import InputNumber from 'antd/es/input-number';
 import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 
-export default function CatalogCategoryFormModal({ open, canManage, editingCategory, categoryOptions = [], onCancel, onSubmit }) {
+export default function CatalogCategoryFormModal({ open, canManage, editingCategory, categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
+    const imageUrl = Form.useWatch('image_url', form) ?? '';
+    const categoryName = Form.useWatch('name', form) ?? '';
 
     useEffect(() => {
         form.setFieldsValue(editingCategory);
@@ -56,8 +59,27 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="image_url" label="Ảnh đại diện">
-                            <Input placeholder="https://cdn.example.com/category.jpg" />
+                        <Form.Item name="image_url" hidden>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item label="Ảnh đại diện">
+                            <SingleMediaPicker
+                                open={open}
+                                value={imageUrl}
+                                onChange={(nextValue) => form.setFieldValue('image_url', nextValue)}
+                                canManage={canManage}
+                                callAdminApi={callAdminApi}
+                                recordTitle={categoryName || 'Category image'}
+                                previewTitle="Ảnh danh mục"
+                                uploadButtonLabel="Upload ảnh danh mục"
+                                uploadHint="Ảnh upload xong sẽ tự được gán cho danh mục hiện tại."
+                                libraryModalTitle="Chọn ảnh danh mục từ thư viện"
+                                urlPlaceholder="https://example.com/category.jpg"
+                                uploadSuccessMessage="Đã upload và gán ảnh danh mục."
+                                urlSuccessMessage="Đã lưu URL vào thư viện media và gán cho danh mục."
+                                uploadErrorMessage="Upload ảnh danh mục không thành công."
+                                urlErrorMessage="Không thể lưu ảnh danh mục từ URL."
+                            />
                         </Form.Item>
                     </Col>
                 </Row>

@@ -67,6 +67,9 @@ Route::prefix('{locale}')
 			->whereIn('subscribeSegment', FrontendLocalization::segmentValues('subscribe'))
 			->name('site.newsletter.subscribe');
 
+		Route::post('/theme-preset/{preset}', [CmsSiteController::class, 'switchThemePreset'])
+			->name('site.theme.preset.switch');
+
 		Route::middleware('auth:admin')->group(function (): void {
 			Route::get('/{previewSegment}/{pagesSegment}/{page}', [CmsSiteController::class, 'previewPage'])
 				->whereIn('previewSegment', FrontendLocalization::segmentValues('preview'))

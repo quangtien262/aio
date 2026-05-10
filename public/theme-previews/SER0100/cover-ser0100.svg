@@ -1,0 +1,34 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="120" y1="80" x2="1460" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="0.55" stop-color="#155E75"/>
+      <stop offset="1" stop-color="#EA580C"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <path d="M0 678C136 618 244 590 382 606C506 620 596 712 726 720C914 731 1004 578 1188 578C1341 578 1450 650 1600 742V900H0V678Z" fill="#082F49" fill-opacity="0.55"/>
+  <path d="M0 728C160 650 280 634 434 664C568 690 646 802 806 804C992 808 1080 662 1260 660C1388 658 1498 720 1600 804V900H0V728Z" fill="#0C4A6E" fill-opacity="0.45"/>
+  <rect x="80" y="76" width="1440" height="92" rx="32" fill="#FFFFFF" fill-opacity="0.11" stroke="#FFFFFF" stroke-opacity="0.14"/>
+  <text x="130" y="134" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="800">SER0100 • Service Transport Theme</text>
+  <text x="1470" y="134" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="24" text-anchor="end">AIO Theme Manager Preview</text>
+  <text x="96" y="270" fill="#FDBA74" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="4">WEBSITE TYPE: SERVICE</text>
+  <text x="96" y="390" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="98" font-weight="900">Bản sắc nhà xe</text>
+  <text x="96" y="490" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="600">Tập trung route, hotline, năng lực đội xe và hành động báo giá.</text>
+  <rect x="96" y="548" width="320" height="78" rx="39" fill="#F8FAFC"/>
+  <text x="256" y="598" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="800" text-anchor="middle">Nhận báo giá</text>
+  <rect x="442" y="548" width="250" height="78" rx="39" fill="#0F172A" stroke="#FFFFFF" stroke-opacity="0.22"/>
+  <text x="567" y="598" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" text-anchor="middle">1900 6760</text>
+  <rect x="930" y="204" width="502" height="560" rx="40" fill="#FFF7ED" fill-opacity="0.12" stroke="#FFFFFF" stroke-opacity="0.16"/>
+  <text x="982" y="272" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="800">Bố cục chính</text>
+  <rect x="982" y="316" width="398" height="120" rx="28" fill="#FFFFFF" fill-opacity="0.88"/>
+  <text x="1018" y="364" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">Hero báo giá nhanh</text>
+  <text x="1018" y="404" fill="#486581" font-family="Segoe UI, Arial, sans-serif" font-size="22">CTA nổi bật, hotline, form nhu cầu</text>
+  <rect x="982" y="462" width="186" height="118" rx="24" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="1194" y="462" width="186" height="118" rx="24" fill="#FFFFFF" fill-opacity="0.16"/>
+  <rect x="982" y="604" width="398" height="118" rx="24" fill="#FFFFFF" fill-opacity="0.16"/>
+  <text x="1014" y="524" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Bảng tuyến</text>
+  <text x="1226" y="524" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Nhóm xe</text>
+  <text x="1014" y="670" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Cẩm nang, trust metrics, CTA cuối trang</text>
+  <text x="96" y="760" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="28">Dùng chung CMS, Catalog, Cart/Checkout nhưng đổi trọng tâm sang lead-gen cho dịch vụ.</text>
+</svg>

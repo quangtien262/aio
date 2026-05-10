@@ -1,0 +1,10 @@
+<svg width="220" height="96" viewBox="0 0 220 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="220" height="96" rx="22" fill="#0F172A"/>
+  <path d="M30 58C30 44.7452 40.7452 34 54 34H115C123.284 34 130 40.7157 130 49V58H30Z" fill="#F8FAFC"/>
+  <path d="M43 58H159C166.18 58 172 63.8203 172 71V72H43V58Z" fill="#FDBA74"/>
+  <circle cx="68" cy="73" r="10" fill="#102A43"/>
+  <circle cx="148" cy="73" r="10" fill="#102A43"/>
+  <path d="M126 40H152L170 58H126V40Z" fill="#1F6F78"/>
+  <text x="180" y="43" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="end">SER0100</text>
+  <text x="180" y="66" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="11" text-anchor="end">SERVICE TRANSPORT</text>
+</svg>

@@ -29,7 +29,7 @@ class ThemeTranslationManagementController
         $group = (string) ($payload['group'] ?? 'static');
 
         if ($group === 'content') {
-            $businessContentTranslationService->saveOverrides($this->resolveWebsiteKey(), $resolvedLocale, $payload['entries']);
+            $businessContentTranslationService->saveOverrides($this->resolveWebsiteKey(), $resolvedLocale, $payload['entries'], $key);
         } else {
             $themeTranslationService->saveOverrides($key, $resolvedLocale, $payload['entries']);
         }

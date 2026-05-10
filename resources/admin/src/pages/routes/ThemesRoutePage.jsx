@@ -35,6 +35,9 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
         return <Alert type="error" showIcon message={error} />;
     }
 
+    const themes = data?.themes ?? [];
+    const activeTheme = themes.find((theme) => theme.is_active) ?? null;
+
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
             {returnTo ? (
@@ -50,7 +53,8 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
             ) : null}
 
             <ThemeManagerPage
-                themes={data?.themes ?? []}
+                themes={themes}
+                activeTheme={activeTheme}
                 frontendLocale={frontendLocale}
                 defaultFrontendLocale={defaultFrontendLocale ?? data?.meta?.default_locale ?? 'vi'}
                 onActivate={(themeKey) => runAdminAction(

@@ -9,6 +9,9 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\SiteProfile;
 use App\Support\PermissionLabel;
+use Database\Seeders\FeaturedCategorySeeder;
+use Database\Seeders\HeroSideBannerSeeder;
+use Database\Seeders\SidePromoSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,6 +23,9 @@ class DatabaseSeeder extends Seeder
         $this->seedDefaultAdmin();
         $this->seedSiteProfile();
         $this->enableDefaultCmsModule();
+        $this->call(HeroSideBannerSeeder::class);
+        $this->call(FeaturedCategorySeeder::class);
+        $this->call(SidePromoSeeder::class);
     }
 
     private function seedCoreAccess(): void

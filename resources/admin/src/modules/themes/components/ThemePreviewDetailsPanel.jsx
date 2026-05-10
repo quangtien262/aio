@@ -29,6 +29,9 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, onOpenAct
         return <Empty description="Chưa có theme nào để xem chi tiết." />;
     }
 
+    const thumbnailUrl = theme.preview_urls?.thumbnail || null;
+    const coverUrl = theme.preview_urls?.cover || null;
+
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <div>
@@ -39,6 +42,27 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, onOpenAct
                 </Space>
                 <Paragraph style={{ marginBottom: 0 }}>{theme.description || 'Theme chưa có mô tả.'}</Paragraph>
             </div>
+
+            {coverUrl || thumbnailUrl ? (
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    {coverUrl ? (
+                        <img
+                            src={coverUrl}
+                            alt={`${theme.name} cover`}
+                            style={{ width: '100%', height: 196, objectFit: 'cover', borderRadius: 18, border: '1px solid #d9e6e2', display: 'block' }}
+                        />
+                    ) : null}
+                    {thumbnailUrl ? (
+                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                            <img
+                                src={thumbnailUrl}
+                                alt={`${theme.name} thumbnail`}
+                                style={{ width: 180, height: 120, objectFit: 'cover', borderRadius: 18, border: '1px solid #d9e6e2', display: 'block' }}
+                            />
+                        </div>
+                    ) : null}
+                </Space>
+            ) : null}
 
             {!theme.is_active ? (
                 <Button type="primary" disabled={!canActivate} onClick={() => onOpenActivateDialog?.(theme)}>

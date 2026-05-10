@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="960" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="720" rx="36" fill="url(#bg)"/>
+  <circle cx="290" cy="290" r="132" fill="#F8FAFC" fill-opacity="0.12"/>
+  <rect x="214" y="180" width="152" height="228" rx="26" fill="#E2E8F0"/>
+  <rect x="236" y="210" width="108" height="148" rx="16" fill="#0F172A"/>
+  <circle cx="290" cy="384" r="10" fill="#94A3B8"/>
+  <rect x="430" y="220" width="228" height="34" rx="17" fill="#F97316"/>
+  <rect x="430" y="278" width="300" height="22" rx="11" fill="#E2E8F0" fill-opacity="0.8"/>
+  <rect x="430" y="316" width="268" height="22" rx="11" fill="#E2E8F0" fill-opacity="0.55"/>
+  <rect x="430" y="382" width="188" height="54" rx="27" fill="#F8FAFC"/>
+  <text x="430" y="510" fill="#F8FAFC" font-family="Arial, sans-serif" font-size="54" font-weight="700">Demo Commerce Asset</text>
+  <text x="430" y="564" fill="#CBD5E1" font-family="Arial, sans-serif" font-size="28">Fallback local image for catalog product cards</text>
+</svg>

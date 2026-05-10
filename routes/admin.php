@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\Api\Catalog\CategoryIndexController as CatalogCat
 use App\Http\Controllers\Admin\Api\Catalog\CategoryManagementController as CatalogCategoryManagementController;
 use App\Http\Controllers\Admin\Api\Cms\CategoryIndexController;
 use App\Http\Controllers\Admin\Api\Cms\CategoryManagementController;
+use App\Http\Controllers\Admin\Api\Cms\FeaturedCategoryIndexController;
+use App\Http\Controllers\Admin\Api\Cms\FeaturedCategoryManagementController;
 use App\Http\Controllers\Admin\Api\Cms\MediaIndexController;
 use App\Http\Controllers\Admin\Api\Cms\MediaManagementController;
 use App\Http\Controllers\Admin\Api\Cms\MenuIndexController;
@@ -20,6 +22,8 @@ use App\Http\Controllers\Admin\Api\Cms\PageManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PageIndexController;
 use App\Http\Controllers\Admin\Api\Cms\PostIndexController;
 use App\Http\Controllers\Admin\Api\Cms\PostManagementController;
+use App\Http\Controllers\Admin\Api\Cms\SidePromoIndexController;
+use App\Http\Controllers\Admin\Api\Cms\SidePromoManagementController;
 use App\Http\Controllers\Admin\Api\DashboardController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
@@ -287,6 +291,9 @@ Route::prefix('admin')
                 Route::get('/cms/menus', MenuIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.menus.index');
+                Route::get('/cms/featured-categories', FeaturedCategoryIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.featured-categories.index');
                 Route::get('/cms/menu-locations', [MenuLocationController::class, 'index'])
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.menu-locations.index');
@@ -308,6 +315,27 @@ Route::prefix('admin')
                 Route::delete('/cms/menus/{menu}', [MenuManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.menu.manage')
                     ->name('cms.menus.destroy');
+                Route::post('/cms/featured-categories', [FeaturedCategoryManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.featured-categories.store');
+                Route::put('/cms/featured-categories/{featuredCategory}', [FeaturedCategoryManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.featured-categories.update');
+                Route::delete('/cms/featured-categories/{featuredCategory}', [FeaturedCategoryManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.featured-categories.destroy');
+                Route::get('/cms/side-promos', SidePromoIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.side-promos.index');
+                Route::post('/cms/side-promos', [SidePromoManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.side-promos.store');
+                Route::put('/cms/side-promos/{sidePromo}', [SidePromoManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.side-promos.update');
+                Route::delete('/cms/side-promos/{sidePromo}', [SidePromoManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.menu.manage')
+                    ->name('cms.side-promos.destroy');
                 Route::get('/cms/media', MediaIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.media.index');

@@ -56,6 +56,8 @@ class SiteBannerManagementController
             'eyebrow' => ['nullable', 'string', 'max:120'],
             'summary' => ['nullable', 'string'],
             'button_label' => ['nullable', 'string', 'max:120'],
+            'image_position' => ['nullable', 'string', 'max:120'],
+            'show_caption' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
         ]);
@@ -75,6 +77,8 @@ class SiteBannerManagementController
                 'eyebrow' => $validated['eyebrow'] ?? null,
                 'summary' => $validated['summary'] ?? null,
                 'button_label' => $validated['button_label'] ?? null,
+                'image_position' => $validated['image_position'] ?? null,
+                'show_caption' => array_key_exists('show_caption', $validated) ? (bool) $validated['show_caption'] : null,
             ], fn ($value): bool => $value !== null && $value !== ''),
             'sort_order' => (int) ($validated['sort_order'] ?? 0),
             'is_active' => (bool) ($validated['is_active'] ?? true),
@@ -95,6 +99,8 @@ class SiteBannerManagementController
             'eyebrow' => data_get($banner->metadata, 'eyebrow'),
             'summary' => data_get($banner->metadata, 'summary'),
             'button_label' => data_get($banner->metadata, 'button_label'),
+            'image_position' => data_get($banner->metadata, 'image_position', 'center'),
+            'show_caption' => (bool) data_get($banner->metadata, 'show_caption', true),
             'sort_order' => $banner->sort_order,
             'is_active' => $banner->is_active,
         ];

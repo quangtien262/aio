@@ -34,6 +34,17 @@ class ThemeDemoContentGenerator
         );
     }
 
+    public function servicePresets(): array
+    {
+        return array_values(array_map(
+            fn (array $preset): array => Arr::only($preset, ['key', 'label', 'description', 'company_name']),
+            array_filter(
+                $this->presetDefinitions(),
+                fn (array $preset): bool => ($preset['catalog_style'] ?? 'commerce') === 'service',
+            ),
+        ));
+    }
+
     public function generate(string $themeKey, string $presetKey): array
     {
         $preset = collect($this->presetDefinitions())->firstWhere('key', $presetKey);
@@ -42,20 +53,25 @@ class ThemeDemoContentGenerator
             throw new InvalidArgumentException('Preset demo content không hợp lệ.');
         }
 
-        $siteProfile = SiteProfile::query()->firstOrCreate(
-            ['site_name' => 'AIO Website'],
-            [
+        $isServicePreset = ($preset['catalog_style'] ?? 'commerce') === 'service';
+
+        $siteProfile = SiteProfile::query()->first();
+
+        if (! $siteProfile) {
+            $siteProfile = new SiteProfile([
+                'site_name' => 'AIO Website',
                 'website_type' => 'ecommerce',
                 'active_theme_key' => $themeKey,
                 'is_setup_completed' => false,
                 'completed_steps' => [],
                 'branding' => [],
-            ],
-        );
+            ]);
+            $siteProfile->save();
+        }
 
         $timestamp = Carbon::now();
 
-        return DB::transaction(function () use ($preset, $siteProfile, $themeKey, $timestamp): array {
+        return DB::transaction(function () use ($preset, $siteProfile, $themeKey, $timestamp, $isServicePreset): array {
             $this->replaceMenuLocations();
             $purged = $this->purgeDemoContent();
 
@@ -79,10 +95,28 @@ class ThemeDemoContentGenerator
             $menuCount = $this->seedMenus($preset, $categoryMap, $themeKey, $pageSlugs);
             $bannerCount = $this->seedBanners($preset, $themeKey, $timestamp);
 
+            $branding = array_merge((array) $siteProfile->branding, $this->buildDemoBranding($preset, $isServicePreset));
+
+            if ($isServicePreset) {
+                $branding['demo_preset_key'] = $preset['key'];
+                $branding['demo_preset_label'] = $preset['label'];
+                $branding['demo_preset_description'] = $preset['description'];
+                $branding['slogan'] = $preset['description'];
+            }
+
             $siteProfile->forceFill([
-                'website_type' => 'ecommerce',
+                'site_name' => $preset['company_name'],
+                'website_type' => $isServicePreset ? 'service' : 'ecommerce',
                 'active_theme_key' => $themeKey,
+                'branding' => $branding,
             ])->save();
+
+            SiteProfile::query()->whereKey($siteProfile->getKey())->update([
+                'site_name' => $preset['company_name'],
+                'website_type' => $isServicePreset ? 'service' : 'ecommerce',
+                'active_theme_key' => $themeKey,
+                'branding' => $branding,
+            ]);
 
             return [
                 'preset' => Arr::only($preset, ['key', 'label', 'description']),
@@ -172,18 +206,23 @@ class ThemeDemoContentGenerator
 
     private function seedPages(array $preset, Carbon $timestamp, string $themeKey, array $pageSlugs): int
     {
+        $isServicePreset = ($preset['catalog_style'] ?? 'commerce') === 'service';
         $pages = [
             [
-                'title' => 'Giới thiệu',
+                'title' => $isServicePreset ? 'Giới thiệu nhà xe' : 'Giới thiệu',
                 'slug' => $pageSlugs['about'],
-                'excerpt' => 'Hồ sơ năng lực demo cho '.$preset['label'],
-                'body' => '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Website demo này được tạo để review theme '.$preset['theme_flavor'].' và khả năng mapping dữ liệu thật từ CMS/Catalog.</p>',
+                'excerpt' => $isServicePreset ? 'Hồ sơ năng lực và đội xe demo cho '.$preset['label'] : 'Hồ sơ năng lực demo cho '.$preset['label'],
+                'body' => $isServicePreset
+                    ? '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Website demo này được tạo để review theme '.$preset['theme_flavor'].' và khả năng mapping dữ liệu thật từ CMS, Catalog dịch vụ, bảng giá tham khảo và CTA báo giá nhanh.</p>'
+                    : '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Website demo này được tạo để review theme '.$preset['theme_flavor'].' và khả năng mapping dữ liệu thật từ CMS/Catalog.</p>',
             ],
             [
-                'title' => 'Liên hệ',
+                'title' => $isServicePreset ? 'Báo giá và liên hệ' : 'Liên hệ',
                 'slug' => $pageSlugs['contact'],
-                'excerpt' => 'Kênh liên hệ tư vấn và CSKH',
-                'body' => '<h2>Liên hệ tư vấn</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Địa chỉ: '.$preset['address'].'</p>',
+                'excerpt' => $isServicePreset ? 'Kênh nhận lịch trình, báo giá và CSKH' : 'Kênh liên hệ tư vấn và CSKH',
+                'body' => $isServicePreset
+                    ? '<h2>Liên hệ báo giá</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Địa chỉ điều phối: '.$preset['address'].'</p><p>Hãy gửi số khách, điểm đón, điểm đến và ngày đi để được tư vấn nhanh.</p>'
+                    : '<h2>Liên hệ tư vấn</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Địa chỉ: '.$preset['address'].'</p>',
             ],
         ];
 
@@ -208,20 +247,35 @@ class ThemeDemoContentGenerator
 
     private function seedPosts(array $preset, int $categoryId, Carbon $timestamp, string $themeKey): int
     {
-        $titles = [
-            'Top deal mới tuần này cho '.$preset['short_label'],
-            '5 xu hướng mua sắm '.$preset['short_label'].' đang tăng mạnh',
-            'Gợi ý chọn sản phẩm nổi bật cho chiến dịch cuối tuần',
-            'Cách tối ưu landing page bán '.$preset['short_label'].' theo mùa',
-        ];
+        $titles = ($preset['catalog_style'] ?? 'commerce') === 'service'
+            ? [
+                'Kinh nghiệm chọn '.$preset['short_label'].' cho nhu cầu thực tế',
+                'Checklist cần chuẩn bị trước khi đặt '.$preset['short_label'],
+                'Gợi ý tối ưu lịch trình để tiết kiệm chi phí vận hành',
+                'Cách xây dựng landing page dịch vụ chuyển đổi tốt hơn',
+            ]
+            : [
+                'Top deal mới tuần này cho '.$preset['short_label'],
+                '5 xu hướng mua sắm '.$preset['short_label'].' đang tăng mạnh',
+                'Gợi ý chọn sản phẩm nổi bật cho chiến dịch cuối tuần',
+                'Cách tối ưu landing page bán '.$preset['short_label'].' theo mùa',
+            ];
+
+        $excerpt = ($preset['catalog_style'] ?? 'commerce') === 'service'
+            ? 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block cẩm nang, trust content và lead-gen của theme.'
+            : 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block tin tức của theme.';
+
+        $bodyTemplate = ($preset['catalog_style'] ?? 'commerce') === 'service'
+            ? '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị cẩm nang, kinh nghiệm đặt dịch vụ và nội dung SEO của website.</p>'
+            : '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị tin mới trên website.</p>';
 
         foreach ($titles as $index => $title) {
             $record = CmsPost::query()->create([
                 'title' => $title,
                 'slug' => $this->demoSlug($themeKey, $title),
                 'status' => 'published',
-                'excerpt' => 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block tin tức của theme.',
-                'body' => '<p>'.$preset['description'].'</p><p>Bài viết demo số '.($index + 1).' dùng để hiển thị tin mới trên website.</p>',
+                'excerpt' => $excerpt,
+                'body' => sprintf($bodyTemplate, $index + 1),
                 'meta_title' => $title,
                 'meta_description' => 'Tin tức demo cho '.$preset['label'],
                 'category_id' => $categoryId,
@@ -270,7 +324,7 @@ class ThemeDemoContentGenerator
 
                 foreach (range(1, 4) as $productIndex) {
                     $productName = $this->buildProductName($preset, $department['name'], $childName, $productIndex);
-                    $price = $this->buildPrice($parentIndex, $childIndex, $productIndex);
+                    $price = $this->buildPrice($preset, $parentIndex, $childIndex, $productIndex);
                     $isFeatured = $featuredCounter < 8;
                     $createdAt = $timestamp->copy()->subMinutes(($parentIndex * 10) + ($childIndex * 4) + $productIndex);
 
@@ -287,7 +341,7 @@ class ThemeDemoContentGenerator
                         'highlights' => $this->buildProductHighlights($preset, $department['name'], $childName),
                         'usage_terms' => $this->buildUsageTerms($preset, $department['name']),
                         'usage_location' => $this->buildUsageLocation($preset),
-                        'image_url' => $this->imageUrl($preset['key'].'-product-'.$parentIndex.'-'.$childIndex.'-'.$productIndex, 640, 420),
+                        'image_url' => $this->productImageUrl($preset, $department['name'], $childName, $parentIndex, $childIndex, $productIndex, 640, 420),
                         'sold_count' => 3 + ($parentIndex * 2) + $productIndex,
                         'deal_end_at' => $timestamp->copy()->addDays(10 + $parentIndex + $productIndex),
                         'is_featured' => $isFeatured,
@@ -298,7 +352,7 @@ class ThemeDemoContentGenerator
                     ]);
                     $this->recordDemoModel($product, $themeKey, $preset['key']);
 
-                    foreach ($this->buildGalleryImages($preset, $parentIndex, $childIndex, $productIndex) as $galleryIndex => $galleryImage) {
+                    foreach ($this->buildGalleryImages($preset, $department['name'], $childName, $parentIndex, $childIndex, $productIndex) as $galleryIndex => $galleryImage) {
                         $product->images()->create([
                             'catalog_product_id' => $product->id,
                             'image_url' => $galleryImage,
@@ -322,6 +376,7 @@ class ThemeDemoContentGenerator
 
     private function seedMenus(array $preset, array $categoryMap, string $themeKey, array $pageSlugs): int
     {
+        $isServicePreset = ($preset['catalog_style'] ?? 'commerce') === 'service';
         $productItems = collect($categoryMap)->map(function (array $entry, int $index): array {
             /** @var CatalogCategory $parent */
             $parent = $entry['parent'];
@@ -345,11 +400,7 @@ class ThemeDemoContentGenerator
         $primaryMenu = CmsMenu::query()->create([
             'name' => 'Primary Navigation',
             'location' => 'primary-navigation',
-            'items' => [
-                ['label' => 'Tin tức', 'url' => '/tin-tuc', 'target' => '_self'],
-                ['label' => 'Giới thiệu', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
-                ['label' => 'Liên hệ', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
-            ],
+            'items' => $this->buildPrimaryMenuItems($isServicePreset, $pageSlugs),
         ]);
         $this->recordDemoModel($primaryMenu, $themeKey, $preset['key']);
 
@@ -363,8 +414,50 @@ class ThemeDemoContentGenerator
         return 2;
     }
 
+    private function buildPrimaryMenuItems(bool $isServicePreset, array $pageSlugs): array
+    {
+        if (! $isServicePreset) {
+            return [
+                ['label' => 'Tin tức', 'url' => '/tin-tuc', 'target' => '_self'],
+                ['label' => 'Giới thiệu', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                ['label' => 'Liên hệ', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
+            ];
+        }
+
+        return [
+            [
+                'label' => 'Cẩm nang',
+                'url' => '/tin-tuc',
+                'target' => '_self',
+                'children' => [
+                    ['label' => 'Kinh nghiệm đặt xe', 'summary' => 'Checklist, kinh nghiệm và nội dung SEO cho khách đặt tuyến.', 'url' => '/tin-tuc', 'target' => '_self'],
+                    ['label' => 'Lịch trình tối ưu', 'summary' => 'Gợi ý cách chọn route, loại xe và thời gian khởi hành phù hợp.', 'url' => '/tin-tuc', 'target' => '_self'],
+                ],
+            ],
+            [
+                'label' => 'Giới thiệu',
+                'url' => '/'.$pageSlugs['about'],
+                'target' => '_self',
+                'children' => [
+                    ['label' => 'Về nhà xe', 'summary' => 'Tổng quan thương hiệu, năng lực điều phối và đội xe hiện có.', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                    ['label' => 'Quy trình phục vụ', 'summary' => 'Cách tiếp nhận lịch trình, xác nhận chuyến và chăm sóc khách hàng.', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                ],
+            ],
+            [
+                'label' => 'Báo giá',
+                'url' => '/'.$pageSlugs['contact'],
+                'target' => '_self',
+                'children' => [
+                    ['label' => 'Gửi yêu cầu báo giá', 'summary' => 'Điền nhu cầu tuyến, số khách và khung giờ để nhận tư vấn nhanh.', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
+                    ['label' => 'Liên hệ điều phối', 'summary' => 'Xem thông tin liên hệ và đầu mối hỗ trợ cho từng loại nhu cầu.', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
+                ],
+            ],
+        ];
+    }
+
     private function seedBanners(array $preset, string $themeKey, Carbon $timestamp): int
     {
+        $isServicePreset = ($preset['catalog_style'] ?? 'commerce') === 'service';
         $records = [
             [
                 'placement' => 'hero-main',
@@ -374,7 +467,7 @@ class ThemeDemoContentGenerator
                 'metadata' => [
                     'eyebrow' => $preset['hero_eyebrow'],
                     'summary' => $preset['description'],
-                    'button_label' => 'Mua ngay',
+                    'button_label' => $isServicePreset ? 'Nhận báo giá' : 'Mua ngay',
                 ],
                 'image_url' => $this->imageUrl($preset['key'].'-hero-main', 960, 520),
                 'link_url' => '#featured',
@@ -387,7 +480,7 @@ class ThemeDemoContentGenerator
             $records[] = [
                 'placement' => 'hero-side',
                 'title' => $department['name'],
-                'subtitle' => 'Ưu đãi mới cho '.$department['children'][0],
+                'subtitle' => $isServicePreset ? 'Giải pháp nổi bật cho '.$department['children'][0] : 'Ưu đãi mới cho '.$department['children'][0],
                 'badge' => null,
                 'metadata' => [],
                 'image_url' => $this->imageUrl($preset['key'].'-hero-side-'.$index, 360, 180),
@@ -433,6 +526,12 @@ class ThemeDemoContentGenerator
 
     private function buildProductName(array $preset, string $departmentName, string $childName, int $productIndex): string
     {
+        if (($preset['catalog_style'] ?? 'commerce') === 'service') {
+            $serviceTiers = ['Tiêu chuẩn', 'Linh hoạt', 'Khứ hồi', 'Doanh nghiệp'];
+
+            return trim(sprintf('%s %s %s', $departmentName, $childName, $serviceTiers[$productIndex - 1] ?? 'Gói'));
+        }
+
         $suffixes = ['Pro', 'Max', 'Plus', 'Edition'];
 
         return trim($childName.' '.$preset['product_prefix'].' '.$suffixes[$productIndex - 1].' '.(64 + ($productIndex * 64)).'GB');
@@ -443,23 +542,427 @@ class ThemeDemoContentGenerator
         return Str::slug('demo-'.$themeKey.'-'.$value);
     }
 
-    private function buildPrice(int $parentIndex, int $childIndex, int $productIndex): int
+    private function buildPrice(array $preset, int $parentIndex, int $childIndex, int $productIndex): int
     {
+        if (($preset['catalog_style'] ?? 'commerce') === 'service') {
+            return 790000 + ($parentIndex * 250000) + ($childIndex * 120000) + ($productIndex * 180000);
+        }
+
         return 390000 + ($parentIndex * 170000) + ($childIndex * 80000) + ($productIndex * 45000);
     }
 
-    private function buildGalleryImages(array $preset, int $parentIndex, int $childIndex, int $productIndex): array
+    private function buildGalleryImages(array $preset, string $departmentName, string $childName, int $parentIndex, int $childIndex, int $productIndex): array
     {
         return [
-            $this->imageUrl($preset['key'].'-product-gallery-'.$parentIndex.'-'.$childIndex.'-'.$productIndex.'-1', 960, 720),
-            $this->imageUrl($preset['key'].'-product-gallery-'.$parentIndex.'-'.$childIndex.'-'.$productIndex.'-2', 960, 720),
-            $this->imageUrl($preset['key'].'-product-gallery-'.$parentIndex.'-'.$childIndex.'-'.$productIndex.'-3', 960, 720),
-            $this->imageUrl($preset['key'].'-product-gallery-'.$parentIndex.'-'.$childIndex.'-'.$productIndex.'-4', 960, 720),
+            $this->productImageUrl($preset, $departmentName, $childName, $parentIndex, $childIndex, $productIndex, 960, 720, 0),
+            $this->productImageUrl($preset, $departmentName, $childName, $parentIndex, $childIndex, $productIndex, 960, 720, 1),
+            $this->productImageUrl($preset, $departmentName, $childName, $parentIndex, $childIndex, $productIndex, 960, 720, 2),
+            $this->productImageUrl($preset, $departmentName, $childName, $parentIndex, $childIndex, $productIndex, 960, 720, 3),
         ];
+    }
+
+    private function productImageUrl(array $preset, string $departmentName, string $childName, int $parentIndex, int $childIndex, int $productIndex, int $width, int $height, int $variantOffset = 0): string
+    {
+        $pool = $this->productPhotoPool($preset, $departmentName, $childName, $productIndex, $width, $height);
+
+        $index = ($parentIndex * 13) + ($childIndex * 5) + $productIndex + $variantOffset;
+
+        return $pool[$index % count($pool)];
+    }
+
+    private function productPhotoPool(array $preset, string $departmentName, string $childName, int $productIndex, int $width, int $height): array
+    {
+        $catalogStyle = (string) ($preset['catalog_style'] ?? 'commerce');
+        $normalizedDepartment = $this->normalizePhotoContext($departmentName);
+        $normalizedChild = $this->normalizePhotoContext($childName);
+
+        foreach ($this->productPhotoKeywordGroups($catalogStyle, $preset, $normalizedDepartment, $normalizedChild, $productIndex) as $keywords) {
+            $pool = $this->keywordPhotoPool($keywords, $width, $height);
+
+            if ($pool !== []) {
+                return $pool;
+            }
+        }
+
+        return $catalogStyle === 'service'
+            ? $this->servicePlaceholderPool()
+            : $this->commercePlaceholderPool();
+    }
+
+    private function productPhotoKeywordGroups(string $catalogStyle, array $preset, string $departmentName, string $childName, int $productIndex): array
+    {
+        $groups = [];
+        $context = trim($departmentName.' '.$childName);
+        $phoneVariantKeywords = match ($productIndex) {
+            1 => ['smartphone black', 'phone closeup black', 'premium phone black'],
+            2 => ['smartphone silver', 'phone closeup silver', 'premium phone silver'],
+            3 => ['smartphone blue', 'phone closeup blue', 'premium phone blue'],
+            4 => ['smartphone white', 'phone closeup white', 'premium phone white'],
+            default => ['smartphone', 'mobile phone', 'device'],
+        };
+
+        if (($preset['key'] ?? '') === 'phones-accessories') {
+            if (str_contains($departmentName, 'smartphone')) {
+                $groups[] = $phoneVariantKeywords;
+                $groups[] = ['smartphone', 'mobile phone', 'device'];
+
+                if (str_contains($childName, 'flagship')) {
+                    $groups[] = ['premium smartphone', 'smartphone camera', 'android phone'];
+                } elseif (str_contains($childName, 'tam trung')) {
+                    $groups[] = ['midrange smartphone', 'android phone', 'mobile device'];
+                } elseif (str_contains($childName, 'gia tot')) {
+                    $groups[] = ['budget smartphone', 'mobile phone', 'android'];
+                }
+            }
+
+            if (str_contains($departmentName, 'op lung')) {
+                $groups[] = ['phone case', 'smartphone case', 'mobile accessories'];
+            }
+
+            if (str_contains($departmentName, 'tai nghe')) {
+                $groups[] = str_contains($childName, 'over ear')
+                    ? ['over-ear headphones', 'headphones', 'audio gear']
+                    : ['wireless earbuds', 'earbuds', 'headphones'];
+            }
+
+            if (str_contains($departmentName, 'sac')) {
+                $groups[] = str_contains($childName, 'khong day')
+                    ? ['wireless charger', 'phone charger', 'charging dock']
+                    : ['fast charger', 'phone charger', 'usb charger'];
+            }
+
+            if (str_contains($departmentName, 'dong ho')) {
+                $groups[] = ['smartwatch', 'wearable', 'watch'];
+            }
+
+            if (str_contains($departmentName, 'loa mini')) {
+                $groups[] = ['bluetooth speaker', 'portable speaker', 'audio'];
+            }
+
+            if (str_contains($departmentName, 'thiet bi ghi hinh')) {
+                $groups[] = ['gimbal camera', 'camera accessory', 'content creator'];
+            }
+
+            if (str_contains($departmentName, 'bao hanh')) {
+                $groups[] = ['smartphone repair', 'phone service', 'device care'];
+            }
+
+            if (str_contains($departmentName, 'may cu')) {
+                $groups[] = ['used smartphone', 'refurbished phone', 'mobile phone'];
+            }
+
+            if (str_contains($departmentName, 'phu kien xe')) {
+                $groups[] = ['car phone holder', 'car charger', 'car accessory'];
+            }
+        }
+
+        if ($catalogStyle === 'service') {
+            if (str_contains($departmentName, '16 cho')) {
+                $groups[] = ['minibus', '16 seater bus', 'tour van'];
+            } elseif (str_contains($departmentName, '29 cho')) {
+                $groups[] = ['coach bus', 'tour bus', 'bus charter'];
+            } elseif (str_contains($departmentName, '45 cho')) {
+                $groups[] = ['large coach bus', 'charter bus', 'tour coach'];
+            } elseif (str_contains($departmentName, 'san bay')) {
+                $groups[] = ['airport transfer', 'shuttle bus', 'van transport'];
+            } elseif (str_contains($departmentName, 'city transfer')) {
+                $groups[] = ['city transfer', 'shuttle van', 'transport service'];
+            } else {
+                $groups[] = ['bus transport', 'shuttle service', 'van'];
+            }
+        } elseif ($groups === []) {
+            $groups[] = match (true) {
+                str_contains($context, 'dien thoai') || str_contains($context, 'android') || str_contains($context, 'iphone') || str_contains($context, 'gaming phone') => ['smartphone', 'mobile phone', 'device'],
+                str_contains($context, 'laptop') || str_contains($context, 'ultrabook') || str_contains($context, 'workstation') => ['laptop', 'notebook computer', 'workspace'],
+                str_contains($context, 'may tinh bang') || str_contains($context, 'tablet') || str_contains($context, 'ipad') => ['tablet device', 'ipad tablet', 'mobile screen'],
+                str_contains($context, 'phu kien') || str_contains($context, 'thiet bi mang') => ['tech accessories', 'gadget', 'electronics'],
+                str_contains($context, 'am thanh') || str_contains($context, 'tv') || str_contains($context, 'giai tri') => ['speaker', 'headphones', 'audio'],
+                str_contains($context, 'camera') => ['camera', 'lens', 'recording gear'],
+                str_contains($context, 'resort') || str_contains($context, 'tour') || str_contains($context, 'du lich') || str_contains($context, 've vui choi') || str_contains($context, 'du thuyen') || str_contains($context, 'team building') || str_contains($context, 'visa') || str_contains($context, 'city stay') || str_contains($context, 'bien') || str_contains($context, 'nui') => ['resort room', 'hotel stay', 'travel resort'],
+                str_contains($context, 'spa') || str_contains($context, 'massage') || str_contains($context, 'wellness') || str_contains($context, 'detox') => ['spa treatment', 'massage spa', 'wellness'],
+                str_contains($context, 'am thuc') || str_contains($context, 'buffet') || str_contains($context, 'hai san') || str_contains($context, 'cafe') => ['restaurant food', 'buffet', 'dining'],
+                str_contains($context, 'my pham') || str_contains($context, 'cham soc da') || str_contains($context, 'trang diem') || str_contains($context, 'nuoc hoa') || str_contains($context, 'cham soc toc') || str_contains($context, 'body care') || str_contains($context, 'danh cho nam') || str_contains($context, 'thuc pham dep da') => ['skincare product', 'beauty serum', 'cosmetics'],
+                str_contains($context, 'thiet bi ve sinh') || str_contains($context, 'nha tam') || str_contains($context, 'lavabo') || str_contains($context, 'sen voi') => ['bathroom fixture', 'sink faucet', 'interior bathroom'],
+                str_contains($context, 'gach op lat') || str_contains($context, 'phong khach') || str_contains($context, 'noi that') || str_contains($context, 'cua') || str_contains($context, 'san') || str_contains($context, 'ngoai that') || str_contains($context, 'den trang tri') => ['home interior', 'showroom interior', 'kitchen decor'],
+                str_contains($context, 'gaming') => ['gaming gear', 'keyboard mouse', 'pc accessory'],
+                default => [],
+            };
+        }
+
+        return array_values(array_filter($groups, fn (array $keywords): bool => $keywords !== []));
+    }
+
+    private function keywordPhotoPool(array $keywords, int $width, int $height): array
+    {
+        $curated = $this->curatedPhotoPoolForKeywords($keywords, $width, $height);
+
+        if ($curated !== []) {
+            return $curated;
+        }
+
+        $keywordString = implode(' ', $keywords);
+
+        if (preg_match('/bus|coach|shuttle|minibus|transport/', $keywordString) === 1) {
+            return $this->servicePlaceholderPool();
+        }
+
+        return $this->commercePlaceholderPool();
+    }
+
+    private function curatedPhotoPoolForKeywords(array $keywords, int $width, int $height): array
+    {
+        $keywordString = implode(' ', $keywords);
+
+        return match (true) {
+            preg_match('/smartphone|mobile phone|android phone|premium phone|used smartphone|refurbished phone|device/', $keywordString) === 1
+                => $this->smartphonePhotoPool(),
+            preg_match('/phone case|smartphone case|mobile accessories/', $keywordString) === 1
+                => $this->phoneCasePhotoPool(),
+            preg_match('/charger|charging dock|usb charger|car charger/', $keywordString) === 1
+                => $this->chargerPhotoPool(),
+            preg_match('/smartwatch|wearable|watch/', $keywordString) === 1
+                => $this->wearablePhotoPool(),
+            preg_match('/bluetooth speaker|portable speaker/', $keywordString) === 1
+                => $this->speakerPhotoPool(),
+            preg_match('/headphones|earbuds|audio gear|speaker|bluetooth speaker|portable speaker/', $keywordString) === 1
+                => $this->audioPhotoPool(),
+            preg_match('/car phone holder|tech accessories/', $keywordString) === 1
+                => $this->techAccessoryPhotoPool(),
+            preg_match('/camera|gimbal|recording gear|content creator/', $keywordString) === 1
+                => $this->cameraGearPhotoPool(),
+            preg_match('/laptop|notebook computer|workspace/', $keywordString) === 1
+                => $this->laptopPhotoPool(),
+            preg_match('/tablet|ipad|mobile screen/', $keywordString) === 1
+                => $this->tabletPhotoPool(),
+            preg_match('/resort|hotel stay|travel resort|hotel room/', $keywordString) === 1
+                => $this->resortPhotoPool(),
+            preg_match('/spa|massage spa|wellness/', $keywordString) === 1
+                => $this->spaPhotoPool(),
+            preg_match('/restaurant food|buffet|dining/', $keywordString) === 1
+                => $this->buffetPhotoPool(),
+            preg_match('/skincare|beauty serum|cosmetics|beauty/', $keywordString) === 1
+                => $this->beautyPhotoPool(),
+            preg_match('/bathroom fixture|sink faucet|interior bathroom|bathroom/', $keywordString) === 1
+                => $this->bathroomPhotoPool(),
+            preg_match('/home interior|showroom interior|kitchen decor/', $keywordString) === 1
+                => $this->interiorPhotoPool(),
+            preg_match('/bus|coach|shuttle|van transport|minibus|airport transfer|transport service/', $keywordString) === 1
+                => $this->busPhotoPool(),
+            default => [],
+        };
+    }
+
+    private function localAssetPool(array $relativePaths): array
+    {
+        return array_map(fn (string $path): string => url('theme-demo/curated/'.$path), $relativePaths);
+    }
+
+    private function smartphonePhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'phones/smartphones/phone-01.jpg',
+            'phones/smartphones/phone-02.jpg',
+            'phones/smartphones/phone-03.jpg',
+            'phones/smartphones/phone-04.jpg',
+            'phones/smartphones/phone-05.jpg',
+        ]);
+    }
+
+    private function phoneCasePhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'phones/cases/case-01.jpg',
+            'phones/cases/case-02.jpg',
+            'phones/cases/case-03.jpg',
+            'phones/cases/case-04.jpg',
+            'phones/cases/case-05.jpg',
+        ]);
+    }
+
+    private function chargerPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'phones/chargers/charger-01.jpg',
+            'phones/chargers/charger-02.jpg',
+            'phones/chargers/charger-03.jpg',
+            'phones/chargers/charger-04.jpg',
+            'phones/chargers/charger-05.jpg',
+        ]);
+    }
+
+    private function audioPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'phones/audio/audio-01.jpg',
+            'phones/audio/audio-02.jpg',
+            'phones/audio/audio-03.jpg',
+            'phones/audio/audio-04.jpg',
+            'phones/audio/audio-05.jpg',
+        ]);
+    }
+
+    private function techAccessoryPhotoPool(): array
+    {
+        return array_values(array_merge($this->phoneCasePhotoPool(), $this->chargerPhotoPool()));
+    }
+
+    private function wearablePhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'phones/watches/watch-01.jpg',
+            'phones/watches/watch-02.jpg',
+            'phones/watches/watch-03.jpg',
+            'phones/watches/watch-04.jpg',
+            'phones/watches/watch-05.jpg',
+        ]);
+    }
+
+    private function speakerPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'phones/speakers/speaker-01.jpg',
+            'phones/speakers/speaker-02.jpg',
+            'phones/speakers/speaker-03.jpg',
+            'phones/speakers/speaker-04.jpg',
+            'phones/speakers/speaker-05.jpg',
+        ]);
+    }
+
+    private function cameraGearPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'phones/camera/camera-01.jpg',
+            'phones/camera/camera-02.jpg',
+            'phones/camera/camera-03.jpg',
+        ]);
+    }
+
+    private function laptopPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'commerce/laptops/laptop-01.jpg',
+            'commerce/laptops/laptop-02.jpg',
+            'commerce/laptops/laptop-03.jpg',
+            'commerce/laptops/laptop-04.jpg',
+            'commerce/laptops/laptop-05.jpg',
+        ]);
+    }
+
+    private function tabletPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'commerce/tablets/tablet-01.jpg',
+            'commerce/tablets/tablet-02.jpg',
+            'commerce/tablets/tablet-03.jpg',
+            'commerce/tablets/tablet-04.jpg',
+            'commerce/tablets/tablet-05.jpg',
+        ]);
+    }
+
+    private function resortPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'travel/resorts/resort-01.jpg',
+            'travel/resorts/resort-02.jpg',
+            'travel/resorts/resort-03.jpg',
+            'travel/resorts/resort-04.jpg',
+            'travel/resorts/resort-05.jpg',
+        ]);
+    }
+
+    private function spaPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'wellness/spa/spa-01.jpg',
+            'wellness/spa/spa-02.jpg',
+            'wellness/spa/spa-03.jpg',
+            'wellness/spa/spa-04.jpg',
+            'wellness/spa/spa-05.jpg',
+        ]);
+    }
+
+    private function buffetPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'food/buffet/buffet-01.jpg',
+            'food/buffet/buffet-02.jpg',
+            'food/buffet/buffet-03.jpg',
+            'food/buffet/buffet-04.jpg',
+            'food/buffet/buffet-05.jpg',
+        ]);
+    }
+
+    private function beautyPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'beauty/skincare/beauty-01.jpg',
+            'beauty/skincare/beauty-02.jpg',
+            'beauty/skincare/beauty-03.jpg',
+            'beauty/skincare/beauty-04.jpg',
+            'beauty/skincare/beauty-05.jpg',
+        ]);
+    }
+
+    private function bathroomPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'home/bathroom/bathroom-01.jpg',
+            'home/bathroom/bathroom-02.jpg',
+            'home/bathroom/bathroom-03.jpg',
+            'home/bathroom/bathroom-04.jpg',
+            'home/bathroom/bathroom-05.jpg',
+        ]);
+    }
+
+    private function interiorPhotoPool(): array
+    {
+        return array_values(array_merge($this->resortPhotoPool(), $this->bathroomPhotoPool()));
+    }
+
+    private function busPhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'transport/buses/bus-01.jpg',
+            'transport/buses/bus-02.jpg',
+            'transport/buses/bus-03.jpg',
+            'transport/buses/bus-04.jpg',
+            'transport/buses/bus-05.jpg',
+            'transport/buses/bus-06.jpg',
+        ]);
+    }
+
+    private function commercePlaceholderPool(): array
+    {
+        return $this->localAssetPool(['placeholders/commerce-generic.svg']);
+    }
+
+    private function servicePlaceholderPool(): array
+    {
+        return $this->localAssetPool(['placeholders/service-generic.svg']);
+    }
+
+    private function normalizePhotoContext(string $value): string
+    {
+        $normalized = Str::of($value)
+            ->ascii()
+            ->lower()
+            ->replaceMatches('/[^a-z0-9\s]+/', ' ')
+            ->replaceMatches('/\s+/', ' ')
+            ->trim();
+
+        return (string) $normalized;
     }
 
     private function buildProductHighlights(array $preset, string $departmentName, string $childName): string
     {
+        if (($preset['catalog_style'] ?? 'commerce') === 'service') {
+            return implode(PHP_EOL, [
+                'Phù hợp cho nhu cầu '.$departmentName.' với cấu hình '.$childName.'.',
+                'Dùng để test block dịch vụ, bảng giá tham khảo và CTA báo giá nhanh của theme '.$preset['company_name'].'.',
+                'Có thể chỉnh trực tiếp để biến từ data demo sang gói dịch vụ thực tế cho nhà xe.',
+            ]);
+        }
+
         return implode(PHP_EOL, [
             'Ưu đãi nổi bật cho nhóm '.$childName.' thuộc ngành '.$departmentName.'.',
             'Phù hợp để test bố cục deal nhiều khối như banner, card và trang detail.',
@@ -469,6 +972,15 @@ class ThemeDemoContentGenerator
 
     private function buildUsageTerms(array $preset, string $departmentName): string
     {
+        if (($preset['catalog_style'] ?? 'commerce') === 'service') {
+            return implode(PHP_EOL, [
+                'Giá trên là mức tham khảo, có thể thay đổi theo lịch trình, thời gian và điểm đón thực tế.',
+                'Khuyến nghị liên hệ trước để xác nhận lịch xe, loại xe và chi phí phát sinh cho nhóm '.$departmentName.'.',
+                'Vui lòng cung cấp rõ ngày đi, số khách, điểm đón và điểm đến để được báo giá nhanh.',
+                'Một số gói dịch vụ cần đặt cọc hoặc xác nhận trước với điều phối viên của '.$preset['company_name'].'.',
+            ]);
+        }
+
         return implode(PHP_EOL, [
             'Thời hạn ưu đãi linh hoạt theo chiến dịch của '.$preset['company_name'].'.',
             'Khuyến nghị liên hệ trước để xác nhận tình trạng áp dụng cho nhóm '.$departmentName.'.',
@@ -489,6 +1001,14 @@ class ThemeDemoContentGenerator
 
     private function buildProductDetailContent(array $preset, string $departmentName, string $childName, string $productName): string
     {
+        if (($preset['catalog_style'] ?? 'commerce') === 'service') {
+            return implode(PHP_EOL.PHP_EOL, [
+                $productName.' là gói dịch vụ demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage service, trang danh mục và trang chi tiết dịch vụ của SER0100.',
+                'Gói này thuộc nhóm '.$departmentName.' với cấu hình '.$childName.', nên nội dung được viết theo hướng báo giá tham khảo, năng lực vận hành và lưu ý khi đặt xe hoặc điều phối chuyến.',
+                'Sếp có thể chỉnh lại mô tả, bảng giá, gallery ảnh xe, nội dung sử dụng và CTA để biến gói demo thành nội dung thật cho doanh nghiệp vận tải.',
+            ]);
+        }
+
         return implode(PHP_EOL.PHP_EOL, [
             $productName.' là dữ liệu demo được sinh cho preset '.$preset['label'].', giúp kiểm thử đầy đủ luồng hiển thị trang chi tiết sản phẩm theo phong cách deal page.',
             'Sản phẩm thuộc nhóm '.$childName.' trong ngành '.$departmentName.', vì vậy phần nội dung dài được thiết kế để hiển thị đẹp ở các block mô tả, điều kiện sử dụng và vị trí áp dụng trên theme TH0001.',
@@ -498,7 +1018,51 @@ class ThemeDemoContentGenerator
 
     private function imageUrl(string $seed, int $width, int $height): string
     {
+        if (Str::startsWith($seed, 'ser-')) {
+            return $this->serviceImageUrl($seed);
+        }
+
         return sprintf('https://picsum.photos/seed/%s/%d/%d', $seed, $width, $height);
+    }
+
+    private function serviceImageUrl(string $seed): string
+    {
+        if (Str::contains($seed, 'hero-main')) {
+            return url('theme-demo/service/service-hero-main.svg');
+        }
+
+        if (Str::contains($seed, 'hero-side')) {
+            $index = (abs(crc32($seed)) % 2) + 1;
+
+            return url('theme-demo/service/service-banner-'.$index.'.svg');
+        }
+
+        $index = (abs(crc32($seed)) % 4) + 1;
+
+        return url('theme-demo/service/service-card-'.$index.'.svg');
+    }
+
+    private function buildDemoBranding(array $preset, bool $isServicePreset): array
+    {
+        $branding = [
+            'company_name' => $preset['company_name'],
+            'support_hotline' => '1900 6760',
+            'support_email' => 'hello@'.$preset['domain'],
+            'support_location' => $preset['address'],
+            'demo_preset_key' => $preset['key'],
+            'demo_preset_label' => $preset['label'],
+            'demo_preset_description' => $preset['description'],
+            'slogan' => $isServicePreset
+                ? $preset['description']
+                : 'Demo commerce preset cho '.$preset['company_name'],
+        ];
+
+        if ($isServicePreset) {
+            $branding['logo_url'] = url('theme-demo/service/brand-mark.svg');
+            $branding['favicon_url'] = url('theme-demo/service/brand-mark.svg');
+        }
+
+        return $branding;
     }
 
     private function presetDefinitions(): array
@@ -718,6 +1282,78 @@ class ThemeDemoContentGenerator
                     ['name' => 'Phụ kiện xe hơi', 'children' => ['Sạc xe', 'Cam hành trình', 'Giá đỡ']],
                     ['name' => 'Thiết bị văn phòng', 'children' => ['Bút trình chiếu', 'Docking', 'Ổ cắm kéo dài']],
                     ['name' => 'Quà công nghệ', 'children' => ['Gift set', 'Mini gadget', 'Best seller']],
+                ],
+            ],
+            [
+                'key' => 'ser-airport-city',
+                'label' => 'Nhà xe sân bay và city transfer',
+                'short_label' => 'nhà xe sân bay',
+                'description' => 'Preset cho nhà xe tập trung vào đưa đón sân bay, city transfer và thuê xe gia đình ngắn hạn.',
+                'company_name' => 'Saigon Airport Cars',
+                'domain' => 'saigonairportcars.demo',
+                'address' => '12 Trường Sơn, Tân Bình, TP.HCM',
+                'theme_flavor' => 'airport transfer service',
+                'hero_eyebrow' => 'Đúng giờ mỗi chuyến',
+                'hero_title' => 'Đưa đón sân bay và city transfer đúng giờ mỗi ngày',
+                'hero_subtitle' => 'Xe sạch, tài xế lịch sự, hỗ trợ nhanh cho khách gia đình, khách công tác và khách VIP.',
+                'hero_badge' => 'Phục vụ 24/7',
+                'catalog_style' => 'service',
+                'product_prefix' => 'Ride',
+                'departments' => [
+                    ['name' => 'Đưa đón sân bay', 'children' => ['4 chỗ', '7 chỗ', '16 chỗ']],
+                    ['name' => 'City transfer', 'children' => ['Nội đô', 'Liên quận', 'Khách sạn']],
+                    ['name' => 'Xe gia đình', 'children' => ['Nửa ngày', 'Trọn ngày', 'Cuối tuần']],
+                    ['name' => 'Xe công tác', 'children' => ['Doanh nhân', 'Đón đối tác', 'Lịch trình linh hoạt']],
+                    ['name' => 'Xe VIP', 'children' => ['Sedan cao cấp', 'MPV cao cấp', 'Đón khuya']],
+                    ['name' => 'Đi tỉnh gần', 'children' => ['Vũng Tàu', 'Mỹ Tho', 'Tây Ninh']],
+                ],
+            ],
+            [
+                'key' => 'ser-tour-coach',
+                'label' => 'Nhà xe du lịch và xe đoàn',
+                'short_label' => 'xe du lịch',
+                'description' => 'Preset cho nhà xe chuyên tour đoàn, trường học, công ty và hành trình tỉnh.',
+                'company_name' => 'Viet Tour Coach',
+                'domain' => 'viettourcoach.demo',
+                'address' => '85 Nguyễn Văn Linh, Đà Nẵng',
+                'theme_flavor' => 'tour transport service',
+                'hero_eyebrow' => 'Vận hành tour đoàn',
+                'hero_title' => 'Thuê xe du lịch đoàn, tour công ty và hành trình tỉnh',
+                'hero_subtitle' => 'Đội xe 16 đến 45 chỗ, hỗ trợ điều phối tour, team building và lịch trình đường dài.',
+                'hero_badge' => 'Xe 16-45 chỗ',
+                'catalog_style' => 'service',
+                'product_prefix' => 'Tour',
+                'departments' => [
+                    ['name' => 'Thuê xe 16 chỗ', 'children' => ['Trong ngày', '2N1Đ', '3N2Đ']],
+                    ['name' => 'Thuê xe 29 chỗ', 'children' => ['Doanh nghiệp', 'Trường học', 'Hành hương']],
+                    ['name' => 'Thuê xe 45 chỗ', 'children' => ['Đoàn lớn', 'Sự kiện', 'Tour liên tỉnh']],
+                    ['name' => 'Tuyến phổ biến', 'children' => ['Đà Nẵng - Huế', 'Đà Nẵng - Hội An', 'Đà Nẵng - Quy Nhơn']],
+                    ['name' => 'Tour công ty', 'children' => ['Team building', 'MICE', 'Retreat']],
+                    ['name' => 'Xe đoàn học sinh', 'children' => ['Tham quan', 'Dã ngoại', 'Ngoại khóa']],
+                ],
+            ],
+            [
+                'key' => 'ser-business-cargo',
+                'label' => 'Shuttle doanh nghiệp và hàng nhẹ',
+                'short_label' => 'shuttle doanh nghiệp',
+                'description' => 'Preset cho doanh nghiệp vận hành shuttle nhân sự, hợp đồng tháng và vận chuyển hàng nhẹ.',
+                'company_name' => 'Metro Shuttle Logistics',
+                'domain' => 'metroshuttle.demo',
+                'address' => 'Lô B3 KCN Sóng Thần, Bình Dương',
+                'theme_flavor' => 'business shuttle and cargo',
+                'hero_eyebrow' => 'Shuttle và logistics nhẹ',
+                'hero_title' => 'Shuttle doanh nghiệp và vận chuyển hàng nhẹ theo hợp đồng',
+                'hero_subtitle' => 'Phù hợp cho công ty, nhà máy, sự kiện và các tuyến giao nhận định kỳ.',
+                'hero_badge' => 'Hợp đồng tháng',
+                'catalog_style' => 'service',
+                'product_prefix' => 'Shuttle',
+                'departments' => [
+                    ['name' => 'Shuttle công ty', 'children' => ['Theo ca', 'Theo tuyến', 'Theo tháng']],
+                    ['name' => 'Xe đưa đón nhân sự', 'children' => ['7 chỗ', '16 chỗ', '29 chỗ']],
+                    ['name' => 'Chở hàng nội thành', 'children' => ['Hàng nhẹ', 'Thiết bị sự kiện', 'Hàng gấp']],
+                    ['name' => 'Chở hàng tuyến tỉnh', 'children' => ['Bình Dương', 'Đồng Nai', 'Long An']],
+                    ['name' => 'Dịch vụ sự kiện', 'children' => ['Chở booth', 'Chở đạo cụ', 'Chở ekip']],
+                    ['name' => 'Hợp đồng dài hạn', 'children' => ['Doanh nghiệp', 'Nhà máy', 'Trường học']],
                 ],
             ],
         ];

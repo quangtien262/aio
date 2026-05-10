@@ -26,7 +26,9 @@ import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
 const CmsPageFormModal = lazy(() => import('../components/CmsPageFormModal'));
 const CmsPostFormModal = lazy(() => import('../components/CmsPostFormModal'));
 const CmsCategoryFormModal = lazy(() => import('../components/CmsCategoryFormModal'));
+const CmsFeaturedCategoryFormModal = lazy(() => import('../components/CmsFeaturedCategoryFormModal'));
 const CmsMenuFormModal = lazy(() => import('../components/CmsMenuFormModal'));
+const CmsSidePromoFormModal = lazy(() => import('../components/CmsSidePromoFormModal'));
 const CatalogProductFormModal = lazy(() => import('../../catalog/components/CatalogProductFormModal'));
 const { Paragraph, Text, Title } = Typography;
 
@@ -85,6 +87,26 @@ const sectionConfigMap = {
         title: 'Chi tiết menu',
         description: 'Xem và chỉnh cấu trúc menu hiển thị trên website theo từng vị trí.',
         endpoint: '/admin/api/cms/menus',
+        permissionView: 'cms.view',
+        permissionCreate: 'cms.menu.manage',
+        permissionUpdate: 'cms.menu.manage',
+        permissionDelete: 'cms.menu.manage',
+        permissionPublish: null,
+    },
+    'cms-featured-categories': {
+        title: 'Danh mục nổi bật',
+        description: 'Quản lý các cụm danh mục nổi bật dùng chung cho storefront theo từng vị trí.',
+        endpoint: '/admin/api/cms/featured-categories',
+        permissionView: 'cms.view',
+        permissionCreate: 'cms.menu.manage',
+        permissionUpdate: 'cms.menu.manage',
+        permissionDelete: 'cms.menu.manage',
+        permissionPublish: null,
+    },
+    'cms-side-promos': {
+        title: 'Side promos',
+        description: 'Quản lý block promo dọc cạnh hero theo từng vị trí storefront.',
+        endpoint: '/admin/api/cms/side-promos',
         permissionView: 'cms.view',
         permissionCreate: 'cms.menu.manage',
         permissionUpdate: 'cms.menu.manage',
@@ -183,6 +205,26 @@ const emptyMenu = {
     tenant_key: '',
 };
 
+const emptyFeaturedCategory = {
+    id: null,
+    name: '',
+    location: 'home-featured-categories',
+    items: [{ label: '', url: '', target: '_self', link_type: 'custom', link_value: null, custom_url: '' }],
+    website_key: '',
+    owner_key: '',
+    tenant_key: '',
+};
+
+const emptySidePromo = {
+    id: null,
+    name: '',
+    location: 'home-hero-side-promos',
+    items: [{ title: '', subtitle: '', image: '', url: '', target: '_self', link_type: 'custom', link_value: null, custom_url: '' }],
+    website_key: '',
+    owner_key: '',
+    tenant_key: '',
+};
+
 const BULK_KEEP_VALUE = '__KEEP__';
 const BULK_CLEAR_VALUE = '__CLEAR__';
 
@@ -248,7 +290,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productPublishFilter, setProductPublishFilter] = useState('all');
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
     const [mediaFile, setMediaFile] = useState(null);
-    const createButtonLabel = sectionKey === 'cms-menus' ? 'Thêm menu' : `Tạo ${sectionConfig.title}`;
+    const createButtonLabel = sectionKey === 'cms-menus'
+        ? 'Thêm menu'
+        : sectionKey === 'cms-featured-categories'
+            ? 'Thêm danh mục nổi bật'
+            : sectionKey === 'cms-side-promos'
+                ? 'Thêm side promo'
+            : `Tạo ${sectionConfig.title}`;
 
     const sectionPermissions = useMemo(() => ({
         canView: (currentPermissions ?? []).includes(sectionConfig.permissionView),
@@ -270,6 +318,18 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 return {
                     ...(productsPayload.data ?? { items: [], total: 0, metrics: {} }),
                     categories: categoriesPayload.data?.items ?? [],
+                };
+            }
+
+            if (sectionKey === 'cms-side-promos') {
+                const [sidePromosPayload, mediaPayload] = await Promise.all([
+                    callAdminApi('/admin/api/cms/side-promos'),
+                    callAdminApi('/admin/api/cms/media'),
+                ]);
+
+                return {
+                    ...(sidePromosPayload.data ?? { items: [], total: 0 }),
+                    media: mediaPayload.data?.items ?? [],
                 };
             }
 
@@ -307,7 +367,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ];
         }
 
-        if (sectionKey === 'cms-categories' || sectionKey === 'cms-menus') {
+        if (sectionKey === 'cms-categories' || sectionKey === 'cms-menus' || sectionKey === 'cms-featured-categories' || sectionKey === 'cms-side-promos') {
             return [];
         }
 
@@ -384,6 +444,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             setEditingRecord(emptyProduct);
         } else if (sectionKey === 'cms-categories') {
             setEditingRecord(emptyCategory);
+        } else if (sectionKey === 'cms-featured-categories') {
+            setEditingRecord(emptyFeaturedCategory);
+        } else if (sectionKey === 'cms-side-promos') {
+            setEditingRecord(emptySidePromo);
         } else if (sectionKey === 'cms-menus') {
             setEditingRecord(emptyMenu);
         } else {
@@ -816,6 +880,42 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ];
         }
 
+        if (sectionKey === 'cms-featured-categories') {
+            return [
+                {
+                    title: 'Nhóm',
+                    dataIndex: 'name',
+                    key: 'name',
+                    render: (value, record) => (
+                        <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openEditModal(record)}>
+                            <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                        </Button>
+                    ),
+                },
+                { title: 'Vị trí', dataIndex: 'location', key: 'location', render: (value) => <Tag>{value}</Tag> },
+                { title: 'Items', key: 'items', render: (_, record) => (record.items ?? []).length },
+                { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
+            ];
+        }
+
+        if (sectionKey === 'cms-side-promos') {
+            return [
+                {
+                    title: 'Block',
+                    dataIndex: 'name',
+                    key: 'name',
+                    render: (value, record) => (
+                        <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openEditModal(record)}>
+                            <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                        </Button>
+                    ),
+                },
+                { title: 'Vị trí', dataIndex: 'location', key: 'location', render: (value) => <Tag>{value}</Tag> },
+                { title: 'Promo', key: 'items', render: (_, record) => (record.items ?? []).length },
+                { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
+            ];
+        }
+
         return [
             {
                 title: 'Media',
@@ -886,6 +986,40 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingCategory={editingRecord}
                         parentOptions={(data?.items ?? []).filter((item) => item.id !== editingRecord?.id).map((item) => ({ label: item.name, value: item.id }))}
+                        onCancel={() => setModalOpen(false)}
+                        onSubmit={handleSaveRecord}
+                    />
+                </Suspense>
+            );
+        }
+
+        if (sectionKey === 'cms-featured-categories') {
+            return (
+                <Suspense fallback={null}>
+                    <CmsFeaturedCategoryFormModal
+                        open={modalOpen}
+                        canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        editingGroup={editingRecord}
+                        locationOptions={data?.locations ?? []}
+                        linkOptions={data?.linkOptions ?? {}}
+                        onCancel={() => setModalOpen(false)}
+                        onSubmit={handleSaveRecord}
+                    />
+                </Suspense>
+            );
+        }
+
+        if (sectionKey === 'cms-side-promos') {
+            return (
+                <Suspense fallback={null}>
+                    <CmsSidePromoFormModal
+                        open={modalOpen}
+                        canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        editingGroup={editingRecord}
+                        locationOptions={data?.locations ?? []}
+                        linkOptions={data?.linkOptions ?? {}}
+                        mediaOptions={data?.media ?? []}
+                        callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />

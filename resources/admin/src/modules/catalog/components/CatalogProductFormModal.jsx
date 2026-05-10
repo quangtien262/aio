@@ -12,14 +12,13 @@ import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
 import message from 'antd/es/message';
 import Modal from 'antd/es/modal';
-import Pagination from 'antd/es/pagination';
-import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Tooltip from 'antd/es/tooltip';
-import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
+import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import {
     BlockQuote,
     Bold,
@@ -44,7 +43,6 @@ import {
 import 'ckeditor5/ckeditor5.css';
 
 const { TextArea } = Input;
-const { Text } = Typography;
 
 function normalizeGalleryImages(value) {
     if (Array.isArray(value)) {
@@ -96,40 +94,17 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
     const [form] = Form.useForm();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [uploadingAsset, setUploadingAsset] = useState(null);
-    const [galleryMediaMode, setGalleryMediaMode] = useState('upload');
-    const [galleryLibraryOpen, setGalleryLibraryOpen] = useState(false);
-    const [galleryLibraryPage, setGalleryLibraryPage] = useState(1);
-    const [galleryKeyword, setGalleryKeyword] = useState('');
-    const [galleryUrl, setGalleryUrl] = useState('');
-    const [galleryMediaOptions, setGalleryMediaOptions] = useState([]);
-    const [galleryLibrarySelection, setGalleryLibrarySelection] = useState([]);
     const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
-    const galleryInputRef = useRef(null);
     const editorInitialData = useMemo(() => editingProduct?.detail_content ?? '', [editingProduct?.id, editingProduct?.slug, editingProduct?.detail_content]);
     const editorInstanceKey = useMemo(() => `${editingProduct?.id ?? 'new'}:${editingProduct?.slug ?? 'blank'}:${open ? 'open' : 'closed'}`, [editingProduct?.id, editingProduct?.slug, open]);
     const galleryImages = Form.useWatch('gallery_images', form) ?? [];
-    const normalizedGalleryImages = useMemo(() => normalizeGalleryImages(galleryImages), [galleryImages]);
-    const filteredGalleryMediaOptions = useMemo(() => {
-        const normalizedKeyword = galleryKeyword.trim().toLowerCase();
-
-        if (!normalizedKeyword) {
-            return galleryMediaOptions;
-        }
-
-        return galleryMediaOptions.filter((item) => [item.title, item.file_url]
-            .some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword)));
-    }, [galleryKeyword, galleryMediaOptions]);
-    const galleryPageSize = 8;
-    const paginatedGalleryMediaOptions = useMemo(() => {
-        const startIndex = (galleryLibraryPage - 1) * galleryPageSize;
-
-        return filteredGalleryMediaOptions.slice(startIndex, startIndex + galleryPageSize);
-    }, [filteredGalleryMediaOptions, galleryLibraryPage]);
+    const coverImageUrl = Form.useWatch('image_url', form) ?? '';
+    const productName = Form.useWatch('name', form) ?? '';
 
     useEffect(() => {
         form.setFieldsValue({
@@ -139,39 +114,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         form.setFieldValue('detail_content', editingProduct?.detail_content ?? '');
         form.setFieldValue('gallery_images', normalizeGalleryImages(editingProduct?.gallery_images ?? []));
         editorSelectionRef.current = null;
-        setGalleryMediaMode('upload');
-        setGalleryLibraryOpen(false);
-        setGalleryLibraryPage(1);
-        setGalleryKeyword('');
-        setGalleryUrl('');
-        setGalleryLibrarySelection([]);
     }, [editingProduct, form]);
-
-    useEffect(() => {
-        if (!open || !callAdminApi) {
-            return undefined;
-        }
-
-        let isActive = true;
-
-        callAdminApi('/admin/api/cms/media')
-            .then((payload) => {
-                if (!isActive) {
-                    return;
-                }
-
-                setGalleryMediaOptions(payload?.data?.items ?? []);
-            })
-            .catch(() => {
-                if (isActive) {
-                    setGalleryMediaOptions([]);
-                }
-            });
-
-        return () => {
-            isActive = false;
-        };
-    }, [open, callAdminApi]);
 
     const editorConfig = useMemo(() => ({
         licenseKey: 'GPL',
@@ -304,49 +247,6 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         return url;
     };
 
-    const createGalleryMediaRecord = async ({ file, fileUrl, title }) => {
-        if (!callAdminApi) {
-            throw new Error('Thiếu cấu hình media cho gallery sản phẩm.');
-        }
-
-        const formData = new FormData();
-
-        if (file) {
-            formData.append('file', file);
-        }
-
-        if (fileUrl) {
-            formData.append('file_url', fileUrl);
-        }
-
-        if (title) {
-            formData.append('title', title);
-        }
-
-        const payload = await callAdminApi('/admin/api/cms/media', {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (!payload?.data?.file_url) {
-            throw new Error('Không thể tạo ảnh cho gallery sản phẩm.');
-        }
-
-        return payload.data;
-    };
-
-    const setGalleryImages = (nextImages) => {
-        form.setFieldValue('gallery_images', Array.from(new Set(normalizeGalleryImages(nextImages))));
-    };
-
-    const appendGalleryImages = (nextImages) => {
-        setGalleryImages([...normalizedGalleryImages, ...normalizeGalleryImages(nextImages)]);
-    };
-
-    const removeGalleryImage = (imageUrl) => {
-        setGalleryImages(normalizedGalleryImages.filter((item) => item !== imageUrl));
-    };
-
     const openAssetPicker = (inputRef) => {
         const editor = editorInstanceRef.current;
 
@@ -445,133 +345,6 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         messageApi.success('Đã nhúng video YouTube vào nội dung sản phẩm.');
     };
 
-    const handleUploadGalleryImages = async (event) => {
-        const files = Array.from(event.target.files ?? []);
-
-        if (!files.length) {
-            return;
-        }
-
-        setUploadingAsset('gallery-image');
-
-        try {
-            const uploadedMedia = [];
-
-            for (const file of files) {
-                const media = await createGalleryMediaRecord({
-                    file,
-                    title: file.name.replace(/\.[^.]+$/, ''),
-                });
-
-                uploadedMedia.push(media);
-            }
-
-            setGalleryMediaOptions((currentOptions) => {
-                const nextMap = new Map(currentOptions.map((item) => [item.id, item]));
-
-                uploadedMedia.forEach((item) => nextMap.set(item.id, item));
-
-                return Array.from(nextMap.values());
-            });
-            appendGalleryImages(uploadedMedia.map((item) => item.file_url));
-            messageApi.success(`Đã thêm ${uploadedMedia.length} ảnh vào gallery sản phẩm.`);
-        } catch (error) {
-            messageApi.error(error instanceof Error ? error.message : 'Upload gallery sản phẩm không thành công.');
-        } finally {
-            setUploadingAsset(null);
-            event.target.value = '';
-        }
-    };
-
-    const handleCreateGalleryImagesFromUrl = async () => {
-        const urls = galleryUrl
-            .split(/\r?\n/)
-            .map((item) => item.trim())
-            .filter(Boolean);
-
-        if (!urls.length) {
-            messageApi.warning('Nhập ít nhất một URL ảnh trước khi lưu.');
-            return;
-        }
-
-        setUploadingAsset('gallery-url');
-
-        try {
-            const createdMedia = [];
-
-            for (const [index, fileUrl] of urls.entries()) {
-                const media = await createGalleryMediaRecord({
-                    fileUrl,
-                    title: `${form.getFieldValue('name') || 'Gallery image'} ${index + 1}`,
-                });
-
-                createdMedia.push(media);
-            }
-
-            setGalleryMediaOptions((currentOptions) => {
-                const nextMap = new Map(currentOptions.map((item) => [item.id, item]));
-
-                createdMedia.forEach((item) => nextMap.set(item.id, item));
-
-                return Array.from(nextMap.values());
-            });
-            appendGalleryImages(createdMedia.map((item) => item.file_url));
-            setGalleryUrl('');
-            messageApi.success(`Đã thêm ${createdMedia.length} ảnh từ URL vào gallery.`);
-        } catch (error) {
-            messageApi.error(error instanceof Error ? error.message : 'Không thể lưu ảnh gallery từ URL.');
-        } finally {
-            setUploadingAsset(null);
-        }
-    };
-
-    const openGalleryLibrary = () => {
-        setGalleryLibrarySelection(normalizedGalleryImages);
-        setGalleryLibraryOpen(true);
-    };
-
-    const applyGalleryLibrarySelection = () => {
-        appendGalleryImages(galleryLibrarySelection);
-        setGalleryLibraryOpen(false);
-    };
-
-    const renderGalleryPreview = () => {
-        if (!normalizedGalleryImages.length) {
-            return null;
-        }
-
-        return (
-            <div style={{ display: 'grid', gap: 12 }}>
-                {normalizedGalleryImages.map((imageUrl, index) => (
-                    <div
-                        key={`${imageUrl}-${index}`}
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: '96px minmax(0, 1fr) auto',
-                            gap: 12,
-                            alignItems: 'center',
-                            padding: 12,
-                            border: '1px solid #dbe7e4',
-                            borderRadius: 16,
-                            background: '#fff',
-                        }}
-                    >
-                        <img
-                            src={imageUrl}
-                            alt={`Gallery ${index + 1}`}
-                            style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 12 }}
-                        />
-                        <div style={{ minWidth: 0, display: 'grid', gap: 4 }}>
-                            <strong>{`Ảnh gallery ${index + 1}`}</strong>
-                            <span style={{ color: '#6b7280', wordBreak: 'break-all' }}>{imageUrl}</span>
-                        </div>
-                        <Button size="small" onClick={() => removeGalleryImage(imageUrl)}>Bỏ chọn</Button>
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
     const handleSubmit = async () => {
         const values = await form.validateFields();
 
@@ -654,8 +427,27 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                     </Card>
 
                     <Card size="small" className="cms-post-form-card" title="Ảnh cover sản phẩm">
-                        <Form.Item name="image_url" label="URL ảnh cover" style={{ marginBottom: 0 }}>
-                            <Input placeholder="https://cdn.example.com/product.jpg" />
+                        <Form.Item name="image_url" hidden>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item label="Ảnh cover" style={{ marginBottom: 0 }}>
+                            <SingleMediaPicker
+                                open={open}
+                                value={coverImageUrl}
+                                onChange={(nextValue) => form.setFieldValue('image_url', nextValue)}
+                                canManage={canManage}
+                                callAdminApi={callAdminApi}
+                                recordTitle={productName || 'Product cover'}
+                                previewTitle="Ảnh cover sản phẩm"
+                                uploadButtonLabel="Upload ảnh cover"
+                                uploadHint="Ảnh upload xong sẽ tự được gán làm cover sản phẩm."
+                                libraryModalTitle="Chọn ảnh cover từ thư viện"
+                                urlPlaceholder="https://example.com/product.jpg"
+                                uploadSuccessMessage="Đã upload và gán ảnh cover sản phẩm."
+                                urlSuccessMessage="Đã lưu URL vào thư viện media và gán làm cover sản phẩm."
+                                uploadErrorMessage="Upload ảnh cover sản phẩm không thành công."
+                                urlErrorMessage="Không thể lưu ảnh cover sản phẩm từ URL."
+                            />
                         </Form.Item>
                     </Card>
 
@@ -706,79 +498,24 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
 
                     <Card size="small" className="cms-post-form-card" title="Gallery ảnh sản phẩm">
                         <Form.Item name="gallery_images" label="Gallery ảnh sản phẩm" style={{ marginBottom: 16 }}>
-                            <div className="cms-featured-media-shell">
-                                <Radio.Group
-                                    value={galleryMediaMode}
-                                    onChange={(event) => setGalleryMediaMode(event.target.value)}
-                                    optionType="button"
-                                    buttonStyle="solid"
-                                    className="cms-featured-media-mode"
-                                    options={[
-                                        { label: 'Upload nhiều ảnh', value: 'upload' },
-                                        { label: 'Chọn từ thư viện', value: 'library' },
-                                        { label: 'Nhập từ URL', value: 'url' },
-                                    ]}
-                                />
-
-                                {galleryMediaMode === 'upload' ? (
-                                    <div className="cms-featured-media-action-card">
-                                        <input ref={galleryInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleUploadGalleryImages} />
-                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                            <Space wrap>
-                                                <Button
-                                                    type="primary"
-                                                    disabled={!canManage || !callAdminApi}
-                                                    loading={uploadingAsset === 'gallery-image'}
-                                                    onClick={() => galleryInputRef.current?.click()}
-                                                >
-                                                    Upload nhiều ảnh
-                                                </Button>
-                                                <Text type="secondary">Mỗi lần có thể chọn nhiều ảnh và tự thêm vào gallery.</Text>
-                                            </Space>
-                                            {renderGalleryPreview()}
-                                        </Space>
-                                    </div>
-                                ) : null}
-
-                                {galleryMediaMode === 'library' ? (
-                                    <div className="cms-featured-media-action-card">
-                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                            <Space wrap>
-                                                <Button type="primary" onClick={openGalleryLibrary}>
-                                                    Mở thư viện media
-                                                </Button>
-                                                <Text type="secondary">Chọn nhiều ảnh có sẵn từ CMS media rồi thêm vào gallery.</Text>
-                                            </Space>
-                                            {renderGalleryPreview()}
-                                        </Space>
-                                    </div>
-                                ) : null}
-
-                                {galleryMediaMode === 'url' ? (
-                                    <div className="cms-featured-media-action-card">
-                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                            <TextArea
-                                                value={galleryUrl}
-                                                onChange={(event) => setGalleryUrl(event.target.value)}
-                                                rows={4}
-                                                placeholder={['https://cdn.example.com/product-1.jpg', 'https://cdn.example.com/product-2.jpg'].join('\n')}
-                                            />
-                                            <Space wrap>
-                                                <Button
-                                                    type="primary"
-                                                    disabled={!canManage || !callAdminApi}
-                                                    loading={uploadingAsset === 'gallery-url'}
-                                                    onClick={handleCreateGalleryImagesFromUrl}
-                                                >
-                                                    Lưu URL và thêm vào gallery
-                                                </Button>
-                                                <Text type="secondary">Mỗi dòng là một URL ảnh, hệ thống sẽ lưu vào CMS media để tái sử dụng.</Text>
-                                            </Space>
-                                            {renderGalleryPreview()}
-                                        </Space>
-                                    </div>
-                                ) : null}
-                            </div>
+                            <MultiMediaPicker
+                                open={open}
+                                value={galleryImages}
+                                onChange={(nextValue) => form.setFieldValue('gallery_images', nextValue)}
+                                canManage={canManage}
+                                callAdminApi={callAdminApi}
+                                recordTitle={productName || 'Product gallery'}
+                                previewTitle="Ảnh gallery"
+                                uploadButtonLabel="Upload nhiều ảnh"
+                                uploadHint="Mỗi lần có thể chọn nhiều ảnh và tự thêm vào gallery."
+                                libraryModalTitle="Chọn ảnh gallery từ thư viện"
+                                urlPlaceholder={['https://cdn.example.com/product-1.jpg', 'https://cdn.example.com/product-2.jpg'].join('\n')}
+                                uploadSuccessMessage="Đã thêm ảnh vào gallery sản phẩm."
+                                urlSuccessMessage="Đã lưu URL vào thư viện media và thêm ảnh gallery."
+                                uploadErrorMessage="Upload gallery sản phẩm không thành công."
+                                urlErrorMessage="Không thể lưu ảnh gallery từ URL."
+                                emptyValueMessage="Nhập ít nhất một URL ảnh trước khi lưu."
+                            />
                         </Form.Item>
 
                     </Card>
@@ -899,66 +636,6 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                     <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
                         Dán link YouTube chuẩn hoặc mã nhúng để hệ thống chèn video responsive vào nội dung sản phẩm.
                     </div>
-                </Space>
-            </Modal>
-
-            <Modal
-                title="Chọn ảnh gallery từ thư viện"
-                open={galleryLibraryOpen}
-                onCancel={() => setGalleryLibraryOpen(false)}
-                onOk={applyGalleryLibrarySelection}
-                okText={`Thêm ${galleryLibrarySelection.length} ảnh`}
-                cancelText="Hủy"
-                width={920}
-                destroyOnHidden
-            >
-                <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    <Input.Search
-                        allowClear
-                        value={galleryKeyword}
-                        onChange={(event) => {
-                            setGalleryKeyword(event.target.value);
-                            setGalleryLibraryPage(1);
-                        }}
-                        placeholder="Tìm theo tên media hoặc URL"
-                    />
-
-                    <div className="cms-featured-media-library-grid">
-                        {paginatedGalleryMediaOptions.map((item) => {
-                            const isSelected = galleryLibrarySelection.includes(item.file_url);
-
-                            return (
-                                <button
-                                    key={item.id}
-                                    type="button"
-                                    className={`cms-featured-media-library-item${isSelected ? ' is-selected' : ''}`}
-                                    onClick={() => {
-                                        setGalleryLibrarySelection((currentSelection) => (
-                                            currentSelection.includes(item.file_url)
-                                                ? currentSelection.filter((currentItem) => currentItem !== item.file_url)
-                                                : [...currentSelection, item.file_url]
-                                        ));
-                                    }}
-                                >
-                                    <div className="cms-featured-media-library-thumb">
-                                        {item.file_url ? <img src={item.file_url} alt={item.title} /> : null}
-                                    </div>
-                                    <div className="cms-featured-media-library-copy">
-                                        <strong>{item.title || `Media #${item.id}`}</strong>
-                                        <span>{item.file_url || 'Không có URL'}</span>
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    <Pagination
-                        current={galleryLibraryPage}
-                        pageSize={galleryPageSize}
-                        total={filteredGalleryMediaOptions.length}
-                        showSizeChanger={false}
-                        onChange={setGalleryLibraryPage}
-                    />
                 </Space>
             </Modal>
         </Drawer>

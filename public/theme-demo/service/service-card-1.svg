@@ -1,0 +1,10 @@
+<svg width="960" height="640" viewBox="0 0 960 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="640" rx="32" fill="#F8FAFC"/>
+  <rect x="0" y="428" width="960" height="212" fill="#DBEAFE"/>
+  <rect x="138" y="240" width="308" height="118" rx="28" fill="#FFFFFF" stroke="#BFDBFE"/>
+  <rect x="168" y="336" width="396" height="92" rx="24" fill="#1F6F78"/>
+  <circle cx="248" cy="428" r="30" fill="#0F172A"/>
+  <circle cx="472" cy="428" r="30" fill="#0F172A"/>
+  <text x="620" y="252" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">Airport sedan</text>
+  <text x="620" y="308" fill="#486581" font-family="Segoe UI, Arial, sans-serif" font-size="22">4 cho tieu chuan</text>
+</svg>

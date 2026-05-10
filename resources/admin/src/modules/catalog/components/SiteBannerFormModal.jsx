@@ -7,14 +7,27 @@ import InputNumber from 'antd/es/input-number';
 import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 
 const placementOptions = [
+    { label: 'Slide hero / Banner ảnh', value: 'hero-slider' },
     { label: 'Hero chính', value: 'hero-main' },
     { label: 'Hero phụ', value: 'hero-side' },
 ];
 
-export default function SiteBannerFormModal({ open, canManage, editingBanner, onCancel, onSubmit }) {
+const imagePositionOptions = [
+    { label: 'Giữa', value: 'center' },
+    { label: 'Trái', value: 'left center' },
+    { label: 'Phải', value: 'right center' },
+    { label: 'Trên', value: 'center top' },
+    { label: 'Dưới', value: 'center bottom' },
+];
+
+export default function SiteBannerFormModal({ open, canManage, editingBanner, mediaOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
+    const placement = Form.useWatch('placement', form);
+    const imageUrl = Form.useWatch('image_url', form) ?? '';
+    const bannerTitle = Form.useWatch('title', form) ?? '';
 
     useEffect(() => {
         form.setFieldsValue(editingBanner);
@@ -32,6 +45,8 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, on
             eyebrow: values.eyebrow || null,
             summary: values.summary || null,
             button_label: values.button_label || null,
+            image_position: values.image_position || 'center',
+            show_caption: Boolean(values.show_caption),
             is_active: Boolean(values.is_active),
         });
         form.resetFields();
@@ -51,7 +66,7 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, on
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item name="theme_key" label="Theme key">
-                            <Input placeholder="TH0001" />
+                            <Input placeholder="SER0100 hoặc để trống cho global" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -74,8 +89,28 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, on
                 </Row>
                 <Row gutter={16}>
                     <Col span={12}>
-                        <Form.Item name="image_url" label="Ảnh banner" rules={[{ required: true, message: 'Nhập URL ảnh banner' }]}>
-                            <Input placeholder="https://cdn.example.com/banner.jpg" />
+                        <Form.Item name="image_url" hidden rules={[{ required: true, message: 'Chọn ảnh banner' }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item label="Ảnh banner" required>
+                            <SingleMediaPicker
+                                open={open}
+                                value={imageUrl}
+                                onChange={(nextValue) => form.setFieldValue('image_url', nextValue)}
+                                canManage={canManage}
+                                callAdminApi={callAdminApi}
+                                mediaOptions={mediaOptions}
+                                recordTitle={bannerTitle || 'Banner image'}
+                                previewTitle="Ảnh banner"
+                                uploadButtonLabel="Upload ảnh banner"
+                                uploadHint="Ảnh upload xong sẽ tự được gán cho slide/banner hiện tại."
+                                libraryModalTitle="Chọn ảnh banner từ thư viện"
+                                urlPlaceholder="https://example.com/banner-image.jpg"
+                                uploadSuccessMessage="Đã upload và gán ảnh banner."
+                                urlSuccessMessage="Đã lưu URL vào thư viện media và gán cho banner."
+                                uploadErrorMessage="Upload ảnh banner không thành công."
+                                urlErrorMessage="Không thể lưu ảnh banner từ URL."
+                            />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -91,8 +126,8 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, on
                         </Form.Item>
                     </Col>
                     <Col span={8}>
-                        <Form.Item name="eyebrow" label="Eyebrow">
-                            <Input placeholder="Flash sale" />
+                        <Form.Item name="eyebrow" label={placement === 'hero-slider' ? 'Nhãn nhỏ của caption' : 'Eyebrow'}>
+                            <Input placeholder={placement === 'hero-slider' ? 'Tour ops' : 'Flash sale'} />
                         </Form.Item>
                     </Col>
                     <Col span={8}>
@@ -101,16 +136,24 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, on
                         </Form.Item>
                     </Col>
                 </Row>
-                <Form.Item name="summary" label="Mô tả dài">
-                    <Input.TextArea rows={3} placeholder="Mô tả dùng cho hero lớn" />
+                <Form.Item name="summary" label={placement === 'hero-slider' ? 'Mô tả caption' : 'Mô tả dài'}>
+                    <Input.TextArea rows={3} placeholder={placement === 'hero-slider' ? 'Caption ngắn cho slide banner' : 'Mô tả dùng cho hero lớn'} />
                 </Form.Item>
                 <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item name="image_position" label="Focal point ảnh">
+                            <Select options={imagePositionOptions} />
+                        </Form.Item>
+                    </Col>
                     <Col span={6}>
                         <Form.Item name="sort_order" label="Thứ tự">
                             <InputNumber min={0} precision={0} style={{ width: '100%' }} />
                         </Form.Item>
                     </Col>
                 </Row>
+                <Form.Item name="show_caption" valuePropName="checked" label=" " colon={false}>
+                    <Checkbox>Hiện caption trên ảnh</Checkbox>
+                </Form.Item>
                 <Form.Item name="is_active" valuePropName="checked" label=" " colon={false}>
                     <Checkbox>Kích hoạt banner</Checkbox>
                 </Form.Item>

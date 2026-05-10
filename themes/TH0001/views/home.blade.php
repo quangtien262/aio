@@ -3,43 +3,100 @@
     $branding = $homeData['branding'] ?? [];
     $heroBanner = $homeData['hero_banner'] ?? [];
     $sidePromos = $homeData['side_banners'] ?? [];
-    $brands = $homeData['brand_highlights'] ?? [];
+    $secondarySidePromos = collect($homeData['secondary_side_promos'] ?? [])->take(3)->values()->all();
+    $featuredCategories = $homeData['featured_categories'] ?? $homeData['brand_highlights'] ?? [];
     $sidebarCategories = $homeData['product_menu'] ?? [];
     $featuredDeals = $homeData['featured_products'] ?? [];
     $featuredTitle = $homeData['featured_title'] ?? 'Sản phẩm nổi bật';
     $sections = $homeData['sections'] ?? [];
+    $heroSlideDefaults = $homeData['hero_slide_defaults'] ?? ['eyebrow' => 'Ưu đãi nổi bật', 'badge' => 'Khám phá ngay', 'cta' => 'Xem ngay'];
+    $footerColumns = $homeData['footer_columns'] ?? [];
+    $companyFooter = $homeData['company_footer'] ?? [];
     $cartSummary = $homeData['cart_summary'] ?? ['count' => 0];
     $customerAuth = $homeData['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
     $newsletterState = $homeData['newsletter'] ?? ['is_subscribed' => false];
     $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
+    $themeBlockRegistry = app(\App\Support\ThemeBlockRegistry::class);
+    $themeKey = 'TH0001';
     $t = fn (string $key, string $default) => $themeTranslator->bladeText('TH0001', app()->getLocale(), $key, $default);
+    $adminUser = auth('admin')->user();
+    $canQuickEditThemeBlocks = $adminUser !== null
+        && $adminUser->hasPermission('theme.view')
+        && $adminUser->hasPermission('theme.customize');
+    $quickEditLocales = \App\Support\FrontendLocalization::supportedLocales();
+    $quickEditLocaleOptions = \App\Support\FrontendLocalization::localeOptions();
+    $heroBannerEditKeyMap = collect($heroBanner['edit_fields'] ?? [])->keyBy('slot')->all();
+    $managedHeroSlides = collect($homeData['hero_slides'] ?? [])->filter(fn ($slide): bool => is_array($slide) && filled($slide['image'] ?? null))->values();
+    $heroQuickEditFields = $managedHeroSlides->isNotEmpty()
+        ? $managedHeroSlides->flatMap(fn (array $slide): array => $slide['edit_fields'] ?? [])->values()->all()
+        : array_merge(
+            $heroBanner['edit_fields'] ?? [],
+            [
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.eyebrow'), 'label' => 'Nhãn slide phụ', 'group' => 'content', 'entity' => 'theme'],
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.badge'), 'label' => 'Badge slide phụ', 'group' => 'content', 'entity' => 'theme'],
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.cta'), 'label' => 'CTA slide phụ', 'group' => 'content', 'entity' => 'theme'],
+            ],
+        );
+    $heroSlideDefaultKeyMap = [
+        'eyebrow' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.eyebrow'),
+        'badge' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.badge'),
+        'cta' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.cta'),
+    ];
+    $companyFooterEditFields = [
+        ['key' => $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_1'), 'label' => 'Địa chỉ dòng 1', 'group' => 'content', 'entity' => 'theme'],
+        ['key' => $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2'), 'label' => 'Địa chỉ dòng 2', 'group' => 'content', 'entity' => 'theme'],
+    ];
     $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
     $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $searchCategories = collect($sidebarCategories)->pluck('label')->take(6)->all();
-    $heroSlides = collect([$heroBanner])
-        ->merge(
-            collect($sidePromos)->take(3)->map(function (array $promo, int $index): array {
-                return [
-                    'image' => $promo['image'] ?? 'https://picsum.photos/seed/th0001-fallback-hero-'.($index + 1).'/960/520',
-                    'title' => $promo['title'] ?? 'Ưu đãi nổi bật',
-                    'summary' => $promo['subtitle'] ?? 'Khám phá thêm các ưu đãi đang chạy trong storefront TH0001.',
-                    'eyebrow' => 'Ưu đãi nổi bật',
-                    'badge' => 'Khám phá ngay',
-                    'cta' => 'Xem ngay',
-                    'link_url' => $promo['link_url'] ?? '#featured',
-                ];
-            })
-        )
-        ->filter(fn ($slide): bool => is_array($slide) && filled($slide['image'] ?? null))
-        ->values();
+    $heroSlides = $managedHeroSlides->isNotEmpty()
+        ? $managedHeroSlides
+        : collect([$heroBanner])
+            ->merge(
+                collect($sidePromos)->take(3)->map(function (array $promo, int $index) use ($heroSlideDefaults): array {
+                    return [
+                        'image' => $promo['image'] ?? 'https://picsum.photos/seed/th0001-fallback-hero-'.($index + 1).'/960/520',
+                        'title' => $promo['title'] ?? 'Ưu đãi nổi bật',
+                        'summary' => $promo['subtitle'] ?? 'Khám phá thêm các ưu đãi đang chạy trong storefront TH0001.',
+                        'eyebrow' => $heroSlideDefaults['eyebrow'] ?? 'Ưu đãi nổi bật',
+                        'badge' => $heroSlideDefaults['badge'] ?? 'Khám phá ngay',
+                        'cta' => $heroSlideDefaults['cta'] ?? 'Xem ngay',
+                        'link_url' => $promo['link_url'] ?? '#featured',
+                    ];
+                })
+            )
+            ->filter(fn ($slide): bool => is_array($slide) && filled($slide['image'] ?? null))
+            ->values();
 
-    $footerColumns = [
-        $t('footer.help_title', 'Trợ giúp') => [$t('footer.shipping_policy', 'Chính sách giao hàng'), $t('footer.payment_methods', 'Cách thức thanh toán'), $t('footer.evouchers', 'Hotdeal E-voucher'), $t('footer.membership', 'Membership')],
-        $t('footer.about_title', 'Giới thiệu') => [$t('footer.about_us', 'Về chúng tôi'), $t('footer.contact', 'Liên hệ'), $t('footer.privacy_policy', 'Chính sách bảo mật'), $t('footer.operating_regulations', 'Quy chế hoạt động')],
-        $t('footer.partnership_title', 'Hợp tác') => [$t('footer.gift_cards', 'Thẻ quà tặng'), $t('footer.partner_contact', 'Liên hệ hợp tác'), $t('footer.careers', 'Tuyển dụng'), $t('footer.press_info', 'Thông tin báo chí')],
-    ];
+    if ($footerColumns === []) {
+        $footerColumns = [
+            ['title' => $t('footer.help_title', 'Trợ giúp'), 'links' => [$t('footer.shipping_policy', 'Chính sách giao hàng'), $t('footer.payment_methods', 'Cách thức thanh toán'), $t('footer.evouchers', 'Hotdeal E-voucher'), $t('footer.membership', 'Membership')]],
+            ['title' => $t('footer.about_title', 'Giới thiệu'), 'links' => [$t('footer.about_us', 'Về chúng tôi'), $t('footer.contact', 'Liên hệ'), $t('footer.privacy_policy', 'Chính sách bảo mật'), $t('footer.operating_regulations', 'Quy chế hoạt động')]],
+            ['title' => $t('footer.partnership_title', 'Hợp tác'), 'links' => [$t('footer.gift_cards', 'Thẻ quà tặng'), $t('footer.partner_contact', 'Liên hệ hợp tác'), $t('footer.careers', 'Tuyển dụng'), $t('footer.press_info', 'Thông tin báo chí')]],
+        ];
+    }
+
+    $footerColumnEditFields = collect($footerColumns)->values()->map(function (array $column, int $index) use ($themeBlockRegistry, $themeKey): array {
+        return [
+            'title' => $column['title'] ?? sprintf('Cột %d', $index + 1),
+            'fields' => array_merge(
+                [[
+                    'key' => $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.title', $index)),
+                    'label' => 'Tiêu đề cột',
+                    'group' => 'content',
+                    'entity' => 'theme',
+                ]],
+                collect($column['links'] ?? [])->values()->map(fn (string $link, int $linkIndex): array => [
+                    'key' => $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.links.%d', $index, $linkIndex)),
+                    'label' => sprintf('Link %d', $linkIndex + 1),
+                    'group' => 'content',
+                    'entity' => 'theme',
+                ])->all(),
+            ),
+        ];
+    })->all();
 
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
     $formatDiscount = fn ($value) => '-'.(int) $value.'%';
@@ -151,14 +208,31 @@
             .th-side-promo { min-height: 69px; position: relative; overflow: hidden; border: 1px solid var(--th-line); }
             .th-side-promo img { width: 100%; height: 100%; object-fit: cover; }
             .th-side-promo span { position: absolute; left: 12px; bottom: 10px; z-index: 1; color: #fff; font-size: 13px; font-weight: 800; text-shadow: 0 2px 8px rgba(0,0,0,0.45); }
-            .th-brand-strip { margin-top: 12px; background: var(--th-surface); border: 1px solid var(--th-line); padding: 14px 16px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
-            .th-brand { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-            .th-brand-badge { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 11px; box-shadow: var(--th-shadow); }
+            .th-brand-strip { margin-top: 12px; background: var(--th-surface); border: 1px solid var(--th-line); padding: 16px 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+            .th-brand { display: flex; align-items: center; justify-content: center; text-align: center; }
+            .th-brand-badge { width: 92px; height: 92px; padding: 12px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 12px; line-height: 1.2; text-align: center; text-wrap: balance; overflow-wrap: anywhere; word-break: normal; hyphens: auto; box-shadow: var(--th-shadow); }
             .th-section-tabs { display: flex; gap: 24px; font-size: 14px; color: #7d7d7d; text-transform: uppercase; }
             .th-section-tabs span:first-child { color: var(--th-ink); font-weight: 800; }
             .th-featured-panel { margin-top: 22px; background: var(--th-surface); border: 1px solid var(--th-line); padding: 0 0 22px; }
             .th-featured-topbar { padding: 0 16px; display: flex; align-items: center; gap: 24px; min-height: 48px; border-bottom: 1px solid var(--th-line); }
             .th-card-grid { padding: 18px 16px 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+            .th-secondary-promo-section { margin-top: 18px; background: var(--th-surface); border: 1px solid var(--th-line); padding: 16px; }
+            .th-secondary-promo-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+            .th-secondary-promo-head h3 { margin: 0; font-size: 22px; text-transform: uppercase; color: var(--th-ink); }
+            .th-secondary-promo-head p { margin: 4px 0 0; color: var(--th-muted); font-size: 13px; }
+            .th-secondary-promo-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 180px)); gap: 16px; }
+            .th-secondary-promo-card { position: relative; min-height: 180px; overflow: hidden; border: 1px solid var(--th-line); background: #111; }
+            .th-secondary-promo-card:first-child { grid-row: 1 / span 2; min-height: 376px; }
+            .th-secondary-promo-card:first-child .th-secondary-promo-copy strong { font-size: 30px; }
+            .th-secondary-promo-card:first-child .th-secondary-promo-copy > span:not(.th-secondary-promo-cta) { font-size: 14px; max-width: 75%; }
+            .th-secondary-promo-card img { width: 100%; height: 100%; object-fit: cover; }
+            .th-secondary-promo-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6, 8, 14, 0.08) 0%, rgba(6, 8, 14, 0.84) 100%); }
+            .th-secondary-promo-badge { position: absolute; top: 16px; left: 16px; z-index: 1; display: inline-flex; align-items: center; padding: 6px 11px; border-radius: 999px; background: rgba(255,255,255,0.16); color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; backdrop-filter: blur(6px); }
+            .th-secondary-promo-copy { position: absolute; inset: auto 16px 16px 16px; z-index: 1; color: #fff; }
+            .th-secondary-promo-copy strong { display: block; font-size: 22px; line-height: 1.15; }
+            .th-secondary-promo-copy > span:not(.th-secondary-promo-cta) { display: block; margin-top: 8px; color: rgba(255,255,255,0.86); font-size: 13px; }
+            .th-secondary-promo-copy .th-secondary-promo-cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 8px 12px; border-radius: 999px; background: #fff; color: #111827; font-size: 12px; font-weight: 800; }
+            .th-secondary-promo-cta::after { content: '›'; font-size: 14px; line-height: 1; }
             .th-deal-card { background: #fff; border: 1px solid var(--th-line); transition: transform .18s ease, box-shadow .18s ease; }
             .th-deal-card:hover { transform: translateY(-3px); box-shadow: var(--th-shadow); }
             .th-deal-image-wrap { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: #f1f1f1; }
@@ -192,12 +266,15 @@
             .th-footer-links { display: grid; gap: 8px; color: #7b7b7b; font-size: 13px; }
             .th-company { background: #fff7f7; border: 1px solid #ffd9d9; border-radius: 16px; padding: 16px; }
             .th-company strong { display: block; color: var(--th-red); margin-bottom: 8px; }
+            .th-inline-edit-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 32px; padding-right: 96px; position: relative; z-index: 2; pointer-events: none; }
+            .th-inline-edit-head > * { pointer-events: auto; }
+            .th-inline-edit-head .sf-inline-edit-btn { position: absolute; top: 0; right: 0; z-index: 3; }
 
             @media (max-width: 1100px) {
                 .th-hero-layout { grid-template-columns: 1fr; }
                 .th-sidebar { display: none; }
                 .th-hero-stack { grid-template-columns: 1fr; }
-                .th-card-grid, .th-category-grid, .th-brand-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+                .th-card-grid, .th-category-grid, .th-brand-strip, .th-secondary-promo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
                 .th-search { grid-template-columns: minmax(0, 1fr) 52px; }
                 .th-sidebar-mega { display: none !important; opacity: 0 !important; visibility: hidden !important; }
             }
@@ -209,11 +286,12 @@
                 .th-main-nav-categories { min-width: 0; }
                 .th-main-nav-menu { gap: 16px; overflow-x: auto; }
                 .th-hero-overlay { width: 100%; padding: 24px 18px; }
-                .th-card-grid, .th-category-grid, .th-brand-strip, .th-footer-grid { grid-template-columns: 1fr; }
+                .th-card-grid, .th-category-grid, .th-brand-strip, .th-footer-grid, .th-secondary-promo-grid { grid-template-columns: 1fr; }
                 .th-category-header { align-items: flex-start; padding: 12px 16px; }
                 .th-category-title { min-width: 0; font-size: 22px; }
                 .th-category-tabs, .th-category-filters, .th-inline { gap: 12px; }
                 .th-price { font-size: 20px; }
+                .th-secondary-promo-head { align-items: flex-start; flex-direction: column; }
             }
         </style>
     </head>
@@ -300,7 +378,7 @@
 
                                             <div class="th-sidebar-mega-promo">
                                                 @foreach ($sidePromos as $promo)
-                                                    <a href="{{ $promo['link_url'] ?? '#featured' }}">
+                                                        <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}">
                                                         <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
                                                         <span>{{ $promo['title'] }} · {{ $promo['subtitle'] }}</span>
                                                     </a>
@@ -314,11 +392,17 @@
 
                         <div>
                             <div class="th-hero-stack">
-                                @include('theme-th0001::partials.home-hero-slider', ['heroSlides' => $heroSlides])
+                                @include('theme-th0001::partials.home-hero-slider', [
+                                    'heroSlides' => $heroSlides,
+                                    'canQuickEditThemeBlocks' => $canQuickEditThemeBlocks,
+                                    'heroQuickEditFields' => $heroQuickEditFields,
+                                    'heroBannerEditKeyMap' => $heroBannerEditKeyMap,
+                                    'heroSlideDefaultKeyMap' => $heroSlideDefaultKeyMap,
+                                ])
 
                                 <div class="th-side-promo-grid">
                                     @foreach ($sidePromos as $promo)
-                                        <a href="{{ $promo['link_url'] ?? '#featured' }}" class="th-side-promo">
+                                        <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}" class="th-side-promo">
                                             <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
                                             <span>{{ $promo['title'] }} · {{ $promo['subtitle'] }}</span>
                                         </a>
@@ -327,13 +411,13 @@
                             </div>
 
                             <section class="th-brand-strip">
-                                @foreach ($brands as $brand)
-                                    <div class="th-brand">
-                                        <div class="th-brand-badge" style="background: {{ $brand['tone'] }}">{{ $brand['name'] }}</div>
-                                        <strong>{{ $brand['name'] }}</strong>
-                                    </div>
+                                @foreach ($featuredCategories as $category)
+                                    <a href="{{ $category['url'] ?? '#' }}" target="{{ $category['target'] ?? '_self' }}" class="th-brand">
+                                        <div class="th-brand-badge" style="background: {{ $category['tone'] }}">{{ $category['name'] }}</div>
+                                    </a>
                                 @endforeach
                             </section>
+
                         </div>
                     </section>
 
@@ -372,6 +456,9 @@
                     </section>
 
                     @foreach ($sections as $section)
+                        @php
+                            $sectionItems = collect($section['items'] ?? [])->take(4)->all();
+                        @endphp
                         <section id="section-{{ $section['slug'] }}" class="th-category-section">
                             <div class="th-category-header {{ $section['theme'] === 'pink' ? 'pink' : '' }}">
                                 <div class="th-category-title">
@@ -393,7 +480,7 @@
                             </div>
 
                             <div class="th-category-grid">
-                                @foreach ($section['items'] as $item)
+                                @foreach ($sectionItems as $item)
                                     <article class="th-deal-card">
                                         <div class="th-deal-image-wrap">
                                             <a href="{{ $item['url'] ?? '#' }}">
@@ -422,28 +509,86 @@
                             </div>
                         </section>
                     @endforeach
+
+                    @if (!empty($secondarySidePromos))
+                        <section class="th-secondary-promo-section">
+                            <div class="th-secondary-promo-head">
+                                <div>
+                                    <h3>@themeT('home.secondary_promos_title', 'Khám phá nhanh')</h3>
+                                    <p>@themeT('home.secondary_promos_summary', 'Demo cho location secondary_side_promos để theme khác tái sử dụng cùng cơ chế quản trị.')</p>
+                                </div>
+                            </div>
+
+                            <div class="th-secondary-promo-grid">
+                                @foreach ($secondarySidePromos as $promo)
+                                    <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}" class="th-secondary-promo-card">
+                                        <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
+                                        @if (!empty($promo['badge']))
+                                            <span class="th-secondary-promo-badge">{{ $promo['badge'] }}</span>
+                                        @endif
+                                        <div class="th-secondary-promo-copy">
+                                            <strong>{{ $promo['title'] }}</strong>
+                                            <span>{{ $promo['subtitle'] }}</span>
+                                            @if (!empty($promo['cta_label']))
+                                                <span class="th-secondary-promo-cta">{{ $promo['cta_label'] }}</span>
+                                            @endif
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </section>
+                    @endif
                 </div>
             </main>
 
             <footer class="th-footer">
                 <div class="th-container th-footer-inner">
                     <div class="th-footer-grid">
-                        @foreach ($footerColumns as $title => $links)
+                        @foreach ($footerColumns as $column)
+                            @php
+                                $footerColumnEditor = $footerColumnEditFields[$loop->index] ?? ['fields' => []];
+                            @endphp
                             <section class="th-footer-card">
-                                <h4>{{ $title }}</h4>
+                                <div class="th-inline-edit-head">
+                                    <h4 data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.title', $loop->index)) }}">{{ $column['title'] ?? '' }}</h4>
+                                    @if ($canQuickEditThemeBlocks)
+                                        <button
+                                            type="button"
+                                            class="sf-inline-edit-btn"
+                                            data-sf-inline-edit-trigger
+                                            data-edit-title="Sửa {{ $footerColumnEditor['title'] ?? 'cột footer' }}"
+                                            data-edit-fields='@json($footerColumnEditor['fields'] ?? [])'
+                                        >
+                                            Sửa cột
+                                        </button>
+                                    @endif
+                                </div>
                                 <div class="th-footer-links">
-                                    @foreach ($links as $link)
-                                        <a href="#">{{ $link }}</a>
+                                    @foreach (($column['links'] ?? []) as $linkIndex => $link)
+                                        <a href="#" data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.links.%d', $loop->parent->index, $linkIndex)) }}">{{ $link }}</a>
                                     @endforeach
                                 </div>
                             </section>
                         @endforeach
 
                         <section class="th-company">
-                            <strong>{{ mb_strtoupper(data_get($branding, 'company_name', 'TH0001 DEMO'), 'UTF-8') }}</strong>
+                            <div class="th-inline-edit-head">
+                                <strong>{{ mb_strtoupper(data_get($branding, 'company_name', 'TH0001 DEMO'), 'UTF-8') }}</strong>
+                                @if ($canQuickEditThemeBlocks)
+                                    <button
+                                        type="button"
+                                        class="sf-inline-edit-btn"
+                                        data-sf-inline-edit-trigger
+                                        data-edit-title="Sửa chân trang công ty"
+                                        data-edit-fields='@json($companyFooterEditFields)'
+                                    >
+                                        Sửa công ty
+                                    </button>
+                                @endif
+                            </div>
                             <div class="th-footer-links">
-                                <span>332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM</span>
-                                <span>Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân</span>
+                                <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_1') }}">{{ $companyFooter['address_line_1'] ?? '332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM' }}</span>
+                                <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2') }}">{{ $companyFooter['address_line_2'] ?? 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân' }}</span>
                                 <span>Hotline: {{ $contactHotline }}</span>
                                 <span>Email: {{ $contactEmail }}</span>
                             </div>
@@ -454,5 +599,14 @@
         </div>
         @include('theme-th0001::partials.product-search-autocomplete')
         @include('theme-th0001::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
+        @if ($canQuickEditThemeBlocks)
+            @include('partials.storefront-inline-translation-editor', [
+                'editorId' => 'th0001-inline-editor',
+                'themeKey' => $themeKey,
+                'currentLocale' => app()->getLocale(),
+                'supportedLocales' => $quickEditLocales,
+                'localeOptions' => $quickEditLocaleOptions,
+            ])
+        @endif
     </body>
 </html>

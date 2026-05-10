@@ -34,7 +34,7 @@ class ThemeTranslationIndexController
         $perPage = (int) ($validated['per_page'] ?? 25);
         $websiteKey = $this->resolveWebsiteKey();
         $entries = $group === 'content'
-            ? $businessContentTranslationService->editableEntries($websiteKey, $locale)
+            ? $businessContentTranslationService->editableEntries($websiteKey, $locale, $key)
             : $themeTranslationService->editableEntries($key, $locale);
 
         $filteredEntries = $this->filterEntries(collect($entries), $keyword, $entity)->values();
@@ -102,6 +102,7 @@ class ThemeTranslationIndexController
             str_starts_with($key, 'site_profile.'), str_starts_with($key, 'branding.') => 'site-profile',
             str_starts_with($key, 'cms_menu.') => 'menu',
             str_starts_with($key, 'site_banner.') => 'banner',
+            str_starts_with($key, 'theme_block.'), str_starts_with($key, 'theme_metric.'), str_starts_with($key, 'theme_section.') => 'theme',
             str_starts_with($key, 'catalog_category.') => 'catalog-category',
             str_starts_with($key, 'catalog_product.') => 'catalog-product',
             str_starts_with($key, 'cms_page.') => 'cms-page',
@@ -131,6 +132,7 @@ class ThemeTranslationIndexController
         return [
             'all',
             'site-profile',
+            'theme',
             'menu',
             'banner',
             'catalog',
