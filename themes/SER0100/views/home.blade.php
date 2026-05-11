@@ -420,7 +420,15 @@
                 width: 6px;
                 background: linear-gradient(180deg, var(--ser-petrol), var(--ser-orange));
             }
-            .service-card h3, .service-item h3, .service-post h3, .service-highlight h3 { margin: 0 0 10px; color: var(--ser-night); }
+            .service-card h3 {
+                margin: 0 0 12px;
+                color: #082f49;
+                font-size: 28px;
+                font-weight: 800;
+                line-height: 1.2;
+                letter-spacing: -0.02em;
+            }
+            .service-item h3, .service-post h3, .service-highlight h3 { margin: 0 0 10px; color: var(--ser-night); }
             .service-card p, .service-item p, .service-post p, .service-highlight p { margin: 0; color: var(--ser-muted); line-height: 1.75; }
             .service-links { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
             .service-links a { display: inline-flex; padding: 8px 12px; border-radius: 999px; background: rgba(31, 111, 120, 0.08); color: var(--ser-petrol); font-size: 13px; font-weight: 700; }

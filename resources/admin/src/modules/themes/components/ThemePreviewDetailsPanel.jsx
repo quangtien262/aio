@@ -6,6 +6,26 @@ import Typography from 'antd/es/typography';
 
 const { Paragraph, Text, Title } = Typography;
 
+function formatAdminDateTime(value, emptyLabel) {
+    if (!value) {
+        return emptyLabel;
+    }
+
+    const parsed = new Date(value);
+
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+
+    return new Intl.DateTimeFormat('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(parsed);
+}
+
 function renderSupportTags(supports) {
     const entries = Object.entries(supports ?? {});
 
@@ -72,40 +92,12 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, onOpenAct
                 <Text type="success">Theme này đang được kích hoạt cho website hiện tại.</Text>
             )}
 
-            <div>
-                <Text strong style={{ display: 'block', marginBottom: 12 }}>Preview khối giao diện</Text>
-                {(theme.blocks ?? []).length ? (
-                    <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                        {(theme.blocks ?? []).map((blockName, index) => (
-                            <div
-                                key={`${theme.key}-${blockName}`}
-                                style={{
-                                    border: '1px solid #d9e6e2',
-                                    borderRadius: 12,
-                                    padding: '10px 12px',
-                                    background: index % 2 === 0 ? '#f7fbfa' : '#eef7f4',
-                                }}
-                            >
-                                <Text strong>{blockName}</Text>
-                            </div>
-                        ))}
-                    </Space>
-                ) : (
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Theme chưa khai báo blocks preview." />
-                )}
-            </div>
-
             <div className="detail-grid">
                 {[
                     ['Key', theme.key],
                     ['Version', theme.version],
-                    ['Parent', theme.parent || 'Không có'],
-                    ['Thumbnail asset', theme.preview?.thumbnail || 'Không có'],
-                    ['Cover asset', theme.preview?.cover || 'Không có'],
-                    ['Demo content', theme.demo?.content_path || 'Không có'],
-                    ['Demo settings', theme.demo?.settings_path || 'Không có'],
-                    ['Installed at', theme.installed_at || 'Chưa cài đặt'],
-                    ['Activated at', theme.activated_at || 'Chưa kích hoạt'],
+                    ['Installed at', formatAdminDateTime(theme.installed_at, 'Chưa cài đặt')],
+                    ['Activated at', formatAdminDateTime(theme.activated_at, 'Chưa kích hoạt')],
                 ].map(([label, value]) => (
                     <div key={label} className="detail-tile">
                         <Text className="detail-label">{label}</Text>
