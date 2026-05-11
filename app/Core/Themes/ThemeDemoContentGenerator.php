@@ -475,6 +475,10 @@ class ThemeDemoContentGenerator
             ],
         ];
 
+        if ($isServicePreset) {
+            $records = array_merge($records, $this->buildServiceHeroSliderRecords($preset));
+        }
+
         foreach (array_slice($preset['departments'], 0, 4) as $index => $department) {
             $departmentSlug = Str::slug($preset['key'].'-'.$department['name']);
             $records[] = [
@@ -508,6 +512,66 @@ class ThemeDemoContentGenerator
         }
 
         return count($records);
+    }
+
+    private function buildServiceHeroSliderRecords(array $preset): array
+    {
+        $images = $this->serviceHeroBannerPool();
+        $departments = array_slice($preset['departments'] ?? [], 0, count($images));
+
+        if ($departments === [] || $images === []) {
+            return [];
+        }
+
+        $records = [];
+
+        foreach ($departments as $index => $department) {
+            $departmentName = (string) ($department['name'] ?? 'Dịch vụ');
+            $firstChild = (string) ($department['children'][0] ?? 'Lịch trình linh hoạt');
+            $departmentSlug = Str::slug($preset['key'].'-'.$departmentName);
+
+            $records[] = [
+                'placement' => 'hero-slider',
+                'title' => $index === 0
+                    ? (string) ($preset['hero_title'] ?? $departmentName)
+                    : $departmentName,
+                'subtitle' => $index === 0
+                    ? (string) ($preset['hero_subtitle'] ?? $preset['description'] ?? '')
+                    : 'Giải pháp phù hợp cho '.$firstChild,
+                'badge' => $index === 0
+                    ? (string) ($preset['hero_badge'] ?? '')
+                    : 'Linh hoạt theo nhu cầu',
+                'metadata' => [
+                    'eyebrow' => $index === 0
+                        ? (string) ($preset['hero_eyebrow'] ?? 'Premium booking')
+                        : 'Service spotlight',
+                    'summary' => $index === 0
+                        ? (string) ($preset['description'] ?? '')
+                        : 'Tuyến '.$departmentName.' được dựng sẵn để test slider ảnh, overlay nội dung và CTA đặt xe cho theme service.',
+                    'button_label' => 'Nhận báo giá',
+                    'image_position' => match ($index % 4) {
+                        1 => '62% 32%',
+                        2 => '58% 34%',
+                        3 => '54% 46%',
+                        default => '70% center',
+                    },
+                    'show_caption' => false,
+                ],
+                'image_url' => $images[$index % count($images)],
+                'link_url' => $index === 0 ? '#featured-services' : '/danh-muc/'.$departmentSlug,
+                'sort_order' => $index,
+            ];
+        }
+
+        return $records;
+    }
+
+    private function serviceHeroBannerPool(): array
+    {
+        return [
+            '/theme-demo/service/ser0101-slide-01.svg?v=ser0101-20260511-01',
+            '/theme-demo/service/ser0101-slide-02.svg?v=ser0101-20260511-01',
+        ];
     }
 
     private function recordDemoModel(Model $model, string $themeKey, string $presetKey): void
@@ -1003,7 +1067,7 @@ class ThemeDemoContentGenerator
     {
         if (($preset['catalog_style'] ?? 'commerce') === 'service') {
             return implode(PHP_EOL.PHP_EOL, [
-                $productName.' là gói dịch vụ demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage service, trang danh mục và trang chi tiết dịch vụ của SER0100.',
+                $productName.' là gói dịch vụ demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage service, trang danh mục và trang chi tiết dịch vụ của bộ theme service.',
                 'Gói này thuộc nhóm '.$departmentName.' với cấu hình '.$childName.', nên nội dung được viết theo hướng báo giá tham khảo, năng lực vận hành và lưu ý khi đặt xe hoặc điều phối chuyến.',
                 'Sếp có thể chỉnh lại mô tả, bảng giá, gallery ảnh xe, nội dung sử dụng và CTA để biến gói demo thành nội dung thật cho doanh nghiệp vận tải.',
             ]);

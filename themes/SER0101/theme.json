@@ -1,0 +1,39 @@
+{
+  "name": "SER0101 Premium Booking",
+  "key": "SER0101",
+  "version": "0.1.0",
+  "description": "Theme đặt xe dịch vụ phong cách premium booking với booking console, route board và catalog dịch vụ dùng chung data contract service.",
+  "website_type": "service",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-ser0101.svg",
+    "cover": "cover-ser0101.svg"
+  },
+  "blocks": [
+    "service-hero-quote",
+    "service-quick-actions",
+    "fleet-capacity-grid",
+    "service-category-strip",
+    "popular-routes-table",
+    "featured-service-packages",
+    "trust-metrics",
+    "customer-logo-wall",
+    "testimonials",
+    "service-blog-teasers",
+    "footer-service-contact"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}

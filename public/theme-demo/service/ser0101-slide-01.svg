@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">SER0101 Slide 01</title>
+  <desc id="desc">Banner xe bus tone do trang cho theme SER0101.</desc>
+  <rect width="1600" height="900" fill="#f5f1ea"/>
+  <polygon points="0,176 756,176 934,900 0,900" fill="#c91710"/>
+  <polygon points="1360,0 1600,0 1600,154 1218,154" fill="#8d0d08"/>
+  <circle cx="542" cy="72" r="8" fill="#8d0d08"/>
+  <circle cx="570" cy="96" r="8" fill="#8d0d08"/>
+  <circle cx="598" cy="72" r="8" fill="#8d0d08"/>
+  <circle cx="626" cy="96" r="8" fill="#8d0d08"/>
+  <circle cx="654" cy="72" r="8" fill="#8d0d08"/>
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#8d0d08">
+    <path d="M84 92h58l18 18-18 18H84l-18-18zm18 18 11 11h22l11-11-11-11h-22z" fill="#8d0d08"/>
+    <text x="180" y="120" font-size="44" font-weight="700">htvietnam.vn</text>
+  </g>
+  <polygon points="742,88 1552,88 1484,760 800,760" fill="#ffffff"/>
+  <image href="/theme-demo/curated/transport/buses/bus-01.jpg" x="778" y="96" width="770" height="666" preserveAspectRatio="xMidYMid slice"/>
+  <polygon points="742,88 1552,88 1484,760 800,760" fill="none" stroke="#ffffff" stroke-width="18"/>
+  <text x="58" y="328" font-family="Arial Black, Segoe UI, Arial, sans-serif" font-size="94" font-weight="900" fill="#ffffff">BUS HTVIETNAM</text>
+  <text x="84" y="470" font-family="Arial Black, Segoe UI, Arial, sans-serif" font-size="92" font-weight="900" fill="#ffffff">SERVICE</text>
+  <text x="58" y="570" font-family="Segoe UI, Arial, sans-serif" font-size="33" fill="#ffffff">Du lich su kien, dua don doanh nghiep va dat xe theo lich trinh rieng</text>
+  <text x="58" y="618" font-family="Segoe UI, Arial, sans-serif" font-size="33" fill="#ffffff">voi bo cuc banner ro rang, de nhan dien va de chuyen doi.</text>
+  <polygon points="84,692 376,692 344,770 52,770" fill="#ffffff"/>
+  <text x="178" y="748" text-anchor="middle" font-family="Arial Black, Segoe UI, Arial, sans-serif" font-size="44" fill="#b3130c">BOOK NOW</text>
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#ffffff" font-size="31" font-weight="700">
+    <circle cx="96" cy="818" r="22" fill="none" stroke="#ffffff" stroke-width="8"/>
+    <text x="130" y="830">039.916.2342</text>
+    <circle cx="420" cy="818" r="22" fill="none" stroke="#ffffff" stroke-width="8"/>
+    <text x="454" y="830">www.htvietnam.vn</text>
+  </g>
+  <circle cx="574" cy="718" r="8" fill="#ffffff"/>
+  <circle cx="602" cy="694" r="8" fill="#ffffff"/>
+  <circle cx="630" cy="718" r="8" fill="#ffffff"/>
+  <circle cx="658" cy="694" r="8" fill="#ffffff"/>
+  <circle cx="686" cy="718" r="8" fill="#ffffff"/>
+  <circle cx="714" cy="694" r="8" fill="#ffffff"/>
+  <polygon points="934,900 1020,782 1128,782" fill="#8d0d08"/>
+</svg>

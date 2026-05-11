@@ -90,7 +90,12 @@ class CmsSiteController
     {
         abort_unless(app()->environment('local') || $request->user('admin') !== null, 403);
 
-        abort_unless($this->themeRegistry->all()->firstWhere('key', 'SER0100') !== null, 404);
+        $siteProfile = SiteProfile::query()->first();
+        $activeTheme = $this->resolveActiveTheme($siteProfile);
+        $themeKey = $this->resolveServiceThemeKey($activeTheme);
+
+        abort_unless($themeKey !== null, 404);
+        abort_unless($this->themeRegistry->all()->firstWhere('key', $themeKey) !== null, 404);
 
         $servicePresetKeys = collect($this->themeDemoContentGenerator->servicePresets())
             ->pluck('key')
@@ -101,7 +106,7 @@ class CmsSiteController
 
         try {
             $this->storefrontCart->clear();
-            $this->themeDemoContentGenerator->generate('SER0100', $preset);
+            $this->themeDemoContentGenerator->generate($themeKey, $preset);
         } catch (InvalidArgumentException) {
             abort(422, 'Preset demo content không hợp lệ.');
         }
@@ -946,7 +951,7 @@ class CmsSiteController
     {
         $themeKey = (string) ($activeTheme['key'] ?? '');
 
-        if ($themeKey === 'SER0100') {
+        if ($this->isServiceThemeKey($themeKey)) {
             return $this->resolveServiceThemeHomeData($siteProfile, $activeTheme, $menus);
         }
 
@@ -1098,7 +1103,7 @@ class CmsSiteController
             return $items;
         }
 
-        if ($themeKey !== 'SER0100') {
+        if (! $this->isServiceThemeKey($themeKey)) {
             return [];
         }
 
@@ -1237,7 +1242,7 @@ class CmsSiteController
     private function resolvePresetSwitcher(?SiteProfile $siteProfile, ?array $activeTheme): array
     {
         $themeKey = (string) ($activeTheme['key'] ?? '');
-        $enabled = $themeKey === 'SER0100' && (app()->environment('local') || auth('admin')->check());
+        $enabled = $this->isServiceThemeKey($themeKey) && (app()->environment('local') || auth('admin')->check());
 
         if (! $enabled) {
             return [
@@ -1768,9 +1773,21 @@ class CmsSiteController
                 ->contains(function (mixed $value): bool {
                     $normalizedValue = $this->normalizeSearchText((string) $value);
 
-                    return preg_match('/bao\s*gia|fleet|airport|shuttle|charter|tour|coach|xe|tuyen|route|demo\s*ser0100/', $normalizedValue) === 1;
+                    return preg_match('/bao\s*gia|fleet|airport|shuttle|charter|tour|coach|xe|tuyen|route|demo\s*ser010[01]/', $normalizedValue) === 1;
                 });
         });
+    }
+
+    private function resolveServiceThemeKey(?array $activeTheme): ?string
+    {
+        $themeKey = strtoupper((string) ($activeTheme['key'] ?? ''));
+
+        return $this->isServiceThemeKey($themeKey) ? $themeKey : null;
+    }
+
+    private function isServiceThemeKey(?string $themeKey): bool
+    {
+        return in_array(strtoupper((string) $themeKey), ['SER0100', 'SER0101'], true);
     }
 
     private function themeBlockText(string $websiteKey, string $themeKey, string $blockKey, ?string $default): string

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">SER0101 Slide 02</title>
+  <desc id="desc">Banner xe bus variant 2 cho theme SER0101.</desc>
+  <rect width="1600" height="900" fill="#f8f5ef"/>
+  <polygon points="0,538 816,538 764,764 0,764" fill="#a80f09"/>
+  <polygon points="980,0 1046,0 898,356 834,356" fill="#a80f09"/>
+  <polygon points="1094,0 1600,0 1600,900 1282,900 1328,522 970,522" fill="#ffffff"/>
+  <image href="/theme-demo/curated/transport/buses/bus-02.jpg" x="1026" y="0" width="574" height="900" preserveAspectRatio="xMidYMid slice"/>
+  <polygon points="690,364 1230,364 1098,720 560,720" fill="#ffffff"/>
+  <image href="/theme-demo/curated/transport/buses/bus-01.jpg" x="584" y="384" width="622" height="316" preserveAspectRatio="xMidYMid slice"/>
+  <polygon points="690,364 1230,364 1098,720 560,720" fill="none" stroke="#ffffff" stroke-width="22"/>
+  <text x="30" y="224" font-family="Arial Black, Segoe UI, Arial, sans-serif" font-size="114" font-weight="900" fill="#050505">BUS HTVIETNAM</text>
+  <text x="30" y="432" font-family="Arial Black, Segoe UI, Arial, sans-serif" font-size="116" font-weight="900" fill="#a80f09">SERVICE</text>
+  <text x="18" y="600" font-family="Segoe UI, Arial, sans-serif" font-size="34" fill="#ffffff">Bat ke nhu cau dua don san bay, city transfer hay su kien cong ty,</text>
+  <text x="18" y="648" font-family="Segoe UI, Arial, sans-serif" font-size="34" fill="#ffffff">banner nay giu chat premium booking nhung nhin ro hinh anh hon.</text>
+  <polygon points="28,766 372,766 344,840 0,840" fill="#ffffff"/>
+  <text x="182" y="822" text-anchor="middle" font-family="Arial Black, Segoe UI, Arial, sans-serif" font-size="44" fill="#a80f09">BOOK NOW</text>
+  <polygon points="378,766 704,766 682,840 356,840" fill="#ffffff"/>
+  <polygon points="710,766 1074,766 1052,840 688,840" fill="#ffffff"/>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#151515">
+    <text x="504" y="818" text-anchor="middle">039.916.2342</text>
+    <text x="882" y="818" text-anchor="middle">www.htvietnam.com</text>
+  </g>
+</svg>
