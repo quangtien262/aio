@@ -1,0 +1,10 @@
+<svg width="360" height="180" viewBox="0 0 360 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="360" height="180" rx="24" fill="#A35035"/>
+  <rect x="24" y="24" width="184" height="132" rx="22" fill="#FFF8F1" fill-opacity="0.12"/>
+  <text x="44" y="58" fill="#F6D9C2" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">RETAIL / CAPSULE</text>
+  <text x="44" y="92" fill="#FFF8F1" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800">Mẫu may sẵn và capsule theo mùa</text>
+  <text x="44" y="130" fill="#F8ECE3" font-family="Segoe UI, Arial, sans-serif" font-size="15">Phù hợp local brand nhỏ, batch ngắn và retail linh hoạt.</text>
+  <circle cx="282" cy="88" r="54" fill="#FFF8F1" fill-opacity="0.82"/>
+  <path d="M250 76L282 60L314 76L304 96H260L250 76Z" fill="#A35035"/>
+  <path d="M262 94H302L308 136H256L262 94Z" fill="#F6E9DF"/>
+</svg>

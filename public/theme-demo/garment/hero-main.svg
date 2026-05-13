@@ -1,0 +1,27 @@
+<svg width="960" height="520" viewBox="0 0 960 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="520" rx="32" fill="#F6E9DF"/>
+  <rect x="0" y="0" width="960" height="520" rx="32" fill="url(#paint0_linear)"/>
+  <circle cx="782" cy="98" r="92" fill="#FFF7F1" fill-opacity="0.75"/>
+  <circle cx="846" cy="434" r="126" fill="#D9B8A2" fill-opacity="0.35"/>
+  <rect x="56" y="54" width="386" height="412" rx="28" fill="#3E2E28" fill-opacity="0.92"/>
+  <text x="88" y="112" fill="#F0C7A6" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">GARMENT WORKSHOP</text>
+  <text x="88" y="176" fill="#FFF8F1" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="800">May sỉ lẻ theo form dáng riêng.</text>
+  <text x="88" y="246" fill="#EEDFD4" font-family="Segoe UI, Arial, sans-serif" font-size="22">Duyệt mẫu, chốt size, vào chuyền và giao hàng theo từng đợt cho doanh nghiệp, local brand và retail.</text>
+  <rect x="88" y="312" width="176" height="52" rx="26" fill="#FFF8F1"/>
+  <text x="176" y="345" text-anchor="middle" fill="#7F3A25" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">MOQ từ 30</text>
+  <rect x="280" y="312" width="210" height="52" rx="26" fill="#A35035"/>
+  <text x="385" y="345" text-anchor="middle" fill="#FFF8F1" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">Xem bộ sưu tập</text>
+  <rect x="540" y="84" width="300" height="360" rx="28" fill="#FFF8F1" fill-opacity="0.86"/>
+  <path d="M610 136L690 100L770 136L748 188H632L610 136Z" fill="#B46B48"/>
+  <path d="M644 184H736L752 404H628L644 184Z" fill="#F6E9DF"/>
+  <path d="M684 160C684 150.059 692.059 142 702 142C711.941 142 720 150.059 720 160V184H684V160Z" fill="#E7C2A6"/>
+  <rect x="560" y="360" width="260" height="54" rx="18" fill="#A35035" fill-opacity="0.12"/>
+  <text x="690" y="394" text-anchor="middle" fill="#7F3A25" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">OEM / ODM • Uniform • Retail</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="84" y1="18" x2="884" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E7C7B1"/>
+      <stop offset="0.55" stop-color="#F7F1EA"/>
+      <stop offset="1" stop-color="#D7B39A"/>
+    </linearGradient>
+  </defs>
+</svg>

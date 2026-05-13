@@ -7,6 +7,8 @@ import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
 
 const COMMERCE_PRESET_OPTIONS = [
+    { label: 'Xưởng may quần áo sỉ lẻ', value: 'garment-workshop', description: 'Đồng phục, OEM/ODM, local brand, retail may sẵn.' },
+    { label: 'Thời trang lookbook và retail', value: 'fashion-studio', description: 'Capsule collection, ready-to-wear, streetwear, showroom retail.' },
     { label: 'Điện máy công nghệ', value: 'electronics-superstore', description: 'Điện thoại, laptop, điện lạnh, gia dụng.' },
     { label: 'Điện thoại và phụ kiện', value: 'phones-accessories', description: 'Showroom smartphone, gear, bảo hành.' },
     { label: 'Máy tính và workstation', value: 'computer-workstation', description: 'PC, laptop, màn hình, server mini.' },
@@ -76,7 +78,7 @@ export default function ThemeDemoDataModal({ open, theme, mode = 'generate', can
                             ? 'Hệ thống sẽ regenerate lại bộ demo data theo preset đã chọn và buộc toàn bộ ảnh demo đi qua local curated asset pool trong repo. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
                             : (theme?.website_type ?? '').toLowerCase() === 'service'
                                 ? 'Hệ thống sẽ tạo menu, gói dịch vụ, cẩm nang, trang giới thiệu và banner demo cho website hiện tại. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
-                                : 'Hệ thống sẽ tạo menu, sản phẩm, tin tức, trang giới thiệu và banner demo cho website hiện tại. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
+                                : 'Hệ thống sẽ tạo menu, sản phẩm, tin tức, trang giới thiệu và banner demo cho website hiện tại. Với TH0002 có thể chọn preset xưởng may hoặc thời trang để sinh taxonomy, hero và catalog đúng domain may mặc. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
                     }
                 />
 

@@ -10,9 +10,10 @@ use Illuminate\Http\Request;
 
 class CustomerFavoriteController
 {
-    public function __invoke(Request $request, CatalogProduct $product): RedirectResponse|JsonResponse
+    public function __invoke(Request $request): RedirectResponse|JsonResponse
     {
         $customer = $request->user('customer');
+        $product = CatalogProduct::query()->where('slug', (string) $request->route('product'))->firstOrFail();
 
         $favorite = CustomerFavorite::query()->firstWhere([
             'customer_id' => $customer?->id,

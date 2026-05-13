@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Support\ThemeBlocks\Definitions\Ser0100ThemeBlockDefinition;
 use App\Support\ThemeBlocks\Definitions\Ser0101ThemeBlockDefinition;
 use App\Support\ThemeBlocks\Definitions\Th0001ThemeBlockDefinition;
+use App\Support\ThemeBlocks\Definitions\Th0002ThemeBlockDefinition;
 use App\Support\ThemeBlocks\ThemeBlockDefinition;
 
 class ThemeBlockRegistry
@@ -18,6 +19,7 @@ class ThemeBlockRegistry
             'ser0100' => new Ser0100ThemeBlockDefinition(),
             'ser0101' => new Ser0101ThemeBlockDefinition(),
             'th0001' => new Th0001ThemeBlockDefinition(),
+            'th0002' => new Th0002ThemeBlockDefinition(),
         ];
     }
 

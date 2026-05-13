@@ -3,13 +3,26 @@
 namespace App\Http\Controllers\Admin\Api;
 
 use App\Models\SiteBanner;
+use App\Models\SiteProfile;
 use Illuminate\Http\JsonResponse;
 
 class SiteBannerIndexController
 {
     public function __invoke(): JsonResponse
     {
-        $query = SiteBanner::query()->orderBy('placement')->orderBy('sort_order')->orderByDesc('updated_at');
+        $activeThemeKey = (string) (SiteProfile::query()->first()?->active_theme_key ?? '');
+
+        $query = SiteBanner::query()
+            ->when($activeThemeKey !== '', function ($builder) use ($activeThemeKey) {
+                $builder->where(function ($scopedQuery) use ($activeThemeKey) {
+                    $scopedQuery
+                        ->whereNull('theme_key')
+                        ->orWhere('theme_key', $activeThemeKey);
+                });
+            })
+            ->orderBy('placement')
+            ->orderBy('sort_order')
+            ->orderByDesc('updated_at');
 
         $items = $query->get()->map(fn (SiteBanner $banner): array => [
             'id' => $banner->id,
@@ -33,6 +46,7 @@ class SiteBannerIndexController
             'data' => [
                 'items' => $items,
                 'total' => count($items),
+                'active_theme_key' => $activeThemeKey,
             ],
         ]);
     }

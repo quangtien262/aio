@@ -86,9 +86,11 @@ class CmsSiteController
         return $this->renderContent('page', $page);
     }
 
-    public function switchThemePreset(Request $request, string $locale, string $preset): RedirectResponse
+    public function switchThemePreset(Request $request): RedirectResponse
     {
         abort_unless(app()->environment('local') || $request->user('admin') !== null, 403);
+
+        $preset = (string) $request->route('preset');
 
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
@@ -314,7 +316,7 @@ class CmsSiteController
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             'category' => $category,
             'sidebarCategories' => $sidebarCategories,
-            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product))->all(),
+            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'TH0001')))->all(),
             'childCategories' => $category->children->map(fn (CatalogCategory $child): array => [
                 'name' => $child->name,
                 'slug' => $child->slug,
@@ -382,9 +384,11 @@ class CmsSiteController
         return $this->renderProductDetailView($product, false);
     }
 
-    public function previewProduct(Request $request, CatalogProduct $product): View
+    public function previewProduct(Request $request): View
     {
         abort_unless(in_array('cms.product.view', $request->user('admin')?->permissions() ?? [], true), 403);
+
+        $product = CatalogProduct::query()->findOrFail((string) $request->route('product'));
 
         $product = $this->resolveProductPreviewModel((string) $product->getKey(), true);
 
@@ -418,14 +422,14 @@ class CmsSiteController
             'activeTheme' => $activeTheme,
             'menus' => $menus,
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
-            'product' => $this->mapProductCard($product),
+            'product' => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'TH0001')),
             'productModel' => $product,
             'productGallery' => $this->resolveProductGallery($product),
             'productHighlights' => $this->splitTextLines($product->highlights),
             'usageTerms' => $this->splitTextLines($product->usage_terms),
             'usageLocationLines' => $this->splitTextLines($product->usage_location),
             'detailParagraphs' => $this->splitTextParagraphs($product->detail_content),
-            'relatedProducts' => $relatedProducts->map(fn (CatalogProduct $item): array => $this->mapProductCard($item))->all(),
+            'relatedProducts' => $relatedProducts->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, (string) ($activeTheme['key'] ?? 'TH0001')))->all(),
             'isFavorite' => in_array($product->id, $favoriteProductIds, true),
             'isPreview' => $isPreview,
         ]);
@@ -523,7 +527,7 @@ class CmsSiteController
             'menus' => $menus,
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             'searchQuery' => $search,
-            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product))->all(),
+            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'TH0001')))->all(),
             'pagination' => $products,
             'resultCount' => $products->total(),
             'searchCategories' => $searchCategories,
@@ -589,8 +593,21 @@ class CmsSiteController
         ]);
     }
 
-    public function cart(Request $request): View
+    public function cart(Request $request): View|JsonResponse
     {
+        $cartSummary = $this->storefrontCart->summary();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'data' => [
+                    'cart_summary' => $cartSummary,
+                    'has_items' => $this->storefrontCart->hasItems(),
+                    'checkout_url' => route('site.checkout.index'),
+                    'cart_url' => route('site.cart.index'),
+                ],
+            ]);
+        }
+
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
@@ -600,21 +617,37 @@ class CmsSiteController
             'siteProfile' => $siteProfile,
             'activeTheme' => $activeTheme,
             'menus' => $menus,
-            'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
+            'themeShellData' => array_replace($this->resolveThemeShellData($siteProfile, $activeTheme, $menus), [
+                'cart_summary' => $cartSummary,
+            ]),
             'checkoutMode' => $request->boolean('checkout'),
         ]);
     }
 
-    public function addToCart(Request $request): RedirectResponse
+    public function addToCart(Request $request): JsonResponse|RedirectResponse
     {
         $slug = (string) $request->route('slug');
 
         $product = $this->resolvePurchasableProduct($slug);
         $quantity = $this->validateCartQuantity($request, $product);
 
-        $this->storefrontCart->add($product, $quantity);
+        $item = $this->storefrontCart->add($product, $quantity);
+        $summary = $this->storefrontCart->summary();
+        $message = 'Đã thêm '.$quantity.' sản phẩm vào giỏ hàng.';
 
-        return back()->with('cart_success', 'Đã thêm '.$quantity.' sản phẩm vào giỏ hàng.');
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => $message,
+                'data' => [
+                    'item' => $item,
+                    'cart_summary' => $summary,
+                    'cart_url' => route('site.cart.index'),
+                    'checkout_url' => route('site.checkout.index'),
+                ],
+            ]);
+        }
+
+        return back()->with('cart_success', $message);
     }
 
     public function buyNow(Request $request): RedirectResponse
@@ -637,7 +670,7 @@ class CmsSiteController
             ->with('cart_success', 'Đã thêm sản phẩm vào giỏ và chuyển bạn tới bước thanh toán.');
     }
 
-    public function updateCartItem(Request $request): RedirectResponse
+    public function updateCartItem(Request $request): JsonResponse|RedirectResponse
     {
         $productId = (int) $request->route('productId');
 
@@ -649,16 +682,39 @@ class CmsSiteController
 
         abort_if($item === null, 404);
 
-        return back()->with('cart_success', 'Đã cập nhật số lượng sản phẩm trong giỏ hàng.');
+        $message = 'Đã cập nhật số lượng sản phẩm trong giỏ hàng.';
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => $message,
+                'data' => [
+                    'item' => $item,
+                    'cart_summary' => $this->storefrontCart->summary(),
+                ],
+            ]);
+        }
+
+        return back()->with('cart_success', $message);
     }
 
-    public function removeCartItem(Request $request): RedirectResponse
+    public function removeCartItem(Request $request): JsonResponse|RedirectResponse
     {
         $productId = (int) $request->route('productId');
 
         $this->storefrontCart->remove($productId);
 
-        return back()->with('cart_success', 'Đã xóa sản phẩm khỏi giỏ hàng.');
+        $message = 'Đã xóa sản phẩm khỏi giỏ hàng.';
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => $message,
+                'data' => [
+                    'cart_summary' => $this->storefrontCart->summary(),
+                ],
+            ]);
+        }
+
+        return back()->with('cart_success', $message);
     }
 
     public function checkout(Request $request): View|RedirectResponse
@@ -751,8 +807,10 @@ class CmsSiteController
         return to_route('site.checkout.success', ['order' => $order->id])->with('cart_success', 'Đơn hàng đã được ghi nhận thành công.');
     }
 
-    public function checkoutSuccess(Order $order): View
+    public function checkoutSuccess(Request $request): View
     {
+        $order = Order::query()->findOrFail((string) $request->route('order'));
+
         abort_unless(auth('customer')->id() === $order->customer_id, 403);
 
         $siteProfile = SiteProfile::query()->first();
@@ -769,16 +827,20 @@ class CmsSiteController
         ]);
     }
 
-    public function previewPage(Request $request, CmsPage $page): View
+    public function previewPage(Request $request): View
     {
         abort_unless(in_array('cms.publish', $request->user('admin')?->permissions() ?? [], true), 403);
+
+        $page = CmsPage::query()->findOrFail((string) $request->route('page'));
 
         return $this->renderContent('page', $page->load('featuredMedia'), ['isPreview' => true]);
     }
 
-    public function previewPost(Request $request, CmsPost $post): View
+    public function previewPost(Request $request): View
     {
         abort_unless(in_array('cms.publish', $request->user('admin')?->permissions() ?? [], true), 403);
+
+        $post = CmsPost::query()->findOrFail((string) $request->route('post'));
 
         return $this->renderContent('post', $post->load(['category', 'featuredMedia']), ['isPreview' => true]);
     }
@@ -826,6 +888,7 @@ class CmsSiteController
         $siteProfile = $this->localizeSiteProfile($extra['siteProfile'] ?? SiteProfile::query()->first());
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
+        $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
         $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
         $viewName = $this->resolveThemeCmsView($activeTheme) ?? 'site-cms';
 
@@ -853,9 +916,9 @@ class CmsSiteController
             'menus' => $menus,
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             'isPreview' => false,
-            'pageTitle' => $contentType === 'posts' ? $this->themeText('menu.default.blog', $title, 'TH0001') : $title,
+            'pageTitle' => $contentType === 'posts' ? $this->themeText('menu.default.blog', $title, $themeKey) : $title,
             'pageDescription' => $contentType === 'posts'
-                ? $this->themeText('cms.posts.description', $description, 'TH0001')
+                ? $this->themeText('cms.posts.description', $description, $themeKey)
                 : $description,
         ], $extra));
     }
@@ -955,13 +1018,19 @@ class CmsSiteController
             return $this->resolveServiceThemeHomeData($siteProfile, $activeTheme, $menus);
         }
 
-        if ($themeKey !== 'TH0001') {
+        if (! $this->isCommerceThemeKey($themeKey)) {
             return [];
         }
 
+        return $this->resolveCommerceThemeHomeData($siteProfile, $activeTheme, $menus);
+    }
+
+    private function resolveCommerceThemeHomeData(?SiteProfile $siteProfile, ?array $activeTheme, array $menus): array
+    {
+        $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
+
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $shellData = $this->resolveThemeShellData($siteProfile, $activeTheme, $menus);
-        $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
 
         $parentCategories = CatalogCategory::query()
             ->with(['children' => function ($query) use ($websiteKey): void {
@@ -979,7 +1048,6 @@ class CmsSiteController
         $heroBanner = $this->resolveHeroBanner($websiteKey, $themeKey);
         $sideBanners = $this->resolveSidePromos($websiteKey, $themeKey);
         $featuredProducts = $this->resolveFeaturedProducts($websiteKey);
-        $sections = $this->resolveSections($parentCategories, $websiteKey);
 
         return [
             ...$shellData,
@@ -991,10 +1059,10 @@ class CmsSiteController
             'featured_title' => collect($featuredProducts)->contains(fn (array $product): bool => (bool) ($product['is_featured'] ?? false))
                 ? $this->themeText('theme.fallback.featured_products', 'Sản phẩm nổi bật', $themeKey)
                 : $this->themeText('theme.fallback.latest_products', 'Sản phẩm mới nhất', $themeKey),
-            'sections' => $sections,
-            'featured_categories' => $this->resolveFeaturedCategories($websiteKey, $parentCategories),
-            'footer_featured_categories' => $this->resolveFeaturedCategories($websiteKey, $parentCategories, 'footer-featured-categories', false),
-            'brand_highlights' => $this->resolveFeaturedCategories($websiteKey, $parentCategories),
+            'sections' => $this->resolveSections($parentCategories, $websiteKey, $themeKey),
+            'featured_categories' => $this->resolveFeaturedCategories($websiteKey, $parentCategories, 'home-featured-categories', true, $themeKey),
+            'footer_featured_categories' => $this->resolveFeaturedCategories($websiteKey, $parentCategories, 'footer-featured-categories', false, $themeKey),
+            'brand_highlights' => $this->resolveFeaturedCategories($websiteKey, $parentCategories, 'home-featured-categories', true, $themeKey),
             'hero_slide_defaults' => $this->resolveCommerceHeroSlideDefaults($websiteKey, $themeKey),
             'footer_columns' => $this->resolveCommerceFooterColumns($websiteKey, $themeKey),
             'company_footer' => $this->resolveCommerceCompanyFooter($websiteKey, $themeKey),
@@ -1171,8 +1239,8 @@ class CmsSiteController
             'support_location' => 'Hà Nội',
         ], $siteProfile?->branding ?? []);
 
-        if ($themeKey === 'TH0001') {
-            $branding = $this->resolveCommerceBranding($siteProfile, $branding, $websiteKey);
+        if ($this->isCommerceThemeKey($themeKey)) {
+            $branding = $this->resolveCommerceBranding($siteProfile, $branding, $websiteKey, $themeKey);
         } elseif (! $this->isDemoPresetBranding($branding)) {
             foreach (['company_name', 'slogan', 'support_location'] as $field) {
                 if (filled($branding[$field] ?? null)) {
@@ -1307,11 +1375,13 @@ class CmsSiteController
             ->filter(fn (mixed $item): bool => is_array($item))
             ->values();
 
-        if ($items->isEmpty() || ($themeKey === 'TH0001' && $this->shouldUseCommerceTopMenuFallback($items->all()))) {
+        if ($items->isEmpty() || ($this->isCommerceThemeKey($themeKey) && $this->shouldUseCommerceTopMenuFallback($items->all()))) {
+            $resolvedThemeKey = $this->isCommerceThemeKey($themeKey) ? (string) $themeKey : 'TH0001';
+
             return [
-                ['label' => $this->themeText('menu.default.blog', 'Tin tức', 'TH0001'), 'url' => route('site.blog.index'), 'target' => '_self'],
-                ['label' => $this->themeText('menu.default.about', 'Giới thiệu', 'TH0001'), 'url' => $this->localizedStaticPageUrl('gioi-thieu'), 'target' => '_self'],
-                ['label' => $this->themeText('menu.default.contact', 'Liên hệ', 'TH0001'), 'url' => $this->localizedStaticPageUrl('lien-he'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.blog', 'Tin tức', $resolvedThemeKey), 'url' => route('site.blog.index'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.about', 'Giới thiệu', $resolvedThemeKey), 'url' => $this->localizedStaticPageUrl('gioi-thieu'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.contact', 'Liên hệ', $resolvedThemeKey), 'url' => $this->localizedStaticPageUrl('lien-he'), 'target' => '_self'],
             ];
         }
 
@@ -1508,9 +1578,11 @@ class CmsSiteController
         return $items->map(fn (CatalogProduct $product): array => $this->mapProductCard($product))->all();
     }
 
-    private function resolveSections(Collection $parentCategories, string $websiteKey): array
+    private function resolveSections(Collection $parentCategories, string $websiteKey, string $themeKey = 'TH0001'): array
     {
-        return $parentCategories->map(function (CatalogCategory $parent, int $index) use ($websiteKey): array {
+        $tabs = $this->commerceThemeDefaults($themeKey)['section_tabs'];
+
+        return $parentCategories->map(function (CatalogCategory $parent, int $index) use ($websiteKey, $themeKey, $tabs): array {
             $categoryIds = $parent->children->pluck('id')->prepend($parent->id)->all();
             $productsQuery = CatalogProduct::query()->with(['category', 'images'])
                 ->where('is_active', true)
@@ -1523,14 +1595,14 @@ class CmsSiteController
                 'title' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $parent->id), $parent->name),
                 'slug' => $parent->slug,
                 'url' => $this->categoryUrl($parent->slug),
-                'tabs' => ['Mới nhất', 'Bán chạy', 'Giá tốt'],
+                'tabs' => $tabs,
                 'filters' => $parent->children->take(4)->map(fn (CatalogCategory $child): string => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $child->id), $child->name))->all(),
-                'items' => $productsQuery->take(8)->get()->map(fn (CatalogProduct $product): array => $this->mapProductCard($product))->all(),
+                'items' => $productsQuery->take(8)->get()->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, $themeKey))->all(),
             ];
         })->filter(fn (array $section): bool => $section['items'] !== [])->values()->all();
     }
 
-    private function resolveFeaturedCategories(string $websiteKey, Collection $parentCategories, string $location = 'home-featured-categories', bool $fallbackToBrandHighlights = true): array
+    private function resolveFeaturedCategories(string $websiteKey, Collection $parentCategories, string $location = 'home-featured-categories', bool $fallbackToBrandHighlights = true, string $themeKey = 'TH0001'): array
     {
         $query = CmsFeaturedCategory::query()
             ->where('location', $location)
@@ -1542,20 +1614,20 @@ class CmsSiteController
         $items = collect($record?->items ?? [])->values()->filter(fn (mixed $item): bool => is_array($item) && filled($item['label'] ?? null));
 
         if ($items->isNotEmpty()) {
-            return $items->map(function (array $item, int $index) use ($websiteKey, $location): array {
+            return $items->map(function (array $item, int $index) use ($websiteKey, $location, $themeKey): array {
                 return [
                     'name' => $this->contentText($websiteKey, sprintf('cms_featured_category.%s.%d.label', $location, $index), (string) ($item['label'] ?? '')),
                     'url' => $this->localizedUrl((string) ($item['url'] ?? '#')),
                     'target' => $item['target'] ?? '_self',
-                    'tone' => $this->resolveFeaturedCategoryTone($index),
+                    'tone' => $this->resolveFeaturedCategoryTone($index, $themeKey),
                 ];
             })->all();
         }
 
-        return $fallbackToBrandHighlights ? $this->resolveBrandHighlights($parentCategories) : [];
+        return $fallbackToBrandHighlights ? $this->resolveBrandHighlights($parentCategories, $themeKey) : [];
     }
 
-    private function resolveBrandHighlights(Collection $parentCategories): array
+    private function resolveBrandHighlights(Collection $parentCategories, string $themeKey = 'TH0001'): array
     {
         $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
 
@@ -1563,13 +1635,13 @@ class CmsSiteController
             'name' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $category->id), $category->name),
             'url' => $this->categoryUrl($category->slug),
             'target' => '_self',
-            'tone' => $this->resolveFeaturedCategoryTone($index),
+            'tone' => $this->resolveFeaturedCategoryTone($index, $themeKey),
         ])->all();
     }
 
-    private function resolveFeaturedCategoryTone(int $index): string
+    private function resolveFeaturedCategoryTone(int $index, string $themeKey = 'TH0001'): string
     {
-        $tones = ['#101828', '#8f5f00', '#1c8c64', '#a66900', '#0d9488'];
+        $tones = $this->commerceThemeDefaults($themeKey)['featured_tones'];
 
         return $tones[$index % count($tones)];
     }
@@ -1668,29 +1740,18 @@ class CmsSiteController
 
     private function resolveCommerceHeroSlideDefaults(string $websiteKey, string $themeKey): array
     {
+        $defaults = $this->commerceThemeDefaults($themeKey);
+
         return [
-            'eyebrow' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.eyebrow', 'Ưu đãi nổi bật'),
-            'badge' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.badge', 'Khám phá ngay'),
-            'cta' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.cta', 'Xem ngay'),
+            'eyebrow' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.eyebrow', $defaults['hero_slide']['eyebrow']),
+            'badge' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.badge', $defaults['hero_slide']['badge']),
+            'cta' => $this->themeBlockText($websiteKey, $themeKey, 'hero_slide.cta', $defaults['hero_slide']['cta']),
         ];
     }
 
     private function resolveCommerceFooterColumns(string $websiteKey, string $themeKey): array
     {
-        $defaults = [
-            [
-                'title' => 'Trợ giúp',
-                'links' => ['Chính sách giao hàng', 'Cách thức thanh toán', 'Hotdeal E-voucher', 'Membership'],
-            ],
-            [
-                'title' => 'Giới thiệu',
-                'links' => ['Về chúng tôi', 'Liên hệ', 'Chính sách bảo mật', 'Quy chế hoạt động'],
-            ],
-            [
-                'title' => 'Hợp tác',
-                'links' => ['Thẻ quà tặng', 'Liên hệ hợp tác', 'Tuyển dụng', 'Thông tin báo chí'],
-            ],
-        ];
+        $defaults = $this->commerceThemeDefaults($themeKey)['footer_columns'];
 
         return collect($defaults)->map(function (array $column, int $index) use ($websiteKey, $themeKey): array {
             return [
@@ -1704,25 +1765,20 @@ class CmsSiteController
 
     private function resolveCommerceCompanyFooter(string $websiteKey, string $themeKey): array
     {
+        $defaults = $this->commerceThemeDefaults($themeKey)['company_footer'];
+
         return [
-            'address_line_1' => $this->themeBlockText($websiteKey, $themeKey, 'company_footer.address_line_1', '332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM'),
-            'address_line_2' => $this->themeBlockText($websiteKey, $themeKey, 'company_footer.address_line_2', 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân'),
+            'address_line_1' => $this->themeBlockText($websiteKey, $themeKey, 'company_footer.address_line_1', $defaults['address_line_1']),
+            'address_line_2' => $this->themeBlockText($websiteKey, $themeKey, 'company_footer.address_line_2', $defaults['address_line_2']),
         ];
     }
 
-    private function resolveCommerceBranding(?SiteProfile $siteProfile, array $branding, string $websiteKey): array
+    private function resolveCommerceBranding(?SiteProfile $siteProfile, array $branding, string $websiteKey, string $themeKey): array
     {
+        $defaults = $this->commerceThemeDefaults($themeKey)['branding'];
+
         if ($this->shouldUseCommerceBrandingFallback($siteProfile, $branding)) {
-            $branding = array_merge($branding, [
-                'company_name' => 'TH0001 Deal Commerce',
-                'slogan' => 'Deal ngon mỗi ngày, mua nhanh giá tốt',
-                'logo_url' => self::DEFAULT_BRAND_ASSET,
-                'favicon_url' => self::DEFAULT_BRAND_ASSET,
-                'primary_color' => '#ef2b2d',
-                'support_hotline' => '1900 6760 / 0354.466.968',
-                'support_email' => 'cs@th0001.demo',
-                'support_location' => 'TP.HCM & Hà Nội',
-            ]);
+            $branding = array_merge($branding, $defaults);
         }
 
         foreach (['company_name', 'slogan', 'support_location'] as $field) {
@@ -1732,6 +1788,68 @@ class CmsSiteController
         }
 
         return $branding;
+    }
+
+    private function commerceThemeDefaults(string $themeKey): array
+    {
+        return match (strtoupper($themeKey)) {
+            'TH0002' => [
+                'hero_slide' => [
+                    'eyebrow' => 'Xưởng may theo yêu cầu',
+                    'badge' => 'MOQ từ 30 sản phẩm',
+                    'cta' => 'Xem bộ sưu tập',
+                ],
+                'footer_columns' => [
+                    ['title' => 'Hỗ trợ đặt may', 'links' => ['Quy trình báo giá', 'Hướng dẫn gửi techpack', 'MOQ và thời gian mẫu', 'Chính sách đổi trả']],
+                    ['title' => 'Về xưởng may', 'links' => ['Năng lực sản xuất', 'Dịch vụ OEM / ODM', 'Chất liệu và hoàn thiện', 'Liên hệ showroom']],
+                    ['title' => 'Hợp tác', 'links' => ['May đồng phục doanh nghiệp', 'Sản xuất cho local brand', 'Bán sỉ đại lý', 'Tuyển cộng tác viên']],
+                ],
+                'company_footer' => [
+                    'address_line_1' => 'Xưởng chính: Cụm công nghiệp may mặc, Tân Bình, TP.HCM',
+                    'address_line_2' => 'Showroom tư vấn: Thanh Xuân, Hà Nội - nhận mẫu, duyệt size và chốt đơn sỉ lẻ',
+                ],
+                'branding' => [
+                    'company_name' => 'TH0002 Garment Workshop',
+                    'slogan' => 'May sỉ lẻ, duyệt mẫu nhanh, sản xuất rõ tiến độ',
+                    'logo_url' => url('theme-demo/garment/brand-mark.svg'),
+                    'favicon_url' => url('theme-demo/garment/brand-mark.svg'),
+                    'primary_color' => '#a35035',
+                    'support_hotline' => '1900 6760 / 0354.466.968',
+                    'support_email' => 'cs@th0002.demo',
+                    'support_location' => 'Hà Nội - TP.HCM',
+                ],
+                'section_tabs' => ['May theo mẫu', 'Bán lẻ sẵn kho', 'Đơn sỉ nổi bật'],
+                'featured_tones' => ['#7f3a25', '#406b52', '#8b5e34', '#5d4a3a', '#9b6c43'],
+            ],
+            default => [
+                'hero_slide' => [
+                    'eyebrow' => 'Ưu đãi nổi bật',
+                    'badge' => 'Khám phá ngay',
+                    'cta' => 'Xem ngay',
+                ],
+                'footer_columns' => [
+                    ['title' => 'Trợ giúp', 'links' => ['Chính sách giao hàng', 'Cách thức thanh toán', 'Hotdeal E-voucher', 'Membership']],
+                    ['title' => 'Giới thiệu', 'links' => ['Về chúng tôi', 'Liên hệ', 'Chính sách bảo mật', 'Quy chế hoạt động']],
+                    ['title' => 'Hợp tác', 'links' => ['Thẻ quà tặng', 'Liên hệ hợp tác', 'Tuyển dụng', 'Thông tin báo chí']],
+                ],
+                'company_footer' => [
+                    'address_line_1' => '332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM',
+                    'address_line_2' => 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân',
+                ],
+                'branding' => [
+                    'company_name' => 'TH0001 Deal Commerce',
+                    'slogan' => 'Deal ngon mỗi ngày, mua nhanh giá tốt',
+                    'logo_url' => self::DEFAULT_BRAND_ASSET,
+                    'favicon_url' => self::DEFAULT_BRAND_ASSET,
+                    'primary_color' => '#ef2b2d',
+                    'support_hotline' => '1900 6760 / 0354.466.968',
+                    'support_email' => 'cs@th0001.demo',
+                    'support_location' => 'TP.HCM & Hà Nội',
+                ],
+                'section_tabs' => ['Mới nhất', 'Bán chạy', 'Giá tốt'],
+                'featured_tones' => ['#101828', '#8f5f00', '#1c8c64', '#a66900', '#0d9488'],
+            ],
+        };
     }
 
     private function shouldUseCommerceBrandingFallback(?SiteProfile $siteProfile, array $branding): bool
@@ -1790,6 +1908,11 @@ class CmsSiteController
         return in_array(strtoupper((string) $themeKey), ['SER0100', 'SER0101'], true);
     }
 
+    private function isCommerceThemeKey(?string $themeKey): bool
+    {
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002'], true);
+    }
+
     private function themeBlockText(string $websiteKey, string $themeKey, string $blockKey, ?string $default): string
     {
         return $this->contentText(
@@ -1837,9 +1960,10 @@ class CmsSiteController
         })->all();
     }
 
-    private function mapProductCard(CatalogProduct $product): array
+    private function mapProductCard(CatalogProduct $product, ?string $themeKey = null): array
     {
         $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
+        $resolvedThemeKey = $themeKey ?: 'TH0001';
         $product = $this->localizeProductModel($product, $websiteKey);
         $originalPrice = $product->original_price !== null ? (float) $product->original_price : null;
         $price = (float) $product->price;
@@ -1853,7 +1977,7 @@ class CmsSiteController
             'old_price' => $originalPrice,
             'discount' => $discount,
             'image' => $this->resolveProductPrimaryImage($product),
-            'tag' => $product->category?->name ?: $this->themeText('theme.fallback.new_product', 'Sản phẩm mới', 'TH0001'),
+            'tag' => $product->category?->name ?: $this->themeText('theme.fallback.new_product', 'Sản phẩm mới', $resolvedThemeKey),
             'meta' => $product->stock,
             'is_featured' => $product->is_featured,
             'url' => $this->productUrl($product->slug ?: (string) $product->id),

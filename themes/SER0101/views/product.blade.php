@@ -97,12 +97,59 @@
             .hero-dossier-item { padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.12); }
             .hero-dossier-item strong { display: block; font-size: 18px; }
             .hero-dossier-item small { color: #cbd5e1; line-height: 1.5; }
-            .hero { display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(340px, 0.98fr); gap: 20px; }
+            .hero { display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(340px, 0.98fr); gap: 20px; align-items: start; }
             .panel { border: 1px solid rgba(217, 226, 236, 0.92); border-radius: 28px; background: rgba(255, 255, 255, 0.94); box-shadow: 0 22px 48px rgba(16, 42, 67, 0.08); }
             .gallery, .copy, .section { padding: 22px; }
-            .gallery img.main { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 22px; background: #edf2f7; }
-            .thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
-            .thumbs img { width: 100%; aspect-ratio: 1 / 1; border-radius: 16px; object-fit: cover; border: 1px solid rgba(217, 226, 236, 0.92); }
+            .gallery img.main {
+                width: 100%;
+                aspect-ratio: 1 / 1;
+                object-fit: cover;
+                border-radius: 22px;
+                background: #edf2f7;
+                transition: opacity 0.24s ease, transform 0.24s ease;
+            }
+            .gallery img.main.is-switching {
+                opacity: 0.58;
+                transform: scale(0.985);
+            }
+            .thumbs {
+                display: grid;
+                grid-template-columns: repeat(5, minmax(0, 88px));
+                justify-content: start;
+                gap: 10px;
+                margin-top: 12px;
+            }
+            .thumbs button {
+                display: block;
+                width: 100%;
+                padding: 0;
+                border: 0;
+                background: transparent;
+                border-radius: 16px;
+                cursor: pointer;
+                transition: transform 0.18s ease, box-shadow 0.18s ease;
+            }
+            .thumbs button:hover { transform: translateY(-2px); }
+            .thumbs button:focus-visible {
+                outline: 3px solid rgba(15, 118, 110, 0.22);
+                outline-offset: 3px;
+            }
+            .thumbs button.is-active {
+                box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+            }
+            .thumbs img {
+                width: 100%;
+                aspect-ratio: 1 / 1;
+                border-radius: 16px;
+                object-fit: cover;
+                border: 1px solid rgba(217, 226, 236, 0.92);
+                transition: border-color 0.18s ease, opacity 0.18s ease;
+            }
+            .thumbs button.is-active img {
+                border-color: rgba(15, 118, 110, 0.52);
+                opacity: 1;
+            }
+            .thumbs button:not(.is-active) img { opacity: 0.82; }
             .service-tag { display: inline-flex; margin-bottom: 12px; padding: 8px 12px; border-radius: 999px; background: rgba(31, 111, 120, 0.08); color: var(--p); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
             .copy h2 { margin: 0 0 12px; color: var(--night); font-size: 38px; line-height: 1.08; }
             .copy p { margin: 0; color: var(--m); line-height: 1.8; }
@@ -118,7 +165,7 @@
             .btn.primary { background: linear-gradient(135deg, var(--p), #0f5d56); color: #fff; box-shadow: 0 14px 28px rgba(15, 118, 110, 0.2); }
             .btn.secondary { background: #fff; border: 1px solid rgba(217, 226, 236, 0.92); color: var(--night); }
             .btn.secondary button { border: 0; background: transparent; font: inherit; color: inherit; padding: 0; }
-            .details { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; padding-bottom: 34px; }
+            .details { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; padding-bottom: 34px; align-items: start; }
             .section h3 { margin: 0 0 14px; color: var(--night); font-size: 26px; }
             .section p { margin: 0 0 12px; color: #334e68; line-height: 1.9; }
             .highlights { display: grid; gap: 12px; }
@@ -135,6 +182,9 @@
             .booking-dossier-item { padding-top: 10px; border-top: 1px dashed rgba(180, 83, 9, 0.18); }
             .booking-dossier-item strong { display: block; color: var(--night); }
             .booking-dossier-item span { color: var(--m); line-height: 1.6; font-size: 14px; }
+            .cart-feedback { margin-top: 12px; padding: 12px 14px; border-radius: 16px; font-size: 14px; font-weight: 700; line-height: 1.6; }
+            .cart-feedback[data-state="success"] { background: rgba(15, 118, 110, 0.1); color: #0f5d56; }
+            .cart-feedback[data-state="error"] { background: rgba(185, 28, 28, 0.08); color: #991b1b; }
             .step-list { display: grid; gap: 12px; margin-top: 16px; }
             .step { display: flex; gap: 12px; align-items: flex-start; }
             .step-index { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 12px; background: var(--night); color: #fff; font-size: 13px; font-weight: 800; }
@@ -147,7 +197,10 @@
 
             @media (max-width: 680px) {
                 .wrap { width: min(100%, calc(100% - 16px)); }
-                .thumbs, .mini-metrics { grid-template-columns: 1fr 1fr; }
+                .thumbs {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                }
+                .mini-metrics { grid-template-columns: 1fr 1fr; }
             }
         </style>
     </head>
@@ -184,12 +237,17 @@
             </section>
 
             <section class="hero">
-                <div class="panel gallery">
-                    <img class="main" src="{{ $primaryImage }}" alt="{{ $product['title'] }}">
+                <div class="panel gallery" data-ser-product-gallery>
+                    <img class="main" src="{{ $primaryImage }}" alt="{{ $product['title'] }}" data-ser-product-main-image>
                     @if ($gallery !== [])
                         <div class="thumbs">
-                            @foreach ($gallery as $image)
-                                <img src="{{ $image['url'] }}" alt="{{ $image['alt'] ?? $product['title'] }}">
+                            @foreach ($gallery as $index => $image)
+                                @php
+                                    $thumbAlt = $image['alt'] ?? $product['title'];
+                                @endphp
+                                <button type="button" data-ser-product-thumb data-image-src="{{ $image['url'] }}" data-image-alt="{{ $thumbAlt }}" class="{{ $index === 0 ? 'is-active' : '' }}" aria-pressed="{{ $index === 0 ? 'true' : 'false' }}">
+                                    <img src="{{ $image['url'] }}" alt="{{ $thumbAlt }}">
+                                </button>
                             @endforeach
                         </div>
                     @endif
@@ -224,12 +282,13 @@
 
                     <div class="actions">
                         <button type="button" class="btn primary" data-open-quote-modal>{{ $t('product.buy_now', 'Nhận báo giá') }}</button>
-                        <form method="POST" action="{{ route('site.cart.add', ['slug' => $productModel->slug]) }}">
+                        <form method="POST" action="{{ route('site.cart.add', ['slug' => $productModel->slug]) }}" data-ser-add-to-cart-form data-success-message="{{ $t('product.add_to_cart_success', 'Đã thêm dịch vụ vào giỏ hàng.') }}" data-error-message="{{ $t('product.add_to_cart_error', 'Không thể thêm dịch vụ vào giỏ hàng lúc này.') }}">
                             @csrf
                             <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="btn secondary">{{ $t('product.add_to_cart', 'Thêm vào giỏ hàng') }}</button>
+                            <button type="submit" class="btn secondary" data-loading-label="{{ $t('product.add_to_cart_loading', 'Đang thêm...') }}">{{ $t('product.add_to_cart', 'Thêm vào giỏ hàng') }}</button>
                         </form>
                     </div>
+                    <div class="cart-feedback" data-ser-cart-feedback hidden aria-live="polite"></div>
                 </div>
             </section>
 
@@ -253,7 +312,7 @@
 
                 <aside class="booking-card">
                     <div class="panel booking-dossier">
-                        <h4>Booking dossier</h4>
+                        <h4>{{ $t('common.booking_dossier_title', 'Hồ sơ đặt xe') }}</h4>
                         <div class="booking-dossier-list">
                             @foreach ($serviceDossier as $item)
                                 <div class="booking-dossier-item">
@@ -312,5 +371,72 @@
         </footer>
 
         @include('theme-ser0101::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
+        <script>
+            (() => {
+                const gallery = document.querySelector('[data-ser-product-gallery]');
+                const mainImage = document.querySelector('[data-ser-product-main-image]');
+                const thumbs = [...document.querySelectorAll('[data-ser-product-thumb]')];
+
+                if (!gallery || !mainImage || thumbs.length === 0) {
+                    return;
+                }
+
+                const setActiveThumb = (activeThumb) => {
+                    thumbs.forEach((thumb) => {
+                        const isActive = thumb === activeThumb;
+                        thumb.classList.toggle('is-active', isActive);
+                        thumb.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    });
+                };
+
+                const switchMainImage = (thumb) => {
+                    const nextSrc = thumb.dataset.imageSrc;
+                    const nextAlt = thumb.dataset.imageAlt || mainImage.alt;
+
+                    if (!nextSrc) {
+                        return;
+                    }
+
+                    mainImage.classList.add('is-switching');
+                    window.setTimeout(() => {
+                        mainImage.src = nextSrc;
+                        mainImage.alt = nextAlt;
+                        mainImage.classList.remove('is-switching');
+                    }, 120);
+                    setActiveThumb(thumb);
+                };
+
+                const focusThumbByOffset = (currentThumb, offset) => {
+                    const currentIndex = thumbs.indexOf(currentThumb);
+
+                    if (currentIndex < 0) {
+                        return;
+                    }
+
+                    const nextIndex = (currentIndex + offset + thumbs.length) % thumbs.length;
+                    thumbs[nextIndex]?.focus();
+                    switchMainImage(thumbs[nextIndex]);
+                };
+
+                thumbs.forEach((thumb) => {
+                    thumb.addEventListener('click', () => {
+                        switchMainImage(thumb);
+                    });
+
+                    thumb.addEventListener('keydown', (event) => {
+                        if (event.key === 'ArrowRight') {
+                            event.preventDefault();
+                            focusThumbByOffset(thumb, 1);
+                            return;
+                        }
+
+                        if (event.key === 'ArrowLeft') {
+                            event.preventDefault();
+                            focusThumbByOffset(thumb, -1);
+                        }
+                    });
+                });
+            })();
+        </script>
     </body>
 </html>

@@ -51,7 +51,17 @@ class SetupStepController
         return filled($siteProfile->site_name)
             && filled($siteProfile->website_type)
             && filled($siteProfile->active_theme_key)
-            && (filled($branding['company_name'] ?? null) || filled($branding['primary_color'] ?? null) || $completedSteps->contains('branding'))
+            && (
+                filled($branding['company_name'] ?? null)
+                || filled($branding['primary_color'] ?? null)
+                || filled($branding['primary_color_deep'] ?? null)
+                || filled($branding['accent_color'] ?? null)
+                || filled($branding['accent_soft_color'] ?? null)
+                || filled($branding['background_color'] ?? null)
+                || filled($branding['surface_color'] ?? null)
+                || filled($branding['surface_tint_color'] ?? null)
+                || $completedSteps->contains('branding')
+            )
             && (ModuleInstallation::query()->where('status', 'enabled')->exists() || $completedSteps->contains('modules'))
             && Admin::query()->where('is_active', true)->exists();
     }

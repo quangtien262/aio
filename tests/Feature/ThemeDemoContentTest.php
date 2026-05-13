@@ -61,7 +61,7 @@ class ThemeDemoContentTest extends TestCase
             'preset' => 'electronics-superstore',
         ])->assertOk();
 
-        $response = $this->get('/');
+        $response = $this->get($this->storefrontPath());
 
         $response->assertOk();
         $response->assertSee('Điện thoại');
@@ -92,11 +92,11 @@ class ThemeDemoContentTest extends TestCase
             ],
         ]);
 
-        $this->get('/')
+        $this->get($this->storefrontPath())
             ->assertOk()
             ->assertSee('Test');
 
-        $this->get('/tin-tuc')
+        $this->get($this->storefrontPath('tin-tuc'))
             ->assertOk()
             ->assertSee('Test');
     }
@@ -124,7 +124,7 @@ class ThemeDemoContentTest extends TestCase
             ],
         );
 
-        $this->get('/test')
+        $this->get($this->storefrontPath('test'))
             ->assertOk()
             ->assertSee('test')
             ->assertSee('test thôi nhé')
@@ -133,6 +133,35 @@ class ThemeDemoContentTest extends TestCase
             ->assertDontSee('Về trang chủ')
             ->assertDontSee('Thông tin nhanh')
             ->assertDontSee('Trang thông tin');
+    }
+
+    public function test_th0001_admin_preview_routes_resolve_localized_route_params(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $page = CmsPage::query()->where('status', 'published')->orderBy('id')->firstOrFail();
+        $post = \App\Models\CmsPost::query()->where('status', 'published')->orderBy('id')->firstOrFail();
+        $product = CatalogProduct::query()->where('is_active', true)->orderBy('id')->firstOrFail();
+
+        $this->get($this->storefrontRoute('site.preview.pages', ['page' => $page->id]))
+            ->assertOk()
+            ->assertSee($page->title);
+
+        $this->get($this->storefrontRoute('site.preview.posts', ['post' => $post->id]))
+            ->assertOk()
+            ->assertSee($post->title);
+
+        $this->get($this->storefrontRoute('site.preview.products', ['product' => $product->id]))
+            ->assertOk()
+            ->assertSee($product->name);
     }
 
     public function test_th0001_cms_pages_and_news_listing_render_with_storefront_shell(): void
@@ -147,7 +176,10 @@ class ThemeDemoContentTest extends TestCase
             'preset' => 'electronics-superstore',
         ])->assertOk();
 
-        $this->get('/tin-tuc')
+        $aboutPage = CmsPage::query()->where('slug', 'demo-th0001-gioi-thieu')->firstOrFail();
+        $contactPage = CmsPage::query()->where('slug', 'demo-th0001-lien-he')->firstOrFail();
+
+        $this->get($this->storefrontPath('tin-tuc'))
             ->assertOk()
             ->assertDontSee('Bản tin thương hiệu')
             ->assertDontSee('Demo theme TH0001')
@@ -155,16 +187,16 @@ class ThemeDemoContentTest extends TestCase
             ->assertSee('Lọc tin')
             ->assertSee('Tất cả chuyên mục');
 
-        $this->get('/gioi-thieu')
+        $this->get($this->storefrontPath($aboutPage->slug))
             ->assertOk()
             ->assertSee('Giới thiệu')
             ->assertDontSee('Hồ sơ vận hành')
             ->assertDontSee('Đồng bộ CMS và storefront');
 
-        $this->get('/lien-he')
+        $this->get($this->storefrontPath($contactPage->slug))
             ->assertOk()
-            ->assertSee('Liên hệ ngay')
-            ->assertSee('Gửi yêu cầu liên hệ')
+            ->assertSee('Liên hệ')
+            ->assertSee('Liên hệ tư vấn')
             ->assertSee('Hotline')
             ->assertSee('Email');
     }
@@ -182,14 +214,17 @@ class ThemeDemoContentTest extends TestCase
             'preset' => 'electronics-superstore',
         ])->assertOk();
 
-        $this->post('/lien-he', [
+        $contactPage = CmsPage::query()->where('slug', 'demo-th0001-lien-he')->firstOrFail();
+
+        $this->from($this->storefrontPath($contactPage->slug))
+            ->post($this->storefrontPath('lien-he'), [
             'name' => 'Nguyen Van A',
             'email' => 'lead@example.com',
             'phone' => '0909123456',
             'subject' => 'Booking campaign',
             'message' => 'Toi can duoc tu van chien dich truyen thong cho landing page moi.',
         ])
-            ->assertRedirect('/lien-he')
+            ->assertRedirect($this->storefrontPath($contactPage->slug))
             ->assertSessionHas('contact_status');
 
         Mail::assertQueued(ContactInquiryMail::class, function (ContactInquiryMail $mail): bool {
@@ -213,7 +248,7 @@ class ThemeDemoContentTest extends TestCase
         $post = \App\Models\CmsPost::query()->where('status', 'published')->orderBy('id')->firstOrFail();
         $relatedPost = \App\Models\CmsPost::query()->where('status', 'published')->whereKeyNot($post->id)->orderBy('id')->firstOrFail();
 
-        $this->get('/tin-tuc/'.$post->slug)
+        $this->get($this->storefrontPath('tin-tuc/'.$post->slug))
             ->assertOk()
             ->assertDontSee('Đơn vị vận hành storefront và nội dung CMS trên cùng một nền tảng.')
             ->assertDontSee('Kênh tiếp nhận liên hệ hợp tác, booking truyền thông và CSKH.')
@@ -233,7 +268,7 @@ class ThemeDemoContentTest extends TestCase
             'preset' => 'electronics-superstore',
         ])->assertOk();
 
-        $response = $this->get('/tin-tuc?q=landing+page');
+        $response = $this->get($this->storefrontPath('tin-tuc', ['q' => 'landing page']));
 
         $response
             ->assertOk()
@@ -255,7 +290,7 @@ class ThemeDemoContentTest extends TestCase
 
         $product = CatalogProduct::query()->whereNotNull('sku')->orderBy('id')->firstOrFail();
 
-        $this->get('/tim-kiem?q='.urlencode((string) $product->sku))
+        $this->get($this->storefrontPath('tim-kiem', ['q' => (string) $product->sku]))
             ->assertOk()
             ->assertSee('Kết quả cho')
             ->assertSee($product->name);
@@ -275,7 +310,7 @@ class ThemeDemoContentTest extends TestCase
 
         $product = CatalogProduct::query()->whereNotNull('sku')->orderBy('id')->firstOrFail();
 
-        $this->getJson('/tim-kiem/goi-y?q='.urlencode((string) $product->sku))
+        $this->getJson($this->storefrontPath('tim-kiem/goi-y', ['q' => (string) $product->sku]))
             ->assertOk()
             ->assertJsonFragment([
                 'label' => $product->name,
@@ -357,7 +392,7 @@ class ThemeDemoContentTest extends TestCase
             'tenant_key' => 'tenant-a',
         ]);
 
-        $response = $this->get('/tim-kiem?'.http_build_query([
+        $response = $this->get($this->storefrontPath('tim-kiem', [
             'q' => 'SearchSpec',
             'category' => $category->slug,
             'sort' => 'price_desc',
@@ -552,11 +587,11 @@ class ThemeDemoContentTest extends TestCase
         $category = CatalogCategory::query()->whereNull('parent_id')->orderBy('id')->firstOrFail();
         $product = CatalogProduct::query()->whereNotNull('slug')->orderBy('id')->firstOrFail();
 
-        $this->get('/danh-muc/'.$category->slug)
+        $this->get($this->storefrontPath('danh-muc/'.$category->slug))
             ->assertOk()
             ->assertSee($category->name);
 
-        $this->get('/san-pham/'.$product->slug)
+        $this->get($this->storefrontPath('san-pham/'.$product->slug))
             ->assertOk()
             ->assertSee($product->name)
             ->assertSee($product->sku)
@@ -592,7 +627,11 @@ class ThemeDemoContentTest extends TestCase
         $targetMinPrice = (int) $targetMinProduct->price;
         $targetMaxPrice = (int) $targetMaxProduct->price;
 
-        $response = $this->get('/danh-muc/'.$category->slug.'?sort=price_asc&min_price='.$targetMinPrice.'&max_price='.$targetMaxPrice);
+        $response = $this->get($this->storefrontPath('danh-muc/'.$category->slug, [
+            'sort' => 'price_asc',
+            'min_price' => $targetMinPrice,
+            'max_price' => $targetMaxPrice,
+        ]));
 
         $response->assertOk();
 
@@ -634,16 +673,16 @@ class ThemeDemoContentTest extends TestCase
 
         $this->actingAs($customer, 'customer');
 
-        $this->from('/san-pham/'.$product->slug)
-            ->post(route('site.cart.add', ['slug' => $product->slug]), [
+        $this->from($this->storefrontPath('san-pham/'.$product->slug))
+            ->post($this->storefrontRoute('site.cart.add', ['slug' => $product->slug]), [
                 'quantity' => 2,
             ])
-            ->assertRedirect('/san-pham/'.$product->slug)
+            ->assertRedirect($this->storefrontPath('san-pham/'.$product->slug))
             ->assertSessionHas('cart_success');
 
         $this->assertSame(2, data_get(session('storefront_cart'), $product->id.'.quantity'));
 
-        $this->post(route('site.cart.update', ['productId' => $product->id]), [
+        $this->post($this->storefrontRoute('site.cart.update', ['productId' => $product->id]), [
             'quantity' => 4,
         ])
             ->assertRedirect()
@@ -651,24 +690,24 @@ class ThemeDemoContentTest extends TestCase
 
         $this->assertSame(4, data_get(session('storefront_cart'), $product->id.'.quantity'));
 
-        $this->get('/san-pham/'.$product->slug)
+        $this->get($this->storefrontPath('san-pham/'.$product->slug))
             ->assertOk()
             ->assertSee('GIỎ HÀNG (4)');
 
-        $this->post(route('site.cart.buy_now', ['slug' => $product->slug]), [
+        $this->post($this->storefrontRoute('site.cart.buy_now', ['slug' => $product->slug]), [
             'quantity' => 1,
         ])
-            ->assertRedirect(route('site.checkout.index'))
+            ->assertRedirect($this->storefrontRoute('site.checkout.index'))
             ->assertSessionHas('cart_success');
 
         $this->assertSame(5, data_get(session('storefront_cart'), $product->id.'.quantity'));
 
-        $this->get(route('site.checkout.index'))
+        $this->get($this->storefrontRoute('site.checkout.index'))
             ->assertOk()
             ->assertSee('Thanh toán đơn hàng')
             ->assertSee($product->name);
 
-        $checkoutResponse = $this->post(route('site.checkout.store'), [
+        $checkoutResponse = $this->post($this->storefrontRoute('site.checkout.store'), [
             'customer_name' => 'Nguyen Van A',
             'customer_phone' => '0909123456',
             'customer_email' => 'customer@example.com',
@@ -682,7 +721,7 @@ class ThemeDemoContentTest extends TestCase
 
         $order = Order::query()->with('items')->latest('id')->firstOrFail();
 
-        $checkoutResponse->assertRedirect(route('site.checkout.success', ['order' => $order->id]));
+        $checkoutResponse->assertRedirect($this->storefrontRoute('site.checkout.success', ['order' => $order->id]));
 
         $this->assertNull(session('storefront_cart'));
         $this->assertSame('placed', $order->status);
@@ -704,15 +743,16 @@ class ThemeDemoContentTest extends TestCase
             return $mail->order->is($order) && $mail->audience === 'admin';
         });
 
-        $this->get(route('site.checkout.success', ['order' => $order->id]))
+        $this->get($this->storefrontRoute('site.checkout.success', ['order' => $order->id]))
             ->assertOk()
             ->assertSee('Đặt hàng thành công')
             ->assertSee('Nguyen Van A')
             ->assertSee($order->order_code)
             ->assertSee($product->name);
 
-        $this->get(route('site.cart.index'))
+        $this->get($this->storefrontRoute('site.cart.index'))
             ->assertOk()
             ->assertSee('Giỏ hàng hiện đang trống');
     }
+
 }

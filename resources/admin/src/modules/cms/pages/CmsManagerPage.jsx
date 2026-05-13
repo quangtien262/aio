@@ -105,7 +105,7 @@ const sectionConfigMap = {
     },
     'cms-side-promos': {
         title: 'Side promos',
-        description: 'Quản lý block promo dọc cạnh hero theo từng vị trí storefront.',
+        description: 'Quản lý block promo dọc kiểu CMS cũ cạnh hero. Đây không phải nơi quản lý slide banner hero của theme SER0101; slide hero đang nằm ở Catalog > Slide banner.',
         endpoint: '/admin/api/cms/side-promos',
         permissionView: 'cms.view',
         permissionCreate: 'cms.menu.manage',

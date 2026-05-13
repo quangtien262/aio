@@ -21,6 +21,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ $t('cart.title', 'Yêu cầu của bạn') }} | {{ data_get($branding, 'company_name', 'SER0101') }}</title>
         @vite('resources/css/app.css')
         <style>
@@ -94,7 +95,9 @@
                 gap: 16px;
                 padding: 20px 0;
                 border-bottom: 1px solid rgba(217, 226, 236, 0.92);
+                transition: opacity 0.2s ease, transform 0.2s ease;
             }
+            .item.is-pending { opacity: 0.55; transform: scale(0.99); }
             .item:first-child { padding-top: 0; }
             .item:last-child { border-bottom: 0; padding-bottom: 0; }
             .item img { width: 132px; height: 106px; object-fit: cover; border-radius: 22px; background: #edf2f7; }
@@ -154,6 +157,16 @@
                 padding-top: 12px;
                 border-top: 1px dashed rgba(194, 65, 12, 0.2);
             }
+            .cart-inline-toast {
+                margin-bottom: 16px;
+                padding: 12px 14px;
+                border-radius: 18px;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1.6;
+            }
+            .cart-inline-toast[data-state="success"] { background: rgba(15, 118, 110, 0.1); color: #0f5d56; }
+            .cart-inline-toast[data-state="error"] { background: rgba(185, 28, 28, 0.08); color: #991b1b; }
             .empty {
                 padding: 34px;
                 border-radius: 22px;
@@ -191,17 +204,18 @@
                 <h1>{{ $t('cart.title', 'Yêu cầu của bạn') }}</h1>
                 <p>{{ $t('cart.hero_summary', 'Danh sách này giữ lại các gói Sếp đang cân nhắc để điều phối viên chốt lộ trình, loại xe và mức giá phù hợp trước khi gửi yêu cầu đặt xe.') }}</p>
                 <div class="hero-meta">
-                    <span>{{ str_replace(':count', (string) ($cartSummary['count'] ?? 0), $t('cart.saved_count', ':count mục đang lưu')) }}</span>
-                    <span>{{ str_replace(':count', (string) ($cartSummary['unique_count'] ?? 0), $t('cart.unique_count_chip', ':count gói khác nhau')) }}</span>
+                    <span data-cart-hero-count>{{ str_replace(':count', (string) ($cartSummary['count'] ?? 0), $t('cart.saved_count', ':count mục đang lưu')) }}</span>
+                    <span data-cart-hero-unique>{{ str_replace(':count', (string) ($cartSummary['unique_count'] ?? 0), $t('cart.unique_count_chip', ':count gói khác nhau')) }}</span>
                     <span>{{ data_get($branding, 'support_hotline', '1900 6760') }}</span>
                 </div>
             </section>
 
             <section class="layout">
                 <div class="panel panel-body">
-                    <div class="stack">
+                    <div class="cart-inline-toast" data-cart-page-toast hidden aria-live="polite"></div>
+                    <div class="stack" data-cart-page-items>
                         @forelse ($cartItems as $item)
-                            <article class="item">
+                            <article class="item" data-cart-page-item data-product-id="{{ $item['product_id'] }}">
                                 <img src="{{ $item['image'] ?: 'https://picsum.photos/seed/ser0101-cart/640/420' }}" alt="{{ $item['title'] }}">
 
                                 <div>
@@ -210,17 +224,17 @@
                                         <span>{{ $item['sku'] ?: 'SER0101' }}</span>
                                     </div>
                                     <h3><a href="{{ $item['url'] ?? '#' }}">{{ $item['title'] }}</a></h3>
-                                    <p>{{ str_replace([':quantity', ':price'], [(string) $item['quantity'], $formatCurrency($item['price'] ?? null)], $t('cart.item_meta', 'Số lượng lưu: :quantity · Giá tham khảo: :price')) }}</p>
+                                    <p data-cart-page-meta>{{ str_replace([':quantity', ':price'], [(string) $item['quantity'], $formatCurrency($item['price'] ?? null)], $t('cart.item_meta', 'Số lượng lưu: :quantity · Giá tham khảo: :price')) }}</p>
                                 </div>
 
                                 <div class="actions">
-                                    <form method="POST" action="{{ route('site.cart.update', ['productId' => $item['product_id']]) }}">
+                                    <form method="POST" action="{{ route('site.cart.update', ['productId' => $item['product_id']]) }}" data-cart-page-update-form>
                                         @csrf
-                                        <input type="number" name="quantity" min="1" max="99" value="{{ $item['quantity'] }}">
+                                        <input type="number" name="quantity" min="1" max="99" value="{{ $item['quantity'] }}" data-cart-page-quantity-input>
                                         <button type="submit" class="btn secondary">{{ $t('cart.update', 'Cập nhật') }}</button>
                                     </form>
 
-                                    <form method="POST" action="{{ route('site.cart.remove', ['productId' => $item['product_id']]) }}">
+                                    <form method="POST" action="{{ route('site.cart.remove', ['productId' => $item['product_id']]) }}" data-cart-page-remove-form>
                                         @csrf
                                         <button type="submit" class="btn secondary">{{ $t('cart.remove', 'Xóa khỏi danh sách') }}</button>
                                     </form>
@@ -240,16 +254,16 @@
                     <div class="summary-box">
                         <h2>{{ $t('cart.summary_title', 'Tóm tắt yêu cầu') }}</h2>
                         <div class="summary-line">
-                            <span>Số lượng mục</span>
-                            <strong>{{ $cartSummary['count'] ?? 0 }}</strong>
+                            <span>{{ $t('cart.item_count_label', 'Số lượng mục') }}</span>
+                            <strong data-cart-summary-count>{{ $cartSummary['count'] ?? 0 }}</strong>
                         </div>
                         <div class="summary-line">
                             <span>{{ $t('cart.unique_count_label', 'Số gói khác nhau') }}</span>
-                            <strong>{{ $cartSummary['unique_count'] ?? 0 }}</strong>
+                            <strong data-cart-summary-unique>{{ $cartSummary['unique_count'] ?? 0 }}</strong>
                         </div>
                         <div class="summary-line summary-total">
                             <span>{{ $t('cart.estimated_value_label', 'Giá trị tham khảo') }}</span>
-                            <strong>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
+                            <strong data-cart-summary-subtotal>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
                         </div>
                     </div>
 
@@ -269,5 +283,326 @@
         </main>
 
         @include('theme-ser0101::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
+        <script>
+            (() => {
+                const itemsNode = document.querySelector('[data-cart-page-items]');
+                const toastNode = document.querySelector('[data-cart-page-toast]');
+                const heroCountNode = document.querySelector('[data-cart-hero-count]');
+                const heroUniqueNode = document.querySelector('[data-cart-hero-unique]');
+                const summaryCountNode = document.querySelector('[data-cart-summary-count]');
+                const summaryUniqueNode = document.querySelector('[data-cart-summary-unique]');
+                const summarySubtotalNode = document.querySelector('[data-cart-summary-subtotal]');
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                const emptyTitle = @json($t('cart.empty', 'Chưa có gói nào trong danh sách yêu cầu.'));
+                const emptyHint = @json($t('cart.empty_hint', 'Chọn một dịch vụ từ trang chủ, danh mục hoặc tìm kiếm để lưu lại và tiếp tục gửi yêu cầu.'));
+                const backHomeShort = @json($t('cart.back_home_short', 'Về trang chủ'));
+                const itemMetaTemplate = @json($t('cart.item_meta', 'Số lượng lưu: :quantity · Giá tham khảo: :price'));
+                const savedCountTemplate = @json($t('cart.saved_count', ':count mục đang lưu'));
+                const uniqueCountTemplate = @json($t('cart.unique_count_chip', ':count gói khác nhau'));
+                const itemStatus = @json($t('cart.item_status', 'Đã lưu yêu cầu'));
+                const updateLabel = @json($t('cart.update', 'Cập nhật'));
+                const removeLabel = @json($t('cart.remove', 'Xóa khỏi danh sách'));
+                const homeUrl = @json(route('site.home'));
+                const cartSyncKey = 'ser0101-cart-sync';
+                const cartTabIdKey = 'ser0101-cart-tab-id';
+                const externalCheckoutMessage = @json($t('checkout_success.sync_cart_cleared', 'Một tab khác vừa hoàn tất gửi yêu cầu. Giỏ hàng đã được làm mới.'));
+                const tabId = (() => {
+                    try {
+                        const existing = window.sessionStorage.getItem(cartTabIdKey);
+
+                        if (existing) {
+                            return existing;
+                        }
+
+                        const created = `tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                        window.sessionStorage.setItem(cartTabIdKey, created);
+                        return created;
+                    } catch (error) {
+                        return 'tab-fallback';
+                    }
+                })();
+                let currentSummary = JSON.parse(JSON.stringify(@json($cartSummary) || {}));
+
+                if (!itemsNode || !toastNode) {
+                    return;
+                }
+
+                const formatCurrency = (value) => value === null || value === undefined
+                    ? 'Liên hệ'
+                    : `${new Intl.NumberFormat('vi-VN').format(Number(value || 0))}đ`;
+
+                const escapeHtml = (value) => String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+
+                const showToast = (message, isError = false) => {
+                    toastNode.hidden = false;
+                    toastNode.textContent = message;
+                    toastNode.dataset.state = isError ? 'error' : 'success';
+                    window.clearTimeout(showToast.timeoutId);
+                    showToast.timeoutId = window.setTimeout(() => {
+                        toastNode.hidden = true;
+                    }, 2600);
+                };
+
+                const submitJson = async (url, body) => {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body,
+                    });
+
+                    const payload = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        throw payload;
+                    }
+
+                    return payload;
+                };
+
+                const normalizeSummary = (summary = {}) => {
+                    const items = Array.isArray(summary.items) ? summary.items.map((item) => ({ ...item })) : [];
+                    const count = Number(summary.count ?? items.reduce((total, item) => total + Number(item.quantity || 0), 0));
+                    const subtotal = Number(summary.subtotal ?? items.reduce((total, item) => total + (Number(item.price || 0) * Number(item.quantity || 0)), 0));
+
+                    return {
+                        ...summary,
+                        items,
+                        count,
+                        subtotal,
+                        unique_count: Number(summary.unique_count ?? items.length),
+                    };
+                };
+
+                const patchQuantitySummary = (summary, productId, quantity) => {
+                    const nextSummary = normalizeSummary(summary);
+                    const productKey = String(productId);
+                    const nextItems = nextSummary.items.map((item) => ({ ...item }));
+                    const itemIndex = nextItems.findIndex((item) => String(item.product_id) === productKey);
+
+                    if (itemIndex < 0) {
+                        return nextSummary;
+                    }
+
+                    nextItems[itemIndex].quantity = Math.max(1, Number(quantity || 1));
+
+                    return normalizeSummary({
+                        ...nextSummary,
+                        items: nextItems,
+                    });
+                };
+
+                const removeItemSummary = (summary, productId) => {
+                    const nextSummary = normalizeSummary(summary);
+                    const productKey = String(productId);
+
+                    return normalizeSummary({
+                        ...nextSummary,
+                        items: nextSummary.items.filter((item) => String(item.product_id) !== productKey),
+                    });
+                };
+
+                const setItemPending = (productId, nextState) => {
+                    const item = itemsNode.querySelector(`[data-cart-page-item][data-product-id="${CSS.escape(String(productId))}"]`);
+
+                    if (!item) {
+                        return;
+                    }
+
+                    item.classList.toggle('is-pending', nextState);
+                    item.querySelectorAll('button, input').forEach((node) => {
+                        node.disabled = nextState;
+                    });
+                };
+
+                const broadcastCartSync = ({ summary = currentSummary, message = '', origin = 'cart-updated', item = null } = {}) => {
+                    try {
+                        window.localStorage.setItem(cartSyncKey, JSON.stringify({
+                            source: tabId,
+                            origin,
+                            message,
+                            item,
+                            summary: normalizeSummary(summary),
+                            timestamp: Date.now(),
+                        }));
+                    } catch (error) {
+                        console.error(error);
+                    }
+                };
+
+                const renderSummary = (summary = {}) => {
+                    currentSummary = normalizeSummary(summary);
+                    const count = Number(currentSummary.count || 0);
+                    const uniqueCount = Number(currentSummary.unique_count || 0);
+                    const subtotal = currentSummary.subtotal ?? 0;
+
+                    if (heroCountNode) {
+                        heroCountNode.textContent = savedCountTemplate.replace(':count', `${count}`);
+                    }
+
+                    if (heroUniqueNode) {
+                        heroUniqueNode.textContent = uniqueCountTemplate.replace(':count', `${uniqueCount}`);
+                    }
+
+                    if (summaryCountNode) {
+                        summaryCountNode.textContent = `${count}`;
+                    }
+
+                    if (summaryUniqueNode) {
+                        summaryUniqueNode.textContent = `${uniqueCount}`;
+                    }
+
+                    if (summarySubtotalNode) {
+                        summarySubtotalNode.textContent = formatCurrency(subtotal);
+                    }
+                };
+
+                const renderItems = (summary = {}) => {
+                    currentSummary = normalizeSummary(summary);
+                    const items = Array.isArray(currentSummary.items) ? currentSummary.items : [];
+
+                    if (items.length === 0) {
+                        itemsNode.innerHTML = `
+                            <div class="empty">
+                                <strong>${escapeHtml(emptyTitle)}</strong>
+                                <p>${escapeHtml(emptyHint)}</p>
+                                <a class="btn primary" style="margin-top: 16px;" href="${escapeHtml(homeUrl)}">${escapeHtml(backHomeShort)}</a>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    itemsNode.innerHTML = items.map((item) => {
+                        const meta = itemMetaTemplate
+                            .replace(':quantity', `${Number(item.quantity || 0)}`)
+                            .replace(':price', formatCurrency(item.price ?? null));
+
+                        return `
+                            <article class="item" data-cart-page-item data-product-id="${escapeHtml(item.product_id || '')}">
+                                <img src="${escapeHtml(item.image || 'https://picsum.photos/seed/ser0101-cart/640/420')}" alt="${escapeHtml(item.title || '')}">
+                                <div>
+                                    <div class="item-meta">
+                                        <span>${escapeHtml(itemStatus)}</span>
+                                        <span>${escapeHtml(item.sku || 'SER0101')}</span>
+                                    </div>
+                                    <h3><a href="${escapeHtml(item.url || '#')}">${escapeHtml(item.title || '')}</a></h3>
+                                    <p data-cart-page-meta>${escapeHtml(meta)}</p>
+                                </div>
+                                <div class="actions">
+                                    <form method="POST" action="${escapeHtml(`{{ route('site.cart.update', ['productId' => '__PRODUCT__']) }}`.replace('__PRODUCT__', String(item.product_id || '')))}" data-cart-page-update-form>
+                                        <input type="hidden" name="_token" value="${escapeHtml(csrfToken)}">
+                                        <input type="number" name="quantity" min="1" max="99" value="${escapeHtml(item.quantity || 1)}" data-cart-page-quantity-input>
+                                        <button type="submit" class="btn secondary">${escapeHtml(updateLabel)}</button>
+                                    </form>
+                                    <form method="POST" action="${escapeHtml(`{{ route('site.cart.remove', ['productId' => '__PRODUCT__']) }}`.replace('__PRODUCT__', String(item.product_id || '')))}" data-cart-page-remove-form>
+                                        <input type="hidden" name="_token" value="${escapeHtml(csrfToken)}">
+                                        <button type="submit" class="btn secondary">${escapeHtml(removeLabel)}</button>
+                                    </form>
+                                </div>
+                            </article>
+                        `;
+                    }).join('');
+                };
+
+                itemsNode.addEventListener('submit', async (event) => {
+                    const updateForm = event.target.closest('[data-cart-page-update-form]');
+                    const removeForm = event.target.closest('[data-cart-page-remove-form]');
+
+                    if (!updateForm && !removeForm) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    const form = updateForm || removeForm;
+                    const itemNode = form.closest('[data-cart-page-item]');
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    const originalLabel = submitButton?.textContent || '';
+                    const productId = itemNode?.dataset.productId;
+                    const quantityInput = updateForm?.querySelector('[data-cart-page-quantity-input]');
+                    const optimisticQuantity = Number(quantityInput?.value || 1);
+                    const previousSummary = currentSummary;
+                    const isUpdateAction = Boolean(updateForm && productId);
+
+                    if (isUpdateAction) {
+                        const optimisticSummary = patchQuantitySummary(currentSummary, productId, optimisticQuantity);
+                        renderItems(optimisticSummary);
+                        renderSummary(optimisticSummary);
+                        setItemPending(productId, true);
+                    } else if (itemNode) {
+                        const optimisticSummary = removeItemSummary(currentSummary, productId);
+                        renderItems(optimisticSummary);
+                        renderSummary(optimisticSummary);
+                    }
+
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.textContent = '...';
+                    }
+
+                    try {
+                        const payload = await submitJson(form.action, new FormData(form));
+                        const summary = normalizeSummary(payload?.data?.cart_summary || {});
+                        renderItems(summary);
+                        renderSummary(summary);
+                        document.dispatchEvent(new CustomEvent('ser:cart-updated', { detail: { ...(payload?.data || {}), cart_summary: summary } }));
+                        document.dispatchEvent(new CustomEvent('ser:cart-toast', { detail: { message: payload?.message || 'Đã cập nhật giỏ hàng.', isError: false } }));
+                        broadcastCartSync({ summary, message: payload?.message || 'Đã cập nhật giỏ hàng.', origin: isUpdateAction ? 'cart-update' : 'cart-remove', item: payload?.data?.item || null });
+                        showToast(payload?.message || 'Đã cập nhật giỏ hàng.');
+                    } catch (error) {
+                        renderItems(previousSummary);
+                        renderSummary(previousSummary);
+                        document.dispatchEvent(new CustomEvent('ser:cart-toast', { detail: { message: error?.message || 'Không thể cập nhật giỏ hàng lúc này.', isError: true } }));
+                        showToast(error?.message || 'Không thể cập nhật giỏ hàng lúc này.', true);
+                    } finally {
+                        if (!isUpdateAction && itemNode && itemNode.isConnected) {
+                            itemNode.classList.remove('is-pending');
+                            itemNode.querySelectorAll('button, input').forEach((node) => {
+                                node.disabled = false;
+                            });
+                        }
+
+                        if (submitButton && form.isConnected) {
+                            submitButton.disabled = false;
+                            submitButton.textContent = originalLabel;
+                        }
+                    }
+                });
+
+                window.addEventListener('storage', (event) => {
+                    if (event.key !== cartSyncKey || !event.newValue) {
+                        return;
+                    }
+
+                    try {
+                        const payload = JSON.parse(event.newValue);
+
+                        if (!payload || payload.source === tabId) {
+                            return;
+                        }
+
+                        const summary = normalizeSummary(payload.summary || {});
+                        renderItems(summary);
+                        renderSummary(summary);
+
+                        if (payload.origin === 'checkout-success') {
+                            showToast(payload.message || externalCheckoutMessage);
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                });
+
+                renderSummary(currentSummary);
+            })();
+        </script>
     </body>
 </html>

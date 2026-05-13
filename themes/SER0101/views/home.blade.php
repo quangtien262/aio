@@ -339,6 +339,158 @@
             .service-tag { display: inline-flex; margin-bottom: 12px; padding: 8px 12px; border-radius: 999px; background: rgba(31, 111, 120, 0.08); color: var(--ser-petrol); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
             .service-price { margin-top: 16px; display: flex; justify-content: flex-start; align-items: center; gap: 12px; }
             .service-price strong { font-size: 26px; color: var(--ser-orange); }
+            .featured-deal-grid {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 14px;
+            }
+            .featured-deal-card {
+                position: relative;
+                overflow: hidden;
+                border-radius: 2px;
+                border: 1px solid #d9dee6;
+                background: #fff;
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+                padding: 0;
+                transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+            }
+            .featured-deal-card:hover {
+                transform: translateY(-4px);
+                border-color: rgba(255, 59, 48, 0.28);
+                box-shadow: 0 18px 38px rgba(255, 59, 48, 0.14);
+            }
+            .featured-deal-media {
+                position: relative;
+                display: block;
+                margin: 0;
+                overflow: hidden;
+                background: #e8edf3;
+            }
+            .featured-deal-media img {
+                width: 100%;
+                aspect-ratio: 1 / 1;
+                object-fit: cover;
+                border-radius: 0;
+                transition: transform .28s ease;
+            }
+            .featured-deal-card:hover .featured-deal-media img {
+                transform: scale(1.04);
+            }
+            .featured-deal-corner-icon,
+            .featured-deal-ribbon,
+            .featured-deal-chip,
+            .featured-deal-format {
+                position: absolute;
+                z-index: 2;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+            }
+            .featured-deal-corner-icon {
+                top: 10px;
+                left: 10px;
+                width: 34px;
+                height: 34px;
+                border-radius: 999px;
+                background: rgba(17, 24, 39, 0.82);
+                color: #fff;
+                font-size: 15px;
+                box-shadow: 0 8px 16px rgba(15, 23, 42, 0.18);
+            }
+            .featured-deal-ribbon {
+                top: 12px;
+                right: -34px;
+                width: 132px;
+                height: 28px;
+                transform: rotate(38deg);
+                background: linear-gradient(90deg, #ff3b30, #d70015);
+                color: #fff;
+                font-size: 12px;
+                letter-spacing: .03em;
+                text-transform: uppercase;
+                box-shadow: 0 10px 20px rgba(215, 0, 21, 0.25);
+            }
+            .featured-deal-chip {
+                left: 10px;
+                bottom: 10px;
+                padding: 6px 10px;
+                border-radius: 4px;
+                background: rgba(17, 24, 39, 0.82);
+                color: #fff;
+                font-size: 12px;
+            }
+            .featured-deal-format {
+                right: 10px;
+                bottom: 10px;
+                padding: 6px 10px;
+                border-radius: 4px;
+                background: rgba(255, 255, 255, 0.96);
+                color: #374151;
+                font-size: 11px;
+                box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+            }
+            .featured-deal-body {
+                padding: 12px 14px 12px;
+            }
+            .featured-deal-title {
+                display: -webkit-box;
+                margin: 0;
+                height: calc(1.38em * 2);
+                overflow: hidden;
+                color: #1b2430;
+                font-size: 15px;
+                font-weight: 700;
+                line-height: 1.38;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+            }
+            .featured-deal-title a {
+                color: inherit;
+            }
+            .featured-deal-title a:hover {
+                color: #b91c1c;
+            }
+            .featured-deal-divider {
+                margin: 10px 0 10px;
+                border-top: 1px solid #e5e7eb;
+            }
+            .featured-deal-pricing {
+                display: grid;
+                gap: 5px;
+            }
+            .featured-deal-current {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .featured-deal-current strong {
+                color: #ff2b2b;
+                font-size: 16px;
+                font-weight: 800;
+                line-height: 1;
+            }
+            .featured-deal-discount {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 22px;
+                padding: 0 8px;
+                border-radius: 6px;
+                background: linear-gradient(180deg, #ff4949, #ff2b2b);
+                color: #fff;
+                font-size: 12px;
+                font-weight: 800;
+            }
+            .featured-deal-original {
+                color: #9ca3af;
+                font-size: 13px;
+                text-decoration: line-through;
+            }
+            .featured-deal-meta {
+                display: none;
+            }
 
             .route-board { overflow: hidden; }
             .route-board-header { display: flex; justify-content: space-between; gap: 16px; padding: 18px 20px; background: linear-gradient(90deg, rgba(16, 42, 67, 0.98), rgba(31, 111, 120, 0.9)); color: #fff; flex-wrap: wrap; }
@@ -350,6 +502,7 @@
             .route-table table { width: 100%; border-collapse: collapse; background: var(--ser-white); }
             .route-table th, .route-table td { padding: 18px 20px; text-align: left; border-bottom: 1px solid rgba(217, 226, 236, 0.92); }
             .route-table th { background: #f5f9fb; color: var(--ser-night); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; }
+            .route-table th:last-child { text-align: right; }
             .route-table td:last-child { text-align: right; color: var(--ser-orange); font-weight: 800; }
             .route-table tr:hover td { background: rgba(247, 243, 236, 0.7); }
             .route-table tr:last-child td { border-bottom: 0; }
@@ -412,6 +565,7 @@
 
             @media (max-width: 980px) {
                 .service-grid, .card-grid, .highlight-grid, .post-grid, .metrics-grid, .footer-grid { grid-template-columns: 1fr 1fr; }
+                .featured-deal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
                 .hero-grid { grid-template-columns: 1fr; }
                 .hero-card { min-height: 0; }
             }
@@ -421,6 +575,7 @@
                 .header-inner, .nav-inner, .footer-inner, .topbar-inner, .cta-strip { align-items: flex-start; flex-direction: column; }
                 .search { width: 100%; max-width: none; grid-template-columns: 1fr; border-radius: 22px; }
                 .service-grid, .card-grid, .highlight-grid, .post-grid, .metrics-grid, .footer-grid { grid-template-columns: 1fr; }
+                .featured-deal-grid { grid-template-columns: 1fr; }
                 .hero-card { grid-template-columns: 1fr; }
                 .hero-stage,
                 .ser-hero-carousel,
@@ -546,17 +701,38 @@
                         <p>{{ $t('home.featured_summary', 'Vận dụng CatalogProduct để đại diện cho gói shuttle, tour coach và tuyến hợp đồng, nhưng bố cục ưu tiên chuyển đổi theo phong cách nhà xe.') }}</p>
                     </div>
                 </div>
-                <div class="card-grid">
+                <div class="featured-deal-grid">
                     @foreach ($featuredServices as $service)
-                        <article class="service-item">
-                            <a class="service-item-media" href="{{ $service['url'] ?? '#' }}" aria-label="{{ $service['title'] ?? '' }}">
+                        @php
+                            $currentPrice = (int) ($service['price'] ?? 0);
+                            $discountRate = 10 + (($loop->index % 4) * 8);
+                            $originalPrice = $currentPrice > 0
+                                ? (int) ceil($currentPrice / (1 - ($discountRate / 100)))
+                                : null;
+                            $dealMeta = $service['tag'] ?? $t('product.service_tag_default', 'Gói dịch vụ');
+                        @endphp
+                        <article class="featured-deal-card">
+                            <a class="featured-deal-media" href="{{ $service['url'] ?? '#' }}" aria-label="{{ $service['title'] ?? '' }}">
                                 <img src="{{ $service['image'] ?? 'https://picsum.photos/seed/ser0101-service/960/720' }}" alt="{{ $service['title'] ?? '' }}">
+                                <span class="featured-deal-corner-icon">★</span>
+                                <span class="featured-deal-ribbon">Độc quyền</span>
+                                <span class="featured-deal-chip">{{ $dealMeta }}</span>
+                                <span class="featured-deal-format">E-Voucher</span>
                             </a>
-                            <span class="service-tag">{{ $service['tag'] ?? $t('product.service_tag_default', 'Gói dịch vụ') }}</span>
-                            <h3><a href="{{ $service['url'] ?? '#' }}">{{ $service['title'] ?? '' }}</a></h3>
-                            <p>{{ \Illuminate\Support\Str::limit((string) ($service['summary'] ?? $service['tag'] ?? ''), 120) }}</p>
-                            <div class="service-price">
-                                <strong>{{ $formatCurrency($service['price'] ?? null) }}</strong>
+                            <div class="featured-deal-body">
+                                <h3 class="featured-deal-title"><a href="{{ $service['url'] ?? '#' }}">{{ $service['title'] ?? '' }}</a></h3>
+                                <div class="featured-deal-divider"></div>
+                                <div class="featured-deal-pricing">
+                                    <div class="featured-deal-current">
+                                        <strong>{{ $formatCurrency($service['price'] ?? null) }}</strong>
+                                        @if ($currentPrice > 0)
+                                            <span class="featured-deal-discount">-{{ $discountRate }}%</span>
+                                        @endif
+                                    </div>
+                                    @if ($originalPrice !== null)
+                                        <span class="featured-deal-original">{{ $formatCurrency($originalPrice) }}</span>
+                                    @endif
+                                </div>
                             </div>
                         </article>
                     @endforeach
@@ -577,10 +753,6 @@
                             <div>
                                 <strong>{{ $t('home.route_board_header_title', 'Bảng tuyến nổi bật') }}</strong>
                                 <span>{{ $t('home.route_board_header_summary', 'Tập trung nhu cầu đi sân bay, đưa đón doanh nghiệp, hợp đồng tour và chuyến hàng nhẹ.') }}</span>
-                            </div>
-                            <div class="route-board-meta">
-                                <span>{{ $t('home.route_board_meta_cta', 'CTA sẵn cho điều phối') }}</span>
-                                <span>{{ $t('home.route_board_meta_lead', 'Ưu tiên thu lead') }}</span>
                             </div>
                         </div>
                         <div class="route-table">

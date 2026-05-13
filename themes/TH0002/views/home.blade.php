@@ -1,0 +1,690 @@
+@php
+    $homeData = $themeHomeData ?? [];
+    $branding = $homeData['branding'] ?? [];
+    $heroBanner = $homeData['hero_banner'] ?? [];
+    $sidePromos = $homeData['side_banners'] ?? [];
+    $secondarySidePromos = collect($homeData['secondary_side_promos'] ?? [])->take(3)->values()->all();
+    $featuredCategories = $homeData['featured_categories'] ?? $homeData['brand_highlights'] ?? [];
+    $sidebarCategories = $homeData['product_menu'] ?? [];
+    $featuredDeals = $homeData['featured_products'] ?? [];
+    $featuredTitle = $homeData['featured_title'] ?? 'Bộ sưu tập nổi bật';
+    $sections = $homeData['sections'] ?? [];
+    $heroSlideDefaults = $homeData['hero_slide_defaults'] ?? ['eyebrow' => 'Xưởng may theo yêu cầu', 'badge' => 'MOQ từ 30 sản phẩm', 'cta' => 'Xem bộ sưu tập'];
+    $footerColumns = $homeData['footer_columns'] ?? [];
+    $companyFooter = $homeData['company_footer'] ?? [];
+    $cartSummary = $homeData['cart_summary'] ?? ['count' => 0];
+    $customerAuth = $homeData['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
+    $newsletterState = $homeData['newsletter'] ?? ['is_subscribed' => false];
+    $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
+    $themeBlockRegistry = app(\App\Support\ThemeBlockRegistry::class);
+    $themeKey = 'TH0002';
+    $t = fn (string $key, string $default) => $themeTranslator->bladeText('TH0002', app()->getLocale(), $key, $default);
+    $adminUser = auth('admin')->user();
+    $canQuickEditThemeBlocks = $adminUser !== null
+        && $adminUser->hasPermission('theme.view')
+        && $adminUser->hasPermission('theme.customize');
+    $quickEditLocales = \App\Support\FrontendLocalization::supportedLocales();
+    $quickEditLocaleOptions = \App\Support\FrontendLocalization::localeOptions();
+    $heroBannerEditKeyMap = collect($heroBanner['edit_fields'] ?? [])->keyBy('slot')->all();
+    $managedHeroSlides = collect($homeData['hero_slides'] ?? [])->filter(fn ($slide): bool => is_array($slide) && filled($slide['image'] ?? null))->values();
+    $heroQuickEditFields = $managedHeroSlides->isNotEmpty()
+        ? $managedHeroSlides->flatMap(fn (array $slide): array => $slide['edit_fields'] ?? [])->values()->all()
+        : array_merge(
+            $heroBanner['edit_fields'] ?? [],
+            [
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.eyebrow'), 'label' => 'Nhãn slide phụ', 'group' => 'content', 'entity' => 'theme'],
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.badge'), 'label' => 'Badge slide phụ', 'group' => 'content', 'entity' => 'theme'],
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.cta'), 'label' => 'CTA slide phụ', 'group' => 'content', 'entity' => 'theme'],
+            ],
+        );
+    $heroSlideDefaultKeyMap = [
+        'eyebrow' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.eyebrow'),
+        'badge' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.badge'),
+        'cta' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.cta'),
+    ];
+    $companyFooterEditFields = [
+        ['key' => $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_1'), 'label' => 'Địa chỉ dòng 1', 'group' => 'content', 'entity' => 'theme'],
+        ['key' => $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2'), 'label' => 'Địa chỉ dòng 2', 'group' => 'content', 'entity' => 'theme'],
+    ];
+    $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
+    $contactEmail = data_get($branding, 'support_email', 'cs@th0002.demo');
+    $contactLocation = data_get($branding, 'support_location', 'Hà Nội - TP.HCM');
+    $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
+    $searchCategories = collect($sidebarCategories)->pluck('label')->take(6)->all();
+    $workshopMetrics = [
+        ['label' => 'Năng lực xưởng', 'value' => '12,000+ sp/tháng'],
+        ['label' => 'MOQ OEM', 'value' => 'Từ 30 mẫu / màu'],
+        ['label' => 'Thời gian hoàn thiện', 'value' => '5-12 ngày'],
+        ['label' => 'Chất liệu chủ lực', 'value' => 'Cotton, kate, denim'],
+    ];
+    $serviceLanes = [
+        [
+            'badge' => 'Wholesale / B2B',
+            'title' => 'May đồng phục và đơn sỉ theo bộ size',
+            'summary' => 'Phù hợp doanh nghiệp, trường học, chuỗi cửa hàng cần chốt size, duyệt mẫu, theo dõi tiến độ và giao hàng nhiều đợt.',
+        ],
+        [
+            'badge' => 'Retail / Capsule',
+            'title' => 'Sản xuất cho local brand và đơn retail linh hoạt',
+            'summary' => 'Nhận phát triển capsule collection, chỉnh rập cơ bản, làm mẫu thử nhanh cho shop thời trang và thương hiệu mới.',
+        ],
+    ];
+    $heroSlides = $managedHeroSlides->isNotEmpty()
+        ? $managedHeroSlides
+        : collect([$heroBanner])
+            ->merge(
+                collect($sidePromos)->take(3)->map(function (array $promo, int $index) use ($heroSlideDefaults): array {
+                    return [
+                        'image' => $promo['image'] ?? 'https://picsum.photos/seed/th0002-fallback-hero-'.($index + 1).'/960/520',
+                        'title' => $promo['title'] ?? 'Lookbook xưởng may',
+                        'summary' => $promo['subtitle'] ?? 'Theo dõi các dòng sản phẩm chủ lực, năng lực mẫu và tiến độ sản xuất trong storefront TH0002.',
+                        'eyebrow' => $heroSlideDefaults['eyebrow'] ?? 'Xưởng may theo yêu cầu',
+                        'badge' => $heroSlideDefaults['badge'] ?? 'MOQ từ 30 sản phẩm',
+                        'cta' => $heroSlideDefaults['cta'] ?? 'Xem bộ sưu tập',
+                        'link_url' => $promo['link_url'] ?? '#featured',
+                    ];
+                })
+            )
+            ->filter(fn ($slide): bool => is_array($slide) && filled($slide['image'] ?? null))
+            ->values();
+
+    if ($footerColumns === []) {
+        $footerColumns = [
+            ['title' => $t('footer.help_title', 'Hỗ trợ đặt may'), 'links' => [$t('footer.shipping_policy', 'Quy trình báo giá'), $t('footer.payment_methods', 'Hướng dẫn đặt cọc'), $t('footer.evouchers', 'MOQ và thời gian mẫu'), $t('footer.membership', 'Chính sách đổi trả')]],
+            ['title' => $t('footer.about_title', 'Về xưởng may'), 'links' => [$t('footer.about_us', 'Năng lực sản xuất'), $t('footer.contact', 'Liên hệ showroom'), $t('footer.privacy_policy', 'Cam kết chất lượng'), $t('footer.operating_regulations', 'Quy trình kiểm hàng')]],
+            ['title' => $t('footer.partnership_title', 'Hợp tác'), 'links' => [$t('footer.gift_cards', 'May đồng phục doanh nghiệp'), $t('footer.partner_contact', 'Local brand OEM / ODM'), $t('footer.careers', 'Bán sỉ đại lý'), $t('footer.press_info', 'Tuyển cộng tác viên')]],
+        ];
+    }
+
+    $footerColumnEditFields = collect($footerColumns)->values()->map(function (array $column, int $index) use ($themeBlockRegistry, $themeKey): array {
+        return [
+            'title' => $column['title'] ?? sprintf('Cột %d', $index + 1),
+            'fields' => array_merge(
+                [[
+                    'key' => $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.title', $index)),
+                    'label' => 'Tiêu đề cột',
+                    'group' => 'content',
+                    'entity' => 'theme',
+                ]],
+                collect($column['links'] ?? [])->values()->map(fn (string $link, int $linkIndex): array => [
+                    'key' => $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.links.%d', $index, $linkIndex)),
+                    'label' => sprintf('Link %d', $linkIndex + 1),
+                    'group' => 'content',
+                    'entity' => 'theme',
+                ])->all(),
+            ),
+        ];
+    })->all();
+
+    $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
+    $formatDiscount = fn ($value) => '-'.(int) $value.'%';
+@endphp
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <title>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'TH0002 Garment Workshop')) }}</title>
+        <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
+        @vite('resources/css/app.css')
+        <style>
+            @include('theme-th0002::partials.palette-tokens', ['branding' => $branding])
+
+            :root {
+                --th-badge-bg: rgba(214, 122, 44, 0.12);
+                --th-badge-color: var(--th-red-deep);
+                --th-badge-border: 1px solid rgba(214, 122, 44, 0.16);
+                --th-badge-shadow: 0 8px 18px rgba(175, 95, 31, 0.08);
+                --th-badge-min-height: 30px;
+                --th-badge-padding-inline: 12px;
+                --th-badge-font-size: 11px;
+                --th-badge-letter-spacing: 0.08em;
+            }
+
+            * { box-sizing: border-box; }
+            body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--th-ink); background: var(--th-bg); }
+            a { color: inherit; text-decoration: none; }
+            img { display: block; max-width: 100%; }
+            .th-page { min-height: 100vh; }
+            .th-topbar { background: #f6efe6; border-top: 3px solid #efaa4c; color: var(--th-muted); font-size: 12px; }
+            .th-container { width: min(1200px, calc(100% - 24px)); margin: 0 auto; }
+            .th-topbar-inner, .th-header-inner, .th-main-nav-inner, .th-footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+            .th-topbar-inner { padding: 6px 0; }
+            .th-inline { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+            .th-inline-action { padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+            .th-inline-form { margin: 0; }
+            .th-accent { color: var(--th-red); }
+            .th-header { background: var(--th-surface); }
+            .th-header-inner { padding: 12px 0; }
+            .th-logo { display: flex; align-items: center; gap: 12px; min-width: 220px; }
+            .th-logo img { width: 160px; height: 52px; object-fit: contain; }
+            .th-logo-mark { display: flex; flex-direction: column; font-size: 12px; line-height: 1.35; color: #555; }
+            .th-logo-mark strong { color: var(--th-red); font-size: 16px; }
+            .th-search { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 52px; border: 2px solid var(--th-red); border-radius: 4px; overflow: hidden; background: #fff; max-width: 720px; }
+            .th-search input, .th-search button { border: 0; height: 44px; font-size: 14px; }
+            .th-search input { padding: 0 14px; background: transparent; }
+            .th-search button { background: var(--th-red); color: #fff; font-weight: 700; cursor: pointer; }
+            .th-cart { min-width: 120px; display: flex; justify-content: flex-end; font-weight: 700; color: #5f5f5f; }
+            .th-main-nav { background: var(--th-red); color: #fff; }
+            .th-main-nav-inner { min-height: 42px; justify-content: flex-start; }
+            .th-main-nav-menu { display: flex; justify-content: flex-start; gap: 28px; font-size: 14px; font-weight: 700; }
+            .th-main-nav-menu a { padding: 11px 0; display: block; text-align: left; text-transform: uppercase; transition: color .18s ease; }
+            .th-main-nav-menu a:hover { color: #fff2bf; }
+            .th-main-nav-categories { background: rgba(0,0,0,0.08); min-width: 170px; padding: 11px 14px; font-weight: 700; }
+            .th-content { padding: 0 0 40px; }
+            .th-hero-layout { display: grid; grid-template-columns: 220px 1fr; gap: 16px; margin-top: 0; }
+            .th-sidebar { position: relative; background: var(--th-surface); border: 1px solid var(--th-line); z-index: 5; }
+            .th-sidebar-entry { position: static; }
+            .th-sidebar-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 14px; border-bottom: 1px solid var(--th-line); font-size: 14px; color: #4f4f4f; background: #fff; transition: background .16s ease, color .16s ease; }
+            .th-sidebar-entry:last-child .th-sidebar-item { border-bottom: 0; }
+            .th-sidebar-entry:hover .th-sidebar-item { color: var(--th-red); background: #fff5ec; }
+            .th-sidebar-item.is-accent { color: var(--th-red); font-weight: 700; }
+            .th-sidebar-icon { width: 20px; color: #979797; }
+            .th-sidebar-mega { position: absolute; top: -1px; left: 100%; width: calc(100vw - max((100vw - 1200px) / 2, 12px) * 2 - 220px); max-width: 948px; min-height: 302px; display: grid; grid-template-columns: minmax(0, 1fr) 220px; background: #fff; border: 1px solid var(--th-line); box-shadow: 0 24px 48px rgba(21, 24, 34, 0.12); z-index: 8; opacity: 0; visibility: hidden; pointer-events: none; transform: translate3d(12px, 0, 0); transition: opacity .18s ease, transform .22s ease, visibility .22s ease; }
+            .th-sidebar-mega::before { content: ''; position: absolute; top: 0; left: -20px; width: 20px; height: 100%; }
+            .th-sidebar-entry:hover .th-sidebar-mega { opacity: 1; visibility: visible; pointer-events: auto; transform: translate3d(0, 0, 0); }
+            .th-sidebar-mega-content { display: grid; grid-template-columns: 170px 1fr 1.15fr; gap: 34px; padding: 22px 26px 22px 24px; align-content: start; }
+            .th-sidebar-mega-content.has-four .th-sidebar-mega-column:nth-child(4) { grid-column: 1 / 2; align-self: start; }
+            .th-sidebar-mega.mega-hot { max-width: 920px; grid-template-columns: minmax(0, 1fr) 218px; }
+            .th-sidebar-mega.mega-hot .th-sidebar-mega-content { grid-template-columns: 180px 1fr 1fr; gap: 30px; }
+            .th-sidebar-mega.mega-food { max-width: 930px; grid-template-columns: minmax(0, 1fr) 220px; }
+            .th-sidebar-mega.mega-food .th-sidebar-mega-content { grid-template-columns: 190px 190px 1fr; gap: 28px; }
+            .th-sidebar-mega.mega-beauty { max-width: 968px; grid-template-columns: minmax(0, 1fr) 220px; }
+            .th-sidebar-mega.mega-beauty .th-sidebar-mega-content { grid-template-columns: 140px 190px 1fr; gap: 28px 34px; }
+            .th-sidebar-mega-column h4 { margin: 0 0 14px; font-size: 14px; line-height: 1.35; color: #1f1f1f; text-transform: uppercase; font-weight: 800; }
+            .th-sidebar-mega-column ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+            .th-sidebar-mega-column a { color: #5f5f5f; font-size: 13px; line-height: 1.45; }
+            .th-sidebar-mega-column a:hover { color: var(--th-red); }
+            .th-sidebar-mega-promo { display: grid; gap: 8px; padding: 0; background: #fafafa; border-left: 1px solid var(--th-line); }
+            .th-sidebar-mega-promo a { position: relative; min-height: 69px; overflow: hidden; }
+            .th-sidebar-mega-promo img { width: 100%; height: 100%; object-fit: cover; }
+            .th-sidebar-mega-promo span { position: absolute; left: 12px; bottom: 10px; right: 12px; color: #fff; font-size: 13px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
+            .th-hero-stack { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; }
+            .th-hero-card { background: linear-gradient(90deg, #fff3ea 0%, #fff 100%); min-height: 300px; position: relative; overflow: hidden; border: 1px solid #ffd7bd; }
+            .th-hero-slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .6s ease; }
+            .th-hero-slide.is-active { opacity: 1; pointer-events: auto; z-index: 1; }
+            .th-hero-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+            .th-hero-overlay {position: relative;z-index: 1;width: min(54%, 420px);padding: 36px 32px;background: linear-gradient(90deg, rgb(0 0 0 / 95%) 0%, rgb(255 255 255 / 14%) 100%);height: 100%;}
+            .th-pill-badge { display: inline-flex; align-items: center; justify-content: center; min-height: var(--th-badge-min-height); padding: 0 var(--th-badge-padding-inline); border: var(--th-badge-border); border-radius: 999px; background: var(--th-badge-bg); color: var(--th-badge-color); font-size: var(--th-badge-font-size); font-weight: 800; text-transform: uppercase; letter-spacing: var(--th-badge-letter-spacing); box-shadow: var(--th-badge-shadow); }
+            .th-eyebrow { --th-badge-min-height: 32px; --th-badge-font-size: 12px; --th-badge-color: #c96d24; }
+            .th-hero-title { margin: 14px 0 10px; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; color: #ffffff; }
+            .th-hero-summary { margin: 0 0 20px; color: #ffffff; line-height: 1.6; }
+            .th-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+            .th-badge-price { background: #fff; color: var(--th-red); border-radius: 20px; padding: 10px 14px; font-size: 15px; font-weight: 800; box-shadow: 0 10px 24px rgba(214,122,44,0.18); }
+            .th-hero-button { background: linear-gradient(180deg, #ff8e18 0%, #f25c05 100%); color: #fff; border-radius: 999px; padding: 11px 22px; font-weight: 800; text-transform: uppercase; }
+            .th-hero-nav { position: absolute; top: 50%; z-index: 3; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-top: -22px; padding: 0; border: 0; border-radius: 999px; background: rgba(255,255,255,.88); color: #303030; font-size: 28px; line-height: 1; text-align: center; box-shadow: 0 12px 24px rgba(19, 21, 33, 0.16); cursor: pointer; opacity: 0; visibility: hidden; transform: translateY(-50%) scale(.92); transition: opacity .2s ease, visibility .2s ease, transform .2s ease, background .18s ease; }
+            .th-hero-card:hover .th-hero-nav, .th-hero-card:focus-within .th-hero-nav { opacity: 1; visibility: visible; transform: translateY(-50%) scale(1); }
+            .th-hero-nav:hover { background: #fff; transform: translateY(-50%) scale(1.06); }
+            .th-hero-nav-prev { left: 5px; }
+            .th-hero-nav-next { right: 5px; }
+            .th-hero-dots { position: absolute; left: 32px; bottom: 20px; z-index: 3; display: flex; align-items: center; gap: 8px; }
+            .th-hero-dot { width: 10px; height: 10px; border: 0; border-radius: 999px; background: rgba(255,255,255,.55); cursor: pointer; transition: transform .18s ease, background .18s ease; }
+            .th-hero-dot.is-active { background: #fff; transform: scale(1.25); }
+            .th-side-promo-grid { display: grid; gap: 8px; }
+            .th-side-promo { min-height: 69px; position: relative; overflow: hidden; border: 1px solid var(--th-line); }
+            .th-side-promo img { width: 100%; height: 100%; object-fit: cover; }
+            .th-side-promo span { position: absolute; left: 12px; bottom: 10px; z-index: 1; color: #fff; font-size: 13px; font-weight: 800; text-shadow: 0 2px 8px rgba(0,0,0,0.45); }
+            .th-brand-strip { position: relative; margin-top: 24px; background: var(--th-surface); border: 1px solid var(--th-line); padding: 24px 20px 16px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; overflow: visible; }
+            .th-brand-strip-label { position: absolute; top: 0; left: 20px; transform: translateY(-50%); --th-badge-bg: #fff7f0; }
+            .th-brand { display: flex; align-items: center; justify-content: center; text-align: center; }
+            .th-brand-badge { width: 92px; height: 92px; padding: 12px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 12px; line-height: 1.2; text-align: center; text-wrap: balance; overflow-wrap: anywhere; word-break: normal; hyphens: auto; box-shadow: var(--th-shadow); }
+            .th-workshop-band { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 16px; }
+            .th-workshop-panel, .th-workshop-services { background: var(--th-surface); border: 1px solid var(--th-line); padding: 18px; }
+            .th-workshop-panel h3, .th-workshop-services h3 { margin: 0 0 10px; font-size: 20px; line-height: 1.25; color: var(--th-ink); }
+            .th-workshop-panel p, .th-service-card p { margin: 0; color: var(--th-muted); line-height: 1.7; font-size: 14px; }
+            .th-workshop-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+            .th-metric-card { padding: 14px; border: 1px solid var(--th-line); background: linear-gradient(180deg, #fff 0%, #faf6f1 100%); }
+            .th-metric-card span { display: block; color: var(--th-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+            .th-metric-card strong { display: block; margin-top: 8px; color: var(--th-red-deep); font-size: 20px; }
+            .th-service-stack { display: grid; gap: 12px; }
+            .th-service-card { padding: 16px; border: 1px solid var(--th-line); background: #fffaf6; }
+            .th-service-card strong { display: block; margin: 8px 0; font-size: 18px; color: var(--th-ink); }
+            .th-service-badge { --th-badge-min-height: 28px; --th-badge-padding-inline: 10px; --th-badge-bg: rgba(163, 80, 53, 0.1); }
+            .th-section-tabs { display: flex; gap: 24px; font-size: 14px; color: #7d7d7d; text-transform: uppercase; }
+            .th-section-tabs span:first-child { color: var(--th-ink); font-weight: 800; }
+            .th-featured-panel { margin-top: 22px; background: var(--th-surface); border: 1px solid var(--th-line); padding: 0 0 22px; }
+            .th-featured-topbar { padding: 0 16px; display: flex; align-items: center; gap: 24px; min-height: 48px; border-bottom: 1px solid var(--th-line); }
+            .th-card-grid { padding: 18px 16px 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+            .th-secondary-promo-section { margin-top: 18px; background: var(--th-surface); border: 1px solid var(--th-line); padding: 16px; }
+            .th-secondary-promo-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+            .th-secondary-promo-head h3 { margin: 0; font-size: 20px; line-height: 1.25; text-transform: uppercase; color: var(--th-ink); }
+            .th-secondary-promo-head p { margin: 4px 0 0; color: var(--th-muted); font-size: 13px; }
+            .th-secondary-promo-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 180px)); gap: 16px; }
+            .th-secondary-promo-card { position: relative; min-height: 180px; overflow: hidden; border: 1px solid var(--th-line); background: #111; }
+            .th-secondary-promo-card:first-child { grid-row: 1 / span 2; min-height: 376px; }
+            .th-secondary-promo-card:first-child .th-secondary-promo-copy strong { font-size: 30px; }
+            .th-secondary-promo-card:first-child .th-secondary-promo-copy > span:not(.th-secondary-promo-cta) { font-size: 14px; max-width: 75%; }
+            .th-secondary-promo-card img { width: 100%; height: 100%; object-fit: cover; }
+            .th-secondary-promo-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6, 8, 14, 0.08) 0%, rgba(6, 8, 14, 0.84) 100%); }
+            .th-secondary-promo-badge { position: absolute; top: 16px; left: 16px; z-index: 1; --th-badge-bg: rgba(255,255,255,0.16); --th-badge-color: #fff; --th-badge-border: 1px solid rgba(255,255,255,0.18); --th-badge-shadow: none; --th-badge-padding-inline: 11px; backdrop-filter: blur(6px); }
+            .th-secondary-promo-copy { position: absolute; inset: auto 16px 16px 16px; z-index: 1; color: #fff; }
+            .th-secondary-promo-copy strong { display: block; font-size: 22px; line-height: 1.15; }
+            .th-secondary-promo-copy > span:not(.th-secondary-promo-cta) { display: block; margin-top: 8px; color: rgba(255,255,255,0.86); font-size: 13px; }
+            .th-secondary-promo-copy .th-secondary-promo-cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 8px 12px; border-radius: 999px; background: #fff; color: #111827; font-size: 12px; font-weight: 800; }
+            .th-secondary-promo-cta::after { content: '›'; font-size: 14px; line-height: 1; }
+            .th-deal-card { background: #fff; border: 1px solid var(--th-line); transition: transform .18s ease, box-shadow .18s ease; }
+            .th-deal-card:hover { transform: translateY(-3px); box-shadow: var(--th-shadow); }
+            .th-deal-image-wrap { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: #f1f1f1; }
+            .th-deal-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
+            .th-deal-chip, .th-deal-countdown { position: absolute; bottom: 10px; right: 10px; background: rgba(22,22,22,0.68); color: #fff; padding: 4px 8px; border-radius: 999px; font-size: 11px; }
+            .th-deal-countdown { top: 10px; left: 10px; right: auto; bottom: auto; }
+            .th-deal-body { padding: 12px 12px 14px; }
+            .th-deal-title { margin: 0 0 12px; font-size: 15px; line-height: 1.45; min-height: 44px; }
+            .th-pricing { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+            .th-price { color: var(--th-red); font-size: 20px; font-weight: 900; letter-spacing: -0.04em; }
+            .th-price small { font-size: 18px; }
+            .th-discount { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 6px; background: var(--th-red); color: #fff; font-size: 13px; font-weight: 800; }
+            .th-old-price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: #a8a8a8; font-size: 13px; }
+            .th-old-price { text-decoration: line-through; }
+            .th-stat { color: #9d9d9d; }
+            .th-category-section { margin-top: 26px; background: var(--th-surface); border: 1px solid var(--th-line); }
+            .th-category-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 16px; min-height: 52px; border-top: 4px solid var(--th-lime); }
+            .th-category-header.pink { border-top-color: var(--th-pink); }
+            .th-category-title { display: flex; align-items: center; gap: 12px; min-width: 220px; color: var(--th-lime); font-size: 19px; line-height: 1.15; font-weight: 800; text-transform: uppercase; }
+            .th-category-header.pink .th-category-title { color: var(--th-pink); }
+            .th-category-title-badge { width: 32px; height: 32px; border-radius: 8px; background: currentColor; color: #fff; display: grid; place-items: center; font-size: 16px; }
+            .th-category-filters, .th-category-tabs { display: flex; align-items: center; gap: 22px; font-size: 13px; color: #6f6f6f; flex-wrap: wrap; }
+            .th-category-tabs span:first-child, .th-category-filters a:first-child { color: var(--th-ink); font-weight: 800; }
+            .th-category-grid { padding: 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+            .th-category-footer { padding: 0 16px 18px; display: flex; justify-content: center; }
+            .th-more-button { border: 1px solid var(--th-line); background: #fafafa; color: #6f6f6f; padding: 10px 18px; }
+            .th-footer { margin-top: 32px; background: #fff; border-top: 1px solid var(--th-line); }
+            .th-footer-inner { padding: 26px 0 40px; align-items: flex-start; }
+            .th-footer-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; width: 100%; }
+            .th-footer-card h4 { margin: 0 0 14px; color: #444; text-transform: uppercase; font-size: 14px; }
+            .th-footer-links { display: grid; gap: 8px; color: #7b7b7b; font-size: 13px; }
+            .th-company { background: #fff7f0; border: 1px solid #f0d3b1; border-radius: 16px; padding: 16px; }
+            .th-company strong { display: block; color: var(--th-red); margin-bottom: 8px; }
+            .th-inline-edit-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 32px; padding-right: 96px; position: relative; z-index: 2; pointer-events: none; }
+            .th-inline-edit-head > * { pointer-events: auto; }
+            .th-inline-edit-head .sf-inline-edit-btn { position: absolute; top: 0; right: 0; z-index: 3; }
+
+            @media (max-width: 1100px) {
+                .th-hero-layout { grid-template-columns: 1fr; }
+                .th-sidebar { display: none; }
+                .th-hero-stack { grid-template-columns: 1fr; }
+                .th-card-grid, .th-category-grid, .th-brand-strip, .th-secondary-promo-grid, .th-workshop-band { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+                .th-search { grid-template-columns: minmax(0, 1fr) 52px; }
+                .th-sidebar-mega { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+            }
+
+            @media (max-width: 760px) {
+                .th-topbar-inner, .th-header-inner, .th-main-nav-inner, .th-footer-inner { flex-direction: column; align-items: stretch; }
+                .th-logo { text-align: center; font-size: 36px; }
+                .th-search { max-width: none; grid-template-columns: 1fr; }
+                .th-main-nav-categories { min-width: 0; }
+                .th-main-nav-menu { gap: 16px; overflow-x: auto; }
+                .th-hero-overlay { width: 100%; padding: 24px 18px; }
+                .th-card-grid, .th-category-grid, .th-brand-strip, .th-footer-grid, .th-secondary-promo-grid, .th-workshop-band, .th-workshop-metrics { grid-template-columns: 1fr; }
+                .th-category-header { align-items: flex-start; padding: 12px 16px; }
+                .th-category-title { min-width: 0; font-size: 16px; line-height: 1.15; }
+                .th-workshop-panel h3, .th-workshop-services h3, .th-secondary-promo-head h3 { font-size: 18px; }
+                .th-category-tabs, .th-category-filters, .th-inline { gap: 12px; }
+                .th-price { font-size: 20px; }
+                .th-secondary-promo-head { align-items: flex-start; flex-direction: column; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="th-page">
+            <div class="th-topbar">
+                <div class="th-container th-topbar-inner">
+                    <div class="th-inline">
+                        <span>📍 {{ $contactLocation }}</span>
+                        <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('common.newsletter_subscribed') : __('common.newsletter_subscribe') }}</button>
+                    </div>
+                    <div class="th-inline">
+                        <span>📞 @themeT('common.hotline_label', 'Hotline'): <span class="th-accent">{{ $contactHotline }}</span></span>
+                        <span>✉ @themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
+                        @if (!empty($customerAuth['is_authenticated']))
+                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài khoản')</a>
+                            <form class="th-inline-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
+                                @csrf
+                                <button type="submit" class="th-inline-action">@themeT('common.logout', 'Đăng xuất')</button>
+                            </form>
+                        @else
+                            <button type="button" class="th-inline-action" data-open-auth-modal="register">@themeT('common.register', 'Đăng ký')</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="login">@themeT('common.login', 'Đăng nhập')</button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <header class="th-header">
+                <div class="th-container th-header-inner">
+                    <a class="th-logo" href="{{ route('site.home') }}">
+                        <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'Website logo') }}">
+                        <span class="th-logo-mark">
+                            <strong>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'AIO Commerce')) }}</strong>
+                        </span>
+                    </a>
+                    <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
+                        <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                        <button type="submit">@themeT('common.search_button', 'Tìm')</button>
+                    </form>
+                    <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} @themeT('common.cart_label', 'GIỎ HÀNG')</a>
+                </div>
+            </header>
+
+            <nav class="th-main-nav">
+                <div class="th-container th-main-nav-inner">
+                    <div class="th-main-nav-categories">@themeT('common.categories', 'DANH MỤC')</div>
+                    <div class="th-main-nav-menu">
+                        @foreach (($homeData['top_menu'] ?? []) as $menuItem)
+                            <a href="{{ $menuItem['url'] ?? '#' }}" target="{{ $menuItem['target'] ?? '_self' }}">{{ $menuItem['label'] ?? __('common.menu') }}</a>
+                        @endforeach
+                    </div>
+                </div>
+            </nav>
+
+            <main class="th-content">
+                <div class="th-container">
+                    @php
+                        $sidebarCategoryCount = count($sidebarCategories ?? []);
+                        $brandStripInlineWithHero = $sidebarCategoryCount >= 12;
+                    @endphp
+
+                    <section class="th-hero-layout">
+                        <aside class="th-sidebar">
+                            @foreach ($sidebarCategories as $category)
+                                <div class="th-sidebar-entry">
+                                    <a href="{{ $category['url'] ?? '#' }}" target="{{ $category['target'] ?? '_self' }}" class="th-sidebar-item {{ !empty($category['highlight']) ? 'is-accent' : '' }}">
+                                        <span><span class="th-sidebar-icon">{{ $category['icon'] ?? '◌' }}</span> {{ $category['label'] }}</span>
+                                        <span>›</span>
+                                    </a>
+
+                                    @if (!empty($category['children']))
+                                        @php
+                                            $submenuColumns = collect($category['children'])->chunk(3);
+                                        @endphp
+                                        <div class="th-sidebar-mega {{ $loop->first ? 'mega-hot' : ($loop->index % 2 === 0 ? 'mega-beauty' : 'mega-food') }}">
+                                            <div class="th-sidebar-mega-content {{ $submenuColumns->count() > 3 ? 'has-four' : '' }}">
+                                                @foreach ($submenuColumns as $chunk)
+                                                    <div class="th-sidebar-mega-column">
+                                                        <h4>{{ $category['label'] }}</h4>
+                                                        <ul>
+                                                            @foreach ($chunk as $child)
+                                                                <li><a href="{{ $child['url'] ?? ($category['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a></li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+
+                                            <div class="th-sidebar-mega-promo">
+                                                @foreach ($sidePromos as $promo)
+                                                        <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}">
+                                                        <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
+                                                        <span>{{ $promo['title'] }} · {{ $promo['subtitle'] }}</span>
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </aside>
+
+                        <div>
+                            <div class="th-hero-stack">
+                                @include('theme-th0002::partials.home-hero-slider', [
+                                    'heroSlides' => $heroSlides,
+                                    'canQuickEditThemeBlocks' => $canQuickEditThemeBlocks,
+                                    'heroQuickEditFields' => $heroQuickEditFields,
+                                    'heroBannerEditKeyMap' => $heroBannerEditKeyMap,
+                                    'heroSlideDefaultKeyMap' => $heroSlideDefaultKeyMap,
+                                ])
+
+                                <div class="th-side-promo-grid">
+                                    @foreach ($sidePromos as $promo)
+                                        <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}" class="th-side-promo">
+                                            <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
+                                            <span>{{ $promo['title'] }} · {{ $promo['subtitle'] }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            @if ($brandStripInlineWithHero)
+                                <section class="th-brand-strip">
+                                    <span class="th-pill-badge th-brand-strip-label">Danh mục nổi bật</span>
+                                    @foreach ($featuredCategories as $category)
+                                        <a href="{{ $category['url'] ?? '#' }}" target="{{ $category['target'] ?? '_self' }}" class="th-brand">
+                                            <div class="th-brand-badge" style="background: {{ $category['tone'] }}">{{ $category['name'] }}</div>
+                                        </a>
+                                    @endforeach
+                                </section>
+                            @endif
+
+                        </div>
+                    </section>
+
+                    @if (! $brandStripInlineWithHero)
+                        <section class="th-brand-strip">
+                            <span class="th-pill-badge th-brand-strip-label">Danh mục nổi bật</span>
+                            @foreach ($featuredCategories as $category)
+                                <a href="{{ $category['url'] ?? '#' }}" target="{{ $category['target'] ?? '_self' }}" class="th-brand">
+                                    <div class="th-brand-badge" style="background: {{ $category['tone'] }}">{{ $category['name'] }}</div>
+                                </a>
+                            @endforeach
+                        </section>
+                    @endif
+
+                    <section class="th-workshop-band">
+                        <div class="th-workshop-panel">
+                            <h3>Xưởng may phục vụ cả bán sỉ và bán lẻ</h3>
+                            <p>TH0002 được dựng để bám sát mô hình xưởng may thực tế: nhận thiết kế, duyệt mẫu, quản lý size theo nhóm khách và chốt đơn theo từng đợt sản xuất.</p>
+                            <div class="th-workshop-metrics">
+                                @foreach ($workshopMetrics as $metric)
+                                    <article class="th-metric-card">
+                                        <span>{{ $metric['label'] }}</span>
+                                        <strong>{{ $metric['value'] }}</strong>
+                                    </article>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="th-workshop-services">
+                            <h3>Luồng dịch vụ chính</h3>
+                            <div class="th-service-stack">
+                                @foreach ($serviceLanes as $lane)
+                                    <article class="th-service-card">
+                                        <span class="th-pill-badge th-service-badge">{{ $lane['badge'] }}</span>
+                                        <strong>{{ $lane['title'] }}</strong>
+                                        <p>{{ $lane['summary'] }}</p>
+                                    </article>
+                                @endforeach
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="featured" class="th-featured-panel">
+                        <div class="th-featured-topbar">
+                            <div class="th-section-tabs">
+                                <span>{{ $featuredTitle }}</span>
+                                <span>@themeT('home.updated_tab', 'Mới cập nhật')</span>
+                                <span>@themeT('home.good_price_tab', 'Giá tốt')</span>
+                            </div>
+                        </div>
+
+                        <div class="th-card-grid">
+                            @foreach ($featuredDeals as $deal)
+                                <article class="th-deal-card">
+                                    <div class="th-deal-image-wrap">
+                                        <a href="{{ $deal['url'] ?? '#' }}">
+                                            <img src="{{ $deal['image'] }}" alt="{{ $deal['title'] }}">
+                                        </a>
+                                        <span class="th-deal-chip">{{ $deal['tag'] ?? 'Sản phẩm' }}</span>
+                                    </div>
+                                    <div class="th-deal-body">
+                                        <h3 class="th-deal-title"><a href="{{ $deal['url'] ?? '#' }}">{{ $deal['title'] }}</a></h3>
+                                        <div class="th-pricing">
+                                            <span class="th-price">{{ $formatCurrency($deal['price'] ?? null) }}</span>
+                                            <span class="th-discount">{{ $formatDiscount($deal['discount'] ?? 0) }}</span>
+                                        </div>
+                                        <div class="th-old-price-row">
+                                            <span class="th-old-price">{{ $formatCurrency($deal['old_price'] ?? null) }}</span>
+                                            <span class="th-stat">{{ str_replace(':count', (string) ($deal['meta'] ?? 0), $t('home.stock', 'Tồn kho :count')) }}</span>
+                                        </div>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
+
+                    @foreach ($sections as $section)
+                        @php
+                            $sectionItems = collect($section['items'] ?? [])->take(4)->all();
+                        @endphp
+                        <section id="section-{{ $section['slug'] }}" class="th-category-section">
+                            <div class="th-category-header {{ $section['theme'] === 'pink' ? 'pink' : '' }}">
+                                <div class="th-category-title">
+                                    <span class="th-category-title-badge">{{ $section['theme'] === 'pink' ? '✿' : '🍴' }}</span>
+                                    <span>{{ $section['title'] }}</span>
+                                </div>
+
+                                <div class="th-category-tabs">
+                                    @foreach ($section['tabs'] as $tab)
+                                        <span>{{ $tab }}</span>
+                                    @endforeach
+                                </div>
+
+                                <div class="th-category-filters">
+                                    @foreach ($section['filters'] as $filter)
+                                        <a href="#">{{ $filter }}</a>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div class="th-category-grid">
+                                @foreach ($sectionItems as $item)
+                                    <article class="th-deal-card">
+                                        <div class="th-deal-image-wrap">
+                                            <a href="{{ $item['url'] ?? '#' }}">
+                                                <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
+                                            </a>
+                                            <span class="th-deal-countdown">{{ str_replace(':days', '21', $t('home.deal_days_left', '⏱ Còn :days ngày')) }}</span>
+                                            <span class="th-deal-chip">{{ $item['tag'] }}</span>
+                                        </div>
+                                        <div class="th-deal-body">
+                                            <h3 class="th-deal-title"><a href="{{ $item['url'] ?? '#' }}">{{ $item['title'] }}</a></h3>
+                                            <div class="th-pricing">
+                                                <span class="th-price">{{ $formatCurrency($item['price'] ?? null) }}</span>
+                                                <span class="th-discount">{{ $formatDiscount($item['discount'] ?? 0) }}</span>
+                                            </div>
+                                            <div class="th-old-price-row">
+                                                <span class="th-old-price">{{ $formatCurrency($item['old_price'] ?? null) }}</span>
+                                                <span class="th-stat">{{ str_replace(':count', (string) ($item['meta'] ?? 0), $t('home.stock', 'Tồn kho :count')) }}</span>
+                                            </div>
+                                        </div>
+                                    </article>
+                                @endforeach
+                            </div>
+
+                            <div class="th-category-footer">
+                                <a href="{{ $section['url'] ?? route('site.catalog.category', ['slug' => $section['slug']]) }}" class="th-more-button">{{ str_replace(':title', $section['title'], __('home.view_all_latest')) }}</a>
+                            </div>
+                        </section>
+                    @endforeach
+
+                    @if (!empty($secondarySidePromos))
+                        <section class="th-secondary-promo-section">
+                            <div class="th-secondary-promo-head">
+                                <div>
+                                    <h3>@themeT('home.secondary_promos_title', 'Khám phá nhanh')</h3>
+                                    <p>@themeT('home.secondary_promos_summary', 'Demo cho location secondary_side_promos để theme khác tái sử dụng cùng cơ chế quản trị.')</p>
+                                </div>
+                            </div>
+
+                            <div class="th-secondary-promo-grid">
+                                @foreach ($secondarySidePromos as $promo)
+                                    <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}" class="th-secondary-promo-card">
+                                        <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
+                                        @if (!empty($promo['badge']))
+                                            <span class="th-pill-badge th-secondary-promo-badge">{{ $promo['badge'] }}</span>
+                                        @endif
+                                        <div class="th-secondary-promo-copy">
+                                            <strong>{{ $promo['title'] }}</strong>
+                                            <span>{{ $promo['subtitle'] }}</span>
+                                            @if (!empty($promo['cta_label']))
+                                                <span class="th-secondary-promo-cta">{{ $promo['cta_label'] }}</span>
+                                            @endif
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </section>
+                    @endif
+                </div>
+            </main>
+
+            <footer class="th-footer">
+                <div class="th-container th-footer-inner">
+                    <div class="th-footer-grid">
+                        @foreach ($footerColumns as $column)
+                            @php
+                                $footerColumnEditor = $footerColumnEditFields[$loop->index] ?? ['fields' => []];
+                            @endphp
+                            <section class="th-footer-card">
+                                <div class="th-inline-edit-head">
+                                    <h4 data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.title', $loop->index)) }}">{{ $column['title'] ?? '' }}</h4>
+                                    @if ($canQuickEditThemeBlocks)
+                                        <button
+                                            type="button"
+                                            class="sf-inline-edit-btn"
+                                            data-sf-inline-edit-trigger
+                                            data-edit-title="Sửa {{ $footerColumnEditor['title'] ?? 'cột footer' }}"
+                                            data-edit-fields='@json($footerColumnEditor['fields'] ?? [])'
+                                        >
+                                            Sửa cột
+                                        </button>
+                                    @endif
+                                </div>
+                                <div class="th-footer-links">
+                                    @foreach (($column['links'] ?? []) as $linkIndex => $link)
+                                        <a href="#" data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.links.%d', $loop->parent->index, $linkIndex)) }}">{{ $link }}</a>
+                                    @endforeach
+                                </div>
+                            </section>
+                        @endforeach
+
+                        <section class="th-company">
+                            <div class="th-inline-edit-head">
+                                <strong>{{ mb_strtoupper(data_get($branding, 'company_name', 'TH0002 DEMO'), 'UTF-8') }}</strong>
+                                @if ($canQuickEditThemeBlocks)
+                                    <button
+                                        type="button"
+                                        class="sf-inline-edit-btn"
+                                        data-sf-inline-edit-trigger
+                                        data-edit-title="Sửa chân trang công ty"
+                                        data-edit-fields='@json($companyFooterEditFields)'
+                                    >
+                                        Sửa công ty
+                                    </button>
+                                @endif
+                            </div>
+                            <div class="th-footer-links">
+                                <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_1') }}">{{ $companyFooter['address_line_1'] ?? '332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM' }}</span>
+                                <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2') }}">{{ $companyFooter['address_line_2'] ?? 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân' }}</span>
+                                <span>Hotline: {{ $contactHotline }}</span>
+                                <span>Email: {{ $contactEmail }}</span>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        @include('theme-th0002::partials.product-search-autocomplete')
+        @include('theme-th0002::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
+        @if ($canQuickEditThemeBlocks)
+            @include('partials.storefront-inline-translation-editor', [
+                'editorId' => 'th0002-inline-editor',
+                'themeKey' => $themeKey,
+                'currentLocale' => app()->getLocale(),
+                'supportedLocales' => $quickEditLocales,
+                'localeOptions' => $quickEditLocaleOptions,
+            ])
+        @endif
+    </body>
+</html>

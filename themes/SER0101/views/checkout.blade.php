@@ -17,12 +17,14 @@
     $contactLocation = data_get($branding, 'support_location', 'Hồ Chí Minh');
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
+    $cartSyncUrl = route('site.cart.index');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ $t('checkout.title', 'Gửi thông tin đặt xe') }} | {{ data_get($branding, 'company_name', 'SER0101') }}</title>
         @vite('resources/css/app.css')
         <style>
@@ -164,6 +166,28 @@
             .next-steps h3 { margin: 0 0 12px; color: var(--night); font-size: 20px; }
             .next-steps ol { margin: 0; padding-left: 18px; color: var(--muted); }
             .next-steps li + li { margin-top: 8px; }
+            .checkout-sync-banner {
+                margin-bottom: 16px;
+                padding: 14px 16px;
+                border-radius: 18px;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 1.7;
+                background: rgba(180, 83, 9, 0.12);
+                color: #9a3412;
+            }
+            .checkout-sync-banner[hidden] { display: none; }
+            .checkout-empty-state {
+                margin-top: 18px;
+                padding: 20px;
+                border-radius: 22px;
+                background: linear-gradient(180deg, #f8fbfd, #eef5f7);
+                text-align: center;
+            }
+            .checkout-empty-state[hidden] { display: none; }
+            .checkout-empty-state strong { display: block; margin-bottom: 10px; color: var(--night); font-size: 22px; }
+            .checkout-empty-state p { margin: 0; color: var(--muted); line-height: 1.8; }
+            .checkout-empty-state .btn { margin-top: 16px; }
 
             @media (max-width: 980px) {
                 .layout, .grid, .hero-grid { grid-template-columns: 1fr; }
@@ -186,11 +210,11 @@
                         <p>{{ $t('checkout.hero_summary', 'Điền thông tin liên hệ để điều phối viên xác nhận lịch trình, loại xe, điểm đón và báo giá cuối cùng theo gói dịch vụ Sếp đã lưu.') }}</p>
                     </div>
                     <aside class="hero-dossier">
-                        <strong>Booking dossier</strong>
+                        <strong>{{ $t('common.booking_dossier_title', 'Hồ sơ đặt xe') }}</strong>
                         <p>Trang checkout của SER0101 được trình bày như bước bàn giao yêu cầu cho concierge desk, không giống giỏ hàng thương mại điện tử thuần.</p>
                         <div class="hero-dossier-list">
                             <div class="hero-dossier-item">
-                                <b>{{ $cartSummary['count'] ?? 0 }}</b>
+                                <b data-checkout-hero-count>{{ $cartSummary['count'] ?? 0 }}</b>
                                 <small>Mục đang chờ xác nhận</small>
                             </div>
                             <div class="hero-dossier-item">
@@ -207,8 +231,10 @@
             </section>
 
             <section class="layout">
-                <form method="POST" action="{{ route('site.checkout.store') }}" class="panel">
+                <form method="POST" action="{{ route('site.checkout.store') }}" class="panel" data-checkout-form>
                     @csrf
+
+                    <div class="checkout-sync-banner" data-checkout-sync-banner hidden></div>
 
                     <h2 class="title">{{ $t('checkout.shipping_info', 'Thông tin liên hệ') }}</h2>
 
@@ -254,27 +280,35 @@
                     </div>
 
                     <div class="actions">
-                        <button type="submit" class="btn primary">{{ $t('checkout.submit', 'Gửi yêu cầu') }}</button>
+                        <button type="submit" class="btn primary" data-checkout-submit>{{ $t('checkout.submit', 'Gửi yêu cầu') }}</button>
+                        <a class="btn secondary" href="{{ route('site.cart.index') }}">{{ $t('checkout.back_to_cart', 'Quay lại danh sách') }}</a>
+                    </div>
+
+                    <div class="checkout-empty-state" data-checkout-empty-state hidden>
+                        <strong>{{ $t('cart.empty', 'Chưa có gói nào trong danh sách yêu cầu.') }}</strong>
+                        <p>{{ $t('checkout.empty_sync_hint', 'Giỏ hàng đã thay đổi ở tab khác. Hãy quay lại danh sách yêu cầu để chọn lại dịch vụ trước khi tiếp tục gửi thông tin.') }}</p>
                         <a class="btn secondary" href="{{ route('site.cart.index') }}">{{ $t('checkout.back_to_cart', 'Quay lại danh sách') }}</a>
                     </div>
                 </form>
 
-                <aside class="panel">
+                <aside class="panel" data-checkout-summary-panel>
                     <div class="summary-box">
                         <h2 class="title" style="margin-bottom: 8px;">{{ $t('checkout.summary_title', 'Thông tin đang gửi') }}</h2>
-                        @foreach ($cartItems as $item)
-                            <div class="summary-line">
-                                <span>{{ $item['title'] }} × {{ $item['quantity'] }}</span>
-                                <strong>{{ $formatCurrency(((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 0))) }}</strong>
-                            </div>
-                        @endforeach
+                        <div data-checkout-summary-items>
+                            @foreach ($cartItems as $item)
+                                <div class="summary-line">
+                                    <span>{{ $item['title'] }} × {{ $item['quantity'] }}</span>
+                                    <strong>{{ $formatCurrency(((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 0))) }}</strong>
+                                </div>
+                            @endforeach
+                        </div>
                         <div class="summary-line summary-total">
                             <span>Tổng số mục</span>
-                            <strong>{{ $cartSummary['count'] ?? 0 }}</strong>
+                            <strong data-checkout-summary-count>{{ $cartSummary['count'] ?? 0 }}</strong>
                         </div>
                         <div class="summary-line">
                             <span>Giá trị tham khảo</span>
-                            <strong>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
+                            <strong data-checkout-summary-subtotal>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
                         </div>
                     </div>
 
@@ -294,5 +328,170 @@
             </section>
         </main>
         @include('theme-ser0101::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
+        <script>
+            (() => {
+                const checkoutForm = document.querySelector('[data-checkout-form]');
+                const submitButton = document.querySelector('[data-checkout-submit]');
+                const heroCountNode = document.querySelector('[data-checkout-hero-count]');
+                const summaryItemsNode = document.querySelector('[data-checkout-summary-items]');
+                const summaryCountNode = document.querySelector('[data-checkout-summary-count]');
+                const summarySubtotalNode = document.querySelector('[data-checkout-summary-subtotal]');
+                const bannerNode = document.querySelector('[data-checkout-sync-banner]');
+                const emptyStateNode = document.querySelector('[data-checkout-empty-state]');
+                const syncUrl = @json($cartSyncUrl);
+                const initialSummary = @json($cartSummary);
+                const checkoutChangedMessage = @json($t('checkout.sync_changed', 'Giỏ hàng vừa được cập nhật từ tab khác. Thông tin checkout đã được đồng bộ lại.'));
+                const checkoutEmptyMessage = @json($t('checkout.sync_empty', 'Giỏ hàng đã trống do thay đổi ở tab khác. Vui lòng quay lại danh sách yêu cầu trước khi tiếp tục.'));
+                const cartSyncKey = 'ser0101-cart-sync';
+                const cartTabIdKey = 'ser0101-cart-tab-id';
+                const tabId = (() => {
+                    try {
+                        const existing = window.sessionStorage.getItem(cartTabIdKey);
+
+                        if (existing) {
+                            return existing;
+                        }
+
+                        const created = `tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                        window.sessionStorage.setItem(cartTabIdKey, created);
+                        return created;
+                    } catch (error) {
+                        return 'tab-fallback';
+                    }
+                })();
+                const emptySummaryLabel = @json($t('checkout.empty_summary', 'Hiện không còn gói nào để gửi ở bước checkout này.'));
+                let lastSummarySignature = JSON.stringify(initialSummary || {});
+
+                if (!checkoutForm || !summaryItemsNode) {
+                    return;
+                }
+
+                const formatCurrency = (value) => value === null || value === undefined
+                    ? 'Liên hệ'
+                    : `${new Intl.NumberFormat('vi-VN').format(Number(value || 0))}đ`;
+
+                const escapeHtml = (value) => String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+
+                const setBanner = (message = '', isVisible = false) => {
+                    if (!bannerNode) {
+                        return;
+                    }
+
+                    bannerNode.textContent = message;
+                    bannerNode.hidden = !isVisible;
+                };
+
+                const renderSummary = (summary = {}) => {
+                    const items = Array.isArray(summary.items) ? summary.items : [];
+                    const count = Number(summary.count || 0);
+                    const summarySignature = JSON.stringify(summary || {});
+                    const hasChanged = summarySignature !== lastSummarySignature;
+                    lastSummarySignature = summarySignature;
+
+                    if (heroCountNode) {
+                        heroCountNode.textContent = `${count}`;
+                    }
+
+                    if (summaryCountNode) {
+                        summaryCountNode.textContent = `${count}`;
+                    }
+
+                    if (summarySubtotalNode) {
+                        summarySubtotalNode.textContent = formatCurrency(summary.subtotal ?? 0);
+                    }
+
+                    if (items.length === 0) {
+                        summaryItemsNode.innerHTML = `<div class="summary-line"><span>${escapeHtml(emptySummaryLabel)}</span><strong>0</strong></div>`;
+                        checkoutForm.querySelectorAll('input, textarea, button').forEach((node) => {
+                            if (node.closest('[data-checkout-empty-state]')) {
+                                return;
+                            }
+
+                            node.disabled = true;
+                        });
+                        if (emptyStateNode) {
+                            emptyStateNode.hidden = false;
+                        }
+                        setBanner(checkoutEmptyMessage, hasChanged);
+                        return;
+                    }
+
+                    summaryItemsNode.innerHTML = items.map((item) => `
+                        <div class="summary-line">
+                            <span>${escapeHtml(item.title || '')} × ${escapeHtml(item.quantity || 0)}</span>
+                            <strong>${escapeHtml(formatCurrency((Number(item.price || 0) * Number(item.quantity || 0))))}</strong>
+                        </div>
+                    `).join('');
+
+                    checkoutForm.querySelectorAll('input, textarea, button').forEach((node) => {
+                        if (node === submitButton) {
+                            node.disabled = false;
+                            return;
+                        }
+
+                        if (node.type === 'hidden') {
+                            return;
+                        }
+
+                        node.disabled = false;
+                    });
+                    if (emptyStateNode) {
+                        emptyStateNode.hidden = true;
+                    }
+                    setBanner(checkoutChangedMessage, hasChanged);
+                };
+
+                const syncCheckout = async () => {
+                    try {
+                        const response = await fetch(syncUrl, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+                        const payload = await response.json().catch(() => ({}));
+
+                        if (!response.ok) {
+                            throw payload;
+                        }
+
+                        const summary = payload?.data?.cart_summary || {};
+                        renderSummary(summary);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                };
+
+                window.addEventListener('focus', syncCheckout);
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        syncCheckout();
+                    }
+                });
+
+                window.addEventListener('storage', (event) => {
+                    if (event.key !== cartSyncKey || !event.newValue) {
+                        return;
+                    }
+
+                    try {
+                        const payload = JSON.parse(event.newValue);
+
+                        if (!payload || payload.source === tabId) {
+                            return;
+                        }
+
+                        renderSummary(payload.summary || {});
+                    } catch (error) {
+                        console.error(error);
+                    }
+                });
+            })();
+        </script>
     </body>
 </html>

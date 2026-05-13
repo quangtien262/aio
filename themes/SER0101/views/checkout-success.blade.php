@@ -216,5 +216,44 @@
             </section>
         </main>
         @include('theme-ser0101::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
+        <script>
+            (() => {
+                const cartSyncKey = 'ser0101-cart-sync';
+                const cartTabIdKey = 'ser0101-cart-tab-id';
+                const syncMessage = @json($t('checkout_success.sync_cart_cleared', 'Một tab khác vừa hoàn tất gửi yêu cầu. Giỏ hàng đã được làm mới.'));
+                const tabId = (() => {
+                    try {
+                        const existing = window.sessionStorage.getItem(cartTabIdKey);
+
+                        if (existing) {
+                            return existing;
+                        }
+
+                        const created = `tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                        window.sessionStorage.setItem(cartTabIdKey, created);
+                        return created;
+                    } catch (error) {
+                        return 'tab-fallback';
+                    }
+                })();
+
+                try {
+                    window.localStorage.setItem(cartSyncKey, JSON.stringify({
+                        source: tabId,
+                        origin: 'checkout-success',
+                        message: syncMessage,
+                        summary: {
+                            count: 0,
+                            subtotal: 0,
+                            unique_count: 0,
+                            items: [],
+                        },
+                        timestamp: Date.now(),
+                    }));
+                } catch (error) {
+                    console.error(error);
+                }
+            })();
+        </script>
     </body>
 </html>

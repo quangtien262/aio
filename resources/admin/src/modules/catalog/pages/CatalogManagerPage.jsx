@@ -106,6 +106,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
     })), [data?.categories?.items]);
 
     const bannerItems = data?.banners?.items ?? [];
+    const activeThemeKey = data?.banners?.active_theme_key ?? '';
     const sliderBanners = useMemo(() => bannerItems.filter((banner) => banner.placement === 'hero-slider'), [bannerItems]);
     const otherBanners = useMemo(() => bannerItems.filter((banner) => banner.placement !== 'hero-slider'), [bannerItems]);
 
@@ -171,7 +172,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         } : {
             ...emptyBannerForm,
             placement,
-            theme_key: placement === 'hero-slider' ? 'SER0100' : '',
+            theme_key: placement === 'hero-slider' ? activeThemeKey : '',
         });
         setBannerModalOpen(true);
     };
@@ -356,7 +357,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     <Paragraph style={{ marginBottom: 0 }}>
-                                        Khu này quản lý riêng banner hình ảnh cho slider hero dùng chung giữa các theme. Chọn `theme_key` để ràng cho một theme cụ thể, hoặc để trống để dùng như dữ liệu global.
+                                        Khu này quản lý banner ảnh cho hero slider của theme đang active{activeThemeKey ? ` (${activeThemeKey})` : ''}. Để trống `theme_key` nếu muốn dùng như dữ liệu global, hoặc giữ đúng theme hiện hành để ràng riêng cho storefront này.
                                     </Paragraph>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                         <Button type="primary" disabled={!permissions.catalogCreate} onClick={() => openBannerModal(null, 'hero-slider')}>

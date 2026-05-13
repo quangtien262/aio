@@ -15,6 +15,53 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 const { Paragraph, Text, Title } = Typography;
 
+function buildDefaultPalette(activeThemeKey) {
+    if (activeThemeKey === 'TH0002') {
+        return {
+            primaryColor: '#d67a2c',
+            primaryColorDeep: '#af5f1f',
+            accentColor: '#d98d4a',
+            accentSoftColor: '#efaa4c',
+            backgroundColor: '#faf6f1',
+            surfaceColor: '#ffffff',
+            surfaceTintColor: '#fff4e8',
+        };
+    }
+
+    return {
+        primaryColor: '#0f766e',
+        primaryColorDeep: '#115e59',
+        accentColor: '#14b8a6',
+        accentSoftColor: '#99f6e4',
+        backgroundColor: '#f8fafc',
+        surfaceColor: '#ffffff',
+        surfaceTintColor: '#f0fdfa',
+    };
+}
+
+function PaletteColorField({ label, value, fallback, disabled, onChange }) {
+    return (
+        <Form.Item label={label}>
+            <Space wrap align="center">
+                <input
+                    disabled={disabled}
+                    type="color"
+                    value={value || fallback}
+                    onChange={(event) => onChange(event.target.value)}
+                    style={{ width: 48, height: 40, border: '1px solid #d9e6e2', borderRadius: 8, padding: 4, background: 'white' }}
+                />
+                <Input
+                    disabled={disabled}
+                    value={value}
+                    onChange={(event) => onChange(event.target.value)}
+                    placeholder={fallback}
+                    style={{ width: 160 }}
+                />
+            </Space>
+        </Form.Item>
+    );
+}
+
 function BrandingPreviewImage({ src, alt, frameClassName, placeholderTitle, placeholderHint }) {
     const [hasError, setHasError] = useState(false);
 
@@ -45,11 +92,18 @@ function BrandingPreviewImage({ src, alt, frameClassName, placeholderTitle, plac
 export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps }) {
     const { message } = App.useApp();
     const [searchParams, setSearchParams] = useSearchParams();
+    const defaultPalette = buildDefaultPalette(setup?.active_theme_key);
     const [siteName, setSiteName] = useState('');
     const [websiteType, setWebsiteType] = useState('');
     const [companyName, setCompanyName] = useState('');
     const [slogan, setSlogan] = useState('');
     const [primaryColor, setPrimaryColor] = useState('');
+    const [primaryColorDeep, setPrimaryColorDeep] = useState('');
+    const [accentColor, setAccentColor] = useState('');
+    const [accentSoftColor, setAccentSoftColor] = useState('');
+    const [backgroundColor, setBackgroundColor] = useState('');
+    const [surfaceColor, setSurfaceColor] = useState('');
+    const [surfaceTintColor, setSurfaceTintColor] = useState('');
     const [logoUrl, setLogoUrl] = useState('');
     const [faviconUrl, setFaviconUrl] = useState('');
     const [supportHotline, setSupportHotline] = useState('');
@@ -65,13 +119,19 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
         setWebsiteType(setup?.website_type ?? '');
         setCompanyName(setup?.branding?.company_name ?? '');
         setSlogan(setup?.branding?.slogan ?? '');
-        setPrimaryColor(setup?.branding?.primary_color ?? '#0f766e');
+        setPrimaryColor(setup?.branding?.primary_color ?? defaultPalette.primaryColor);
+        setPrimaryColorDeep(setup?.branding?.primary_color_deep ?? defaultPalette.primaryColorDeep);
+        setAccentColor(setup?.branding?.accent_color ?? defaultPalette.accentColor);
+        setAccentSoftColor(setup?.branding?.accent_soft_color ?? defaultPalette.accentSoftColor);
+        setBackgroundColor(setup?.branding?.background_color ?? defaultPalette.backgroundColor);
+        setSurfaceColor(setup?.branding?.surface_color ?? defaultPalette.surfaceColor);
+        setSurfaceTintColor(setup?.branding?.surface_tint_color ?? defaultPalette.surfaceTintColor);
         setLogoUrl(setup?.branding?.logo_url ?? '');
         setFaviconUrl(setup?.branding?.favicon_url ?? '');
         setSupportHotline(setup?.branding?.support_hotline ?? '');
         setSupportEmail(setup?.branding?.support_email ?? '');
         setSupportLocation(setup?.branding?.support_location ?? '');
-    }, [setup]);
+    }, [defaultPalette, setup]);
 
     useEffect(() => {
         if (!focusStep) {
@@ -126,6 +186,15 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
     const completionPercentage = setup.summary?.completion_percentage ?? 0;
     const nextStepLabel = setup.summary?.next_step_label;
     const branding = setup.branding ?? {};
+    const brandingPalette = [
+        ['Primary', branding.primary_color || defaultPalette.primaryColor],
+        ['Deep', branding.primary_color_deep || defaultPalette.primaryColorDeep],
+        ['Accent', branding.accent_color || defaultPalette.accentColor],
+        ['Soft', branding.accent_soft_color || defaultPalette.accentSoftColor],
+        ['Background', branding.background_color || defaultPalette.backgroundColor],
+        ['Surface', branding.surface_color || defaultPalette.surfaceColor],
+        ['Tint', branding.surface_tint_color || defaultPalette.surfaceTintColor],
+    ];
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
@@ -196,6 +265,12 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
                                 company_name: companyName,
                                 slogan,
                                 primary_color: primaryColor,
+                                primary_color_deep: primaryColorDeep,
+                                accent_color: accentColor,
+                                accent_soft_color: accentSoftColor,
+                                background_color: backgroundColor,
+                                surface_color: surfaceColor,
+                                surface_tint_color: surfaceTintColor,
                                 logo_url: logoUrl,
                                 favicon_url: faviconUrl,
                                 support_hotline: supportHotline,
@@ -233,28 +308,17 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
                                         <Text className="card-label">Brand Assets</Text>
                                         <Title level={5} style={{ margin: 0 }}>Nhận diện thương hiệu</Title>
                                         <Paragraph style={{ marginBottom: 0 }}>
-                                            Nhập màu chủ đạo, logo và favicon để sidebar, header và theme preview phản ánh đúng bộ nhận diện hiện tại.
+                                            Nhập palette tổng thể, logo và favicon để storefront TH0002 lấy màu trực tiếp từ DB thay vì hardcode trong view.
                                         </Paragraph>
                                     </div>
                                     <div className="setup-form-grid setup-form-grid-branding">
-                                        <Form.Item label="Primary color">
-                                            <Space wrap align="center">
-                                                <input
-                                                    disabled={!canEditProfile}
-                                                    type="color"
-                                                    value={primaryColor || '#0f766e'}
-                                                    onChange={(event) => setPrimaryColor(event.target.value)}
-                                                    style={{ width: 48, height: 40, border: '1px solid #d9e6e2', borderRadius: 8, padding: 4, background: 'white' }}
-                                                />
-                                                <Input
-                                                    disabled={!canEditProfile}
-                                                    value={primaryColor}
-                                                    onChange={(event) => setPrimaryColor(event.target.value)}
-                                                    placeholder="#0f766e"
-                                                    style={{ width: 160 }}
-                                                />
-                                            </Space>
-                                        </Form.Item>
+                                        <PaletteColorField label="Primary color" value={primaryColor} fallback={defaultPalette.primaryColor} disabled={!canEditProfile} onChange={setPrimaryColor} />
+                                        <PaletteColorField label="Primary color deep" value={primaryColorDeep} fallback={defaultPalette.primaryColorDeep} disabled={!canEditProfile} onChange={setPrimaryColorDeep} />
+                                        <PaletteColorField label="Accent color" value={accentColor} fallback={defaultPalette.accentColor} disabled={!canEditProfile} onChange={setAccentColor} />
+                                        <PaletteColorField label="Accent soft color" value={accentSoftColor} fallback={defaultPalette.accentSoftColor} disabled={!canEditProfile} onChange={setAccentSoftColor} />
+                                        <PaletteColorField label="Background color" value={backgroundColor} fallback={defaultPalette.backgroundColor} disabled={!canEditProfile} onChange={setBackgroundColor} />
+                                        <PaletteColorField label="Surface color" value={surfaceColor} fallback={defaultPalette.surfaceColor} disabled={!canEditProfile} onChange={setSurfaceColor} />
+                                        <PaletteColorField label="Surface tint color" value={surfaceTintColor} fallback={defaultPalette.surfaceTintColor} disabled={!canEditProfile} onChange={setSurfaceTintColor} />
                                         <Form.Item label="Logo URL">
                                             <Input disabled={!canEditProfile} value={logoUrl} onChange={(event) => setLogoUrl(event.target.value)} placeholder="https://cdn.example.com/logo.svg" />
                                         </Form.Item>
@@ -374,6 +438,26 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
                                         }}
                                     />
                                     <Text strong>{branding.primary_color || 'Chưa cấu hình'}</Text>
+                                </Space>
+                            </div>
+                            <div className="detail-tile detail-tile-wide">
+                                <Text className="detail-label">Theme palette</Text>
+                                <Space wrap size={10}>
+                                    {brandingPalette.map(([label, color]) => (
+                                        <Space key={label} size={6}>
+                                            <span
+                                                style={{
+                                                    width: 14,
+                                                    height: 14,
+                                                    borderRadius: '50%',
+                                                    background: color,
+                                                    display: 'inline-block',
+                                                    border: '1px solid #c9d8d3',
+                                                }}
+                                            />
+                                            <Text>{label}</Text>
+                                        </Space>
+                                    ))}
                                 </Space>
                             </div>
                             <div className="detail-tile detail-tile-wide">

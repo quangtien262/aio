@@ -27,7 +27,14 @@ class SetupWizardStateController
         $derivedCompletion = [
             'website_type' => filled($siteProfile?->site_name) && filled($siteProfile?->website_type),
             'theme' => filled($siteProfile?->active_theme_key),
-            'branding' => filled($branding['company_name'] ?? null) || filled($branding['primary_color'] ?? null),
+            'branding' => filled($branding['company_name'] ?? null)
+                || filled($branding['primary_color'] ?? null)
+                || filled($branding['primary_color_deep'] ?? null)
+                || filled($branding['accent_color'] ?? null)
+                || filled($branding['accent_soft_color'] ?? null)
+                || filled($branding['background_color'] ?? null)
+                || filled($branding['surface_color'] ?? null)
+                || filled($branding['surface_tint_color'] ?? null),
             'modules' => $signals['enabled_modules'] > 0,
             'admin_account' => $signals['active_admins'] > 0,
             'finish' => (bool) $siteProfile?->is_setup_completed,

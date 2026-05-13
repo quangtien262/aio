@@ -1,0 +1,10 @@
+<svg width="360" height="180" viewBox="0 0 360 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="360" height="180" rx="24" fill="#6E8A62"/>
+  <rect x="24" y="22" width="168" height="136" rx="22" fill="#F7F1EA" fill-opacity="0.16"/>
+  <text x="44" y="58" fill="#E8F1E4" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">WHOLESALE</text>
+  <text x="44" y="92" fill="#FFF8F1" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800">Đồng phục và pack size đại lý</text>
+  <text x="44" y="132" fill="#E8F1E4" font-family="Segoe UI, Arial, sans-serif" font-size="15">Chốt số lượng, đóng gói theo line và giao nhiều đợt.</text>
+  <rect x="234" y="26" width="84" height="128" rx="22" fill="#F7F1EA" fill-opacity="0.78"/>
+  <path d="M246 54L276 40L306 54L296 76H256L246 54Z" fill="#6E8A62"/>
+  <path d="M258 74H294L300 142H252L258 74Z" fill="#FFF8F1"/>
+</svg>
