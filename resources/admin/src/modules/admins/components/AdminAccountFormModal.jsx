@@ -15,6 +15,7 @@ const { Text } = Typography;
 export const emptyAccountForm = {
     id: null,
     name: '',
+    username: '',
     email: '',
     is_active: true,
     role_ids: [],
@@ -56,12 +57,24 @@ export default function AdminAccountFormModal({ open, canManageAdmins, editingAc
         >
             <Form form={form} layout="vertical" initialValues={editingAccount}>
                 <Row gutter={16}>
-                    <Col span={12}>
+                    <Col span={8}>
                         <Form.Item name="name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên admin' }]}>
                             <Input placeholder="VD: Nguyễn Văn A" />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
+                    <Col span={8}>
+                        <Form.Item
+                            name="username"
+                            label="Username"
+                            rules={[
+                                { required: true, message: 'Nhập username admin' },
+                                { pattern: /^[A-Za-z0-9._-]+$/, message: 'Username chỉ gồm chữ, số, dấu chấm, gạch dưới hoặc gạch ngang' },
+                            ]}
+                        >
+                            <Input placeholder="admin" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
                         <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Nhập email admin' }, { type: 'email', message: 'Email admin không hợp lệ' }]}>
                             <Input placeholder="admin@aio.local" />
                         </Form.Item>

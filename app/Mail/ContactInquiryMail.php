@@ -22,7 +22,7 @@ class ContactInquiryMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Lien he moi: '.($this->payload['subject'] ?? 'Yeu cau tu van'),
+            subject: 'Liên hệ mới: '.($this->payload['subject'] ?? 'Yêu cầu tư vấn'),
             replyTo: filled($this->payload['email'] ?? null)
                 ? [[
                     'address' => (string) $this->payload['email'],

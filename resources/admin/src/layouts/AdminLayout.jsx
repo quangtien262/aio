@@ -475,7 +475,7 @@ export default function AdminLayout() {
             credentials: 'same-origin',
         });
 
-        window.location.href = '/admin/login';
+        window.location.href = '/';
     };
 
     const adminActionItems = [

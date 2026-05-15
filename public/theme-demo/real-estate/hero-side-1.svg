@@ -1,0 +1,16 @@
+<svg width="720" height="360" viewBox="0 0 720 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="360" fill="#142843"/>
+  <rect width="720" height="360" fill="url(#g)"/>
+  <rect x="422" y="94" width="84" height="180" rx="10" fill="#F4E8CF"/>
+  <rect x="500" y="64" width="104" height="210" rx="10" fill="#D9A461"/>
+  <rect x="588" y="128" width="62" height="146" rx="10" fill="#F4E8CF" fill-opacity="0.85"/>
+  <text x="52" y="110" fill="#F3C879" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">PHAN KHU NOI BAT</text>
+  <text x="52" y="168" fill="#FFF8EE" font-family="Georgia, Times New Roman, serif" font-size="46" font-weight="700">Sky Garden</text>
+  <text x="52" y="214" fill="#D6CEC1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Can goc, ban cong rong, de day CTA nhan bang gia.</text>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="720" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#12253F"/>
+      <stop offset="1" stop-color="#725235"/>
+    </linearGradient>
+  </defs>
+</svg>

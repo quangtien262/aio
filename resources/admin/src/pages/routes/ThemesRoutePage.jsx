@@ -17,11 +17,15 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/themes');
+            const [themesPayload, setupPayload] = await Promise.all([
+                callAdminApi('/admin/api/themes'),
+                callAdminApi('/admin/api/setup'),
+            ]);
 
             return {
-                themes: payload.data ?? [],
-                meta: payload.meta ?? {},
+                themes: themesPayload.data ?? [],
+                meta: themesPayload.meta ?? {},
+                siteProfile: setupPayload.data ?? null,
             };
         },
         cacheKey: 'admin.route.themes',
@@ -55,6 +59,7 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
             <ThemeManagerPage
                 themes={themes}
                 activeTheme={activeTheme}
+                siteProfile={data?.siteProfile ?? null}
                 frontendLocale={frontendLocale}
                 defaultFrontendLocale={defaultFrontendLocale ?? data?.meta?.default_locale ?? 'vi'}
                 onActivate={(themeKey) => runAdminAction(
@@ -78,6 +83,7 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
                     'Đã xóa data test cho theme.',
                     reload,
                 )}
+                onSaveThemePalette={reload}
                 canActivate={canActivate}
                 canGenerateDemoData={canGenerateDemoData}
                 callAdminApi={callAdminApi}

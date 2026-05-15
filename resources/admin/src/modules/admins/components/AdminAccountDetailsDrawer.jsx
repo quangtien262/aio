@@ -55,7 +55,8 @@ export default function AdminAccountDetailsDrawer({ open, admin, scopeTypes, can
                         <div className="admin-account-drawer-hero-copy">
                             <Text className="card-label">Admin Profile</Text>
                             <Title level={3} style={{ margin: '4px 0 6px' }}>{admin.name}</Title>
-                            <Paragraph style={{ marginBottom: 10 }}>{admin.email}</Paragraph>
+                            <Paragraph style={{ marginBottom: 4 }}><strong>Username:</strong> @{admin.username}</Paragraph>
+                            <Paragraph style={{ marginBottom: 10 }}><strong>Email:</strong> {admin.email}</Paragraph>
                             <Space wrap>
                                 <Tag color={admin.is_active ? 'green' : 'default'}>{admin.is_active ? 'active' : 'inactive'}</Tag>
                                 {admin.is_locked ? <Tag color="red">locked</Tag> : <Tag color="cyan">ready</Tag>}
@@ -91,6 +92,14 @@ export default function AdminAccountDetailsDrawer({ open, admin, scopeTypes, can
                     </Card>
 
                     <div className="detail-grid detail-grid-2">
+                        <div className="detail-tile">
+                            <Text className="detail-label">Username</Text>
+                            <Text strong>@{admin.username}</Text>
+                        </div>
+                        <div className="detail-tile">
+                            <Text className="detail-label">Email</Text>
+                            <Text strong>{admin.email}</Text>
+                        </div>
                         <div className="detail-tile">
                             <Text className="detail-label">Lần đăng nhập cuối</Text>
                             <Text strong>{formatLastLogin(admin.last_login_at)}</Text>

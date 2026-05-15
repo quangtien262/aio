@@ -235,8 +235,8 @@ class CmsSiteController
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => $source === 'quote_modal'
-                    ? 'Yeu cau bao gia da duoc gui va luu thanh cong.'
-                    : 'Yeu cau lien he da duoc gui thanh cong.',
+                    ? 'Yêu cầu báo giá đã được gửi và lưu thành công.'
+                    : 'Yêu cầu liên hệ đã được gửi thành công.',
                 'data' => [
                     'email' => $payload['email'],
                     'subject' => $payload['subject'],
@@ -1793,6 +1793,40 @@ class CmsSiteController
     private function commerceThemeDefaults(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'LAN0201' => [
+                'hero_slide' => [
+                    'eyebrow' => 'Landing dự án mở bán',
+                    'badge' => 'Nhận brochure, bảng giá và timeline',
+                    'cta' => 'Khám phá bảng hàng',
+                ],
+                'footer_columns' => [
+                    ['title' => 'Tổng quan dự án', 'links' => ['Vị trí kết nối vùng', 'Masterplan & phân khu', 'Timeline mở bán', 'Tiến độ xây dựng']],
+                    ['title' => 'Bảng hàng & chính sách', 'links' => ['Giỏ hàng căn đẹp', 'Ưu đãi theo giai đoạn', 'Phương án thanh toán', 'FAQ dành cho nhà đầu tư']],
+                    ['title' => 'Kết nối sales gallery', 'links' => ['Đặt lịch xem nhà mẫu', 'Nhận brochure PDF', 'Liên hệ phòng kinh doanh', 'Chính sách bảo mật lead']],
+                ],
+                'company_footer' => [
+                    'address_line_1' => 'Sales gallery: Đại lộ trung tâm dự án LAN0201, khu đông thành phố',
+                    'address_line_2' => 'Private appointment lounge: Hotline nhận lịch hẹn, tư vấn tài chính và bảng hàng mở bán',
+                ],
+                'branding' => [
+                    'company_name' => 'LAN0201 Project Landing',
+                    'slogan' => 'Landing page mở bán bất động sản, tối ưu lead và kể chuyện bảng hàng theo từng phân khu',
+                    'logo_url' => url('theme-previews/LAN0201/preview-lan0201.svg'),
+                    'favicon_url' => url('theme-previews/LAN0201/preview-lan0201.svg'),
+                    'primary_color' => '#0f3557',
+                    'primary_color_deep' => '#0a2741',
+                    'accent_color' => '#c7923e',
+                    'accent_soft_color' => '#e6c98e',
+                    'background_color' => '#f5f1ea',
+                    'surface_color' => '#ffffff',
+                    'surface_tint_color' => '#f8f4ee',
+                    'support_hotline' => '1900 6760 / 0909 020 201',
+                    'support_email' => 'sales@lan0201.demo',
+                    'support_location' => 'TP.HCM - hành lang mở bán khu Đông',
+                ],
+                'section_tabs' => ['Tổng quan mở bán', 'Căn đẹp chủ lực', 'Gói ưu đãi tài chính'],
+                'featured_tones' => ['#0f3557', '#c7923e', '#7a8a97', '#114a6e', '#8f6a2d'],
+            ],
             'TH0002' => [
                 'hero_slide' => [
                     'eyebrow' => 'Xưởng may theo yêu cầu',
@@ -1910,7 +1944,7 @@ class CmsSiteController
 
     private function isCommerceThemeKey(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'LAN0201'], true);
     }
 
     private function themeBlockText(string $websiteKey, string $themeKey, string $blockKey, ?string $default): string
@@ -1925,9 +1959,9 @@ class CmsSiteController
     private function resolveServiceHighlights(Collection $parentCategories): array
     {
         $defaults = [
-            ['title' => 'Bao gia nhanh', 'summary' => 'Noi bat CTA goi hotline, nhan lich trinh va yeu cau tu van ngay tren hero.'],
-            ['title' => 'Fleet ro rang', 'summary' => 'Danh muc va goi dich vu hien thi theo so cho, nhu cau va hanh trinh de ra quyet dinh nhanh hon.'],
-            ['title' => 'Noi dung tao trust', 'summary' => 'Co san block chi so van hanh, bai viet huong dan va vi tri lien he cho doanh nghiep dich vu.'],
+            ['title' => 'Báo giá nhanh', 'summary' => 'Nổi bật CTA gọi hotline, nhận lịch trình và yêu cầu tư vấn ngay trên hero.'],
+            ['title' => 'Fleet rõ ràng', 'summary' => 'Danh mục và gói dịch vụ hiển thị theo số chỗ, nhu cầu và hành trình để ra quyết định nhanh hơn.'],
+            ['title' => 'Nội dung tạo trust', 'summary' => 'Có sẵn block chỉ số vận hành, bài viết hướng dẫn và vị trí liên hệ cho doanh nghiệp dịch vụ.'],
         ];
 
         if ($parentCategories->isEmpty()) {
@@ -1971,6 +2005,10 @@ class CmsSiteController
             ? (int) round((($originalPrice - $price) / $originalPrice) * 100)
             : 0;
 
+        $highlightLines = $this->splitTextLines($product->highlights);
+        $usageTermLines = $this->splitTextLines($product->usage_terms);
+        $usageLocationLines = $this->splitTextLines($product->usage_location);
+
         return [
             'title' => $product->name,
             'price' => $price,
@@ -1979,6 +2017,13 @@ class CmsSiteController
             'image' => $this->resolveProductPrimaryImage($product),
             'tag' => $product->category?->name ?: $this->themeText('theme.fallback.new_product', 'Sản phẩm mới', $resolvedThemeKey),
             'meta' => $product->stock,
+            'sku' => $product->sku,
+            'summary' => $product->short_description,
+            'sold_count' => (int) ($product->sold_count ?? 0),
+            'deal_end_at' => $product->deal_end_at?->toIso8601String(),
+            'highlights' => $highlightLines,
+            'usage_terms_lines' => $usageTermLines,
+            'usage_location_lines' => $usageLocationLines,
             'is_featured' => $product->is_featured,
             'url' => $this->productUrl($product->slug ?: (string) $product->id),
         ];

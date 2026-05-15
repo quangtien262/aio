@@ -225,7 +225,22 @@ class ThemeDemoContentGenerator
                         : '<h2>Gửi yêu cầu may</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Xưởng / showroom: '.$preset['address'].'</p><p>Hãy gửi rõ form dáng, chất liệu, kỹ thuật in thêu, bảng size và số lượng dự kiến để đội ngũ kỹ thuật báo giá nhanh hơn.</p><p>Preset hiện đang dựng sẵn '.$garmentProfile['contact_focus'].' để admin dễ đổi nhanh thành luồng nhận techpack, duyệt mẫu và chốt line sản xuất thật.</p>',
                 ],
             ]
-            : [
+            : ($this->isRealEstatePreset($preset)
+                ? [
+                    [
+                        'title' => 'Giới thiệu dự án',
+                        'slug' => $pageSlugs['about'],
+                        'excerpt' => 'Tổng quan quy mô, vị trí, pháp lý và hệ tiện ích của '.$preset['company_name'],
+                        'body' => '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Trang demo này mô phỏng cách LAN0201 trình bày tổng quan dự án, phân khu mở bán, lợi thế vị trí và các điểm nhấn tiện ích trên landing page bất động sản.</p><p>Preset hiện ưu tiên nhóm sản phẩm '.$preset['departments'][0]['name'].', để đội ngũ review nhanh hero, bảng hàng, CTA nhận brochure, lịch hẹn private tour và điều hướng sang listing.</p><p>Sếp có thể thay nội dung này bằng hồ sơ pháp lý, tiến độ thi công, bản đồ kết nối vùng, bộ tài liệu bán hàng và timeline ra hàng thật.</p>',
+                    ],
+                    [
+                        'title' => 'Nhận bảng giá và đặt lịch xem',
+                        'slug' => $pageSlugs['contact'],
+                        'excerpt' => 'Kênh nhận tư vấn, lịch xem nhà mẫu và bộ tài liệu mở bán của '.$preset['company_name'],
+                        'body' => '<h2>Nhận bảng giá và đặt lịch xem</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Sa bàn / nhà mẫu: '.$preset['address'].'</p><p>Hãy gửi rõ loại hình sản phẩm, ngân sách, mục đích mua ở hay đầu tư và khung giờ mong muốn để đội ngũ kinh doanh chuẩn bị bảng hàng phù hợp.</p><p>Preset hiện dựng sẵn luồng nhận brochure, giữ chỗ và hẹn tham quan để admin đổi nhanh sang quy trình bán hàng thật của dự án.</p>',
+                    ],
+                ]
+                : [
                 [
                     'title' => $isServicePreset ? 'Giới thiệu nhà xe' : 'Giới thiệu',
                     'slug' => $pageSlugs['about'],
@@ -242,7 +257,7 @@ class ThemeDemoContentGenerator
                         ? '<h2>Liên hệ báo giá</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Địa chỉ điều phối: '.$preset['address'].'</p><p>Hãy gửi số khách, điểm đón, điểm đến và ngày đi để được tư vấn nhanh.</p>'
                         : '<h2>Liên hệ tư vấn</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Địa chỉ: '.$preset['address'].'</p>',
                 ],
-            ];
+            ]);
 
         foreach ($pages as $index => $page) {
             $record = CmsPage::query()->create([
@@ -288,12 +303,19 @@ class ThemeDemoContentGenerator
                             'Gợi ý trưng bày landing page atelier để tăng lead báo giá',
                         ]),
                 ]
-                : [
+                : ($this->isRealEstatePreset($preset)
+                    ? [
+                        'Checklist chọn căn đẹp trong đợt mở bán đầu tiên',
+                        '5 điểm cần hỏi đội sales trước khi giữ chỗ',
+                        'Cách đọc bảng giá, chính sách và tiến độ thanh toán nhanh hơn',
+                        'Gợi ý triển khai landing page dự án để gom lead hiệu quả',
+                    ]
+                    : [
                 'Top deal mới tuần này cho '.$preset['short_label'],
                 '5 xu hướng mua sắm '.$preset['short_label'].' đang tăng mạnh',
                 'Gợi ý chọn sản phẩm nổi bật cho chiến dịch cuối tuần',
                 'Cách tối ưu landing page bán '.$preset['short_label'].' theo mùa',
-            ]);
+            ]));
 
         $excerpt = ($preset['catalog_style'] ?? 'commerce') === 'service'
             ? 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block cẩm nang, trust content và lead-gen của theme.'
@@ -301,7 +323,9 @@ class ThemeDemoContentGenerator
                 ? ($this->isFashionPreset($preset)
                     ? 'Nội dung demo cho mảng thời trang nhằm kiểm tra lookbook, editorial và block collection journal của theme.'
                     : 'Nội dung demo cho xưởng may nhằm kiểm tra lookbook, cẩm nang sản xuất và block tin tức của theme.')
-                : 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block tin tức của theme.');
+                : ($this->isRealEstatePreset($preset)
+                    ? 'Nội dung demo cho dự án mở bán nhằm kiểm tra block cẩm nang, trust content và CTA nhận tư vấn của theme.'
+                    : 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block tin tức của theme.'));
 
         $bodyTemplate = ($preset['catalog_style'] ?? 'commerce') === 'service'
             ? '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị cẩm nang, kinh nghiệm đặt dịch vụ và nội dung SEO của website.</p>'
@@ -309,7 +333,9 @@ class ThemeDemoContentGenerator
                 ? ($this->isFashionPreset($preset)
                     ? '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị lookbook theo mùa, editorial và nội dung retail fashion của website.</p>'
                     : '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị lookbook, quy trình duyệt mẫu và nội dung bán sỉ lẻ cho xưởng may.</p>')
-                : '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị tin mới trên website.</p>');
+                : ($this->isRealEstatePreset($preset)
+                    ? '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị cẩm nang mở bán, thông tin thị trường và nội dung tư vấn cho website dự án.</p>'
+                    : '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị tin mới trên website.</p>'));
 
         foreach ($titles as $index => $title) {
             $record = CmsPost::query()->create([
@@ -381,23 +407,32 @@ class ThemeDemoContentGenerator
                     $price = $this->buildPrice($preset, $parentIndex, $childIndex, $productIndex);
                     $isFeatured = $featuredCounter < 8;
                     $createdAt = $timestamp->copy()->subMinutes(($parentIndex * 10) + ($childIndex * 4) + $productIndex);
+                    $isRealEstatePreset = $this->isRealEstatePreset($preset);
 
                     $product = CatalogProduct::query()->create([
                         'catalog_category_id' => $child->id,
                         'name' => $productName,
                         'slug' => Str::slug($productName),
-                        'sku' => strtoupper(Str::slug($preset['key'].'-'.$parentIndex.'-'.$childIndex.'-'.$productIndex, '-')),
+                        'sku' => $this->buildProductSku($preset, $department['name'], $parentIndex, $childIndex, $productIndex),
                         'price' => $price,
-                        'original_price' => $price + (($productIndex + 1) * 150000),
-                        'stock' => 20 + ($parentIndex * 3) + $productIndex,
+                        'original_price' => $isRealEstatePreset
+                            ? $price + (int) round($price * (0.035 + ($productIndex * 0.005)))
+                            : $price + (($productIndex + 1) * 150000),
+                        'stock' => $isRealEstatePreset
+                            ? max(2, 12 - ($childIndex * 2) - $productIndex)
+                            : 20 + ($parentIndex * 3) + $productIndex,
                         'short_description' => $this->buildProductShortDescription($preset, $department['name'], $childName),
                         'detail_content' => $this->buildProductDetailContent($preset, $department['name'], $childName, $productName),
                         'highlights' => $this->buildProductHighlights($preset, $department['name'], $childName),
                         'usage_terms' => $this->buildUsageTerms($preset, $department['name']),
                         'usage_location' => $this->buildUsageLocation($preset),
                         'image_url' => $this->productImageUrl($preset, $department['name'], $childName, $parentIndex, $childIndex, $productIndex, 640, 420),
-                        'sold_count' => 3 + ($parentIndex * 2) + $productIndex,
-                        'deal_end_at' => $timestamp->copy()->addDays(10 + $parentIndex + $productIndex),
+                        'sold_count' => $isRealEstatePreset
+                            ? 24 + ($parentIndex * 12) + ($childIndex * 5) + ($productIndex * 4)
+                            : 3 + ($parentIndex * 2) + $productIndex,
+                        'deal_end_at' => $isRealEstatePreset
+                            ? $timestamp->copy()->addDays(5 + $parentIndex + $productIndex)
+                            : $timestamp->copy()->addDays(10 + $parentIndex + $productIndex),
                         'is_featured' => $isFeatured,
                         'sort_order' => $productIndex,
                         'is_active' => true,
@@ -478,6 +513,14 @@ class ThemeDemoContentGenerator
                     ['label' => 'Lookbook', 'url' => '/tin-tuc', 'target' => '_self'],
                     ['label' => $this->isFashionPreset($preset) ? 'Về studio' : 'Về xưởng may', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
                     ['label' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist' : 'Gửi yêu cầu may', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
+                ];
+            }
+
+            if ($this->isRealEstatePreset($preset)) {
+                return [
+                    ['label' => 'Tin thị trường', 'url' => '/tin-tuc', 'target' => '_self'],
+                    ['label' => 'Tổng quan dự án', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                    ['label' => 'Nhận bảng giá', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
                 ];
             }
 
@@ -666,6 +709,12 @@ class ThemeDemoContentGenerator
             return trim(sprintf('%s %s %s', $departmentName, $childName, $serviceTiers[$productIndex - 1] ?? 'Gói'));
         }
 
+        if ($this->isRealEstatePreset($preset)) {
+            $unitCodes = ['A1-05', 'A2-12', 'B1-08', 'C2-16'];
+
+            return trim(sprintf('%s %s - Mã căn %s', $departmentName, $childName, $unitCodes[$productIndex - 1] ?? 'A1-01'));
+        }
+
         if ($this->isGarmentFamilyPreset($preset)) {
             $lines = $this->isFashionPreset($preset)
                 ? ['Edit', 'Studio', 'Runway', 'Capsule']
@@ -690,7 +739,32 @@ class ThemeDemoContentGenerator
             return 790000 + ($parentIndex * 250000) + ($childIndex * 120000) + ($productIndex * 180000);
         }
 
+        if ($this->isRealEstatePreset($preset)) {
+            $basePrices = [2150000000, 3480000000, 5290000000, 12800000000, 18900000000];
+            $basePrice = $basePrices[$parentIndex] ?? 4200000000;
+
+            return $basePrice + ($childIndex * 185000000) + ($productIndex * 95000000);
+        }
+
         return 390000 + ($parentIndex * 170000) + ($childIndex * 80000) + ($productIndex * 45000);
+    }
+
+    private function buildProductSku(array $preset, string $departmentName, int $parentIndex, int $childIndex, int $productIndex): string
+    {
+        if ($this->isRealEstatePreset($preset)) {
+            $typeCode = match ($this->normalizePhotoContext($departmentName)) {
+                'studio' => 'STD',
+                '1pn' => '1PN',
+                '2pn' => '2PN',
+                'shophouse' => 'SHP',
+                'villa' => 'VLA',
+                default => 'REA',
+            };
+
+            return sprintf('LAN0201-%s-%02d%02d%02d', $typeCode, $parentIndex + 1, $childIndex + 1, $productIndex);
+        }
+
+        return strtoupper(Str::slug($preset['key'].'-'.$parentIndex.'-'.$childIndex.'-'.$productIndex, '-'));
     }
 
     private function buildGalleryImages(array $preset, string $departmentName, string $childName, int $parentIndex, int $childIndex, int $productIndex): array
@@ -817,6 +891,17 @@ class ThemeDemoContentGenerator
             } else {
                 $groups[] = ['bus transport', 'shuttle service', 'van'];
             }
+        } elseif ($this->isRealEstatePreset($preset)) {
+            $groups[] = match (true) {
+                str_contains($context, 'studio') => ['studio apartment', 'show flat interior', 'project launch studio'],
+                str_contains($context, '1pn') => ['1 bedroom apartment', 'apartment interior', 'project launch condo'],
+                str_contains($context, '2pn') => ['2 bedroom apartment', 'family apartment interior', 'project launch condo'],
+                str_contains($context, 'villa') || str_contains($context, 'biet thu') => ['real estate villa', 'luxury villa', 'project launch villa'],
+                str_contains($context, 'shophouse') || str_contains($context, 'thuong mai') => ['real estate shophouse', 'mixed use building', 'project launch storefront'],
+                str_contains($context, 'townhouse') || str_contains($context, 'lien ke') => ['real estate townhouse', 'row house project', 'project launch townhouse'],
+                str_contains($context, 'penthouse') => ['real estate penthouse', 'luxury apartment', 'project launch penthouse'],
+                default => ['real estate apartment', 'model home interior', 'project launch condo'],
+            };
         } elseif ($groups === []) {
             $groups[] = match (true) {
                 str_contains($context, 'dien thoai') || str_contains($context, 'android') || str_contains($context, 'iphone') || str_contains($context, 'gaming phone') => ['smartphone', 'mobile phone', 'device'],
@@ -861,6 +946,16 @@ class ThemeDemoContentGenerator
         $keywordString = implode(' ', $keywords);
 
         return match (true) {
+            preg_match('/studio apartment|show flat interior|project launch studio/', $keywordString) === 1
+                => $this->realEstateStudioPhotoPool($width, $height),
+            preg_match('/1 bedroom apartment|apartment interior/', $keywordString) === 1
+                => $this->realEstateOneBedroomPhotoPool($width, $height),
+            preg_match('/2 bedroom apartment|family apartment interior/', $keywordString) === 1
+                => $this->realEstateTwoBedroomPhotoPool($width, $height),
+            preg_match('/shophouse|storefront|mixed use building/', $keywordString) === 1
+                => $this->realEstateShophousePhotoPool($width, $height),
+            preg_match('/villa/', $keywordString) === 1
+                => $this->realEstateVillaPhotoPool($width, $height),
             preg_match('/smartphone|mobile phone|android phone|premium phone|used smartphone|refurbished phone|device/', $keywordString) === 1
                 => $this->smartphonePhotoPool(),
             preg_match('/phone case|smartphone case|mobile accessories/', $keywordString) === 1
@@ -893,6 +988,8 @@ class ThemeDemoContentGenerator
                 => $this->bathroomPhotoPool(),
             preg_match('/home interior|showroom interior|kitchen decor/', $keywordString) === 1
                 => $this->interiorPhotoPool(),
+            preg_match('/real estate|apartment|condo|villa|townhouse|shophouse|model home|project launch/', $keywordString) === 1
+                => $this->realEstatePhotoPool(),
             preg_match('/bus|coach|shuttle|van transport|minibus|airport transfer|transport service/', $keywordString) === 1
                 => $this->busPhotoPool(),
             default => [],
@@ -1066,6 +1163,72 @@ class ThemeDemoContentGenerator
         return array_values(array_merge($this->resortPhotoPool(), $this->bathroomPhotoPool()));
     }
 
+    private function realEstatePhotoPool(): array
+    {
+        return $this->localAssetPool([
+            'real-estate/projects/project-01.svg',
+            'real-estate/projects/project-02.svg',
+            'real-estate/projects/project-03.svg',
+            'real-estate/projects/project-04.svg',
+            'real-estate/projects/project-05.svg',
+        ]);
+    }
+
+    private function realEstateStudioPhotoPool(int $width, int $height): array
+    {
+        return $this->unsplashPhotoPool([
+            'photo-1505693416388-ac5ce068fe85',
+            'photo-1484154218962-a197022b5858',
+            'photo-1502672260266-1c1ef2d93688',
+        ], $width, $height);
+    }
+
+    private function realEstateOneBedroomPhotoPool(int $width, int $height): array
+    {
+        return $this->unsplashPhotoPool([
+            'photo-1494526585095-c41746248156',
+            'photo-1484154218962-a197022b5858',
+            'photo-1502672260266-1c1ef2d93688',
+        ], $width, $height);
+    }
+
+    private function realEstateTwoBedroomPhotoPool(int $width, int $height): array
+    {
+        return $this->unsplashPhotoPool([
+            'photo-1502672260266-1c1ef2d93688',
+            'photo-1494526585095-c41746248156',
+            'photo-1505693416388-ac5ce068fe85',
+        ], $width, $height);
+    }
+
+    private function realEstateShophousePhotoPool(int $width, int $height): array
+    {
+        return $this->unsplashPhotoPool([
+            'photo-1600047509807-ba8f99d2cdde',
+            'photo-1600566753086-00f18fb6b3ea',
+            'photo-1600607687644-c7171b42498f',
+        ], $width, $height);
+    }
+
+    private function realEstateVillaPhotoPool(int $width, int $height): array
+    {
+        return $this->unsplashPhotoPool([
+            'photo-1512917774080-9991f1c4c750',
+            'photo-1564013799919-ab600027ffc6',
+            'photo-1600585154526-990dced4db0d',
+            'photo-1600607687939-ce8a6c25118c',
+            'photo-1600585152915-d208bec867a1',
+        ], $width, $height);
+    }
+
+    private function unsplashPhotoPool(array $photoIds, int $width, int $height): array
+    {
+        return array_map(
+            fn (string $photoId): string => sprintf('https://images.unsplash.com/%s?auto=format&fit=crop&w=%d&h=%d&q=80', $photoId, $width, $height),
+            $photoIds,
+        );
+    }
+
     private function busPhotoPool(): array
     {
         return $this->localAssetPool([
@@ -1124,6 +1287,14 @@ class ThemeDemoContentGenerator
             ]);
         }
 
+        if ($this->isRealEstatePreset($preset)) {
+            return implode(PHP_EOL, [
+                'Sản phẩm '.$childName.' thuộc phân khu '.$departmentName.', dùng để test card mở bán, banner ưu đãi và trang chi tiết listing cho LAN0201.',
+                'Tập trung vào mã căn, vị trí, tiến độ mở bán và CTA nhận bảng giá để đội sales chuyển đổi lead nhanh hơn.',
+                'Có thể chỉnh trực tiếp để chuyển từ data demo sang bảng hàng thật cho dự án đang mở bán.',
+            ]);
+        }
+
         return implode(PHP_EOL, [
             'Ưu đãi nổi bật cho nhóm '.$childName.' thuộc ngành '.$departmentName.'.',
             'Phù hợp để test bố cục deal nhiều khối như banner, card và trang detail.',
@@ -1159,6 +1330,15 @@ class ThemeDemoContentGenerator
             ]);
         }
 
+        if ($this->isRealEstatePreset($preset)) {
+            return implode(PHP_EOL, [
+                'Bảng giá mang tính tham khảo và có thể thay đổi theo đợt mở bán, vị trí căn và chính sách ưu đãi của phân khu '.$departmentName.'.',
+                'Khuyến nghị liên hệ phòng kinh doanh để xác nhận bảng giá, phương án thanh toán và sản phẩm còn hàng trước khi giữ chỗ.',
+                'Vui lòng cung cấp mã căn, nhu cầu ở hoặc đầu tư và ngân sách dự kiến để đội ngũ tư vấn gợi ý nhanh hơn.',
+                'Một số sản phẩm cần xác nhận lịch xem nhà mẫu và ký xác nhận thông tin trước khi đặt cọc.',
+            ]);
+        }
+
         return implode(PHP_EOL, [
             'Thời hạn ưu đãi linh hoạt theo chiến dịch của '.$preset['company_name'].'.',
             'Khuyến nghị liên hệ trước để xác nhận tình trạng áp dụng cho nhóm '.$departmentName.'.',
@@ -1169,6 +1349,15 @@ class ThemeDemoContentGenerator
 
     private function buildUsageLocation(array $preset): string
     {
+        if ($this->isRealEstatePreset($preset)) {
+            return implode(PHP_EOL, [
+                'Sa ban va nha mau: '.$preset['address'],
+                'Phong kinh doanh: '.$preset['company_name'],
+                'Hotline: 1900 6760',
+                'Email: hello@'.$preset['domain'],
+            ]);
+        }
+
         return implode(PHP_EOL, [
             $preset['company_name'],
             $preset['address'],
@@ -1317,6 +1506,14 @@ class ThemeDemoContentGenerator
 
     private function buildProductShortDescription(array $preset, string $departmentName, string $childName): string
     {
+        if ($this->isRealEstatePreset($preset)) {
+            return sprintf(
+                'Bảng hàng %s thuộc phân khu %s, ưu tiên thông tin vị trí, chính sách mở bán và CTA đặt lịch xem nhà mẫu để đội sales chuyển đổi lead nhanh.',
+                $childName,
+                $departmentName,
+            );
+        }
+
         if (! $this->isGarmentFamilyPreset($preset)) {
             return 'Mẫu demo cho '.$childName.' trong preset '.$preset['label'].'.';
         }
@@ -1367,6 +1564,15 @@ class ThemeDemoContentGenerator
             ]);
         }
 
+        if ($this->isRealEstatePreset($preset)) {
+            return implode(PHP_EOL.PHP_EOL, [
+                $productName.' là dữ liệu demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage dự án, trang bảng hàng và trang chi tiết listing của LAN0201.',
+                'Sản phẩm này thuộc nhóm '.$departmentName.' với cấu hình '.$childName.', nên nội dung dài được viết theo hướng giới thiệu vị trí, lợi thế phân khu, chính sách thanh toán và CTA nhận tư vấn.',
+                'Bản seed đang nhấn vào thông tin mở bán, phương án giữ chỗ và lịch xem nhà mẫu để Sếp có thể đổi nhanh sang nội dung dự án thật trong admin Catalog.',
+                'Sếp có thể sửa trực tiếp mô tả, gallery ảnh, bảng giá, mã căn, ghi chú chính sách và thông tin liên hệ để biến trang từ demo thành nội dung vận hành thật.',
+            ]);
+        }
+
         return implode(PHP_EOL.PHP_EOL, [
             $productName.' là dữ liệu demo được sinh cho preset '.$preset['label'].', giúp kiểm thử đầy đủ luồng hiển thị trang chi tiết sản phẩm theo phong cách deal page.',
             'Sản phẩm thuộc nhóm '.$childName.' trong ngành '.$departmentName.', vì vậy phần nội dung dài được thiết kế để hiển thị đẹp ở các block mô tả, điều kiện sử dụng và vị trí áp dụng trên theme TH0001.',
@@ -1378,6 +1584,10 @@ class ThemeDemoContentGenerator
     {
         if (Str::startsWith($seed, 'ser-')) {
             return $this->serviceImageUrl($seed);
+        }
+
+        if (Str::contains($seed, 'real-estate-launchpad')) {
+            return $this->realEstateImageUrl($seed);
         }
 
         if (Str::contains($seed, 'garment-workshop') || Str::contains($seed, 'fashion-studio')) {
@@ -1421,6 +1631,23 @@ class ThemeDemoContentGenerator
         return url('theme-demo/garment/product-0'.$index.'.svg');
     }
 
+    private function realEstateImageUrl(string $seed): string
+    {
+        if (Str::contains($seed, 'hero-main')) {
+            return url('theme-demo/real-estate/hero-main.svg');
+        }
+
+        if (Str::contains($seed, 'hero-side')) {
+            $index = (abs(crc32($seed)) % 2) + 1;
+
+            return url('theme-demo/real-estate/hero-side-'.$index.'.svg');
+        }
+
+        $index = (abs(crc32($seed)) % 5) + 1;
+
+        return url('theme-demo/curated/real-estate/projects/project-0'.$index.'.svg');
+    }
+
     private function buildDemoBranding(array $preset, bool $isServicePreset): array
     {
         $branding = [
@@ -1444,6 +1671,10 @@ class ThemeDemoContentGenerator
         } elseif ($this->isGarmentFamilyPreset($preset)) {
             $branding['logo_url'] = url('theme-demo/garment/brand-mark.svg');
             $branding['favicon_url'] = url('theme-demo/garment/brand-mark.svg');
+        } elseif ($this->isRealEstatePreset($preset)) {
+            $branding['logo_url'] = url('theme-demo/real-estate/brand-mark.svg');
+            $branding['favicon_url'] = url('theme-demo/real-estate/brand-mark.svg');
+            $branding['support_hotline'] = '1900 0201';
         }
 
         return $branding;
@@ -1464,6 +1695,11 @@ class ThemeDemoContentGenerator
         return ($preset['garment_profile'] ?? null) === 'fashion';
     }
 
+    private function isRealEstatePreset(array $preset): bool
+    {
+        return ($preset['industry_family'] ?? null) === 'real-estate';
+    }
+
     private function buildDemoNewsCategory(array $preset, string $themeKey): array
     {
         if ($this->isGarmentFamilyPreset($preset)) {
@@ -1482,6 +1718,16 @@ class ThemeDemoContentGenerator
             ];
         }
 
+        if ($this->isRealEstatePreset($preset)) {
+            return [
+                'name' => 'Tin mở bán & cẩm nang',
+                'slug' => Str::slug('tin-mo-ban-'.$preset['key']),
+                'description' => 'Chuyên mục demo cho tin thị trường, hướng dẫn chọn căn và cập nhật mở bán của LAN0201.',
+                'meta_title' => 'Tin mở bán '.$preset['company_name'],
+                'meta_description' => 'Tin thị trường, thông tin mở bán và bài viết tư vấn demo cho '.$preset['company_name'],
+            ];
+        }
+
         return [
             'name' => 'Tin '.$preset['short_label'],
             'slug' => Str::slug('tin-'.$preset['key']),
@@ -1494,6 +1740,29 @@ class ThemeDemoContentGenerator
     private function presetDefinitions(): array
     {
         return [
+            [
+                'key' => 'real-estate-launchpad',
+                'label' => 'Bất động sản mở bán dự án',
+                'short_label' => 'bất động sản',
+                'description' => 'Preset cho LAN0201 theo hướng landing dự án mở bán, bảng hàng listing, CTA nhận brochure và đặt lịch xem nhà mẫu.',
+                'company_name' => 'LAN0201 Project Landing',
+                'domain' => 'lan0201landing.demo',
+                'address' => 'Nhà mẫu ven sông, Thủ Đức, TP.HCM',
+                'theme_flavor' => 'project launch landing',
+                'hero_eyebrow' => 'Dự án mở bán',
+                'hero_title' => 'Bảng hàng mở bán và ưu đãi cho dự án đang ra mắt',
+                'hero_subtitle' => 'Dùng để test LAN0201 với hero landing, listing bất động sản, pricing ribbon, timeline mở bán và CTA nhận bảng giá.',
+                'hero_badge' => 'Nhận bảng giá và brochure mới nhất',
+                'product_prefix' => 'Căn',
+                'industry_family' => 'real-estate',
+                'departments' => [
+                    ['name' => 'Studio', 'children' => ['Ban công đông nam', 'View sông', 'Nội thất liền tường']],
+                    ['name' => '1PN', 'children' => ['Layout tối ưu', 'View công viên', 'Có phòng đa năng']],
+                    ['name' => '2PN', 'children' => ['Căn góc 2 WC', 'View hồ bơi', 'Logia kép']],
+                    ['name' => 'Shophouse', 'children' => ['Mặt tiền đại lộ', 'Gần quảng trường', 'Hai mặt thoáng']],
+                    ['name' => 'Villa', 'children' => ['Đơn lập sân vườn', 'Song lập ven kênh', 'Hoàng hôn bên sông']],
+                ],
+            ],
             [
                 'key' => 'garment-workshop',
                 'label' => 'Xưởng may quần áo sỉ lẻ',

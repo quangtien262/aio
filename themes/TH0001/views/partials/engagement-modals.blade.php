@@ -6,6 +6,7 @@
     $themeText = static fn (string $key, string $default): string => $themeTranslator->bladeText('TH0001', app()->getLocale(), $key, $default);
     $themeMessages = [
         'required_email' => $themeText('modal.error.required_email', 'Vui lòng nhập email.'),
+        'required_login' => $themeText('modal.error.required_login', 'Vui lòng nhập email khách hàng hoặc username admin.'),
         'invalid_email' => $themeText('modal.error.invalid_email', 'Email không đúng định dạng.'),
         'required_password' => $themeText('modal.error.required_password', 'Vui lòng nhập mật khẩu.'),
         'required_name' => $themeText('modal.error.required_name', 'Vui lòng nhập họ và tên.'),
@@ -18,6 +19,8 @@
         'generic_invalid' => $themeText('modal.error.generic_invalid', 'Vui lòng kiểm tra lại thông tin đã nhập.'),
         'generic_action_failed' => $themeText('modal.error.generic_action_failed', 'Không thực hiện được thao tác.'),
         'newsletter_invalid' => $themeText('modal.error.newsletter_invalid', 'Vui lòng kiểm tra lại email đã nhập.'),
+        'login_success_customer' => $themeText('modal.success.login_customer', 'Đăng nhập thành công. Đang chuyển bạn đến khu vực mua sắm.'),
+        'login_success_admin' => $themeText('modal.success.login_admin', 'Đăng nhập thành công. Đang chuyển bạn đến khu vực quản trị.'),
     ];
 @endphp
 <div id="th-modal-root"
@@ -35,14 +38,14 @@
         <button type="button" class="th-modal-close" data-th-modal-close aria-label="@themeT('modal.close', 'Đóng')">×</button>
 
         <section class="th-modal-panel" data-th-modal-panel="login" hidden>
-            <h3 id="th-modal-title">@themeT('modal.login_title', 'Đăng nhập để tiếp tục mua hàng')</h3>
-            <p>@themeT('modal.login_summary', 'Đăng nhập nhanh để thanh toán, theo dõi đơn hàng và lưu sản phẩm yêu thích.')</p>
+            <h3 id="th-modal-title">@themeT('modal.login_title', 'Đăng nhập để tiếp tục')</h3>
+            <p>@themeT('modal.login_summary', 'Dùng tài khoản admin hoặc khách hàng để tiếp tục thao tác phù hợp với quyền truy cập của bạn.')</p>
             <form data-th-auth-form="login" novalidate>
                 <input type="hidden" name="redirect_to" value="{{ $postLoginRedirect }}">
                 <label class="th-modal-field">
-                    <span>@themeT('modal.email', 'Email')</span>
-                    <input type="email" name="email" required>
-                    <small class="th-modal-field-error" data-th-field-error="email"></small>
+                    <span>@themeT('modal.login_identity', 'Email khách hàng / Username admin')</span>
+                    <input type="text" name="login" required>
+                    <small class="th-modal-field-error" data-th-field-error="login"></small>
                 </label>
                 <label class="th-modal-field">
                     <span>@themeT('modal.password', 'Mật khẩu')</span>
@@ -211,6 +214,14 @@
         color: #8a5a00;
         line-height: 1.6;
     }
+    .th-modal-message[data-state="success"] {
+        background: #eaf8ef;
+        color: #17663a;
+    }
+    .th-modal-message[data-state="error"] {
+        background: #fff1d8;
+        color: #8a5a00;
+    }
 </style>
 
 <script>
@@ -264,10 +275,8 @@
             const errors = {};
 
             if (mode === 'login') {
-                if (!String(payload.email || '').trim()) {
-                    errors.email = messages.required_email;
-                } else if (!emailPattern.test(String(payload.email).trim())) {
-                    errors.email = messages.invalid_email;
+                if (!String(payload.login || '').trim()) {
+                    errors.login = messages.required_login;
                 }
 
                 if (!String(payload.password || '').trim()) {
@@ -319,7 +328,7 @@
             return { payload, errors };
         };
 
-        const showMessage = (message) => {
+        const showMessage = (message, state = 'error') => {
             if (!messageNode) {
                 return;
             }
@@ -327,11 +336,25 @@
             if (!message) {
                 messageNode.hidden = true;
                 messageNode.textContent = '';
+                messageNode.removeAttribute('data-state');
                 return;
             }
 
             messageNode.hidden = false;
+            messageNode.dataset.state = state;
             messageNode.textContent = message;
+        };
+
+        const loginSuccessMessage = (guard, fallbackMessage) => {
+            if (guard === 'admin') {
+                return messages.login_success_admin || fallbackMessage;
+            }
+
+            if (guard === 'customer') {
+                return messages.login_success_customer || fallbackMessage;
+            }
+
+            return fallbackMessage;
         };
 
         const openPanel = (panelKey, redirectTo = null) => {
@@ -444,9 +467,19 @@
                         throw new Error(body.message || messages.generic_action_failed);
                     }
 
-                    window.location.href = body.data?.redirect_to || activeRedirect || window.location.href;
+                    const redirectTo = body.data?.redirect_to || activeRedirect || window.location.href;
+
+                    if (mode === 'login') {
+                        showMessage(loginSuccessMessage(body.data?.guard, body.message || messages.login_success_customer), 'success');
+                        window.setTimeout(() => {
+                            window.location.href = redirectTo;
+                        }, 700);
+                        return;
+                    }
+
+                    window.location.href = redirectTo;
                 } catch (error) {
-                    showMessage(error.message || messages.generic_action_failed);
+                    showMessage(error.message || messages.generic_action_failed, 'error');
                 }
             });
         });

@@ -1,13 +1,15 @@
 import { expect, test } from '@playwright/test';
 
-const adminEmail = process.env.PLAYWRIGHT_ADMIN_EMAIL || 'admin@aio.local';
+const adminUsername = process.env.PLAYWRIGHT_ADMIN_USERNAME || 'admin';
 const adminPassword = process.env.PLAYWRIGHT_ADMIN_PASSWORD || 'password';
 
 async function loginAsAdmin(page) {
-    await page.goto('/admin/login');
-    await page.locator('input[name="email"]').fill(adminEmail);
-    await page.locator('input[name="password"]').fill(adminPassword);
-    await page.getByRole('button', { name: /đăng nhập admin/i }).click();
+    await page.goto('/vi');
+    await page.locator('[data-open-auth-modal="login"]').first().click();
+    await expect(page.locator('[data-th-modal-panel="login"]')).toBeVisible();
+    await page.locator('[data-th-auth-form="login"] input[name="login"]').fill(adminUsername);
+    await page.locator('[data-th-auth-form="login"] input[name="password"]').fill(adminPassword);
+    await page.locator('[data-th-auth-form="login"] .th-modal-submit').click();
     await page.waitForURL(/\/admin(\/|$)/);
 }
 

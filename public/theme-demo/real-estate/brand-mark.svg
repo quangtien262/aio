@@ -1,0 +1,7 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="240" rx="48" fill="#10233E"/>
+  <path d="M58 152L120 76L182 152" stroke="#F2C572" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M82 152V116L120 86L158 116V152" stroke="#F7E9D1" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="108" y="126" width="24" height="26" rx="6" fill="#F2C572"/>
+  <text x="120" y="194" text-anchor="middle" fill="#F7E9D1" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700">LAN0201</text>
+</svg>

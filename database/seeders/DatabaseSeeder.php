@@ -54,9 +54,11 @@ class DatabaseSeeder extends Seeder
     private function seedDefaultAdmin(): void
     {
         $admin = Admin::query()->updateOrCreate(
-            ['email' => 'admin@aio.local'],
+            ['username' => 'admin'],
             [
                 'name' => 'System Admin',
+                'username' => 'admin',
+                'email' => 'admin@aio.local',
                 'password' => Hash::make('password'),
                 'is_active' => true,
                 'locked_at' => null,

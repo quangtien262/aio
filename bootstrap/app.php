@@ -24,9 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request): string {
-            return $request->is('admin') || $request->is('admin/*')
-                ? route('admin.auth.login')
-                : route('site.home', FrontendLocalization::routeParameterDefaults($request->session()->get('frontend_locale')));
+            return route('site.home', [
+                'locale' => FrontendLocalization::resolveLocale($request->session()->get('frontend_locale')),
+            ]);
         });
 
         $middleware->redirectUsersTo(function (Request $request): string {

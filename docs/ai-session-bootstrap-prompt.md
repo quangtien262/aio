@@ -19,50 +19,27 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
   - kế toán
   - CMS website
   - và các phân hệ mở rộng khác về sau
-- Mỗi mảng tính năng phải được tách thành **module riêng** để có thể bật, cài đặt, gỡ bỏ, nâng cấp độc lập.
-- Hệ thống sẽ có một **store/module manager page** để người dùng cài thêm module khi cần.
-- Đây là một nền tảng định hướng thương mại hóa lâu dài, nên khi thiết kế base source phải ưu tiên:
-  - khả năng mở rộng
-  - khả năng đóng gói module
-  - ít coupling giữa các module
-  - quyền hạn tách theo module
-  - theme/frontend có thể thay đổi mà không làm mất dữ liệu lõi
+- Mỗi mảng tính năng phải tách thành **module riêng** để có thể bật/tắt, cài/gỡ, nâng cấp độc lập qua store/module manager.
+- Ưu tiên xuyên suốt: mở rộng tốt, coupling thấp, quyền theo module, đổi theme không làm mất dữ liệu lõi.
 
 ## 2. Định hướng website builder / theme system
 
-- Hệ thống website sẽ có nhiều loại giao diện/theme có thể cài đặt và chuyển đổi linh hoạt.
-- Khi đổi theme, dữ liệu website không được mất.
-- Theme không chỉ quản lý giao diện mà còn là nơi chứa phần copy/public content theo từng locale cho storefront.
-- Việc đổi theme phải có kiểm soát theo **đúng loại website**, ví dụ:
-  - thương mại điện tử
-  - website dịch vụ
-  - website giới thiệu doanh nghiệp
-  - website tin tức
-  - landing page
-- CMS/theme là một trụ cột lớn của sản phẩm. Mục tiêu dài hạn là xây một kho giao diện website lớn, khoảng 100 mẫu trở lên, rồi mới bắt đầu đẩy mạnh thương mại hóa.
-- Khi cài đặt mới hệ thống, cần có flow setup ban đầu như:
-  - chọn loại website
-  - chọn theme phù hợp
-  - nhập các cấu hình nền tảng ban đầu
+- Hệ thống có nhiều theme cài/chuyển linh hoạt nhưng không làm mất dữ liệu business/CMS.
+- Theme quản lý giao diện + static/public copy theo locale cho storefront.
+- Việc đổi theme phải bị ràng buộc theo **đúng loại website**.
+- CMS/theme là trụ cột thương mại quan trọng; dài hạn hướng tới kho theme lớn.
+- Flow setup khởi tạo nên có: chọn loại website, chọn theme, nhập cấu hình nền tảng ban đầu.
 
 ## 2.1. Định hướng đa ngôn ngữ và theme translation
 
 - Hệ thống storefront hiện đi theo kiến trúc locale động, lấy registry từ bảng `system_locales` thay vì hardcode cố định `vi/en` trong code.
 - `vi` hiện là `source locale`, `default locale` và `fallback locale` an toàn cho storefront. `en` đang được seed active/published để giữ tương thích với storefront hiện tại và các test/backward compatibility.
 - Route public storefront vẫn đi theo dạng prefix locale như `/{locale}`, nhưng tập locale runtime phải lấy từ locale registry đang active/published thay vì giả định sẵn 2 ngôn ngữ.
-- Phần đa ngôn ngữ nên tách làm 2 lớp rõ ràng:
-  - `static theme copy`: text tĩnh của giao diện như nút, heading, label, empty state, CTA
-  - `business content`: dữ liệu nghiệp vụ/CMS hiển thị trên storefront như menu, page, post, category, product, banner, site profile
-- Static copy của theme vẫn đi theo file dictionary trong theme, nhưng locale built-in nào được hỗ trợ phải khai báo ở theme manifest qua `localization.default_locale` và `localization.supported_locales`.
-- Business content translation không hardcode trong Blade/component mà được map ra key chuẩn để có thể override theo locale. Locale dùng để editor/override phải tách khỏi khái niệm locale storefront đang bật thực tế.
-- Tư duy đúng là: theme quyết định cách render, còn dữ liệu business/CMS phải có cơ chế dịch độc lập để khi đổi theme vẫn giữ được nội dung đã nhập.
-- Cần phân biệt rõ 2 lớp locale:
-  - `runtime storefront locales`: locale đang active để render route public và redirect từ homepage
-  - `editable locales`: locale mà admin được phép chuẩn bị/cập nhật nội dung dịch, kể cả locale built-in hoặc preset chưa cần public ngay
-- Fallback cần đi theo hướng an toàn:
-  - ưu tiên override do user nhập trong admin
-  - nếu chưa có override thì dùng default translation entry được build từ dữ liệu gốc
-  - nếu locale editor mới chưa dịch đủ thì storefront vẫn phải rơi về source/fallback locale an toàn
+- Phần đa ngôn ngữ phải tách 2 lớp: `static theme copy` và `business content`.
+- Static copy đi theo dictionary của theme; built-in locale phải khai báo ở theme manifest qua `localization.default_locale` và `localization.supported_locales`.
+- Business content translation phải map ra key chuẩn để admin override theo locale, không hardcode trong Blade/component.
+- Cần tách `runtime storefront locales` và `editable locales`.
+- Fallback an toàn: ưu tiên override của user, nếu thiếu thì dùng default entry từ dữ liệu gốc, cuối cùng rơi về source/fallback locale.
 - `/admin/themes` hiện là điểm quản trị locale storefront luôn: user có thể bật/tắt locale, publish/draft, đổi default locale và thêm locale custom. Workspace switcher ở admin phải phản ánh nhanh locale storefront đang xem mà không lẫn với shell admin language.
 - Admin UI nội bộ hiện vẫn ưu tiên tiếng Việt; phần đa ngôn ngữ vừa làm tập trung vào storefront/theme content, không phải dịch toàn bộ shell quản trị.
 
@@ -71,6 +48,12 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 - Hệ thống có 2 loại tài khoản chính:
   - `admin`: đăng nhập quản trị hệ thống
   - `customer` hoặc người dùng đăng ký trên website frontend
+- Admin hiện đã đi theo hướng đăng nhập bằng `username` thay vì `email` để thao tác nhanh hơn khi login.
+- Customer storefront vẫn đăng nhập bằng `email`.
+- Modal login storefront hiện là form dùng chung cho cả admin và customer:
+  - backend sẽ thử guard `admin` trước bằng `username`
+  - nếu không khớp admin thì mới fallback sang guard `customer` bằng `email`
+  - UI field login trong modal nên được hiểu là `Email khách hàng / Username admin`, không quay lại hardcode thuần `email` cho flow login chung này.
 - Phân quyền phải đi theo hướng **RBAC theo từng module**, nghĩa là mỗi module có tập permission riêng.
 - Khi module được cài đặt/gỡ bỏ thì permission liên quan cũng phải đồng bộ theo module đó.
 
@@ -98,11 +81,10 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 ## 6. Kiến trúc và convention cần giữ
 
 - Không reintroduce kiến trúc multi-tenant cũ. Các check/runtime field kiểu `website_key`, `owner_key`, `tenant_key` đã được dọn khỏi flow chính, giữ đúng tinh thần single-site.
-- Mỗi khách hàng triển khai thực tế sẽ clone ra source riêng, nên ưu tiên thiết kế theo hướng **single-tenant by codebase**, không phải multi-tenant shared runtime.
-- Tư duy đúng của dự án là: **core platform + module ecosystem + theme ecosystem**.
-- Module phải đủ độc lập để có thể cài/xóa tùy ý qua store/install flow.
-- Theme phải đổi được linh hoạt trong cùng nhóm website mà không làm hỏng dữ liệu business/CMS.
-- Với đa ngôn ngữ storefront, cần giữ tách biệt giữa `theme static translation` và `content translation override`, không trộn lẫn vào cùng một nguồn dữ liệu mơ hồ.
+- Mỗi khách hàng triển khai thực tế sẽ clone ra source riêng, nên đây là **single-tenant by codebase**, không phải multi-tenant shared runtime.
+- Tư duy đúng của dự án: **core platform + module ecosystem + theme ecosystem**.
+- Module phải đủ độc lập để cài/xóa tùy ý; theme phải đổi được trong cùng nhóm website mà không hỏng dữ liệu business/CMS.
+- Với storefront i18n, luôn giữ tách biệt giữa `theme static translation` và `content translation override`.
 - Admin dùng React như một phần của Laravel app, không tách hẳn thành frontend project độc lập.
 - Admin UI ưu tiên **drawer** cho form tạo/sửa nội dung CMS thay vì modal nếu cùng pattern hiện có.
 - Giữ style thay đổi nhỏ, đúng codebase hiện tại, không refactor rộng nếu user không yêu cầu.
@@ -115,17 +97,8 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 
 ### CMS / Posts
 - File chính: `resources/admin/src/modules/cms/components/CmsPostFormModal.jsx`
-- Drawer tạo/sửa bài viết CMS đã được tối ưu lại:
-  - `Publish At` dùng `DatePicker`, mặc định thời gian hiện tại cho bài viết mới
-  - form chia thành các card/group rõ ràng
-  - SEO fields nằm trong `Collapse`
-  - CKEditor 5 free dùng cho nội dung bài viết
-  - có upload ảnh/video trực tiếp vào nội dung
-  - có nút nhúng video YouTube vào editor
-- `Ảnh đại diện bài viết` có 3 mode:
-  1. upload ảnh trực tiếp
-  2. chọn từ thư viện media có sẵn (modal + pagination)
-  3. nhập URL để tạo media record rồi gán vào bài viết
+- Drawer post đã được tối ưu lại với `Publish At` dùng `DatePicker`, form chia card/group, SEO trong `Collapse`, nội dung dùng CKEditor 5 free, có upload media và nhúng YouTube.
+- Ảnh đại diện bài viết hỗ trợ 3 mode: upload trực tiếp, chọn từ thư viện media, hoặc nhập URL để tạo media record.
 
 ### CMS / Media
 - File backend chính: `app/Http/Controllers/Admin/Api/Cms/MediaManagementController.php`
@@ -150,62 +123,48 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
   - `resources/admin/src/modules/access/utils/permissionLabels.js`
 
 ### Themes
-- `/admin/themes` đã đổi để preview theme chỉ mở khi click vào tiêu đề theme
-- Preview hiển thị bằng drawer
-- Nút `Kích hoạt theme` đã được đẩy lên đầu drawer để thao tác nhanh hơn
-- `/admin/themes` hiện là nơi quản lý cả locale storefront lẫn translation của theme cho storefront
-- Locale manager drawer mới cho phép:
-  - xem `default`, `source`, `fallback` locale hiện tại
-  - bật/tắt trạng thái `active` và `published` của từng locale storefront
-  - đổi `default locale` động
-  - thêm locale custom ngoài built-in locale của theme
-  - nhìn rõ locale nào được theme hỗ trợ sẵn qua metadata trong theme manifest
-- Drawer translation hỗ trợ các flow chính:
-  - chọn locale động theo danh sách locale editor/runtime từ backend, không hardcode `vi/en`
-  - chuyển nhanh giữa `static` và `business content`
-  - search theo keyword/key
-  - phân trang để tải nhanh
-  - filter theo entity để dễ tìm đúng nhóm dữ liệu cần dịch
-  - edit từng entry bằng modal gọn thay vì render full form quá nặng
-- Với `business content`, hệ thống đã có lớp chuẩn hóa key để user dịch lại dữ liệu storefront mà không sửa trực tiếp record gốc. Các nhóm chính đã phủ gồm:
-  - `site_profile`
-  - `site_banner`
-  - `cms_menu`
-  - `cms_page`
-  - `cms_post`
-  - `cms_category`
-  - `catalog_category`
-  - `catalog_product`
-- File/hàm quan trọng cần nhớ khi tiếp tục phần này:
-  - `app/Support/BusinessContentTranslationService.php`
-  - `app/Http/Controllers/Admin/Api/ThemeTranslationIndexController.php`
-  - `resources/admin/src/modules/themes/components/ThemeTranslationDrawer.jsx`
-  - `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`
-- Hướng xử lý đúng cho phần dịch lại data ngôn ngữ của theme là:
-  - không chỉnh tay text trong Blade cho từng locale nếu đó là business content
-  - chuẩn hóa key translation trước, rồi expose ra admin để user override
-  - hỗ trợ save/load override nhanh theo locale để user có thể tinh chỉnh bất kỳ locale đích nào mà không chạm dữ liệu gốc tiếng Việt
-  - ưu tiên UX đủ nhanh cho dữ liệu lớn: search, pagination, entity filter, edit từng dòng
+- `/admin/themes` hiện quản lý cả preview theme, locale storefront và translation. Preview mở bằng drawer khi click tiêu đề theme; nút `Kích hoạt theme` nằm ở đầu drawer.
+- Locale manager cho phép xem `default/source/fallback`, bật/tắt `active/published`, đổi `default locale`, thêm locale custom và phân biệt locale built-in của theme.
+- Translation drawer đã hỗ trợ locale động, tách `static` / `business content`, search, pagination, entity filter và edit từng entry.
+- Business content translation đã phủ các nhóm chính như `site_profile`, `site_banner`, `cms_menu`, `cms_page`, `cms_post`, `cms_category`, `catalog_category`, `catalog_product`.
+- Auth modal storefront hiện đã được đồng bộ shared login admin/customer trên tất cả các theme đang có engagement modal chính: `TH0001`, `TH0002`, `SER0100`, `SER0101`.
+- Rule cần giữ: login panel của các theme này phải dùng field identity chung `Email khách hàng / Username admin`, post về `customer.auth.store`, để backend thử admin trước rồi mới fallback customer.
+- File neo chính: `app/Support/BusinessContentTranslationService.php`, `app/Http/Controllers/Admin/Api/ThemeTranslationIndexController.php`, `resources/admin/src/modules/themes/components/ThemeTranslationDrawer.jsx`, `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`.
 - Đã có test/backstop cho phần này:
   - `tests/Feature/ThemeContentTranslationTest.php`
   - `tests/browser/admin-theme-translations.spec.js`
+- TH0002 hiện đã được làm sâu hơn ở phần theme configurability:
+- TH0002 hiện đọc palette từ `site_profiles.branding`, đã có partial token chung `themes/TH0002/views/partials/palette-tokens.blade.php`, và homepage đã có shared badge token cho pill/badge.
+- Palette editor của TH0002 đã tách khỏi Setup Wizard sang Theme Manager. File neo chính: `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`, `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`, `resources/admin/src/pages/routes/ThemesRoutePage.jsx`.
+- Save palette hiện vẫn đi qua endpoint setup hiện có (`PUT /admin/api/setup`) chứ chưa tách API riêng.
+- Palette persist trong `site_profiles.branding` với các key chính: `primary_color`, `primary_color_deep`, `accent_color`, `accent_soft_color`, `background_color`, `surface_color`, `surface_tint_color`.
+- Setup flow liên quan: `app/Http/Controllers/Admin/Api/SetupProfileController.php`, `app/Http/Controllers/Admin/Api/SetupWizardStateController.php`, `app/Http/Controllers/Admin/Api/SetupStepController.php`.
+- Có regression test cho save palette setup tại:
+  - `tests/Feature/AdminFoundationApiTest.php` với case `test_admin_can_store_theme_palette_in_setup_branding`
 
 ### Setup
 - `/admin/setup` đã được format lại cho gọn hơn, theo layout nhóm section rõ ràng
+- Setup Wizard hiện chỉ giữ branding cơ bản như site/profile/logo/favicon/contact.
+- Không đưa palette editor đầy đủ của TH0002 quay lại Setup Wizard; palette chi tiết chỉnh ở Theme Manager.
+
+### Auth / Admin Accounts
+- Admin account hiện có field persisted `username` trong bảng `admins`.
+- Migration bổ sung gần đây: `database/migrations/2026_05_13_000001_add_username_to_admins_table.php`
+- Default admin seed hiện là `username=admin`, `email=admin@aio.local`, `password=password`.
+- Seeder/factory đã được cập nhật để admin luôn có `username`: `database/seeders/DatabaseSeeder.php`, `database/factories/AdminFactory.php`.
+- Dedicated admin login page riêng đã được bỏ để giảm bề mặt truy cập; admin login đi qua shared storefront login modal ngoài website.
+- Khi admin hết session hoặc logout, hệ thống phải quay về storefront homepage thay vì `/admin/login`.
+- File neo auth: `app/Http/Controllers/Admin/AuthenticatedSessionController.php`, `app/Http/Controllers/Customer/AuthenticatedSessionController.php`, `bootstrap/app.php`, `resources/admin/src/layouts/AdminLayout.jsx`.
+- Admin account management UI/API đã được cập nhật để tạo/sửa/list/drawer đều có `username`: `app/Http/Controllers/Admin/Api/AdminAccountController.php`, `resources/admin/src/modules/admins/components/AdminAccountFormModal.jsx`, `resources/admin/src/modules/admins/components/AdminAccountsTableCard.jsx`, `resources/admin/src/modules/admins/components/AdminAccountDetailsDrawer.jsx`, `resources/admin/src/modules/admins/pages/AdminAccountsPage.jsx`.
+- Ở admin account table/drawer, UX hiện ưu tiên hiển thị `username` rõ hơn `email`.
+- Test đã khóa phần auth/account mới tại:
+  - `tests/Feature/AuthSplitTest.php`
+  - `tests/Feature/AdminFoundationApiTest.php`
 
 ## 8. Những capability nghiệp vụ cần luôn ghi nhớ khi làm việc
 
-- Đây là hệ thống định hướng rất rộng, không phải chỉ có CMS.
-- Các nhóm nghiệp vụ tiềm năng/định hướng dài hạn gồm:
-  - CRM / khách hàng
-  - Project management
-  - Purchasing
-  - Inventory / kho
-  - HRM / nhân sự
-  - Sales
-  - Accounting
-  - CMS / website builder / theme marketplace
-- Vì vậy khi đề xuất model, route, permission, menu, settings, dashboard hay schema, cần nghĩ theo hướng có thể dùng chung pattern cho nhiều module khác nhau.
+- Đây là hệ thống định hướng rộng, không chỉ có CMS. Các nhóm trọng tâm dài hạn gồm CRM, Project, Purchasing, Inventory, HRM, Sales, Accounting, CMS / website builder / theme marketplace.
+- Khi đề xuất model, route, permission, menu, settings, dashboard hay schema, phải ưu tiên pattern dùng lại được cho nhiều module.
 
 ## 9. Các file quan trọng nên kiểm tra trước khi sửa
 
@@ -216,6 +175,11 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 - `modules/Cms/module.json`
 - `app/Support/PermissionLabel.php`
 - `resources/admin/src/styles/index.css`
+- `app/Http/Controllers/Customer/AuthenticatedSessionController.php`
+- `app/Http/Controllers/Admin/Api/AdminAccountController.php`
+- `themes/TH0002/views/partials/palette-tokens.blade.php`
+- `themes/TH0002/views/partials/engagement-modals.blade.php`
+- `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`
 
 ## 10. Cách làm việc tôi muốn ở session này
 
@@ -225,6 +189,12 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 - Sau khi sửa backend Laravel, ưu tiên chạy `php artisan optimize:clear` nếu phù hợp.
 - Nếu có bug runtime ở UI admin, hãy kiểm tra cả import thiếu, prop sai, mismatch Ant Design/React, và những chỗ render component con trong drawer/modal.
 - Nếu người dùng hỏi “tiếp tục phần trước”, hãy giả định ngữ cảnh gần nhất xoay quanh CMS admin, media, posts, permissions, themes, setup, và UX quản trị.
+- Ở ngữ cảnh gần đây hơn của repo này, hãy đặc biệt nhớ thêm:
+  - palette TH0002 đã nằm trong Theme Manager, không còn ở Setup Wizard
+  - admin login dùng `username`
+  - modal storefront login là form dùng chung `admin username` + `customer email`
+  - các theme `TH0001`, `TH0002`, `SER0100`, `SER0101` đều đã đồng bộ flow shared login này
+  - không reintroduce lại `/admin/login` hoặc dedicated admin login page riêng
 - Khi cần đề xuất kiến trúc, hãy ưu tiên các thiết kế có thể tái sử dụng cho nhiều module khác nhau trong hệ sinh thái AIO.
 - Khi nói về roadmap hay solution, hãy nhớ CMS/theme marketplace là một trụ cột thương mại quan trọng của dự án.
 

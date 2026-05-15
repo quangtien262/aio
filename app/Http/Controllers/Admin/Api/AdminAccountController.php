@@ -19,10 +19,11 @@ class AdminAccountController
         $admins = Admin::query()
             ->with(['roles:id,name', 'roleScopes:id,admin_id,role_id,scope_type,scope_value'])
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'is_active', 'locked_at', 'locked_reason', 'last_login_at'])
+            ->get(['id', 'name', 'username', 'email', 'is_active', 'locked_at', 'locked_reason', 'last_login_at'])
             ->map(fn (Admin $admin): array => [
                 'id' => $admin->id,
                 'name' => $admin->name,
+                'username' => $admin->username,
                 'email' => $admin->email,
                 'is_active' => (bool) $admin->is_active,
                 'is_locked' => $admin->isLocked(),
@@ -57,6 +58,7 @@ class AdminAccountController
         DB::transaction(function () use ($validated): void {
             $admin = Admin::query()->create([
                 'name' => $validated['name'],
+                'username' => $validated['username'],
                 'email' => $validated['email'],
                 'password' => $validated['password'],
                 'is_active' => $validated['is_active'] ?? true,
@@ -77,6 +79,7 @@ class AdminAccountController
         DB::transaction(function () use ($admin, $validated): void {
             $admin->update([
                 'name' => $validated['name'],
+                'username' => $validated['username'],
                 'email' => $validated['email'],
                 'is_active' => $validated['is_active'] ?? true,
             ]);
@@ -140,6 +143,7 @@ class AdminAccountController
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique('admins', 'username')->ignore($admin?->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('admins', 'email')->ignore($admin?->id)],
             'password' => [$requirePassword ? 'required' : 'nullable', 'confirmed', Password::min(8)],
             'is_active' => ['nullable', 'boolean'],

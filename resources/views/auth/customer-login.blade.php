@@ -51,7 +51,7 @@
 
                 <div class="links">
                     <a href="{{ route('customer.auth.register') }}">Đăng ký tài khoản</a>
-                    <a href="{{ route('admin.auth.login') }}">Đăng nhập admin</a>
+                    <a href="{{ route('site.home') }}">Về trang chủ</a>
                 </div>
             </section>
         </main>

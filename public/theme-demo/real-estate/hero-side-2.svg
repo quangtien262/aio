@@ -1,0 +1,16 @@
+<svg width="720" height="360" viewBox="0 0 720 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="360" fill="#1B2E4B"/>
+  <rect width="720" height="360" fill="url(#g)"/>
+  <path d="M416 278C452 202 496 148 546 116C590 90 624 84 668 88V278H416Z" fill="#F2DFBE"/>
+  <path d="M456 278C498 198 550 152 612 138V278H456Z" fill="#D59A54"/>
+  <text x="52" y="110" fill="#F3C879" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">SHOWFLAT TOUR</text>
+  <text x="52" y="168" fill="#FFF8EE" font-family="Georgia, Times New Roman, serif" font-size="44" font-weight="700">Nha mau va</text>
+  <text x="52" y="216" fill="#FFF8EE" font-family="Georgia, Times New Roman, serif" font-size="44" font-weight="700">brochure ban hang</text>
+  <text x="52" y="260" fill="#D6CEC1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Side banner demo cho uu dai giu cho va dat lich tham quan.</text>
+  <defs>
+    <linearGradient id="g" x1="40" y1="20" x2="664" y2="338" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#18304F"/>
+      <stop offset="1" stop-color="#8A6030"/>
+    </linearGradient>
+  </defs>
+</svg>

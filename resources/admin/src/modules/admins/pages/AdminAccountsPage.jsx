@@ -12,6 +12,7 @@ const AdminLockFormModal = lazy(() => import('../components/AdminLockFormModal')
 const emptyAccountForm = {
     id: null,
     name: '',
+    username: '',
     email: '',
     is_active: true,
     role_ids: [],
@@ -60,6 +61,7 @@ export default function AdminAccountsPage({
         setEditingAccount({
             id: admin.id,
             name: admin.name,
+            username: admin.username,
             email: admin.email,
             is_active: admin.is_active,
             role_ids: admin.role_ids ?? [],

@@ -66,6 +66,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
         return (adminAccounts ?? []).filter((admin) => {
             const matchesKeyword = normalizedKeyword === ''
                 || admin.name?.toLowerCase().includes(normalizedKeyword)
+                || admin.username?.toLowerCase().includes(normalizedKeyword)
                 || admin.email?.toLowerCase().includes(normalizedKeyword)
                 || (admin.roles ?? []).some((role) => role.name?.toLowerCase().includes(normalizedKeyword))
                 || (admin.scopes ?? []).some((scope) => `${scope.scope_type}:${scope.scope_value}`.toLowerCase().includes(normalizedKeyword));
@@ -87,10 +88,11 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
 
     const handleExportCsv = () => {
         const rows = [
-            ['ID', 'Tên admin', 'Email', 'Trạng thái', 'Khóa', 'Lý do khóa', 'Lần đăng nhập cuối', 'Roles', 'Scopes'],
+            ['ID', 'Tên admin', 'Username', 'Email', 'Trạng thái', 'Khóa', 'Lý do khóa', 'Lần đăng nhập cuối', 'Roles', 'Scopes'],
             ...filteredAdmins.map((admin) => [
                 admin.id,
                 admin.name,
+                admin.username,
                 admin.email,
                 admin.is_active ? 'active' : 'inactive',
                 admin.is_locked ? 'locked' : 'unlocked',
@@ -125,7 +127,8 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                     <Button type="link" className="admin-name-link" onClick={() => onOpenDetailsDrawer?.(admin)}>
                         {admin.name}
                     </Button>
-                    <Text type="secondary">{admin.email}</Text>
+                    <Text strong>Username: @{admin.username}</Text>
+                    <Text type="secondary">Email: {admin.email}</Text>
                 </Space>
             ),
         },
@@ -290,7 +293,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                         allowClear
                         value={keyword}
                         onChange={(event) => setKeyword(event.target.value)}
-                        placeholder="Tìm theo tên, email, role hoặc scope"
+                        placeholder="Tìm theo tên, username, email, role hoặc scope"
                     />
                 </Col>
                 <Col xs={24} md={6}>

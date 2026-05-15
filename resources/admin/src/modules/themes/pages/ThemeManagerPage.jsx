@@ -13,8 +13,9 @@ const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDe
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
 const ThemeDemoDataModal = lazy(() => import('../components/ThemeDemoDataModal'));
 const ThemeLocaleDrawer = lazy(() => import('../components/ThemeLocaleDrawer'));
+const ThemePaletteEditorDrawer = lazy(() => import('../components/ThemePaletteEditorDrawer'));
 
-export default function ThemeManagerPage({ themes, activeTheme = null, onActivate, onGenerateDemoData, onDeleteDemoData, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
+export default function ThemeManagerPage({ themes, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
     const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
@@ -23,6 +24,7 @@ export default function ThemeManagerPage({ themes, activeTheme = null, onActivat
     const [translationThemeKey, setTranslationThemeKey] = useState(null);
     const [themeBlocksThemeKey, setThemeBlocksThemeKey] = useState(null);
     const [localeThemeKey, setLocaleThemeKey] = useState(null);
+    const [paletteThemeKey, setPaletteThemeKey] = useState(null);
 
     useEffect(() => {
         if (!themes?.length) {
@@ -50,6 +52,7 @@ export default function ThemeManagerPage({ themes, activeTheme = null, onActivat
     const translationTheme = useMemo(() => themes.find((theme) => theme.key === translationThemeKey) ?? null, [themes, translationThemeKey]);
     const themeBlocksTheme = useMemo(() => themes.find((theme) => theme.key === themeBlocksThemeKey) ?? null, [themeBlocksThemeKey, themes]);
     const localeTheme = useMemo(() => themes.find((theme) => theme.key === localeThemeKey) ?? null, [localeThemeKey, themes]);
+    const paletteTheme = useMemo(() => themes.find((theme) => theme.key === paletteThemeKey) ?? null, [paletteThemeKey, themes]);
 
     const handleOpenPreview = (themeKey) => {
         setSelectedThemeKey(themeKey);
@@ -63,6 +66,9 @@ export default function ThemeManagerPage({ themes, activeTheme = null, onActivat
                 <Space>
                     <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setLocaleThemeKey(selectedTheme?.key ?? null)}>
                         Quản lý ngôn ngữ
+                    </Button>
+                    <Button disabled={selectedTheme?.key !== 'TH0002' || !canGenerateDemoData} onClick={() => setPaletteThemeKey(selectedTheme?.key ?? null)}>
+                        Palette theme
                     </Button>
                     <Button type="primary" disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setThemeBlocksThemeKey(selectedTheme?.key ?? null)}>
                         Khối riêng của theme
@@ -197,6 +203,21 @@ export default function ThemeManagerPage({ themes, activeTheme = null, onActivat
                         callAdminApi={callAdminApi}
                         runAdminAction={runAdminAction}
                         onClose={() => setLocaleThemeKey(null)}
+                    />
+                </Suspense>
+            ) : null}
+
+            {paletteThemeKey ? (
+                <Suspense fallback={null}>
+                    <ThemePaletteEditorDrawer
+                        open={Boolean(paletteThemeKey)}
+                        theme={paletteTheme}
+                        siteProfile={siteProfile}
+                        canManagePalette={canGenerateDemoData}
+                        callAdminApi={callAdminApi}
+                        runAdminAction={runAdminAction}
+                        onSaved={onSaveThemePalette}
+                        onClose={() => setPaletteThemeKey(null)}
                     />
                 </Suspense>
             ) : null}

@@ -185,6 +185,45 @@ class AdminFoundationApiTest extends TestCase
         $this->assertTrue((bool) ThemeInstallation::query()->where('key', 'corporate-starter')->value('is_active'));
     }
 
+    public function test_admin_can_store_theme_palette_in_setup_branding(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+
+        $this->putJson('/admin/api/setup', [
+            'site_name' => 'AIO Website',
+            'website_type' => 'ecommerce',
+            'primary_color' => '#d67a2c',
+            'primary_color_deep' => '#af5f1f',
+            'accent_color' => '#d98d4a',
+            'accent_soft_color' => '#efaa4c',
+            'background_color' => '#faf6f1',
+            'surface_color' => '#ffffff',
+            'surface_tint_color' => '#fff4e8',
+        ])->assertOk();
+
+        $siteProfile = SiteProfile::query()->firstOrFail();
+
+        $this->assertSame('#d67a2c', data_get($siteProfile->branding, 'primary_color'));
+        $this->assertSame('#af5f1f', data_get($siteProfile->branding, 'primary_color_deep'));
+        $this->assertSame('#d98d4a', data_get($siteProfile->branding, 'accent_color'));
+        $this->assertSame('#efaa4c', data_get($siteProfile->branding, 'accent_soft_color'));
+        $this->assertSame('#faf6f1', data_get($siteProfile->branding, 'background_color'));
+        $this->assertSame('#ffffff', data_get($siteProfile->branding, 'surface_color'));
+        $this->assertSame('#fff4e8', data_get($siteProfile->branding, 'surface_tint_color'));
+        $this->assertContains('branding', $siteProfile->completed_steps ?? []);
+
+        $this->getJson('/admin/api/setup')
+            ->assertOk()
+            ->assertJsonPath('data.branding.primary_color', '#d67a2c')
+            ->assertJsonPath('data.branding.primary_color_deep', '#af5f1f')
+            ->assertJsonPath('data.branding.accent_color', '#d98d4a')
+            ->assertJsonPath('data.branding.accent_soft_color', '#efaa4c');
+    }
+
     public function test_admin_can_manage_roles_permissions_and_admin_assignments(): void
     {
         $this->seed(DatabaseSeeder::class);
@@ -277,6 +316,7 @@ class AdminFoundationApiTest extends TestCase
 
         $this->postJson('/admin/api/admins', [
             'name' => 'Scope Admin',
+            'username' => 'scope-admin',
             'email' => 'scope-admin@aio.local',
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -299,6 +339,7 @@ class AdminFoundationApiTest extends TestCase
         $scopedAdmin = Admin::query()->where('email', 'scope-admin@aio.local')->firstOrFail();
 
         $this->assertDatabaseHas('admins', [
+            'username' => 'scope-admin',
             'email' => 'scope-admin@aio.local',
             'is_active' => true,
         ]);
@@ -332,6 +373,7 @@ class AdminFoundationApiTest extends TestCase
 
         $this->putJson("/admin/api/admins/{$scopedAdmin->id}", [
             'name' => 'Scope Admin Updated',
+            'username' => 'scope-admin',
             'email' => 'scope-admin@aio.local',
             'is_active' => true,
             'role_ids' => [$role->id],
@@ -404,6 +446,7 @@ class AdminFoundationApiTest extends TestCase
 
         $this->postJson('/admin/api/admins', [
             'name' => 'Broken Scope Admin',
+            'username' => 'broken-scope-admin',
             'email' => 'broken-scope-admin@aio.local',
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -538,6 +581,7 @@ class AdminFoundationApiTest extends TestCase
 
         $this->postJson('/admin/api/admins', [
             'name' => 'Scoped Data Admin',
+            'username' => 'scoped-data-admin',
             'email' => 'scoped-data-admin@aio.local',
             'password' => 'password123',
             'password_confirmation' => 'password123',

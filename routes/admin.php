@@ -61,11 +61,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')
     ->name('admin.')
     ->group(function (): void {
-        Route::middleware('guest:admin')->group(function (): void {
-            Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('auth.login');
-            Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('auth.store');
-        });
-
         Route::middleware('auth:admin')->group(function (): void {
             Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 

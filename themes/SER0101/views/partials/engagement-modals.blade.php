@@ -4,6 +4,24 @@
     $postLoginRedirect = $postLoginRedirect ?? request()->fullUrl();
     $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
     $themeText = static fn (string $key, string $default): string => $themeTranslator->bladeText('SER0101', app()->getLocale(), $key, $default);
+    $themeMessages = [
+        'required_email' => $themeText('modal.error.required_email', 'Vui lòng nhập email.'),
+        'required_login' => $themeText('modal.error.required_login', 'Vui lòng nhập email khách hàng hoặc username admin.'),
+        'invalid_email' => $themeText('modal.error.invalid_email', 'Email không đúng định dạng.'),
+        'required_password' => $themeText('modal.error.required_password', 'Vui lòng nhập mật khẩu.'),
+        'required_name' => $themeText('modal.error.required_name', 'Vui lòng nhập họ và tên.'),
+        'phone_too_long' => $themeText('modal.error.phone_too_long', 'Số điện thoại không được quá 30 ký tự.'),
+        'password_too_short' => $themeText('modal.error.password_too_short', 'Mật khẩu phải có ít nhất 8 ký tự.'),
+        'required_password_confirmation' => $themeText('modal.error.required_password_confirmation', 'Vui lòng xác nhận mật khẩu.'),
+        'password_confirmation_mismatch' => $themeText('modal.error.password_confirmation_mismatch', 'Xác nhận mật khẩu không khớp.'),
+        'newsletter_failed' => $themeText('modal.error.newsletter_failed', 'Không thể đăng ký bản tin.'),
+        'newsletter_success' => $themeText('modal.success.newsletter', 'Đăng ký nhận bản tin thành công.'),
+        'generic_invalid' => $themeText('modal.error.generic_invalid', 'Vui lòng kiểm tra lại thông tin đã nhập.'),
+        'generic_action_failed' => $themeText('modal.error.generic_action_failed', 'Không thực hiện được thao tác.'),
+        'newsletter_invalid' => $themeText('modal.error.newsletter_invalid', 'Vui lòng kiểm tra lại email đã nhập.'),
+        'login_success_customer' => $themeText('modal.success.login_customer', 'Đăng nhập thành công. Đang chuyển bạn đến khu vực mua sắm.'),
+        'login_success_admin' => $themeText('modal.success.login_admin', 'Đăng nhập thành công. Đang chuyển bạn đến khu vực quản trị.'),
+    ];
 @endphp
 <div id="ser-modal-root"
     data-authenticated="{{ !empty($customerAuth['is_authenticated']) ? '1' : '0' }}"
@@ -20,13 +38,13 @@
         <button type="button" class="ser-modal-close" data-ser-modal-close aria-label="{{ $themeText('modal.close', 'Đóng') }}">×</button>
         <section class="ser-modal-panel" data-ser-modal-panel="login" hidden>
             <h3>{{ $themeText('modal.login_title', 'Đăng nhập để tiếp tục') }}</h3>
-            <p>{{ $themeText('modal.login_summary', 'Đăng nhập để lưu yêu cầu và theo dõi thông tin.') }}</p>
+            <p>{{ $themeText('modal.login_summary', 'Dùng tài khoản admin hoặc khách hàng để tiếp tục thao tác phù hợp với quyền truy cập của bạn.') }}</p>
             <form data-ser-auth-form="login" novalidate>
                 <input type="hidden" name="redirect_to" value="{{ $postLoginRedirect }}">
                 <label class="ser-modal-field">
-                    <span>{{ $themeText('modal.email', 'Email') }}</span>
-                    <input type="email" name="email" required>
-                    <small data-ser-field-error="email"></small>
+                    <span>{{ $themeText('modal.login_identity', 'Email khách hàng / Username admin') }}</span>
+                    <input type="text" name="login" required>
+                    <small data-ser-field-error="login"></small>
                 </label>
                 <label class="ser-modal-field">
                     <span>{{ $themeText('modal.password', 'Mật khẩu') }}</span>
@@ -145,6 +163,7 @@
 <script>
     (() => {
         const root = document.getElementById('ser-modal-root');
+        const messages = @json($themeMessages);
         if (!root) {
             return;
         }
@@ -178,6 +197,18 @@
             messageNode.style.color = isError ? '#9b1c1c' : '#166534';
         };
 
+        const loginSuccessMessage = (guard, fallbackMessage) => {
+            if (guard === 'admin') {
+                return messages.login_success_admin || fallbackMessage;
+            }
+
+            if (guard === 'customer') {
+                return messages.login_success_customer || fallbackMessage;
+            }
+
+            return fallbackMessage;
+        };
+
         const clearErrors = (form) => {
             form.querySelectorAll('[data-ser-field-error]').forEach((node) => {
                 node.textContent = '';
@@ -195,25 +226,51 @@
             clearErrors(form);
             const data = new FormData(form);
             let valid = true;
-            const email = String(data.get('email') || '').trim();
-            if (!email || !emailPattern.test(email)) {
-                setFieldError(form, 'email', 'Email không hợp lệ.');
-                valid = false;
+            if (mode === 'login') {
+                const login = String(data.get('login') || '').trim();
+
+                if (!login) {
+                    setFieldError(form, 'login', messages.required_login);
+                    valid = false;
+                }
+            } else {
+                const email = String(data.get('email') || '').trim();
+
+                if (!email) {
+                    setFieldError(form, 'email', messages.required_email);
+                    valid = false;
+                } else if (!emailPattern.test(email)) {
+                    setFieldError(form, 'email', messages.invalid_email);
+                    valid = false;
+                }
             }
+
             if (mode !== 'newsletter') {
                 const password = String(data.get('password') || '');
-                if (password.length < 8) {
-                    setFieldError(form, 'password', 'Mật khẩu tối thiểu 8 ký tự.');
+
+                if (!password) {
+                    setFieldError(form, 'password', messages.required_password);
+                    valid = false;
+                } else if (password.length < 8) {
+                    setFieldError(form, 'password', messages.password_too_short);
                     valid = false;
                 }
             }
             if (mode === 'register') {
                 if (!String(data.get('name') || '').trim()) {
-                    setFieldError(form, 'name', 'Vui lòng nhập họ và tên.');
+                    setFieldError(form, 'name', messages.required_name);
+                    valid = false;
+                }
+                if (String(data.get('phone') || '').trim().length > 30) {
+                    setFieldError(form, 'phone', messages.phone_too_long);
+                    valid = false;
+                }
+                if (!String(data.get('password_confirmation') || '')) {
+                    setFieldError(form, 'password_confirmation', messages.required_password_confirmation);
                     valid = false;
                 }
                 if (String(data.get('password_confirmation') || '') !== String(data.get('password') || '')) {
-                    setFieldError(form, 'password_confirmation', 'Xác nhận mật khẩu không khớp.');
+                    setFieldError(form, 'password_confirmation', messages.password_confirmation_mismatch);
                     valid = false;
                 }
             }
@@ -280,12 +337,20 @@
                 const payload = Object.fromEntries(new FormData(form).entries());
                 payload.redirect_to = activeRedirect;
                 try {
-                    await submitJson(mode === 'login' ? root.dataset.loginUrl : root.dataset.registerUrl, payload);
-                    window.location.assign(activeRedirect);
+                    const body = await submitJson(mode === 'login' ? root.dataset.loginUrl : root.dataset.registerUrl, payload);
+                    const redirectTo = body?.data?.redirect_to || activeRedirect;
+
+                    if (mode === 'login') {
+                        showMessage(loginSuccessMessage(body?.data?.guard, body?.message || messages.login_success_customer));
+                        window.setTimeout(() => window.location.assign(redirectTo), 700);
+                        return;
+                    }
+
+                    window.location.assign(redirectTo);
                 } catch (error) {
                     const errors = error?.errors || {};
                     Object.entries(errors).forEach(([field, messages]) => setFieldError(form, field, Array.isArray(messages) ? messages[0] : messages));
-                    showMessage(error?.message || 'Không thực hiện được thao tác.', true);
+                    showMessage(error?.message || messages.generic_action_failed, true);
                 }
             });
         });
@@ -298,11 +363,11 @@
             }
             try {
                 await submitJson(root.dataset.newsletterUrl, Object.fromEntries(new FormData(newsletterForm).entries()));
-                showMessage('Đăng ký nhận bản tin thành công.');
+                showMessage(messages.newsletter_success);
             } catch (error) {
                 const errors = error?.errors || {};
                 Object.entries(errors).forEach(([field, messages]) => setFieldError(newsletterForm, field, Array.isArray(messages) ? messages[0] : messages));
-                showMessage(error?.message || 'Không thể đăng ký bản tin.', true);
+                showMessage(error?.message || messages.newsletter_failed, true);
             }
         });
 
