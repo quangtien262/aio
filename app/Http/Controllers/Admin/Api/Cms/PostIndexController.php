@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 use App\Models\CmsCategory;
 use App\Models\CmsMedia;
 use App\Models\CmsPost;
+use App\Support\FrontendLocalization;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
 
@@ -30,8 +31,8 @@ class PostIndexController
             'category_name' => $post->category?->name,
             'featured_media_id' => $post->featured_media_id,
             'featured_media_url' => $post->featuredMedia?->file_url,
-            'public_url' => url('/tin-tuc/'.$post->slug),
-            'preview_url' => url('/preview/posts/'.$post->id),
+            'public_url' => route('site.blog.show', array_merge(FrontendLocalization::routeParameterDefaults(null), ['slug' => $post->slug])),
+            'preview_url' => route('site.preview.posts', array_merge(FrontendLocalization::routeParameterDefaults(null), ['post' => $post->id])),
         ])->values()->all();
 
         /** @var EloquentBuilder<CmsCategory> $categoryQuery */

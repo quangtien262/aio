@@ -4,6 +4,7 @@ import Button from 'antd/es/button';
 import Drawer from 'antd/es/drawer';
 import Empty from 'antd/es/empty';
 import Input from 'antd/es/input';
+import Select from 'antd/es/select';
 import List from 'antd/es/list';
 import Modal from 'antd/es/modal';
 import Space from 'antd/es/space';
@@ -27,6 +28,37 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
     const [sourceLocale, setSourceLocale] = useState('vi');
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [formState, setFormState] = useState({ code: '', name: '', native_name: '' });
+
+    const builtinLanguageOptions = useMemo(() => ([
+        { code: 'en', name: 'English', native: 'English' },
+        { code: 'vi', name: 'Vietnamese', native: 'Tiếng Việt' },
+        { code: 'ja', name: 'Japanese', native: '日本語' },
+        { code: 'zh', name: 'Chinese', native: '中文' },
+        { code: 'ko', name: 'Korean', native: '한국어' },
+        { code: 'fr', name: 'French', native: 'Français' },
+        { code: 'de', name: 'German', native: 'Deutsch' },
+        { code: 'es', name: 'Spanish', native: 'Español' },
+        { code: 'pt', name: 'Portuguese', native: 'Português' },
+        { code: 'ru', name: 'Russian', native: 'Русский' },
+        { code: 'ar', name: 'Arabic', native: 'العربية' },
+        { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
+        { code: 'id', name: 'Indonesian', native: 'Bahasa Indonesia' },
+        { code: 'ms', name: 'Malay', native: 'Bahasa Melayu' },
+        { code: 'th', name: 'Thai', native: 'ไทย' },
+        { code: 'tl', name: 'Filipino', native: 'Filipino' },
+        { code: 'nl', name: 'Dutch', native: 'Nederlands' },
+        { code: 'sv', name: 'Swedish', native: 'Svenska' },
+        { code: 'no', name: 'Norwegian', native: 'Norsk' },
+        { code: 'da', name: 'Danish', native: 'Dansk' },
+        { code: 'fi', name: 'Finnish', native: 'Suomi' },
+        { code: 'pl', name: 'Polish', native: 'Polski' },
+        { code: 'tr', name: 'Turkish', native: 'Türkçe' },
+        { code: 'he', name: 'Hebrew', native: 'עברית' },
+        { code: 'uk', name: 'Ukrainian', native: 'Українська' },
+        { code: 'ro', name: 'Romanian', native: 'Română' },
+        { code: 'cs', name: 'Czech', native: 'Čeština' },
+        { code: 'hu', name: 'Hungarian', native: 'Magyar' },
+    ]), []);
 
     const sortedLocales = useMemo(
         () => [...locales].sort((left, right) => Number(right.is_default) - Number(left.is_default) || left.sort_order - right.sort_order || left.code.localeCompare(right.code)),
@@ -130,7 +162,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                 destroyOnHidden
                 extra={(
                     <Space>
-                        <Button onClick={() => setCreateModalOpen(true)} disabled={!canManageLocales}>Thêm locale custom</Button>
+                        <Button onClick={() => setCreateModalOpen(true)} disabled={!canManageLocales}>Thêm ngôn ngữ</Button>
                     </Space>
                 )}
             >
@@ -216,29 +248,34 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
             </Drawer>
 
             <Modal
-                title="Thêm locale custom"
+                title="Thêm ngôn ngữ"
                 open={createModalOpen}
                 onCancel={() => setCreateModalOpen(false)}
                 onOk={handleCreateLocale}
-                okText="Thêm locale"
+                okText="Thêm ngôn ngữ"
                 destroyOnHidden
             >
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                    <Input
-                        value={formState.code}
-                        onChange={(event) => setFormState((current) => ({ ...current, code: event.target.value }))}
-                        placeholder="Mã locale, ví dụ: en hoặc ja"
+                    <Select
+                        showSearch
+                        placeholder="Chọn ngôn ngữ..."
+                        options={builtinLanguageOptions.map((opt) => ({ label: `${opt.name} — ${opt.native}`, value: opt.code }))}
+                        optionFilterProp="label"
+                        onChange={(value) => {
+                            const pick = builtinLanguageOptions.find((l) => l.code === value);
+
+                            if (pick) {
+                                setFormState({ code: pick.code, name: pick.name, native_name: pick.native });
+                            } else {
+                                setFormState({ code: value, name: value, native_name: '' });
+                            }
+                        }}
+                        filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                        style={{ width: '100%' }}
                     />
-                    <Input
-                        value={formState.name}
-                        onChange={(event) => setFormState((current) => ({ ...current, name: event.target.value }))}
-                        placeholder="Tên hiển thị"
-                    />
-                    <Input
-                        value={formState.native_name}
-                        onChange={(event) => setFormState((current) => ({ ...current, native_name: event.target.value }))}
-                        placeholder="Tên bản địa"
-                    />
+                    <div style={{ color: 'rgba(0,0,0,0.56)', fontSize: 13 }}>
+                        Sau khi chọn, hệ thống sẽ tự điền mã locale và tên. Các trường hiển thị sẽ được lưu ngầm.
+                    </div>
                 </Space>
             </Modal>
         </>

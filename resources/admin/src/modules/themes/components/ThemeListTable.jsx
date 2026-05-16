@@ -12,8 +12,35 @@ const statusColorMap = {
     active: 'green',
 };
 
-export default function ThemeListTable({ themes, selectedThemeKey, onSelectTheme, onOpenPreview }) {
+export default function ThemeListTable({ themes, themesMeta = {}, selectedThemeKey, onSelectTheme, onOpenPreview, callAdminApi, runAdminAction }) {
+    const canManageAvatar = Boolean(themesMeta?.can_manage_theme_avatar);
+
+    const uploadAvatar = async (theme, file) => {
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        await runAdminAction(() => callAdminApi(`/admin/api/themes/${encodeURIComponent(theme.key)}/avatar`, { method: 'POST', body: formData }), 'Đã cập nhật ảnh đại diện.', () => { window.location.reload(); });
+    };
+
     const columns = [
+        {
+            title: 'Ảnh',
+            key: 'avatar',
+            width: 96,
+            render: (_, theme) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <img src={theme.avatar_url ?? theme.preview_urls?.thumbnail ?? ''} alt={theme.name} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, background: '#f4f7f6', border: '1px solid #e6efec' }} />
+                    {canManageAvatar ? (
+                        <label style={{ cursor: 'pointer', fontSize: 12, color: '#1677ff' }}>
+                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => uploadAvatar(theme, e.target.files?.[0])} />
+                            Đổi
+                        </label>
+                    ) : null}
+                </div>
+            ),
+        },
         {
             title: 'Theme',
             key: 'theme',

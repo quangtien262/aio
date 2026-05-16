@@ -15,7 +15,7 @@ const ThemeDemoDataModal = lazy(() => import('../components/ThemeDemoDataModal')
 const ThemeLocaleDrawer = lazy(() => import('../components/ThemeLocaleDrawer'));
 const ThemePaletteEditorDrawer = lazy(() => import('../components/ThemePaletteEditorDrawer'));
 
-export default function ThemeManagerPage({ themes, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
+export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
     const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
@@ -60,44 +60,46 @@ export default function ThemeManagerPage({ themes, activeTheme = null, siteProfi
     };
 
     return (
-        <Card
-            title="Theme Engine Flow"
-            extra={(
-                <Space>
-                    <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setLocaleThemeKey(selectedTheme?.key ?? null)}>
-                        Quản lý ngôn ngữ
-                    </Button>
-                    <Button disabled={selectedTheme?.key !== 'TH0002' || !canGenerateDemoData} onClick={() => setPaletteThemeKey(selectedTheme?.key ?? null)}>
-                        Palette theme
-                    </Button>
-                    <Button type="primary" disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setThemeBlocksThemeKey(selectedTheme?.key ?? null)}>
-                        Khối riêng của theme
-                    </Button>
-                    <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setTranslationThemeKey(selectedTheme?.key ?? null)}>
-                        Bản dịch frontend (default {defaultFrontendLocale.toUpperCase()}, xem {frontendLocale.toUpperCase()})
-                    </Button>
-                    <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setDemoThemeKey(selectedTheme?.key ?? null)}>
-                        Tạo data test
-                    </Button>
-                    <Button disabled={!selectedTheme || !canGenerateDemoData} onClick={() => {
-                        setDemoActionMode('rebuild');
-                        setDemoThemeKey(selectedTheme?.key ?? null);
-                    }}>
-                        Rebuild curated local demo
-                    </Button>
-                    <Popconfirm
-                        title="Xóa toàn bộ data test đã được hệ thống đánh dấu?"
-                        description="Thao tác này chỉ xóa dữ liệu test do hệ thống tạo và đã được gắn marker demo."
-                        onConfirm={() => onDeleteDemoData?.(selectedTheme?.key ?? null)}
-                        disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}
-                    >
-                        <Button danger disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}>
-                            Xóa data test
+        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+            <aside style={{ width: 280 }}>
+                <Card size="small" title="Actions">
+                    <Space direction="vertical" style={{ width: '100%' }}>
+                        <Button block disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setLocaleThemeKey(selectedTheme?.key ?? null)}>
+                            Quản lý ngôn ngữ
                         </Button>
-                    </Popconfirm>
-                </Space>
-            )}
-        >
+                        <Button block disabled={selectedTheme?.key !== 'TH0002' || !canGenerateDemoData} onClick={() => setPaletteThemeKey(selectedTheme?.key ?? null)}>
+                            Palette theme
+                        </Button>
+                        <Button block type="primary" disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setThemeBlocksThemeKey(selectedTheme?.key ?? null)}>
+                            bản dịch của theme
+                        </Button>
+                        <Button block disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setTranslationThemeKey(selectedTheme?.key ?? null)}>
+                            Bản dịch frontend (default {defaultFrontendLocale.toUpperCase()}, xem {frontendLocale.toUpperCase()})
+                        </Button>
+                        <Button block disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setDemoThemeKey(selectedTheme?.key ?? null)}>
+                            Tạo data test
+                        </Button>
+                        <Button block disabled={!selectedTheme || !canGenerateDemoData} onClick={() => {
+                            setDemoActionMode('rebuild');
+                            setDemoThemeKey(selectedTheme?.key ?? null);
+                        }}>
+                            Rebuild curated local demo
+                        </Button>
+                        <Popconfirm
+                            title="Xóa toàn bộ data test đã được hệ thống đánh dấu?"
+                            description="Thao tác này chỉ xóa dữ liệu test do hệ thống tạo và đã được gắn marker demo."
+                            onConfirm={() => onDeleteDemoData?.(selectedTheme?.key ?? null)}
+                            disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}
+                        >
+                            <Button block danger disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}>
+                                Xóa data test
+                            </Button>
+                        </Popconfirm>
+                    </Space>
+                </Card>
+            </aside>
+            <div style={{ flex: 1 }}>
+                <Card title="Theme Engine Flow">
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label">Theme Activation</Text>
                 <Paragraph style={{ marginBottom: 0 }}>
@@ -106,7 +108,15 @@ export default function ThemeManagerPage({ themes, activeTheme = null, siteProfi
             </Space>
 
             <Suspense fallback={<Card loading title="Theme List" />}>
-                <ThemeListTable themes={themes} selectedThemeKey={selectedThemeKey} onSelectTheme={setSelectedThemeKey} onOpenPreview={handleOpenPreview} />
+                <ThemeListTable
+                    themes={themes}
+                    themesMeta={themesMeta}
+                    selectedThemeKey={selectedThemeKey}
+                    onSelectTheme={setSelectedThemeKey}
+                    onOpenPreview={handleOpenPreview}
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                />
             </Suspense>
 
             <Drawer
@@ -176,7 +186,7 @@ export default function ThemeManagerPage({ themes, activeTheme = null, siteProfi
                     runAdminAction={runAdminAction}
                     initialGroup="content"
                     initialEntity="theme"
-                    title={themeBlocksTheme ? `Khối riêng của theme: ${themeBlocksTheme.name} (${frontendLocale.toUpperCase()})` : 'Khối riêng của theme'}
+                    title={themeBlocksTheme ? `bản dịch của theme: ${themeBlocksTheme.name} (${frontendLocale.toUpperCase()})` : 'bản dịch của theme'}
                     description="Màn này mở thẳng các block riêng của đúng theme đang chọn, ví dụ như khối Báo giá trong ngày, Tin mới hoặc các hero/footer đặc thù."
                     onClose={() => setThemeBlocksThemeKey(null)}
                 />
@@ -221,6 +231,8 @@ export default function ThemeManagerPage({ themes, activeTheme = null, siteProfi
                     />
                 </Suspense>
             ) : null}
-        </Card>
+                </Card>
+            </div>
+        </div>
     );
 }

@@ -397,6 +397,9 @@ Route::prefix('admin')
                 Route::get('/themes', ThemeRegistryController::class)
                     ->middleware('admin.permission:theme.view')
                     ->name('themes');
+                Route::post('/themes/{key}/avatar', \App\Http\Controllers\Admin\Api\ThemeAvatarController::class)
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.avatar');
                 Route::post('/themes/{key}/activate', ThemeActivationController::class)
                     ->middleware('admin.permission:theme.activate')
                     ->name('themes.activate');

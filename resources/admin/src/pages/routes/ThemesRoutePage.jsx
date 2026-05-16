@@ -58,6 +58,7 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
 
             <ThemeManagerPage
                 themes={themes}
+                themesMeta={data?.meta ?? {}}
                 activeTheme={activeTheme}
                 siteProfile={data?.siteProfile ?? null}
                 frontendLocale={frontendLocale}

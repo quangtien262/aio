@@ -49,6 +49,7 @@ class ThemeRegistry
                     'activated_at' => $installation?->activated_at,
                     'has_demo_data' => $demoRecordCount > 0,
                     'demo_record_count' => $demoRecordCount,
+                    'avatar_url' => $this->resolveAvatarUrl($manifest->key),
                 ];
             })
             ->values();
@@ -94,5 +95,26 @@ class ThemeRegistry
         }
 
         return URL::to($relativePath);
+    }
+
+    private function resolveAvatarUrl(string $themeKey): ?string
+    {
+        $relativeDir = 'theme-previews/'.$themeKey;
+        $absoluteDir = public_path(str_replace('/', DIRECTORY_SEPARATOR, $relativeDir));
+
+        if (! File::exists($absoluteDir)) {
+            return null;
+        }
+
+        $candidates = glob($absoluteDir.DIRECTORY_SEPARATOR.'avatar.*');
+
+        if (empty($candidates)) {
+            return null;
+        }
+
+        // Use first match
+        $fileName = basename($candidates[0]);
+
+        return URL::to($relativeDir.'/'.$fileName);
     }
 }
