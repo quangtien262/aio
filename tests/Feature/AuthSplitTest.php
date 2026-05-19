@@ -130,4 +130,11 @@ class AuthSplitTest extends TestCase
 
         $this->assertGuest('customer');
     }
+
+    public function test_root_entry_redirects_to_clean_locale_home_url(): void
+    {
+        $this->withSession(['frontend_locale' => $this->storefrontLocale()])
+            ->get('/')
+            ->assertRedirect('/'.$this->storefrontLocale());
+    }
 }

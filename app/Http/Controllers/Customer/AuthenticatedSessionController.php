@@ -142,12 +142,17 @@ class AuthenticatedSessionController
 
     public function destroy(Request $request): RedirectResponse
     {
+        $locale = $request->session()->get('frontend_locale');
+
         Auth::guard('customer')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return to_route('site.home');
+        /** @var Redirector $redirector */
+        $redirector = app('redirect');
+
+        return $redirector->to('/'.\App\Support\FrontendLocalization::resolveLocale($locale));
     }
 
     private function normalizeRedirectTarget(?string $redirectTo, string $fallback): string
