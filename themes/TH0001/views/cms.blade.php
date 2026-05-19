@@ -221,12 +221,12 @@
             .th-contact-info-card small { display: block; margin-bottom: 6px; color: #8b8b8b; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
             .th-contact-info-card strong { display: block; margin-bottom: 6px; font-size: 22px; line-height: 1.25; }
             .th-contact-info-card span { display: block; color: #666; line-height: 1.7; }
-            .th-contact-form-shell { width: min(920px, 100%); margin: 0 auto; padding: 30px; border-radius: 28px; border: 1px solid var(--th-line); background: #fff; box-shadow: var(--th-shadow); }
+            .th-contact-form-shell { width: 100%; max-width: none; margin: 0; padding: 30px; border-radius: 28px; border: 1px solid var(--th-line); background: #fff; box-shadow: var(--th-shadow); }
             .th-contact-form-shell h2 { margin: 0 0 10px; text-align: center; font-size: clamp(28px, 4vw, 42px); }
             .th-contact-form-shell > p { margin: 0 0 24px; text-align: center; color: #666; line-height: 1.7; }
             .th-contact-form-shell .th-contact-form { gap: 16px; }
             .th-contact-submit-row { display: flex; justify-content: center; }
-            .th-about-simple { width: min(920px, 100%); margin: 0 auto; padding: 32px; border-radius: 28px; border: 1px solid #ffe0d6; background: linear-gradient(180deg, #fff 0%, #fff9f6 100%); box-shadow: var(--th-shadow); }
+            .th-about-simple { width: 100%; max-width: none; margin: 0; padding: 32px; border-radius: 28px; border: 1px solid #ffe0d6; background: linear-gradient(180deg, #fff 0%, #fff9f6 100%); box-shadow: var(--th-shadow); }
             .th-about-simple .th-cms-title { margin-bottom: 10px; }
             .th-about-simple .th-cms-body { margin-top: 20px; }
             .th-footer { margin-top: 32px; background: #fff; border-top: 1px solid var(--th-line); }
