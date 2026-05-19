@@ -55,6 +55,30 @@ class AuthSplitTest extends TestCase
         $this->assertGuest('customer');
     }
 
+    public function test_shared_login_accepts_long_storefront_redirect_payload_without_validation_error(): void
+    {
+        $admin = Admin::factory()->create([
+            'username' => 'admin',
+            'email' => 'admin@aio.local',
+            'password' => 'password',
+        ]);
+
+        $longRedirect = route('site.home', FrontendLocalization::routeParameterDefaults($this->storefrontLocale()));
+
+        $response = $this->postJson($this->storefrontRoute('customer.auth.store'), [
+            'login' => 'admin',
+            'password' => 'password',
+            'redirect_to' => $longRedirect,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.guard', 'admin')
+            ->assertJsonPath('data.redirect_to', route('admin.index'));
+
+        $this->assertAuthenticatedAs($admin, 'admin');
+    }
+
     public function test_customer_registration_and_login_use_customer_guard_only(): void
     {
         $registerResponse = $this->post($this->storefrontRoute('customer.auth.register.store'), [

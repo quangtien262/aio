@@ -9,6 +9,7 @@ import ThemeTranslationDrawer from '../components/ThemeTranslationDrawer';
 
 const { Paragraph, Text } = Typography;
 const ThemeListTable = lazy(() => import('../components/ThemeListTable'));
+const ThemeGrid = lazy(() => import('../components/ThemeGrid'));
 const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDetailsPanel'));
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
 const ThemeDemoDataModal = lazy(() => import('../components/ThemeDemoDataModal'));
@@ -108,6 +109,14 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
             </Space>
 
             <Suspense fallback={<Card loading title="Theme List" />}>
+                <div style={{ marginBottom: 16 }}>
+                    <ThemeGrid
+                        themes={themes}
+                        selectedThemeKey={selectedThemeKey}
+                        onSelectTheme={setSelectedThemeKey}
+                        onOpenPreview={handleOpenPreview}
+                    />
+                </div>
                 <ThemeListTable
                     themes={themes}
                     themesMeta={themesMeta}
