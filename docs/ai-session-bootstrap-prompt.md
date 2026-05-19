@@ -129,6 +129,8 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 - Business content translation đã phủ các nhóm chính như `site_profile`, `site_banner`, `cms_menu`, `cms_page`, `cms_post`, `cms_category`, `catalog_category`, `catalog_product`.
 - Auth modal storefront hiện đã được đồng bộ shared login admin/customer trên tất cả các theme đang có engagement modal chính: `TH0001`, `TH0002`, `SER0100`, `SER0101`.
 - Rule cần giữ: login panel của các theme này phải dùng field identity chung `Email khách hàng / Username admin`, post về `customer.auth.store`, để backend thử admin trước rồi mới fallback customer.
+- Có guide riêng để AI đọc trước khi dựng theme mới: `docs/theme-authoring-guide.md`.
+- Có checklist 1 trang để AI/dev copy-paste khi bắt đầu dựng theme mới: `docs/theme-starter-checklist.md`.
 - File neo chính: `app/Support/BusinessContentTranslationService.php`, `app/Http/Controllers/Admin/Api/ThemeTranslationIndexController.php`, `resources/admin/src/modules/themes/components/ThemeTranslationDrawer.jsx`, `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`.
 - Đã có test/backstop cho phần này:
   - `tests/Feature/ThemeContentTranslationTest.php`
@@ -180,6 +182,8 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 - `themes/TH0002/views/partials/palette-tokens.blade.php`
 - `themes/TH0002/views/partials/engagement-modals.blade.php`
 - `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`
+- `docs/theme-authoring-guide.md`
+- `docs/theme-starter-checklist.md`
 
 ## 10. Cách làm việc tôi muốn ở session này
 
