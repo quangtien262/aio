@@ -94,15 +94,29 @@ export default function ThemeDemoDataModal({ open, theme, mode = 'generate', can
                         label="Ngành dữ liệu mẫu"
                         rules={[{ required: true, message: 'Chọn loại dữ liệu test cần tạo' }]}
                     >
-                        <Select
-                            options={presetOptions}
-                            optionRender={(option) => (
-                                <div>
-                                    <div>{option.data.label}</div>
-                                    <Text type="secondary">{option.data.description}</Text>
-                                </div>
-                            )}
-                        />
+                            <Select
+                                showSearch
+                                placeholder="Tìm ngành dữ liệu mẫu"
+                                options={presetOptions}
+                                optionLabelProp="label"
+                                filterOption={(input, option) => {
+                                    const label = (option?.label ?? option?.data?.label ?? '').toString();
+                                    const desc = (option?.data?.description ?? option?.description ?? '').toString();
+
+                                    return `${label} ${desc}`.toLowerCase().includes(String(input).toLowerCase());
+                                }}
+                                optionRender={(option) => {
+                                    const label = option?.label ?? option?.data?.label ?? '';
+                                    const desc = option?.data?.description ?? option?.description ?? '';
+
+                                    return (
+                                        <div>
+                                            <div>{label}</div>
+                                            {desc ? <Text type="secondary">{desc}</Text> : null}
+                                        </div>
+                                    );
+                                }}
+                            />
                     </Form.Item>
                 </Form>
             </Space>

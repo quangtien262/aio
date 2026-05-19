@@ -8,7 +8,6 @@ import Typography from 'antd/es/typography';
 import ThemeTranslationDrawer from '../components/ThemeTranslationDrawer';
 
 const { Paragraph, Text } = Typography;
-const ThemeListTable = lazy(() => import('../components/ThemeListTable'));
 const ThemeGrid = lazy(() => import('../components/ThemeGrid'));
 const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDetailsPanel'));
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
@@ -116,16 +115,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                         onSelectTheme={setSelectedThemeKey}
                         onOpenPreview={handleOpenPreview}
                     />
-                </div>
-                <ThemeListTable
-                    themes={themes}
-                    themesMeta={themesMeta}
-                    selectedThemeKey={selectedThemeKey}
-                    onSelectTheme={setSelectedThemeKey}
-                    onOpenPreview={handleOpenPreview}
-                    callAdminApi={callAdminApi}
-                    runAdminAction={runAdminAction}
-                />
+                    </div>
             </Suspense>
 
             <Drawer
