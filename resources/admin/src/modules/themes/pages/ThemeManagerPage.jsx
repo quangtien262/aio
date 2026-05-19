@@ -6,6 +6,7 @@ import Popconfirm from 'antd/es/popconfirm';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
+import { EyeOutlined } from '@ant-design/icons';
 import ThemeTranslationDrawer from '../components/ThemeTranslationDrawer';
 
 const { Paragraph, Text } = Typography;
@@ -103,7 +104,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
             <div style={{ flex: 1 }}>
                 <Card title="Theme Engine Flow">
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
-                <Text className="card-label">Theme Activation</Text>
+                <Text className="card-label" strong>Theme Activation</Text>
                 <Paragraph style={{ marginBottom: 0 }}>
                     Danh sách theme và preview được tách riêng để chỉ mở chi tiết khi cần. Bấm vào tiêu đề theme để xem preview trong drawer và thao tác kích hoạt nhanh.
                 </Paragraph>
@@ -127,7 +128,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                                 </div>
 
                                 <div style={{ display: 'flex', gap: 8 }}>
-                                    <Button onClick={() => handleOpenPreview(activeThemeFromList.key)}>Xem chi tiết</Button>
+                                    <Button icon={<EyeOutlined />} onClick={() => handleOpenPreview(activeThemeFromList.key)}>Xem chi tiết</Button>
                                 </div>
                             </div>
 

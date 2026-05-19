@@ -9,6 +9,7 @@ import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import message from 'antd/es/message';
 import Modal from 'antd/es/modal';
+import AntList from 'antd/es/list';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
@@ -106,10 +107,12 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     const [uploadingAsset, setUploadingAsset] = useState(null);
     const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
+    const [sampleModalOpen, setSampleModalOpen] = useState(false);
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
+    const sampleImageInputRef = useRef(null);
     const slugEditedRef = useRef(Boolean(editingPage?.id));
     const titleValue = Form.useWatch('title', form) ?? '';
     const scopeValues = Form.useWatch(['website_key', 'owner_key', 'tenant_key'], form);
@@ -217,6 +220,79 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
             ],
         },
     }), []);
+
+    const SAMPLE_PRESETS = [
+        {
+            id: 'landing-intro',
+            title: 'Landing page giới thiệu',
+            description: 'Bố cục landing hai cột: ảnh/video bên trái, nội dung nổi bật bên phải.',
+            html: '<section style="display:flex;gap:24px;align-items:start;flex-wrap:wrap"><div style="flex:1;min-width:300px"><div style="position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#f3f7f6,#e6f3f2);height:100%;min-height:260px;display:flex;align-items:center;justify-content:center;border:1px solid #eef2f2"><div style="width:76px;height:76px;border-radius:50%;background:#ff9f1c;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.12)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7L8 5z" fill="#fff"/></svg></div></div></div><div style="flex:1;min-width:320px"><div style="color:#06b6d4;font-weight:700;letter-spacing:1.6px;font-size:12px;margin-bottom:8px">CHÚNG TÔI LÀ AI</div><h2 style="margin:0 0 12px;font-size:28px;line-height:1.15">Cam kết chất lượng và kết quả vượt trội</h2><p style="color:#374151;margin:0 0 16px">Chúng tôi là những người giải quyết vấn đề. Chúng tôi cam kết mang đến cho khách hàng sản phẩm và dịch vụ tốt nhất, đáp ứng và vượt qua mong đợi của họ bằng sự tập trung, chuyên môn và trách nhiệm.</p><div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px"><div style="flex:1;min-width:140px;padding:12px;border:1px solid #eef2f2;border-radius:8px;background:#fff"><div style="font-weight:700;margin-bottom:6px">Đảm bảo chất lượng</div><div style="color:#6b7280;font-size:13px">Quy trình kiểm soát chất lượng chặt chẽ cho mọi dự án.</div></div><div style="flex:1;min-width:140px;padding:12px;border:1px solid #eef2f2;border-radius:8px;background:#fff"><div style="font-weight:700;margin-bottom:6px">Trách nhiệm xã hội</div><div style="color:#6b7280;font-size:13px">Cam kết phát triển bền vững và hỗ trợ cộng đồng.</div></div></div></div></section>'
+        },
+        {
+            id: 'features',
+            title: '3 Features',
+            description: 'Ba cột tính năng với icon và mô tả ngắn.',
+            html: '<div class="sample-features" style="display:flex;gap:16px"><div style="flex:1;padding:12px;border:1px solid #eef2f2;border-radius:8px"><h3>Feature A</h3><p>Miêu tả ngắn về tính năng A.</p></div><div style="flex:1;padding:12px;border:1px solid #eef2f2;border-radius:8px"><h3>Feature B</h3><p>Miêu tả ngắn về tính năng B.</p></div><div style="flex:1;padding:12px;border:1px solid #eef2f2;border-radius:8px"><h3>Feature C</h3><p>Miêu tả ngắn về tính năng C.</p></div></div>'
+        },
+        {
+            id: 'faq',
+            title: 'FAQ (Accordion)',
+            description: 'Danh sách các câu hỏi thường gặp dạng list để copy nhanh.',
+            html: '<section class="sample-faq"><h2>FAQ</h2><dl><dt><strong>Hỏi: Làm sao để đăng ký?</strong></dt><dd>Trả lời: Bạn chỉ cần điền thông tin và bấm nút Đăng ký.</dd><dt><strong>Hỏi: Thời gian giao hàng?</strong></dt><dd>Trả lời: Thông thường 3-5 ngày làm việc.</dd></dl></section>'
+        }
+    ];
+
+    const buildPresetHtml = (item) => {
+        if (!item) return item?.html ?? '';
+
+        if (item.id === 'landing-intro') {
+            const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23eef2ff'/><stop offset='1' stop-color='%23f8fbff'/></linearGradient><radialGradient id='sun' cx='30%25' cy='20%25' r='40%25'><stop offset='0' stop-color='%23ffd27d'/><stop offset='1' stop-color='%23ff9f1c'/></radialGradient></defs><rect width='100%25' height='100%25' rx='14' fill='url(%23g)'/><g transform='translate(0 120)'><path d='M0 560 C200 420 400 420 600 560 C800 700 1000 700 1200 560 L1200 800 L0 800 Z' fill='%23dff6f0'/><path d='M0 480 C220 340 420 360 600 480 C780 600 1000 620 1200 480 L1200 800 L0 800 Z' fill='%23bfece4'/></g><g transform='translate(80 40)'><circle cx='320' cy='120' r='56' fill='url(%23sun)' opacity='0.95'/><g transform='translate(180 260)'><rect x='0' y='0' width='680' height='420' rx='12' fill='%23ffffff' stroke='%23e6eef0' stroke-width='2' /><rect x='20' y='20' width='320' height='380' rx='8' fill='%23f3f7f6' /><rect x='360' y='20' width='300' height='120' rx='6' fill='%23fff4e6' /><rect x='360' y='150' width='300' height='90' rx='6' fill='%23fff' /><rect x='360' y='255' width='300' height='145' rx='6' fill='%23fff' /></g></g><g transform='translate(460 380)'><circle r='36' fill='%23ff9f1c' /><path d='M-8 -14 L18 0 L-8 14 z' fill='%23fff' transform='translate(6 0)'/></g></svg>`;
+
+            const imgSrc = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+
+            return (`<section style="display:flex;gap:24px;align-items:start;flex-wrap:wrap"><div style="flex:1;min-width:300px"><div style="position:relative;border-radius:12px;overflow:hidden;height:100%;min-height:260px;display:flex;align-items:center;justify-content:center;border:1px solid #eef2f2"><img src="${imgSrc}" alt="hero" style="width:100%;height:100%;object-fit:cover;display:block"/><div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:#ff9f1c;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.12)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7L8 5z" fill="#fff"/></svg></div></div></div><div style="flex:1;min-width:320px"><div style="color:#06b6d4;font-weight:700;letter-spacing:1.6px;font-size:12px;margin-bottom:8px">CHÚNG TÔI LÀ AI</div><h2 style="margin:0 0 12px;font-size:28px;line-height:1.15">Cam kết chất lượng và kết quả vượt trội</h2><p style="color:#374151;margin:0 0 16px">Chúng tôi là những người giải quyết vấn đề. Chúng tôi cam kết mang đến cho khách hàng sản phẩm và dịch vụ tốt nhất, đáp ứng và vượt qua mong đợi của họ bằng sự tập trung, chuyên môn và trách nhiệm.</p><div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px"><div style="flex:1;min-width:140px;padding:12px;border:1px solid #eef2f2;border-radius:8px;background:#fff"><div style="font-weight:700;margin-bottom:6px">Đảm bảo chất lượng</div><div style="color:#6b7280;font-size:13px">Quy trình kiểm soát chất lượng chặt chẽ cho mọi dự án.</div></div><div style="flex:1;min-width:140px;padding:12px;border:1px solid #eef2f2;border-radius:8px;background:#fff"><div style="font-weight:700;margin-bottom:6px">Trách nhiệm xã hội</div><div style="color:#6b7280;font-size:13px">Cam kết phát triển bền vững và hỗ trợ cộng đồng.</div></div></div></div></section>`);
+        }
+
+        return item.html ?? '';
+    };
+
+    const buildPresetHtmlWithOverride = (item, overrideImageSrc = null) => {
+        if (!item) return item?.html ?? '';
+
+        if (item.id === 'landing-intro') {
+            const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23eef2ff'/><stop offset='1' stop-color='%23f8fbff'/></linearGradient><radialGradient id='sun' cx='30%25' cy='20%25' r='40%25'><stop offset='0' stop-color='%23ffd27d'/><stop offset='1' stop-color='%23ff9f1c'/></radialGradient></defs><rect width='100%25' height='100%25' rx='14' fill='url(%23g)'/><g transform='translate(0 120)'><path d='M0 560 C200 420 400 420 600 560 C800 700 1000 700 1200 560 L1200 800 L0 800 Z' fill='%23dff6f0'/><path d='M0 480 C220 340 420 360 600 480 C780 600 1000 620 1200 480 L1200 800 L0 800 Z' fill='%23bfece4'/></g><g transform='translate(80 40)'><circle cx='320' cy='120' r='56' fill='url(%23sun)' opacity='0.95'/><g transform='translate(180 260)'><rect x='0' y='0' width='680' height='420' rx='12' fill='%23ffffff' stroke='%23e6eef0' stroke-width='2' /><rect x='20' y='20' width='320' height='380' rx='8' fill='%23f3f7f6' /><rect x='360' y='20' width='300' height='120' rx='6' fill='%23fff4e6' /><rect x='360' y='150' width='300' height='90' rx='6' fill='%23fff' /><rect x='360' y='255' width='300' height='145' rx='6' fill='%23fff' /></g></g><g transform='translate(460 380)'><circle r='36' fill='%23ff9f1c' /><path d='M-8 -14 L18 0 L-8 14 z' fill='%23fff' transform='translate(6 0)'/></g></svg>`;
+
+            const defaultImgSrc = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+            const imgSrc = overrideImageSrc ?? defaultImgSrc;
+
+            return (`<section style="display:flex;gap:24px;align-items:start;flex-wrap:wrap"><div style="flex:1;min-width:300px"><div style="position:relative;border-radius:12px;overflow:hidden;height:100%;min-height:260px;display:flex;align-items:center;justify-content:center;border:1px solid #eef2f2"><img src="${imgSrc}" alt="hero" style="width:100%;height:100%;object-fit:cover;display:block"/><div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:#ff9f1c;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.12)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7L8 5z" fill="#fff"/></svg></div></div></div><div style="flex:1;min-width:320px"><div style="color:#06b6d4;font-weight:700;letter-spacing:1.6px;font-size:12px;margin-bottom:8px">CHÚNG TÔI LÀ AI</div><h2 style="margin:0 0 12px;font-size:28px;line-height:1.15">Cam kết chất lượng và kết quả vượt trội</h2><p style="color:#374151;margin:0 0 16px">Chúng tôi là những người giải quyết vấn đề. Chúng tôi cam kết mang đến cho khách hàng sản phẩm và dịch vụ tốt nhất, đáp ứng và vượt qua mong đợi của họ bằng sự tập trung, chuyên môn và trách nhiệm.</p><div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px"><div style="flex:1;min-width:140px;padding:12px;border:1px solid #eef2f2;border-radius:8px;background:#fff"><div style="font-weight:700;margin-bottom:6px">Đảm bảo chất lượng</div><div style="color:#6b7280;font-size:13px">Quy trình kiểm soát chất lượng chặt chẽ cho mọi dự án.</div></div><div style="flex:1;min-width:140px;padding:12px;border:1px solid #eef2f2;border-radius:8px;background:#fff"><div style="font-weight:700;margin-bottom:6px">Trách nhiệm xã hội</div><div style="color:#6b7280;font-size:13px">Cam kết phát triển bền vững và hỗ trợ cộng đồng.</div></div></div></div></section>`);
+        }
+
+        return item.html ?? '';
+    };
+
+    const [pendingPresetToInsert, setPendingPresetToInsert] = useState(null);
+
+    const handleSampleImageSelected = (event) => {
+        const file = event?.target?.files?.[0];
+
+        if (!file || !pendingPresetToInsert) {
+            if (sampleImageInputRef.current) sampleImageInputRef.current.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const dataUrl = reader.result;
+            const html = buildPresetHtmlWithOverride(pendingPresetToInsert, dataUrl);
+            insertHtmlIntoEditor(html);
+            setSampleModalOpen(false);
+            messageApi.success('Đã chèn nội dung mẫu vào editor với ảnh đã chọn.');
+            setPendingPresetToInsert(null);
+            if (sampleImageInputRef.current) sampleImageInputRef.current.value = '';
+        };
+        reader.readAsDataURL(file);
+    };
 
     const uploadCmsMedia = async (file, typeLabel) => {
         const formData = new FormData();
@@ -383,7 +459,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
             title={editingPage?.id ? 'Cập nhật trang CMS' : 'Tạo trang CMS'}
             open={open}
             onCancel={handleCancel}
-            width={960}
+            width="100%"
             destroyOnHidden
             className="cms-page-drawer"
             extra={(
@@ -490,6 +566,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                                 }}>
                                     Nhúng video YouTube
                                 </Button>
+                                <Button type="default" disabled={!canManage} onClick={() => setSampleModalOpen(true)}>Nội dung mẫu</Button>
                             </Space>
                         </div>
 
@@ -544,6 +621,59 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                         placeholder="https://www.youtube.com/watch?v=..."
                     />
                 </Space>
+            </Modal>
+
+            <Modal
+                title="Chèn nội dung mẫu"
+                open={sampleModalOpen}
+                onCancel={() => setSampleModalOpen(false)}
+                footer={null}
+                width={720}
+                destroyOnHidden
+            >
+                <input ref={sampleImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleSampleImageSelected} />
+                <AntList
+                    dataSource={SAMPLE_PRESETS}
+                    renderItem={(item) => (
+                        <AntList.Item
+                            actions={[
+                                <Button
+                                    key="insert"
+                                    type="primary"
+                                    onClick={() => {
+                                        const html = buildPresetHtml(item);
+                                        insertHtmlIntoEditor(html);
+                                        setSampleModalOpen(false);
+                                        messageApi.success('Đã chèn nội dung mẫu vào editor.');
+                                    }}
+                                >
+                                    Chèn
+                                </Button>,
+                                <Button
+                                    key="insertWithImage"
+                                    onClick={() => {
+                                        setPendingPresetToInsert(item);
+                                        if (sampleImageInputRef.current) {
+                                            sampleImageInputRef.current.click();
+                                        }
+                                    }}
+                                >
+                                    Chèn với ảnh
+                                </Button>,
+                            ]}
+                        >
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'center', width: '100%' }}>
+                                <div style={{ width: 180, height: 112, flex: '0 0 180px', overflow: 'hidden', borderRadius: 8, border: '1px solid #eef2f2' }} dangerouslySetInnerHTML={{ __html: buildPresetHtmlWithOverride(item) }} />
+                                <div style={{ flex: 1 }}>
+                                    <AntList.Item.Meta
+                                        title={item.title}
+                                        description={item.description}
+                                    />
+                                </div>
+                            </div>
+                        </AntList.Item>
+                    )}
+                />
             </Modal>
         </Drawer>
     );
