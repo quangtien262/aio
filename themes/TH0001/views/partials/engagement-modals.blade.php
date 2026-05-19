@@ -43,13 +43,13 @@
             <form data-th-auth-form="login" novalidate>
                 <input type="hidden" name="redirect_to" value="{{ $postLoginRedirect }}">
                 <label class="th-modal-field">
-                    <span>@themeT('modal.login_identity', 'Email khách hàng / Username admin')</span>
-                    <input type="text" name="login" required>
+                    <span class="sr-only">@themeT('modal.login_identity', 'Email khách hàng / Username admin')</span>
+                    <input type="text" name="login" required placeholder="@themeT('modal.login_identity', 'Email khách hàng / Username admin')" aria-label="@themeT('modal.login_identity', 'Email khách hàng / Username admin')">
                     <small class="th-modal-field-error" data-th-field-error="login"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>@themeT('modal.password', 'Mật khẩu')</span>
-                    <input type="password" name="password" required>
+                    <span class="sr-only">@themeT('modal.password', 'Mật khẩu')</span>
+                    <input type="password" name="password" required placeholder="@themeT('modal.password', 'Mật khẩu')" aria-label="@themeT('modal.password', 'Mật khẩu')">
                     <small class="th-modal-field-error" data-th-field-error="password"></small>
                 </label>
                 <button type="submit" class="th-modal-submit">@themeT('modal.login_submit', 'Đăng nhập')</button>
@@ -63,28 +63,28 @@
             <form data-th-auth-form="register" novalidate>
                 <input type="hidden" name="redirect_to" value="{{ $postLoginRedirect }}">
                 <label class="th-modal-field">
-                    <span>@themeT('modal.full_name', 'Họ và tên')</span>
-                    <input type="text" name="name" required>
+                    <span class="sr-only">@themeT('modal.full_name', 'Họ và tên')</span>
+                    <input type="text" name="name" required placeholder="@themeT('modal.full_name', 'Họ và tên')" aria-label="@themeT('modal.full_name', 'Họ và tên')">
                     <small class="th-modal-field-error" data-th-field-error="name"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>@themeT('modal.email', 'Email')</span>
-                    <input type="email" name="email" required>
+                    <span class="sr-only">@themeT('modal.email', 'Email')</span>
+                    <input type="email" name="email" required placeholder="@themeT('modal.email', 'Email')" aria-label="@themeT('modal.email', 'Email')">
                     <small class="th-modal-field-error" data-th-field-error="email"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>@themeT('modal.phone', 'Số điện thoại')</span>
-                    <input type="text" name="phone">
+                    <span class="sr-only">@themeT('modal.phone', 'Số điện thoại')</span>
+                    <input type="text" name="phone" placeholder="@themeT('modal.phone', 'Số điện thoại')" aria-label="@themeT('modal.phone', 'Số điện thoại')">
                     <small class="th-modal-field-error" data-th-field-error="phone"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>@themeT('modal.password', 'Mật khẩu')</span>
-                    <input type="password" name="password" required>
+                    <span class="sr-only">@themeT('modal.password', 'Mật khẩu')</span>
+                    <input type="password" name="password" required placeholder="@themeT('modal.password', 'Mật khẩu')" aria-label="@themeT('modal.password', 'Mật khẩu')">
                     <small class="th-modal-field-error" data-th-field-error="password"></small>
                 </label>
                 <label class="th-modal-field">
-                    <span>@themeT('modal.password_confirmation', 'Xác nhận mật khẩu')</span>
-                    <input type="password" name="password_confirmation" required>
+                    <span class="sr-only">@themeT('modal.password_confirmation', 'Xác nhận mật khẩu')</span>
+                    <input type="password" name="password_confirmation" required placeholder="@themeT('modal.password_confirmation', 'Xác nhận mật khẩu')" aria-label="@themeT('modal.password_confirmation', 'Xác nhận mật khẩu')">
                     <small class="th-modal-field-error" data-th-field-error="password_confirmation"></small>
                 </label>
                 <button type="submit" class="th-modal-submit">@themeT('modal.register_submit', 'Đăng ký')</button>
@@ -98,8 +98,8 @@
             <p>{{ !empty($newsletterState['is_subscribed']) ? $themeText('modal.newsletter_summary_subscribed', 'Email của bạn đã đăng ký nhận bản tin. Có thể nhập email khác nếu muốn đổi.') : $themeText('modal.newsletter_summary_unsubscribed', 'Nhập email để nhận cập nhật ưu đãi, bài viết và sản phẩm mới.') }}</p>
             <form data-th-newsletter-form novalidate>
                 <label class="th-modal-field">
-                    <span>@themeT('modal.email', 'Email')</span>
-                    <input type="email" name="email" value="{{ $customerAuth['customer']['email'] ?? '' }}" {{ !empty($customerAuth['is_authenticated']) ? 'readonly' : '' }} required>
+                    <span class="sr-only">@themeT('modal.email', 'Email')</span>
+                    <input type="email" name="email" value="{{ $customerAuth['customer']['email'] ?? '' }}" {{ !empty($customerAuth['is_authenticated']) ? 'readonly' : '' }} required placeholder="@themeT('modal.email', 'Email')" aria-label="@themeT('modal.email', 'Email')">
                     <small class="th-modal-field-error" data-th-field-error="email"></small>
                 </label>
                 <button type="submit" class="th-modal-submit">@themeT('modal.newsletter_submit', 'Xác nhận đăng ký')</button>
@@ -170,6 +170,10 @@
         color: #444;
         font-weight: 700;
     }
+
+    .th-modal-field .th-icon { vertical-align: -2px; margin-right: 8px; display: inline-block }
+
+    .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
     .th-modal-field input {
         min-height: 46px;
         border: 1px solid #e4d7d7;

@@ -23,8 +23,12 @@ import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
 import MenuOutlined from '@ant-design/icons/MenuOutlined';
 import MoreOutlined from '@ant-design/icons/MoreOutlined';
+import HomeOutlined from '@ant-design/icons/HomeOutlined';
+import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
+import LockOutlined from '@ant-design/icons/LockOutlined';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { adminNavigation, adminNavigationSections } from '../shared/config/navigation';
+import ChangePasswordModal from '../shared/components/ChangePasswordModal';
 
 const ModuleRoutePage = lazy(() => import('../pages/modules/ModuleRoutePage'));
 const DashboardRoutePage = lazy(() => import('../pages/routes/DashboardRoutePage'));
@@ -74,6 +78,7 @@ export default function AdminLayout() {
     const [brandLogoFailed, setBrandLogoFailed] = useState(false);
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const [mobileSectionKey, setMobileSectionKey] = useState(null);
+    const [changePasswordOpen, setChangePasswordOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const isMobile = !screens.lg;
@@ -596,12 +601,41 @@ export default function AdminLayout() {
                                     <span className="admin-section-dropdown-caret" aria-hidden="true" />
                                 </Button>
                             </Dropdown>
-                            <Button href="/" className="admin-header-utility-button">Website</Button>
-                            <Button onClick={handleAdminLogout} className="admin-header-utility-button">Đăng xuất</Button>
+                            <Button href="/" target="_blank" rel="noopener noreferrer" className="admin-header-utility-button" icon={<HomeOutlined />} aria-label="Website">Website</Button>
+
+                            <Dropdown
+                                menu={{
+                                    items: [
+                                        { key: 'change_password', label: 'Đổi mật khẩu', icon: <LockOutlined /> },
+                                        { key: 'logout', label: 'Đăng xuất', icon: <LogoutOutlined />, danger: true },
+                                    ],
+                                    onClick: ({ key }) => {
+                                        if (key === 'change_password') {
+                                            setChangePasswordOpen(true);
+                                        }
+
+                                        if (key === 'logout') {
+                                            handleAdminLogout();
+                                        }
+                                    },
+                                }}
+                                trigger={['click']}
+                                placement="bottomRight"
+                            >
+                                <Button className="admin-header-utility-button" icon={<MoreOutlined />} aria-label="Tài khoản">Tài khoản</Button>
+                            </Dropdown>
                         </Space>
                     )}
                 </Space>
             </Header>
+
+            <ChangePasswordModal
+                open={changePasswordOpen}
+                onClose={() => setChangePasswordOpen(false)}
+                callAdminApi={callAdminApi}
+                runAdminAction={runAdminAction}
+                adminId={currentAdmin?.id}
+            />
 
             {!isMobile ? (
                 <Header className="admin-sub-header">
