@@ -4,6 +4,7 @@ import Card from 'antd/es/card';
 import Drawer from 'antd/es/drawer';
 import Popconfirm from 'antd/es/popconfirm';
 import Space from 'antd/es/space';
+import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import ThemeTranslationDrawer from '../components/ThemeTranslationDrawer';
 
@@ -47,6 +48,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
 
     const selectedTheme = useMemo(() => themes.find((theme) => theme.key === selectedThemeKey) ?? null, [selectedThemeKey, themes]);
     const previewTheme = useMemo(() => themes.find((theme) => theme.key === previewThemeKey) ?? null, [previewThemeKey, themes]);
+    const activeThemeFromList = useMemo(() => themes.find((t) => t.is_active) ?? activeTheme ?? null, [themes, activeTheme]);
     const activateTheme = useMemo(() => themes.find((theme) => theme.key === activateThemeKey) ?? null, [activateThemeKey, themes]);
     const demoTheme = useMemo(() => themes.find((theme) => theme.key === demoThemeKey) ?? null, [demoThemeKey, themes]);
     const translationTheme = useMemo(() => themes.find((theme) => theme.key === translationThemeKey) ?? null, [themes, translationThemeKey]);
@@ -106,6 +108,34 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                     Danh sách theme và preview được tách riêng để chỉ mở chi tiết khi cần. Bấm vào tiêu đề theme để xem preview trong drawer và thao tác kích hoạt nhanh.
                 </Paragraph>
             </Space>
+
+            {activeThemeFromList ? (
+                <div style={{ marginBottom: 16 }}>
+                    <Card size="small" bordered style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                        <div style={{ width: 260, flex: '0 0 260px', borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+                            <img src={activeThemeFromList.preview_urls?.cover ?? activeThemeFromList.preview_urls?.thumbnail ?? activeThemeFromList.avatar_url ?? ''} alt={activeThemeFromList.name} style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
+                        </div>
+
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: 16 }}>{activeThemeFromList.name}</div>
+                                    <div style={{ marginTop: 8 }}>
+                                        {activeThemeFromList.website_type ? <Tag color="gold">{activeThemeFromList.website_type}</Tag> : null}
+                                        <Tag color={activeThemeFromList.is_active ? 'green' : 'default'} style={{ marginLeft: 8 }}>{activeThemeFromList.is_active ? 'Đang kích hoạt' : (activeThemeFromList.status ?? '')}</Tag>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    <Button onClick={() => handleOpenPreview(activeThemeFromList.key)}>Xem chi tiết</Button>
+                                </div>
+                            </div>
+
+                            <div style={{ marginTop: 12 }}>{activeThemeFromList.description ?? 'Theme chưa có mô tả.'}</div>
+                        </div>
+                    </Card>
+                </div>
+            ) : null}
 
             <Suspense fallback={<Card loading title="Theme List" />}>
                 <div style={{ marginBottom: 16 }}>
