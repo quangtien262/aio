@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import './SetupWizardPage.css';
 import Alert from 'antd/es/alert';
 import App from 'antd/es/app';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
+import Popconfirm from 'antd/es/popconfirm';
+import Modal from 'antd/es/modal';
+import Checkbox from 'antd/es/checkbox';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import List from 'antd/es/list';
 import Progress from 'antd/es/progress';
 import Select from 'antd/es/select';
@@ -42,7 +47,7 @@ function BrandingPreviewImage({ src, alt, frameClassName, placeholderTitle, plac
     );
 }
 
-export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps }) {
+export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps, callAdminApi }) {
     const { message } = App.useApp();
     const [searchParams, setSearchParams] = useSearchParams();
     const [siteName, setSiteName] = useState('');
@@ -54,7 +59,25 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
     const [supportHotline, setSupportHotline] = useState('');
     const [supportEmail, setSupportEmail] = useState('');
     const [supportLocation, setSupportLocation] = useState('');
+    const [popLogoVisible, setPopLogoVisible] = useState(false);
+    const [tempLogo, setTempLogo] = useState('');
+    const [popFaviconVisible, setPopFaviconVisible] = useState(false);
+    const [tempFavicon, setTempFavicon] = useState('');
+    const [faviconUseLogo, setFaviconUseLogo] = useState(false);
+    const [popHotlineVisible, setPopHotlineVisible] = useState(false);
+    const [tempHotline, setTempHotline] = useState('');
+    const [popEmailVisible, setPopEmailVisible] = useState(false);
+    const [tempEmail, setTempEmail] = useState('');
+    const [popLocationVisible, setPopLocationVisible] = useState(false);
+    const [tempLocation, setTempLocation] = useState('');
+    const [popCompanyVisible, setPopCompanyVisible] = useState(false);
+    const [tempCompany, setTempCompany] = useState('');
+    const [popSiteNameVisible, setPopSiteNameVisible] = useState(false);
+    const [tempSiteName, setTempSiteName] = useState('');
+    const [popWebsiteTypeVisible, setPopWebsiteTypeVisible] = useState(false);
+    const [tempWebsiteType, setTempWebsiteType] = useState('');
     const stepRefs = useRef(new Map());
+    const fieldContainerRef = useRef(null);
     const announcedCompletedStepRef = useRef(null);
     const focusStep = searchParams.get('focusStep');
     const completedStep = searchParams.get('completedStep');
@@ -125,6 +148,56 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
     const nextStepLabel = setup.summary?.next_step_label;
     const branding = setup.branding ?? {};
 
+    function scrollToField(fieldId) {
+        try {
+            const el = document.getElementById(fieldId);
+            if (!el) return;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // if it's an input inside a wrapper, focus the first input
+            if (typeof el.focus === 'function') {
+                el.focus();
+            } else {
+                const input = el.querySelector && el.querySelector('input, textarea, select');
+                if (input && typeof input.focus === 'function') input.focus();
+            }
+        } catch (err) {
+            // ignore
+        }
+    }
+
+    function saveProfile(changes) {
+        const payload = {
+            site_name: siteName,
+            website_type: websiteType,
+            company_name: companyName,
+            slogan,
+            logo_url: logoUrl,
+            favicon_url: faviconUrl,
+            support_hotline: supportHotline,
+            support_email: supportEmail,
+            support_location: supportLocation,
+            ...changes,
+        };
+
+        // update local state
+        if (changes.site_name !== undefined) setSiteName(changes.site_name);
+        if (changes.website_type !== undefined) setWebsiteType(changes.website_type);
+        if (changes.company_name !== undefined) setCompanyName(changes.company_name);
+        if (changes.slogan !== undefined) setSlogan(changes.slogan);
+        if (changes.logo_url !== undefined) setLogoUrl(changes.logo_url);
+        // if logo changed and user selected 'use logo as favicon', also update favicon
+        if (changes.logo_url !== undefined && faviconUseLogo) {
+            changes.favicon_url = changes.logo_url;
+            setFaviconUrl(changes.logo_url);
+        }
+        if (changes.favicon_url !== undefined) setFaviconUrl(changes.favicon_url);
+        if (changes.support_hotline !== undefined) setSupportHotline(changes.support_hotline);
+        if (changes.support_email !== undefined) setSupportEmail(changes.support_email);
+        if (changes.support_location !== undefined) setSupportLocation(changes.support_location);
+
+        onSaveProfile?.(payload);
+    }
+
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Card title="Cài đặt website">
@@ -177,104 +250,208 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
 
             <div className="setup-shell">
                 <div className="setup-main-column">
-                    <Card
-                        title="Site Profile & Branding"
-                        extra={(
-                            <Button htmlType="submit" type="primary" form="setup-profile-form" disabled={!canEditProfile}>
-                                Lưu cấu hình
-                            </Button>
-                        )}
-                    >
-                        <Form
-                            id="setup-profile-form"
-                            layout="vertical"
-                            onFinish={() => onSaveProfile?.({
-                                site_name: siteName,
-                                website_type: websiteType,
-                                company_name: companyName,
-                                slogan,
-                                logo_url: logoUrl,
-                                favicon_url: faviconUrl,
-                                support_hotline: supportHotline,
-                                support_email: supportEmail,
-                                support_location: supportLocation,
-                            })}
-                        >
-                            <div className="setup-form-stack">
-                                <section className="setup-form-section">
-                                    <div className="setup-form-section-heading">
-                                        <Text className="card-label">Core Info</Text>
-                                        <Title level={5} style={{ margin: 0 }}>Thông tin nền tảng</Title>
-                                        <Paragraph style={{ marginBottom: 0 }}>
-                                            Chốt tên website, loại website và phần mô tả thương hiệu cơ bản trước khi đi tiếp các bước theme/module.
-                                        </Paragraph>
-                                    </div>
-                                    <div className="setup-form-grid setup-form-grid-2">
-                                        <Form.Item label="Tên website" required>
-                                            <Input disabled={!canEditProfile} value={siteName} onChange={(event) => setSiteName(event.target.value)} placeholder="VD: HTV Corporate Site" />
-                                        </Form.Item>
-                                        <Form.Item label="Loại website" required>
-                                            <Select disabled={!canEditProfile} value={websiteType || undefined} options={websiteTypeOptions} onChange={setWebsiteType} placeholder="Chọn loại website" />
-                                        </Form.Item>
-                                        <Form.Item label="Company name">
-                                            <Input disabled={!canEditProfile} value={companyName} onChange={(event) => setCompanyName(event.target.value)} placeholder="VD: HT Việt Nam" />
-                                        </Form.Item>
-                                        <Form.Item label="Slogan">
-                                            <Input disabled={!canEditProfile} value={slogan} onChange={(event) => setSlogan(event.target.value)} placeholder="VD: Digital foundation for every website" />
-                                        </Form.Item>
-                                    </div>
-                                </section>
 
-                                <section className="setup-form-section">
-                                    <div className="setup-form-section-heading">
-                                        <Text className="card-label">Brand Assets</Text>
-                                        <Title level={5} style={{ margin: 0 }}>Nhận diện thương hiệu</Title>
-                                        <Paragraph style={{ marginBottom: 0 }}>
-                                            Cấu hình logo, favicon và thông tin nhận diện cơ bản ở đây. Palette giao diện chi tiết của TH0002 đã được tách sang Theme Manager để tránh chỉnh màu ở hai nơi.
-                                        </Paragraph>
-                                    </div>
-                                    <div className="setup-form-grid setup-form-grid-2">
-                                        <Form.Item label="Logo URL">
-                                            <Input disabled={!canEditProfile} value={logoUrl} onChange={(event) => setLogoUrl(event.target.value)} placeholder="https://cdn.example.com/logo.svg" />
-                                        </Form.Item>
-                                        <Form.Item label="Favicon URL">
-                                            <Input disabled={!canEditProfile} value={faviconUrl} onChange={(event) => setFaviconUrl(event.target.value)} placeholder="https://cdn.example.com/favicon.ico" />
-                                        </Form.Item>
-                                    </div>
-                                </section>
 
-                                <section className="setup-form-section">
-                                    <div className="setup-form-section-heading">
-                                        <Text className="card-label">Support</Text>
-                                        <Title level={5} style={{ margin: 0 }}>Thông tin hỗ trợ</Title>
-                                        <Paragraph style={{ marginBottom: 0 }}>
-                                            Các trường này thường được render ở header, footer hoặc block liên hệ của theme storefront.
-                                        </Paragraph>
-                                    </div>
-                                    <div className="setup-form-grid setup-form-grid-3">
-                                        <Form.Item label="Hotline hiển thị ở header">
-                                            <Input disabled={!canEditProfile} value={supportHotline} onChange={(event) => setSupportHotline(event.target.value)} placeholder="1900 6760 / 0354.466.968" />
-                                        </Form.Item>
-                                        <Form.Item label="Email chăm sóc khách hàng">
-                                            <Input disabled={!canEditProfile} value={supportEmail} onChange={(event) => setSupportEmail(event.target.value)} placeholder="sales@example.com" />
-                                        </Form.Item>
-                                        <Form.Item label="Vị trí / khu vực hiển thị">
-                                            <Input disabled={!canEditProfile} value={supportLocation} onChange={(event) => setSupportLocation(event.target.value)} placeholder="Hà Nội" />
-                                        </Form.Item>
-                                    </div>
-                                </section>
-
-                                <div className="setup-form-actions">
-                                    <Text type="secondary">Màu storefront của TH0002 hiện được chỉnh trong Theme Manager để đồng bộ đúng theo theme đang dùng.</Text>
-                                    <Button htmlType="submit" type="primary" disabled={!canEditProfile}>
-                                        Lưu profile và branding
-                                    </Button>
-                                </div>
+                <div className="setup-side-column">
+                    <Card title="Site Profile & Branding">
+                        <div className="detail-grid detail-grid-2">
+                            <div className="detail-tile detail-tile-row detail-tile-wide">
+                                <Text className="detail-label">Tên website</Text>
+                                <div className="detail-value" title={siteName || ''}>{siteName || 'Chưa cấu hình'}</div>
+                                <Popconfirm
+                                    title={(
+                                        <div style={{ minWidth: 260 }}>
+                                            <Input value={tempSiteName} onChange={(e) => setTempSiteName(e.target.value)} placeholder="Nhập tên website" />
+                                        </div>
+                                    )}
+                                    okText="Lưu"
+                                    cancelText="Hủy"
+                                    onConfirm={() => { saveProfile({ site_name: tempSiteName }); setPopSiteNameVisible(false); }}
+                                    visible={popSiteNameVisible}
+                                    onVisibleChange={(v) => { setPopSiteNameVisible(v); if (v) setTempSiteName(siteName); }}
+                                >
+                                    <Button size="small" onClick={() => setPopSiteNameVisible(true)}>Sửa</Button>
+                                </Popconfirm>
                             </div>
-                        </Form>
+
+                            <div className="detail-tile detail-tile-row detail-tile-wide">
+                                <Text className="detail-label">Loại website</Text>
+                                <div className="detail-value" title={setup.website_type_label || ''}>{setup.website_type_label || 'Chưa chọn'}</div>
+                                <Popconfirm
+                                    title={(
+                                        <div style={{ minWidth: 260 }}>
+                                            <Select value={tempWebsiteType || undefined} options={websiteTypeOptions} onChange={(v) => setTempWebsiteType(v)} placeholder="Chọn loại website" style={{ width: '100%' }} />
+                                        </div>
+                                    )}
+                                    okText="Lưu"
+                                    cancelText="Hủy"
+                                    onConfirm={() => { saveProfile({ website_type: tempWebsiteType }); setPopWebsiteTypeVisible(false); }}
+                                    visible={popWebsiteTypeVisible}
+                                    onVisibleChange={(v) => { setPopWebsiteTypeVisible(v); if (v) setTempWebsiteType(websiteType); }}
+                                >
+                                    <Button size="small" onClick={() => setPopWebsiteTypeVisible(true)}>Sửa</Button>
+                                </Popconfirm>
+                            </div>
+
+                            <div className="detail-tile detail-tile-wide">
+                                <Text className="detail-label">Company name</Text>
+                                <Text strong>{companyName || 'Chưa cấu hình'}</Text>
+                            </div>
+                            <div className="detail-tile detail-tile-wide">
+                                <Text className="detail-label">Slogan</Text>
+                                <Text strong>{slogan || 'Chưa cấu hình'}</Text>
+                            </div>
+                            <div className="detail-tile detail-tile-wide">
+                                <Text className="detail-label">Palette storefront</Text>
+                                <Text strong>{setup.active_theme_key === 'TH0002' ? 'Quản lý trong Theme Manager' : 'Không áp dụng'}</Text>
+                            </div>
+
+                            <div className="detail-tile detail-tile-wide detail-tile-row">
+                                <Text className="detail-label">Logo</Text>
+                                <div style={{ flex: 1 }}>
+                                    <BrandingPreviewImage
+                                        src={logoUrl}
+                                        alt={companyName || siteName || 'Logo'}
+                                        frameClassName="branding-image-frame"
+                                        placeholderTitle={logoUrl ? '' : 'Chưa cấu hình'}
+                                        placeholderHint={logoUrl ? '' : 'Chưa có logo'}
+                                    />
+                                </div>
+                                <Button size="small" onClick={() => { setPopLogoVisible(true); setTempLogo(logoUrl); }}>Sửa</Button>
+                            </div>
+
+                            <div className="detail-tile detail-tile-wide detail-tile-row">
+                                <Text className="detail-label">Favicon</Text>
+                                <div style={{ flex: '0 0 56px' }}>
+                                    <BrandingPreviewImage
+                                        src={faviconUrl}
+                                        alt="Favicon"
+                                        frameClassName="branding-image-frame"
+                                        placeholderTitle={faviconUrl ? '' : 'Chưa cấu hình'}
+                                        placeholderHint={faviconUrl ? '' : 'Chưa có favicon'}
+                                    />
+                                </div>
+                                <Button size="small" onClick={() => { setPopFaviconVisible(true); setTempFavicon(faviconUrl); }}>Sửa</Button>
+                            </div>
+
+                            <div className="detail-tile detail-tile-row">
+                                <Text className="detail-label">Hotline</Text>
+                                <div className="detail-value" title={supportHotline || ''}>{supportHotline || 'Chưa cấu hình'}</div>
+                                <Popconfirm
+                                    title={(
+                                        <div style={{ minWidth: 260 }}>
+                                            <Input value={tempHotline} onChange={(e) => setTempHotline(e.target.value)} placeholder="1900 6760 / 0354.466.968" />
+                                        </div>
+                                    )}
+                                    okText="Lưu"
+                                    cancelText="Hủy"
+                                    onConfirm={() => { saveProfile({ support_hotline: tempHotline }); setPopHotlineVisible(false); }}
+                                    visible={popHotlineVisible}
+                                    onVisibleChange={(v) => { setPopHotlineVisible(v); if (v) setTempHotline(supportHotline); }}
+                                >
+                                    <Button size="small" onClick={() => setPopHotlineVisible(true)}>Sửa</Button>
+                                </Popconfirm>
+                            </div>
+
+                            <div className="detail-tile detail-tile-row">
+                                <Text className="detail-label">Email CSKH</Text>
+                                <div className="detail-value" title={supportEmail || ''}>{supportEmail || 'Chưa cấu hình'}</div>
+                                <Popconfirm
+                                    title={(
+                                        <div style={{ minWidth: 260 }}>
+                                            <Input value={tempEmail} onChange={(e) => setTempEmail(e.target.value)} placeholder="sales@example.com" />
+                                        </div>
+                                    )}
+                                    okText="Lưu"
+                                    cancelText="Hủy"
+                                    onConfirm={() => { saveProfile({ support_email: tempEmail }); setPopEmailVisible(false); }}
+                                    visible={popEmailVisible}
+                                    onVisibleChange={(v) => { setPopEmailVisible(v); if (v) setTempEmail(supportEmail); }}
+                                >
+                                    <Button size="small" onClick={() => setPopEmailVisible(true)}>Sửa</Button>
+                                </Popconfirm>
+                            </div>
+
+                            <div className="detail-tile detail-tile-wide detail-tile-row">
+                                <Text className="detail-label">Vị trí hiển thị</Text>
+                                <div className="detail-value" title={supportLocation || ''}>{supportLocation || 'Chưa cấu hình'}</div>
+                                <Popconfirm
+                                    title={(
+                                        <div style={{ minWidth: 260 }}>
+                                            <Input value={tempLocation} onChange={(e) => setTempLocation(e.target.value)} placeholder="Hà Nội" />
+                                        </div>
+                                    )}
+                                    okText="Lưu"
+                                    cancelText="Hủy"
+                                    onConfirm={() => { saveProfile({ support_location: tempLocation }); setPopLocationVisible(false); }}
+                                    visible={popLocationVisible}
+                                    onVisibleChange={(v) => { setPopLocationVisible(v); if (v) setTempLocation(supportLocation); }}
+                                >
+                                    <Button size="small" onClick={() => setPopLocationVisible(true)}>Sửa</Button>
+                                </Popconfirm>
+                            </div>
+                        </div>
                     </Card>
 
-                    <Card title="Các bước setup">
+                    <Modal
+                        title="Upload Logo"
+                        open={popLogoVisible}
+                        onCancel={() => setPopLogoVisible(false)}
+                        footer={null}
+                        destroyOnClose
+                    >
+                        <SingleMediaPicker
+                            open={popLogoVisible}
+                            value={tempLogo}
+                            onChange={(v) => setTempLogo(v)}
+                            canManage={canEditProfile}
+                            callAdminApi={callAdminApi}
+                            uploadButtonLabel="Upload logo"
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                            <Button onClick={() => setPopLogoVisible(false)}>Hủy</Button>
+                            <Button type="primary" onClick={() => { saveProfile({ logo_url: tempLogo }); setPopLogoVisible(false); }}>Lưu</Button>
+                        </div>
+                    </Modal>
+
+                    <Modal
+                        title="Upload Favicon"
+                        open={popFaviconVisible}
+                        onCancel={() => setPopFaviconVisible(false)}
+                        footer={null}
+                        destroyOnClose
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                            <Checkbox checked={faviconUseLogo} onChange={(e) => {
+                                const v = e.target.checked;
+                                setFaviconUseLogo(v);
+                                if (v) setTempFavicon(logoUrl);
+                            }} disabled={!canEditProfile}>Dùng logo làm favicon</Checkbox>
+                        </div>
+
+                        {!faviconUseLogo ? (
+                            <SingleMediaPicker
+                                open={popFaviconVisible}
+                                value={tempFavicon}
+                                onChange={(v) => setTempFavicon(v)}
+                                canManage={canEditProfile}
+                                callAdminApi={callAdminApi}
+                                uploadButtonLabel="Upload favicon"
+                            />
+                        ) : (
+                            <div style={{ padding: 12, border: '1px dashed var(--sw-border)', borderRadius: 6 }}>
+                                <Text>Favicon sẽ được lấy từ Logo hiện tại.</Text>
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                            <Button onClick={() => setPopFaviconVisible(false)}>Hủy</Button>
+                            <Button type="primary" onClick={() => { saveProfile({ favicon_url: faviconUseLogo ? logoUrl : tempFavicon }); setPopFaviconVisible(false); setFaviconUseLogo(false); }}>Lưu</Button>
+                        </div>
+                    </Modal>
+                </div>
+
+                    <Card title="Site Profile & Branding">
                         <List
                             className="setup-steps-list"
                             dataSource={setup.steps}
@@ -328,56 +505,59 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
                     </Card>
                 </div>
 
+
                 <div className="setup-side-column">
-                    <Card title="Branding Snapshot">
-                        <div className="detail-grid detail-grid-2">
-                            <div className="detail-tile">
-                                <Text className="detail-label">Company name</Text>
-                                <Text strong>{branding.company_name || 'Chưa cấu hình'}</Text>
-                            </div>
-                            <div className="detail-tile">
-                                <Text className="detail-label">Slogan</Text>
-                                <Text strong>{branding.slogan || 'Chưa cấu hình'}</Text>
-                            </div>
-                            <div className="detail-tile">
-                                <Text className="detail-label">Palette storefront</Text>
-                                <Text strong>{setup.active_theme_key === 'TH0002' ? 'Quản lý trong Theme Manager' : 'Không áp dụng'}</Text>
-                            </div>
-                            <div className="detail-tile detail-tile-wide">
-                                <Text className="detail-label">Logo URL</Text>
-                                <Text strong>{branding.logo_url || 'Chưa cấu hình'}</Text>
-                                <BrandingPreviewImage
-                                    src={branding.logo_url}
-                                    alt="Logo preview"
-                                    frameClassName="branding-image-frame branding-image-frame-logo"
-                                    placeholderTitle="Logo placeholder"
-                                    placeholderHint={branding.logo_url ? 'Link logo không tải được.' : 'Chưa có logo để xem trước.'}
-                                />
-                            </div>
-                            <div className="detail-tile detail-tile-wide">
-                                <Text className="detail-label">Favicon URL</Text>
-                                <Text strong>{branding.favicon_url || 'Chưa cấu hình'}</Text>
-                                <BrandingPreviewImage
-                                    src={branding.favicon_url}
-                                    alt="Favicon preview"
-                                    frameClassName="branding-image-frame branding-image-frame-favicon"
-                                    placeholderTitle="Favicon placeholder"
-                                    placeholderHint={branding.favicon_url ? 'Link favicon không tải được.' : 'Chưa có favicon để xem trước.'}
-                                />
-                            </div>
-                            <div className="detail-tile">
-                                <Text className="detail-label">Hotline</Text>
-                                <Text strong>{branding.support_hotline || 'Chưa cấu hình'}</Text>
-                            </div>
-                            <div className="detail-tile">
-                                <Text className="detail-label">Email CSKH</Text>
-                                <Text strong>{branding.support_email || 'Chưa cấu hình'}</Text>
-                            </div>
-                            <div className="detail-tile detail-tile-wide">
-                                <Text className="detail-label">Vị trí hiển thị</Text>
-                                <Text strong>{branding.support_location || 'Chưa cấu hình'}</Text>
-                            </div>
-                        </div>
+                    <Card title="Các bước setup">
+                        <List
+                            className="setup-steps-list"
+                            dataSource={setup.steps}
+                            renderItem={(item) => (
+                                <List.Item
+                                    ref={(element) => {
+                                        if (element) {
+                                            stepRefs.current.set(item.key, element);
+                                        } else {
+                                            stepRefs.current.delete(item.key);
+                                        }
+                                    }}
+                                    className={`${focusStep === item.key ? 'setup-step-focus' : ''} setup-step-row`}
+                                >
+                                    <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                                        <Space className="setup-step-header" wrap>
+                                            <div className="setup-step-copy">
+                                                <Text strong>{item.label}</Text>
+                                                {item.description ? <Paragraph style={{ marginBottom: 0, marginTop: 4 }}>{item.description}</Paragraph> : null}
+                                            </div>
+                                            <Space wrap>
+                                                <Tag color={item.is_completed ? 'green' : item.is_blocked ? 'default' : 'blue'}>
+                                                    {item.is_completed ? 'done' : item.is_blocked ? 'blocked' : 'pending'}
+                                                </Tag>
+                                                <Tag>{item.manual_completion ? 'manual' : 'auto'}</Tag>
+                                                {item.completion_source === 'derived' && item.is_completed ? <Tag color="cyan">derived</Tag> : null}
+                                            </Space>
+                                        </Space>
+
+                                        <Space wrap className="setup-step-actions">
+                                            {item.route && item.route !== '/setup' ? (
+                                                <Link to={`${item.route}?returnTo=${encodeURIComponent('/setup')}&focusStep=${encodeURIComponent(item.key)}${item.manual_completion ? `&completeStep=${encodeURIComponent(item.key)}` : ''}`}>
+                                                    <Button size="small">Đi tới bước này</Button>
+                                                </Link>
+                                            ) : null}
+                                            {!item.is_completed ? (
+                                                <Button
+                                                    size="small"
+                                                    type="primary"
+                                                    disabled={!canCompleteSteps || !item.can_complete}
+                                                    onClick={() => onCompleteStep?.(item.key)}
+                                                >
+                                                    {item.key === 'finish' ? 'Chốt setup' : 'Đánh dấu hoàn thành'}
+                                                </Button>
+                                            ) : null}
+                                        </Space>
+                                    </Space>
+                                </List.Item>
+                            )}
+                        />
                     </Card>
                 </div>
             </div>

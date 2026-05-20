@@ -236,7 +236,17 @@ export default function AdminLayout() {
                 ...item,
                 section: item.section ?? 'workspace',
             }))),
-        ].filter((item) => !item.permission || hasPermission(item.permission));
+        ]
+            // filter out any module-provided link to the setup page to keep CMS menu tidy
+            .filter((item) => {
+                const route = String(item.route ?? '').replace(/\/?$/, '');
+                if (route === '/admin/cms/setup' || route === '/admin/setup' || item.label === 'Cài đặt website') {
+                    return false;
+                }
+
+                return true;
+            })
+            .filter((item) => !item.permission || hasPermission(item.permission));
     }, [currentAdmin, hasPermission]);
 
     const defaultRoute = navigationItems[0]?.route ?? '/dashboard';

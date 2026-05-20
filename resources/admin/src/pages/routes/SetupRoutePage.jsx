@@ -60,6 +60,7 @@ export default function SetupRoutePage({ canAccess, canComplete, callAdminApi, r
             }}
             canEditProfile={canComplete}
             canCompleteSteps={canComplete}
+            callAdminApi={callAdminApi}
         />
     );
 }

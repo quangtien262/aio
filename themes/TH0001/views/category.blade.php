@@ -12,6 +12,7 @@
     $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
     $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
+    $companyTitle = data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', ''));
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $activeFilters = $filters ?? [];
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
@@ -92,7 +93,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $category->name }} | {{ data_get($branding, 'company_name', 'TH0001') }}</title>
+        <title>{{ $category->name }}{{ $companyTitle ? ' | '.$companyTitle : '' }}</title>
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
@@ -282,9 +283,9 @@
             <header class="th-header">
                 <div class="th-container th-header-inner">
                     <a class="th-logo" href="{{ route('site.home') }}">
-                        <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'Website logo') }}">
+                        <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ $companyTitle ?: '' }}">
                         <span class="th-logo-mark">
-                            <strong>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'AIO Commerce')) }}</strong>
+                            <strong>{{ $companyTitle }}</strong>
                         </span>
                     </a>
                     <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
@@ -497,7 +498,7 @@
                         @endforeach
 
                         <div class="th-company">
-                            <strong>{{ data_get($branding, 'company_name', 'TH0001') }}</strong>
+                            <strong>{{ data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', '')) }}</strong>
                             <div>Thiết kế lại trang danh sách sản phẩm theo layout thương mại điện tử, dùng dữ liệu category và product thật từ hệ thống.</div>
                         </div>
                     </div>

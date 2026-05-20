@@ -1,5 +1,6 @@
 @php
     $themeShellData = $themeShellData ?? [];
+    $siteProfile = $themeShellData['site_profile'] ?? $siteProfile ?? \App\Models\SiteProfile::query()->first();
     $branding = $themeShellData['branding'] ?? [];
     $topMenu = $themeShellData['top_menu'] ?? [];
     $productMenu = $themeShellData['product_menu'] ?? [];
@@ -12,6 +13,7 @@
     $contactHotline = data_get($branding, 'support_hotline', '1900 6760');
     $contactEmail = data_get($branding, 'support_email', config('mail.from.address', 'cs@aio.local'));
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
+    $companyTitle = data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', ''));
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $pageSlug = (string) ($entry->slug ?? '');
     $isAboutPage = ($contentType ?? null) === 'page' && in_array($pageSlug, ['gioi-thieu', 'about'], true);
@@ -34,7 +36,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $pageTitle ?? data_get($branding, 'company_name', $siteProfile?->site_name ?? config('app.name', 'AIO Platform')) }}</title>
+        <title>{{ $pageTitle ?? $companyTitle }}</title>
         @if (!empty($pageDescription))
             <meta name="description" content="{{ $pageDescription }}">
         @endif
@@ -284,7 +286,7 @@
             <header class="th-header">
                 <div class="th-container th-header-inner">
                     <a class="th-logo" href="{{ route('site.home') }}">
-                        <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'Website logo') }}">
+                        <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ $companyTitle ?: '' }}">
                     </a>
                     <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
                         <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
@@ -638,7 +640,7 @@
                                     <div class="th-cms-mini-list">
                                         <div class="th-cms-mini-item">
                                             <small>{{ $t('cms.sidebar.brand_label', 'Thương hiệu') }}</small>
-                                            <strong>{{ data_get($branding, 'company_name', $siteProfile?->site_name ?? 'AIO Commerce') }}</strong>
+                                            <strong>{{ data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', '')) }}</strong>
                                         </div>
                                         <div class="th-cms-mini-item">
                                             <small>Hotline</small>
@@ -698,7 +700,7 @@
                         @endforeach
 
                         <section class="th-company">
-                            <strong>{{ mb_strtoupper(data_get($branding, 'company_name', 'TH0001 DEMO'), 'UTF-8') }}</strong>
+                            <strong>{{ mb_strtoupper(data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', '')), 'UTF-8') }}</strong>
                             <div class="th-footer-links">
                                 <span>{{ $t('footer.address_line_1', '332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM') }}</span>
                                 <span>{{ $t('footer.address_line_2', 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân') }}</span>

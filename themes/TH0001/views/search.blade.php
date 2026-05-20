@@ -11,6 +11,7 @@
     $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
     $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
+    $companyTitle = data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', ''));
     $searchQuery = (string) ($searchQuery ?? request('q', ''));
     $productCollection = collect($products ?? []);
     $pagination = $pagination ?? null;
@@ -37,7 +38,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $searchQuery !== '' ? str_replace(':query', $searchQuery, $t('search.title_query', 'Kết quả cho ":query"')) : $t('search.title_default', 'Tìm kiếm sản phẩm') }} | {{ data_get($branding, 'company_name', 'TH0001') }}</title>
+        <title>{{ $searchQuery !== '' ? str_replace(':query', $searchQuery, $t('search.title_query', 'Kết quả cho ":query"')) : $t('search.title_default', 'Tìm kiếm sản phẩm') }}{{ $companyTitle ? ' | '.$companyTitle : '' }}</title>
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
@@ -165,9 +166,9 @@
             <header class="th-header">
                 <div class="th-container th-header-inner">
                     <a class="th-logo" href="{{ route('site.home') }}">
-                        <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'Website logo') }}">
+                        <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ $companyTitle ?: '' }}">
                         <span class="th-logo-mark">
-                            <strong>{{ data_get($branding, 'company_name', data_get($siteProfile, 'site_name', 'AIO Commerce')) }}</strong>
+                            <strong>{{ $companyTitle }}</strong>
                         </span>
                     </a>
                     <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
@@ -314,7 +315,7 @@
                 <div class="th-container th-footer-inner">
                     <div class="th-footer-grid">
                         <div class="th-company">
-                            <strong>{{ data_get($branding, 'company_name', $siteProfile?->site_name ?? 'AIO Website') }}</strong>
+                            <strong>{{ $companyTitle }}</strong>
                             <div>{{ $contactLocation }}</div>
                             <div>@themeT('common.hotline_label', 'Hotline'): {{ $contactHotline }}</div>
                             <div>@themeT('common.email_label', 'Email'): {{ $contactEmail }}</div>

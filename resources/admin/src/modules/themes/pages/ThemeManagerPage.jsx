@@ -4,9 +4,12 @@ import Card from 'antd/es/card';
 import Drawer from 'antd/es/drawer';
 import Popconfirm from 'antd/es/popconfirm';
 import Space from 'antd/es/space';
+import Menu from 'antd/es/menu';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import { EyeOutlined } from '@ant-design/icons';
+import { GlobalOutlined, BgColorsOutlined, MessageOutlined, FileTextOutlined, SettingOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import ThemeTranslationDrawer from '../components/ThemeTranslationDrawer';
 
 const { Paragraph, Text } = Typography;
@@ -19,6 +22,7 @@ const ThemePaletteEditorDrawer = lazy(() => import('../components/ThemePaletteEd
 
 export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
+    const navigate = useNavigate();
     const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
     const [demoThemeKey, setDemoThemeKey] = useState(null);
@@ -66,39 +70,42 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
         <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
             <aside style={{ width: 280 }}>
                 <Card size="small" title="Actions">
-                    <Space direction="vertical" style={{ width: '100%' }}>
-                        <Button block disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setLocaleThemeKey(selectedTheme?.key ?? null)}>
+                    <Menu mode="vertical" selectable={false} style={{ borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,0.04)', padding: 8 }}>
+                        <Menu.Item key="lang" icon={<GlobalOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setLocaleThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
                             Quản lý ngôn ngữ
-                        </Button>
-                        <Button block disabled={selectedTheme?.key !== 'TH0002' || !canGenerateDemoData} onClick={() => setPaletteThemeKey(selectedTheme?.key ?? null)}>
+                        </Menu.Item>
+                        <Menu.Item key="palette" icon={<BgColorsOutlined />} disabled={selectedTheme?.key !== 'TH0002' || !canGenerateDemoData} onClick={() => setPaletteThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
                             Palette theme
-                        </Button>
-                        <Button block type="primary" disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setThemeBlocksThemeKey(selectedTheme?.key ?? null)}>
+                        </Menu.Item>
+                        <Menu.Item key="theme-translate" icon={<FileTextOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setThemeBlocksThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
                             bản dịch của theme
-                        </Button>
-                        <Button block disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setTranslationThemeKey(selectedTheme?.key ?? null)}>
+                        </Menu.Item>
+                        <Menu.Item key="frontend-translate" icon={<MessageOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setTranslationThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
                             Bản dịch frontend (default {defaultFrontendLocale.toUpperCase()}, xem {frontendLocale.toUpperCase()})
-                        </Button>
-                        <Button block disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setDemoThemeKey(selectedTheme?.key ?? null)}>
+                        </Menu.Item>
+                        <Menu.Item key="demo-create" icon={<FileTextOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setDemoThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
                             Tạo data test
-                        </Button>
-                        <Button block disabled={!selectedTheme || !canGenerateDemoData} onClick={() => {
+                        </Menu.Item>
+                        <Menu.Item key="setup" icon={<SettingOutlined />} onClick={() => navigate(`../setup?returnTo=${encodeURIComponent('/admin/themes')}&focusStep=${encodeURIComponent('theme')}`)} style={{ marginBottom: 6, fontWeight: 600 }}>
+                            Cài đặt website
+                        </Menu.Item>
+                        <Menu.Item key="rebuild" icon={<ReloadOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => {
                             setDemoActionMode('rebuild');
                             setDemoThemeKey(selectedTheme?.key ?? null);
-                        }}>
+                        }} style={{ marginBottom: 6 }}>
                             Rebuild curated local demo
-                        </Button>
-                        <Popconfirm
-                            title="Xóa toàn bộ data test đã được hệ thống đánh dấu?"
-                            description="Thao tác này chỉ xóa dữ liệu test do hệ thống tạo và đã được gắn marker demo."
-                            onConfirm={() => onDeleteDemoData?.(selectedTheme?.key ?? null)}
-                            disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}
-                        >
-                            <Button block danger disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}>
-                                Xóa data test
-                            </Button>
-                        </Popconfirm>
-                    </Space>
+                        </Menu.Item>
+                        <Menu.Item key="delete" icon={<DeleteOutlined />} disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData} style={{ marginBottom: 6 }}>
+                            <Popconfirm
+                                title="Xóa toàn bộ data test đã được hệ thống đánh dấu?"
+                                description="Thao tác này chỉ xóa dữ liệu test do hệ thống tạo và đã được gắn marker demo."
+                                onConfirm={() => onDeleteDemoData?.(selectedTheme?.key ?? null)}
+                                disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}
+                            >
+                                <span style={{ color: 'var(--ant-danger-color)' }}>Xóa data test</span>
+                            </Popconfirm>
+                        </Menu.Item>
+                    </Menu>
                 </Card>
             </aside>
             <div style={{ flex: 1 }}>

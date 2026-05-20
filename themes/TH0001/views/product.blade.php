@@ -12,6 +12,7 @@
     $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
     $contactEmail = data_get($branding, 'support_email', 'cs@th0001.demo');
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
+    $companyTitle = data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', ''));
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $gallery = $productGallery ?? [];
     $highlights = $productHighlights ?? [];
@@ -75,7 +76,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $product['title'] }} | {{ data_get($branding, 'company_name', 'TH0001') }}</title>
+        <title>{{ $product['title'] }}{{ $companyTitle ? ' | '.$companyTitle : '' }}</title>
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
@@ -291,7 +292,7 @@
         <header class="header">
             <div class="wrap header-main">
                 <a class="brand" href="{{ route('site.home') }}">
-                    <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'TH0001') }}">
+                    <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ $companyTitle ?: '' }}">
                 </a>
 
                 <form class="searchbar" method="GET" action="{{ route('site.catalog.search') }}" role="search">
@@ -581,7 +582,7 @@
                     @endforeach
 
                     <section class="th-company">
-                        <strong>{{ mb_strtoupper(data_get($branding, 'company_name', 'TH0001 DEMO'), 'UTF-8') }}</strong>
+                        <strong>{{ mb_strtoupper(data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', '')), 'UTF-8') }}</strong>
                         <div class="th-footer-links">
                             <span>332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM</span>
                             <span>Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân</span>
