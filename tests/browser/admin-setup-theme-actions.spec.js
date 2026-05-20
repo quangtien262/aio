@@ -37,9 +37,13 @@ test('setup theme actions route into working theme manager flows', async ({ page
         const menuItem = await openSetupAction(page, action.menuName);
         await menuItem.click();
 
-        await expect(page).toHaveURL(/\/admin\/themes/);
+        await expect(page).toHaveURL(/\/admin\/setup/);
         await expect(page.getByRole('dialog', { name: action.dialogName })).toBeVisible();
     }
+
+    const themeManagerItem = await openSetupAction(page, /ql theme/i);
+    await themeManagerItem.click();
+    await expect(page).toHaveURL(/\/admin\/themes/);
 
     const conditionalActions = [
         { menuName: /palette theme/i, dialogName: /palette theme/i },
@@ -57,7 +61,7 @@ test('setup theme actions route into working theme manager flows', async ({ page
         }
 
         await setupMenuItem.click();
-        await expect(page).toHaveURL(/\/admin\/themes/);
+        await expect(page).toHaveURL(/\/admin\/setup/);
         await expect(page.getByRole('dialog', { name: action.dialogName })).toBeVisible();
     }
 });

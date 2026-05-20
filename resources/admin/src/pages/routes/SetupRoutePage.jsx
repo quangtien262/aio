@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import SetupWizardPage from '../../modules/setup/pages/SetupWizardPage';
 import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
 
-export default function SetupRoutePage({ canAccess, canComplete, callAdminApi, runAdminAction }) {
+export default function SetupRoutePage({ canAccess, canComplete, canViewThemeManager, canManageThemeActions, callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { data, loading, error, reload } = useAdminRouteResource({
@@ -42,6 +42,7 @@ export default function SetupRoutePage({ canAccess, canComplete, callAdminApi, r
     return (
         <SetupWizardPage
             setup={data?.setup ?? null}
+            themes={data?.themes ?? []}
             activeTheme={(data?.themes ?? []).find((theme) => theme.is_active) ?? null}
             onSaveProfile={async (payload) => {
                 const didSave = await runAdminAction(
@@ -67,6 +68,22 @@ export default function SetupRoutePage({ canAccess, canComplete, callAdminApi, r
             }}
             canEditProfile={canComplete}
             canCompleteSteps={canComplete}
+            canViewThemeManager={canViewThemeManager}
+            canManageThemeActions={canManageThemeActions}
+            frontendLocale={frontendLocale}
+            defaultFrontendLocale={defaultFrontendLocale}
+            onGenerateDemoData={(themeKey, preset) => runAdminAction(
+                () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'POST', body: JSON.stringify({ preset }) }),
+                'Đã tạo data test cho theme.',
+                reload,
+            )}
+            onDeleteDemoData={(themeKey) => runAdminAction(
+                () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'DELETE' }),
+                'Đã xóa data test cho theme.',
+                reload,
+            )}
+            onSaveThemePalette={reload}
+            runAdminAction={runAdminAction}
             callAdminApi={callAdminApi}
         />
     );

@@ -18,6 +18,8 @@ import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ThemeActionMenuCard from '../../themes/components/ThemeActionMenuCard';
+import ThemeActionOverlayHost from '../../themes/components/ThemeActionOverlayHost';
+import useThemeActionOverlayController from '../../themes/hooks/useThemeActionOverlayController';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -48,10 +50,11 @@ function BrandingPreviewImage({ src, alt, frameClassName, placeholderTitle, plac
     );
 }
 
-export default function SetupWizardPage({ setup, activeTheme = null, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps, callAdminApi }) {
+export default function SetupWizardPage({ setup, themes = [], activeTheme = null, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps, canViewThemeManager = false, canManageThemeActions = false, frontendLocale = 'vi', defaultFrontendLocale = 'vi', onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, runAdminAction, callAdminApi }) {
     const { message } = App.useApp();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
+    const themeActionController = useThemeActionOverlayController();
     const [siteName, setSiteName] = useState('');
     const [websiteType, setWebsiteType] = useState('');
     const [companyName, setCompanyName] = useState('');
@@ -83,23 +86,6 @@ export default function SetupWizardPage({ setup, activeTheme = null, onSaveProfi
     const announcedCompletedStepRef = useRef(null);
     const focusStep = searchParams.get('focusStep');
     const completedStep = searchParams.get('completedStep');
-    const activeThemeKey = activeTheme?.key ?? setup?.active_theme_key ?? null;
-    const openThemeManagerAction = (actionKey) => {
-        if (!activeThemeKey) {
-            return;
-        }
-
-        const nextParams = new URLSearchParams();
-        nextParams.set('returnTo', '/admin/setup');
-        nextParams.set('focusStep', 'theme');
-        nextParams.set('theme', activeThemeKey);
-
-        if (actionKey) {
-            nextParams.set('action', actionKey);
-        }
-
-        navigate({ pathname: '/admin/themes', search: `?${nextParams.toString()}` });
-    };
 
     useEffect(() => {
         setSiteName(setup?.site_name ?? '');
@@ -272,16 +258,20 @@ export default function SetupWizardPage({ setup, activeTheme = null, onSaveProfi
                     <div style={{ marginBottom: 12 }}>
                         <ThemeActionMenuCard
                             theme={activeTheme}
-                            canManageThemeActions={Boolean(activeThemeKey)}
-                            frontendLocale="vi"
-                            defaultFrontendLocale="vi"
-                            onOpenLocale={() => openThemeManagerAction('locale')}
-                            onOpenPalette={() => openThemeManagerAction('palette')}
-                            onOpenThemeTranslations={() => openThemeManagerAction('theme-translate')}
-                            onOpenFrontendTranslations={() => openThemeManagerAction('frontend-translate')}
-                            onOpenDemoCreate={() => openThemeManagerAction('demo-create')}
-                            onOpenRebuild={() => openThemeManagerAction('rebuild')}
-                            onOpenDelete={() => openThemeManagerAction('delete')}
+                            canViewThemeManager={canViewThemeManager}
+                            canManageThemeActions={canManageThemeActions}
+                            frontendLocale={frontendLocale}
+                            defaultFrontendLocale={defaultFrontendLocale}
+                            onOpenThemeManager={() => navigate('../themes')}
+                            onOpenLocale={themeActionController.openLocale}
+                            onOpenPalette={themeActionController.openPalette}
+                            onOpenThemeTranslations={themeActionController.openThemeTranslations}
+                            onOpenFrontendTranslations={themeActionController.openFrontendTranslations}
+                            onOpenDemoCreate={themeActionController.openDemoCreate}
+                            onOpenSetup={() => navigate('../setup')}
+                            onOpenRebuild={themeActionController.openRebuild}
+                            onOpenDelete={themeActionController.openDelete}
+                            isSetupActive
                         />
                     </div>
                 </div>
@@ -482,6 +472,20 @@ export default function SetupWizardPage({ setup, activeTheme = null, onSaveProfi
                             <Button type="primary" onClick={() => { saveProfile({ favicon_url: faviconUseLogo ? logoUrl : tempFavicon }); setPopFaviconVisible(false); setFaviconUseLogo(false); }}>Lưu</Button>
                         </div>
                     </Modal>
+
+                    <ThemeActionOverlayHost
+                        state={themeActionController.overlayState}
+                        themes={themes}
+                        siteProfile={setup}
+                        canManageThemeActions={canManageThemeActions}
+                        callAdminApi={callAdminApi}
+                        runAdminAction={runAdminAction}
+                        frontendLocale={frontendLocale}
+                        onGenerateDemoData={onGenerateDemoData}
+                        onDeleteDemoData={onDeleteDemoData}
+                        onSaveThemePalette={onSaveThemePalette}
+                        onClose={themeActionController.closeOverlay}
+                    />
                 </div>
             </div>
         </Space>
