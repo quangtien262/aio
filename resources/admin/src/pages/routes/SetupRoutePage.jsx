@@ -10,9 +10,15 @@ export default function SetupRoutePage({ canAccess, canComplete, callAdminApi, r
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/setup');
+            const [setupPayload, themesPayload] = await Promise.all([
+                callAdminApi('/admin/api/setup'),
+                callAdminApi('/admin/api/themes'),
+            ]);
 
-            return payload.data ?? null;
+            return {
+                setup: setupPayload.data ?? null,
+                themes: themesPayload.data ?? [],
+            };
         },
         cacheKey: 'admin.route.setup',
     });
@@ -35,7 +41,8 @@ export default function SetupRoutePage({ canAccess, canComplete, callAdminApi, r
 
     return (
         <SetupWizardPage
-            setup={data}
+            setup={data?.setup ?? null}
+            activeTheme={(data?.themes ?? []).find((theme) => theme.is_active) ?? null}
             onSaveProfile={async (payload) => {
                 const didSave = await runAdminAction(
                     () => callAdminApi('/admin/api/setup', { method: 'PUT', body: JSON.stringify(payload) }),

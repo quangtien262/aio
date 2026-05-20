@@ -16,7 +16,8 @@ import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import ThemeActionMenuCard from '../../themes/components/ThemeActionMenuCard';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -47,8 +48,9 @@ function BrandingPreviewImage({ src, alt, frameClassName, placeholderTitle, plac
     );
 }
 
-export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps, callAdminApi }) {
+export default function SetupWizardPage({ setup, activeTheme = null, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps, callAdminApi }) {
     const { message } = App.useApp();
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [siteName, setSiteName] = useState('');
     const [websiteType, setWebsiteType] = useState('');
@@ -81,6 +83,23 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
     const announcedCompletedStepRef = useRef(null);
     const focusStep = searchParams.get('focusStep');
     const completedStep = searchParams.get('completedStep');
+    const activeThemeKey = activeTheme?.key ?? setup?.active_theme_key ?? null;
+    const openThemeManagerAction = (actionKey) => {
+        if (!activeThemeKey) {
+            return;
+        }
+
+        const nextParams = new URLSearchParams();
+        nextParams.set('returnTo', '/admin/setup');
+        nextParams.set('focusStep', 'theme');
+        nextParams.set('theme', activeThemeKey);
+
+        if (actionKey) {
+            nextParams.set('action', actionKey);
+        }
+
+        navigate({ pathname: '/admin/themes', search: `?${nextParams.toString()}` });
+    };
 
     useEffect(() => {
         setSiteName(setup?.site_name ?? '');
@@ -249,10 +268,24 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
             </Card>
 
             <div className="setup-shell">
-                <div className="setup-main-column">
-
-
                 <div className="setup-side-column">
+                    <div style={{ marginBottom: 12 }}>
+                        <ThemeActionMenuCard
+                            theme={activeTheme}
+                            canManageThemeActions={Boolean(activeThemeKey)}
+                            frontendLocale="vi"
+                            defaultFrontendLocale="vi"
+                            onOpenLocale={() => openThemeManagerAction('locale')}
+                            onOpenPalette={() => openThemeManagerAction('palette')}
+                            onOpenThemeTranslations={() => openThemeManagerAction('theme-translate')}
+                            onOpenFrontendTranslations={() => openThemeManagerAction('frontend-translate')}
+                            onOpenDemoCreate={() => openThemeManagerAction('demo-create')}
+                            onOpenRebuild={() => openThemeManagerAction('rebuild')}
+                            onOpenDelete={() => openThemeManagerAction('delete')}
+                        />
+                    </div>
+                </div>
+                <div className="setup-main-column">
                     <Card title="Site Profile & Branding">
                         <div className="detail-grid detail-grid-2">
                             <div className="detail-tile detail-tile-row detail-tile-wide">
@@ -449,116 +482,6 @@ export default function SetupWizardPage({ setup, onSaveProfile, onCompleteStep, 
                             <Button type="primary" onClick={() => { saveProfile({ favicon_url: faviconUseLogo ? logoUrl : tempFavicon }); setPopFaviconVisible(false); setFaviconUseLogo(false); }}>Lưu</Button>
                         </div>
                     </Modal>
-                </div>
-
-                    <Card title="Site Profile & Branding">
-                        <List
-                            className="setup-steps-list"
-                            dataSource={setup.steps}
-                            renderItem={(item) => (
-                                <List.Item
-                                    ref={(element) => {
-                                        if (element) {
-                                            stepRefs.current.set(item.key, element);
-                                        } else {
-                                            stepRefs.current.delete(item.key);
-                                        }
-                                    }}
-                                    className={`${focusStep === item.key ? 'setup-step-focus' : ''} setup-step-row`}
-                                >
-                                    <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                        <Space className="setup-step-header" wrap>
-                                            <div className="setup-step-copy">
-                                                <Text strong>{item.label}</Text>
-                                                {item.description ? <Paragraph style={{ marginBottom: 0, marginTop: 4 }}>{item.description}</Paragraph> : null}
-                                            </div>
-                                            <Space wrap>
-                                                <Tag color={item.is_completed ? 'green' : item.is_blocked ? 'default' : 'blue'}>
-                                                    {item.is_completed ? 'done' : item.is_blocked ? 'blocked' : 'pending'}
-                                                </Tag>
-                                                <Tag>{item.manual_completion ? 'manual' : 'auto'}</Tag>
-                                                {item.completion_source === 'derived' && item.is_completed ? <Tag color="cyan">derived</Tag> : null}
-                                            </Space>
-                                        </Space>
-
-                                        <Space wrap className="setup-step-actions">
-                                            {item.route && item.route !== '/setup' ? (
-                                                <Link to={`${item.route}?returnTo=${encodeURIComponent('/setup')}&focusStep=${encodeURIComponent(item.key)}${item.manual_completion ? `&completeStep=${encodeURIComponent(item.key)}` : ''}`}>
-                                                    <Button size="small">Đi tới bước này</Button>
-                                                </Link>
-                                            ) : null}
-                                            {!item.is_completed ? (
-                                                <Button
-                                                    size="small"
-                                                    type="primary"
-                                                    disabled={!canCompleteSteps || !item.can_complete}
-                                                    onClick={() => onCompleteStep?.(item.key)}
-                                                >
-                                                    {item.key === 'finish' ? 'Chốt setup' : 'Đánh dấu hoàn thành'}
-                                                </Button>
-                                            ) : null}
-                                        </Space>
-                                    </Space>
-                                </List.Item>
-                            )}
-                        />
-                    </Card>
-                </div>
-
-
-                <div className="setup-side-column">
-                    <Card title="Các bước setup">
-                        <List
-                            className="setup-steps-list"
-                            dataSource={setup.steps}
-                            renderItem={(item) => (
-                                <List.Item
-                                    ref={(element) => {
-                                        if (element) {
-                                            stepRefs.current.set(item.key, element);
-                                        } else {
-                                            stepRefs.current.delete(item.key);
-                                        }
-                                    }}
-                                    className={`${focusStep === item.key ? 'setup-step-focus' : ''} setup-step-row`}
-                                >
-                                    <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                        <Space className="setup-step-header" wrap>
-                                            <div className="setup-step-copy">
-                                                <Text strong>{item.label}</Text>
-                                                {item.description ? <Paragraph style={{ marginBottom: 0, marginTop: 4 }}>{item.description}</Paragraph> : null}
-                                            </div>
-                                            <Space wrap>
-                                                <Tag color={item.is_completed ? 'green' : item.is_blocked ? 'default' : 'blue'}>
-                                                    {item.is_completed ? 'done' : item.is_blocked ? 'blocked' : 'pending'}
-                                                </Tag>
-                                                <Tag>{item.manual_completion ? 'manual' : 'auto'}</Tag>
-                                                {item.completion_source === 'derived' && item.is_completed ? <Tag color="cyan">derived</Tag> : null}
-                                            </Space>
-                                        </Space>
-
-                                        <Space wrap className="setup-step-actions">
-                                            {item.route && item.route !== '/setup' ? (
-                                                <Link to={`${item.route}?returnTo=${encodeURIComponent('/setup')}&focusStep=${encodeURIComponent(item.key)}${item.manual_completion ? `&completeStep=${encodeURIComponent(item.key)}` : ''}`}>
-                                                    <Button size="small">Đi tới bước này</Button>
-                                                </Link>
-                                            ) : null}
-                                            {!item.is_completed ? (
-                                                <Button
-                                                    size="small"
-                                                    type="primary"
-                                                    disabled={!canCompleteSteps || !item.can_complete}
-                                                    onClick={() => onCompleteStep?.(item.key)}
-                                                >
-                                                    {item.key === 'finish' ? 'Chốt setup' : 'Đánh dấu hoàn thành'}
-                                                </Button>
-                                            ) : null}
-                                        </Space>
-                                    </Space>
-                                </List.Item>
-                            )}
-                        />
-                    </Card>
                 </div>
             </div>
         </Space>

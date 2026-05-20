@@ -2,14 +2,13 @@ import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Drawer from 'antd/es/drawer';
-import Popconfirm from 'antd/es/popconfirm';
+import Modal from 'antd/es/modal';
 import Space from 'antd/es/space';
-import Menu from 'antd/es/menu';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import { EyeOutlined } from '@ant-design/icons';
-import { GlobalOutlined, BgColorsOutlined, MessageOutlined, FileTextOutlined, SettingOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import ThemeActionMenuCard from '../components/ThemeActionMenuCard';
 import ThemeTranslationDrawer from '../components/ThemeTranslationDrawer';
 
 const { Paragraph, Text } = Typography;
@@ -23,6 +22,7 @@ const ThemePaletteEditorDrawer = lazy(() => import('../components/ThemePaletteEd
 export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
     const [demoThemeKey, setDemoThemeKey] = useState(null);
@@ -31,6 +31,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
     const [themeBlocksThemeKey, setThemeBlocksThemeKey] = useState(null);
     const [localeThemeKey, setLocaleThemeKey] = useState(null);
     const [paletteThemeKey, setPaletteThemeKey] = useState(null);
+    const [deleteThemeKey, setDeleteThemeKey] = useState(null);
 
     useEffect(() => {
         if (!themes?.length) {
@@ -60,53 +61,112 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
     const themeBlocksTheme = useMemo(() => themes.find((theme) => theme.key === themeBlocksThemeKey) ?? null, [themeBlocksThemeKey, themes]);
     const localeTheme = useMemo(() => themes.find((theme) => theme.key === localeThemeKey) ?? null, [localeThemeKey, themes]);
     const paletteTheme = useMemo(() => themes.find((theme) => theme.key === paletteThemeKey) ?? null, [paletteThemeKey, themes]);
+    const deleteTheme = useMemo(() => themes.find((theme) => theme.key === deleteThemeKey) ?? null, [deleteThemeKey, themes]);
+    const requestedAction = searchParams.get('action');
+    const requestedThemeKey = searchParams.get('theme');
+
+    const clearRequestedAction = () => {
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.delete('action');
+        nextParams.delete('theme');
+        setSearchParams(nextParams, { replace: true });
+    };
 
     const handleOpenPreview = (themeKey) => {
         setSelectedThemeKey(themeKey);
         setPreviewThemeKey(themeKey);
     };
 
+    useEffect(() => {
+        if (!themes?.length || !requestedAction) {
+            return;
+        }
+
+        const fallbackThemeKey = activeThemeFromList?.key ?? themes[0]?.key ?? null;
+        const targetThemeKey = themes.some((theme) => theme.key === requestedThemeKey)
+            ? requestedThemeKey
+            : (selectedThemeKey ?? fallbackThemeKey);
+
+        if (!targetThemeKey) {
+            clearRequestedAction();
+            return;
+        }
+
+        if (selectedThemeKey !== targetThemeKey) {
+            setSelectedThemeKey(targetThemeKey);
+            return;
+        }
+
+        const targetTheme = themes.find((theme) => theme.key === targetThemeKey) ?? null;
+
+        switch (requestedAction) {
+        case 'locale':
+            if (canGenerateDemoData) {
+                setLocaleThemeKey(targetThemeKey);
+            }
+            break;
+        case 'palette':
+            if (canGenerateDemoData && targetTheme?.key === 'TH0002') {
+                setPaletteThemeKey(targetThemeKey);
+            }
+            break;
+        case 'theme-translate':
+            if (canGenerateDemoData) {
+                setThemeBlocksThemeKey(targetThemeKey);
+            }
+            break;
+        case 'frontend-translate':
+            if (canGenerateDemoData) {
+                setTranslationThemeKey(targetThemeKey);
+            }
+            break;
+        case 'demo-create':
+            if (canGenerateDemoData) {
+                setDemoActionMode('generate');
+                setDemoThemeKey(targetThemeKey);
+            }
+            break;
+        case 'rebuild':
+            if (canGenerateDemoData) {
+                setDemoActionMode('rebuild');
+                setDemoThemeKey(targetThemeKey);
+            }
+            break;
+        case 'delete':
+            if (canGenerateDemoData && targetTheme?.has_demo_data) {
+                setDeleteThemeKey(targetThemeKey);
+            }
+            break;
+        default:
+            break;
+        }
+
+        clearRequestedAction();
+    }, [activeThemeFromList?.key, canGenerateDemoData, requestedAction, requestedThemeKey, searchParams, selectedThemeKey, setSearchParams, themes]);
+
     return (
         <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
             <aside style={{ width: 280 }}>
-                <Card size="small" title="Actions">
-                    <Menu mode="vertical" selectable={false} style={{ borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,0.04)', padding: 8 }}>
-                        <Menu.Item key="lang" icon={<GlobalOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setLocaleThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
-                            Quản lý ngôn ngữ
-                        </Menu.Item>
-                        <Menu.Item key="palette" icon={<BgColorsOutlined />} disabled={selectedTheme?.key !== 'TH0002' || !canGenerateDemoData} onClick={() => setPaletteThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
-                            Palette theme
-                        </Menu.Item>
-                        <Menu.Item key="theme-translate" icon={<FileTextOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setThemeBlocksThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
-                            bản dịch của theme
-                        </Menu.Item>
-                        <Menu.Item key="frontend-translate" icon={<MessageOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setTranslationThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
-                            Bản dịch frontend (default {defaultFrontendLocale.toUpperCase()}, xem {frontendLocale.toUpperCase()})
-                        </Menu.Item>
-                        <Menu.Item key="demo-create" icon={<FileTextOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => setDemoThemeKey(selectedTheme?.key ?? null)} style={{ marginBottom: 6 }}>
-                            Tạo data test
-                        </Menu.Item>
-                        <Menu.Item key="setup" icon={<SettingOutlined />} onClick={() => navigate(`../setup?returnTo=${encodeURIComponent('/admin/themes')}&focusStep=${encodeURIComponent('theme')}`)} style={{ marginBottom: 6, fontWeight: 600 }}>
-                            Cài đặt website
-                        </Menu.Item>
-                        <Menu.Item key="rebuild" icon={<ReloadOutlined />} disabled={!selectedTheme || !canGenerateDemoData} onClick={() => {
-                            setDemoActionMode('rebuild');
-                            setDemoThemeKey(selectedTheme?.key ?? null);
-                        }} style={{ marginBottom: 6 }}>
-                            Rebuild curated local demo
-                        </Menu.Item>
-                        <Menu.Item key="delete" icon={<DeleteOutlined />} disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData} style={{ marginBottom: 6 }}>
-                            <Popconfirm
-                                title="Xóa toàn bộ data test đã được hệ thống đánh dấu?"
-                                description="Thao tác này chỉ xóa dữ liệu test do hệ thống tạo và đã được gắn marker demo."
-                                onConfirm={() => onDeleteDemoData?.(selectedTheme?.key ?? null)}
-                                disabled={!selectedTheme || !selectedTheme.has_demo_data || !canGenerateDemoData}
-                            >
-                                <span style={{ color: 'var(--ant-danger-color)' }}>Xóa data test</span>
-                            </Popconfirm>
-                        </Menu.Item>
-                    </Menu>
-                </Card>
+                <ThemeActionMenuCard
+                    theme={selectedTheme}
+                    canManageThemeActions={canGenerateDemoData}
+                    frontendLocale={frontendLocale}
+                    defaultFrontendLocale={defaultFrontendLocale}
+                    onOpenLocale={(theme) => setLocaleThemeKey(theme?.key ?? null)}
+                    onOpenPalette={(theme) => setPaletteThemeKey(theme?.key ?? null)}
+                    onOpenThemeTranslations={(theme) => setThemeBlocksThemeKey(theme?.key ?? null)}
+                    onOpenFrontendTranslations={(theme) => setTranslationThemeKey(theme?.key ?? null)}
+                    onOpenDemoCreate={(theme) => {
+                        setDemoActionMode('generate');
+                        setDemoThemeKey(theme?.key ?? null);
+                    }}
+                    onOpenSetup={() => navigate('../setup')}
+                    onOpenRebuild={(theme) => {
+                        setDemoActionMode('rebuild');
+                        setDemoThemeKey(theme?.key ?? null);
+                    }}
+                    onOpenDelete={(theme) => setDeleteThemeKey(theme?.key ?? null)}
+                />
             </aside>
             <div style={{ flex: 1 }}>
                 <Card title="Theme Engine Flow">
@@ -268,6 +328,27 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                     />
                 </Suspense>
             ) : null}
+
+            <Modal
+                title={deleteTheme ? `Xóa data test: ${deleteTheme.name}` : 'Xóa data test'}
+                open={Boolean(deleteThemeKey)}
+                onCancel={() => setDeleteThemeKey(null)}
+                onOk={async () => {
+                    const didDelete = await onDeleteDemoData?.(deleteThemeKey);
+
+                    if (didDelete !== false) {
+                        setDeleteThemeKey(null);
+                    }
+                }}
+                okText="Xóa data test"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true, disabled: !deleteTheme || !canGenerateDemoData || !deleteTheme?.has_demo_data }}
+                destroyOnHidden
+            >
+                <Paragraph style={{ marginBottom: 0 }}>
+                    Thao tác này chỉ xóa dữ liệu test do hệ thống tạo và đã được gắn marker demo cho theme hiện tại.
+                </Paragraph>
+            </Modal>
                 </Card>
             </div>
         </div>

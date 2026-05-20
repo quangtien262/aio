@@ -13,7 +13,6 @@ use Database\Seeders\FeaturedCategorySeeder;
 use Database\Seeders\HeroSideBannerSeeder;
 use Database\Seeders\SidePromoSeeder;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -59,7 +58,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'System Admin',
                 'username' => 'admin',
                 'email' => 'admin@aio.local',
-                'password' => Hash::make('password'),
+                'password' => 'password',
                 'is_active' => true,
                 'locked_at' => null,
                 'locked_reason' => null,

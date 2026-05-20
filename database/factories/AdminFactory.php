@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Admin;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -23,7 +22,7 @@ class AdminFactory extends Factory
             'username' => $username,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= 'password',
             'is_active' => true,
             'locked_at' => null,
             'locked_reason' => null,
