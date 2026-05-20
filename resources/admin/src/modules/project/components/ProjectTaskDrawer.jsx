@@ -31,7 +31,7 @@ export default function ProjectTaskDrawer({ open, onClose, onSubmit, task, refer
             open={open}
             onClose={onClose}
             width={560}
-            destroyOnClose
+            destroyOnHidden
             extra={
                 <Space>
                     <Button onClick={onClose}>Hủy</Button>

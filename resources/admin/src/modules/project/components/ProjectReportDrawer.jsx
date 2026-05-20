@@ -24,7 +24,7 @@ export default function ProjectReportDrawer({ open, onClose, onSubmit, report, c
             open={open}
             onClose={onClose}
             width={640}
-            destroyOnClose
+            destroyOnHidden
             extra={
                 <Space>
                     <Button onClick={onClose}>Hủy</Button>

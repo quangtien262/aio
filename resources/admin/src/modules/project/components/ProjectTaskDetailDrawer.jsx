@@ -335,7 +335,7 @@ export default function ProjectTaskDetailDrawer({
             open={open}
             onClose={onClose}
             width={980}
-            destroyOnClose={false}
+            destroyOnHidden={false}
             extra={
                 <Space>
                     {canManageTasks ? <Button icon={<EditOutlined />} onClick={() => onEditTask?.(task)}>Sửa</Button> : null}

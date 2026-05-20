@@ -38,7 +38,7 @@ export default function ProjectFormDrawer({ open, onClose, onSubmit, project, re
             open={open}
             onClose={onClose}
             width={720}
-            destroyOnClose
+            destroyOnHidden
             extra={
                 <Space>
                     <Button onClick={onClose}>Hủy</Button>

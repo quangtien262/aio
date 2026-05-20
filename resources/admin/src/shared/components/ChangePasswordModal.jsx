@@ -30,7 +30,7 @@ export default function ChangePasswordModal({ open, onClose, callAdminApi, runAd
             open={open}
             onCancel={onClose}
             footer={null}
-            destroyOnClose
+            destroyOnHidden
         >
             <Form layout="vertical" onFinish={handleSubmit}>
                 <Form.Item name="current_password" label="Mật khẩu hiện tại" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại.' }]}>

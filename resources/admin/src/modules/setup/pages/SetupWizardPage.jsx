@@ -290,8 +290,8 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                                     okText="Lưu"
                                     cancelText="Hủy"
                                     onConfirm={() => { saveProfile({ site_name: tempSiteName }); setPopSiteNameVisible(false); }}
-                                    visible={popSiteNameVisible}
-                                    onVisibleChange={(v) => { setPopSiteNameVisible(v); if (v) setTempSiteName(siteName); }}
+                                    open={popSiteNameVisible}
+                                    onOpenChange={(v) => { setPopSiteNameVisible(v); if (v) setTempSiteName(siteName); }}
                                 >
                                     <Button size="small" onClick={() => setPopSiteNameVisible(true)}>Sửa</Button>
                                 </Popconfirm>
@@ -309,8 +309,8 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                                     okText="Lưu"
                                     cancelText="Hủy"
                                     onConfirm={() => { saveProfile({ website_type: tempWebsiteType }); setPopWebsiteTypeVisible(false); }}
-                                    visible={popWebsiteTypeVisible}
-                                    onVisibleChange={(v) => { setPopWebsiteTypeVisible(v); if (v) setTempWebsiteType(websiteType); }}
+                                    open={popWebsiteTypeVisible}
+                                    onOpenChange={(v) => { setPopWebsiteTypeVisible(v); if (v) setTempWebsiteType(websiteType); }}
                                 >
                                     <Button size="small" onClick={() => setPopWebsiteTypeVisible(true)}>Sửa</Button>
                                 </Popconfirm>
@@ -369,8 +369,8 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                                     okText="Lưu"
                                     cancelText="Hủy"
                                     onConfirm={() => { saveProfile({ support_hotline: tempHotline }); setPopHotlineVisible(false); }}
-                                    visible={popHotlineVisible}
-                                    onVisibleChange={(v) => { setPopHotlineVisible(v); if (v) setTempHotline(supportHotline); }}
+                                    open={popHotlineVisible}
+                                    onOpenChange={(v) => { setPopHotlineVisible(v); if (v) setTempHotline(supportHotline); }}
                                 >
                                     <Button size="small" onClick={() => setPopHotlineVisible(true)}>Sửa</Button>
                                 </Popconfirm>
@@ -388,8 +388,8 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                                     okText="Lưu"
                                     cancelText="Hủy"
                                     onConfirm={() => { saveProfile({ support_email: tempEmail }); setPopEmailVisible(false); }}
-                                    visible={popEmailVisible}
-                                    onVisibleChange={(v) => { setPopEmailVisible(v); if (v) setTempEmail(supportEmail); }}
+                                    open={popEmailVisible}
+                                    onOpenChange={(v) => { setPopEmailVisible(v); if (v) setTempEmail(supportEmail); }}
                                 >
                                     <Button size="small" onClick={() => setPopEmailVisible(true)}>Sửa</Button>
                                 </Popconfirm>
@@ -407,8 +407,8 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                                     okText="Lưu"
                                     cancelText="Hủy"
                                     onConfirm={() => { saveProfile({ support_location: tempLocation }); setPopLocationVisible(false); }}
-                                    visible={popLocationVisible}
-                                    onVisibleChange={(v) => { setPopLocationVisible(v); if (v) setTempLocation(supportLocation); }}
+                                    open={popLocationVisible}
+                                    onOpenChange={(v) => { setPopLocationVisible(v); if (v) setTempLocation(supportLocation); }}
                                 >
                                     <Button size="small" onClick={() => setPopLocationVisible(true)}>Sửa</Button>
                                 </Popconfirm>
@@ -421,7 +421,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                         open={popLogoVisible}
                         onCancel={() => setPopLogoVisible(false)}
                         footer={null}
-                        destroyOnClose
+                        destroyOnHidden
                     >
                         <SingleMediaPicker
                             open={popLogoVisible}
@@ -442,7 +442,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                         open={popFaviconVisible}
                         onCancel={() => setPopFaviconVisible(false)}
                         footer={null}
-                        destroyOnClose
+                        destroyOnHidden
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                             <Checkbox checked={faviconUseLogo} onChange={(e) => {
