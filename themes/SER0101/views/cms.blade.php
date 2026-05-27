@@ -30,6 +30,8 @@
         <style>
             @include('theme-ser0101::partials.shell-styles')
 
+            @include('theme-ser0101::partials.palette-tokens', ['branding' => $branding])
+
             :root {
                 --navy: #0f172f;
                 --night: #08111f;
@@ -99,7 +101,7 @@
             .toolbar input, .toolbar select { min-height: 46px; border: 1px solid var(--line); border-radius: 14px; padding: 0 14px; font: inherit; }
             .toolbar-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .toolbar-buttons button, .toolbar-buttons a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 999px; font-weight: 800; }
-            .toolbar-buttons button { border: 0; background: linear-gradient(135deg, var(--teal), #0f5d56); color: #fff; }
+            .toolbar-buttons button { border: 0; background: linear-gradient(135deg, var(--teal), var(--p-deep)); color: #fff; }
             .toolbar-buttons a { border: 1px solid var(--line); background: #fff; color: var(--navy); }
             .post-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
             .post-card { overflow: hidden; }

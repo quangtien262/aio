@@ -1,7 +1,7 @@
 .ser-shell-flash {
-    background: linear-gradient(135deg, #fff3cd, #ffe5b4);
-    border-bottom: 1px solid rgba(194, 65, 12, 0.18);
-    color: #7c2d12;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--a) 18%, white), color-mix(in srgb, var(--o) 20%, white));
+    border-bottom: 1px solid color-mix(in srgb, var(--o) 18%, transparent);
+    color: var(--o-deep);
 }
 
 .ser-shell-flash .wrap {
@@ -11,7 +11,7 @@
 }
 
 .ser-shell-topbar {
-    background: #081a2a;
+    background: var(--night);
     color: rgba(255, 255, 255, 0.82);
 }
 
@@ -103,7 +103,7 @@
 }
 
 .ser-shell-brand-copy strong {
-    color: #102a43;
+    color: var(--n);
     font-size: 18px;
     line-height: 1.2;
 }
@@ -134,7 +134,7 @@
     background: transparent;
     padding: 0 16px;
     font: inherit;
-    color: #102a43;
+    color: var(--n);
 }
 
 .ser-shell-search button {
@@ -142,7 +142,7 @@
     border-radius: 999px;
     min-height: 38px;
     padding: 0 18px;
-    background: linear-gradient(135deg, #c2410c, #ea580c);
+    background: linear-gradient(135deg, var(--o), var(--o-deep));
     color: #fff;
     font-weight: 800;
     cursor: pointer;
@@ -183,28 +183,28 @@
 .ser-shell-dropdown summary {
     border: 1px solid rgba(217, 226, 236, 0.95);
     background: #fff;
-    color: #102a43;
+    color: var(--n);
 }
 
 .ser-shell-menu-link:hover,
 .ser-shell-dropdown[open] summary,
 .ser-shell-dropdown:hover summary {
-    border-color: rgba(31, 111, 120, 0.45);
-    color: #1f6f78;
-    box-shadow: 0 10px 24px rgba(31, 111, 120, 0.12);
+    border-color: var(--p);
+    color: var(--p);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--p) 18%, transparent);
 }
 
 .ser-shell-cart {
-    border: 1px solid rgba(31, 111, 120, 0.2);
-    background: rgba(31, 111, 120, 0.08);
-    color: #155e75;
+    border: 1px solid color-mix(in srgb, var(--p) 22%, transparent);
+    background: color-mix(in srgb, var(--p) 8%, white);
+    color: var(--p);
 }
 
 .ser-shell-cta {
     border: 0;
-    background: linear-gradient(135deg, #c2410c, #ea580c);
+    background: linear-gradient(135deg, var(--o), var(--o-deep));
     color: #fff;
-    box-shadow: 0 14px 28px rgba(194, 65, 12, 0.2);
+    box-shadow: 0 14px 28px color-mix(in srgb, var(--o) 20%, transparent);
 }
 
 .ser-shell-dropdown {
@@ -264,10 +264,10 @@
     list-style: none;
     margin-bottom: 14px;
     padding: 8px 12px 8px 14px;
-    border: 1px solid rgba(31, 111, 120, 0.28);
+    border: 1px solid color-mix(in srgb, var(--p) 28%, transparent);
     border-radius: 999px;
     background: linear-gradient(180deg, #ffffff, #f4f8fb);
-    color: #1f6f78;
+    color: var(--p);
     cursor: pointer;
     box-shadow: 0 12px 24px rgba(8, 26, 42, 0.06);
 }
@@ -310,11 +310,11 @@
 }
 
 .ser-shell-mega-summary-link:hover {
-    color: #0f766e;
-    background: rgba(236, 253, 245, 0.72);
+    color: var(--p);
+    background: color-mix(in srgb, var(--p) 12%, white);
     transform: translateX(2px);
-    text-shadow: 0 6px 16px rgba(15, 118, 110, 0.16);
-    box-shadow: 0 8px 18px rgba(15, 118, 110, 0.1);
+    text-shadow: 0 6px 16px color-mix(in srgb, var(--p) 16%, transparent);
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--p) 10%, transparent);
 }
 
 .ser-shell-mega-summary:hover .ser-shell-mega-summary-icon,
@@ -332,9 +332,9 @@
 
 .ser-shell-mega-summary-link:focus-visible {
     outline: 0;
-    color: #0f766e;
-    background: rgba(236, 253, 245, 0.72);
-    box-shadow: 0 0 0 4px rgba(31, 111, 120, 0.12);
+    color: var(--p);
+    background: color-mix(in srgb, var(--p) 12%, white);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--p) 12%, transparent);
 }
 
 .ser-shell-mega-body {
@@ -396,7 +396,7 @@
 
 .ser-shell-tree-link-icon {
     flex: 0 0 auto;
-    color: #1f6f78;
+    color: var(--p);
     font-size: 12px;
     line-height: 1;
     transform: translateY(-1px);
@@ -416,7 +416,7 @@
     gap: 8px;
     margin-left: 6px;
     padding-left: 18px;
-    border-left: 1px dashed rgba(31, 111, 120, 0.24);
+    border-left: 1px dashed color-mix(in srgb, var(--p) 24%, transparent);
 }
 
 .ser-shell-preset-panel {
@@ -458,18 +458,18 @@
 }
 
 .ser-shell-primary-option--parent {
-    border-color: rgba(31, 111, 120, 0.34);
-    background: rgba(31, 111, 120, 0.08);
+    border-color: color-mix(in srgb, var(--p) 34%, transparent);
+    background: color-mix(in srgb, var(--p) 8%, white);
 }
 
 .ser-shell-primary-option:hover {
-    border-color: rgba(31, 111, 120, 0.34);
-    background: rgba(31, 111, 120, 0.06);
+    border-color: color-mix(in srgb, var(--p) 34%, transparent);
+    background: color-mix(in srgb, var(--p) 6%, white);
 }
 
 .ser-shell-preset-option.is-active {
-    border-color: rgba(31, 111, 120, 0.34);
-    background: rgba(31, 111, 120, 0.08);
+    border-color: color-mix(in srgb, var(--p) 34%, transparent);
+    background: color-mix(in srgb, var(--p) 8%, white);
 }
 
 .ser-shell-preset-option:disabled {
@@ -569,8 +569,8 @@
         width: 28px;
         height: 28px;
         border-radius: 999px;
-        background: rgba(31, 111, 120, 0.1);
-        color: #1f6f78;
+        background: color-mix(in srgb, var(--p) 10%, white);
+        color: var(--p);
         font-size: 18px;
         font-weight: 700;
         content: '+';

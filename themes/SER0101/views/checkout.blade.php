@@ -41,6 +41,8 @@
                 --shadow: 0 22px 56px rgba(10, 30, 47, 0.1);
             }
 
+            @include('theme-ser0101::partials.palette-tokens', ['branding' => $branding])
+
             * { box-sizing: border-box; }
             body {
                 margin: 0;
@@ -137,13 +139,13 @@
                 cursor: pointer;
                 text-decoration: none;
             }
-            .btn.primary { background: linear-gradient(135deg, var(--teal), #0f5d56); color: #fff; }
+            .btn.primary { background: linear-gradient(135deg, var(--teal), var(--p-deep)); color: #fff; }
             .btn.secondary { background: #fff; border: 1px solid var(--line); color: var(--navy); }
             .summary-box {
                 padding: 22px;
                 border-radius: 24px;
                 background: linear-gradient(180deg, rgba(255, 250, 241, 0.96), rgba(245, 251, 248, 0.98));
-                border: 1px solid rgba(180, 83, 9, 0.08);
+                border: 1px solid color-mix(in srgb, var(--a) 8%, transparent);
             }
             .summary-line { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 9px 0; color: #486581; }
             .summary-line strong { color: var(--night); }
@@ -152,7 +154,7 @@
                 margin-top: 14px;
                 padding: 16px;
                 border-radius: 18px;
-                background: rgba(15, 118, 110, 0.08);
+                background: color-mix(in srgb, var(--p) 8%, white);
                 color: var(--muted);
                 line-height: 1.75;
             }
@@ -161,7 +163,7 @@
                 padding: 18px;
                 border-radius: 20px;
                 background: #ffffff;
-                border: 1px dashed rgba(180, 83, 9, 0.2);
+                border: 1px dashed color-mix(in srgb, var(--a) 20%, transparent);
             }
             .next-steps h3 { margin: 0 0 12px; color: var(--night); font-size: 20px; }
             .next-steps ol { margin: 0; padding-left: 18px; color: var(--muted); }
@@ -173,8 +175,8 @@
                 font-size: 14px;
                 font-weight: 700;
                 line-height: 1.7;
-                background: rgba(180, 83, 9, 0.12);
-                color: #9a3412;
+                background: color-mix(in srgb, var(--a) 12%, white);
+                color: color-mix(in srgb, var(--a) 62%, black);
             }
             .checkout-sync-banner[hidden] { display: none; }
             .checkout-empty-state {

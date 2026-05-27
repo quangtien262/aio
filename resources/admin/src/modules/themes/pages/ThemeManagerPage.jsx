@@ -91,7 +91,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
             }
             break;
         case 'palette':
-            if (canGenerateDemoData && targetTheme?.key === 'TH0002') {
+            if (canGenerateDemoData && targetTheme?.supports?.custom_css) {
                 themeActionController.openPalette(targetTheme);
             }
             break;
@@ -207,7 +207,12 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                     <ThemePreviewDetailsPanel
                         theme={previewTheme}
                         canActivate={canActivate}
+                        canOpenPalette={canGenerateDemoData && Boolean(previewTheme?.supports?.custom_css)}
                         onOpenActivateDialog={(theme) => setActivateThemeKey(theme.key)}
+                        onOpenPalette={(theme) => {
+                            setPreviewThemeKey(null);
+                            themeActionController.openPalette(theme);
+                        }}
                     />
                 </Suspense>
             </Drawer>

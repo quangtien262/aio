@@ -36,6 +36,8 @@
                 --shadow: 0 22px 56px rgba(16, 42, 67, 0.1);
             }
 
+            @include('theme-ser0100::partials.palette-tokens', ['branding' => $branding])
+
             * { box-sizing: border-box; }
             body {
                 margin: 0;
@@ -94,7 +96,7 @@
                 font-weight: 800;
                 text-decoration: none;
             }
-            .cta .primary { background: linear-gradient(135deg, var(--orange), #ea580c); color: #fff; }
+            .cta .primary { background: linear-gradient(135deg, var(--orange), var(--o-deep)); color: #fff; }
             .cta .secondary { background: #fff; border: 1px solid var(--line); color: var(--navy); }
 
             @media (max-width: 680px) {

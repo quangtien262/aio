@@ -37,6 +37,8 @@
                 --shadow: 0 22px 56px rgba(10, 30, 47, 0.1);
             }
 
+            @include('theme-ser0101::partials.palette-tokens', ['branding' => $branding])
+
             * { box-sizing: border-box; }
             body {
                 margin: 0;
@@ -104,7 +106,7 @@
             .items { margin-top: 18px; padding: 18px; border-radius: 24px; background: linear-gradient(180deg, #fffaf1, #f5fbf8); }
             .items h2 { margin: 0 0 8px; color: var(--night); font-size: 24px; }
             .items p { margin: 0 0 12px; color: var(--muted); line-height: 1.75; }
-            .next-steps { margin-top: 18px; padding: 18px; border-radius: 22px; background: #fff; border: 1px dashed rgba(180, 83, 9, 0.2); }
+            .next-steps { margin-top: 18px; padding: 18px; border-radius: 22px; background: #fff; border: 1px dashed color-mix(in srgb, var(--a) 20%, transparent); }
             .next-steps h2 { margin: 0 0 10px; color: var(--night); font-size: 24px; }
             .next-steps ol { margin: 0; padding-left: 18px; color: var(--muted); }
             .next-steps li + li { margin-top: 8px; }
@@ -119,7 +121,7 @@
                 font-weight: 800;
                 text-decoration: none;
             }
-            .cta .primary { background: linear-gradient(135deg, var(--teal), #0f5d56); color: #fff; }
+            .cta .primary { background: linear-gradient(135deg, var(--teal), var(--p-deep)); color: #fff; }
             .cta .secondary { background: #fff; border: 1px solid var(--line); color: var(--navy); }
 
             @media (max-width: 680px) {

@@ -156,7 +156,7 @@
     .ser-modal-field small { min-height:0; color:#c53030; font-size:13px; }
     .ser-modal-field small:empty { display:none; }
     .ser-modal-submit,.ser-modal-switch { width:100%; min-height:46px; border-radius:14px; font-weight:700; cursor:pointer; }
-    .ser-modal-submit { border:0; background:#c2410c; color:#fff; }
+    .ser-modal-submit { border:0; background:linear-gradient(135deg, var(--o), var(--o-deep)); color:#fff; }
     .ser-modal-switch { margin-top:12px; border:1px solid #d9e2ec; background:#fff; color:#102a43; }
     .ser-modal-message { margin-top:14px; padding:12px 14px; border-radius:14px; background:#eefcf4; color:#166534; line-height:1.6; }
 </style>

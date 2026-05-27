@@ -44,6 +44,8 @@
                 --bg: #fbfcfb;
             }
 
+            @include('theme-ser0101::partials.palette-tokens', ['branding' => $branding])
+
             * { box-sizing: border-box; }
             body {
                 margin: 0;
@@ -143,7 +145,7 @@
             .toolbar h2 { margin: 0 0 10px; color: var(--night); font-size: 32px; letter-spacing: -0.03em; }
             .toolbar p { margin: 0; color: var(--m); line-height: 1.8; }
             .chip-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-            .chip { display: inline-flex; padding: 8px 12px; border-radius: 999px; background: rgba(15, 118, 110, 0.08); color: var(--p); font-size: 13px; font-weight: 700; }
+            .chip { display: inline-flex; padding: 8px 12px; border-radius: 999px; background: color-mix(in srgb, var(--p) 8%, white); color: var(--p); font-size: 13px; font-weight: 700; }
             .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
             .card { position: relative; overflow: hidden; padding: 18px; }
             .card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--p), var(--a), var(--o)); }
@@ -152,7 +154,7 @@
             .card-media:hover img { transform: scale(1.03); }
             .card h3 { margin: 0 0 10px; color: var(--night); font-size: 28px; letter-spacing: -0.03em; }
             .card p { margin: 0; color: var(--m); line-height: 1.75; }
-            .card-meta { display: inline-flex; margin: 12px 0 0; padding: 8px 12px; border-radius: 999px; background: rgba(240, 180, 41, 0.16); color: var(--o); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+            .card-meta { display: inline-flex; margin: 12px 0 0; padding: 8px 12px; border-radius: 999px; background: color-mix(in srgb, var(--a) 16%, white); color: var(--o); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
             .price { margin-top: 16px; display: flex; justify-content: flex-start; align-items: center; gap: 12px; }
             .price strong { font-size: 28px; color: var(--o); }
             .empty { padding: 36px; text-align: center; }

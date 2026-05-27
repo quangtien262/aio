@@ -42,6 +42,8 @@
                 --m: #5d7288;
             }
 
+            @include('theme-ser0101::partials.palette-tokens', ['branding' => $branding])
+
             * { box-sizing: border-box; }
             body {
                 margin: 0;
@@ -103,7 +105,7 @@
                 color: var(--night);
                 background: #fff;
             }
-            .hero button { border: 0; background: linear-gradient(135deg, var(--p), #0f5d56); color: #fff; font-weight: 800; cursor: pointer; }
+            .hero button { border: 0; background: linear-gradient(135deg, var(--p), var(--p-deep)); color: #fff; font-weight: 800; cursor: pointer; }
             .summary-row { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
             .summary-row strong { color: var(--night); font-size: 20px; }
             .summary-row span { color: var(--m); }
@@ -113,7 +115,7 @@
             .card-media { display: block; border-radius: 20px; overflow: hidden; margin-bottom: 14px; }
             .card img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 20px; background: #edf2f7; transition: transform .25s ease; }
             .card-media:hover img { transform: scale(1.03); }
-            .card-tag { display: inline-flex; margin-bottom: 12px; padding: 8px 12px; border-radius: 999px; background: rgba(15, 118, 110, 0.08); color: var(--p); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+            .card-tag { display: inline-flex; margin-bottom: 12px; padding: 8px 12px; border-radius: 999px; background: color-mix(in srgb, var(--p) 8%, white); color: var(--p); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
             .card h3 { margin: 0 0 10px; color: var(--night); font-size: 26px; letter-spacing: -0.03em; }
             .card p { margin: 0; color: var(--m); line-height: 1.75; }
             .meta { margin-top: 16px; display: flex; justify-content: flex-start; align-items: center; gap: 12px; }

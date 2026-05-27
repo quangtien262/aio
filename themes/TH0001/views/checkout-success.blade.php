@@ -23,14 +23,7 @@
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
-            :root {
-                --th-red: #ef2b2d;
-                --th-green: #65b32e;
-                --th-ink: #202124;
-                --th-muted: #70757f;
-                --th-line: #e6e6e6;
-                --th-bg: #f3f3f3;
-            }
+            @include('theme-th0001::partials.palette-tokens', ['branding' => $branding])
             * { box-sizing: border-box; }
             body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--th-bg); color: var(--th-ink); }
             a { color: inherit; text-decoration: none; }

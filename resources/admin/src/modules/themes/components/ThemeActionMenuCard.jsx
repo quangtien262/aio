@@ -21,7 +21,7 @@ export default function ThemeActionMenuCard({
     isSetupActive = false,
 }) {
     const canOpenThemeActions = Boolean(theme) && canManageThemeActions;
-    const canOpenPalette = canOpenThemeActions && theme?.key === 'TH0002';
+    const canOpenPalette = canOpenThemeActions && Boolean(theme?.supports?.custom_css ?? true);
     const canDeleteDemoData = canOpenThemeActions && Boolean(theme?.has_demo_data);
     const items = [
         {

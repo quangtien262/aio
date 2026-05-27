@@ -3,6 +3,7 @@ import Empty from 'antd/es/empty';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
+import { BgColorsOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -44,7 +45,7 @@ function renderSupportTags(supports) {
     );
 }
 
-export default function ThemePreviewDetailsPanel({ theme, canActivate, onOpenActivateDialog }) {
+export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPalette = false, onOpenActivateDialog, onOpenPalette }) {
     if (!theme) {
         return <Empty description="Chưa có theme nào để xem chi tiết." />;
     }
@@ -84,13 +85,21 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, onOpenAct
                 </Space>
             ) : null}
 
-            {!theme.is_active ? (
-                <Button type="primary" disabled={!canActivate} onClick={() => onOpenActivateDialog?.(theme)}>
-                    Kích hoạt theme
-                </Button>
-            ) : (
-                <Text type="success">Theme này đang được kích hoạt cho website hiện tại.</Text>
-            )}
+            <Space wrap>
+                {!theme.is_active ? (
+                    <Button type="primary" disabled={!canActivate} onClick={() => onOpenActivateDialog?.(theme)}>
+                        Kích hoạt theme
+                    </Button>
+                ) : (
+                    <Text type="success">Theme này đang được kích hoạt cho website hiện tại.</Text>
+                )}
+
+                {canOpenPalette ? (
+                    <Button icon={<BgColorsOutlined />} onClick={() => onOpenPalette?.(theme)}>
+                        Palette theme
+                    </Button>
+                ) : null}
+            </Space>
 
             <div className="detail-grid">
                 {[

@@ -39,6 +39,8 @@
                 --bg: #f7fbfd;
             }
 
+            @include('theme-ser0100::partials.palette-tokens', ['branding' => $branding])
+
             * { box-sizing: border-box; }
             body {
                 margin: 0;
@@ -110,7 +112,7 @@
             .toolbar h2 { margin: 0 0 10px; color: var(--night); font-size: 30px; }
             .toolbar p { margin: 0; color: var(--m); line-height: 1.8; }
             .chip-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-            .chip { display: inline-flex; padding: 8px 12px; border-radius: 999px; background: rgba(31, 111, 120, 0.08); color: var(--p); font-size: 13px; font-weight: 700; }
+            .chip { display: inline-flex; padding: 8px 12px; border-radius: 999px; background: color-mix(in srgb, var(--p) 8%, white); color: var(--p); font-size: 13px; font-weight: 700; }
             .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
             .card { overflow: hidden; padding: 18px; }
             .card-media { display: block; border-radius: 20px; overflow: hidden; margin-bottom: 16px; }
@@ -118,7 +120,7 @@
             .card-media:hover img { transform: scale(1.03); }
             .card h3 { margin: 0 0 10px; color: var(--night); font-size: 24px; }
             .card p { margin: 0; color: var(--m); line-height: 1.75; }
-            .card-meta { display: inline-flex; margin: 12px 0 0; padding: 8px 12px; border-radius: 999px; background: rgba(245, 158, 11, 0.12); color: var(--o); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+            .card-meta { display: inline-flex; margin: 12px 0 0; padding: 8px 12px; border-radius: 999px; background: color-mix(in srgb, var(--a) 12%, white); color: var(--o); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
             .price { margin-top: 16px; display: flex; justify-content: flex-start; align-items: center; gap: 12px; }
             .price strong { font-size: 28px; color: var(--o); }
             .empty { padding: 36px; text-align: center; }

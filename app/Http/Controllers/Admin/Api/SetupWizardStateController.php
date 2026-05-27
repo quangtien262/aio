@@ -17,6 +17,7 @@ class SetupWizardStateController
         $completedSteps = collect($siteProfile?->completed_steps ?? []);
         $websiteTypes = config('aio.website_types', []);
         $branding = $siteProfile?->branding ?? [];
+        $themePalettes = $siteProfile?->theme_palettes ?? [];
 
         $signals = [
             'active_admins' => Admin::query()->where('is_active', true)->count(),
@@ -34,7 +35,8 @@ class SetupWizardStateController
                 || filled($branding['accent_soft_color'] ?? null)
                 || filled($branding['background_color'] ?? null)
                 || filled($branding['surface_color'] ?? null)
-                || filled($branding['surface_tint_color'] ?? null),
+                || filled($branding['surface_tint_color'] ?? null)
+                || collect($themePalettes)->contains(fn (mixed $palette): bool => is_array($palette) && $palette !== []),
             'modules' => $signals['enabled_modules'] > 0,
             'admin_account' => $signals['active_admins'] > 0,
             'finish' => (bool) $siteProfile?->is_setup_completed,
@@ -78,6 +80,7 @@ class SetupWizardStateController
                     ->all(),
                 'active_theme_key' => $siteProfile?->active_theme_key,
                 'branding' => $branding,
+                'theme_palettes' => $themePalettes,
                 'is_setup_completed' => (bool) $siteProfile?->is_setup_completed,
                 'setup_completed_at' => $siteProfile?->setup_completed_at?->toDateTimeString(),
                 'summary' => [

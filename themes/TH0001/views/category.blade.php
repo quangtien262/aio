@@ -97,17 +97,7 @@
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
-            :root {
-                --th-red: #ef2b2d;
-                --th-red-deep: #d91c20;
-                --th-ink: #222;
-                --th-muted: #757575;
-                --th-line: #e6e6e6;
-                --th-bg: #f6f6f8;
-                --th-surface: #fff;
-                --th-green: #79c400;
-                --th-shadow: 0 18px 40px rgba(19, 21, 33, 0.08);
-            }
+            @include('theme-th0001::partials.palette-tokens', ['branding' => $branding])
 
             * { box-sizing: border-box; }
             body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--th-ink); background: var(--th-bg); }

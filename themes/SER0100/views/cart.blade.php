@@ -37,6 +37,8 @@
                 --shadow: 0 22px 56px rgba(16, 42, 67, 0.1);
             }
 
+            @include('theme-ser0100::partials.palette-tokens', ['branding' => $branding])
+
             * { box-sizing: border-box; }
             body {
                 margin: 0;
@@ -104,7 +106,7 @@
                 display: inline-flex;
                 padding: 8px 12px;
                 border-radius: 999px;
-                background: rgba(31, 111, 120, 0.08);
+                background: color-mix(in srgb, var(--petrol) 8%, white);
                 color: var(--petrol);
                 font-size: 12px;
                 font-weight: 800;
@@ -132,7 +134,7 @@
                 border: 0;
                 cursor: pointer;
             }
-            .btn.primary { background: linear-gradient(135deg, var(--orange), #ea580c); color: #fff; }
+            .btn.primary { background: linear-gradient(135deg, var(--orange), var(--o-deep)); color: #fff; }
             .btn.secondary { background: #fff; border: 1px solid var(--line); color: var(--navy); }
             .summary-box {
                 padding: 22px;
@@ -165,7 +167,7 @@
                 margin-top: 14px;
                 padding: 16px;
                 border-radius: 18px;
-                background: rgba(31, 111, 120, 0.08);
+                background: color-mix(in srgb, var(--petrol) 8%, white);
                 color: var(--muted);
                 line-height: 1.75;
             }

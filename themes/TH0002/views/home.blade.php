@@ -279,10 +279,8 @@
             .th-old-price { text-decoration: line-through; }
             .th-stat { color: #9d9d9d; }
             .th-category-section { margin-top: 26px; background: var(--th-surface); border: 1px solid var(--th-line); }
-            .th-category-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 16px; min-height: 52px; border-top: 4px solid var(--th-lime); }
-            .th-category-header.pink { border-top-color: var(--th-pink); }
-            .th-category-title { display: flex; align-items: center; gap: 12px; min-width: 220px; color: var(--th-lime); font-size: 19px; line-height: 1.15; font-weight: 800; text-transform: uppercase; }
-            .th-category-header.pink .th-category-title { color: var(--th-pink); }
+            .th-category-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 16px; min-height: 52px; border-top: 4px solid var(--th-red); }
+            .th-category-title { display: flex; align-items: center; gap: 12px; min-width: 220px; color: var(--th-red); font-size: 19px; line-height: 1.15; font-weight: 800; text-transform: uppercase; }
             .th-category-title-badge { width: 32px; height: 32px; border-radius: 8px; background: currentColor; color: #fff; display: grid; place-items: center; font-size: 16px; }
             .th-category-filters, .th-category-tabs { display: flex; align-items: center; gap: 22px; font-size: 13px; color: #6f6f6f; flex-wrap: wrap; }
             .th-category-tabs span:first-child, .th-category-filters a:first-child { color: var(--th-ink); font-weight: 800; }
@@ -538,9 +536,9 @@
                             $sectionItems = collect($section['items'] ?? [])->take(4)->all();
                         @endphp
                         <section id="section-{{ $section['slug'] }}" class="th-category-section">
-                            <div class="th-category-header {{ $section['theme'] === 'pink' ? 'pink' : '' }}">
+                            <div class="th-category-header">
                                 <div class="th-category-title">
-                                    <span class="th-category-title-badge">{{ $section['theme'] === 'pink' ? '✿' : '🍴' }}</span>
+                                    <span class="th-category-title-badge">🍴</span>
                                     <span>{{ $section['title'] }}</span>
                                 </div>
 

@@ -224,6 +224,38 @@ class AdminFoundationApiTest extends TestCase
             ->assertJsonPath('data.branding.accent_soft_color', '#efaa4c');
     }
 
+    public function test_admin_can_store_theme_palette_per_theme(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+
+        $this->putJson('/admin/api/themes/TH0001/palette', [
+            'primary_color' => '#123456',
+            'primary_color_deep' => '#0f1e2d',
+            'accent_color' => '#74b816',
+            'accent_soft_color' => '#a9e34b',
+            'background_color' => '#fff5f5',
+            'surface_color' => '#ffffff',
+            'surface_tint_color' => '#fff0f6',
+        ])->assertOk();
+
+        $siteProfile = SiteProfile::query()->firstOrFail();
+
+        $this->assertSame('#123456', data_get($siteProfile->theme_palettes, 'TH0001.primary_color'));
+        $this->assertSame('#0f1e2d', data_get($siteProfile->theme_palettes, 'TH0001.primary_color_deep'));
+        $this->assertSame('#74b816', data_get($siteProfile->theme_palettes, 'TH0001.accent_color'));
+        $this->assertNull(data_get($siteProfile->branding, 'primary_color'));
+        $this->assertContains('branding', $siteProfile->completed_steps ?? []);
+
+        $this->getJson('/admin/api/setup')
+            ->assertOk()
+            ->assertJsonPath('data.theme_palettes.TH0001.primary_color', '#123456')
+            ->assertJsonPath('data.theme_palettes.TH0001.accent_soft_color', '#a9e34b');
+    }
+
     public function test_admin_can_manage_roles_permissions_and_admin_assignments(): void
     {
         $this->seed(DatabaseSeeder::class);

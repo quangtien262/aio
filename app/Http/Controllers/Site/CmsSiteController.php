@@ -1229,6 +1229,7 @@ class CmsSiteController
         $siteProfile = $this->localizeSiteProfile($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
+        $themePalette = $this->resolveThemePalette($siteProfile, $themeKey);
         $branding = array_merge([
             'company_name' => $siteProfile?->site_name ?? 'AIO Website',
             'logo_url' => self::DEFAULT_BRAND_ASSET,
@@ -1242,11 +1243,17 @@ class CmsSiteController
         if ($this->isCommerceThemeKey($themeKey)) {
             $branding = $this->resolveCommerceBranding($siteProfile, $branding, $websiteKey, $themeKey);
         } elseif (! $this->isDemoPresetBranding($branding)) {
+            if ($themePalette !== []) {
+                $branding = array_merge($branding, $themePalette);
+            }
+
             foreach (['company_name', 'slogan', 'support_location'] as $field) {
                 if (filled($branding[$field] ?? null)) {
                     $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
                 }
             }
+        } elseif ($themePalette !== []) {
+            $branding = array_merge($branding, $themePalette);
         }
 
         /** @var Customer|null $customer */
@@ -1776,9 +1783,14 @@ class CmsSiteController
     private function resolveCommerceBranding(?SiteProfile $siteProfile, array $branding, string $websiteKey, string $themeKey): array
     {
         $defaults = $this->commerceThemeDefaults($themeKey)['branding'];
+        $themePalette = $this->resolveThemePalette($siteProfile, $themeKey);
 
         if ($this->shouldUseCommerceBrandingFallback($siteProfile, $branding)) {
             $branding = array_merge($branding, $defaults);
+        }
+
+        if ($themePalette !== []) {
+            $branding = array_merge($branding, $themePalette);
         }
 
         foreach (['company_name', 'slogan', 'support_location'] as $field) {
@@ -1788,6 +1800,14 @@ class CmsSiteController
         }
 
         return $branding;
+    }
+
+    private function resolveThemePalette(?SiteProfile $siteProfile, string $themeKey): array
+    {
+        $themePalettes = $siteProfile?->theme_palettes ?? [];
+        $palette = $themePalettes[strtoupper($themeKey)] ?? null;
+
+        return is_array($palette) ? $palette : [];
     }
 
     private function commerceThemeDefaults(string $themeKey): array

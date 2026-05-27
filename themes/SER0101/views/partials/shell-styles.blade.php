@@ -1,7 +1,7 @@
 .ser-shell-flash {
-    background: linear-gradient(135deg, #f5fbf8, #f8efe0);
-    border-bottom: 1px solid rgba(180, 83, 9, 0.16);
-    color: #7c4a03;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--p) 10%, white), color-mix(in srgb, var(--a) 16%, white));
+    border-bottom: 1px solid color-mix(in srgb, var(--a) 16%, transparent);
+    color: color-mix(in srgb, var(--a) 62%, black);
 }
 
 .ser-shell-flash .wrap {
@@ -11,7 +11,7 @@
 }
 
 .ser-shell-topbar {
-    background: #0b1b26;
+    background: var(--night);
     color: rgba(248, 250, 252, 0.84);
 }
 
@@ -52,7 +52,7 @@
     gap: 8px;
     padding: 6px 10px;
     border-radius: 999px;
-    background: rgba(240, 180, 41, 0.12);
+    background: color-mix(in srgb, var(--a) 12%, transparent);
     color: #f8fafc;
     font-weight: 700;
 }
@@ -62,8 +62,8 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #f0b429;
-    box-shadow: 0 0 0 6px rgba(240, 180, 41, 0.18);
+    background: var(--a);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--a) 18%, transparent);
 }
 
 .ser-shell-header {
@@ -150,7 +150,7 @@
     border-radius: 999px;
     min-height: 38px;
     padding: 0 18px;
-    background: linear-gradient(135deg, #0f766e, #0f5d56);
+    background: linear-gradient(135deg, var(--p), var(--p-deep));
     color: #fff;
     font-weight: 800;
     cursor: pointer;
@@ -187,9 +187,9 @@
 }
 
 .ser-shell-cart {
-    border: 1px solid rgba(15, 118, 110, 0.18);
-    background: rgba(15, 118, 110, 0.08);
-    color: #0f766e;
+    border: 1px solid color-mix(in srgb, var(--p) 20%, transparent);
+    background: color-mix(in srgb, var(--p) 8%, white);
+    color: var(--p);
     gap: 10px;
     cursor: pointer;
     transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
@@ -198,8 +198,8 @@
 .ser-shell-cart:hover,
 .ser-shell-cart:focus-visible {
     transform: translateY(-1px);
-    border-color: rgba(15, 118, 110, 0.34);
-    box-shadow: 0 14px 26px rgba(15, 118, 110, 0.12);
+    border-color: color-mix(in srgb, var(--p) 34%, transparent);
+    box-shadow: 0 14px 26px color-mix(in srgb, var(--p) 12%, transparent);
 }
 
 .ser-shell-cart--header {
@@ -219,16 +219,16 @@
     height: 28px;
     padding: 0 8px;
     border-radius: 999px;
-    background: #0f766e;
+    background: var(--p);
     color: #fff;
     font-size: 12px;
 }
 
 .ser-shell-cta {
     border: 0;
-    background: linear-gradient(135deg, #b45309, #d97706);
+    background: linear-gradient(135deg, var(--a), color-mix(in srgb, var(--a) 70%, black));
     color: #fff;
-    box-shadow: 0 14px 28px rgba(180, 83, 9, 0.2);
+    box-shadow: 0 14px 28px color-mix(in srgb, var(--a) 20%, transparent);
 }
 
 .ser-shell-menu--editorial {
@@ -275,7 +275,7 @@
     bottom: -8px;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, #0f766e, #f0b429);
+    background: linear-gradient(90deg, var(--p), var(--a));
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.22s ease;
@@ -359,7 +359,7 @@
 }
 
 .ser-shell-flyout-title span {
-    color: #0f766e;
+    color: var(--p);
     font-weight: 800;
 }
 
@@ -406,7 +406,7 @@
     gap: 8px;
     padding: 18px;
     border-radius: 22px;
-    background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(240, 180, 41, 0.12));
+    background: linear-gradient(135deg, color-mix(in srgb, var(--p) 8%, white), color-mix(in srgb, var(--a) 12%, white));
 }
 
 .ser-shell-primary-feature strong {
@@ -435,7 +435,7 @@
 .ser-shell-flyout-list a:hover,
 .ser-shell-flyout-title:hover,
 .ser-shell-nav-link:hover {
-    color: #0f766e;
+    color: var(--p);
 }
 
 @media (max-width: 980px) {
@@ -511,18 +511,18 @@
 }
 
 .ser-shell-primary-option--parent {
-    border-color: rgba(31, 111, 120, 0.34);
-    background: rgba(31, 111, 120, 0.08);
+    border-color: color-mix(in srgb, var(--p) 34%, transparent);
+    background: color-mix(in srgb, var(--p) 8%, white);
 }
 
 .ser-shell-primary-option:hover {
-    border-color: rgba(31, 111, 120, 0.34);
-    background: rgba(31, 111, 120, 0.06);
+    border-color: color-mix(in srgb, var(--p) 34%, transparent);
+    background: color-mix(in srgb, var(--p) 6%, white);
 }
 
 .ser-shell-preset-option.is-active {
-    border-color: rgba(31, 111, 120, 0.34);
-    background: rgba(31, 111, 120, 0.08);
+    border-color: color-mix(in srgb, var(--p) 34%, transparent);
+    background: color-mix(in srgb, var(--p) 8%, white);
 }
 
 .ser-shell-preset-option:disabled {
@@ -558,7 +558,7 @@
     height: 100vh;
     padding: 22px;
     background:
-        radial-gradient(circle at top right, rgba(240, 180, 41, 0.16), transparent 28%),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--a) 16%, transparent), transparent 28%),
         linear-gradient(180deg, #fffdf8 0%, #f8fcfa 52%, #f3faf8 100%);
     box-shadow: -24px 0 48px rgba(8, 26, 42, 0.16);
     border-left: 1px solid rgba(214, 226, 222, 0.92);
@@ -592,8 +592,8 @@
     align-items: center;
     padding: 6px 10px;
     border-radius: 999px;
-    background: rgba(15, 118, 110, 0.1);
-    color: #0f766e;
+    background: color-mix(in srgb, var(--p) 10%, white);
+    color: var(--p);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -719,7 +719,7 @@
 .ser-cart-remove {
     border: 0;
     background: transparent;
-    color: #b45309;
+    color: var(--a);
     font-size: 13px;
     font-weight: 800;
     cursor: pointer;
@@ -728,8 +728,8 @@
 .ser-cart-preview-more {
     padding: 12px 14px;
     border-radius: 18px;
-    background: rgba(15, 118, 110, 0.08);
-    color: #0f5d56;
+    background: color-mix(in srgb, var(--p) 8%, white);
+    color: var(--p-deep);
     font-size: 13px;
     font-weight: 700;
 }
@@ -756,8 +756,8 @@
 }
 
 .ser-cart-drawer-toast[data-state="success"] {
-    background: rgba(15, 118, 110, 0.1);
-    color: #0f5d56;
+    background: color-mix(in srgb, var(--p) 10%, white);
+    color: var(--p-deep);
 }
 
 .ser-cart-drawer-toast[data-state="error"] {
@@ -798,7 +798,7 @@
 
 .ser-cart-drawer-link--primary {
     border: 0;
-    background: linear-gradient(135deg, #0f766e, #0f5d56);
+    background: linear-gradient(135deg, var(--p), var(--p-deep));
     color: #fff;
 }
 

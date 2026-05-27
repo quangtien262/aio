@@ -12,6 +12,7 @@ use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\SiteProfile;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -68,6 +69,121 @@ class ThemeDemoContentTest extends TestCase
         $response->assertSee('Deal sốc cho điện thoại, laptop và điện gia dụng');
         $response->assertSee('Tin tức');
         $response->assertDontSee('Demo theme TH0001');
+    }
+
+    public function test_th0001_homepage_uses_theme_specific_palette_tokens(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $siteProfile = SiteProfile::query()->firstOrFail();
+        $siteProfile->forceFill([
+            'branding' => array_merge($siteProfile->branding ?? [], [
+                'primary_color' => '#ef2b2d',
+                'accent_color' => '#79c400',
+            ]),
+            'theme_palettes' => array_merge($siteProfile->theme_palettes ?? [], [
+                'TH0001' => [
+                    'primary_color' => '#123456',
+                    'primary_color_deep' => '#102030',
+                    'accent_color' => '#74b816',
+                    'accent_soft_color' => '#a9e34b',
+                    'background_color' => '#fff5f5',
+                    'surface_color' => '#ffffff',
+                    'surface_tint_color' => '#fff0f6',
+                ],
+            ]),
+        ])->save();
+
+        $this->get($this->storefrontPath())
+            ->assertOk()
+            ->assertSee('--th-red: #123456;', false)
+            ->assertSee('--th-lime: #a9e34b;', false)
+            ->assertDontSee('--th-red: #ef2b2d;', false);
+    }
+
+    public function test_ser0100_homepage_uses_theme_specific_palette_tokens(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/SER0100/activate')->assertOk();
+        $this->postJson('/admin/api/themes/SER0100/demo-data', [
+            'preset' => 'ser-airport-city',
+        ])->assertOk();
+
+        $siteProfile = SiteProfile::query()->firstOrFail();
+        $siteProfile->forceFill([
+            'branding' => array_merge($siteProfile->branding ?? [], [
+                'primary_color' => '#ef2b2d',
+                'accent_color' => '#79c400',
+            ]),
+            'theme_palettes' => array_merge($siteProfile->theme_palettes ?? [], [
+                'SER0100' => [
+                    'primary_color' => '#123456',
+                    'primary_color_deep' => '#102030',
+                    'accent_color' => '#74b816',
+                    'accent_soft_color' => '#a9e34b',
+                    'background_color' => '#fff5f5',
+                    'surface_color' => '#ffffff',
+                    'surface_tint_color' => '#fff0f6',
+                ],
+            ]),
+        ])->save();
+
+        $this->get($this->storefrontPath())
+            ->assertOk()
+            ->assertSee('--ser-orange: #123456;', false)
+            ->assertSee('--ser-petrol: #74b816;', false)
+            ->assertDontSee('--ser-orange: #ef2b2d;', false);
+    }
+
+    public function test_ser0101_homepage_uses_theme_specific_palette_tokens(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/SER0101/activate')->assertOk();
+        $this->postJson('/admin/api/themes/SER0101/demo-data', [
+            'preset' => 'ser-business-cargo',
+        ])->assertOk();
+
+        $siteProfile = SiteProfile::query()->firstOrFail();
+        $siteProfile->forceFill([
+            'branding' => array_merge($siteProfile->branding ?? [], [
+                'primary_color' => '#ef2b2d',
+                'accent_color' => '#79c400',
+            ]),
+            'theme_palettes' => array_merge($siteProfile->theme_palettes ?? [], [
+                'SER0101' => [
+                    'primary_color' => '#123456',
+                    'primary_color_deep' => '#102030',
+                    'accent_color' => '#74b816',
+                    'accent_soft_color' => '#a9e34b',
+                    'background_color' => '#fff5f5',
+                    'surface_color' => '#ffffff',
+                    'surface_tint_color' => '#fff0f6',
+                ],
+            ]),
+        ])->save();
+
+        $this->get($this->storefrontPath())
+            ->assertOk()
+            ->assertSee('--ser-primary: #123456;', false)
+            ->assertSee('--teal: var(--ser-primary);', false)
+            ->assertSee('--orange: var(--ser-accent);', false)
+            ->assertDontSee('--ser-primary: #ef2b2d;', false);
     }
 
     public function test_th0001_top_menu_uses_all_primary_navigation_items(): void

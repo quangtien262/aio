@@ -47,6 +47,7 @@ class SetupStepController
     {
         $completedSteps = collect($siteProfile->completed_steps ?? []);
         $branding = $siteProfile->branding ?? [];
+        $themePalettes = $siteProfile->theme_palettes ?? [];
 
         return filled($siteProfile->site_name)
             && filled($siteProfile->website_type)
@@ -60,6 +61,7 @@ class SetupStepController
                 || filled($branding['background_color'] ?? null)
                 || filled($branding['surface_color'] ?? null)
                 || filled($branding['surface_tint_color'] ?? null)
+                || collect($themePalettes)->contains(fn (mixed $palette): bool => is_array($palette) && $palette !== [])
                 || $completedSteps->contains('branding')
             )
             && (ModuleInstallation::query()->where('status', 'enabled')->exists() || $completedSteps->contains('modules'))

@@ -51,6 +51,7 @@ use App\Http\Controllers\Admin\Api\SiteBannerIndexController;
 use App\Http\Controllers\Admin\Api\SiteBannerManagementController;
 use App\Http\Controllers\Admin\Api\ThemeActivationController;
 use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
+use App\Http\Controllers\Admin\Api\ThemePaletteController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
 use App\Http\Controllers\Admin\Api\ThemeLocaleController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
@@ -115,6 +116,9 @@ Route::prefix('admin')
                 Route::get('/themes/{key}/translations', ThemeTranslationIndexController::class)
                     ->middleware('admin.permission:theme.view')
                     ->name('themes.translations.index');
+                Route::put('/themes/{key}/palette', ThemePaletteController::class)
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.palette.update');
                 Route::put('/themes/{key}/translations/{locale}', [ThemeTranslationManagementController::class, 'update'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.translations.update');
