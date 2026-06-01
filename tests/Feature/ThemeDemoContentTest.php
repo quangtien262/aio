@@ -109,6 +109,32 @@ class ThemeDemoContentTest extends TestCase
             ->assertDontSee('--th-red: #ef2b2d;', false);
     }
 
+    public function test_th0001_homepage_preserves_custom_logo_and_favicon_from_setup(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+
+        $siteProfile = SiteProfile::query()->firstOrFail();
+        $siteProfile->forceFill([
+            'website_type' => 'business',
+            'branding' => array_merge($siteProfile->branding ?? [], [
+                'company_name' => 'AIO Test Brand',
+                'logo_url' => 'https://cdn.example.com/branding/custom-logo.png',
+                'favicon_url' => 'https://cdn.example.com/branding/custom-favicon.ico',
+            ]),
+        ])->save();
+
+        $this->get($this->storefrontPath())
+            ->assertOk()
+            ->assertSee('https://cdn.example.com/branding/custom-logo.png', false)
+            ->assertSee('https://cdn.example.com/branding/custom-favicon.ico', false)
+            ->assertDontSee('https://htvietnam.vn/images/logo/logo_vn_noslogan.png', false);
+    }
+
     public function test_ser0100_homepage_uses_theme_specific_palette_tokens(): void
     {
         $this->seed(DatabaseSeeder::class);

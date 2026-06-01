@@ -98,11 +98,7 @@
 .ser-shell-brand img {
     width: 52px;
     height: 52px;
-    border-radius: 20px;
-    object-fit: cover;
-    border: 1px solid rgba(214, 226, 222, 0.92);
-    background: #fff;
-    padding: 6px;
+    object-fit: contain;
 }
 
 .ser-shell-brand-copy {

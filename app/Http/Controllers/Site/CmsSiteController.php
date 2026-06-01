@@ -1786,7 +1786,7 @@ class CmsSiteController
         $themePalette = $this->resolveThemePalette($siteProfile, $themeKey);
 
         if ($this->shouldUseCommerceBrandingFallback($siteProfile, $branding)) {
-            $branding = array_merge($branding, $defaults);
+            $branding = array_merge($defaults, $branding);
         }
 
         if ($themePalette !== []) {
