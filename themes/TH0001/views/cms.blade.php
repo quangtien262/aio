@@ -51,19 +51,17 @@
             img { display: block; max-width: 100%; }
             .th-page { min-height: 100vh; }
             .th-container { width: min(1200px, calc(100% - 24px)); margin: 0 auto; }
-            .th-topbar { background: #f3f3f3; border-top: 3px solid #ff4f92; color: var(--th-muted); font-size: 12px; }
+            .th-topbar { background: #ffffff; border-top: 3px solid #ff4f92; color: var(--th-muted); font-size: 12px; }
             .th-topbar-inner, .th-header-inner, .th-main-nav-inner, .th-footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
             .th-topbar-inner { padding: 6px 0; }
             .th-inline { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
             .th-inline-action { padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
             .th-inline-form { margin: 0; }
             .th-accent { color: var(--th-red); }
-            .th-header { background: var(--th-surface); }
+            .th-header { background: #f6f6f6; }
             .th-header-inner { padding: 12px 0; }
             .th-logo { display: flex; align-items: center; gap: 12px; min-width: 220px; }
             .th-logo img { width: 160px; height: 52px; object-fit: contain; }
-            .th-logo-mark { display: flex; flex-direction: column; font-size: 12px; line-height: 1.35; color: #555; }
-            .th-logo-mark strong { color: var(--th-red); font-size: 16px; }
             .th-search { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 52px; border: 2px solid var(--th-red); border-radius: 4px; overflow: hidden; background: #fff; max-width: 720px; }
             .th-search input, .th-search button { border: 0; height: 44px; font-size: 14px; }
             .th-search input { padding: 0 14px; background: transparent; }
