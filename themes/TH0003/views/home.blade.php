@@ -7,6 +7,7 @@
     $secondarySidePromos = collect($homeData['secondary_side_promos'] ?? [])->take(3)->values()->all();
     $featuredCategories = $homeData['featured_categories'] ?? $homeData['brand_highlights'] ?? [];
     $sidebarCategories = $homeData['product_menu'] ?? [];
+    $fashionCategoryTiles = $homeData['fashion_category_tiles'] ?? [];
     $featuredDeals = $homeData['featured_products'] ?? [];
     $featuredTitle = $homeData['featured_title'] ?? 'Sản phẩm nổi bật';
     $sections = $homeData['sections'] ?? [];
@@ -72,27 +73,37 @@
                         'eyebrow' => $heroSlideDefaults['eyebrow'] ?? 'Ưu đãi nổi bật',
                         'badge' => $heroSlideDefaults['badge'] ?? 'Khám phá ngay',
                         'cta' => $heroSlideDefaults['cta'] ?? 'Xem ngay',
-                        'link_url' => $promo['link_url'] ?? '#featured',
+                        'link_url' => $promo['link_url'] ?? route('site.catalog.search'),
                     ];
                 })
             )
             ->filter(fn ($slide): bool => is_array($slide) && filled($slide['image'] ?? null))
             ->values();
+    $fashionBannerSlides = collect($homeData['fashion_banner_slides'] ?? []);
+    $fashionBannerSlides = $fashionBannerSlides->isNotEmpty()
+        ? $fashionBannerSlides->take(5)->values()
+        : ($heroSlides->isNotEmpty()
+            ? $heroSlides->take(5)->values()
+            : collect([[
+                'image' => data_get($heroBanner, 'image', 'https://picsum.photos/seed/th0003-banner/1440/520'),
+                'link_url' => route('site.catalog.search'),
+                'title' => $companyTitle ?: 'TH0003 Fashion',
+            ]]));
 
     $topMenuItems = collect($homeData['top_menu'] ?? [])->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? null))->values()->all();
     if ($topMenuItems === []) {
         $topMenuItems = [
-            ['label' => $t('home.menu.new_arrivals', 'Hàng mới'), 'url' => '#featured', 'target' => '_self', 'children' => [
-                ['label' => $t('home.menu.this_week', 'Mới tuần này'), 'url' => '#featured'],
-                ['label' => $t('home.menu.best_fit', 'Dễ phối nhất'), 'url' => '#section-office-capsule'],
+            ['label' => $t('home.menu.new_arrivals', 'Hàng mới'), 'url' => route('site.catalog.search'), 'target' => '_self', 'children' => [
+                ['label' => $t('home.menu.this_week', 'Mới tuần này'), 'url' => route('site.catalog.search')],
+                ['label' => $t('home.menu.best_fit', 'Dễ phối nhất'), 'url' => route('site.catalog.search')],
             ]],
-            ['label' => $t('home.menu.collections', 'Bộ sưu tập'), 'url' => '#fashion-collections', 'target' => '_self', 'children' => [
-                ['label' => $t('home.menu.office_capsule', 'Office capsule'), 'url' => '#section-office-capsule'],
-                ['label' => $t('home.menu.weekend_edit', 'Weekend edit'), 'url' => '#section-weekend-edit'],
+            ['label' => $t('home.menu.collections', 'Bộ sưu tập'), 'url' => route('site.catalog.search'), 'target' => '_self', 'children' => [
+                ['label' => $t('home.menu.office_capsule', 'Office capsule'), 'url' => route('site.catalog.search')],
+                ['label' => $t('home.menu.weekend_edit', 'Weekend edit'), 'url' => route('site.catalog.search')],
             ]],
-            ['label' => $t('home.menu.lookbook', 'Lookbook'), 'url' => '#fashion-journal', 'target' => '_self', 'children' => [
-                ['label' => $t('home.menu.style_notes', 'Ghi chú phối đồ'), 'url' => '#fashion-journal'],
-                ['label' => $t('home.menu.care_guide', 'Chăm sóc chất liệu'), 'url' => '#fashion-journal'],
+            ['label' => $t('home.menu.lookbook', 'Lookbook'), 'url' => route('site.blog.index'), 'target' => '_self', 'children' => [
+                ['label' => $t('home.menu.style_notes', 'Ghi chú phối đồ'), 'url' => route('site.blog.index')],
+                ['label' => $t('home.menu.care_guide', 'Chăm sóc chất liệu'), 'url' => route('site.blog.index')],
             ]],
             ['label' => $t('home.menu.sale', 'Sale'), 'url' => route('site.catalog.search'), 'target' => '_self', 'children' => [
                 ['label' => $t('home.menu.price_drop', 'Giá tốt'), 'url' => route('site.catalog.search')],
@@ -105,7 +116,7 @@
             $item['children'] = [
                 [
                     'label' => 'Xem '.$item['label'],
-                    'url' => $item['url'] ?? '#',
+                    'url' => $item['url'] ?? route('site.home'),
                     'target' => $item['target'] ?? '_self',
                 ],
             ];
@@ -116,33 +127,37 @@
 
     if ($sidebarCategories === []) {
         $sidebarCategories = [
-            ['label' => $t('home.demo.category.women', 'Đầm & váy'), 'url' => '#section-dam-vay', 'target' => '_self', 'icon' => '✦', 'highlight' => true, 'children' => [
-                ['label' => $t('home.demo.category.maxi', 'Váy maxi'), 'url' => '#section-dam-vay', 'target' => '_self'],
-                ['label' => $t('home.demo.category.office', 'Đầm công sở'), 'url' => '#section-dam-vay', 'target' => '_self'],
-                ['label' => $t('home.demo.category.party', 'Party dress'), 'url' => '#section-dam-vay', 'target' => '_self'],
+            ['label' => $t('home.demo.category.women', 'Đầm & váy'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '✦', 'highlight' => true, 'children' => [
+                ['label' => $t('home.demo.category.maxi', 'Váy maxi'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.office', 'Đầm công sở'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.party', 'Party dress'), 'url' => route('site.catalog.search'), 'target' => '_self'],
             ]],
-            ['label' => $t('home.demo.category.tops', 'Áo kiểu & sơ mi'), 'url' => '#section-ao-kieu', 'target' => '_self', 'icon' => '◐', 'highlight' => false, 'children' => [
-                ['label' => $t('home.demo.category.shirt', 'Sơ mi lụa'), 'url' => '#section-ao-kieu', 'target' => '_self'],
-                ['label' => $t('home.demo.category.crop', 'Crop top'), 'url' => '#section-ao-kieu', 'target' => '_self'],
-                ['label' => $t('home.demo.category.knit', 'Áo dệt kim'), 'url' => '#section-ao-kieu', 'target' => '_self'],
+            ['label' => $t('home.demo.category.tops', 'Áo kiểu & sơ mi'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '◐', 'highlight' => false, 'children' => [
+                ['label' => $t('home.demo.category.shirt', 'Sơ mi lụa'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.crop', 'Crop top'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.knit', 'Áo dệt kim'), 'url' => route('site.catalog.search'), 'target' => '_self'],
             ]],
-            ['label' => $t('home.demo.category.bottoms', 'Quần & chân váy'), 'url' => '#section-quan-vay', 'target' => '_self', 'icon' => '◇', 'highlight' => false, 'children' => [
-                ['label' => $t('home.demo.category.trouser', 'Quần ống suông'), 'url' => '#section-quan-vay', 'target' => '_self'],
-                ['label' => $t('home.demo.category.skirt', 'Chân váy midi'), 'url' => '#section-quan-vay', 'target' => '_self'],
-                ['label' => $t('home.demo.category.denim', 'Denim edit'), 'url' => '#section-quan-vay', 'target' => '_self'],
+            ['label' => $t('home.demo.category.bottoms', 'Quần & chân váy'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '◇', 'highlight' => false, 'children' => [
+                ['label' => $t('home.demo.category.trouser', 'Quần ống suông'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.skirt', 'Chân váy midi'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.denim', 'Denim edit'), 'url' => route('site.catalog.search'), 'target' => '_self'],
             ]],
-            ['label' => $t('home.demo.category.accessories', 'Phụ kiện'), 'url' => '#section-phu-kien', 'target' => '_self', 'icon' => '◌', 'highlight' => false, 'children' => [
-                ['label' => $t('home.demo.category.bag', 'Túi mini'), 'url' => '#section-phu-kien', 'target' => '_self'],
-                ['label' => $t('home.demo.category.belt', 'Thắt lưng'), 'url' => '#section-phu-kien', 'target' => '_self'],
-                ['label' => $t('home.demo.category.scarf', 'Khăn lụa'), 'url' => '#section-phu-kien', 'target' => '_self'],
+            ['label' => $t('home.demo.category.accessories', 'Phụ kiện'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '◌', 'highlight' => false, 'children' => [
+                ['label' => $t('home.demo.category.bag', 'Túi mini'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.belt', 'Thắt lưng'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.scarf', 'Khăn lụa'), 'url' => route('site.catalog.search'), 'target' => '_self'],
             ]],
         ];
+    }
+
+    if ($fashionCategoryTiles === []) {
+        $fashionCategoryTiles = $sidebarCategories;
     }
 
     if ($featuredCategories === []) {
         $featuredCategories = collect($sidebarCategories)->take(5)->values()->map(fn (array $category, int $index): array => [
             'name' => $category['label'] ?? $t('common.category', 'Danh mục'),
-            'url' => $category['url'] ?? '#featured',
+            'url' => $category['url'] ?? route('site.catalog.search'),
             'target' => $category['target'] ?? '_self',
             'tone' => ['#b20f3a', '#1f1a1d', '#0f8a8a', '#c17a3a', '#6b4b7d'][$index % 5],
         ])->all();
@@ -157,7 +172,7 @@
         ['title' => $t('home.demo.product.wide_pants', 'Quần ống suông kem'), 'image' => 'https://picsum.photos/seed/th0003-wide-pants/720/960', 'price' => 580000, 'old_price' => 720000, 'discount' => 19, 'tag' => $t('home.demo.tag.city', 'City fit'), 'meta' => 27],
         ['title' => $t('home.demo.product.mini_bag', 'Túi mini da mềm'), 'image' => 'https://picsum.photos/seed/th0003-mini-bag/720/960', 'price' => 690000, 'old_price' => 890000, 'discount' => 22, 'tag' => $t('home.demo.tag.accessory', 'Accessory'), 'meta' => 12],
         ['title' => $t('home.demo.product.denim_jacket', 'Áo khoác denim crop'), 'image' => 'https://picsum.photos/seed/th0003-denim-jacket/720/960', 'price' => 720000, 'old_price' => 940000, 'discount' => 23, 'tag' => $t('home.demo.tag.street', 'Street'), 'meta' => 19],
-    ])->map(fn (array $item, int $index): array => array_merge($item, ['url' => '#featured', 'sku' => 'TH0003-DEMO-'.($index + 1)]))->values();
+    ])->map(fn (array $item, int $index): array => array_merge($item, ['url' => route('site.catalog.search'), 'sku' => 'TH0003-DEMO-'.($index + 1)]))->values();
 
     if ($featuredDeals === []) {
         $featuredDeals = $demoProducts->all();
@@ -170,7 +185,7 @@
                 'theme' => 'pink',
                 'title' => $t('home.demo.section.office_title', 'Office capsule'),
                 'slug' => 'office-capsule',
-                'url' => '#featured',
+                'url' => route('site.catalog.search'),
                 'tabs' => [$t('home.demo.tab.new', 'Mới về'), $t('home.demo.tab.best', 'Bán chạy'), $t('home.demo.tab.mix', 'Dễ phối')],
                 'filters' => [$t('home.demo.filter.blazer', 'Blazer'), $t('home.demo.filter.shirt', 'Sơ mi'), $t('home.demo.filter.trouser', 'Quần âu')],
                 'items' => $demoProducts->slice(0, 4)->values()->all(),
@@ -179,7 +194,7 @@
                 'theme' => 'lime',
                 'title' => $t('home.demo.section.weekend_title', 'Weekend edit'),
                 'slug' => 'weekend-edit',
-                'url' => '#featured',
+                'url' => route('site.catalog.search'),
                 'tabs' => [$t('home.demo.tab.lookbook', 'Lookbook'), $t('home.demo.tab.resort', 'Resort'), $t('home.demo.tab.casual', 'Casual')],
                 'filters' => [$t('home.demo.filter.dress', 'Đầm'), $t('home.demo.filter.denim', 'Denim'), $t('home.demo.filter.bag', 'Túi')],
                 'items' => $demoProducts->slice(4, 4)->values()->all(),
@@ -197,9 +212,24 @@
 
     if ($footerColumns === []) {
         $footerColumns = [
-            ['title' => $t('footer.help_title', 'Trợ giúp'), 'links' => [$t('footer.shipping_policy', 'Chính sách giao hàng'), $t('footer.payment_methods', 'Cách thức thanh toán'), $t('footer.evouchers', 'Fashion E-voucher'), $t('footer.membership', 'Membership')]],
-            ['title' => $t('footer.about_title', 'Giới thiệu'), 'links' => [$t('footer.about_us', 'Về chúng tôi'), $t('footer.contact', 'Liên hệ'), $t('footer.privacy_policy', 'Chính sách bảo mật'), $t('footer.operating_regulations', 'Quy chế hoạt động')]],
-            ['title' => $t('footer.partnership_title', 'Hợp tác'), 'links' => [$t('footer.gift_cards', 'Thẻ quà tặng'), $t('footer.partner_contact', 'Liên hệ hợp tác'), $t('footer.careers', 'Tuyển dụng'), $t('footer.press_info', 'Thông tin báo chí')]],
+            ['title' => $t('footer.help_title', 'Trợ giúp'), 'links' => [
+                ['label' => $t('footer.shipping_policy', 'Chính sách giao hàng'), 'url' => url('/'.app()->getLocale().'/chinh-sach-giao-hang')],
+                ['label' => $t('footer.payment_methods', 'Cách thức thanh toán'), 'url' => url('/'.app()->getLocale().'/cach-thuc-thanh-toan')],
+                ['label' => $t('footer.evouchers', 'Fashion E-voucher'), 'url' => route('site.catalog.search')],
+                ['label' => $t('footer.membership', 'Membership'), 'url' => route('customer.account')],
+            ]],
+            ['title' => $t('footer.about_title', 'Giới thiệu'), 'links' => [
+                ['label' => $t('footer.about_us', 'Về chúng tôi'), 'url' => url('/'.app()->getLocale().'/gioi-thieu')],
+                ['label' => $t('footer.contact', 'Liên hệ'), 'url' => url('/'.app()->getLocale().'/lien-he')],
+                ['label' => $t('footer.privacy_policy', 'Chính sách bảo mật'), 'url' => url('/'.app()->getLocale().'/chinh-sach-bao-mat')],
+                ['label' => $t('footer.operating_regulations', 'Quy chế hoạt động'), 'url' => url('/'.app()->getLocale().'/quy-che-hoat-dong')],
+            ]],
+            ['title' => $t('footer.partnership_title', 'Hợp tác'), 'links' => [
+                ['label' => $t('footer.gift_cards', 'Thẻ quà tặng'), 'url' => route('site.catalog.search')],
+                ['label' => $t('footer.partner_contact', 'Liên hệ hợp tác'), 'url' => url('/'.app()->getLocale().'/lien-he')],
+                ['label' => $t('footer.careers', 'Tuyển dụng'), 'url' => url('/'.app()->getLocale().'/tuyen-dung')],
+                ['label' => $t('footer.press_info', 'Thông tin báo chí'), 'url' => route('site.blog.index')],
+            ]],
         ];
     }
 
@@ -213,7 +243,7 @@
                     'group' => 'content',
                     'entity' => 'theme',
                 ]],
-                collect($column['links'] ?? [])->values()->map(fn (string $link, int $linkIndex): array => [
+                collect($column['links'] ?? [])->values()->map(fn (string|array $link, int $linkIndex): array => [
                     'key' => $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.links.%d', $index, $linkIndex)),
                     'label' => sprintf('Link %d', $linkIndex + 1),
                     'group' => 'content',
@@ -438,18 +468,18 @@
             .th-fashion-page .th-main-nav { background: #1f1a1d; }
             .th-fashion-page .th-main-nav-categories { background: #b20f3a; letter-spacing: .08em; }
             .th-fashion-page .th-main-nav-menu a { letter-spacing: .08em; font-size: 12px; }
-            .fashion-editorial { display: grid; grid-template-columns: minmax(0, .92fr) minmax(320px, 1.08fr); gap: 22px; margin: 22px 0; min-height: 420px; }
-            .fashion-editorial-copy { background: #1f1a1d; color: #fff; padding: clamp(28px, 5vw, 56px); display: grid; align-content: center; gap: 22px; }
             .fashion-kicker { color: #f2c94c; font-size: 12px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
-            .fashion-editorial h1 { margin: 0; font-size: clamp(38px, 7vw, 82px); line-height: .92; font-family: Georgia, 'Times New Roman', serif; font-weight: 500; }
-            .fashion-editorial p { margin: 0; color: rgba(255,255,255,.76); line-height: 1.8; max-width: 520px; }
-            .fashion-editorial-actions { display: flex; gap: 12px; flex-wrap: wrap; }
             .fashion-button, .fashion-button-alt { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; font-size: 12px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
             .fashion-button { background: #f2c94c; color: #1f1a1d; }
             .fashion-button-alt { border: 1px solid rgba(255,255,255,.35); color: #fff; }
-            .fashion-editorial-image { position: relative; min-height: 420px; overflow: hidden; background: #d9c7c2; }
-            .fashion-editorial-image img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.96) contrast(1.02); }
-            .fashion-editorial-label { position: absolute; left: 22px; bottom: 22px; right: 22px; display: flex; justify-content: space-between; gap: 12px; color: #fff; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+            .fashion-banner-slider { position: relative; margin: 22px 0; min-height: 0; overflow: hidden; background: #ded4cf; border: 1px solid #eadfda; box-shadow: 0 18px 46px rgba(31,26,29,.08); }
+            .fashion-banner-track { position: relative; aspect-ratio: 1200 / 360; min-height: 260px; }
+            .fashion-banner-slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .55s ease, visibility .55s ease; }
+            .fashion-banner-slide.is-active { opacity: 1; visibility: visible; z-index: 1; }
+            .fashion-banner-slide img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.98) contrast(1.02); }
+            .fashion-banner-dots { position: absolute; left: 0; right: 0; bottom: 14px; z-index: 2; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
+            .fashion-banner-dot { width: 26px; height: 3px; border-radius: 999px; background: rgba(255,255,255,.52); box-shadow: 0 1px 8px rgba(31,26,29,.24); transition: width .2s ease, background .2s ease; }
+            .fashion-banner-dot.is-active { width: 44px; background: #fff; }
             .fashion-content-strip { margin: 22px 0; display: grid; grid-template-columns: minmax(230px, .32fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
             .fashion-strip-head { background: #fff; padding: 26px; border: 1px solid #eadfda; display: grid; align-content: center; gap: 12px; }
             .fashion-strip-head span, .fashion-news-head span { color: #b20f3a; font-size: 12px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
@@ -511,16 +541,12 @@
             .th-fashion-page .th-footer-links { color: rgba(255,255,255,.68); }
             .th-fashion-page .th-company { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 0; }
             @media (max-width: 1100px) {
-                .fashion-editorial { grid-template-columns: 1fr; }
-                .fashion-editorial-image { min-height: 360px; }
                 .fashion-content-strip, .fashion-news-section { grid-template-columns: 1fr; }
                 .fashion-menu-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
                 .th-fashion-page .th-hero-stack { grid-template-columns: 1fr; }
             }
             @media (max-width: 760px) {
-                .fashion-editorial { min-height: 0; }
-                .fashion-editorial-copy { padding: 30px 22px; }
-                .fashion-editorial-image { min-height: 280px; }
+                .fashion-banner-track { aspect-ratio: 16 / 7; min-height: 180px; }
                 .fashion-menu-rail, .fashion-news-grid { grid-template-columns: 1fr; }
                 .th-fashion-page .th-hero-overlay { width: 100%; padding: 30px 22px; }
                 .th-fashion-page .th-brand-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -585,15 +611,15 @@
                                     <div class="th-nav-products-grid">
                                         @foreach (collect($sidebarCategories)->take(8) as $category)
                                             <div class="th-nav-category-card">
-                                                <a href="{{ $category['url'] ?? '#featured' }}" target="{{ $category['target'] ?? '_self' }}" class="th-nav-category-head">
+                                                <a href="{{ $category['url'] ?? route('site.catalog.search') }}" target="{{ $category['target'] ?? '_self' }}" class="th-nav-category-head">
                                                     <span class="th-nav-category-icon">{{ $category['icon'] ?? '✦' }}</span>
                                                     <strong>{{ $category['label'] ?? __('common.category') }}</strong>
                                                 </a>
                                                 <div class="th-nav-category-links">
                                                     @forelse (collect($category['children'] ?? [])->take(4) as $child)
-                                                        <a href="{{ $child['url'] ?? ($category['url'] ?? '#featured') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a>
+                                                        <a href="{{ $child['url'] ?? ($category['url'] ?? route('site.catalog.search')) }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a>
                                                     @empty
-                                                        <a href="{{ $category['url'] ?? '#featured' }}" target="{{ $category['target'] ?? '_self' }}">@themeT('home.products_menu_view_all', 'Xem tất cả')</a>
+                                                        <a href="{{ $category['url'] ?? route('site.catalog.search') }}" target="{{ $category['target'] ?? '_self' }}">@themeT('home.products_menu_view_all', 'Xem tất cả')</a>
                                                     @endforelse
                                                 </div>
                                             </div>
@@ -605,7 +631,7 @@
 
                         @foreach ($topMenuItems as $menuItem)
                             <div class="th-nav-item">
-                                <a href="{{ $menuItem['url'] ?? '#' }}" target="{{ $menuItem['target'] ?? '_self' }}" class="th-nav-link">
+                                <a href="{{ $menuItem['url'] ?? route('site.home') }}" target="{{ $menuItem['target'] ?? '_self' }}" class="th-nav-link">
                                     <span>{{ $menuItem['label'] ?? __('common.menu') }}</span>
                                     @if (!empty($menuItem['children']))
                                         <span class="th-nav-caret">▾</span>
@@ -614,7 +640,7 @@
                                 @if (!empty($menuItem['children']))
                                     <div class="th-nav-simple-panel">
                                         @foreach (collect($menuItem['children'])->take(6) as $child)
-                                            <a href="{{ $child['url'] ?? ($menuItem['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.menu') }}</a>
+                                            <a href="{{ $child['url'] ?? ($menuItem['url'] ?? route('site.home')) }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.menu') }}</a>
                                         @endforeach
                                     </div>
                                 @endif
@@ -626,6 +652,29 @@
 
             <main class="th-content">
                 <div class="th-container">
+                    <section class="fashion-banner-slider" data-fashion-banner-slider>
+                        <div class="fashion-banner-track">
+                            @foreach ($fashionBannerSlides as $slide)
+                                <a
+                                    href="{{ $slide['link_url'] ?? route('site.catalog.search') }}"
+                                    target="{{ $slide['target'] ?? '_self' }}"
+                                    class="fashion-banner-slide {{ $loop->first ? 'is-active' : '' }}"
+                                    data-fashion-banner-slide
+                                    aria-label="{{ $slide['title'] ?? ($companyTitle ?: 'TH0003 Fashion') }}"
+                                >
+                                    <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] ?? ($companyTitle ?: 'TH0003 Fashion') }}">
+                                </a>
+                            @endforeach
+                        </div>
+                        @if ($fashionBannerSlides->count() > 1)
+                            <div class="fashion-banner-dots" aria-hidden="true">
+                                @foreach ($fashionBannerSlides as $slide)
+                                    <span class="fashion-banner-dot {{ $loop->first ? 'is-active' : '' }}" data-fashion-banner-dot></span>
+                                @endforeach
+                            </div>
+                        @endif
+                    </section>
+
                     <section id="fashion-collections" class="fashion-content-strip">
                         <div class="fashion-strip-head">
                             <span>@themeT('home.collection_kicker', 'Shop by mood')</span>
@@ -633,44 +682,29 @@
                             <p>@themeT('home.collection_summary', 'Đưa menu danh mục lên thành các tile thị giác để khách thấy ngay shop đang bán gì, kể cả khi catalog thật chưa đủ dữ liệu.')</p>
                         </div>
                         <div class="fashion-menu-rail">
-                            @foreach (collect($sidebarCategories)->take(4) as $category)
+                            @foreach (collect($fashionCategoryTiles)->take(4) as $category)
                                 @php
                                     $categoryChildren = collect($category['children'] ?? [])->pluck('label')->take(3)->implode(' / ');
+                                    $categoryCount = (int) ($category['products_count'] ?? 0);
                                 @endphp
-                                <a href="{{ $category['url'] ?? '#featured' }}" target="{{ $category['target'] ?? '_self' }}" class="fashion-category-tile">
+                                <a href="{{ $category['url'] ?? route('site.catalog.search') }}" target="{{ $category['target'] ?? '_self' }}" class="fashion-category-tile">
                                     <span class="fashion-category-icon">{{ $category['icon'] ?? '✦' }}</span>
-                                    <strong>{{ $category['label'] ?? __('common.category') }}</strong>
-                                    <small>{{ $categoryChildren !== '' ? $categoryChildren : $t('home.collection_tile_fallback', 'Hàng mới / Bán chạy / Sale') }}</small>
+                                    <strong>{{ $category['label'] ?? $category['name'] ?? __('common.category') }}</strong>
+                                    <small>
+                                        {{ $categoryChildren !== '' ? $categoryChildren : $t('home.collection_tile_fallback', 'Hàng mới / Bán chạy / Sale') }}
+                                        @if ($categoryCount > 0)
+                                            · {{ $categoryCount }} @themeT('home.collection_product_count', 'sản phẩm')
+                                        @endif
+                                    </small>
                                 </a>
                             @endforeach
                         </div>
-                    </section>
-
-                    <section class="fashion-editorial">
-                        <div class="fashion-editorial-copy">
-                            <div class="fashion-kicker">@themeT('home.fashion_kicker', 'TH0003 / Fashion Studio')</div>
-                            <h1>@themeT('home.fashion_title', 'Tủ đồ mới cho nhịp sống thành thị')</h1>
-                            <p>@themeT('home.fashion_summary', 'Khám phá các thiết kế dễ phối, chất liệu gọn nhẹ và bảng màu theo mùa. Dữ liệu sản phẩm vẫn lấy trực tiếp từ Catalog để shop vận hành thật sau khi đổi theme.')</p>
-                            <div class="fashion-editorial-actions">
-                                <a href="#featured" class="fashion-button">@themeT('home.fashion_shop_now', 'Xem bộ sưu tập')</a>
-                                <a href="{{ route('site.catalog.search') }}" class="fashion-button-alt">@themeT('home.fashion_search', 'Tìm outfit')</a>
-                            </div>
-                        </div>
-                        <a class="fashion-editorial-image" href="#featured">
-                            <img src="{{ $heroSlides->first()['image'] ?? data_get($heroBanner, 'image', 'https://picsum.photos/seed/th0003-editorial/900/1100') }}" alt="{{ $companyTitle ?: 'TH0003 Fashion' }}">
-                            <div class="fashion-editorial-label">
-                                <span>@themeT('home.fashion_label_left', 'New season')</span>
-                                <span>@themeT('home.fashion_label_right', 'Ready to wear')</span>
-                            </div>
-                        </a>
                     </section>
 
                     <section id="featured" class="th-featured-panel">
                         <div class="th-featured-topbar">
                             <div class="th-section-tabs">
                                 <span>{{ $featuredTitle }}</span>
-                                <span>@themeT('home.updated_tab', 'Mới cập nhật')</span>
-                                <span>@themeT('home.good_price_tab', 'Giá tốt')</span>
                             </div>
                         </div>
 
@@ -678,13 +712,13 @@
                             @foreach ($featuredDeals as $deal)
                                 <article class="th-deal-card">
                                     <div class="th-deal-image-wrap">
-                                        <a href="{{ $deal['url'] ?? '#' }}">
+                                        <a href="{{ $deal['url'] ?? route('site.catalog.search') }}">
                                             <img src="{{ $deal['image'] }}" alt="{{ $deal['title'] }}">
                                         </a>
                                         <span class="th-deal-chip">{{ $deal['tag'] ?? 'Sản phẩm' }}</span>
                                     </div>
                                     <div class="th-deal-body">
-                                        <h3 class="th-deal-title"><a href="{{ $deal['url'] ?? '#' }}">{{ $deal['title'] }}</a></h3>
+                                        <h3 class="th-deal-title"><a href="{{ $deal['url'] ?? route('site.catalog.search') }}">{{ $deal['title'] }}</a></h3>
                                         <div class="th-pricing">
                                             <span class="th-price">{{ $formatCurrency($deal['price'] ?? null) }}</span>
                                             <span class="th-discount">{{ $formatDiscount($deal['discount'] ?? 0) }}</span>
@@ -718,7 +752,7 @@
 
                                 <div class="th-category-filters">
                                     @foreach ($section['filters'] as $filter)
-                                        <a href="#">{{ $filter }}</a>
+                                        <a href="{{ is_array($filter) ? ($filter['url'] ?? ($section['url'] ?? route('site.catalog.search'))) : ($section['url'] ?? route('site.catalog.search')) }}">{{ is_array($filter) ? ($filter['label'] ?? '') : $filter }}</a>
                                     @endforeach
                                 </div>
                             </div>
@@ -727,14 +761,14 @@
                                 @foreach ($sectionItems as $item)
                                     <article class="th-deal-card">
                                         <div class="th-deal-image-wrap">
-                                            <a href="{{ $item['url'] ?? '#' }}">
+                                            <a href="{{ $item['url'] ?? route('site.catalog.search') }}">
                                                 <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
                                             </a>
                                             <span class="th-deal-countdown">{{ str_replace(':days', '21', $t('home.fashion_days_left', '⏱ Còn :days ngày')) }}</span>
                                             <span class="th-deal-chip">{{ $item['tag'] }}</span>
                                         </div>
                                         <div class="th-deal-body">
-                                            <h3 class="th-deal-title"><a href="{{ $item['url'] ?? '#' }}">{{ $item['title'] }}</a></h3>
+                                            <h3 class="th-deal-title"><a href="{{ $item['url'] ?? route('site.catalog.search') }}">{{ $item['title'] }}</a></h3>
                                             <div class="th-pricing">
                                                 <span class="th-price">{{ $formatCurrency($item['price'] ?? null) }}</span>
                                                 <span class="th-discount">{{ $formatDiscount($item['discount'] ?? 0) }}</span>
@@ -765,7 +799,7 @@
 
                             <div class="th-secondary-promo-grid">
                                 @foreach ($secondarySidePromos as $promo)
-                                    <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}" class="th-secondary-promo-card">
+                                    <a href="{{ $promo['link_url'] ?? route('site.catalog.search') }}" target="{{ $promo['target'] ?? '_self' }}" class="th-secondary-promo-card">
                                         <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
                                         @if (!empty($promo['badge']))
                                             <span class="th-secondary-promo-badge">{{ $promo['badge'] }}</span>
@@ -835,7 +869,11 @@
                                 </div>
                                 <div class="th-footer-links">
                                     @foreach (($column['links'] ?? []) as $linkIndex => $link)
-                                        <a href="#" data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.links.%d', $loop->parent->index, $linkIndex)) }}">{{ $link }}</a>
+                                        @php
+                                            $footerLinkLabel = is_array($link) ? ($link['label'] ?? '') : $link;
+                                            $footerLinkUrl = is_array($link) ? ($link['url'] ?? route('site.home')) : route('site.home');
+                                        @endphp
+                                        <a href="{{ $footerLinkUrl }}" data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.links.%d', $loop->parent->index, $linkIndex)) }}">{{ $footerLinkLabel }}</a>
                                     @endforeach
                                 </div>
                             </section>
@@ -878,5 +916,23 @@
                 'localeOptions' => $quickEditLocaleOptions,
             ])
         @endif
+        <script>
+            document.querySelectorAll('[data-fashion-banner-slider]').forEach((slider) => {
+                const slides = Array.from(slider.querySelectorAll('[data-fashion-banner-slide]'));
+                const dots = Array.from(slider.querySelectorAll('[data-fashion-banner-dot]'));
+                if (slides.length <= 1) {
+                    return;
+                }
+
+                let activeIndex = 0;
+                window.setInterval(() => {
+                    slides[activeIndex].classList.remove('is-active');
+                    dots[activeIndex]?.classList.remove('is-active');
+                    activeIndex = (activeIndex + 1) % slides.length;
+                    slides[activeIndex].classList.add('is-active');
+                    dots[activeIndex]?.classList.add('is-active');
+                }, 4200);
+            });
+        </script>
     </body>
 </html>

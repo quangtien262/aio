@@ -19,7 +19,7 @@
                 <p class="th-hero-summary" data-translation-display="{{ $slide['translation_keys']['summary'] ?? ($loop->first ? ($heroBannerEditKeyMap['summary']['key'] ?? 'theme.fallback.hero_summary') : '') }}">{{ $slide['summary'] ?? 'Dữ liệu banner đang được lấy trực tiếp từ bảng banner riêng.' }}</p>
                 <div class="th-hero-actions">
                     <span class="th-badge-price" data-translation-display="{{ $slide['translation_keys']['badge'] ?? ($loop->first ? ($heroBannerEditKeyMap['badge']['key'] ?? 'theme.fallback.hero_badge') : ($heroSlideDefaultKeyMap['badge'] ?? 'theme_block.TH0003.hero_slide.badge')) }}">{{ $slide['badge'] ?? 'Ưu đãi mới' }}</span>
-                    <a href="{{ $slide['link_url'] ?? '#featured' }}" class="th-hero-button" data-translation-display="{{ $slide['translation_keys']['cta'] ?? ($loop->first ? ($heroBannerEditKeyMap['cta']['key'] ?? 'theme.fallback.hero_cta') : ($heroSlideDefaultKeyMap['cta'] ?? 'theme_block.TH0003.hero_slide.cta')) }}">{{ $slide['cta'] ?? 'Mua ngay' }}</a>
+                    <a href="{{ $slide['link_url'] ?? route('site.catalog.search') }}" class="th-hero-button" data-translation-display="{{ $slide['translation_keys']['cta'] ?? ($loop->first ? ($heroBannerEditKeyMap['cta']['key'] ?? 'theme.fallback.hero_cta') : ($heroSlideDefaultKeyMap['cta'] ?? 'theme_block.TH0003.hero_slide.cta')) }}">{{ $slide['cta'] ?? 'Mua ngay' }}</a>
                 </div>
             </div>
         </article>

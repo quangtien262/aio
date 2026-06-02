@@ -12,6 +12,8 @@
     $contactEmail = data_get($branding, 'support_email', 'cs@TH0003.demo');
     $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
     $companyTitle = data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', ''));
+    $footerColumns = $shell['footer_columns'] ?? [];
+    $companyFooter = $shell['company_footer'] ?? [];
     $searchQuery = (string) ($searchQuery ?? request('q', ''));
     $productCollection = collect($products ?? []);
     $pagination = $pagination ?? null;
@@ -125,10 +127,13 @@
                 .search-toolbar { grid-template-columns: 1fr; }
                 .product-grid, .th-footer-grid { grid-template-columns: 1fr; }
             }
+            @include('theme-th0003::partials.fashion-shell-styles')
         </style>
     </head>
     <body>
-        <div class="th-page">
+        <div class="th-page th-fashion-page">
+            @include('theme-th0003::partials.fashion-header')
+            <div class="th-legacy-header" hidden>
             <div class="th-topbar">
                 <div class="th-container th-topbar-inner">
                     <div class="th-inline">
@@ -171,17 +176,18 @@
                         <div class="th-main-nav-categories">@themeT('common.categories', 'DANH MỤC')</div>
                         <div class="th-category-panel">
                             @foreach ($productMenu as $item)
-                                <a href="{{ $item['url'] ?? '#' }}" class="th-sidebar-item">{{ $item['label'] ?? __('common.category') }}</a>
+                                <a href="{{ $item['url'] ?? route('site.catalog.search') }}" class="th-sidebar-item">{{ $item['label'] ?? __('common.category') }}</a>
                             @endforeach
                         </div>
                     </div>
                     <div class="th-main-nav-menu">
                         @foreach ($topMenu as $item)
-                            <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
+                            <a href="{{ $item['url'] ?? route('site.home') }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
                         @endforeach
                     </div>
                 </div>
             </nav>
+            </div>
 
             <main>
                 <div class="th-container">
@@ -297,44 +303,7 @@
                 </div>
             </main>
 
-            <footer class="th-footer">
-                <div class="th-container th-footer-inner">
-                    <div class="th-footer-grid">
-                        <div class="th-company">
-                            <strong>{{ $companyTitle }}</strong>
-                            <div>{{ $contactLocation }}</div>
-                            <div>@themeT('common.hotline_label', 'Hotline'): {{ $contactHotline }}</div>
-                            <div>@themeT('common.email_label', 'Email'): {{ $contactEmail }}</div>
-                        </div>
-                        <div class="th-footer-card">
-                            <h4>@themeT('search.discover', 'Khám phá')</h4>
-                            <div class="th-footer-links">
-                                <a href="{{ route('site.blog.index') }}">{{ $t('menu.default.blog', 'Tin tức') }}</a>
-                                <a href="{{ url('/'.app()->getLocale().'/gioi-thieu') }}">{{ $t('menu.default.about', 'Giới thiệu') }}</a>
-                                <a href="{{ url('/'.app()->getLocale().'/lien-he') }}">{{ $t('menu.default.contact', 'Liên hệ') }}</a>
-                            </div>
-                        </div>
-                        <div class="th-footer-card">
-                            <h4>@themeT('search.account_title', 'Tài khoản')</h4>
-                            <div class="th-footer-links">
-                                @if (!empty($customerAuth['is_authenticated']))
-                                    <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('search.account_page', 'Trang tài khoản')</a>
-                                @else
-                                    <button type="button" class="th-inline-action" data-open-auth-modal="login">@themeT('common.login', 'Đăng nhập')</button>
-                                    <button type="button" class="th-inline-action" data-open-auth-modal="register">@themeT('common.register', 'Đăng ký')</button>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="th-footer-card">
-                            <h4>@themeT('search.newsletter_title', 'Bản tin')</h4>
-                            <div class="th-footer-links">
-                                <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('search.newsletter_subscribed') : __('search.newsletter_subscribe') }}</button>
-                                <span>@themeT('search.newsletter_summary', 'Cập nhật ưu đãi và nội dung mới mỗi tuần.')</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            @include('theme-th0003::partials.footer', ['footerContainerClass' => 'th-container', 'footerCompanyFirst' => true])
         </div>
 
         @include('theme-th0003::partials.product-search-autocomplete')

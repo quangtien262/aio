@@ -24,11 +24,8 @@
     $postCategories = collect($postCategories ?? []);
     $latestPostItems = collect($latestPosts ?? [])->filter(fn ($post) => (int) ($post->id ?? 0) !== (int) ($entry->id ?? 0))->take(3)->values();
     $relatedPostItems = collect($relatedPosts ?? [])->filter(fn ($post) => (int) ($post->id ?? 0) !== (int) ($entry->id ?? 0))->take(3)->values();
-    $footerColumns = [
-        $t('footer.help_title', 'Trợ giúp') => [$t('footer.shipping_policy', 'Chính sách giao hàng'), $t('footer.payment_methods', 'Cách thức thanh toán'), $t('footer.evouchers', 'Fashion E-voucher'), $t('footer.membership', 'Membership')],
-        $t('footer.about_title', 'Giới thiệu') => [$t('footer.about_us', 'Về chúng tôi'), $t('footer.contact', 'Liên hệ'), $t('footer.privacy_policy', 'Chính sách bảo mật'), $t('footer.operating_regulations', 'Quy chế hoạt động')],
-        $t('footer.partnership_title', 'Hợp tác') => [$t('footer.gift_cards', 'Thẻ quà tặng'), $t('footer.partner_contact', 'Liên hệ hợp tác'), $t('footer.careers', 'Tuyển dụng'), $t('footer.press_info', 'Thông tin báo chí')],
-    ];
+    $footerColumns = $themeShellData['footer_columns'] ?? [];
+    $companyFooter = $themeShellData['company_footer'] ?? [];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -244,10 +241,13 @@
                 .th-cms-hero-meta, .th-cms-card-grid, .th-footer-grid, .th-contact-grid, .th-news-toolbar { grid-template-columns: 1fr; }
                 .th-cms-card-media { aspect-ratio: 4 / 3; }
             }
+            @include('theme-th0003::partials.fashion-shell-styles')
         </style>
     </head>
     <body>
-        <div class="th-page">
+        <div class="th-page th-fashion-page">
+            @include('theme-th0003::partials.fashion-header')
+            <div class="th-legacy-header" hidden>
             <div class="th-topbar">
                 <div class="th-container th-topbar-inner">
                     <div class="th-inline">
@@ -280,7 +280,7 @@
                         <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
                         <button type="submit">@themeT('common.search_button', 'Tìm')</button>
                     </form>
-                    <a class="th-cart" href="{{ route('site.cart.index') }}">?? {{ $cartSummary['count'] ?? 0 }} @themeT('common.cart_label', 'GIỎ HÀNG')</a>
+                    <a class="th-cart" href="{{ route('site.cart.index') }}">&#128722; {{ $cartSummary['count'] ?? 0 }} @themeT('common.cart_label', 'GIỎ HÀNG')</a>
                 </div>
             </header>
 
@@ -291,7 +291,7 @@
                         <div class="th-category-panel">
                             @foreach ($productMenu as $item)
                                 <div class="th-sidebar-entry">
-                                    <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}" class="th-sidebar-item {{ !empty($item['highlight']) ? 'is-accent' : '' }}">
+                                    <a href="{{ $item['url'] ?? route('site.catalog.search') }}" target="{{ $item['target'] ?? '_self' }}" class="th-sidebar-item {{ !empty($item['highlight']) ? 'is-accent' : '' }}">
                                         <span><span class="th-sidebar-icon">{{ $item['icon'] ?? '•' }}</span> {{ $item['label'] ?? __('common.category') }}</span>
                                         <span>›</span>
                                     </a>
@@ -307,7 +307,7 @@
                                                         <h4>{{ $item['label'] ?? __('common.category') }}</h4>
                                                         <ul>
                                                             @foreach ($chunk as $child)
-                                                                <li><a href="{{ $child['url'] ?? ($item['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? $t('common.child_group', 'Nhóm con') }}</a></li>
+                                                                <li><a href="{{ $child['url'] ?? ($item['url'] ?? route('site.catalog.search')) }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? $t('common.child_group', 'Nhóm con') }}</a></li>
                                                             @endforeach
                                                         </ul>
                                                     </div>
@@ -316,7 +316,7 @@
 
                                             <div class="th-sidebar-mega-promo">
                                                 @foreach ($sidePromos as $promo)
-                                                    <a href="{{ $promo['link_url'] ?? '#featured' }}">
+                                                    <a href="{{ $promo['link_url'] ?? route('site.catalog.search') }}">
                                                         <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
                                                         <span>{{ $promo['title'] }}{{ filled($promo['subtitle'] ?? null) ? ' ? '.$promo['subtitle'] : '' }}</span>
                                                     </a>
@@ -330,11 +330,12 @@
                     </div>
                     <div class="th-main-nav-menu">
                         @foreach ($topMenu as $menuItem)
-                            <a href="{{ $menuItem['url'] ?? '#' }}" target="{{ $menuItem['target'] ?? '_self' }}">{{ $menuItem['label'] ?? $t('common.menu', 'Menu') }}</a>
+                            <a href="{{ $menuItem['url'] ?? route('site.home') }}" target="{{ $menuItem['target'] ?? '_self' }}">{{ $menuItem['label'] ?? $t('common.menu', 'Menu') }}</a>
                         @endforeach
                     </div>
                 </div>
             </nav>
+            </div>
 
             <main class="th-content">
                 <div class="th-container">
@@ -673,32 +674,7 @@
                 </div>
             </main>
 
-            <footer class="th-footer">
-                <div class="th-container th-footer-inner">
-                    <div class="th-footer-grid">
-                        @foreach ($footerColumns as $title => $links)
-                            <section class="th-footer-card">
-                                <h4>{{ $title }}</h4>
-                                <div class="th-footer-links">
-                                    @foreach ($links as $link)
-                                        <a href="#">{{ $link }}</a>
-                                    @endforeach
-                                </div>
-                            </section>
-                        @endforeach
-
-                        <section class="th-company">
-                            <strong>{{ mb_strtoupper(data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', '')), 'UTF-8') }}</strong>
-                            <div class="th-footer-links">
-                                <span>{{ $t('footer.address_line_1', '332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM') }}</span>
-                                <span>{{ $t('footer.address_line_2', 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân') }}</span>
-                                <span>Hotline: {{ $contactHotline }}</span>
-                                <span>Email: {{ $contactEmail }}</span>
-                            </div>
-                        </section>
-                    </div>
-                </div>
-            </footer>
+            @include('theme-th0003::partials.footer', ['footerContainerClass' => 'th-container', 'footerCompanyFirst' => true])
         </div>
 
         @include('theme-th0003::partials.product-search-autocomplete')

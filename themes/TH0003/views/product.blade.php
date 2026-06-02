@@ -17,11 +17,8 @@
     $gallery = $productGallery ?? [];
     $highlights = $productHighlights ?? [];
     $detailParagraphsList = $detailParagraphs ?? [];
-    $footerColumns = [
-        $t('footer.help_title', 'Trợ giúp') => [$t('footer.shipping_policy', 'Chính sách giao hàng'), $t('footer.payment_methods', 'Cách thức thanh toán'), $t('footer.evouchers', 'Fashion E-voucher'), $t('footer.membership', 'Membership')],
-        $t('footer.about_title', 'Giới thiệu') => [$t('footer.about_us', 'Về chúng tôi'), $t('footer.contact', 'Liên hệ'), $t('footer.privacy_policy', 'Chính sách bảo mật'), $t('footer.operating_regulations', 'Quy chế hoạt động')],
-        $t('footer.partnership_title', 'Hợp tác') => [$t('footer.gift_cards', 'Thẻ quà tặng'), $t('footer.partner_contact', 'Liên hệ hợp tác'), $t('footer.careers', 'Tuyển dụng'), $t('footer.press_info', 'Thông tin báo chí')],
-    ];
+    $footerColumns = $shell['footer_columns'] ?? [];
+    $companyFooter = $shell['company_footer'] ?? [];
     $primaryImage = $gallery[0]['url'] ?? ($product['image'] ?? 'https://picsum.photos/seed/TH0003-product-fallback/960/720');
     $discount = (int) ($product['discount'] ?? 0);
     $soldCount = (int) ($productModel->sold_count ?? 0);
@@ -303,9 +300,12 @@
             @media (max-width: 720px) {
                 .fashion-fit-panel { grid-template-columns: 1fr; }
             }
+            @include('theme-th0003::partials.fashion-shell-styles')
         </style>
     </head>
-    <body class="fashion-product-page">
+    <body class="th-fashion-page fashion-product-page">
+        @include('theme-th0003::partials.fashion-header')
+        <div class="th-legacy-header" hidden>
         <div class="utility">
             <div class="wrap utility-inner">
                 <div class="utility-group">
@@ -351,7 +351,7 @@
                     <div class="nav-category-panel">
                         @foreach ($productMenu as $item)
                             <div class="th-sidebar-entry">
-                                <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}" class="th-sidebar-item {{ !empty($item['highlight']) ? 'is-accent' : '' }}">
+                                <a href="{{ $item['url'] ?? route('site.catalog.search') }}" target="{{ $item['target'] ?? '_self' }}" class="th-sidebar-item {{ !empty($item['highlight']) ? 'is-accent' : '' }}">
                                     <span><span class="th-sidebar-icon">{{ $item['icon'] ?? '?' }}</span> {{ $item['label'] ?? __('common.category') }}</span>
                                     <span>›</span>
                                 </a>
@@ -367,7 +367,7 @@
                                                     <h4>{{ $item['label'] ?? __('common.category') }}</h4>
                                                     <ul>
                                                         @foreach ($chunk as $child)
-                                                            <li><a href="{{ $child['url'] ?? ($item['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a></li>
+                                                            <li><a href="{{ $child['url'] ?? ($item['url'] ?? route('site.catalog.search')) }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a></li>
                                                         @endforeach
                                                     </ul>
                                                 </div>
@@ -376,7 +376,7 @@
 
                                         <div class="th-sidebar-mega-promo">
                                             @foreach ($sidePromos as $promo)
-                                                <a href="{{ $promo['link_url'] ?? '#featured' }}">
+                                                <a href="{{ $promo['link_url'] ?? route('site.catalog.search') }}">
                                                     <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
                                                     <span>{{ $promo['title'] }}{{ filled($promo['subtitle'] ?? null) ? ' ? '.$promo['subtitle'] : '' }}</span>
                                                 </a>
@@ -390,11 +390,12 @@
                 </div>
                 <div class="nav-links">
                     @foreach ($topMenu as $item)
-                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
+                        <a href="{{ $item['url'] ?? route('site.home') }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
                     @endforeach
                 </div>
             </div>
         </nav>
+        </div>
 
         <main class="wrap">
             @if (session('cart_success'))
@@ -618,32 +619,7 @@
             </section>
         </main>
 
-        <footer class="th-footer">
-            <div class="wrap th-footer-inner">
-                <div class="th-footer-grid">
-                    @foreach ($footerColumns as $title => $links)
-                        <section class="th-footer-card">
-                            <h4>{{ $title }}</h4>
-                            <div class="th-footer-links">
-                                @foreach ($links as $link)
-                                    <a href="#">{{ $link }}</a>
-                                @endforeach
-                            </div>
-                        </section>
-                    @endforeach
-
-                    <section class="th-company">
-                        <strong>{{ mb_strtoupper(data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', '')), 'UTF-8') }}</strong>
-                        <div class="th-footer-links">
-                            <span>332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM</span>
-                            <span>Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân</span>
-                            <span>Hotline: {{ $contactHotline }}</span>
-                            <span>Email: {{ $contactEmail }}</span>
-                        </div>
-                    </section>
-                </div>
-            </div>
-        </footer>
+        @include('theme-th0003::partials.footer', ['footerContainerClass' => 'wrap'])
 
         @include('theme-th0003::partials.product-search-autocomplete')
         @include('theme-th0003::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])

@@ -2,6 +2,7 @@
     $shell = $themeShellData ?? [];
     $branding = $shell['branding'] ?? [];
     $topMenu = $shell['top_menu'] ?? [];
+    $productMenu = $shell['product_menu'] ?? [];
     $cartSummary = $shell['cart_summary'] ?? ['count' => 0, 'subtotal' => 0, 'items' => []];
     $cartItems = $cartSummary['items'] ?? [];
     $customerAuth = $shell['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
@@ -44,7 +45,7 @@
             .cart-link { font-size: 14px; font-weight: 700; color: #444; }
             .nav { background: var(--th-red); color: #fff; }
             .nav-inner { display: flex; align-items: center; justify-content: flex-start; gap: 28px; min-height: 42px; font-size: 14px; font-weight: 700; }
-            .nav-category { background: rgba(0, 0, 0, .16); padding: 12px 18px; min-width: 210px; }
+            .nav-category { display: block; background: rgba(0, 0, 0, .16); padding: 12px 18px; min-width: 210px; color: #fff; }
             .nav-links { display: flex; justify-content: flex-start; gap: 28px; flex-wrap: wrap; }
             .nav-links a { text-transform: uppercase; transition: color .18s ease; }
             .nav-links a:hover { color: #fff2bf; }
@@ -92,9 +93,12 @@
                 .cart-actions { justify-items: start; }
                 .quantity-form { justify-content: start; }
             }
+            @include('theme-th0003::partials.fashion-shell-styles')
         </style>
     </head>
-    <body>
+    <body class="th-fashion-page">
+        @include('theme-th0003::partials.fashion-header')
+        <div class="th-legacy-header" hidden>
         <div class="utility">
             <div class="wrap utility-inner">
                 <div class="utility-group">
@@ -135,14 +139,18 @@
 
         <nav class="nav">
             <div class="wrap nav-inner">
-                <div class="nav-category">@themeT('common.categories', 'DANH MỤC')</div>
+                <a class="nav-category" href="{{ route('site.catalog.search') }}">@themeT('common.products', 'SẢN PHẨM')</a>
                 <div class="nav-links">
+                    @foreach (collect($productMenu)->take(4) as $item)
+                        <a href="{{ $item['url'] ?? route('site.catalog.search') }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.category') }}</a>
+                    @endforeach
                     @foreach ($topMenu as $item)
-                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
+                        <a href="{{ $item['url'] ?? route('site.home') }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] ?? __('common.menu') }}</a>
                     @endforeach
                 </div>
             </div>
         </nav>
+        </div>
 
         <main class="wrap">
             <div class="breadcrumb">
@@ -166,12 +174,12 @@
                         <div class="cart-table">
                             @foreach ($cartItems as $item)
                                 <article class="cart-row">
-                                    <a href="{{ $item['url'] ?? '#' }}">
+                                    <a href="{{ $item['url'] ?? route('site.catalog.search') }}">
                                         <img src="{{ $item['image'] ?: 'https://picsum.photos/seed/TH0003-product-fallback/640/420' }}" alt="{{ $item['title'] }}">
                                     </a>
 
                                     <div class="cart-copy">
-                                        <h3><a href="{{ $item['url'] ?? '#' }}">{{ $item['title'] }}</a></h3>
+                                        <h3><a href="{{ $item['url'] ?? route('site.catalog.search') }}">{{ $item['title'] }}</a></h3>
                                         <div class="cart-meta">{{ __('cart.stock_available', ['count' => $item['stock'] ?? __('cart.stock_unlimited')]) }}</div>
                                         <div class="cart-price-row">
                                             <span class="cart-price">{{ $formatCurrency($item['price'] ?? null) }}</span>
