@@ -1048,6 +1048,7 @@ class CmsSiteController
         $heroBanner = $this->resolveHeroBanner($websiteKey, $themeKey);
         $sideBanners = $this->resolveSidePromos($websiteKey, $themeKey);
         $featuredProducts = $this->resolveFeaturedProducts($websiteKey);
+        $latestPosts = $this->resolveLatestPostHighlights($websiteKey);
 
         return [
             ...$shellData,
@@ -1066,6 +1067,17 @@ class CmsSiteController
             'hero_slide_defaults' => $this->resolveCommerceHeroSlideDefaults($websiteKey, $themeKey),
             'footer_columns' => $this->resolveCommerceFooterColumns($websiteKey, $themeKey),
             'company_footer' => $this->resolveCommerceCompanyFooter($websiteKey, $themeKey),
+            'latest_posts_section' => [
+                'kicker' => $this->themeBlockText($websiteKey, $themeKey, 'latest_posts.kicker', 'Fashion journal'),
+                'title' => $this->themeBlockText($websiteKey, $themeKey, 'latest_posts.title', 'Tin mới từ shop'),
+                'summary' => $this->themeBlockText(
+                    $websiteKey,
+                    $themeKey,
+                    'latest_posts.summary',
+                    'Cập nhật lookbook, cách phối đồ và các ghi chú vận hành mới nhất từ CMS.'
+                ),
+            ],
+            'latest_posts' => $latestPosts,
         ];
     }
 

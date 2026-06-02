@@ -1,0 +1,35 @@
+{
+  "name": "TH0003 Fashion Commerce",
+  "key": "TH0003",
+  "version": "0.1.0",
+  "description": "Theme thương mại điện tử cho shop thời trang, tập trung vào lookbook, bộ sưu tập theo mùa, grid sản phẩm sạch và trải nghiệm mua hàng gọn.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-th0003.svg",
+    "cover": "cover-th0003.svg"
+  },
+  "blocks": [
+    "fashion-topbar",
+    "editorial-header",
+    "lookbook-hero",
+    "collection-rail",
+    "featured-products",
+    "seasonal-promos",
+    "fashion-footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}
