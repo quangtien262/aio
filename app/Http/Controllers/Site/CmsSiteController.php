@@ -1868,7 +1868,7 @@ class CmsSiteController
             return [
                 'title' => $this->themeBlockText($websiteKey, $themeKey, sprintf('footer.columns.%d.title', $index), $column['title']),
                 'links' => collect($column['links'])->map(
-                    fn (string $link, int $linkIndex): string|array => strtoupper($themeKey) === 'TH0003'
+                    fn (string $link, int $linkIndex): string|array => in_array(strtoupper($themeKey), ['TH0003', 'TH0020'], true)
                         ? [
                             'label' => $this->themeBlockText($websiteKey, $themeKey, sprintf('footer.columns.%d.links.%d', $index, $linkIndex), $link),
                             'url' => $this->resolveCommerceFooterLinkUrl($index, $linkIndex),
@@ -2039,6 +2039,40 @@ class CmsSiteController
                 'section_tabs' => ['Hàng mới', 'Bán chạy', 'Dễ phối'],
                 'featured_tones' => ['#b20f3a', '#1f1a1d', '#0f8a8a', '#c17a3a', '#6b4b7d'],
             ],
+            'TH0020' => [
+                'hero_slide' => [
+                    'eyebrow' => 'Interior studio',
+                    'badge' => 'New living',
+                    'cta' => 'Xem bộ sưu tập',
+                ],
+                'footer_columns' => [
+                    ['title' => 'Hỗ trợ mua hàng', 'links' => ['Chính sách giao hàng', 'Đổi trả và bảo hành', 'Tư vấn phối không gian', 'Theo dõi đơn hàng']],
+                    ['title' => 'Về showroom', 'links' => ['Về chúng tôi', 'Liên hệ showroom', 'Chính sách bảo mật', 'Interior journal']],
+                    ['title' => 'Bộ sưu tập nội thất', 'links' => ['Hàng mới', 'Sản phẩm nổi bật', 'Danh mục sản phẩm', 'Ý tưởng bài trí']],
+                ],
+                'company_footer' => [
+                    'address_line_1' => 'Showroom TH0020: 42 Nguyễn Cơ Thạch, Nam Từ Liêm, Hà Nội',
+                    'address_line_2' => 'Experience studio TP.HCM: nhận tư vấn phối phòng, vật liệu và giao lắp theo lịch hẹn',
+                ],
+                'branding' => [
+                    'company_name' => 'TH0020 Interior Commerce',
+                    'slogan' => 'Nội thất hiện đại cho căn hộ, nhà phố và studio sống tối giản',
+                    'logo_url' => self::DEFAULT_BRAND_ASSET,
+                    'favicon_url' => self::DEFAULT_BRAND_ASSET,
+                    'primary_color' => '#33483c',
+                    'primary_color_deep' => '#21312b',
+                    'accent_color' => '#b98455',
+                    'accent_soft_color' => '#ead9ba',
+                    'background_color' => '#f6f2ea',
+                    'surface_color' => '#fffdf8',
+                    'surface_tint_color' => '#fbf7ef',
+                    'support_hotline' => '1900 6760 / 0902.020.020',
+                    'support_email' => 'studio@th0020.demo',
+                    'support_location' => 'Hà Nội - TP.HCM',
+                ],
+                'section_tabs' => ['Phòng khách', 'Phòng ngủ', 'Decor nổi bật'],
+                'featured_tones' => ['#33483c', '#8f6a4a', '#60715c', '#b98455', '#d8b799'],
+            ],
             default => [
                 'hero_slide' => [
                     'eyebrow' => 'Ưu đãi nổi bật',
@@ -2128,7 +2162,7 @@ class CmsSiteController
 
     private function isCommerceThemeKey(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'LAN0201'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'LAN0201'], true);
     }
 
     private function themeBlockText(string $websiteKey, string $themeKey, string $blockKey, ?string $default): string

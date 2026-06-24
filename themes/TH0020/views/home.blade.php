@@ -1,4 +1,4 @@
-﻿@php
+@php
     $homeData = $themeHomeData ?? [];
     $siteProfile = $homeData['site_profile'] ?? $siteProfile ?? \App\Models\SiteProfile::query()->first();
     $branding = $homeData['branding'] ?? [];
@@ -7,13 +7,13 @@
     $secondarySidePromos = collect($homeData['secondary_side_promos'] ?? [])->take(3)->values()->all();
     $featuredCategories = $homeData['featured_categories'] ?? $homeData['brand_highlights'] ?? [];
     $sidebarCategories = $homeData['product_menu'] ?? [];
-    $fashionCategoryTiles = $homeData['fashion_category_tiles'] ?? [];
+    $InteriorCategoryTiles = $homeData['interior_category_tiles'] ?? $homeData['fashion_category_tiles'] ?? [];
     $featuredDeals = $homeData['featured_products'] ?? [];
     $featuredTitle = $homeData['featured_title'] ?? 'Sản phẩm nổi bật';
     $sections = $homeData['sections'] ?? [];
     $latestPostsSection = $homeData['latest_posts_section'] ?? [];
     $latestPosts = $homeData['latest_posts'] ?? [];
-    $heroSlideDefaults = $homeData['hero_slide_defaults'] ?? ['eyebrow' => 'Ưu đãi nổi bật', 'badge' => 'Khám phá ngay', 'cta' => 'Xem ngay'];
+    $heroSlideDefaults = $homeData['hero_slide_defaults'] ?? ['eyebrow' => 'Interior studio', 'badge' => 'New living', 'cta' => 'Xem bộ sưu tập'];
     $footerColumns = $homeData['footer_columns'] ?? [];
     $companyFooter = $homeData['company_footer'] ?? [];
     $cartSummary = $homeData['cart_summary'] ?? ['count' => 0];
@@ -21,12 +21,12 @@
     $newsletterState = $homeData['newsletter'] ?? ['is_subscribed' => false];
     $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
     $themeBlockRegistry = app(\App\Support\ThemeBlockRegistry::class);
-    $themeKey = 'TH0003';
-    $t = fn (string $key, string $default) => $themeTranslator->bladeText('TH0003', app()->getLocale(), $key, $default);
+    $themeKey = 'TH0020';
+    $t = fn (string $key, string $default) => $themeTranslator->bladeText('TH0020', app()->getLocale(), $key, $default);
     $latestPostsSection = array_merge([
-        'kicker' => $t('home.latest_posts_kicker', 'Fashion journal'),
-        'title' => $t('home.latest_posts_title', 'Tin mới từ shop'),
-        'summary' => $t('home.latest_posts_summary', 'Cập nhật lookbook, cách phối đồ và các ghi chú vận hành mới nhất từ CMS.'),
+        'kicker' => $t('home.latest_posts_kicker', 'Interior journal'),
+        'title' => $t('home.latest_posts_title', 'Ý tưởng mới cho không gian sống'),
+        'summary' => $t('home.latest_posts_summary', 'Cập nhật xu hướng nội thất, cách phối vật liệu và gợi ý chọn sản phẩm từ CMS.'),
     ], $latestPostsSection);
     $adminUser = auth('admin')->user();
     $canQuickEditThemeBlocks = $adminUser !== null
@@ -41,9 +41,9 @@
         : array_merge(
             $heroBanner['edit_fields'] ?? [],
             [
-                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.eyebrow'), 'label' => 'Nhãn slide phụ', 'group' => 'content', 'entity' => 'theme'],
-                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.badge'), 'label' => 'Badge slide phụ', 'group' => 'content', 'entity' => 'theme'],
-                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.cta'), 'label' => 'CTA slide phụ', 'group' => 'content', 'entity' => 'theme'],
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.eyebrow'), 'label' => 'Nhãn slide ph?', 'group' => 'content', 'entity' => 'theme'],
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.badge'), 'label' => 'Badge slide ph?', 'group' => 'content', 'entity' => 'theme'],
+                ['key' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.cta'), 'label' => 'CTA slide ph?', 'group' => 'content', 'entity' => 'theme'],
             ],
         );
     $heroSlideDefaultKeyMap = [
@@ -52,12 +52,12 @@
         'cta' => $themeBlockRegistry->contentKey($themeKey, 'hero_slide.cta'),
     ];
     $companyFooterEditFields = [
-        ['key' => $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_1'), 'label' => 'Địa chỉ dòng 1', 'group' => 'content', 'entity' => 'theme'],
-        ['key' => $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2'), 'label' => 'Địa chỉ dòng 2', 'group' => 'content', 'entity' => 'theme'],
+        ['key' => $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_1'), 'label' => 'Ð?a ch? dòng 1', 'group' => 'content', 'entity' => 'theme'],
+        ['key' => $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2'), 'label' => 'Ð?a ch? dòng 2', 'group' => 'content', 'entity' => 'theme'],
     ];
-    $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0354.466.968');
-    $contactEmail = data_get($branding, 'support_email', 'cs@TH0003.demo');
-    $contactLocation = data_get($branding, 'support_location', 'Hà Nội');
+    $contactHotline = data_get($branding, 'support_hotline', '1900 6760 / 0902.020.020');
+    $contactEmail = data_get($branding, 'support_email', 'studio@th0020.demo');
+    $contactLocation = data_get($branding, 'support_location', 'Hà Nội - TP.HCM');
     $companyTitle = data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', ''));
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $searchCategories = collect($sidebarCategories)->pluck('label')->take(6)->all();
@@ -67,10 +67,10 @@
             ->merge(
                 collect($sidePromos)->take(3)->map(function (array $promo, int $index) use ($heroSlideDefaults): array {
                     return [
-                        'image' => $promo['image'] ?? 'https://picsum.photos/seed/TH0003-fallback-hero-'.($index + 1).'/960/520',
-                        'title' => $promo['title'] ?? 'Ưu đãi nổi bật',
-                        'summary' => $promo['subtitle'] ?? 'Khám phá thêm các ưu đãi đang chạy trong storefront TH0003.',
-                        'eyebrow' => $heroSlideDefaults['eyebrow'] ?? 'Ưu đãi nổi bật',
+                        'image' => $promo['image'] ?? 'https://picsum.photos/seed/TH0020-fallback-hero-'.($index + 1).'/960/520',
+                        'title' => $promo['title'] ?? 'Không gian mới cho căn hộ hiện đại',
+                        'summary' => $promo['subtitle'] ?? 'Khám phá các bộ sưu tập sofa, bàn ăn, giường ngủ và decor đang nổi bật.',
+                        'eyebrow' => $heroSlideDefaults['eyebrow'] ?? 'Interior studio',
                         'badge' => $heroSlideDefaults['badge'] ?? 'Khám phá ngay',
                         'cta' => $heroSlideDefaults['cta'] ?? 'Xem ngay',
                         'link_url' => $promo['link_url'] ?? route('site.catalog.search'),
@@ -79,35 +79,54 @@
             )
             ->filter(fn ($slide): bool => is_array($slide) && filled($slide['image'] ?? null))
             ->values();
-    $fashionBannerSlides = collect($homeData['fashion_banner_slides'] ?? []);
-    $fashionBannerSlides = $fashionBannerSlides->isNotEmpty()
-        ? $fashionBannerSlides->take(5)->values()
+    $InteriorBannerSlides = collect($homeData['interior_banner_slides'] ?? $homeData['fashion_banner_slides'] ?? []);
+    $InteriorBannerSlides = $InteriorBannerSlides->isNotEmpty()
+        ? $InteriorBannerSlides->take(5)->values()
         : ($heroSlides->isNotEmpty()
             ? $heroSlides->take(5)->values()
             : collect([[
-                'image' => data_get($heroBanner, 'image', 'https://picsum.photos/seed/th0003-banner/1440/520'),
+                'image' => data_get($heroBanner, 'image', 'https://picsum.photos/seed/TH0020-banner/1440/520'),
                 'link_url' => route('site.catalog.search'),
-                'title' => $companyTitle ?: 'TH0003 Fashion',
+                'title' => $companyTitle ?: 'TH0020 Interior',
             ]]));
+    $topSidePromos = collect($sidePromos)->take(2)->values();
+    if ($topSidePromos->isEmpty()) {
+        $topSidePromos = collect([
+            [
+                'title' => 'Phòng khách tinh gọn',
+                'subtitle' => 'Sofa, bàn trà và kệ TV theo cùng tông vật liệu.',
+                'image' => 'https://picsum.photos/seed/th0020-side-living/720/520',
+                'link_url' => route('site.catalog.search'),
+                'target' => '_self',
+            ],
+            [
+                'title' => 'Góc ăn ấm sáng',
+                'subtitle' => 'Bàn ăn, ghế gỗ và đèn treo cho căn hộ đô thị.',
+                'image' => 'https://picsum.photos/seed/th0020-side-dining/720/520',
+                'link_url' => route('site.catalog.search'),
+                'target' => '_self',
+            ],
+        ]);
+    }
 
     $topMenuItems = collect($homeData['top_menu'] ?? [])->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? null))->values()->all();
     if ($topMenuItems === []) {
         $topMenuItems = [
             ['label' => $t('home.menu.new_arrivals', 'Hàng mới'), 'url' => route('site.catalog.search'), 'target' => '_self', 'children' => [
                 ['label' => $t('home.menu.this_week', 'Mới tuần này'), 'url' => route('site.catalog.search')],
-                ['label' => $t('home.menu.best_fit', 'Dễ phối nhất'), 'url' => route('site.catalog.search')],
+                ['label' => $t('home.menu.best_fit', 'Dễ phối không gian'), 'url' => route('site.catalog.search')],
             ]],
             ['label' => $t('home.menu.collections', 'Bộ sưu tập'), 'url' => route('site.catalog.search'), 'target' => '_self', 'children' => [
-                ['label' => $t('home.menu.office_capsule', 'Office capsule'), 'url' => route('site.catalog.search')],
-                ['label' => $t('home.menu.weekend_edit', 'Weekend edit'), 'url' => route('site.catalog.search')],
+                ['label' => $t('home.menu.office_capsule', 'Căn hộ tối giản'), 'url' => route('site.catalog.search')],
+                ['label' => $t('home.menu.weekend_edit', 'Nhà phố ấm sáng'), 'url' => route('site.catalog.search')],
             ]],
-            ['label' => $t('home.menu.lookbook', 'Lookbook'), 'url' => route('site.blog.index'), 'target' => '_self', 'children' => [
-                ['label' => $t('home.menu.style_notes', 'Ghi chú phối đồ'), 'url' => route('site.blog.index')],
-                ['label' => $t('home.menu.care_guide', 'Chăm sóc chất liệu'), 'url' => route('site.blog.index')],
+            ['label' => $t('home.menu.lookbook', 'Cảm hứng'), 'url' => route('site.blog.index'), 'target' => '_self', 'children' => [
+                ['label' => $t('home.menu.style_notes', 'Gợi ý phối phòng'), 'url' => route('site.blog.index')],
+                ['label' => $t('home.menu.care_guide', 'Chăm sóc vật liệu'), 'url' => route('site.blog.index')],
             ]],
             ['label' => $t('home.menu.sale', 'Sale'), 'url' => route('site.catalog.search'), 'target' => '_self', 'children' => [
                 ['label' => $t('home.menu.price_drop', 'Giá tốt'), 'url' => route('site.catalog.search')],
-                ['label' => $t('home.menu.last_size', 'Last size'), 'url' => route('site.catalog.search')],
+                ['label' => $t('home.menu.last_size', 'Hàng trưng bày'), 'url' => route('site.catalog.search')],
             ]],
         ];
     }
@@ -115,36 +134,36 @@
 
     if ($sidebarCategories === []) {
         $sidebarCategories = [
-            ['label' => $t('home.demo.category.women', 'Đầm & váy'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '✦', 'highlight' => true, 'children' => [
-                ['label' => $t('home.demo.category.maxi', 'Váy maxi'), 'url' => route('site.catalog.search'), 'target' => '_self'],
-                ['label' => $t('home.demo.category.office', 'Đầm công sở'), 'url' => route('site.catalog.search'), 'target' => '_self'],
-                ['label' => $t('home.demo.category.party', 'Party dress'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+            ['label' => $t('home.demo.category.women', 'Phòng khách'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '▣', 'highlight' => true, 'children' => [
+                ['label' => $t('home.demo.category.maxi', 'Sofa & armchair'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.office', 'Bàn trà'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.party', 'Kệ TV'), 'url' => route('site.catalog.search'), 'target' => '_self'],
             ]],
-            ['label' => $t('home.demo.category.tops', 'Áo kiểu & sơ mi'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '◐', 'highlight' => false, 'children' => [
-                ['label' => $t('home.demo.category.shirt', 'Sơ mi lụa'), 'url' => route('site.catalog.search'), 'target' => '_self'],
-                ['label' => $t('home.demo.category.crop', 'Crop top'), 'url' => route('site.catalog.search'), 'target' => '_self'],
-                ['label' => $t('home.demo.category.knit', 'Áo dệt kim'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+            ['label' => $t('home.demo.category.tops', 'Phòng ngủ'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '▥', 'highlight' => false, 'children' => [
+                ['label' => $t('home.demo.category.shirt', 'Giường ngủ'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.crop', 'Tủ đầu giường'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.knit', 'Tủ áo'), 'url' => route('site.catalog.search'), 'target' => '_self'],
             ]],
-            ['label' => $t('home.demo.category.bottoms', 'Quần & chân váy'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '◇', 'highlight' => false, 'children' => [
-                ['label' => $t('home.demo.category.trouser', 'Quần ống suông'), 'url' => route('site.catalog.search'), 'target' => '_self'],
-                ['label' => $t('home.demo.category.skirt', 'Chân váy midi'), 'url' => route('site.catalog.search'), 'target' => '_self'],
-                ['label' => $t('home.demo.category.denim', 'Denim edit'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+            ['label' => $t('home.demo.category.bottoms', 'Bàn ăn & bếp'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '▤', 'highlight' => false, 'children' => [
+                ['label' => $t('home.demo.category.trouser', 'Bàn ăn'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.skirt', 'Ghế ăn'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.denim', 'Tủ bếp phụ'), 'url' => route('site.catalog.search'), 'target' => '_self'],
             ]],
-            ['label' => $t('home.demo.category.accessories', 'Phụ kiện'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '◌', 'highlight' => false, 'children' => [
-                ['label' => $t('home.demo.category.bag', 'Túi mini'), 'url' => route('site.catalog.search'), 'target' => '_self'],
-                ['label' => $t('home.demo.category.belt', 'Thắt lưng'), 'url' => route('site.catalog.search'), 'target' => '_self'],
-                ['label' => $t('home.demo.category.scarf', 'Khăn lụa'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+            ['label' => $t('home.demo.category.accessories', 'Decor & đèn'), 'url' => route('site.catalog.search'), 'target' => '_self', 'icon' => '◇', 'highlight' => false, 'children' => [
+                ['label' => $t('home.demo.category.bag', 'Đèn trang trí'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.belt', 'Thảm'), 'url' => route('site.catalog.search'), 'target' => '_self'],
+                ['label' => $t('home.demo.category.scarf', 'Bình & tranh'), 'url' => route('site.catalog.search'), 'target' => '_self'],
             ]],
         ];
     }
 
-    if ($fashionCategoryTiles === []) {
-        $fashionCategoryTiles = $sidebarCategories;
+    if ($InteriorCategoryTiles === []) {
+        $InteriorCategoryTiles = $sidebarCategories;
     }
 
     if ($featuredCategories === []) {
         $featuredCategories = collect($sidebarCategories)->take(5)->values()->map(fn (array $category, int $index): array => [
-            'name' => $category['label'] ?? $t('common.category', 'Danh mục'),
+            'name' => $category['label'] ?? $t('common.category', 'Danh m?c'),
             'url' => $category['url'] ?? route('site.catalog.search'),
             'target' => $category['target'] ?? '_self',
             'tone' => ['#b20f3a', '#1f1a1d', '#0f8a8a', '#c17a3a', '#6b4b7d'][$index % 5],
@@ -152,19 +171,19 @@
     }
 
     $demoProducts = collect([
-        ['title' => $t('home.demo.product.linen_blazer', 'Blazer linen dáng rộng'), 'image' => 'https://picsum.photos/seed/th0003-linen-blazer/720/960', 'price' => 890000, 'old_price' => 1190000, 'discount' => 25, 'tag' => $t('home.demo.tag.new', 'New season'), 'meta' => 18],
-        ['title' => $t('home.demo.product.silk_shirt', 'Sơ mi lụa cổ mềm'), 'image' => 'https://picsum.photos/seed/th0003-silk-shirt/720/960', 'price' => 520000, 'old_price' => 690000, 'discount' => 25, 'tag' => $t('home.demo.tag.workwear', 'Workwear'), 'meta' => 32],
-        ['title' => $t('home.demo.product.midi_skirt', 'Chân váy midi xếp ly'), 'image' => 'https://picsum.photos/seed/th0003-midi-skirt/720/960', 'price' => 640000, 'old_price' => 790000, 'discount' => 19, 'tag' => $t('home.demo.tag.editor_pick', 'Editor pick'), 'meta' => 21],
-        ['title' => $t('home.demo.product.knit_top', 'Áo knit tối giản'), 'image' => 'https://picsum.photos/seed/th0003-knit-top/720/960', 'price' => 420000, 'old_price' => 560000, 'discount' => 25, 'tag' => $t('home.demo.tag.easy_mix', 'Easy mix'), 'meta' => 44],
-        ['title' => $t('home.demo.product.maxi_dress', 'Đầm maxi cotton'), 'image' => 'https://picsum.photos/seed/th0003-maxi-dress/720/960', 'price' => 760000, 'old_price' => 980000, 'discount' => 22, 'tag' => $t('home.demo.tag.resort', 'Resort'), 'meta' => 16],
-        ['title' => $t('home.demo.product.wide_pants', 'Quần ống suông kem'), 'image' => 'https://picsum.photos/seed/th0003-wide-pants/720/960', 'price' => 580000, 'old_price' => 720000, 'discount' => 19, 'tag' => $t('home.demo.tag.city', 'City fit'), 'meta' => 27],
-        ['title' => $t('home.demo.product.mini_bag', 'Túi mini da mềm'), 'image' => 'https://picsum.photos/seed/th0003-mini-bag/720/960', 'price' => 690000, 'old_price' => 890000, 'discount' => 22, 'tag' => $t('home.demo.tag.accessory', 'Accessory'), 'meta' => 12],
-        ['title' => $t('home.demo.product.denim_jacket', 'Áo khoác denim crop'), 'image' => 'https://picsum.photos/seed/th0003-denim-jacket/720/960', 'price' => 720000, 'old_price' => 940000, 'discount' => 23, 'tag' => $t('home.demo.tag.street', 'Street'), 'meta' => 19],
-    ])->map(fn (array $item, int $index): array => array_merge($item, ['url' => route('site.catalog.search'), 'sku' => 'TH0003-DEMO-'.($index + 1)]))->values();
+        ['title' => $t('home.demo.product.linen_blazer', 'Sofa module vải bouclé'), 'image' => 'https://picsum.photos/seed/TH0020-boucle-sofa/900/720', 'price' => 12800000, 'old_price' => 14900000, 'discount' => 14, 'tag' => $t('home.demo.tag.new', 'New living'), 'meta' => 18],
+        ['title' => $t('home.demo.product.silk_shirt', 'Bàn trà gỗ sồi bo cạnh'), 'image' => 'https://picsum.photos/seed/TH0020-oak-coffee-table/900/720', 'price' => 4200000, 'old_price' => 5200000, 'discount' => 19, 'tag' => $t('home.demo.tag.workwear', 'Oak finish'), 'meta' => 32],
+        ['title' => $t('home.demo.product.midi_skirt', 'Ghế ăn lưng cong bọc nỉ'), 'image' => 'https://picsum.photos/seed/TH0020-dining-chair/900/720', 'price' => 1850000, 'old_price' => 2400000, 'discount' => 23, 'tag' => $t('home.demo.tag.editor_pick', 'Editor pick'), 'meta' => 21],
+        ['title' => $t('home.demo.product.knit_top', 'Đèn sàn kim loại mờ'), 'image' => 'https://picsum.photos/seed/TH0020-floor-lamp/900/720', 'price' => 2600000, 'old_price' => 3200000, 'discount' => 19, 'tag' => $t('home.demo.tag.easy_mix', 'Warm light'), 'meta' => 44],
+        ['title' => $t('home.demo.product.maxi_dress', 'Giường platform gỗ veneer'), 'image' => 'https://picsum.photos/seed/TH0020-platform-bed/900/720', 'price' => 15800000, 'old_price' => 17900000, 'discount' => 12, 'tag' => $t('home.demo.tag.resort', 'Bedroom'), 'meta' => 16],
+        ['title' => $t('home.demo.product.wide_pants', 'Tủ console cửa mây'), 'image' => 'https://picsum.photos/seed/TH0020-rattan-console/900/720', 'price' => 7200000, 'old_price' => 8900000, 'discount' => 19, 'tag' => $t('home.demo.tag.city', 'Rattan'), 'meta' => 27],
+        ['title' => $t('home.demo.product.mini_bag', 'Thảm len dệt tay màu cát'), 'image' => 'https://picsum.photos/seed/TH0020-wool-rug/900/720', 'price' => 3900000, 'old_price' => 4800000, 'discount' => 19, 'tag' => $t('home.demo.tag.accessory', 'Decor'), 'meta' => 12],
+        ['title' => $t('home.demo.product.denim_jacket', 'Kệ sách module thanh mảnh'), 'image' => 'https://picsum.photos/seed/TH0020-bookshelf/900/720', 'price' => 6400000, 'old_price' => 7800000, 'discount' => 18, 'tag' => $t('home.demo.tag.street', 'Storage'), 'meta' => 19],
+    ])->map(fn (array $item, int $index): array => array_merge($item, ['url' => route('site.catalog.search'), 'sku' => 'TH0020-DEMO-'.($index + 1)]))->values();
 
     if ($featuredDeals === []) {
         $featuredDeals = $demoProducts->all();
-        $featuredTitle = $t('theme.fallback.featured_products', 'Sản phẩm nổi bật');
+        $featuredTitle = $t('theme.fallback.featured_products', 'S?n ph?m n?i b?t');
     }
 
     if ($sections === []) {
@@ -174,8 +193,8 @@
                 'title' => $t('home.demo.section.office_title', 'Office capsule'),
                 'slug' => 'office-capsule',
                 'url' => route('site.catalog.search'),
-                'tabs' => [$t('home.demo.tab.new', 'Mới về'), $t('home.demo.tab.best', 'Bán chạy'), $t('home.demo.tab.mix', 'Dễ phối')],
-                'filters' => [$t('home.demo.filter.blazer', 'Blazer'), $t('home.demo.filter.shirt', 'Sơ mi'), $t('home.demo.filter.trouser', 'Quần âu')],
+                'tabs' => [$t('home.demo.tab.new', 'M?i v?'), $t('home.demo.tab.best', 'Bán ch?y'), $t('home.demo.tab.mix', 'D? ph?i')],
+                'filters' => [$t('home.demo.filter.blazer', 'Blazer'), $t('home.demo.filter.shirt', 'So mi'), $t('home.demo.filter.trouser', 'Qu?n âu')],
                 'items' => $demoProducts->slice(0, 4)->values()->all(),
             ],
             [
@@ -184,7 +203,7 @@
                 'slug' => 'weekend-edit',
                 'url' => route('site.catalog.search'),
                 'tabs' => [$t('home.demo.tab.lookbook', 'Lookbook'), $t('home.demo.tab.resort', 'Resort'), $t('home.demo.tab.casual', 'Casual')],
-                'filters' => [$t('home.demo.filter.dress', 'Đầm'), $t('home.demo.filter.denim', 'Denim'), $t('home.demo.filter.bag', 'Túi')],
+                'filters' => [$t('home.demo.filter.dress', 'Ð?m'), $t('home.demo.filter.denim', 'Denim'), $t('home.demo.filter.bag', 'Túi')],
                 'items' => $demoProducts->slice(4, 4)->values()->all(),
             ],
         ];
@@ -192,30 +211,30 @@
 
     if ($latestPosts === []) {
         $latestPosts = [
-            ['title' => $t('home.demo.post.size_title', 'Cách chọn size khi mua online'), 'excerpt' => $t('home.demo.post.size_excerpt', 'Gợi ý đọc số đo, form dáng và chất liệu để giảm đổi trả cho shop thời trang.'), 'url' => route('site.blog.index'), 'image' => 'https://picsum.photos/seed/th0003-post-size/900/700', 'published_at' => now()->subDays(2)->format('d/m/Y')],
-            ['title' => $t('home.demo.post.lookbook_title', 'Lookbook tuần này: linen và denim'), 'excerpt' => $t('home.demo.post.lookbook_excerpt', 'Một layout nhẹ cho shop cập nhật cảm hứng phối đồ và dẫn khách về danh mục sản phẩm.'), 'url' => route('site.blog.index'), 'image' => 'https://picsum.photos/seed/th0003-post-lookbook/900/700', 'published_at' => now()->subDays(5)->format('d/m/Y')],
-            ['title' => $t('home.demo.post.care_title', 'Bảo quản đồ lụa và knitwear'), 'excerpt' => $t('home.demo.post.care_excerpt', 'Nội dung hậu mãi giúp tăng niềm tin và tạo thêm điểm chạm sau mua.'), 'url' => route('site.blog.index'), 'image' => 'https://picsum.photos/seed/th0003-post-care/900/700', 'published_at' => now()->subDays(8)->format('d/m/Y')],
+            ['title' => $t('home.demo.post.size_title', 'Cách ch?n size khi mua online'), 'excerpt' => $t('home.demo.post.size_excerpt', 'G?i ý d?c s? do, form dáng và ch?t li?u d? gi?m d?i tr? cho shop th?i trang.'), 'url' => route('site.blog.index'), 'image' => 'https://picsum.photos/seed/TH0020-post-size/900/700', 'published_at' => now()->subDays(2)->format('d/m/Y')],
+            ['title' => $t('home.demo.post.lookbook_title', 'Lookbook tu?n này: linen và denim'), 'excerpt' => $t('home.demo.post.lookbook_excerpt', 'M?t layout nh? cho shop c?p nh?t c?m h?ng ph?i d? và d?n khách v? danh m?c s?n ph?m.'), 'url' => route('site.blog.index'), 'image' => 'https://picsum.photos/seed/TH0020-post-lookbook/900/700', 'published_at' => now()->subDays(5)->format('d/m/Y')],
+            ['title' => $t('home.demo.post.care_title', 'B?o qu?n d? l?a và knitwear'), 'excerpt' => $t('home.demo.post.care_excerpt', 'N?i dung h?u mãi giúp tang ni?m tin và t?o thêm di?m ch?m sau mua.'), 'url' => route('site.blog.index'), 'image' => 'https://picsum.photos/seed/TH0020-post-care/900/700', 'published_at' => now()->subDays(8)->format('d/m/Y')],
         ];
     }
 
     if ($footerColumns === []) {
         $footerColumns = [
-            ['title' => $t('footer.help_title', 'Trợ giúp'), 'links' => [
+            ['title' => $t('footer.help_title', 'Tr? giúp'), 'links' => [
                 ['label' => $t('footer.shipping_policy', 'Chính sách giao hàng'), 'url' => url('/'.app()->getLocale().'/chinh-sach-giao-hang')],
-                ['label' => $t('footer.payment_methods', 'Cách thức thanh toán'), 'url' => url('/'.app()->getLocale().'/cach-thuc-thanh-toan')],
-                ['label' => $t('footer.evouchers', 'Fashion E-voucher'), 'url' => route('site.catalog.search')],
+                ['label' => $t('footer.payment_methods', 'Cách th?c thanh toán'), 'url' => url('/'.app()->getLocale().'/cach-thuc-thanh-toan')],
+                ['label' => $t('footer.evouchers', 'Interior E-voucher'), 'url' => route('site.catalog.search')],
                 ['label' => $t('footer.membership', 'Membership'), 'url' => route('customer.account')],
             ]],
-            ['title' => $t('footer.about_title', 'Giới thiệu'), 'links' => [
-                ['label' => $t('footer.about_us', 'Về chúng tôi'), 'url' => url('/'.app()->getLocale().'/gioi-thieu')],
-                ['label' => $t('footer.contact', 'Liên hệ'), 'url' => url('/'.app()->getLocale().'/lien-he')],
-                ['label' => $t('footer.privacy_policy', 'Chính sách bảo mật'), 'url' => url('/'.app()->getLocale().'/chinh-sach-bao-mat')],
-                ['label' => $t('footer.operating_regulations', 'Quy chế hoạt động'), 'url' => url('/'.app()->getLocale().'/quy-che-hoat-dong')],
+            ['title' => $t('footer.about_title', 'Gi?i thi?u'), 'links' => [
+                ['label' => $t('footer.about_us', 'V? chúng tôi'), 'url' => url('/'.app()->getLocale().'/gioi-thieu')],
+                ['label' => $t('footer.contact', 'Liên h?'), 'url' => url('/'.app()->getLocale().'/lien-he')],
+                ['label' => $t('footer.privacy_policy', 'Chính sách b?o m?t'), 'url' => url('/'.app()->getLocale().'/chinh-sach-bao-mat')],
+                ['label' => $t('footer.operating_regulations', 'Quy ch? ho?t d?ng'), 'url' => url('/'.app()->getLocale().'/quy-che-hoat-dong')],
             ]],
-            ['title' => $t('footer.partnership_title', 'Hợp tác'), 'links' => [
-                ['label' => $t('footer.gift_cards', 'Thẻ quà tặng'), 'url' => route('site.catalog.search')],
-                ['label' => $t('footer.partner_contact', 'Liên hệ hợp tác'), 'url' => url('/'.app()->getLocale().'/lien-he')],
-                ['label' => $t('footer.careers', 'Tuyển dụng'), 'url' => url('/'.app()->getLocale().'/tuyen-dung')],
+            ['title' => $t('footer.partnership_title', 'H?p tác'), 'links' => [
+                ['label' => $t('footer.gift_cards', 'Th? quà t?ng'), 'url' => route('site.catalog.search')],
+                ['label' => $t('footer.partner_contact', 'Liên h? h?p tác'), 'url' => url('/'.app()->getLocale().'/lien-he')],
+                ['label' => $t('footer.careers', 'Tuy?n d?ng'), 'url' => url('/'.app()->getLocale().'/tuyen-dung')],
                 ['label' => $t('footer.press_info', 'Thông tin báo chí'), 'url' => route('site.blog.index')],
             ]],
         ];
@@ -223,11 +242,11 @@
 
     $footerColumnEditFields = collect($footerColumns)->values()->map(function (array $column, int $index) use ($themeBlockRegistry, $themeKey): array {
         return [
-            'title' => $column['title'] ?? sprintf('Cột %d', $index + 1),
+            'title' => $column['title'] ?? sprintf('C?t %d', $index + 1),
             'fields' => array_merge(
                 [[
                     'key' => $themeBlockRegistry->contentKey($themeKey, sprintf('footer.columns.%d.title', $index)),
-                    'label' => 'Tiêu đề cột',
+                    'label' => 'Tiêu d? c?t',
                     'group' => 'content',
                     'entity' => 'theme',
                 ]],
@@ -241,7 +260,7 @@
         ];
     })->all();
 
-    $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
+    $formatCurrency = fn ($value) => $value === null ? 'Liên h?' : number_format((float) $value, 0, ',', '.').'d';
     $formatDiscount = fn ($value) => '-'.(int) $value.'%';
 @endphp
 <!DOCTYPE html>
@@ -254,7 +273,7 @@
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
-            @include('theme-th0003::partials.palette-tokens', ['branding' => $branding])
+            @include('theme-th0020::partials.palette-tokens', ['branding' => $branding])
 
             * { box-sizing: border-box; }
             body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--th-ink); background: var(--th-bg); }
@@ -446,122 +465,147 @@
                 .th-price { font-size: 20px; }
                 .th-secondary-promo-head { align-items: flex-start; flex-direction: column; }
             }
-            .th-fashion-page { background: #f7f5f2; }
-            .th-fashion-page .th-topbar { border-top-color: #1f1a1d; background: #fdfbf8; }
-            .th-fashion-page .th-header { background: #fffaf6; border-bottom: 1px solid #eadfda; }
-            .th-fashion-page .th-logo img { width: 150px; }
-            .th-fashion-page .th-search { border: 1px solid #1f1a1d; border-radius: 0; max-width: 620px; }
-            .th-fashion-page .th-search button { background: #1f1a1d; letter-spacing: .08em; text-transform: uppercase; }
-            .th-fashion-page .th-cart { color: #1f1a1d; text-transform: uppercase; letter-spacing: .08em; }
-            .th-fashion-page .th-main-nav { background: #1f1a1d; }
-            .th-fashion-page .th-main-nav-categories { background: #b20f3a; letter-spacing: .08em; }
-            .th-fashion-page .th-main-nav-menu a { letter-spacing: .08em; font-size: 12px; }
-            .fashion-kicker { color: #f2c94c; font-size: 12px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
-            .fashion-button, .fashion-button-alt { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; font-size: 12px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-            .fashion-button { background: #f2c94c; color: #1f1a1d; }
-            .fashion-button-alt { border: 1px solid rgba(255,255,255,.35); color: #fff; }
-            .fashion-banner-slider { position: relative; margin: 22px 0; min-height: 0; overflow: hidden; background: #ded4cf; border: 1px solid #eadfda; box-shadow: 0 18px 46px rgba(31,26,29,.08); }
-            .fashion-banner-track { position: relative; aspect-ratio: 1200 / 360; min-height: 260px; }
-            .fashion-banner-slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .55s ease, visibility .55s ease; }
-            .fashion-banner-slide.is-active { opacity: 1; visibility: visible; z-index: 1; }
-            .fashion-banner-slide img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.98) contrast(1.02); }
-            .fashion-banner-dots { position: absolute; left: 0; right: 0; bottom: 14px; z-index: 2; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
-            .fashion-banner-dot { width: 26px; height: 3px; border-radius: 999px; background: rgba(255,255,255,.52); box-shadow: 0 1px 8px rgba(31,26,29,.24); transition: width .2s ease, background .2s ease; }
-            .fashion-banner-dot.is-active { width: 44px; background: #fff; }
-            .fashion-content-strip { margin: 22px 0; display: grid; grid-template-columns: minmax(230px, .32fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
-            .fashion-strip-head { background: #fff; padding: 26px; border: 1px solid #eadfda; display: grid; align-content: center; gap: 12px; }
-            .fashion-strip-head span, .fashion-news-head span { color: #b20f3a; font-size: 12px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
-            .fashion-strip-head h2, .fashion-news-head h2 { margin: 0; color: #1f1a1d; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(28px, 4vw, 44px); font-weight: 500; line-height: 1.05; }
-            .fashion-strip-head p, .fashion-news-head p { margin: 0; color: #756a70; line-height: 1.75; }
-            .fashion-menu-rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-            .fashion-category-tile { min-height: 174px; background: #1f1a1d; color: #fff; padding: 20px; display: grid; align-content: space-between; position: relative; overflow: hidden; }
-            .fashion-category-tile::after { content: ''; position: absolute; inset: auto -42px -58px auto; width: 130px; height: 130px; border-radius: 999px; background: rgba(242,201,76,.22); }
-            .fashion-category-tile:nth-child(2) { background: #b20f3a; }
-            .fashion-category-tile:nth-child(3) { background: #0f8a8a; }
-            .fashion-category-tile:nth-child(4) { background: #c17a3a; }
-            .fashion-category-icon { width: 38px; height: 38px; display: inline-grid; place-items: center; background: rgba(255,255,255,.14); color: #f2c94c; font-size: 18px; }
-            .fashion-category-tile strong { position: relative; z-index: 1; font-size: 18px; line-height: 1.25; }
-            .fashion-category-tile small { position: relative; z-index: 1; color: rgba(255,255,255,.72); line-height: 1.55; }
-            .fashion-news-section { margin-top: 34px; display: grid; grid-template-columns: minmax(260px, .34fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-            .fashion-news-head { background: #fff; border: 1px solid #eadfda; padding: 28px; display: grid; gap: 14px; }
-            .fashion-news-link { width: fit-content; min-height: 42px; display: inline-flex; align-items: center; padding: 0 16px; background: #1f1a1d; color: #fff; font-size: 12px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-            .fashion-news-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-            .fashion-news-card { background: #fff; border: 1px solid #eadfda; min-width: 0; }
-            .fashion-news-image { aspect-ratio: 4 / 3; overflow: hidden; background: #ded4cf; }
-            .fashion-news-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .32s ease; }
-            .fashion-news-card:hover img { transform: scale(1.045); }
-            .fashion-news-body { padding: 18px; display: grid; gap: 10px; }
-            .fashion-news-date { color: #b20f3a; font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
-            .fashion-news-card h3 { margin: 0; color: #1f1a1d; font-size: 18px; line-height: 1.35; }
-            .fashion-news-card p { margin: 0; color: #756a70; line-height: 1.65; }
-            .th-fashion-page .th-hero-layout { grid-template-columns: 250px minmax(0, 1fr); align-items: start; }
-            .th-fashion-page .th-sidebar { border: 0; background: #fff; box-shadow: 0 18px 44px rgba(31,26,29,.08); }
-            .th-fashion-page .th-sidebar-item { border-bottom-color: #f0e7e2; min-height: 54px; letter-spacing: .03em; }
-            .th-fashion-page .th-hero-stack { grid-template-columns: minmax(0, 1fr) 250px; }
-            .th-fashion-page .th-hero-card { min-height: 430px; border: 0; background: #111; }
-            .th-fashion-page .th-hero-overlay { width: min(50%, 460px); background: linear-gradient(90deg, rgba(31,26,29,.88) 0%, rgba(31,26,29,.15) 100%); padding: 52px 42px; }
-            .th-fashion-page .th-eyebrow { background: rgba(242,201,76,.18); color: #f2c94c; border-radius: 0; letter-spacing: .16em; }
-            .th-fashion-page .th-hero-title { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; font-size: clamp(34px, 5vw, 58px); }
-            .th-fashion-page .th-hero-button { border-radius: 0; background: #fff; color: #1f1a1d; letter-spacing: .1em; }
-            .th-fashion-page .th-side-promo { min-height: 132px; border: 0; background: #1f1a1d; }
-            .th-fashion-page .th-side-promo span { top: auto; bottom: 14px; text-transform: uppercase; letter-spacing: .08em; }
-            .th-fashion-page .th-brand-strip { border: 0; background: transparent; padding: 0; margin-top: 18px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
-            .th-fashion-page .th-brand-badge { width: 100%; height: 112px; border-radius: 0; box-shadow: none; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
-            .th-fashion-page .th-featured-panel, .th-fashion-page .th-category-section, .th-fashion-page .th-secondary-promo-section { border: 0; background: transparent; padding: 0; }
-            .th-fashion-page .th-featured-topbar, .th-fashion-page .th-category-header { border: 0; padding: 24px 0 14px; min-height: 0; }
-            .th-fashion-page .th-section-tabs span:first-child, .th-fashion-page .th-category-title { font-family: Georgia, 'Times New Roman', serif; font-size: 34px; color: #1f1a1d; text-transform: none; font-weight: 500; }
-            .th-fashion-page .th-section-tabs span:not(:first-child), .th-fashion-page .th-category-tabs, .th-fashion-page .th-category-filters { color: #756a70; letter-spacing: .08em; font-size: 12px; }
-            .th-fashion-page .th-card-grid, .th-fashion-page .th-category-grid { padding: 0; gap: 22px; }
-            .th-fashion-page .th-deal-card { border: 0; background: transparent; box-shadow: none; }
-            .th-fashion-page .th-deal-card:hover { transform: translateY(-4px); box-shadow: none; }
-            .th-fashion-page .th-deal-image-wrap { aspect-ratio: 3 / 4; background: #ded4cf; }
-            .th-fashion-page .th-deal-image-wrap img { transition: transform .32s ease; }
-            .th-fashion-page .th-deal-card:hover img { transform: scale(1.045); }
-            .th-fashion-page .th-deal-chip, .th-fashion-page .th-deal-countdown { border-radius: 0; background: #1f1a1d; letter-spacing: .08em; text-transform: uppercase; }
-            .th-fashion-page .th-deal-body { padding: 14px 0 0; }
-            .th-fashion-page .th-deal-title { min-height: 48px; font-size: 16px; color: #1f1a1d; }
-            .th-fashion-page .th-price { color: #b20f3a; letter-spacing: 0; }
-            .th-fashion-page .th-discount { border-radius: 0; background: #0f8a8a; }
-            .th-fashion-page .th-secondary-promo-grid { grid-template-columns: 1.2fr .8fr; }
-            .th-fashion-page .th-secondary-promo-card { border: 0; min-height: 260px; }
-            .th-fashion-page .th-footer { background: #1f1a1d; color: #fff; border: 0; }
-            .th-fashion-page .th-footer-card h4, .th-fashion-page .th-company strong { color: #f2c94c; letter-spacing: .12em; }
-            .th-fashion-page .th-footer-links { color: rgba(255,255,255,.68); }
-            .th-fashion-page .th-company { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 0; }
+            .th-interior-page { background: #f6f2ea; color: #21312b; }
+            .th-interior-page .th-topbar { border-top-color: #33483c; background: #fbf7ef; color: #6f7a72; }
+            .th-interior-page .th-header { background: #fffdf8; border-bottom: 1px solid #e2ddd2; }
+            .th-interior-page .th-logo img { width: 166px; }
+            .th-interior-page .th-search { border: 1px solid #e2ddd2; border-radius: 999px; max-width: 650px; box-shadow: 0 10px 28px rgba(57,48,38,.05); }
+            .th-interior-page .th-search button { background: #33483c; letter-spacing: .08em; text-transform: uppercase; }
+            .th-interior-page .th-cart { color: #21312b; text-transform: uppercase; letter-spacing: .08em; }
+            .th-interior-page .th-main-nav { background: #fffdf8; color: #21312b; border-top: 1px solid rgba(51,72,60,.08); border-bottom: 1px solid #d8d0c2; box-shadow: 0 14px 32px rgba(57,48,38,.08); }
+            .th-interior-page .th-home-link { width: 58px; min-height: 54px; background: #ece6dc; color: #33483c; border-left: 1px solid #d8d0c2; border-right: 1px solid #d8d0c2; font-size: 21px; font-weight: 900; text-shadow: 0 1px 0 rgba(255,255,255,.65); box-shadow: inset 0 -2px 0 rgba(51,72,60,.12); }
+            .th-interior-page .th-home-link:hover { background: #33483c; color: #fff; box-shadow: inset 0 -3px 0 #b98455; transform: translateY(-1px); text-shadow: none; }
+            .th-interior-page .th-nav-products { background: transparent; }
+            .th-interior-page .th-main-nav-menu > .th-nav-item > .th-nav-link { min-height: 54px; padding: 0 24px; color: #17251f; font-size: 13px; font-weight: 950; letter-spacing: .105em; text-shadow: 0 1px 0 rgba(255,255,255,.68); border-right: 1px solid rgba(51,72,60,.08); }
+            .th-interior-page .th-main-nav-menu > .th-nav-products > .th-nav-link { background: #33483c; color: #fff; box-shadow: inset 0 -3px 0 rgba(244,208,111,.55); text-shadow: none; }
+            .th-interior-page .th-main-nav-menu > .th-nav-products > .th-nav-link .th-nav-caret { color: #f4d06f; }
+            .th-interior-page .th-main-nav-menu > .th-nav-item:hover > .th-nav-link,
+            .th-interior-page .th-main-nav-menu > .th-nav-item > .th-nav-link:hover { background: #33483c; color: #fff; box-shadow: inset 0 -3px 0 #b98455; transform: translateY(-1px); text-shadow: none; }
+            .th-interior-page .th-nav-caret { color: #b98455; }
+            .th-interior-page .th-nav-item:hover > .th-nav-link .th-nav-caret { color: #f4d06f; transform: translateY(-1px) rotate(180deg); }
+            .th-interior-page .th-nav-simple-panel { background: #fffdf8; border: 1px solid #d8d0c2; box-shadow: 0 22px 54px rgba(33,49,43,.18); }
+            .th-interior-page .th-nav-simple-panel a { color: #24362f; font-weight: 800; border-radius: 12px; }
+            .th-interior-page .th-nav-simple-panel a:hover { background: #33483c; color: #fff; }
+            .th-interior-page .th-nav-products-panel { border-top: 1px solid rgba(51,72,60,.12); border-bottom: 1px solid #d8d0c2; box-shadow: 0 32px 80px rgba(33,49,43,.2); }
+            .interior-kicker { color: #b98455; font-size: 12px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+            .interior-button, .interior-button-alt { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; font-size: 12px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+            .interior-button { background: #33483c; color: #fff; }
+            .interior-button-alt { border: 1px solid rgba(255,255,255,.35); color: #fff; }
+            .th20-hero-promos { margin: 24px 0; display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; align-items: stretch; }
+            .interior-banner-slider { position: relative; margin: 0; min-height: 0; overflow: hidden; background: #e3ddd2; border: 1px solid #e2ddd2; border-radius: 28px; box-shadow: 0 22px 60px rgba(57,48,38,.09); }
+            .interior-banner-track { position: relative; aspect-ratio: 16 / 6; min-height: 318px; }
+            .interior-banner-slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .55s ease, visibility .55s ease; }
+            .interior-banner-slide.is-active { opacity: 1; visibility: visible; z-index: 1; }
+            .interior-banner-slide img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.98) contrast(1.02); }
+            .interior-banner-dots { position: absolute; left: 0; right: 0; bottom: 14px; z-index: 2; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
+            .interior-banner-dot { width: 26px; height: 3px; border-radius: 999px; background: rgba(255,255,255,.52); box-shadow: 0 1px 8px rgba(31,26,29,.24); transition: width .2s ease, background .2s ease; }
+            .interior-banner-dot.is-active { width: 44px; background: #fff; }
+            .th20-side-banner-stack { display: grid; gap: 18px; }
+            .th20-side-banner { position: relative; min-height: 0; overflow: hidden; border-radius: 28px; border: 1px solid #e2ddd2; background: #33483c; color: #fff; box-shadow: 0 18px 42px rgba(57,48,38,.08); }
+            .th20-side-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(22,30,25,.08), rgba(22,30,25,.78)); }
+            .th20-side-banner img { width: 100%; height: 100%; min-height: 150px; object-fit: cover; }
+            .th20-side-banner span, .th20-side-banner small { position: absolute; z-index: 1; left: 18px; right: 18px; }
+            .th20-side-banner span { bottom: 48px; font-size: 20px; font-weight: 800; line-height: 1.2; }
+            .th20-side-banner small { bottom: 18px; color: rgba(255,255,255,.78); line-height: 1.45; }
+            .interior-content-strip { margin: 22px 0; display: grid; grid-template-columns: minmax(230px, .32fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+            .interior-strip-head { background: #fffdf8; padding: 28px; border: 1px solid #e2ddd2; border-radius: 28px; display: grid; align-content: center; gap: 12px; box-shadow: 0 14px 38px rgba(57,48,38,.05); }
+            .interior-strip-head span, .interior-news-head span { color: #b98455; font-size: 12px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+            .interior-strip-head h2, .interior-news-head h2 { margin: 0; color: #21312b; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(28px, 4vw, 44px); font-weight: 500; line-height: 1.05; }
+            .interior-strip-head p, .interior-news-head p { margin: 0; color: #6f7a72; line-height: 1.75; }
+            .interior-menu-rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+            .interior-category-tile { min-height: 174px; background: #33483c; color: #fff; padding: 22px; border-radius: 28px; display: grid; align-content: space-between; position: relative; overflow: hidden; box-shadow: 0 16px 38px rgba(57,48,38,.08); }
+            .interior-category-tile::after { content: ''; position: absolute; inset: auto -42px -58px auto; width: 130px; height: 130px; border-radius: 999px; background: rgba(234,217,186,.22); }
+            .interior-category-tile:nth-child(2) { background: #8f6a4a; }
+            .interior-category-tile:nth-child(3) { background: #60715c; }
+            .interior-category-tile:nth-child(4) { background: #b98455; }
+            .interior-category-icon { width: 38px; height: 38px; display: inline-grid; place-items: center; background: rgba(255,255,255,.14); color: #ead9ba; font-size: 18px; }
+            .interior-category-tile strong { position: relative; z-index: 1; font-size: 18px; line-height: 1.25; }
+            .interior-category-tile small { position: relative; z-index: 1; color: rgba(255,255,255,.72); line-height: 1.55; }
+            .interior-news-section { margin-top: 34px; display: grid; grid-template-columns: minmax(260px, .34fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+            .interior-news-head { background: #fffdf8; border: 1px solid #e2ddd2; border-radius: 28px; padding: 28px; display: grid; gap: 14px; }
+            .interior-news-link { width: fit-content; min-height: 42px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 999px; background: #33483c; color: #fff; font-size: 12px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+            .interior-news-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+            .interior-news-card { background: #fffdf8; border: 1px solid #e2ddd2; border-radius: 24px; min-width: 0; overflow: hidden; box-shadow: 0 14px 34px rgba(57,48,38,.06); }
+            .interior-news-image { aspect-ratio: 4 / 3; overflow: hidden; background: #e3ddd2; }
+            .interior-news-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .32s ease; }
+            .interior-news-card:hover img { transform: scale(1.045); }
+            .interior-news-body { padding: 18px; display: grid; gap: 10px; }
+            .interior-news-date { color: #b20f3a; font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+            .interior-news-card h3 { margin: 0; color: #1f1a1d; font-size: 18px; line-height: 1.35; }
+            .interior-news-card p { margin: 0; color: #756a70; line-height: 1.65; }
+            .th-interior-page .th-hero-layout { grid-template-columns: 250px minmax(0, 1fr); align-items: start; }
+            .th-interior-page .th-sidebar { border: 0; background: #fff; box-shadow: 0 18px 44px rgba(31,26,29,.08); }
+            .th-interior-page .th-sidebar-item { border-bottom-color: #f0e7e2; min-height: 54px; letter-spacing: .03em; }
+            .th-interior-page .th-hero-stack { grid-template-columns: minmax(0, 1fr) 250px; }
+            .th-interior-page .th-hero-card { min-height: 430px; border: 0; background: #111; }
+            .th-interior-page .th-hero-overlay { width: min(50%, 460px); background: linear-gradient(90deg, rgba(31,26,29,.88) 0%, rgba(31,26,29,.15) 100%); padding: 52px 42px; }
+            .th-interior-page .th-eyebrow { background: rgba(242,201,76,.18); color: #f2c94c; border-radius: 0; letter-spacing: .16em; }
+            .th-interior-page .th-hero-title { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; font-size: clamp(34px, 5vw, 58px); }
+            .th-interior-page .th-hero-button { border-radius: 0; background: #fff; color: #1f1a1d; letter-spacing: .1em; }
+            .th-interior-page .th-side-promo { min-height: 132px; border: 0; background: #1f1a1d; }
+            .th-interior-page .th-side-promo span { top: auto; bottom: 14px; text-transform: uppercase; letter-spacing: .08em; }
+            .th-interior-page .th-brand-strip { border: 0; background: transparent; padding: 0; margin-top: 18px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+            .th-interior-page .th-brand-badge { width: 100%; height: 112px; border-radius: 0; box-shadow: none; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+            .th-interior-page .th-featured-panel, .th-interior-page .th-category-section, .th-interior-page .th-secondary-promo-section { border: 0; background: transparent; padding: 0; }
+            .th-interior-page .th-featured-topbar, .th-interior-page .th-category-header { border: 0; padding: 24px 0 14px; min-height: 0; }
+            .th-interior-page .th-section-tabs span:first-child, .th-interior-page .th-category-title { font-family: Georgia, 'Times New Roman', serif; font-size: 34px; color: #21312b; text-transform: none; font-weight: 500; }
+            .th-interior-page .th-section-tabs span:not(:first-child), .th-interior-page .th-category-tabs, .th-interior-page .th-category-filters { color: #6f7a72; letter-spacing: .08em; font-size: 12px; }
+            .th-interior-page .th-card-grid, .th-interior-page .th-category-grid { padding: 0; gap: 22px; }
+            .th-interior-page .th-deal-card { border: 1px solid #e2ddd2; border-radius: 24px; background: #fffdf8; box-shadow: 0 14px 34px rgba(57,48,38,.06); overflow: hidden; }
+            .th-interior-page .th-deal-card:hover { transform: translateY(-4px); box-shadow: 0 22px 54px rgba(57,48,38,.12); border-color: #33483c; }
+            .th-interior-page .th-deal-image-wrap { aspect-ratio: 4 / 3; background: #e3ddd2; }
+            .th-interior-page .th-deal-image-wrap img { transition: transform .32s ease; }
+            .th-interior-page .th-deal-card:hover img { transform: scale(1.045); }
+            .th-interior-page .th-deal-chip, .th-interior-page .th-deal-countdown { border-radius: 999px; background: #33483c; letter-spacing: .08em; text-transform: uppercase; }
+            .th-interior-page .th-deal-body { padding: 16px 18px 18px; }
+            .th-interior-page .th-deal-title { min-height: 48px; font-size: 16px; color: #21312b; }
+            .th-interior-page .th-price { color: #8f6a4a; letter-spacing: 0; }
+            .th-interior-page .th-discount { border-radius: 999px; background: #60715c; }
+            .th-interior-page .th-secondary-promo-grid { grid-template-columns: 1.2fr .8fr; }
+            .th-interior-page .th-secondary-promo-card { border: 0; border-radius: 28px; min-height: 260px; }
+            .th-interior-page .th-footer { background: #27382f; color: #fff; border: 0; }
+            .th-interior-page .th-footer-card h4, .th-interior-page .th-company strong { color: #ead9ba; letter-spacing: .12em; }
+            .th-interior-page .th-footer-links { color: rgba(255,255,255,.68); }
+            .th-interior-page .th-company { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; }
             @media (max-width: 1100px) {
-                .fashion-content-strip, .fashion-news-section { grid-template-columns: 1fr; }
-                .fashion-menu-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-                .th-fashion-page .th-hero-stack { grid-template-columns: 1fr; }
+                .th20-hero-promos { grid-template-columns: 1fr; }
+                .th20-side-banner-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+                .interior-content-strip, .interior-news-section { grid-template-columns: 1fr; }
+                .interior-menu-rail, .interior-news-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+                .th-interior-page .th-hero-stack { grid-template-columns: 1fr; }
             }
             @media (max-width: 760px) {
-                .fashion-banner-track { aspect-ratio: 16 / 7; min-height: 180px; }
-                .fashion-menu-rail, .fashion-news-grid { grid-template-columns: 1fr; }
-                .th-fashion-page .th-hero-overlay { width: 100%; padding: 30px 22px; }
-                .th-fashion-page .th-brand-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-                .th-fashion-page .th-section-tabs span:first-child, .th-fashion-page .th-category-title { font-size: 28px; }
+                .th20-side-banner-stack { grid-template-columns: 1fr; }
+                .interior-banner-track { aspect-ratio: 16 / 9; min-height: 220px; }
+                .interior-menu-rail, .interior-news-grid { grid-template-columns: 1fr; }
+                .th-interior-page .th-hero-overlay { width: 100%; padding: 30px 22px; }
+                .th-interior-page .th-brand-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+                .th-interior-page .th-section-tabs span:first-child, .th-interior-page .th-category-title { font-size: 28px; }
             }
         </style>
     </head>
     <body>
-        <div class="th-page th-fashion-page">
+        <div class="th-page th-interior-page">
+            @include('theme-th0020::partials.interior-header')
+            <div class="th-legacy-header" hidden>
             <div class="th-topbar">
                 <div class="th-container th-topbar-inner">
                     <div class="th-inline">
-                        <span>📍 {{ $contactLocation }}</span>
+                        <span>?? {{ $contactLocation }}</span>
                         <button type="button" class="th-inline-action" data-open-newsletter-modal>{{ $newsletterState['is_subscribed'] ? __('common.newsletter_subscribed') : __('common.newsletter_subscribe') }}</button>
                     </div>
                     <div class="th-inline">
-                        <span>📞 @themeT('common.hotline_label', 'Hotline'): <span class="th-accent">{{ $contactHotline }}</span></span>
-                        <span>✉ @themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
+                        <span>?? @themeT('common.hotline_label', 'Hotline'): <span class="th-accent">{{ $contactHotline }}</span></span>
+                        <span>? @themeT('common.email_label', 'Email'): {{ $contactEmail }}</span>
                         @if (!empty($customerAuth['is_authenticated']))
-                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài khoản')</a>
+                            <a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">@themeT('common.account', 'Tài kho?n')</a>
                             <form class="th-inline-form" method="POST" action="{{ $customerAuth['logout_url'] ?? route('customer.auth.logout') }}">
                                 @csrf
-                                <button type="submit" class="th-inline-action">@themeT('common.logout', 'Đăng xuất')</button>
+                                <button type="submit" class="th-inline-action">@themeT('common.logout', 'Ðang xu?t')</button>
                             </form>
                         @else
-                            <button type="button" class="th-inline-action" data-open-auth-modal="register">@themeT('common.register', 'Đăng ký')</button>
-                            <button type="button" class="th-inline-action" data-open-auth-modal="login">@themeT('common.login', 'Đăng nhập')</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="register">@themeT('common.register', 'Ðang ký')</button>
+                            <button type="button" class="th-inline-action" data-open-auth-modal="login">@themeT('common.login', 'Ðang nh?p')</button>
                         @endif
                     </div>
                 </div>
@@ -573,41 +617,41 @@
                         <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ $companyTitle ?: '' }}">
                     </a>
                     <form class="th-search" method="GET" action="{{ route('site.catalog.search') }}" role="search">
-                        <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm kiếm sản phẩm / khuyến mãi')" aria-label="@themeT('common.search_aria', 'Tìm kiếm sản phẩm')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
+                        <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('common.search_placeholder', 'Tìm ki?m s?n ph?m / khuy?n mãi')" aria-label="@themeT('common.search_aria', 'Tìm ki?m s?n ph?m')" data-th-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
                         <button type="submit">@themeT('common.search_button', 'Tìm')</button>
                     </form>
-                    <a class="th-cart" href="{{ route('site.cart.index') }}">🛒 {{ $cartSummary['count'] ?? 0 }} @themeT('common.cart_label', 'GIỎ HÀNG')</a>
+                    <a class="th-cart" href="{{ route('site.cart.index') }}">?? {{ $cartSummary['count'] ?? 0 }} @themeT('common.cart_label', 'GI? HÀNG')</a>
                 </div>
             </header>
 
             <nav class="th-main-nav">
                 <div class="th-container th-main-nav-inner">
-                    <a class="th-home-link" href="{{ route('site.home') }}" aria-label="@themeT('common.home', 'Trang chủ')">⌂</a>
+                    <a class="th-home-link" href="{{ route('site.home') }}" aria-label="@themeT('common.home', 'Trang ch?')">¦</a>
                     <div class="th-main-nav-menu">
                         <div class="th-nav-item th-nav-products">
-                            <a href="#fashion-collections" class="th-nav-link">
-                                <span>@themeT('common.products', 'Sản phẩm')</span>
-                                <span class="th-nav-caret">▾</span>
+                            <a href="#interior-collections" class="th-nav-link">
+                                <span>@themeT('common.products', 'S?n ph?m')</span>
+                                <span class="th-nav-caret">?</span>
                             </a>
                             <div class="th-nav-products-panel">
                                 <div class="th-nav-products-inner">
                                     <div class="th-nav-products-intro">
-                                        <span>@themeT('home.products_menu_kicker', 'TH0003 catalog')</span>
-                                        <strong>@themeT('home.products_menu_title', 'Chọn nhanh danh mục')</strong>
-                                        <small>@themeT('home.products_menu_summary', 'Mega menu full width cho sản phẩm, gom các nhóm hàng chính và liên kết con để khách đi thẳng vào đúng outfit.')</small>
+                                        <span>@themeT('home.products_menu_kicker', 'TH0020 catalog')</span>
+                                        <strong>@themeT('home.products_menu_title', 'Ch?n nhanh danh m?c')</strong>
+                                        <small>@themeT('home.products_menu_summary', 'Mega menu full width cho s?n ph?m, gom các nhóm hàng chính và liên k?t con d? khách di th?ng vào dúng outfit.')</small>
                                     </div>
                                     <div class="th-nav-products-grid">
                                         @foreach (collect($sidebarCategories)->take(8) as $category)
                                             <div class="th-nav-category-card">
                                                 <a href="{{ $category['url'] ?? route('site.catalog.search') }}" target="{{ $category['target'] ?? '_self' }}" class="th-nav-category-head">
-                                                    <span class="th-nav-category-icon">{{ $category['icon'] ?? '✦' }}</span>
+                                                    <span class="th-nav-category-icon">{{ $category['icon'] ?? '?' }}</span>
                                                     <strong>{{ $category['label'] ?? __('common.category') }}</strong>
                                                 </a>
                                                 <div class="th-nav-category-links">
                                                     @forelse (collect($category['children'] ?? [])->take(4) as $child)
                                                         <a href="{{ $child['url'] ?? ($category['url'] ?? route('site.catalog.search')) }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a>
                                                     @empty
-                                                        <a href="{{ $category['url'] ?? route('site.catalog.search') }}" target="{{ $category['target'] ?? '_self' }}">@themeT('home.products_menu_view_all', 'Xem tất cả')</a>
+                                                        <a href="{{ $category['url'] ?? route('site.catalog.search') }}" target="{{ $category['target'] ?? '_self' }}">@themeT('home.products_menu_view_all', 'Xem t?t c?')</a>
                                                     @endforelse
                                                 </div>
                                             </div>
@@ -622,7 +666,7 @@
                                 <a href="{{ $menuItem['url'] ?? route('site.home') }}" target="{{ $menuItem['target'] ?? '_self' }}" class="th-nav-link">
                                     <span>{{ $menuItem['label'] ?? __('common.menu') }}</span>
                                     @if (!empty($menuItem['children']))
-                                        <span class="th-nav-caret">▾</span>
+                                        <span class="th-nav-caret">?</span>
                                     @endif
                                 </a>
                                 @if (!empty($menuItem['children']))
@@ -637,51 +681,66 @@
                     </div>
                 </div>
             </nav>
+            </div>
 
             <main class="th-content">
                 <div class="th-container">
-                    <section class="fashion-banner-slider" data-fashion-banner-slider>
-                        <div class="fashion-banner-track">
-                            @foreach ($fashionBannerSlides as $slide)
-                                <a
-                                    href="{{ $slide['link_url'] ?? route('site.catalog.search') }}"
-                                    target="{{ $slide['target'] ?? '_self' }}"
-                                    class="fashion-banner-slide {{ $loop->first ? 'is-active' : '' }}"
-                                    data-fashion-banner-slide
-                                    aria-label="{{ $slide['title'] ?? ($companyTitle ?: 'TH0003 Fashion') }}"
-                                >
-                                    <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] ?? ($companyTitle ?: 'TH0003 Fashion') }}">
-                                </a>
-                            @endforeach
-                        </div>
-                        @if ($fashionBannerSlides->count() > 1)
-                            <div class="fashion-banner-dots" aria-hidden="true">
-                                @foreach ($fashionBannerSlides as $slide)
-                                    <span class="fashion-banner-dot {{ $loop->first ? 'is-active' : '' }}" data-fashion-banner-dot></span>
+                    <section class="th20-hero-promos">
+                        <div class="interior-banner-slider" data-interior-banner-slider>
+                            <div class="interior-banner-track">
+                                @foreach ($InteriorBannerSlides as $slide)
+                                    <a
+                                        href="{{ $slide['link_url'] ?? route('site.catalog.search') }}"
+                                        target="{{ $slide['target'] ?? '_self' }}"
+                                        class="interior-banner-slide {{ $loop->first ? 'is-active' : '' }}"
+                                        data-interior-banner-slide
+                                        aria-label="{{ $slide['title'] ?? ($companyTitle ?: 'TH0020 Interior') }}"
+                                    >
+                                        <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] ?? ($companyTitle ?: 'TH0020 Interior') }}">
+                                    </a>
                                 @endforeach
                             </div>
-                        @endif
+                            @if ($InteriorBannerSlides->count() > 1)
+                                <div class="interior-banner-dots" aria-hidden="true">
+                                    @foreach ($InteriorBannerSlides as $slide)
+                                        <span class="interior-banner-dot {{ $loop->first ? 'is-active' : '' }}" data-interior-banner-dot></span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+
+                        <aside class="th20-side-banner-stack" aria-label="Banner nội thất nổi bật">
+                            @foreach ($topSidePromos as $promo)
+                                <a href="{{ $promo['link_url'] ?? route('site.catalog.search') }}" target="{{ $promo['target'] ?? '_self' }}" class="th20-side-banner">
+                                    <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] ?? 'TH0020 banner' }}">
+                                    <span>{{ $promo['title'] ?? 'Bộ sưu tập nội thất' }}</span>
+                                    @if (!empty($promo['subtitle']))
+                                        <small>{{ $promo['subtitle'] }}</small>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </aside>
                     </section>
 
-                    <section id="fashion-collections" class="fashion-content-strip">
-                        <div class="fashion-strip-head">
-                            <span>@themeT('home.collection_kicker', 'Shop by mood')</span>
-                            <h2>@themeT('home.collection_title', 'Mua theo nhóm phong cách')</h2>
-                            <p>@themeT('home.collection_summary', 'Đưa menu danh mục lên thành các tile thị giác để khách thấy ngay shop đang bán gì, kể cả khi catalog thật chưa đủ dữ liệu.')</p>
+                    <section id="interior-collections" class="interior-content-strip">
+                        <div class="interior-strip-head">
+                            <span>@themeT('home.collection_kicker', 'Shop by room')</span>
+                            <h2>@themeT('home.collection_title', 'Mua theo không gian')</h2>
+                            <p>@themeT('home.collection_summary', 'Đưa danh mục lên thành các tile trực quan để khách chọn nhanh phòng khách, phòng ngủ, bàn ăn hoặc decor.')</p>
                         </div>
-                        <div class="fashion-menu-rail">
-                            @foreach (collect($fashionCategoryTiles)->take(4) as $category)
+                        <div class="interior-menu-rail">
+                            @foreach (collect($InteriorCategoryTiles)->take(4) as $category)
                                 @php
                                     $categoryChildren = collect($category['children'] ?? [])->pluck('label')->take(3)->implode(' / ');
                                     $categoryCount = (int) ($category['products_count'] ?? 0);
                                 @endphp
-                                <a href="{{ $category['url'] ?? route('site.catalog.search') }}" target="{{ $category['target'] ?? '_self' }}" class="fashion-category-tile">
-                                    <span class="fashion-category-icon">{{ $category['icon'] ?? '✦' }}</span>
+                                <a href="{{ $category['url'] ?? route('site.catalog.search') }}" target="{{ $category['target'] ?? '_self' }}" class="interior-category-tile">
+                                    <span class="interior-category-icon">{{ $category['icon'] ?? '?' }}</span>
                                     <strong>{{ $category['label'] ?? $category['name'] ?? __('common.category') }}</strong>
                                     <small>
-                                        {{ $categoryChildren !== '' ? $categoryChildren : $t('home.collection_tile_fallback', 'Hàng mới / Bán chạy / Sale') }}
+                                        {{ $categoryChildren !== '' ? $categoryChildren : $t('home.collection_tile_fallback', 'Hàng m?i / Bán ch?y / Sale') }}
                                         @if ($categoryCount > 0)
-                                            · {{ $categoryCount }} @themeT('home.collection_product_count', 'sản phẩm')
+                                            · {{ $categoryCount }} @themeT('home.collection_product_count', 's?n ph?m')
                                         @endif
                                     </small>
                                 </a>
@@ -703,7 +762,7 @@
                                         <a href="{{ $deal['url'] ?? route('site.catalog.search') }}">
                                             <img src="{{ $deal['image'] }}" alt="{{ $deal['title'] }}">
                                         </a>
-                                        <span class="th-deal-chip">{{ $deal['tag'] ?? 'Sản phẩm' }}</span>
+                                        <span class="th-deal-chip">{{ $deal['tag'] ?? 'S?n ph?m' }}</span>
                                     </div>
                                     <div class="th-deal-body">
                                         <h3 class="th-deal-title"><a href="{{ $deal['url'] ?? route('site.catalog.search') }}">{{ $deal['title'] }}</a></h3>
@@ -713,7 +772,7 @@
                                         </div>
                                         <div class="th-old-price-row">
                                             <span class="th-old-price">{{ $formatCurrency($deal['old_price'] ?? null) }}</span>
-                                            <span class="th-stat">{{ str_replace(':count', (string) ($deal['meta'] ?? 0), $t('home.stock', 'Tồn kho :count')) }}</span>
+                                            <span class="th-stat">{{ str_replace(':count', (string) ($deal['meta'] ?? 0), $t('home.stock', 'T?n kho :count')) }}</span>
                                         </div>
                                     </div>
                                 </article>
@@ -728,7 +787,7 @@
                         <section id="section-{{ $section['slug'] }}" class="th-category-section">
                             <div class="th-category-header">
                                 <div class="th-category-title">
-                                    <span class="th-category-title-badge">✦</span>
+                                    <span class="th-category-title-badge">?</span>
                                     <span>{{ $section['title'] }}</span>
                                 </div>
 
@@ -752,7 +811,7 @@
                                             <a href="{{ $item['url'] ?? route('site.catalog.search') }}">
                                                 <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
                                             </a>
-                                            <span class="th-deal-countdown">{{ str_replace(':days', '21', $t('home.fashion_days_left', '⏱ Còn :days ngày')) }}</span>
+                                            <span class="th-deal-countdown">{{ str_replace(':days', '21', $t('home.interior_days_left', '? Còn :days ngày')) }}</span>
                                             <span class="th-deal-chip">{{ $item['tag'] }}</span>
                                         </div>
                                         <div class="th-deal-body">
@@ -763,7 +822,7 @@
                                             </div>
                                             <div class="th-old-price-row">
                                                 <span class="th-old-price">{{ $formatCurrency($item['old_price'] ?? null) }}</span>
-                                                <span class="th-stat">{{ str_replace(':count', (string) ($item['meta'] ?? 0), $t('home.stock', 'Tồn kho :count')) }}</span>
+                                                <span class="th-stat">{{ str_replace(':count', (string) ($item['meta'] ?? 0), $t('home.stock', 'T?n kho :count')) }}</span>
                                             </div>
                                         </div>
                                     </article>
@@ -781,7 +840,7 @@
                             <div class="th-secondary-promo-head">
                                 <div>
                                     <h3>@themeT('home.secondary_promos_title', 'Khám phá nhanh')</h3>
-                                    <p>@themeT('home.secondary_promos_summary', 'Demo cho location secondary_side_promos để theme khác tái sử dụng cùng cơ chế quản trị.')</p>
+                                    <p>@themeT('home.secondary_promos_summary', 'Demo cho location secondary_side_promos d? theme khác tái s? d?ng cùng co ch? qu?n tr?.')</p>
                                 </div>
                             </div>
 
@@ -806,24 +865,24 @@
                     @endif
 
                     @if (!empty($latestPosts))
-                        <section id="fashion-journal" class="fashion-news-section">
-                            <div class="fashion-news-head">
-                                <span>{{ $latestPostsSection['kicker'] ?? 'Fashion journal' }}</span>
-                                <h2>{{ $latestPostsSection['title'] ?? 'Tin mới từ shop' }}</h2>
-                                <p>{{ $latestPostsSection['summary'] ?? 'Cập nhật lookbook, cách phối đồ và các ghi chú vận hành mới nhất từ CMS.' }}</p>
-                                <a href="{{ route('site.blog.index') }}" class="fashion-news-link">@themeT('home.latest_posts_view_all', 'Xem tất cả')</a>
+                        <section id="interior-journal" class="interior-news-section">
+                            <div class="interior-news-head">
+                                <span>{{ $latestPostsSection['kicker'] ?? 'Interior journal' }}</span>
+                                <h2>{{ $latestPostsSection['title'] ?? 'Tin m?i t? shop' }}</h2>
+                                <p>{{ $latestPostsSection['summary'] ?? 'C?p nh?t lookbook, cách ph?i d? và các ghi chú v?n hành m?i nh?t t? CMS.' }}</p>
+                                <a href="{{ route('site.blog.index') }}" class="interior-news-link">@themeT('home.latest_posts_view_all', 'Xem t?t c?')</a>
                             </div>
 
-                            <div class="fashion-news-grid">
+                            <div class="interior-news-grid">
                                 @foreach (collect($latestPosts)->take(3) as $post)
-                                    <article class="fashion-news-card">
-                                        <a href="{{ $post['url'] ?? route('site.blog.index') }}" class="fashion-news-image">
-                                            <img src="{{ $post['image'] ?? 'https://picsum.photos/seed/th0003-news-'.$loop->index.'/900/700' }}" alt="{{ $post['title'] ?? 'Fashion journal' }}">
+                                    <article class="interior-news-card">
+                                        <a href="{{ $post['url'] ?? route('site.blog.index') }}" class="interior-news-image">
+                                            <img src="{{ $post['image'] ?? 'https://picsum.photos/seed/TH0020-news-'.$loop->index.'/900/700' }}" alt="{{ $post['title'] ?? 'Interior journal' }}">
                                         </a>
-                                        <div class="fashion-news-body">
-                                            <span class="fashion-news-date">{{ $post['published_at'] ?? now()->format('d/m/Y') }}</span>
-                                            <h3><a href="{{ $post['url'] ?? route('site.blog.index') }}">{{ $post['title'] ?? 'Fashion journal' }}</a></h3>
-                                            <p>{{ $post['excerpt'] ?? $t('home.latest_posts_excerpt_fallback', 'Cập nhật ngắn cho khách hàng về sản phẩm, bộ sưu tập và kinh nghiệm phối đồ.') }}</p>
+                                        <div class="interior-news-body">
+                                            <span class="interior-news-date">{{ $post['published_at'] ?? now()->format('d/m/Y') }}</span>
+                                            <h3><a href="{{ $post['url'] ?? route('site.blog.index') }}">{{ $post['title'] ?? 'Interior journal' }}</a></h3>
+                                            <p>{{ $post['excerpt'] ?? $t('home.latest_posts_excerpt_fallback', 'C?p nh?t ng?n cho khách hàng v? s?n ph?m, b? suu t?p và kinh nghi?m ph?i d?.') }}</p>
                                         </div>
                                     </article>
                                 @endforeach
@@ -848,10 +907,10 @@
                                             type="button"
                                             class="sf-inline-edit-btn"
                                             data-sf-inline-edit-trigger
-                                            data-edit-title="Sửa {{ $footerColumnEditor['title'] ?? 'cột footer' }}"
+                                            data-edit-title="S?a {{ $footerColumnEditor['title'] ?? 'c?t footer' }}"
                                             data-edit-fields='@json($footerColumnEditor['fields'] ?? [])'
                                         >
-                                            Sửa cột
+                                            S?a c?t
                                         </button>
                                     @endif
                                 </div>
@@ -875,16 +934,16 @@
                                         type="button"
                                         class="sf-inline-edit-btn"
                                         data-sf-inline-edit-trigger
-                                        data-edit-title="Sửa chân trang công ty"
+                                        data-edit-title="S?a chân trang công ty"
                                         data-edit-fields='@json($companyFooterEditFields)'
                                     >
-                                        Sửa công ty
+                                        S?a công ty
                                     </button>
                                 @endif
                             </div>
                             <div class="th-footer-links">
-                                <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_1') }}">{{ $companyFooter['address_line_1'] ?? '332 Lũy Bán Bích, Phường Hòa Thạnh, Quận Tân Phú, TP.HCM' }}</span>
-                                <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2') }}">{{ $companyFooter['address_line_2'] ?? 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân' }}</span>
+                                <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_1') }}">{{ $companyFooter['address_line_1'] ?? '332 Luy Bán Bích, Phu?ng Hòa Th?nh, Qu?n Tân Phú, TP.HCM' }}</span>
+                                <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2') }}">{{ $companyFooter['address_line_2'] ?? 'Chi nhánh Hà N?i: T?ng 3, CT2 Ban Co Y?u Chính Ph?, Thanh Xuân' }}</span>
                                 <span>Hotline: {{ $contactHotline }}</span>
                                 <span>Email: {{ $contactEmail }}</span>
                             </div>
@@ -893,11 +952,11 @@
                 </div>
             </footer>
         </div>
-        @include('theme-th0003::partials.product-search-autocomplete')
-        @include('theme-th0003::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
+        @include('theme-th0020::partials.product-search-autocomplete')
+        @include('theme-th0020::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
         @if ($canQuickEditThemeBlocks)
             @include('partials.storefront-inline-translation-editor', [
-                'editorId' => 'th0003-inline-editor',
+                'editorId' => 'TH0020-inline-editor',
                 'themeKey' => $themeKey,
                 'currentLocale' => app()->getLocale(),
                 'supportedLocales' => $quickEditLocales,
@@ -905,9 +964,9 @@
             ])
         @endif
         <script>
-            document.querySelectorAll('[data-fashion-banner-slider]').forEach((slider) => {
-                const slides = Array.from(slider.querySelectorAll('[data-fashion-banner-slide]'));
-                const dots = Array.from(slider.querySelectorAll('[data-fashion-banner-dot]'));
+            document.querySelectorAll('[data-interior-banner-slider]').forEach((slider) => {
+                const slides = Array.from(slider.querySelectorAll('[data-interior-banner-slide]'));
+                const dots = Array.from(slider.querySelectorAll('[data-interior-banner-dot]'));
                 if (slides.length <= 1) {
                     return;
                 }

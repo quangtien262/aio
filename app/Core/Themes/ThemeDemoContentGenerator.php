@@ -575,6 +575,7 @@ class ThemeDemoContentGenerator
                     'eyebrow' => $preset['hero_eyebrow'],
                     'summary' => $preset['description'],
                     'button_label' => $isServicePreset ? 'Nhận báo giá' : ($this->isGarmentFamilyPreset($preset) ? 'Xem bộ sưu tập' : 'Mua ngay'),
+                    'button_label' => $isServicePreset ? 'Nhan bao gia' : ($this->isInteriorPreset($preset) ? 'Xem phong cach' : ($this->isGarmentFamilyPreset($preset) ? 'Xem bo suu tap' : 'Mua ngay')),
                 ],
                 'image_url' => $this->imageUrl($preset['key'].'-hero-main', 960, 520),
                 'link_url' => '#featured',
@@ -598,6 +599,13 @@ class ThemeDemoContentGenerator
                             ? 'Khám phá '.$department['children'][0]
                             : 'Nhận may cho '.$department['children'][0])
                         : 'Ưu đãi mới cho '.$department['children'][0]),
+                'subtitle' => $isServicePreset
+                    ? 'Giai phap noi bat cho '.$department['children'][0]
+                    : ($this->isInteriorPreset($preset)
+                        ? 'Goi y moi cho '.$department['children'][0]
+                        : ($this->isGarmentFamilyPreset($preset)
+                            ? ($this->isFashionPreset($preset) ? 'Kham pha '.$department['children'][0] : 'Nhan may cho '.$department['children'][0])
+                            : 'Uu dai moi cho '.$department['children'][0])),
                 'badge' => null,
                 'metadata' => [],
                 'image_url' => $this->imageUrl($preset['key'].'-hero-side-'.$index, 360, 180),
@@ -715,6 +723,12 @@ class ThemeDemoContentGenerator
             return trim(sprintf('%s %s - Mã căn %s', $departmentName, $childName, $unitCodes[$productIndex - 1] ?? 'A1-01'));
         }
 
+        if ($this->isInteriorPreset($preset)) {
+            $lines = ['Oak', 'Linen', 'Nordic', 'Studio'];
+
+            return trim(sprintf('%s %s %s %02d', $childName, $preset['product_prefix'], $lines[$productIndex - 1] ?? 'Home', $productIndex));
+        }
+
         if ($this->isGarmentFamilyPreset($preset)) {
             $lines = $this->isFashionPreset($preset)
                 ? ['Edit', 'Studio', 'Runway', 'Capsule']
@@ -744,6 +758,13 @@ class ThemeDemoContentGenerator
             $basePrice = $basePrices[$parentIndex] ?? 4200000000;
 
             return $basePrice + ($childIndex * 185000000) + ($productIndex * 95000000);
+        }
+
+        if ($this->isInteriorPreset($preset)) {
+            $basePrices = [5900000, 8900000, 12500000, 3900000, 4900000, 3200000, 6800000, 5200000];
+            $basePrice = $basePrices[$parentIndex] ?? 4500000;
+
+            return $basePrice + ($childIndex * 850000) + ($productIndex * 420000);
         }
 
         return 390000 + ($parentIndex * 170000) + ($childIndex * 80000) + ($productIndex * 45000);
@@ -891,6 +912,18 @@ class ThemeDemoContentGenerator
             } else {
                 $groups[] = ['bus transport', 'shuttle service', 'van'];
             }
+        } elseif ($this->isInteriorPreset($preset)) {
+            $groups[] = match (true) {
+                str_contains($context, 'sofa') || str_contains($context, 'phong khach') || str_contains($context, 'ban tra') || str_contains($context, 'ke tv') => ['modern living room', 'sofa interior', 'home interior'],
+                str_contains($context, 'phong ngu') || str_contains($context, 'giuong') || str_contains($context, 'tu ao') => ['modern bedroom', 'bedroom furniture', 'interior bedroom'],
+                str_contains($context, 'ban an') || str_contains($context, 'bep') || str_contains($context, 'ghe an') => ['dining room furniture', 'modern dining room', 'kitchen decor'],
+                str_contains($context, 'den') || str_contains($context, 'decor') || str_contains($context, 'tham') || str_contains($context, 'tranh') => ['interior decor', 'lamp interior', 'home decor'],
+                str_contains($context, 'lam viec') || str_contains($context, 'ergonomic') || str_contains($context, 'ke ho so') => ['home office interior', 'desk setup', 'modern workspace'],
+                str_contains($context, 'ban cong') || str_contains($context, 'san vuon') || str_contains($context, 'chau cay') => ['balcony furniture', 'outdoor furniture', 'patio decor'],
+                str_contains($context, 'vat lieu') || str_contains($context, 'san go') || str_contains($context, 'gach') || str_contains($context, 'tam op') => ['interior material', 'wood floor', 'tile texture'],
+                str_contains($context, 'phong tam') || str_contains($context, 'lavabo') || str_contains($context, 'sen voi') || str_contains($context, 'tu guong') => ['modern bathroom', 'bathroom fixture', 'interior bathroom'],
+                default => ['home interior', 'showroom interior', 'modern furniture'],
+            };
         } elseif ($this->isRealEstatePreset($preset)) {
             $groups[] = match (true) {
                 str_contains($context, 'studio') => ['studio apartment', 'show flat interior', 'project launch studio'],
@@ -1265,6 +1298,14 @@ class ThemeDemoContentGenerator
 
     private function buildProductHighlights(array $preset, string $departmentName, string $childName): string
     {
+        if ($this->isInteriorPreset($preset)) {
+            return implode(PHP_EOL, [
+                'Thiet ke cho nhom '.$childName.' thuoc khong gian '.$departmentName.', phu hop test card san pham, mega menu va goi y theo phong cua TH0020.',
+                'Noi dung tap trung vao vat lieu, kich thuoc, mau sac va kha nang phoi combo trong can ho hoac nha pho.',
+                'Co the chinh truc tiep de doi tu demo sang catalog noi that that, kem thong tin giao lap va bao hanh vat lieu.',
+            ]);
+        }
+
         if (($preset['catalog_style'] ?? 'commerce') === 'service') {
             return implode(PHP_EOL, [
                 'Phù hợp cho nhu cầu '.$departmentName.' với cấu hình '.$childName.'.',
@@ -1304,6 +1345,15 @@ class ThemeDemoContentGenerator
 
     private function buildUsageTerms(array $preset, string $departmentName): string
     {
+        if ($this->isInteriorPreset($preset)) {
+            return implode(PHP_EOL, [
+                'Gia co the thay doi theo vat lieu, kich thuoc, mau hoan thien va khoang cach giao lap cua nhom '.$departmentName.'.',
+                'Khuyen nghi xac nhan kich thuoc phong, loi di thang may va mat bang lap dat truoc khi chot don.',
+                'Vui long cung cap anh khong gian, so do kich thuoc hoac nhu cau phoi combo de showroom tu van nhanh hon.',
+                'Mot so san pham can dat coc hoac hen lich giao lap rieng khi chon mau vat lieu theo yeu cau.',
+            ]);
+        }
+
         if (($preset['catalog_style'] ?? 'commerce') === 'service') {
             return implode(PHP_EOL, [
                 'Giá trên là mức tham khảo, có thể thay đổi theo lịch trình, thời gian và điểm đón thực tế.',
@@ -1514,6 +1564,14 @@ class ThemeDemoContentGenerator
             );
         }
 
+        if ($this->isInteriorPreset($preset)) {
+            return sprintf(
+                'Mau %s cho nhom %s, tap trung vat lieu, kich thuoc, cach phoi phong va kha nang giao lap cho khong gian song that.',
+                $childName,
+                $departmentName,
+            );
+        }
+
         if (! $this->isGarmentFamilyPreset($preset)) {
             return 'Mẫu demo cho '.$childName.' trong preset '.$preset['label'].'.';
         }
@@ -1539,6 +1597,15 @@ class ThemeDemoContentGenerator
 
     private function buildProductDetailContent(array $preset, string $departmentName, string $childName, string $productName): string
     {
+        if ($this->isInteriorPreset($preset)) {
+            return implode(PHP_EOL.PHP_EOL, [
+                $productName.' la du lieu demo duoc sinh cho preset '.$preset['label'].', giup kiem thu homepage TH0020, trang danh muc va trang chi tiet san pham noi that.',
+                'Mau nay thuoc nhom '.$departmentName.' voi dong '.$childName.', nen noi dung dai tap trung vao vat lieu, kich thuoc, ty le phong va cach phoi cung cac san pham lien quan.',
+                'Ban seed nay uu tien trai nghiem mua that: goi y showroom, tu van phoi phong, giao lap theo lich va thong tin bao hanh vat lieu de admin co the doi thanh catalog van hanh that.',
+                'Co the sua truc tiep mo ta, gallery anh, quy cach, kich thuoc va ghi chu lap dat trong admin Catalog de bien trang demo thanh noi dung thuong mai dien tu noi that hoan chinh.',
+            ]);
+        }
+
         if (($preset['catalog_style'] ?? 'commerce') === 'service') {
             return implode(PHP_EOL.PHP_EOL, [
                 $productName.' là gói dịch vụ demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage service, trang danh mục và trang chi tiết dịch vụ của bộ theme service.',
@@ -1700,6 +1767,11 @@ class ThemeDemoContentGenerator
         return ($preset['industry_family'] ?? null) === 'real-estate';
     }
 
+    private function isInteriorPreset(array $preset): bool
+    {
+        return ($preset['industry_family'] ?? null) === 'interior';
+    }
+
     private function buildDemoNewsCategory(array $preset, string $themeKey): array
     {
         if ($this->isGarmentFamilyPreset($preset)) {
@@ -1725,6 +1797,16 @@ class ThemeDemoContentGenerator
                 'description' => 'Chuyên mục demo cho tin thị trường, hướng dẫn chọn căn và cập nhật mở bán của LAN0201.',
                 'meta_title' => 'Tin mở bán '.$preset['company_name'],
                 'meta_description' => 'Tin thị trường, thông tin mở bán và bài viết tư vấn demo cho '.$preset['company_name'],
+            ];
+        }
+
+        if ($this->isInteriorPreset($preset)) {
+            return [
+                'name' => 'Y tuong khong gian',
+                'slug' => Str::slug('y-tuong-khong-gian-'.$preset['key']),
+                'description' => 'Chuyen muc demo cho goi y phoi phong, vat lieu va cach chon noi that cua TH0020.',
+                'meta_title' => 'Y tuong noi that '.$preset['company_name'],
+                'meta_description' => 'Y tuong phoi phong, vat lieu va bai viet tu van demo cho '.$preset['company_name'],
             ];
         }
 
@@ -1923,6 +2005,32 @@ class ThemeDemoContentGenerator
                     ['name' => 'Ẩm thực địa phương', 'children' => ['Buffet', 'Hải sản', 'Cafe view đẹp']],
                     ['name' => 'Visa & dịch vụ', 'children' => ['Hàn Quốc', 'Nhật Bản', 'Schengen']],
                     ['name' => 'Team building', 'children' => ['1 ngày', '2 ngày', 'MICE']],
+                ],
+            ],
+            [
+                'key' => 'interior-home',
+                'label' => 'Noi that sang hien dai',
+                'short_label' => 'noi that',
+                'description' => 'Preset cho ecommerce noi that, decor va vat lieu hoan thien, phu hop TH0020 voi menu da cap, banner tren dau va block san pham theo khong gian.',
+                'company_name' => 'TH0020 Living Studio',
+                'domain' => 'th0020living.demo',
+                'address' => '42 Nguyen Co Thach, Nam Tu Liem, Ha Noi',
+                'theme_flavor' => 'interior commerce',
+                'hero_eyebrow' => 'New living',
+                'hero_title' => 'Noi that sang hien dai cho can ho va nha pho',
+                'hero_subtitle' => 'Dung de test TH0020 voi room catalog, mega menu san pham, side banner va luong mua hang that tu Catalog.',
+                'hero_badge' => 'Tu van phoi phong',
+                'product_prefix' => 'Living',
+                'industry_family' => 'interior',
+                'departments' => [
+                    ['name' => 'Phong khach', 'children' => ['Sofa', 'Ban tra', 'Ke TV']],
+                    ['name' => 'Phong ngu', 'children' => ['Giuong ngu', 'Tu dau giuong', 'Tu ao']],
+                    ['name' => 'Ban an va bep', 'children' => ['Ban an', 'Ghe an', 'Tu bep phu']],
+                    ['name' => 'Decor va den', 'children' => ['Den trang tri', 'Tham', 'Binh va tranh']],
+                    ['name' => 'Goc lam viec', 'children' => ['Ban lam viec', 'Ghe ergonomic', 'Ke ho so']],
+                    ['name' => 'Ban cong va san vuon', 'children' => ['Ban ghe ban cong', 'Ghe thu gian', 'Chau cay']],
+                    ['name' => 'Vat lieu hoan thien', 'children' => ['San go', 'Gach op lat', 'Tam op']],
+                    ['name' => 'Phong tam', 'children' => ['Lavabo', 'Sen voi', 'Tu guong']],
                 ],
             ],
             [

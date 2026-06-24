@@ -23,6 +23,22 @@
             .th-main-nav-menu { display: flex; justify-content: flex-start; gap: 0; font-size: 14px; font-weight: 800; }
             .th-nav-item { position: relative; }
             .th-nav-link { min-height: 42px; padding: 0 18px; display: inline-flex; align-items: center; gap: 8px; text-align: left; text-transform: uppercase; letter-spacing: .08em; font-size: 12px; transition: color .18s ease, background .18s ease; cursor: pointer; }
+            .th-fashion-page .th-main-nav-menu,
+            body.th-fashion-page .th-main-nav-menu {
+                align-items: stretch;
+                gap: 0;
+            }
+            .th-fashion-page .th-main-nav-menu > .th-nav-item > .th-nav-link,
+            body.th-fashion-page .th-main-nav-menu > .th-nav-item > .th-nav-link {
+                min-height: 42px;
+                padding: 0 20px;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                white-space: nowrap;
+                line-height: 1;
+                letter-spacing: .08em;
+            }
             .th-nav-link:hover, .th-nav-item:hover > .th-nav-link { color: #f2c94c; background: rgba(255,255,255,.06); }
             .th-nav-caret { font-size: 11px; opacity: .72; transform: translateY(-1px); }
             .th-nav-products { position: static; background: #b20f3a; }
@@ -122,6 +138,61 @@
                 font-size: 18px;
                 line-height: 1.35;
             }
+            .th-fashion-page .th-cms-card-grid {
+                align-items: stretch;
+                gap: 24px;
+            }
+            .th-fashion-page .th-cms-card-grid > .th-cms-card {
+                display: flex;
+                flex-direction: column;
+                min-height: 100%;
+                border: 1px solid #eadfda;
+                background: #fffaf6;
+                box-shadow: 0 18px 42px rgba(31,26,29,.07);
+                overflow: hidden;
+            }
+            .th-fashion-page .th-cms-card-grid > .th-cms-card:hover {
+                transform: translateY(-4px);
+                border-color: #1f1a1d;
+                box-shadow: 0 24px 58px rgba(31,26,29,.12);
+            }
+            .th-fashion-page .th-cms-card-grid > .th-cms-card > a:first-child {
+                display: block;
+                aspect-ratio: 16 / 11;
+                overflow: hidden;
+                background: #ded4cf;
+            }
+            .th-fashion-page .th-cms-card-grid > .th-cms-card > a:first-child .th-cms-card-media {
+                width: 100%;
+                height: 100%;
+                aspect-ratio: auto;
+                border: 0;
+                object-fit: cover;
+            }
+            .th-fashion-page .th-cms-card-grid .th-cms-card-body {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                padding: 18px 18px 20px;
+                background: #fffaf6;
+            }
+            .th-fashion-page .th-cms-card-grid .th-cms-meta-row {
+                margin-bottom: 10px;
+            }
+            .th-fashion-page .th-cms-card-grid .th-cms-card-title {
+                margin: 0 0 10px;
+                font-size: 21px;
+                line-height: 1.25;
+            }
+            .th-fashion-page .th-cms-card-grid .th-cms-card-summary {
+                margin: 0;
+                color: #756a70;
+                line-height: 1.7;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
             .th-fashion-page .th-cms-meta-row,
             .th-fashion-page .fashion-news-date {
                 color: #b20f3a;
@@ -189,4 +260,5 @@
                 .th-nav-link { padding: 0 14px; white-space: nowrap; }
                 .th-nav-products-panel, .th-nav-simple-panel { display: none; }
                 .th-nav-products-grid { grid-template-columns: 1fr; }
+                .th-fashion-page .th-cms-card-grid { grid-template-columns: 1fr; gap: 18px; }
             }
