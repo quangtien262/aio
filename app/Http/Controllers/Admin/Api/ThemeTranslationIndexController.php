@@ -108,6 +108,11 @@ class ThemeTranslationIndexController
             str_starts_with($key, 'cms_page.') => 'cms-page',
             str_starts_with($key, 'cms_category.') => 'cms-category',
             str_starts_with($key, 'cms_post.') => 'cms-post',
+            str_starts_with($key, 'cms_service.') => 'cms-service',
+            str_starts_with($key, 'cms_project.') => 'cms-project',
+            str_starts_with($key, 'cms_testimonial.') => 'cms-testimonial',
+            str_starts_with($key, 'cms_team_member.') => 'cms-team-member',
+            str_starts_with($key, 'cms_partner.') => 'cms-partner',
             default => 'all',
         };
     }
@@ -119,7 +124,7 @@ class ThemeTranslationIndexController
         return match ($entity) {
             'all' => true,
             'catalog' => in_array($resolvedEntity, ['catalog-category', 'catalog-product'], true),
-            'cms' => in_array($resolvedEntity, ['cms-page', 'cms-category', 'cms-post'], true),
+            'cms' => in_array($resolvedEntity, ['cms-page', 'cms-category', 'cms-post', 'cms-service', 'cms-project', 'cms-testimonial', 'cms-team-member', 'cms-partner'], true),
             default => $resolvedEntity === $entity,
         };
     }
@@ -142,6 +147,11 @@ class ThemeTranslationIndexController
             'cms-page',
             'cms-category',
             'cms-post',
+            'cms-service',
+            'cms-project',
+            'cms-testimonial',
+            'cms-team-member',
+            'cms-partner',
         ];
     }
 

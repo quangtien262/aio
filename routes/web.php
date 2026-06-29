@@ -14,7 +14,7 @@ use App\Support\FrontendLocalization;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-	$locale = FrontendLocalization::resolveLocale(session('frontend_locale'));
+	$locale = FrontendLocalization::defaultLocale();
 
 	return redirect('/'.$locale);
 })->name('site.entry');
@@ -91,6 +91,12 @@ Route::prefix('{locale}')
 		Route::get('/{blogSegment}/{slug}', [CmsSiteController::class, 'post'])
 			->whereIn('blogSegment', FrontendLocalization::segmentValues('blog'))
 			->name('site.blog.show');
+		Route::get('/{servicesSegment}', [CmsSiteController::class, 'servicesIndex'])
+			->whereIn('servicesSegment', FrontendLocalization::segmentValues('services'))
+			->name('site.services.index');
+		Route::get('/{servicesSegment}/{slug}', [CmsSiteController::class, 'service'])
+			->whereIn('servicesSegment', FrontendLocalization::segmentValues('services'))
+			->name('site.services.show');
 		Route::post('/{contactSegment}', [CmsSiteController::class, 'submitContact'])
 			->whereIn('contactSegment', FrontendLocalization::segmentValues('contact'))
 			->name('site.contact.submit');

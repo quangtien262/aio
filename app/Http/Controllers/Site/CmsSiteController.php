@@ -16,12 +16,14 @@ use App\Models\CustomerFavorite;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
+use App\Models\CmsService;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Support\FrontendLocalization;
 use App\Support\BusinessContentTranslationService;
+use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\OrderConfirmationSender;
 use App\Support\StorefrontCart;
 use Illuminate\Contracts\View\View;
@@ -46,6 +48,7 @@ class CmsSiteController
         private readonly BusinessContentTranslationService $businessContentTranslationService,
         private readonly StorefrontCart $storefrontCart,
         private readonly OrderConfirmationSender $orderConfirmationSender,
+        private readonly LandingPageBuilder $landingPageBuilder,
     ) {
     }
 
@@ -53,15 +56,22 @@ class CmsSiteController
     {
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
-        $menus = $this->resolveMenus($this->resolveWebsiteKey($siteProfile));
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $themeKey = (string) ($activeTheme['key'] ?? '');
+        $menus = $this->resolveMenus($websiteKey);
 
         if ($themeHomeView = $this->resolveThemeHomeView($activeTheme)) {
-            return view($themeHomeView, [
+            $landingPage = $this->landingPageBuilder->resolveHome($websiteKey, $themeKey);
+            $landingViewData = $landingPage
+                ? $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())
+                : [];
+
+            return view($themeHomeView, array_merge([
                 'siteProfile' => $siteProfile,
                 'activeTheme' => $activeTheme,
                 'menus' => $menus,
                 'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
-            ]);
+            ], $landingViewData));
         }
 
         $page = CmsPage::query()->with('featuredMedia')->where('slug', 'home')->where('status', 'published')->first();
@@ -80,6 +90,25 @@ class CmsSiteController
     public function page(Request $request): View
     {
         $slug = (string) $request->route('slug');
+        $siteProfile = SiteProfile::query()->first();
+        $activeTheme = $this->resolveActiveTheme($siteProfile);
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $themeKey = (string) ($activeTheme['key'] ?? '');
+
+        if ($themeHomeView = $this->resolveThemeHomeView($activeTheme)) {
+            $landingPage = $this->landingPageBuilder->resolveBySlug($websiteKey, $slug, $themeKey);
+
+            if ($landingPage !== null) {
+                $menus = $this->resolveMenus($websiteKey);
+
+                return view($themeHomeView, array_merge([
+                    'siteProfile' => $siteProfile,
+                    'activeTheme' => $activeTheme,
+                    'menus' => $menus,
+                    'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
+                ], $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())));
+            }
+        }
 
         $page = CmsPage::query()->with('featuredMedia')->where('slug', $slug)->where('status', 'published')->firstOrFail();
 
@@ -181,6 +210,61 @@ class CmsSiteController
         $post = CmsPost::query()->with(['category', 'featuredMedia'])->where('slug', $slug)->where('status', 'published')->firstOrFail();
 
         return $this->renderContent('post', $post);
+    }
+
+    public function servicesIndex(Request $request): View
+    {
+        $siteProfile = SiteProfile::query()->first();
+        $activeTheme = $this->resolveActiveTheme($siteProfile);
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $menus = $this->resolveMenus($websiteKey);
+        $search = trim((string) $request->query('q', ''));
+
+        $servicesQuery = CmsService::query()
+            ->with('featuredImage')
+            ->where('status', 'published')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->latest('updated_at');
+        $this->applyWebsiteScope($servicesQuery, $websiteKey);
+
+        if ($search !== '') {
+            $servicesQuery->where(function (EloquentBuilder $query) use ($search): void {
+                $query->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('summary', 'like', '%'.$search.'%')
+                    ->orWhere('content', 'like', '%'.$search.'%');
+            });
+        }
+
+        $services = $servicesQuery->paginate(12)->withQueryString();
+
+        return $this->renderListing('services', 'Dịch vụ', 'Danh sách dịch vụ đã xuất bản.', $services, [
+            'siteProfile' => $siteProfile,
+            'activeTheme' => $activeTheme,
+            'menus' => $menus,
+            'serviceFilters' => [
+                'q' => $search,
+            ],
+        ]);
+    }
+
+    public function service(Request $request): View
+    {
+        $slug = (string) $request->route('slug');
+        $siteProfile = SiteProfile::query()->first();
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+
+        $query = CmsService::query()
+            ->with(['images', 'featuredImage'])
+            ->where('slug', $slug)
+            ->where('status', 'published');
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        $service = $query->firstOrFail();
+
+        return $this->renderContent('service', $service, [
+            'siteProfile' => $siteProfile,
+        ]);
     }
 
     public function submitContact(Request $request): RedirectResponse|JsonResponse
@@ -861,6 +945,10 @@ class CmsSiteController
             $entry = $this->localizePostModel($entry, $websiteKey);
         }
 
+        if ($entry instanceof CmsService) {
+            $entry = $this->localizeServiceModel($entry, $websiteKey);
+        }
+
         if ($contentType === 'page' && ! array_key_exists('latestPosts', $extra)) {
             $extra['latestPosts'] = CmsPost::query()->where('status', 'published')->latest('publish_at')->take(3)->get()
                 ->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
@@ -893,9 +981,17 @@ class CmsSiteController
         $viewName = $this->resolveThemeCmsView($activeTheme) ?? 'site-cms';
 
         if (is_object($items) && method_exists($items, 'getCollection') && method_exists($items, 'setCollection')) {
-            $items->setCollection($items->getCollection()->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey)));
+            $items->setCollection($items->getCollection()->map(fn (mixed $item): mixed => match (true) {
+                $item instanceof CmsPost => $this->localizePostModel($item, $websiteKey),
+                $item instanceof CmsService => $this->localizeServiceModel($item, $websiteKey),
+                default => $item,
+            }));
         } elseif ($items instanceof Collection) {
-            $items = $items->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
+            $items = $items->map(fn (mixed $item): mixed => match (true) {
+                $item instanceof CmsPost => $this->localizePostModel($item, $websiteKey),
+                $item instanceof CmsService => $this->localizeServiceModel($item, $websiteKey),
+                default => $item,
+            });
         }
 
         if ($contentType === 'posts' && ! array_key_exists('latestPosts', $extra)) {
@@ -1440,6 +1536,15 @@ class CmsSiteController
         $items = collect($menus['primary-navigation'] ?? $menus['primary'] ?? [])
             ->filter(fn (mixed $item): bool => is_array($item))
             ->values();
+
+        if ($this->isLandingHybridThemeKey($themeKey) && ($items->isEmpty() || $this->shouldUseLandingHybridTopMenuFallback($items->all()))) {
+            return [
+                ['label' => 'Dịch vụ', 'url' => route('site.services.index'), 'target' => '_self'],
+                ['label' => 'Tin tức', 'url' => route('site.blog.index'), 'target' => '_self'],
+                ['label' => 'Giới thiệu', 'url' => url('/'.$this->currentLocale().'/gioi-thieu'), 'target' => '_self'],
+                ['label' => 'Liên hệ', 'url' => url('/'.$this->currentLocale().'/lien-he'), 'target' => '_self'],
+            ];
+        }
 
         if ($items->isEmpty() || ($this->isCommerceThemeKey($themeKey) && $this->shouldUseCommerceTopMenuFallback($items->all()))) {
             $resolvedThemeKey = $this->isCommerceThemeKey($themeKey) ? (string) $themeKey : 'TH0001';
@@ -2148,6 +2253,25 @@ class CmsSiteController
         });
     }
 
+    private function shouldUseLandingHybridTopMenuFallback(array $items): bool
+    {
+        return collect($items)->contains(function (mixed $item): bool {
+            if (! is_array($item)) {
+                return false;
+            }
+
+            $url = trim((string) ($item['url'] ?? $item['href'] ?? ''));
+
+            if ($url === '' || $url === '#') {
+                return true;
+            }
+
+            $normalizedUrl = $this->normalizeSearchText($url);
+
+            return preg_match('/demo[-_\s]*th\d+|demo[-_\s]*ser\d+/', $normalizedUrl) === 1;
+        });
+    }
+
     private function resolveServiceThemeKey(?array $activeTheme): ?string
     {
         $themeKey = strtoupper((string) ($activeTheme['key'] ?? ''));
@@ -2163,6 +2287,11 @@ class CmsSiteController
     private function isCommerceThemeKey(?string $themeKey): bool
     {
         return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'LAN0201'], true);
+    }
+
+    private function isLandingHybridThemeKey(?string $themeKey): bool
+    {
+        return in_array(strtoupper((string) $themeKey), ['XD0301'], true);
     }
 
     private function themeBlockText(string $websiteKey, string $themeKey, string $blockKey, ?string $default): string
@@ -2555,6 +2684,20 @@ class CmsSiteController
             $localizedCategory->meta_description = $this->contentText($websiteKey, sprintf('cms_category.%d.meta_description', $post->category->id), $post->category->meta_description);
             $localized->setRelation('category', $localizedCategory);
         }
+
+        return $localized;
+    }
+
+    private function localizeServiceModel(CmsService $service, string $websiteKey): CmsService
+    {
+        $localized = clone $service;
+        $localized->title = $this->contentText($websiteKey, sprintf('cms_service.%d.title', $service->id), $service->title);
+        $localized->summary = $this->contentText($websiteKey, sprintf('cms_service.%d.summary', $service->id), $service->summary);
+        $localized->content = $this->contentText($websiteKey, sprintf('cms_service.%d.content', $service->id), $service->content);
+        $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_title', $service->id), $service->meta_title);
+        $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_description', $service->id), $service->meta_description);
+        $localized->excerpt = $localized->summary;
+        $localized->body = $localized->content;
 
         return $localized;
     }

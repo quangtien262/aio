@@ -30,6 +30,11 @@ const ENTITY_LABELS = {
     'cms-page': 'CMS page',
     'cms-category': 'CMS category',
     'cms-post': 'CMS post',
+    'cms-service': 'CMS service',
+    'cms-project': 'CMS project',
+    'cms-testimonial': 'CMS testimonial',
+    'cms-team-member': 'CMS team member',
+    'cms-partner': 'CMS partner',
 };
 
 function applyDrafts(entries, drafts) {
@@ -76,6 +81,26 @@ function entryEntity(key) {
 
     if (key.startsWith('cms_post.')) {
         return 'cms-post';
+    }
+
+    if (key.startsWith('cms_service.')) {
+        return 'cms-service';
+    }
+
+    if (key.startsWith('cms_project.')) {
+        return 'cms-project';
+    }
+
+    if (key.startsWith('cms_testimonial.')) {
+        return 'cms-testimonial';
+    }
+
+    if (key.startsWith('cms_team_member.')) {
+        return 'cms-team-member';
+    }
+
+    if (key.startsWith('cms_partner.')) {
+        return 'cms-partner';
     }
 
     return 'all';

@@ -1,7 +1,7 @@
 {
   "name": "CMS",
   "key": "cms",
-  "version": "0.2.0",
+  "version": "0.2.5",
   "description": "Module quản lý nội dung, trang, bài viết, menu và media cho AIO Platform.",
   "website_type": ["corporate", "news", "ecommerce", "landingpage"],
   "dependencies": [],
@@ -40,13 +40,63 @@
     },
     {
       "key": "cms-posts",
-      "label": "Posts",
+      "label": "Tin tức",
       "description": "Quản lý bài viết, trạng thái xuất bản và gắn category.",
-      "badge": "Posts",
+      "badge": "Tin tức",
       "color": "orange",
       "icon": "profile",
       "route": "/admin/cms/posts",
       "permission": "cms.post.view"
+    },
+    {
+      "key": "cms-services",
+      "label": "Services",
+      "description": "Quan ly dich vu, noi dung gioi thieu va gallery anh dung cho cac block dich vu.",
+      "badge": "Services",
+      "color": "green",
+      "icon": "tool",
+      "route": "/admin/cms/services",
+      "permission": "cms.view"
+    },
+    {
+      "key": "cms-projects",
+      "label": "Projects",
+      "description": "Quan ly du an, noi dung gioi thieu va gallery anh dung cho cac block du an.",
+      "badge": "Projects",
+      "color": "cyan",
+      "icon": "picture",
+      "route": "/admin/cms/projects",
+      "permission": "cms.view"
+    },
+    {
+      "key": "cms-testimonials",
+      "label": "Testimonials",
+      "description": "Quan ly nhan xet khach hang dung chung cho cac theme va landing block.",
+      "badge": "Reviews",
+      "color": "magenta",
+      "icon": "team",
+      "route": "/admin/cms/testimonials",
+      "permission": "cms.view"
+    },
+    {
+      "key": "cms-team-members",
+      "label": "Team",
+      "description": "Quan ly doi ngu nhan su, gallery anh va anh dai dien dung chung cho cac theme.",
+      "badge": "Team",
+      "color": "blue",
+      "icon": "team",
+      "route": "/admin/cms/team-members",
+      "permission": "cms.view"
+    },
+    {
+      "key": "cms-partners",
+      "label": "Partners",
+      "description": "Quan ly logo va thong tin doi tac dung chung cho cac theme.",
+      "badge": "Partners",
+      "color": "gold",
+      "icon": "appstore",
+      "route": "/admin/cms/partners",
+      "permission": "cms.view"
     },
     {
       "key": "cms-products",
@@ -87,16 +137,6 @@
       "icon": "setting",
       "route": "/admin/cms/setup",
       "permission": "setup.view"
-    },
-    {
-      "key": "cms-categories",
-      "label": "Categories",
-      "description": "Quản lý taxonomy cho bài viết và nội dung có phân loại.",
-      "badge": "Taxonomy",
-      "color": "green",
-      "icon": "tags",
-      "route": "/admin/cms/categories",
-      "permission": "cms.view"
     },
     {
       "key": "cms-menus",
@@ -140,6 +180,46 @@
     }
   ],
   "changelog": [
+    {
+      "version": "0.2.5",
+      "date": "2026-06-25",
+      "notes": [
+        "Them quan ly doi tac CMS.",
+        "Bo sung nguon du lieu cms_partners cho block partner_logos."
+      ]
+    },
+    {
+      "version": "0.2.4",
+      "date": "2026-06-25",
+      "notes": [
+        "Them quan ly doi ngu nhan su CMS voi gallery anh va anh dai dien.",
+        "Bo sung nguon du lieu cms_team_members cho block team_members."
+      ]
+    },
+    {
+      "version": "0.2.3",
+      "date": "2026-06-25",
+      "notes": [
+        "Them quan ly nhan xet khach hang CMS.",
+        "Bo sung nguon du lieu cms_testimonials cho block testimonials."
+      ]
+    },
+    {
+      "version": "0.2.2",
+      "date": "2026-06-25",
+      "notes": [
+        "Them quan ly du an CMS voi gallery anh, alt text va anh dai dien.",
+        "Bo sung nguon du lieu cms_projects cho block du an dong cua landing page."
+      ]
+    },
+    {
+      "version": "0.2.1",
+      "date": "2026-06-25",
+      "notes": [
+        "Them quan ly dich vu CMS voi gallery anh, alt text va anh dai dien.",
+        "Bo sung nguon du lieu cms_services cho cac block dich vu dong."
+      ]
+    },
     {
       "version": "0.2.0",
       "date": "2026-04-04",

@@ -234,12 +234,16 @@ export default function AdminLayout() {
             ...adminNavigation,
             ...((currentAdmin?.module_navigation ?? []).map((item) => ({
                 ...item,
+                label: item.key === 'cms-posts' ? 'Tin tức' : item.label,
                 section: item.section ?? 'workspace',
             }))),
         ]
             // filter out any module-provided link to the setup page to keep CMS menu tidy
             .filter((item) => {
                 const route = String(item.route ?? '').replace(/\/?$/, '');
+                if (item.key === 'cms-categories' || route === '/admin/cms/categories') {
+                    return false;
+                }
                 if (route === '/admin/cms/setup' || route === '/admin/setup' || item.label === 'Cài đặt website') {
                     return false;
                 }
@@ -281,7 +285,7 @@ export default function AdminLayout() {
     }, []);
 
     const renderModuleRoutes = useCallback(() => {
-        return (currentAdmin?.module_navigation ?? []).map((item) => {
+        return navigationItems.filter((item) => item.source === 'module').map((item) => {
             const route = normalizeRoute(item.route);
             const modulePayload = modules.find((moduleItem) => moduleItem.key === item.module_key)
                 ?? (item.module_key
@@ -306,7 +310,7 @@ export default function AdminLayout() {
                 />
             );
         });
-    }, [callAdminApi, currentAdmin, modules, normalizeRoute, runAdminAction]);
+    }, [callAdminApi, modules, navigationItems, normalizeRoute, runAdminAction]);
 
     const navigationMenuItems = useMemo(() => {
         return navigationItems.map((item) => ({

@@ -104,6 +104,7 @@ class FrontendLocalization
             'pagesSegment' => self::segment('pages', $resolvedLocale),
             'postsSegment' => self::segment('posts', $resolvedLocale),
             'productsSegment' => self::segment('products', $resolvedLocale),
+            'servicesSegment' => self::segment('services', $resolvedLocale),
             'blogSegment' => self::segment('blog', $resolvedLocale),
             'contactSegment' => self::segment('contact', $resolvedLocale),
             'cartSegment' => self::segment('cart', $resolvedLocale),

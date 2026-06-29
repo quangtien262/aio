@@ -101,6 +101,28 @@
                             </article>
                         @endforeach
                     </section>
+                @elseif (($contentType ?? null) === 'services')
+                    <section class="site-hero">
+                        <span class="site-kicker">Services</span>
+                        <h1 class="site-listing-title">{{ $pageTitle }}</h1>
+                        <p class="site-summary">{{ $pageDescription }}</p>
+                    </section>
+
+                    <section class="site-list-grid">
+                        @foreach ($listingItems as $service)
+                            <article class="site-list-card">
+                                @if (!empty($service->featuredImage?->image_url ?? null))
+                                    <a href="{{ route('site.services.show', ['slug' => $service->slug]) }}">
+                                        <img src="{{ $service->featuredImage->image_url }}" alt="{{ $service->featuredImage->alt_text ?: $service->title }}" style="width:100%;height:220px;object-fit:cover;border-radius:18px;border:1px solid var(--site-line);margin-bottom:16px;">
+                                    </a>
+                                @endif
+                                <span class="site-kicker">Service</span>
+                                <h2 style="margin-top:0;"><a href="{{ route('site.services.show', ['slug' => $service->slug]) }}">{{ $service->title }}</a></h2>
+                                <p>{{ $service->summary ?: \Illuminate\Support\Str::limit(strip_tags($service->content ?? ''), 140) }}</p>
+                                <a class="site-auth-link" href="{{ route('site.services.show', ['slug' => $service->slug]) }}">Xem chi tiết</a>
+                            </article>
+                        @endforeach
+                    </section>
                 @else
                     <section class="site-hero">
                         <span class="site-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
@@ -109,11 +131,14 @@
                             <p class="site-summary">{{ $entry->excerpt }}</p>
                         @endif
 
-                        @if (!empty($entry->featuredMedia?->file_url ?? null))
+                        @if (($contentType ?? null) === 'service' && !empty($entry->featuredImage?->image_url ?? null))
+                            <img class="site-featured-image" src="{{ $entry->featuredImage->image_url }}" alt="{{ $entry->featuredImage->alt_text ?: $entry->title }}">
+                        @elseif (!empty($entry->featuredMedia?->file_url ?? null))
                             <img class="site-featured-image" src="{{ $entry->featuredMedia->file_url }}" alt="{{ $entry->title }}">
                         @endif
                     </section>
 
+                    @if(false)
                     <section class="site-auth-panel">
                         @auth('admin')
                             <span class="site-kicker">Admin session</span>
@@ -156,9 +181,24 @@
                         @endauth
                     </section>
 
+                    @endif
+
                     <section class="site-content">
                         {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
                     </section>
+
+                    @if (($contentType ?? null) === 'service' && !empty($entry->images) && $entry->images->count() > 1)
+                        <section class="site-list-grid">
+                            @foreach ($entry->images as $image)
+                                <article class="site-list-card">
+                                    <img src="{{ $image->image_url }}" alt="{{ $image->alt_text ?: $entry->title }}" style="width:100%;height:220px;object-fit:cover;border-radius:18px;border:1px solid var(--site-line);">
+                                    @if (!empty($image->caption))
+                                        <p>{{ $image->caption }}</p>
+                                    @endif
+                                </article>
+                            @endforeach
+                        </section>
+                    @endif
 
                     @if (!empty($latestPosts) && count($latestPosts) > 0)
                         <section class="site-list-grid">

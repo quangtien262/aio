@@ -20,11 +20,22 @@ use App\Http\Controllers\Admin\Api\Cms\MenuLocationController;
 use App\Http\Controllers\Admin\Api\Cms\MenuManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PageManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PageIndexController;
+use App\Http\Controllers\Admin\Api\Cms\PartnerIndexController;
+use App\Http\Controllers\Admin\Api\Cms\PartnerManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PostIndexController;
 use App\Http\Controllers\Admin\Api\Cms\PostManagementController;
+use App\Http\Controllers\Admin\Api\Cms\ProjectIndexController as CmsProjectIndexController;
+use App\Http\Controllers\Admin\Api\Cms\ProjectManagementController as CmsProjectManagementController;
+use App\Http\Controllers\Admin\Api\Cms\ServiceIndexController;
+use App\Http\Controllers\Admin\Api\Cms\ServiceManagementController;
 use App\Http\Controllers\Admin\Api\Cms\SidePromoIndexController;
 use App\Http\Controllers\Admin\Api\Cms\SidePromoManagementController;
+use App\Http\Controllers\Admin\Api\Cms\TeamMemberIndexController;
+use App\Http\Controllers\Admin\Api\Cms\TeamMemberManagementController;
+use App\Http\Controllers\Admin\Api\Cms\TestimonialIndexController;
+use App\Http\Controllers\Admin\Api\Cms\TestimonialManagementController;
 use App\Http\Controllers\Admin\Api\DashboardController;
+use App\Http\Controllers\Admin\Api\LandingPageBlockController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
@@ -254,6 +265,24 @@ Route::prefix('admin')
                 Route::get('/cms/pages', PageIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.pages.index');
+                Route::get('/landing/pages/{landingPage}/blocks', [LandingPageBlockController::class, 'index'])
+                    ->middleware('admin.permission:cms.view')
+                    ->name('landing.pages.blocks.index');
+                Route::post('/landing/pages/{landingPage}/blocks', [LandingPageBlockController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('landing.pages.blocks.store');
+                Route::put('/landing/pages/{landingPage}/blocks/reorder', [LandingPageBlockController::class, 'reorder'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('landing.pages.blocks.reorder');
+                Route::put('/landing/blocks/{block}', [LandingPageBlockController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('landing.blocks.update');
+                Route::get('/landing/blocks/{block}/source-preview', [LandingPageBlockController::class, 'sourcePreview'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('landing.blocks.source-preview');
+                Route::delete('/landing/blocks/{block}', [LandingPageBlockController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('landing.blocks.destroy');
                 Route::post('/cms/pages', [PageManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.create')
                     ->name('cms.pages.store');
@@ -275,6 +304,66 @@ Route::prefix('admin')
                 Route::delete('/cms/posts/{post}', [PostManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.post.delete')
                     ->name('cms.posts.destroy');
+                Route::get('/cms/services', ServiceIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.services.index');
+                Route::post('/cms/services', [ServiceManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('cms.services.store');
+                Route::put('/cms/services/{service}', [ServiceManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.services.update');
+                Route::delete('/cms/services/{service}', [ServiceManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.services.destroy');
+                Route::get('/cms/projects', CmsProjectIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.projects.index');
+                Route::post('/cms/projects', [CmsProjectManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('cms.projects.store');
+                Route::put('/cms/projects/{project}', [CmsProjectManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.projects.update');
+                Route::delete('/cms/projects/{project}', [CmsProjectManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.projects.destroy');
+                Route::get('/cms/testimonials', TestimonialIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.testimonials.index');
+                Route::post('/cms/testimonials', [TestimonialManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('cms.testimonials.store');
+                Route::put('/cms/testimonials/{testimonial}', [TestimonialManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.testimonials.update');
+                Route::delete('/cms/testimonials/{testimonial}', [TestimonialManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.testimonials.destroy');
+                Route::get('/cms/team-members', TeamMemberIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.team-members.index');
+                Route::post('/cms/team-members', [TeamMemberManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('cms.team-members.store');
+                Route::put('/cms/team-members/{member}', [TeamMemberManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.team-members.update');
+                Route::delete('/cms/team-members/{member}', [TeamMemberManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.team-members.destroy');
+                Route::get('/cms/partners', PartnerIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.partners.index');
+                Route::post('/cms/partners', [PartnerManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('cms.partners.store');
+                Route::put('/cms/partners/{partner}', [PartnerManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.partners.update');
+                Route::delete('/cms/partners/{partner}', [PartnerManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.partners.destroy');
                 Route::get('/cms/categories', CategoryIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.categories.index');
@@ -350,6 +439,15 @@ Route::prefix('admin')
                 Route::get('/cms/product-categories', CatalogCategoryIndexController::class)
                     ->middleware('admin.permission:cms.product.view')
                     ->name('cms.product-categories.index');
+                Route::post('/cms/product-categories', [CatalogCategoryManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.product.create')
+                    ->name('cms.product-categories.store');
+                Route::put('/cms/product-categories/{category}', [CatalogCategoryManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.product.update')
+                    ->name('cms.product-categories.update');
+                Route::delete('/cms/product-categories/{category}', [CatalogCategoryManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.product.delete')
+                    ->name('cms.product-categories.destroy');
                 Route::post('/cms/products', [ProductManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.product.create')
                     ->name('cms.products.store');

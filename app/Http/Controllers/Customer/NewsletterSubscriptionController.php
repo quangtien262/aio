@@ -14,6 +14,7 @@ class NewsletterSubscriptionController
         $customer = $request->user('customer');
         $validated = $request->validate([
             'email' => [$customer ? 'nullable' : 'required', 'email', 'max:255'],
+            'source' => ['nullable', 'string', 'max:60'],
         ]);
 
         $email = mb_strtolower((string) ($validated['email'] ?? $customer?->email ?? ''));
@@ -26,7 +27,7 @@ class NewsletterSubscriptionController
                 'customer_id' => $customer?->id,
                 'name' => $customer?->name,
                 'phone' => $customer?->phone,
-                'source' => 'theme-header',
+                'source' => $validated['source'] ?? 'theme-header',
                 'subscribed_at' => now(),
                 'metadata' => [
                     'ip' => $request->ip(),

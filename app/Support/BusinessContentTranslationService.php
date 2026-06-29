@@ -10,7 +10,12 @@ use App\Models\CmsFeaturedCategory;
 use App\Models\CmsSidePromo;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
+use App\Models\CmsPartner;
 use App\Models\CmsPost;
+use App\Models\CmsProject;
+use App\Models\CmsService;
+use App\Models\CmsTeamMember;
+use App\Models\CmsTestimonial;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Models\ThemeTranslation;
@@ -339,6 +344,114 @@ class BusinessContentTranslationService
             }
         });
 
+        if (Schema::hasTable('cms_services')) {
+            CmsService::query()->orderBy('id')->get()->each(function (CmsService $service) use ($entries): void {
+                foreach ([
+                    'title' => $service->title,
+                    'summary' => $service->summary,
+                    'content' => $service->content,
+                    'button_label' => $service->button_label,
+                    'meta_title' => $service->meta_title,
+                    'meta_description' => $service->meta_description,
+                ] as $field => $value) {
+                    if (! filled($value)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'key' => sprintf('cms_service.%d.%s', $service->id, $field),
+                        'label' => sprintf('CMS service / %s / %s', $service->slug ?: $service->id, $field),
+                        'source_value' => (string) $value,
+                    ]);
+                }
+            });
+        }
+
+        if (Schema::hasTable('cms_projects')) {
+            CmsProject::query()->orderBy('id')->get()->each(function (CmsProject $project) use ($entries): void {
+                foreach ([
+                    'title' => $project->title,
+                    'summary' => $project->summary,
+                    'content' => $project->content,
+                    'button_label' => $project->button_label,
+                    'meta_title' => $project->meta_title,
+                    'meta_description' => $project->meta_description,
+                ] as $field => $value) {
+                    if (! filled($value)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'key' => sprintf('cms_project.%d.%s', $project->id, $field),
+                        'label' => sprintf('CMS project / %s / %s', $project->slug ?: $project->id, $field),
+                        'source_value' => (string) $value,
+                    ]);
+                }
+            });
+        }
+
+        if (Schema::hasTable('cms_testimonials')) {
+            CmsTestimonial::query()->orderBy('id')->get()->each(function (CmsTestimonial $testimonial) use ($entries): void {
+                foreach ([
+                    'name' => $testimonial->name,
+                    'role' => $testimonial->role,
+                    'company' => $testimonial->company,
+                    'quote' => $testimonial->quote,
+                ] as $field => $value) {
+                    if (! filled($value)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'key' => sprintf('cms_testimonial.%d.%s', $testimonial->id, $field),
+                        'label' => sprintf('CMS testimonial / %s / %s', $testimonial->name ?: $testimonial->id, $field),
+                        'source_value' => (string) $value,
+                    ]);
+                }
+            });
+        }
+
+        if (Schema::hasTable('cms_team_members')) {
+            CmsTeamMember::query()->orderBy('id')->get()->each(function (CmsTeamMember $member) use ($entries): void {
+                foreach ([
+                    'name' => $member->name,
+                    'role' => $member->role,
+                    'department' => $member->department,
+                    'summary' => $member->summary,
+                    'bio' => $member->bio,
+                ] as $field => $value) {
+                    if (! filled($value)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'key' => sprintf('cms_team_member.%d.%s', $member->id, $field),
+                        'label' => sprintf('CMS team member / %s / %s', $member->slug ?: $member->id, $field),
+                        'source_value' => (string) $value,
+                    ]);
+                }
+            });
+        }
+
+        if (Schema::hasTable('cms_partners')) {
+            CmsPartner::query()->orderBy('id')->get()->each(function (CmsPartner $partner) use ($entries): void {
+                foreach ([
+                    'title' => $partner->title,
+                    'description' => $partner->description,
+                ] as $field => $value) {
+                    if (! filled($value)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'key' => sprintf('cms_partner.%d.%s', $partner->id, $field),
+                        'label' => sprintf('CMS partner / %s / %s', $partner->slug ?: $partner->id, $field),
+                        'source_value' => (string) $value,
+                    ]);
+                }
+            });
+        }
+
         foreach ($this->themeBlockRegistry->editableEntries((string) $themeKey, $websiteKey) as $entry) {
             $entries->push($entry);
         }
@@ -390,6 +503,11 @@ class BusinessContentTranslationService
             CmsPage::class,
             CmsCategory::class,
             CmsPost::class,
+            CmsService::class,
+            CmsProject::class,
+            CmsTestimonial::class,
+            CmsTeamMember::class,
+            CmsPartner::class,
         ];
 
         $signature = collect($models)
@@ -404,6 +522,11 @@ class BusinessContentTranslationService
         /** @var Model $model */
         $model = new $modelClass();
         $table = $model->getTable();
+
+        if (! Schema::hasTable($table)) {
+            return $table.':missing';
+        }
+
         $query = $modelClass::query();
 
         $count = (int) (clone $query)->count();
