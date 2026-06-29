@@ -13,7 +13,7 @@ class ServiceIndexController
     {
         /** @var EloquentBuilder<CmsService> $query */
         $query = CmsService::query();
-        $query->with(['images'])->orderBy('sort_order')->orderByDesc('updated_at');
+        $query->with(['category:id,name', 'images'])->orderBy('sort_order')->orderByDesc('updated_at');
 
         $items = $query->get()->map(fn (CmsService $service): array => $this->serialize($service))->values()->all();
 
@@ -28,7 +28,7 @@ class ServiceIndexController
                 'metrics' => [
                     'published' => collect($items)->where('status', 'published')->count(),
                     'draft' => collect($items)->where('status', 'draft')->count(),
-                    'featured' => collect($items)->where('is_featured', true)->count(),
+                    'featured' => collect($items)->where('is_highlight', true)->count(),
                 ],
                 'media' => $mediaQuery->get(['id', 'title', 'file_path', 'file_url', 'alt_text'])
                     ->map(fn (CmsMedia $media): array => [
@@ -58,6 +58,8 @@ class ServiceIndexController
 
         return [
             'id' => $service->id,
+            'cms_service_category_id' => $service->cms_service_category_id,
+            'category_name' => $service->category?->name,
             'title' => $service->title,
             'slug' => $service->slug,
             'status' => $service->status,
@@ -70,6 +72,7 @@ class ServiceIndexController
             'meta_description' => $service->meta_description,
             'publish_at' => $service->publish_at?->toAtomString(),
             'is_featured' => $service->is_featured,
+            'is_highlight' => $service->is_highlight,
             'sort_order' => $service->sort_order,
             'website_key' => $service->website_key,
             'owner_key' => $service->owner_key,

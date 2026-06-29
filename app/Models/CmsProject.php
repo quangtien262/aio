@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['title', 'slug', 'status', 'summary', 'content', 'button_label', 'link_url', 'meta_title', 'meta_description', 'publish_at', 'is_featured', 'sort_order', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['title', 'slug', 'status', 'summary', 'content', 'button_label', 'link_url', 'meta_title', 'meta_description', 'publish_at', 'is_featured', 'is_highlight', 'sort_order', 'website_key', 'owner_key', 'tenant_key'])]
 class CmsProject extends Model
 {
     use HasFactory;
@@ -20,6 +20,7 @@ class CmsProject extends Model
         return [
             'publish_at' => 'datetime',
             'is_featured' => 'boolean',
+            'is_highlight' => 'boolean',
             'sort_order' => 'integer',
         ];
     }

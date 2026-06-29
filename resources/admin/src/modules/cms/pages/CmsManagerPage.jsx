@@ -32,6 +32,8 @@ const CmsTeamMemberFormModal = lazy(() => import('../components/CmsTeamMemberFor
 const CmsTestimonialFormModal = lazy(() => import('../components/CmsTestimonialFormModal'));
 const CmsCategoryFormModal = lazy(() => import('../components/CmsCategoryFormModal'));
 const CmsFeaturedCategoryFormModal = lazy(() => import('../components/CmsFeaturedCategoryFormModal'));
+const LandingBlockManagerDrawer = lazy(() => import('../components/LandingBlockManagerDrawer'));
+const LandingPageFormModal = lazy(() => import('../components/LandingPageFormModal'));
 const CmsMenuFormModal = lazy(() => import('../components/CmsMenuFormModal'));
 const CmsSidePromoFormModal = lazy(() => import('../components/CmsSidePromoFormModal'));
 const CatalogCategoryFormModal = lazy(() => import('../../catalog/components/CatalogCategoryFormModal'));
@@ -43,6 +45,16 @@ const sectionConfigMap = {
         title: 'Pages',
         description: 'Quản lý page công khai, SEO field cơ bản và preview unpublished.',
         endpoint: '/admin/api/cms/pages',
+        permissionView: 'cms.view',
+        permissionCreate: 'cms.create',
+        permissionUpdate: 'cms.update',
+        permissionDelete: 'cms.delete',
+        permissionPublish: 'cms.publish',
+    },
+    'cms-landing-pages': {
+        title: 'Landing pages',
+        description: 'Quản lý trang chủ và các landingpage chiến dịch theo từng khối nội dung của theme.',
+        endpoint: '/admin/api/landing/pages',
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
         permissionUpdate: 'cms.update',
@@ -198,6 +210,16 @@ const emptyPage = {
     tenant_key: '',
 };
 
+const emptyLandingPage = {
+    id: null,
+    title: '',
+    slug: '',
+    status: 'draft',
+    sort_order: 0,
+    is_home: false,
+    data_by_locale: {},
+};
+
 const emptyPost = {
     id: null,
     title: '',
@@ -210,6 +232,7 @@ const emptyPost = {
     featured_media_id: null,
     category_id: null,
     publish_at: null,
+    is_highlight: false,
     website_key: '',
     owner_key: '',
     tenant_key: '',
@@ -217,6 +240,7 @@ const emptyPost = {
 
 const emptyService = {
     id: null,
+    cms_service_category_id: null,
     title: '',
     slug: '',
     status: 'draft',
@@ -229,11 +253,23 @@ const emptyService = {
     meta_description: '',
     publish_at: null,
     is_featured: true,
+    is_highlight: true,
     sort_order: 0,
     images: [],
     website_key: '',
     owner_key: '',
     tenant_key: '',
+};
+
+const emptyServiceCategory = {
+    id: null,
+    parent_id: null,
+    name: '',
+    slug: '',
+    description: '',
+    image_url: '',
+    sort_order: 0,
+    is_active: true,
 };
 
 const emptyProject = {
@@ -249,6 +285,7 @@ const emptyProject = {
     meta_description: '',
     publish_at: null,
     is_featured: true,
+    is_highlight: true,
     sort_order: 0,
     images: [],
     website_key: '',
@@ -331,6 +368,7 @@ const emptyProduct = {
     sold_count: 0,
     deal_end_at: '',
     is_featured: false,
+    is_highlight: false,
     sort_order: 0,
     is_active: true,
 };
@@ -444,6 +482,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [bulkProductEditForm] = Form.useForm();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
+    const [blockManagerOpen, setBlockManagerOpen] = useState(false);
+    const [selectedLandingPage, setSelectedLandingPage] = useState(null);
     const [selectedPost, setSelectedPost] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -461,6 +501,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [categoryItems, setCategoryItems] = useState([]);
     const [categoryLoading, setCategoryLoading] = useState(false);
     const [editingCategoryRecord, setEditingCategoryRecord] = useState(emptyCategory);
+    const [serviceCategoryManagerOpen, setServiceCategoryManagerOpen] = useState(false);
+    const [serviceCategoryFormOpen, setServiceCategoryFormOpen] = useState(false);
+    const [serviceCategoryItems, setServiceCategoryItems] = useState([]);
+    const [serviceCategoryLoading, setServiceCategoryLoading] = useState(false);
+    const [editingServiceCategoryRecord, setEditingServiceCategoryRecord] = useState(emptyServiceCategory);
     const [productCategoryManagerOpen, setProductCategoryManagerOpen] = useState(false);
     const [productCategoryFormOpen, setProductCategoryFormOpen] = useState(false);
     const [productCategoryItems, setProductCategoryItems] = useState([]);
@@ -468,6 +513,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [editingProductCategoryRecord, setEditingProductCategoryRecord] = useState(emptyProductCategory);
     const createButtonLabel = sectionKey === 'cms-menus'
         ? 'Thêm menu'
+        : sectionKey === 'cms-landing-pages'
+            ? 'Thêm landingpage'
         : sectionKey === 'cms-featured-categories'
             ? 'Thêm danh mục nổi bật'
             : sectionKey === 'cms-side-promos'
@@ -494,6 +541,18 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                 return {
                     ...(productsPayload.data ?? { items: [], total: 0, metrics: {} }),
+                    categories: categoriesPayload.data?.items ?? [],
+                };
+            }
+
+            if (sectionKey === 'cms-services') {
+                const [servicesPayload, categoriesPayload] = await Promise.all([
+                    callAdminApi('/admin/api/cms/services'),
+                    callAdminApi('/admin/api/cms/service-categories'),
+                ]);
+
+                return {
+                    ...(servicesPayload.data ?? { items: [], total: 0, metrics: {}, media: [] }),
                     categories: categoriesPayload.data?.items ?? [],
                 };
             }
@@ -528,6 +587,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ];
         }
 
+        if (sectionKey === 'cms-landing-pages') {
+            return [
+                { label: 'Tổng landingpage', value: data.total ?? 0 },
+                { label: 'Đã xuất bản', value: data.metrics?.published ?? 0 },
+                { label: 'Bản nháp', value: data.metrics?.draft ?? 0 },
+            ];
+        }
+
         if (sectionKey === 'cms-services') {
             return [
                 {
@@ -553,13 +620,15 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 </Button>
                                 <Text type="secondary">{record.summary || 'Chưa có mô tả ngắn'}</Text>
                                 <Space size={6} wrap>
-                                    {record.is_featured ? <Tag color="gold">Nổi bật</Tag> : null}
+                                    {record.category_name ? <Tag color="blue">{record.category_name}</Tag> : <Tag>Chưa phân loại</Tag>}
+                                    {record.is_highlight ? <Tag color="gold">Nổi bật</Tag> : null}
                                     <Tag>{`${record.images?.length ?? 0} ảnh`}</Tag>
                                 </Space>
                             </Space>
                         </Space>
                     ),
                 },
+                { title: 'Danh mục', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa phân loại' },
                 { title: 'Slug', dataIndex: 'slug', key: 'slug' },
                 { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
                 { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
@@ -594,7 +663,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 </Button>
                                 <Text type="secondary">{record.summary || 'Chua co mo ta ngan'}</Text>
                                 <Space size={6} wrap>
-                                    {record.is_featured ? <Tag color="gold">Noi bat</Tag> : null}
+                                    {record.is_highlight ? <Tag color="gold">Noi bat</Tag> : null}
                                     <Tag>{`${record.images?.length ?? 0} anh`}</Tag>
                                 </Space>
                             </Space>
@@ -750,6 +819,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         value: category.id,
     })), [data?.categories]);
 
+    const serviceCategoryOptions = useMemo(() => (data?.categories ?? []).map((category) => ({
+        label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
+        value: category.id,
+    })), [data?.categories]);
+
     const categoryParentOptions = useMemo(() => categoryItems
         .filter((category) => category.id !== editingCategoryRecord?.id)
         .map((category) => ({
@@ -763,6 +837,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
             value: category.id,
         })), [editingProductCategoryRecord?.id, productCategoryItems]);
+
+    const serviceCategoryParentOptions = useMemo(() => serviceCategoryItems
+        .filter((category) => category.id !== editingServiceCategoryRecord?.id)
+        .map((category) => ({
+            label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
+            value: category.id,
+        })), [editingServiceCategoryRecord?.id, serviceCategoryItems]);
 
     const selectedProducts = useMemo(() => {
         if (sectionKey !== 'cms-products') {
@@ -802,8 +883,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
                 const matchesCategory = productCategoryFilter === 'all' || String(product.catalog_category_id ?? '') === String(productCategoryFilter);
                 const matchesFeatured = productFeaturedFilter === 'all'
-                    || (productFeaturedFilter === 'featured' && product.is_featured)
-                    || (productFeaturedFilter === 'normal' && !product.is_featured);
+                    || (productFeaturedFilter === 'featured' && product.is_highlight)
+                    || (productFeaturedFilter === 'normal' && !product.is_highlight);
                 const matchesActive = productActiveFilter === 'all'
                     || (productActiveFilter === 'active' && product.is_active)
                     || (productActiveFilter === 'inactive' && !product.is_active);
@@ -820,7 +901,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     }, [data?.items, data?.orders, keyword, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, sectionKey]);
 
     const openCreateModal = () => {
-        if (sectionKey === 'cms-posts') {
+        if (sectionKey === 'cms-landing-pages') {
+            setEditingRecord(emptyLandingPage);
+        } else if (sectionKey === 'cms-posts') {
             setEditingRecord(emptyPost);
         } else if (sectionKey === 'cms-services') {
             setEditingRecord(emptyService);
@@ -847,6 +930,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         setModalOpen(true);
+    };
+
+    const openBlockManager = (record) => {
+        setSelectedLandingPage(record);
+        setBlockManagerOpen(true);
     };
 
     const openEditModal = (record) => {
@@ -962,6 +1050,80 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
     };
 
+    const loadServiceCategoryItems = async () => {
+        setServiceCategoryLoading(true);
+
+        try {
+            const payload = await callAdminApi('/admin/api/cms/service-categories');
+            setServiceCategoryItems(payload.data?.items ?? []);
+        } finally {
+            setServiceCategoryLoading(false);
+        }
+    };
+
+    const openServiceCategoryManager = async () => {
+        setServiceCategoryManagerOpen(true);
+        await loadServiceCategoryItems();
+    };
+
+    const openCreateServiceCategory = () => {
+        setEditingServiceCategoryRecord(emptyServiceCategory);
+        setServiceCategoryFormOpen(true);
+    };
+
+    const openEditServiceCategory = (record) => {
+        setEditingServiceCategoryRecord({
+            ...emptyServiceCategory,
+            ...record,
+        });
+        setServiceCategoryFormOpen(true);
+    };
+
+    const handleSaveServiceCategory = async (payload) => {
+        const didSave = editingServiceCategoryRecord?.id
+            ? await runAdminAction(
+                () => callAdminApi(`/admin/api/cms/service-categories/${editingServiceCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+                'ÄÃ£ cáº­p nháº­t danh má»¥c dá»‹ch vá»¥.',
+                async () => {
+                    await loadServiceCategoryItems();
+                    await reload();
+                },
+            )
+            : await runAdminAction(
+                () => callAdminApi('/admin/api/cms/service-categories', { method: 'POST', body: JSON.stringify(payload) }),
+                'ÄÃ£ táº¡o danh má»¥c dá»‹ch vá»¥.',
+                async () => {
+                    await loadServiceCategoryItems();
+                    await reload();
+                },
+            );
+
+        if (didSave) {
+            setServiceCategoryFormOpen(false);
+            setEditingServiceCategoryRecord(emptyServiceCategory);
+        }
+    };
+
+    const handleDeleteServiceCategory = (record) => {
+        Modal.confirm({
+            title: 'XÃ³a danh má»¥c dá»‹ch vá»¥?',
+            content: `Danh má»¥c "${record.name}" sáº½ bá»‹ xÃ³a. CÃ¡c dá»‹ch vá»¥ Ä‘ang gáº¯n danh má»¥c nÃ y cÃ³ thá»ƒ cáº§n cáº­p nháº­t láº¡i.`,
+            okText: 'XÃ³a',
+            okButtonProps: { danger: true },
+            cancelText: 'Há»§y',
+            onOk: async () => {
+                await runAdminAction(
+                    () => callAdminApi(`/admin/api/cms/service-categories/${record.id}`, { method: 'DELETE' }),
+                    'ÄÃ£ xÃ³a danh má»¥c dá»‹ch vá»¥.',
+                    async () => {
+                        await loadServiceCategoryItems();
+                        await reload();
+                    },
+                );
+            },
+        });
+    };
+
     const loadProductCategoryItems = async () => {
         setProductCategoryLoading(true);
 
@@ -1057,7 +1219,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         gallery_images: product.gallery_images ?? [],
         sold_count: product.sold_count,
         deal_end_at: product.deal_end_at,
-        is_featured: values.is_featured === BULK_KEEP_VALUE ? product.is_featured : values.is_featured === 'true',
+        is_featured: product.is_featured,
+        is_highlight: values.is_featured === BULK_KEEP_VALUE ? product.is_highlight : values.is_featured === 'true',
         sort_order: product.sort_order,
         is_active: values.is_active === BULK_KEEP_VALUE ? product.is_active : values.is_active === 'true',
     });
@@ -1191,6 +1354,22 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             );
         }
 
+        if (sectionKey === 'cms-landing-pages') {
+            actionItems.push({
+                key: 'blocks',
+                label: 'Quản lý khối',
+                icon: <EditOutlined />,
+            });
+
+            if (record.admin_url) {
+                actionItems.push({
+                    key: 'visual',
+                    label: 'Sửa trực quan',
+                    icon: <EyeOutlined />,
+                });
+            }
+        }
+
         if (record.public_url) {
             actionItems.push({
                 key: 'public',
@@ -1227,10 +1406,20 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             label: 'Xóa',
             icon: <DeleteOutlined />,
             danger: true,
-            disabled: !sectionPermissions.canDelete,
+            disabled: !sectionPermissions.canDelete || (sectionKey === 'cms-landing-pages' && record.is_home),
         });
 
         const handleActionClick = ({ key }) => {
+            if (key === 'blocks') {
+                openBlockManager(record);
+                return;
+            }
+
+            if (key === 'visual' && record.admin_url) {
+                window.open(record.admin_url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
             if (key === 'public' && record.public_url) {
                 window.open(record.public_url, '_blank', 'noopener,noreferrer');
                 return;
@@ -1272,6 +1461,42 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         : undefined;
 
     const columns = useMemo(() => {
+        if (sectionKey === 'cms-landing-pages') {
+            return [
+                {
+                    title: 'Landingpage',
+                    dataIndex: 'title',
+                    key: 'title',
+                    render: (value, record) => (
+                        <Space direction="vertical" size={2}>
+                            <Space wrap>
+                                <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openBlockManager(record)}>
+                                    <Text strong style={{ color: '#1677ff' }}>{value || record.path}</Text>
+                                </Button>
+                                {record.is_home ? <Tag color="green">Trang chủ</Tag> : null}
+                            </Space>
+                            <Text type="secondary">{record.excerpt || 'Quản lý các khối nội dung landingpage.'}</Text>
+                        </Space>
+                    ),
+                },
+                { title: 'Đường dẫn', dataIndex: 'path', key: 'path', render: (value) => <Text code>{value}</Text> },
+                { title: 'Theme', dataIndex: 'theme_key', key: 'theme_key', render: (value) => <Tag>{value}</Tag> },
+                { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: renderStatusTag },
+                {
+                    title: 'Khối',
+                    key: 'blocks',
+                    render: (_, record) => (
+                        <Space direction="vertical" size={0}>
+                            <Text strong>{record.block_count ?? 0} khối</Text>
+                            <Text type="secondary">{record.visible_block_count ?? 0} đang hiển thị</Text>
+                        </Space>
+                    ),
+                },
+                { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
+                { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
+            ];
+        }
+
         if (sectionKey === 'cms-pages') {
             return [
                 { title: 'Title', dataIndex: 'title', key: 'title' },
@@ -1345,7 +1570,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             <Space direction="vertical" size={4} align="start">
                                 <Space size={8} wrap>
                                     <Text strong style={{ color: '#1677ff' }}>{value}</Text>
-                                    {record.is_featured ? <Tag color="gold">Nổi bật</Tag> : null}
+                                    {record.is_highlight ? <Tag color="gold">Nổi bật</Tag> : null}
                                 </Space>
                                 <Text type="secondary">{record.category_name || 'Chưa gắn danh mục'}</Text>
                             </Space>
@@ -1482,6 +1707,22 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             return null;
         }
 
+        if (sectionKey === 'cms-landing-pages') {
+            return (
+                <Suspense fallback={null}>
+                    <LandingPageFormModal
+                        open={modalOpen}
+                        canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        editingPage={editingRecord}
+                        locales={data?.locales ?? []}
+                        defaultLocale={frontendLocale}
+                        onCancel={() => setModalOpen(false)}
+                        onSubmit={handleSaveRecord}
+                    />
+                </Suspense>
+            );
+        }
+
         if (sectionKey === 'cms-posts') {
             return (
                 <Suspense fallback={null}>
@@ -1507,6 +1748,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingService={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        categoryOptions={serviceCategoryOptions}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -1696,6 +1938,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                     </Space>
                 )
+            : sectionKey === 'cms-services'
+                ? (
+                    <Space wrap>
+                        <Button onClick={openServiceCategoryManager}>Cài đặt danh mục dịch vụ</Button>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
+                    </Space>
+                )
             : sectionKey !== 'cms-media' && sectionKey !== 'cms-products'
                 ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                 : null;
@@ -1882,6 +2131,24 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <Empty description={`Chưa có dữ liệu cho ${sectionConfig.title}.`} />
                 ) : null}
             </Card>
+
+            <Suspense fallback={null}>
+                <LandingBlockManagerDrawer
+                    open={sectionKey === 'cms-landing-pages' && blockManagerOpen}
+                    page={selectedLandingPage}
+                    locale={frontendLocale}
+                    canCreate={sectionPermissions.canCreate}
+                    canUpdate={sectionPermissions.canUpdate}
+                    canDelete={sectionPermissions.canDelete}
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    onClose={() => {
+                        setBlockManagerOpen(false);
+                        setSelectedLandingPage(null);
+                    }}
+                    onChanged={reload}
+                />
+            </Suspense>
 
             <Drawer
                 title={selectedOrder ? `Chi tiết ${selectedOrder.order_code}` : 'Chi tiết đơn hàng'}
@@ -2099,7 +2366,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 </div>
                                 <div className="detail-tile">
                                     <Text className="detail-label">Nổi bật</Text>
-                                    {selectedProduct.is_featured ? <Tag color="gold">featured</Tag> : <Tag>normal</Tag>}
+                                    {selectedProduct.is_highlight ? <Tag color="gold">highlight</Tag> : <Tag>normal</Tag>}
                                 </div>
                                 <div className="detail-tile">
                                     <Text className="detail-label">Hạn deal</Text>
@@ -2221,6 +2488,87 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         setEditingCategoryRecord(emptyCategory);
                     }}
                     onSubmit={handleSaveCategory}
+                />
+            </Suspense>
+
+            <Modal
+                title="Cài đặt danh mục dịch vụ"
+                open={serviceCategoryManagerOpen}
+                onCancel={() => setServiceCategoryManagerOpen(false)}
+                footer={null}
+                width={1040}
+                destroyOnHidden
+            >
+                <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+                        <Text type="secondary">Quản lý danh mục dịch vụ ngay trong màn Services để tiện tạo, sửa và gắn danh mục.</Text>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateServiceCategory}>
+                            Thêm danh mục dịch vụ
+                        </Button>
+                    </Space>
+
+                    <Table
+                        rowKey="id"
+                        loading={serviceCategoryLoading}
+                        dataSource={serviceCategoryItems}
+                        pagination={{ pageSize: 8, hideOnSinglePage: true }}
+                        columns={[
+                            {
+                                title: 'Danh mục dịch vụ',
+                                dataIndex: 'name',
+                                key: 'name',
+                                render: (value, record) => (
+                                    <Space size={12} align="start">
+                                        {record.image_url ? (
+                                            <img src={record.image_url} alt={value} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 12, border: '1px solid #dbe7e4' }} />
+                                        ) : (
+                                            <div style={{ width: 56, height: 56, borderRadius: 12, border: '1px solid #dbe7e4', background: '#f4f7f6', display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
+                                                No Img
+                                            </div>
+                                        )}
+                                        <Space direction="vertical" size={0}>
+                                            <Text strong>{value}</Text>
+                                            <Text type="secondary">{record.description || record.slug}</Text>
+                                        </Space>
+                                    </Space>
+                                ),
+                            },
+                            { title: 'Slug', dataIndex: 'slug', key: 'slug' },
+                            { title: 'Danh mục cha', dataIndex: 'parent_name', key: 'parent_name', render: (value) => value || '-' },
+                            { title: 'Dịch vụ', dataIndex: 'services_count', key: 'services_count', render: (value) => value ?? 0 },
+                            { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
+                            { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', render: (value) => value ? <Tag color="green">Đang bật</Tag> : <Tag>Tắt</Tag> },
+                            {
+                                title: 'Tác vụ',
+                                key: 'actions',
+                                render: (_, record) => (
+                                    <Space>
+                                        <Button size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditServiceCategory(record)}>
+                                            Sửa
+                                        </Button>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete} onClick={() => handleDeleteServiceCategory(record)}>
+                                            Xóa
+                                        </Button>
+                                    </Space>
+                                ),
+                            },
+                        ]}
+                    />
+                </Space>
+            </Modal>
+
+            <Suspense fallback={null}>
+                <CatalogCategoryFormModal
+                    open={serviceCategoryFormOpen}
+                    canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    editingCategory={editingServiceCategoryRecord}
+                    categoryOptions={serviceCategoryParentOptions}
+                    callAdminApi={callAdminApi}
+                    onCancel={() => {
+                        setServiceCategoryFormOpen(false);
+                        setEditingServiceCategoryRecord(emptyServiceCategory);
+                    }}
+                    onSubmit={handleSaveServiceCategory}
                 />
             </Suspense>
 

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProductImage;
 
-#[Fillable(['catalog_category_id', 'name', 'slug', 'sku', 'price', 'original_price', 'stock', 'short_description', 'detail_content', 'meta_title', 'meta_description', 'highlights', 'usage_terms', 'usage_location', 'image_url', 'sold_count', 'deal_end_at', 'is_featured', 'sort_order', 'is_active'])]
+#[Fillable(['catalog_category_id', 'name', 'slug', 'sku', 'price', 'original_price', 'stock', 'short_description', 'detail_content', 'meta_title', 'meta_description', 'highlights', 'usage_terms', 'usage_location', 'image_url', 'sold_count', 'deal_end_at', 'is_featured', 'is_highlight', 'sort_order', 'is_active'])]
 class CatalogProduct extends Model
 {
     use HasFactory;
@@ -25,6 +25,7 @@ class CatalogProduct extends Model
             'original_price' => 'decimal:2',
             'deal_end_at' => 'datetime',
             'is_featured' => 'boolean',
+            'is_highlight' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

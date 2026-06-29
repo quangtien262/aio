@@ -23,6 +23,7 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
         await onSubmit?.({
             ...values,
             parent_id: values.parent_id || null,
+            slug: undefined,
             image_url: values.image_url || null,
             is_active: Boolean(values.is_active),
         });
@@ -53,12 +54,7 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
                     </Col>
                 </Row>
                 <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item name="slug" label="Slug public">
-                            <Input placeholder="dien-thoai" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
+                    <Col span={24}>
                         <Form.Item name="image_url" hidden>
                             <Input />
                         </Form.Item>

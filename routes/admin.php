@@ -27,6 +27,8 @@ use App\Http\Controllers\Admin\Api\Cms\PostManagementController;
 use App\Http\Controllers\Admin\Api\Cms\ProjectIndexController as CmsProjectIndexController;
 use App\Http\Controllers\Admin\Api\Cms\ProjectManagementController as CmsProjectManagementController;
 use App\Http\Controllers\Admin\Api\Cms\ServiceIndexController;
+use App\Http\Controllers\Admin\Api\Cms\ServiceCategoryIndexController;
+use App\Http\Controllers\Admin\Api\Cms\ServiceCategoryManagementController;
 use App\Http\Controllers\Admin\Api\Cms\ServiceManagementController;
 use App\Http\Controllers\Admin\Api\Cms\SidePromoIndexController;
 use App\Http\Controllers\Admin\Api\Cms\SidePromoManagementController;
@@ -36,6 +38,7 @@ use App\Http\Controllers\Admin\Api\Cms\TestimonialIndexController;
 use App\Http\Controllers\Admin\Api\Cms\TestimonialManagementController;
 use App\Http\Controllers\Admin\Api\DashboardController;
 use App\Http\Controllers\Admin\Api\LandingPageBlockController;
+use App\Http\Controllers\Admin\Api\LandingPageController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
@@ -265,6 +268,18 @@ Route::prefix('admin')
                 Route::get('/cms/pages', PageIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.pages.index');
+                Route::get('/landing/pages', [LandingPageController::class, 'index'])
+                    ->middleware('admin.permission:cms.view')
+                    ->name('landing.pages.index');
+                Route::post('/landing/pages', [LandingPageController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('landing.pages.store');
+                Route::put('/landing/pages/{landingPage}', [LandingPageController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('landing.pages.update');
+                Route::delete('/landing/pages/{landingPage}', [LandingPageController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('landing.pages.destroy');
                 Route::get('/landing/pages/{landingPage}/blocks', [LandingPageBlockController::class, 'index'])
                     ->middleware('admin.permission:cms.view')
                     ->name('landing.pages.blocks.index');
@@ -307,6 +322,18 @@ Route::prefix('admin')
                 Route::get('/cms/services', ServiceIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.services.index');
+                Route::get('/cms/service-categories', ServiceCategoryIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.service-categories.index');
+                Route::post('/cms/service-categories', [ServiceCategoryManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('cms.service-categories.store');
+                Route::put('/cms/service-categories/{category}', [ServiceCategoryManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.service-categories.update');
+                Route::delete('/cms/service-categories/{category}', [ServiceCategoryManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.service-categories.destroy');
                 Route::post('/cms/services', [ServiceManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.create')
                     ->name('cms.services.store');

@@ -88,6 +88,7 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
             meta_description: values.meta_description || null,
             sort_order: Number(values.sort_order ?? 0),
             is_featured: Boolean(values.is_featured),
+            is_highlight: Boolean(values.is_highlight),
             publish_at: values.status === 'published' ? (values.publish_at || dayjs().format('YYYY-MM-DDTHH:mm:ss')) : null,
             images: (values.images ?? []).filter((image) => image?.image_url),
         });
@@ -143,6 +144,11 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="is_featured" label="Dự án nổi bật" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={8}>
+                                <Form.Item name="is_highlight" label="Đánh dấu highlight" valuePropName="checked">
                                     <Switch />
                                 </Form.Item>
                             </Col>

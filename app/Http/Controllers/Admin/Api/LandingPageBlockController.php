@@ -86,6 +86,10 @@ class LandingPageBlockController
 
     public function sourcePreview(LandingPageBlock $block, Request $request, LandingPageBuilder $builder): JsonResponse
     {
+        if ($request->has('featured_only')) {
+            $request->merge(['featured_only' => $request->boolean('featured_only')]);
+        }
+
         $validated = $request->validate([
             'locale' => ['nullable', 'string'],
             'source' => ['nullable', 'string', 'max:80'],

@@ -93,26 +93,35 @@ class CmsSiteController
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
-        $themeKey = (string) ($activeTheme['key'] ?? '');
-
-        if ($themeHomeView = $this->resolveThemeHomeView($activeTheme)) {
-            $landingPage = $this->landingPageBuilder->resolveBySlug($websiteKey, $slug, $themeKey);
-
-            if ($landingPage !== null) {
-                $menus = $this->resolveMenus($websiteKey);
-
-                return view($themeHomeView, array_merge([
-                    'siteProfile' => $siteProfile,
-                    'activeTheme' => $activeTheme,
-                    'menus' => $menus,
-                    'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
-                ], $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())));
-            }
-        }
-
         $page = CmsPage::query()->with('featuredMedia')->where('slug', $slug)->where('status', 'published')->firstOrFail();
 
         return $this->renderContent('page', $page);
+    }
+
+    public function landing(Request $request): View
+    {
+        $slug = (string) $request->route('slug');
+        $siteProfile = SiteProfile::query()->first();
+        $activeTheme = $this->resolveActiveTheme($siteProfile);
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $themeKey = (string) ($activeTheme['key'] ?? '');
+        $themeHomeView = $this->resolveThemeHomeView($activeTheme);
+
+        abort_if($themeHomeView === null, 404);
+
+        $canPreviewDraft = auth('admin')->check() && $request->query('mod') === 'admin';
+        $landingPage = $this->landingPageBuilder->resolveBySlug($websiteKey, $slug, $themeKey, ! $canPreviewDraft);
+
+        abort_if($landingPage === null || $landingPage->is_home, 404);
+
+        $menus = $this->resolveMenus($websiteKey);
+
+        return view($themeHomeView, array_merge([
+            'siteProfile' => $siteProfile,
+            'activeTheme' => $activeTheme,
+            'menus' => $menus,
+            'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
+        ], $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())));
     }
 
     public function switchThemePreset(Request $request): RedirectResponse
@@ -219,9 +228,10 @@ class CmsSiteController
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
         $search = trim((string) $request->query('q', ''));
+        $categorySlug = trim((string) $request->query('category', ''));
 
         $servicesQuery = CmsService::query()
-            ->with('featuredImage')
+            ->with(['category', 'featuredImage'])
             ->where('status', 'published')
             ->orderByDesc('is_featured')
             ->orderBy('sort_order')
@@ -236,6 +246,12 @@ class CmsSiteController
             });
         }
 
+        if ($categorySlug !== '') {
+            $servicesQuery->whereHas('category', function (EloquentBuilder $query) use ($categorySlug): void {
+                $query->where('slug', $categorySlug);
+            });
+        }
+
         $services = $servicesQuery->paginate(12)->withQueryString();
 
         return $this->renderListing('services', 'Dịch vụ', 'Danh sách dịch vụ đã xuất bản.', $services, [
@@ -244,6 +260,7 @@ class CmsSiteController
             'menus' => $menus,
             'serviceFilters' => [
                 'q' => $search,
+                'category' => $categorySlug,
             ],
         ]);
     }
@@ -2479,12 +2496,21 @@ class CmsSiteController
     private function renderThemeCatalogView(string $viewKey, ?array $activeTheme, array $data): View
     {
         $themeKey = strtolower((string) ($activeTheme['key'] ?? ''));
+        $viewFactory = app(\Illuminate\Contracts\View\Factory::class);
 
         if ($themeKey !== '') {
             $viewName = "theme-{$themeKey}::{$viewKey}";
 
-            if (app(\Illuminate\Contracts\View\Factory::class)->exists($viewName)) {
+            if ($viewFactory->exists($viewName)) {
                 return view($viewName, $data);
+            }
+        }
+
+        foreach (['theme-th0003', 'theme-th0020', 'theme-th0001'] as $fallbackNamespace) {
+            $fallbackView = "{$fallbackNamespace}::{$viewKey}";
+
+            if ($viewFactory->exists($fallbackView)) {
+                return view($fallbackView, $data);
             }
         }
 

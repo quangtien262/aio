@@ -34,6 +34,7 @@ class ProductIndexController
                 'sold_count' => $product->sold_count,
                 'deal_end_at' => $product->deal_end_at?->toIso8601String(),
                 'is_featured' => $product->is_featured,
+                'is_highlight' => $product->is_highlight,
                 'sort_order' => $product->sort_order,
                 'is_active' => $product->is_active,
                 'public_url' => $product->slug ? url('/san-pham/'.$product->slug) : null,

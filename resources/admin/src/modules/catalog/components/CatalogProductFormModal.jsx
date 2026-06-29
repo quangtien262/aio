@@ -86,6 +86,7 @@ export const emptyCatalogProductForm = {
     sold_count: 0,
     deal_end_at: '',
     is_featured: false,
+    is_highlight: false,
     sort_order: 0,
     is_active: true,
 };
@@ -366,6 +367,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
             sold_count: values.sold_count ?? 0,
             deal_end_at: values.deal_end_at ? values.deal_end_at.format('YYYY-MM-DDTHH:mm:ss') : null,
             is_featured: Boolean(values.is_featured),
+            is_highlight: Boolean(values.is_highlight),
             is_active: Boolean(values.is_active),
         });
 
@@ -486,6 +488,11 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                             <Col xs={24} md={8}>
                                 <Form.Item name="is_featured" valuePropName="checked" label=" " colon={false}>
                                     <Checkbox>Đánh dấu nổi bật</Checkbox>
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={8}>
+                                <Form.Item name="is_highlight" valuePropName="checked" label=" " colon={false}>
+                                    <Checkbox>Đánh dấu highlight</Checkbox>
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>

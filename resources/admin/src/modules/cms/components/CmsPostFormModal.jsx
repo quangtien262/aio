@@ -14,6 +14,7 @@ import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
+import Switch from 'antd/es/switch';
 import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
@@ -54,6 +55,7 @@ export const emptyCmsPostForm = {
     featured_media_id: null,
     category_id: null,
     publish_at: null,
+    is_highlight: false,
     website_key: '',
     owner_key: '',
     tenant_key: '',
@@ -448,6 +450,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             meta_description: values.meta_description || null,
             featured_media_id: values.featured_media_id || null,
             category_id: values.category_id || null,
+            is_highlight: Boolean(values.is_highlight),
             publish_at: values.status === 'published' ? dayjs().format('YYYY-MM-DDTHH:mm:ss') : null,
         });
 
@@ -580,6 +583,11 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                             <Col xs={24} md={12}>
                                 <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 0 }}>
                                     <Select allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="is_highlight" label="Tin nổi bật" valuePropName="checked">
+                                    <Switch />
                                 </Form.Item>
                             </Col>
                         </Row>

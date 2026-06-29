@@ -39,6 +39,16 @@
       "permission": "cms.view"
     },
     {
+      "key": "cms-landing-pages",
+      "label": "Landing pages",
+      "description": "Quản lý trang chủ và các landingpage chiến dịch theo từng khối nội dung.",
+      "badge": "Landing",
+      "color": "lime",
+      "icon": "appstore",
+      "route": "/admin/cms/landing-pages",
+      "permission": "cms.view"
+    },
+    {
       "key": "cms-posts",
       "label": "Tin tức",
       "description": "Quản lý bài viết, trạng thái xuất bản và gắn category.",

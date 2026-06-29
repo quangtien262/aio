@@ -85,6 +85,7 @@ class ProductManagementController
             'sold_count' => ['nullable', 'integer', 'min:0'],
             'deal_end_at' => ['nullable', 'date'],
             'is_featured' => ['nullable', 'boolean'],
+            'is_highlight' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
         ]);
@@ -113,6 +114,7 @@ class ProductManagementController
             'sold_count' => $product->sold_count,
             'deal_end_at' => $product->deal_end_at?->toIso8601String(),
             'is_featured' => $product->is_featured,
+            'is_highlight' => $product->is_highlight,
             'sort_order' => $product->sort_order,
             'is_active' => $product->is_active,
         ];
@@ -136,6 +138,7 @@ class ProductManagementController
             'deal_end_at' => $validated['deal_end_at'] ?? null,
             'sort_order' => (int) ($validated['sort_order'] ?? 0),
             'is_featured' => (bool) ($validated['is_featured'] ?? false),
+            'is_highlight' => (bool) ($validated['is_highlight'] ?? $validated['is_featured'] ?? false),
             'is_active' => (bool) ($validated['is_active'] ?? true),
         ]);
     }

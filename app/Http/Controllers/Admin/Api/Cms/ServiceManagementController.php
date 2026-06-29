@@ -23,7 +23,7 @@ class ServiceManagementController
             $service = CmsService::query()->create($validated);
             $this->syncImages($service, $images);
 
-            return $service->load('images');
+            return $service->load(['category', 'images']);
         });
 
         return response()->json(['message' => 'Đã tạo dịch vụ CMS.', 'data' => $this->serialize($service)], 201);
@@ -42,7 +42,7 @@ class ServiceManagementController
             $record->update($validated);
             $this->syncImages($record, $images);
 
-            return $record->fresh('images');
+            return $record->fresh(['category', 'images']);
         });
 
         return response()->json(['message' => 'Đã cập nhật dịch vụ CMS.', 'data' => $this->serialize($record)]);
@@ -60,6 +60,7 @@ class ServiceManagementController
     private function validatePayload(Request $request, ?CmsService $service = null): array
     {
         return $request->validate([
+            'cms_service_category_id' => ['nullable', 'integer', Rule::exists('cms_service_categories', 'id')],
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('cms_services', 'slug')->ignore($service?->id)],
             'status' => ['required', 'string', Rule::in(config('cms.workflow.statuses', ['draft', 'published']))],
@@ -72,6 +73,7 @@ class ServiceManagementController
             'meta_description' => ['nullable', 'string', 'max:1000'],
             'publish_at' => ['nullable', 'date'],
             'is_featured' => ['boolean'],
+            'is_highlight' => ['boolean'],
             'sort_order' => ['nullable', 'integer'],
             'website_key' => ['nullable', 'string', 'max:255'],
             'owner_key' => ['nullable', 'string', 'max:255'],
@@ -143,6 +145,8 @@ class ServiceManagementController
 
         return [
             'id' => $service->id,
+            'cms_service_category_id' => $service->cms_service_category_id,
+            'category_name' => $service->category?->name,
             'title' => $service->title,
             'slug' => $service->slug,
             'status' => $service->status,
@@ -155,6 +159,7 @@ class ServiceManagementController
             'meta_description' => $service->meta_description,
             'publish_at' => $service->publish_at?->toAtomString(),
             'is_featured' => $service->is_featured,
+            'is_highlight' => $service->is_highlight,
             'sort_order' => $service->sort_order,
             'website_key' => $service->website_key,
             'owner_key' => $service->owner_key,

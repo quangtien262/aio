@@ -1,59 +1,59 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Api\Catalog;
+namespace App\Http\Controllers\Admin\Api\Cms;
 
-use App\Models\CatalogCategory;
+use App\Models\CmsServiceCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class CategoryManagementController
+class ServiceCategoryManagementController
 {
     public function store(Request $request): JsonResponse
     {
         $validated = $this->validatePayload($request);
 
-        $record = CatalogCategory::query()->create(array_merge($this->normalizePayload($validated), [
-            'slug' => 'pending-category-'.Str::uuid(),
+        $record = CmsServiceCategory::query()->create(array_merge($this->normalizePayload($validated), [
+            'slug' => 'pending-service-category-'.Str::uuid(),
         ]));
         $record->update(['slug' => $this->uniqueSlug($record->name, $record->id)]);
 
         return response()->json([
-            'message' => 'Đã tạo danh mục catalog.',
+            'message' => 'Đã tạo danh mục dịch vụ.',
             'data' => $this->serializeCategory($record->fresh(['parent'])),
         ], 201);
     }
 
     public function update(Request $request, int $category): JsonResponse
     {
-        $record = CatalogCategory::query()->with('parent:id,name')->findOrFail($category);
+        $record = CmsServiceCategory::query()->with('parent:id,name')->findOrFail($category);
         $validated = $this->validatePayload($request, $record);
 
         $record->update($this->normalizePayload($validated, $record));
 
         return response()->json([
-            'message' => 'Đã cập nhật danh mục catalog.',
+            'message' => 'Đã cập nhật danh mục dịch vụ.',
             'data' => $this->serializeCategory($record->fresh(['parent'])),
         ]);
     }
 
     public function destroy(int $category): JsonResponse
     {
-        $record = CatalogCategory::query()->findOrFail($category);
+        $record = CmsServiceCategory::query()->findOrFail($category);
         $record->delete();
 
         return response()->json([
-            'message' => 'Đã xóa danh mục catalog.',
+            'message' => 'Đã xóa danh mục dịch vụ.',
         ]);
     }
 
-    private function validatePayload(Request $request, ?CatalogCategory $category = null): array
+    private function validatePayload(Request $request, ?CmsServiceCategory $category = null): array
     {
         return $request->validate([
-            'parent_id' => ['nullable', 'integer', 'exists:catalog_categories,id'],
+            'parent_id' => ['nullable', 'integer', 'exists:cms_service_categories,id'],
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('catalog_categories', 'slug')->ignore($category?->id)],
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('cms_service_categories', 'slug')->ignore($category?->id)],
             'description' => ['nullable', 'string'],
             'image_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -61,7 +61,7 @@ class CategoryManagementController
         ]);
     }
 
-    private function normalizePayload(array $validated, ?CatalogCategory $category = null): array
+    private function normalizePayload(array $validated, ?CmsServiceCategory $category = null): array
     {
         $name = trim((string) ($validated['name'] ?? ''));
 
@@ -74,8 +74,8 @@ class CategoryManagementController
 
     private function uniqueSlug(string $name, int $id): string
     {
-        $baseSlug = Str::slug($name) ?: 'danh-muc-'.$id;
-        $exists = CatalogCategory::query()
+        $baseSlug = Str::slug($name) ?: 'danh-muc-dich-vu-'.$id;
+        $exists = CmsServiceCategory::query()
             ->where('slug', $baseSlug)
             ->whereKeyNot($id)
             ->exists();
@@ -83,7 +83,7 @@ class CategoryManagementController
         return $exists ? $baseSlug.'-'.$id : $baseSlug;
     }
 
-    private function serializeCategory(CatalogCategory $category): array
+    private function serializeCategory(CmsServiceCategory $category): array
     {
         return [
             'id' => $category->id,

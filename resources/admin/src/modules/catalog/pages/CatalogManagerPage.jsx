@@ -33,6 +33,7 @@ const emptyProductForm = {
     sold_count: 0,
     deal_end_at: '',
     is_featured: false,
+    is_highlight: false,
     sort_order: 0,
     is_active: true,
 };
@@ -130,6 +131,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             sold_count: product.sold_count ?? 0,
             deal_end_at: product.deal_end_at ? product.deal_end_at.slice(0, 16) : '',
             is_featured: Boolean(product.is_featured),
+            is_highlight: Boolean(product.is_highlight),
             sort_order: product.sort_order ?? 0,
             is_active: product.is_active ?? true,
         } : emptyProductForm);
@@ -190,7 +192,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         { title: 'Giá', dataIndex: 'price', key: 'price', render: (value) => Number(value ?? 0).toLocaleString('vi-VN') },
         { title: 'Tồn', dataIndex: 'stock', key: 'stock' },
         { title: 'Đã mua', dataIndex: 'sold_count', key: 'sold_count' },
-        { title: 'Nổi bật', dataIndex: 'is_featured', key: 'is_featured', render: (value) => value ? <Tag color="gold">featured</Tag> : <Tag>normal</Tag> },
+        { title: 'Highlight', dataIndex: 'is_highlight', key: 'is_highlight', render: (value) => value ? <Tag color="gold">highlight</Tag> : <Tag>normal</Tag> },
         {
             title: 'Tác vụ',
             key: 'actions',

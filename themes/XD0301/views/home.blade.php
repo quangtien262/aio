@@ -120,6 +120,7 @@
         .xd-landing-block{position:relative}.xd-hero{position:relative;min-height:820px;overflow:hidden;background:#111c24}.xd-slide{position:absolute;inset:0;opacity:0;transition:opacity .7s ease}.xd-slide.is-active{opacity:1}.xd-slide img{width:100%;height:100%;object-fit:cover;filter:grayscale(.15) contrast(1.05)}.xd-slide:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,15,22,.82),rgba(7,15,22,.42) 42%,rgba(7,15,22,.16))}
         .xd-hero-content{position:relative;z-index:2;display:flex;align-items:center;min-height:820px}.xd-hero-card{position:relative;width:min(560px,92vw);margin-left:90px;padding:88px 78px 82px;color:#fff;border:8px solid rgba(189,212,0,.72)}.xd-hero-card small{display:block;margin-bottom:28px;font-weight:900;text-transform:uppercase}.xd-hero-card h1{margin:0 0 20px;font-size:clamp(42px,4vw,70px);line-height:1.12;letter-spacing:-.05em}.xd-hero-card p{margin:0 0 36px;color:rgba(255,255,255,.88);font-size:18px;font-weight:600}
         .xd-button{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 34px;color:#fff;background:var(--lime);border:0;border-radius:3px;font-weight:900;text-transform:uppercase;box-shadow:0 15px 30px rgba(189,212,0,.28)}.xd-hero-arrow{position:absolute;z-index:4;top:50%;transform:translateY(-50%);width:54px;height:78px;color:#fff;background:rgba(0,0,0,.35);border:0;font-size:42px;cursor:pointer}.xd-hero-arrow:hover{background:var(--lime)}.xd-hero-arrow.prev{left:0}.xd-hero-arrow.next{right:0}.xd-hero-dots{position:absolute;z-index:4;left:50%;bottom:30px;display:flex;gap:12px;transform:translateX(-50%)}.xd-dot{width:13px;height:13px;border:0;border-radius:999px;background:rgba(255,255,255,.35);cursor:pointer}.xd-dot.is-active{background:var(--lime);box-shadow:0 0 0 7px rgba(189,212,0,.15)}
+        .xd-featured-cats{position:relative;padding:56px 0 76px;background:linear-gradient(180deg,#fff 0,#fbfcfa 100%);overflow:hidden}.xd-featured-cats:before{content:"";position:absolute;right:-90px;top:-120px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(189,212,0,.18),transparent 66%)}.xd-featured-cats-head{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:28px}.xd-featured-cats-copy{max-width:720px}.xd-featured-cats-copy .xd-kicker{margin-bottom:6px}.xd-featured-cats h2{margin:0;color:var(--ink);font-size:clamp(30px,2.6vw,46px);line-height:1.15;letter-spacing:-.045em}.xd-featured-cats p{margin:10px 0 0;color:var(--muted);font-size:17px;font-weight:650;line-height:1.6}.xd-featured-cat-grid{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}.xd-featured-cat{position:relative;min-height:190px;overflow:hidden;border:1px solid rgba(38,56,74,.08);border-radius:22px;background:#101d28;color:#fff;box-shadow:0 12px 32px rgba(16,29,40,.1);isolation:isolate;transition:transform .24s ease,box-shadow .24s ease}.xd-featured-cat:hover{transform:translateY(-6px);box-shadow:0 24px 54px rgba(16,29,40,.18)}.xd-featured-cat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.74;transition:transform .45s ease,opacity .25s ease}.xd-featured-cat:hover img{transform:scale(1.07);opacity:.88}.xd-featured-cat:before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(7,15,22,.12),rgba(7,15,22,.84))}.xd-featured-cat-body{position:absolute;z-index:2;left:20px;right:20px;bottom:18px;display:grid;gap:8px}.xd-featured-cat-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:rgba(189,212,0,.94);color:#fff;font-size:18px;font-weight:950;box-shadow:0 12px 28px rgba(189,212,0,.28)}.xd-featured-cat h3{margin:0;font-size:19px;line-height:1.22;letter-spacing:-.02em}.xd-featured-cat span{color:rgba(255,255,255,.78);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.xd-featured-cat.is-compact{min-height:150px}.xd-featured-cat.is-compact .xd-featured-cat-icon{width:40px;height:40px;border-radius:13px}
         .xd-section{padding:112px 0}.is-dotted,.xd-partners{background:radial-gradient(circle,rgba(38,56,74,.12) 1.6px,transparent 1.8px) 0 0/16px 16px,var(--bg)}.xd-section-title{margin-bottom:68px;text-align:center}.xd-section-title h2,.xd-intro-copy h2{margin:0;color:var(--ink);font-size:clamp(36px,3.2vw,58px);line-height:1.18;letter-spacing:-.045em}.xd-kicker{position:relative;display:inline-block;margin-bottom:8px;font-size:15px;font-weight:900;text-transform:uppercase}.xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:36px;height:36px;border:5px solid var(--lime)}a.xd-kicker{color:var(--ink);text-decoration:none}a.xd-kicker:hover{color:var(--lime-dark)}
         .xd-intro{display:grid;grid-template-columns:minmax(0,.95fr) minmax(420px,.85fr);align-items:center;gap:90px}.xd-intro-copy p{max-width:760px;color:var(--muted);font-size:20px;font-weight:550}.xd-intro-visual{position:relative;min-height:620px}.xd-intro-visual:before{content:"";position:absolute;left:-185px;top:215px;width:470px;height:360px;background:radial-gradient(circle,rgba(38,56,74,.18) 1.6px,transparent 1.8px) 0 0/16px 16px}.xd-intro-visual img{position:absolute;right:0;top:0;width:78%;height:100%;object-fit:cover}.xd-years{position:absolute;z-index:2;left:5%;top:42px;width:176px;height:176px;border:8px solid var(--lime)}.xd-years strong{position:absolute;left:42px;top:92px;color:var(--ink);font-size:140px;line-height:.72;letter-spacing:-.08em}.xd-years span{position:absolute;left:15px;top:245px;min-width:260px;font-size:18px;font-weight:900;text-transform:uppercase}
         .xd-services{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px}.xd-service-card{background:#fff;box-shadow:0 5px 20px rgba(16,29,40,.08);transition:.25s}.xd-service-card:hover{transform:translateY(-8px);box-shadow:var(--shadow)}.xd-service-image{display:block;position:relative;height:300px;overflow:hidden;background:linear-gradient(135deg,#edf2f0,#f8faf5)}.xd-service-image:empty:before{content:"No image";position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-weight:900;text-transform:uppercase}.xd-service-image img{display:block;width:100%;height:100%;object-fit:cover;transition:.4s}.xd-service-image img.is-broken{display:none}.xd-service-card:hover img:not(.is-broken){transform:scale(1.05)}.xd-service-body{position:relative;padding:40px 42px 46px}.xd-service-card h3{margin:0 0 16px;font-size:22px;line-height:1.32;letter-spacing:.015em;text-transform:uppercase}.xd-service-card h3 a{color:inherit;text-decoration:none}.xd-service-card h3 a:hover{color:var(--lime-dark)}.xd-service-card p{margin:0 0 28px;color:var(--muted);font-size:18px}.xd-text-link{color:var(--lime-dark);font-weight:900;text-transform:uppercase}
@@ -131,11 +132,11 @@
         .xd-partners{padding:74px 0}.xd-partner-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:24px;align-items:center}.xd-partner{display:grid;place-items:center;min-height:104px;color:#9da5aa;background:rgba(255,255,255,.7);font-size:22px;font-weight:950;text-align:center;filter:grayscale(1);transition:.2s}.xd-partner img{max-width:150px;max-height:58px;object-fit:contain}.xd-partner:hover{color:var(--ink);border-color:var(--lime);filter:grayscale(0);transform:translateY(-3px)}
         .xd-footer{padding:88px 0 72px;border-top:1px solid var(--line);background:#fff}.xd-footer-grid{display:grid;grid-template-columns:1.25fr .65fr 1fr 1.25fr;gap:80px}.xd-footer h3{margin:0 0 24px;font-size:30px;line-height:1.2}.xd-footer p,.xd-footer a{color:var(--muted);font-size:20px;font-weight:550}.xd-footer-links,.xd-contact-list{display:grid;gap:8px}.xd-newsletter{display:flex;margin-top:12px;border:1px solid var(--line)}.xd-newsletter input{min-width:0;flex:1;border:0;padding:0 24px;color:var(--ink);font:inherit;outline:0}.xd-newsletter button{width:166px;min-height:74px;color:#fff;background:var(--lime);border:0;font-weight:900;text-transform:uppercase}.xd-newsletter-note{margin-top:12px;font-size:14px!important;font-weight:800!important;line-height:1.45}.xd-newsletter-note.is-success{color:var(--lime-dark)!important}.xd-newsletter-note.is-error{color:#b42318!important}
         .xd-auth-modal[hidden]{display:none!important}.xd-auth-modal{position:fixed;inset:0;z-index:220;display:grid;place-items:center;padding:24px}.xd-auth-backdrop{position:absolute;inset:0;background:rgba(12,22,30,.66);backdrop-filter:blur(5px)}.xd-auth-card{position:relative;width:min(520px,calc(100vw - 32px));max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:30px;box-shadow:0 32px 90px rgba(0,0,0,.34)}.xd-auth-close{position:absolute;right:18px;top:16px;display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:999px;background:#f3f6ef;color:var(--ink);font-size:24px;cursor:pointer}.xd-auth-title{margin:0 48px 8px 0;font-size:30px;line-height:1.2}.xd-auth-note{margin:0 0 22px;color:var(--muted);font-size:15px}.xd-auth-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:22px;padding:6px;border:1px solid var(--line);border-radius:999px;background:#f8faf5}.xd-auth-tab{min-height:42px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:inherit;font-size:13px;font-weight:900;text-transform:uppercase;cursor:pointer}.xd-auth-tab.is-active{background:var(--lime);color:#fff;box-shadow:0 10px 20px rgba(189,212,0,.26)}.xd-auth-panel{display:none}.xd-auth-panel.is-active{display:block}.xd-auth-form{display:grid;gap:14px}.xd-auth-field{display:grid;gap:7px;color:var(--ink);font-size:13px;font-weight:900;text-transform:uppercase}.xd-auth-field input{width:100%;min-height:50px;border:1px solid #dfe5df;border-radius:14px;padding:0 15px;color:var(--ink);font:inherit;font-size:15px;font-weight:600;outline:0;text-transform:none}.xd-auth-field input:focus{border-color:var(--lime);box-shadow:0 0 0 4px rgba(189,212,0,.15)}.xd-auth-check{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;font-weight:700}.xd-auth-submit{min-height:54px;border:0;border-radius:14px;background:var(--ink);color:#fff;font:inherit;font-weight:900;text-transform:uppercase;cursor:pointer}.xd-auth-submit:hover{background:var(--lime);color:#fff}.xd-auth-feedback{margin:16px 0 0;padding:12px 14px;border-radius:12px;background:#fff4f2;color:#b42318;font-size:14px;font-weight:800}.xd-auth-feedback.is-success{background:#f3f9dc;color:var(--lime-dark)}
-        .xd-edit-block{position:absolute;right:18px;top:18px;z-index:20;border:0;border-radius:999px;padding:10px 16px;background:#101d28;color:#fff;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.18);cursor:pointer}.xd-editor[hidden]{display:none}.xd-editor{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(10,18,25,.58)}.xd-editor-card{width:min(860px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}.xd-editor-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.xd-editor-head h3{margin:0;font-size:26px}.xd-editor-close{border:0;background:#f1f3ef;border-radius:999px;width:40px;height:40px;font-size:24px;cursor:pointer}.xd-editor-locale-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;padding:6px;border:1px solid #dfe5df;border-radius:999px;background:#fbfcfa}.xd-editor-locale-tab{min-height:38px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:inherit;font-size:13px;font-weight:900;cursor:pointer}.xd-editor-locale-tab.is-active{background:var(--lime);color:#fff;box-shadow:0 9px 18px rgba(189,212,0,.22)}.xd-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.xd-editor-field{display:grid;gap:6px}.xd-editor-field span{font-weight:800;color:var(--ink)}.xd-editor-field input,.xd-editor-field textarea{width:100%;border:1px solid #dfe5df;border-radius:12px;padding:12px 14px;font:inherit}.xd-editor-field textarea{min-height:120px}.xd-editor-field.is-wide{grid-column:1/-1}.xd-editor-hidden-json{display:none!important}.xd-editor-items{grid-column:1/-1;display:grid;gap:12px;padding:16px;border:1px solid #dfe5df;border-radius:16px;background:#fbfcfa}.xd-editor-items[hidden]{display:none}.xd-editor-items-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.xd-editor-items-head h4{margin:0;font-size:18px}.xd-editor-help{margin:4px 0 0;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}.xd-editor-item-list{display:grid;gap:10px}.xd-editor-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;padding:14px;border:1px solid #e7ece5;border-radius:14px;background:#fff}.xd-editor-item-summary{min-width:0}.xd-editor-item-summary small{display:block;margin-bottom:4px;color:var(--lime-dark);font-size:11px;font-weight:950;text-transform:uppercase;letter-spacing:.06em}.xd-editor-item-summary strong{display:block;overflow:hidden;color:var(--ink);font-size:15px;font-weight:950;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}.xd-editor-item-summary span{display:-webkit-box;overflow:hidden;margin-top:4px;color:var(--muted);font-size:13px;font-weight:700;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}.xd-editor-item-actions{display:flex;align-items:center;gap:8px}.xd-editor-edit,.xd-editor-remove,.xd-editor-add{border:1px solid #dfe5df;border-radius:999px;background:#fff;color:var(--ink);font-weight:900;cursor:pointer}.xd-editor-edit,.xd-editor-remove{padding:7px 12px}.xd-editor-edit{border-color:rgba(189,212,0,.45);background:#f8fbde;color:var(--lime-dark)}.xd-editor-add{min-height:38px;padding:0 14px}.xd-editor-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:18px}.xd-editor-actions button{min-height:44px;border-radius:12px;padding:0 18px;border:1px solid #dfe5df;background:#fff;font-weight:900;cursor:pointer}.xd-editor-actions button[type=submit]{border-color:var(--lime);background:var(--lime);color:#fff}.xd-item-modal[hidden]{display:none!important}.xd-item-modal{position:fixed;inset:0;z-index:130;display:grid;place-items:center;padding:20px;background:rgba(10,18,25,.56)}.xd-item-card{width:min(660px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.3)}.xd-item-card-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.xd-item-card-head h3{margin:0;font-size:24px}.xd-item-close{border:0;background:#f1f3ef;border-radius:999px;width:38px;height:38px;font-size:22px;cursor:pointer}.xd-item-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.xd-item-form label{display:grid;gap:6px;color:var(--ink);font-size:12px;font-weight:900;text-transform:uppercase}.xd-item-form input,.xd-item-form textarea{width:100%;border:1px solid #dfe5df;border-radius:12px;padding:11px 13px;font:inherit;font-size:14px;text-transform:none}.xd-item-form textarea{min-height:112px}.xd-item-form .is-wide{grid-column:1/-1}.xd-item-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.xd-item-actions button{min-height:42px;border:1px solid #dfe5df;border-radius:12px;background:#fff;padding:0 16px;font-weight:900;cursor:pointer}.xd-item-actions button[type=submit]{border-color:var(--lime);background:var(--lime);color:#fff}
+        .xd-edit-block{position:absolute;right:18px;top:18px;z-index:20;border:0;border-radius:999px;padding:10px 16px;background:#101d28;color:#fff;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.18);cursor:pointer}.xd-editor[hidden]{display:none}.xd-editor{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(10,18,25,.58)}.xd-editor-card{width:min(860px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}.xd-editor-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.xd-editor-head h3{margin:0;font-size:26px}.xd-editor-close{border:0;background:#f1f3ef;border-radius:999px;width:40px;height:40px;font-size:24px;cursor:pointer}.xd-editor-locale-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;padding:6px;border:1px solid #dfe5df;border-radius:999px;background:#fbfcfa}.xd-editor-locale-tab{min-height:38px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:inherit;font-size:13px;font-weight:900;cursor:pointer}.xd-editor-locale-tab.is-active{background:var(--lime);color:#fff;box-shadow:0 9px 18px rgba(189,212,0,.22)}.xd-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.xd-editor-field{display:grid;gap:6px}.xd-editor-field span{font-weight:800;color:var(--ink)}.xd-editor-field input,.xd-editor-field textarea{width:100%;border:1px solid #dfe5df;border-radius:12px;padding:12px 14px;font:inherit}.xd-editor-field textarea{min-height:120px}.xd-editor-field.is-wide{grid-column:1/-1}.xd-editor-hidden-json{display:none!important}.xd-editor-items{grid-column:1/-1;display:grid;gap:12px;padding:16px;border:1px solid #dfe5df;border-radius:16px;background:#fbfcfa}.xd-editor-items[hidden]{display:none}.xd-editor-items-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.xd-editor-items-head h4{margin:0;font-size:18px}.xd-editor-items-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.xd-editor-help{margin:4px 0 0;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}.xd-editor-item-list{display:grid;gap:10px}.xd-editor-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;padding:14px;border:1px solid #e7ece5;border-radius:14px;background:#fff}.xd-editor-item-summary{min-width:0}.xd-editor-item-summary small{display:block;margin-bottom:4px;color:var(--lime-dark);font-size:11px;font-weight:950;text-transform:uppercase;letter-spacing:.06em}.xd-editor-item-summary strong{display:block;overflow:hidden;color:var(--ink);font-size:15px;font-weight:950;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}.xd-editor-item-summary span{display:-webkit-box;overflow:hidden;margin-top:4px;color:var(--muted);font-size:13px;font-weight:700;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}.xd-editor-item-actions{display:flex;align-items:center;gap:8px}.xd-editor-edit,.xd-editor-remove,.xd-editor-add,.xd-editor-manage{border:1px solid #dfe5df;border-radius:999px;background:#fff;color:var(--ink);font-weight:900;cursor:pointer}.xd-editor-edit,.xd-editor-remove{padding:7px 12px}.xd-editor-edit{border-color:rgba(189,212,0,.45);background:#f8fbde;color:var(--lime-dark)}.xd-editor-add,.xd-editor-manage{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;text-decoration:none}.xd-editor-manage{background:#101d28;color:#fff;border-color:#101d28}.xd-editor-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:18px}.xd-editor-actions button{min-height:44px;border-radius:12px;padding:0 18px;border:1px solid #dfe5df;background:#fff;font-weight:900;cursor:pointer}.xd-editor-actions button[type=submit]{border-color:var(--lime);background:var(--lime);color:#fff}.xd-item-modal[hidden]{display:none!important}.xd-item-modal{position:fixed;inset:0;z-index:130;display:grid;place-items:center;padding:20px;background:rgba(10,18,25,.56)}.xd-item-card{width:min(660px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.3)}.xd-item-card-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.xd-item-card-head h3{margin:0;font-size:24px}.xd-item-close{border:0;background:#f1f3ef;border-radius:999px;width:38px;height:38px;font-size:22px;cursor:pointer}.xd-item-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.xd-item-form label{display:grid;gap:6px;color:var(--ink);font-size:12px;font-weight:900;text-transform:uppercase}.xd-item-form input,.xd-item-form textarea{width:100%;border:1px solid #dfe5df;border-radius:12px;padding:11px 13px;font:inherit;font-size:14px;text-transform:none}.xd-item-form textarea{min-height:112px}.xd-item-form .is-wide{grid-column:1/-1}.xd-item-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.xd-item-actions button{min-height:42px;border:1px solid #dfe5df;border-radius:12px;background:#fff;padding:0 16px;font-weight:900;cursor:pointer}.xd-item-actions button[type=submit]{border-color:var(--lime);background:var(--lime);color:#fff}
         .xd-editor-item-main{display:grid;grid-template-columns:78px minmax(0,1fr);align-items:center;gap:14px;min-width:0}.xd-editor-item-thumb{display:grid;place-items:center;width:78px;height:58px;overflow:hidden;border:1px solid #dfe5df;border-radius:12px;background:#eef3ee;color:var(--muted);font-size:10px;font-weight:950;text-transform:uppercase}.xd-editor-item-thumb img{width:100%;height:100%;object-fit:cover}.xd-editor-item-thumb.is-empty{background:linear-gradient(135deg,#f7f9ee,#eef3ee)}
-        .xd-editor-source{grid-column:1/-1;display:grid;gap:12px;padding:16px;border:1px solid #dfe5df;border-radius:16px;background:#fff}.xd-editor-source[hidden]{display:none}.xd-editor-source h4{margin:0;font-size:18px}.xd-editor-source-grid{display:grid;grid-template-columns:1.15fr .55fr .7fr .6fr;gap:12px;align-items:end}.xd-editor-source label{display:grid;gap:6px;color:var(--ink);font-size:13px;font-weight:900}.xd-editor-source select,.xd-editor-source input{width:100%;min-height:44px;border:1px solid #dfe5df;border-radius:12px;background:#fff;padding:0 12px;color:var(--ink);font:inherit;font-size:14px}.xd-editor-source-check{align-self:center;display:flex!important;grid-template-columns:none!important;align-items:center;gap:9px;padding-top:22px}.xd-editor-source-check input{width:20px;min-height:20px}.xd-editor-source-note{margin:0;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}
-        @media (max-width:1180px){.xd-header-inner{flex-wrap:wrap;padding:18px 0}.xd-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto}.xd-nav-link{padding:18px 16px}.xd-dropdown{top:calc(100% + 2px)}.xd-hero-card{margin-left:0}.xd-services,.xd-team,.xd-footer-grid,.xd-projects{grid-template-columns:repeat(2,minmax(0,1fr))}.xd-service-slider .xd-service-card{flex-basis:calc((100% - 32px)/2)}.xd-project-slider,.xd-team-slider{--xd-row-card:calc((100% - var(--xd-row-gap))/2)}.xd-testimonial-slider{--xd-row-card:min(720px,82vw)}.xd-intro{grid-template-columns:1fr}}
-        @media (max-width:760px){.xd-container{width:min(100% - 28px,1540px)}.xd-header{position:relative}.xd-header-actions{width:100%;justify-content:center}.xd-hotline{justify-content:center}.xd-login-button{min-height:48px}.xd-hero,.xd-hero-content{min-height:690px}.xd-hero-card{padding:48px 34px;border-width:5px}.xd-section{padding:72px 0}.xd-services,.xd-projects,.xd-team,.xd-testimonials,.xd-partner-grid,.xd-footer-grid,.xd-editor-grid{grid-template-columns:1fr}.xd-service-slider .xd-service-card{flex-basis:min(86vw,420px)}.xd-project-slider,.xd-team-slider,.xd-testimonial-slider{--xd-row-card:min(86vw,420px)}.xd-service-nav,.xd-row-nav{display:none!important}.xd-project-card{min-height:430px}.xd-testimonial{grid-template-columns:1fr}.xd-intro-visual{min-height:420px}.xd-years strong{font-size:96px}}
+        .xd-editor-source{grid-column:1/-1;display:grid;gap:12px;padding:16px;border:1px solid #dfe5df;border-radius:16px;background:#fff}.xd-editor-source[hidden],.xd-editor-source label[hidden]{display:none!important}.xd-editor-source h4{margin:0;font-size:18px}.xd-editor-source-grid{display:grid;grid-template-columns:1.15fr .55fr .7fr .6fr;gap:12px;align-items:end}.xd-editor-source label{display:grid;gap:6px;color:var(--ink);font-size:13px;font-weight:900}.xd-editor-source select,.xd-editor-source input{width:100%;min-height:44px;border:1px solid #dfe5df;border-radius:12px;background:#fff;padding:0 12px;color:var(--ink);font:inherit;font-size:14px}.xd-editor-source-check{align-self:center;display:flex!important;grid-template-columns:none!important;align-items:center;gap:9px;padding-top:22px}.xd-editor-source-check input{width:20px;min-height:20px}.xd-editor-source-note{margin:0;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}
+        @media (max-width:1180px){.xd-header-inner{flex-wrap:wrap;padding:18px 0}.xd-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto}.xd-nav-link{padding:18px 16px}.xd-dropdown{top:calc(100% + 2px)}.xd-hero-card{margin-left:0}.xd-services,.xd-team,.xd-footer-grid,.xd-projects,.xd-featured-cat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.xd-service-slider .xd-service-card{flex-basis:calc((100% - 32px)/2)}.xd-project-slider,.xd-team-slider{--xd-row-card:calc((100% - var(--xd-row-gap))/2)}.xd-testimonial-slider{--xd-row-card:min(720px,82vw)}.xd-intro{grid-template-columns:1fr}}
+        @media (max-width:760px){.xd-container{width:min(100% - 28px,1540px)}.xd-header{position:relative}.xd-header-actions{width:100%;justify-content:center}.xd-hotline{justify-content:center}.xd-login-button{min-height:48px}.xd-hero,.xd-hero-content{min-height:690px}.xd-hero-card{padding:48px 34px;border-width:5px}.xd-featured-cats{padding:46px 0 56px}.xd-featured-cats-head{display:grid}.xd-section{padding:72px 0}.xd-services,.xd-projects,.xd-team,.xd-testimonials,.xd-partner-grid,.xd-footer-grid,.xd-editor-grid,.xd-featured-cat-grid{grid-template-columns:1fr}.xd-featured-cat{min-height:170px}.xd-service-slider .xd-service-card{flex-basis:min(86vw,420px)}.xd-project-slider,.xd-team-slider,.xd-testimonial-slider{--xd-row-card:min(86vw,420px)}.xd-service-nav,.xd-row-nav{display:none!important}.xd-project-card{min-height:430px}.xd-testimonial{grid-template-columns:1fr}.xd-intro-visual{min-height:420px}.xd-years strong{font-size:96px}}
         @media (max-width:640px){
             body{font-size:15px;line-height:1.65;overflow-x:hidden}
             .xd-container{width:min(100% - 24px,1540px)}
@@ -338,6 +339,45 @@
                         </section>
                         @break
 
+                    @case('featured_categories')
+                        @php
+                            $categoryItems = collect($block['dynamic_items'] ?? [])->whenEmpty(fn () => collect($content['items'] ?? []))->values();
+                        @endphp
+                        <section id="{{ $anchor }}" class="xd-featured-cats xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
+                            {!! $editButton !!}
+                            <div class="xd-container">
+                                <div class="xd-featured-cats-head">
+                                    <div class="xd-featured-cats-copy">
+                                        <span class="xd-kicker">{{ $data['subtitle'] ?? 'Khám phá nhanh' }}</span>
+                                        <h2>{{ $data['title'] ?? 'Danh mục trọng tâm' }}</h2>
+                                        @if(filled($data['description'] ?? null))
+                                            <p>{{ $data['description'] }}</p>
+                                        @endif
+                                    </div>
+                                    @if(filled($data['button_label'] ?? null))
+                                        <a class="xd-text-link" href="#dich-vu">{{ $data['button_label'] }}</a>
+                                    @endif
+                                </div>
+                                <div class="xd-featured-cat-grid">
+                                    @foreach ($categoryItems as $category)
+                                        <a class="xd-featured-cat {{ $categoryItems->count() > 4 ? 'is-compact' : '' }}" href="{{ $category['url'] ?? '#dich-vu' }}">
+                                            @if(filled($category['image'] ?? null))
+                                                <img src="{{ $category['image'] }}" alt="{{ $category['alt'] ?? $category['title'] ?? '' }}">
+                                            @endif
+                                            <span class="xd-featured-cat-body">
+                                                <i class="xd-featured-cat-icon">{{ $category['icon'] ?? mb_substr((string) ($category['title'] ?? 'C'), 0, 1) }}</i>
+                                                <h3>{{ $category['title'] ?? $category['name'] ?? '' }}</h3>
+                                                @if(filled($category['count_label'] ?? $category['summary'] ?? null))
+                                                    <span>{{ $category['count_label'] ?? $category['summary'] }}</span>
+                                                @endif
+                                            </span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </section>
+                        @break
+
                     @case('about_experience')
                         <section id="{{ $anchor }}" class="xd-section xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
                             {!! $editButton !!}
@@ -519,7 +559,10 @@
                                 <h4>Danh sách nội dung</h4>
                                 <p class="xd-editor-help" data-xd-items-help>Chỉnh từng mục bằng form, không cần nhập JSON.</p>
                             </div>
-                            <button type="button" class="xd-editor-add" data-xd-add-item>Thêm mục</button>
+                            <div class="xd-editor-items-actions">
+                                <a class="xd-editor-manage" data-xd-manage-source href="#" target="_blank" rel="noopener" hidden>Quản lý nội dung</a>
+                                <button type="button" class="xd-editor-add" data-xd-add-item>Thêm mục</button>
+                            </div>
                         </div>
                         <div class="xd-editor-item-list" data-xd-item-list></div>
                     </section>
@@ -788,6 +831,7 @@
             const itemModalTitle = document.querySelector('[data-xd-item-title]');
             const itemIndexInput = document.querySelector('[data-xd-item-index]');
             const sourceEditor = document.querySelector('[data-xd-source-editor]');
+            const manageSourceLink = document.querySelector('[data-xd-manage-source]');
             const sourceSettingFields = Array.from(document.querySelectorAll('[data-xd-setting-field]'));
             const localeTabs = Array.from(document.querySelectorAll('[data-xd-locale-tab]'));
             let activeItemKey = '';
@@ -797,6 +841,10 @@
             let sourcePreviewController = null;
             let sourcePreviewTimer = null;
             const sourceLabels = {
+                custom: 'Nội dung tùy chỉnh',
+                catalog_categories: 'Danh mục sản phẩm',
+                cms_service_categories: 'Danh mục dịch vụ',
+                cms_categories: 'Danh mục tin tức',
                 cms_services: 'Dịch vụ',
                 cms_products: 'Sản phẩm',
                 catalog_products: 'Sản phẩm',
@@ -804,9 +852,26 @@
                 cms_posts: 'Tin tức',
                 latest_posts: 'Tin mới nhất',
                 cms_projects: 'Dự án',
+                cms_team_members: 'Đội ngũ',
+                cms_testimonials: 'Đánh giá',
+            };
+            const sourceManageUrls = {
+                cms_services: '/admin/cms/services',
+                catalog_categories: '/admin/cms/products',
+                cms_service_categories: '/admin/cms/services',
+                cms_categories: '/admin/cms/posts',
+                cms_posts: '/admin/cms/posts',
+                latest_posts: '/admin/cms/posts',
+                cms_products: '/admin/cms/products',
+                catalog_products: '/admin/cms/products',
+                featured_products: '/admin/cms/products',
+                cms_projects: '/admin/cms/projects',
+                cms_team_members: '/admin/cms/team',
+                cms_testimonials: '/admin/cms/testimonials',
             };
             const defaultBlockLimits = {
                 hero_slider: 3,
+                featured_categories: 6,
                 featured_services: 3,
                 project_gallery: 4,
                 team_members: 4,
@@ -826,6 +891,26 @@
                 try { return JSON.parse(row?.dataset.xdItem || '{}'); } catch (error) { return {}; }
             };
             const settingField = (name) => sourceSettingFields.find((input) => input.dataset.xdSettingField === name);
+            const sourceControlWrap = (name) => settingField(name)?.closest('label');
+            const currentSourceValue = () => settingField('source')?.value || activeBlock?.settings?.source || '';
+            const isCustomSource = () => !sourceEditor || sourceEditor.hidden || currentSourceValue() === 'custom' || currentSourceValue() === '';
+            const syncSourceModeUi = () => {
+                const customMode = isCustomSource();
+                ['limit', 'category_id', 'featured_only'].forEach((name) => {
+                    const wrap = sourceControlWrap(name);
+                    const input = settingField(name);
+                    if (wrap) wrap.hidden = customMode;
+                    if (input) input.disabled = customMode;
+                });
+                if (addItemButton) addItemButton.hidden = !customMode;
+                if (manageSourceLink) {
+                    const source = currentSourceValue();
+                    const url = sourceManageUrls[source] || '';
+                    manageSourceLink.hidden = customMode || url === '';
+                    manageSourceLink.href = url || '#';
+                    manageSourceLink.textContent = `Quản lý ${sourceLabels[source] || 'nội dung'}`;
+                }
+            };
             const normalizeSourceOptions = (options = []) => options
                 .map((option) => typeof option === 'string' ? {value: option, label: sourceLabels[option] || option} : {
                     value: option.value || option.key || '',
@@ -865,7 +950,12 @@
                     sourceSelect.value = settings.source || options[0]?.value || '';
                     sourceSelect.onchange = () => {
                         renderCategorySelect(sourceSelect.value, '');
-                        scheduleSourcePreview();
+                        syncSourceModeUi();
+                        if (sourceSelect.value === 'custom') {
+                            renderItemsEditor(activeBlock, parseJson(field('content').value, {}));
+                        } else {
+                            scheduleSourcePreview();
+                        }
                     };
                 }
 
@@ -884,6 +974,7 @@
                 }
 
                 sourceEditor.hidden = false;
+                syncSourceModeUi();
             };
             const collectSourceSettings = (settings) => {
                 if (!sourceEditor || sourceEditor.hidden) return settings;
@@ -895,6 +986,12 @@
                 const featuredOnly = settingField('featured_only');
 
                 if (source !== '') next.source = source;
+                if (source === 'custom') {
+                    delete next.limit;
+                    delete next.category_id;
+                    delete next.featured_only;
+                    return next;
+                }
                 if (limit > 0) next.limit = Math.max(1, Math.min(12, limit));
                 else delete next.limit;
                 if (categoryId > 0) next.category_id = categoryId;
@@ -914,6 +1011,17 @@
                         ['image', 'Ảnh'],
                         ['link_url', 'Link'],
                         ['button_label', 'Nút bấm'],
+                    ];
+                }
+
+                if (blockType === 'featured_categories') {
+                    return [
+                        ['title', 'Tiêu đề'],
+                        ['summary', 'Mô tả / nhãn phụ', 'textarea'],
+                        ['image', 'Ảnh'],
+                        ['icon', 'Icon / ký tự'],
+                        ['url', 'Link'],
+                        ['count_label', 'Nhãn số lượng'],
                     ];
                 }
 
@@ -953,7 +1061,7 @@
                     ['button_label', 'Nút bấm'],
                 ];
             };
-            const renderEditorItem = (item = {}, index = 0, blockType = '') => {
+            const renderEditorItem = (item = {}, index = 0, blockType = '', canEditItem = true) => {
                 const row = document.createElement('article');
                 row.className = 'xd-editor-item';
                 row.dataset.xdItemRow = '1';
@@ -974,19 +1082,21 @@
                             <span>${escapeHtml(summary)}</span>
                         </div>
                     </div>
-                    <div class="xd-editor-item-actions">
+                    ${canEditItem ? `<div class="xd-editor-item-actions">
                         <button type="button" class="xd-editor-edit" data-xd-edit-item>Sửa</button>
                         <button type="button" class="xd-editor-remove" data-xd-remove-item>Xóa</button>
-                    </div>
+                    </div>` : ''}
                 `;
-                row.querySelector('[data-xd-edit-item]')?.addEventListener('click', () => {
-                    const currentIndex = Array.from(itemList.querySelectorAll('[data-xd-item-row]')).indexOf(row);
-                    openItemModal(currentIndex, parseItemData(row));
-                });
-                row.querySelector('[data-xd-remove-item]')?.addEventListener('click', () => {
-                    row.remove();
-                    syncItemNumbers();
-                });
+                if (canEditItem) {
+                    row.querySelector('[data-xd-edit-item]')?.addEventListener('click', () => {
+                        const currentIndex = Array.from(itemList.querySelectorAll('[data-xd-item-row]')).indexOf(row);
+                        openItemModal(currentIndex, parseItemData(row));
+                    });
+                    row.querySelector('[data-xd-remove-item]')?.addEventListener('click', () => {
+                        row.remove();
+                        syncItemNumbers();
+                    });
+                }
                 return row;
             };
             const syncItemNumbers = () => {
@@ -1026,7 +1136,7 @@
                 activeItemKey = editorItemKey(blockType);
                 const content = contentOverride || block.data?.content || {};
                 let items = Array.isArray(content[activeItemKey]) ? content[activeItemKey] : [];
-                const canEditList = ['hero_slider', 'featured_services', 'project_gallery', 'team_members', 'testimonials', 'partner_logos'].includes(blockType);
+                const canEditList = ['hero_slider', 'featured_categories', 'featured_services', 'project_gallery', 'team_members', 'testimonials', 'partner_logos'].includes(blockType);
 
                 itemList.innerHTML = '';
                 if (!canEditList) {
@@ -1039,16 +1149,22 @@
                 }
 
                 itemsEditor.hidden = false;
-                itemHelp.textContent = blockHasDynamicItems(block)
-                    ? 'Khối này đang lấy danh sách từ dữ liệu CMS. Nếu muốn đổi từng mục, nên sửa trong module CMS tương ứng; form này chủ yếu dùng cho block tĩnh.'
-                    : 'Chỉnh từng mục bằng form, hệ thống sẽ tự chuyển về cấu trúc lưu phù hợp.';
+                const customMode = isCustomSource();
+                syncSourceModeUi();
+                itemHelp.textContent = customMode
+                    ? 'Nội dung tùy chỉnh: có thể thêm, sửa hoặc xóa từng mục ngay tại đây.'
+                    : `Danh sách đang lấy tự động từ ${sourceLabels[currentSourceValue()] || 'CMS'}. Muốn sửa từng item, mở trang quản lý tương ứng.`;
 
-                items.forEach((item, index) => itemList.appendChild(renderEditorItem(item, index, blockType)));
-                if (!items.length) itemList.appendChild(renderEditorItem({}, 0, blockType));
+                items.forEach((item, index) => itemList.appendChild(renderEditorItem(item, index, blockType, customMode)));
+                if (!items.length && customMode) itemList.appendChild(renderEditorItem({}, 0, blockType, true));
                 addItemButton.dataset.xdBlockType = blockType;
             };
             const previewSourceItems = async () => {
                 if (!activeBlock || !sourcePreviewUrlTemplate || !sourceEditor || sourceEditor.hidden) return;
+                if (isCustomSource()) {
+                    renderItemsEditor(activeBlock, parseJson(field('content').value, {}));
+                    return;
+                }
 
                 const settingsPayload = collectSourceSettings(parseJson(field('settings').value, {}));
                 field('settings').value = pretty(settingsPayload);
@@ -1059,7 +1175,9 @@
 
                 const params = new URLSearchParams({locale: activeEditorLocale});
                 Object.entries(settingsPayload).forEach(([key, value]) => {
-                    if (value !== null && value !== '' && value !== undefined) params.set(key, String(value));
+                    if (value !== null && value !== '' && value !== undefined) {
+                        params.set(key, typeof value === 'boolean' ? (value ? '1' : '0') : String(value));
+                    }
                 });
 
                 try {
@@ -1074,10 +1192,9 @@
                     activeBlock = {...activeBlock, settings: settingsPayload, dynamic_items: items};
                     blocks[activeBlock.id] = activeBlock;
 
-                    const nextContent = {...(parseJson(field('content').value, {}) || {})};
-                    nextContent[activeItemKey || editorItemKey(activeBlock.block_type)] = items;
-                    field('content').value = pretty(nextContent);
-                    renderItemsEditor(activeBlock, nextContent);
+                    const previewContent = {};
+                    previewContent[activeItemKey || editorItemKey(activeBlock.block_type)] = items;
+                    renderItemsEditor(activeBlock, previewContent);
                 } catch (error) {
                     if (error.name === 'AbortError') return;
                     if (itemHelp) itemHelp.textContent = error.message || 'Không tải được danh sách nội dung.';
@@ -1090,6 +1207,7 @@
                 }, 250);
             };
             const collectEditorItems = () => {
+                if (!isCustomSource()) return null;
                 if (!itemsEditor || itemsEditor.hidden || !activeItemKey) return null;
                 return Array.from(itemList.querySelectorAll('[data-xd-item-row]'))
                     .map(parseItemData)
@@ -1120,6 +1238,7 @@
                 field('button_label').value = draft.button_label || '';
                 field('content').value = pretty(draft.content || {});
                 renderItemsEditor(activeBlock, draft.content || {});
+                if (!isCustomSource()) scheduleSourcePreview();
                 localeTabs.forEach((button) => button.classList.toggle('is-active', button.dataset.xdLocaleTab === locale));
             };
             const switchEditorLocale = (locale) => {
@@ -1142,10 +1261,10 @@
                 const rows = Array.from(itemList.querySelectorAll('[data-xd-item-row]'));
                 const blockType = activeBlock.block_type || addItemButton?.dataset.xdBlockType || '';
                 if (indexValue === '') {
-                    itemList.appendChild(renderEditorItem(item, rows.length, blockType));
+                    itemList.appendChild(renderEditorItem(item, rows.length, blockType, true));
                 } else {
                     const index = Number(indexValue);
-                    rows[index]?.replaceWith(renderEditorItem(item, index, blockType));
+                    rows[index]?.replaceWith(renderEditorItem(item, index, blockType, true));
                 }
                 syncItemNumbers();
                 closeItemModal();

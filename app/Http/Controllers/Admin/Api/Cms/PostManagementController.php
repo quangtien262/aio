@@ -50,6 +50,7 @@ class PostManagementController
             'featured_media_id' => ['nullable', 'integer', Rule::exists('cms_media', 'id')],
             'category_id' => ['nullable', 'integer', Rule::exists('cms_categories', 'id')],
             'publish_at' => ['nullable', 'date'],
+            'is_highlight' => ['boolean'],
         ]);
     }
 
@@ -67,6 +68,7 @@ class PostManagementController
             'publish_at' => $post->publish_at?->toAtomString(),
             'featured_media_id' => $post->featured_media_id,
             'category_id' => $post->category_id,
+            'is_highlight' => $post->is_highlight,
         ];
     }
 }

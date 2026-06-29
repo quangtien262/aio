@@ -29,6 +29,7 @@ class PostIndexController
             'publish_at' => $post->publish_at?->toAtomString(),
             'category_id' => $post->category_id,
             'category_name' => $post->category?->name,
+            'is_highlight' => $post->is_highlight,
             'featured_media_id' => $post->featured_media_id,
             'featured_media_url' => $post->featuredMedia?->file_url,
             'public_url' => route('site.blog.show', array_merge(FrontendLocalization::routeParameterDefaults(null), ['slug' => $post->slug])),
@@ -49,6 +50,7 @@ class PostIndexController
                 'metrics' => [
                     'published' => collect($items)->where('status', 'published')->count(),
                     'draft' => collect($items)->where('status', 'draft')->count(),
+                    'highlight' => collect($items)->where('is_highlight', true)->count(),
                 ],
                 'categories' => $categoryQuery->get(['id', 'name'])->map(fn (CmsCategory $category): array => ['label' => $category->name, 'value' => $category->id])->values()->all(),
                 'media' => $mediaQuery->get(['id', 'title', 'file_path', 'file_url'])->map(fn (CmsMedia $media): array => ['id' => $media->id, 'title' => $media->title, 'file_url' => $media->file_url])->values()->all(),

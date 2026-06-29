@@ -52,7 +52,7 @@ function toSlug(value) {
         .replace(/^-+|-+$/g, '');
 }
 
-export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], onCancel, onSubmit }) {
+export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], categoryOptions = [], onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const slugEditedRef = useRef(Boolean(editingService?.id));
     const titleValue = Form.useWatch('title', form) ?? '';
@@ -174,6 +174,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
 
         await onSubmit?.({
             ...values,
+            cms_service_category_id: values.cms_service_category_id || null,
             summary: values.summary || null,
             content: values.content || null,
             icon: values.icon || null,
@@ -183,6 +184,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             meta_description: values.meta_description || null,
             sort_order: Number(values.sort_order ?? 0),
             is_featured: Boolean(values.is_featured),
+            is_highlight: Boolean(values.is_highlight),
             publish_at: values.status === 'published' ? (values.publish_at || dayjs().format('YYYY-MM-DDTHH:mm:ss')) : null,
             images: (values.images ?? []).filter((image) => image?.image_url),
         });
@@ -232,6 +234,17 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
+                                <Form.Item name="cms_service_category_id" label="Danh mục dịch vụ">
+                                    <Select
+                                        allowClear
+                                        showSearch
+                                        optionFilterProp="label"
+                                        options={categoryOptions}
+                                        placeholder="Chọn danh mục"
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={8}>
                                 <Form.Item name="icon" label="Icon ngắn">
                                     <Input placeholder="VD: building, home..." maxLength={20} />
                                 </Form.Item>
@@ -245,6 +258,11 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                         <Row gutter={16}>
                             <Col xs={24} md={8}>
                                 <Form.Item name="is_featured" label="Dịch vụ nổi bật" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={8}>
+                                <Form.Item name="is_highlight" label="Đánh dấu highlight" valuePropName="checked">
                                     <Switch />
                                 </Form.Item>
                             </Col>

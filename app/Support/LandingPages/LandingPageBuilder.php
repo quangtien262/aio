@@ -10,6 +10,7 @@ use App\Models\CmsPartner;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
 use App\Models\CmsService;
+use App\Models\CmsServiceCategory;
 use App\Models\CmsTeamMember;
 use App\Models\CmsTestimonial;
 use App\Models\LandingPage;
@@ -87,18 +88,22 @@ class LandingPageBuilder
         return $page?->load(['data', 'blocks.data']);
     }
 
-    public function resolveBySlug(string $websiteKey, string $slug, string $themeKey): ?LandingPage
+    public function resolveBySlug(string $websiteKey, string $slug, string $themeKey, bool $publishedOnly = true): ?LandingPage
     {
         if (! $this->supportsTheme($themeKey) || ! $this->tablesReady()) {
             return null;
         }
 
-        return LandingPage::query()
+        $query = LandingPage::query()
             ->with(['data', 'blocks.data'])
             ->where('website_key', $websiteKey)
-            ->where('slug', $slug)
-            ->where('status', 'published')
-            ->first();
+            ->where('slug', $slug);
+
+        if ($publishedOnly) {
+            $query->where('status', 'published');
+        }
+
+        return $query->first();
     }
 
     /**
@@ -129,11 +134,19 @@ class LandingPageBuilder
     {
         return [
             'categories_by_source' => [
+                'custom' => [],
                 'cms_posts' => $this->cmsCategoryOptions(),
                 'latest_posts' => $this->cmsCategoryOptions(),
                 'cms_products' => $this->catalogCategoryOptions(),
                 'catalog_products' => $this->catalogCategoryOptions(),
                 'featured_products' => $this->catalogCategoryOptions(),
+                'cms_projects' => [],
+                'cms_services' => $this->cmsServiceCategoryOptions(),
+                'cms_team_members' => [],
+                'cms_testimonials' => [],
+                'catalog_categories' => [],
+                'cms_categories' => [],
+                'cms_service_categories' => [],
             ],
         ];
     }
@@ -151,6 +164,27 @@ class LandingPageBuilder
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(fn (CmsCategory $category): array => [
+                'value' => (int) $category->id,
+                'label' => (string) $category->name,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{value:int,label:string}>
+     */
+    private function cmsServiceCategoryOptions(): array
+    {
+        if (! Schema::hasTable('cms_service_categories')) {
+            return [];
+        }
+
+        return CmsServiceCategory::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'parent_id', 'name'])
+            ->map(fn (CmsServiceCategory $category): array => [
                 'value' => (int) $category->id,
                 'label' => (string) $category->name,
             ])
@@ -271,6 +305,7 @@ class LandingPageBuilder
             'status' => 'published',
             'template' => 'home',
             'is_home' => true,
+            'sort_order' => 0,
             'settings' => ['menu_display_type' => 'landingpage'],
             'published_at' => now(),
         ]);
@@ -398,7 +433,7 @@ class LandingPageBuilder
      */
     private function landingMenuItems(array $blocks, ?string $slug): array
     {
-        $base = $slug ? url('/'.app()->getLocale().'/'.$slug) : '';
+        $base = $slug ? route('site.landing.show', ['locale' => app()->getLocale(), 'slug' => $slug]) : '';
 
         return collect($blocks)
             ->filter(fn (array $block): bool => filled($block['anchor_id'] ?? null))
@@ -424,6 +459,7 @@ class LandingPageBuilder
         $settings = array_merge($block->settings ?? [], $settings);
         $defaultLimit = match ($block->block_type) {
             'hero_slider' => 3,
+            'featured_categories' => 6,
             'project_gallery' => 4,
             'team_members' => 4,
             'testimonials' => 2,
@@ -434,6 +470,10 @@ class LandingPageBuilder
 
         if ($block->block_type === 'hero_slider') {
             return $this->heroSlideItems($settings, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if ($block->block_type === 'featured_categories') {
+            return $this->featuredCategoryItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
         if ($block->block_type === 'latest_posts') {
@@ -520,10 +560,18 @@ class LandingPageBuilder
         }
 
         if ($block->block_type === 'team_members') {
+            if (($settings['source'] ?? 'cms_team_members') === 'custom') {
+                return [];
+            }
+
             return $this->cmsTeamMemberItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
         if ($block->block_type === 'testimonials') {
+            if (($settings['source'] ?? 'cms_testimonials') === 'custom') {
+                return [];
+            }
+
             return $this->cmsTestimonialItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
@@ -606,6 +654,7 @@ class LandingPageBuilder
         $source = (string) ($settings['source'] ?? $defaultSource);
 
         return match ($source) {
+            'custom' => [],
             'cms_posts', 'latest_posts' => $this->latestPostItems($settings, $limit, $locale, $websiteKey),
             'cms_products', 'catalog_products', 'featured_products' => $this->featuredProductItems($settings, $limit, $locale, $websiteKey),
             'cms_projects' => $this->cmsProjectItems($settings, $limit, $locale, $websiteKey),
@@ -617,6 +666,155 @@ class LandingPageBuilder
     private function fallbackContentImage(): string
     {
         return 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80';
+    }
+
+    private function fallbackCategoryImage(int $index = 0): string
+    {
+        $images = [
+            'https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=900&q=80',
+        ];
+
+        return $images[$index % count($images)];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     * @return array<int, array<string, mixed>>
+     */
+    private function featuredCategoryItems(array $settings, int $limit, string $locale, ?string $websiteKey): array
+    {
+        $source = (string) ($settings['source'] ?? 'catalog_categories');
+        $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
+
+        if ($source === 'custom') {
+            return [];
+        }
+
+        if ($source === 'cms_categories') {
+            if (! Schema::hasTable('cms_categories')) {
+                return [];
+            }
+
+            return CmsCategory::query()
+                ->withCount(['posts' => fn (Builder $query) => $query->where('status', 'published')])
+                ->orderByDesc('posts_count')
+                ->orderBy('name')
+                ->take($limit)
+                ->get()
+                ->map(function (CmsCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
+                    $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_category.%d.name', $category->id), $category->name);
+
+                    return [
+                        'title' => $title,
+                        'summary' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_category.%d.description', $category->id), $category->description),
+                        'image' => $this->fallbackCategoryImage($index),
+                        'alt' => $title,
+                        'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
+                        'count_label' => (int) $category->posts_count > 0 ? $category->posts_count.' bài viết' : null,
+                        'url' => route('site.blog.index', ['locale' => $locale, 'category' => $category->slug]),
+                    ];
+                })
+                ->all();
+        }
+
+        if ($source === 'cms_services') {
+            return $this->cmsServiceItems(['featured_only' => $settings['featured_only'] ?? true], $limit, $locale, $websiteKey)
+                ?: [];
+        }
+
+        if ($source === 'cms_service_categories') {
+            if (! Schema::hasTable('cms_service_categories')) {
+                return [];
+            }
+
+            return CmsServiceCategory::query()
+                ->where('is_active', true)
+                ->withCount(['services' => fn (Builder $query) => $query->where('status', 'published')])
+                ->orderByDesc('services_count')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->take($limit)
+                ->get()
+                ->map(function (CmsServiceCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
+                    $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service_category.%d.name', $category->id), $category->name);
+                    $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service_category.%d.description', $category->id), $category->description);
+
+                    return [
+                        'title' => $title,
+                        'summary' => $summary,
+                        'image' => $category->image_url ?: $this->fallbackCategoryImage($index),
+                        'alt' => $title,
+                        'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
+                        'count_label' => (int) $category->services_count > 0 ? $category->services_count.' dịch vụ' : null,
+                        'url' => route('site.services.index', ['locale' => $locale, 'category' => $category->slug]),
+                    ];
+                })
+                ->all();
+        }
+
+        if (! Schema::hasTable('catalog_categories')) {
+            return [];
+        }
+
+        return CatalogCategory::query()
+            ->where('is_active', true)
+            ->withCount(['products' => fn (Builder $query) => $query->where('is_active', true)])
+            ->orderByDesc('products_count')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->take($limit)
+            ->get()
+            ->map(function (CatalogCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
+                $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_category.%d.name', $category->id), $category->name);
+                $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_category.%d.description', $category->id), $category->description);
+
+                return [
+                    'title' => $title,
+                    'summary' => $summary,
+                    'image' => $category->image_url ?: $this->fallbackCategoryImage($index),
+                    'alt' => $title,
+                    'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
+                    'count_label' => (int) $category->products_count > 0 ? $category->products_count.' sản phẩm' : null,
+                    'url' => route('site.catalog.search', ['locale' => $locale, 'category' => $category->slug]),
+                ];
+            })
+            ->all();
+    }
+
+    private function highlightColumn(string $table): ?string
+    {
+        if (Schema::hasColumn($table, 'is_highlight')) {
+            return 'is_highlight';
+        }
+
+        return Schema::hasColumn($table, 'is_featured') ? 'is_featured' : null;
+    }
+
+    private function applyHighlightFilter(Builder $query, string $table, array $settings): void
+    {
+        if (($settings['featured_only'] ?? true) !== true) {
+            return;
+        }
+
+        $column = $this->highlightColumn($table);
+
+        if ($column !== null) {
+            $query->where($column, true);
+        }
+    }
+
+    private function orderByHighlight(Builder $query, string $table): void
+    {
+        $column = $this->highlightColumn($table);
+
+        if ($column !== null) {
+            $query->orderByDesc($column);
+        }
     }
 
     /**
@@ -631,6 +829,7 @@ class LandingPageBuilder
         if (filled($settings['category_id'] ?? null)) {
             $query->where('category_id', (int) $settings['category_id']);
         }
+        $this->applyHighlightFilter($query, 'cms_posts', $settings);
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
@@ -651,11 +850,14 @@ class LandingPageBuilder
     private function featuredProductItems(array $settings, int $limit, string $locale, ?string $websiteKey): array
     {
         /** @var Builder $query */
-        $query = CatalogProduct::query()->where('is_active', true)->orderByDesc('is_featured')->latest();
+        $query = CatalogProduct::query()->where('is_active', true);
+        $this->orderByHighlight($query, 'catalog_products');
+        $query->latest();
 
         if (filled($settings['category_id'] ?? null)) {
             $query->where('catalog_category_id', (int) $settings['category_id']);
         }
+        $this->applyHighlightFilter($query, 'catalog_products', $settings);
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
@@ -682,14 +884,12 @@ class LandingPageBuilder
         /** @var Builder $query */
         $query = CmsProject::query()
             ->with('images')
-            ->where('status', 'published')
-            ->orderByDesc('is_featured')
+            ->where('status', 'published');
+        $this->orderByHighlight($query, 'cms_projects');
+        $query
             ->orderBy('sort_order')
             ->latest('updated_at');
-
-        if (($settings['featured_only'] ?? true) === true) {
-            $query->where('is_featured', true);
-        }
+        $this->applyHighlightFilter($query, 'cms_projects', $settings);
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
@@ -721,13 +921,14 @@ class LandingPageBuilder
         /** @var Builder $query */
         $query = CmsService::query()
             ->with('images')
-            ->where('status', 'published')
-            ->orderByDesc('is_featured')
+            ->where('status', 'published');
+        $this->orderByHighlight($query, 'cms_services');
+        $query
             ->orderBy('sort_order')
             ->latest('updated_at');
-
-        if (($settings['featured_only'] ?? true) === true) {
-            $query->where('is_featured', true);
+        $this->applyHighlightFilter($query, 'cms_services', $settings);
+        if (! empty($settings['category_id']) && Schema::hasColumn('cms_services', 'cms_service_category_id')) {
+            $query->where('cms_service_category_id', (int) $settings['category_id']);
         }
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
@@ -916,6 +1117,49 @@ class LandingPageBuilder
                 ],
             ],
             [
+                'block_type' => 'featured_categories',
+                'label' => 'Danh mục nổi bật',
+                'description' => 'Khối chiến lược hiển thị các nhóm sản phẩm, dịch vụ hoặc tin tức nổi bật.',
+                'anchor_id' => 'danh-muc-noi-bat',
+                'dynamic' => true,
+                'settings' => [
+                    'source' => 'catalog_categories',
+                    'limit' => 6,
+                    'featured_only' => false,
+                ],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => ['custom', 'catalog_categories', 'cms_service_categories', 'cms_services', 'cms_categories']],
+                    'limit' => ['type' => 'number', 'label' => 'Số danh mục hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung highlight'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Danh mục trọng tâm',
+                        'subtitle' => 'Khám phá nhanh',
+                        'description' => 'Các nhóm nội dung quan trọng nhất giúp khách hàng đi thẳng tới nhu cầu chính.',
+                        'button_label' => 'Xem thêm',
+                        'content' => ['items' => [
+                            ['title' => 'Nhà ở dân dụng', 'summary' => 'Thiết kế, thi công và hoàn thiện nhà phố, biệt thự.', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80', 'url' => '#dich-vu'],
+                            ['title' => 'Không gian thương mại', 'summary' => 'Showroom, văn phòng và khách sạn theo chuẩn vận hành.', 'image' => 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80', 'url' => '#du-an'],
+                            ['title' => 'Cải tạo nội thất', 'summary' => 'Tối ưu công năng, vật liệu và trải nghiệm sử dụng.', 'image' => 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80', 'url' => '#dich-vu'],
+                            ['title' => 'Tư vấn kỹ thuật', 'summary' => 'Kiểm soát tiến độ, chi phí và chất lượng công trình.', 'image' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80', 'url' => '#lien-he'],
+                        ]],
+                    ],
+                    'en' => [
+                        'title' => 'Key categories',
+                        'subtitle' => 'Explore fast',
+                        'description' => 'Priority content groups that help visitors reach the right offer quickly.',
+                        'button_label' => 'View more',
+                        'content' => ['items' => [
+                            ['title' => 'Residential builds', 'summary' => 'Design, construction and finishing for houses and villas.', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80', 'url' => '#dich-vu'],
+                            ['title' => 'Commercial spaces', 'summary' => 'Showrooms, offices and hotels ready for operation.', 'image' => 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80', 'url' => '#du-an'],
+                            ['title' => 'Interior upgrades', 'summary' => 'Function, material and living-experience optimization.', 'image' => 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80', 'url' => '#dich-vu'],
+                            ['title' => 'Technical consulting', 'summary' => 'Schedule, cost and quality control for each project.', 'image' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80', 'url' => '#lien-he'],
+                        ]],
+                    ],
+                ],
+            ],
+            [
                 'block_type' => 'about_experience',
                 'label' => 'Giới thiệu và kinh nghiệm',
                 'description' => 'Khối giới thiệu công ty kèm số năm kinh nghiệm.',
@@ -951,10 +1195,10 @@ class LandingPageBuilder
                     'featured_only' => true,
                 ],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => ['cms_services', 'cms_products', 'cms_posts', 'cms_projects']],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => ['custom', 'cms_services', 'cms_products', 'cms_posts', 'cms_projects']],
                     'limit' => ['type' => 'number', 'label' => 'Số item hiển thị'],
                     'category_id' => ['type' => 'number', 'label' => 'ID danh mục khi dùng tin tức/sản phẩm'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy dịch vụ nổi bật'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung highlight'],
                 ],
                 'data' => [
                     'vi' => [
@@ -991,10 +1235,10 @@ class LandingPageBuilder
                     'featured_only' => true,
                 ],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => ['cms_projects', 'cms_services', 'cms_products', 'cms_posts']],
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => ['custom', 'cms_projects', 'cms_services', 'cms_products', 'cms_posts']],
                     'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
                     'category_id' => ['type' => 'number', 'label' => 'ID danh muc khi dung tin tuc/san pham'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay highlight'],
                 ],
                 'data' => [
                     'vi' => [
@@ -1022,6 +1266,7 @@ class LandingPageBuilder
                     'featured_only' => true,
                 ],
                 'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => ['custom', 'cms_team_members']],
                     'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
                     'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
                 ],
@@ -1051,6 +1296,7 @@ class LandingPageBuilder
                     'featured_only' => true,
                 ],
                 'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => ['custom', 'cms_testimonials']],
                     'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
                     'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
                 ],

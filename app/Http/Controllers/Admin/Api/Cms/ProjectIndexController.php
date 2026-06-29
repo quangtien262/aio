@@ -28,7 +28,7 @@ class ProjectIndexController
                 'metrics' => [
                     'published' => collect($items)->where('status', 'published')->count(),
                     'draft' => collect($items)->where('status', 'draft')->count(),
-                    'featured' => collect($items)->where('is_featured', true)->count(),
+                    'featured' => collect($items)->where('is_highlight', true)->count(),
                 ],
                 'media' => $mediaQuery->get(['id', 'title', 'file_path', 'file_url', 'alt_text'])
                     ->map(fn (CmsMedia $media): array => [
@@ -69,6 +69,7 @@ class ProjectIndexController
             'meta_description' => $project->meta_description,
             'publish_at' => $project->publish_at?->toAtomString(),
             'is_featured' => $project->is_featured,
+            'is_highlight' => $project->is_highlight,
             'sort_order' => $project->sort_order,
             'website_key' => $project->website_key,
             'owner_key' => $project->owner_key,

@@ -69,6 +69,8 @@ Route::prefix('{locale}')
 
 		Route::post('/theme-preset/{preset}', [CmsSiteController::class, 'switchThemePreset'])
 			->name('site.theme.preset.switch');
+		Route::get('/land/{slug}', [CmsSiteController::class, 'landing'])
+			->name('site.landing.show');
 
 		Route::middleware('auth:admin')->group(function (): void {
 			Route::get('/{previewSegment}/{pagesSegment}/{page}', [CmsSiteController::class, 'previewPage'])
