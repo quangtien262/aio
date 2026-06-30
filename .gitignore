@@ -2,12 +2,16 @@
 .env.*
 !.env.example
 
+public/.user.ini
+.well-known/
+
 /web-aio
 
 /vendor
 /node_modules
 /public/build
 /public/hot
+
 /public/theme-demo/curated
 /storage/*.key
 /storage/logs
