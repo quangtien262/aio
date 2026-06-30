@@ -8,12 +8,38 @@
     $email = trim((string) ($branding['support_email'] ?? 'admin@demo031086.web30s.vn'));
     $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'));
 
-    $normalizeNavItem = function (array $item) use (&$normalizeNavItem): array {
+    $localizeMenuUrl = function (?string $href): string {
+        $href = trim((string) $href);
+
+        if ($href === '' || $href === '#' || str_starts_with($href, '#') || preg_match('/^(https?:)?\/\//i', $href) || preg_match('/^(mailto|tel):/i', $href)) {
+            return $href !== '' ? $href : '#';
+        }
+
+        $parts = parse_url($href) ?: [];
+        $path = trim((string) ($parts['path'] ?? ''), '/');
+        $query = isset($parts['query']) && $parts['query'] !== '' ? '?'.$parts['query'] : '';
+        $fragment = isset($parts['fragment']) && $parts['fragment'] !== '' ? '#'.$parts['fragment'] : '';
+
+        if ($path === '') {
+            return route('site.home').$query.$fragment;
+        }
+
+        $segments = explode('/', $path);
+        $knownLocales = \App\Support\FrontendLocalization::knownLocaleCodes();
+
+        if (! in_array($segments[0] ?? '', $knownLocales, true)) {
+            array_unshift($segments, app()->getLocale());
+        }
+
+        return url('/'.implode('/', $segments)).$query.$fragment;
+    };
+
+    $normalizeNavItem = function (array $item) use (&$normalizeNavItem, $localizeMenuUrl): array {
         $href = (string) ($item['url'] ?? $item['href'] ?? '#');
 
         return [
             'label' => (string) ($item['label'] ?? $item['title'] ?? 'Menu'),
-            'href' => $href !== '' ? $href : '#',
+            'href' => $localizeMenuUrl($href),
             'target' => $item['target'] ?? '_self',
             'active' => false,
             'children' => collect($item['children'] ?? [])
@@ -51,6 +77,7 @@
 
     $isServiceListing = ($contentType ?? null) === 'services';
     $isServiceDetail = ($contentType ?? null) === 'service';
+    $isPostListing = ($contentType ?? null) === 'posts';
     $title = $pageTitle ?? ($entry->title ?? data_get($siteProfile, 'site_name', 'Arkit'));
     $description = $pageDescription ?? ($entry->excerpt ?? '');
 @endphp
@@ -172,6 +199,46 @@
                             <p>{{ app()->getLocale() === 'en' ? 'No services are available yet.' : 'Chưa có dịch vụ nào được xuất bản.' }}</p>
                         @endforelse
                     </section>
+                @elseif ($isPostListing)
+                    <section class="xd-cms-hero">
+                        <div>
+                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'News' : 'Tin tức' }}</span>
+                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'News' : 'Tin tức') }}</h1>
+                            <p>{{ $pageDescription ?? (app()->getLocale() === 'en' ? 'Latest company updates and construction insights.' : 'Danh sách bài viết, tin tức và kinh nghiệm xây dựng mới nhất.') }}</p>
+                        </div>
+                        <div class="xd-cms-stats">
+                            <strong>{{ method_exists($listingItems, 'total') ? $listingItems->total() : collect($listingItems ?? [])->count() }}</strong>
+                            <span>{{ app()->getLocale() === 'en' ? 'Published posts' : 'Bài viết đã xuất bản' }}</span>
+                        </div>
+                    </section>
+
+                    <section class="xd-services-list">
+                        @forelse ($listingItems as $post)
+                            @php
+                                $postUrl = route('site.blog.show', ['slug' => $post->slug]);
+                                $image = $post->featuredMedia?->url ?: $post->featuredMedia?->file_url;
+                                $summary = $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags((string) ($post->body ?? '')), 150);
+                            @endphp
+                            <article class="xd-service-card">
+                                <a class="xd-service-image" href="{{ $postUrl }}" aria-label="{{ $post->title }}">
+                                    <img src="{{ $image ?: 'https://picsum.photos/seed/xd0301-post-'.($post->id ?? 'default').'/960/720' }}" alt="{{ $post->title }}">
+                                </a>
+                                <div class="xd-service-body">
+                                    <h2><a href="{{ $postUrl }}">{{ $post->title }}</a></h2>
+                                    <p>{{ $summary }}</p>
+                                    <a class="xd-text-link" href="{{ $postUrl }}">{{ app()->getLocale() === 'en' ? 'Read more' : 'Đọc tiếp' }}</a>
+                                </div>
+                            </article>
+                        @empty
+                            <p>{{ app()->getLocale() === 'en' ? 'No posts are available yet.' : 'Chưa có bài viết nào được xuất bản.' }}</p>
+                        @endforelse
+                    </section>
+
+                    @if (method_exists($listingItems, 'links'))
+                        <div style="margin-top:32px">
+                            {{ $listingItems->links() }}
+                        </div>
+                    @endif
                 @elseif ($isServiceDetail)
                     @php
                         $featuredImage = $entry->featuredImage?->image_url;

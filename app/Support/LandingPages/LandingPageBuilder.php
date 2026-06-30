@@ -47,6 +47,7 @@ class LandingPageBuilder
                 'label' => $block['label'],
                 'description' => $block['description'],
                 'default_anchor_id' => $block['anchor_id'],
+                'preview_image' => $block['preview_image'] ?? null,
                 'dynamic' => $block['dynamic'] ?? false,
                 'settings_schema' => $block['settings_schema'] ?? [],
             ])
@@ -1082,6 +1083,7 @@ class LandingPageBuilder
                 'block_type' => 'hero_slider',
                 'label' => 'Hero slider',
                 'description' => 'Menu đầu trang và slide banner ảnh chạy.',
+                'preview_image' => '/theme-previews/XD0301/hero-slider.png',
                 'anchor_id' => 'top',
                 'dynamic' => true,
                 'media' => [],
@@ -1120,6 +1122,7 @@ class LandingPageBuilder
                 'block_type' => 'featured_categories',
                 'label' => 'Danh mục nổi bật',
                 'description' => 'Khối chiến lược hiển thị các nhóm sản phẩm, dịch vụ hoặc tin tức nổi bật.',
+                'preview_image' => '/theme-previews/XD0301/featured-categories.png',
                 'anchor_id' => 'danh-muc-noi-bat',
                 'dynamic' => true,
                 'settings' => [
@@ -1163,6 +1166,7 @@ class LandingPageBuilder
                 'block_type' => 'about_experience',
                 'label' => 'Giới thiệu và kinh nghiệm',
                 'description' => 'Khối giới thiệu công ty kèm số năm kinh nghiệm.',
+                'preview_image' => '/theme-previews/XD0301/about-experience.png',
                 'anchor_id' => 'gioi-thieu',
                 'media' => ['image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1000&q=85'],
                 'settings' => ['years' => 10],
@@ -1187,6 +1191,7 @@ class LandingPageBuilder
                 'block_type' => 'featured_services',
                 'label' => 'Dịch vụ nổi bật',
                 'description' => 'Danh sách dịch vụ nổi bật dạng card.',
+                'preview_image' => '/theme-previews/XD0301/featured-services.png',
                 'anchor_id' => 'dich-vu',
                 'dynamic' => true,
                 'settings' => [
@@ -1227,6 +1232,7 @@ class LandingPageBuilder
                 'block_type' => 'project_gallery',
                 'label' => 'Dự án hoàn thành',
                 'description' => 'Gallery dự án đã hoàn thành.',
+                'preview_image' => '/theme-previews/XD0301/project-gallery.png',
                 'anchor_id' => 'du-an',
                 'dynamic' => true,
                 'settings' => [
@@ -1258,6 +1264,7 @@ class LandingPageBuilder
                 'block_type' => 'team_members',
                 'label' => 'Nhân sự',
                 'description' => 'Giới thiệu nhân sự chủ chốt.',
+                'preview_image' => '/theme-previews/XD0301/team-members.png',
                 'anchor_id' => 'thu-vien',
                 'dynamic' => true,
                 'settings' => [
@@ -1288,6 +1295,7 @@ class LandingPageBuilder
                 'block_type' => 'testimonials',
                 'label' => 'Khách hàng nhận xét',
                 'description' => 'Nhận xét của khách hàng.',
+                'preview_image' => '/theme-previews/XD0301/testimonials.png',
                 'anchor_id' => 'danh-gia',
                 'dynamic' => true,
                 'settings' => [
@@ -1316,6 +1324,7 @@ class LandingPageBuilder
                 'block_type' => 'partner_logos',
                 'label' => 'Logo đối tác',
                 'description' => 'Logo đối tác có link.',
+                'preview_image' => '/theme-previews/XD0301/partner-logos.png',
                 'anchor_id' => 'doi-tac',
                 'dynamic' => true,
                 'settings' => [
@@ -1347,6 +1356,7 @@ class LandingPageBuilder
                 'block_type' => 'footer_contact',
                 'label' => 'Footer',
                 'description' => 'Footer thông tin, liên hệ và đăng ký nhận tin.',
+                'preview_image' => '/theme-previews/XD0301/footer-contact.png',
                 'anchor_id' => 'lien-he',
                 'data' => [
                     'vi' => [
