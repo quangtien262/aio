@@ -781,7 +781,7 @@ class LandingPageBuilder
                     'alt' => $title,
                     'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                     'count_label' => (int) $category->products_count > 0 ? $category->products_count.' sản phẩm' : null,
-                    'url' => route('site.catalog.search', ['locale' => $locale, 'category' => $category->slug]),
+                    'url' => route('site.catalog.category', ['locale' => $locale, 'slug' => $category->slug]),
                 ];
             })
             ->all();

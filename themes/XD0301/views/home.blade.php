@@ -18,6 +18,23 @@
         ->whenEmpty(fn () => collect(data_get($hero, 'dynamic_items', []))->filter(fn ($slide) => is_array($slide) && filled($slide['image'] ?? null)))
         ->values();
     $heroSlides = $heroSlides->isNotEmpty() ? $heroSlides : collect([['kicker' => 'Residential', 'title' => 'Xây dựng ngôi nhà mơ ước', 'summary' => 'XD0301 Construction Landing', 'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1920&q=85']]);
+    $hasMeaningfulHeroText = function (array $slide, array $data = []): bool {
+        $values = [
+            $slide['kicker'] ?? $data['subtitle'] ?? null,
+            $slide['title'] ?? $data['title'] ?? null,
+            $slide['summary'] ?? $data['description'] ?? null,
+            $slide['button_label'] ?? $data['button_label'] ?? null,
+        ];
+
+        foreach ($values as $value) {
+            $text = trim((string) $value);
+            if ($text !== '' && ! preg_match('/^[\d\s.,:;!?\-+_#]+$/u', $text)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
 
     $localizeMenuUrl = function (?string $href): string {
         $href = trim((string) $href);
@@ -181,6 +198,7 @@
         .xd-nav{display:flex;align-items:center;justify-content:center;gap:0;min-width:0;flex:1}.xd-nav-item{position:relative}.xd-nav-link{display:inline-flex;align-items:center;gap:8px;padding:39px 21px;color:#344354;font-size:15px;font-weight:850;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}.xd-nav-caret{color:var(--lime-dark);font-size:12px;line-height:1;transition:transform .18s ease}.xd-nav-link.is-active,.xd-nav-link:hover,.xd-nav-item:hover>.xd-nav-link,.xd-nav-item:focus-within>.xd-nav-link{color:var(--lime-dark)}.xd-nav-item:hover>.xd-nav-link .xd-nav-caret,.xd-nav-item:focus-within>.xd-nav-link .xd-nav-caret{transform:rotate(180deg)}
         .xd-dropdown{position:absolute;top:100%;left:0;z-index:90;min-width:250px;padding:12px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(12px);transition:opacity .18s ease,transform .18s ease,visibility .18s ease}.xd-nav-item:hover>.xd-dropdown,.xd-nav-item:focus-within>.xd-dropdown{opacity:1;visibility:visible;transform:translateY(0)}.xd-dropdown-item{position:relative}.xd-dropdown-link{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 14px;border-left:3px solid transparent;color:#53606b;font-size:14px;font-weight:800;line-height:1.35}.xd-dropdown-link:hover,.xd-dropdown-item:focus-within>.xd-dropdown-link{background:#f7f9ee;border-left-color:var(--lime);color:var(--ink)}.xd-subdropdown{position:absolute;top:0;left:calc(100% + 10px);z-index:91;min-width:230px;padding:10px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateX(-8px);transition:opacity .18s ease,transform .18s ease,visibility .18s ease}.xd-dropdown-item:hover>.xd-subdropdown,.xd-dropdown-item:focus-within>.xd-subdropdown{opacity:1;visibility:visible;transform:translateX(0)}
         .xd-header-actions{display:flex;align-items:center;gap:12px;flex:0 0 auto}.xd-hotline{display:inline-flex;align-items:center;gap:12px;padding:18px 28px;color:#fff;background:var(--lime);border-radius:4px;box-shadow:0 14px 26px rgba(189,212,0,.34);font-weight:900;letter-spacing:.035em;white-space:nowrap}.xd-login-button{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 22px;border:1px solid rgba(38,56,74,.14);border-radius:4px;background:#fff;color:var(--ink);box-shadow:0 12px 24px rgba(16,29,40,.08);font:inherit;font-size:14px;font-weight:900;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap;cursor:pointer}.xd-login-button:hover{border-color:var(--lime);color:var(--lime-dark);transform:translateY(-1px)}
+        .xd-mobile-menu-toggle{display:none;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:0 16px;border:1px solid rgba(38,56,74,.12);border-radius:999px;background:#101d28;color:#fff;font:inherit;font-size:13px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 14px 28px rgba(16,29,40,.16);cursor:pointer}.xd-mobile-menu-toggle:before{content:"";width:16px;height:2px;background:currentColor;box-shadow:0 -6px 0 currentColor,0 6px 0 currentColor}.xd-mobile-panel[hidden]{display:none!important}.xd-mobile-panel{display:none}.xd-mobile-list,.xd-mobile-children{display:grid;gap:8px;margin:0;padding:0;list-style:none}.xd-mobile-link,.xd-mobile-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:0 14px;border:1px solid #edf0f2;border-radius:14px;background:#fff;color:var(--ink);font-size:14px;font-weight:900;text-transform:uppercase}.xd-mobile-link.is-active,.xd-mobile-summary.is-active{border-color:var(--lime);background:#f8fbde;color:var(--lime-dark)}.xd-mobile-item details{display:grid;gap:8px}.xd-mobile-summary{cursor:pointer;list-style:none}.xd-mobile-summary::-webkit-details-marker{display:none}.xd-mobile-summary:after{content:"+";display:grid;place-items:center;width:24px;height:24px;border-radius:999px;background:#f2f5ed;color:var(--lime-dark);font-size:17px;line-height:1}.xd-mobile-item details[open]>.xd-mobile-summary:after{content:"-";background:var(--lime);color:#fff}.xd-mobile-children{margin:8px 0 0 14px;padding-left:10px;border-left:2px solid #e8efcf}.xd-mobile-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid #edf0f2}.xd-mobile-actions .xd-hotline,.xd-mobile-actions .xd-login-button{width:100%;min-height:48px;justify-content:center;border-radius:14px;padding:0 12px;font-size:13px}
         .xd-landing-block{position:relative}.xd-hero{position:relative;min-height:820px;overflow:hidden;background:#111c24}.xd-slide{position:absolute;inset:0;opacity:0;transition:opacity .7s ease}.xd-slide.is-active{opacity:1}.xd-slide img{width:100%;height:100%;object-fit:cover;filter:grayscale(.15) contrast(1.05)}.xd-slide:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,15,22,.82),rgba(7,15,22,.42) 42%,rgba(7,15,22,.16))}
         .xd-hero-content{position:relative;z-index:2;display:flex;align-items:center;min-height:820px}.xd-hero-card{position:relative;width:min(560px,92vw);margin-left:90px;padding:88px 78px 82px;color:#fff;border:8px solid rgba(189,212,0,.72)}.xd-hero-card small{display:block;margin-bottom:28px;font-weight:900;text-transform:uppercase}.xd-hero-card h1{margin:0 0 20px;font-size:clamp(42px,4vw,70px);line-height:1.12;letter-spacing:-.05em}.xd-hero-card p{margin:0 0 36px;color:rgba(255,255,255,.88);font-size:18px;font-weight:600}
         .xd-button{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 34px;color:#fff;background:var(--lime);border:0;border-radius:3px;font-weight:900;text-transform:uppercase;box-shadow:0 15px 30px rgba(189,212,0,.28)}.xd-hero-arrow{position:absolute;z-index:4;top:50%;transform:translateY(-50%);width:54px;height:78px;color:#fff;background:rgba(0,0,0,.35);border:0;font-size:42px;cursor:pointer}.xd-hero-arrow:hover{background:var(--lime)}.xd-hero-arrow.prev{left:0}.xd-hero-arrow.next{right:0}.xd-hero-dots{position:absolute;z-index:4;left:50%;bottom:30px;display:flex;gap:12px;transform:translateX(-50%)}.xd-dot{width:13px;height:13px;border:0;border-radius:999px;background:rgba(255,255,255,.35);cursor:pointer}.xd-dot.is-active{background:var(--lime);box-shadow:0 0 0 7px rgba(189,212,0,.15)}
@@ -212,10 +230,16 @@
             .xd-logo-mark{width:29px;height:38px;flex:0 0 auto}
             .xd-logo-mark:before{left:7px;bottom:5px;width:15px;height:23px}
             .xd-logo-mark:after{left:11px;top:13px;width:8px;height:5px;box-shadow:0 8px 0 #fff}
-            .xd-header-actions{width:auto;gap:8px;margin-left:auto}.xd-hotline{width:auto;min-height:42px;padding:0 14px;border-radius:999px;font-size:0;box-shadow:0 10px 22px rgba(189,212,0,.26)}
+            .xd-header-actions{display:none}.xd-hotline{width:auto;min-height:42px;padding:0 14px;border-radius:999px;font-size:0;box-shadow:0 10px 22px rgba(189,212,0,.26)}
             .xd-hotline::after{content:"19009477";font-size:13px;letter-spacing:.03em}
             .xd-login-button{min-height:42px;padding:0 13px;border-radius:999px;font-size:12px;box-shadow:0 10px 22px rgba(16,29,40,.07)}
-            .xd-nav{order:3;width:100%;max-width:100%;flex:0 0 100%;display:flex;justify-content:flex-start;gap:8px;overflow-x:auto;padding:8px 0 2px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+            .xd-nav{display:none}
+            .xd-mobile-menu-toggle{display:inline-flex;margin-left:auto}
+            .xd-mobile-panel{position:fixed;left:12px;right:12px;top:76px;z-index:120;max-height:calc(100dvh - 92px);overflow:auto;padding:14px;border:1px solid rgba(38,56,74,.1);border-radius:22px;background:rgba(255,255,255,.98);box-shadow:0 28px 80px rgba(16,29,40,.24);backdrop-filter:blur(14px)}
+            .xd-mobile-panel.is-open{display:block}
+            .xd-mobile-actions .xd-hotline{font-size:0}
+            .xd-mobile-actions .xd-login-button{font-size:12px;box-shadow:none}
+            .xd-mobile-actions .xd-hotline:after{content:"19009477";font-size:13px}
             .xd-nav::-webkit-scrollbar{display:none}
             .xd-nav-item{scroll-snap-align:start;flex:0 0 auto}
             .xd-nav-link{padding:8px 12px;border:1px solid #e7ece5;border-radius:999px;background:#fff;color:#2d3c4b;font-size:12px;font-weight:900;letter-spacing:.035em;box-shadow:0 8px 18px rgba(16,29,40,.06)}
@@ -327,6 +351,7 @@
                         <i class="xd-logo-mark" aria-hidden="true"></i><b>ar<span>kit</span>.</b>
                     @endif
                 </a>
+                <button type="button" class="xd-mobile-menu-toggle" data-xd-mobile-menu-toggle aria-expanded="false" aria-controls="xd-mobile-menu">Menu</button>
                 <nav class="xd-nav" aria-label="Menu chính">
                     @foreach ($navItems as $item)
                         <div class="xd-nav-item {{ !empty($item['children']) ? 'has-children' : '' }}">
@@ -368,6 +393,49 @@
                         <button type="button" class="xd-login-button" data-xd-auth-open="login">Đăng nhập</button>
                     @endif
                 </div>
+                <div id="xd-mobile-menu" class="xd-mobile-panel" data-xd-mobile-menu hidden>
+                    <ul class="xd-mobile-list">
+                        @foreach ($navItems as $item)
+                            <li class="xd-mobile-item">
+                                @if (!empty($item['children']))
+                                    <details>
+                                        <summary class="xd-mobile-summary {{ ($item['active'] ?? false) ? 'is-active' : '' }}">{{ $item['label'] }}</summary>
+                                        <ul class="xd-mobile-children">
+                                            <li><a class="xd-mobile-link" href="{{ $item['href'] }}" target="{{ $item['target'] ?? '_self' }}">Xem {{ $item['label'] }}</a></li>
+                                            @foreach (collect($item['children'])->take(12) as $child)
+                                                <li class="xd-mobile-item">
+                                                    @if (!empty($child['children']))
+                                                        <details>
+                                                            <summary class="xd-mobile-summary">{{ $child['label'] ?? 'Menu' }}</summary>
+                                                            <ul class="xd-mobile-children">
+                                                                <li><a class="xd-mobile-link" href="{{ $child['href'] ?? ($item['href'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">Xem {{ $child['label'] ?? 'Menu' }}</a></li>
+                                                                @foreach (collect($child['children'])->take(12) as $grandChild)
+                                                                    <li><a class="xd-mobile-link" href="{{ $grandChild['href'] ?? ($child['href'] ?? '#') }}" target="{{ $grandChild['target'] ?? '_self' }}">{{ $grandChild['label'] ?? 'Menu' }}</a></li>
+                                                                @endforeach
+                                                            </ul>
+                                                        </details>
+                                                    @else
+                                                        <a class="xd-mobile-link" href="{{ $child['href'] ?? ($item['href'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? 'Menu' }}</a>
+                                                    @endif
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </details>
+                                @else
+                                    <a class="xd-mobile-link {{ ($item['active'] ?? false) ? 'is-active' : '' }}" href="{{ $item['href'] }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] }}</a>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                    <div class="xd-mobile-actions">
+                        <a class="xd-hotline" href="tel:19009477"><span aria-hidden="true">&#9742;</span> 19009477</a>
+                        @if (auth('customer')->check())
+                            <a class="xd-login-button" href="{{ route('customer.account') }}">Tài khoản</a>
+                        @else
+                            <button type="button" class="xd-login-button" data-xd-auth-open="login">Đăng nhập</button>
+                        @endif
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -392,13 +460,16 @@
                                 ->whenEmpty(fn () => collect($block['dynamic_items'] ?? [])->filter(fn ($slide) => is_array($slide) && filled($slide['image'] ?? null)))
                                 ->values();
                             $firstSlide = $slides->first() ?? [];
+                            $showHeroCard = is_array($firstSlide) && $hasMeaningfulHeroText($firstSlide, $data);
                         @endphp
                         <section id="{{ $anchor }}" class="xd-hero xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
                             {!! $editButton !!}
                             @foreach ($slides as $slide)
                                 <article class="xd-slide {{ $loop->first ? 'is-active' : '' }}"><img src="{{ $slide['image'] }}" alt="{{ $slide['alt'] ?? $slide['title'] ?? $data['title'] ?? 'Banner' }}"></article>
                             @endforeach
-                            <div class="xd-container xd-hero-content"><div class="xd-hero-card"><small data-hero-kicker>{{ $firstSlide['kicker'] ?? $data['subtitle'] ?? '' }}</small><h1 data-hero-title>{{ $firstSlide['title'] ?? $data['title'] ?? '' }}</h1><p data-hero-summary>{{ $firstSlide['summary'] ?? $data['description'] ?? '' }}</p><a class="xd-button" href="{{ $firstSlide['link_url'] ?? '#du-an' }}" data-hero-link>{{ $firstSlide['button_label'] ?? $data['button_label'] ?? 'Xem dự án →' }}</a></div></div>
+                            @if ($showHeroCard)
+                                <div class="xd-container xd-hero-content"><div class="xd-hero-card"><small data-hero-kicker>{{ $firstSlide['kicker'] ?? $data['subtitle'] ?? '' }}</small><h1 data-hero-title>{{ $firstSlide['title'] ?? $data['title'] ?? '' }}</h1><p data-hero-summary>{{ $firstSlide['summary'] ?? $data['description'] ?? '' }}</p><a class="xd-button" href="{{ $firstSlide['link_url'] ?? '#du-an' }}" data-hero-link>{{ $firstSlide['button_label'] ?? $data['button_label'] ?? 'Xem dự án →' }}</a></div></div>
+                            @endif
                             <button class="xd-hero-arrow prev" type="button" data-slide-prev aria-label="Slide trước">&#8249;</button><button class="xd-hero-arrow next" type="button" data-slide-next aria-label="Slide sau">&#8250;</button>
                             <div class="xd-hero-dots" aria-label="Chọn slide">@foreach ($slides as $slide)<button class="xd-dot {{ $loop->first ? 'is-active' : '' }}" type="button" data-slide-dot="{{ $loop->index }}" aria-label="Slide {{ $loop->iteration }}"></button>@endforeach</div>
                         </section>
@@ -656,6 +727,29 @@
 
     <script>
         (() => {
+            const mobileToggle = document.querySelector('[data-xd-mobile-menu-toggle]');
+            const mobileMenu = document.querySelector('[data-xd-mobile-menu]');
+            const closeMobileMenu = () => {
+                if (!mobileToggle || !mobileMenu) return;
+                mobileMenu.hidden = true;
+                mobileMenu.classList.remove('is-open');
+                mobileToggle.setAttribute('aria-expanded', 'false');
+            };
+            mobileToggle?.addEventListener('click', () => {
+                const willOpen = mobileMenu?.hidden;
+                if (!mobileMenu) return;
+                mobileMenu.hidden = !willOpen;
+                mobileMenu.classList.toggle('is-open', Boolean(willOpen));
+                mobileToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            });
+            document.addEventListener('click', (event) => {
+                if (!mobileMenu || mobileMenu.hidden) return;
+                if (mobileMenu.contains(event.target) || mobileToggle?.contains(event.target)) return;
+                closeMobileMenu();
+            });
+            document.querySelectorAll('.xd-mobile-link').forEach((link) => {
+                link.addEventListener('click', closeMobileMenu);
+            });
             const slides = Array.from(document.querySelectorAll('.xd-slide'));
             const dots = Array.from(document.querySelectorAll('.xd-dot'));
             const copy = @json($heroSlides);
@@ -663,8 +757,15 @@
             const kicker = document.querySelector('[data-hero-kicker]');
             const summary = document.querySelector('[data-hero-summary]');
             const heroLink = document.querySelector('[data-hero-link]');
+            const heroCard = document.querySelector('.xd-hero-card');
             let index = 0;
             let timer = null;
+            const hasMeaningfulHeroText = (item = {}) => {
+                return ['kicker', 'title', 'summary', 'button_label'].some((key) => {
+                    const value = String(item?.[key] || '').trim();
+                    return value !== '' && !/^[\d\s.,:;!?\-+_#]+$/u.test(value);
+                });
+            };
             document.querySelectorAll('.xd-service-image img').forEach((image) => {
                 if (!image.currentSrc && !image.getAttribute('src')) image.classList.add('is-broken');
                 image.addEventListener('error', () => image.classList.add('is-broken'), {once: true});
@@ -674,6 +775,7 @@
                 index = (next + slides.length) % slides.length;
                 slides.forEach((slide, slideIndex) => slide.classList.toggle('is-active', slideIndex === index));
                 dots.forEach((dot, dotIndex) => dot.classList.toggle('is-active', dotIndex === index));
+                if (heroCard) heroCard.hidden = !hasMeaningfulHeroText(copy[index] || {});
                 if (title) title.textContent = copy[index]?.title || '';
                 if (kicker) kicker.textContent = copy[index]?.kicker || '';
                 if (summary) summary.textContent = copy[index]?.summary || '';

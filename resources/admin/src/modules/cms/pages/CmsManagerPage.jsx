@@ -1569,13 +1569,48 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     dataIndex: 'name',
                     key: 'name',
                     render: (value, record) => (
-                        <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => setSelectedProduct(record)}>
-                            <Space direction="vertical" size={4} align="start">
+                        <Button type="link" style={{ paddingInline: 0, height: 'auto', textAlign: 'left' }} onClick={() => setSelectedProduct(record)}>
+                            <Space size={12} align="center">
+                                {record.image_url ? (
+                                    <img
+                                        src={record.image_url}
+                                        alt={value}
+                                        style={{
+                                            width: 56,
+                                            height: 56,
+                                            objectFit: 'cover',
+                                            borderRadius: 10,
+                                            border: '1px solid #edf0f2',
+                                            background: '#f6f8f9',
+                                            flexShrink: 0,
+                                        }}
+                                    />
+                                ) : (
+                                    <div
+                                        style={{
+                                            width: 56,
+                                            height: 56,
+                                            display: 'grid',
+                                            placeItems: 'center',
+                                            borderRadius: 10,
+                                            border: '1px solid #edf0f2',
+                                            background: '#f6f8f9',
+                                            color: '#8c9aa5',
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        No Img
+                                    </div>
+                                )}
+                                <Space direction="vertical" size={4} align="start">
                                 <Space size={8} wrap>
                                     <Text strong style={{ color: '#1677ff' }}>{value}</Text>
                                     {record.is_highlight ? <Tag color="gold">Nổi bật</Tag> : null}
                                 </Space>
                                 <Text type="secondary">{record.category_name || 'Chưa gắn danh mục'}</Text>
+                                </Space>
                             </Space>
                         </Button>
                     ),
