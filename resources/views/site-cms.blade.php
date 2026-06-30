@@ -82,7 +82,7 @@
                     @auth('admin')
                         <a class="site-admin-entry" href="{{ route('admin.index') }}">Vào quản trị</a>
                     @else
-                        <a class="site-admin-entry" href="{{ url('/admin') }}">Đăng nhập quản trị</a>
+                        <a class="site-admin-entry" href="#admin-login">Đăng nhập quản trị</a>
                     @endauth
                 </nav>
             </header>
@@ -145,8 +145,7 @@
                         @endif
                     </section>
 
-                    @if(false)
-                    <section class="site-auth-panel">
+                    <section id="admin-login" class="site-auth-panel">
                         @auth('admin')
                             <span class="site-kicker">Admin session</span>
                             <h2>Đã đăng nhập quản trị</h2>
@@ -169,10 +168,10 @@
 
                             <form method="POST" action="{{ route('customer.auth.store') }}" class="site-auth-form" novalidate>
                                 @csrf
-                                <input type="hidden" name="redirect_to" value="{{ route('customer.account') }}">
+                                <input type="hidden" name="redirect_to" value="{{ route('admin.index') }}">
                                 <div class="site-auth-grid">
                                     <label class="site-auth-field">
-                                        <span>Email khách hàng / Username admin</span>
+                                        <span>Username admin hoặc email</span>
                                         <input type="text" name="login" value="{{ old('login', 'admin') }}" required autofocus>
                                     </label>
                                     <label class="site-auth-field">
@@ -187,8 +186,6 @@
                             </form>
                         @endauth
                     </section>
-
-                    @endif
 
                     <section class="site-content">
                         {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
