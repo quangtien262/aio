@@ -1,4 +1,4 @@
-@php
+﻿@php
     $shell = $themeShellData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
@@ -275,23 +275,16 @@
             <section class="xd-container xd-catalog">
                 <aside class="xd-sidebar">
                     <div class="xd-panel">
-                        <h2>Nhóm liên quan</h2>
+                        <h2>Danh mục sản phẩm</h2>
                         <div class="xd-side-list">
                             @if ($sidebarItems->isNotEmpty())
                                 {!! $renderCategoryTree($sidebarItems->all()) !!}
                             @else
-                            @foreach ($skipLegacySidebarItem ? [] : $sidebarItems as $item)
-                                <a class="xd-side-link {{ ($item['active'] ?? false) ? 'is-active' : '' }}" href="{{ $item['url'] ?? '#' }}">
-                                    <span>{{ $item['label'] ?? $item['name'] ?? 'Danh mục' }}</span>
-                                    <small>{{ (int) ($item['count'] ?? 0) }}</small>
-                                </a>
-                            @if ($sidebarItems->isEmpty())
                                 <a class="xd-side-link is-active" href="{{ route('site.catalog.category', ['slug' => $category->slug]) }}">
                                     <span>{{ $category->name }}</span>
                                     <small>{{ $productItems->count() }}</small>
                                 </a>
                             @endif
-                            @endforeach
                         </div>
                     </div>
                     <div class="xd-panel xd-promo">
