@@ -87,6 +87,63 @@
         ]);
     }
 
+    $hasProductItem = $navItems->contains(function (array $item): bool {
+        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
+    });
+
+    if (! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
+        $productCategories = \App\Models\CatalogCategory::query()
+            ->with(['children' => fn ($query) => $query
+                ->where('is_active', true)
+                ->withCount(['products' => fn ($productQuery) => $productQuery->where('is_active', true)])
+                ->orderBy('sort_order')
+                ->orderBy('name')])
+            ->withCount(['products' => fn ($query) => $query->where('is_active', true)])
+            ->whereNull('parent_id')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn ($category): bool => (int) $category->products_count > 0 || $category->children->contains(fn ($child): bool => (int) $child->products_count > 0))
+            ->take(8)
+            ->values();
+
+        if ($productCategories->isNotEmpty()) {
+            $productMenuItem = [
+                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
+                'href' => route('site.catalog.search'),
+                'target' => '_self',
+                'active' => request()->routeIs('site.catalog.*'),
+                'children' => $productCategories
+                    ->map(fn ($category): array => [
+                        'label' => (string) $category->name,
+                        'href' => route('site.catalog.category', ['slug' => $category->slug]),
+                        'target' => '_self',
+                        'active' => false,
+                        'children' => $category->children
+                            ->filter(fn ($child): bool => (int) $child->products_count > 0)
+                            ->take(8)
+                            ->map(fn ($child): array => [
+                                'label' => (string) $child->name,
+                                'href' => route('site.catalog.category', ['slug' => $child->slug]),
+                                'target' => '_self',
+                                'active' => false,
+                                'children' => [],
+                            ])
+                            ->values()
+                            ->all(),
+                    ])
+                    ->values()
+                    ->all(),
+            ];
+
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
+            $navArray = $navItems->values()->all();
+            array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
+            $navItems = collect($navArray);
+        }
+    }
+
     $currentUrl = rtrim(url()->current(), '/');
     $navItems = $navItems->map(function (array $item) use ($currentUrl): array {
         $href = (string) ($item['href'] ?? '#');
