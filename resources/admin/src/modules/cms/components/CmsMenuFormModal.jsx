@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
+import Checkbox from 'antd/es/checkbox';
 import Col from 'antd/es/col';
 import Divider from 'antd/es/divider';
 import Drawer from 'antd/es/drawer';
@@ -238,6 +239,24 @@ function removeItemAtPath(items, path) {
     });
 }
 
+function removeItemsByKeys(items, selectedKeys) {
+    const selectedSet = new Set(selectedKeys ?? []);
+
+    return (items ?? [])
+        .filter((item) => !selectedSet.has(item?.__menuKey))
+        .map((item) => ({
+            ...item,
+            children: (item.children ?? []).filter((child) => !selectedSet.has(child?.__menuKey)),
+        }));
+}
+
+function collectMenuItemKeys(items = []) {
+    return (items ?? []).flatMap((item) => [
+        item.__menuKey,
+        ...collectMenuItemKeys(item.children ?? []),
+    ]).filter(Boolean);
+}
+
 function appendChildItem(items, parentIndex, nextChild) {
     return items.map((item, index) => {
         if (index !== parentIndex) {
@@ -356,6 +375,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
     const [selectedLocation, setSelectedLocation] = useState(editingMenu?.location ?? 'primary');
     const [itemLinkType, setItemLinkType] = useState('custom');
     const [manualExpandedKeys, setManualExpandedKeys] = useState([]);
+    const [selectedItemKeys, setSelectedItemKeys] = useState([]);
     const [draggingKey, setDraggingKey] = useState(null);
     const [dragOverState, setDragOverState] = useState({ key: null, mode: null });
     const linkLookups = useMemo(() => buildLinkLookups(linkOptions), [linkOptions]);
@@ -372,6 +392,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
 
         setMenuItems(normalizedItems);
         setManualExpandedKeys(collectExpandableKeys(normalizedItems));
+        setSelectedItemKeys([]);
         setDragOverState({ key: null, mode: null });
         setSelectedLocation(editingMenu?.location ?? 'primary');
     }, [editingMenu, form, linkLookups]);
@@ -383,20 +404,26 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
     const handleSubmit = async () => {
         const values = await form.validateFields();
 
-        await onSubmit?.({
+        const didSave = await onSubmit?.({
             ...values,
             items: normalizeMenuItemsForSubmit(menuItems, linkLookups),
         });
 
+        if (didSave === false) {
+            return;
+        }
+
         form.resetFields();
         setMenuItems([]);
         setManualExpandedKeys([]);
+        setSelectedItemKeys([]);
     };
 
     const handleCancel = () => {
         form.resetFields();
         setMenuItems([]);
         setManualExpandedKeys([]);
+        setSelectedItemKeys([]);
         setDraggingKey(null);
         setDragOverState({ key: null, mode: null });
         setItemEditorOpen(false);
@@ -485,12 +512,81 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         closeItemEditor();
     };
 
-    const handleDeleteItem = (path) => {
-        setMenuItems((current) => {
-            const next = removeItemAtPath(current, path);
+    const persistMenuItems = async (nextItems, successMessage = 'Đã cập nhật menu.') => {
+        if (!editingMenu?.id) {
+            return true;
+        }
 
-            return next;
+        const values = await form.validateFields();
+
+        return runAdminAction?.(
+            () => callAdminApi(`/admin/api/cms/menus/${editingMenu.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    ...values,
+                    items: normalizeMenuItemsForSubmit(nextItems, linkLookups),
+                }),
+            }),
+            successMessage,
+            onLocationsChanged,
+        );
+    };
+
+    const handleDeleteItem = async (path) => {
+        const currentItems = menuItems;
+        const nextItems = removeItemAtPath(currentItems, path);
+
+        setMenuItems(nextItems);
+        setSelectedItemKeys((current) => {
+            const nextKeys = collectMenuItemKeys(nextItems);
+
+            return current.filter((key) => nextKeys.includes(key));
         });
+
+        const didPersist = await persistMenuItems(nextItems, 'Đã xóa item menu.');
+
+        if (didPersist === false) {
+            setMenuItems(currentItems);
+        }
+    };
+
+    const allMenuItemKeys = useMemo(() => collectMenuItemKeys(menuItems), [menuItems]);
+    const selectedMenuItemKeys = useMemo(() => selectedItemKeys.filter((key) => allMenuItemKeys.includes(key)), [allMenuItemKeys, selectedItemKeys]);
+    const isAllSelected = allMenuItemKeys.length > 0 && selectedMenuItemKeys.length === allMenuItemKeys.length;
+    const isPartiallySelected = selectedMenuItemKeys.length > 0 && selectedMenuItemKeys.length < allMenuItemKeys.length;
+
+    const toggleSelectAllItems = (checked) => {
+        setSelectedItemKeys(checked ? allMenuItemKeys : []);
+    };
+
+    const toggleSelectItem = (itemKey, checked) => {
+        setSelectedItemKeys((current) => {
+            const next = new Set(current);
+
+            if (checked) {
+                next.add(itemKey);
+            } else {
+                next.delete(itemKey);
+            }
+
+            return Array.from(next);
+        });
+    };
+
+    const handleDeleteSelectedItems = async () => {
+        const currentItems = menuItems;
+        const currentSelectedKeys = selectedItemKeys;
+        const nextItems = removeItemsByKeys(currentItems, selectedMenuItemKeys);
+
+        setMenuItems(nextItems);
+        setSelectedItemKeys([]);
+
+        const didPersist = await persistMenuItems(nextItems, 'Đã xóa các item menu đã chọn.');
+
+        if (didPersist === false) {
+            setMenuItems(currentItems);
+            setSelectedItemKeys(currentSelectedKeys);
+        }
     };
 
     const handleTreeDrop = (info) => {
@@ -660,7 +756,20 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
 
                     <Card
                         title="Danh sách menu"
-                        extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => openItemEditor({ mode: 'create', isChild: false })}>Thêm mới</Button>}
+                        extra={(
+                            <Space wrap>
+                                <Popconfirm
+                                    title={`Xóa ${selectedMenuItemKeys.length} item đã chọn?`}
+                                    disabled={!canManage || !selectedMenuItemKeys.length}
+                                    onConfirm={handleDeleteSelectedItems}
+                                >
+                                    <Button danger icon={<DeleteOutlined />} disabled={!canManage || !selectedMenuItemKeys.length}>
+                                        Xóa đã chọn{selectedMenuItemKeys.length ? ` (${selectedMenuItemKeys.length})` : ''}
+                                    </Button>
+                                </Popconfirm>
+                                <Button type="primary" icon={<PlusOutlined />} onClick={() => openItemEditor({ mode: 'create', isChild: false })}>Thêm mới</Button>
+                            </Space>
+                        )}
                     >
                         <Space direction="vertical" size={16} style={{ width: '100%' }}>
                             <Row gutter={[12, 12]}>
@@ -685,6 +794,18 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                             </Row>
 
                             {menuItems.length ? (
+                                <>
+                                <Space wrap align="center">
+                                    <Checkbox
+                                        checked={isAllSelected}
+                                        indeterminate={isPartiallySelected}
+                                        disabled={!canManage}
+                                        onChange={(event) => toggleSelectAllItems(event.target.checked)}
+                                    >
+                                        Chọn tất cả
+                                    </Checkbox>
+                                    <Text type="secondary">Đã chọn {selectedMenuItemKeys.length}/{allMenuItemKeys.length} item</Text>
+                                </Space>
                                 <Tree
                                     className="cms-menu-tree"
                                     blockNode
@@ -712,6 +833,12 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                                                     <Space direction="vertical" size={4} style={{ minWidth: 0, flex: 1 }}>
                                                         <Space wrap>
+                                                            <Checkbox
+                                                                checked={selectedMenuItemKeys.includes(node.key)}
+                                                                disabled={!canManage}
+                                                                onChange={(event) => toggleSelectItem(node.key, event.target.checked)}
+                                                                onClick={(event) => event.stopPropagation()}
+                                                            />
                                                             <Space size={6}>
                                                                 <HolderOutlined style={{ color: '#7c948d' }} />
                                                                 <Text strong>{item.label || 'Chưa có label'}</Text>
@@ -747,6 +874,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                         );
                                     }}
                                 />
+                                </>
                             ) : <Empty description="Chưa có item menu nào." />}
                         </Space>
                     </Card>

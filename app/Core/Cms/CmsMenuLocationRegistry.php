@@ -3,6 +3,7 @@
 namespace App\Core\Cms;
 
 use App\Models\SiteProfile;
+use App\Models\CmsMenu;
 use Illuminate\Support\Collection;
 
 class CmsMenuLocationRegistry
@@ -13,10 +14,10 @@ class CmsMenuLocationRegistry
         $storedLocations = data_get($siteProfile?->branding, 'cms.menu_locations');
 
         if (is_array($storedLocations) && $storedLocations !== []) {
-            return $this->normalize($storedLocations);
+            return $this->mergeWithExistingMenuLocations($this->normalize($storedLocations));
         }
 
-        return $this->defaultLocations();
+        return $this->mergeWithExistingMenuLocations($this->defaultLocations());
     }
 
     public function values(): array
@@ -94,5 +95,41 @@ class CmsMenuLocationRegistry
             ->map(fn (string $label, string $value): array => ['label' => $label, 'value' => $value])
             ->values()
             ->all();
+    }
+
+    /**
+     * Keep old/demo menu locations valid even when the editable registry was saved
+     * before those locations existed.
+     *
+     * @param  array<int, array{label: string, value: string}>  $locations
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function mergeWithExistingMenuLocations(array $locations): array
+    {
+        if (! class_exists(CmsMenu::class)) {
+            return $locations;
+        }
+
+        $existingValues = CmsMenu::query()
+            ->whereNotNull('location')
+            ->distinct()
+            ->pluck('location')
+            ->filter()
+            ->values();
+
+        $next = collect($locations);
+
+        foreach ($existingValues as $value) {
+            if ($next->contains('value', $value)) {
+                continue;
+            }
+
+            $next->push([
+                'label' => str((string) $value)->replace('-', ' ')->title()->toString(),
+                'value' => (string) $value,
+            ]);
+        }
+
+        return $next->unique('value')->values()->all();
     }
 }

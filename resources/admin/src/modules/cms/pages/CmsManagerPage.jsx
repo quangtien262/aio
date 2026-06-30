@@ -973,6 +973,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         if (didSave) {
             setModalOpen(false);
         }
+
+        return didSave;
     };
 
     const handleDeleteRecord = async (recordId) => {
