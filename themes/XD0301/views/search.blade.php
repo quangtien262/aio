@@ -7,10 +7,11 @@
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $email = trim((string) ($branding['support_email'] ?? 'admin@demo031086.web30s.vn'));
     $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'));
-    $categoryDescription = trim((string) ($category->description ?? ''));
     $productItems = collect($products ?? []);
-    $childCategoryItems = collect($childCategories ?? []);
-    $sidebarItems = collect($sidebarCategories ?? []);
+    $categoryItems = collect($searchCategories ?? []);
+    $filters = $searchFilters ?? [];
+    $currentCategory = (string) ($filters['category'] ?? '');
+    $searchQuery = (string) ($searchQuery ?? '');
     $formatCurrency = fn ($value) => $value === null || (float) $value <= 0 ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
 
     $localizeMenuUrl = function (?string $href): string {
@@ -61,8 +62,6 @@
         ->values();
 
     $homeUrl = route('site.home');
-    $aboutUrl = url('/'.app()->getLocale().'/gioi-thieu');
-    $contactUrl = url('/'.app()->getLocale().'/lien-he');
     if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
             'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ',
@@ -73,93 +72,34 @@
         ]);
     }
 
-    $hasProductItem = $navItems->contains(function (array $item): bool {
-        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
-    });
-
-    if (false && ! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
-        $productCategories = \App\Models\CatalogCategory::query()
-            ->with(['children' => fn ($query) => $query
-                ->where('is_active', true)
-                ->withCount(['products' => fn ($productQuery) => $productQuery->where('is_active', true)])
-                ->orderBy('sort_order')
-                ->orderBy('name')])
-            ->withCount(['products' => fn ($query) => $query->where('is_active', true)])
-            ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get()
-            ->filter(fn ($category): bool => (int) $category->products_count > 0 || $category->children->contains(fn ($child): bool => (int) $child->products_count > 0))
-            ->take(8)
-            ->values();
-
-        if ($productCategories->isNotEmpty()) {
-            $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
-                'href' => route('site.catalog.search'),
-                'target' => '_self',
-                'active' => request()->routeIs('site.catalog.*'),
-                'children' => $productCategories
-                    ->map(fn ($item): array => [
-                        'label' => (string) $item->name,
-                        'href' => route('site.catalog.category', ['slug' => $item->slug]),
-                        'target' => '_self',
-                        'active' => false,
-                        'children' => $item->children
-                            ->filter(fn ($child): bool => (int) $child->products_count > 0)
-                            ->take(8)
-                            ->map(fn ($child): array => [
-                                'label' => (string) $child->name,
-                                'href' => route('site.catalog.category', ['slug' => $child->slug]),
-                                'target' => '_self',
-                                'active' => false,
-                                'children' => [],
-                            ])
-                            ->values()
-                            ->all(),
-                    ])
-                    ->values()
-                    ->all(),
-            ];
-
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
-            $navArray = $navItems->values()->all();
-            array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
-            $navItems = collect($navArray);
-        }
-    }
-
     $productNavigationItems = collect(data_get($menus ?? [], 'product-navigation', []))
         ->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
         ->map(fn (array $item): array => $normalizeNavItem($item))
         ->values();
 
+    $hasProductItem = $navItems->contains(function (array $item): bool {
+        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
+    });
+
     if ($productNavigationItems->isNotEmpty()) {
         if ($hasProductItem) {
-            $navItems = $navItems
-                ->map(function (array $item) use ($productNavigationItems): array {
-                    $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
-
-                    if (in_array($label, ['sáº£n pháº©m', 'sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
-                        $item['children'] = $productNavigationItems->all();
-                    }
-
-                    return $item;
-                })
-                ->values();
+            $navItems = $navItems->map(function (array $item) use ($productNavigationItems): array {
+                $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
+                if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                    $item['children'] = $productNavigationItems->all();
+                }
+                return $item;
+            })->values();
         } else {
-            $productMenuItem = [
+            $navArray = $navItems->values()->all();
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
+            array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [[
                 'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
                 'children' => $productNavigationItems->all(),
-            ];
-
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chá»§', 'trang chủ', 'home'], true));
-            $navArray = $navItems->values()->all();
-            array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
+            ]]);
             $navItems = collect($navArray);
         }
     }
@@ -169,7 +109,6 @@
         $href = (string) ($item['href'] ?? '#');
         $absoluteHref = str_starts_with($href, 'http') ? rtrim($href, '/') : rtrim(url($href), '/');
         $item['active'] = $href !== '#' && ($absoluteHref === $currentUrl || (($item['active'] ?? false) && request()->routeIs('site.catalog.*')));
-
         return $item;
     })->values();
 @endphp
@@ -180,20 +119,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $category->name }} | {{ $logoAlt }}</title>
+    <title>{{ $searchQuery !== '' ? 'Tìm kiếm: '.$searchQuery : 'Tìm kiếm sản phẩm' }} | {{ $logoAlt }}</title>
     <style>
-        :root{--lime:#bdd400;--lime-dark:#8fa900;--ink:#26384a;--muted:#74808a;--line:#e6ebe8;--bg:#fbfcfa;--panel:#fff;--shadow:0 22px 55px rgba(28,45,60,.13);--font:"Montserrat","Segoe UI",Arial,sans-serif}
+        :root{--lime:#bdd400;--lime-dark:#8fa900;--ink:#26384a;--muted:#74808a;--line:#e6ebe8;--bg:#fbfcfa;--shadow:0 22px 55px rgba(28,45,60,.13);--font:"Montserrat","Segoe UI",Arial,sans-serif}
         *{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--bg);font-family:var(--font);font-size:16px;line-height:1.7}a{text-decoration:none;color:inherit}img{display:block;max-width:100%}button,input,select{font:inherit}.xd-container{width:min(1540px,calc(100% - 56px));margin:0 auto}
         .xd-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);box-shadow:0 10px 30px rgba(16,29,40,.08);backdrop-filter:blur(14px)}.xd-header-inner{display:flex;align-items:center;justify-content:space-between;min-height:102px;gap:34px}.xd-logo{display:inline-flex;align-items:center;gap:11px;font-size:34px;font-weight:900;letter-spacing:-.06em;color:var(--ink)}.xd-logo-image{display:block;width:auto;max-width:156px;height:64px;object-fit:contain}.xd-logo-mark{position:relative;width:38px;height:50px;background:linear-gradient(135deg,var(--lime),#d9ec27);clip-path:polygon(50% 0,100% 22%,100% 100%,0 100%,0 22%)}.xd-logo-mark:before,.xd-logo-mark:after{content:"";position:absolute;background:#fff}.xd-logo-mark:before{left:9px;bottom:7px;width:20px;height:30px}.xd-logo-mark:after{left:14px;top:17px;width:10px;height:7px;box-shadow:0 11px 0 #fff}.xd-logo span{color:var(--lime)}
         .xd-nav{display:flex;align-items:center;justify-content:center;gap:0;min-width:0;flex:1}.xd-nav-item{position:relative}.xd-nav-link{display:inline-flex;align-items:center;gap:8px;padding:39px 21px;color:#344354;font-size:15px;font-weight:850;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}.xd-nav-caret{color:var(--lime-dark);font-size:12px;transition:transform .18s ease}.xd-nav-link.is-active,.xd-nav-link:hover,.xd-nav-item:hover>.xd-nav-link,.xd-nav-item:focus-within>.xd-nav-link{color:var(--lime-dark)}.xd-nav-item:hover>.xd-nav-link .xd-nav-caret,.xd-nav-item:focus-within>.xd-nav-link .xd-nav-caret{transform:rotate(180deg)}.xd-dropdown{position:absolute;top:100%;left:0;z-index:90;min-width:250px;padding:12px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(12px);transition:.18s}.xd-nav-item:hover>.xd-dropdown,.xd-nav-item:focus-within>.xd-dropdown{opacity:1;visibility:visible;transform:translateY(0)}.xd-dropdown-link{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 14px;border-left:3px solid transparent;color:#53606b;font-size:14px;font-weight:800;line-height:1.35}.xd-dropdown-link:hover{background:#f7f9ee;border-left-color:var(--lime);color:var(--ink)}
         .xd-header-actions{display:flex;align-items:center;gap:12px;flex:0 0 auto}.xd-hotline{display:inline-flex;align-items:center;gap:12px;padding:18px 28px;color:#fff;background:var(--lime);border-radius:4px;box-shadow:0 14px 26px rgba(189,212,0,.34);font-weight:900;letter-spacing:.035em;white-space:nowrap}.xd-login-button{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 22px;border:1px solid rgba(38,56,74,.14);border-radius:4px;background:#fff;color:var(--ink);box-shadow:0 12px 24px rgba(16,29,40,.08);font-size:14px;font-weight:900;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}
-        .xd-page-main{padding:0 0 88px}.xd-hero{position:relative;min-height:360px;display:grid;align-items:end;overflow:hidden;background:linear-gradient(135deg,#0c1a22,#26384a)}.xd-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,18,25,.85),rgba(8,18,25,.45)),url("{{ $category->image_url ?: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80' }}") center/cover;filter:saturate(.9)}.xd-hero:after{content:"";position:absolute;inset:auto 0 0;height:42%;background:linear-gradient(0deg,rgba(8,18,25,.76),transparent)}.xd-hero-inner{position:relative;z-index:1;padding:90px 0 70px;color:#fff}.xd-breadcrumb{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:22px;color:rgba(255,255,255,.72);font-size:14px;font-weight:800}.xd-breadcrumb a:hover{color:var(--lime)}.xd-kicker{position:relative;display:inline-block;margin:0 0 18px 18px;font-size:14px;font-weight:950;letter-spacing:.055em;text-transform:uppercase}.xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}.xd-hero h1{max-width:760px;margin:0;font-size:clamp(42px,6vw,86px);line-height:.98;letter-spacing:-.065em}.xd-hero p{max-width:760px;margin:22px 0 0;color:rgba(255,255,255,.82);font-size:20px;font-weight:650}
-        .xd-catalog{display:grid;grid-template-columns:320px minmax(0,1fr);gap:34px;margin-top:42px}.xd-sidebar{display:grid;gap:18px;align-content:start}.xd-panel,.xd-product-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.07)}.xd-panel{padding:24px}.xd-panel h2,.xd-panel h3{margin:0 0 16px;font-size:22px;letter-spacing:-.025em}.xd-side-list{display:grid;gap:8px}.xd-side-link{display:flex;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid var(--line);color:#53606b;font-weight:850}.xd-side-link.is-active,.xd-side-link:hover{border-color:var(--lime);background:#f8faed;color:var(--ink)}.xd-side-link small{color:var(--muted);font-weight:750}.xd-promo{background:#13232d;color:#fff;border-color:#13232d}.xd-promo p{margin:0;color:rgba(255,255,255,.74)}.xd-toolbar{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:20px}.xd-toolbar h2{margin:0;font-size:38px;line-height:1.08;letter-spacing:-.045em}.xd-toolbar p{margin:8px 0 0;color:var(--muted);font-weight:750}.xd-sort{height:46px;min-width:190px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:0 14px;font-weight:800}
-        .xd-child-cats{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}.xd-child-cats a{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font-size:13px;font-weight:900;text-transform:uppercase}.xd-child-cats a:hover{border-color:var(--lime);color:var(--ink)}
-        .xd-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.xd-product-card{display:grid;grid-template-rows:auto 1fr;overflow:hidden;border-radius:22px;background:linear-gradient(180deg,#fff,#fbfcfa);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.xd-product-card:hover{transform:translateY(-5px);border-color:rgba(189,212,0,.7);box-shadow:var(--shadow)}.xd-product-image{position:relative;display:block;aspect-ratio:1/1;background:radial-gradient(circle at 50% 34%,#fff 0,#f5f8f2 46%,#e9efe8 100%);overflow:hidden}.xd-product-image:after{content:"";position:absolute;left:22px;right:22px;bottom:17px;height:18px;border-radius:50%;background:rgba(38,56,74,.14);filter:blur(10px)}.xd-product-image img{position:relative;z-index:1;width:100%;height:100%;padding:20px;object-fit:contain;transition:transform .35s ease}.xd-product-card:hover img{transform:scale(1.035)}.xd-product-tag{position:absolute;z-index:2;left:16px;top:16px;max-width:calc(100% - 32px);padding:7px 11px;border-radius:999px;background:rgba(16,29,40,.88);color:#fff;font-size:11px;font-weight:950;line-height:1.25;text-transform:uppercase;box-shadow:0 10px 22px rgba(16,29,40,.18)}.xd-product-body{display:grid;align-content:start;gap:14px;padding:22px}.xd-product-body h3{margin:0;font-size:20px;line-height:1.28;letter-spacing:-.025em}.xd-price-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}.xd-price{color:#9a6a3e;font-size:23px;font-weight:950;letter-spacing:-.04em}.xd-old-price{color:#9aa3a9;text-decoration:line-through}.xd-discount{display:inline-flex;align-items:center;height:26px;padding:0 8px;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:900}.xd-empty{padding:42px;background:#fff;border:1px solid var(--line);color:var(--muted);font-weight:750}
+        .xd-hero{position:relative;padding:92px 0 76px;overflow:hidden;background:linear-gradient(135deg,rgba(8,18,25,.93),rgba(38,56,74,.84)),url("https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80") center/cover;color:#fff}.xd-breadcrumb{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:22px;color:rgba(255,255,255,.72);font-size:14px;font-weight:800}.xd-breadcrumb a:hover{color:var(--lime)}.xd-kicker{position:relative;display:inline-block;margin:0 0 18px 18px;font-size:14px;font-weight:950;letter-spacing:.055em;text-transform:uppercase}.xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}.xd-hero h1{max-width:820px;margin:0;font-size:clamp(42px,6vw,82px);line-height:.98;letter-spacing:-.065em}.xd-hero p{max-width:760px;margin:22px 0 0;color:rgba(255,255,255,.82);font-size:20px;font-weight:650}
+        .xd-search-shell{display:grid;grid-template-columns:320px minmax(0,1fr);gap:34px;padding:42px 0 88px}.xd-panel,.xd-product-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.07)}.xd-panel{padding:24px}.xd-panel h2,.xd-panel h3{margin:0 0 16px;font-size:22px;letter-spacing:-.025em}.xd-filter-form{display:grid;gap:12px}.xd-filter-form input,.xd-filter-form select{width:100%;height:48px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:0 14px;font-weight:750}.xd-filter-form button{height:48px;border:0;background:var(--lime);color:#fff;font-weight:950;text-transform:uppercase;cursor:pointer}.xd-side-list{display:grid;gap:8px;margin-top:18px}.xd-side-link{display:flex;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid var(--line);color:#53606b;font-weight:850}.xd-side-link.is-active,.xd-side-link:hover{border-color:var(--lime);background:#f8faed;color:var(--ink)}.xd-promo{margin-top:18px;background:#13232d;color:#fff;border-color:#13232d}.xd-promo p{margin:0;color:rgba(255,255,255,.74)}
+        .xd-toolbar{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}.xd-toolbar h2{margin:0;font-size:38px;line-height:1.08;letter-spacing:-.045em}.xd-toolbar p{margin:8px 0 0;color:var(--muted);font-weight:750}.xd-sort{height:46px;min-width:190px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:0 14px;font-weight:800}
+        .xd-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.xd-product-card{display:grid;grid-template-rows:auto 1fr;overflow:hidden;border-radius:22px;background:linear-gradient(180deg,#fff,#fbfcfa);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.xd-product-card:hover{transform:translateY(-5px);border-color:rgba(189,212,0,.7);box-shadow:var(--shadow)}.xd-product-image{position:relative;display:block;aspect-ratio:1/1;background:radial-gradient(circle at 50% 34%,#fff 0,#f5f8f2 46%,#e9efe8 100%);overflow:hidden}.xd-product-image:after{content:"";position:absolute;left:22px;right:22px;bottom:17px;height:18px;border-radius:50%;background:rgba(38,56,74,.14);filter:blur(10px)}.xd-product-image img{position:relative;z-index:1;width:100%;height:100%;padding:20px;object-fit:contain;transition:transform .35s ease}.xd-product-card:hover img{transform:scale(1.035)}.xd-product-tag{position:absolute;z-index:2;left:16px;top:16px;max-width:calc(100% - 32px);padding:7px 11px;border-radius:999px;background:rgba(16,29,40,.88);color:#fff;font-size:11px;font-weight:950;line-height:1.25;text-transform:uppercase;box-shadow:0 10px 22px rgba(16,29,40,.18)}.xd-product-body{display:grid;align-content:start;gap:14px;padding:22px}.xd-product-body h3{margin:0;font-size:20px;line-height:1.28;letter-spacing:-.025em}.xd-price-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}.xd-price{color:#9a6a3e;font-size:23px;font-weight:950;letter-spacing:-.04em}.xd-old-price{color:#9aa3a9;text-decoration:line-through}.xd-discount{display:inline-flex;align-items:center;height:26px;padding:0 8px;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:900}.xd-empty{padding:42px;background:#fff;border:1px solid var(--line);color:var(--muted);font-weight:750}.xd-pagination{display:flex;justify-content:space-between;gap:16px;margin-top:28px}.xd-pagination a,.xd-pagination span{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:900}.xd-pagination span{opacity:.45}
         .xd-footer{padding:88px 0 72px;border-top:1px solid var(--line);background:#fff}.xd-footer-grid{display:grid;grid-template-columns:1.25fr .65fr 1fr 1.25fr;gap:80px}.xd-footer h3{margin:0 0 24px;font-size:30px;line-height:1.2}.xd-footer p,.xd-footer a{color:var(--muted);font-size:20px;font-weight:550}.xd-footer-links,.xd-contact-list{display:grid;gap:8px}.xd-newsletter{display:flex;margin-top:12px;border:1px solid var(--line)}.xd-newsletter input{min-width:0;flex:1;border:0;padding:0 24px;color:var(--ink);outline:0}.xd-newsletter button{width:166px;min-height:74px;color:#fff;background:var(--lime);border:0;font-weight:900;text-transform:uppercase}
-        @media (max-width:1180px){.xd-header-inner{flex-wrap:wrap;padding:18px 0}.xd-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto}.xd-nav-link{padding:18px 16px}.xd-catalog{grid-template-columns:1fr}.xd-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.xd-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-        @media (max-width:640px){.xd-container{width:min(100% - 24px,1540px)}.xd-header-inner{min-height:0;padding:12px 0 10px;gap:10px}.xd-logo-image{max-width:132px;height:52px}.xd-header-actions{margin-left:auto;gap:8px}.xd-hotline{min-height:42px;padding:0 14px;border-radius:999px;font-size:0}.xd-hotline:after{content:"{{ $hotline }}";font-size:13px}.xd-login-button{min-height:42px;padding:0 13px;border-radius:999px;font-size:12px}.xd-nav{flex:0 0 100%;gap:8px;overflow-x:auto;padding:8px 0 2px}.xd-nav::-webkit-scrollbar{display:none}.xd-nav-item{flex:0 0 auto}.xd-nav-link{padding:8px 12px;border:1px solid #e7ece5;border-radius:999px;background:#fff;font-size:12px}.xd-hero{min-height:330px}.xd-hero-inner{padding:58px 0 46px}.xd-hero h1{font-size:40px}.xd-hero p{font-size:16px}.xd-toolbar{display:grid}.xd-sort{width:100%}.xd-product-grid,.xd-footer-grid{grid-template-columns:1fr}.xd-footer{padding:52px 0 42px}.xd-footer h3{font-size:24px}.xd-footer p,.xd-footer a{font-size:15px;line-height:1.7;overflow-wrap:anywhere}.xd-newsletter{display:grid;border-radius:16px;overflow:hidden}.xd-newsletter input{min-height:52px}.xd-newsletter button{width:100%;min-height:52px}}
+        @media (max-width:1180px){.xd-header-inner{flex-wrap:wrap;padding:18px 0}.xd-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto}.xd-nav-link{padding:18px 16px}.xd-search-shell{grid-template-columns:1fr}.xd-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.xd-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media (max-width:640px){.xd-container{width:min(100% - 24px,1540px)}.xd-header-inner{min-height:0;padding:12px 0 10px;gap:10px}.xd-logo-image{max-width:132px;height:52px}.xd-header-actions{margin-left:auto;gap:8px}.xd-hotline{min-height:42px;padding:0 14px;border-radius:999px;font-size:0}.xd-hotline:after{content:"{{ $hotline }}";font-size:13px}.xd-login-button{min-height:42px;padding:0 13px;border-radius:999px;font-size:12px}.xd-nav{flex:0 0 100%;gap:8px;overflow-x:auto;padding:8px 0 2px}.xd-nav::-webkit-scrollbar{display:none}.xd-nav-item{flex:0 0 auto}.xd-nav-link{padding:8px 12px;border:1px solid #e7ece5;border-radius:999px;background:#fff;font-size:12px}.xd-hero{padding:58px 0 46px}.xd-hero h1{font-size:40px}.xd-hero p{font-size:16px}.xd-toolbar{display:grid}.xd-sort{width:100%}.xd-product-grid,.xd-footer-grid{grid-template-columns:1fr}.xd-footer{padding:52px 0 42px}.xd-footer h3{font-size:24px}.xd-footer p,.xd-footer a{font-size:15px;line-height:1.7;overflow-wrap:anywhere}.xd-newsletter{display:grid;border-radius:16px;overflow:hidden}.xd-newsletter input{min-height:52px}.xd-newsletter button{width:100%;min-height:52px}}
     </style>
 </head>
 <body>
@@ -237,71 +176,80 @@
             </div>
         </header>
 
-        <main class="xd-page-main">
+        <main>
             <section class="xd-hero">
-                <div class="xd-container xd-hero-inner">
+                <div class="xd-container">
                     <div class="xd-breadcrumb">
                         <a href="{{ route('site.home') }}">Trang chủ</a>
                         <span>/</span>
-                        @if ($category->parent)
-                            <a href="{{ route('site.catalog.category', ['slug' => $category->parent->slug]) }}">{{ $category->parent->name }}</a>
-                            <span>/</span>
-                        @endif
-                        <strong>{{ $category->name }}</strong>
+                        <strong>Tìm kiếm</strong>
                     </div>
-                    <span class="xd-kicker">Danh mục sản phẩm</span>
-                    <h1>{{ $category->name }}</h1>
-                    <p>{{ $categoryDescription !== '' ? $categoryDescription : 'Danh sách sản phẩm được sắp theo nhóm nhu cầu để khách hàng chọn nhanh vật tư, nội thất và giải pháp phù hợp cho công trình.' }}</p>
+                    <span class="xd-kicker">Catalog</span>
+                    <h1>{{ $searchQuery !== '' ? 'Kết quả cho "'.$searchQuery.'"' : 'Tìm kiếm sản phẩm' }}</h1>
+                    <p>Tra cứu nhanh theo từ khóa, danh mục và sắp xếp theo nhu cầu mua hàng của khách.</p>
                 </div>
             </section>
 
-            <section class="xd-container xd-catalog">
-                <aside class="xd-sidebar">
+            <section class="xd-container xd-search-shell">
+                <aside>
                     <div class="xd-panel">
-                        <h2>Nhóm liên quan</h2>
+                        <h2>Bộ lọc</h2>
+                        <form class="xd-filter-form" method="GET" action="{{ route('site.catalog.search') }}">
+                            <input type="search" name="q" value="{{ $searchQuery }}" placeholder="Tìm sản phẩm, mã SKU...">
+                            <select name="category">
+                                <option value="">Tất cả danh mục</option>
+                                @foreach ($categoryItems as $category)
+                                    <option value="{{ $category->slug }}" {{ $currentCategory === $category->slug ? 'selected' : '' }}>{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                            <select name="sort">
+                                <option value="default" {{ ($filters['sort'] ?? 'default') === 'default' ? 'selected' : '' }}>Mới nhất</option>
+                                <option value="price_asc" {{ ($filters['sort'] ?? '') === 'price_asc' ? 'selected' : '' }}>Giá tăng dần</option>
+                                <option value="price_desc" {{ ($filters['sort'] ?? '') === 'price_desc' ? 'selected' : '' }}>Giá giảm dần</option>
+                                <option value="bestseller" {{ ($filters['sort'] ?? '') === 'bestseller' ? 'selected' : '' }}>Bán chạy</option>
+                            </select>
+                            <button type="submit">Lọc sản phẩm</button>
+                        </form>
+                    </div>
+                    <div class="xd-panel">
+                        <h3>Danh mục</h3>
                         <div class="xd-side-list">
-                            @forelse ($sidebarItems as $item)
-                                <a class="xd-side-link {{ ($item['active'] ?? false) ? 'is-active' : '' }}" href="{{ $item['url'] ?? '#' }}">
-                                    <span>{{ $item['label'] ?? $item['name'] ?? 'Danh mục' }}</span>
-                                    <small>{{ (int) ($item['count'] ?? 0) }}</small>
-                                </a>
-                            @empty
-                                <a class="xd-side-link is-active" href="{{ route('site.catalog.category', ['slug' => $category->slug]) }}">
+                            <a class="xd-side-link {{ $currentCategory === '' ? 'is-active' : '' }}" href="{{ route('site.catalog.search', request()->except(['category', 'page'])) }}">
+                                <span>Tất cả</span>
+                                <small>{{ (int) ($resultCount ?? $productItems->count()) }}</small>
+                            </a>
+                            @foreach ($categoryItems as $category)
+                                <a class="xd-side-link {{ $currentCategory === $category->slug ? 'is-active' : '' }}" href="{{ route('site.catalog.search', array_merge(request()->except(['page']), ['category' => $category->slug])) }}">
                                     <span>{{ $category->name }}</span>
-                                    <small>{{ $productItems->count() }}</small>
                                 </a>
-                            @endforelse
+                            @endforeach
                         </div>
                     </div>
                     <div class="xd-panel xd-promo">
-                        <h3>Tư vấn chọn đúng vật tư</h3>
-                        <p>Gửi nhu cầu công trình để đội ngũ XD0301 gợi ý nhóm sản phẩm và phương án triển khai phù hợp.</p>
+                        <h3>Cần tư vấn nhanh?</h3>
+                        <p>Gửi từ khóa hoặc gọi hotline để đội ngũ XD0301 gợi ý nhóm sản phẩm phù hợp cho công trình.</p>
                     </div>
                 </aside>
 
-                <div class="xd-main">
+                <div>
                     <div class="xd-toolbar">
                         <div>
-                            <span class="xd-kicker">Catalog</span>
-                            <h2>{{ $productItems->count() }} sản phẩm đang hiển thị</h2>
-                            <p>Lọc nhanh theo danh mục con hoặc xem chi tiết từng sản phẩm.</p>
+                            <span class="xd-kicker">Kết quả</span>
+                            <h2>{{ (int) ($resultCount ?? $productItems->count()) }} sản phẩm phù hợp</h2>
+                            <p>{{ $searchQuery !== '' ? 'Đang lọc theo từ khóa: '.$searchQuery : 'Danh sách sản phẩm đang được hiển thị theo bộ lọc hiện tại.' }}</p>
                         </div>
-                        <form method="GET">
+                        <form method="GET" action="{{ route('site.catalog.search') }}">
+                            @foreach (request()->except(['sort', 'page']) as $key => $value)
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endforeach
                             <select class="xd-sort" name="sort" onchange="this.form.submit()">
-                                @foreach (($sortOptions ?? []) as $option)
-                                    <option value="{{ $option['value'] }}" {{ ($filters['sort'] ?? 'default') === $option['value'] ? 'selected' : '' }}>{{ $option['label'] }}</option>
-                                @endforeach
+                                <option value="default" {{ ($filters['sort'] ?? 'default') === 'default' ? 'selected' : '' }}>Mới nhất</option>
+                                <option value="price_asc" {{ ($filters['sort'] ?? '') === 'price_asc' ? 'selected' : '' }}>Giá tăng dần</option>
+                                <option value="price_desc" {{ ($filters['sort'] ?? '') === 'price_desc' ? 'selected' : '' }}>Giá giảm dần</option>
+                                <option value="bestseller" {{ ($filters['sort'] ?? '') === 'bestseller' ? 'selected' : '' }}>Bán chạy</option>
                             </select>
                         </form>
                     </div>
-
-                    @if ($childCategoryItems->isNotEmpty())
-                        <div class="xd-child-cats">
-                            @foreach ($childCategoryItems as $child)
-                                <a href="{{ $child['url'] ?? '#' }}">{{ $child['name'] ?? 'Danh mục' }}</a>
-                            @endforeach
-                        </div>
-                    @endif
 
                     @if ($productItems->isNotEmpty())
                         <div class="xd-product-grid">
@@ -309,7 +257,7 @@
                                 <a class="xd-product-card" href="{{ $product['url'] ?? '#' }}">
                                     <span class="xd-product-image">
                                         <img src="{{ $product['image'] ?? 'https://picsum.photos/seed/xd0301-product/720/540' }}" alt="{{ $product['title'] ?? '' }}">
-                                        <span class="xd-product-tag">{{ $product['tag'] ?? $category->name }}</span>
+                                        <span class="xd-product-tag">{{ $product['tag'] ?? 'Sản phẩm' }}</span>
                                     </span>
                                     <span class="xd-product-body">
                                         <h3>{{ $product['title'] ?? 'Sản phẩm' }}</h3>
@@ -326,8 +274,23 @@
                                 </a>
                             @endforeach
                         </div>
+
+                        @if (($pagination ?? null) && method_exists($pagination, 'previousPageUrl'))
+                            <div class="xd-pagination">
+                                @if ($pagination->previousPageUrl())
+                                    <a href="{{ $pagination->previousPageUrl() }}">Trang trước</a>
+                                @else
+                                    <span>Trang trước</span>
+                                @endif
+                                @if ($pagination->nextPageUrl())
+                                    <a href="{{ $pagination->nextPageUrl() }}">Trang sau</a>
+                                @else
+                                    <span>Trang sau</span>
+                                @endif
+                            </div>
+                        @endif
                     @else
-                        <div class="xd-empty">Chưa có sản phẩm nào trong danh mục này.</div>
+                        <div class="xd-empty">Chưa tìm thấy sản phẩm phù hợp. Hãy thử từ khóa khác hoặc bỏ bớt bộ lọc.</div>
                     @endif
                 </div>
             </section>
@@ -350,8 +313,8 @@
                     <div class="xd-footer-links">
                         <a href="{{ route('site.home') }}">Trang chủ</a>
                         <a href="{{ route('site.blog.index') }}">Tin tức</a>
-                        <a href="{{ $aboutUrl }}">Giới thiệu</a>
-                        <a href="{{ $contactUrl }}">Liên hệ</a>
+                        <a href="{{ url('/'.app()->getLocale().'/gioi-thieu') }}">Giới thiệu</a>
+                        <a href="{{ url('/'.app()->getLocale().'/lien-he') }}">Liên hệ</a>
                     </div>
                 </div>
                 <div>
