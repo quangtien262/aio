@@ -25,6 +25,14 @@ return new class extends Migration
     {
         foreach (['cms_projects', 'cms_services', 'catalog_products', 'cms_posts'] as $table) {
             if (Schema::hasTable($table) && Schema::hasColumn($table, 'is_highlight')) {
+                $indexName = $table.'_is_highlight_index';
+
+                if ($this->indexExists($table, $indexName)) {
+                    Schema::table($table, function (Blueprint $table) use ($indexName): void {
+                        $table->dropIndex($indexName);
+                    });
+                }
+
                 Schema::table($table, function (Blueprint $table): void {
                     $table->dropColumn('is_highlight');
                 });
@@ -39,7 +47,21 @@ return new class extends Migration
         }
 
         Schema::table($table, function (Blueprint $table): void {
-            $table->boolean('is_highlight')->default(false)->index();
+            $table->boolean('is_highlight')->default(false);
+            $table->index('is_highlight');
         });
+    }
+
+    private function indexExists(string $table, string $indexName): bool
+    {
+        $connection = Schema::getConnection();
+
+        if ($connection->getDriverName() === 'sqlite') {
+            return collect(DB::select("PRAGMA index_list('{$table}')"))
+                ->contains(fn ($index): bool => ($index->name ?? null) === $indexName);
+        }
+
+        return collect(DB::select("SHOW INDEX FROM {$table}"))
+            ->contains(fn ($index): bool => ($index->Key_name ?? null) === $indexName);
     }
 };

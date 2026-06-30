@@ -89,18 +89,14 @@ return new class extends Migration
             DB::table('pro__task_statuses')->whereNotNull('project_id')->delete();
         });
 
-        $indexes = collect(DB::select('SHOW INDEX FROM pro__task_statuses'))->pluck('Key_name')->unique();
-        $foreignKeys = collect(DB::select("
-            SELECT CONSTRAINT_NAME
-            FROM information_schema.KEY_COLUMN_USAGE
-            WHERE TABLE_SCHEMA = DATABASE()
-                AND TABLE_NAME = 'pro__task_statuses'
-                AND COLUMN_NAME = 'project_id'
-                AND REFERENCED_TABLE_NAME IS NOT NULL
-        "))->pluck('CONSTRAINT_NAME')->unique();
+        $indexes = $this->indexes('pro__task_statuses');
+        $foreignKeys = $this->foreignKeys('pro__task_statuses', 'project_id');
+        $isSqlite = Schema::getConnection()->getDriverName() === 'sqlite';
 
-        Schema::table('pro__task_statuses', function (Blueprint $table) use ($foreignKeys, $indexes): void {
-            if ($foreignKeys->contains('pro__task_statuses_project_id_foreign')) {
+        Schema::table('pro__task_statuses', function (Blueprint $table) use ($foreignKeys, $indexes, $isSqlite): void {
+            if ($isSqlite) {
+                $table->dropForeign(['project_id']);
+            } elseif ($foreignKeys->contains('pro__task_statuses_project_id_foreign')) {
                 $table->dropForeign('pro__task_statuses_project_id_foreign');
             }
 
@@ -114,5 +110,38 @@ return new class extends Migration
 
             $table->dropColumn('project_id');
         });
+    }
+
+    private function indexes(string $table): \Illuminate\Support\Collection
+    {
+        $connection = Schema::getConnection();
+
+        if ($connection->getDriverName() === 'sqlite') {
+            return collect(DB::select("PRAGMA index_list('{$table}')"))
+                ->pluck('name')
+                ->unique();
+        }
+
+        return collect(DB::select("SHOW INDEX FROM {$table}"))
+            ->pluck('Key_name')
+            ->unique();
+    }
+
+    private function foreignKeys(string $table, string $column): \Illuminate\Support\Collection
+    {
+        $connection = Schema::getConnection();
+
+        if ($connection->getDriverName() === 'sqlite') {
+            return collect();
+        }
+
+        return collect(DB::select("
+            SELECT CONSTRAINT_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = '{$table}'
+                AND COLUMN_NAME = '{$column}'
+                AND REFERENCED_TABLE_NAME IS NOT NULL
+        "))->pluck('CONSTRAINT_NAME')->unique();
     }
 };

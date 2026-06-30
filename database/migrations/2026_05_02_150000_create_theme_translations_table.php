@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('theme_translations', function (Blueprint $table): void {
             $table->id();
-            $table->string('theme_key');
+            $table->string('theme_key', 64);
             $table->string('locale', 12);
-            $table->string('group')->default('static');
-            $table->string('translation_key');
+            $table->string('group', 64)->default('static');
+            $table->string('translation_key', 191);
             $table->text('value')->nullable();
             $table->timestamps();
 
