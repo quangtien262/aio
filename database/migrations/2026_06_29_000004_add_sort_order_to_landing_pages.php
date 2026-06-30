@@ -13,7 +13,8 @@ return new class extends Migration
         }
 
         Schema::table('landing_pages', function (Blueprint $table): void {
-            $table->unsignedInteger('sort_order')->default(0)->after('is_home')->index();
+            $table->unsignedInteger('sort_order')->default(0)->after('is_home');
+            $table->index('sort_order', 'landing_pages_sort_order_index');
         });
     }
 
@@ -24,6 +25,7 @@ return new class extends Migration
         }
 
         Schema::table('landing_pages', function (Blueprint $table): void {
+            $table->dropIndex('landing_pages_sort_order_index');
             $table->dropColumn('sort_order');
         });
     }
