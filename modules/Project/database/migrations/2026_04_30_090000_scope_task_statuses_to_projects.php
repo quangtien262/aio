@@ -10,7 +10,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pro__task_statuses', function (Blueprint $table): void {
-            $table->foreignId('project_id')->nullable()->after('id')->constrained('pro__projects')->cascadeOnDelete();
+            $table->foreignId('project_id')->nullable()->after('id');
+            $table->index('project_id', 'pro__task_statuses_project_id_idx');
+            $table->foreign('project_id', 'pro__task_statuses_project_id_foreign')->references('id')->on('pro__projects')->cascadeOnDelete();
             $table->index(['project_id', 'is_active', 'sort_order'], 'pro__task_statuses_project_sort_idx');
         });
 
@@ -87,9 +89,30 @@ return new class extends Migration
             DB::table('pro__task_statuses')->whereNotNull('project_id')->delete();
         });
 
-        Schema::table('pro__task_statuses', function (Blueprint $table): void {
-            $table->dropIndex('pro__task_statuses_project_sort_idx');
-            $table->dropConstrainedForeignId('project_id');
+        $indexes = collect(DB::select('SHOW INDEX FROM pro__task_statuses'))->pluck('Key_name')->unique();
+        $foreignKeys = collect(DB::select("
+            SELECT CONSTRAINT_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'pro__task_statuses'
+                AND COLUMN_NAME = 'project_id'
+                AND REFERENCED_TABLE_NAME IS NOT NULL
+        "))->pluck('CONSTRAINT_NAME')->unique();
+
+        Schema::table('pro__task_statuses', function (Blueprint $table) use ($foreignKeys, $indexes): void {
+            if ($foreignKeys->contains('pro__task_statuses_project_id_foreign')) {
+                $table->dropForeign('pro__task_statuses_project_id_foreign');
+            }
+
+            if ($indexes->contains('pro__task_statuses_project_sort_idx')) {
+                $table->dropIndex('pro__task_statuses_project_sort_idx');
+            }
+
+            if ($indexes->contains('pro__task_statuses_project_id_idx')) {
+                $table->dropIndex('pro__task_statuses_project_id_idx');
+            }
+
+            $table->dropColumn('project_id');
         });
     }
 };
