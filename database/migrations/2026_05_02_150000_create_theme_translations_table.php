@@ -17,8 +17,8 @@ return new class extends Migration
             $table->text('value')->nullable();
             $table->timestamps();
 
-            $table->unique(['theme_key', 'locale', 'group', 'translation_key'], 'theme_translations_unique_entry');
-            $table->index(['theme_key', 'locale'], 'theme_translations_theme_locale_index');
+            // $table->unique(['theme_key', 'locale', 'group', 'translation_key'], 'theme_translations_unique_entry');
+            // $table->index(['theme_key', 'locale'], 'theme_translations_theme_locale_index');
         });
     }
 
