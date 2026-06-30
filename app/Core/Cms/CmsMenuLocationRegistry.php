@@ -5,6 +5,7 @@ namespace App\Core\Cms;
 use App\Models\SiteProfile;
 use App\Models\CmsMenu;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 class CmsMenuLocationRegistry
 {
@@ -14,7 +15,13 @@ class CmsMenuLocationRegistry
         $storedLocations = data_get($siteProfile?->branding, 'cms.menu_locations');
 
         if (is_array($storedLocations) && $storedLocations !== []) {
-            return $this->mergeWithExistingMenuLocations($this->normalize($storedLocations));
+            $locations = collect($this->normalize($storedLocations))
+                ->concat($this->defaultLocations())
+                ->unique('value')
+                ->values()
+                ->all();
+
+            return $this->mergeWithExistingMenuLocations($locations);
         }
 
         return $this->mergeWithExistingMenuLocations($this->defaultLocations());
@@ -106,7 +113,7 @@ class CmsMenuLocationRegistry
      */
     private function mergeWithExistingMenuLocations(array $locations): array
     {
-        if (! class_exists(CmsMenu::class)) {
+        if (! class_exists(CmsMenu::class) || ! Schema::hasTable('cms_menus')) {
             return $locations;
         }
 

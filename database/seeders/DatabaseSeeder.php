@@ -74,7 +74,7 @@ class DatabaseSeeder extends Seeder
 
     private function seedSiteProfile(): void
     {
-        SiteProfile::query()->firstOrCreate(
+        $siteProfile = SiteProfile::query()->firstOrCreate(
             ['site_name' => 'AIO Website'],
             [
                 'website_type' => 'ecommerce',
@@ -84,6 +84,25 @@ class DatabaseSeeder extends Seeder
                 'branding' => ['website_key' => 'website-main'],
             ],
         );
+
+        $branding = $siteProfile->branding ?? [];
+        $storedLocations = data_get($branding, 'cms.menu_locations', []);
+        $defaultLocations = config('cms.menu_locations', []);
+
+        if (is_array($defaultLocations) && $defaultLocations !== []) {
+            $mergedLocations = collect(is_array($storedLocations) ? $storedLocations : [])
+                ->concat($defaultLocations)
+                ->filter(fn (mixed $location): bool => is_array($location)
+                    && filled($location['label'] ?? null)
+                    && filled($location['value'] ?? null))
+                ->unique('value')
+                ->values()
+                ->all();
+
+            data_set($branding, 'cms.menu_locations', $mergedLocations);
+
+            $siteProfile->forceFill(['branding' => $branding])->save();
+        }
     }
 
     private function enableDefaultCmsModule(): void

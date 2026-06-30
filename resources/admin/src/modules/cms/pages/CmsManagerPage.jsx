@@ -1126,14 +1126,18 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
     };
 
-    const loadProductCategoryItems = async () => {
-        setProductCategoryLoading(true);
+    const loadProductCategoryItems = async ({ silent = false } = {}) => {
+        if (! silent) {
+            setProductCategoryLoading(true);
+        }
 
         try {
             const payload = await callAdminApi('/admin/api/cms/product-categories');
             setProductCategoryItems(payload.data?.items ?? []);
         } finally {
-            setProductCategoryLoading(false);
+            if (! silent) {
+                setProductCategoryLoading(false);
+            }
         }
     };
 
@@ -1161,16 +1165,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 () => callAdminApi(`/admin/api/cms/product-categories/${editingProductCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
                 'Đã cập nhật danh mục sản phẩm.',
                 async () => {
-                    await loadProductCategoryItems();
-                    await reload();
+                    await loadProductCategoryItems({ silent: true });
                 },
             )
             : await runAdminAction(
                 () => callAdminApi('/admin/api/cms/product-categories', { method: 'POST', body: JSON.stringify(payload) }),
                 'Đã tạo danh mục sản phẩm.',
                 async () => {
-                    await loadProductCategoryItems();
-                    await reload();
+                    await loadProductCategoryItems({ silent: true });
                 },
             );
 
@@ -1192,8 +1194,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     () => callAdminApi(`/admin/api/cms/product-categories/${record.id}`, { method: 'DELETE' }),
                     'Đã xóa danh mục sản phẩm.',
                     async () => {
-                        await loadProductCategoryItems();
-                        await reload();
+                        await loadProductCategoryItems({ silent: true });
                     },
                 );
             },

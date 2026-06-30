@@ -701,6 +701,16 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                 ? buildUrlSelectOptions(linkOptions.postCategories ?? [])
                 : [];
 
+    const handleItemUrlChange = (value, option) => {
+        itemForm.setFieldValue('link_value', value);
+
+        const nextLabel = option?.title ?? option?.label;
+
+        if (nextLabel) {
+            itemForm.setFieldValue('label', nextLabel);
+        }
+    };
+
     const itemPreviewUrl = resolveItemUrl(itemForm.getFieldsValue(true), linkLookups);
 
     return (
@@ -924,6 +934,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                             <Select
                                 showSearch
                                 options={itemUrlOptions}
+                                onChange={handleItemUrlChange}
                                 optionRender={(option) => (
                                     <Space direction="vertical" size={0} style={{ width: '100%', lineHeight: 1.35 }}>
                                         <Text strong>{option.data.title}</Text>
