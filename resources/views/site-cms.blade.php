@@ -22,9 +22,11 @@
             .site-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 28px; background: rgba(255,255,255,0.92); border-bottom: 1px solid var(--site-line); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 10; }
             .site-brand strong { display: block; font-size: 20px; }
             .site-brand span { color: var(--site-muted); font-size: 13px; }
-            .site-nav { display: flex; flex-wrap: wrap; gap: 10px; }
+            .site-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
             .site-nav a { color: var(--site-ink); text-decoration: none; padding: 10px 14px; border-radius: 12px; }
             .site-nav a:hover { background: color-mix(in srgb, var(--site-accent) 10%, white); }
+            .site-nav .site-admin-entry { border: 1px solid color-mix(in srgb, var(--site-accent) 45%, white); background: var(--site-accent); color: #fff; font-weight: 700; box-shadow: 0 10px 24px rgba(15, 118, 110, 0.18); }
+            .site-nav .site-admin-entry:hover { background: color-mix(in srgb, var(--site-accent) 86%, #0f172a); color: #fff; }
             .site-main { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 60px; }
             .site-preview-banner { margin-bottom: 18px; padding: 12px 16px; border-radius: 14px; background: #fff7e6; border: 1px solid #ffd591; color: #8a5a00; }
             .site-hero { padding: 28px; border: 1px solid var(--site-line); border-radius: 24px; background: radial-gradient(circle at top left, color-mix(in srgb, var(--site-accent) 18%, white) 0%, transparent 28%), var(--site-surface); box-shadow: 0 18px 48px rgba(15,34,30,0.08); }
@@ -77,6 +79,11 @@
                         <a href="{{ $item['url'] ?? '#' }}" @if(($item['target'] ?? '') === '_blank') target="_blank" rel="noreferrer" @endif>{{ $item['label'] ?? 'Menu' }}</a>
                     @endforeach
                     <a href="{{ route('site.blog.index') }}">Tin tức</a>
+                    @auth('admin')
+                        <a class="site-admin-entry" href="{{ route('admin.index') }}">Vào quản trị</a>
+                    @else
+                        <a class="site-admin-entry" href="{{ url('/admin') }}">Đăng nhập quản trị</a>
+                    @endauth
                 </nav>
             </header>
 
