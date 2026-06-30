@@ -480,6 +480,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const frontendLocale = window.localStorage.getItem('aio.frontendLocale') || 'vi';
     const homeAdminUrl = `/${encodeURIComponent(frontendLocale)}?mod=admin`;
     const [bulkProductEditForm] = Form.useForm();
+    const [mediaEditForm] = Form.useForm();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
     const [blockManagerOpen, setBlockManagerOpen] = useState(false);
@@ -494,8 +495,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productFeaturedFilter, setProductFeaturedFilter] = useState('all');
     const [productActiveFilter, setProductActiveFilter] = useState('all');
     const [productPublishFilter, setProductPublishFilter] = useState('all');
+    const [productSort, setProductSort] = useState('newest');
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
     const [mediaFile, setMediaFile] = useState(null);
+    const [editingMediaRecord, setEditingMediaRecord] = useState(null);
     const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
     const [categoryFormOpen, setCategoryFormOpen] = useState(false);
     const [categoryItems, setCategoryItems] = useState([]);
@@ -873,7 +876,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         if (sectionKey === 'cms-products') {
-            return (data?.items ?? []).filter((product) => {
+            const filteredProducts = (data?.items ?? []).filter((product) => {
                 const matchesKeyword = normalizedKeyword === '' || [
                     product.name,
                     product.slug,
@@ -895,10 +898,41 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                 return matchesKeyword && matchesCategory && matchesFeatured && matchesActive && matchesPublish;
             });
+
+            return [...filteredProducts].sort((left, right) => {
+                const leftName = String(left.name ?? '').toLowerCase();
+                const rightName = String(right.name ?? '').toLowerCase();
+                const leftPrice = Number(left.price ?? 0);
+                const rightPrice = Number(right.price ?? 0);
+                const leftStock = Number(left.stock ?? 0);
+                const rightStock = Number(right.stock ?? 0);
+                const leftNewest = Date.parse(left.created_at ?? left.updated_at ?? '') || Number(left.id ?? 0);
+                const rightNewest = Date.parse(right.created_at ?? right.updated_at ?? '') || Number(right.id ?? 0);
+
+                switch (productSort) {
+                    case 'name_asc':
+                        return leftName.localeCompare(rightName, 'vi');
+                    case 'name_desc':
+                        return rightName.localeCompare(leftName, 'vi');
+                    case 'price_desc':
+                        return rightPrice - leftPrice;
+                    case 'price_asc':
+                        return leftPrice - rightPrice;
+                    case 'stock_desc':
+                        return rightStock - leftStock;
+                    case 'stock_asc':
+                        return leftStock - rightStock;
+                    case 'oldest':
+                        return leftNewest - rightNewest;
+                    case 'newest':
+                    default:
+                        return rightNewest - leftNewest;
+                }
+            });
         }
 
         return data?.items ?? [];
-    }, [data?.items, data?.orders, keyword, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, sectionKey]);
+    }, [data?.items, data?.orders, keyword, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey]);
 
     const openCreateModal = () => {
         if (sectionKey === 'cms-landing-pages') {
@@ -1334,6 +1368,38 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
     };
 
+    const openEditMediaTitle = (record) => {
+        setEditingMediaRecord(record);
+        mediaEditForm.setFieldsValue({
+            title: record.title ?? '',
+            alt_text: record.alt_text ?? '',
+        });
+    };
+
+    const handleSaveMediaTitle = async () => {
+        if (!editingMediaRecord?.id) {
+            return false;
+        }
+
+        const values = await mediaEditForm.validateFields();
+        const didSave = await runAdminAction(
+            () => callAdminApi(`/admin/api/cms/media/${editingMediaRecord.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    title: values.title,
+                    alt_text: values.alt_text || null,
+                }),
+            }),
+            'Da cap nhat ten hien thi media.',
+            reload,
+        );
+
+        if (didSave) {
+            setEditingMediaRecord(null);
+            mediaEditForm.resetFields();
+        }
+    };
+
     const renderActions = (record) => {
         const actionItems = [];
 
@@ -1402,6 +1468,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 label: 'Mở media',
                 icon: <EyeOutlined />,
             });
+            actionItems.push({
+                key: 'edit-media-title',
+                label: 'Sửa tên hiển thị',
+                icon: <EditOutlined />,
+                disabled: !sectionPermissions.canUpdate,
+            });
         }
 
         actionItems.push({
@@ -1435,6 +1507,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             if (key === 'open' && record.file_url) {
                 window.open(record.file_url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            if (key === 'edit-media-title') {
+                openEditMediaTitle(record);
                 return;
             }
 
@@ -2091,6 +2168,24 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                             style={{ width: '100%' }}
                                         />
                                     </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Sắp xếp</Text>
+                                        <Select
+                                            value={productSort}
+                                            onChange={setProductSort}
+                                            options={[
+                                                { label: 'Mới nhất', value: 'newest' },
+                                                { label: 'Cũ nhất', value: 'oldest' },
+                                                { label: 'Tên sản phẩm A-Z', value: 'name_asc' },
+                                                { label: 'Tên sản phẩm Z-A', value: 'name_desc' },
+                                                { label: 'Giá giảm dần', value: 'price_desc' },
+                                                { label: 'Giá tăng dần', value: 'price_asc' },
+                                                { label: 'Tồn kho giảm dần', value: 'stock_desc' },
+                                                { label: 'Tồn kho tăng dần', value: 'stock_asc' },
+                                            ]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
                                     <Space wrap>
                                         <Dropdown
                                             trigger={['click']}
@@ -2134,10 +2229,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         </Col>
                         <Col xs={24} xl={17}>
                             <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
-                                    <Button onClick={openProductCategoryManager}>Cài đặt danh mục SP</Button>
-                                    <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{`Tạo ${sectionConfig.title}`}</Button>
-                                </div>
                                 {filteredItems.length ? (
                                     <Table
                                         rowKey="id"
@@ -2242,6 +2333,32 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </Space>
                 ) : null}
             </Drawer>
+
+            <Modal
+                title="Sửa tên hiển thị media"
+                open={sectionKey === 'cms-media' && Boolean(editingMediaRecord)}
+                onCancel={() => {
+                    setEditingMediaRecord(null);
+                    mediaEditForm.resetFields();
+                }}
+                onOk={handleSaveMediaTitle}
+                okText="Lưu"
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Form form={mediaEditForm} layout="vertical">
+                    <Form.Item
+                        name="title"
+                        label="Tên hiển thị"
+                        rules={[{ required: true, message: 'Nhập tên hiển thị cho file' }]}
+                    >
+                        <Input placeholder="Tên hiển thị" />
+                    </Form.Item>
+                    <Form.Item name="alt_text" label="Alt text" style={{ marginBottom: 0 }}>
+                        <Input placeholder="Mô tả ngắn cho ảnh/file" />
+                    </Form.Item>
+                </Form>
+            </Modal>
 
             <Modal
                 title={`Cập nhật ${selectedProductRowKeys.length} sản phẩm đã chọn`}

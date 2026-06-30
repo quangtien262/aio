@@ -45,6 +45,23 @@ class MediaManagementController
         return response()->json(['message' => 'Đã upload media CMS.', 'data' => $this->serialize($media)], 201);
     }
 
+    public function update(Request $request, int $media): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'alt_text' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        /** @var CmsMedia $record */
+        $record = CmsMedia::query()->findOrFail($media);
+        $record->update([
+            'title' => $validated['title'],
+            'alt_text' => $validated['alt_text'] ?? null,
+        ]);
+
+        return response()->json(['message' => 'Đã cập nhật tên hiển thị media.', 'data' => $this->serialize($record->fresh())]);
+    }
+
     public function destroy(Request $request, int $media): JsonResponse
     {
         /** @var CmsMedia $record */

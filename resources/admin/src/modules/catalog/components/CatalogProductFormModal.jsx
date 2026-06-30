@@ -411,8 +411,12 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>
-                                <Form.Item name="catalog_category_id" label="Danh mục">
-                                    <Select allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
+                                <Form.Item
+                                    name="catalog_category_id"
+                                    label="Danh mục"
+                                    rules={[{ required: true, message: 'Vui lòng chọn danh mục sản phẩm' }]}
+                                >
+                                    <Select showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>

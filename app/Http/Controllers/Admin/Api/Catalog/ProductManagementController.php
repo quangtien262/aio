@@ -65,7 +65,7 @@ class ProductManagementController
     private function validatePayload(Request $request, ?CatalogProduct $product = null): array
     {
         return $request->validate([
-            'catalog_category_id' => ['nullable', 'integer', 'exists:catalog_categories,id'],
+            'catalog_category_id' => ['required', 'integer', 'exists:catalog_categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('catalog_products', 'slug')->ignore($product?->id)],
             'sku' => ['nullable', 'string', 'max:255', Rule::unique('catalog_products', 'sku')->ignore($product?->id)],

@@ -457,6 +457,9 @@ Route::prefix('admin')
                 Route::post('/cms/media', [MediaManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.media.manage')
                     ->name('cms.media.store');
+                Route::put('/cms/media/{media}', [MediaManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.media.manage')
+                    ->name('cms.media.update');
                 Route::delete('/cms/media/{media}', [MediaManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.media.manage')
                     ->name('cms.media.destroy');
