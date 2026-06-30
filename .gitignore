@@ -3,6 +3,7 @@
 !.env.example
 
 public/.user.ini
+public/files/
 .well-known/
 
 /web-aio

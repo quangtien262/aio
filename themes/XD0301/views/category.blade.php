@@ -75,7 +75,7 @@
         return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
     });
 
-    if (! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
+    if (false && ! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
         $productCategories = \App\Models\CatalogCategory::query()
             ->with(['children' => fn ($query) => $query
                 ->where('is_active', true)
@@ -122,6 +122,40 @@
             ];
 
             $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
+            $navArray = $navItems->values()->all();
+            array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
+            $navItems = collect($navArray);
+        }
+    }
+
+    $productNavigationItems = collect(data_get($menus ?? [], 'product-navigation', []))
+        ->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
+        ->map(fn (array $item): array => $normalizeNavItem($item))
+        ->values();
+
+    if ($productNavigationItems->isNotEmpty()) {
+        if ($hasProductItem) {
+            $navItems = $navItems
+                ->map(function (array $item) use ($productNavigationItems): array {
+                    $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
+
+                    if (in_array($label, ['sáº£n pháº©m', 'sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                        $item['children'] = $productNavigationItems->all();
+                    }
+
+                    return $item;
+                })
+                ->values();
+        } else {
+            $productMenuItem = [
+                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
+                'href' => route('site.catalog.search'),
+                'target' => '_self',
+                'active' => request()->routeIs('site.catalog.*'),
+                'children' => $productNavigationItems->all(),
+            ];
+
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chá»§', 'trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);

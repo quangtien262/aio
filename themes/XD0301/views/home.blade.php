@@ -13,9 +13,9 @@
     }
 
     $hero = $blocks->firstWhere('block_type', 'hero_slider') ?? [];
-    $heroSlides = collect(data_get($hero, 'dynamic_items', []))
+    $heroSlides = collect(data_get($hero, 'data.content.slides', []))
         ->filter(fn ($slide) => is_array($slide) && filled($slide['image'] ?? null))
-        ->whenEmpty(fn () => collect(data_get($hero, 'data.content.slides', []))->filter(fn ($slide) => is_array($slide) && filled($slide['image'] ?? null)))
+        ->whenEmpty(fn () => collect(data_get($hero, 'dynamic_items', []))->filter(fn ($slide) => is_array($slide) && filled($slide['image'] ?? null)))
         ->values();
     $heroSlides = $heroSlides->isNotEmpty() ? $heroSlides : collect([['kicker' => 'Residential', 'title' => 'Xây dựng ngôi nhà mơ ước', 'summary' => 'XD0301 Construction Landing', 'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1920&q=85']]);
 
@@ -99,50 +99,31 @@
         return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
     });
 
-    if (! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
-        $productCategories = \App\Models\CatalogCategory::query()
-            ->with(['children' => fn ($query) => $query
-                ->where('is_active', true)
-                ->withCount(['products' => fn ($productQuery) => $productQuery->where('is_active', true)])
-                ->orderBy('sort_order')
-                ->orderBy('name')])
-            ->withCount(['products' => fn ($query) => $query->where('is_active', true)])
-            ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get()
-            ->filter(fn ($category): bool => (int) $category->products_count > 0 || $category->children->contains(fn ($child): bool => (int) $child->products_count > 0))
-            ->take(8)
-            ->values();
+    $productNavigationItems = collect(data_get($menus ?? [], 'product-navigation', []))
+        ->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
+        ->map(fn (array $item): array => $normalizeNavItem($item))
+        ->values();
 
-        if ($productCategories->isNotEmpty()) {
+    if ($productNavigationItems->isNotEmpty()) {
+        if ($hasProductItem) {
+            $navItems = $navItems
+                ->map(function (array $item) use ($productNavigationItems): array {
+                    $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
+
+                    if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                        $item['children'] = $productNavigationItems->all();
+                    }
+
+                    return $item;
+                })
+                ->values();
+        } else {
             $productMenuItem = [
                 'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
-                'children' => $productCategories
-                    ->map(fn ($category): array => [
-                        'label' => (string) $category->name,
-                        'href' => route('site.catalog.category', ['slug' => $category->slug]),
-                        'target' => '_self',
-                        'active' => false,
-                        'children' => $category->children
-                            ->filter(fn ($child): bool => (int) $child->products_count > 0)
-                            ->take(8)
-                            ->map(fn ($child): array => [
-                                'label' => (string) $child->name,
-                                'href' => route('site.catalog.category', ['slug' => $child->slug]),
-                                'target' => '_self',
-                                'active' => false,
-                                'children' => [],
-                            ])
-                            ->values()
-                            ->all(),
-                    ])
-                    ->values()
-                    ->all(),
+                'children' => $productNavigationItems->all(),
             ];
 
             $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
@@ -217,7 +198,7 @@
         .xd-auth-modal[hidden]{display:none!important}.xd-auth-modal{position:fixed;inset:0;z-index:220;display:grid;place-items:center;padding:24px}.xd-auth-backdrop{position:absolute;inset:0;background:rgba(12,22,30,.66);backdrop-filter:blur(5px)}.xd-auth-card{position:relative;width:min(520px,calc(100vw - 32px));max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:30px;box-shadow:0 32px 90px rgba(0,0,0,.34)}.xd-auth-close{position:absolute;right:18px;top:16px;display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:999px;background:#f3f6ef;color:var(--ink);font-size:24px;cursor:pointer}.xd-auth-title{margin:0 48px 8px 0;font-size:30px;line-height:1.2}.xd-auth-note{margin:0 0 22px;color:var(--muted);font-size:15px}.xd-auth-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:22px;padding:6px;border:1px solid var(--line);border-radius:999px;background:#f8faf5}.xd-auth-tab{min-height:42px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:inherit;font-size:13px;font-weight:900;text-transform:uppercase;cursor:pointer}.xd-auth-tab.is-active{background:var(--lime);color:#fff;box-shadow:0 10px 20px rgba(189,212,0,.26)}.xd-auth-panel{display:none}.xd-auth-panel.is-active{display:block}.xd-auth-form{display:grid;gap:14px}.xd-auth-field{display:grid;gap:7px;color:var(--ink);font-size:13px;font-weight:900;text-transform:uppercase}.xd-auth-field input{width:100%;min-height:50px;border:1px solid #dfe5df;border-radius:14px;padding:0 15px;color:var(--ink);font:inherit;font-size:15px;font-weight:600;outline:0;text-transform:none}.xd-auth-field input:focus{border-color:var(--lime);box-shadow:0 0 0 4px rgba(189,212,0,.15)}.xd-auth-check{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;font-weight:700}.xd-auth-submit{min-height:54px;border:0;border-radius:14px;background:var(--ink);color:#fff;font:inherit;font-weight:900;text-transform:uppercase;cursor:pointer}.xd-auth-submit:hover{background:var(--lime);color:#fff}.xd-auth-feedback{margin:16px 0 0;padding:12px 14px;border-radius:12px;background:#fff4f2;color:#b42318;font-size:14px;font-weight:800}.xd-auth-feedback.is-success{background:#f3f9dc;color:var(--lime-dark)}
         .xd-edit-block{position:absolute;right:18px;top:18px;z-index:20;border:0;border-radius:999px;padding:10px 16px;background:#dc2626;color:#fff;font-weight:900;box-shadow:0 12px 34px rgba(220,38,38,.38);cursor:pointer}.xd-edit-block:hover{background:#b91c1c;box-shadow:0 14px 40px rgba(220,38,38,.5);transform:translateY(-1px)}.xd-editor[hidden]{display:none}.xd-editor{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(10,18,25,.58)}.xd-editor-card{width:min(860px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.28)}.xd-editor-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.xd-editor-head h3{margin:0;font-size:26px}.xd-editor-close{border:0;background:#f1f3ef;border-radius:999px;width:40px;height:40px;font-size:24px;cursor:pointer}.xd-editor-locale-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;padding:6px;border:1px solid #dfe5df;border-radius:999px;background:#fbfcfa}.xd-editor-locale-tab{min-height:38px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:inherit;font-size:13px;font-weight:900;cursor:pointer}.xd-editor-locale-tab.is-active{background:var(--lime);color:#fff;box-shadow:0 9px 18px rgba(189,212,0,.22)}.xd-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.xd-editor-field{display:grid;gap:6px}.xd-editor-field span{font-weight:800;color:var(--ink)}.xd-editor-field input,.xd-editor-field textarea{width:100%;border:1px solid #dfe5df;border-radius:12px;padding:12px 14px;font:inherit}.xd-editor-field textarea{min-height:120px}.xd-editor-field.is-wide{grid-column:1/-1}.xd-editor-hidden-json{display:none!important}.xd-editor-items{grid-column:1/-1;display:grid;gap:12px;padding:16px;border:1px solid #dfe5df;border-radius:16px;background:#fbfcfa}.xd-editor-items[hidden]{display:none}.xd-editor-items-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.xd-editor-items-head h4{margin:0;font-size:18px}.xd-editor-items-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.xd-editor-help{margin:4px 0 0;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}.xd-editor-item-list{display:grid;gap:10px}.xd-editor-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;padding:14px;border:1px solid #e7ece5;border-radius:14px;background:#fff}.xd-editor-item-summary{min-width:0}.xd-editor-item-summary small{display:block;margin-bottom:4px;color:var(--lime-dark);font-size:11px;font-weight:950;text-transform:uppercase;letter-spacing:.06em}.xd-editor-item-summary strong{display:block;overflow:hidden;color:var(--ink);font-size:15px;font-weight:950;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}.xd-editor-item-summary span{display:-webkit-box;overflow:hidden;margin-top:4px;color:var(--muted);font-size:13px;font-weight:700;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}.xd-editor-item-actions{display:flex;align-items:center;gap:8px}.xd-editor-edit,.xd-editor-remove,.xd-editor-add,.xd-editor-manage{border:1px solid #dfe5df;border-radius:999px;background:#fff;color:var(--ink);font-weight:900;cursor:pointer}.xd-editor-edit,.xd-editor-remove{padding:7px 12px}.xd-editor-edit{border-color:rgba(189,212,0,.45);background:#f8fbde;color:var(--lime-dark)}.xd-editor-add,.xd-editor-manage{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;text-decoration:none}.xd-editor-manage{background:#101d28;color:#fff;border-color:#101d28}.xd-editor-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:18px}.xd-editor-actions button{min-height:44px;border-radius:12px;padding:0 18px;border:1px solid #dfe5df;background:#fff;font-weight:900;cursor:pointer}.xd-editor-actions button[type=submit]{border-color:var(--lime);background:var(--lime);color:#fff}.xd-item-modal[hidden]{display:none!important}.xd-item-modal{position:fixed;inset:0;z-index:130;display:grid;place-items:center;padding:20px;background:rgba(10,18,25,.56)}.xd-item-card{width:min(660px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.3)}.xd-item-card-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.xd-item-card-head h3{margin:0;font-size:24px}.xd-item-close{border:0;background:#f1f3ef;border-radius:999px;width:38px;height:38px;font-size:22px;cursor:pointer}.xd-item-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.xd-item-form label{display:grid;gap:6px;color:var(--ink);font-size:12px;font-weight:900;text-transform:uppercase}.xd-item-form input,.xd-item-form textarea{width:100%;border:1px solid #dfe5df;border-radius:12px;padding:11px 13px;font:inherit;font-size:14px;text-transform:none}.xd-item-form textarea{min-height:112px}.xd-item-form .is-wide{grid-column:1/-1}.xd-item-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.xd-item-actions button{min-height:42px;border:1px solid #dfe5df;border-radius:12px;background:#fff;padding:0 16px;font-weight:900;cursor:pointer}.xd-item-actions button[type=submit]{border-color:var(--lime);background:var(--lime);color:#fff}
         .xd-editor-item-main{display:grid;grid-template-columns:78px minmax(0,1fr);align-items:center;gap:14px;min-width:0}.xd-editor-item-thumb{display:grid;place-items:center;width:78px;height:58px;overflow:hidden;border:1px solid #dfe5df;border-radius:12px;background:#eef3ee;color:var(--muted);font-size:10px;font-weight:950;text-transform:uppercase}.xd-editor-item-thumb img{width:100%;height:100%;object-fit:cover}.xd-editor-item-thumb.is-empty{background:linear-gradient(135deg,#f7f9ee,#eef3ee)}
-        .xd-item-upload{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.xd-item-upload button{min-height:34px;border:1px solid #dfe5df;border-radius:999px;background:#f8fbde;color:var(--lime-dark);padding:0 12px;font-size:12px;font-weight:900;cursor:pointer}.xd-item-upload button:disabled{opacity:.55;cursor:wait}.xd-item-upload small{color:var(--muted);font-size:12px;font-weight:800;text-transform:none}
+        .xd-item-image-field{grid-column:1/-1}.xd-image-mode{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 6px}.xd-image-mode label{display:inline-flex!important;grid-template-columns:none!important;align-items:center;gap:7px;min-height:34px;padding:0 12px;border:1px solid #dfe5df;border-radius:999px;background:#fff;color:var(--ink);font-size:12px;font-weight:900;text-transform:none;cursor:pointer}.xd-image-mode input{width:auto!important;margin:0}.xd-item-image-field.is-upload-mode>[data-xd-item-modal-field="image"]{display:none}.xd-item-upload{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.xd-item-upload[hidden]{display:none!important}.xd-item-upload button{min-height:38px;border:1px solid #dfe5df;border-radius:999px;background:#f8fbde;color:var(--lime-dark);padding:0 14px;font-size:12px;font-weight:900;cursor:pointer}.xd-item-upload button:disabled{opacity:.55;cursor:wait}.xd-item-upload small{color:var(--muted);font-size:12px;font-weight:800;text-transform:none}
         .xd-editor-source{grid-column:1/-1;display:grid;gap:12px;padding:16px;border:1px solid #dfe5df;border-radius:16px;background:#fff}.xd-editor-source[hidden],.xd-editor-source label[hidden]{display:none!important}.xd-editor-source h4{margin:0;font-size:18px}.xd-editor-source-grid{display:grid;grid-template-columns:1.15fr .55fr .7fr .6fr;gap:12px;align-items:end}.xd-editor-source label{display:grid;gap:6px;color:var(--ink);font-size:13px;font-weight:900}.xd-editor-source select,.xd-editor-source input{width:100%;min-height:44px;border:1px solid #dfe5df;border-radius:12px;background:#fff;padding:0 12px;color:var(--ink);font:inherit;font-size:14px}.xd-editor-source-check{align-self:center;display:flex!important;grid-template-columns:none!important;align-items:center;gap:9px;padding-top:22px}.xd-editor-source-check input{width:20px;min-height:20px}.xd-editor-source-note{margin:0;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}
         @media (max-width:1180px){.xd-header-inner{flex-wrap:wrap;padding:18px 0}.xd-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto}.xd-nav-link{padding:18px 16px}.xd-dropdown{top:calc(100% + 2px)}.xd-hero-card{margin-left:0}.xd-services,.xd-team,.xd-footer-grid,.xd-projects,.xd-featured-cat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.xd-service-slider .xd-service-card{flex-basis:calc((100% - 32px)/2)}.xd-project-slider,.xd-team-slider{--xd-row-card:calc((100% - var(--xd-row-gap))/2)}.xd-testimonial-slider{--xd-row-card:min(720px,82vw)}.xd-intro{grid-template-columns:1fr}}
         @media (max-width:760px){.xd-container{width:min(100% - 28px,1540px)}.xd-header{position:relative}.xd-header-actions{width:100%;justify-content:center}.xd-hotline{justify-content:center}.xd-login-button{min-height:48px}.xd-hero,.xd-hero-content{min-height:690px}.xd-hero-card{padding:48px 34px;border-width:5px}.xd-featured-cats{padding:46px 0 56px}.xd-featured-cats-head{display:grid}.xd-section{padding:72px 0}.xd-services,.xd-projects,.xd-team,.xd-testimonials,.xd-partner-grid,.xd-footer-grid,.xd-editor-grid,.xd-featured-cat-grid{grid-template-columns:1fr}.xd-featured-cat{min-height:170px}.xd-service-slider .xd-service-card{flex-basis:min(86vw,420px)}.xd-project-slider,.xd-team-slider,.xd-testimonial-slider{--xd-row-card:min(86vw,420px)}.xd-service-nav,.xd-row-nav{display:none!important}.xd-project-card{min-height:430px}.xd-testimonial{grid-template-columns:1fr}.xd-intro-visual{min-height:420px}.xd-years strong{font-size:96px}}
@@ -406,9 +387,9 @@
                 @switch($block['block_type'])
                     @case('hero_slider')
                         @php
-                            $slides = collect($block['dynamic_items'] ?? [])
+                            $slides = collect($content['slides'] ?? [])
                                 ->filter(fn ($slide) => is_array($slide) && filled($slide['image'] ?? null))
-                                ->whenEmpty(fn () => collect($content['slides'] ?? [])->filter(fn ($slide) => is_array($slide) && filled($slide['image'] ?? null)))
+                                ->whenEmpty(fn () => collect($block['dynamic_items'] ?? [])->filter(fn ($slide) => is_array($slide) && filled($slide['image'] ?? null)))
                                 ->values();
                             $firstSlide = $slides->first() ?? [];
                         @endphp
@@ -1012,6 +993,9 @@
             const parseItemData = (row) => {
                 try { return JSON.parse(row?.dataset.xdItem || '{}'); } catch (error) { return {}; }
             };
+            const normalizeContentObject = (value) => {
+                return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+            };
             const settingField = (name) => sourceSettingFields.find((input) => input.dataset.xdSettingField === name);
             const sourceControlWrap = (name) => settingField(name)?.closest('label');
             const currentSourceValue = () => settingField('source')?.value || activeBlock?.settings?.source || '';
@@ -1242,24 +1226,40 @@
                 editorItemFields(blockType).forEach(([key, label, type]) => {
                     const control = document.createElement('label');
                     control.className = type === 'textarea' ? 'is-wide' : '';
+                    if (key === 'image') control.className = `${control.className} xd-item-image-field`.trim();
                     control.innerHTML = type === 'textarea'
                         ? `<span>${escapeHtml(label)}</span><textarea data-xd-item-modal-field="${escapeHtml(key)}"></textarea>`
                         : `<span>${escapeHtml(label)}</span><input data-xd-item-modal-field="${escapeHtml(key)}">`;
                     const input = control.querySelector('[data-xd-item-modal-field]');
                     input.value = item?.[key] ?? '';
                     if (key === 'image') {
+                        const modeWrap = document.createElement('div');
+                        modeWrap.className = 'xd-image-mode';
+                        modeWrap.innerHTML = `
+                            <label><input type="radio" name="xd_item_image_mode" value="url" checked> Nhập liên kết hình ảnh</label>
+                            <label><input type="radio" name="xd_item_image_mode" value="upload"> Upload ảnh</label>
+                        `;
                         const uploadWrap = document.createElement('div');
                         uploadWrap.className = 'xd-item-upload';
+                        uploadWrap.hidden = true;
                         uploadWrap.innerHTML = '<input type="file" accept="image/*" data-xd-item-upload hidden><button type="button" data-xd-item-upload-trigger>Upload ảnh</button><small data-xd-item-upload-status></small>';
                         const fileInput = uploadWrap.querySelector('[data-xd-item-upload]');
                         const triggerButton = uploadWrap.querySelector('[data-xd-item-upload-trigger]');
                         const statusNode = uploadWrap.querySelector('[data-xd-item-upload-status]');
+                        const syncImageMode = () => {
+                            const mode = modeWrap.querySelector('input[name="xd_item_image_mode"]:checked')?.value || 'url';
+                            uploadWrap.hidden = mode !== 'upload';
+                            control.classList.toggle('is-upload-mode', mode === 'upload');
+                        };
+                        modeWrap.querySelectorAll('input[name="xd_item_image_mode"]').forEach((radio) => radio.addEventListener('change', syncImageMode));
                         triggerButton?.addEventListener('click', () => fileInput?.click());
                         fileInput?.addEventListener('change', () => {
                             const file = fileInput.files?.[0];
                             if (file) uploadItemImage(file, input, statusNode, triggerButton);
                         });
+                        control.insertBefore(modeWrap, input);
                         control.appendChild(uploadWrap);
+                        syncImageMode();
                     }
                     itemFormFields.appendChild(control);
                 });
@@ -1270,7 +1270,7 @@
                 if (!itemsEditor || !itemList) return;
                 const blockType = block.block_type || '';
                 activeItemKey = editorItemKey(blockType);
-                const content = contentOverride || block.data?.content || {};
+                const content = normalizeContentObject(contentOverride || block.data?.content || {});
                 let items = Array.isArray(content[activeItemKey]) ? content[activeItemKey] : [];
                 const canEditList = ['hero_slider', 'featured_categories', 'featured_services', 'project_gallery', 'team_members', 'testimonials', 'partner_logos'].includes(blockType);
 
@@ -1294,6 +1294,11 @@
                 items.forEach((item, index) => itemList.appendChild(renderEditorItem(item, index, blockType, customMode)));
                 if (!items.length && customMode) itemList.appendChild(renderEditorItem({}, 0, blockType, true));
                 addItemButton.dataset.xdBlockType = blockType;
+            };
+            const alwaysCollectItemBlocks = ['hero_slider', 'partner_logos'];
+            const shouldCollectEditorItems = () => {
+                const blockType = activeBlock?.block_type || addItemButton?.dataset.xdBlockType || '';
+                return alwaysCollectItemBlocks.includes(blockType) || isCustomSource();
             };
             const previewSourceItems = async () => {
                 if (!activeBlock || !sourcePreviewUrlTemplate || !sourceEditor || sourceEditor.hidden) return;
@@ -1343,14 +1348,26 @@
                 }, 250);
             };
             const collectEditorItems = () => {
-                if (!isCustomSource()) return null;
+                if (!shouldCollectEditorItems()) return null;
                 if (!itemsEditor || itemsEditor.hidden || !activeItemKey) return null;
                 return Array.from(itemList.querySelectorAll('[data-xd-item-row]'))
                     .map(parseItemData)
                     .filter((item) => Object.keys(item).length > 0);
             };
+            const syncEditorItemsIntoContentField = () => {
+                const editorItems = collectEditorItems();
+                if (!editorItems) return;
+
+                const content = normalizeContentObject(parseJson(field('content').value, {}));
+                content[activeItemKey] = editorItems;
+                field('content').value = pretty(content);
+
+                if (localeDrafts[activeEditorLocale]) {
+                    localeDrafts[activeEditorLocale].content = content;
+                }
+            };
             const collectCurrentLocaleDraft = () => {
-                const content = parseJson(field('content').value, {});
+                const content = normalizeContentObject(parseJson(field('content').value, {}));
                 const editorItems = collectEditorItems();
                 if (editorItems) content[activeItemKey] = editorItems;
 
@@ -1372,8 +1389,8 @@
                 field('subtitle').value = draft.subtitle || '';
                 field('description').value = draft.description || '';
                 field('button_label').value = draft.button_label || '';
-                field('content').value = pretty(draft.content || {});
-                renderItemsEditor(activeBlock, draft.content || {});
+                field('content').value = pretty(normalizeContentObject(draft.content || {}));
+                renderItemsEditor(activeBlock, normalizeContentObject(draft.content || {}));
                 if (!isCustomSource()) scheduleSourcePreview();
                 localeTabs.forEach((button) => button.classList.toggle('is-active', button.dataset.xdLocaleTab === locale));
             };
@@ -1403,6 +1420,7 @@
                     rows[index]?.replaceWith(renderEditorItem(item, index, blockType, true));
                 }
                 syncItemNumbers();
+                syncEditorItemsIntoContentField();
                 closeItemModal();
             });
             document.querySelectorAll('[data-xd-item-close]').forEach((button) => button.addEventListener('click', closeItemModal));
@@ -1416,10 +1434,11 @@
                     localeDrafts = {};
                     const availableLocales = editorLocales.length ? editorLocales.map((locale) => locale.code) : [block.data?.locale || activeEditorLocale];
                     availableLocales.forEach((locale) => {
+                        const localeContent = block.data_by_locale?.[locale]?.content || block.data?.content || {};
                         localeDrafts[locale] = {
                             locale,
                             ...(block.data_by_locale?.[locale] || block.data || {}),
-                            content: block.data_by_locale?.[locale]?.content || block.data?.content || {},
+                            content: normalizeContentObject(localeContent),
                         };
                     });
                     field('block_id').value = block.id;
