@@ -61,6 +61,8 @@
         ->values();
 
     $homeUrl = route('site.home');
+    $aboutUrl = url('/'.app()->getLocale().'/gioi-thieu');
+    $contactUrl = url('/'.app()->getLocale().'/lien-he');
     if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
             'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ',
@@ -351,8 +353,8 @@
                     <div class="xd-footer-links">
                         <a href="{{ route('site.home') }}">Trang chủ</a>
                         <a href="{{ route('site.blog.index') }}">Tin tức</a>
-                        <a href="{{ route('site.cms.page', ['slug' => 'gioi-thieu']) }}">Giới thiệu</a>
-                        <a href="{{ route('site.cms.page', ['slug' => 'lien-he']) }}">Liên hệ</a>
+                        <a href="{{ $aboutUrl }}">Giới thiệu</a>
+                        <a href="{{ $contactUrl }}">Liên hệ</a>
                     </div>
                 </div>
                 <div>
