@@ -417,6 +417,7 @@ class CmsSiteController
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             'category' => $category,
             'sidebarCategories' => $sidebarCategories,
+            'catalogTreeCategories' => $this->resolveCatalogCategoryTreeItems($category, $websiteKey),
             'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'TH0001')))->all(),
             'childCategories' => $category->children->map(fn (CatalogCategory $child): array => [
                 'name' => $child->name,
@@ -474,6 +475,48 @@ class CmsSiteController
                 'active' => $item->id === $currentCategory->id,
             ];
         })->all();
+    }
+
+    private function resolveCatalogCategoryTreeItems(CatalogCategory $currentCategory, string $websiteKey): array
+    {
+        $query = CatalogCategory::query()
+            ->where('is_active', true)
+            ->withCount(['products' => function (EloquentBuilder $query) use ($websiteKey): void {
+                $query->where('is_active', true);
+                $this->applyWebsiteScope($query, $websiteKey);
+            }])
+            ->orderBy('sort_order')
+            ->orderBy('name');
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        $categories = $query->get();
+        $childrenByParent = $categories->groupBy(fn (CatalogCategory $category): string => $category->parent_id === null ? 'root' : (string) $category->parent_id);
+
+        $buildTree = function (?int $parentId) use (&$buildTree, $childrenByParent, $currentCategory, $websiteKey): array {
+            $key = $parentId === null ? 'root' : (string) $parentId;
+
+            return collect($childrenByParent->get($key, collect()))
+                ->map(function (CatalogCategory $category) use (&$buildTree, $currentCategory, $websiteKey): array {
+                    $children = $buildTree((int) $category->id);
+                    $directCount = (int) ($category->products_count ?? 0);
+                    $totalCount = $directCount + collect($children)->sum(fn (array $child): int => (int) ($child['count'] ?? 0));
+                    $isCurrent = (int) $category->id === (int) $currentCategory->id;
+                    $hasActiveChild = collect($children)->contains(fn (array $child): bool => (bool) ($child['active'] ?? false));
+
+                    return [
+                        'label' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $category->id), $category->name),
+                        'url' => $this->categoryUrl((string) $category->slug),
+                        'count' => $totalCount,
+                        'active' => $isCurrent || $hasActiveChild,
+                        'current' => $isCurrent,
+                        'children' => $children,
+                    ];
+                })
+                ->values()
+                ->all();
+        };
+
+        return $buildTree(null);
     }
 
     public function product(Request $request): View

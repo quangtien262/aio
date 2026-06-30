@@ -10,8 +10,25 @@
     $categoryDescription = trim((string) ($category->description ?? ''));
     $productItems = collect($products ?? []);
     $childCategoryItems = collect($childCategories ?? []);
-    $sidebarItems = collect($sidebarCategories ?? []);
+    $sidebarItems = collect($catalogTreeCategories ?? $sidebarCategories ?? []);
     $formatCurrency = fn ($value) => $value === null || (float) $value <= 0 ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
+    $renderCategoryTree = function ($items, int $level = 0) use (&$renderCategoryTree): string {
+        return collect($items)->map(function (array $item) use (&$renderCategoryTree, $level): string {
+            $children = collect($item['children'] ?? []);
+            $classes = trim('xd-side-link level-'.$level.' '.(($item['active'] ?? false) ? 'is-active' : '').' '.(($item['current'] ?? false) ? 'is-current' : ''));
+            $html = '<div class="xd-side-node level-'.$level.'">';
+            $html .= '<a class="'.e($classes).'" href="'.e((string) ($item['url'] ?? '#')).'">';
+            $html .= '<span>'.e((string) ($item['label'] ?? $item['name'] ?? 'Danh mục')).'</span>';
+            $html .= '<small>'.(int) ($item['count'] ?? 0).'</small>';
+            $html .= '</a>';
+
+            if ($children->isNotEmpty()) {
+                $html .= '<div class="xd-side-children">'.$renderCategoryTree($children->all(), $level + 1).'</div>';
+            }
+
+            return $html.'</div>';
+        })->implode('');
+    };
 
     $localizeMenuUrl = function (?string $href): string {
         $href = trim((string) $href);
@@ -188,7 +205,7 @@
         .xd-nav{display:flex;align-items:center;justify-content:center;gap:0;min-width:0;flex:1}.xd-nav-item{position:relative}.xd-nav-link{display:inline-flex;align-items:center;gap:8px;padding:39px 21px;color:#344354;font-size:15px;font-weight:850;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}.xd-nav-caret{color:var(--lime-dark);font-size:12px;transition:transform .18s ease}.xd-nav-link.is-active,.xd-nav-link:hover,.xd-nav-item:hover>.xd-nav-link,.xd-nav-item:focus-within>.xd-nav-link{color:var(--lime-dark)}.xd-nav-item:hover>.xd-nav-link .xd-nav-caret,.xd-nav-item:focus-within>.xd-nav-link .xd-nav-caret{transform:rotate(180deg)}.xd-dropdown{position:absolute;top:100%;left:0;z-index:90;min-width:250px;padding:12px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(12px);transition:.18s}.xd-nav-item:hover>.xd-dropdown,.xd-nav-item:focus-within>.xd-dropdown{opacity:1;visibility:visible;transform:translateY(0)}.xd-dropdown-link{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 14px;border-left:3px solid transparent;color:#53606b;font-size:14px;font-weight:800;line-height:1.35}.xd-dropdown-link:hover{background:#f7f9ee;border-left-color:var(--lime);color:var(--ink)}
         .xd-header-actions{display:flex;align-items:center;gap:12px;flex:0 0 auto}.xd-hotline{display:inline-flex;align-items:center;gap:12px;padding:18px 28px;color:#fff;background:var(--lime);border-radius:4px;box-shadow:0 14px 26px rgba(189,212,0,.34);font-weight:900;letter-spacing:.035em;white-space:nowrap}.xd-login-button{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 22px;border:1px solid rgba(38,56,74,.14);border-radius:4px;background:#fff;color:var(--ink);box-shadow:0 12px 24px rgba(16,29,40,.08);font-size:14px;font-weight:900;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}
         .xd-page-main{padding:0 0 88px}.xd-hero{position:relative;min-height:360px;display:grid;align-items:end;overflow:hidden;background:linear-gradient(135deg,#0c1a22,#26384a)}.xd-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,18,25,.85),rgba(8,18,25,.45)),url("{{ $category->image_url ?: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80' }}") center/cover;filter:saturate(.9)}.xd-hero:after{content:"";position:absolute;inset:auto 0 0;height:42%;background:linear-gradient(0deg,rgba(8,18,25,.76),transparent)}.xd-hero-inner{position:relative;z-index:1;padding:90px 0 70px;color:#fff}.xd-breadcrumb{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:22px;color:rgba(255,255,255,.72);font-size:14px;font-weight:800}.xd-breadcrumb a:hover{color:var(--lime)}.xd-kicker{position:relative;display:inline-block;margin:0 0 18px 18px;font-size:14px;font-weight:950;letter-spacing:.055em;text-transform:uppercase}.xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}.xd-hero h1{max-width:760px;margin:0;font-size:clamp(42px,6vw,86px);line-height:.98;letter-spacing:-.065em}.xd-hero p{max-width:760px;margin:22px 0 0;color:rgba(255,255,255,.82);font-size:20px;font-weight:650}
-        .xd-catalog{display:grid;grid-template-columns:320px minmax(0,1fr);gap:34px;margin-top:42px}.xd-sidebar{display:grid;gap:18px;align-content:start}.xd-panel,.xd-product-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.07)}.xd-panel{padding:24px}.xd-panel h2,.xd-panel h3{margin:0 0 16px;font-size:22px;letter-spacing:-.025em}.xd-side-list{display:grid;gap:8px}.xd-side-link{display:flex;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid var(--line);color:#53606b;font-weight:850}.xd-side-link.is-active,.xd-side-link:hover{border-color:var(--lime);background:#f8faed;color:var(--ink)}.xd-side-link small{color:var(--muted);font-weight:750}.xd-promo{background:#13232d;color:#fff;border-color:#13232d}.xd-promo p{margin:0;color:rgba(255,255,255,.74)}.xd-toolbar{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:20px}.xd-toolbar h2{margin:0;font-size:38px;line-height:1.08;letter-spacing:-.045em}.xd-toolbar p{margin:8px 0 0;color:var(--muted);font-weight:750}.xd-sort{height:46px;min-width:190px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:0 14px;font-weight:800}
+        .xd-catalog{display:grid;grid-template-columns:320px minmax(0,1fr);gap:34px;margin-top:42px}.xd-sidebar{display:grid;gap:18px;align-content:start}.xd-panel,.xd-product-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.07)}.xd-panel{padding:24px}.xd-panel h2,.xd-panel h3{margin:0 0 16px;font-size:22px;letter-spacing:-.025em}.xd-side-list{display:grid;gap:6px}.xd-side-node{display:grid;gap:6px}.xd-side-children{display:grid;gap:6px;margin-left:14px;padding-left:14px;border-left:1px dashed #dfe7db}.xd-side-link{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);color:#53606b;font-weight:850;line-height:1.35}.xd-side-link.level-0{color:var(--ink);background:#fff;font-weight:950}.xd-side-link.level-1{font-size:14px}.xd-side-link.level-2,.xd-side-link.level-3{font-size:13px;padding:10px 12px}.xd-side-link.is-active,.xd-side-link:hover{border-color:var(--lime);background:#f8faed;color:var(--ink)}.xd-side-link.is-current{box-shadow:inset 4px 0 0 var(--lime)}.xd-side-link small{flex:0 0 auto;color:var(--muted);font-weight:750}.xd-promo{background:#13232d;color:#fff;border-color:#13232d}.xd-promo p{margin:0;color:rgba(255,255,255,.74)}.xd-toolbar{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:20px}.xd-toolbar h2{margin:0;font-size:38px;line-height:1.08;letter-spacing:-.045em}.xd-toolbar p{margin:8px 0 0;color:var(--muted);font-weight:750}.xd-sort{height:46px;min-width:190px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:0 14px;font-weight:800}
         .xd-child-cats{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}.xd-child-cats a{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font-size:13px;font-weight:900;text-transform:uppercase}.xd-child-cats a:hover{border-color:var(--lime);color:var(--ink)}
         .xd-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.xd-product-card{display:grid;grid-template-rows:auto 1fr;overflow:hidden;border-radius:22px;background:linear-gradient(180deg,#fff,#fbfcfa);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.xd-product-card:hover{transform:translateY(-5px);border-color:rgba(189,212,0,.7);box-shadow:var(--shadow)}.xd-product-image{position:relative;display:block;aspect-ratio:1/1;background:radial-gradient(circle at 50% 34%,#fff 0,#f5f8f2 46%,#e9efe8 100%);overflow:hidden}.xd-product-image:after{content:"";position:absolute;left:22px;right:22px;bottom:17px;height:18px;border-radius:50%;background:rgba(38,56,74,.14);filter:blur(10px)}.xd-product-image img{position:relative;z-index:1;width:100%;height:100%;padding:20px;object-fit:contain;transition:transform .35s ease}.xd-product-card:hover img{transform:scale(1.035)}.xd-product-tag{position:absolute;z-index:2;left:16px;top:16px;max-width:calc(100% - 32px);padding:7px 11px;border-radius:999px;background:rgba(16,29,40,.88);color:#fff;font-size:11px;font-weight:950;line-height:1.25;text-transform:uppercase;box-shadow:0 10px 22px rgba(16,29,40,.18)}.xd-product-body{display:grid;align-content:start;gap:14px;padding:22px}.xd-product-body h3{margin:0;font-size:20px;line-height:1.28;letter-spacing:-.025em}.xd-price-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}.xd-price{color:#9a6a3e;font-size:23px;font-weight:950;letter-spacing:-.04em}.xd-old-price{color:#9aa3a9;text-decoration:line-through}.xd-discount{display:inline-flex;align-items:center;height:26px;padding:0 8px;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:900}.xd-empty{padding:42px;background:#fff;border:1px solid var(--line);color:var(--muted);font-weight:750}
         .xd-footer{padding:88px 0 72px;border-top:1px solid var(--line);background:#fff}.xd-footer-grid{display:grid;grid-template-columns:1.25fr .65fr 1fr 1.25fr;gap:80px}.xd-footer h3{margin:0 0 24px;font-size:30px;line-height:1.2}.xd-footer p,.xd-footer a{color:var(--muted);font-size:20px;font-weight:550}.xd-footer-links,.xd-contact-list{display:grid;gap:8px}.xd-newsletter{display:flex;margin-top:12px;border:1px solid var(--line)}.xd-newsletter input{min-width:0;flex:1;border:0;padding:0 24px;color:var(--ink);outline:0}.xd-newsletter button{width:166px;min-height:74px;color:#fff;background:var(--lime);border:0;font-weight:900;text-transform:uppercase}
@@ -260,17 +277,21 @@
                     <div class="xd-panel">
                         <h2>Nhóm liên quan</h2>
                         <div class="xd-side-list">
-                            @forelse ($sidebarItems as $item)
+                            @if ($sidebarItems->isNotEmpty())
+                                {!! $renderCategoryTree($sidebarItems->all()) !!}
+                            @else
+                            @foreach ($skipLegacySidebarItem ? [] : $sidebarItems as $item)
                                 <a class="xd-side-link {{ ($item['active'] ?? false) ? 'is-active' : '' }}" href="{{ $item['url'] ?? '#' }}">
                                     <span>{{ $item['label'] ?? $item['name'] ?? 'Danh mục' }}</span>
                                     <small>{{ (int) ($item['count'] ?? 0) }}</small>
                                 </a>
-                            @empty
+                            @if ($sidebarItems->isEmpty())
                                 <a class="xd-side-link is-active" href="{{ route('site.catalog.category', ['slug' => $category->slug]) }}">
                                     <span>{{ $category->name }}</span>
                                     <small>{{ $productItems->count() }}</small>
                                 </a>
-                            @endforelse
+                            @endif
+                            @endforeach
                         </div>
                     </div>
                     <div class="xd-panel xd-promo">
