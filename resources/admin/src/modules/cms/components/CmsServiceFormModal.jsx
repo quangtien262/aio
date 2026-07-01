@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
@@ -9,6 +9,7 @@ import Drawer from 'antd/es/drawer';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
+import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
@@ -55,9 +56,19 @@ function toSlug(value) {
 export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], categoryOptions = [], onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const slugEditedRef = useRef(Boolean(editingService?.id));
+    const editorInstanceRef = useRef(null);
+    const [contentMode, setContentMode] = useState('editor');
+    const [editorContentVersion, setEditorContentVersion] = useState(0);
     const titleValue = Form.useWatch('title', form) ?? '';
-    const editorInitialData = useMemo(() => editingService?.content ?? '', [editingService?.id, editingService?.slug, editingService?.content]);
-    const editorInstanceKey = useMemo(() => `${editingService?.id ?? 'new'}:${editingService?.slug ?? 'blank'}:${open ? 'open' : 'closed'}`, [editingService?.id, editingService?.slug, open]);
+    const contentValue = Form.useWatch('content', form) ?? '';
+    const editorInitialData = useMemo(
+        () => form.getFieldValue('content') ?? editingService?.content ?? '',
+        [editingService?.id, editingService?.slug, editingService?.content, editorContentVersion, form]
+    );
+    const editorInstanceKey = useMemo(
+        () => `${editingService?.id ?? 'new'}:${editingService?.slug ?? 'blank'}:${open ? 'open' : 'closed'}:${contentMode}:${editorContentVersion}`,
+        [editingService?.id, editingService?.slug, open, contentMode, editorContentVersion]
+    );
 
     useEffect(() => {
         form.setFieldsValue({
@@ -66,6 +77,9 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             images: editingService?.images?.length ? editingService.images : [],
         });
         slugEditedRef.current = Boolean(editingService?.id || editingService?.slug);
+        setContentMode('editor');
+        setEditorContentVersion((current) => current + 1);
+        editorInstanceRef.current = null;
     }, [editingService, form]);
 
     useEffect(() => {
@@ -167,6 +181,27 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
     const handleSlugChange = (event) => {
         slugEditedRef.current = true;
         form.setFieldValue('slug', toSlug(event.target.value));
+    };
+
+    const syncCurrentEditorBodyToForm = () => {
+        const editor = editorInstanceRef.current;
+
+        if (contentMode === 'editor' && editor) {
+            form.setFieldValue('content', editor.getData());
+        }
+    };
+
+    const handleContentModeChange = (event) => {
+        const nextMode = event.target.value;
+
+        if (nextMode === contentMode) {
+            return;
+        }
+
+        syncCurrentEditorBodyToForm();
+        editorInstanceRef.current = null;
+        setContentMode(nextMode);
+        setEditorContentVersion((current) => current + 1);
     };
 
     const handleSubmit = async () => {
@@ -370,22 +405,48 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                     </Card>
 
                     <Card size="small" className="cms-post-form-card cms-post-form-card-editor" title="Nội dung chi tiết">
-                        <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
-                            <div className="cms-editor-shell">
-                                <CKEditor
-                                    key={editorInstanceKey}
-                                    editor={ClassicEditor}
-                                    config={editorConfig}
-                                    data={editorInitialData}
+                        <div className="cms-editor-upload-panel">
+                            <Space wrap className="cms-editor-toolbar-row" size={12}>
+                                <Radio.Group
+                                    value={contentMode}
+                                    onChange={handleContentModeChange}
+                                    optionType="button"
+                                    buttonStyle="solid"
                                     disabled={!canManage}
-                                    onReady={(editor) => {
-                                        form.setFieldValue('content', editor.getData());
-                                    }}
-                                    onChange={(_, editor) => {
-                                        form.setFieldValue('content', editor.getData());
-                                    }}
+                                    options={[
+                                        { label: 'Trình soạn thảo', value: 'editor' },
+                                        { label: 'Nhập mã HTML', value: 'html' },
+                                    ]}
                                 />
-                            </div>
+                            </Space>
+                        </div>
+                        <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
+                            {contentMode === 'editor' ? (
+                                <div className="cms-editor-shell">
+                                    <CKEditor
+                                        key={editorInstanceKey}
+                                        editor={ClassicEditor}
+                                        config={editorConfig}
+                                        data={editorInitialData}
+                                        disabled={!canManage}
+                                        onReady={(editor) => {
+                                            editorInstanceRef.current = editor;
+                                        }}
+                                        onChange={(_, editor) => {
+                                            form.setFieldValue('content', editor.getData());
+                                        }}
+                                    />
+                                </div>
+                            ) : (
+                                <Input.TextArea
+                                    rows={18}
+                                    className="cms-html-code-input"
+                                    value={contentValue}
+                                    disabled={!canManage}
+                                    placeholder="<section>Nhập mã HTML chi tiết dịch vụ...</section>"
+                                    onChange={(event) => form.setFieldValue('content', event.target.value)}
+                                />
+                            )}
                         </Form.Item>
                         <Form.Item name="content" hidden>
                             <Input.TextArea />

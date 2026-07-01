@@ -331,6 +331,7 @@ class BusinessContentTranslationService
                 'body' => $post->body,
                 'meta_title' => $post->meta_title,
                 'meta_description' => $post->meta_description,
+                'meta_keywords' => $post->meta_keywords,
             ] as $field => $value) {
                 if (! filled($value)) {
                     continue;

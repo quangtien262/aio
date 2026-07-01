@@ -50,6 +50,7 @@ class PostManagementController
             'body' => ['nullable', 'string'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
+            'meta_keywords' => ['nullable', 'string', 'max:1000'],
             'featured_media_id' => ['nullable', 'integer', Rule::exists('cms_media', 'id')],
             'category_id' => ['nullable', 'integer', Rule::exists('cms_categories', 'id')],
             'publish_at' => ['nullable', 'date'],
@@ -72,8 +73,9 @@ class PostManagementController
             'slug' => $post?->slug ?: 'pending-post-'.Str::lower((string) Str::uuid()),
             'excerpt' => $excerpt,
             'body' => $this->normalizeTextBlock($validated['body'] ?? null),
-            'meta_title' => $this->normalizeTextBlock($validated['meta_title'] ?? null) ?: $title,
+            'meta_title' => $title,
             'meta_description' => $this->normalizeTextBlock($validated['meta_description'] ?? null) ?: $excerpt,
+            'meta_keywords' => $this->normalizeTextBlock($validated['meta_keywords'] ?? null),
             'is_highlight' => (bool) ($validated['is_highlight'] ?? false),
         ];
     }
@@ -108,6 +110,7 @@ class PostManagementController
             'body' => $post->body,
             'meta_title' => $post->meta_title,
             'meta_description' => $post->meta_description,
+            'meta_keywords' => $post->meta_keywords,
             'publish_at' => $post->publish_at?->toAtomString(),
             'featured_media_id' => $post->featured_media_id,
             'category_id' => $post->category_id,

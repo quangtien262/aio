@@ -237,7 +237,7 @@
             .xd-logo-mark:before{left:7px;bottom:5px;width:15px;height:23px}
             .xd-logo-mark:after{left:11px;top:13px;width:8px;height:5px;box-shadow:0 8px 0 #fff}
             .xd-header-actions{display:none}.xd-hotline{width:auto;min-height:42px;padding:0 14px;border-radius:999px;font-size:0;box-shadow:0 10px 22px rgba(189,212,0,.26)}
-            .xd-hotline::after{content:"19009477";font-size:13px;letter-spacing:.03em}
+            .xd-hotline::after{content:"0399162342";font-size:13px;letter-spacing:.03em}
             .xd-login-button{min-height:42px;padding:0 13px;border-radius:999px;font-size:12px;box-shadow:0 10px 22px rgba(16,29,40,.07)}
             .xd-nav{display:none}
             .xd-mobile-menu-toggle{display:inline-flex;margin-left:auto}
@@ -245,7 +245,7 @@
             .xd-mobile-panel.is-open{display:block}
             .xd-mobile-actions .xd-hotline{font-size:0}
             .xd-mobile-actions .xd-login-button{font-size:12px;box-shadow:none}
-            .xd-mobile-actions .xd-hotline:after{content:"19009477";font-size:13px}
+            .xd-mobile-actions .xd-hotline:after{content:"0399162342";font-size:13px}
             .xd-nav::-webkit-scrollbar{display:none}
             .xd-nav-item{scroll-snap-align:start;flex:0 0 auto}
             .xd-nav-link{padding:8px 12px;border:1px solid #e7ece5;border-radius:999px;background:#fff;color:#2d3c4b;font-size:12px;font-weight:900;letter-spacing:.035em;box-shadow:0 8px 18px rgba(16,29,40,.06)}
@@ -392,7 +392,7 @@
                     @endforeach
                 </nav>
                 <div class="xd-header-actions">
-                    <a class="xd-hotline" href="tel:19009477"><span aria-hidden="true">&#9742;</span> 19009477</a>
+                    <a class="xd-hotline" href="tel:0399162342"><span aria-hidden="true">&#9742;</span> 0399162342</a>
                     @if (auth('customer')->check())
                         <a class="xd-login-button" href="{{ route('customer.account') }}">Tài khoản</a>
                     @else
@@ -434,7 +434,7 @@
                         @endforeach
                     </ul>
                     <div class="xd-mobile-actions">
-                        <a class="xd-hotline" href="tel:19009477"><span aria-hidden="true">&#9742;</span> 19009477</a>
+                        <a class="xd-hotline" href="tel:0399162342"><span aria-hidden="true">&#9742;</span> 0399162342</a>
                         @if (auth('customer')->check())
                             <a class="xd-login-button" href="{{ route('customer.account') }}">Tài khoản</a>
                         @else
@@ -581,7 +581,7 @@
             <div class="xd-container xd-footer-grid">
                 <div><a class="xd-logo" href="{{ route('site.home') }}" aria-label="{{ $logoAlt }} trang chủ">@if ($logoUrl !== '')<img class="xd-logo-image" src="{{ $logoUrl }}" alt="{{ $logoAlt }}">@else<i class="xd-logo-mark" aria-hidden="true"></i><b>ar<span>kit</span>.</b>@endif</a><p>{{ $footerData['description'] ?? 'Arkit là công ty chuyên về thiết kế và thi công.' }}</p></div>
                 <div><h3>Thông tin</h3><nav class="xd-footer-links" aria-label="Thông tin">@foreach ($footerNavItems as $item)<a href="{{ $item['href'] }}" target="{{ $item['target'] ?? '_self' }}" @if (($item['target'] ?? '_self') === '_blank') rel="noopener noreferrer" @endif>{{ $item['label'] }}</a>@endforeach</nav></div>
-                <div><h3>{{ $footerData['subtitle'] ?? 'Liên hệ' }}</h3><div class="xd-contact-list"><a href="https://maps.google.com/?q={{ urlencode($footerContent['address'] ?? '') }}">&#128205; {{ $footerContent['address'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM' }}</a><a href="mailto:{{ $footerContent['email'] ?? 'admin@demo031086.web30s.vn' }}">&#9993; {{ $footerContent['email'] ?? 'admin@demo031086.web30s.vn' }}</a><a href="tel:{{ $footerContent['phone'] ?? '19009477' }}">&#9742; {{ $footerContent['phone'] ?? '19009477' }}</a></div></div>
+                <div><h3>{{ $footerData['subtitle'] ?? 'Liên hệ' }}</h3><div class="xd-contact-list"><a href="https://maps.google.com/?q={{ urlencode($footerContent['address'] ?? '') }}">&#128205; {{ $footerContent['address'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM' }}</a><a href="mailto:{{ $footerContent['email'] ?? 'admin@htvietnam.vn' }}">&#9993; {{ $footerContent['email'] ?? 'admin@htvietnam.vn' }}</a><a href="tel:{{ $footerContent['phone'] ?? '0399162342' }}">&#9742; {{ $footerContent['phone'] ?? '0399162342' }}</a></div></div>
                 <div>
                     <h3>{{ $footerData['title'] ?? 'Đăng ký nhận tin' }}</h3>
                     <p>Đăng ký email để nhận thông tin mới nhất từ chúng tôi</p>

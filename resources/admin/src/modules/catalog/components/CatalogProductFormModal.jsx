@@ -12,6 +12,7 @@ import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
 import message from 'antd/es/message';
 import Modal from 'antd/es/modal';
+import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
@@ -101,15 +102,24 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
     const [uploadingAsset, setUploadingAsset] = useState(null);
     const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
+    const [contentMode, setContentMode] = useState('editor');
+    const [editorContentVersion, setEditorContentVersion] = useState(0);
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
-    const editorInitialData = useMemo(() => editingProduct?.detail_content ?? '', [editingProduct?.id, editingProduct?.slug, editingProduct?.detail_content]);
-    const editorInstanceKey = useMemo(() => `${editingProduct?.id ?? 'new'}:${editingProduct?.slug ?? 'blank'}:${open ? 'open' : 'closed'}`, [editingProduct?.id, editingProduct?.slug, open]);
+    const editorInitialData = useMemo(
+        () => form.getFieldValue('detail_content') ?? editingProduct?.detail_content ?? '',
+        [editingProduct?.id, editingProduct?.slug, editingProduct?.detail_content, editorContentVersion, form]
+    );
+    const editorInstanceKey = useMemo(
+        () => `${editingProduct?.id ?? 'new'}:${editingProduct?.slug ?? 'blank'}:${open ? 'open' : 'closed'}:${contentMode}:${editorContentVersion}`,
+        [editingProduct?.id, editingProduct?.slug, open, contentMode, editorContentVersion]
+    );
     const galleryImages = Form.useWatch('gallery_images', form) ?? [];
     const coverImageUrl = Form.useWatch('image_url', form) ?? '';
     const productName = Form.useWatch('name', form) ?? '';
+    const detailContentValue = Form.useWatch('detail_content', form) ?? '';
     const productImages = useMemo(() => Array.from(new Set([
         coverImageUrl,
         ...normalizeGalleryImages(galleryImages),
@@ -141,6 +151,9 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         });
         form.setFieldValue('detail_content', editingProduct?.detail_content ?? '');
         form.setFieldValue('gallery_images', normalizeGalleryImages(editingProduct?.gallery_images ?? []));
+        setContentMode('editor');
+        setEditorContentVersion((current) => current + 1);
+        editorInstanceRef.current = null;
         editorSelectionRef.current = null;
     }, [editingProduct, form]);
 
@@ -215,6 +228,28 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
 
     const syncEditorBodyToForm = (editor) => {
         form.setFieldValue('detail_content', editor.getData());
+    };
+
+    const syncCurrentEditorBodyToForm = () => {
+        const editor = editorInstanceRef.current;
+
+        if (contentMode === 'editor' && editor) {
+            syncEditorBodyToForm(editor);
+        }
+    };
+
+    const handleContentModeChange = (event) => {
+        const nextMode = event.target.value;
+
+        if (nextMode === contentMode) {
+            return;
+        }
+
+        syncCurrentEditorBodyToForm();
+        editorInstanceRef.current = null;
+        editorSelectionRef.current = null;
+        setContentMode(nextMode);
+        setEditorContentVersion((current) => current + 1);
     };
 
     const captureEditorSelection = (editor) => {
@@ -594,6 +629,17 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                     >
                         <div className="cms-editor-upload-panel">
                             <Space wrap className="cms-editor-toolbar-row" size={12}>
+                                <Radio.Group
+                                    value={contentMode}
+                                    onChange={handleContentModeChange}
+                                    optionType="button"
+                                    buttonStyle="solid"
+                                    disabled={!canManage}
+                                    options={[
+                                        { label: 'Trình soạn thảo', value: 'editor' },
+                                        { label: 'Nhập mã HTML', value: 'html' },
+                                    ]}
+                                />
                                 <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
                                 <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
                                 <Button type="default" disabled={!canManage || uploadingAsset === 'video' || !callAdminApi} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
@@ -613,7 +659,8 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                         </div>
 
                         <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
-                            <div className="cms-editor-shell">
+                            {contentMode === 'editor' ? (
+                                <div className="cms-editor-shell">
                                 <CKEditor
                                     key={editorInstanceKey}
                                     editor={ClassicEditor}
@@ -632,7 +679,17 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                         syncEditorBodyToForm(editor);
                                     }}
                                 />
-                            </div>
+                                </div>
+                            ) : (
+                                <TextArea
+                                    rows={18}
+                                    className="cms-html-code-input"
+                                    value={detailContentValue}
+                                    disabled={!canManage}
+                                    placeholder="<section>Nhập mã HTML chi tiết sản phẩm...</section>"
+                                    onChange={(event) => form.setFieldValue('detail_content', event.target.value)}
+                                />
+                            )}
                         </Form.Item>
                         <Form.Item name="detail_content" hidden>
                             <Input />

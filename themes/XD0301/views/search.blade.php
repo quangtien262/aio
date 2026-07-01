@@ -3,9 +3,9 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $logoAlt = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Arkit')));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '19009477'));
+    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342'));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
-    $email = trim((string) ($branding['support_email'] ?? 'admin@demo031086.web30s.vn'));
+    $email = trim((string) ($branding['support_email'] ?? 'admin@htvietnam.vn'));
     $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'));
     $productItems = collect($products ?? []);
     $categoryItems = collect($searchCategories ?? []);

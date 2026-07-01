@@ -2747,6 +2747,7 @@ class CmsSiteController
         $localized->body = $this->contentText($websiteKey, sprintf('cms_post.%d.body', $post->id), $post->body);
         $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_post.%d.meta_title', $post->id), $post->meta_title);
         $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_post.%d.meta_description', $post->id), $post->meta_description);
+        $localized->meta_keywords = $this->contentText($websiteKey, sprintf('cms_post.%d.meta_keywords', $post->id), $post->meta_keywords);
 
         if ($post->relationLoaded('category') && $post->category) {
             $localizedCategory = clone $post->category;

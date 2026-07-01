@@ -26,6 +26,7 @@ class PostIndexController
             'body' => $post->body,
             'meta_title' => $post->meta_title,
             'meta_description' => $post->meta_description,
+            'meta_keywords' => $post->meta_keywords,
             'publish_at' => $post->publish_at?->toAtomString(),
             'category_id' => $post->category_id,
             'category_name' => $post->category?->name,

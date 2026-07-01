@@ -52,6 +52,7 @@ export const emptyCmsPostForm = {
     body: '',
     meta_title: '',
     meta_description: '',
+    meta_keywords: '',
     featured_media_id: null,
     category_id: null,
     publish_at: null,
@@ -471,8 +472,9 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             excerpt: values.excerpt || null,
             body: values.body || null,
             slug: null,
-            meta_title: values.meta_title || values.title || null,
+            meta_title: values.title || null,
             meta_description: values.meta_description || values.excerpt || null,
+            meta_keywords: values.meta_keywords || null,
             featured_media_id: values.featured_media_id || null,
             category_id: values.category_id || null,
             is_highlight: Boolean(values.is_highlight),
@@ -589,7 +591,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                     </Card>
 
                     <Card size="small" className="cms-post-form-card" title="Xuất bản và hiển thị">
-                        <Row gutter={16}>
+                        <Row gutter={[16, 14]} align="top">
                             <Col xs={24} lg={13}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
                                     <Radio.Group
@@ -604,10 +606,13 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                                     <Select allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={12}>
-                                <Form.Item name="is_highlight" label="Tin nổi bật" valuePropName="checked">
-                                    <Switch />
-                                </Form.Item>
+                            <Col xs={24}>
+                                <div className="cms-post-highlight-row">
+                                    <Form.Item name="is_highlight" label="Tin nổi bật" valuePropName="checked" style={{ marginBottom: 0 }}>
+                                        <Switch />
+                                    </Form.Item>
+                                    <Text type="secondary">Dùng để ưu tiên bài viết trong các block nổi bật ngoài website.</Text>
+                                </div>
                             </Col>
                         </Row>
                     </Card>
@@ -692,8 +697,12 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                     <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
-                                <Form.Item name="meta_title" label="SEO Title">
-                                    <Input.TextArea rows={3} placeholder="SEO title" />
+                                <Form.Item
+                                    name="meta_keywords"
+                                    label="SEO Keyword"
+                                    extra="Nhập các từ khóa chính, phân tách bằng dấu phẩy."
+                                >
+                                    <Input.TextArea rows={3} placeholder="tu khoa 1, tu khoa 2, tu khoa 3" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>
@@ -718,6 +727,17 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                     >
                         <div className="cms-editor-upload-panel">
                             <Space wrap className="cms-editor-toolbar-row" size={12}>
+                                <Radio.Group
+                                    value={contentMode}
+                                    onChange={handleContentModeChange}
+                                    optionType="button"
+                                    buttonStyle="solid"
+                                    disabled={!canManage}
+                                    options={[
+                                        { label: 'Trình soạn văn bản', value: 'editor' },
+                                        { label: 'Code HTML', value: 'html' },
+                                    ]}
+                                />
                                 <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
                                 <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
                                 <Button type="default" disabled={!canManage || uploadingAsset === 'video'} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
@@ -737,27 +757,38 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                         </div>
 
                         <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
-                            <div className="cms-editor-shell">
-                                <CKEditor
-                                    key={editorInstanceKey}
-                                    editor={ClassicEditor}
-                                    config={editorConfig}
-                                    data={editorInitialData}
-                                    disabled={!canManage}
-                                    onReady={(editor) => {
-                                        editorInstanceRef.current = editor;
+                            {contentMode === 'editor' ? (
+                                <div className="cms-editor-shell">
+                                    <CKEditor
+                                        key={editorInstanceKey}
+                                        editor={ClassicEditor}
+                                        config={editorConfig}
+                                        data={editorInitialData}
+                                        disabled={!canManage}
+                                        onReady={(editor) => {
+                                            editorInstanceRef.current = editor;
 
-                                        captureEditorSelection(editor);
-                                        editor.model.document.selection.on('change:range', () => {
                                             captureEditorSelection(editor);
-                                        });
-                                    }}
-                                    onChange={(_, editor) => {
-                                        captureEditorSelection(editor);
-                                        syncEditorBodyToForm(editor);
-                                    }}
+                                            editor.model.document.selection.on('change:range', () => {
+                                                captureEditorSelection(editor);
+                                            });
+                                        }}
+                                        onChange={(_, editor) => {
+                                            captureEditorSelection(editor);
+                                            syncEditorBodyToForm(editor);
+                                        }}
+                                    />
+                                </div>
+                            ) : (
+                                <Input.TextArea
+                                    rows={18}
+                                    value={bodyValue}
+                                    disabled={!canManage}
+                                    className="cms-html-code-input"
+                                    placeholder="<section>Nhập mã HTML tùy chỉnh...</section>"
+                                    onChange={(event) => form.setFieldValue('body', event.target.value)}
                                 />
-                            </div>
+                            )}
                         </Form.Item>
                         <Form.Item name="body" hidden>
                             <Input.TextArea />

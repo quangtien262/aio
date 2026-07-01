@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['title', 'slug', 'status', 'excerpt', 'body', 'meta_title', 'meta_description', 'featured_media_id', 'category_id', 'publish_at', 'is_highlight'])]
+#[Fillable(['title', 'slug', 'status', 'excerpt', 'body', 'meta_title', 'meta_description', 'meta_keywords', 'featured_media_id', 'category_id', 'publish_at', 'is_highlight'])]
 class CmsPost extends Model
 {
     use HasFactory;

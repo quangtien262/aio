@@ -588,6 +588,16 @@ a {
     color: #16302b;
 }
 
+.cms-post-highlight-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border: 1px solid #dbe7e4;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f8fcfb 0%, #ffffff 100%);
+}
+
 .cms-post-form-card-editor .ant-card-body {
     padding-top: 16px;
 }
@@ -706,6 +716,14 @@ a {
 .cms-editor-shell .ck.ck-editor__editable.ck-focused {
     border-color: #1677ff;
     box-shadow: 0 0 0 1px rgba(22, 119, 255, 0.2);
+}
+
+.cms-html-code-input {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #102a43;
+    background: #fbfdfc;
 }
 
 .cms-editor-hint {

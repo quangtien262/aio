@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import Button from 'antd/es/button';
@@ -8,12 +9,35 @@ import Drawer from 'antd/es/drawer';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
+import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
 import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
+import {
+    BlockQuote,
+    Bold,
+    ClassicEditor,
+    Essentials,
+    GeneralHtmlSupport,
+    Heading,
+    Image,
+    ImageCaption,
+    ImageResize,
+    ImageStyle,
+    ImageToolbar,
+    Italic,
+    Link,
+    List,
+    MediaEmbed,
+    Paragraph,
+    Table,
+    TableToolbar,
+    Underline,
+} from 'ckeditor5';
+import 'ckeditor5/ckeditor5.css';
 
 const { Text } = Typography;
 
@@ -32,14 +56,30 @@ function toSlug(value) {
 export default function CmsProjectFormModal({ open, canManage, editingProject, mediaOptions = [], onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const slugEditedRef = useRef(Boolean(editingProject?.id));
+    const editorInstanceRef = useRef(null);
+    const [contentMode, setContentMode] = useState('editor');
+    const [editorContentVersion, setEditorContentVersion] = useState(0);
     const titleValue = Form.useWatch('title', form) ?? '';
+    const contentValue = Form.useWatch('content', form) ?? '';
+    const editorInitialData = useMemo(
+        () => form.getFieldValue('content') ?? editingProject?.content ?? '',
+        [editingProject?.id, editingProject?.slug, editingProject?.content, editorContentVersion, form]
+    );
+    const editorInstanceKey = useMemo(
+        () => `${editingProject?.id ?? 'new'}:${editingProject?.slug ?? 'blank'}:${open ? 'open' : 'closed'}:${contentMode}:${editorContentVersion}`,
+        [editingProject?.id, editingProject?.slug, open, contentMode, editorContentVersion]
+    );
 
     useEffect(() => {
         form.setFieldsValue({
             ...editingProject,
+            content: editingProject?.content ?? '',
             images: editingProject?.images?.length ? editingProject.images : [],
         });
         slugEditedRef.current = Boolean(editingProject?.id || editingProject?.slug);
+        setContentMode('editor');
+        setEditorContentVersion((current) => current + 1);
+        editorInstanceRef.current = null;
     }, [editingProject, form]);
 
     useEffect(() => {
@@ -49,6 +89,74 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
 
         form.setFieldValue('slug', toSlug(titleValue));
     }, [form, titleValue]);
+
+    const editorConfig = useMemo(() => ({
+        licenseKey: 'GPL',
+        plugins: [
+            Essentials,
+            Paragraph,
+            Heading,
+            Bold,
+            Italic,
+            Underline,
+            Link,
+            List,
+            BlockQuote,
+            Image,
+            ImageCaption,
+            ImageStyle,
+            ImageToolbar,
+            ImageResize,
+            Table,
+            TableToolbar,
+            MediaEmbed,
+            GeneralHtmlSupport,
+        ],
+        toolbar: {
+            items: [
+                'undo',
+                'redo',
+                '|',
+                'heading',
+                '|',
+                'bold',
+                'italic',
+                'underline',
+                '|',
+                'link',
+                'bulletedList',
+                'numberedList',
+                'blockQuote',
+                '|',
+                'insertTable',
+                'mediaEmbed',
+            ],
+            shouldNotGroupWhenFull: true,
+        },
+        image: {
+            toolbar: ['imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|', 'toggleImageCaption'],
+            resizeOptions: [
+                { name: 'resizeImage:original', value: null, label: 'Gốc' },
+                { name: 'resizeImage:50', value: '50', label: '50%' },
+                { name: 'resizeImage:75', value: '75', label: '75%' },
+            ],
+        },
+        table: {
+            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'],
+        },
+        mediaEmbed: {
+            previewsInData: true,
+        },
+        htmlSupport: {
+            allow: [
+                { name: 'figure', classes: true, attributes: true, styles: true },
+                { name: 'img', classes: true, attributes: true, styles: true },
+                { name: 'div', classes: true, attributes: true, styles: true },
+                { name: 'iframe', classes: true, attributes: true, styles: true },
+                { name: 'table', classes: true, attributes: true, styles: true },
+            ],
+        },
+    }), []);
 
     const mediaSelectOptions = mediaOptions.map((item) => ({
         label: item.title || item.file_url,
@@ -73,6 +181,27 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
     const handleSlugChange = (event) => {
         slugEditedRef.current = true;
         form.setFieldValue('slug', toSlug(event.target.value));
+    };
+
+    const syncCurrentEditorBodyToForm = () => {
+        const editor = editorInstanceRef.current;
+
+        if (contentMode === 'editor' && editor) {
+            form.setFieldValue('content', editor.getData());
+        }
+    };
+
+    const handleContentModeChange = (event) => {
+        const nextMode = event.target.value;
+
+        if (nextMode === contentMode) {
+            return;
+        }
+
+        syncCurrentEditorBodyToForm();
+        editorInstanceRef.current = null;
+        setContentMode(nextMode);
+        setEditorContentVersion((current) => current + 1);
     };
 
     const handleSubmit = async () => {
@@ -170,9 +299,52 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                         </Form.Item>
                     </Card>
 
-                    <Card size="small" title="Nội dung chi tiết">
-                        <Form.Item name="content" label="Nội dung" style={{ marginBottom: 0 }}>
-                            <Input.TextArea rows={8} placeholder="Nội dung giới thiệu chi tiết dự án." />
+                    <Card size="small" className="cms-post-form-card cms-post-form-card-editor" title="Nội dung chi tiết">
+                        <div className="cms-editor-upload-panel">
+                            <Space wrap className="cms-editor-toolbar-row" size={12}>
+                                <Radio.Group
+                                    value={contentMode}
+                                    onChange={handleContentModeChange}
+                                    optionType="button"
+                                    buttonStyle="solid"
+                                    disabled={!canManage}
+                                    options={[
+                                        { label: 'Trình soạn thảo', value: 'editor' },
+                                        { label: 'Nhập mã HTML', value: 'html' },
+                                    ]}
+                                />
+                            </Space>
+                        </div>
+                        <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
+                            {contentMode === 'editor' ? (
+                                <div className="cms-editor-shell">
+                                    <CKEditor
+                                        key={editorInstanceKey}
+                                        editor={ClassicEditor}
+                                        config={editorConfig}
+                                        data={editorInitialData}
+                                        disabled={!canManage}
+                                        onReady={(editor) => {
+                                            editorInstanceRef.current = editor;
+                                        }}
+                                        onChange={(_, editor) => {
+                                            form.setFieldValue('content', editor.getData());
+                                        }}
+                                    />
+                                </div>
+                            ) : (
+                                <Input.TextArea
+                                    rows={18}
+                                    className="cms-html-code-input"
+                                    value={contentValue}
+                                    disabled={!canManage}
+                                    placeholder="<section>Nhập mã HTML chi tiết dự án...</section>"
+                                    onChange={(event) => form.setFieldValue('content', event.target.value)}
+                                />
+                            )}
+                        </Form.Item>
+                        <Form.Item name="content" hidden>
+                            <Input.TextArea />
                         </Form.Item>
                     </Card>
 
