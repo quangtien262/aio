@@ -121,14 +121,23 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
     const [featuredMediaOptions, setFeaturedMediaOptions] = useState(mediaOptions);
     const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
+    const [contentMode, setContentMode] = useState('editor');
+    const [editorContentVersion, setEditorContentVersion] = useState(0);
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
     const featuredMediaInputRef = useRef(null);
     const featuredMediaId = Form.useWatch('featured_media_id', form) ?? null;
-    const editorInitialData = useMemo(() => editingPost?.body ?? '', [editingPost?.id, editingPost?.slug, editingPost?.body]);
-    const editorInstanceKey = useMemo(() => `${editingPost?.id ?? 'new'}:${editingPost?.slug ?? 'blank'}:${open ? 'open' : 'closed'}`, [editingPost?.id, editingPost?.slug, open]);
+    const bodyValue = Form.useWatch('body', form) ?? '';
+    const editorInitialData = useMemo(
+        () => form.getFieldValue('body') ?? editingPost?.body ?? '',
+        [editingPost?.id, editingPost?.slug, editingPost?.body, editorContentVersion, form]
+    );
+    const editorInstanceKey = useMemo(
+        () => `${editingPost?.id ?? 'new'}:${editingPost?.slug ?? 'blank'}:${open ? 'open' : 'closed'}:${contentMode}:${editorContentVersion}`,
+        [editingPost?.id, editingPost?.slug, open, contentMode, editorContentVersion]
+    );
 
     useEffect(() => {
         form.setFieldsValue({
@@ -136,6 +145,9 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
         });
         form.setFieldValue('body', editingPost?.body ?? '');
         editorSelectionRef.current = null;
+        editorInstanceRef.current = null;
+        setContentMode('editor');
+        setEditorContentVersion((current) => current + 1);
         setFeaturedMediaMode(editingPost?.featured_media_id ? 'library' : 'upload');
         setFeaturedMediaUrl('');
         setFeaturedMediaKeyword('');
@@ -328,6 +340,28 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
         form.setFieldValue('body', editor.getData());
     };
 
+    const syncCurrentEditorBodyToForm = () => {
+        const editor = editorInstanceRef.current;
+
+        if (contentMode === 'editor' && editor) {
+            form.setFieldValue('body', editor.getData());
+        }
+    };
+
+    const handleContentModeChange = (event) => {
+        const nextMode = event.target.value;
+
+        if (nextMode === contentMode) {
+            return;
+        }
+
+        syncCurrentEditorBodyToForm();
+        editorInstanceRef.current = null;
+        editorSelectionRef.current = null;
+        setContentMode(nextMode);
+        setEditorContentVersion((current) => current + 1);
+    };
+
     const captureEditorSelection = (editor) => {
         const range = editor?.model?.document?.selection?.getFirstRange?.();
 
@@ -429,6 +463,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
     };
 
     const handleSubmit = async () => {
+        syncCurrentEditorBodyToForm();
         const values = await form.validateFields();
 
         await onSubmit?.({
@@ -540,7 +575,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             <Form form={form} layout="vertical" initialValues={editingPost}>
                 <div className="cms-post-form-shell">
                     <Card size="small" className="cms-post-form-card" title="Thông tin bài viết">
-                        <Row gutter={16}>
+                        <Row gutter={[16, 14]} align="top">
                             <Col xs={24}>
                                 <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề bài viết' }]}>
                                     <Input placeholder="Bài viết nổi bật" />
@@ -555,7 +590,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
 
                     <Card size="small" className="cms-post-form-card" title="Xuất bản và hiển thị">
                         <Row gutter={16}>
-                            <Col xs={24} md={12}>
+                            <Col xs={24} lg={13}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
                                     <Radio.Group
                                         optionType="button"
@@ -564,7 +599,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                                     />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={12}>
+                            <Col xs={24} lg={11}>
                                 <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 0 }}>
                                     <Select allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
                                 </Form.Item>
