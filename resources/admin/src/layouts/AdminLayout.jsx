@@ -73,11 +73,15 @@ const cmsContentMenuOrder = [
 
 const cmsContentMenuKeySet = new Set(cmsContentMenuOrder.map((item) => item.key));
 const cmsContentMenuLabelMap = new Map(cmsContentMenuOrder.map((item) => [item.key, item.label]));
+const cmsStandaloneMenuLabelMap = new Map([
+    ['cms-orders', 'Đơn đặt hàng'],
+    ['cms-newsletter', 'ĐK nhận tin'],
+]);
 
 function withCmsMenuLabel(item) {
     return {
         ...item,
-        label: cmsContentMenuLabelMap.get(item.key) ?? item.label,
+        label: cmsContentMenuLabelMap.get(item.key) ?? cmsStandaloneMenuLabelMap.get(item.key) ?? item.label,
     };
 }
 

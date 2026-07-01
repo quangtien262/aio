@@ -368,6 +368,32 @@ a {
 .admin-workspace-menu .ant-menu-overflow-item:hover {
     color:#d2dbf5 !important;
 }
+
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-selected,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-active,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu:hover {
+    color: rgba(255, 255, 255, 0.92) !important;
+    background: transparent;
+    box-shadow: none;
+}
+
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-selected,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-active,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+}
+
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu > .ant-menu-submenu-title,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-selected > .ant-menu-submenu-title,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-active > .ant-menu-submenu-title,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu:hover > .ant-menu-submenu-title,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-title-content,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-item-icon {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
 .admin-header-actions {
     flex: 0 0 auto;
 }

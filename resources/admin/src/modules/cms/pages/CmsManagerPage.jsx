@@ -14,6 +14,7 @@ import Dropdown from 'antd/es/dropdown';
 import Empty from 'antd/es/empty';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
+import InputNumber from 'antd/es/input-number';
 import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
@@ -132,7 +133,7 @@ const sectionConfigMap = {
         permissionPublish: null,
     },
     'cms-orders': {
-        title: 'Orders',
+        title: 'Đơn đặt hàng',
         description: 'Theo dõi đơn hàng từ storefront, khách hàng và line-item ngay trong CMS.',
         endpoint: '/admin/api/cms/orders',
         permissionView: 'cms.order.view',
@@ -224,7 +225,7 @@ const emptyPost = {
     id: null,
     title: '',
     slug: '',
-    status: 'draft',
+    status: 'published',
     excerpt: '',
     body: '',
     meta_title: '',
@@ -357,7 +358,7 @@ const emptyProduct = {
     sku: '',
     price: 0,
     original_price: null,
-    stock: 0,
+    stock: 1000,
     short_description: '',
     detail_content: '',
     highlights: '',
@@ -1247,7 +1248,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         sku: product.sku,
         price: product.price,
         original_price: product.original_price,
-        stock: product.stock,
+        stock: values.stock === undefined || values.stock === null || values.stock === ''
+            ? product.stock
+            : Number(values.stock),
         short_description: product.short_description,
         detail_content: product.detail_content,
         highlights: product.highlights,
@@ -1328,6 +1331,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         bulkProductEditForm.setFieldsValue({
             catalog_category_id: BULK_KEEP_VALUE,
+            stock: null,
             is_featured: BULK_KEEP_VALUE,
             is_active: BULK_KEEP_VALUE,
         });
@@ -1339,6 +1343,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (
             values.catalog_category_id === BULK_KEEP_VALUE
+            && (values.stock === undefined || values.stock === null || values.stock === '')
             && values.is_featured === BULK_KEEP_VALUE
             && values.is_active === BULK_KEEP_VALUE
         ) {
@@ -1985,6 +1990,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         editingService={editingRecord}
                         mediaOptions={data?.media ?? []}
                         categoryOptions={serviceCategoryOptions}
+                        callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -2015,6 +2021,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingTestimonial={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -2030,6 +2037,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingMember={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -2472,6 +2480,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 { label: 'Bỏ danh mục', value: BULK_CLEAR_VALUE },
                                 ...productCategoryOptions,
                             ]}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        name="stock"
+                        label="Tồn kho mới"
+                        extra="Để trống nếu muốn giữ nguyên tồn kho hiện tại."
+                        rules={[{ type: 'number', min: 0, message: 'Tồn kho phải lớn hơn hoặc bằng 0' }]}
+                    >
+                        <InputNumber
+                            min={0}
+                            precision={0}
+                            style={{ width: '100%' }}
+                            placeholder="Nhập tồn kho muốn áp dụng"
                         />
                     </Form.Item>
                     <Form.Item name="is_featured" label="Nổi bật">

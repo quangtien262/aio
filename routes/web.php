@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Customer\Api\AccountOverviewController;
+use App\Http\Controllers\Customer\Api\AddressManagementController;
 use App\Http\Controllers\Customer\Api\FavoriteManagementController;
 use App\Http\Controllers\Customer\Api\ProfileUpdateController;
+use App\Http\Controllers\Customer\Api\PasswordUpdateController;
+use App\Http\Controllers\Customer\Api\ServiceInterestController;
 use App\Http\Controllers\Customer\AuthenticatedSessionController as CustomerAuthenticatedSessionController;
 use App\Http\Controllers\Customer\CustomerAccountController;
 use App\Http\Controllers\Customer\CustomerFavoriteController;
@@ -49,7 +52,14 @@ Route::prefix('{locale}')
 				->group(function (): void {
 					Route::get('/overview', AccountOverviewController::class)->name('overview');
 					Route::put('/profile', ProfileUpdateController::class)->name('profile.update');
+					Route::put('/password', PasswordUpdateController::class)->name('password.update');
+					Route::post('/addresses', [AddressManagementController::class, 'store'])->name('addresses.store');
+					Route::put('/addresses/{address}', [AddressManagementController::class, 'update'])->name('addresses.update');
+					Route::put('/addresses/{address}/default', [AddressManagementController::class, 'markDefault'])->name('addresses.default');
+					Route::delete('/addresses/{address}', [AddressManagementController::class, 'destroy'])->name('addresses.destroy');
 					Route::delete('/favorites/{favorite}', [FavoriteManagementController::class, 'destroy'])->name('favorites.destroy');
+					Route::post('/service-interests', [ServiceInterestController::class, 'store'])->name('service_interests.store');
+					Route::delete('/service-interests/{interest}', [ServiceInterestController::class, 'destroy'])->name('service_interests.destroy');
 				});
 
 			Route::post('/{favoriteSegment}/{product:slug}', CustomerFavoriteController::class)

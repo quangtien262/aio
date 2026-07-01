@@ -13,6 +13,8 @@
             id="customer-root"
             data-basename="/{{ app()->getLocale() }}/{{ \App\Support\FrontendLocalization::segment('account', app()->getLocale()) }}"
             data-api-base="/{{ app()->getLocale() }}/{{ \App\Support\FrontendLocalization::segment('account', app()->getLocale()) }}/api"
+            data-home-url="{{ route('site.home') }}"
+            data-logout-url="{{ route('customer.auth.logout') }}"
         ></div>
     </body>
 </html>

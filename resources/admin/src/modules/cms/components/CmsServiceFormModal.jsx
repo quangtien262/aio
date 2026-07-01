@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
-import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
-import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
@@ -14,8 +12,8 @@ import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
-import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import {
     BlockQuote,
     Bold,
@@ -39,8 +37,6 @@ import {
 } from 'ckeditor5';
 import 'ckeditor5/ckeditor5.css';
 
-const { Text } = Typography;
-
 function toSlug(value) {
     return String(value ?? '')
         .normalize('NFD')
@@ -53,7 +49,7 @@ function toSlug(value) {
         .replace(/^-+|-+$/g, '');
 }
 
-export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], categoryOptions = [], onCancel, onSubmit }) {
+export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const slugEditedRef = useRef(Boolean(editingService?.id));
     const editorInstanceRef = useRef(null);
@@ -71,10 +67,16 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
     );
 
     useEffect(() => {
+        const featuredImage = editingService?.images?.find((image) => image?.is_featured)
+            ?? editingService?.images?.[0]
+            ?? null;
+
         form.setFieldsValue({
             ...editingService,
             content: editingService?.content ?? '',
             images: editingService?.images?.length ? editingService.images : [],
+            featured_image_url: editingService?.featured_image_url || featuredImage?.image_url || '',
+            featured_image_alt: editingService?.featured_image_alt || featuredImage?.alt_text || '',
         });
         slugEditedRef.current = Boolean(editingService?.id || editingService?.slug);
         setContentMode('editor');
@@ -158,26 +160,6 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
         },
     }), []);
 
-    const mediaSelectOptions = mediaOptions.map((item) => ({
-        label: item.title || item.file_url,
-        value: item.id,
-        media: item,
-    }));
-
-    const handleMediaChange = (fieldName, mediaId) => {
-        const selected = mediaOptions.find((item) => item.id === mediaId);
-
-        if (!selected) {
-            return;
-        }
-
-        form.setFieldValue(['images', fieldName, 'image_url'], selected.file_url);
-
-        if (!form.getFieldValue(['images', fieldName, 'alt_text'])) {
-            form.setFieldValue(['images', fieldName, 'alt_text'], selected.alt_text || selected.title || '');
-        }
-    };
-
     const handleSlugChange = (event) => {
         slugEditedRef.current = true;
         form.setFieldValue('slug', toSlug(event.target.value));
@@ -206,9 +188,34 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
 
     const handleSubmit = async () => {
         const values = await form.validateFields();
+        const {
+            featured_image_url: rawFeaturedImageUrl,
+            featured_image_alt: featuredImageAlt,
+            ...payloadValues
+        } = values;
+        const featuredImageUrl = String(rawFeaturedImageUrl ?? '').trim();
+        const existingImages = editingService?.images ?? [];
+        const normalizedImages = featuredImageUrl
+            ? [
+                {
+                    image_url: featuredImageUrl,
+                    alt_text: featuredImageAlt || values.title || null,
+                    caption: null,
+                    is_featured: true,
+                    sort_order: 0,
+                },
+                ...existingImages
+                    .filter((image) => image?.image_url && image.image_url !== featuredImageUrl)
+                    .map((image, index) => ({
+                        ...image,
+                        is_featured: false,
+                        sort_order: Number(image.sort_order ?? index + 1),
+                    })),
+            ]
+            : [];
 
         await onSubmit?.({
-            ...values,
+            ...payloadValues,
             cms_service_category_id: values.cms_service_category_id || null,
             summary: values.summary || null,
             content: values.content || null,
@@ -221,7 +228,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             is_featured: Boolean(values.is_featured),
             is_highlight: Boolean(values.is_highlight),
             publish_at: values.status === 'published' ? (values.publish_at || dayjs().format('YYYY-MM-DDTHH:mm:ss')) : null,
-            images: (values.images ?? []).filter((image) => image?.image_url),
+            images: normalizedImages,
         });
 
         form.resetFields();
@@ -317,76 +324,26 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                         </Form.Item>
                     </Card>
 
-                    <Card size="small" title="Gallery ảnh dịch vụ">
-                        <Form.List name="images">
-                            {(fields, { add, remove }) => (
-                                <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                                    {fields.map((field) => {
-                                        const imageUrl = form.getFieldValue(['images', field.name, 'image_url']);
-
-                                        return (
-                                            <Card key={field.key} size="small" type="inner">
-                                                <Row gutter={12}>
-                                                    <Col xs={24} md={8}>
-                                                        {imageUrl ? (
-                                                            <img src={imageUrl} alt="" style={{ width: '100%', height: 154, objectFit: 'cover', borderRadius: 12, border: '1px solid #dbe7e4' }} />
-                                                        ) : (
-                                                            <div style={{ height: 154, borderRadius: 12, border: '1px dashed #cbd5d1', display: 'grid', placeItems: 'center', color: '#8aa19a' }}>Chưa có ảnh</div>
-                                                        )}
-                                                    </Col>
-                                                    <Col xs={24} md={16}>
-                                                        <Row gutter={12}>
-                                                            <Col xs={24} md={12}>
-                                                                <Form.Item name={[field.name, 'cms_media_id']} label="Chọn từ media">
-                                                                    <Select
-                                                                        allowClear
-                                                                        showSearch
-                                                                        optionFilterProp="label"
-                                                                        options={mediaSelectOptions}
-                                                                        placeholder="Chọn ảnh có sẵn"
-                                                                        onChange={(value) => handleMediaChange(field.name, value)}
-                                                                    />
-                                                                </Form.Item>
-                                                            </Col>
-                                                            <Col xs={24} md={12}>
-                                                                <Form.Item name={[field.name, 'sort_order']} label="Thứ tự">
-                                                                    <InputNumber min={0} style={{ width: '100%' }} />
-                                                                </Form.Item>
-                                                            </Col>
-                                                        </Row>
-                                                        <Form.Item name={[field.name, 'image_url']} label="URL ảnh" rules={[{ required: true, message: 'Nhập URL ảnh' }]}>
-                                                            <Input placeholder="https://example.com/service.jpg" />
-                                                        </Form.Item>
-                                                        <Row gutter={12}>
-                                                            <Col xs={24} md={12}>
-                                                                <Form.Item name={[field.name, 'alt_text']} label="Alt text">
-                                                                    <Input placeholder="Mô tả ảnh cho SEO/accessibility" />
-                                                                </Form.Item>
-                                                            </Col>
-                                                            <Col xs={24} md={12}>
-                                                                <Form.Item name={[field.name, 'caption']} label="Caption">
-                                                                    <Input placeholder="Chú thích ảnh" />
-                                                                </Form.Item>
-                                                            </Col>
-                                                        </Row>
-                                                        <Space wrap>
-                                                            <Form.Item name={[field.name, 'is_featured']} valuePropName="checked" style={{ marginBottom: 0 }}>
-                                                                <Switch checkedChildren="Đại diện" unCheckedChildren="Ảnh phụ" />
-                                                            </Form.Item>
-                                                            <Button danger icon={<DeleteOutlined />} onClick={() => remove(field.name)}>Xóa ảnh</Button>
-                                                        </Space>
-                                                    </Col>
-                                                </Row>
-                                            </Card>
-                                        );
-                                    })}
-                                    <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ image_url: '', alt_text: '', caption: '', is_featured: fields.length === 0, sort_order: fields.length })}>
-                                        Thêm ảnh dịch vụ
-                                    </Button>
-                                    <Text type="secondary">Nếu không chọn ảnh đại diện, hệ thống tự lấy ảnh đầu tiên làm ảnh đại diện ngoài website.</Text>
-                                </Space>
-                            )}
-                        </Form.List>
+                    <Card size="small" className="cms-post-form-card" title="Ảnh đại diện dịch vụ">
+                        <Form.Item name="featured_image_url" style={{ marginBottom: 0 }}>
+                            <SingleMediaPicker
+                                open={open}
+                                canManage={canManage}
+                                callAdminApi={callAdminApi}
+                                mediaOptions={mediaOptions}
+                                recordTitle={titleValue || 'Service image'}
+                                previewTitle="Ảnh đại diện dịch vụ"
+                                uploadButtonLabel="Upload ảnh trực tiếp"
+                                uploadHint="Ảnh upload xong sẽ tự được gắn làm ảnh đại diện dịch vụ."
+                                libraryButtonLabel="Mở thư viện media"
+                                libraryHint="Chọn lại từ media CMS đã có sẵn."
+                                urlPlaceholder="https://example.com/service.jpg"
+                                urlButtonLabel="Lưu URL và gắn ảnh"
+                            />
+                        </Form.Item>
+                        <Form.Item name="featured_image_alt" label="Alt text" style={{ marginTop: 12, marginBottom: 0 }}>
+                            <Input placeholder="Mô tả ảnh dịch vụ" />
+                        </Form.Item>
                     </Card>
 
                     <Card size="small" title="SEO">

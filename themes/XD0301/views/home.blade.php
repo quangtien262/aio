@@ -165,10 +165,15 @@
         return $item;
     })->values();
 
-    $footerBlock = $blocks->firstWhere('block_type', 'footer_contact');
-    $branding = (array) data_get($themeHomeData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
+    $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($themeHomeData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', [])));
+    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Arkit'))) ?: 'Arkit';
+    $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Arkit là công ty chuyên về thiết kế và thi công.'))) ?: 'Arkit là công ty chuyên về thiết kế và thi công.';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $logoAlt = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'XD0301')));
+    $logoAlt = $companyName;
+    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
+    $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
+    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? 'admin@htvietnam.vn')) ?: 'admin@htvietnam.vn';
+    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM')) ?: '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM';
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
     $blockSourcePreviewUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.source-preview', ['block' => '__BLOCK_ID__']) : '';
@@ -203,7 +208,7 @@
         .xd-logo-mark:before,.xd-logo-mark:after{content:"";position:absolute;background:#fff}.xd-logo-mark:before{left:9px;bottom:7px;width:20px;height:30px}.xd-logo-mark:after{left:14px;top:17px;width:10px;height:7px;box-shadow:0 11px 0 #fff}.xd-logo span{color:var(--lime)}
         .xd-nav{display:flex;align-items:center;justify-content:center;gap:0;min-width:0;flex:1}.xd-nav-item{position:relative}.xd-nav-link{display:inline-flex;align-items:center;gap:8px;padding:39px 21px;color:#344354;font-size:15px;font-weight:850;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap}.xd-nav-caret{color:var(--lime-dark);font-size:12px;line-height:1;transition:transform .18s ease}.xd-nav-link.is-active,.xd-nav-link:hover,.xd-nav-item:hover>.xd-nav-link,.xd-nav-item:focus-within>.xd-nav-link{color:var(--lime-dark)}.xd-nav-item:hover>.xd-nav-link .xd-nav-caret,.xd-nav-item:focus-within>.xd-nav-link .xd-nav-caret{transform:rotate(180deg)}
         .xd-dropdown{position:absolute;top:100%;left:0;z-index:90;min-width:250px;padding:12px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateY(12px);transition:opacity .18s ease,transform .18s ease,visibility .18s ease}.xd-nav-item:hover>.xd-dropdown,.xd-nav-item:focus-within>.xd-dropdown{opacity:1;visibility:visible;transform:translateY(0)}.xd-dropdown-item{position:relative}.xd-dropdown-link{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 14px;border-left:3px solid transparent;color:#53606b;font-size:14px;font-weight:800;line-height:1.35}.xd-dropdown-link:hover,.xd-dropdown-item:focus-within>.xd-dropdown-link{background:#f7f9ee;border-left-color:var(--lime);color:var(--ink)}.xd-subdropdown{position:absolute;top:0;left:calc(100% + 10px);z-index:91;min-width:230px;padding:10px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:translateX(-8px);transition:opacity .18s ease,transform .18s ease,visibility .18s ease}.xd-dropdown-item:hover>.xd-subdropdown,.xd-dropdown-item:focus-within>.xd-subdropdown{opacity:1;visibility:visible;transform:translateX(0)}
-        .xd-header-actions{display:flex;align-items:center;gap:12px;flex:0 0 auto}.xd-hotline{display:inline-flex;align-items:center;gap:12px;padding:18px 28px;color:#fff;background:var(--lime);border-radius:4px;box-shadow:0 14px 26px rgba(189,212,0,.34);font-weight:900;letter-spacing:.035em;white-space:nowrap}.xd-login-button{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 22px;border:1px solid rgba(38,56,74,.14);border-radius:4px;background:#fff;color:var(--ink);box-shadow:0 12px 24px rgba(16,29,40,.08);font:inherit;font-size:14px;font-weight:900;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap;cursor:pointer}.xd-login-button:hover{border-color:var(--lime);color:var(--lime-dark);transform:translateY(-1px)}
+        .xd-header-actions{display:flex;align-items:center;gap:12px;flex:0 0 auto}.xd-cart-link{display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;border:1px solid rgba(38,56,74,.14);border-radius:4px;background:#fff;color:var(--ink);box-shadow:0 12px 24px rgba(16,29,40,.08);transition:.2s ease}.xd-cart-link svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.xd-cart-link:hover{border-color:var(--lime);background:var(--lime);color:#fff;transform:translateY(-1px)}.xd-hotline{display:inline-flex;align-items:center;gap:12px;padding:18px 28px;color:#fff;background:var(--lime);border-radius:4px;box-shadow:0 14px 26px rgba(189,212,0,.34);font-weight:900;letter-spacing:.035em;white-space:nowrap}.xd-login-button{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 22px;border:1px solid rgba(38,56,74,.14);border-radius:4px;background:#fff;color:var(--ink);box-shadow:0 12px 24px rgba(16,29,40,.08);font:inherit;font-size:14px;font-weight:900;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap;cursor:pointer}.xd-login-button:hover{border-color:var(--lime);color:var(--lime-dark);transform:translateY(-1px)}
         .xd-mobile-menu-toggle{display:none;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:0 16px;border:1px solid rgba(38,56,74,.12);border-radius:999px;background:#101d28;color:#fff;font:inherit;font-size:13px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 14px 28px rgba(16,29,40,.16);cursor:pointer}.xd-mobile-menu-toggle:before{content:"";width:16px;height:2px;background:currentColor;box-shadow:0 -6px 0 currentColor,0 6px 0 currentColor}.xd-mobile-panel[hidden]{display:none!important}.xd-mobile-panel{display:none}.xd-mobile-list,.xd-mobile-children{display:grid;gap:8px;margin:0;padding:0;list-style:none}.xd-mobile-link,.xd-mobile-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:0 14px;border:1px solid #edf0f2;border-radius:14px;background:#fff;color:var(--ink);font-size:14px;font-weight:900;text-transform:uppercase}.xd-mobile-link.is-active,.xd-mobile-summary.is-active{border-color:var(--lime);background:#f8fbde;color:var(--lime-dark)}.xd-mobile-item details{display:grid;gap:8px}.xd-mobile-summary{cursor:pointer;list-style:none}.xd-mobile-summary::-webkit-details-marker{display:none}.xd-mobile-summary:after{content:"+";display:grid;place-items:center;width:24px;height:24px;border-radius:999px;background:#f2f5ed;color:var(--lime-dark);font-size:17px;line-height:1}.xd-mobile-item details[open]>.xd-mobile-summary:after{content:"-";background:var(--lime);color:#fff}.xd-mobile-children{margin:8px 0 0 14px;padding-left:10px;border-left:2px solid #e8efcf}.xd-mobile-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid #edf0f2}.xd-mobile-actions .xd-hotline,.xd-mobile-actions .xd-login-button{width:100%;min-height:48px;justify-content:center;border-radius:14px;padding:0 12px;font-size:13px}
         .xd-landing-block{position:relative}.xd-hero{position:relative;min-height:820px;overflow:hidden;background:#111c24}.xd-slide{position:absolute;inset:0;opacity:0;transition:opacity .7s ease}.xd-slide.is-active{opacity:1}.xd-slide img{width:100%;height:100%;object-fit:cover;filter:grayscale(.15) contrast(1.05)}.xd-slide:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,15,22,.82),rgba(7,15,22,.42) 42%,rgba(7,15,22,.16))}
         .xd-hero-content{position:relative;z-index:2;display:flex;align-items:center;min-height:820px}.xd-hero-card{position:relative;width:min(560px,92vw);margin-left:90px;padding:88px 78px 82px;color:#fff;border:8px solid rgba(189,212,0,.72)}.xd-hero-card small{display:block;margin-bottom:28px;font-weight:900;text-transform:uppercase}.xd-hero-card h1{margin:0 0 20px;font-size:clamp(42px,3vw,70px);line-height:1.12;letter-spacing:-.05em}.xd-hero-card p{margin:0 0 36px;color:rgba(255,255,255,.88);font-size:18px;font-weight:600}
@@ -237,7 +242,9 @@
             .xd-logo-mark:before{left:7px;bottom:5px;width:15px;height:23px}
             .xd-logo-mark:after{left:11px;top:13px;width:8px;height:5px;box-shadow:0 8px 0 #fff}
             .xd-header-actions{display:none}.xd-hotline{width:auto;min-height:42px;padding:0 14px;border-radius:999px;font-size:0;box-shadow:0 10px 22px rgba(189,212,0,.26)}
-            .xd-hotline::after{content:"0399162342";font-size:13px;letter-spacing:.03em}
+            .xd-hotline::after{content:"{{ $hotline }}";font-size:13px;letter-spacing:.03em}
+            .xd-cart-link{width:42px;height:42px;border-radius:999px;box-shadow:0 10px 22px rgba(16,29,40,.07)}
+            .xd-cart-link svg{width:19px;height:19px}
             .xd-login-button{min-height:42px;padding:0 13px;border-radius:999px;font-size:12px;box-shadow:0 10px 22px rgba(16,29,40,.07)}
             .xd-nav{display:none}
             .xd-mobile-menu-toggle{display:inline-flex;margin-left:auto}
@@ -245,7 +252,7 @@
             .xd-mobile-panel.is-open{display:block}
             .xd-mobile-actions .xd-hotline{font-size:0}
             .xd-mobile-actions .xd-login-button{font-size:12px;box-shadow:none}
-            .xd-mobile-actions .xd-hotline:after{content:"0399162342";font-size:13px}
+            .xd-mobile-actions .xd-hotline:after{content:"{{ $hotline }}";font-size:13px}
             .xd-nav::-webkit-scrollbar{display:none}
             .xd-nav-item{scroll-snap-align:start;flex:0 0 auto}
             .xd-nav-link{padding:8px 12px;border:1px solid #e7ece5;border-radius:999px;background:#fff;color:#2d3c4b;font-size:12px;font-weight:900;letter-spacing:.035em;box-shadow:0 8px 18px rgba(16,29,40,.06)}
@@ -392,7 +399,10 @@
                     @endforeach
                 </nav>
                 <div class="xd-header-actions">
-                    <a class="xd-hotline" href="tel:0399162342"><span aria-hidden="true">&#9742;</span> 0399162342</a>
+                    <a class="xd-hotline" href="tel:{{ $phoneHref }}"><span aria-hidden="true">&#9742;</span> {{ $hotline }}</a>
+                    <a class="xd-cart-link" href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng" title="Giỏ hàng">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6h15l-1.5 8.5H8L6 3H3"/><circle cx="9" cy="20" r="1.7"/><circle cx="18" cy="20" r="1.7"/></svg>
+                    </a>
                     @if (auth('customer')->check())
                         <a class="xd-login-button" href="{{ route('customer.account') }}">Tài khoản</a>
                     @else
@@ -434,7 +444,10 @@
                         @endforeach
                     </ul>
                     <div class="xd-mobile-actions">
-                        <a class="xd-hotline" href="tel:0399162342"><span aria-hidden="true">&#9742;</span> 0399162342</a>
+                        <a class="xd-hotline" href="tel:{{ $phoneHref }}"><span aria-hidden="true">&#9742;</span> {{ $hotline }}</a>
+                        <a class="xd-cart-link" href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng" title="Giỏ hàng">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6h15l-1.5 8.5H8L6 3H3"/><circle cx="9" cy="20" r="1.7"/><circle cx="18" cy="20" r="1.7"/></svg>
+                        </a>
                         @if (auth('customer')->check())
                             <a class="xd-login-button" href="{{ route('customer.account') }}">Tài khoản</a>
                         @else
@@ -571,35 +584,7 @@
             @endforeach
         </main>
 
-        @php
-            $footerData = data_get($footerBlock, 'data', []);
-            $footerContent = data_get($footerData, 'content', []);
-            $footerEdit = $canEditLanding && filled(data_get($footerBlock, 'id')) ? '<button type="button" class="xd-edit-block" data-xd-edit-block="'.e((string) data_get($footerBlock, 'id')).'">Sửa khối</button>' : '';
-        @endphp
-        <footer id="{{ data_get($footerBlock, 'anchor_id', 'lien-he') }}" class="xd-footer xd-landing-block" data-landing-block-id="{{ data_get($footerBlock, 'id') }}" data-block-type="footer_contact">
-            {!! $footerEdit !!}
-            <div class="xd-container xd-footer-grid">
-                <div><a class="xd-logo" href="{{ route('site.home') }}" aria-label="{{ $logoAlt }} trang chủ">@if ($logoUrl !== '')<img class="xd-logo-image" src="{{ $logoUrl }}" alt="{{ $logoAlt }}">@else<i class="xd-logo-mark" aria-hidden="true"></i><b>ar<span>kit</span>.</b>@endif</a><p>{{ $footerData['description'] ?? 'Arkit là công ty chuyên về thiết kế và thi công.' }}</p></div>
-                <div><h3>Thông tin</h3><nav class="xd-footer-links" aria-label="Thông tin">@foreach ($footerNavItems as $item)<a href="{{ $item['href'] }}" target="{{ $item['target'] ?? '_self' }}" @if (($item['target'] ?? '_self') === '_blank') rel="noopener noreferrer" @endif>{{ $item['label'] }}</a>@endforeach</nav></div>
-                <div><h3>{{ $footerData['subtitle'] ?? 'Liên hệ' }}</h3><div class="xd-contact-list"><a href="https://maps.google.com/?q={{ urlencode($footerContent['address'] ?? '') }}">&#128205; {{ $footerContent['address'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM' }}</a><a href="mailto:{{ $footerContent['email'] ?? 'admin@htvietnam.vn' }}">&#9993; {{ $footerContent['email'] ?? 'admin@htvietnam.vn' }}</a><a href="tel:{{ $footerContent['phone'] ?? '0399162342' }}">&#9742; {{ $footerContent['phone'] ?? '0399162342' }}</a></div></div>
-                <div>
-                    <h3>{{ $footerData['title'] ?? 'Đăng ký nhận tin' }}</h3>
-                    <p>Đăng ký email để nhận thông tin mới nhất từ chúng tôi</p>
-                    <form class="xd-newsletter" action="{{ route('site.newsletter.subscribe') }}" method="post">
-                        @csrf
-                        <input type="hidden" name="source" value="theme-footer-xd0301">
-                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Địa chỉ email....." aria-label="Địa chỉ email" required>
-                        <button type="submit">{{ $footerData['button_label'] ?? 'Đăng ký' }}</button>
-                    </form>
-                    @if (session('cart_success'))
-                        <p class="xd-newsletter-note is-success">{{ session('cart_success') }}</p>
-                    @endif
-                    @if ($errors->has('email'))
-                        <p class="xd-newsletter-note is-error">{{ $errors->first('email') }}</p>
-                    @endif
-                </div>
-            </div>
-        </footer>
+        @include('theme-xd0301::partials.footer')
     </div>
 
     @unless (auth('customer')->check())

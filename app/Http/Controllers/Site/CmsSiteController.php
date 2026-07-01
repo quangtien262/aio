@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
@@ -71,6 +72,7 @@ class CmsSiteController
                 'activeTheme' => $activeTheme,
                 'menus' => $menus,
                 'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
+                'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             ], $landingViewData));
         }
 
@@ -121,6 +123,7 @@ class CmsSiteController
             'activeTheme' => $activeTheme,
             'menus' => $menus,
             'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
+            'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
         ], $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())));
     }
 
@@ -2847,7 +2850,9 @@ class CmsSiteController
         $quantity = (int) $validated['quantity'];
 
         if ($product->stock !== null && (int) $product->stock <= 0) {
-            abort(422, 'Sản phẩm hiện đã hết hàng.');
+            throw ValidationException::withMessages([
+                'cart' => 'Sản phẩm hiện đã hết hàng.',
+            ]);
         }
 
         if ($product->stock !== null) {

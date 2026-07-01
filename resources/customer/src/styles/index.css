@@ -1,5 +1,6 @@
 :root {
     color-scheme: light;
+    font-family: "Be Vietnam Pro", "Segoe UI", sans-serif;
 }
 
 html,
@@ -11,9 +12,10 @@ body,
 
 body {
     background:
-        radial-gradient(circle at top left, rgba(249, 115, 22, 0.14) 0%, rgba(255, 255, 255, 0) 34%),
-        linear-gradient(180deg, #fff7ed 0%, #fffdf8 100%);
-    color: #431407;
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.16) 0%, rgba(255, 255, 255, 0) 34%),
+        radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.12) 0%, rgba(255, 255, 255, 0) 32%),
+        linear-gradient(180deg, #f7fffc 0%, #f8fafc 100%);
+    color: #0f172a;
 }
 
 .customer-shell {
@@ -22,24 +24,42 @@ body {
 }
 
 .customer-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 24px clamp(16px, 3vw, 32px);
+    padding: 22px clamp(16px, 4vw, 42px);
+    border-bottom: 1px solid rgba(15, 118, 110, 0.12);
+    background: rgba(247, 254, 251, 0.86);
+    backdrop-filter: blur(18px);
+}
+
+.customer-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.customer-brand .ant-typography {
+    margin: 0;
 }
 
 .customer-kicker {
     display: inline-block;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+    color: #0f766e;
     font-size: 12px;
-    color: #c2410c;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .customer-main-layout {
+    gap: 24px;
+    padding: 24px clamp(16px, 4vw, 42px) 42px;
     background: transparent;
-    padding: 0 clamp(16px, 3vw, 32px) 32px;
 }
 
 .customer-sider {
@@ -49,12 +69,14 @@ body {
 .customer-profile-card {
     display: grid;
     gap: 12px;
-    padding: 24px;
     margin-bottom: 18px;
-    border: 1px solid rgba(194, 65, 12, 0.12);
+    padding: 24px;
+    border: 1px solid rgba(15, 118, 110, 0.14);
     border-radius: 28px;
-    background: linear-gradient(180deg, #ffffff 0%, #fff4e8 100%);
-    box-shadow: 0 18px 40px rgba(154, 52, 18, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(45, 212, 191, 0.22), transparent 42%),
+        linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
 }
 
 .customer-menu.ant-menu {
@@ -67,33 +89,52 @@ body {
     min-height: 48px;
     margin: 0 0 10px;
     border-radius: 16px;
+    color: #334155;
+    font-weight: 700;
 }
 
 .customer-menu.ant-menu-inline .ant-menu-item-selected {
-    background: rgba(249, 115, 22, 0.12);
-    color: #9a3412;
+    background: rgba(15, 118, 110, 0.12);
+    color: #0f766e;
 }
 
 .customer-content {
+    min-width: 0;
     padding-left: 24px;
 }
 
 .customer-hero-card,
-.customer-panel-card {
-    border: 1px solid rgba(194, 65, 12, 0.12);
+.customer-panel-card,
+.customer-address-card {
+    border: 1px solid rgba(15, 118, 110, 0.14);
     border-radius: 28px;
-    box-shadow: 0 18px 40px rgba(154, 52, 18, 0.08);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
 }
 
 .customer-hero-card {
+    overflow: hidden;
     background:
-        radial-gradient(circle at top left, rgba(251, 191, 36, 0.16) 0%, rgba(255, 255, 255, 0) 36%),
-        linear-gradient(135deg, #ffffff 0%, #fff4e6 100%);
+        radial-gradient(circle at top right, rgba(20, 184, 166, 0.22) 0%, rgba(255, 255, 255, 0) 36%),
+        linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
 }
 
 .customer-stat-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.customer-action-grid,
+.customer-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.customer-section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
     gap: 16px;
 }
 
@@ -114,7 +155,7 @@ body {
 
 .customer-order-item {
     padding-bottom: 12px;
-    border-bottom: 1px solid #f3dfd1;
+    border-bottom: 1px solid #d8eee8;
 }
 
 .customer-order-meta {
@@ -129,11 +170,21 @@ body {
     gap: 16px;
 }
 
-.customer-favorite-image {
+.customer-favorite-image,
+.customer-thumb {
     display: block;
     width: 100%;
     height: 220px;
     object-fit: cover;
+    background: #ecfdf5;
+}
+
+.customer-service-image {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 18px;
+    background: #ecfdf5;
 }
 
 .customer-form-grid {
@@ -152,8 +203,8 @@ body {
     }
 
     .customer-content {
-        padding-left: 0;
         padding-top: 16px;
+        padding-left: 0;
     }
 
     .customer-stat-grid,
@@ -166,9 +217,10 @@ body {
     .customer-topbar,
     .customer-order-head,
     .customer-order-item,
-    .customer-order-foot {
-        flex-direction: column;
+    .customer-order-foot,
+    .customer-section-head {
         align-items: stretch;
+        flex-direction: column;
     }
 
     .customer-stat-grid,

@@ -22,7 +22,7 @@ const emptyProductForm = {
     sku: '',
     price: 0,
     original_price: null,
-    stock: 0,
+    stock: 1000,
     short_description: '',
     detail_content: '',
     highlights: '',

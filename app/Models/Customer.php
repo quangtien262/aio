@@ -47,4 +47,14 @@ class Customer extends Authenticatable
     {
         return $this->hasMany(NewsletterSubscriber::class);
     }
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(CustomerAddress::class);
+    }
+
+    public function serviceInterests(): HasMany
+    {
+        return $this->hasMany(CustomerServiceInterest::class);
+    }
 }

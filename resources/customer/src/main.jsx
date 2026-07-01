@@ -11,6 +11,8 @@ ReactDOM.createRoot(customerRoot).render(
         <CustomerApp
             basename={customerRoot?.dataset.basename || '/account'}
             apiBase={customerRoot?.dataset.apiBase || '/account/api'}
+            homeUrl={customerRoot?.dataset.homeUrl || '/'}
+            logoutUrl={customerRoot?.dataset.logoutUrl || '/logout'}
         />
     </React.StrictMode>
 );

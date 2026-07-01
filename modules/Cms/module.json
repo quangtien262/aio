@@ -120,9 +120,9 @@
     },
     {
       "key": "cms-orders",
-      "label": "Orders",
+      "label": "Đơn đặt hàng",
       "description": "Theo dõi đơn đặt hàng từ storefront ngay trong workspace CMS.",
-      "badge": "Orders",
+      "badge": "Đơn hàng",
       "color": "blue",
       "icon": "profile",
       "route": "/admin/cms/orders",
@@ -130,7 +130,7 @@
     },
     {
       "key": "cms-newsletter",
-      "label": "Bản tin",
+      "label": "ĐK nhận tin",
       "description": "Quản lý danh sách đăng ký nhận tin từ website ngay trong CMS workspace.",
       "badge": "Newsletter",
       "color": "cyan",

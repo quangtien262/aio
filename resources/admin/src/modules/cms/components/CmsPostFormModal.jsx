@@ -47,7 +47,7 @@ export const emptyCmsPostForm = {
     id: null,
     title: '',
     slug: '',
-    status: 'draft',
+    status: 'published',
     excerpt: '',
     body: '',
     meta_title: '',
@@ -142,6 +142,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
 
     useEffect(() => {
         form.setFieldsValue({
+            status: 'published',
             ...editingPost,
         });
         form.setFieldValue('body', editingPost?.body ?? '');
