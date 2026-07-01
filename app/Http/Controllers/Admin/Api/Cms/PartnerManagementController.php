@@ -5,15 +5,20 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 use App\Models\CmsPartner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PartnerManagementController
 {
     public function store(Request $request): JsonResponse
     {
-        $partner = CmsPartner::query()->create($this->validatePayload($request));
+        $payload = $this->validatePayload($request);
+        $partner = CmsPartner::query()->create(array_merge($payload, [
+            'slug' => 'pending-partner-'.Str::uuid(),
+        ]));
+        $partner->update(['slug' => $this->uniqueSlug($partner->title, $partner->id)]);
 
-        return response()->json(['message' => 'Da tao doi tac CMS.', 'data' => $this->serialize($partner)], 201);
+        return response()->json(['message' => 'Da tao doi tac CMS.', 'data' => $this->serialize($partner->fresh())], 201);
     }
 
     public function update(Request $request, int $partner): JsonResponse
@@ -21,6 +26,7 @@ class PartnerManagementController
         /** @var CmsPartner $record */
         $record = CmsPartner::query()->findOrFail($partner);
         $record->update($this->validatePayload($request, $record));
+        $record->update(['slug' => $this->uniqueSlug($record->title, $record->id)]);
 
         return response()->json(['message' => 'Da cap nhat doi tac CMS.', 'data' => $this->serialize($record->fresh())]);
     }
@@ -38,7 +44,6 @@ class PartnerManagementController
     {
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('cms_partners', 'slug')->ignore($partner?->id)],
             'description' => ['nullable', 'string'],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image_alt' => ['nullable', 'string', 'max:255'],
@@ -51,6 +56,17 @@ class PartnerManagementController
             'owner_key' => ['nullable', 'string', 'max:255'],
             'tenant_key' => ['nullable', 'string', 'max:255'],
         ]);
+    }
+
+    private function uniqueSlug(string $title, int $id): string
+    {
+        $baseSlug = Str::slug($title) ?: 'doi-tac-'.$id;
+        $exists = CmsPartner::query()
+            ->where('slug', $baseSlug)
+            ->whereKeyNot($id)
+            ->exists();
+
+        return $exists ? $baseSlug.'-'.$id : $baseSlug;
     }
 
     private function serialize(CmsPartner $partner): array

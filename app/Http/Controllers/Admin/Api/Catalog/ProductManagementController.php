@@ -18,6 +18,9 @@ class ProductManagementController
 
         $product = DB::transaction(function () use ($validated, $shouldGenerateDefaultSku): CatalogProduct {
             $product = CatalogProduct::query()->create($this->normalizePayload($validated));
+            $product->update([
+                'slug' => $this->uniqueSlug($product->name, $product->id),
+            ]);
 
             if ($shouldGenerateDefaultSku) {
                 $product->update([
@@ -43,6 +46,9 @@ class ProductManagementController
 
         DB::transaction(function () use ($record, $validated): void {
             $record->update($this->normalizePayload($validated));
+            $record->update([
+                'slug' => $this->uniqueSlug($record->name, $record->id),
+            ]);
             $this->syncGalleryImages($record, $validated['gallery_images'] ?? []);
         });
 
@@ -76,6 +82,7 @@ class ProductManagementController
             'detail_content' => ['nullable', 'string'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
+            'meta_keywords' => ['nullable', 'string', 'max:1000'],
             'highlights' => ['nullable', 'string'],
             'usage_terms' => ['nullable', 'string'],
             'usage_location' => ['nullable', 'string'],
@@ -106,6 +113,7 @@ class ProductManagementController
             'detail_content' => $product->detail_content,
             'meta_title' => $product->meta_title,
             'meta_description' => $product->meta_description,
+            'meta_keywords' => $product->meta_keywords,
             'highlights' => $product->highlights,
             'usage_terms' => $product->usage_terms,
             'usage_location' => $product->usage_location,
@@ -124,12 +132,15 @@ class ProductManagementController
     {
         $name = trim((string) ($validated['name'] ?? ''));
         $sku = trim((string) ($validated['sku'] ?? ''));
+        $shortDescription = $this->normalizeTextBlock($validated['short_description'] ?? null);
 
         return array_merge($validated, [
-            'slug' => trim((string) ($validated['slug'] ?? '')) !== '' ? $validated['slug'] : Str::slug($name),
+            'slug' => 'pending-product-'.Str::lower(Str::random(16)),
             'sku' => $sku !== '' ? $sku : 'TMP-'.Str::upper(Str::random(16)),
-            'meta_title' => $this->normalizeTextBlock($validated['meta_title'] ?? null),
-            'meta_description' => $this->normalizeTextBlock($validated['meta_description'] ?? null),
+            'short_description' => $shortDescription,
+            'meta_title' => $this->normalizeTextBlock($validated['meta_title'] ?? null) ?: $name,
+            'meta_description' => $this->normalizeTextBlock($validated['meta_description'] ?? null) ?: $shortDescription,
+            'meta_keywords' => $this->normalizeTextBlock($validated['meta_keywords'] ?? null),
             'detail_content' => $this->normalizeTextBlock($validated['detail_content'] ?? null),
             'highlights' => $this->normalizeTextBlock($validated['highlights'] ?? null),
             'usage_terms' => $this->normalizeTextBlock($validated['usage_terms'] ?? null),
@@ -170,5 +181,16 @@ class ProductManagementController
     private function defaultSku(int $id): string
     {
         return 'PRO'.$id;
+    }
+
+    private function uniqueSlug(string $name, int $id): string
+    {
+        $baseSlug = Str::slug($name) ?: 'san-pham-'.$id;
+        $exists = CatalogProduct::query()
+            ->where('slug', $baseSlug)
+            ->whereKeyNot($id)
+            ->exists();
+
+        return $exists ? "{$baseSlug}-{$id}" : $baseSlug;
     }
 }

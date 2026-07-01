@@ -553,6 +553,9 @@ export default function LandingBlockManagerDrawer({
                                 {Object.entries(editingBlock.settings_schema ?? {}).map(renderSettingField)}
                             </div>
                         ) : null}
+                        <Form.Item name={['settings', 'cta_url']} label="Link CTA">
+                            <Input placeholder="/gioi-thieu hoac https://..." />
+                        </Form.Item>
                     </Card>
 
                     <Tabs

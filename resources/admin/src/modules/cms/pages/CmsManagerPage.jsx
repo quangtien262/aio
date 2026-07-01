@@ -489,6 +489,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [selectedProductRowKeys, setSelectedProductRowKeys] = useState([]);
+    const [selectedPartnerRowKeys, setSelectedPartnerRowKeys] = useState([]);
     const [bulkProductEditOpen, setBulkProductEditOpen] = useState(false);
     const [keyword, setKeyword] = useState('');
     const [productCategoryFilter, setProductCategoryFilter] = useState('all');
@@ -1291,6 +1292,35 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
     };
 
+    const handleBulkDeletePartners = async () => {
+        const ids = [...selectedPartnerRowKeys];
+
+        const didDelete = await runAdminAction(async () => {
+            for (const id of ids) {
+                await callAdminApi(`${sectionConfig.endpoint}/${id}`, { method: 'DELETE' });
+            }
+        }, `Đã xóa ${ids.length} đối tác.`, reload);
+
+        if (didDelete) {
+            setSelectedPartnerRowKeys([]);
+        }
+    };
+
+    const confirmBulkDeletePartners = () => {
+        if (!selectedPartnerRowKeys.length) {
+            return;
+        }
+
+        Modal.confirm({
+            title: `Xóa ${selectedPartnerRowKeys.length} đối tác đã chọn?`,
+            content: 'Thao tác này không thể hoàn tác.',
+            okText: 'Xóa tất cả',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: handleBulkDeletePartners,
+        });
+    };
+
     const openBulkEditProducts = () => {
         if (!selectedProductRowKeys.length) {
             return;
@@ -1539,6 +1569,97 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             preserveSelectedRowKeys: true,
         }
         : undefined;
+    const partnerRowSelection = sectionKey === 'cms-partners' && sectionPermissions.canDelete
+        ? {
+            selectedRowKeys: selectedPartnerRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedPartnerRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
+    const productBulkActions = sectionKey === 'cms-products' ? (
+        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Space wrap>
+                <Dropdown
+                    trigger={['click']}
+                    menu={{
+                        items: [
+                            {
+                                key: 'bulk-edit',
+                                label: 'Sửa đã chọn',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedProductRowKeys.length,
+                            },
+                            {
+                                key: 'bulk-delete',
+                                label: 'Xóa đã chọn',
+                                icon: <DeleteOutlined />,
+                                danger: true,
+                                disabled: !sectionPermissions.canDelete || !selectedProductRowKeys.length,
+                            },
+                        ],
+                        onClick: ({ key }) => {
+                            if (key === 'bulk-edit') {
+                                openBulkEditProducts();
+                            }
+
+                            if (key === 'bulk-delete') {
+                                confirmBulkDeleteProducts();
+                            }
+                        },
+                    }}
+                >
+                    <Button icon={<MoreOutlined />} disabled={!selectedProductRowKeys.length}>
+                        Thao tác đã chọn
+                    </Button>
+                </Dropdown>
+                {selectedProductRowKeys.length ? (
+                    <Text type="secondary">Đã chọn {selectedProductRowKeys.length} sản phẩm.</Text>
+                ) : null}
+            </Space>
+            {selectedProductRowKeys.length ? (
+                <Button size="small" type="link" onClick={() => setSelectedProductRowKeys([])}>
+                    Bỏ chọn
+                </Button>
+            ) : null}
+        </Space>
+    ) : null;
+    const partnerBulkActions = sectionKey === 'cms-partners' ? (
+        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Space wrap>
+                <Dropdown
+                    trigger={['click']}
+                    menu={{
+                        items: [
+                            {
+                                key: 'bulk-delete',
+                                label: 'Xóa đã chọn',
+                                icon: <DeleteOutlined />,
+                                danger: true,
+                                disabled: !sectionPermissions.canDelete || !selectedPartnerRowKeys.length,
+                            },
+                        ],
+                        onClick: ({ key }) => {
+                            if (key === 'bulk-delete') {
+                                confirmBulkDeletePartners();
+                            }
+                        },
+                    }}
+                >
+                    <Button icon={<MoreOutlined />} disabled={!selectedPartnerRowKeys.length}>
+                        Thao tác đã chọn
+                    </Button>
+                </Dropdown>
+                {selectedPartnerRowKeys.length ? (
+                    <Text type="secondary">Đã chọn {selectedPartnerRowKeys.length} đối tác.</Text>
+                ) : null}
+            </Space>
+            {selectedPartnerRowKeys.length ? (
+                <Button size="small" type="link" onClick={() => setSelectedPartnerRowKeys([])}>
+                    Bỏ chọn
+                </Button>
+            ) : null}
+        </Space>
+    ) : null;
 
     const columns = useMemo(() => {
         if (sectionKey === 'cms-landing-pages') {
@@ -1924,6 +2045,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingPartner={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -2060,6 +2182,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                     </Space>
                 )
+            : sectionKey === 'cms-partners'
+                ? (
+                    <Space wrap>
+                        {partnerBulkActions}
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
+                    </Space>
+                )
             : sectionKey !== 'cms-media' && sectionKey !== 'cms-products'
                 ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                 : null;
@@ -2186,49 +2315,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                             style={{ width: '100%' }}
                                         />
                                     </Space>
-                                    <Space wrap>
-                                        <Dropdown
-                                            trigger={['click']}
-                                            menu={{
-                                                items: [
-                                                    {
-                                                        key: 'bulk-edit',
-                                                        label: 'Sửa đã chọn',
-                                                        icon: <EditOutlined />,
-                                                        disabled: !sectionPermissions.canUpdate || !selectedProductRowKeys.length,
-                                                    },
-                                                    {
-                                                        key: 'bulk-delete',
-                                                        label: 'Xóa đã chọn',
-                                                        icon: <DeleteOutlined />,
-                                                        danger: true,
-                                                        disabled: !sectionPermissions.canDelete || !selectedProductRowKeys.length,
-                                                    },
-                                                ],
-                                                onClick: ({ key }) => {
-                                                    if (key === 'bulk-edit') {
-                                                        openBulkEditProducts();
-                                                    }
-
-                                                    if (key === 'bulk-delete') {
-                                                        confirmBulkDeleteProducts();
-                                                    }
-                                                },
-                                            }}
-                                        >
-                                            <Button icon={<MoreOutlined />} disabled={!selectedProductRowKeys.length}>
-                                                Thao tác đã chọn
-                                            </Button>
-                                        </Dropdown>
-                                        {selectedProductRowKeys.length ? (
-                                            <Text type="secondary">Đã chọn {selectedProductRowKeys.length} sản phẩm.</Text>
-                                        ) : null}
-                                    </Space>
                                 </Space>
                             </Card>
                         </Col>
                         <Col xs={24} xl={17}>
                             <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                {productBulkActions}
                                 {filteredItems.length ? (
                                     <Table
                                         rowKey="id"
@@ -2249,7 +2341,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 {sectionKey !== 'cms-products' && filteredItems.length ? (
                     <Table
                         rowKey="id"
-                        rowSelection={productRowSelection}
+                        rowSelection={partnerRowSelection}
                         columns={columns}
                         dataSource={filteredItems}
                         pagination={{ pageSize: 10, hideOnSinglePage: true }}

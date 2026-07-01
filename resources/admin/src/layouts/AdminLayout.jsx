@@ -59,6 +59,72 @@ const sectionMetaMap = {
     },
 };
 
+const cmsContentMenuOrder = [
+    { key: 'cms-pages', label: 'Pages' },
+    { key: 'cms-products', label: 'Sản phẩm' },
+    { key: 'cms-services', label: 'Dịch vụ' },
+    { key: 'cms-posts', label: 'Tin tức' },
+    { key: 'cms-projects', label: 'Dự án' },
+    { key: 'cms-landing-pages', label: 'Landing pages' },
+    { key: 'cms-team-members', label: 'Đội ngũ nhân sự' },
+    { key: 'cms-partners', label: 'Đối tác' },
+    { key: 'cms-testimonials', label: 'Testimonials' },
+];
+
+const cmsContentMenuKeySet = new Set(cmsContentMenuOrder.map((item) => item.key));
+const cmsContentMenuLabelMap = new Map(cmsContentMenuOrder.map((item) => [item.key, item.label]));
+
+function withCmsMenuLabel(item) {
+    return {
+        ...item,
+        label: cmsContentMenuLabelMap.get(item.key) ?? item.label,
+    };
+}
+
+function buildWorkspaceMenuItems(items) {
+    const contentItems = cmsContentMenuOrder
+        .map(({ key, label }) => {
+            const item = items.find((candidate) => candidate.key === key);
+
+            return item ? { ...item, label } : null;
+        })
+        .filter(Boolean);
+
+    if (!contentItems.length) {
+        return items.map(withCmsMenuLabel);
+    }
+
+    const firstContentIndex = items.findIndex((item) => cmsContentMenuKeySet.has(item.key));
+    const beforeContent = items
+        .slice(0, Math.max(firstContentIndex, 0))
+        .filter((item) => !cmsContentMenuKeySet.has(item.key))
+        .map(withCmsMenuLabel);
+    const afterContent = items
+        .slice(Math.max(firstContentIndex, 0))
+        .filter((item) => !cmsContentMenuKeySet.has(item.key))
+        .map(withCmsMenuLabel);
+
+    return [
+        ...beforeContent,
+        {
+            key: 'cms-content-group',
+            label: 'Nội dung',
+            icon: <AppstoreOutlined />,
+            children: contentItems,
+        },
+        ...afterContent,
+    ];
+}
+
+function toAntMenuItem(item) {
+    return {
+        key: item.key,
+        label: item.label,
+        icon: item.icon,
+        children: item.children?.map(toAntMenuItem),
+    };
+}
+
 function renderLazyRouteElement(Component, props, fallbackTitle) {
     return (
         <Suspense fallback={<Card loading title={fallbackTitle} />}>
@@ -384,12 +450,7 @@ export default function AdminLayout() {
             ? navigationMenuItems.filter((item) => item.source === 'module' && item.moduleKey === currentNavigationItem.moduleKey)
             : navigationMenuItems.filter((item) => item.section === effectiveSectionKey && item.source !== 'module');
 
-        return scopedItems
-            .map((item) => ({
-                key: item.key,
-                icon: item.icon,
-                label: item.label,
-            }));
+        return buildWorkspaceMenuItems(scopedItems);
     }, [currentNavigationItem, effectiveSectionKey, navigationMenuItems]);
 
     const selectedMenuKey = useMemo(() => {
@@ -529,11 +590,7 @@ export default function AdminLayout() {
         }
     };
 
-    const desktopWorkspaceMenuItems = sideMenuItems.map((item) => ({
-        key: item.key,
-        label: item.label,
-        icon: item.icon,
-    }));
+    const desktopWorkspaceMenuItems = sideMenuItems.map(toAntMenuItem);
 
     return (
         <Layout className="admin-shell">

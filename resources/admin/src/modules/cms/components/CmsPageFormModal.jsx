@@ -10,6 +10,7 @@ import Input from 'antd/es/input';
 import message from 'antd/es/message';
 import Modal from 'antd/es/modal';
 import AntList from 'antd/es/list';
+import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
@@ -108,6 +109,8 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [sampleModalOpen, setSampleModalOpen] = useState(false);
+    const [contentMode, setContentMode] = useState('editor');
+    const [editorContentVersion, setEditorContentVersion] = useState(0);
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
@@ -115,14 +118,24 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     const sampleImageInputRef = useRef(null);
     const slugEditedRef = useRef(Boolean(editingPage?.id));
     const titleValue = Form.useWatch('title', form) ?? '';
+    const bodyValue = Form.useWatch('body', form) ?? '';
     const scopeValues = Form.useWatch(['website_key', 'owner_key', 'tenant_key'], form);
-    const editorInitialData = useMemo(() => editingPage?.body ?? '', [editingPage?.id, editingPage?.slug, editingPage?.body]);
-    const editorInstanceKey = useMemo(() => `${editingPage?.id ?? 'new'}:${editingPage?.slug ?? 'blank'}:${open ? 'open' : 'closed'}`, [editingPage?.id, editingPage?.slug, open]);
+    const editorInitialData = useMemo(
+        () => form.getFieldValue('body') ?? editingPage?.body ?? '',
+        [editingPage?.id, editingPage?.slug, editingPage?.body, editorContentVersion, form]
+    );
+    const editorInstanceKey = useMemo(
+        () => `${editingPage?.id ?? 'new'}:${editingPage?.slug ?? 'blank'}:${open ? 'open' : 'closed'}:${contentMode}:${editorContentVersion}`,
+        [editingPage?.id, editingPage?.slug, open, contentMode, editorContentVersion]
+    );
 
     useEffect(() => {
         form.setFieldsValue(editingPage);
         form.setFieldValue('body', editingPage?.body ?? '');
         slugEditedRef.current = Boolean(editingPage?.id || editingPage?.slug);
+        setContentMode('editor');
+        setEditorContentVersion((current) => current + 1);
+        editorInstanceRef.current = null;
         editorSelectionRef.current = null;
     }, [editingPage, form]);
 
@@ -328,6 +341,28 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         form.setFieldValue('body', editor.getData());
     };
 
+    const syncCurrentEditorBodyToForm = () => {
+        const editor = editorInstanceRef.current;
+
+        if (contentMode === 'editor' && editor) {
+            form.setFieldValue('body', editor.getData());
+        }
+    };
+
+    const handleContentModeChange = (event) => {
+        const nextMode = event.target.value;
+
+        if (nextMode === contentMode) {
+            return;
+        }
+
+        syncCurrentEditorBodyToForm();
+        editorInstanceRef.current = null;
+        editorSelectionRef.current = null;
+        setContentMode(nextMode);
+        setEditorContentVersion((current) => current + 1);
+    };
+
     const captureEditorSelection = (editor) => {
         const range = editor?.model?.document?.selection?.getFirstRange?.();
 
@@ -429,6 +464,8 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     };
 
     const handleSubmit = async () => {
+        syncCurrentEditorBodyToForm();
+
         const values = await form.validateFields();
 
         await onSubmit?.({
@@ -458,7 +495,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         <Drawer
             title={editingPage?.id ? 'Cập nhật trang CMS' : 'Tạo trang CMS'}
             open={open}
-            onCancel={handleCancel}
+            onClose={handleCancel}
             width="100%"
             destroyOnHidden
             className="cms-page-drawer"
@@ -551,6 +588,17 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                     >
                         <div className="cms-editor-upload-panel">
                             <Space wrap className="cms-editor-toolbar-row" size={12}>
+                                <Radio.Group
+                                    value={contentMode}
+                                    onChange={handleContentModeChange}
+                                    optionType="button"
+                                    buttonStyle="solid"
+                                    disabled={!canManage}
+                                    options={[
+                                        { label: 'Soạn thảo', value: 'editor' },
+                                        { label: 'Nhập mã HTML', value: 'html' },
+                                    ]}
+                                />
                                 <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
                                 <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
                                 <Button type="default" disabled={!canManage || uploadingAsset === 'video'} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
@@ -570,8 +618,9 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                             </Space>
                         </div>
 
-                        <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
-                            <div className="cms-editor-shell">
+                        {contentMode === 'editor' ? (
+                            <Form.Item label="Nội dung" style={{ marginBottom: 0 }}>
+                                <div className="cms-editor-shell">
                                 <CKEditor
                                     key={editorInstanceKey}
                                     editor={ClassicEditor}
@@ -591,8 +640,21 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                                         syncEditorBodyToForm(editor);
                                     }}
                                 />
-                            </div>
-                        </Form.Item>
+                                </div>
+                            </Form.Item>
+                        ) : null}
+                        {contentMode === 'html' ? (
+                            <Form.Item label="Mã HTML" style={{ marginBottom: 0 }}>
+                                <Input.TextArea
+                                    rows={18}
+                                    value={bodyValue}
+                                    disabled={!canManage}
+                                    placeholder="<section>...</section>"
+                                    onChange={(event) => form.setFieldValue('body', event.target.value)}
+                                    style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' }}
+                                />
+                            </Form.Item>
+                        ) : null}
                         <Form.Item name="body" hidden>
                             <Input.TextArea />
                         </Form.Item>

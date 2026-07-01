@@ -18,7 +18,6 @@ import Space from 'antd/es/space';
 import Tooltip from 'antd/es/tooltip';
 import dayjs from 'dayjs';
 import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
-import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import {
     BlockQuote,
     Bold,
@@ -65,6 +64,10 @@ function normalizeDealEndAtValue(value) {
     return dateValue.isValid() ? dateValue : null;
 }
 
+function FormValueBridge() {
+    return null;
+}
+
 export const emptyCatalogProductForm = {
     id: null,
     catalog_category_id: null,
@@ -78,6 +81,7 @@ export const emptyCatalogProductForm = {
     detail_content: '',
     meta_title: '',
     meta_description: '',
+    meta_keywords: '',
     highlights: '',
     usage_terms: '',
     usage_location: '',
@@ -106,6 +110,29 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
     const galleryImages = Form.useWatch('gallery_images', form) ?? [];
     const coverImageUrl = Form.useWatch('image_url', form) ?? '';
     const productName = Form.useWatch('name', form) ?? '';
+    const productImages = useMemo(() => Array.from(new Set([
+        coverImageUrl,
+        ...normalizeGalleryImages(galleryImages),
+    ].filter(Boolean))), [coverImageUrl, galleryImages]);
+
+    const syncProductImages = (nextValue, nextCover = null) => {
+        const normalizedImages = Array.from(new Set(normalizeGalleryImages(nextValue)));
+        const selectedCover = nextCover && normalizedImages.includes(nextCover)
+            ? nextCover
+            : normalizedImages[0] ?? '';
+        const orderedImages = selectedCover
+            ? [selectedCover, ...normalizedImages.filter((item) => item !== selectedCover)]
+            : normalizedImages;
+
+        form.setFieldsValue({
+            image_url: selectedCover,
+            gallery_images: orderedImages,
+        });
+    };
+
+    const setProductCoverImage = (nextCover) => {
+        syncProductImages(productImages, nextCover);
+    };
 
     useEffect(() => {
         form.setFieldsValue({
@@ -348,22 +375,28 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
 
     const handleSubmit = async () => {
         const values = await form.validateFields();
+        const submittedImages = Array.from(new Set([
+            values.image_url,
+            ...normalizeGalleryImages(values.gallery_images),
+        ].filter(Boolean)));
+        const submittedCover = values.image_url || submittedImages[0] || null;
 
         await onSubmit?.({
             ...values,
             catalog_category_id: values.catalog_category_id || null,
-            slug: values.slug || null,
+            slug: null,
             sku: values.sku || null,
             original_price: values.original_price ?? null,
             short_description: values.short_description || null,
             detail_content: values.detail_content || null,
-            meta_title: values.meta_title || null,
-            meta_description: values.meta_description || null,
+            meta_title: values.name || null,
+            meta_description: values.meta_description || values.short_description || null,
+            meta_keywords: values.meta_keywords || null,
             highlights: values.highlights || null,
             usage_terms: values.usage_terms || null,
             usage_location: values.usage_location || null,
-            image_url: values.image_url || null,
-            gallery_images: normalizeGalleryImages(values.gallery_images),
+            image_url: submittedCover,
+            gallery_images: submittedImages,
             sold_count: values.sold_count ?? 0,
             deal_end_at: values.deal_end_at ? values.deal_end_at.format('YYYY-MM-DDTHH:mm:ss') : null,
             is_featured: Boolean(values.is_featured),
@@ -419,12 +452,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                     <Select showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={12}>
-                                <Form.Item name="slug" label="Slug public">
-                                    <Input placeholder="san-pham-noi-bat" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={12}>
+                            <Col xs={24}>
                                 <Form.Item name="short_description" label="Mô tả ngắn">
                                     <Input.TextArea rows={3} placeholder="Mô tả cho card và detail page" />
                                 </Form.Item>
@@ -432,27 +460,33 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                         </Row>
                     </Card>
 
-                    <Card size="small" className="cms-post-form-card" title="Ảnh cover sản phẩm">
+                    <Card size="small" className="cms-post-form-card" title="Hình ảnh sản phẩm">
                         <Form.Item name="image_url" hidden>
-                            <Input />
+                            <FormValueBridge />
                         </Form.Item>
-                        <Form.Item label="Ảnh cover" style={{ marginBottom: 0 }}>
-                            <SingleMediaPicker
+                        <Form.Item name="gallery_images" hidden>
+                            <FormValueBridge />
+                        </Form.Item>
+                        <Form.Item label="Danh sách hình ảnh" style={{ marginBottom: 0 }}>
+                            <MultiMediaPicker
                                 open={open}
-                                value={coverImageUrl}
-                                onChange={(nextValue) => form.setFieldValue('image_url', nextValue)}
+                                value={productImages}
+                                onChange={(nextValue) => syncProductImages(nextValue)}
+                                coverValue={coverImageUrl}
+                                onSetCover={setProductCoverImage}
                                 canManage={canManage}
                                 callAdminApi={callAdminApi}
-                                recordTitle={productName || 'Product cover'}
-                                previewTitle="Ảnh cover sản phẩm"
-                                uploadButtonLabel="Upload ảnh cover"
-                                uploadHint="Ảnh upload xong sẽ tự được gán làm cover sản phẩm."
-                                libraryModalTitle="Chọn ảnh cover từ thư viện"
-                                urlPlaceholder="https://example.com/product.jpg"
-                                uploadSuccessMessage="Đã upload và gán ảnh cover sản phẩm."
-                                urlSuccessMessage="Đã lưu URL vào thư viện media và gán làm cover sản phẩm."
-                                uploadErrorMessage="Upload ảnh cover sản phẩm không thành công."
-                                urlErrorMessage="Không thể lưu ảnh cover sản phẩm từ URL."
+                                recordTitle={productName || 'Product images'}
+                                previewTitle="Ảnh sản phẩm"
+                                uploadButtonLabel="Upload ảnh sản phẩm"
+                                uploadHint="Có thể upload nhiều ảnh. Ảnh đầu tiên sẽ tự làm ảnh đại diện."
+                                libraryModalTitle="Chọn ảnh sản phẩm từ thư viện"
+                                urlPlaceholder={['https://cdn.example.com/product-1.jpg', 'https://cdn.example.com/product-2.jpg'].join('\n')}
+                                uploadSuccessMessage="Đã thêm ảnh sản phẩm."
+                                urlSuccessMessage="Đã lưu URL vào thư viện media và thêm ảnh sản phẩm."
+                                uploadErrorMessage="Upload ảnh sản phẩm không thành công."
+                                urlErrorMessage="Không thể lưu ảnh sản phẩm từ URL."
+                                emptyValueMessage="Nhập ít nhất một URL ảnh trước khi lưu."
                             />
                         </Form.Item>
                     </Card>
@@ -507,35 +541,15 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                         </Row>
                     </Card>
 
-                    <Card size="small" className="cms-post-form-card" title="Gallery ảnh sản phẩm">
-                        <Form.Item name="gallery_images" label="Gallery ảnh sản phẩm" style={{ marginBottom: 16 }}>
-                            <MultiMediaPicker
-                                open={open}
-                                value={galleryImages}
-                                onChange={(nextValue) => form.setFieldValue('gallery_images', nextValue)}
-                                canManage={canManage}
-                                callAdminApi={callAdminApi}
-                                recordTitle={productName || 'Product gallery'}
-                                previewTitle="Ảnh gallery"
-                                uploadButtonLabel="Upload nhiều ảnh"
-                                uploadHint="Mỗi lần có thể chọn nhiều ảnh và tự thêm vào gallery."
-                                libraryModalTitle="Chọn ảnh gallery từ thư viện"
-                                urlPlaceholder={['https://cdn.example.com/product-1.jpg', 'https://cdn.example.com/product-2.jpg'].join('\n')}
-                                uploadSuccessMessage="Đã thêm ảnh vào gallery sản phẩm."
-                                urlSuccessMessage="Đã lưu URL vào thư viện media và thêm ảnh gallery."
-                                uploadErrorMessage="Upload gallery sản phẩm không thành công."
-                                urlErrorMessage="Không thể lưu ảnh gallery từ URL."
-                                emptyValueMessage="Nhập ít nhất một URL ảnh trước khi lưu."
-                            />
-                        </Form.Item>
-
-                    </Card>
-
                     <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
-                                <Form.Item name="meta_title" label="SEO Title">
-                                    <TextArea rows={3} placeholder="SEO title" />
+                                <Form.Item
+                                    name="meta_keywords"
+                                    label="SEO Keyword"
+                                    extra="Nhap cac tu khoa chinh, phan tach bang dau phay."
+                                >
+                                    <TextArea rows={3} placeholder="phu gia dau nhon, chong tham, vat tu xay dung" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>

@@ -12,14 +12,13 @@
     $highlights = $productHighlights ?? [];
     $detailParagraphsList = $detailParagraphs ?? [];
     $detailHtml = trim((string) ($productModel->detail_content ?? ''));
+    $seoTitle = trim((string) ($productModel->meta_title ?? '')) ?: ($product['title'] ?? $logoAlt);
+    $seoDescription = trim((string) ($productModel->meta_description ?? '')) ?: trim((string) ($productModel->short_description ?? ''));
+    $seoKeywords = trim((string) ($productModel->meta_keywords ?? ''));
     $usageTermsList = $usageTerms ?? [];
     $relatedProducts = $relatedProducts ?? [];
     $discount = (int) ($product['discount'] ?? 0);
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
-    $maxPurchaseQuantity = $productModel->stock !== null && (int) $productModel->stock > 0
-        ? max(1, min(9, (int) $productModel->stock))
-        : 9;
-
     if ($highlights === [] && filled($productModel->short_description)) {
         $highlights = [trim((string) $productModel->short_description)];
     }
@@ -201,7 +200,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $product['title'] }} | {{ $logoAlt }}</title>
+    <title>{{ $seoTitle }} | {{ $logoAlt }}</title>
+    @if ($seoDescription !== '')
+        <meta name="description" content="{{ $seoDescription }}">
+    @endif
+    @if ($seoKeywords !== '')
+        <meta name="keywords" content="{{ $seoKeywords }}">
+    @endif
     <style>
         :root{--lime:#bdd400;--lime-dark:#8fa900;--ink:#26384a;--muted:#74808a;--line:#e6ebe8;--bg:#fbfcfa;--shadow:0 22px 55px rgba(28,45,60,.13);--font:"Montserrat","Segoe UI",Arial,sans-serif}
         *{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--bg);font-family:var(--font);font-size:16px;line-height:1.75}a{text-decoration:none;color:inherit}img{display:block;max-width:100%}button,input,select{font:inherit}.xd-container{width:min(1540px,calc(100% - 56px));margin:0 auto}
@@ -294,7 +299,7 @@
                     <article class="xd-info-panel">
                         <span class="xd-kicker">{{ $productModel->category?->name ?: 'Sản phẩm' }}</span>
                         <h1>{{ $product['title'] }}</h1>
-                        <p class="xd-summary">{{ $productModel->short_description ?: 'Giải pháp vật tư và nội thất cho công trình hiện đại.' }}</p>
+                        <p class="xd-summary">{!! nl2br(e($productModel->short_description ?: 'Giải pháp vật tư và nội thất cho công trình hiện đại.')) !!}</p>
 
                         <div class="xd-product-meta">
                             @if ($productModel->sku)
@@ -320,14 +325,7 @@
 
                         <form class="xd-purchase-form" method="POST" action="{{ route('site.cart.add', ['slug' => $productModel->slug]) }}">
                             @csrf
-                            <label class="xd-quantity">
-                                <span>Số lượng</span>
-                                <select name="quantity">
-                                    @foreach (range(1, $maxPurchaseQuantity) as $qty)
-                                        <option value="{{ $qty }}">{{ $qty }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
+                            <input type="hidden" name="quantity" value="1">
                             <div class="xd-cta-row">
                                 <button type="submit" class="xd-btn xd-btn-primary" formaction="{{ route('site.cart.buy_now', ['slug' => $productModel->slug]) }}">Mua ngay</button>
                                 <button type="submit" class="xd-btn xd-btn-dark">Thêm vào giỏ</button>

@@ -309,18 +309,61 @@ a {
 .admin-section-menu.ant-menu-horizontal > .ant-menu-item-selected,
 .admin-section-menu.ant-menu-horizontal > .ant-menu-item-active,
 .admin-section-menu.ant-menu-horizontal > .ant-menu-item:hover,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu-selected,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu-active,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu:hover,
 .admin-workspace-menu.ant-menu-horizontal > .ant-menu-item-selected,
 .admin-workspace-menu.ant-menu-horizontal > .ant-menu-item-active,
-.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.08);
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item:hover,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-selected,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-active,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu:hover {
+    color: #0f4c81 !important;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(3, 45, 86, 0.18);
+}
+
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu-selected > .ant-menu-submenu-title,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu-active > .ant-menu-submenu-title,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu:hover > .ant-menu-submenu-title,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-selected > .ant-menu-submenu-title,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-active > .ant-menu-submenu-title,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu:hover > .ant-menu-submenu-title,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-item-selected .ant-menu-title-content,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-item-active .ant-menu-title-content,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-item:hover .ant-menu-title-content,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item-selected .ant-menu-title-content,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item-active .ant-menu-title-content,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item:hover .ant-menu-title-content {
+    color: #0f4c81 !important;
+    font-weight: 800;
+}
+
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-item-icon,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu-active .ant-menu-item-icon,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu:hover .ant-menu-item-icon,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-item-icon,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-active .ant-menu-item-icon,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu:hover .ant-menu-item-icon,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-item-selected .ant-menu-item-icon,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-item-active .ant-menu-item-icon,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-item:hover .ant-menu-item-icon,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item-selected .ant-menu-item-icon,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item-active .ant-menu-item-icon,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item:hover .ant-menu-item-icon {
+    color: #0f4c81 !important;
 }
 
 .admin-section-menu.ant-menu-horizontal > .ant-menu-item-selected::after,
 .admin-section-menu.ant-menu-horizontal > .ant-menu-item:hover::after,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu-selected::after,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu:hover::after,
 .admin-workspace-menu.ant-menu-horizontal > .ant-menu-item-selected::after,
-.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item:hover::after {
-    border-bottom-color: #1677ff;
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item:hover::after,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu-selected::after,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu:hover::after {
+    border-bottom-color: transparent;
 }
 .admin-workspace-menu .ant-menu-overflow-item:hover {
     color:#d2dbf5 !important;

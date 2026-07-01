@@ -31,6 +31,10 @@ export default function MultiMediaPicker({
     callAdminApi,
     mediaOptions = EMPTY_MEDIA_OPTIONS,
     recordTitle = '',
+    coverValue = '',
+    onSetCover,
+    coverBadgeLabel = 'Ảnh đại diện',
+    setCoverButtonLabel = 'Đặt làm ảnh đại diện',
     previewTitle = 'Ảnh đã chọn',
     uploadButtonLabel = 'Upload nhiều ảnh',
     uploadHint = 'Mỗi lần có thể chọn nhiều ảnh và tự thêm vào gallery.',
@@ -295,12 +299,24 @@ export default function MultiMediaPicker({
                                 style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 12 }}
                             />
                             <div style={{ minWidth: 0, display: 'grid', gap: 4 }}>
-                                <strong>{selectedMedia?.title || `${previewTitle} ${index + 1}`}</strong>
+                                <Space size={8} wrap>
+                                    <strong>{selectedMedia?.title || `${previewTitle} ${index + 1}`}</strong>
+                                    {coverValue === mediaUrlValue ? (
+                                        <Text style={{ color: '#7ea400', fontWeight: 700 }}>{coverBadgeLabel}</Text>
+                                    ) : null}
+                                </Space>
                                 <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: 0, color: '#6b7280', wordBreak: 'break-all' }}>
                                     {mediaUrlValue}
                                 </Paragraph>
                             </div>
-                            <Button size="small" onClick={() => removeValue(mediaUrlValue)}>Bỏ chọn</Button>
+                            <Space wrap style={{ justifyContent: 'flex-end' }}>
+                                {onSetCover && coverValue !== mediaUrlValue ? (
+                                    <Button size="small" type="primary" ghost onClick={() => onSetCover(mediaUrlValue)}>
+                                        {setCoverButtonLabel}
+                                    </Button>
+                                ) : null}
+                                <Button size="small" onClick={() => removeValue(mediaUrlValue)}>Bỏ chọn</Button>
+                            </Space>
                         </div>
                     );
                 })}

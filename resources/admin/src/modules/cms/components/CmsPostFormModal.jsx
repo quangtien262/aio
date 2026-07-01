@@ -126,8 +126,6 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
     const featuredMediaInputRef = useRef(null);
-    const slugEditedRef = useRef(Boolean(editingPost?.id));
-    const titleValue = Form.useWatch('title', form) ?? '';
     const featuredMediaId = Form.useWatch('featured_media_id', form) ?? null;
     const editorInitialData = useMemo(() => editingPost?.body ?? '', [editingPost?.id, editingPost?.slug, editingPost?.body]);
     const editorInstanceKey = useMemo(() => `${editingPost?.id ?? 'new'}:${editingPost?.slug ?? 'blank'}:${open ? 'open' : 'closed'}`, [editingPost?.id, editingPost?.slug, open]);
@@ -137,7 +135,6 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             ...editingPost,
         });
         form.setFieldValue('body', editingPost?.body ?? '');
-        slugEditedRef.current = Boolean(editingPost?.id || editingPost?.slug);
         editorSelectionRef.current = null;
         setFeaturedMediaMode(editingPost?.featured_media_id ? 'library' : 'upload');
         setFeaturedMediaUrl('');
@@ -157,14 +154,6 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             return Array.from(nextMap.values());
         });
     }, [mediaOptions]);
-
-    useEffect(() => {
-        if (slugEditedRef.current) {
-            return;
-        }
-
-        form.setFieldValue('slug', toSlug(titleValue));
-    }, [form, titleValue]);
 
     const editorConfig = useMemo(() => ({
         licenseKey: 'GPL',
@@ -446,8 +435,9 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             ...values,
             excerpt: values.excerpt || null,
             body: values.body || null,
-            meta_title: values.meta_title || null,
-            meta_description: values.meta_description || null,
+            slug: null,
+            meta_title: values.meta_title || values.title || null,
+            meta_description: values.meta_description || values.excerpt || null,
             featured_media_id: values.featured_media_id || null,
             category_id: values.category_id || null,
             is_highlight: Boolean(values.is_highlight),
@@ -460,11 +450,6 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
     const handleCancel = () => {
         form.resetFields();
         onCancel?.();
-    };
-
-    const handleSlugChange = (event) => {
-        slugEditedRef.current = true;
-        form.setFieldValue('slug', toSlug(event.target.value));
     };
 
     const handleUploadFeaturedMedia = async (event) => {
@@ -540,7 +525,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
         <Drawer
             title={editingPost?.id ? 'Cập nhật bài viết CMS' : 'Tạo bài viết CMS'}
             open={open}
-            onCancel={handleCancel}
+            onClose={handleCancel}
             width={960}
             destroyOnHidden
             className="cms-page-drawer"
@@ -556,14 +541,9 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                 <div className="cms-post-form-shell">
                     <Card size="small" className="cms-post-form-card" title="Thông tin bài viết">
                         <Row gutter={16}>
-                            <Col xs={24} md={14}>
+                            <Col xs={24}>
                                 <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề bài viết' }]}>
                                     <Input placeholder="Bài viết nổi bật" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={10}>
-                                <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug bài viết' }]}>
-                                    <Input placeholder="bai-viet-noi-bat" onChange={handleSlugChange} />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -577,7 +557,11 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-                                    <Select options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]} />
+                                    <Radio.Group
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                        options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]}
+                                    />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>

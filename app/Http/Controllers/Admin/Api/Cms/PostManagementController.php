@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 use App\Models\CmsPost;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PostManagementController
@@ -13,7 +14,8 @@ class PostManagementController
     {
         $validated = $this->validatePayload($request);
 
-        $post = CmsPost::query()->create($validated);
+        $post = CmsPost::query()->create($this->normalizePayload($validated));
+        $post->update(['slug' => $this->uniqueSlug($post->title, $post->id)]);
 
         return response()->json(['message' => 'Đã tạo bài viết CMS.', 'data' => $this->serialize($post)], 201);
     }
@@ -23,7 +25,8 @@ class PostManagementController
         /** @var CmsPost $record */
         $record = CmsPost::query()->findOrFail($post);
         $validated = $this->validatePayload($request, $record);
-        $record->update($validated);
+        $record->update($this->normalizePayload($validated, $record));
+        $record->update(['slug' => $this->uniqueSlug($record->title, $record->id)]);
 
         return response()->json(['message' => 'Đã cập nhật bài viết CMS.', 'data' => $this->serialize($record->fresh())]);
     }
@@ -41,7 +44,7 @@ class PostManagementController
     {
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('cms_posts', 'slug')->ignore($post?->id)],
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('cms_posts', 'slug')->ignore($post?->id)],
             'status' => ['required', 'string', Rule::in(config('cms.workflow.statuses', ['draft', 'published']))],
             'excerpt' => ['nullable', 'string'],
             'body' => ['nullable', 'string'],
@@ -52,6 +55,46 @@ class PostManagementController
             'publish_at' => ['nullable', 'date'],
             'is_highlight' => ['boolean'],
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function normalizePayload(array $validated, ?CmsPost $post = null): array
+    {
+        $title = trim((string) $validated['title']);
+        $excerpt = $this->normalizeTextBlock($validated['excerpt'] ?? null);
+
+        return [
+            ...$validated,
+            'title' => $title,
+            'slug' => $post?->slug ?: 'pending-post-'.Str::lower((string) Str::uuid()),
+            'excerpt' => $excerpt,
+            'body' => $this->normalizeTextBlock($validated['body'] ?? null),
+            'meta_title' => $this->normalizeTextBlock($validated['meta_title'] ?? null) ?: $title,
+            'meta_description' => $this->normalizeTextBlock($validated['meta_description'] ?? null) ?: $excerpt,
+            'is_highlight' => (bool) ($validated['is_highlight'] ?? false),
+        ];
+    }
+
+    private function normalizeTextBlock(mixed $value): ?string
+    {
+        $normalized = trim((string) ($value ?? ''));
+
+        return $normalized === '' ? null : $normalized;
+    }
+
+    private function uniqueSlug(string $title, int $id): string
+    {
+        $baseSlug = Str::slug($title) ?: 'bai-viet-'.$id;
+
+        $exists = CmsPost::query()
+            ->where('slug', $baseSlug)
+            ->whereKeyNot($id)
+            ->exists();
+
+        return $exists ? $baseSlug.'-'.$id : $baseSlug;
     }
 
     private function serialize(CmsPost $post): array
