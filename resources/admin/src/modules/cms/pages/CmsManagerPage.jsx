@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
@@ -500,6 +500,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productActiveFilter, setProductActiveFilter] = useState('all');
     const [productPublishFilter, setProductPublishFilter] = useState('all');
     const [productSort, setProductSort] = useState('newest');
+    const [productPagination, setProductPagination] = useState({ current: 1, pageSize: 10 });
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
     const [mediaFile, setMediaFile] = useState(null);
     const [editingMediaRecord, setEditingMediaRecord] = useState(null);
@@ -859,6 +860,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         return (data?.items ?? []).filter((product) => selectedProductRowKeys.includes(product.id));
     }, [data?.items, sectionKey, selectedProductRowKeys]);
+
+    useEffect(() => {
+        if (sectionKey !== 'cms-products') {
+            return;
+        }
+
+        setProductPagination((current) => ({ ...current, current: 1 }));
+    }, [keyword, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey]);
 
     const filteredItems = useMemo(() => {
         const normalizedKeyword = keyword.trim().toLowerCase();
@@ -2383,7 +2392,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         rowSelection={productRowSelection}
                                         columns={columns}
                                         dataSource={filteredItems}
-                                        pagination={{ pageSize: 10, hideOnSinglePage: true }}
+                                        pagination={{
+                                            current: productPagination.current,
+                                            pageSize: productPagination.pageSize,
+                                            total: filteredItems.length,
+                                            showSizeChanger: true,
+                                            pageSizeOptions: ['10', '20', '50', '100'],
+                                            showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} sản phẩm`,
+                                            onChange: (current, pageSize) => {
+                                                setProductPagination({ current, pageSize });
+                                            },
+                                        }}
                                         scroll={{ x: 980 }}
                                     />
                                 ) : (

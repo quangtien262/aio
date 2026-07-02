@@ -6,7 +6,7 @@
     $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342'));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $email = trim((string) ($branding['support_email'] ?? 'admin@htvietnam.vn'));
-    $address = trim((string) ($branding['support_location'] ?? '196 Nguyá»…n ÄÃ¬nh Chiá»ƒu, Quáº­n 3, TP.HCM'));
+    $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'));
 
     $localizeMenuUrl = function (?string $href): string {
         $href = trim((string) $href);
@@ -34,11 +34,29 @@
         return url('/'.implode('/', $segments)).$query.$fragment;
     };
 
-    $normalizeNavItem = function (array $item) use (&$normalizeNavItem, $localizeMenuUrl): array {
+    $repairXdLabel = static function (string $label): string {
+        $label = trim($label);
+
+        return strtr($label, [
+            'Trang chá»§' => 'Trang chủ',
+            'TRANG CHÁ»§' => 'TRANG CHỦ',
+            'trang chá»§' => 'trang chủ',
+            'Sáº£n pháº©m' => 'Sản phẩm',
+            'Sáº£N PHÁº©M' => 'SẢN PHẨM',
+            'SÁº£N PHÁº©M' => 'SẢN PHẨM',
+            'sáº£n pháº©m' => 'sản phẩm',
+            'sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'sản phẩm',
+            'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'Sản phẩm',
+            'TÃ i khoáº£n' => 'Tài khoản',
+            'TÃ I KHOáº£N' => 'TÀI KHOẢN',
+        ]);
+    };
+
+    $normalizeNavItem = function (array $item) use (&$normalizeNavItem, $localizeMenuUrl, $repairXdLabel): array {
         $href = (string) ($item['url'] ?? $item['href'] ?? '#');
 
         return [
-            'label' => (string) ($item['label'] ?? $item['title'] ?? 'Menu'),
+            'label' => $repairXdLabel((string) ($item['label'] ?? $item['title'] ?? 'Menu')),
             'href' => $localizeMenuUrl($href),
             'target' => $item['target'] ?? '_self',
             'active' => false,
@@ -56,9 +74,9 @@
         ->values();
 
     $homeUrl = route('site.home');
-    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chá»§', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
+    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chá»§',
+            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ',
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -67,7 +85,7 @@
     }
 
     $hasProductItem = $navItems->contains(function (array $item): bool {
-        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sáº£n pháº©m', 'san pham', 'products', 'product'], true);
+        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
     });
 
     if (false && ! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
@@ -89,7 +107,7 @@
 
         if ($productCategories->isNotEmpty()) {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sáº£n pháº©m',
+                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -116,7 +134,7 @@
                     ->all(),
             ];
 
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chá»§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);
@@ -134,7 +152,7 @@
                 ->map(function (array $item) use ($productNavigationItems): array {
                     $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
 
-                    if (in_array($label, ['sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m', 'sáº£n pháº©m', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                    if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
                         $item['children'] = $productNavigationItems->all();
                     }
 
@@ -143,14 +161,14 @@
                 ->values();
         } else {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sáº£n pháº©m',
+                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
                 'children' => $productNavigationItems->all(),
             ];
 
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chÃ¡Â»Â§', 'trang chá»§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);
@@ -207,7 +225,7 @@
     <div id="top" class="xd-page">
         <header class="xd-header">
             <div class="xd-container xd-header-inner">
-                <a class="xd-logo" href="{{ route('site.home') }}" aria-label="{{ $logoAlt }} trang chá»§">
+                <a class="xd-logo" href="{{ route('site.home') }}" aria-label="{{ $logoAlt }} trang chủ">
                     @if ($logoUrl !== '')
                         <img class="xd-logo-image" src="{{ $logoUrl }}" alt="{{ $logoAlt }}">
                     @else
@@ -253,7 +271,7 @@
                         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6h15l-1.5 8.5H8L6 3H3"/><circle cx="9" cy="20" r="1.7"/><circle cx="18" cy="20" r="1.7"/></svg>
                     </a>
                     @if (auth('customer')->check())
-                        <a class="xd-login-button" href="{{ route('customer.account') }}">TÃ i khoáº£n</a>
+                        <a class="xd-login-button" href="{{ route('customer.account') }}">Tài khoản</a>
                     @else
                         <button type="button" class="xd-login-button" data-xd-auth-open="login">Đăng nhập</button>
                     @endif
@@ -266,13 +284,13 @@
                 @if ($isServiceListing)
                     <section class="xd-cms-hero">
                         <div>
-                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Services' : 'Dá»‹ch vá»¥' }}</span>
-                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'Services' : 'Dá»‹ch vá»¥') }}</h1>
+                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Services' : 'Dịch vụ' }}</span>
+                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'Services' : 'Dịch vụ') }}</h1>
                             <p>{{ $pageDescription ?? (app()->getLocale() === 'en' ? 'Explore our construction and design services.' : 'Danh sÃ¡ch dá»‹ch vá»¥ thiáº¿t káº¿ vÃ  thi cÃ´ng ná»•i báº­t.') }}</p>
                         </div>
                         <div class="xd-cms-stats">
                             <strong>{{ collect($listingItems ?? [])->count() }}</strong>
-                            <span>{{ app()->getLocale() === 'en' ? 'Available services' : 'Dá»‹ch vá»¥ Ä‘ang hiá»ƒn thá»‹' }}</span>
+                            <span>{{ app()->getLocale() === 'en' ? 'Available services' : 'Dịch vụ đang hiển thị' }}</span>
                         </div>
                     </section>
 
@@ -292,23 +310,23 @@
                                 <div class="xd-service-body">
                                     <h2><a href="{{ $serviceUrl }}">{{ $service->title }}</a></h2>
                                     <p>{{ $service->summary ?: \Illuminate\Support\Str::limit(strip_tags($service->content ?? ''), 150) }}</p>
-                                    <a class="xd-text-link" href="{{ $serviceUrl }}">{{ app()->getLocale() === 'en' ? 'Learn more' : 'TÃ¬m hiá»ƒu ngay' }}</a>
+                                    <a class="xd-text-link" href="{{ $serviceUrl }}">{{ app()->getLocale() === 'en' ? 'Learn more' : 'Tìm hiểu ngay' }}</a>
                                 </div>
                             </article>
                         @empty
-                            <p>{{ app()->getLocale() === 'en' ? 'No services are available yet.' : 'ChÆ°a cÃ³ dá»‹ch vá»¥ nÃ o Ä‘Æ°á»£c xuáº¥t báº£n.' }}</p>
+                            <p>{{ app()->getLocale() === 'en' ? 'No services are available yet.' : 'Chưa có dịch vụ nào được xuất bản.' }}</p>
                         @endforelse
                     </section>
                 @elseif ($isPostListing)
                     <section class="xd-cms-hero">
                         <div>
-                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'News' : 'Tin tá»©c' }}</span>
-                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'News' : 'Tin tá»©c') }}</h1>
+                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'News' : 'Tin tức' }}</span>
+                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'News' : 'Tin tức') }}</h1>
                             <p>{{ $pageDescription ?? (app()->getLocale() === 'en' ? 'Latest company updates and construction insights.' : 'Danh sÃ¡ch bÃ i viáº¿t, tin tá»©c vÃ  kinh nghiá»‡m xÃ¢y dá»±ng má»›i nháº¥t.') }}</p>
                         </div>
                         <div class="xd-cms-stats">
                             <strong>{{ method_exists($listingItems, 'total') ? $listingItems->total() : collect($listingItems ?? [])->count() }}</strong>
-                            <span>{{ app()->getLocale() === 'en' ? 'Published posts' : 'BÃ i viáº¿t Ä‘Ã£ xuáº¥t báº£n' }}</span>
+                            <span>{{ app()->getLocale() === 'en' ? 'Published posts' : 'Bài viết đã xuất bản' }}</span>
                         </div>
                     </section>
 
@@ -326,11 +344,11 @@
                                 <div class="xd-service-body">
                                     <h2><a href="{{ $postUrl }}">{{ $post->title }}</a></h2>
                                     <p>{{ $summary }}</p>
-                                    <a class="xd-text-link" href="{{ $postUrl }}">{{ app()->getLocale() === 'en' ? 'Read more' : 'Äá»c tiáº¿p' }}</a>
+                                    <a class="xd-text-link" href="{{ $postUrl }}">{{ app()->getLocale() === 'en' ? 'Read more' : 'Đọc tiếp' }}</a>
                                 </div>
                             </article>
                         @empty
-                            <p>{{ app()->getLocale() === 'en' ? 'No posts are available yet.' : 'ChÆ°a cÃ³ bÃ i viáº¿t nÃ o Ä‘Æ°á»£c xuáº¥t báº£n.' }}</p>
+                            <p>{{ app()->getLocale() === 'en' ? 'No posts are available yet.' : 'Chưa có bài viết nào được xuất bản.' }}</p>
                         @endforelse
                     </section>
 
@@ -350,13 +368,13 @@
                                 <img class="xd-detail-image" src="{{ $featuredImage }}" alt="{{ $featuredAlt }}">
                             @endif
                             <div class="xd-detail-body">
-                                <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Service' : 'Dá»‹ch vá»¥' }}</span>
+                                <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Service' : 'Dịch vụ' }}</span>
                                 <h1>{{ $entry->title }}</h1>
                                 @if (!empty($entry->excerpt))
                                     <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
                                 @endif
                                 <div class="xd-rich-content">
-                                    {!! $entry->body ?: '<p>Ná»™i dung Ä‘ang Ä‘Æ°á»£c cáº­p nháº­t.</p>' !!}
+                                    {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
                                 </div>
 
                                 @if (!empty($entry->images) && $entry->images->count() > 1)
@@ -374,7 +392,7 @@
                             </div>
                         </article>
                         <aside class="xd-side-card">
-                            <h3>{{ app()->getLocale() === 'en' ? 'Quick links' : 'LiÃªn káº¿t nhanh' }}</h3>
+                            <h3>{{ app()->getLocale() === 'en' ? 'Quick links' : 'Liên kết nhanh' }}</h3>
                             <a href="{{ route('site.services.index') }}">{{ app()->getLocale() === 'en' ? 'All services' : 'Táº¥t cáº£ dá»‹ch vá»¥' }}</a>
                             @foreach ($navItems->take(5) as $item)
                                 <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
@@ -480,7 +498,7 @@
                                 <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
                             @endif
                             <div class="xd-rich-content">
-                                {!! $entry->body ?: '<p>Ná»™i dung Ä‘ang Ä‘Æ°á»£c cáº­p nháº­t.</p>' !!}
+                                {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
                             </div>
                         </div>
                     </section>
