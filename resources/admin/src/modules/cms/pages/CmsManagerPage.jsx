@@ -1262,7 +1262,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         gallery_images: product.gallery_images ?? [],
         sold_count: product.sold_count,
         deal_end_at: product.deal_end_at,
-        is_featured: product.is_featured,
+        is_featured: values.is_featured === BULK_KEEP_VALUE ? product.is_featured : values.is_featured === 'true',
         is_highlight: values.is_featured === BULK_KEEP_VALUE ? product.is_highlight : values.is_featured === 'true',
         sort_order: product.sort_order,
         is_active: values.is_active === BULK_KEEP_VALUE ? product.is_active : values.is_active === 'true',

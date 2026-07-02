@@ -134,6 +134,8 @@ class ProductManagementController
         $sku = trim((string) ($validated['sku'] ?? ''));
         $shortDescription = $this->normalizeTextBlock($validated['short_description'] ?? null);
 
+        $highlighted = (bool) ($validated['is_highlight'] ?? $validated['is_featured'] ?? false);
+
         return array_merge($validated, [
             'slug' => 'pending-product-'.Str::lower(Str::random(16)),
             'sku' => $sku !== '' ? $sku : 'TMP-'.Str::upper(Str::random(16)),
@@ -148,8 +150,8 @@ class ProductManagementController
             'sold_count' => (int) ($validated['sold_count'] ?? 0),
             'deal_end_at' => $validated['deal_end_at'] ?? null,
             'sort_order' => (int) ($validated['sort_order'] ?? 0),
-            'is_featured' => (bool) ($validated['is_featured'] ?? false),
-            'is_highlight' => (bool) ($validated['is_highlight'] ?? $validated['is_featured'] ?? false),
+            'is_featured' => $highlighted,
+            'is_highlight' => $highlighted,
             'is_active' => (bool) ($validated['is_active'] ?? true),
         ]);
     }

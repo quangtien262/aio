@@ -145,8 +145,12 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
     };
 
     useEffect(() => {
+        const highlighted = Boolean(editingProduct?.is_highlight ?? editingProduct?.is_featured ?? false);
+
         form.setFieldsValue({
             ...editingProduct,
+            is_featured: highlighted,
+            is_highlight: highlighted,
             deal_end_at: normalizeDealEndAtValue(editingProduct?.deal_end_at),
         });
         form.setFieldValue('detail_content', editingProduct?.detail_content ?? '');
@@ -410,6 +414,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
 
     const handleSubmit = async () => {
         const values = await form.validateFields();
+        const highlighted = Boolean(values.is_highlight ?? values.is_featured ?? false);
         const submittedImages = Array.from(new Set([
             values.image_url,
             ...normalizeGalleryImages(values.gallery_images),
@@ -434,8 +439,8 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
             gallery_images: submittedImages,
             sold_count: values.sold_count ?? 0,
             deal_end_at: values.deal_end_at ? values.deal_end_at.format('YYYY-MM-DDTHH:mm:ss') : null,
-            is_featured: Boolean(values.is_featured),
-            is_highlight: Boolean(values.is_highlight),
+            is_featured: highlighted,
+            is_highlight: highlighted,
             is_active: Boolean(values.is_active),
         });
 
@@ -559,13 +564,8 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
-                                <Form.Item name="is_featured" valuePropName="checked" label=" " colon={false}>
-                                    <Checkbox>Đánh dấu nổi bật</Checkbox>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={8}>
                                 <Form.Item name="is_highlight" valuePropName="checked" label=" " colon={false}>
-                                    <Checkbox>Đánh dấu highlight</Checkbox>
+                                    <Checkbox>Đánh dấu nổi bật</Checkbox>
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
@@ -640,21 +640,25 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                         { label: 'Nhập mã HTML', value: 'html' },
                                     ]}
                                 />
-                                <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
-                                <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
-                                <Button type="default" disabled={!canManage || uploadingAsset === 'video' || !callAdminApi} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
-                                <Button type="default" disabled={!canManage || uploadingAsset === 'image' || !callAdminApi} loading={uploadingAsset === 'video'} onClick={() => openAssetPicker(videoInputRef)}>Upload video vào nội dung</Button>
-                                <Button type="default" disabled={!canManage || Boolean(uploadingAsset)} onClick={() => {
-                                    const editor = editorInstanceRef.current;
+                                {contentMode === 'editor' ? (
+                                    <>
+                                        <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleInsertImage} />
+                                        <input ref={videoInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleInsertVideo} />
+                                        <Button type="default" disabled={!canManage || uploadingAsset === 'video' || !callAdminApi} loading={uploadingAsset === 'image'} onClick={() => openAssetPicker(imageInputRef)}>Upload ảnh vào nội dung</Button>
+                                        <Button type="default" disabled={!canManage || uploadingAsset === 'image' || !callAdminApi} loading={uploadingAsset === 'video'} onClick={() => openAssetPicker(videoInputRef)}>Upload video vào nội dung</Button>
+                                        <Button type="default" disabled={!canManage || Boolean(uploadingAsset)} onClick={() => {
+                                            const editor = editorInstanceRef.current;
 
-                                    if (editor) {
-                                        captureEditorSelection(editor);
-                                    }
+                                            if (editor) {
+                                                captureEditorSelection(editor);
+                                            }
 
-                                    setYoutubeEmbedOpen(true);
-                                }}>
-                                    Nhúng video YouTube
-                                </Button>
+                                            setYoutubeEmbedOpen(true);
+                                        }}>
+                                            Nhúng video YouTube
+                                        </Button>
+                                    </>
+                                ) : null}
                             </Space>
                         </div>
 

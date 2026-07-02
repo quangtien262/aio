@@ -72,6 +72,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/admin/src/main.jsx',
+                'resources/customer/src/main.jsx',
             ],
             refresh: true,
         }),
