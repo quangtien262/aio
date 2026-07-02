@@ -118,6 +118,69 @@ body {
         linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
 }
 
+.customer-profile-overview {
+    overflow: hidden;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 30px;
+    background:
+        radial-gradient(circle at top right, rgba(20, 184, 166, 0.22) 0%, rgba(255, 255, 255, 0) 38%),
+        linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+}
+
+.customer-profile-overview .ant-card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    padding: 28px;
+}
+
+.customer-profile-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.customer-profile-hero .ant-typography {
+    margin-top: 0;
+}
+
+.customer-profile-summary-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.customer-info-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.customer-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(15, 118, 110, 0.12);
+}
+
+.customer-info-row:last-child {
+    border-bottom: 0;
+}
+
+.customer-info-row span {
+    color: #64748b;
+    font-weight: 700;
+}
+
+.customer-info-row strong {
+    color: #0f172a;
+    text-align: right;
+}
+
 .customer-stat-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -207,9 +270,15 @@ body {
         padding-left: 0;
     }
 
+    .customer-profile-summary-grid,
     .customer-stat-grid,
     .customer-form-grid {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .customer-profile-overview .ant-card-body {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
 
@@ -223,8 +292,19 @@ body {
         flex-direction: column;
     }
 
+    .customer-profile-summary-grid,
     .customer-stat-grid,
     .customer-form-grid {
         grid-template-columns: 1fr;
+    }
+
+    .customer-profile-hero,
+    .customer-info-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .customer-info-row strong {
+        text-align: left;
     }
 }

@@ -362,6 +362,8 @@ function ServicesPage({ interests, services, onCreate, onDelete, saving }) {
 function ProfilePage({ customer, newsletter, onSaveProfile, onSavePassword, saving }) {
     const [profileForm] = Form.useForm();
     const [passwordForm] = Form.useForm();
+    const [profileOpen, setProfileOpen] = useState(false);
+    const [passwordOpen, setPasswordOpen] = useState(false);
 
     useEffect(() => {
         profileForm.setFieldsValue({
@@ -371,65 +373,148 @@ function ProfilePage({ customer, newsletter, onSaveProfile, onSavePassword, savi
         });
     }, [customer, profileForm]);
 
+    const submitProfile = async (payload) => {
+        const ok = await onSaveProfile({
+            name: payload.name,
+            phone: payload.phone,
+        });
+
+        if (ok) {
+            setProfileOpen(false);
+        }
+    };
+
+    const submitPassword = async (payload) => {
+        const ok = await onSavePassword(payload);
+
+        if (ok) {
+            passwordForm.resetFields();
+            setPasswordOpen(false);
+        }
+    };
+
     return (
-        <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Card className="customer-panel-card" title="Thông tin tài khoản">
-                <Form form={profileForm} layout="vertical" onFinish={onSaveProfile}>
-                    <div className="customer-form-grid">
-                        <Form.Item name="name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="phone" label="Số điện thoại">
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="email" label="Email" className="customer-form-full">
-                            <Input disabled />
-                        </Form.Item>
+        <Space direction="vertical" size={18} style={{ width: '100%' }}>
+            <Card className="customer-profile-overview">
+                <div className="customer-profile-hero">
+                    <Avatar size={86} icon={<UserOutlined />} />
+                    <div>
+                        <Text className="customer-kicker">Hồ sơ khách hàng</Text>
+                        <Title level={2}>{customer?.name || 'Khách hàng'}</Title>
+                        <Paragraph>
+                            Quản lý thông tin cá nhân, bảo mật tài khoản và trạng thái nhận bản tin tại đây.
+                        </Paragraph>
                     </div>
-                    <Button htmlType="submit" type="primary" loading={saving}>Lưu thông tin</Button>
-                </Form>
+                </div>
+                <Space wrap>
+                    <Button type="primary" icon={<UserOutlined />} onClick={() => setProfileOpen(true)}>
+                        Sửa thông tin cá nhân
+                    </Button>
+                    <Button icon={<SafetyCertificateOutlined />} onClick={() => setPasswordOpen(true)}>
+                        Đổi mật khẩu
+                    </Button>
+                </Space>
             </Card>
 
-            <Card className="customer-panel-card" title="Đổi mật khẩu">
-                <Form form={passwordForm} layout="vertical" onFinish={async (payload) => {
-                    const ok = await onSavePassword(payload);
-                    if (ok) {
-                        passwordForm.resetFields();
-                    }
-                }}>
-                    <div className="customer-form-grid">
-                        <Form.Item name="current_password" label="Mật khẩu hiện tại" rules={[{ required: true, message: 'Nhập mật khẩu hiện tại' }]}>
-                            <Input.Password />
-                        </Form.Item>
-                        <Form.Item name="password" label="Mật khẩu mới" rules={[{ required: true, min: 8, message: 'Mật khẩu tối thiểu 8 ký tự' }]}>
-                            <Input.Password />
-                        </Form.Item>
-                        <Form.Item name="password_confirmation" label="Nhập lại mật khẩu mới" dependencies={['password']} rules={[
-                            { required: true, message: 'Nhập lại mật khẩu mới' },
-                            ({ getFieldValue }) => ({
-                                validator(_, value) {
-                                    return !value || getFieldValue('password') === value
-                                        ? Promise.resolve()
-                                        : Promise.reject(new Error('Mật khẩu nhập lại chưa khớp'));
-                                },
-                            }),
-                        ]}>
-                            <Input.Password />
-                        </Form.Item>
+            <div className="customer-profile-summary-grid">
+                <Card className="customer-panel-card">
+                    <Text className="customer-kicker">Thông tin cá nhân</Text>
+                    <div className="customer-info-list">
+                        <div className="customer-info-row">
+                            <span>Họ và tên</span>
+                            <strong>{customer?.name || 'Chưa cập nhật'}</strong>
+                        </div>
+                        <div className="customer-info-row">
+                            <span>Email</span>
+                            <strong>{customer?.email || 'Chưa cập nhật'}</strong>
+                        </div>
+                        <div className="customer-info-row">
+                            <span>Số điện thoại</span>
+                            <strong>{customer?.phone || 'Chưa cập nhật'}</strong>
+                        </div>
+                        <div className="customer-info-row">
+                            <span>Ngày tham gia</span>
+                            <strong>{formatDateTime(customer?.created_at)}</strong>
+                        </div>
                     </div>
-                    <Button htmlType="submit" type="primary" loading={saving}>Đổi mật khẩu</Button>
-                </Form>
-            </Card>
+                </Card>
 
-            <Card className="customer-panel-card">
-                <Text className="customer-kicker">Newsletter</Text>
-                <Title level={4}>Trạng thái nhận bản tin</Title>
-                <Paragraph>
-                    {newsletter?.is_subscribed
-                        ? `Email ${newsletter.email} đã được đăng ký nhận bản tin.`
-                        : 'Tài khoản này chưa đăng ký nhận bản tin ở storefront.'}
-                </Paragraph>
-            </Card>
+                <Card className="customer-panel-card">
+                    <Text className="customer-kicker">Bảo mật</Text>
+                    <Title level={4}>Mật khẩu đang được bảo vệ</Title>
+                    <Paragraph type="secondary">
+                        Nên đổi mật khẩu định kỳ và không dùng lại mật khẩu của các website khác.
+                    </Paragraph>
+                    <Button onClick={() => setPasswordOpen(true)}>Đổi mật khẩu</Button>
+                </Card>
+
+                <Card className="customer-panel-card">
+                    <Text className="customer-kicker">Newsletter</Text>
+                    <Title level={4}>Trạng thái nhận bản tin</Title>
+                    <Paragraph>
+                        {newsletter?.is_subscribed
+                            ? `Email ${newsletter.email} đã được đăng ký nhận bản tin.`
+                            : 'Tài khoản này chưa đăng ký nhận bản tin ở storefront.'}
+                    </Paragraph>
+                </Card>
+            </div>
+
+            <Modal
+                title="Sửa thông tin cá nhân"
+                open={profileOpen}
+                onCancel={() => setProfileOpen(false)}
+                footer={null}
+                destroyOnClose
+            >
+                <Form form={profileForm} layout="vertical" onFinish={submitProfile}>
+                    <Form.Item name="name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
+                        <Input placeholder="Nhập họ và tên" />
+                    </Form.Item>
+                    <Form.Item name="phone" label="Số điện thoại">
+                        <Input placeholder="Nhập số điện thoại" />
+                    </Form.Item>
+                    <Form.Item name="email" label="Email">
+                        <Input disabled />
+                    </Form.Item>
+                    <Space>
+                        <Button onClick={() => setProfileOpen(false)}>Hủy</Button>
+                        <Button htmlType="submit" type="primary" loading={saving}>Lưu thông tin</Button>
+                    </Space>
+                </Form>
+            </Modal>
+
+            <Modal
+                title="Đổi mật khẩu"
+                open={passwordOpen}
+                onCancel={() => setPasswordOpen(false)}
+                footer={null}
+                destroyOnClose
+            >
+                <Form form={passwordForm} layout="vertical" onFinish={submitPassword}>
+                    <Form.Item name="current_password" label="Mật khẩu hiện tại" rules={[{ required: true, message: 'Nhập mật khẩu hiện tại' }]}>
+                        <Input.Password />
+                    </Form.Item>
+                    <Form.Item name="password" label="Mật khẩu mới" rules={[{ required: true, min: 8, message: 'Mật khẩu tối thiểu 8 ký tự' }]}>
+                        <Input.Password />
+                    </Form.Item>
+                    <Form.Item name="password_confirmation" label="Nhập lại mật khẩu mới" dependencies={['password']} rules={[
+                        { required: true, message: 'Nhập lại mật khẩu mới' },
+                        ({ getFieldValue }) => ({
+                            validator(_, value) {
+                                return !value || getFieldValue('password') === value
+                                    ? Promise.resolve()
+                                    : Promise.reject(new Error('Mật khẩu nhập lại chưa khớp'));
+                            },
+                        }),
+                    ]}>
+                        <Input.Password />
+                    </Form.Item>
+                    <Space>
+                        <Button onClick={() => setPasswordOpen(false)}>Hủy</Button>
+                        <Button htmlType="submit" type="primary" loading={saving}>Đổi mật khẩu</Button>
+                    </Space>
+                </Form>
+            </Modal>
         </Space>
     );
 }

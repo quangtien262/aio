@@ -481,6 +481,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const frontendLocale = window.localStorage.getItem('aio.frontendLocale') || 'vi';
     const homeAdminUrl = `/${encodeURIComponent(frontendLocale)}?mod=admin`;
     const [bulkProductEditForm] = Form.useForm();
+    const [bulkProductStockForm] = Form.useForm();
     const [mediaEditForm] = Form.useForm();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
@@ -492,6 +493,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [selectedProductRowKeys, setSelectedProductRowKeys] = useState([]);
     const [selectedPartnerRowKeys, setSelectedPartnerRowKeys] = useState([]);
     const [bulkProductEditOpen, setBulkProductEditOpen] = useState(false);
+    const [bulkProductStockOpen, setBulkProductStockOpen] = useState(false);
     const [keyword, setKeyword] = useState('');
     const [productCategoryFilter, setProductCategoryFilter] = useState('all');
     const [productFeaturedFilter, setProductFeaturedFilter] = useState('all');
@@ -1338,6 +1340,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         setBulkProductEditOpen(true);
     };
 
+    const openBulkStockProducts = () => {
+        if (!selectedProductRowKeys.length) {
+            return;
+        }
+
+        bulkProductStockForm.setFieldsValue({
+            stock: 1000,
+        });
+        setBulkProductStockOpen(true);
+    };
+
     const handleBulkEditProducts = async () => {
         const values = await bulkProductEditForm.validateFields();
 
@@ -1368,6 +1381,31 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             setBulkProductEditOpen(false);
             setSelectedProductRowKeys([]);
             bulkProductEditForm.resetFields();
+        }
+    };
+
+    const handleBulkStockProducts = async () => {
+        const values = await bulkProductStockForm.validateFields();
+        const products = [...selectedProducts];
+
+        const didUpdate = await runAdminAction(async () => {
+            for (const product of products) {
+                await callAdminApi(`${sectionConfig.endpoint}/${product.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(buildBulkProductPayload(product, {
+                        catalog_category_id: BULK_KEEP_VALUE,
+                        stock: Number(values.stock),
+                        is_featured: BULK_KEEP_VALUE,
+                        is_active: BULK_KEEP_VALUE,
+                    })),
+                });
+            }
+        }, `Đã cập nhật tồn kho cho ${products.length} sản phẩm.`, reload);
+
+        if (didUpdate) {
+            setBulkProductStockOpen(false);
+            setSelectedProductRowKeys([]);
+            bulkProductStockForm.resetFields();
         }
     };
 
@@ -1595,6 +1633,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 disabled: !sectionPermissions.canUpdate || !selectedProductRowKeys.length,
                             },
                             {
+                                key: 'bulk-stock',
+                                label: 'Điều chỉnh tồn kho',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedProductRowKeys.length,
+                            },
+                            {
                                 key: 'bulk-delete',
                                 label: 'Xóa đã chọn',
                                 icon: <DeleteOutlined />,
@@ -1605,6 +1649,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         onClick: ({ key }) => {
                             if (key === 'bulk-edit') {
                                 openBulkEditProducts();
+                            }
+
+                            if (key === 'bulk-stock') {
+                                openBulkStockProducts();
                             }
 
                             if (key === 'bulk-delete') {
@@ -2456,6 +2504,43 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </Form.Item>
                     <Form.Item name="alt_text" label="Alt text" style={{ marginBottom: 0 }}>
                         <Input placeholder="Mô tả ngắn cho ảnh/file" />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Modal
+                title={`Điều chỉnh tồn kho cho ${selectedProductRowKeys.length} sản phẩm`}
+                open={sectionKey === 'cms-products' && bulkProductStockOpen}
+                onCancel={() => {
+                    setBulkProductStockOpen(false);
+                    bulkProductStockForm.resetFields();
+                }}
+                onOk={handleBulkStockProducts}
+                okText="Cập nhật tồn kho"
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Form form={bulkProductStockForm} layout="vertical">
+                    <Alert
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                        message={`Tồn kho mới sẽ được áp dụng cho ${selectedProductRowKeys.length} sản phẩm đang chọn.`}
+                    />
+                    <Form.Item
+                        name="stock"
+                        label="Tồn kho mới"
+                        rules={[
+                            { required: true, message: 'Nhập tồn kho mới' },
+                            { type: 'number', min: 0, message: 'Tồn kho phải lớn hơn hoặc bằng 0' },
+                        ]}
+                    >
+                        <InputNumber
+                            min={0}
+                            precision={0}
+                            style={{ width: '100%' }}
+                            placeholder="Ví dụ: 1000"
+                        />
                     </Form.Item>
                 </Form>
             </Modal>
