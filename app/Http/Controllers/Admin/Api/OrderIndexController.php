@@ -39,6 +39,8 @@ class OrderIndexController
                         'subtotal' => (float) $order->subtotal,
                         'item_count' => $order->item_count,
                         'placed_at' => $order->placed_at?->toIso8601String(),
+                        'read_at' => $order->read_at?->toIso8601String(),
+                        'is_read' => $order->read_at !== null,
                         'email_queued_at' => $order->email_queued_at?->toIso8601String(),
                         'email_sent_at' => $order->email_sent_at?->toIso8601String(),
                         'items' => $order->items->map(fn ($item): array => [

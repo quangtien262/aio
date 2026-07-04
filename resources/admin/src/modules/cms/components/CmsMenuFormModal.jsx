@@ -37,11 +37,18 @@ const emptyLocationForm = { label: '', value: '' };
 const { Paragraph, Text, Title } = Typography;
 
 const LINK_TYPE_OPTIONS = [
+    { label: 'Trang chủ', value: 'home' },
+    { label: 'Liên hệ', value: 'contact' },
     { label: 'Theo page', value: 'page' },
     { label: 'Theo danh mục sản phẩm', value: 'product-category' },
     { label: 'Theo danh mục tin tức', value: 'post-category' },
     { label: 'Liên kết khác', value: 'custom' },
 ];
+
+const SPECIAL_LINK_URLS = {
+    home: '/',
+    contact: '/contact',
+};
 
 let menuItemKeySeed = 0;
 
@@ -83,6 +90,19 @@ function buildLinkLookups(linkOptions = {}) {
 function inferLinkMeta(item, linkLookups) {
     const normalized = { ...createEmptyMenuItem(), ...(item ?? {}) };
     const url = typeof normalized.url === 'string' ? normalized.url : '';
+    const legacyPostCategorySlug = url.match(/^\/tin-tuc\?category=([^&]+)/)?.[1] ?? '';
+
+    for (const [linkType, linkUrl] of Object.entries(SPECIAL_LINK_URLS)) {
+        if (url === linkUrl) {
+            return {
+                ...normalized,
+                link_type: linkType,
+                link_value: null,
+                custom_url: '',
+                children: Array.isArray(normalized.children) ? normalized.children : [],
+            };
+        }
+    }
 
     if (normalized.link_type && normalized.link_type !== 'custom' && normalized.link_value) {
         return {
@@ -94,7 +114,13 @@ function inferLinkMeta(item, linkLookups) {
     }
 
     for (const [linkType, lookup] of Object.entries(linkLookups)) {
-        const matched = Array.from(lookup.values()).find((option) => option.url === url);
+        const matched = Array.from(lookup.values()).find((option) => {
+            if (option.url === url) {
+                return true;
+            }
+
+            return linkType === 'post-category' && legacyPostCategorySlug && option.url === `/c/${legacyPostCategorySlug}`;
+        });
 
         if (matched) {
             return {
@@ -138,6 +164,10 @@ function normalizeMenuItemsForForm(items, linkLookups) {
 
 function resolveItemUrl(item, linkLookups) {
     const linkType = item?.link_type ?? 'custom';
+
+    if (SPECIAL_LINK_URLS[linkType]) {
+        return SPECIAL_LINK_URLS[linkType];
+    }
 
     if (linkType === 'custom') {
         return (item?.custom_url ?? '').trim() || '#';
@@ -693,6 +723,8 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         setDragOverState({ key: null, mode: null });
     };
 
+    const isSpecialLinkType = Boolean(SPECIAL_LINK_URLS[itemLinkType]);
+
     const itemUrlOptions = itemLinkType === 'page'
         ? buildUrlSelectOptions(linkOptions.pages ?? [])
         : itemLinkType === 'product-category'
@@ -929,7 +961,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                         <Form.Item name="custom_url" label="URL" rules={[{ required: true, message: 'Nhập URL' }]}>
                             <Input placeholder="/gioi-thieu hoặc https://domain.com" />
                         </Form.Item>
-                    ) : (
+                    ) : isSpecialLinkType ? null : (
                         <Form.Item name="link_value" label="URL" rules={[{ required: true, message: 'Chọn URL' }]}>
                             <Select
                                 showSearch

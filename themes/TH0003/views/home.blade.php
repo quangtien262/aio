@@ -208,13 +208,13 @@
             ]],
             ['title' => $t('footer.about_title', 'Giới thiệu'), 'links' => [
                 ['label' => $t('footer.about_us', 'Về chúng tôi'), 'url' => url('/'.app()->getLocale().'/gioi-thieu')],
-                ['label' => $t('footer.contact', 'Liên hệ'), 'url' => url('/'.app()->getLocale().'/lien-he')],
+                ['label' => $t('footer.contact', 'Liên hệ'), 'url' => route('site.contact')],
                 ['label' => $t('footer.privacy_policy', 'Chính sách bảo mật'), 'url' => url('/'.app()->getLocale().'/chinh-sach-bao-mat')],
                 ['label' => $t('footer.operating_regulations', 'Quy chế hoạt động'), 'url' => url('/'.app()->getLocale().'/quy-che-hoat-dong')],
             ]],
             ['title' => $t('footer.partnership_title', 'Hợp tác'), 'links' => [
                 ['label' => $t('footer.gift_cards', 'Thẻ quà tặng'), 'url' => route('site.catalog.search')],
-                ['label' => $t('footer.partner_contact', 'Liên hệ hợp tác'), 'url' => url('/'.app()->getLocale().'/lien-he')],
+                ['label' => $t('footer.partner_contact', 'Liên hệ hợp tác'), 'url' => route('site.contact')],
                 ['label' => $t('footer.careers', 'Tuyển dụng'), 'url' => url('/'.app()->getLocale().'/tuyen-dung')],
                 ['label' => $t('footer.press_info', 'Thông tin báo chí'), 'url' => route('site.blog.index')],
             ]],

@@ -131,6 +131,7 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 - Rule cần giữ: login panel của các theme này phải dùng field identity chung `Email khách hàng / Username admin`, post về `customer.auth.store`, để backend thử admin trước rồi mới fallback customer.
 - Có guide riêng để AI đọc trước khi dựng theme mới: `docs/theme-authoring-guide.md`.
 - Có checklist 1 trang để AI/dev copy-paste khi bắt đầu dựng theme mới: `docs/theme-starter-checklist.md`.
+- Storefront CMS route convention hiện tại: page thường giữ `/{slug}`, dịch vụ dùng `/s` + `/s/{slug}` + `/ser/{slug}`, tin tức dùng `/c` + `/c/{slug}` + `/n/{slug}`, liên hệ dùng `/contact`; theme/admin/demo data phải ưu tiên route helper và không sinh mới `/tin-tuc`, `/tin-tuc?category=...`, `/dich-vu`, `/lien-he`.
 - File neo chính: `app/Support/BusinessContentTranslationService.php`, `app/Http/Controllers/Admin/Api/ThemeTranslationIndexController.php`, `resources/admin/src/modules/themes/components/ThemeTranslationDrawer.jsx`, `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`.
 - Đã có test/backstop cho phần này:
   - `tests/Feature/ThemeContentTranslationTest.php`

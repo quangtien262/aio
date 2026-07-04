@@ -1665,7 +1665,7 @@ class CmsSiteController
             return [
                 ['label' => $this->themeText('menu.default.blog', 'Tin tức', $resolvedThemeKey), 'url' => route('site.blog.index'), 'target' => '_self'],
                 ['label' => $this->themeText('menu.default.about', 'Giới thiệu', $resolvedThemeKey), 'url' => $this->localizedStaticPageUrl('gioi-thieu'), 'target' => '_self'],
-                ['label' => $this->themeText('menu.default.contact', 'Liên hệ', $resolvedThemeKey), 'url' => $this->localizedStaticPageUrl('lien-he'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.contact', 'Liên hệ', $resolvedThemeKey), 'url' => route('site.contact'), 'target' => '_self'],
             ];
         }
 
@@ -2109,7 +2109,7 @@ class CmsSiteController
             },
             1 => match ($linkIndex) {
                 0 => $this->localizedStaticPageUrl('gioi-thieu'),
-                1 => $this->localizedStaticPageUrl('lien-he'),
+                1 => route('site.contact'),
                 2 => $this->localizedStaticPageUrl('chinh-sach-bao-mat'),
                 3 => route('site.blog.index'),
                 default => route('site.home'),

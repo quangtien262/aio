@@ -72,6 +72,7 @@ function buildLinkLookups(linkOptions = {}) {
 function inferLinkMeta(item, linkLookups) {
     const normalized = { ...createEmptySidePromoItem(), ...(item ?? {}) };
     const url = typeof normalized.url === 'string' ? normalized.url : '';
+    const legacyPostCategorySlug = url.match(/^\/tin-tuc\?category=([^&]+)/)?.[1] ?? '';
 
     if (normalized.link_type && normalized.link_type !== 'custom' && normalized.link_value) {
         return {
@@ -82,7 +83,13 @@ function inferLinkMeta(item, linkLookups) {
     }
 
     for (const [linkType, lookup] of Object.entries(linkLookups)) {
-        const matched = Array.from(lookup.values()).find((option) => option.url === url);
+        const matched = Array.from(lookup.values()).find((option) => {
+            if (option.url === url) {
+                return true;
+            }
+
+            return linkType === 'post-category' && legacyPostCategorySlug && option.url === `/c/${legacyPostCategorySlug}`;
+        });
 
         if (matched) {
             return {

@@ -42,7 +42,9 @@ use App\Http\Controllers\Admin\Api\LandingPageController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
+use App\Http\Controllers\Admin\Api\NewsletterSubscriberManagementController;
 use App\Http\Controllers\Admin\Api\OrderIndexController;
+use App\Http\Controllers\Admin\Api\OrderManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectChecklistManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectDetailController;
 use App\Http\Controllers\Admin\Api\Project\ProjectFileManagementController;
@@ -91,6 +93,12 @@ Route::prefix('admin')
                 Route::get('/newsletter-subscribers', NewsletterSubscriberIndexController::class)
                     ->middleware('admin.permission:platform.dashboard.view')
                     ->name('newsletter-subscribers.index');
+                Route::put('/newsletter-subscribers/{subscriber}', [NewsletterSubscriberManagementController::class, 'update'])
+                    ->middleware('admin.permission:platform.dashboard.view')
+                    ->name('newsletter-subscribers.update');
+                Route::delete('/newsletter-subscribers/{subscriber}', [NewsletterSubscriberManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:platform.dashboard.view')
+                    ->name('newsletter-subscribers.destroy');
                 Route::get('/access', AccessControlIndexController::class)
                     ->middleware('admin.permission:rbac.role.view')
                     ->name('access.index');
@@ -490,6 +498,15 @@ Route::prefix('admin')
                 Route::get('/cms/orders', OrderIndexController::class)
                     ->middleware('admin.permission:cms.order.view')
                     ->name('cms.orders.index');
+                Route::put('/cms/orders/{order}', [OrderManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.order.view')
+                    ->name('cms.orders.update');
+                Route::put('/cms/orders/{order}/read', [OrderManagementController::class, 'markRead'])
+                    ->middleware('admin.permission:cms.order.view')
+                    ->name('cms.orders.read');
+                Route::delete('/cms/orders/{order}', [OrderManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.order.view')
+                    ->name('cms.orders.destroy');
                 Route::get('/catalog/products', ProductIndexController::class)
                     ->middleware('admin.permission:catalog.view')
                     ->name('catalog.products.index');

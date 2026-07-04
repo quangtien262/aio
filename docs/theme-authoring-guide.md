@@ -160,7 +160,21 @@ File neo:
 - `app/Models/ThemeDemoRecord.php`
 - `docs/theme-demo-curated-assets.md`
 
-## 9. Shared auth modal là convention storefront mới
+## 9. Storefront route conventions for CMS/content pages
+
+Keep CMS/content routes explicit. Do not route blog, service, or contact pages through the generic `/{slug}` page fallback.
+
+- Normal CMS page: `/{slug}` via `site.page`.
+- Service index/category: `/s` and `/s/{slug}` via `site.services.index` / `site.services.category`.
+- Service detail: `/ser/{slug}` via `site.services.show`.
+- News index/category: `/c` and `/c/{slug}` via `site.blog.index` / `site.blog.category`.
+- News detail: `/n/{slug}` via `site.blog.show`.
+- Contact page/form: `/contact` via `site.contact` / `site.contact.submit`.
+- Product category/detail currently keep the localized catalog route helpers: `site.catalog.category` and `site.catalog.product`.
+
+Theme Blade files should use route helpers instead of hard-coded legacy URLs. Avoid reintroducing `/tin-tuc`, `/tin-tuc?category=...`, `/dich-vu`, or `/lien-he`; saved legacy links may redirect, but new theme/admin/demo data must use the route names above. Do not add `.html` suffixes unless the whole route strategy is changed consistently with canonical/redirect rules.
+
+## 10. Shared auth modal là convention storefront mới
 
 - Dedicated admin login page riêng đã bị bỏ.
 - Flow login storefront hiện là shared login giữa admin và customer.
@@ -188,7 +202,7 @@ File neo:
 - `app/Http/Controllers/Admin/AuthenticatedSessionController.php`
 - `bootstrap/app.php`
 
-## 10. TH0002 palette là pattern cho theme-specific configuration
+## 11. TH0002 palette là pattern cho theme-specific configuration
 
 - `TH0002` là case đã đi xa hơn theme thường vì có palette editor riêng.
 - Palette của TH0002 hiện được lưu trong `site_profiles.branding`.
@@ -207,7 +221,7 @@ File neo:
 - `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`
 - `app/Http/Controllers/Admin/Api/SetupProfileController.php`
 
-## 11. Checklist tối thiểu khi tạo theme mới
+## 12. Checklist tối thiểu khi tạo theme mới
 
 1. Tạo thư mục `themes/{KEY}` với ít nhất `theme.json`, `views/`, `lang/`.
 2. Viết manifest đúng các field admin đang dùng: `key`, `name`, `website_type`, `preview`, `blocks`, `supports`, `localization`, `demo` nếu có.
@@ -220,7 +234,7 @@ File neo:
 9. Thêm preview/avatar tương ứng trong `public/theme-previews/{KEY}`.
 10. Kiểm tra theme có xuất hiện đúng trong Theme Manager, activate được, render được các route storefront chính, translation hoạt động, và nếu có thì demo data chạy được.
 
-## 12. Các file nên đọc trước khi bắt tay làm theme mới
+## 13. Các file nên đọc trước khi bắt tay làm theme mới
 
 - `app/Core/Themes/ThemeRegistry.php`
 - `app/Core/Themes/ThemeTranslationService.php`
@@ -236,7 +250,7 @@ File neo:
 - `themes/TH0002/views/partials/palette-tokens.blade.php`
 - `docs/architecture/ser0100-service-theme-spec.md`
 
-## 13. Nguyên tắc thiết kế khi AI làm theme mới trong repo này
+## 14. Nguyên tắc thiết kế khi AI làm theme mới trong repo này
 
 - Bám pattern theme đã có, không tự phát minh một engine song song.
 - Ưu tiên reuse flow CMS/Catalog/Banner/Menu/Translation hiện tại trước khi nghĩ tới schema mới.

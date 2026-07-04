@@ -13,8 +13,10 @@
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $pageSlug = (string) ($entry->slug ?? '');
     $isAboutPage = ($contentType ?? null) === 'page' && in_array($pageSlug, ['gioi-thieu', 'about'], true);
-    $isContactPage = ($contentType ?? null) === 'page' && in_array($pageSlug, ['lien-he', 'contact'], true);
+    $isContactPage = ($contentType ?? null) === 'contact' || (($contentType ?? null) === 'page' && in_array($pageSlug, ['lien-he', 'contact'], true));
     $isPostDetail = ($contentType ?? null) === 'post';
+    $isServiceListing = ($contentType ?? null) === 'services';
+    $isServiceDetail = ($contentType ?? null) === 'service';
     $listingCollection = isset($listingItems) ? collect($listingItems->items()) : collect();
     $postFilters = $postFilters ?? ['q' => '', 'category' => ''];
     $postCategories = collect($postCategories ?? []);

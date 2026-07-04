@@ -1,27 +1,36 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import CopyOutlined from '@ant-design/icons/CopyOutlined';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
+import HolderOutlined from '@ant-design/icons/HolderOutlined';
 import MoreOutlined from '@ant-design/icons/MoreOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import UploadOutlined from '@ant-design/icons/UploadOutlined';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
+import DatePicker from 'antd/es/date-picker';
 import Drawer from 'antd/es/drawer';
 import Dropdown from 'antd/es/dropdown';
 import Empty from 'antd/es/empty';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
+import message from 'antd/es/message';
 import Modal from 'antd/es/modal';
+import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
+import dayjs from 'dayjs';
 import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
 
 const CmsPageFormModal = lazy(() => import('../components/CmsPageFormModal'));
@@ -40,6 +49,65 @@ const CmsSidePromoFormModal = lazy(() => import('../components/CmsSidePromoFormM
 const CatalogCategoryFormModal = lazy(() => import('../../catalog/components/CatalogCategoryFormModal'));
 const CatalogProductFormModal = lazy(() => import('../../catalog/components/CatalogProductFormModal'));
 const { Paragraph, Text, Title } = Typography;
+const { RangePicker } = DatePicker;
+
+const orderStatusOptions = [
+    { label: 'Tất cả trạng thái', value: 'all' },
+    { label: 'Mới đặt', value: 'placed' },
+    { label: 'Chờ xử lý', value: 'pending' },
+    { label: 'Đang xử lý', value: 'processing' },
+    { label: 'Hoàn tất', value: 'completed' },
+    { label: 'Đã hủy', value: 'cancelled' },
+];
+
+const orderDatePresetOptions = [
+    { label: 'Tùy chọn', value: 'custom' },
+    { label: 'Hôm nay', value: 'today' },
+    { label: 'Hôm qua', value: 'yesterday' },
+    { label: 'Tuần này', value: 'this_week' },
+    { label: 'Tháng này', value: 'this_month' },
+    { label: 'Tháng trước', value: 'last_month' },
+    { label: 'Quý này', value: 'this_quarter' },
+    { label: 'Quý trước', value: 'last_quarter' },
+    { label: 'Năm nay', value: 'this_year' },
+    { label: 'Năm ngoái', value: 'last_year' },
+];
+
+const resolveOrderDatePresetRange = (preset) => {
+    const now = dayjs();
+    const quarterStartMonth = Math.floor(now.month() / 3) * 3;
+    const thisQuarterStart = now.month(quarterStartMonth).startOf('month');
+    const lastQuarterStart = thisQuarterStart.subtract(3, 'month');
+
+    switch (preset) {
+        case 'today':
+            return [now.startOf('day'), now.endOf('day')];
+        case 'yesterday': {
+            const yesterday = now.subtract(1, 'day');
+            return [yesterday.startOf('day'), yesterday.endOf('day')];
+        }
+        case 'this_week':
+            return [now.startOf('week'), now.endOf('week')];
+        case 'this_month':
+            return [now.startOf('month'), now.endOf('month')];
+        case 'last_month': {
+            const lastMonth = now.subtract(1, 'month');
+            return [lastMonth.startOf('month'), lastMonth.endOf('month')];
+        }
+        case 'this_quarter':
+            return [thisQuarterStart.startOf('day'), thisQuarterStart.add(2, 'month').endOf('month')];
+        case 'last_quarter':
+            return [lastQuarterStart.startOf('day'), lastQuarterStart.add(2, 'month').endOf('month')];
+        case 'this_year':
+            return [now.startOf('year'), now.endOf('year')];
+        case 'last_year': {
+            const lastYear = now.subtract(1, 'year');
+            return [lastYear.startOf('year'), lastYear.endOf('year')];
+        }
+        default:
+            return null;
+    }
+};
 
 const sectionConfigMap = {
     'cms-pages': {
@@ -138,8 +206,8 @@ const sectionConfigMap = {
         endpoint: '/admin/api/cms/orders',
         permissionView: 'cms.order.view',
         permissionCreate: null,
-        permissionUpdate: null,
-        permissionDelete: null,
+        permissionUpdate: 'cms.order.view',
+        permissionDelete: 'cms.order.view',
         permissionPublish: null,
     },
     'cms-categories': {
@@ -480,8 +548,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const sectionConfig = sectionConfigMap[sectionKey] ?? sectionConfigMap['cms-pages'];
     const frontendLocale = window.localStorage.getItem('aio.frontendLocale') || 'vi';
     const homeAdminUrl = `/${encodeURIComponent(frontendLocale)}?mod=admin`;
+    const [messageApi, messageContextHolder] = message.useMessage();
     const [bulkProductEditForm] = Form.useForm();
     const [bulkProductStockForm] = Form.useForm();
+    const [bulkProductActiveForm] = Form.useForm();
+    const [bulkOrderStatusForm] = Form.useForm();
     const [mediaEditForm] = Form.useForm();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
@@ -491,10 +562,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [selectedProductRowKeys, setSelectedProductRowKeys] = useState([]);
+    const [selectedOrderRowKeys, setSelectedOrderRowKeys] = useState([]);
     const [selectedPartnerRowKeys, setSelectedPartnerRowKeys] = useState([]);
     const [bulkProductEditOpen, setBulkProductEditOpen] = useState(false);
     const [bulkProductStockOpen, setBulkProductStockOpen] = useState(false);
+    const [bulkProductActiveOpen, setBulkProductActiveOpen] = useState(false);
+    const [bulkOrderStatusOpen, setBulkOrderStatusOpen] = useState(false);
     const [keyword, setKeyword] = useState('');
+    const [orderStatusFilter, setOrderStatusFilter] = useState('all');
+    const [orderDatePreset, setOrderDatePreset] = useState('custom');
+    const [orderDateRange, setOrderDateRange] = useState(null);
     const [productCategoryFilter, setProductCategoryFilter] = useState('all');
     const [productFeaturedFilter, setProductFeaturedFilter] = useState('all');
     const [productActiveFilter, setProductActiveFilter] = useState('all');
@@ -503,6 +580,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productPagination, setProductPagination] = useState({ current: 1, pageSize: 10 });
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
     const [mediaFile, setMediaFile] = useState(null);
+    const [mediaUploadOpen, setMediaUploadOpen] = useState(false);
     const [editingMediaRecord, setEditingMediaRecord] = useState(null);
     const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
     const [categoryFormOpen, setCategoryFormOpen] = useState(false);
@@ -519,6 +597,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productCategoryItems, setProductCategoryItems] = useState([]);
     const [productCategoryLoading, setProductCategoryLoading] = useState(false);
     const [editingProductCategoryRecord, setEditingProductCategoryRecord] = useState(emptyProductCategory);
+    const productCategorySensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
     const createButtonLabel = sectionKey === 'cms-menus'
         ? 'Thêm menu'
         : sectionKey === 'cms-landing-pages'
@@ -861,6 +940,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         return (data?.items ?? []).filter((product) => selectedProductRowKeys.includes(product.id));
     }, [data?.items, sectionKey, selectedProductRowKeys]);
 
+    const selectedOrders = useMemo(() => {
+        if (sectionKey !== 'cms-orders') {
+            return [];
+        }
+
+        return (data?.orders ?? []).filter((order) => selectedOrderRowKeys.includes(order.id));
+    }, [data?.orders, sectionKey, selectedOrderRowKeys]);
+
     useEffect(() => {
         if (sectionKey !== 'cms-products') {
             return;
@@ -874,17 +961,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-orders') {
             return (data?.orders ?? []).filter((order) => {
-                if (normalizedKeyword === '') {
-                    return true;
-                }
-
-                return [
+                const matchesKeyword = normalizedKeyword === '' || [
                     order.order_code,
                     order.customer_name,
                     order.customer_phone,
                     order.customer_email,
                     order.delivery_address,
                 ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
+                const matchesStatus = orderStatusFilter === 'all' || order.status === orderStatusFilter;
+                const placedAt = order.placed_at ? dayjs(order.placed_at) : null;
+                const matchesDateRange = !orderDateRange?.[0] || !orderDateRange?.[1]
+                    || (placedAt && !placedAt.isBefore(orderDateRange[0], 'day') && !placedAt.isAfter(orderDateRange[1], 'day'));
+
+                return matchesKeyword && matchesStatus && matchesDateRange;
             });
         }
 
@@ -944,8 +1033,23 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             });
         }
 
+        if (sectionKey === 'cms-media') {
+            return (data?.items ?? []).filter((mediaItem) => {
+                if (normalizedKeyword === '') {
+                    return true;
+                }
+
+                return [
+                    mediaItem.title,
+                    mediaItem.alt_text,
+                    mediaItem.mime_type,
+                    mediaItem.file_url,
+                ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
+            });
+        }
+
         return data?.items ?? [];
-    }, [data?.items, data?.orders, keyword, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey]);
+    }, [data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey]);
 
     const openCreateModal = () => {
         if (sectionKey === 'cms-landing-pages') {
@@ -1229,6 +1333,63 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
     };
 
+    const buildProductCategoryPayload = (category, sortOrder = category.sort_order) => ({
+        parent_id: category.parent_id ?? null,
+        name: category.name,
+        slug: category.slug ?? '',
+        description: category.description ?? '',
+        image_url: category.image_url ?? '',
+        sort_order: sortOrder,
+        is_active: Boolean(category.is_active),
+    });
+
+    const handleProductCategoryDragEnd = async ({ active, over }) => {
+        if (!over || active.id === over.id || !sectionPermissions.canUpdate) {
+            return;
+        }
+
+        const activeCategoryId = Number(String(active.id).replace('product-category-', ''));
+        const overCategoryId = Number(String(over.id).replace('product-category-', ''));
+        const activeIndex = productCategoryItems.findIndex((category) => category.id === activeCategoryId);
+        const overIndex = productCategoryItems.findIndex((category) => category.id === overCategoryId);
+
+        if (activeIndex < 0 || overIndex < 0 || activeIndex === overIndex) {
+            return;
+        }
+
+        const previousItems = productCategoryItems;
+        const nextItems = arrayMove(productCategoryItems, activeIndex, overIndex).map((category, index) => ({
+            ...category,
+            sort_order: (index + 1) * 10,
+        }));
+
+        setProductCategoryItems(nextItems);
+        setProductCategoryLoading(true);
+
+        const didSave = await runAdminAction(async () => {
+            for (const category of nextItems) {
+                const previousCategory = previousItems.find((item) => item.id === category.id);
+
+                if (!previousCategory || previousCategory.sort_order === category.sort_order) {
+                    continue;
+                }
+
+                await callAdminApi(`/admin/api/cms/product-categories/${category.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(buildProductCategoryPayload(category, category.sort_order)),
+                });
+            }
+        }, 'Đã cập nhật thứ tự danh mục sản phẩm.', async () => {
+            await loadProductCategoryItems({ silent: true });
+        });
+
+        if (!didSave) {
+            setProductCategoryItems(previousItems);
+        }
+
+        setProductCategoryLoading(false);
+    };
+
     const handleDeleteProductCategory = (record) => {
         Modal.confirm({
             title: 'Xóa danh mục sản phẩm?',
@@ -1360,6 +1521,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         setBulkProductStockOpen(true);
     };
 
+    const openBulkActiveProducts = () => {
+        if (!selectedProductRowKeys.length) {
+            return;
+        }
+
+        bulkProductActiveForm.setFieldsValue({
+            is_active: 'true',
+        });
+        setBulkProductActiveOpen(true);
+    };
+
     const handleBulkEditProducts = async () => {
         const values = await bulkProductEditForm.validateFields();
 
@@ -1418,6 +1590,118 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
     };
 
+    const handleBulkActiveProducts = async () => {
+        const values = await bulkProductActiveForm.validateFields();
+        const products = [...selectedProducts];
+        const nextActive = values.is_active === 'true';
+
+        const didUpdate = await runAdminAction(async () => {
+            for (const product of products) {
+                await callAdminApi(`${sectionConfig.endpoint}/${product.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(buildBulkProductPayload(product, {
+                        catalog_category_id: BULK_KEEP_VALUE,
+                        stock: null,
+                        is_featured: BULK_KEEP_VALUE,
+                        is_active: nextActive ? 'true' : 'false',
+                    })),
+                });
+            }
+        }, `Đã ${nextActive ? 'active' : 'unactive'} ${products.length} sản phẩm.`, reload);
+
+        if (didUpdate) {
+            setBulkProductActiveOpen(false);
+            setSelectedProductRowKeys([]);
+            bulkProductActiveForm.resetFields();
+        }
+    };
+
+    const openOrderDetails = async (order) => {
+        setSelectedOrder({
+            ...order,
+            is_read: true,
+            read_at: order.read_at || new Date().toISOString(),
+        });
+
+        if (!order.is_read) {
+            await callAdminApi(`/admin/api/cms/orders/${order.id}/read`, { method: 'PUT' });
+            await reload();
+        }
+    };
+
+    const handleBulkMarkOrdersRead = async () => {
+        const orders = [...selectedOrders];
+
+        const didUpdate = await runAdminAction(async () => {
+            for (const order of orders) {
+                await callAdminApi(`/admin/api/cms/orders/${order.id}/read`, { method: 'PUT' });
+            }
+        }, `Đã đánh dấu đã xem ${orders.length} đơn hàng.`, reload);
+
+        if (didUpdate) {
+            setSelectedOrderRowKeys([]);
+        }
+    };
+
+    const openBulkOrderStatus = () => {
+        if (!selectedOrderRowKeys.length) {
+            return;
+        }
+
+        bulkOrderStatusForm.setFieldsValue({ status: 'processing' });
+        setBulkOrderStatusOpen(true);
+    };
+
+    const handleBulkOrderStatus = async () => {
+        const values = await bulkOrderStatusForm.validateFields();
+        const orders = [...selectedOrders];
+
+        const didUpdate = await runAdminAction(async () => {
+            for (const order of orders) {
+                await callAdminApi(`/admin/api/cms/orders/${order.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: values.status }),
+                });
+            }
+        }, `Đã đổi trạng thái ${orders.length} đơn hàng.`, reload);
+
+        if (didUpdate) {
+            setBulkOrderStatusOpen(false);
+            setSelectedOrderRowKeys([]);
+            bulkOrderStatusForm.resetFields();
+        }
+    };
+
+    const handleBulkDeleteOrders = async () => {
+        const ids = [...selectedOrderRowKeys];
+
+        const didDelete = await runAdminAction(async () => {
+            for (const id of ids) {
+                await callAdminApi(`/admin/api/cms/orders/${id}`, { method: 'DELETE' });
+            }
+        }, `Đã xóa ${ids.length} đơn hàng.`, reload);
+
+        if (didDelete) {
+            setSelectedOrderRowKeys([]);
+            setSelectedOrder(null);
+        }
+    };
+
+    const confirmBulkDeleteOrders = () => {
+        if (!selectedOrderRowKeys.length) {
+            return;
+        }
+
+        Modal.confirm({
+            title: `Xóa ${selectedOrderRowKeys.length} đơn hàng đã chọn?`,
+            content: 'Thao tác này không thể hoàn tác.',
+            okText: 'Xóa tất cả',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: handleBulkDeleteOrders,
+        });
+    };
+
     const confirmDeleteRecord = (recordId) => {
         Modal.confirm({
             title: 'Xóa bản ghi này?',
@@ -1447,6 +1731,20 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         if (didUpload) {
             setMediaFile(null);
             setMediaUpload({ title: '', alt_text: '' });
+            setMediaUploadOpen(false);
+        }
+    };
+
+    const handleCopyMediaUrl = async (record) => {
+        if (!record?.file_url) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(record.file_url);
+            messageApi.success('Đã copy URL media.');
+        } catch {
+            messageApi.error('Không thể copy URL media.');
         }
     };
 
@@ -1494,13 +1792,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             const handleOrderActionClick = ({ key }) => {
                 if (key === 'detail') {
-                    setSelectedOrder(record);
+                    openOrderDetails(record);
                 }
             };
 
             return (
                 <Dropdown menu={{ items: actionItems, onClick: handleOrderActionClick }} trigger={['click']}>
-                    <Button size="small" icon={<MoreOutlined />}>Tác vụ</Button>
+                    <Button size="small" icon={<MoreOutlined />} onClick={(event) => event.stopPropagation()}>Tác vụ</Button>
                 </Dropdown>
             );
         }
@@ -1551,6 +1849,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 icon: <EyeOutlined />,
             });
             actionItems.push({
+                key: 'copy-url',
+                label: 'Copy URL',
+                icon: <CopyOutlined />,
+            });
+            actionItems.push({
                 key: 'edit-media-title',
                 label: 'Sửa tên hiển thị',
                 icon: <EditOutlined />,
@@ -1592,6 +1895,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 return;
             }
 
+            if (key === 'copy-url') {
+                handleCopyMediaUrl(record);
+                return;
+            }
+
             if (key === 'edit-media-title') {
                 openEditMediaTitle(record);
                 return;
@@ -1618,6 +1926,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         ? {
             selectedRowKeys: selectedProductRowKeys,
             onChange: (nextSelectedRowKeys) => setSelectedProductRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
+    const orderRowSelection = sectionKey === 'cms-orders' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
+        ? {
+            selectedRowKeys: selectedOrderRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedOrderRowKeys(nextSelectedRowKeys),
             preserveSelectedRowKeys: true,
         }
         : undefined;
@@ -1648,6 +1963,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 disabled: !sectionPermissions.canUpdate || !selectedProductRowKeys.length,
                             },
                             {
+                                key: 'bulk-active',
+                                label: 'Active / unactive sản phẩm',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedProductRowKeys.length,
+                            },
+                            {
                                 key: 'bulk-delete',
                                 label: 'Xóa đã chọn',
                                 icon: <DeleteOutlined />,
@@ -1662,6 +1983,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                             if (key === 'bulk-stock') {
                                 openBulkStockProducts();
+                            }
+
+                            if (key === 'bulk-active') {
+                                openBulkActiveProducts();
                             }
 
                             if (key === 'bulk-delete') {
@@ -1680,6 +2005,63 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             </Space>
             {selectedProductRowKeys.length ? (
                 <Button size="small" type="link" onClick={() => setSelectedProductRowKeys([])}>
+                    Bỏ chọn
+                </Button>
+            ) : null}
+        </Space>
+    ) : null;
+    const orderBulkActions = sectionKey === 'cms-orders' ? (
+        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Space wrap>
+                <Dropdown
+                    trigger={['click']}
+                    menu={{
+                        items: [
+                            {
+                                key: 'mark-read',
+                                label: 'Đánh dấu đã xem',
+                                icon: <EyeOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedOrderRowKeys.length,
+                            },
+                            {
+                                key: 'change-status',
+                                label: 'Đổi trạng thái',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedOrderRowKeys.length,
+                            },
+                            {
+                                key: 'delete',
+                                label: 'Xóa đã chọn',
+                                icon: <DeleteOutlined />,
+                                danger: true,
+                                disabled: !sectionPermissions.canDelete || !selectedOrderRowKeys.length,
+                            },
+                        ],
+                        onClick: ({ key }) => {
+                            if (key === 'mark-read') {
+                                handleBulkMarkOrdersRead();
+                            }
+
+                            if (key === 'change-status') {
+                                openBulkOrderStatus();
+                            }
+
+                            if (key === 'delete') {
+                                confirmBulkDeleteOrders();
+                            }
+                        },
+                    }}
+                >
+                    <Button icon={<MoreOutlined />} disabled={!selectedOrderRowKeys.length}>
+                        Thao tác đã chọn
+                    </Button>
+                </Dropdown>
+                {selectedOrderRowKeys.length ? (
+                    <Text type="secondary">Đã chọn {selectedOrderRowKeys.length} đơn hàng.</Text>
+                ) : null}
+            </Space>
+            {selectedOrderRowKeys.length ? (
+                <Button size="small" type="link" onClick={() => setSelectedOrderRowKeys([])}>
                     Bỏ chọn
                 </Button>
             ) : null}
@@ -1892,7 +2274,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-orders') {
             return [
-                { title: 'Mã đơn', dataIndex: 'order_code', key: 'order_code', render: (value) => <Text strong>{value}</Text> },
+                {
+                    title: 'Mã đơn',
+                    dataIndex: 'order_code',
+                    key: 'order_code',
+                    render: (value, record) => (
+                        <Space direction="vertical" size={4}>
+                            <Text strong={!record.is_read}>{value}</Text>
+                            {!record.is_read ? <Tag color="red">Chưa đọc</Tag> : <Tag>Đã đọc</Tag>}
+                        </Space>
+                    ),
+                },
                 {
                     title: 'Khách hàng',
                     key: 'customer',
@@ -1991,7 +2383,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 ),
             },
             { title: 'Dung lượng', dataIndex: 'size', key: 'size', render: formatBytes },
-            { title: 'URL', dataIndex: 'file_url', key: 'file_url', render: (value) => <Text copyable>{value}</Text> },
             {
                 title: 'Tác vụ',
                 key: 'actions',
@@ -2063,6 +2454,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingProject={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -2217,8 +2609,63 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         );
     };
 
+    const handleOrderDatePresetChange = (preset) => {
+        setOrderDatePreset(preset);
+        setOrderDateRange(resolveOrderDatePresetRange(preset));
+    };
+
+    const orderTableFilters = (
+        <Space wrap size={8} style={{ justifyContent: 'flex-end' }}>
+            <Input
+                allowClear
+                value={keyword}
+                onChange={(event) => setKeyword(event.target.value)}
+                placeholder="Tìm theo mã đơn, khách hàng, điện thoại..."
+                style={{ width: 300 }}
+            />
+            <Select
+                value={orderStatusFilter}
+                onChange={setOrderStatusFilter}
+                options={orderStatusOptions}
+                style={{ width: 160 }}
+            />
+            <Select
+                value={orderDatePreset}
+                onChange={handleOrderDatePresetChange}
+                options={orderDatePresetOptions}
+                style={{ width: 140 }}
+            />
+            <RangePicker
+                value={orderDateRange}
+                onChange={(nextRange) => {
+                    setOrderDateRange(nextRange);
+                    setOrderDatePreset('custom');
+                }}
+                format="DD/MM/YYYY"
+                placeholder={['Từ ngày', 'Đến ngày']}
+                allowClear
+                style={{ width: 240 }}
+            />
+        </Space>
+    );
+
     const tableExtra = sectionKey === 'cms-orders'
-        ? <Input allowClear value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="TÃ¬m theo mÃ£ Ä‘Æ¡n, khÃ¡ch hÃ ng, Ä‘iá»‡n thoáº¡i..." style={{ width: 320 }} />
+        ? orderTableFilters
+        : sectionKey === 'cms-media'
+            ? (
+                <Space wrap>
+                    <Input
+                        allowClear
+                        value={keyword}
+                        onChange={(event) => setKeyword(event.target.value)}
+                        placeholder="Tìm theo tên file, alt text, loại file..."
+                        style={{ width: 320 }}
+                    />
+                    <Button type="primary" icon={<UploadOutlined />} disabled={!sectionPermissions.canCreate} onClick={() => setMediaUploadOpen(true)}>
+                        Upload media
+                    </Button>
+                </Space>
+            )
         : sectionKey === 'cms-menus'
             ? (
                 <Space wrap>
@@ -2285,19 +2732,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 </Row>
             ) : null}
 
-            {sectionKey === 'cms-media' ? (
-                <Card title="Upload Media" extra={<Button type="primary" icon={<UploadOutlined />} disabled={!sectionPermissions.canCreate || !mediaFile} onClick={handleUploadMedia}>Upload media</Button>}>
-                    <Row gutter={[12, 12]}>
-                        <Col xs={24} md={8}><Input value={mediaUpload.title} onChange={(event) => setMediaUpload((current) => ({ ...current, title: event.target.value }))} placeholder="Tiêu đề media" /></Col>
-                        <Col xs={24} md={8}><Input value={mediaUpload.alt_text} onChange={(event) => setMediaUpload((current) => ({ ...current, alt_text: event.target.value }))} placeholder="Alt text" /></Col>
-                        <Col xs={24} md={8}><input type="file" onChange={(event) => setMediaFile(event.target.files?.[0] ?? null)} /></Col>
-                    </Row>
-                </Card>
-            ) : null}
-
             <Card
                 className="admin-table-card"
-                title={`${sectionConfig.title} (${sectionKey === 'cms-orders' ? (data?.stats?.total_orders ?? 0) : (data?.total ?? 0)})`}
+                title={`${sectionConfig.title} (${sectionKey === 'cms-orders' || sectionKey === 'cms-media' ? filteredItems.length : (data?.total ?? 0)})`}
                 extra={tableExtra}
             >
                 {sectionKey === 'cms-products' ? (
@@ -2414,15 +2851,24 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 ) : null}
 
                 {sectionKey !== 'cms-products' && filteredItems.length ? (
-                    <Table
-                        rowKey="id"
-                        rowSelection={partnerRowSelection}
-                        columns={columns}
-                        dataSource={filteredItems}
-                        pagination={{ pageSize: 10, hideOnSinglePage: true }}
-                        scroll={{ x: 980 }}
-                        onRow={sectionKey === 'cms-orders' ? (record) => ({ onClick: () => setSelectedOrder(record), style: { cursor: 'pointer' } }) : undefined}
-                    />
+                    <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                        {orderBulkActions}
+                        <Table
+                            rowKey="id"
+                            rowSelection={sectionKey === 'cms-orders' ? orderRowSelection : partnerRowSelection}
+                            columns={columns}
+                            dataSource={filteredItems}
+                            pagination={{ pageSize: 10, hideOnSinglePage: true }}
+                            scroll={{ x: 980 }}
+                            onRow={sectionKey === 'cms-orders' ? (record) => ({
+                                onClick: () => openOrderDetails(record),
+                                style: {
+                                    cursor: 'pointer',
+                                    background: record.is_read ? undefined : '#fffbe6',
+                                },
+                            }) : undefined}
+                        />
+                    </Space>
                 ) : sectionKey !== 'cms-products' ? (
                     <Empty description={`Chưa có dữ liệu cho ${sectionConfig.title}.`} />
                 ) : null}
@@ -2445,6 +2891,39 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     onChanged={reload}
                 />
             </Suspense>
+
+            <Modal
+                title={`Đổi trạng thái ${selectedOrderRowKeys.length} đơn hàng`}
+                open={sectionKey === 'cms-orders' && bulkOrderStatusOpen}
+                onCancel={() => {
+                    setBulkOrderStatusOpen(false);
+                    bulkOrderStatusForm.resetFields();
+                }}
+                onOk={handleBulkOrderStatus}
+                okText="Áp dụng"
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Form form={bulkOrderStatusForm} layout="vertical">
+                    <Alert
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                        message={`Trạng thái mới sẽ được áp dụng cho ${selectedOrderRowKeys.length} đơn hàng đang chọn.`}
+                    />
+                    <Form.Item
+                        name="status"
+                        label="Trạng thái đơn hàng"
+                        rules={[{ required: true, message: 'Chọn trạng thái cần áp dụng' }]}
+                    >
+                        <Radio.Group
+                            optionType="button"
+                            buttonStyle="solid"
+                            options={orderStatusOptions.filter((option) => option.value !== 'all')}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
 
             <Drawer
                 title={selectedOrder ? `Chi tiết ${selectedOrder.order_code}` : 'Chi tiết đơn hàng'}
@@ -2500,6 +2979,35 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </Space>
                 ) : null}
             </Drawer>
+
+            <Modal
+                title="Upload media"
+                open={sectionKey === 'cms-media' && mediaUploadOpen}
+                onCancel={() => {
+                    setMediaUploadOpen(false);
+                    setMediaFile(null);
+                    setMediaUpload({ title: '', alt_text: '' });
+                }}
+                onOk={handleUploadMedia}
+                okText="Upload media"
+                okButtonProps={{ disabled: !sectionPermissions.canCreate || !mediaFile }}
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    <Input
+                        value={mediaUpload.title}
+                        onChange={(event) => setMediaUpload((current) => ({ ...current, title: event.target.value }))}
+                        placeholder="Tiêu đề media"
+                    />
+                    <Input
+                        value={mediaUpload.alt_text}
+                        onChange={(event) => setMediaUpload((current) => ({ ...current, alt_text: event.target.value }))}
+                        placeholder="Alt text"
+                    />
+                    <input type="file" onChange={(event) => setMediaFile(event.target.files?.[0] ?? null)} />
+                </Space>
+            </Modal>
 
             <Modal
                 title="Sửa tên hiển thị media"
@@ -2559,6 +3067,42 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             precision={0}
                             style={{ width: '100%' }}
                             placeholder="Ví dụ: 1000"
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Modal
+                title={`Active / unactive ${selectedProductRowKeys.length} sản phẩm`}
+                open={sectionKey === 'cms-products' && bulkProductActiveOpen}
+                onCancel={() => {
+                    setBulkProductActiveOpen(false);
+                    bulkProductActiveForm.resetFields();
+                }}
+                onOk={handleBulkActiveProducts}
+                okText="Áp dụng"
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Form form={bulkProductActiveForm} layout="vertical">
+                    <Alert
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                        message={`Trạng thái mới sẽ được áp dụng cho ${selectedProductRowKeys.length} sản phẩm đang chọn.`}
+                    />
+                    <Form.Item
+                        name="is_active"
+                        label="Trạng thái sản phẩm"
+                        rules={[{ required: true, message: 'Chọn trạng thái cần áp dụng' }]}
+                    >
+                        <Radio.Group
+                            optionType="button"
+                            buttonStyle="solid"
+                            options={[
+                                { label: 'Active sản phẩm', value: 'true' },
+                                { label: 'Unactive sản phẩm', value: 'false' },
+                            ]}
                         />
                     </Form.Item>
                 </Form>
@@ -2960,12 +3504,39 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         </Button>
                     </Space>
 
-                    <Table
-                        rowKey="id"
-                        loading={productCategoryLoading}
-                        dataSource={productCategoryItems}
-                        pagination={{ pageSize: 8, hideOnSinglePage: true }}
-                        columns={[
+                    <DndContext sensors={productCategorySensors} collisionDetection={closestCenter} onDragEnd={handleProductCategoryDragEnd}>
+                        <SortableContext items={productCategoryItems.map((category) => `product-category-${category.id}`)} strategy={verticalListSortingStrategy}>
+                            <Table
+                                rowKey="id"
+                                loading={productCategoryLoading}
+                                dataSource={productCategoryItems}
+                                pagination={false}
+                                scroll={{ y: 520 }}
+                                components={{
+                                    body: {
+                                        row: (rowProps) => (
+                                            <SortableProductCategoryTableRow
+                                                {...rowProps}
+                                                disabled={!sectionPermissions.canUpdate || productCategoryLoading}
+                                            />
+                                        ),
+                                    },
+                                }}
+                                columns={[
+                            {
+                                title: '',
+                                key: 'drag',
+                                width: 44,
+                                render: () => (
+                                    <Button
+                                        type="text"
+                                        size="small"
+                                        icon={<HolderOutlined />}
+                                        disabled={!sectionPermissions.canUpdate || productCategoryLoading}
+                                        aria-label="Kéo thả để sắp xếp danh mục"
+                                    />
+                                ),
+                            },
                             {
                                 title: 'Danh mục SP',
                                 dataIndex: 'name',
@@ -2981,15 +3552,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         )}
                                         <Space direction="vertical" size={0}>
                                             <Text strong>{value}</Text>
-                                            <Text type="secondary">{record.description || record.slug}</Text>
+                                            <Text type="secondary">{record.description || 'Chưa có mô tả'}</Text>
                                         </Space>
                                     </Space>
                                 ),
                             },
-                            { title: 'Slug', dataIndex: 'slug', key: 'slug' },
                             { title: 'Danh mục cha', dataIndex: 'parent_name', key: 'parent_name', render: (value) => value || '-' },
                             { title: 'Sản phẩm', dataIndex: 'products_count', key: 'products_count', render: (value) => value ?? 0 },
-                            { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
                             { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', render: (value) => value ? <Tag color="green">Đang bật</Tag> : <Tag>Tắt</Tag> },
                             {
                                 title: 'Tác vụ',
@@ -3005,8 +3574,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                     </Space>
                                 ),
                             },
-                        ]}
-                    />
+                                ]}
+                            />
+                        </SortableContext>
+                    </DndContext>
                 </Space>
             </Modal>
 
@@ -3027,6 +3598,36 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             {renderModal()}
         </Space>
+    );
+}
+
+function SortableProductCategoryTableRow(props) {
+    const { children, disabled, ...rowProps } = props;
+    const rowKey = rowProps['data-row-key'];
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: `product-category-${rowKey}`,
+        disabled,
+    });
+
+    const style = {
+        ...rowProps.style,
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.72 : undefined,
+        position: isDragging ? 'relative' : undefined,
+        zIndex: isDragging ? 1 : undefined,
+    };
+
+    return (
+        <tr
+            {...rowProps}
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+        >
+            {children}
+        </tr>
     );
 }
 

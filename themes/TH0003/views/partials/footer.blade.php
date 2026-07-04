@@ -25,7 +25,7 @@
                 'title' => 'Về thương hiệu',
                 'links' => [
                     ['label' => 'Về chúng tôi', 'url' => $staticPageUrl('gioi-thieu')],
-                    ['label' => 'Liên hệ showroom', 'url' => $staticPageUrl('lien-he')],
+                    ['label' => 'Liên hệ showroom', 'url' => route('site.contact')],
                     ['label' => 'Chính sách bảo mật', 'url' => $staticPageUrl('chinh-sach-bao-mat')],
                     ['label' => 'Fashion journal', 'url' => route('site.blog.index')],
                 ],

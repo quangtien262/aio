@@ -80,7 +80,7 @@ class ThemeDemoContentGenerator
 
             $pageSlugs = [
                 'about' => $this->demoSlug($themeKey, 'gioi-thieu'),
-                'contact' => $this->demoSlug($themeKey, 'lien-he'),
+                'contact' => 'contact',
             ];
 
             $pageCount = $this->seedPages($preset, $timestamp, $themeKey, $pageSlugs);
@@ -510,7 +510,7 @@ class ThemeDemoContentGenerator
         if (! $isServicePreset) {
             if ($this->isGarmentFamilyPreset($preset)) {
                 return [
-                    ['label' => 'Lookbook', 'url' => '/tin-tuc', 'target' => '_self'],
+                    ['label' => 'Lookbook', 'url' => '/c', 'target' => '_self'],
                     ['label' => $this->isFashionPreset($preset) ? 'Về studio' : 'Về xưởng may', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
                     ['label' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist' : 'Gửi yêu cầu may', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
                 ];
@@ -518,14 +518,14 @@ class ThemeDemoContentGenerator
 
             if ($this->isRealEstatePreset($preset)) {
                 return [
-                    ['label' => 'Tin thị trường', 'url' => '/tin-tuc', 'target' => '_self'],
+                    ['label' => 'Tin thị trường', 'url' => '/c', 'target' => '_self'],
                     ['label' => 'Tổng quan dự án', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
                     ['label' => 'Nhận bảng giá', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
                 ];
             }
 
             return [
-                ['label' => 'Tin tức', 'url' => '/tin-tuc', 'target' => '_self'],
+                ['label' => 'Tin tức', 'url' => '/c', 'target' => '_self'],
                 ['label' => 'Giới thiệu', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
                 ['label' => 'Liên hệ', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
             ];
@@ -534,11 +534,11 @@ class ThemeDemoContentGenerator
         return [
             [
                 'label' => 'Cẩm nang',
-                'url' => '/tin-tuc',
+                'url' => '/c',
                 'target' => '_self',
                 'children' => [
-                    ['label' => 'Kinh nghiệm đặt xe', 'summary' => 'Checklist, kinh nghiệm và nội dung SEO cho khách đặt tuyến.', 'url' => '/tin-tuc', 'target' => '_self'],
-                    ['label' => 'Lịch trình tối ưu', 'summary' => 'Gợi ý cách chọn route, loại xe và thời gian khởi hành phù hợp.', 'url' => '/tin-tuc', 'target' => '_self'],
+                    ['label' => 'Kinh nghiệm đặt xe', 'summary' => 'Checklist, kinh nghiệm và nội dung SEO cho khách đặt tuyến.', 'url' => '/c', 'target' => '_self'],
+                    ['label' => 'Lịch trình tối ưu', 'summary' => 'Gợi ý cách chọn route, loại xe và thời gian khởi hành phù hợp.', 'url' => '/c', 'target' => '_self'],
                 ],
             ],
             [

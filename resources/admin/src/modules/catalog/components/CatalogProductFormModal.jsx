@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
-import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
+import AppstoreOutlined from '@ant-design/icons/AppstoreOutlined';
+import DollarOutlined from '@ant-design/icons/DollarOutlined';
+import DownOutlined from '@ant-design/icons/DownOutlined';
+import FileTextOutlined from '@ant-design/icons/FileTextOutlined';
+import PictureOutlined from '@ant-design/icons/PictureOutlined';
+import RightOutlined from '@ant-design/icons/RightOutlined';
+import SearchOutlined from '@ant-design/icons/SearchOutlined';
+import StarOutlined from '@ant-design/icons/StarOutlined';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Checkbox from 'antd/es/checkbox';
@@ -16,7 +23,7 @@ import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
-import Tooltip from 'antd/es/tooltip';
+import Switch from 'antd/es/switch';
 import dayjs from 'dayjs';
 import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
 import {
@@ -103,6 +110,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
     const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [contentMode, setContentMode] = useState('editor');
+    const [collapsedSections, setCollapsedSections] = useState({});
     const [editorContentVersion, setEditorContentVersion] = useState(0);
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
@@ -142,6 +150,45 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
 
     const setProductCoverImage = (nextCover) => {
         syncProductImages(productImages, nextCover);
+    };
+
+    const isSectionCollapsed = (sectionKey) => Boolean(collapsedSections[sectionKey]);
+
+    const toggleSection = (sectionKey) => {
+        setCollapsedSections((current) => ({
+            ...current,
+            [sectionKey]: !current[sectionKey],
+        }));
+    };
+
+    const renderSectionTitle = (sectionKey, title, IconComponent, extra = null) => {
+        const collapsed = isSectionCollapsed(sectionKey);
+
+        return (
+            <button
+                type="button"
+                onClick={() => toggleSection(sectionKey)}
+                style={{
+                    width: '100%',
+                    border: 0,
+                    padding: 0,
+                    background: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                }}
+            >
+                <Space size={8}>
+                    <IconComponent style={{ color: '#1677ff' }} />
+                    <span>{title}</span>
+                    {extra}
+                </Space>
+                {collapsed ? <RightOutlined style={{ color: '#8c8c8c' }} /> : <DownOutlined style={{ color: '#8c8c8c' }} />}
+            </button>
+        );
     };
 
     useEffect(() => {
@@ -471,7 +518,9 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
             {messageContextHolder}
             <Form form={form} layout="vertical" initialValues={editingProduct}>
                 <div className="cms-post-form-shell">
-                    <Card size="small" className="cms-post-form-card" title="Thông tin cơ bản">
+                    <Card size="small" className="cms-post-form-card" title={renderSectionTitle('basic', 'Thông tin cơ bản', AppstoreOutlined)}>
+                        {!isSectionCollapsed('basic') ? (
+
                         <Row gutter={16}>
                             <Col xs={24} md={14}>
                                 <Form.Item name="name" label="Tên sản phẩm" rules={[{ required: true, message: 'Nhập tên sản phẩm' }]}>
@@ -498,40 +547,12 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 </Form.Item>
                             </Col>
                         </Row>
-                    </Card>
+                                            ) : null}
+</Card>
 
-                    <Card size="small" className="cms-post-form-card" title="Hình ảnh sản phẩm">
-                        <Form.Item name="image_url" hidden>
-                            <FormValueBridge />
-                        </Form.Item>
-                        <Form.Item name="gallery_images" hidden>
-                            <FormValueBridge />
-                        </Form.Item>
-                        <Form.Item label="Danh sách hình ảnh" style={{ marginBottom: 0 }}>
-                            <MultiMediaPicker
-                                open={open}
-                                value={productImages}
-                                onChange={(nextValue) => syncProductImages(nextValue)}
-                                coverValue={coverImageUrl}
-                                onSetCover={setProductCoverImage}
-                                canManage={canManage}
-                                callAdminApi={callAdminApi}
-                                recordTitle={productName || 'Product images'}
-                                previewTitle="Ảnh sản phẩm"
-                                uploadButtonLabel="Upload ảnh sản phẩm"
-                                uploadHint="Có thể upload nhiều ảnh. Ảnh đầu tiên sẽ tự làm ảnh đại diện."
-                                libraryModalTitle="Chọn ảnh sản phẩm từ thư viện"
-                                urlPlaceholder={['https://cdn.example.com/product-1.jpg', 'https://cdn.example.com/product-2.jpg'].join('\n')}
-                                uploadSuccessMessage="Đã thêm ảnh sản phẩm."
-                                urlSuccessMessage="Đã lưu URL vào thư viện media và thêm ảnh sản phẩm."
-                                uploadErrorMessage="Upload ảnh sản phẩm không thành công."
-                                urlErrorMessage="Không thể lưu ảnh sản phẩm từ URL."
-                                emptyValueMessage="Nhập ít nhất một URL ảnh trước khi lưu."
-                            />
-                        </Form.Item>
-                    </Card>
+                    <Card size="small" className="cms-post-form-card" title={renderSectionTitle('pricing', 'Giá bán và tồn kho', DollarOutlined)}>
+                        {!isSectionCollapsed('pricing') ? (
 
-                    <Card size="small" className="cms-post-form-card" title="Giá bán và tồn kho">
                         <Row gutter={16}>
                             <Col xs={24} md={8}>
                                 <Form.Item name="price" label="Giá" rules={[{ required: true, message: 'Nhập giá' }]}>
@@ -569,14 +590,52 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
-                                <Form.Item name="is_active" valuePropName="checked" label=" " colon={false}>
-                                    <Checkbox>Kích hoạt sản phẩm</Checkbox>
+                                <Form.Item name="is_active" valuePropName="checked" label="Active sản phẩm" colon={false}>
+                                    <Switch checkedChildren="active" unCheckedChildren="unactive" />
                                 </Form.Item>
                             </Col>
                         </Row>
-                    </Card>
+                                            ) : null}
+</Card>
 
-                    <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
+                    <Card size="small" className="cms-post-form-card" title={renderSectionTitle('images', 'Hình ảnh sản phẩm', PictureOutlined)}>
+                        {!isSectionCollapsed('images') ? (
+                            <>
+                        <Form.Item name="image_url" hidden>
+                            <FormValueBridge />
+                        </Form.Item>
+                        <Form.Item name="gallery_images" hidden>
+                            <FormValueBridge />
+                        </Form.Item>
+                        <Form.Item label="Danh sách hình ảnh" style={{ marginBottom: 0 }}>
+                            <MultiMediaPicker
+                                open={open}
+                                value={productImages}
+                                onChange={(nextValue) => syncProductImages(nextValue)}
+                                coverValue={coverImageUrl}
+                                onSetCover={setProductCoverImage}
+                                canManage={canManage}
+                                callAdminApi={callAdminApi}
+                                recordTitle={productName || 'Product images'}
+                                previewTitle="Ảnh sản phẩm"
+                                uploadButtonLabel="Upload ảnh sản phẩm"
+                                uploadHint="Có thể upload nhiều ảnh. Ảnh đầu tiên sẽ tự làm ảnh đại diện."
+                                libraryModalTitle="Chọn ảnh sản phẩm từ thư viện"
+                                urlPlaceholder={['https://cdn.example.com/product-1.jpg', 'https://cdn.example.com/product-2.jpg'].join('\n')}
+                                uploadSuccessMessage="Đã thêm ảnh sản phẩm."
+                                urlSuccessMessage="Đã lưu URL vào thư viện media và thêm ảnh sản phẩm."
+                                uploadErrorMessage="Upload ảnh sản phẩm không thành công."
+                                urlErrorMessage="Không thể lưu ảnh sản phẩm từ URL."
+                                emptyValueMessage="Nhập ít nhất một URL ảnh trước khi lưu."
+                            />
+                        </Form.Item>
+                            </>
+                                            ) : null}
+</Card>
+
+                    <Card size="small" className="cms-post-form-card" title={renderSectionTitle('seo', 'SEO cơ bản', SearchOutlined)}>
+                        {!isSectionCollapsed('seo') ? (
+
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
                                 <Form.Item
@@ -593,9 +652,12 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 </Form.Item>
                             </Col>
                         </Row>
-                    </Card>
+                                            ) : null}
+</Card>
 
-                    <Card size="small" className="cms-post-form-card" title="Điểm nổi bật và điều kiện sử dụng">
+                    <Card size="small" className="cms-post-form-card" title={renderSectionTitle('usage', 'Điểm nổi bật và điều kiện sử dụng', StarOutlined)}>
+                        {!isSectionCollapsed('usage') ? (
+
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
                                 <Form.Item name="highlights" label="Điểm nổi bật" extra="Mỗi dòng là một ý nổi bật hiển thị dạng bullet.">
@@ -613,20 +675,16 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 </Form.Item>
                             </Col>
                         </Row>
-                    </Card>
+                                            ) : null}
+</Card>
 
                     <Card
                         size="small"
                         className="cms-post-form-card cms-post-form-card-editor"
-                        title={(
-                            <Space size={8}>
-                                <span>Nội dung chi tiết sản phẩm</span>
-                                <Tooltip title="Sau khi upload, hình ảnh hoặc video sẽ được chèn ngay vào vị trí nội dung hiện tại. Video YouTube có thể nhúng nhanh bằng nút riêng, không cần mở toolbar media của CKEditor.">
-                                    <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
-                                </Tooltip>
-                            </Space>
-                        )}
+                        title={renderSectionTitle('detail', 'Nội dung chi tiết sản phẩm', FileTextOutlined)}
                     >
+                        {!isSectionCollapsed('detail') ? (
+                            <>
                         <div className="cms-editor-upload-panel">
                             <Space wrap className="cms-editor-toolbar-row" size={12}>
                                 <Radio.Group
@@ -698,7 +756,9 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                         <Form.Item name="detail_content" hidden>
                             <Input />
                         </Form.Item>
-                    </Card>
+                            </>
+                                            ) : null}
+</Card>
                 </div>
             </Form>
 

@@ -25,7 +25,7 @@
                 'title' => 'Ve showroom',
                 'links' => [
                     ['label' => 'Ve chung toi', 'url' => $staticPageUrl('gioi-thieu')],
-                    ['label' => 'Lien he showroom', 'url' => $staticPageUrl('lien-he')],
+                    ['label' => 'Lien he showroom', 'url' => route('site.contact')],
                     ['label' => 'Chinh sach bao mat', 'url' => $staticPageUrl('chinh-sach-bao-mat')],
                     ['label' => 'Interior journal', 'url' => route('site.blog.index')],
                 ],

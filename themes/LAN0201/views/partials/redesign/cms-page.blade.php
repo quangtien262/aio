@@ -1,6 +1,11 @@
 @php
     $heroImage = $entry->featured_image_url ?? $entry->cover_image_url ?? $entry->image_url ?? 'https://picsum.photos/seed/lan0201-cms/1200/720';
-    $bodyHtml = $entry->body ?: '<p>'.$t('cms.content_updating', 'Nội dung đang được cập nhật.').'</p>';
+    $isListingPage = in_array($contentType ?? null, ['listing', 'posts', 'services'], true);
+    $isServiceListing = ($contentType ?? null) === 'services';
+    $isServiceDetail = ($contentType ?? null) === 'service';
+    $listingTitle = $isServiceListing ? 'Dịch vụ dự án' : 'Tin dự án';
+    $listingAction = $isServiceListing ? route('site.services.index') : route('site.blog.index');
+    $bodyHtml = $entry->body ?? $entry->content ?? '<p>'.$t('cms.content_updating', 'Nội dung đang được cập nhật.').'</p>';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -22,17 +27,19 @@
                 @include('theme-lan0201::partials.landing-header', ['branding' => $branding, 'topMenu' => $topMenu, 'customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'cartSummary' => $cartSummary, 'contactHotline' => $contactHotline, 'contactEmail' => $contactEmail, 'contactLocation' => $contactLocation, 'activeNav' => 'cms'])
                 <main class="th-landing-main">
                     <div class="th-landing-container">
-                        @if ($contentType === 'listing')
+                        @if ($isListingPage)
                             <section class="th-landing-hero">
-                                <span class="th-landing-kicker">Tin dự án</span>
-                                <h1 class="th-landing-title">Bản tin mở bán và cập nhật thị trường</h1>
-                                <p class="th-landing-summary">Trang CMS được đổi thành một editorial landing hub, đồng bộ với shell mới của LAN0201 thay vì dùng layout tin tức kiểu store.</p>
-                                <form method="GET" action="{{ route('site.blog.index') }}" style="margin-top:18px;">
+                                <span class="th-landing-kicker">{{ $listingTitle }}</span>
+                                <h1 class="th-landing-title">{{ $pageTitle ?? 'Bản tin mở bán và cập nhật thị trường' }}</h1>
+                                <p class="th-landing-summary">{{ $pageDescription ?? 'Trang CMS được đổi thành một editorial landing hub, đồng bộ với shell mới của LAN0201 thay vì dùng layout tin tức kiểu store.' }}</p>
+                                <form method="GET" action="{{ $listingAction }}" style="margin-top:18px;">
                                     <div class="th-landing-form-grid">
                                         <div class="th-landing-field"><label for="q">Từ khóa</label><input id="q" type="search" name="q" value="{{ $postFilters['q'] ?? '' }}"></div>
-                                        <div class="th-landing-field"><label for="category">Chuyên mục</label><select id="category" name="category"><option value="">Tất cả</option>@foreach ($postCategories as $postCategory)<option value="{{ $postCategory->slug ?? '' }}" @selected(($postFilters['category'] ?? '') === ($postCategory->slug ?? ''))>{{ $postCategory->name ?? 'Chuyên mục' }}</option>@endforeach</select></div>
+                                        @unless ($isServiceListing)
+                                            <div class="th-landing-field"><label for="category">Chuyên mục</label><select id="category" name="category"><option value="">Tất cả</option>@foreach ($postCategories as $postCategory)<option value="{{ $postCategory->slug ?? '' }}" @selected(($postFilters['category'] ?? '') === ($postCategory->slug ?? ''))>{{ $postCategory->name ?? 'Chuyên mục' }}</option>@endforeach</select></div>
+                                        @endunless
                                     </div>
-                                    <div class="th-landing-actions-row"><button type="submit" class="th-landing-button">Lọc bài viết</button></div>
+                                    <div class="th-landing-actions-row"><button type="submit" class="th-landing-button">{{ $isServiceListing ? 'Lọc dịch vụ' : 'Lọc bài viết' }}</button></div>
                                 </form>
                             </section>
                             <section style="margin-top:26px;">
@@ -41,12 +48,17 @@
                                 @else
                                     <div class="th-landing-three-col">
                                         @foreach ($listingCollection as $post)
+                                            @php
+                                                $itemUrl = $isServiceListing
+                                                    ? route('site.services.show', ['slug' => $post->slug])
+                                                    : route('site.blog.show', ['slug' => $post->slug]);
+                                            @endphp
                                             <article class="th-landing-card" style="overflow:hidden;">
-                                                <a href="{{ route('site.blog.show', ['slug' => $post->slug]) }}"><img src="{{ $post->featured_image_url ?? $post->cover_image_url ?? 'https://picsum.photos/seed/lan0201-post/'.($loop->index + 1).'/720/520' }}" alt="{{ $post->title }}" style="width:100%; aspect-ratio:16/10; object-fit:cover;"></a>
+                                                <a href="{{ $itemUrl }}"><img src="{{ $post->featured_image_url ?? $post->cover_image_url ?? $post->image_url ?? 'https://picsum.photos/seed/lan0201-post/'.($loop->index + 1).'/720/520' }}" alt="{{ $post->title }}" style="width:100%; aspect-ratio:16/10; object-fit:cover;"></a>
                                                 <div style="padding:20px;">
-                                                    <span class="th-landing-chip">{{ $post->category?->name ?? 'Tin dự án' }}</span>
-                                                    <h3 class="th-landing-listing-title" style="margin-top:12px;"><a href="{{ route('site.blog.show', ['slug' => $post->slug]) }}">{{ $post->title }}</a></h3>
-                                                    <div class="th-landing-copy">{{ $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($post->body ?? ''), 150) }}</div>
+                                                    <span class="th-landing-chip">{{ $post->category?->name ?? $listingTitle }}</span>
+                                                    <h3 class="th-landing-listing-title" style="margin-top:12px;"><a href="{{ $itemUrl }}">{{ $post->title }}</a></h3>
+                                                    <div class="th-landing-copy">{{ $post->excerpt ?? $post->summary ?? \Illuminate\Support\Str::limit(strip_tags($post->body ?? $post->content ?? ''), 150) }}</div>
                                                 </div>
                                             </article>
                                         @endforeach
@@ -58,7 +70,7 @@
                             <section class="th-landing-hero">
                                 <div class="th-landing-hero-grid">
                                     <div>
-                                        <span class="th-landing-kicker">{{ $isPostDetail ? 'Chi tiết bài viết' : ($isContactPage ? 'Điểm chạm liên hệ' : 'Giới thiệu dự án') }}</span>
+                                        <span class="th-landing-kicker">{{ $isPostDetail ? 'Chi tiết bài viết' : ($isServiceDetail ? 'Chi tiết dịch vụ' : ($isContactPage ? 'Điểm chạm liên hệ' : 'Giới thiệu dự án')) }}</span>
                                         <h1 class="th-landing-title">{{ $entry->title }}</h1>
                                         <p class="th-landing-summary">{{ $entry->excerpt ?: 'Nội dung CMS cũng đã được đưa vào shell landing-page mới của LAN0201.' }}</p>
                                     </div>

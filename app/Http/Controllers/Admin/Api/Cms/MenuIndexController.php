@@ -55,7 +55,7 @@ class MenuIndexController
                         ->map(fn (CmsCategory $category): array => [
                             'label' => $category->name,
                             'value' => (string) $category->id,
-                            'url' => '/tin-tuc?category='.$category->slug,
+                            'url' => '/c/'.$category->slug,
                         ])
                         ->values()
                         ->all(),

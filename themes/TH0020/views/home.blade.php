@@ -227,13 +227,13 @@
             ]],
             ['title' => $t('footer.about_title', 'Gi?i thi?u'), 'links' => [
                 ['label' => $t('footer.about_us', 'V? chúng tôi'), 'url' => url('/'.app()->getLocale().'/gioi-thieu')],
-                ['label' => $t('footer.contact', 'Liên h?'), 'url' => url('/'.app()->getLocale().'/lien-he')],
+                ['label' => $t('footer.contact', 'Liên h?'), 'url' => route('site.contact')],
                 ['label' => $t('footer.privacy_policy', 'Chính sách b?o m?t'), 'url' => url('/'.app()->getLocale().'/chinh-sach-bao-mat')],
                 ['label' => $t('footer.operating_regulations', 'Quy ch? ho?t d?ng'), 'url' => url('/'.app()->getLocale().'/quy-che-hoat-dong')],
             ]],
             ['title' => $t('footer.partnership_title', 'H?p tác'), 'links' => [
                 ['label' => $t('footer.gift_cards', 'Th? quà t?ng'), 'url' => route('site.catalog.search')],
-                ['label' => $t('footer.partner_contact', 'Liên h? h?p tác'), 'url' => url('/'.app()->getLocale().'/lien-he')],
+                ['label' => $t('footer.partner_contact', 'Liên h? h?p tác'), 'url' => route('site.contact')],
                 ['label' => $t('footer.careers', 'Tuy?n d?ng'), 'url' => url('/'.app()->getLocale().'/tuyen-dung')],
                 ['label' => $t('footer.press_info', 'Thông tin báo chí'), 'url' => route('site.blog.index')],
             ]],
