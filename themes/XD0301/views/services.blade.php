@@ -280,17 +280,40 @@
 @section('content')
 <main class="xd-page-main">
             <div class="xd-container">
-                    <section class="xd-detail-card">
-                        <div class="xd-detail-body">
-                            <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
-                            <h1>{{ $entry->title }}</h1>
-                            @if (!empty($entry->excerpt))
-                                <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
-                            @endif
-                            <div class="xd-rich-content">
-                                {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
-                            </div>
+                    <section class="xd-cms-hero">
+                        <div>
+                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Services' : 'Dịch vụ' }}</span>
+                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'Services' : 'Dịch vụ') }}</h1>
+                            <p>{{ $pageDescription ?? (app()->getLocale() === 'en' ? 'Explore our construction and design services.' : 'Danh sÃ¡ch dá»‹ch vá»¥ thiáº¿t káº¿ vÃ  thi cÃ´ng ná»•i báº­t.') }}</p>
                         </div>
+                        <div class="xd-cms-stats">
+                            <strong>{{ collect($listingItems ?? [])->count() }}</strong>
+                            <span>{{ app()->getLocale() === 'en' ? 'Available services' : 'Dịch vụ đang hiển thị' }}</span>
+                        </div>
+                    </section>
+
+                    <section class="xd-services-list">
+                        @forelse ($listingItems as $service)
+                            @php
+                                $serviceUrl = route('site.services.show', ['slug' => $service->slug]);
+                                $image = $service->featuredImage?->image_url;
+                                $alt = $service->featuredImage?->alt_text ?: $service->title;
+                            @endphp
+                            <article class="xd-service-card">
+                                <a class="xd-service-image" href="{{ $serviceUrl }}" aria-label="{{ $service->title }}">
+                                    @if ($image)
+                                        <img src="{{ $image }}" alt="{{ $alt }}">
+                                    @endif
+                                </a>
+                                <div class="xd-service-body">
+                                    <h2><a href="{{ $serviceUrl }}">{{ $service->title }}</a></h2>
+                                    <p>{{ $service->summary ?: \Illuminate\Support\Str::limit(strip_tags($service->content ?? ''), 150) }}</p>
+                                    <a class="xd-text-link" href="{{ $serviceUrl }}">{{ app()->getLocale() === 'en' ? 'Learn more' : 'Tìm hiểu ngay' }}</a>
+                                </div>
+                            </article>
+                        @empty
+                            <p>{{ app()->getLocale() === 'en' ? 'No services are available yet.' : 'Chưa có dịch vụ nào được xuất bản.' }}</p>
+                        @endforelse
                     </section>
             </div>
 </main>

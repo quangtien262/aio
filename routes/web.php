@@ -97,20 +97,21 @@ Route::prefix('{locale}')
 				->name('site.preview.products');
 		});
 
-		Route::get('/{blogSegment}', [CmsSiteController::class, 'postsIndex'])
-			->whereIn('blogSegment', FrontendLocalization::segmentValues('blog'))
+		Route::get('/c', [CmsSiteController::class, 'postsIndex'])
 			->name('site.blog.index');
-		Route::get('/{blogSegment}/{slug}', [CmsSiteController::class, 'post'])
-			->whereIn('blogSegment', FrontendLocalization::segmentValues('blog'))
+		Route::get('/c/{slug}', [CmsSiteController::class, 'postsIndex'])
+			->name('site.blog.category');
+		Route::get('/n/{slug}', [CmsSiteController::class, 'post'])
 			->name('site.blog.show');
-		Route::get('/{servicesSegment}', [CmsSiteController::class, 'servicesIndex'])
-			->whereIn('servicesSegment', FrontendLocalization::segmentValues('services'))
+		Route::get('/s', [CmsSiteController::class, 'servicesIndex'])
 			->name('site.services.index');
-		Route::get('/{servicesSegment}/{slug}', [CmsSiteController::class, 'service'])
-			->whereIn('servicesSegment', FrontendLocalization::segmentValues('services'))
+		Route::get('/s/{slug}', [CmsSiteController::class, 'servicesIndex'])
+			->name('site.services.category');
+		Route::get('/ser/{slug}', [CmsSiteController::class, 'service'])
 			->name('site.services.show');
-		Route::post('/{contactSegment}', [CmsSiteController::class, 'submitContact'])
-			->whereIn('contactSegment', FrontendLocalization::segmentValues('contact'))
+		Route::get('/contact', [CmsSiteController::class, 'contact'])
+			->name('site.contact');
+		Route::post('/contact', [CmsSiteController::class, 'submitContact'])
 			->name('site.contact.submit');
 		Route::get('/{cartSegment}', [CmsSiteController::class, 'cart'])
 			->whereIn('cartSegment', FrontendLocalization::segmentValues('cart'))

@@ -62,7 +62,7 @@
             ['label' => 'Trang chủ', 'href' => route('site.home'), 'target' => '_self'],
             ['label' => 'Tin tức', 'href' => route('site.blog.index'), 'target' => '_self'],
             ['label' => 'Giới thiệu', 'href' => url('/'.app()->getLocale().'/gioi-thieu'), 'target' => '_self'],
-            ['label' => 'Liên hệ', 'href' => url('/'.app()->getLocale().'/lien-he'), 'target' => '_self'],
+            ['label' => 'Liên hệ', 'href' => route('site.contact'), 'target' => '_self'],
         ]);
     }
 @endphp

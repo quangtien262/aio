@@ -280,17 +280,46 @@
 @section('content')
 <main class="xd-page-main">
             <div class="xd-container">
-                    <section class="xd-detail-card">
-                        <div class="xd-detail-body">
-                            <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
-                            <h1>{{ $entry->title }}</h1>
-                            @if (!empty($entry->excerpt))
-                                <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
+                    @php
+                        $featuredImage = $entry->featuredImage?->image_url;
+                        $featuredAlt = $entry->featuredImage?->alt_text ?: $entry->title;
+                    @endphp
+                    <section class="xd-detail">
+                        <article class="xd-detail-card">
+                            @if ($featuredImage)
+                                <img class="xd-detail-image" src="{{ $featuredImage }}" alt="{{ $featuredAlt }}">
                             @endif
-                            <div class="xd-rich-content">
-                                {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
+                            <div class="xd-detail-body">
+                                <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Service' : 'Dịch vụ' }}</span>
+                                <h1>{{ $entry->title }}</h1>
+                                @if (!empty($entry->excerpt))
+                                    <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
+                                @endif
+                                <div class="xd-rich-content">
+                                    {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
+                                </div>
+
+                                @if (!empty($entry->images) && $entry->images->count() > 1)
+                                    <div class="xd-gallery">
+                                        @foreach ($entry->images as $image)
+                                            <figure>
+                                                <img src="{{ $image->image_url }}" alt="{{ $image->alt_text ?: $entry->title }}">
+                                                @if (!empty($image->caption))
+                                                    <figcaption>{{ $image->caption }}</figcaption>
+                                                @endif
+                                            </figure>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
-                        </div>
+                        </article>
+                        <aside class="xd-side-card">
+                            <h3>{{ app()->getLocale() === 'en' ? 'Quick links' : 'Liên kết nhanh' }}</h3>
+                            <a href="{{ route('site.services.index') }}">{{ app()->getLocale() === 'en' ? 'All services' : 'Táº¥t cáº£ dá»‹ch vá»¥' }}</a>
+                            @foreach ($navItems->take(5) as $item)
+                                <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
+                            @endforeach
+                        </aside>
                     </section>
             </div>
 </main>

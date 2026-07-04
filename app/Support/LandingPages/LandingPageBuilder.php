@@ -717,7 +717,7 @@ class LandingPageBuilder
                         'alt' => $title,
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->posts_count > 0 ? $category->posts_count.' bài viết' : null,
-                        'url' => route('site.blog.index', ['locale' => $locale, 'category' => $category->slug]),
+                        'url' => route('site.blog.category', ['locale' => $locale, 'slug' => $category->slug]),
                     ];
                 })
                 ->all();
@@ -752,7 +752,7 @@ class LandingPageBuilder
                         'alt' => $title,
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->services_count > 0 ? $category->services_count.' dịch vụ' : null,
-                        'url' => route('site.services.index', ['locale' => $locale, 'category' => $category->slug]),
+                        'url' => route('site.services.category', ['locale' => $locale, 'slug' => $category->slug]),
                     ];
                 })
                 ->all();

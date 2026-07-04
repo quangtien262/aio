@@ -280,18 +280,45 @@
 @section('content')
 <main class="xd-page-main">
             <div class="xd-container">
-                    <section class="xd-detail-card">
-                        <div class="xd-detail-body">
-                            <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
-                            <h1>{{ $entry->title }}</h1>
-                            @if (!empty($entry->excerpt))
-                                <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
-                            @endif
-                            <div class="xd-rich-content">
-                                {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
-                            </div>
+                    <section class="xd-cms-hero">
+                        <div>
+                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'News' : 'Tin tức' }}</span>
+                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'News' : 'Tin tức') }}</h1>
+                            <p>{{ $pageDescription ?? (app()->getLocale() === 'en' ? 'Latest company updates and construction insights.' : 'Danh sÃ¡ch bÃ i viáº¿t, tin tá»©c vÃ  kinh nghiá»‡m xÃ¢y dá»±ng má»›i nháº¥t.') }}</p>
+                        </div>
+                        <div class="xd-cms-stats">
+                            <strong>{{ method_exists($listingItems, 'total') ? $listingItems->total() : collect($listingItems ?? [])->count() }}</strong>
+                            <span>{{ app()->getLocale() === 'en' ? 'Published posts' : 'Bài viết đã xuất bản' }}</span>
                         </div>
                     </section>
+
+                    <section class="xd-services-list">
+                        @forelse ($listingItems as $post)
+                            @php
+                                $postUrl = route('site.blog.show', ['slug' => $post->slug]);
+                                $image = $post->featuredMedia?->url ?: $post->featuredMedia?->file_url;
+                                $summary = $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags((string) ($post->body ?? '')), 150);
+                            @endphp
+                            <article class="xd-service-card">
+                                <a class="xd-service-image" href="{{ $postUrl }}" aria-label="{{ $post->title }}">
+                                    <img src="{{ $image ?: 'https://picsum.photos/seed/xd0301-post-'.($post->id ?? 'default').'/960/720' }}" alt="{{ $post->title }}">
+                                </a>
+                                <div class="xd-service-body">
+                                    <h2><a href="{{ $postUrl }}">{{ $post->title }}</a></h2>
+                                    <p>{{ $summary }}</p>
+                                    <a class="xd-text-link" href="{{ $postUrl }}">{{ app()->getLocale() === 'en' ? 'Read more' : 'Đọc tiếp' }}</a>
+                                </div>
+                            </article>
+                        @empty
+                            <p>{{ app()->getLocale() === 'en' ? 'No posts are available yet.' : 'Chưa có bài viết nào được xuất bản.' }}</p>
+                        @endforelse
+                    </section>
+
+                    @if (method_exists($listingItems, 'links'))
+                        <div style="margin-top:32px">
+                            {{ $listingItems->links() }}
+                        </div>
+                    @endif
             </div>
 </main>
 @endsection

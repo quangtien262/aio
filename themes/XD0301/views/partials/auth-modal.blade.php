@@ -163,7 +163,7 @@
                     @csrf
                     <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
                     <label class="xd-auth-field">
-                        <span>Email hoặc username</span>
+                        <span>Email khách hàng / Username admin</span>
                         <input type="text" name="login" autocomplete="username" required>
                     </label>
                     <label class="xd-auth-field">

@@ -17,6 +17,7 @@ use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
 use App\Models\CmsService;
+use App\Models\CmsServiceCategory;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\SiteBanner;
@@ -89,9 +90,14 @@ class CmsSiteController
         return view('site');
     }
 
-    public function page(Request $request): View
+    public function page(Request $request): View|RedirectResponse
     {
         $slug = (string) $request->route('slug');
+
+        if (in_array($slug, ['contact', 'lien-he'], true)) {
+            return to_route('site.contact', ['locale' => $this->currentLocale()], 301);
+        }
+
         $siteProfile = SiteProfile::query()->first();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
@@ -165,7 +171,7 @@ class CmsSiteController
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
         $search = trim((string) $request->query('q', ''));
-        $categorySlug = trim((string) $request->query('category', ''));
+        $categorySlug = trim((string) ($request->route('slug') ?? $request->query('category', '')));
 
         $postsQuery = CmsPost::query()->with(['category', 'featuredMedia'])->where('status', 'published');
         $this->applyWebsiteScope($postsQuery, $websiteKey);
@@ -202,8 +208,10 @@ class CmsSiteController
 
             return $localized;
         });
+        $currentPostCategory = $categorySlug !== '' ? $postCategories->firstWhere('slug', $categorySlug) : null;
 
-        return $this->renderListing('posts', 'Tin tức', 'Danh sách bài viết đã xuất bản.', $posts, [
+
+        return $this->renderListing('posts', $currentPostCategory?->name ?? 'Tin tức', $currentPostCategory?->description ?? 'Danh sách bài viết đã xuất bản.', $posts, [
             'siteProfile' => $siteProfile,
             'activeTheme' => $activeTheme,
             'menus' => $menus,
@@ -231,7 +239,7 @@ class CmsSiteController
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
         $search = trim((string) $request->query('q', ''));
-        $categorySlug = trim((string) $request->query('category', ''));
+        $categorySlug = trim((string) ($request->route('slug') ?? $request->query('category', '')));
 
         $servicesQuery = CmsService::query()
             ->with(['category', 'featuredImage'])
@@ -256,8 +264,21 @@ class CmsSiteController
         }
 
         $services = $servicesQuery->paginate(12)->withQueryString();
+        $currentServiceCategory = null;
 
-        return $this->renderListing('services', 'Dịch vụ', 'Danh sách dịch vụ đã xuất bản.', $services, [
+        if ($categorySlug !== '') {
+            $categoryQuery = CmsServiceCategory::query()->where('slug', $categorySlug);
+            $this->applyWebsiteScope($categoryQuery, $websiteKey);
+            $currentServiceCategory = $categoryQuery->first();
+
+            if ($currentServiceCategory !== null) {
+                $currentServiceCategory = clone $currentServiceCategory;
+                $currentServiceCategory->name = $this->contentText($websiteKey, sprintf('cms_service_category.%d.name', $currentServiceCategory->id), $currentServiceCategory->name);
+                $currentServiceCategory->description = $this->contentText($websiteKey, sprintf('cms_service_category.%d.description', $currentServiceCategory->id), $currentServiceCategory->description);
+            }
+        }
+
+        return $this->renderListing('services', $currentServiceCategory?->name ?? 'Dịch vụ', $currentServiceCategory?->description ?? 'Danh sách dịch vụ đã xuất bản.', $services, [
             'siteProfile' => $siteProfile,
             'activeTheme' => $activeTheme,
             'menus' => $menus,
@@ -283,6 +304,26 @@ class CmsSiteController
         $service = $query->firstOrFail();
 
         return $this->renderContent('service', $service, [
+            'siteProfile' => $siteProfile,
+        ]);
+    }
+
+    public function contact(): View
+    {
+        $siteProfile = SiteProfile::query()->first();
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+
+        $query = CmsPage::query()
+            ->with('featuredMedia')
+            ->where('status', 'published')
+            ->whereIn('slug', ['contact', 'lien-he']);
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        $page = $query
+            ->orderByRaw("CASE WHEN slug = 'contact' THEN 0 WHEN slug = 'lien-he' THEN 1 ELSE 2 END")
+            ->firstOrFail();
+
+        return $this->renderContent('contact', $page, [
             'siteProfile' => $siteProfile,
         ]);
     }
@@ -998,7 +1039,7 @@ class CmsSiteController
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
         $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
-        $viewName = $this->resolveThemeCmsView($activeTheme) ?? 'site-cms';
+        $viewName = $this->resolveThemeCmsView($activeTheme, $contentType) ?? 'site-cms';
 
         if ($entry instanceof CmsPage) {
             $entry = $this->localizePageModel($entry, $websiteKey);
@@ -1041,7 +1082,7 @@ class CmsSiteController
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
         $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
         $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
-        $viewName = $this->resolveThemeCmsView($activeTheme) ?? 'site-cms';
+        $viewName = $this->resolveThemeCmsView($activeTheme, $contentType) ?? 'site-cms';
 
         if (is_object($items) && method_exists($items, 'getCollection') && method_exists($items, 'setCollection')) {
             $items->setCollection($items->getCollection()->map(fn (mixed $item): mixed => match (true) {
@@ -1121,7 +1162,7 @@ class CmsSiteController
         return app(\Illuminate\Contracts\View\Factory::class)->exists($viewName) ? $viewName : null;
     }
 
-    private function resolveThemeCmsView(?array $activeTheme): ?string
+    private function resolveThemeCmsView(?array $activeTheme, string $contentType = 'page'): ?string
     {
         $themeKey = strtolower((string) ($activeTheme['key'] ?? ''));
 
@@ -1129,7 +1170,16 @@ class CmsSiteController
             return null;
         }
 
-        $viewName = "theme-{$themeKey}::cms";
+        $viewKey = match ($contentType) {
+            'services' => 'services',
+            'service' => 'service',
+            'posts' => 'news',
+            'post' => 'news-detail',
+            'contact' => 'contact',
+            default => 'cms',
+        };
+
+        $viewName = "theme-{$themeKey}::{$viewKey}";
 
         return app(\Illuminate\Contracts\View\Factory::class)->exists($viewName) ? $viewName : null;
     }
@@ -1605,7 +1655,7 @@ class CmsSiteController
                 ['label' => 'Dịch vụ', 'url' => route('site.services.index'), 'target' => '_self'],
                 ['label' => 'Tin tức', 'url' => route('site.blog.index'), 'target' => '_self'],
                 ['label' => 'Giới thiệu', 'url' => url('/'.$this->currentLocale().'/gioi-thieu'), 'target' => '_self'],
-                ['label' => 'Liên hệ', 'url' => url('/'.$this->currentLocale().'/lien-he'), 'target' => '_self'],
+                ['label' => 'Liên hệ', 'url' => route('site.contact'), 'target' => '_self'],
             ];
         }
 

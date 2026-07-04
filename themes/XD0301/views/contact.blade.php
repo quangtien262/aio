@@ -280,17 +280,94 @@
 @section('content')
 <main class="xd-page-main">
             <div class="xd-container">
-                    <section class="xd-detail-card">
-                        <div class="xd-detail-body">
-                            <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
+                    <section class="xd-cms-hero">
+                        <div>
+                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Contact' : 'Liên hệ' }}</span>
                             <h1>{{ $entry->title }}</h1>
                             @if (!empty($entry->excerpt))
-                                <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
+                                <p>{{ $entry->excerpt }}</p>
+                            @else
+                                <p>{{ app()->getLocale() === 'en' ? 'Send your project request and our team will contact you shortly.' : 'Gửi nhu cầu tư vấn, thiết kế hoặc thi công. Đội ngũ XD0301 sẽ phản hồi trong thời gian sớm nhất.' }}</p>
                             @endif
-                            <div class="xd-rich-content">
-                                {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
-                            </div>
                         </div>
+                        <div class="xd-cms-stats">
+                            <strong>24h</strong>
+                            <span>{{ app()->getLocale() === 'en' ? 'Response target' : 'Thời gian phản hồi' }}</span>
+                        </div>
+                    </section>
+
+                    <section class="xd-contact-page">
+                        <aside class="xd-contact-panel">
+                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Contact info' : 'Thông tin liên hệ' }}</span>
+                            <h2>{{ $branding['company_name'] ?? $logoAlt }}</h2>
+                            <p>{{ app()->getLocale() === 'en' ? 'Tell us about your project, timeline and expected scope. We will review and advise the next practical step.' : 'Hãy cho chúng tôi biết nhu cầu, quy mô và thời gian dự kiến. Đội ngũ tư vấn sẽ kiểm tra và đề xuất hướng triển khai phù hợp.' }}</p>
+                            <ul class="xd-contact-methods">
+                                <li class="xd-contact-method">
+                                    <span class="xd-contact-icon" aria-hidden="true">&#9742;</span>
+                                    <div>
+                                        <small>Hotline</small>
+                                        <a href="tel:{{ $phoneHref }}">{{ $hotline }}</a>
+                                    </div>
+                                </li>
+                                <li class="xd-contact-method">
+                                    <span class="xd-contact-icon" aria-hidden="true">&#9993;</span>
+                                    <div>
+                                        <small>Email</small>
+                                        <a href="mailto:{{ $email }}">{{ $email }}</a>
+                                    </div>
+                                </li>
+                                <li class="xd-contact-method">
+                                    <span class="xd-contact-icon" aria-hidden="true">&#9906;</span>
+                                    <div>
+                                        <small>{{ app()->getLocale() === 'en' ? 'Address' : 'Địa chỉ' }}</small>
+                                        <span>{{ $address }}</span>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="xd-contact-note">
+                                <strong>{{ app()->getLocale() === 'en' ? 'Project information helps us reply faster.' : 'Thông tin càng rõ, tư vấn càng nhanh.' }}</strong>
+                                <span>{{ app()->getLocale() === 'en' ? 'You can include site location, area, expected budget and desired handover date.' : 'Có thể ghi thêm địa điểm công trình, diện tích, ngân sách dự kiến và thời gian cần bàn giao.' }}</span>
+                            </div>
+                        </aside>
+
+                        <article class="xd-contact-form-card">
+                            <h2>{{ app()->getLocale() === 'en' ? 'Send a request' : 'Gửi yêu cầu liên hệ' }}</h2>
+                            @if (session('contact_status'))
+                                <div class="xd-contact-alert">{{ session('contact_status') }}</div>
+                            @endif
+                            @if ($errors->any())
+                                <div class="xd-contact-errors">
+                                    {{ app()->getLocale() === 'en' ? 'Please check the form information.' : 'Vui lòng kiểm tra lại thông tin.' }}
+                                    <ul>
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                            <form class="xd-contact-form" method="POST" action="{{ route('site.contact.submit') }}">
+                                @csrf
+                                <input type="hidden" name="source" value="contact">
+                                <input type="hidden" name="subject" value="{{ app()->getLocale() === 'en' ? 'Contact request from website' : 'Yêu cầu liên hệ từ website' }}">
+                                <label class="xd-contact-field">
+                                    <span>{{ app()->getLocale() === 'en' ? 'Full name' : 'Họ tên' }}</span>
+                                    <input name="name" value="{{ old('name') }}" required autocomplete="name">
+                                </label>
+                                <label class="xd-contact-field">
+                                    <span>{{ app()->getLocale() === 'en' ? 'Phone number' : 'Số điện thoại' }}</span>
+                                    <input name="phone" value="{{ old('phone') }}" autocomplete="tel">
+                                </label>
+                                <label class="xd-contact-field">
+                                    <span>Email</span>
+                                    <input type="email" name="email" value="{{ old('email') }}" required autocomplete="email">
+                                </label>
+                                <label class="xd-contact-field">
+                                    <span>{{ app()->getLocale() === 'en' ? 'Message' : 'Nội dung' }}</span>
+                                    <textarea name="message" required>{{ old('message') }}</textarea>
+                                </label>
+                                <button class="xd-contact-submit" type="submit">{{ app()->getLocale() === 'en' ? 'Send request' : 'Gửi liên hệ' }}</button>
+                            </form>
+                        </article>
                     </section>
             </div>
 </main>
