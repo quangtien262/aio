@@ -253,7 +253,8 @@
         .xd-contact-panel p{margin:0 0 26px;color:var(--muted);font-size:18px;font-weight:600}
         .xd-contact-methods{display:grid;gap:16px;margin:0;padding:0;list-style:none}
         .xd-contact-method{display:grid;grid-template-columns:54px minmax(0,1fr);gap:16px;align-items:center;padding:18px;border:1px solid rgba(38,56,74,.1);background:#fff}
-        .xd-contact-icon{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;background:var(--ink);color:#fff;font-size:22px;font-weight:900}
+        .xd-contact-icon{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;background:#bdd400;color:#fff}
+        .xd-contact-icon svg{width:25px;height:25px;display:block;stroke:#fff;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
         .xd-contact-method small{display:block;color:var(--lime-dark);font-size:12px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
         .xd-contact-method a,.xd-contact-method span{color:var(--ink);font-size:18px;font-weight:850;overflow-wrap:anywhere}
         .xd-contact-note{margin-top:24px;padding:20px 22px;background:var(--ink);color:#fff}
@@ -303,21 +304,35 @@
                             <p>{{ app()->getLocale() === 'en' ? 'Tell us about your project, timeline and expected scope. We will review and advise the next practical step.' : 'Hãy cho chúng tôi biết nhu cầu, quy mô và thời gian dự kiến. Đội ngũ tư vấn sẽ kiểm tra và đề xuất hướng triển khai phù hợp.' }}</p>
                             <ul class="xd-contact-methods">
                                 <li class="xd-contact-method">
-                                    <span class="xd-contact-icon" aria-hidden="true">&#9742;</span>
+                                    <span class="xd-contact-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.9.66 2.81a2 2 0 0 1-.45 2.11L8.05 9.91a16 16 0 0 0 6.04 6.04l1.27-1.27a2 2 0 0 1 2.11-.45c.91.31 1.85.53 2.81.66A2 2 0 0 1 22 16.92z"/>
+                                        </svg>
+                                    </span>
                                     <div>
                                         <small>Hotline</small>
                                         <a href="tel:{{ $phoneHref }}">{{ $hotline }}</a>
                                     </div>
                                 </li>
                                 <li class="xd-contact-method">
-                                    <span class="xd-contact-icon" aria-hidden="true">&#9993;</span>
+                                    <span class="xd-contact-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <rect x="3" y="5" width="18" height="14" rx="2"/>
+                                            <path d="m3 7 9 6 9-6"/>
+                                        </svg>
+                                    </span>
                                     <div>
                                         <small>Email</small>
                                         <a href="mailto:{{ $email }}">{{ $email }}</a>
                                     </div>
                                 </li>
                                 <li class="xd-contact-method">
-                                    <span class="xd-contact-icon" aria-hidden="true">&#9906;</span>
+                                    <span class="xd-contact-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M12 21s7-5.3 7-12a7 7 0 1 0-14 0c0 6.7 7 12 7 12z"/>
+                                            <circle cx="12" cy="9" r="2.5"/>
+                                        </svg>
+                                    </span>
                                     <div>
                                         <small>{{ app()->getLocale() === 'en' ? 'Address' : 'Địa chỉ' }}</small>
                                         <span>{{ $address }}</span>
@@ -325,8 +340,8 @@
                                 </li>
                             </ul>
                             <div class="xd-contact-note">
-                                <strong>{{ app()->getLocale() === 'en' ? 'Project information helps us reply faster.' : 'Thông tin càng rõ, tư vấn càng nhanh.' }}</strong>
-                                <span>{{ app()->getLocale() === 'en' ? 'You can include site location, area, expected budget and desired handover date.' : 'Có thể ghi thêm địa điểm công trình, diện tích, ngân sách dự kiến và thời gian cần bàn giao.' }}</span>
+                                <strong>{{ app()->getLocale() === 'en' ? 'Share the essentials, we will shape the right solution.' : 'Chia sẻ nhu cầu, chúng tôi tư vấn đúng giải pháp.' }}</strong>
+                                <span>{{ app()->getLocale() === 'en' ? 'Add your site location, surface area, expected timeline or technical requirements so our team can prepare a practical recommendation.' : 'Hãy gửi thêm địa điểm, diện tích, tiến độ mong muốn hoặc yêu cầu kỹ thuật để đội ngũ chuẩn bị phương án phù hợp ngay từ lần phản hồi đầu tiên.' }}</span>
                             </div>
                         </aside>
 

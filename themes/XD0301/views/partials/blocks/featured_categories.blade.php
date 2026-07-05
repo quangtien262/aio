@@ -23,7 +23,6 @@
                                                 <img src="{{ $category['image'] }}" alt="{{ $category['alt'] ?? $category['title'] ?? '' }}">
                                             @endif
                                             <span class="xd-featured-cat-body">
-                                                <i class="xd-featured-cat-icon">{{ $category['icon'] ?? mb_substr((string) ($category['title'] ?? 'C'), 0, 1) }}</i>
                                                 <h3>{{ $category['title'] ?? $category['name'] ?? '' }}</h3>
                                                 @if(filled($category['count_label'] ?? $category['summary'] ?? null))
                                                     <span>{{ $category['count_label'] ?? $category['summary'] }}</span>

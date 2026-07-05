@@ -1353,6 +1353,39 @@ class LandingPageBuilder
                 ],
             ],
             [
+                'block_type' => 'landing_contact',
+                'label' => 'Khối liên hệ',
+                'description' => 'Thông tin liên hệ và form gửi yêu cầu trực tiếp trên landingpage.',
+                'preview_image' => '/theme-previews/XD0301/landing-contact.png',
+                'anchor_id' => 'lien-he',
+                'settings' => [],
+                'media' => [],
+                'data' => [
+                    'vi' => [
+                        'title' => 'CÔNG TY CP PHỤ GIA VÀ HOÁ CHẤT DẦU KHÍ',
+                        'subtitle' => 'Thông tin liên hệ',
+                        'description' => 'Hãy cho chúng tôi biết nhu cầu, quy mô và thời gian dự kiến. Đội ngũ tư vấn sẽ kiểm tra và đề xuất hướng triển khai phù hợp.',
+                        'button_label' => 'Gửi liên hệ',
+                        'content' => [
+                            'form_title' => 'Gửi yêu cầu liên hệ',
+                            'note_title' => 'Chia sẻ nhu cầu, chúng tôi tư vấn đúng giải pháp.',
+                            'note_text' => 'Hãy gửi thêm địa điểm, diện tích, tiến độ mong muốn hoặc yêu cầu kỹ thuật để đội ngũ chuẩn bị phương án phù hợp ngay từ lần phản hồi đầu tiên.',
+                        ],
+                    ],
+                    'en' => [
+                        'title' => 'PETROLEUM ADDITIVES AND CHEMICALS JSC',
+                        'subtitle' => 'Contact info',
+                        'description' => 'Tell us about your project, timeline and expected scope. We will review and advise the next practical step.',
+                        'button_label' => 'Send request',
+                        'content' => [
+                            'form_title' => 'Send a request',
+                            'note_title' => 'Share the essentials, we will shape the right solution.',
+                            'note_text' => 'Add your site location, surface area, expected timeline or technical requirements so our team can prepare a practical recommendation.',
+                        ],
+                    ],
+                ],
+            ],
+            [
                 'block_type' => 'footer_contact',
                 'label' => 'Footer',
                 'description' => 'Footer thông tin, liên hệ và đăng ký nhận tin.',

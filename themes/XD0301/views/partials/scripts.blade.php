@@ -171,6 +171,8 @@
             const itemModalTitle = document.querySelector('[data-xd-item-title]');
             const itemIndexInput = document.querySelector('[data-xd-item-index]');
             const sourceEditor = document.querySelector('[data-xd-source-editor]');
+            const contactEditor = document.querySelector('[data-xd-contact-editor]');
+            const contactContentFields = Array.from(document.querySelectorAll('[data-xd-content-field]'));
             const manageSourceLink = document.querySelector('[data-xd-manage-source]');
             const sourceSettingFields = Array.from(document.querySelectorAll('[data-xd-setting-field]'));
             const localeTabs = Array.from(document.querySelectorAll('[data-xd-locale-tab]'));
@@ -269,6 +271,25 @@
             };
             const normalizeContentObject = (value) => {
                 return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+            };
+            const syncContactEditorVisibility = (block) => {
+                if (!contactEditor) return;
+                contactEditor.hidden = (block?.block_type || '') !== 'landing_contact';
+            };
+            const loadContactContentFields = (content = {}) => {
+                contactContentFields.forEach((input) => {
+                    input.value = content?.[input.dataset.xdContentField] ?? '';
+                });
+            };
+            const mergeContactContentFields = (content = {}) => {
+                if (!contactEditor || contactEditor.hidden) return content;
+
+                const next = {...normalizeContentObject(content)};
+                contactContentFields.forEach((input) => {
+                    next[input.dataset.xdContentField] = input.value.trim();
+                });
+
+                return next;
             };
             const settingField = (name) => sourceSettingFields.find((input) => input.dataset.xdSettingField === name);
             const sourceControlWrap = (name) => settingField(name)?.closest('label');
@@ -641,9 +662,10 @@
                 }
             };
             const collectCurrentLocaleDraft = () => {
-                const content = normalizeContentObject(parseJson(field('content').value, {}));
+                let content = normalizeContentObject(parseJson(field('content').value, {}));
                 const editorItems = collectEditorItems();
                 if (editorItems) content[activeItemKey] = editorItems;
+                content = mergeContactContentFields(content);
 
                 return {
                     locale: activeEditorLocale,
@@ -664,6 +686,7 @@
                 field('description').value = draft.description || '';
                 field('button_label').value = draft.button_label || '';
                 field('content').value = pretty(normalizeContentObject(draft.content || {}));
+                loadContactContentFields(normalizeContentObject(draft.content || {}));
                 renderItemsEditor(activeBlock, normalizeContentObject(draft.content || {}));
                 if (!isCustomSource()) scheduleSourcePreview();
                 localeTabs.forEach((button) => button.classList.toggle('is-active', button.dataset.xdLocaleTab === locale));
@@ -721,6 +744,7 @@
                     field('settings').value = pretty(block.settings || {});
                     if (field('cta_url')) field('cta_url').value = block.settings?.cta_url || '';
                     field('media').value = pretty(block.media || {});
+                    syncContactEditorVisibility(block);
                     renderSourceEditor(block);
                     loadLocaleDraft(block.data?.locale || activeEditorLocale);
                     editor.hidden = false;

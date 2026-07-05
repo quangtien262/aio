@@ -2204,6 +2204,57 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ];
         }
 
+        if (sectionKey === 'cms-testimonials') {
+            return [
+                {
+                    title: 'Khách hàng',
+                    dataIndex: 'name',
+                    key: 'name',
+                    render: (value, record) => (
+                        <Space size={12} align="start">
+                            {record.image_url ? (
+                                <img
+                                    src={record.image_url}
+                                    alt={record.image_alt || value}
+                                    style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 999, border: '1px solid #dbe7e4', display: 'block' }}
+                                />
+                            ) : (
+                                <div
+                                    style={{
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: 999,
+                                        border: '1px solid #dbe7e4',
+                                        background: '#f4f7f6',
+                                        display: 'grid',
+                                        placeItems: 'center',
+                                        color: '#8aa19a',
+                                        fontSize: 12,
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    No Img
+                                </div>
+                            )}
+                            <Space direction="vertical" size={2} align="start">
+                                <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openEditModal(record)}>
+                                    <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                                </Button>
+                                <Text type="secondary">{record.company || record.role || 'Chưa có thông tin phụ'}</Text>
+                                <Paragraph ellipsis={{ rows: 2 }} style={{ margin: 0, maxWidth: 460 }}>
+                                    {record.quote}
+                                </Paragraph>
+                                {record.is_featured ? <Tag color="gold">Nổi bật</Tag> : null}
+                            </Space>
+                        </Space>
+                    ),
+                },
+                { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: renderStatusTag },
+                { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
+                { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
+            ];
+        }
+
         if (sectionKey === 'cms-products') {
             return [
                 {

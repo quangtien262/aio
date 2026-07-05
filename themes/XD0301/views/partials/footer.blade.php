@@ -94,10 +94,10 @@
                 <a href="mailto:{{ $footerEmail }}">&#9993; {{ $footerEmail }}</a>
                 <a href="tel:{{ $footerPhoneHref }}">&#9742; {{ $footerHotline }}</a>
             </div>
-        </div>
-        <div>
-            <h3>Đăng ký nhận tin</h3>
-            <p>Đăng ký email để nhận thông tin mới nhất từ chúng tôi</p>
+            <div class="xd-footer-newsletter">
+                <h4>Đăng ký nhận tin</h4>
+                <p>Đăng ký email để nhận thông tin mới nhất từ chúng tôi</p>
+            </div>
             <form class="xd-newsletter" method="POST" action="{{ route('site.newsletter.subscribe') }}">
                 @csrf
                 <input type="hidden" name="source" value="{{ $footerSource }}">

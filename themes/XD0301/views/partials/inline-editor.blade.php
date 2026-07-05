@@ -19,6 +19,17 @@
                     <label class="xd-editor-field"><span>Nút CTA</span><input data-xd-field="button_label"></label>
                     <label class="xd-editor-field"><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/gioi-thieu hoặc https://..."></label>
                     <label class="xd-editor-field"><span>Hiển thị</span><input data-xd-field="is_visible" type="checkbox"></label>
+                    <section class="xd-editor-source" data-xd-contact-editor hidden>
+                        <div>
+                            <h4>Nội dung liên hệ</h4>
+                            <p class="xd-editor-source-note">Các trường này chỉ dùng cho block liên hệ trên landingpage.</p>
+                        </div>
+                        <div class="xd-editor-grid">
+                            <label class="xd-editor-field"><span>Tiêu đề form</span><input data-xd-content-field="form_title"></label>
+                            <label class="xd-editor-field"><span>Tiêu đề ghi chú</span><input data-xd-content-field="note_title"></label>
+                            <label class="xd-editor-field is-wide"><span>Nội dung ghi chú</span><textarea data-xd-content-field="note_text"></textarea></label>
+                        </div>
+                    </section>
                     <section class="xd-editor-source" data-xd-source-editor hidden>
                         <div>
                             <h4>Nguồn nội dung</h4>
