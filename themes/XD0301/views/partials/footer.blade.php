@@ -6,9 +6,6 @@
 
     $footerCompanyName = trim((string) ($footerBranding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Arkit'))) ?: 'Arkit';
     $footerDescription = trim((string) ($footerBranding['company_description'] ?? data_get($siteProfile ?? [], 'description', '')));
-    $footerDescription = $footerDescription !== ''
-        ? $footerDescription
-        : $footerCompanyName.' là đơn vị tư vấn, cung cấp và thi công giải pháp cho công trình hiện đại.';
     $footerLogoUrl = trim((string) ($footerBranding['logo_url'] ?? ($logoUrl ?? '')));
     $footerLogoAlt = trim((string) ($footerBranding['logo_alt'] ?? $footerBranding['company_name'] ?? ($logoAlt ?? $footerCompanyName))) ?: $footerCompanyName;
     $footerHotline = trim((string) ($footerBranding['support_hotline'] ?? ($hotline ?? '0399162342'))) ?: '0399162342';
@@ -16,6 +13,9 @@
     $footerEmail = trim((string) ($footerBranding['support_email'] ?? $footerBranding['email'] ?? ($email ?? 'admin@htvietnam.vn'))) ?: 'admin@htvietnam.vn';
     $footerAddress = trim((string) ($footerBranding['support_location'] ?? $footerBranding['address'] ?? ($address ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'))) ?: '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM';
     $footerSource = $footerNewsletterSource ?? 'theme-footer-xd0301';
+    $footerBocStatus = trim((string) ($footerBranding['boc_status'] ?? 'not_notified'));
+    $footerBocConfirmationUrl = trim((string) ($footerBranding['boc_confirmation_url'] ?? ''));
+    $footerBocNote = trim((string) ($footerBranding['boc_footer_note'] ?? '')) ?: 'Website đang chờ khai báo Bộ Công Thương';
 
     $footerUrlResolver = function (?string $href): string {
         $href = trim((string) $href);
@@ -77,7 +77,17 @@
                     <i class="xd-logo-mark" aria-hidden="true"></i><b>{{ $footerCompanyName }}</b>
                 @endif
             </a>
-            <p>{!! nl2br(e($footerDescription)) !!}</p>
+            <h3 class="xd-footer-company">{{ $footerCompanyName }}</h3>
+            @if ($footerDescription !== '')
+                <p>{!! nl2br(e($footerDescription)) !!}</p>
+            @endif
+            @if ($footerBocStatus === 'notified' && $footerBocConfirmationUrl !== '')
+                <a class="xd-footer-boc" href="{{ $footerBocConfirmationUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Đã thông báo Bộ Công Thương">
+                    <img src="/img/dathongbao-bo-cong-thuong.png" alt="Đã thông báo Bộ Công Thương">
+                </a>
+            @elseif ($footerBocStatus === 'pending')
+                <p class="xd-footer-boc-note"><em>{{ $footerBocNote }}</em></p>
+            @endif
         </div>
         <div>
             <h3>Thông tin</h3>

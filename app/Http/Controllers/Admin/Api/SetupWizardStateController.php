@@ -72,6 +72,7 @@ class SetupWizardStateController
         return response()->json([
             'data' => [
                 'site_name' => $siteProfile?->site_name,
+                'description' => $siteProfile?->description,
                 'website_type' => $siteProfile?->website_type,
                 'website_type_label' => $websiteTypes[$siteProfile?->website_type] ?? null,
                 'website_type_options' => collect($websiteTypes)
