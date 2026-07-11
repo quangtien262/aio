@@ -249,6 +249,7 @@
         <footer class="footer">
             <div class="wrap footer-inner">
                 <span>{{ data_get($branding, 'company_name', 'SER0100') }}</span>
+                @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'ser-footer-boc-status'])
                 <span>{{ $contactHotline }}</span>
             </div>
         </footer>

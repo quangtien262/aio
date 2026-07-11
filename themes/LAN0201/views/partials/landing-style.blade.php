@@ -630,6 +630,14 @@ button, input, textarea, select { font: inherit; }
     margin-bottom: 8px;
 }
 
+.th-landing-boc-status {
+    display: inline-flex;
+    margin-top: 14px;
+    color: var(--th-landing-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
 .th-landing-alert {
     margin-bottom: 18px;
     padding: 14px 16px;

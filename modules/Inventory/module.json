@@ -1,0 +1,148 @@
+{
+  "name": "Inventory",
+  "key": "inventory",
+  "version": "0.2.0",
+  "description": "Module quan ly nhieu kho, vi tri, hang hoa, ton kho, batch/serial va giao dich nhap xuat chuyen kho cho AIO Platform.",
+  "website_type": ["backoffice", "ecommerce", "corporate", "landingpage"],
+  "dependencies": ["cms", "catalog"],
+  "permissions": [
+    "inventory.view",
+    "inventory.warehouse.manage",
+    "inventory.location.manage",
+    "inventory.item.manage",
+    "inventory.item.sync",
+    "inventory.receipt.manage",
+    "inventory.issue.manage",
+    "inventory.transfer.manage",
+    "inventory.adjustment.manage",
+    "inventory.stocktake.manage",
+    "inventory.replenishment.view",
+    "inventory.report.view"
+  ],
+  "hooks": [
+    "Modules\\Inventory\\Hooks\\InventoryLifecycleHook"
+  ],
+  "menus": [
+    {
+      "key": "inventory-dashboard",
+      "label": "Tong quan kho",
+      "description": "Theo doi nhanh ton kho, hang sap het va giao dich gan day.",
+      "badge": "Inventory",
+      "color": "green",
+      "icon": "appstore",
+      "route": "/admin/inventory/dashboard",
+      "permission": "inventory.view"
+    },
+    {
+      "key": "inventory-warehouses",
+      "label": "Kho",
+      "description": "Quan ly nhieu kho va dia chi van hanh.",
+      "badge": "Kho",
+      "color": "blue",
+      "icon": "appstore",
+      "route": "/admin/inventory/warehouses",
+      "permission": "inventory.warehouse.manage"
+    },
+    {
+      "key": "inventory-locations",
+      "label": "Vi tri kho",
+      "description": "Quan ly khu, ke, ngan va barcode vi tri trong tung kho.",
+      "badge": "Location",
+      "color": "blue",
+      "icon": "appstore",
+      "route": "/admin/inventory/locations",
+      "permission": "inventory.view"
+    },
+    {
+      "key": "inventory-items",
+      "label": "Hang hoa",
+      "description": "Dong bo san pham CMS/Catalog sang hang hoa kho.",
+      "badge": "Sync",
+      "color": "cyan",
+      "icon": "tags",
+      "route": "/admin/inventory/items",
+      "permission": "inventory.view"
+    },
+    {
+      "key": "inventory-replenishment",
+      "label": "Bo sung hang",
+      "description": "Goi y nhap hang dua tren nguong min/max.",
+      "badge": "Reorder",
+      "color": "orange",
+      "icon": "read",
+      "route": "/admin/inventory/replenishment",
+      "permission": "inventory.replenishment.view"
+    },
+    {
+      "key": "inventory-batches",
+      "label": "Batch & Serial",
+      "description": "Theo doi batch/lot, han dung va serial number.",
+      "badge": "Trace",
+      "color": "magenta",
+      "icon": "tags",
+      "route": "/admin/inventory/batches",
+      "permission": "inventory.view"
+    },
+    {
+      "key": "inventory-balances",
+      "label": "Ton kho",
+      "description": "Xem ton hien tai theo kho va hang hoa.",
+      "badge": "Stock",
+      "color": "gold",
+      "icon": "read",
+      "route": "/admin/inventory/balances",
+      "permission": "inventory.view"
+    },
+    {
+      "key": "inventory-documents",
+      "label": "Phieu kho",
+      "description": "Tao phieu nhap, xuat, chuyen kho va dieu chinh.",
+      "badge": "Docs",
+      "color": "purple",
+      "icon": "profile",
+      "route": "/admin/inventory/documents",
+      "permission": "inventory.view"
+    },
+    {
+      "key": "inventory-movements",
+      "label": "Lich su kho",
+      "description": "Tra cuu stock ledger append-only cua module kho.",
+      "badge": "Ledger",
+      "color": "volcano",
+      "icon": "read",
+      "route": "/admin/inventory/movements",
+      "permission": "inventory.report.view"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.2.0",
+      "date": "2026-07-09",
+      "notes": [
+        "Bo sung vi tri kho nang cao, barcode lookup, nguong min/max va goi y bo sung hang.",
+        "Bo sung batch/lot, han dung, serial number va cost layer FIFO/AVG nen tang."
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-07-09",
+      "notes": [
+        "Khoi tao module Inventory phase 1 voi nhieu kho, hang hoa dong bo tu Catalog, ton kho va stock ledger.",
+        "Bo sung phieu nhap, xuat, chuyen kho, dieu chinh don gian va bao cao dong bo san pham."
+      ]
+    }
+  ],
+  "package": {
+    "migrations": ["database/migrations"],
+    "seeders": [],
+    "config": [],
+    "assets": []
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": true
+  }
+}

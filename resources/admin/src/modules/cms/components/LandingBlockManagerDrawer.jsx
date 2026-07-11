@@ -71,6 +71,31 @@ function editorItemFields(blockType) {
         ];
     }
 
+    if (blockType === 'content_mosaic') {
+        return [
+            ['title', 'TiÃªu Ä‘á»'],
+            ['summary', 'MÃ´ táº£', 'textarea'],
+            ['image', 'áº¢nh'],
+            ['url', 'Link'],
+        ];
+    }
+
+    if (blockType === 'faq_showcase') {
+        return [
+            ['question', 'Câu hỏi'],
+            ['answer', 'Câu trả lời', 'textarea'],
+        ];
+    }
+
+    if (['content_showcase', 'latest_posts'].includes(blockType)) {
+        return [
+            ['title', 'Tiêu đề'],
+            ['summary', 'Mô tả', 'textarea'],
+            ['image', 'Ảnh'],
+            ['url', 'Link'],
+        ];
+    }
+
     if (blockType === 'team_members') {
         return [
             ['name', 'Tên nhân sự'],

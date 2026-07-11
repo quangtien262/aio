@@ -31,12 +31,20 @@ const { Paragraph, Text } = Typography;
 export default function ThemeDemoDataModal({ open, theme, mode = 'generate', canGenerateDemoData, onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const presetOptions = useMemo(() => {
+        if (theme?.demo?.default_preset) {
+            return [{
+                label: `Dữ liệu mẫu mặc định của ${theme.name}`,
+                value: theme.demo.default_preset,
+                description: 'Bộ nội dung được thiết kế riêng cho bố cục và nguồn dữ liệu của theme này.',
+            }];
+        }
+
         if ((theme?.website_type ?? '').toLowerCase() === 'service') {
             return SERVICE_PRESET_OPTIONS;
         }
 
         return COMMERCE_PRESET_OPTIONS;
-    }, [theme?.website_type]);
+    }, [theme?.demo?.default_preset, theme?.name, theme?.website_type]);
 
     useEffect(() => {
         if (!open) {

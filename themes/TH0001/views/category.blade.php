@@ -485,6 +485,7 @@
                         <div class="th-company">
                             <strong>{{ data_get($siteProfile, 'branding.company_name', data_get($branding, 'company_name', '')) }}</strong>
                             <div>Thiết kế lại trang danh sách sản phẩm theo layout thương mại điện tử, dùng dữ liệu category và product thật từ hệ thống.</div>
+                            @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'th-footer-boc-status'])
                         </div>
                     </div>
                 </div>

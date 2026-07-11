@@ -37,6 +37,22 @@ use App\Http\Controllers\Admin\Api\Cms\TeamMemberManagementController;
 use App\Http\Controllers\Admin\Api\Cms\TestimonialIndexController;
 use App\Http\Controllers\Admin\Api\Cms\TestimonialManagementController;
 use App\Http\Controllers\Admin\Api\DashboardController;
+use App\Http\Controllers\Admin\Api\Inventory\BarcodeLookupController as InventoryBarcodeLookupController;
+use App\Http\Controllers\Admin\Api\Inventory\BatchIndexController as InventoryBatchIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\InventoryDashboardController;
+use App\Http\Controllers\Admin\Api\Inventory\ItemIndexController as InventoryItemIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\ItemManagementController as InventoryItemManagementController;
+use App\Http\Controllers\Admin\Api\Inventory\LocationIndexController as InventoryLocationIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\LocationManagementController as InventoryLocationManagementController;
+use App\Http\Controllers\Admin\Api\Inventory\ProductSyncController as InventoryProductSyncController;
+use App\Http\Controllers\Admin\Api\Inventory\ReplenishmentIndexController as InventoryReplenishmentIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\SerialNumberIndexController as InventorySerialNumberIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\StockBalanceIndexController as InventoryStockBalanceIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\StockDocumentIndexController as InventoryStockDocumentIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\StockDocumentManagementController as InventoryStockDocumentManagementController;
+use App\Http\Controllers\Admin\Api\Inventory\StockMovementIndexController as InventoryStockMovementIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\WarehouseIndexController as InventoryWarehouseIndexController;
+use App\Http\Controllers\Admin\Api\Inventory\WarehouseManagementController as InventoryWarehouseManagementController;
 use App\Http\Controllers\Admin\Api\LandingPageBlockController;
 use App\Http\Controllers\Admin\Api\LandingPageController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
@@ -135,6 +151,66 @@ Route::prefix('admin')
                 Route::get('/modules', ModuleRegistryController::class)
                     ->middleware('admin.permission:store.module.view')
                     ->name('modules');
+                Route::get('/inventory/dashboard', InventoryDashboardController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.dashboard');
+                Route::get('/inventory/warehouses', InventoryWarehouseIndexController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.warehouses.index');
+                Route::post('/inventory/warehouses', [InventoryWarehouseManagementController::class, 'store'])
+                    ->middleware('admin.permission:inventory.warehouse.manage')
+                    ->name('inventory.warehouses.store');
+                Route::put('/inventory/warehouses/{warehouse}', [InventoryWarehouseManagementController::class, 'update'])
+                    ->middleware('admin.permission:inventory.warehouse.manage')
+                    ->name('inventory.warehouses.update');
+                Route::delete('/inventory/warehouses/{warehouse}', [InventoryWarehouseManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:inventory.warehouse.manage')
+                    ->name('inventory.warehouses.destroy');
+                Route::get('/inventory/locations', InventoryLocationIndexController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.locations.index');
+                Route::post('/inventory/locations', [InventoryLocationManagementController::class, 'store'])
+                    ->middleware('admin.permission:inventory.location.manage')
+                    ->name('inventory.locations.store');
+                Route::put('/inventory/locations/{location}', [InventoryLocationManagementController::class, 'update'])
+                    ->middleware('admin.permission:inventory.location.manage')
+                    ->name('inventory.locations.update');
+                Route::delete('/inventory/locations/{location}', [InventoryLocationManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:inventory.location.manage')
+                    ->name('inventory.locations.destroy');
+                Route::get('/inventory/items', InventoryItemIndexController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.items.index');
+                Route::put('/inventory/items/{item}', [InventoryItemManagementController::class, 'update'])
+                    ->middleware('admin.permission:inventory.item.manage')
+                    ->name('inventory.items.update');
+                Route::post('/inventory/items/sync-products', InventoryProductSyncController::class)
+                    ->middleware('admin.permission:inventory.item.sync')
+                    ->name('inventory.items.sync-products');
+                Route::get('/inventory/batches', InventoryBatchIndexController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.batches.index');
+                Route::get('/inventory/serial-numbers', InventorySerialNumberIndexController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.serial-numbers.index');
+                Route::get('/inventory/replenishment', InventoryReplenishmentIndexController::class)
+                    ->middleware('admin.permission:inventory.replenishment.view')
+                    ->name('inventory.replenishment.index');
+                Route::get('/inventory/barcode-lookup', InventoryBarcodeLookupController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.barcode-lookup');
+                Route::get('/inventory/balances', InventoryStockBalanceIndexController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.balances.index');
+                Route::get('/inventory/documents', InventoryStockDocumentIndexController::class)
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.documents.index');
+                Route::post('/inventory/documents', [InventoryStockDocumentManagementController::class, 'store'])
+                    ->middleware('admin.permission:inventory.view')
+                    ->name('inventory.documents.store');
+                Route::get('/inventory/movements', InventoryStockMovementIndexController::class)
+                    ->middleware('admin.permission:inventory.report.view')
+                    ->name('inventory.movements.index');
                 Route::get('/themes/{key}/translations', ThemeTranslationIndexController::class)
                     ->middleware('admin.permission:theme.view')
                     ->name('themes.translations.index');

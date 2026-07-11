@@ -2,6 +2,7 @@
 
 namespace App\Core\Themes;
 
+use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Cms\CmsMenuLocationRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -23,6 +24,7 @@ class ThemeDemoContentGenerator
 {
     public function __construct(
         private readonly CmsMenuLocationRegistry $menuLocationRegistry,
+        private readonly ThemeDemoContentProviderRegistry $providerRegistry,
     ) {
     }
 
@@ -47,6 +49,10 @@ class ThemeDemoContentGenerator
 
     public function generate(string $themeKey, string $presetKey): array
     {
+        if ($provider = $this->providerRegistry->forTheme($themeKey)) {
+            return $provider->generate($presetKey);
+        }
+
         $preset = collect($this->presetDefinitions())->firstWhere('key', $presetKey);
 
         if (! is_array($preset)) {
@@ -129,9 +135,18 @@ class ThemeDemoContentGenerator
 
     public function delete(string $themeKey): array
     {
+        if ($provider = $this->providerRegistry->forTheme($themeKey)) {
+            return $provider->delete();
+        }
+
         return DB::transaction(fn (): array => [
             'counts' => $this->purgeDemoContent($themeKey),
         ]);
+    }
+
+    public function defaultPresetForTheme(string $themeKey): ?string
+    {
+        return $this->providerRegistry->forTheme($themeKey)?->defaultPreset();
     }
 
     private function replaceMenuLocations(): void

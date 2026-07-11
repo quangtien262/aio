@@ -864,6 +864,7 @@
                             @endif
                         </div>
                         <p data-translation-display="home.footer_summary">{{ $t('home.footer_summary', 'Theme service-first cho nhà xe, shuttle doanh nghiệp và vận chuyển hàng nhẹ. Ưu tiên hotline, báo giá nhanh và nội dung tạo tin cậy.') }}</p>
+                        @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'ser-footer-boc-status'])
                     </section>
                     <section class="footer-card">
                         <h4 data-translation-display="home.footer_contact_title">{{ $t('home.footer_contact_title', 'Liên hệ') }}</h4>

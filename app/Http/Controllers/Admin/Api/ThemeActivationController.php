@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Admin\Api;
 
 use App\Core\Themes\ThemeRegistry;
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Models\SiteProfile;
 use App\Models\ThemeInstallation;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class ThemeActivationController
 {
-    public function __invoke(string $key, ThemeRegistry $themeRegistry): JsonResponse
+    public function __invoke(Request $request, string $key, ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $demoGenerator): JsonResponse
     {
+        $validated = $request->validate([
+            'create_demo_data' => ['sometimes', 'boolean'],
+        ]);
         ThemeInstallation::query()->update([
             'is_active' => false,
         ]);
@@ -39,8 +44,14 @@ class ThemeActivationController
             'completed_steps' => $completedSteps,
         ])->save();
 
+        $demo = null;
+        if (($validated['create_demo_data'] ?? false) === true && ($preset = $demoGenerator->defaultPresetForTheme($theme->key))) {
+            $demo = $demoGenerator->generate($theme->key, $preset);
+        }
+
         return response()->json([
-            'message' => 'Đã kích hoạt theme.',
+            'message' => $demo ? 'Đã kích hoạt theme và tạo dữ liệu mẫu.' : 'Đã kích hoạt theme.',
+            'data' => ['demo' => $demo],
         ]);
     }
 

@@ -1,4 +1,4 @@
-﻿@php
+@php
     $homeData = $themeHomeData ?? [];
     $siteProfile = $homeData['site_profile'] ?? $siteProfile ?? \App\Models\SiteProfile::query()->first();
     $branding = $homeData['branding'] ?? [];
@@ -887,6 +887,7 @@
                                 <span data-translation-display="{{ $themeBlockRegistry->contentKey($themeKey, 'company_footer.address_line_2') }}">{{ $companyFooter['address_line_2'] ?? 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân' }}</span>
                                 <span>Hotline: {{ $contactHotline }}</span>
                                 <span>Email: {{ $contactEmail }}</span>
+                                @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'th-footer-boc-status'])
                             </div>
                         </section>
                     </div>

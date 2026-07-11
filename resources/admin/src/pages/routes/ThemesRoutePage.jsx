@@ -63,8 +63,8 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
                 siteProfile={data?.siteProfile ?? null}
                 frontendLocale={frontendLocale}
                 defaultFrontendLocale={defaultFrontendLocale ?? data?.meta?.default_locale ?? 'vi'}
-                onActivate={(themeKey) => runAdminAction(
-                    () => callAdminApi(`/admin/api/themes/${themeKey}/activate`, { method: 'POST' }),
+                onActivate={(themeKey, options = {}) => runAdminAction(
+                    () => callAdminApi(`/admin/api/themes/${themeKey}/activate`, { method: 'POST', body: JSON.stringify({ create_demo_data: Boolean(options.createDemoData) }) }),
                     'Đã kích hoạt theme.',
                     async () => {
                         await reload();

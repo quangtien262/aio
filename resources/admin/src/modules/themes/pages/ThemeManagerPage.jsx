@@ -225,8 +225,8 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                         currentTheme={activeTheme}
                         canActivate={canActivate}
                         onCancel={() => setActivateThemeKey(null)}
-                        onConfirm={async (themeKey) => {
-                            await onActivate?.(themeKey);
+                        onConfirm={async (themeKey, options) => {
+                            await onActivate?.(themeKey, options);
                             setActivateThemeKey(null);
                         }}
                     />

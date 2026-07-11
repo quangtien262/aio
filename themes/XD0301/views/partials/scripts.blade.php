@@ -214,6 +214,7 @@
             const defaultBlockLimits = {
                 hero_slider: 3,
                 featured_categories: 6,
+                content_mosaic: 5,
                 featured_services: 3,
                 project_gallery: 4,
                 team_members: 4,
@@ -426,6 +427,15 @@
                     ];
                 }
 
+                if (blockType === 'content_mosaic') {
+                    return [
+                        ['title', 'TiÃªu Ä‘á»'],
+                        ['summary', 'MÃ´ táº£', 'textarea'],
+                        ['image', 'áº¢nh'],
+                        ['url', 'Link'],
+                    ];
+                }
+
                 if (blockType === 'testimonials') {
                     return [
                         ['name', 'Tên khách hàng'],
@@ -567,7 +577,7 @@
                 activeItemKey = editorItemKey(blockType);
                 const content = normalizeContentObject(contentOverride || block.data?.content || {});
                 let items = Array.isArray(content[activeItemKey]) ? content[activeItemKey] : [];
-                const canEditList = ['hero_slider', 'featured_categories', 'featured_services', 'project_gallery', 'team_members', 'testimonials', 'partner_logos'].includes(blockType);
+                const canEditList = ['hero_slider', 'featured_categories', 'content_mosaic', 'featured_services', 'project_gallery', 'team_members', 'testimonials', 'partner_logos'].includes(blockType);
 
                 itemList.innerHTML = '';
                 if (!canEditList) {

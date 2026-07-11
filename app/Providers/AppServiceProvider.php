@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Core\Themes\ThemeTranslationService;
+use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Core\Themes\Demo\Xd0302DemoContentProvider;
 use App\Support\FrontendLocalization;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\URL;
@@ -16,7 +18,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
+            $this->app->make(Xd0302DemoContentProvider::class),
+        ]));
     }
 
     /**

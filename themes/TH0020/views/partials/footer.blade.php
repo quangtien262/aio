@@ -111,6 +111,7 @@
                         <span>Hotline: {{ $footerHotline }}</span>
                         <span>Email: {{ $footerEmail }}</span>
                     </div>
+                    @include('partials.boc-footer-status', ['branding' => $footerBranding, 'class' => 'th-footer-boc-status'])
                 </section>
             @endif
 
@@ -134,6 +135,7 @@
                         <span>Hotline: {{ $footerHotline }}</span>
                         <span>Email: {{ $footerEmail }}</span>
                     </div>
+                    @include('partials.boc-footer-status', ['branding' => $footerBranding, 'class' => 'th-footer-boc-status'])
                 </section>
             @endunless
         </div>

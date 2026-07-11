@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302'], true);
     }
 
     /**
@@ -41,7 +41,7 @@ class LandingPageBuilder
             return [];
         }
 
-        return collect($this->xd0301DefaultBlocks())
+        return collect($this->defaultBlocksForTheme($themeKey))
             ->map(fn (array $block): array => [
                 'block_type' => $block['block_type'],
                 'label' => $block['label'],
@@ -64,7 +64,7 @@ class LandingPageBuilder
             return [];
         }
 
-        $definition = collect($this->xd0301DefaultBlocks())->firstWhere('block_type', $blockType);
+        $definition = collect($this->defaultBlocksForTheme($themeKey))->firstWhere('block_type', $blockType);
 
         return is_array($definition) ? (array) ($definition['settings_schema'] ?? []) : [];
     }
@@ -78,6 +78,7 @@ class LandingPageBuilder
         $query = LandingPage::query()
             ->with(['data', 'blocks.data'])
             ->where('website_key', $websiteKey)
+            ->where('theme_key', strtoupper($themeKey))
             ->where('is_home', true);
 
         $page = $query->first();
@@ -98,6 +99,7 @@ class LandingPageBuilder
         $query = LandingPage::query()
             ->with(['data', 'blocks.data'])
             ->where('website_key', $websiteKey)
+            ->where('theme_key', strtoupper($themeKey))
             ->where('slug', $slug);
 
         if ($publishedOnly) {
@@ -315,17 +317,17 @@ class LandingPageBuilder
             LandingPageData::query()->create([
                 'landing_page_id' => $page->id,
                 'locale' => $locale,
-                'title' => 'XD0301 Construction Landing',
-                'excerpt' => 'Trang chủ landingpage ngành xây dựng.',
-                'meta_title' => 'XD0301 Construction Landing',
-                'meta_description' => 'Theme xây dựng kết hợp landingpage và website truyền thống.',
+                'title' => strtoupper($themeKey).' Landing',
+                'excerpt' => 'Trang chủ landingpage.',
+                'meta_title' => strtoupper($themeKey).' Landing',
+                'meta_description' => 'Landing page được quản lý theo từng block.',
             ]);
         }
 
-        foreach ($this->xd0301DefaultBlocks() as $index => $definition) {
+        foreach ($this->defaultBlocksForTheme($themeKey) as $index => $definition) {
             $block = LandingPageBlock::query()->create([
                 'landing_page_id' => $page->id,
-                'theme_key' => 'XD0301',
+                'theme_key' => strtoupper($themeKey),
                 'block_type' => $definition['block_type'],
                 'sort_order' => ($index + 1) * 10,
                 'is_visible' => true,
@@ -353,7 +355,7 @@ class LandingPageBuilder
 
     public function createBlock(LandingPage $page, string $blockType): LandingPageBlock
     {
-        $definition = collect($this->xd0301DefaultBlocks())->firstWhere('block_type', $blockType);
+        $definition = collect($this->defaultBlocksForTheme((string) $page->theme_key))->firstWhere('block_type', $blockType);
         abort_if($definition === null, 422, 'Unsupported landing block type.');
 
         $maxSort = (int) $page->blocks()->max('sort_order');
@@ -461,7 +463,11 @@ class LandingPageBuilder
         $defaultLimit = match ($block->block_type) {
             'hero_slider' => 3,
             'featured_categories' => 6,
+            'content_mosaic' => 5,
+            'content_showcase' => 5,
             'project_gallery' => 4,
+            'featured_services' => 3,
+            'latest_posts' => 3,
             'team_members' => 4,
             'testimonials' => 2,
             'partner_logos' => 6,
@@ -470,7 +476,7 @@ class LandingPageBuilder
         $limit = max(1, min(12, (int) ($settings['limit'] ?? $defaultLimit)));
 
         if ($block->block_type === 'hero_slider') {
-            return $this->heroSlideItems($settings, $limit, $locale, $block->landingPage?->website_key);
+            return $this->heroSlideItems([...$settings, 'theme_key' => $block->theme_key], $limit, $locale, $block->landingPage?->website_key);
         }
 
         if ($block->block_type === 'featured_categories') {
@@ -478,23 +484,16 @@ class LandingPageBuilder
         }
 
         if ($block->block_type === 'latest_posts') {
-            /** @var Builder $query */
-            $query = CmsPost::query()->with('featuredMedia')->where('status', 'published')->latest('publish_at');
-
-            if (filled($settings['category_id'] ?? null)) {
-                $query->where('category_id', (int) $settings['category_id']);
-            }
-
-            return $query->take($limit)->get()->map(fn (CmsPost $post): array => [
-                'title' => $post->title,
-                'summary' => $post->excerpt,
-                'image' => $post->featuredMedia?->file_url ?: $this->fallbackContentImage(),
-                'url' => route('site.blog.show', ['slug' => $post->slug]),
-            ])->all();
+            return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'project_gallery'], true)) {
-            $defaultSource = $block->block_type === 'project_gallery' ? 'cms_projects' : 'cms_services';
+        if (in_array($block->block_type, ['featured_services', 'content_mosaic', 'content_showcase', 'project_gallery'], true)) {
+            $defaultSource = match ($block->block_type) {
+                'content_mosaic' => 'cms_posts',
+                'content_showcase' => 'cms_projects',
+                'project_gallery' => 'cms_projects',
+                default => 'cms_services',
+            };
 
             return $this->contentSourceItems($settings, $defaultSource, $limit, $locale, $block->landingPage?->website_key);
         }
@@ -613,13 +612,14 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
         $placement = (string) ($settings['placement'] ?? 'xd0301-hero-slider');
+        $themeKey = strtoupper((string) ($settings['theme_key'] ?? 'XD0301'));
 
         /** @var Builder $query */
         $query = SiteBanner::query()
             ->where('is_active', true)
             ->where('placement', $placement)
-            ->where(function (Builder $builder): void {
-                $builder->where('theme_key', 'XD0301')->orWhereNull('theme_key');
+            ->where(function (Builder $builder) use ($themeKey): void {
+                $builder->where('theme_key', $themeKey)->orWhereNull('theme_key');
             })
             ->orderBy('sort_order')
             ->orderBy('id');
@@ -1076,6 +1076,118 @@ class LandingPageBuilder
     /**
      * @return array<int, array<string, mixed>>
      */
+    private function defaultBlocksForTheme(string $themeKey): array
+    {
+        return strtoupper($themeKey) === 'XD0302'
+            ? $this->xd0302DefaultBlocks()
+            : $this->xd0301DefaultBlocks();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function xd0302DefaultBlocks(): array
+    {
+        $contentSources = ['custom', 'cms_posts', 'cms_products', 'cms_services', 'cms_projects'];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Header và banner',
+                'description' => 'Header, menu và banner ảnh chạy.',
+                'preview_image' => '/theme-previews/XD0302/hero-slider.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0302-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000],
+                'settings_schema' => [
+                    ['key' => 'placement', 'label' => 'Vị trí banner', 'type' => 'text', 'default' => 'xd0302-hero-slider'],
+                    ['key' => 'limit', 'label' => 'Số slide', 'type' => 'number', 'default' => 3],
+                    ['key' => 'autoplay_ms', 'label' => 'Tự chuyển (ms)', 'type' => 'number', 'default' => 6000],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Giải pháp năng lượng bền vững cho doanh nghiệp', 'subtitle' => 'Soler Panel', 'description' => 'Tư vấn, thiết kế và triển khai hệ thống năng lượng phù hợp với nhu cầu vận hành.', 'button_label' => 'Xem dự án', 'content' => ['slides' => []]],
+                    'en' => ['title' => 'Sustainable energy for business', 'subtitle' => 'Soler Panel', 'description' => 'Energy solutions designed for your operation.', 'button_label' => 'View projects', 'content' => ['slides' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'about_experience',
+                'label' => 'Giới thiệu',
+                'description' => 'Giới thiệu năng lực, kinh nghiệm và định hướng doanh nghiệp.',
+                'preview_image' => '/theme-previews/XD0302/about-experience.png',
+                'anchor_id' => 'gioi-thieu',
+                'settings' => ['years' => 29, 'cta_url' => '/gioi-thieu'],
+                'media' => [],
+                'data' => [
+                    'vi' => ['title' => 'Chúng tôi đang phát triển các giải pháp năng lượng mặt trời', 'subtitle' => 'Giới thiệu của chúng tôi', 'description' => 'Giải pháp năng lượng xanh giúp doanh nghiệp chủ động chi phí và hướng tới tương lai bền vững.', 'button_label' => 'Về chúng tôi', 'content' => ['tabs' => ['Về chúng tôi', 'Tầm nhìn', 'Sứ mệnh'], 'image_secondary' => '']],
+                    'en' => ['title' => 'We develop solar energy solutions', 'subtitle' => 'About us', 'description' => 'Clean energy solutions for long-term operations.', 'button_label' => 'About us', 'content' => ['tabs' => ['About', 'Vision', 'Mission'], 'image_secondary' => '']],
+                ],
+            ],
+            [
+                'block_type' => 'featured_services',
+                'label' => 'Dịch vụ',
+                'description' => 'Danh sách dịch vụ lấy từ CMS Services.',
+                'preview_image' => '/theme-previews/XD0302/featured-services.png',
+                'anchor_id' => 'dich-vu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 3, 'featured_only' => true],
+                'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']],
+                'data' => ['vi' => ['title' => 'Cung cấp giải pháp năng lượng mặt trời', 'subtitle' => 'Dịch vụ của chúng tôi', 'description' => '', 'button_label' => 'Đọc thêm', 'content' => ['items' => []]], 'en' => ['title' => 'Solar energy solutions', 'subtitle' => 'Our services', 'description' => '', 'button_label' => 'Read more', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'faq_showcase',
+                'label' => 'Hỏi đáp',
+                'description' => 'Câu hỏi thường gặp và các dự án nổi bật minh họa.',
+                'preview_image' => '/theme-previews/XD0302/faq-showcase.png',
+                'anchor_id' => 'hoi-dap',
+                'settings' => [],
+                'data' => ['vi' => ['title' => 'Muốn hỏi điều gì đó từ chúng tôi?', 'subtitle' => 'Câu hỏi thường gặp', 'description' => '', 'button_label' => '', 'content' => ['items' => [['question' => 'Năng lượng mặt trời là gì?', 'answer' => 'Đây là nguồn năng lượng tái tạo từ ánh sáng mặt trời, có thể chuyển đổi thành điện để phục vụ sinh hoạt và sản xuất.'], ['question' => 'Hệ thống hoạt động như thế nào?', 'answer' => 'Tấm pin hấp thụ ánh sáng, bộ biến tần chuyển đổi thành điện và đưa điện vào hệ thống sử dụng.'], ['question' => 'Lợi ích của việc sử dụng là gì?', 'answer' => 'Tiết kiệm chi phí vận hành, giảm phát thải và tăng giá trị bền vững cho công trình.']]]], 'en' => ['title' => 'What would you like to ask?', 'subtitle' => 'FAQ', 'description' => '', 'button_label' => '', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'landing_contact',
+                'label' => 'Liên hệ',
+                'description' => 'Khối lợi ích và biểu mẫu đặt lịch tư vấn.',
+                'preview_image' => '/theme-previews/XD0302/landing-contact.png',
+                'anchor_id' => 'lien-he',
+                'settings' => [],
+                'data' => ['vi' => ['title' => 'Giải pháp tốt nhất cho bạn', 'subtitle' => 'Tại sao chọn chúng tôi', 'description' => 'Chúng tôi tư vấn giải pháp phù hợp với nhu cầu, quy mô và mục tiêu vận hành của doanh nghiệp.', 'button_label' => 'Gửi đi', 'content' => ['form_title' => 'Đặt lịch hẹn', 'benefits' => ['Tiết kiệm chi phí tiền điện', 'Tuổi thọ cao và ít bảo trì', 'Tăng giá trị cho công trình'], 'phone' => '1900 9477']], 'en' => ['title' => 'The best solution for you', 'subtitle' => 'Why choose us', 'description' => 'Tell us about your requirements and timeline.', 'button_label' => 'Send request', 'content' => ['form_title' => 'Book an appointment', 'benefits' => [], 'phone' => '1900 9477']]],
+            ],
+            [
+                'block_type' => 'content_showcase',
+                'label' => 'Dự án / nội dung nổi bật',
+                'description' => 'Lưới nội dung linh hoạt cho dự án, tin tức, sản phẩm hoặc dịch vụ.',
+                'preview_image' => '/theme-previews/XD0302/project-gallery.png',
+                'anchor_id' => 'du-an',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_projects', 'limit' => 5, 'featured_only' => true],
+                'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']],
+                'data' => ['vi' => ['title' => 'Dự án năng lượng của chúng tôi', 'subtitle' => 'Những dự án của chúng tôi', 'description' => '', 'button_label' => 'Tất cả dự án', 'content' => ['items' => []]], 'en' => ['title' => 'Our energy projects', 'subtitle' => 'Projects', 'description' => '', 'button_label' => 'All projects', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'latest_posts',
+                'label' => 'Tin tức',
+                'description' => 'Danh sách tin tức; có thể đổi nguồn sang dự án, sản phẩm hoặc dịch vụ.',
+                'preview_image' => '/theme-previews/XD0302/content-mosaic.png',
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false],
+                'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']],
+                'data' => ['vi' => ['title' => 'Tin tức & bài viết mới nhất', 'subtitle' => 'Tin tức mới nhất', 'description' => '', 'button_label' => 'Xem tất cả', 'content' => ['items' => []]], 'en' => ['title' => 'Latest news and articles', 'subtitle' => 'Latest news', 'description' => '', 'button_label' => 'View all', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'footer_contact',
+                'label' => 'Footer',
+                'description' => 'Thông tin thương hiệu, menu dịch vụ và bản đồ.',
+                'preview_image' => '/theme-previews/XD0302/footer-contact.png',
+                'anchor_id' => 'footer',
+                'settings' => [],
+                'data' => ['vi' => ['title' => 'Bản đồ chỉ đường', 'subtitle' => 'Liên hệ', 'description' => '', 'button_label' => '', 'content' => ['map_url' => '', 'copyright' => '© Bản quyền nội dung thuộc về Soler Panel']], 'en' => ['title' => 'Directions', 'subtitle' => 'Contact', 'description' => '', 'button_label' => '', 'content' => ['map_url' => '', 'copyright' => '© Soler Panel']]],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     private function xd0301DefaultBlocks(): array
     {
         return [
@@ -1224,6 +1336,49 @@ class LandingPageBuilder
                             ['title' => 'Apartment design', 'icon' => '▦', 'image' => 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80', 'summary' => 'Optimized layouts, lighting, functionality and materials for compact, durable living spaces.'],
                             ['title' => 'Bedroom design', 'icon' => '▤', 'image' => 'https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=900&q=80', 'summary' => 'Color, storage, bed and lighting coordination for calm but expressive bedrooms.'],
                             ['title' => 'Basement house design', 'icon' => '⌂', 'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=80', 'summary' => 'Structural, ventilation, waterproofing and circulation consulting for urban townhouses.'],
+                        ]],
+                    ],
+                ],
+            ],
+            [
+                'block_type' => 'content_mosaic',
+                'label' => 'Lưới nội dung nổi bật',
+                'description' => 'Khối dạng mosaic như dự án hoàn thành, có thể lấy dữ liệu từ tin tức, sản phẩm, dịch vụ hoặc dự án.',
+                'preview_image' => '/theme-previews/XD0301/content-mosaic.png',
+                'anchor_id' => 'noi-dung-noi-bat',
+                'dynamic' => true,
+                'settings' => [
+                    'source' => 'cms_posts',
+                    'limit' => 5,
+                    'featured_only' => false,
+                ],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => ['custom', 'cms_posts', 'cms_products', 'cms_services', 'cms_projects']],
+                    'limit' => ['type' => 'number', 'label' => 'Số item hiển thị', 'default' => 5],
+                    'category_id' => ['type' => 'number', 'label' => 'ID danh mục khi dùng tin tức/sản phẩm/dịch vụ'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung highlight'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Dự án hoàn thành',
+                        'subtitle' => 'Những dự án nổi bật do ENVARCH thực hiện',
+                        'description' => '',
+                        'button_label' => 'Xem chi tiết',
+                        'content' => ['items' => [
+                            ['title' => 'Công trình trường mầm non xã Hồng Thái - Bắc', 'summary' => 'Trường mầm non Hồng Thái nằm trải dài ven dòng sông Hồng với 3 khu và 6 điểm...', 'image' => 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1200&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Tòa nhà văn phòng IKON', 'summary' => 'Tòa nhà văn phòng tích hợp cho thuê, phù hợp cho không gian làm việc hiện đại...', 'image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Quán cà phê: Làng Coffee', 'summary' => 'Không gian cải tạo mang tinh thần địa phương, chất liệu mộc và trải nghiệm gần gũi...', 'image' => 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=85', 'url' => '#lien-he'],
+                        ]],
+                    ],
+                    'en' => [
+                        'title' => 'Completed projects',
+                        'subtitle' => 'Featured work delivered by ENVARCH',
+                        'description' => '',
+                        'button_label' => 'View detail',
+                        'content' => ['items' => [
+                            ['title' => 'Hong Thai kindergarten project', 'summary' => 'A kindergarten campus planned around clear circulation, safe play areas and practical classrooms.', 'image' => 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1200&q=85', 'url' => '#lien-he'],
+                            ['title' => 'IKON office building', 'summary' => 'A flexible office building designed for rental operation and modern workplace needs.', 'image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Lang Coffee renovation', 'summary' => 'A local-inspired cafe renovation with warm materials and a memorable guest experience.', 'image' => 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=85', 'url' => '#lien-he'],
                         ]],
                     ],
                 ],

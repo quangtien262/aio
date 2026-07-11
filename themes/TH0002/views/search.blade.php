@@ -346,6 +346,7 @@
                             <div>{{ $contactLocation }}</div>
                             <div>@themeT('common.hotline_label', 'Hotline'): {{ $contactHotline }}</div>
                             <div>@themeT('common.email_label', 'Email'): {{ $contactEmail }}</div>
+                            @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'th-footer-boc-status'])
                         </div>
                         <div class="th-footer-card">
                             <h4>@themeT('search.discover', 'Khám phá')</h4>

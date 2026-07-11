@@ -84,6 +84,7 @@ Mỗi theme cung cấp danh sách block type có sẵn. Với `XD0301`, block m�
 
 - `hero_slider`
 - `about_experience`
+- `content_mosaic`
 - `featured_services`
 - `project_gallery`
 - `team_members`
@@ -106,6 +107,7 @@ Service chịu trách nhiệm:
 ## XD0301 Dynamic Data Notes
 
 - `featured_services` defaults to `cms_services`; settings can switch source to latest posts or featured products.
+- `content_mosaic` defaults to `cms_posts`; settings can switch source to products, services, or projects.
 - `project_gallery` defaults to `cms_projects`; settings can switch source to latest posts, featured products, or CMS services.
 - `team_members` defaults to `cms_team_members`; team members use a master table plus image table for featured avatar/gallery images and alt text.
 - `testimonials` defaults to `cms_testimonials`; each item stores customer name, role/company, quote, avatar image, alt text, featured flag and sort order.

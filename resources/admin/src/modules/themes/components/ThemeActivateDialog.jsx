@@ -11,6 +11,7 @@ const { Paragraph, Text } = Typography;
 
 export default function ThemeActivateDialog({ open, theme, currentTheme = null, canActivate, onCancel, onConfirm }) {
     const [confirmedCrossTypeSwitch, setConfirmedCrossTypeSwitch] = useState(false);
+    const [createDemoData, setCreateDemoData] = useState(false);
 
     const isCrossWebsiteType = useMemo(() => {
         if (!theme || !currentTheme || currentTheme.key === theme.key) {
@@ -22,6 +23,7 @@ export default function ThemeActivateDialog({ open, theme, currentTheme = null, 
 
     useEffect(() => {
         setConfirmedCrossTypeSwitch(false);
+        setCreateDemoData(false);
     }, [open, theme?.key]);
 
     return (
@@ -29,7 +31,7 @@ export default function ThemeActivateDialog({ open, theme, currentTheme = null, 
             title={theme ? `Kích hoạt theme: ${theme.name}` : 'Kích hoạt theme'}
             open={open}
             onCancel={onCancel}
-            onOk={() => onConfirm?.(theme?.key)}
+            onOk={() => onConfirm?.(theme?.key, { createDemoData })}
             okText="Kích hoạt"
             cancelText="Đóng"
             okButtonProps={{ disabled: !theme || !canActivate || theme.is_active || (isCrossWebsiteType && !confirmedCrossTypeSwitch) }}
@@ -54,6 +56,11 @@ export default function ThemeActivateDialog({ open, theme, currentTheme = null, 
                         </Paragraph>
                     ) : null}
                     <Paragraph style={{ marginBottom: 0 }}>{theme.description || 'Theme chưa có mô tả.'}</Paragraph>
+                    {theme?.demo?.default_preset ? (
+                        <Checkbox checked={createDemoData} onChange={(event) => setCreateDemoData(event.target.checked)}>
+                            Tạo dữ liệu mẫu mặc định cho theme này
+                        </Checkbox>
+                    ) : null}
                     {isCrossWebsiteType ? (
                         <>
                             <Divider style={{ margin: '4px 0' }} />

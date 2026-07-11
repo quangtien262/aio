@@ -23,6 +23,7 @@
                     <span class="th-landing-chip">{{ $supportHotline }}</span>
                     <span class="th-landing-chip">{{ $supportEmail }}</span>
                 </div>
+                @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'th-landing-boc-status'])
             </div>
             @foreach ($footerColumns as $title => $links)
                 <div class="th-landing-footer-card">
