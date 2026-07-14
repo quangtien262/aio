@@ -13,11 +13,13 @@
     "hero-slider",
     "about-experience",
     "featured-services",
+    "featured-service-list",
+    "completed-projects-list",
+    "testimonial-showcase",
     "faq-showcase",
     "landing-contact",
     "content-showcase",
-    "latest-posts",
-    "footer-contact"
+    "latest-posts"
   ],
   "supports": {
     "dark_mode": false,

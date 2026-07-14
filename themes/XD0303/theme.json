@@ -14,8 +14,7 @@
     "hotline-callout",
     "content-showcase",
     "process-steps",
-    "partner-logos",
-    "footer-contact"
+    "partner-logos"
   ],
   "supports": {
     "dark_mode": false,

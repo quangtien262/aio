@@ -194,6 +194,7 @@
                 cms_posts: 'Tin tức',
                 latest_posts: 'Tin mới nhất',
                 cms_projects: 'Dự án',
+                cms_menus: 'Menu website',
                 cms_team_members: 'Đội ngũ',
                 cms_testimonials: 'Đánh giá',
             };
@@ -208,6 +209,7 @@
                 catalog_products: '/admin/cms/products',
                 featured_products: '/admin/cms/products',
                 cms_projects: '/admin/cms/projects',
+                cms_menus: '/admin/cms/menus',
                 cms_team_members: '/admin/cms/team',
                 cms_testimonials: '/admin/cms/testimonials',
             };
@@ -217,6 +219,9 @@
                 content_mosaic: 5,
                 content_showcase: 5,
                 featured_services: 3,
+                featured_service_list: 3,
+                completed_projects_list: 5,
+                testimonial_showcase: 3,
                 latest_posts: 3,
                 project_gallery: 4,
                 team_members: 4,
@@ -306,6 +311,11 @@
                     if (wrap) wrap.hidden = customMode;
                     if (input) input.disabled = customMode;
                 });
+                const menuLocationWrap = sourceControlWrap('menu_location');
+                const menuLocationInput = settingField('menu_location');
+                const isMenuSource = currentSourceValue() === 'cms_menus';
+                if (menuLocationWrap) menuLocationWrap.hidden = customMode || !isMenuSource;
+                if (menuLocationInput) menuLocationInput.disabled = customMode || !isMenuSource;
                 if (addItemButton) addItemButton.hidden = !customMode;
                 if (manageSourceLink) {
                     const source = currentSourceValue();
@@ -377,6 +387,12 @@
                     featuredInput.onchange = () => scheduleSourcePreview();
                 }
 
+                const menuLocationInput = settingField('menu_location');
+                if (menuLocationInput) {
+                    menuLocationInput.value = settings.menu_location || 'primary-navigation';
+                    menuLocationInput.oninput = () => scheduleSourcePreview();
+                }
+
                 sourceEditor.hidden = false;
                 syncSourceModeUi();
             };
@@ -388,6 +404,7 @@
                 const limit = Number(settingField('limit')?.value || 0);
                 const categoryId = Number(settingField('category_id')?.value || 0);
                 const featuredOnly = settingField('featured_only');
+                const menuLocation = settingField('menu_location')?.value?.trim() || '';
 
                 if (source !== '') next.source = source;
                 if (source === 'custom') {
@@ -401,6 +418,8 @@
                 if (categoryId > 0) next.category_id = categoryId;
                 else delete next.category_id;
                 if (featuredOnly) next.featured_only = Boolean(featuredOnly.checked);
+                if (source === 'cms_menus' && menuLocation !== '') next.menu_location = menuLocation;
+                else delete next.menu_location;
 
                 return next;
             };
@@ -445,7 +464,7 @@
                     ];
                 }
 
-                if (['content_showcase', 'latest_posts'].includes(blockType)) {
+                if (['content_showcase', 'latest_posts', 'featured_service_list', 'completed_projects_list'].includes(blockType)) {
                     return [
                         ['title', 'Tiêu đề'],
                         ['summary', 'Mô tả', 'textarea'],
@@ -595,7 +614,7 @@
                 activeItemKey = editorItemKey(blockType);
                 const content = normalizeContentObject(contentOverride || block.data?.content || {});
                 let items = Array.isArray(content[activeItemKey]) ? content[activeItemKey] : [];
-                const canEditList = ['hero_slider', 'featured_categories', 'content_mosaic', 'content_showcase', 'latest_posts', 'featured_services', 'project_gallery', 'faq_showcase', 'team_members', 'testimonials', 'partner_logos'].includes(blockType);
+                const canEditList = ['hero_slider', 'featured_categories', 'content_mosaic', 'content_showcase', 'latest_posts', 'featured_services', 'featured_service_list', 'completed_projects_list', 'project_gallery', 'faq_showcase', 'team_members', 'testimonials', 'testimonial_showcase', 'partner_logos'].includes(blockType);
 
                 itemList.innerHTML = '';
                 if (!canEditList) {

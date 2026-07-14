@@ -21,6 +21,7 @@ class LandingPageBlockController
 
         return response()->json([
             'data' => $landingPage->blocks
+                ->reject(fn (LandingPageBlock $block): bool => $block->block_type === 'footer_contact')
                 ->map(fn (LandingPageBlock $block): array => $builder->serializeBlock($block, $locale))
                 ->values(),
             'available_blocks' => $builder->availableBlocks($landingPage->theme_key),
@@ -43,6 +44,8 @@ class LandingPageBlockController
 
     public function update(LandingPageBlock $block, Request $request, LandingPageBuilder $builder): JsonResponse
     {
+        abort_if($block->block_type === 'footer_contact', 404);
+
         $locale = $this->locale($request);
         $validated = $request->validate([
             'is_visible' => ['sometimes', 'boolean'],
@@ -113,6 +116,8 @@ class LandingPageBlockController
 
     public function destroy(LandingPageBlock $block): JsonResponse
     {
+        abort_if($block->block_type === 'footer_contact', 404);
+
         $block->delete();
 
         return response()->json([

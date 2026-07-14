@@ -37,6 +37,7 @@
                         </div>
                         <div class="xd-editor-source-grid">
                             <label><span>Lấy từ bảng</span><select data-xd-setting-field="source"></select></label>
+                            <label><span>Vị trí menu</span><input type="text" data-xd-setting-field="menu_location" placeholder="primary-navigation"></label>
                             <label><span>Số lượng</span><input type="number" min="1" max="12" data-xd-setting-field="limit"></label>
                             <label><span>Danh mục</span><select data-xd-setting-field="category_id"></select></label>
                             <label class="xd-editor-source-check"><input type="checkbox" data-xd-setting-field="featured_only"><span>Chỉ nổi bật</span></label>

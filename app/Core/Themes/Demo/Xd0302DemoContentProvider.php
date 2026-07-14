@@ -11,6 +11,7 @@ use App\Models\CmsProject;
 use App\Models\CmsProjectImage;
 use App\Models\CmsService;
 use App\Models\CmsServiceImage;
+use App\Models\CmsTestimonial;
 use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
@@ -84,6 +85,15 @@ class Xd0302DemoContentProvider implements ThemeDemoContentProvider
                 $this->record($post);
             }
 
+            foreach ([
+                ['Thanh Hương', 'Giám đốc vận hành', 'Giải pháp được tư vấn rõ ràng, đội ngũ triển khai đúng tiến độ và chủ động cập nhật trong toàn bộ quá trình thực hiện.', 'photo-1494790108377-be9c29b29330'],
+                ['Hoàng Tuấn', 'Quản lý nhà máy', 'Phương án phù hợp với nhu cầu vận hành thực tế. Chúng tôi đánh giá cao cách đội ngũ xử lý các yêu cầu kỹ thuật nhanh chóng.', 'photo-1500648767791-00dcc994a43e'],
+                ['Nguyễn Thị Tuyết Vân', 'Khách hàng doanh nghiệp', 'Chất lượng bàn giao tốt, hỗ trợ sau triển khai rất kịp thời và giúp chúng tôi yên tâm hơn khi vận hành hệ thống.', 'photo-1534528741775-53994a69daeb'],
+            ] as $index => [$name, $role, $quote, $photo]) {
+                $testimonial = CmsTestimonial::query()->create(['name' => $name, 'role' => $role, 'quote' => $quote, 'image_url' => $image($photo, 320), 'image_alt' => $name, 'status' => 'published', 'publish_at' => $now, 'is_featured' => true, 'sort_order' => $index]);
+                $this->record($testimonial);
+            }
+
             $catalogCategory = CatalogCategory::query()->create(['name' => 'Thiết bị năng lượng mặt trời', 'slug' => 'xd0302-thiet-bi-nang-luong', 'description' => 'Thiết bị và phụ kiện cho hệ thống năng lượng.', 'image_url' => $image('photo-1509391366360-2e959784a276', 700), 'sort_order' => 0, 'is_active' => true]);
             $this->record($catalogCategory);
             foreach (['Tấm pin mặt trời hiệu suất cao', 'Bộ biến tần thông minh', 'Hệ thống giám sát năng lượng'] as $index => $name) {
@@ -119,7 +129,7 @@ class Xd0302DemoContentProvider implements ThemeDemoContentProvider
                 }
             }
 
-            return ['preset' => $this->preset(), 'counts' => ['services' => 3, 'projects' => 5, 'posts' => 3, 'products' => 3, 'banners' => 2, 'menus' => 1, 'landing_pages' => $existingPage === null && $page ? 1 : 0], 'purged' => $purged];
+            return ['preset' => $this->preset(), 'counts' => ['services' => 3, 'projects' => 5, 'posts' => 3, 'testimonials' => 3, 'products' => 3, 'banners' => 2, 'menus' => 1, 'landing_pages' => $existingPage === null && $page ? 1 : 0], 'purged' => $purged];
         });
     }
 
@@ -127,12 +137,13 @@ class Xd0302DemoContentProvider implements ThemeDemoContentProvider
     {
         $records = ThemeDemoRecord::query()->where('theme_key', self::THEME_KEY)->get();
         $ids = fn (string $type): array => $records->where('model_type', $type)->pluck('model_id')->all();
-        $counts = ['banners' => 0, 'menus' => 0, 'posts' => 0, 'projects' => 0, 'services' => 0, 'products' => 0, 'categories' => 0, 'landing_pages' => 0];
+        $counts = ['banners' => 0, 'menus' => 0, 'posts' => 0, 'projects' => 0, 'services' => 0, 'testimonials' => 0, 'products' => 0, 'categories' => 0, 'landing_pages' => 0];
 
         if ($projectIds = $ids(CmsProject::class)) { CmsProjectImage::query()->whereIn('cms_project_id', $projectIds)->delete(); $counts['projects'] = CmsProject::query()->whereKey($projectIds)->delete(); }
         if ($serviceIds = $ids(CmsService::class)) { CmsServiceImage::query()->whereIn('cms_service_id', $serviceIds)->delete(); $counts['services'] = CmsService::query()->whereKey($serviceIds)->delete(); }
         if ($pageIds = $ids(LandingPage::class)) { $blockIds = LandingPageBlock::query()->whereIn('landing_page_id', $pageIds)->pluck('id'); LandingPageBlockData::query()->whereIn('landing_page_block_id', $blockIds)->delete(); LandingPageBlock::query()->whereIn('landing_page_id', $pageIds)->delete(); LandingPageData::query()->whereIn('landing_page_id', $pageIds)->delete(); $counts['landing_pages'] = LandingPage::query()->whereKey($pageIds)->delete(); }
         if ($postIds = $ids(CmsPost::class)) $counts['posts'] = CmsPost::query()->whereKey($postIds)->delete();
+        if ($testimonialIds = $ids(CmsTestimonial::class)) $counts['testimonials'] = CmsTestimonial::query()->whereKey($testimonialIds)->delete();
         if ($productIds = $ids(CatalogProduct::class)) $counts['products'] = CatalogProduct::query()->whereKey($productIds)->delete();
         if ($categoryIds = $ids(CmsCategory::class)) $counts['categories'] += CmsCategory::query()->whereKey($categoryIds)->delete();
         if ($categoryIds = $ids(CatalogCategory::class)) $counts['categories'] += CatalogCategory::query()->whereKey($categoryIds)->delete();

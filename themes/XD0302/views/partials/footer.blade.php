@@ -1,10 +1,7 @@
 @php
-    $footerBlock = collect($landingBlocks ?? [])->firstWhere('block_type', 'footer_contact') ?? [];
-    $footerData = (array) ($footerBlock['data'] ?? []);
-    $footerContent = (array) ($footerData['content'] ?? []);
-    $footerHeading = $footerData['title'] ?? 'Bản đồ chỉ đường';
-    $footerCopyright = $footerContent['copyright'] ?? ('© Bản quyền nội dung thuộc về '.($companyName ?? 'Soler Panel'));
-    $mapUrl = $footerContent['map_url'] ?? 'https://www.openstreetmap.org/export/embed.html?bbox=106.66%2C10.72%2C106.72%2C10.77&amp;layer=mapnik';
+    $footerHeading = 'Bản đồ chỉ đường';
+    $footerCopyright = '© Bản quyền nội dung thuộc về '.($companyName ?? 'Soler Panel');
+    $mapUrl = 'https://www.openstreetmap.org/export/embed.html?bbox=106.66%2C10.72%2C106.72%2C10.77&amp;layer=mapnik';
 @endphp
 <footer class="xd2-footer">
     <div class="xd2-container xd2-footer__grid">

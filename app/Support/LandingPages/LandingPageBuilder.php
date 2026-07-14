@@ -117,7 +117,7 @@ class LandingPageBuilder
         $pageData = $this->localizedPageData($page, $locale, $fallbackLocale);
 
         $blocks = $page->blocks
-            ->filter(fn (LandingPageBlock $block): bool => $block->is_visible)
+            ->filter(fn (LandingPageBlock $block): bool => $block->is_visible && $block->block_type !== 'footer_contact')
             ->map(fn (LandingPageBlock $block): array => $this->serializeBlock($block, $locale, $fallbackLocale, true))
             ->values()
             ->all();
@@ -466,7 +466,9 @@ class LandingPageBuilder
             'content_mosaic' => 5,
             'content_showcase' => 5,
             'project_gallery' => 4,
-            'featured_services' => 3,
+            'featured_services', 'featured_service_list' => 3,
+            'completed_projects_list' => 5,
+            'testimonial_showcase' => 3,
             'latest_posts' => 3,
             'team_members' => 4,
             'testimonials' => 2,
@@ -487,7 +489,7 @@ class LandingPageBuilder
             return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'content_mosaic', 'content_showcase', 'project_gallery'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
@@ -567,7 +569,11 @@ class LandingPageBuilder
             return $this->cmsTeamMemberItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if ($block->block_type === 'testimonials') {
+        if (in_array($block->block_type, ['testimonials', 'testimonial_showcase'], true)) {
+            if ($block->block_type === 'testimonial_showcase') {
+                return $this->cmsTestimonialItems($settings, $limit, $locale, $block->landingPage?->website_key);
+            }
+
             if (($settings['source'] ?? 'cms_testimonials') === 'custom') {
                 return [];
             }
@@ -660,8 +666,46 @@ class LandingPageBuilder
             'cms_products', 'catalog_products', 'featured_products' => $this->featuredProductItems($settings, $limit, $locale, $websiteKey),
             'cms_projects' => $this->cmsProjectItems($settings, $limit, $locale, $websiteKey),
             'cms_services' => $this->cmsServiceItems($settings, $limit, $locale, $websiteKey),
+            'cms_menus' => $this->cmsMenuItems($settings, $limit),
             default => $this->contentSourceItems([...$settings, 'source' => $defaultSource], $defaultSource, $limit, $locale, $websiteKey),
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     * @return array<int, array<string, mixed>>
+     */
+    private function cmsMenuItems(array $settings, int $limit): array
+    {
+        if (! Schema::hasTable('cms_menus')) {
+            return [];
+        }
+
+        $location = trim((string) ($settings['menu_location'] ?? 'primary-navigation')) ?: 'primary-navigation';
+        $menu = CmsMenu::query()->where('location', $location)->first();
+
+        return collect($menu?->items ?? [])
+            ->filter(fn (mixed $item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
+            ->take($limit)
+            ->values()
+            ->map(function (array $item, int $index): array {
+                $title = trim((string) ($item['label'] ?? $item['title'] ?? ''));
+                $children = collect($item['children'] ?? [])
+                    ->filter(fn (mixed $child): bool => is_array($child) && filled($child['label'] ?? $child['title'] ?? null))
+                    ->map(fn (array $child): string => (string) ($child['label'] ?? $child['title'] ?? ''))
+                    ->filter()
+                    ->implode(', ');
+
+                return [
+                    'title' => $title,
+                    'summary' => $children ?: (string) ($item['description'] ?? $item['summary'] ?? ''),
+                    'image' => (string) ($item['image'] ?? $item['image_url'] ?? $this->fallbackContentImage()),
+                    'alt' => (string) ($item['alt'] ?? $title),
+                    'url' => (string) ($item['url'] ?? $item['href'] ?? '#'),
+                    'button_label' => (string) ($item['button_label'] ?? ''),
+                ];
+            })
+            ->all();
     }
 
     private function fallbackContentImage(): string
@@ -1117,10 +1161,6 @@ class LandingPageBuilder
                 'settings' => ['source' => 'cms_partners', 'limit' => 5], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số logo hiển thị']],
                 'data' => ['vi' => ['title' => 'Đối tác đồng hành', 'subtitle' => 'Đối tác', 'description' => '', 'button_label' => '', 'content' => ['items' => []]], 'en' => ['title' => 'Trusted partners', 'subtitle' => 'Partners', 'description' => '', 'button_label' => '', 'content' => ['items' => []]]],
             ],
-            [
-                'block_type' => 'footer_contact', 'label' => 'Footer', 'description' => 'Thông tin doanh nghiệp, liên kết và liên hệ cuối trang.', 'preview_image' => '/theme-previews/XD0303/footer-contact.png', 'anchor_id' => 'footer', 'settings' => [],
-                'data' => ['vi' => ['title' => 'Thông tin liên hệ', 'subtitle' => 'Liên hệ', 'description' => '', 'button_label' => '', 'content' => ['copyright' => '© Bản quyền nội dung thuộc về doanh nghiệp.']], 'en' => ['title' => 'Contact information', 'subtitle' => 'Contact', 'description' => '', 'button_label' => '', 'content' => ['copyright' => '© All rights reserved.']]],
-            ],
         ];
     }
 
@@ -1130,6 +1170,14 @@ class LandingPageBuilder
     private function xd0302DefaultBlocks(): array
     {
         $contentSources = ['custom', 'cms_posts', 'cms_products', 'cms_services', 'cms_projects'];
+        $featuredListSources = [
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_menus', 'label' => 'Menu website'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+        ];
 
         return [
             [
@@ -1175,6 +1223,61 @@ class LandingPageBuilder
                 'data' => ['vi' => ['title' => 'Cung cấp giải pháp năng lượng mặt trời', 'subtitle' => 'Dịch vụ của chúng tôi', 'description' => '', 'button_label' => 'Đọc thêm', 'content' => ['items' => []]], 'en' => ['title' => 'Solar energy solutions', 'subtitle' => 'Our services', 'description' => '', 'button_label' => 'Read more', 'content' => ['items' => []]]],
             ],
             [
+                'block_type' => 'featured_service_list',
+                'label' => 'Danh sách dịch vụ nổi bật',
+                'description' => 'Danh sách card có thể lấy từ Dịch vụ, Menu, Tin tức, Sản phẩm, Dự án hoặc nhập thủ công.',
+                'preview_image' => '/theme-previews/XD0302/featured-services.png',
+                'anchor_id' => 'dich-vu-noi-bat',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 3, 'featured_only' => true, 'menu_location' => 'primary-navigation'],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $featuredListSources],
+                    'menu_location' => ['type' => 'text', 'label' => 'Vị trí menu'],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Dịch vụ nổi bật', 'subtitle' => 'Giải pháp của chúng tôi', 'description' => '', 'button_label' => 'Xem chi tiết', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Featured services', 'subtitle' => 'Our solutions', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'completed_projects_list',
+                'label' => 'Danh sách dự án đã thực hiện',
+                'description' => 'Danh sách dự án dạng card có thể lấy từ Dịch vụ, Menu, Tin tức, Sản phẩm, Dự án hoặc nhập thủ công.',
+                'preview_image' => '/theme-previews/XD0302/project-gallery.png',
+                'anchor_id' => 'du-an-da-thuc-hien',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 5, 'featured_only' => true, 'menu_location' => 'primary-navigation'],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $featuredListSources],
+                    'menu_location' => ['type' => 'text', 'label' => 'Vị trí menu'],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Dự án đã thực hiện', 'subtitle' => 'Dấu ấn triển khai', 'description' => '', 'button_label' => 'Xem chi tiết', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Completed projects', 'subtitle' => 'Our work', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'testimonial_showcase',
+                'label' => 'Cảm nhận khách hàng',
+                'description' => 'Danh sách cảm nhận khách hàng lấy từ CMS Đánh giá.',
+                'preview_image' => '/theme-previews/XD0302/testimonials.png',
+                'anchor_id' => 'cam-nhan-khach-hang',
+                'dynamic' => true,
+                'settings' => ['limit' => 3, 'featured_only' => true],
+                'settings_schema' => [
+                    'limit' => ['type' => 'number', 'label' => 'Số đánh giá hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy đánh giá nổi bật'],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Phát triển một thiết kế dễ định hướng và sử dụng', 'subtitle' => 'Lời chứng thực', 'description' => 'Thiết kế được tối ưu để người dùng có thể dễ dàng điều hướng, tìm hiểu và sử dụng một cách thuận tiện, hiệu quả.', 'button_label' => '', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Designing experiences that are easy to navigate and use', 'subtitle' => 'Testimonials', 'description' => 'Feedback from customers who have worked with our team.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
                 'block_type' => 'faq_showcase',
                 'label' => 'Hỏi đáp',
                 'description' => 'Câu hỏi thường gặp và các dự án nổi bật minh họa.',
@@ -1213,15 +1316,6 @@ class LandingPageBuilder
                 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false],
                 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']],
                 'data' => ['vi' => ['title' => 'Tin tức & bài viết mới nhất', 'subtitle' => 'Tin tức mới nhất', 'description' => '', 'button_label' => 'Xem tất cả', 'content' => ['items' => []]], 'en' => ['title' => 'Latest news and articles', 'subtitle' => 'Latest news', 'description' => '', 'button_label' => 'View all', 'content' => ['items' => []]]],
-            ],
-            [
-                'block_type' => 'footer_contact',
-                'label' => 'Footer',
-                'description' => 'Thông tin thương hiệu, menu dịch vụ và bản đồ.',
-                'preview_image' => '/theme-previews/XD0302/footer-contact.png',
-                'anchor_id' => 'footer',
-                'settings' => [],
-                'data' => ['vi' => ['title' => 'Bản đồ chỉ đường', 'subtitle' => 'Liên hệ', 'description' => '', 'button_label' => '', 'content' => ['map_url' => '', 'copyright' => '© Bản quyền nội dung thuộc về Soler Panel']], 'en' => ['title' => 'Directions', 'subtitle' => 'Contact', 'description' => '', 'button_label' => '', 'content' => ['map_url' => '', 'copyright' => '© Soler Panel']]],
             ],
         ];
     }
@@ -1578,29 +1672,6 @@ class LandingPageBuilder
                             'note_title' => 'Share the essentials, we will shape the right solution.',
                             'note_text' => 'Add your site location, surface area, expected timeline or technical requirements so our team can prepare a practical recommendation.',
                         ],
-                    ],
-                ],
-            ],
-            [
-                'block_type' => 'footer_contact',
-                'label' => 'Footer',
-                'description' => 'Footer thông tin, liên hệ và đăng ký nhận tin.',
-                'preview_image' => '/theme-previews/XD0301/footer-contact.png',
-                'anchor_id' => 'lien-he',
-                'data' => [
-                    'vi' => [
-                        'title' => 'Đăng ký nhận tin',
-                        'subtitle' => 'Liên hệ',
-                        'description' => 'Arkit là công ty chuyên về thiết kế và thi công. Được thành lập và phát triển bởi kiến trúc sư, kỹ sư nhiều năm kinh nghiệm.',
-                        'button_label' => 'Đăng ký',
-                        'content' => ['address' => '196 Nguyễn Đình Chiểu, Phường Võ Thị Sáu, Quận 3, TP.HCM', 'email' => 'admin@htvietnam.vn', 'phone' => '0399162342'],
-                    ],
-                    'en' => [
-                        'title' => 'Subscribe',
-                        'subtitle' => 'Contact',
-                        'description' => 'Arkit is a design and construction company developed by experienced architects and engineers.',
-                        'button_label' => 'Subscribe',
-                        'content' => ['address' => '196 Nguyen Dinh Chieu, District 3, HCMC', 'email' => 'admin@htvietnam.vn', 'phone' => '0399162342'],
                     ],
                 ],
             ],

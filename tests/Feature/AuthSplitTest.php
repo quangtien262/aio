@@ -55,6 +55,34 @@ class AuthSplitTest extends TestCase
         $this->assertGuest('customer');
     }
 
+    public function test_shared_login_route_authenticates_admin_by_email(): void
+    {
+        $admin = Admin::factory()->create([
+            'username' => 'admin',
+            'email' => 'admin@aio.local',
+            'password' => 'password',
+        ]);
+
+        $this->postJson($this->storefrontRoute('customer.auth.store'), [
+            'login' => $admin->email,
+            'password' => 'password',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.guard', 'admin')
+            ->assertJsonPath('data.redirect_to', route('admin.index'));
+
+        $this->assertAuthenticatedAs($admin, 'admin');
+    }
+
+    public function test_shared_login_form_uses_a_flexible_identifier_field(): void
+    {
+        $this->get($this->storefrontRoute('customer.auth.login'))
+            ->assertOk()
+            ->assertSee('name="login"', false)
+            ->assertSee('type="text"', false)
+            ->assertDontSee('type="email"', false);
+    }
+
     public function test_shared_login_accepts_long_storefront_redirect_payload_without_validation_error(): void
     {
         $admin = Admin::factory()->create([

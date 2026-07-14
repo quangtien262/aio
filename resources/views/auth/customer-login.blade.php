@@ -26,9 +26,9 @@
     <body>
         <main class="shell">
             <section class="panel">
-                <div class="kicker">Customer Guard</div>
-                <h1>Đăng nhập khách hàng</h1>
-                <p>Khu vực dành cho khách đăng ký tài khoản trên website.</p>
+                <div class="kicker">Tài khoản website</div>
+                <h1>Đăng nhập</h1>
+                <p>Đăng nhập bằng tài khoản quản trị hoặc email đã đăng ký của khách hàng.</p>
 
                 @if ($errors->any())
                     <div class="error">{{ $errors->first() }}</div>
@@ -37,13 +37,13 @@
                 <form method="POST" action="{{ route('customer.auth.store') }}" novalidate data-customer-auth-form="login">
                     @csrf
                     <div class="field">
-                        <label for="email">Email</label>
-                        <input id="email" name="email" type="email" value="{{ old('email', 'customer@aio.local') }}" required autofocus class="{{ $errors->has('email') ? 'is-invalid' : '' }}">
-                        <div class="field-error" data-field-error="email">{{ $errors->first('email') }}</div>
+                        <label for="login">Tài khoản hoặc email</label>
+                        <input id="login" name="login" type="text" value="{{ old('login', old('email')) }}" required autofocus autocomplete="username" class="{{ $errors->has('login') || $errors->has('email') ? 'is-invalid' : '' }}">
+                        <div class="field-error" data-field-error="login">{{ $errors->first('login') ?? $errors->first('email') }}</div>
                     </div>
                     <div class="field">
                         <label for="password">Mật khẩu</label>
-                        <input id="password" name="password" type="password" value="password" required class="{{ $errors->has('password') ? 'is-invalid' : '' }}">
+                        <input id="password" name="password" type="password" required autocomplete="current-password" class="{{ $errors->has('password') ? 'is-invalid' : '' }}">
                         <div class="field-error" data-field-error="password">{{ $errors->first('password') }}</div>
                     </div>
                     <button class="button" type="submit">Đăng nhập</button>
@@ -63,7 +63,6 @@
                     return;
                 }
 
-                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 const setFieldError = (field, message) => {
                     const input = form.querySelector(`[name="${field}"]`);
                     const error = form.querySelector(`[data-field-error="${field}"]`);
@@ -76,18 +75,15 @@
                 };
 
                 form.addEventListener('submit', (event) => {
-                    const email = String(form.email.value || '').trim();
+                    const login = String(form.login.value || '').trim();
                     const password = String(form.password.value || '').trim();
                     let hasError = false;
 
-                    setFieldError('email', '');
+                    setFieldError('login', '');
                     setFieldError('password', '');
 
-                    if (!email) {
-                        setFieldError('email', 'Vui lòng nhập email.');
-                        hasError = true;
-                    } else if (!emailPattern.test(email)) {
-                        setFieldError('email', 'Email không đúng định dạng.');
+                    if (!login) {
+                        setFieldError('login', 'Vui lòng nhập tài khoản hoặc email.');
                         hasError = true;
                     }
 

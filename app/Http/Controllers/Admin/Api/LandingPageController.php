@@ -277,8 +277,8 @@ class LandingPageController
                     ];
                 })
                 ->all(),
-            'block_count' => $page->blocks->count(),
-            'visible_block_count' => $page->blocks->where('is_visible', true)->count(),
+            'block_count' => $page->blocks->where('block_type', '!=', 'footer_contact')->count(),
+            'visible_block_count' => $page->blocks->where('block_type', '!=', 'footer_contact')->where('is_visible', true)->count(),
             'path' => $page->is_home ? '/' : '/land/'.$page->slug,
             'public_url' => $publicUrl,
             'admin_url' => $publicUrl.'?mod=admin',

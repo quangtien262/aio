@@ -56,16 +56,19 @@ class AuthenticatedSessionController
         $remember = $request->boolean('remember');
         $identifier = trim((string) ($payload['login'] ?? $payload['email'] ?? ''));
         $errorField = $request->filled('login') ? 'login' : 'email';
-        $adminCredentials = [
-            'username' => $identifier,
-            'password' => $payload['password'],
-        ];
         $customerCredentials = [
             'email' => $identifier,
             'password' => $payload['password'],
         ];
 
-        if (Auth::guard('admin')->attempt($adminCredentials, $remember)) {
+        foreach (['username', 'email'] as $adminIdentifierField) {
+            if (! Auth::guard('admin')->attempt([
+                $adminIdentifierField => $identifier,
+                'password' => $payload['password'],
+            ], $remember)) {
+                continue;
+            }
+
             /** @var Admin|null $admin */
             $admin = Auth::guard('admin')->user();
 

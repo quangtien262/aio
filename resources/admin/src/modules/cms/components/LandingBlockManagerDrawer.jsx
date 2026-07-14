@@ -61,7 +61,7 @@ function editorItemFields(blockType) {
         ];
     }
 
-    if (blockType === 'testimonials') {
+    if (['testimonials', 'testimonial_showcase'].includes(blockType)) {
         return [
             ['name', 'Tên khách hàng'],
             ['company', 'Công ty / vai trò'],
@@ -94,7 +94,7 @@ function editorItemFields(blockType) {
         ];
     }
 
-    if (['content_showcase', 'latest_posts'].includes(blockType)) {
+    if (['content_showcase', 'latest_posts', 'featured_service_list', 'completed_projects_list'].includes(blockType)) {
         return [
             ['title', 'Tiêu đề'],
             ['summary', 'Mô tả', 'textarea'],
@@ -388,7 +388,9 @@ export default function LandingBlockManagerDrawer({
             return (
                 <Form.Item key={key} name={['settings', key]} label={label}>
                     <Select
-                        options={(schema.options ?? []).map((option) => ({ value: option, label: option }))}
+                        options={(schema.options ?? []).map((option) => typeof option === 'string'
+                            ? { value: option, label: option }
+                            : { value: option.value ?? option.key, label: option.label ?? option.value ?? option.key })}
                         placeholder="Chọn nguồn"
                         allowClear
                     />
@@ -400,6 +402,14 @@ export default function LandingBlockManagerDrawer({
             return (
                 <Form.Item key={key} name={['settings', key]} label={label} valuePropName="checked">
                     <Switch />
+                </Form.Item>
+            );
+        }
+
+        if (schema?.type === 'text') {
+            return (
+                <Form.Item key={key} name={['settings', key]} label={label}>
+                    <Input />
                 </Form.Item>
             );
         }
