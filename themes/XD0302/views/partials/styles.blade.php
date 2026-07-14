@@ -154,6 +154,23 @@
         }
 </style>
 <style>
+.xd2-nav a {
+    display: inline-flex;
+    align-items: center;
+}
+.xd2-nav a span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin: -4px 0 0 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    font-size: 0;
+    line-height: 0;
+    transform: rotate(45deg);
+}
+</style>
+<style>
 /* Arial keeps Vietnamese diacritics and word spacing consistent across browsers. */
 :root { --font: Arial, Helvetica, sans-serif; }
 .xd2-header,
@@ -200,3 +217,61 @@
 
 
 
+
+<style>
+.xd2-utility__right,
+.xd2-auth-actions {
+    display: flex;
+    align-items: center;
+}
+.xd2-utility__right { gap: 14px; }
+.xd2-auth-actions { gap: 8px; }
+.xd2-auth-actions button,
+.xd2-utility__logout button {
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, .48);
+    border-radius: 3px;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.xd2-auth-actions button:hover,
+.xd2-utility__logout button:hover {
+    border-color: #fff;
+    background: #fff;
+    color: var(--xd2-ink);
+}
+.xd2-auth-actions .is-register {
+    border-color: var(--xd2-red);
+    background: var(--xd2-red);
+}
+.xd2-auth-actions .is-register:hover { color: var(--xd2-red); }
+.xd2-utility__logout { margin: 0; }
+.xd2-mobile-auth-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 8px;
+}
+.xd2-mobile-auth-actions button {
+    flex: 1;
+    min-height: 42px;
+    border: 1px solid var(--xd2-red);
+    border-radius: 3px;
+    background: #fff;
+    color: var(--xd2-red);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.xd2-mobile-auth-actions button:last-child {
+    background: var(--xd2-red);
+    color: #fff;
+}
+@media (max-width: 620px) {
+    .xd2-utility__inner > .xd2-utility__right { display: none; }
+}
+</style>
