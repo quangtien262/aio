@@ -87,6 +87,13 @@ function editorItemFields(blockType) {
         ];
     }
 
+    if (blockType === 'process_steps') {
+        return [
+            ['title', 'Tiêu đề bước'],
+            ['description', 'Mô tả', 'textarea'],
+        ];
+    }
+
     if (['content_showcase', 'latest_posts'].includes(blockType)) {
         return [
             ['title', 'Tiêu đề'],

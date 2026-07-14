@@ -103,7 +103,7 @@
         <main class="shell">
             <section class="panel">
                 <div class="kicker">AIO Website Platform</div>
-                <h1>Nền tảng Laravel 13 để bán nhiều website, nhiều module, nhiều theme.</h1>
+                <h1>AI MANAGER BUSINESS</h1>
                 <p>
                     Base source đã được khởi tạo theo hướng modular monolith, có admin shell React + Ant Design,
                     sẵn chỗ cho module store, theme engine, setup wizard và phân quyền theo module.

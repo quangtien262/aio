@@ -132,14 +132,25 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('inv_sync_run_lines');
-        Schema::dropIfExists('inv_sync_runs');
-        Schema::dropIfExists('inv_stock_movements');
-        Schema::dropIfExists('inv_stock_document_lines');
-        Schema::dropIfExists('inv_stock_documents');
-        Schema::dropIfExists('inv_stock_balances');
-        Schema::dropIfExists('inv_items');
-        Schema::dropIfExists('inv_locations');
-        Schema::dropIfExists('inv_warehouses');
+        // A previously interrupted phase-two migration may leave these tables behind.
+        // Drop the full inventory graph so migrate:refresh can recover deterministically.
+        Schema::disableForeignKeyConstraints();
+
+        try {
+            Schema::dropIfExists('inv_cost_layers');
+            Schema::dropIfExists('inv_serial_numbers');
+            Schema::dropIfExists('inv_batches');
+            Schema::dropIfExists('inv_sync_run_lines');
+            Schema::dropIfExists('inv_sync_runs');
+            Schema::dropIfExists('inv_stock_movements');
+            Schema::dropIfExists('inv_stock_document_lines');
+            Schema::dropIfExists('inv_stock_documents');
+            Schema::dropIfExists('inv_stock_balances');
+            Schema::dropIfExists('inv_items');
+            Schema::dropIfExists('inv_locations');
+            Schema::dropIfExists('inv_warehouses');
+        } finally {
+            Schema::enableForeignKeyConstraints();
+        }
     }
 };

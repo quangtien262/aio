@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303'], true);
     }
 
     /**
@@ -1078,9 +1078,50 @@ class LandingPageBuilder
      */
     private function defaultBlocksForTheme(string $themeKey): array
     {
-        return strtoupper($themeKey) === 'XD0302'
-            ? $this->xd0302DefaultBlocks()
-            : $this->xd0301DefaultBlocks();
+        return match (strtoupper($themeKey)) {
+            'XD0303' => $this->xd0303DefaultBlocks(),
+            'XD0302' => $this->xd0302DefaultBlocks(),
+            default => $this->xd0301DefaultBlocks(),
+        };
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function xd0303DefaultBlocks(): array
+    {
+        $contentSources = ['custom', 'cms_posts', 'cms_products', 'cms_services', 'cms_projects'];
+
+        return [
+            [
+                'block_type' => 'hero_slider', 'label' => 'Header và banner', 'description' => 'Header dùng logo hệ thống, menu và banner ảnh chạy.', 'preview_image' => '/theme-previews/XD0303/hero-slider.png', 'anchor_id' => 'top', 'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0303-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000],
+                'settings_schema' => [['key' => 'placement', 'label' => 'Vị trí banner', 'type' => 'text', 'default' => 'xd0303-hero-slider'], ['key' => 'limit', 'label' => 'Số slide', 'type' => 'number', 'default' => 3], ['key' => 'autoplay_ms', 'label' => 'Tự chuyển (ms)', 'type' => 'number', 'default' => 6000]],
+                'data' => ['vi' => ['title' => 'Dịch vụ chuyên nghiệp, chất lượng nhanh gọn', 'subtitle' => 'Vận hành linh hoạt', 'description' => 'Đội ngũ chuyên nghiệp, quy trình minh bạch và giải pháp phù hợp cho từng nhu cầu.', 'button_label' => 'Liên hệ ngay', 'content' => ['slides' => []]], 'en' => ['title' => 'Professional service, delivered quickly', 'subtitle' => 'Flexible operations', 'description' => 'Clear processes and solutions for every need.', 'button_label' => 'Contact us', 'content' => ['slides' => []]]],
+            ],
+            [
+                'block_type' => 'hotline_callout', 'label' => 'Hotline', 'description' => 'Khối quảng cáo ngắn với số hotline lấy từ hồ sơ thương hiệu.', 'preview_image' => '/theme-previews/XD0303/hotline-callout.png', 'anchor_id' => 'hotline',
+                'settings' => [], 'data' => ['vi' => ['title' => 'Một cuộc gọi có thể giải quyết tất cả các vấn đề trong nhà của bạn', 'subtitle' => 'Hotline', 'description' => 'Và, chúng tôi có nhiều tùy chọn hơn để liên hệ với chúng tôi.', 'button_label' => '', 'content' => ['phone' => '1900 9477']], 'en' => ['title' => 'One call can solve your service needs', 'subtitle' => 'Hotline', 'description' => 'There are several ways to reach our team.', 'button_label' => '', 'content' => ['phone' => '1900 9477']]],
+            ],
+            [
+                'block_type' => 'content_showcase', 'label' => 'Nội dung nổi bật', 'description' => 'Hiển thị Dịch vụ mặc định; có thể đổi sang Tin tức, Sản phẩm hoặc Dự án.', 'preview_image' => '/theme-previews/XD0303/content-showcase.png', 'anchor_id' => 'dich-vu', 'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 3, 'featured_only' => true], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']],
+                'data' => ['vi' => ['title' => 'Giải pháp cho mọi nhu cầu vận hành', 'subtitle' => 'Dịch vụ nổi bật', 'description' => '', 'button_label' => 'Xem chi tiết', 'content' => ['items' => []]], 'en' => ['title' => 'Solutions for every operational need', 'subtitle' => 'Featured services', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'process_steps', 'label' => 'Quy trình dịch vụ', 'description' => 'Quy trình 4 bước có thể chỉnh sửa trực tiếp.', 'preview_image' => '/theme-previews/XD0303/process-steps.png', 'anchor_id' => 'quy-trinh', 'settings' => [],
+                'data' => ['vi' => ['title' => 'Quy trình dịch vụ', 'subtitle' => 'Những gì chúng tôi đã làm', 'description' => 'Tính toán chi phí hợp lý, cung cấp phương án rõ ràng và triển khai đúng hẹn để mỗi lần hợp tác đều dễ theo dõi.', 'button_label' => '', 'content' => ['items' => [['title' => 'Tiếp nhận thông tin', 'description' => 'Ghi nhận nhu cầu, thời gian và phạm vi công việc cần thực hiện.'], ['title' => 'Khảo sát - báo giá', 'description' => 'Khảo sát thực tế, thống nhất phương án và báo giá minh bạch.'], ['title' => 'Triển khai dịch vụ', 'description' => 'Điều phối nhân sự, thiết bị và cập nhật tiến độ trong quá trình làm việc.'], ['title' => 'Nghiệm thu - thanh toán', 'description' => 'Kiểm tra kết quả, bàn giao và tiếp nhận phản hồi từ khách hàng.']]]], 'en' => ['title' => 'Service process', 'subtitle' => 'How we work', 'description' => 'A clear process from initial request to completion.', 'button_label' => '', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'partner_logos', 'label' => 'Logo đối tác', 'description' => 'Danh sách logo đối tác lấy từ CMS Partners.', 'preview_image' => '/theme-previews/XD0303/partner-logos.png', 'anchor_id' => 'doi-tac', 'dynamic' => true,
+                'settings' => ['source' => 'cms_partners', 'limit' => 5], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số logo hiển thị']],
+                'data' => ['vi' => ['title' => 'Đối tác đồng hành', 'subtitle' => 'Đối tác', 'description' => '', 'button_label' => '', 'content' => ['items' => []]], 'en' => ['title' => 'Trusted partners', 'subtitle' => 'Partners', 'description' => '', 'button_label' => '', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'footer_contact', 'label' => 'Footer', 'description' => 'Thông tin doanh nghiệp, liên kết và liên hệ cuối trang.', 'preview_image' => '/theme-previews/XD0303/footer-contact.png', 'anchor_id' => 'footer', 'settings' => [],
+                'data' => ['vi' => ['title' => 'Thông tin liên hệ', 'subtitle' => 'Liên hệ', 'description' => '', 'button_label' => '', 'content' => ['copyright' => '© Bản quyền nội dung thuộc về doanh nghiệp.']], 'en' => ['title' => 'Contact information', 'subtitle' => 'Contact', 'description' => '', 'button_label' => '', 'content' => ['copyright' => '© All rights reserved.']]],
+            ],
+        ];
     }
 
     /**
