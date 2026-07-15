@@ -1,0 +1,37 @@
+﻿{
+  "name": "XD0314 Build Bench",
+  "key": "XD0314",
+  "version": "0.1.0",
+  "description": "Theme xay dung Build Bench voi topbar, header, hero slider, danh muc dich vu ngang, gioi thieu cong ty, du an, ly do chon, dich vu carousel, doi ngu va footer.",
+  "website_type": "service",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-XD0314.svg",
+    "cover": "cover-XD0314.svg"
+  },
+  "blocks": [
+    "hero-slider",
+    "featured-categories",
+    "about-experience",
+    "content-mosaic",
+    "faq-showcase",
+    "featured-services",
+    "team-members"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": false
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "xd0314-build-bench"
+  }
+}
+
