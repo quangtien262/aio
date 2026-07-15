@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0314'], true);
     }
 
     /**
@@ -1135,6 +1135,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'XD0314' => $this->xd0314DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1148,6 +1149,219 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0314DefaultBlocks(): array
+    {
+        $sources = [
+            ['value' => 'custom', 'label' => 'Nhap thu cong'],
+            ['value' => 'cms_posts', 'label' => 'Tin tuc'],
+            ['value' => 'cms_products', 'label' => 'San pham'],
+            ['value' => 'cms_services', 'label' => 'Dich vu'],
+            ['value' => 'cms_projects', 'label' => 'Du an'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Header va banner',
+                'description' => 'Topbar, header, login/register va hero slider hinh anh.',
+                'preview_image' => '/theme-previews/XD0314/hero-slider.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0314-hero-slider', 'limit' => 3, 'autoplay_ms' => 6200],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vi tri banner'],
+                    'limit' => ['type' => 'number', 'label' => 'So slide'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Think different - do different',
+                        'subtitle' => 'Build Bench',
+                        'description' => 'Hien thuc hoa uoc mo so huu ngoi nha hoan hao cua khach hang bang kinh nghiem va su chuyen nghiep.',
+                        'button_label' => 'Xem them',
+                        'content' => ['slides' => [
+                            ['title' => 'Think different - do different', 'summary' => 'Hien thuc hoa uoc mo so huu ngoi nha hoan hao cua khach hang, thoi hon vao tung cong trinh bang kinh nghiem, su chuyen nghiep cua chung toi.', 'button_label' => 'Xem them', 'image' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#gioi-thieu'],
+                            ['title' => 'Thiet ke va thi cong tron goi', 'summary' => 'Tu ban ve, vat lieu den thi cong hoan thien, moi buoc deu duoc quan ly ro rang.', 'button_label' => 'Dich vu', 'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#dich-vu'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Think different - do different', 'subtitle' => 'Build Bench', 'description' => 'Professional construction solutions for homes and commercial spaces.', 'button_label' => 'Learn more', 'content' => ['slides' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_categories',
+                'label' => 'Slide danh muc dich vu',
+                'description' => 'Danh muc dich vu chay ngang.',
+                'preview_image' => '/theme-previews/XD0314/service-category-slider.png',
+                'anchor_id' => 'danh-muc-dich-vu',
+                'settings' => [],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Danh muc dich vu',
+                        'subtitle' => 'Dich vu',
+                        'description' => '',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['title' => 'Thi cong ong nuoc', 'summary' => 'Sua chua va thi cong ong nuoc ngam cho cong trinh.', 'icon' => '🚰', 'url' => '#dich-vu'],
+                            ['title' => 'Son sua cong trinh', 'summary' => 'Son sua cong trinh lon nho dung tien do.', 'icon' => '🎨', 'url' => '#dich-vu'],
+                            ['title' => 'Thi cong noi that', 'summary' => 'Thiet ke noi that da dang phong cach.', 'icon' => '🪑', 'url' => '#dich-vu'],
+                            ['title' => 'Thi cong xay dung', 'summary' => 'Kien truc su va tho lanh nghe giau kinh nghiem.', 'icon' => '🏠', 'url' => '#dich-vu'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Service categories', 'subtitle' => 'Services', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'about_experience',
+                'label' => 'Gioi thieu cong ty',
+                'description' => 'Khoi gioi thieu nhanh, card nang luc va thong ke nhap tuy chinh.',
+                'preview_image' => '/theme-previews/XD0314/about-experience.png',
+                'anchor_id' => 'gioi-thieu',
+                'settings' => [],
+                'media' => ['image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1400&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Ve cong ty',
+                        'subtitle' => 'Gioi thieu',
+                        'description' => 'Voi kinh nghiem cung doi ngu cong nhan hang dau, chung toi da dat duoc nhieu thanh cong voi cac cong trinh tren khap dat nuoc.',
+                        'button_label' => '',
+                        'content' => [
+                            'items' => [
+                                ['title' => 'Thi cong ong nuoc', 'summary' => 'Thuc hien sua chua va thi cong ong nuoc ngam cho cong trinh va nha o.', 'icon' => '🚰'],
+                                ['title' => 'Son sua cong trinh', 'summary' => 'Nhan va thuc hien cac yeu cau son sua cong trinh lon nho dung tien do.', 'icon' => '🎨'],
+                                ['title' => 'Thi cong noi that', 'summary' => 'Nhan luc thiet ke noi that da dang voi nhieu phong cach.', 'icon' => '🪑'],
+                                ['title' => 'Thi cong xay dung', 'summary' => 'Doi ngu kien truc su, tho lanh nghe se giup uoc mo cua ban thanh hien thuc.', 'icon' => '🏡'],
+                            ],
+                            'stats' => [
+                                ['value' => '316', 'label' => 'Du an da hoan thanh', 'icon' => '▥'],
+                                ['value' => '761', 'label' => 'Khach hang hai long', 'icon' => '●'],
+                                ['value' => '1245', 'label' => 'Cong nhan lam viec', 'icon' => '☏'],
+                            ],
+                        ],
+                    ],
+                    'en' => ['title' => 'About company', 'subtitle' => 'About', 'description' => 'Experienced teams delivering construction projects nationwide.', 'button_label' => '', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'content_mosaic',
+                'label' => 'Du an moi nhat',
+                'description' => 'Gallery anh co tieu de trong anh, lay du lieu tu tin tuc/san pham/dich vu/du an hoac custom.',
+                'preview_image' => '/theme-previews/XD0314/project-gallery.png',
+                'anchor_id' => 'du-an',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $sources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'media' => ['background' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Du an moi nhat',
+                        'subtitle' => '',
+                        'description' => '',
+                        'button_label' => 'Xem chi tiet',
+                        'content' => ['tabs' => [
+                            ['label' => 'Mau nha dang hot'], ['label' => 'Mau nha don gian dep 2019'], ['label' => 'Mau nha cao cap dep 2019'], ['label' => 'Mau nha cap 4 dep 2019'],
+                        ], 'items' => [
+                            ['title' => 'Mau nha pho hien dai', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Toa nha van phong', 'image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'San vuon tren cao', 'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Chung cu cao tang', 'image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Latest projects', 'subtitle' => '', 'description' => '', 'button_label' => 'View more', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'faq_showcase',
+                'label' => 'Tai sao chon chung toi',
+                'description' => 'Khoi ly do chon nhap lieu tuy chinh.',
+                'preview_image' => '/theme-previews/XD0314/why-choose.png',
+                'anchor_id' => 'tai-sao-chon',
+                'settings' => [],
+                'media' => ['background' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Tai sao chon chung toi !',
+                        'subtitle' => '',
+                        'description' => 'Tieu chi kinh doanh hang dau cua chung toi la tao ra san pham doc dao, toi uu cho khach hang va dam bao hoan thanh du an dung y tuong, chat luong va tien do.',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['title' => 'Chat luong tot nhat', 'summary' => 'Chat luong cong trinh luon dam bao tot nhat va phu hop cac tieu chuan chung.', 'icon' => '◎'],
+                            ['title' => 'Chinh truc', 'summary' => 'Dam bao tinh trung thuc va chinh truc trong qua trinh thiet ke va xay dung.', 'icon' => '🏆'],
+                            ['title' => 'Chien luoc', 'summary' => 'Cung cap phuong an va chien luoc xay dung day du cho khach hang.', 'icon' => '☝'],
+                            ['title' => 'Su an toan', 'summary' => 'Dat tinh an toan len hang dau trong qua trinh xay dung.', 'icon' => '●'],
+                            ['title' => 'Cong dong', 'summary' => 'Cong trinh phu hop tieu chuan cong dong va boi canh xung quanh.', 'icon' => '▰'],
+                            ['title' => 'Su ben vung', 'summary' => 'Cong trinh duoc xay dung chat luong va ben vung theo thoi gian.', 'icon' => '⚙'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Why choose us', 'subtitle' => '', 'description' => 'Practical construction values for quality, safety and progress.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_services',
+                'label' => 'Dich vu cua chung toi',
+                'description' => 'Carousel dich vu lay tu nhieu nguon hoac custom.',
+                'preview_image' => '/theme-previews/XD0314/featured-services.png',
+                'anchor_id' => 'dich-vu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $sources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Dich vu cua chung toi',
+                        'subtitle' => 'Dich vu',
+                        'description' => '',
+                        'button_label' => 'Xem them',
+                        'content' => ['items' => [
+                            ['title' => 'Xay dung nha pho theo nhu cau su dung', 'summary' => 'Thiet ke va xay dung nha thanh pho hien dai.', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Xay dung nha pho 2 tang mai Thai', 'summary' => 'Kien truc tinh te, toi uu cong nang su dung.', 'image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Xay dung biet thu vuon', 'summary' => 'Khong gian song xanh, tien nghi va thoai mai.', 'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Our services', 'subtitle' => 'Services', 'description' => '', 'button_label' => 'Read more', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'team_members',
+                'label' => 'Doi ngu',
+                'description' => 'Gioi thieu doi ngu nhan su, moi item cung layout voi chuc danh va ten.',
+                'preview_image' => '/theme-previews/XD0314/team-members.png',
+                'anchor_id' => 'doi-ngu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_team_members', 'limit' => 5, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => [['value' => 'custom', 'label' => 'Nhap thu cong'], ['value' => 'cms_team_members', 'label' => 'Doi ngu']]],
+                    'limit' => ['type' => 'number', 'label' => 'So nhan su'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Doi cua chung toi',
+                        'subtitle' => 'Doi ngu',
+                        'description' => 'Voi doi ngu cong nhan lau nam va kinh nghiem, chung toi dam bao mang den cac cong trinh dat tieu chuan trong ca thiet ke va xay dung.',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['name' => 'Danny Johnny', 'role' => 'Building Worker', 'image' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=700&q=85'],
+                            ['name' => 'Anna Smith', 'role' => 'Site Engineer', 'image' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=700&q=85'],
+                            ['name' => 'John Carter', 'role' => 'Construction Lead', 'image' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=700&q=85'],
+                            ['name' => 'Maria Hill', 'role' => 'Safety Manager', 'image' => 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=700&q=85'],
+                            ['name' => 'Peter Brown', 'role' => 'Architect', 'image' => 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=700&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Our team', 'subtitle' => 'Team', 'description' => 'Experienced construction people delivering quality projects.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */
