@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312'], true);
     }
 
     /**
@@ -1135,6 +1135,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
             'XD0309' => $this->xd0309DefaultBlocks(),
@@ -1147,6 +1148,52 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0312DefaultBlocks(): array
+    {
+        $blocks = collect($this->xd0305DefaultBlocks())->keyBy('block_type');
+        $process = collect($this->xd0303DefaultBlocks())->firstWhere('block_type', 'process_steps');
+
+        $hero = $blocks->get('hero_slider');
+        $hero['settings']['placement'] = 'xd0312-hero-slider';
+        $hero['settings_schema'][0]['default'] = 'xd0312-hero-slider';
+        $hero['data']['vi'] = ['title' => 'Dich vu kho bai va luu tru', 'subtitle' => 'Bizgrow logistics', 'description' => 'Giai phap kho bai, van chuyen va chuoi cung ung toi uu cho doanh nghiep.', 'button_label' => 'Xem dich vu cua chung toi', 'content' => ['slides' => []]];
+
+        $about = $blocks->get('bizmax_about');
+        $about['data']['vi'] = ['title' => 'Logistics tren toan the gioi', 'subtitle' => 'Ve chung toi', 'description' => 'Bizgrow ket noi kho bai, van chuyen va giao nhan bang quy trinh ro rang, linh hoat va tiet kiem chi phi.', 'button_label' => 'Kham pha chung toi', 'content' => ['image_primary' => '', 'image_secondary' => '', 'years' => '15+', 'years_label' => 'Nam kinh nghiem', 'progress_label' => 'Khach hang hai long', 'progress_value' => 98]];
+
+        $services = $blocks->get('business_service_grid');
+        $services['data']['vi'] = ['title' => 'Giai phap kinh doanh sang tao', 'subtitle' => 'Dich vu pho bien', 'description' => 'Dich vu hau can dong bo tu kho bai den giao nhan quoc te.', 'button_label' => 'Xem chi tiet', 'content' => ['items' => []]];
+
+        $process['data']['vi'] = ['title' => 'Quy trinh lam viec', 'subtitle' => 'Quy trinh lam viec', 'description' => 'Minh bach trong tung buoc de don hang duoc xu ly chinh xac va dung tien do.', 'button_label' => '', 'content' => ['items' => [
+            ['title' => 'Yeu cau bao gia', 'description' => 'Tiep nhan nhu cau va phan hoi phuong an phu hop.'],
+            ['title' => 'Tiep nhan don hang', 'description' => 'Xac nhan thong tin, lich trinh va chung tu can thiet.'],
+            ['title' => 'Dat kho bai va luu tru', 'description' => 'Sap xep hang hoa khoa hoc va theo doi bang du lieu so.'],
+            ['title' => 'Van chuyen san pham', 'description' => 'Giao hang an toan, dung thoi gian va cap nhat lien tuc.'],
+        ]]];
+
+        $benefits = $blocks->get('bizmax_benefit_panel');
+        $benefits['data']['vi'] = ['title' => 'Nang luc logistics san sang dong hanh', 'subtitle' => 'Quy mo Bizgrow', 'description' => 'He thong van hanh duoc xay dung de mo rong cung doanh nghiep.', 'button_label' => '', 'content' => ['image' => '', 'items' => [
+            ['title' => '50 cum kho tren toan quoc'], ['title' => '500 can bo nhan vien'], ['title' => '1000 xe tai chuyen dung'], ['title' => '5000 khach hang tin tuong'],
+        ]]];
+
+        $team = $blocks->get('team_members');
+        $team['data']['vi']['title'] = 'Doi ngu chuyen gia cua chung toi';
+        $team['data']['vi']['subtitle'] = 'Thanh vien chuyen gia';
+        $team['data']['vi']['description'] = 'Nhung con nguoi mang den su toi uu va hieu qua cho chuoi cung ung cua ban.';
+
+        $partners = $blocks->get('partner_logos');
+        $partners['data']['vi']['title'] = 'Doi tac tin cay';
+        $partners['data']['vi']['subtitle'] = 'Ket noi toan cau';
+
+        $posts = $blocks->get('bizmax_latest_posts');
+        $posts['data']['vi']['title'] = 'Tin tuc cua chung toi';
+        $posts['data']['vi']['subtitle'] = 'Tu tap chi';
+        $posts['data']['vi']['button_label'] = 'Xem them';
+
+        return [$hero, $about, $services, $process, $benefits, $team, $partners, $posts];
     }
 
     /** @return array<int, array<string, mixed>> */

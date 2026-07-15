@@ -235,6 +235,23 @@ class LandingPageBuilderSourceTest extends TestCase
         $this->get('/vi')->assertOk();
     }
 
+    public function test_xd0312_logistics_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0312-logistics-test', 'XD0312');
+
+        $this->assertTrue($page->blocks()->where('block_type', 'process_steps')->exists());
+        $this->assertTrue($page->blocks()->where('block_type', 'team_members')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0312');
+        $this->assertSame('xd0312-logistics-bizgrow', $provider->defaultPreset());
+        $result = $provider->generate($provider->defaultPreset());
+
+        $this->assertSame(4, $result['counts']['services']);
+        $this->assertSame(3, $result['counts']['team_members']);
+        $this->get('/vi')->assertOk();
+    }
+
     public function test_xd0311_accounting_homepage_and_demo_preset_render(): void
     {
         $builder = app(LandingPageBuilder::class);

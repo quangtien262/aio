@@ -35,9 +35,13 @@ body { font-family:Arial,Helvetica,sans-serif; }
 .xd5-about { grid-template-columns:.9fr 1.1fr; }
 .xd5-about-media img { width:100%; height:490px; }
 .xd5-about-badge { background:var(--gold); color:#141d28; right:-30px; }
-.xd5-benefits { background:#f7f8f9; color:#1c2732; }
-.xd5-benefit-grid img { height:480px; }
-.xd5-benefit-list b:before { background:var(--gold); }
+.xd5-benefits { background:#ef3347; color:#fff; padding:46px 0; }
+.xd5-benefit-grid { display:block; text-align:center; }
+.xd5-benefit-grid > div > .xd5-eyebrow,.xd5-benefit-grid > div > .xd5-title,.xd5-benefit-grid > div > p { display:none; }
+.xd5-benefit-grid img { display:none; }
+.xd5-benefit-list { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#ffffff35; }
+.xd5-benefit-list b { min-height:106px; display:grid; place-items:center; padding:24px; background:#ef3347; font-size:20px; line-height:1.4; }
+.xd5-benefit-list b:before { display:none; }
 .xd5-testimonial { background:#f8fafb; }
 .xd5-team article { border-radius:0; background:#263346; }
 .xd5-team img { height:335px; }
@@ -52,6 +56,6 @@ body { font-family:Arial,Helvetica,sans-serif; }
 .xd12-footer ul { padding:0; list-style:none; }
 .xd12-footer li { margin:11px 0; }
 .xd12-contact-list li:before { content:'•'; color:var(--gold); margin-right:9px; }
-@media(max-width:900px){ .xd12-navigation nav{gap:14px}.xd5-services{grid-template-columns:repeat(2,1fr)}.xd12-footer-grid{grid-template-columns:1fr 1fr}.xd12-utility-spacer{display:none} }
-@media(max-width:620px){ .xd12-header{position:relative;background:#121c28}.xd12-utility > div{gap:8px;overflow:auto}.xd12-utility > div > a:first-child,.xd12-utility-spacer,.xd12-quote-small{display:none}.xd12-navigation{min-height:70px;padding:0 15px}.xd12-navigation .xd5-brand{min-width:0}.xd12-navigation > button{display:block;margin-left:auto;background:transparent;border:1px solid #17213055;color:#172130;padding:8px}.xd12-navigation nav{display:none;flex-basis:100%;order:3;flex-direction:column;align-items:flex-start;padding:10px 0}.xd12-navigation nav.is-open{display:flex}.xd12-quote{display:none}.xd5-hero,.xd5-hero-copy{min-height:560px}.xd5-hero-copy{text-align:left}.xd5-hero-copy>div{margin-top:60px}.xd5-services,.xd12-footer-grid{grid-template-columns:1fr} }
+@media(max-width:900px){ .xd12-navigation nav{gap:14px}.xd5-services{grid-template-columns:repeat(2,1fr)}.xd12-footer-grid{grid-template-columns:1fr 1fr}.xd12-utility-spacer{display:none}.xd5-benefit-list{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:620px){ .xd12-header{position:relative;background:#121c28}.xd12-utility > div{gap:8px;overflow:auto}.xd12-utility > div > a:first-child,.xd12-utility-spacer,.xd12-quote-small{display:none}.xd12-navigation{min-height:70px;padding:0 15px}.xd12-navigation .xd5-brand{min-width:0}.xd12-navigation > button{display:block;margin-left:auto;background:transparent;border:1px solid #17213055;color:#172130;padding:8px}.xd12-navigation nav{display:none;flex-basis:100%;order:3;flex-direction:column;align-items:flex-start;padding:10px 0}.xd12-navigation nav.is-open{display:flex}.xd12-quote{display:none}.xd5-hero,.xd5-hero-copy{min-height:560px}.xd5-hero-copy{text-align:left}.xd5-hero-copy>div{margin-top:60px}.xd5-services,.xd12-footer-grid,.xd5-benefit-list{grid-template-columns:1fr} }
 </style>
