@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0314'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0314', 'XD0315'], true);
     }
 
     /**
@@ -1135,6 +1135,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'XD0315' => $this->xd0315DefaultBlocks(),
             'XD0314' => $this->xd0314DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
@@ -1149,6 +1150,212 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0315DefaultBlocks(): array
+    {
+        $multiSources = [
+            ['value' => 'custom', 'label' => 'Nhap thu cong'],
+            ['value' => 'cms_posts', 'label' => 'Tin tuc'],
+            ['value' => 'cms_products', 'label' => 'San pham'],
+            ['value' => 'cms_services', 'label' => 'Dich vu'],
+            ['value' => 'cms_projects', 'label' => 'Du an'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Header va hero Athletic',
+                'description' => 'Header den, dang nhap/dang ky va hero slider full man hinh.',
+                'preview_image' => '/theme-previews/XD0315/hero-slider.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0315-hero-slider', 'limit' => 3, 'autoplay_ms' => 6200],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vi tri banner'],
+                    'limit' => ['type' => 'number', 'label' => 'So slide'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Hang dau Viet Nam',
+                        'subtitle' => 'Tap luyen cung cac chuyen gia the hinh',
+                        'description' => 'Khong gian tap luyen hien dai danh cho nguoi yeu the thao.',
+                        'button_label' => 'Dang ky tap thu',
+                        'content' => ['slides' => [
+                            ['kicker' => 'Tap luyen cung cac chuyen gia the hinh', 'title' => 'Hang dau Viet Nam', 'button_label' => 'Dang ky tap thu', 'image' => 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#lop-tap'],
+                            ['kicker' => 'Suc manh, ky luat va nang luong moi ngay', 'title' => 'Athletic Fitness', 'button_label' => 'Kham pha lop tap', 'image' => 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#lop-tap'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Vietnam leading fitness center', 'subtitle' => 'Train with professional coaches', 'description' => 'Modern fitness experiences for active members.', 'button_label' => 'Start trial', 'content' => ['slides' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'content_mosaic',
+                'label' => 'Lop tap va dich vu',
+                'description' => 'Mosaic lop tap, co the lay tu news/product/services/project hoac custom.',
+                'preview_image' => '/theme-previews/XD0315/classes.png',
+                'anchor_id' => 'lop-tap',
+                'dynamic' => true,
+                'settings' => ['source' => 'custom', 'limit' => 6, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $multiSources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Trung tam the duc Athletic !',
+                        'subtitle' => '',
+                        'description' => 'Cac dich vu luyen tap va nhung cach giam can hieu qua. Chung toi se giup ban.',
+                        'button_label' => 'Xem them',
+                        'content' => ['items' => [
+                            ['title' => 'Huan luyen ca nhan', 'summary' => 'Huan luyen vien ca nhan danh gia chi so co the va xay dung dinh huong tap luyen rieng.', 'image' => 'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Yoga', 'summary' => 'Hon 50 lop yoga tu co ban den nang cao cho nhieu muc tieu tap luyen.', 'image' => 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Giam can', 'summary' => 'He thong bai tap chuyen sau giup giam mo va cai thien suc ben.', 'image' => 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=1200&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Dance', 'summary' => 'Giai phong nang luong, tang su linh hoat va giup lop tap luon day hung khoi.', 'image' => 'https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?auto=format&fit=crop&w=1200&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Giam cang co', 'summary' => 'Lieu phap gian co thu gian sau khi tap luyen cuong do cao.', 'image' => 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Kickfit', 'summary' => 'Ket hop vo thuat va cardio voi cac dong tac manh me.', 'image' => 'https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Athletic fitness center', 'subtitle' => '', 'description' => 'Training services and effective weight control programs.', 'button_label' => 'More', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'about_experience',
+                'label' => 'Gioi thieu va video',
+                'description' => 'Khoi gioi thieu nen den voi hinh anh lon va video.',
+                'preview_image' => '/theme-previews/XD0315/about-video.png',
+                'anchor_id' => 'gioi-thieu',
+                'settings' => ['cta_url' => '#lop-tap', 'video_url' => '#video'],
+                'media' => [
+                    'image' => 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1200&q=85',
+                    'video_image' => 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=85',
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Chung toi tao ra su khac biet',
+                        'subtitle' => 'But I must explain to you how all this mistaken idea denouncing pleasure and praising pain was born.',
+                        'description' => 'Chung toi muon chung minh rang de co duoc cuoc song tot va lanh manh hon, ban khong nhat thiet phai hy sinh qua nhieu. Chi can dua vao loi song cua minh nhung thoi quen giup nang cao chat luong song.',
+                        'button_label' => 'Xem them',
+                        'content' => [],
+                    ],
+                    'en' => ['title' => 'We make the difference', 'subtitle' => 'Train smarter every day.', 'description' => 'Healthy habits and practical coaching for a stronger lifestyle.', 'button_label' => 'More', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'team_members',
+                'label' => 'Gap go chuyen gia',
+                'description' => 'Danh sach huan luyen vien voi ten va chuc danh.',
+                'preview_image' => '/theme-previews/XD0315/trainers.png',
+                'anchor_id' => 'chuyen-gia',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_team_members', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => [['value' => 'custom', 'label' => 'Nhap thu cong'], ['value' => 'cms_team_members', 'label' => 'Doi ngu']]],
+                    'limit' => ['type' => 'number', 'label' => 'So nhan su'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Gap go chuyen gia',
+                        'subtitle' => '',
+                        'description' => 'Cac chuyen gia hang dau cua Athletic da san sang de cung ban tap luyen, vuon toi than hinh san chac va loi song khoe manh.',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['name' => 'Brad Tran', 'role' => 'Huan luyen vien ta', 'image' => 'https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?auto=format&fit=crop&w=800&q=85'],
+                            ['name' => 'Raymond L. Brown', 'role' => 'Huan luyen vien quyen anh', 'image' => 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=85'],
+                            ['name' => 'Tieu Phuong', 'role' => 'Chuyen gia the hinh', 'image' => 'https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?auto=format&fit=crop&w=800&q=85'],
+                            ['name' => 'Solomon K. Sawyers', 'role' => 'Huan luyen vien lam dep', 'image' => 'https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=800&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Meet the experts', 'subtitle' => '', 'description' => 'Professional coaches ready to guide your fitness journey.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'project_gallery',
+                'label' => 'Cau lac bo',
+                'description' => 'Thu vien co so/cau lac bo voi nhan cam tren anh.',
+                'preview_image' => '/theme-previews/XD0315/clubs.png',
+                'anchor_id' => 'cau-lac-bo',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_projects', 'limit' => 5, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $multiSources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Cau lac bo',
+                        'subtitle' => '',
+                        'description' => 'He thong phong tap tieu chuan 5 Sao voi trang thiet bi, may moc tap luyen nhap khau tu cac thuong hieu hang dau the gioi.',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['title' => 'Athletic Fitness Center 3 Thang 2 Quan 10', 'image' => 'https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1200&q=85'],
+                            ['title' => 'Athletic Fitness Center Thien Son Plaza Quan 7', 'image' => 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=85'],
+                            ['title' => 'Athletic Fitness Center Ho Xuan Huong Quan 3', 'image' => 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Athletic Fitness Center Hoang Sa Quan 3', 'image' => 'https://images.unsplash.com/photo-1576678927484-cc907957088c?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Athletic Fitness Center Pham Van Hai Quan Tan', 'image' => 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=900&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Clubs', 'subtitle' => '', 'description' => 'Premium fitness clubs with modern imported equipment.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_services',
+                'label' => 'Tin tuc su kien',
+                'description' => 'Danh sach tin tuc/su kien 3 cot.',
+                'preview_image' => '/theme-previews/XD0315/news.png',
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $multiSources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Tin tuc su kien',
+                        'subtitle' => '',
+                        'description' => '',
+                        'button_label' => 'Xem them',
+                        'content' => ['items' => [
+                            ['title' => 'So huu body chuan khong kho neu nam duoc bi quyet dinh duong khi tap gym nay', 'summary' => 'Neu chi tap gym ma khong an uong hop ly thi co the se khong co nhung thay doi dang ke.', 'image' => 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Khong an kieng van co body san chac nho che do an tang co giam mo nay!', 'summary' => 'An uong theo che do tang co giam mo giup nam gioi co than hinh quyen ru hon.', 'image' => 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Thuc don cho nguoi moi tap gym co nen su dung nhieu trung?', 'summary' => 'Thuc don cho nguoi moi tap gym nen bat dau voi khau phan an hop ly va da dang.', 'image' => 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'News and events', 'subtitle' => '', 'description' => '', 'button_label' => 'More', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'testimonials',
+                'label' => 'Cau chuyen thanh cong',
+                'description' => 'Success stories dang truoc/sau voi chi so co the.',
+                'preview_image' => '/theme-previews/XD0315/success-stories.png',
+                'anchor_id' => 'cau-chuyen',
+                'settings' => ['source' => 'custom', 'limit' => 4],
+                'media' => ['background' => 'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?auto=format&fit=crop&w=1800&q=80'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Cau chuyen thanh cong',
+                        'subtitle' => '',
+                        'description' => 'Kham pha phuong phap da giup thay doi cuoc song cua hang tram ngan nguoi tai Viet Nam.',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['name' => 'Bui Quoc Thai', 'image' => 'https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=700&q=85', 'before_weight' => '100kg', 'after_weight' => '77kg', 'before_muscle' => '40.5kg', 'after_muscle' => '47.2kg', 'before_fat' => '25%', 'after_fat' => '14.3%'],
+                            ['name' => 'Nguyen Huu Trong', 'image' => 'https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?auto=format&fit=crop&w=700&q=85', 'before_weight' => '62kg', 'after_weight' => '61.5kg', 'before_muscle' => '29.3kg', 'after_muscle' => '31.2kg', 'before_fat' => '25%', 'after_fat' => '20.3%'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Success stories', 'subtitle' => '', 'description' => 'Real transformations from Athletic members.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

@@ -7,11 +7,13 @@
             });
 
             const af15HeroSlides = Array.from(document.querySelectorAll('.af15-hero__slide'));
+            const af15HeroDots = Array.from(document.querySelectorAll('[data-af15-hero-dot]'));
             let af15HeroIndex = 0;
             const showaf15Hero = (next) => {
                 if (!af15HeroSlides.length) return;
                 af15HeroIndex = (next + af15HeroSlides.length) % af15HeroSlides.length;
                 af15HeroSlides.forEach((slide, slideIndex) => slide.classList.toggle('is-active', slideIndex === af15HeroIndex));
+                af15HeroDots.forEach((dot, dotIndex) => dot.classList.toggle('is-active', dotIndex === af15HeroIndex));
             };
             let af15HeroTimer = window.setInterval(() => showaf15Hero(af15HeroIndex + 1), 6200);
             const restartaf15Hero = () => {
@@ -20,6 +22,7 @@
             };
             document.querySelector('[data-af15-hero-prev]')?.addEventListener('click', () => { showaf15Hero(af15HeroIndex - 1); restartaf15Hero(); });
             document.querySelector('[data-af15-hero-next]')?.addEventListener('click', () => { showaf15Hero(af15HeroIndex + 1); restartaf15Hero(); });
+            af15HeroDots.forEach((dot) => dot.addEventListener('click', () => { showaf15Hero(Number(dot.dataset.af15HeroDot || 0)); restartaf15Hero(); }));
 
             document.querySelectorAll('[data-af15-row]').forEach((track) => {
                 let rowTimer = null;

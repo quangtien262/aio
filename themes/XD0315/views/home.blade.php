@@ -1,12 +1,12 @@
 ﻿@php
     $blocks = collect($landingBlocks ?? [])->values();
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($themeHomeData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', [])));
-    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Build Bench'))) ?: 'Build Bench';
-    $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Tieu chi hang dau cua chung toi la tao ra cong trinh chat luong, dung tien do va dung mong doi cua khach hang.'))) ?: 'Tieu chi hang dau cua chung toi la tao ra cong trinh chat luong, dung tien do va dung mong doi cua khach hang.';
+    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Athletic Fitness Center'))) ?: 'Athletic Fitness Center';
+    $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Athletic la trung tam the duc hien dai, dong hanh cung hoi vien tren hanh trinh ren luyen suc khoe va vung chac than hinh.'))) ?: 'Athletic la trung tam the duc hien dai, dong hanh cung hoi vien tren hanh trinh ren luyen suc khoe va vung chac than hinh.';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '(028) 62563737')) ?: '(028) 62563737';
+    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 9477')) ?: '1900 9477';
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
-    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? 'admin@demo.web30s.vn')) ?: 'admin@demo.web30s.vn';
+    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? 'admin@demo031030.web30s.vn')) ?: 'admin@demo031030.web30s.vn';
     $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? '196 Nguyen Dinh Chieu, P.Vo Thi Sau, Q.3, TP.HCM')) ?: '196 Nguyen Dinh Chieu, P.Vo Thi Sau, Q.3, TP.HCM';
 
     $localizeMenuUrl = function (?string $href): string {
@@ -50,9 +50,12 @@
         $navItems = collect([
             ['label' => 'Trang chu', 'href' => route('site.home'), 'children' => []],
             ['label' => 'Gioi thieu', 'href' => '#gioi-thieu', 'children' => []],
-            ['label' => 'Du an tieu bieu', 'href' => '#du-an', 'children' => []],
+            ['label' => 'San pham', 'href' => '#san-pham', 'children' => []],
             ['label' => 'Dich vu', 'href' => '#dich-vu', 'children' => []],
-            ['label' => 'Tin tuc', 'href' => route('site.blog.index'), 'children' => []],
+            ['label' => 'Diem tin', 'href' => '#tin-tuc', 'children' => []],
+            ['label' => 'Cau lac bo', 'href' => '#cau-lac-bo', 'children' => []],
+            ['label' => 'Thu vien anh', 'href' => '#hinh-anh', 'children' => []],
+            ['label' => 'Video', 'href' => '#video', 'children' => []],
             ['label' => 'Lien he', 'href' => '#footer', 'children' => []],
         ]);
     }

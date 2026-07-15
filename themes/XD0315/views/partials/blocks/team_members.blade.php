@@ -6,27 +6,32 @@
         ->values();
 @endphp
 
-<section id="{{ $anchor }}" class="af15-trainers af15-section xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
+<section id="{{ $anchor }}" class="af15-team af15-section xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     {!! $editButton !!}
     <div class="af15-container">
-        <div class="af15-title-row is-light">
+        <div class="af15-title-row">
             <h2>{{ $data['title'] ?? 'Gap go chuyen gia' }}</h2>
             @if (filled($data['description'] ?? null))
                 <p>{{ $data['description'] }}</p>
             @endif
         </div>
-        <div class="af15-trainer-grid">
+        <div class="af15-team__row">
             @foreach ($teamItems as $member)
                 @php
                     $name = $member['name'] ?? $member['title'] ?? '';
                     $role = $member['role'] ?? $member['department'] ?? $member['company'] ?? '';
-                    $image = $member['image'] ?? $member['avatar'] ?? '';
+                    $image = $member['image'] ?? $member['avatar'] ?? $member['image_url'] ?? '';
                 @endphp
-                <article class="af15-trainer-card">
+                <article class="af15-team-card">
                     @if (filled($image))
                         <img src="{{ $image }}" alt="{{ $member['alt'] ?? $name }}">
                     @endif
-                    <span><strong>{{ $name }}</strong><small>{{ $role }}</small></span>
+                    <div>
+                        <strong>{{ $name }}</strong>
+                        @if (filled($role))
+                            <span>{{ $role }}</span>
+                        @endif
+                    </div>
                 </article>
             @endforeach
         </div>

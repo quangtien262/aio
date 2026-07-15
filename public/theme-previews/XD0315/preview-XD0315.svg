@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-label="XD0315 Athletic Fitness preview">
+  <rect width="640" height="420" fill="#151515"/>
+  <rect x="0" y="0" width="640" height="238" fill="#24201c"/>
+  <path d="M0 0h640v238H0z" fill="url(#hero)"/>
+  <path d="M0 0h640v238H0z" fill="#000" opacity=".44"/>
+  <path d="M190 0h165L230 238H65z" fill="#fff" opacity=".14"/>
+  <circle cx="58" cy="42" r="34" fill="#f47c00"/>
+  <text x="58" y="38" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="10" font-weight="800">ATHLETIC</text>
+  <text x="58" y="52" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="7" font-weight="800">FITNESS</text>
+  <rect x="118" y="24" width="474" height="46" fill="#030303"/>
+  <g fill="#fff" font-family="Arial, sans-serif" font-size="10" font-weight="800">
+    <text x="140" y="53" fill="#f47c00">TRANG CHU</text>
+    <text x="212" y="53">GIOI THIEU</text>
+    <text x="294" y="53">DICH VU</text>
+    <text x="354" y="53">DIEM TIN</text>
+    <text x="424" y="53">CAU LAC BO</text>
+    <text x="514" y="53">LIEN HE</text>
+  </g>
+  <text x="320" y="138" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="24" font-weight="900">TAP LUYEN CUNG CHUYEN GIA</text>
+  <text x="320" y="178" text-anchor="middle" fill="#f47c00" font-family="Arial, sans-serif" font-size="40" font-weight="900">ATHLETIC FITNESS</text>
+  <rect x="270" y="194" width="100" height="30" fill="none" stroke="#fff"/>
+  <text x="320" y="214" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="11" font-weight="800">DANG KY TAP THU</text>
+  <rect x="0" y="238" width="640" height="82" fill="#fff"/>
+  <text x="205" y="288" fill="#f47c00" font-family="Arial, sans-serif" font-size="28" font-weight="900">TRUNG TAM THE DUC ATHLETIC !</text>
+  <line x1="416" y1="252" x2="416" y2="306" stroke="#f47c00" stroke-width="3"/>
+  <text x="438" y="276" fill="#666" font-family="Arial, sans-serif" font-size="13" font-weight="700">Cac dich vu luyen tap</text>
+  <text x="438" y="296" fill="#666" font-family="Arial, sans-serif" font-size="13" font-weight="700">va giam can hieu qua</text>
+  <g>
+    <rect x="0" y="320" width="160" height="100" fill="#2b2b2b"/>
+    <rect x="160" y="320" width="160" height="100" fill="#555"/>
+    <rect x="320" y="320" width="320" height="100" fill="#333"/>
+    <text x="24" y="386" fill="#f47c00" font-family="Arial, sans-serif" font-size="20" font-weight="900">YOGA</text>
+    <text x="184" y="386" fill="#f47c00" font-family="Arial, sans-serif" font-size="20" font-weight="900">DANCE</text>
+    <text x="346" y="386" fill="#f47c00" font-family="Arial, sans-serif" font-size="20" font-weight="900">GIAM CAN</text>
+  </g>
+  <defs>
+    <linearGradient id="hero" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#5b4c40"/>
+      <stop offset=".45" stop-color="#2f2f2f"/>
+      <stop offset="1" stop-color="#7b5a42"/>
+    </linearGradient>
+  </defs>
+</svg>
