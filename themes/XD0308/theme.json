@@ -1,0 +1,13 @@
+{
+  "name": "XD0308 Comgo Education",
+  "key": "XD0308",
+  "version": "0.1.0",
+  "description": "Landing page tư vấn du học với banner, giới thiệu, quy trình, dịch vụ, quốc gia, đánh giá, liên hệ và footer cố định.",
+  "website_type": "service",
+  "parent": null,
+  "preview": { "thumbnail": "preview-xd0308.svg", "cover": "cover-xd0308.svg" },
+  "blocks": ["hero-slider", "about-experience", "process-steps", "featured-services", "content-mosaic", "testimonials", "landing-contact"],
+  "supports": { "dark_mode": false, "multi_homepage": false, "custom_css": true, "block_mapping": false },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "xd0308-study-abroad" }
+}

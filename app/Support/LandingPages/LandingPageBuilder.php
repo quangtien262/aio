@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309'], true);
     }
 
     /**
@@ -1135,6 +1135,9 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'XD0309' => $this->xd0309DefaultBlocks(),
+            'XD0308' => $this->xd0308DefaultBlocks(),
+            'XD0307' => $this->xd0307DefaultBlocks(),
             'XD0306' => $this->xd0306DefaultBlocks(),
             'XD0305' => $this->xd0305DefaultBlocks(),
             'XD0304' => $this->xd0304DefaultBlocks(),
@@ -1142,6 +1145,80 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0309DefaultBlocks(): array
+    {
+        $blocks = $this->xd0305DefaultBlocks();
+        $blocks[0]['settings']['placement'] = 'xd0309-hero-slider';
+        $blocks[0]['settings_schema'][0]['default'] = 'xd0309-hero-slider';
+        $blocks[0]['data']['vi'] = ['title' => 'Toi uu chat luong chi phi cho doi tac doanh nghiep', 'subtitle' => 'Thiet bi va giai phap an toan', 'description' => 'Cung cap thiet bi bao ho lao dong va giai phap an toan chuyen nghiep cho doanh nghiep.', 'button_label' => 'Nhan bao gia mien phi', 'content' => ['slides' => []]];
+        $blocks[1]['data']['vi']['title'] = 'Dich vu cua chung toi';
+        $blocks[1]['data']['vi']['subtitle'] = 'Dich vu';
+        $blocks[2]['data']['vi']['title'] = 'Gioi thieu cong ty';
+        $blocks[2]['data']['vi']['subtitle'] = 'Ve chung toi';
+        $blocks[3]['data']['vi']['title'] = 'Tu van hop ly va cam ket chat luong';
+        $blocks[4]['data']['vi']['title'] = 'Doi tac noi gi ve Antek';
+        $blocks[5]['data']['vi']['title'] = 'Doi ngu ky thuat cua chung toi';
+        $blocks[6]['data']['vi']['title'] = 'Yeu cau tu van va bao gia';
+        $blocks[7]['data']['vi']['title'] = 'Tin tuc moi';
+
+        return $blocks;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0307DefaultBlocks(): array
+    {
+        $blocks = $this->xd0305DefaultBlocks();
+        $blocks[0]['settings']['placement'] = 'xd0307-hero-slider';
+        $blocks[0]['settings_schema'][0]['default'] = 'xd0307-hero-slider';
+        $blocks[0]['data']['vi'] = ['title' => 'Chúng tôi là lựa chọn tốt nhất cho bạn', 'subtitle' => 'Dịch vụ dọn dẹp', 'description' => 'Đội ngũ vệ sinh chuyên nghiệp, tận tâm cho gia đình và doanh nghiệp.', 'button_label' => 'Nhận báo giá', 'content' => ['slides' => []]];
+        $blocks[1]['data']['vi']['title'] = 'Dịch vụ làm sạch tuyệt vời dành cho bạn';
+        $blocks[1]['data']['vi']['subtitle'] = 'Dịch vụ của chúng tôi';
+        $blocks[2]['data']['vi']['title'] = 'Chúng tôi cung cấp các dịch vụ vệ sinh tốt nhất';
+        $blocks[2]['data']['vi']['subtitle'] = 'Tìm hiểu về chúng tôi';
+        $blocks[3]['data']['vi']['title'] = '25 năm kinh nghiệm trong ngành làm sạch';
+        $blocks[4]['data']['vi']['title'] = 'Cảm nhận của khách hàng';
+        $blocks[5]['data']['vi']['title'] = 'Gặp gỡ đội ngũ kinh nghiệm cao của chúng tôi';
+        $blocks[6]['data']['vi']['title'] = 'Yêu cầu báo giá dịch vụ';
+        $blocks[7]['data']['vi']['title'] = 'Các bài viết mới nhất từ chúng tôi';
+
+        return $blocks;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0308DefaultBlocks(): array
+    {
+        $studyBlocks = collect($this->xd0303DefaultBlocks())->keyBy('block_type');
+        $coreBlocks = collect($this->xd0301DefaultBlocks())->keyBy('block_type');
+        $blocks = [
+            $studyBlocks->get('hero_slider'),
+            $coreBlocks->get('about_experience'),
+            $studyBlocks->get('process_steps'),
+            $coreBlocks->get('featured_services'),
+            $coreBlocks->get('content_mosaic'),
+            $coreBlocks->get('testimonials'),
+            $coreBlocks->get('landing_contact'),
+        ];
+
+        $blocks[0]['settings']['placement'] = 'xd0308-hero-slider';
+        $blocks[0]['settings_schema'][0]['default'] = 'xd0308-hero-slider';
+        $blocks[0]['data']['vi'] = ['title' => 'Du học và định hướng tương lai', 'subtitle' => 'Tư vấn du học Comgo', 'description' => 'Lộ trình học tập, hồ sơ và visa được đội ngũ chuyên môn đồng hành từ đầu đến cuối.', 'button_label' => 'Đăng ký tư vấn', 'content' => ['slides' => []]];
+        $blocks[1]['data']['vi'] = ['title' => 'Chúng tôi cung cấp giải pháp du học tốt nhất', 'subtitle' => 'Về chúng tôi', 'description' => 'Đồng hành cùng học viên lựa chọn quốc gia, trường học và lộ trình phù hợp với mục tiêu phát triển cá nhân.', 'button_label' => 'Xem thêm', 'content' => []];
+        $blocks[2]['data']['vi'] = ['title' => 'Quy trình đăng ký du học', 'subtitle' => 'Chúng tôi làm việc như thế nào', 'description' => 'Sáu bước rõ ràng để chuẩn bị một hành trình học tập quốc tế vững vàng.', 'button_label' => '', 'content' => ['steps' => []]];
+        $blocks[3]['data']['vi']['title'] = 'Cung cấp các dịch vụ mới nhất';
+        $blocks[3]['data']['vi']['subtitle'] = 'Dịch vụ';
+        $blocks[4]['anchor_id'] = 'quoc-gia';
+        $blocks[4]['settings']['source'] = 'cms_services';
+        $blocks[4]['data']['vi']['title'] = 'Quốc gia được yêu thích nhất cho người nhập cư';
+        $blocks[4]['data']['vi']['subtitle'] = 'Tư vấn du học';
+        $blocks[5]['data']['vi']['title'] = 'Nhận xét từ khách hàng';
+        $blocks[5]['data']['vi']['subtitle'] = 'Lời chứng thực';
+        $blocks[6]['data']['vi']['title'] = 'Yêu cầu một cuộc gọi lại';
+        $blocks[6]['data']['vi']['subtitle'] = 'Tư vấn du học';
+
+        return $blocks;
     }
 
     private function xd0306DefaultBlocks(): array

@@ -158,4 +158,64 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->get('/vi')->assertOk()->assertSee('Tư vấn doanh nghiệp');
     }
+
+    public function test_xd0306_digital_agency_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0306-agency-test', 'XD0306');
+
+        $this->assertTrue($page->blocks()->where('block_type', 'collection_gallery')->exists());
+        $this->assertTrue($page->blocks()->where('block_type', 'faq_showcase')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0306');
+        $this->assertSame('xd0306-digital-agency', $provider->defaultPreset());
+        $provider->generate($provider->defaultPreset());
+
+        $this->get('/vi')->assertOk()->assertSee('Dịch vụ vận tải hàng không đường biển');
+    }
+
+    public function test_xd0308_study_abroad_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0308-study-test', 'XD0308');
+
+        $this->assertTrue($page->blocks()->where('block_type', 'process_steps')->exists());
+        $this->assertTrue($page->blocks()->where('block_type', 'testimonials')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0308');
+        $this->assertSame('xd0308-study-abroad', $provider->defaultPreset());
+        $provider->generate($provider->defaultPreset());
+
+        $this->get('/vi')->assertOk();
+    }
+
+    public function test_xd0307_cleaning_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0307-cleaning-test', 'XD0307');
+
+        $this->assertTrue($page->blocks()->where('block_type', 'business_service_grid')->exists());
+        $this->assertTrue($page->blocks()->where('block_type', 'bizmax_testimonial_carousel')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0307');
+        $this->assertSame('xd0307-cleaning-services', $provider->defaultPreset());
+        $provider->generate($provider->defaultPreset());
+
+        $this->get('/vi')->assertOk();
+    }
+
+    public function test_xd0309_industrial_safety_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0309-safety-test', 'XD0309');
+
+        $this->assertTrue($page->blocks()->where('block_type', 'business_service_grid')->exists());
+        $this->assertTrue($page->blocks()->where('block_type', 'bizmax_contact')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0309');
+        $this->assertSame('xd0309-industrial-safety', $provider->defaultPreset());
+        $provider->generate($provider->defaultPreset());
+
+        $this->get('/vi')->assertOk();
+    }
 }

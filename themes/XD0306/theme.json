@@ -1,1 +1,35 @@
-{"name":"XD0306 Business Consulting","key":"XD0306","version":"0.1.0","description":"Landingpage tư vấn doanh nghiệp với dịch vụ, đội ngũ, bài viết và footer cố định.","website_type":"service","parent":null,"preview":{"thumbnail":"preview-xd0306.svg","cover":"cover-xd0306.svg"},"blocks":["hero-slider","business-service-grid","bizmax-about","bizmax-benefit-panel","bizmax-testimonial-carousel","team-members","bizmax-contact","bizmax-latest-posts","partner-logos"],"supports":{"dark_mode":false,"multi_homepage":false,"custom_css":true,"block_mapping":false},"localization":{"default_locale":"vi","supported_locales":["vi","en"]},"demo":{"content_path":"demo/content","settings_path":"demo/settings","default_preset":"xd0306-business-consulting"}}
+{
+  "name": "XD0306 Black Digital",
+  "key": "XD0306",
+  "version": "0.1.0",
+  "description": "Landing page agency số phong cách đen - đỏ, gồm banner, dịch vụ, giới thiệu, gallery, FAQ, bài viết và footer cố định.",
+  "website_type": "service",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-xd0306.svg",
+    "cover": "cover-xd0306.svg"
+  },
+  "blocks": [
+    "hero-slider",
+    "business-service-grid",
+    "bizmax-about",
+    "collection-gallery",
+    "faq-showcase",
+    "bizmax-latest-posts"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": false
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "xd0306-digital-agency"
+  }
+}
