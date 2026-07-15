@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304'], true);
     }
 
     /**
@@ -465,6 +465,9 @@ class LandingPageBuilder
             'featured_categories' => 6,
             'content_mosaic' => 5,
             'content_showcase' => 5,
+            'service_category_slider' => 4,
+            'solutions_split_list' => 4,
+            'collection_gallery' => 4,
             'project_gallery' => 4,
             'featured_services', 'featured_service_list' => 3,
             'completed_projects_list' => 5,
@@ -489,11 +492,12 @@ class LandingPageBuilder
             return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
                 'project_gallery' => 'cms_projects',
+                'solutions_split_list', 'collection_gallery' => 'cms_services',
                 default => 'cms_services',
             };
 
@@ -1123,10 +1127,62 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'XD0304' => $this->xd0304DefaultBlocks(),
             'XD0303' => $this->xd0303DefaultBlocks(),
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function xd0304DefaultBlocks(): array
+    {
+        $contentSources = [
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider', 'label' => 'Header và banner', 'description' => 'Header, menu và banner hình ảnh chạy.', 'preview_image' => '/theme-previews/XD0304/hero-slider.png', 'anchor_id' => 'top', 'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0304-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000],
+                'settings_schema' => [['key' => 'placement', 'label' => 'Vị trí banner', 'type' => 'text', 'default' => 'xd0304-hero-slider'], ['key' => 'limit', 'label' => 'Số slide', 'type' => 'number', 'default' => 3], ['key' => 'autoplay_ms', 'label' => 'Tự chuyển (ms)', 'type' => 'number', 'default' => 6000]],
+                'data' => ['vi' => ['title' => 'Giải pháp logistics cho mọi hành trình', 'subtitle' => 'Vận tải và hậu cần', 'description' => 'Kết nối vận tải, kho bãi và giao nhận với quy trình rõ ràng, chủ động.', 'button_label' => 'Nhận báo giá', 'content' => ['slides' => []]], 'en' => ['title' => 'Logistics solutions for every journey', 'subtitle' => 'Transport and logistics', 'description' => 'Reliable transport, warehousing and delivery services.', 'button_label' => 'Get a quote', 'content' => ['slides' => []]]],
+            ],
+            [
+                'block_type' => 'service_category_slider', 'label' => 'Danh mục dịch vụ chạy ngang', 'description' => 'Dịch vụ nổi bật hiển thị dạng thanh trượt dưới banner.', 'preview_image' => '/theme-previews/XD0304/service-category-slider.png', 'anchor_id' => 'dich-vu', 'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']],
+                'data' => ['vi' => ['title' => 'Dịch vụ vận tải nổi bật', 'subtitle' => 'Giải pháp vận chuyển', 'description' => '', 'button_label' => 'Xem thêm', 'content' => ['items' => []]], 'en' => ['title' => 'Featured transport services', 'subtitle' => 'Transport solutions', 'description' => '', 'button_label' => 'Learn more', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'solutions_split_list', 'label' => 'Giải pháp logistics', 'description' => 'Danh sách nội dung xen kẽ ảnh và mô tả; có thể lấy từ Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.', 'preview_image' => '/theme-previews/XD0304/solutions-split-list.png', 'anchor_id' => 'giai-phap', 'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']],
+                'data' => ['vi' => ['title' => 'Giải pháp logistics toàn cầu tốt nhất', 'subtitle' => 'Giải pháp thực tế, nhanh chóng thực sự!', 'description' => '', 'button_label' => 'Xem thêm', 'content' => ['items' => []]], 'en' => ['title' => 'Global logistics solutions', 'subtitle' => 'Practical solutions, delivered fast', 'description' => '', 'button_label' => 'Learn more', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'logistics_feature_panel', 'label' => 'Điểm mạnh logistics', 'description' => 'Khối giới thiệu tùy chỉnh với ảnh, số liệu và hai điểm mạnh.', 'preview_image' => '/theme-previews/XD0304/logistics-feature-panel.png', 'anchor_id' => 'gioi-thieu',
+                'settings' => [],
+                'data' => ['vi' => ['title' => 'Đối tác logistics toàn cầu cho chuỗi cung ứng của bạn', 'subtitle' => 'Giải pháp thực tế, nhanh chóng thực sự!', 'description' => 'Chuyên môn về hậu cần toàn cầu cùng quy trình linh hoạt giúp doanh nghiệp chủ động từng chặng vận chuyển.', 'button_label' => 'Liên hệ tư vấn', 'content' => ['image' => '', 'feature_one_title' => 'Tối ưu hóa chi phí', 'feature_one_text' => 'Phương án giao nhận và vận tải phù hợp, rõ ràng về chi phí.', 'feature_two_title' => 'Giảm thời gian vận chuyển', 'feature_two_text' => 'Điều phối linh hoạt để hàng hóa đến đúng kế hoạch.', 'statistic' => '99,9% khách hàng hài lòng trên hơn 750 đánh giá.']], 'en' => ['title' => 'A global logistics partner for your supply chain', 'subtitle' => 'Practical solutions, delivered fast', 'description' => 'Flexible global logistics services designed around your business.', 'button_label' => 'Contact us', 'content' => ['image' => '', 'feature_one_title' => 'Cost efficiency', 'feature_one_text' => 'Transparent transport and delivery plans.', 'feature_two_title' => 'Faster delivery', 'feature_two_text' => 'Flexible operations that keep your schedule on track.', 'statistic' => '99.9% customer satisfaction across 750+ reviews.']]],
+            ],
+            [
+                'block_type' => 'collection_gallery', 'label' => 'Bộ sưu tập hình ảnh', 'description' => 'Thư viện nội dung có thể lấy từ Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.', 'preview_image' => '/theme-previews/XD0304/collection-gallery.png', 'anchor_id' => 'thu-vien', 'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']],
+                'data' => ['vi' => ['title' => 'Một số hình ảnh tiêu biểu', 'subtitle' => 'Khám phá bộ sưu tập', 'description' => 'Những lát cắt về hành trình vận tải, kho bãi và giao nhận của chúng tôi.', 'button_label' => 'Tất cả bộ sưu tập', 'content' => ['items' => []]], 'en' => ['title' => 'Featured collection', 'subtitle' => 'Explore our collection', 'description' => 'A closer look at our transport and logistics operations.', 'button_label' => 'View all', 'content' => ['items' => []]]],
+            ],
+            [
+                'block_type' => 'partner_logos', 'label' => 'Logo đối tác', 'description' => 'Danh sách logo đối tác lấy từ CMS Partners.', 'preview_image' => '/theme-previews/XD0304/partner-logos.png', 'anchor_id' => 'doi-tac', 'dynamic' => true,
+                'settings' => ['source' => 'cms_partners', 'limit' => 6], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số logo hiển thị']],
+                'data' => ['vi' => ['title' => 'Đối tác đồng hành', 'subtitle' => 'Đối tác', 'description' => '', 'button_label' => '', 'content' => ['items' => []]], 'en' => ['title' => 'Trusted partners', 'subtitle' => 'Partners', 'description' => '', 'button_label' => '', 'content' => ['items' => []]]],
+            ],
+        ];
     }
 
     /**

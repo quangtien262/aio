@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\CmsMenu;
+use App\Models\CmsService;
 use App\Models\CmsTestimonial;
+use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -84,5 +86,61 @@ class LandingPageBuilderSourceTest extends TestCase
         $this->assertSame('Customer feedback', $items[0]['name']);
         $this->assertSame('The delivery was clear and well coordinated.', $items[0]['quote']);
         $this->assertArrayNotHasKey('source', $block->settings);
+    }
+
+    public function test_xd0304_creates_logistics_blocks_with_flexible_content_sources(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0304-logistics-test', 'XD0304');
+        $blocks = $page->blocks()->get()->keyBy('block_type');
+
+        $this->assertTrue($blocks->has('hero_slider'));
+        $this->assertTrue($blocks->has('service_category_slider'));
+        $this->assertTrue($blocks->has('solutions_split_list'));
+        $this->assertTrue($blocks->has('logistics_feature_panel'));
+        $this->assertTrue($blocks->has('collection_gallery'));
+        $this->assertTrue($blocks->has('partner_logos'));
+        $this->assertFalse($blocks->has('footer_contact'));
+        $this->assertSame('cms_services', $blocks['solutions_split_list']->settings['source']);
+        $this->assertSame('cms_services', $blocks['collection_gallery']->settings['source']);
+
+        $available = collect($builder->availableBlocks('XD0304'))->keyBy('block_type');
+        $sourceOptions = $available['solutions_split_list']['settings_schema']['source']['options'];
+
+        $this->assertContains('custom', collect($sourceOptions)->pluck('value')->all());
+        $this->assertContains('cms_posts', collect($sourceOptions)->pluck('value')->all());
+        $this->assertContains('cms_products', collect($sourceOptions)->pluck('value')->all());
+        $this->assertContains('cms_projects', collect($sourceOptions)->pluck('value')->all());
+    }
+
+    public function test_xd0304_registers_its_default_demo_content_preset(): void
+    {
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0304');
+
+        $this->assertNotNull($provider);
+        $this->assertSame('xd0304-logistics', $provider->defaultPreset());
+        $this->assertSame('Logistics và vận tải', $provider->preset()['label']);
+    }
+
+    public function test_xd0304_demo_preset_creates_logistics_content(): void
+    {
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0304');
+        $result = $provider->generate($provider->defaultPreset());
+
+        $this->assertSame(4, $result['counts']['services']);
+        $this->assertSame(6, $result['counts']['partners']);
+        $this->assertSame(2, $result['counts']['banners']);
+        $this->assertSame(4, CmsService::query()->count());
+    }
+
+    public function test_xd0304_homepage_renders_with_its_default_demo_content(): void
+    {
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0304');
+        $provider->generate($provider->defaultPreset());
+
+        $this->get('/vi')
+            ->assertOk()
+            ->assertSee('Logistics Việt')
+            ->assertSee('Giải pháp logistics');
     }
 }

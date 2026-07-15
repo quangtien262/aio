@@ -1,0 +1,2 @@
+@php($items = collect($content['items'] ?? [])->whenEmpty(fn () => collect($block['dynamic_items'] ?? []))->take((int) ($settings['limit'] ?? 6)))
+<section id="{{ $anchor }}" class="xd4-partners"><div class="xd4-container xd4-partner-grid">@foreach($items as $item)<a class="xd4-partner" href="{{ $item['url'] ?? '#' }}">@if(filled($item['image'] ?? null))<img src="{{ $item['image'] }}" alt="{{ $item['alt'] ?? $item['name'] ?? '' }}">@else<strong>{{ $item['name'] ?? $item['title'] ?? '' }}</strong>@endif</a>@endforeach</div></section>

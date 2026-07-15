@@ -94,7 +94,7 @@ function editorItemFields(blockType) {
         ];
     }
 
-    if (['content_showcase', 'latest_posts', 'featured_service_list', 'completed_projects_list'].includes(blockType)) {
+    if (['content_showcase', 'latest_posts', 'featured_service_list', 'completed_projects_list', 'service_category_slider', 'solutions_split_list', 'collection_gallery'].includes(blockType)) {
         return [
             ['title', 'Tiêu đề'],
             ['summary', 'Mô tả', 'textarea'],
