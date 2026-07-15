@@ -61,7 +61,7 @@ function editorItemFields(blockType) {
         ];
     }
 
-    if (['testimonials', 'testimonial_showcase'].includes(blockType)) {
+    if (['testimonials', 'testimonial_showcase', 'bizmax_testimonial_carousel'].includes(blockType)) {
         return [
             ['name', 'Tên khách hàng'],
             ['company', 'Công ty / vai trò'],
@@ -94,7 +94,7 @@ function editorItemFields(blockType) {
         ];
     }
 
-    if (['content_showcase', 'latest_posts', 'featured_service_list', 'completed_projects_list', 'service_category_slider', 'solutions_split_list', 'collection_gallery'].includes(blockType)) {
+    if (['content_showcase', 'latest_posts', 'featured_service_list', 'completed_projects_list', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts'].includes(blockType)) {
         return [
             ['title', 'Tiêu đề'],
             ['summary', 'Mô tả', 'textarea'],

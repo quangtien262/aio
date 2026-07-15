@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306'], true);
     }
 
     /**
@@ -468,6 +468,9 @@ class LandingPageBuilder
             'service_category_slider' => 4,
             'solutions_split_list' => 4,
             'collection_gallery' => 4,
+            'business_service_grid' => 4,
+            'bizmax_latest_posts' => 3,
+            'bizmax_testimonial_carousel' => 3,
             'project_gallery' => 4,
             'featured_services', 'featured_service_list' => 3,
             'completed_projects_list' => 5,
@@ -492,11 +495,12 @@ class LandingPageBuilder
             return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
                 'project_gallery' => 'cms_projects',
+                'bizmax_latest_posts' => 'cms_posts',
                 'solutions_split_list', 'collection_gallery' => 'cms_services',
                 default => 'cms_services',
             };
@@ -573,8 +577,12 @@ class LandingPageBuilder
             return $this->cmsTeamMemberItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['testimonials', 'testimonial_showcase'], true)) {
+        if (in_array($block->block_type, ['testimonials', 'testimonial_showcase', 'bizmax_testimonial_carousel'], true)) {
             if ($block->block_type === 'testimonial_showcase') {
+                return $this->cmsTestimonialItems($settings, $limit, $locale, $block->landingPage?->website_key);
+            }
+
+            if ($block->block_type === 'bizmax_testimonial_carousel') {
                 return $this->cmsTestimonialItems($settings, $limit, $locale, $block->landingPage?->website_key);
             }
 
@@ -1127,11 +1135,52 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'XD0306' => $this->xd0306DefaultBlocks(),
+            'XD0305' => $this->xd0305DefaultBlocks(),
             'XD0304' => $this->xd0304DefaultBlocks(),
             'XD0303' => $this->xd0303DefaultBlocks(),
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    private function xd0306DefaultBlocks(): array
+    {
+        $sources = [['value'=>'cms_services','label'=>'Dịch vụ'],['value'=>'cms_posts','label'=>'Tin tức'],['value'=>'cms_products','label'=>'Sản phẩm'],['value'=>'cms_projects','label'=>'Dự án'],['value'=>'custom','label'=>'Nhập thủ công']];
+        return [
+            ['block_type'=>'hero_slider','label'=>'Header và banner','description'=>'Header hai tầng và banner slider.','preview_image'=>'/theme-previews/XD0306/hero-slider.png','anchor_id'=>'top','dynamic'=>true,'settings'=>['source'=>'site_banners','placement'=>'xd0306-hero-slider','limit'=>3,'autoplay_ms'=>6000],'settings_schema'=>[['key'=>'placement','label'=>'Vị trí banner','type'=>'text','default'=>'xd0306-hero-slider'],['key'=>'limit','label'=>'Số slide','type'=>'number','default'=>3]],'data'=>['vi'=>['title'=>'Thiết kế website chuyên nghiệp','subtitle'=>'Digital agency','description'=>'Chúng tôi xây dựng website, thương hiệu và chiến dịch số có hiệu quả.','button_label'=>'Liên hệ ngay','content'=>['slides'=>[]]],'en'=>['title'=>'Professional website design','subtitle'=>'Digital agency','description'=>'Website, branding and digital campaigns.','button_label'=>'Contact us','content'=>['slides'=>[]]]]],
+            ['block_type'=>'business_service_grid','label'=>'Dịch vụ nổi bật','description'=>'Nguồn Dịch vụ, Tin tức, Sản phẩm, Dự án hoặc nhập thủ công.','preview_image'=>'/theme-previews/XD0306/business-service-grid.png','anchor_id'=>'dich-vu','dynamic'=>true,'settings'=>['source'=>'cms_services','limit'=>3,'featured_only'=>true],'settings_schema'=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$sources],'limit'=>['type'=>'number','label'=>'Số mục hiển thị']],'data'=>['vi'=>['title'=>'Công ty cổ phần Black','subtitle'=>'Về chúng tôi','description'=>'Dịch vụ marketing tổng thể giúp doanh nghiệp phát triển trong môi trường số.','button_label'=>'Xem thêm','content'=>['items'=>[]]],'en'=>['title'=>'Black agency','subtitle'=>'About us','description'=>'Integrated digital marketing services.','button_label'=>'Learn more','content'=>['items'=>[]]]]],
+            ['block_type'=>'bizmax_about','label'=>'Giới thiệu sáng tạo','description'=>'Nội dung giới thiệu và hotline tùy chỉnh.','preview_image'=>'/theme-previews/XD0306/bizmax-about.png','anchor_id'=>'gioi-thieu','settings'=>[],'data'=>['vi'=>['title'=>'Chúng tôi sáng tạo studio xây dựng thương hiệu','subtitle'=>'Chúng tôi là ai','description'=>'Đồng hành và phát triển cùng doanh nghiệp bằng giải pháp marketing online, truyền thông và quảng cáo.','button_label'=>'1900 9477','content'=>['years'=>'20+','years_label'=>'Năm kinh nghiệm','progress_label'=>'Khách hàng hài lòng','progress_value'=>90]],'en'=>['title'=>'We build creative brands','subtitle'=>'Who we are','description'=>'We help businesses grow through digital marketing.','button_label'=>'1900 9477','content'=>[]]]],
+            ['block_type'=>'collection_gallery','label'=>'Album hình ảnh','description'=>'Nguồn Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.','preview_image'=>'/theme-previews/XD0306/collection-gallery.png','anchor_id'=>'thu-vien','dynamic'=>true,'settings'=>['source'=>'cms_projects','limit'=>6],'settings_schema'=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$sources],'limit'=>['type'=>'number','label'=>'Số ảnh']],'data'=>['vi'=>['title'=>'Một số album của chúng tôi','subtitle'=>'Hình ảnh','description'=>'','button_label'=>'Xem thêm','content'=>['items'=>[]]],'en'=>['title'=>'Selected albums','subtitle'=>'Gallery','description'=>'','button_label'=>'View more','content'=>['items'=>[]]]]],
+            ['block_type'=>'faq_showcase','label'=>'Câu hỏi thường gặp','description'=>'FAQ tùy chỉnh.','preview_image'=>'/theme-previews/XD0306/faq-showcase.png','anchor_id'=>'faq','settings'=>[],'data'=>['vi'=>['title'=>'Faq\'s','subtitle'=>'','description'=>'','button_label'=>'','content'=>['items'=>[['question'=>'Tôi cần chuẩn bị gì? Tiến hành mất bao lâu?','answer'=>'Đội ngũ sẽ khảo sát và đề xuất lộ trình phù hợp.'],['question'=>'Dịch vụ marketing trọn gói bao gồm những gì?','answer'=>'Bao gồm chiến lược, nội dung, quảng cáo và đo lường hiệu quả.'],['question'=>'Tại sao nên chọn dịch vụ marketing trọn gói?','answer'=>'Giúp các kênh truyền thông vận hành thống nhất.']]]],'en'=>['title'=>'FAQ','subtitle'=>'','description'=>'','button_label'=>'','content'=>['items'=>[]]]]],
+            ['block_type'=>'bizmax_latest_posts','label'=>'Blog của chúng tôi','description'=>'Nguồn Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.','preview_image'=>'/theme-previews/XD0306/bizmax-latest-posts.png','anchor_id'=>'tin-tuc','dynamic'=>true,'settings'=>['source'=>'cms_posts','limit'=>5],'settings_schema'=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$sources],'limit'=>['type'=>'number','label'=>'Số bài hiển thị']],'data'=>['vi'=>['title'=>'Blog của chúng tôi','subtitle'=>'','description'=>'','button_label'=>'Đọc thêm','content'=>['items'=>[]]],'en'=>['title'=>'Our blog','subtitle'=>'','description'=>'','button_label'=>'Read more','content'=>['items'=>[]]]]],
+        ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function xd0305DefaultBlocks(): array
+    {
+        $contentSources = [
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Header và banner', 'description' => 'Header doanh nghiệp và banner ảnh chạy.', 'preview_image' => '/theme-previews/XD0305/hero-slider.png', 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'xd0305-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000], 'settings_schema' => [['key' => 'placement', 'label' => 'Vị trí banner', 'type' => 'text', 'default' => 'xd0305-hero-slider'], ['key' => 'limit', 'label' => 'Số slide', 'type' => 'number', 'default' => 3], ['key' => 'autoplay_ms', 'label' => 'Tự chuyển (ms)', 'type' => 'number', 'default' => 6000]], 'data' => ['vi' => ['title' => 'Nâng cao hiệu quả dành cho bạn', 'subtitle' => 'Tư vấn doanh nghiệp', 'description' => 'Giải pháp tư vấn chuyên nghiệp, linh hoạt cho tổ chức và cá nhân.', 'button_label' => 'Nhận báo giá', 'content' => ['slides' => []]], 'en' => ['title' => 'Better business results for you', 'subtitle' => 'Business consulting', 'description' => 'Professional consulting for organisations and individuals.', 'button_label' => 'Get a quote', 'content' => ['slides' => []]]]],
+            ['block_type' => 'business_service_grid', 'label' => 'Danh sách dịch vụ', 'description' => 'Dịch vụ dạng thẻ; chọn Dịch vụ, Tin tức, Sản phẩm, Dự án hoặc nhập thủ công.', 'preview_image' => '/theme-previews/XD0305/business-service-grid.png', 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 4, 'featured_only' => true], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']], 'data' => ['vi' => ['title' => 'Chúng tôi cung cấp các giải pháp', 'subtitle' => 'Danh sách dịch vụ', 'description' => '', 'button_label' => 'Xem chi tiết', 'content' => ['items' => []]], 'en' => ['title' => 'Solutions we provide', 'subtitle' => 'Services', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]]]],
+            ['block_type' => 'bizmax_about', 'label' => 'Giới thiệu doanh nghiệp', 'description' => 'Khối giới thiệu với hình ảnh, kinh nghiệm và chỉ số tiến độ.', 'preview_image' => '/theme-previews/XD0305/bizmax-about.png', 'anchor_id' => 'gioi-thieu', 'settings' => [], 'data' => ['vi' => ['title' => 'Chuẩn bị cho thành công với Bizmax', 'subtitle' => 'Về chúng tôi', 'description' => 'Cung cấp tư vấn pháp lý, hỗ trợ tuân thủ và các giải pháp phát triển bền vững cho doanh nghiệp.', 'button_label' => 'Nhận báo giá', 'content' => ['image_primary' => '', 'image_secondary' => '', 'years' => '40+', 'years_label' => 'Năm kinh nghiệm', 'progress_label' => 'Phát triển website', 'progress_value' => 90]], 'en' => ['title' => 'Prepare for success with Bizmax', 'subtitle' => 'About us', 'description' => 'Professional business consulting for sustainable growth.', 'button_label' => 'Get a quote', 'content' => ['image_primary' => '', 'image_secondary' => '', 'years' => '40+', 'years_label' => 'Years of experience', 'progress_label' => 'Website growth', 'progress_value' => 90]]]],
+            ['block_type' => 'bizmax_benefit_panel', 'label' => 'Lý do chọn chúng tôi', 'description' => 'Khối điểm mạnh tùy chỉnh với bốn lợi ích.', 'preview_image' => '/theme-previews/XD0305/bizmax-benefit-panel.png', 'anchor_id' => 'loi-ich', 'settings' => [], 'data' => ['vi' => ['title' => 'Phát triển một thiết kế để định hướng và sử dụng', 'subtitle' => 'Vì sao chọn chúng tôi', 'description' => 'Thiết kế được tối ưu hóa để người dùng dễ dàng điều hướng và tìm hiểu thông tin.', 'button_label' => '', 'content' => ['image' => '', 'items' => [['title' => 'Cam kết chất lượng'], ['title' => 'Tăng trưởng hiệu quả'], ['title' => 'Tiết kiệm chi phí'], ['title' => 'Am hiểu thị trường']]]], 'en' => ['title' => 'Designed to guide and perform', 'subtitle' => 'Why choose us', 'description' => 'An experience designed to make information clear and useful.', 'button_label' => '', 'content' => ['image' => '', 'items' => []]]]],
+            ['block_type' => 'bizmax_testimonial_carousel', 'label' => 'Cảm nhận khách hàng', 'description' => 'Đánh giá khách hàng lấy từ CMS Testimonials.', 'preview_image' => '/theme-previews/XD0305/testimonials.png', 'anchor_id' => 'cam-nhan', 'dynamic' => true, 'settings' => ['limit' => 3], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đánh giá hiển thị']], 'data' => ['vi' => ['title' => 'Phát triển một thiết kế để định hướng và sử dụng', 'subtitle' => 'Lời chứng thực', 'description' => 'Trải nghiệm thực tế từ khách hàng đồng hành cùng chúng tôi.', 'button_label' => '', 'content' => ['items' => []]], 'en' => ['title' => 'Designed to guide and perform', 'subtitle' => 'Testimonials', 'description' => 'Experiences from our customers.', 'button_label' => '', 'content' => ['items' => []]]]],
+            ['block_type' => 'team_members', 'label' => 'Đội ngũ chuyên gia', 'description' => 'Danh sách thành viên lấy từ CMS Team.', 'preview_image' => '/theme-previews/XD0305/team-members.png', 'anchor_id' => 'doi-ngu', 'dynamic' => true, 'settings' => ['source' => 'cms_team_members', 'limit' => 3, 'featured_only' => true], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số thành viên hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy thành viên nổi bật']], 'data' => ['vi' => ['title' => 'Gặp gỡ đội ngũ chuyên gia', 'subtitle' => 'Gặp gỡ thành viên của chúng tôi', 'description' => '', 'button_label' => '', 'content' => ['items' => []]], 'en' => ['title' => 'Meet our experts', 'subtitle' => 'Meet our team', 'description' => '', 'button_label' => '', 'content' => ['items' => []]]]],
+            ['block_type' => 'bizmax_contact', 'label' => 'Liên hệ', 'description' => 'Thông tin liên hệ và biểu mẫu tư vấn.', 'preview_image' => '/theme-previews/XD0305/bizmax-contact.png', 'anchor_id' => 'lien-he', 'settings' => [], 'data' => ['vi' => ['title' => 'Làm việc cùng nhau', 'subtitle' => 'Liên hệ với chúng tôi', 'description' => 'Đội ngũ sẵn sàng lắng nghe nhu cầu và xây dựng phương án phù hợp.', 'button_label' => 'Gửi ngay', 'content' => []], 'en' => ['title' => 'Let us work together', 'subtitle' => 'Contact us', 'description' => 'Our team is ready to discuss your needs.', 'button_label' => 'Send', 'content' => []]]],
+            ['block_type' => 'bizmax_latest_posts', 'label' => 'Blog và bài viết', 'description' => 'Bài viết dạng thẻ; chọn Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.', 'preview_image' => '/theme-previews/XD0305/bizmax-latest-posts.png', 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources], 'limit' => ['type' => 'number', 'label' => 'Số bài hiển thị'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật']], 'data' => ['vi' => ['title' => 'Các blog và bài viết gần nhất', 'subtitle' => 'Các blog và bài viết', 'description' => '', 'button_label' => 'Đọc thêm', 'content' => ['items' => []]], 'en' => ['title' => 'Latest blogs and articles', 'subtitle' => 'Blog and articles', 'description' => '', 'button_label' => 'Read more', 'content' => ['items' => []]]]],
+            ['block_type' => 'partner_logos', 'label' => 'Logo đối tác', 'description' => 'Danh sách logo đối tác lấy từ CMS Partners.', 'preview_image' => '/theme-previews/XD0305/partner-logos.png', 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 5], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số logo hiển thị']], 'data' => ['vi' => ['title' => 'Đối tác đồng hành', 'subtitle' => 'Đối tác', 'description' => '', 'button_label' => '', 'content' => ['items' => []]], 'en' => ['title' => 'Trusted partners', 'subtitle' => 'Partners', 'description' => '', 'button_label' => '', 'content' => ['items' => []]]]],
+        ];
     }
 
     /**

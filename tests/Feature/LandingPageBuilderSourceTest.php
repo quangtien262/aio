@@ -143,4 +143,19 @@ class LandingPageBuilderSourceTest extends TestCase
             ->assertSee('Logistics Việt')
             ->assertSee('Giải pháp logistics');
     }
+
+    public function test_xd0305_business_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0305-business-test', 'XD0305');
+        $this->assertTrue($page->blocks()->where('block_type', 'business_service_grid')->exists());
+        $this->assertTrue($page->blocks()->where('block_type', 'bizmax_contact')->exists());
+        $this->assertFalse($page->blocks()->where('block_type', 'footer_contact')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0305');
+        $this->assertSame('xd0305-business-consulting', $provider->defaultPreset());
+        $provider->generate($provider->defaultPreset());
+
+        $this->get('/vi')->assertOk()->assertSee('Tư vấn doanh nghiệp');
+    }
 }
