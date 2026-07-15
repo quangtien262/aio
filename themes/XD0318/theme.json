@@ -1,0 +1,36 @@
+{
+  "name": "XD0318 Fast Gear",
+  "key": "XD0318",
+  "version": "0.1.0",
+  "description": "Fast Gear logistics landing page with clean header, login/register, truck hero, service grid, FAQ, callback form, latest news and contact-only footer.",
+  "website_type": "service",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-XD0318.svg",
+    "cover": "cover-XD0318.svg"
+  },
+  "blocks": [
+    "hero-slider",
+    "bizmax-about",
+    "logistics-feature-panel",
+    "business-service-grid",
+    "faq-showcase",
+    "landing-contact",
+    "bizmax-latest-posts"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": false
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "xd0318-fast-gear"
+  }
+}

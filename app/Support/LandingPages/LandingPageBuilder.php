@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0314', 'XD0315'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0314', 'XD0315', 'XD0318'], true);
     }
 
     /**
@@ -1135,6 +1135,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'XD0318' => $this->xd0318DefaultBlocks(),
             'XD0315' => $this->xd0315DefaultBlocks(),
             'XD0314' => $this->xd0314DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
@@ -1150,6 +1151,185 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0318DefaultBlocks(): array
+    {
+        $contentSources = [
+            ['value' => 'custom', 'label' => 'Nhap thu cong'],
+            ['value' => 'cms_posts', 'label' => 'Tin tuc'],
+            ['value' => 'cms_products', 'label' => 'San pham'],
+            ['value' => 'cms_services', 'label' => 'Dich vu'],
+            ['value' => 'cms_projects', 'label' => 'Du an'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero Fast Gear',
+                'description' => 'Header sang co dang nhap/dang ky va banner xe tai.',
+                'preview_image' => '/theme-previews/XD0318/hero-slider.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0318-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vi tri banner'],
+                    'limit' => ['type' => 'number', 'label' => 'So slide'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Van chuyen moi luc moi noi',
+                        'subtitle' => '',
+                        'description' => 'Ban lo ngai ve chat luong hang hoa se ra sao duoi thoi tiet nang mua nong lanh that thuong cua Viet Nam',
+                        'button_label' => 'Xem them',
+                        'content' => ['slides' => [
+                            ['title' => 'Van chuyen moi luc moi noi', 'summary' => 'Ban lo ngai ve chat luong hang hoa se ra sao duoi thoi tiet nang mua nong lanh that thuong cua Viet Nam', 'button_label' => 'Xem them', 'image' => 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#gioi-thieu'],
+                            ['title' => 'Giao nhan nhanh chong an toan', 'summary' => 'Mang luoi van tai linh hoat cho hang hoa noi dia va quoc te.', 'button_label' => 'Dich vu', 'image' => 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#dich-vu'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Shipping anywhere, anytime', 'subtitle' => '', 'description' => 'Reliable logistics services for every shipment.', 'button_label' => 'Learn more', 'content' => ['slides' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'bizmax_about',
+                'label' => 'Gioi thieu Fast Gear',
+                'description' => 'Khoi gioi thieu 2 cot voi anh tai xe giao hang.',
+                'preview_image' => '/theme-previews/XD0318/about.png',
+                'anchor_id' => 'gioi-thieu',
+                'settings' => ['cta_url' => '#dich-vu'],
+                'media' => ['image' => 'https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&w=1200&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Giai phap logistics toan cau tot nhat',
+                        'subtitle' => 'Ve chung toi',
+                        'description' => "Cong ty Fast Gear duoc thanh lap boi doi ngu nhan vien co hon 20 nam kinh nghiem trong linh vuc giao nhan quoc te, chuyen cung cap cac giai phap logistics cho khach hang.\nMang luoi hoat dong cua cong ty tren toan the gioi - 100 doi tac o 50 quoc gia, tru so chinh tai Viet Nam va van phong chi nhanh tai Hoa Ky.",
+                        'button_label' => 'Xem them',
+                        'content' => [],
+                    ],
+                    'en' => ['title' => 'Best global logistics solutions', 'subtitle' => 'About us', 'description' => 'Fast Gear provides reliable international forwarding and logistics solutions.', 'button_label' => 'More', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'logistics_feature_panel',
+                'label' => 'Video logistics',
+                'description' => 'Khoi video nen cang container.',
+                'preview_image' => '/theme-previews/XD0318/video.png',
+                'anchor_id' => 'video',
+                'settings' => ['video_url' => '#video'],
+                'media' => ['background' => 'https://images.unsplash.com/photo-1494412685616-a5d310fbb07d?auto=format&fit=crop&w=1800&q=85'],
+                'data' => [
+                    'vi' => ['title' => 'Doi tac Logistics Toan Cau Doi Voi The Gioi', 'subtitle' => 'Ve chung toi', 'description' => '', 'button_label' => '', 'content' => []],
+                    'en' => ['title' => 'Global logistics partner for the world', 'subtitle' => 'About us', 'description' => '', 'button_label' => '', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'business_service_grid',
+                'label' => 'Dich vu Fast Gear',
+                'description' => 'Grid dich vu logistics va card nhan bao gia.',
+                'preview_image' => '/theme-previews/XD0318/services.png',
+                'anchor_id' => 'dich-vu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 5, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'media' => ['quote_background' => 'https://images.unsplash.com/photo-1494412685616-a5d310fbb07d?auto=format&fit=crop&w=1000&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Giai phap thuc te, nhanh chong thuc su',
+                        'subtitle' => 'Dich vu cua chung toi',
+                        'description' => '',
+                        'button_label' => 'Xem them',
+                        'content' => ['items' => [
+                            ['title' => 'Van chuyen hang khong', 'summary' => 'Dai ly ban cuoc va hop dong van chuyen voi nhieu hang hang khong lon tren the gioi voi tan suat bay cao.', 'image' => 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Van chuyen vat lieu xay dung', 'summary' => 'Mo rong dich vu van chuyen vat lieu xay dung cho doanh nghiep va cong trinh.', 'image' => 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Van chuyen nha', 'summary' => 'Dich vu chuyen do dac sang nha moi nhanh gon va dam bao an toan.', 'image' => 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Van chuyen thu cung', 'summary' => 'Giai phap dac biet cho khach hang co nhu cau gui dong vat canh.', 'image' => 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Van chuyen hang khong', 'summary' => 'Air cargo la hang hoa van chuyen bang may bay, phu hop don hang can toc do cao.', 'image' => 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=900&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Practical and fast solutions', 'subtitle' => 'Our services', 'description' => '', 'button_label' => 'More', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'faq_showcase',
+                'label' => 'FAQ logistics',
+                'description' => 'Giai dap thac mac va hinh anh kho van.',
+                'preview_image' => '/theme-previews/XD0318/faq.png',
+                'anchor_id' => 'faq',
+                'settings' => [],
+                'media' => [
+                    'image_one' => 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=85',
+                    'image_two' => 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?auto=format&fit=crop&w=900&q=85',
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Giai dap cac thac mac ve dich vu cua ban',
+                        'subtitle' => 'Cau hoi thuong gap',
+                        'description' => 'Cac cau hoi se phan nao cho ban cai nhin tong quat nhat ve chung toi, giup ban hieu ro hon dich vu dang cung cap.',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['question' => 'Cac tieu chi danh gia do uy tin va chat luong cua cong ty van tai chuan nhat?', 'answer' => 'Do uy tin duoc danh gia qua kinh nghiem, mang luoi doi tac, quy trinh giao nhan va kha nang xu ly su co.'],
+                            ['question' => 'Tieu chuan chat luong dich vu van tai hanh khach bang xe o to the nao?', 'answer' => 'Dich vu can dam bao an toan, dung lich trinh, xe dat chuan va thong tin minh bach.'],
+                            ['question' => 'The nao la cac dich vu ho tro van tai duong bo?', 'answer' => 'Bao gom dong goi, kho bai, boc xep, theo doi don hang va giao nhan chang cuoi.'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Answers to your service questions', 'subtitle' => 'FAQ', 'description' => 'Helpful answers about our logistics services.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'landing_contact',
+                'label' => 'Yeu cau goi lai',
+                'description' => 'Form lien he nen cang container.',
+                'preview_image' => '/theme-previews/XD0318/contact.png',
+                'anchor_id' => 'lien-he',
+                'settings' => [],
+                'media' => ['background' => 'https://images.unsplash.com/photo-1494412685616-a5d310fbb07d?auto=format&fit=crop&w=1800&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Yeu cau mot cuoc goi lai',
+                        'subtitle' => 'Lien he',
+                        'description' => 'Chi mat 30 giay va sau do chung toi se goi cho ban tro lai, tu Thu Hai den Thu Sau, 8 gio sang - 5 gio chieu. De dang.',
+                        'button_label' => 'Gui tin nhan',
+                        'content' => [],
+                    ],
+                    'en' => ['title' => 'Request a call back', 'subtitle' => 'Contact', 'description' => 'It takes 30 seconds and we will call you back during business hours.', 'button_label' => 'Send message', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'bizmax_latest_posts',
+                'label' => 'Tin tuc moi',
+                'description' => 'Tin tuc moi nhat dang 3 cot.',
+                'preview_image' => '/theme-previews/XD0318/news.png',
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Doc tin tuc moi nhat cua chung toi',
+                        'subtitle' => 'Tin tuc moi',
+                        'description' => '',
+                        'button_label' => 'Xem them',
+                        'content' => ['items' => [
+                            ['title' => 'Cong thong tin huong dan xuat nhap khau hang hoa chinh thuc', 'summary' => 'Ngay 10/12, tai Ha Noi, Cong thong tin huong dan xuat nhap khau hang hoa duoc gioi thieu den doanh nghiep.', 'image' => 'https://images.unsplash.com/photo-1586528116493-a029325540fa?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 359],
+                            ['title' => 'Ky vong gi tu viec ket thuc thoa thuan FTA giua Viet Nam va Anh?', 'summary' => 'Bien ban ket thuc dam phan thuong mai tu do se mo ra nhieu co hoi cho logistics.', 'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 320],
+                            ['title' => 'Dang sau con so xuat sieu hon 20 ty USD', 'summary' => 'Con so xuat sieu la tin vui trong boi canh hien nay va tao dong luc cho chuoi cung ung.', 'image' => 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 273],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Read our latest news', 'subtitle' => 'Latest news', 'description' => '', 'button_label' => 'More', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

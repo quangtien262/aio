@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="XD0318 Fast Gear cover">
+  <rect width="1280" height="720" fill="#fff"/>
+  <rect width="1280" height="94" fill="#fff"/>
+  <path d="M188 27c19 25-24 29-4 52 8 8 30 2 32-17 2-18-10-35-28-35z" fill="#f4512a"/>
+  <text x="240" y="56" fill="#102232" font-family="Arial, sans-serif" font-size="34" font-weight="900">FAST GEAR</text>
+  <text x="242" y="76" fill="#b4bac0" font-family="Arial, sans-serif" font-size="13">messenger service</text>
+  <g font-family="Arial, sans-serif" font-size="22" fill="#00152d">
+    <text x="484" y="58">Trang chu</text><text x="608" y="58">Gioi thieu</text><text x="748" y="58">Dich vu</text><text x="864" y="58">Tin tuc</text><text x="984" y="58">Thu vien</text>
+  </g>
+  <rect y="94" width="1280" height="380" fill="url(#hero)"/>
+  <rect y="94" width="1280" height="380" fill="#102232" opacity=".56"/>
+  <text x="188" y="226" fill="#fff" font-family="Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="5">VAN CHUYEN MOI LUC MOI</text>
+  <text x="188" y="304" fill="#fff" font-family="Arial, sans-serif" font-size="56" font-weight="900" letter-spacing="5">NOI</text>
+  <text x="188" y="355" fill="#fff" font-family="Arial, sans-serif" font-size="24">Giai phap giao nhan linh hoat, an toan va nhanh chong.</text>
+  <rect x="188" y="388" width="140" height="48" fill="none" stroke="#fff" stroke-width="2"/>
+  <rect x="348" y="388" width="140" height="48" fill="#f4512a"/>
+  <rect x="182" y="528" width="350" height="132" fill="#d8e2ea"/>
+  <rect x="590" y="528" width="500" height="132" fill="#fff"/>
+  <text x="590" y="552" fill="#f4512a" font-family="Arial, sans-serif" font-size="24" font-weight="800">Ve chung toi</text>
+  <text x="590" y="596" fill="#142233" font-family="Arial, sans-serif" font-size="40" font-weight="900">GIAI PHAP LOGISTICS TOAN CAU</text>
+  <text x="590" y="642" fill="#142233" font-family="Arial, sans-serif" font-size="40" font-weight="900">TOT NHAT</text>
+  <defs>
+    <linearGradient id="hero" x1="0" x2="1">
+      <stop stop-color="#a44a24"/><stop offset=".52" stop-color="#cfd6da"/><stop offset="1" stop-color="#51687b"/>
+    </linearGradient>
+  </defs>
+</svg>

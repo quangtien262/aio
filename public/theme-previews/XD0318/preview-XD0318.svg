@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-label="XD0318 Fast Gear preview">
+  <rect width="640" height="420" fill="#fff"/>
+  <rect y="0" width="640" height="56" fill="#fff"/>
+  <path d="M91 16c10 14-13 15-2 28 4 5 16 1 17-9 1-9-5-18-15-19z" fill="#f4512a"/>
+  <text x="116" y="32" fill="#102232" font-family="Arial, sans-serif" font-size="18" font-weight="900">FAST GEAR</text>
+  <text x="117" y="44" fill="#b4bac0" font-family="Arial, sans-serif" font-size="7">messenger service</text>
+  <g font-family="Arial, sans-serif" font-size="10" fill="#00152d">
+    <text x="252" y="34">Trang chu</text><text x="313" y="34">Gioi thieu</text><text x="384" y="34">Dich vu</text><text x="444" y="34">Tin tuc</text><text x="502" y="34">Lien he</text>
+  </g>
+  <rect y="56" width="640" height="180" fill="url(#hero)"/>
+  <rect y="56" width="640" height="180" fill="#102232" opacity=".58"/>
+  <text x="92" y="124" fill="#fff" font-family="Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="3">VAN CHUYEN MOI</text>
+  <text x="92" y="160" fill="#fff" font-family="Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="3">LUC MOI NOI</text>
+  <text x="92" y="188" fill="#fff" font-family="Arial, sans-serif" font-size="12">Giai phap giao nhan linh hoat cho moi hang hoa.</text>
+  <rect x="92" y="204" width="76" height="24" fill="none" stroke="#fff"/>
+  <rect x="176" y="204" width="76" height="24" fill="#f4512a"/>
+  <rect x="82" y="270" width="230" height="92" fill="#d8e2ea"/>
+  <rect x="338" y="270" width="220" height="92" fill="#fff"/>
+  <text x="338" y="288" fill="#f4512a" font-family="Arial, sans-serif" font-size="12" font-weight="800">Ve chung toi</text>
+  <text x="338" y="313" fill="#142233" font-family="Arial, sans-serif" font-size="22" font-weight="900">GIAI PHAP LOGISTICS</text>
+  <text x="338" y="340" fill="#142233" font-family="Arial, sans-serif" font-size="22" font-weight="900">TOAN CAU</text>
+  <rect x="338" y="352" width="70" height="26" fill="#f4512a"/>
+  <defs>
+    <linearGradient id="hero" x1="0" x2="1">
+      <stop stop-color="#a44a24"/><stop offset=".55" stop-color="#cfd6da"/><stop offset="1" stop-color="#51687b"/>
+    </linearGradient>
+  </defs>
+</svg>
