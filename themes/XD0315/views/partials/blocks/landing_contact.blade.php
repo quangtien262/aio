@@ -1,0 +1,120 @@
+﻿@php
+    $contactFormTitle = trim((string) data_get($content, 'form_title', ''));
+    $contactNoteTitle = trim((string) data_get($content, 'note_title', ''));
+    $contactNoteText = trim((string) data_get($content, 'note_text', ''));
+    $contactSubmitLabel = trim((string) ($data['button_label'] ?? ''));
+
+    $contactFormTitle = $contactFormTitle !== ''
+        ? $contactFormTitle
+        : (app()->getLocale() === 'en' ? 'Send a request' : 'Gá»­i yÃªu cáº§u liÃªn há»‡');
+    $contactNoteTitle = $contactNoteTitle !== ''
+        ? $contactNoteTitle
+        : (app()->getLocale() === 'en' ? 'Share the essentials, we will shape the right solution.' : 'Chia sáº» nhu cáº§u, chÃºng tÃ´i tÆ° váº¥n Ä‘Ãºng giáº£i phÃ¡p.');
+    $contactNoteText = $contactNoteText !== ''
+        ? $contactNoteText
+        : (app()->getLocale() === 'en'
+            ? 'Add your site location, surface area, expected timeline or technical requirements so our team can prepare a practical recommendation.'
+            : 'HÃ£y gá»­i thÃªm Ä‘á»‹a Ä‘iá»ƒm, diá»‡n tÃ­ch, tiáº¿n Ä‘á»™ mong muá»‘n hoáº·c yÃªu cáº§u ká»¹ thuáº­t Ä‘á»ƒ Ä‘á»™i ngÅ© chuáº©n bá»‹ phÆ°Æ¡ng Ã¡n phÃ¹ há»£p ngay tá»« láº§n pháº£n há»“i Ä‘áº§u tiÃªn.');
+    $contactSubmitLabel = $contactSubmitLabel !== ''
+        ? $contactSubmitLabel
+        : (app()->getLocale() === 'en' ? 'Send request' : 'Gá»­i liÃªn há»‡');
+@endphp
+
+<section id="{{ $anchor }}" class="xd-section xd-contact-band xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
+    {!! $editButton !!}
+    <div class="xd-container">
+        <div class="xd-contact-page">
+            <aside class="xd-contact-panel">
+                @if (filled($data['subtitle'] ?? null))
+                    <span class="xd-kicker">{{ $data['subtitle'] }}</span>
+                @endif
+                <h2>{!! nl2br(e($data['title'] ?? $companyName)) !!}</h2>
+                @if (filled($data['description'] ?? null))
+                    <p>{!! nl2br(e($data['description'])) !!}</p>
+                @endif
+                <ul class="xd-contact-methods">
+                    <li class="xd-contact-method">
+                        <span class="xd-contact-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.9.66 2.81a2 2 0 0 1-.45 2.11L8.05 9.91a16 16 0 0 0 6.04 6.04l1.27-1.27a2 2 0 0 1 2.11-.45c.91.31 1.85.53 2.81.66A2 2 0 0 1 22 16.92z"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <small>Hotline</small>
+                            <a href="tel:{{ $phoneHref }}">{{ $hotline }}</a>
+                        </div>
+                    </li>
+                    <li class="xd-contact-method">
+                        <span class="xd-contact-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                                <path d="m3 7 9 6 9-6"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <small>Email</small>
+                            <a href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a>
+                        </div>
+                    </li>
+                    <li class="xd-contact-method">
+                        <span class="xd-contact-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 21s7-5.3 7-12a7 7 0 1 0-14 0c0 6.7 7 12 7 12z"/>
+                                <circle cx="12" cy="9" r="2.5"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <small>{{ app()->getLocale() === 'en' ? 'Address' : 'Äá»‹a chá»‰' }}</small>
+                            <span>{{ $supportAddress }}</span>
+                        </div>
+                    </li>
+                </ul>
+                <div class="xd-contact-note">
+                    <strong>{{ $contactNoteTitle }}</strong>
+                    <span>{{ $contactNoteText }}</span>
+                </div>
+            </aside>
+
+            <article class="xd-contact-form-card">
+                <h2>{{ $contactFormTitle }}</h2>
+                @if (session('contact_status'))
+                    <div class="xd-contact-alert">{{ session('contact_status') }}</div>
+                @endif
+                @if ($errors->any())
+                    <div class="xd-contact-errors">
+                        {{ app()->getLocale() === 'en' ? 'Please check the form information.' : 'Vui lÃ²ng kiá»ƒm tra láº¡i thÃ´ng tin.' }}
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                <form class="xd-contact-form" method="POST" action="{{ route('site.contact.submit') }}">
+                    @csrf
+                    <input type="hidden" name="source" value="landing_contact">
+                    <input type="hidden" name="subject" value="{{ app()->getLocale() === 'en' ? 'Contact request from landing page' : 'YÃªu cáº§u liÃªn há»‡ tá»« landing page' }}">
+                    <label class="xd-contact-field">
+                        <span>{{ app()->getLocale() === 'en' ? 'Full name' : 'Há» tÃªn' }}</span>
+                        <input name="name" value="{{ old('name') }}" required autocomplete="name">
+                    </label>
+                    <label class="xd-contact-field">
+                        <span>{{ app()->getLocale() === 'en' ? 'Phone number' : 'Sá»‘ Ä‘iá»‡n thoáº¡i' }}</span>
+                        <input name="phone" value="{{ old('phone') }}" autocomplete="tel">
+                    </label>
+                    <label class="xd-contact-field">
+                        <span>Email</span>
+                        <input type="email" name="email" value="{{ old('email') }}" required autocomplete="email">
+                    </label>
+                    <label class="xd-contact-field">
+                        <span>{{ app()->getLocale() === 'en' ? 'Message' : 'Ná»™i dung' }}</span>
+                        <textarea name="message" required>{{ old('message') }}</textarea>
+                    </label>
+                    <button class="xd-contact-submit" type="submit">{{ $contactSubmitLabel }}</button>
+                </form>
+            </article>
+        </div>
+    </div>
+</section>
+
+
