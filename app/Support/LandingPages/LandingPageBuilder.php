@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311'], true);
     }
 
     /**
@@ -1135,6 +1135,8 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'XD0311' => $this->xd0311DefaultBlocks(),
+            'XD0310' => $this->xd0310DefaultBlocks(),
             'XD0309' => $this->xd0309DefaultBlocks(),
             'XD0308' => $this->xd0308DefaultBlocks(),
             'XD0307' => $this->xd0307DefaultBlocks(),
@@ -1145,6 +1147,78 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0311DefaultBlocks(): array
+    {
+        $blocks = $this->xd0305DefaultBlocks();
+        $processBlock = collect($this->xd0303DefaultBlocks())->firstWhere('block_type', 'process_steps');
+        array_splice($blocks, 4, 0, [$processBlock]);
+
+        $blocks[0]['settings']['placement'] = 'xd0311-hero-slider';
+        $blocks[0]['settings_schema'][0]['default'] = 'xd0311-hero-slider';
+        $blocks[0]['data']['vi'] = [
+            'title' => 'Dich vu ke toan - thue cho doanh nghiep',
+            'subtitle' => 'Tu van tai chinh chuyen nghiep',
+            'description' => 'Dong hanh cung doanh nghiep tu ke toan, ke khai thue den quan tri tai chinh minh bach.',
+            'button_label' => 'Tim hieu them',
+            'content' => ['slides' => []],
+        ];
+        $blocks[1]['data']['vi']['title'] = 'Dich vu noi bat cua chung toi';
+        $blocks[1]['data']['vi']['subtitle'] = 'Dich vu ke toan va tu van';
+        $blocks[2]['data']['vi']['title'] = 'Tin tuong voi cac ke toan vien gioi nhat cua chung toi';
+        $blocks[2]['data']['vi']['subtitle'] = 'Ve chung toi';
+        $blocks[2]['data']['vi']['description'] = 'Doi ngu InVess cung cap giai phap ke toan, thue va tai chinh thuc te, ro rang cho doanh nghiep.';
+        $blocks[2]['data']['vi']['content']['years'] = '25+';
+        $blocks[2]['data']['vi']['content']['years_label'] = 'Nam kinh nghiem';
+        $blocks[3]['data']['vi']['title'] = 'Noi giac mo chap canh';
+        $blocks[3]['data']['vi']['subtitle'] = 'Chung toi lam gi';
+        $blocks[4]['data']['vi'] = [
+            'title' => 'Cach chung toi hoat dong',
+            'subtitle' => 'Quy trinh lam viec',
+            'description' => 'Quy trinh tu van ro rang giup doanh nghiep chu dong trong tung quyet dinh tai chinh.',
+            'button_label' => '',
+            'content' => ['items' => [
+                ['title' => 'Tiep nhan nhu cau', 'description' => 'Lang nghe muc tieu va thu thap thong tin can thiet.'],
+                ['title' => 'Danh gia ho so', 'description' => 'Phan tich du lieu va xac dinh phuong an phu hop.'],
+                ['title' => 'Tu van giai phap', 'description' => 'Trinh bay ke hoach minh bach ve chi phi va tien do.'],
+                ['title' => 'Dong hanh trien khai', 'description' => 'Theo doi ket qua va ho tro doanh nghiep kip thoi.'],
+            ]],
+        ];
+        $blocks[5]['data']['vi']['title'] = 'Cam nhan tu khach hang';
+        $blocks[5]['data']['vi']['subtitle'] = 'Loi chung thuc';
+        $blocks[6]['data']['vi']['title'] = 'Tin moi nhat';
+        $blocks[6]['data']['vi']['subtitle'] = 'Kien thuc cho doanh nghiep';
+        $blocks[7]['data']['vi']['title'] = 'Doi tac dong hanh';
+
+        return $blocks;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0310DefaultBlocks(): array
+    {
+        $blocks = $this->xd0305DefaultBlocks();
+        $projectBlock = collect($this->xd0301DefaultBlocks())->firstWhere('block_type', 'project_gallery');
+        array_splice($blocks, 4, 0, [$projectBlock]);
+
+        $blocks[0]['settings']['placement'] = 'xd0310-hero-slider';
+        $blocks[0]['settings_schema'][0]['default'] = 'xd0310-hero-slider';
+        $blocks[0]['data']['vi'] = ['title' => 'Chung toi biet ve cac loai thuc vat tot hon', 'subtitle' => 'Mot khu vuon hon bao gio het', 'description' => 'Thiet ke, thi cong va cham soc canh quan xanh cho khong gian song cua ban.', 'button_label' => '1900 9477', 'content' => ['slides' => []]];
+        $blocks[1]['data']['vi']['title'] = 'Dich vu chinh cua chung toi';
+        $blocks[1]['data']['vi']['subtitle'] = 'Dich vu';
+        $blocks[2]['data']['vi']['title'] = 'Gioi thieu cong ty';
+        $blocks[2]['data']['vi']['subtitle'] = 'Ve chung toi';
+        $blocks[3]['data']['vi']['title'] = 'Hoan thanh cong viec theo dung cach';
+        $blocks[4]['data']['vi']['title'] = 'Mot so du an tieu bieu';
+        $blocks[4]['data']['vi']['subtitle'] = 'Du an canh quan';
+        $blocks[5]['data']['vi']['title'] = 'Cam nhan tu khach hang';
+        $blocks[6]['data']['vi']['title'] = 'Doi ngu kien truc su va ky su';
+        $blocks[7]['data']['vi']['title'] = 'Yeu cau tu van va bao gia';
+        $blocks[8]['data']['vi']['title'] = 'Tin tuc moi';
+        $blocks[9]['data']['vi']['title'] = 'Doi tac dong hanh';
+
+        return $blocks;
     }
 
     /** @return array<int, array<string, mixed>> */

@@ -218,4 +218,35 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->get('/vi')->assertOk();
     }
+
+    public function test_xd0310_garden_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0310-garden-test', 'XD0310');
+
+        $this->assertTrue($page->blocks()->where('block_type', 'project_gallery')->exists());
+        $this->assertTrue($page->blocks()->where('block_type', 'partner_logos')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0310');
+        $this->assertSame('xd0310-garden-landscape', $provider->defaultPreset());
+        $result = $provider->generate($provider->defaultPreset());
+
+        $this->assertSame(4, $result['counts']['projects']);
+        $this->get('/vi')->assertOk();
+    }
+
+    public function test_xd0311_accounting_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0311-accounting-test', 'XD0311');
+
+        $this->assertTrue($page->blocks()->where('block_type', 'business_service_grid')->exists());
+        $this->assertTrue($page->blocks()->where('block_type', 'process_steps')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0311');
+        $this->assertSame('xd0311-accounting-advisory', $provider->defaultPreset());
+        $provider->generate($provider->defaultPreset());
+
+        $this->get('/vi')->assertOk()->assertSee('Đăng nhập');
+    }
 }
