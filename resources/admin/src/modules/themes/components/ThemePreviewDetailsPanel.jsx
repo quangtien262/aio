@@ -3,7 +3,7 @@ import Empty from 'antd/es/empty';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { BgColorsOutlined } from '@ant-design/icons';
+import { BgColorsOutlined, DatabaseOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -45,7 +45,7 @@ function renderSupportTags(supports) {
     );
 }
 
-export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPalette = false, onOpenActivateDialog, onOpenPalette }) {
+export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPalette = false, canGenerateDemoData = false, onOpenActivateDialog, onOpenPalette, onOpenDemoCreate }) {
     if (!theme) {
         return <Empty description="Chưa có theme nào để xem chi tiết." />;
     }
@@ -97,6 +97,12 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPa
                 {canOpenPalette ? (
                     <Button icon={<BgColorsOutlined />} onClick={() => onOpenPalette?.(theme)}>
                         Palette theme
+                    </Button>
+                ) : null}
+
+                {theme.key === 'XD321' ? (
+                    <Button icon={<DatabaseOutlined />} disabled={!canGenerateDemoData} onClick={() => onOpenDemoCreate?.(theme)}>
+                        Tao data test
                     </Button>
                 ) : null}
             </Space>

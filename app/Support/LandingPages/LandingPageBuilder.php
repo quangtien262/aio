@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321'], true);
     }
 
     /**
@@ -1142,6 +1142,7 @@ class LandingPageBuilder
             'FOOT401' => $this->foot401DefaultBlocks(),
             'XD0320' => $this->xd0320DefaultBlocks(),
             'NT501' => $this->nt501DefaultBlocks(),
+            'XD321' => $this->xd321DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1857,6 +1858,58 @@ class LandingPageBuilder
         $partners['data']['vi'] = ['title' => 'Đối tác của chúng tôi', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
         return [$hero, $quality, $about, $feature, $projects, $team, $partners];
+    }
+
+    private function xd321DefaultBlocks(): array
+    {
+        $industrial = collect($this->xd0320DefaultBlocks())->keyBy('block_type');
+        $interior = collect($this->xd0314DefaultBlocks())->keyBy('block_type');
+        $foot = collect($this->foot401DefaultBlocks())->keyBy('block_type');
+        $logistics = collect($this->xd0312DefaultBlocks())->keyBy('block_type');
+
+        $hero = $industrial->get('hero_slider');
+        $hero['label'] = 'Header va hero logistics XD321';
+        $hero['description'] = 'Hero slider cho dich vu van chuyen va logistics.';
+        $hero['settings'] = ['source' => 'site_banners', 'placement' => 'xd321-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500];
+        $hero['data']['vi'] = ['title' => 'Nhanh chong, an toan cung XD321 Cargo', 'subtitle' => 'XD321 Cargo', 'description' => 'Toi uu moi hanh trinh van chuyen tu noi dia den quoc te.', 'button_label' => 'Xem them', 'content' => ['slides' => [['title' => 'Nhanh chong, an toan cung XD321 Cargo', 'summary' => 'Toi uu moi hanh trinh van chuyen tu noi dia den quoc te. An toan va tiet kiem.', 'button_label' => 'Xem them', 'image' => 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#dich-vu']]]];
+
+        $quality = $industrial->get('featured_categories');
+        $quality['label'] = 'Cam ket dich vu';
+        $quality['data']['vi'] = ['title' => 'Cam ket XD321 Cargo', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => 'Dung tien do', 'summary' => 'Theo doi don hang lien tuc.', 'icon' => 'fa-solid fa-clock'], ['title' => 'An toan hang hoa', 'summary' => 'Quy trinh minh bach.', 'icon' => 'fa-solid fa-shield-halved'], ['title' => 'Ket noi toan cau', 'summary' => 'Mang luoi quoc te.', 'icon' => 'fa-solid fa-globe'], ['title' => 'Chi phi toi uu', 'summary' => 'Bao gia ro rang.', 'icon' => 'fa-solid fa-tags']]]];
+
+        $about = $industrial->get('about_experience');
+        $about['label'] = 'Gioi thieu XD321 Cargo';
+        $about['media'] = ['image' => 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1100&q=85'];
+        $about['data']['vi'] = ['title' => 'Doi tac logistics tin cay cho doanh nghiep', 'subtitle' => 'Gioi thieu ve XD321 Cargo', 'description' => 'Chung toi ket noi thuong mai toan cau bang giai phap van chuyen dang tin cay, minh bach va linh hoat. Doi ngu chuyen nghiep ho tro tu kho bai den giao nhan cuoi cung.', 'button_label' => 'Tu van ngay', 'content' => ['years' => '15+', 'years_label' => 'Nam kinh nghiem', 'items' => [['title' => 'Van tai da phuong thuc'], ['title' => 'Quy trinh kiem soat chat che'], ['title' => 'Dich vu linh hoat cho tung lo hang'], ['title' => 'Mang luoi doi tac toan cau']]]];
+
+        $services = $interior->get('content_mosaic');
+        $services['label'] = 'Dich vu van chuyen'; $services['anchor_id'] = 'dich-vu';
+        $services['description'] = 'Lay tu tin tuc, san pham, dich vu, du an hoac nhap tay.';
+        $services['settings'] = ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true];
+        $services['data']['vi'] = ['title' => 'Dich vu van chuyen', 'subtitle' => 'Ket noi van tai toan cau', 'description' => 'Giai phap linh hoat cho hang hoa duong bien, hang khong va duong bo.', 'button_label' => '', 'content' => ['items' => []]];
+
+        $solutions = $interior->get('content_mosaic');
+        $solutions['block_type'] = 'project_gallery'; $solutions['label'] = 'Giai phap logistics'; $solutions['anchor_id'] = 'giai-phap';
+        $solutions['settings'] = ['source' => 'cms_projects', 'limit' => 3, 'featured_only' => true];
+        $solutions['data']['vi'] = ['title' => 'Giai phap logistics hien dai', 'subtitle' => 'Giai phap', 'description' => 'Tu luu kho, xu ly don hang den dieu phoi chuoi cung ung.', 'button_label' => '', 'content' => ['items' => []]];
+
+        $process = $logistics->get('process_steps');
+        $process['label'] = 'Quy trinh van hanh'; $process['anchor_id'] = 'quy-trinh';
+        $process['data']['vi'] = ['title' => 'Quy trinh dam bao van hanh logistics xuyen suot', 'subtitle' => 'Quy trinh lam viec', 'description' => 'Moi buoc deu duoc kiem soat chat che de dam bao tien do va tinh minh bach.', 'button_label' => 'Lien he ngay', 'content' => ['items' => [['title' => 'Tiep nhan va len ke hoach', 'summary' => 'Phan tich chi tiet lo hang va xay dung phuong an toi uu.'], ['title' => 'Dieu phoi va trien khai', 'summary' => 'To chuc van chuyen, xu ly chung tu va toi uu lo trinh.'], ['title' => 'Theo doi va cap nhat', 'summary' => 'Cap nhat trang thai lien tuc trong thoi gian thuc.'], ['title' => 'Giao hang va toi uu', 'summary' => 'Danh gia ket qua de nang cao chat luong dich vu.']]]];
+
+        $products = $foot->get('featured_products');
+        $products['label'] = 'San pham logistics'; $products['anchor_id'] = 'san-pham';
+        $products['data']['vi']['title'] = 'San pham ho tro logistics'; $products['data']['vi']['subtitle'] = 'Vat tu dong goi';
+
+        $testimonials = $industrial->get('team_members');
+        $testimonials['block_type'] = 'testimonials'; $testimonials['label'] = 'Phan hoi khach hang';
+        $testimonials['data']['vi'] = ['title' => 'Khach hang noi gi ve XD321 Cargo', 'subtitle' => 'Phan hoi tu doi tac', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        $partners = $industrial->get('partner_logos'); $partners['label'] = 'Mang luoi doi tac';
+        $news = $foot->get('bizmax_latest_posts'); $news['label'] = 'Tin tuc logistics'; $news['anchor_id'] = 'tin-tuc';
+        $news['settings'] = ['source' => 'cms_posts', 'limit' => 6, 'featured_only' => true];
+        $news['data']['vi'] = ['title' => 'Cap nhat tin tuc logistics', 'subtitle' => 'Kien thuc va thi truong', 'description' => '', 'button_label' => 'Xem them', 'content' => ['items' => []]];
+        return [$hero, $quality, $about, $services, $solutions, $process, $products, $testimonials, $partners, $news];
     }
 
     private function nt501DefaultBlocks(): array

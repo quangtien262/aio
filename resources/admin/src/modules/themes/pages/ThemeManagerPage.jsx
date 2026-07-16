@@ -208,10 +208,15 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                         theme={previewTheme}
                         canActivate={canActivate}
                         canOpenPalette={canGenerateDemoData && Boolean(previewTheme?.supports?.custom_css)}
+                        canGenerateDemoData={canGenerateDemoData}
                         onOpenActivateDialog={(theme) => setActivateThemeKey(theme.key)}
                         onOpenPalette={(theme) => {
                             setPreviewThemeKey(null);
                             themeActionController.openPalette(theme);
+                        }}
+                        onOpenDemoCreate={(theme) => {
+                            setPreviewThemeKey(null);
+                            themeActionController.openDemoCreate(theme);
                         }}
                     />
                 </Suspense>

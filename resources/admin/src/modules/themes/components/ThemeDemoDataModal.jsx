@@ -1,132 +1,100 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Alert from 'antd/es/alert';
+import Checkbox from 'antd/es/checkbox';
 import Form from 'antd/es/form';
 import Modal from 'antd/es/modal';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
 
+const { Paragraph, Text } = Typography;
+
 const COMMERCE_PRESET_OPTIONS = [
-    { label: 'Bất động sản mở bán dự án', value: 'real-estate-launchpad', description: 'Bảng hàng căn hộ, shophouse, villa, brochure và đặt lịch xem nhà mẫu cho LAN0201.' },
-    { label: 'Xưởng may quần áo sỉ lẻ', value: 'garment-workshop', description: 'Đồng phục, OEM/ODM, local brand, retail may sẵn.' },
-    { label: 'Thời trang lookbook và retail', value: 'fashion-studio', description: 'Capsule collection, ready-to-wear, streetwear, showroom retail.' },
-    { label: 'Điện máy công nghệ', value: 'electronics-superstore', description: 'Điện thoại, laptop, điện lạnh, gia dụng.' },
-    { label: 'Điện thoại và phụ kiện', value: 'phones-accessories', description: 'Showroom smartphone, gear, bảo hành.' },
-    { label: 'Máy tính và workstation', value: 'computer-workstation', description: 'PC, laptop, màn hình, server mini.' },
-    { label: 'Du lịch và trải nghiệm', value: 'travel-deals', description: 'Tour, combo nghỉ dưỡng, vé trải nghiệm.' },
-    { label: 'Mỹ phẩm và làm đẹp', value: 'cosmetics-beauty', description: 'Skincare, makeup, body care, spa.' },
-    { label: 'Hóa chất và vật tư công nghiệp', value: 'industrial-chemicals', description: 'Dung môi, xử lý nước, vật tư lab.' },
-    { label: 'Xây dựng và nội thất', value: 'construction-materials', description: 'Vật liệu hoàn thiện, nội thất, công cụ.' },
-    { label: 'Phụ kiện công nghệ', value: 'tech-accessories', description: 'Gaming gear, sạc nhanh, smart-home.' },
+    { label: 'Du lieu thuong mai mac dinh', value: 'electronics-superstore', description: 'San pham, tin tuc, danh muc va banner demo.' },
 ];
 
 const SERVICE_PRESET_OPTIONS = [
-    { label: 'Nhà xe sân bay và city transfer', value: 'ser-airport-city', description: 'Đưa đón sân bay, city transfer, khách gia đình và khách công tác.' },
-    { label: 'Nhà xe du lịch và xe đoàn', value: 'ser-tour-coach', description: 'Xe 16-45 chỗ, tour công ty, trường học, đoàn khách.' },
-    { label: 'Shuttle doanh nghiệp và hàng nhẹ', value: 'ser-business-cargo', description: 'Shuttle theo hợp đồng, chở nhân sự và vận chuyển hàng nhẹ.' },
+    { label: 'Nha xe san bay va city transfer', value: 'ser-airport-city', description: 'Demo dich vu van chuyen va booking.' },
+    { label: 'Shuttle doanh nghiep va hang nhe', value: 'ser-business-cargo', description: 'Demo dich vu cho website service.' },
 ];
-
-const { Paragraph, Text } = Typography;
 
 export default function ThemeDemoDataModal({ open, theme, mode = 'generate', canGenerateDemoData, onCancel, onSubmit }) {
     const [form] = Form.useForm();
+    const [resetAll, setResetAll] = useState(false);
+    const [countdown, setCountdown] = useState(0);
     const presetOptions = useMemo(() => {
         if (theme?.demo?.default_preset) {
-            return [{
-                label: `Dữ liệu mẫu mặc định của ${theme.name}`,
-                value: theme.demo.default_preset,
-                description: 'Bộ nội dung được thiết kế riêng cho bố cục và nguồn dữ liệu của theme này.',
-            }];
+            return [{ label: `Du lieu mau danh rieng cho ${theme.name}`, value: theme.demo.default_preset, description: 'Noi dung duoc thiet ke rieng cho bo cuc va nguon du lieu cua theme.' }];
         }
 
-        if ((theme?.website_type ?? '').toLowerCase() === 'service') {
-            return SERVICE_PRESET_OPTIONS;
-        }
-
-        return COMMERCE_PRESET_OPTIONS;
+        return (theme?.website_type ?? '').toLowerCase() === 'service' ? SERVICE_PRESET_OPTIONS : COMMERCE_PRESET_OPTIONS;
     }, [theme?.demo?.default_preset, theme?.name, theme?.website_type]);
 
     useEffect(() => {
-        if (!open) {
-            return;
+        if (open) {
+            form.setFieldsValue({ preset: presetOptions[0]?.value });
+        }
+    }, [form, open, presetOptions]);
+
+    useEffect(() => {
+        if (!open || !resetAll) {
+            setCountdown(0);
+            return undefined;
         }
 
-        form.setFieldsValue({
-            preset: presetOptions[0]?.value,
-        });
-    }, [form, open, presetOptions]);
+        setCountdown(5);
+        const timer = window.setInterval(() => {
+            setCountdown((current) => {
+                if (current <= 1) {
+                    window.clearInterval(timer);
+                    return 0;
+                }
+
+                return current - 1;
+            });
+        }, 1000);
+
+        return () => window.clearInterval(timer);
+    }, [open, resetAll]);
 
     const handleOk = async () => {
         const values = await form.validateFields();
-        const didFinish = await onSubmit?.(values.preset);
+        const didFinish = await onSubmit?.(values.preset, { resetAll });
 
         if (didFinish !== false) {
             form.resetFields();
+            setResetAll(false);
         }
+    };
+
+    const close = () => {
+        form.resetFields();
+        setResetAll(false);
+        onCancel?.();
     };
 
     return (
         <Modal
-            title={theme ? `${mode === 'rebuild' ? 'Rebuild curated local demo' : 'Tạo data test'}: ${theme.name}` : mode === 'rebuild' ? 'Rebuild curated local demo' : 'Tạo data test'}
+            title={theme ? `Tao data test: ${theme.name}` : 'Tao data test'}
             open={open}
-            onCancel={() => {
-                form.resetFields();
-                onCancel?.();
-            }}
+            onCancel={close}
             onOk={handleOk}
-            okText={mode === 'rebuild' ? 'Rebuild dữ liệu local' : 'Tạo dữ liệu'}
-            okButtonProps={{ disabled: !theme || !canGenerateDemoData }}
+            okText={mode === 'rebuild' ? 'Rebuild du lieu' : 'Tao du lieu'}
+            okButtonProps={{ disabled: !theme || !canGenerateDemoData || countdown > 0 }}
             destroyOnHidden
         >
             <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                <Alert
-                    type="info"
-                    showIcon
-                    message={
-                        mode === 'rebuild'
-                            ? 'Hệ thống sẽ regenerate lại bộ demo data theo preset đã chọn và buộc toàn bộ ảnh demo đi qua local curated asset pool trong repo. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
-                            : (theme?.website_type ?? '').toLowerCase() === 'service'
-                                ? 'Hệ thống sẽ tạo menu, gói dịch vụ, cẩm nang, trang giới thiệu và banner demo cho website hiện tại. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
-                                : 'Hệ thống sẽ tạo menu, sản phẩm, tin tức, trang giới thiệu và banner demo cho website hiện tại. LAN0201 có thể dùng preset bất động sản mở bán, TH0002 có preset may mặc, và các theme commerce khác vẫn dùng chung cơ chế này. Chỉ dữ liệu test đã được hệ thống đánh dấu mới bị thay thế hoặc xóa về sau.'
-                    }
-                />
-
-                <div>
-                    <Text className="card-label">Theme đang chọn</Text>
-                    <Paragraph style={{ marginBottom: 0 }}>{theme?.name ?? 'Chưa chọn theme'}</Paragraph>
-                </div>
-
-                <Form form={form} layout="vertical" initialValues={{ preset: presetOptions[0]?.value }}>
-                    <Form.Item
-                        name="preset"
-                        label="Ngành dữ liệu mẫu"
-                        rules={[{ required: true, message: 'Chọn loại dữ liệu test cần tạo' }]}
-                    >
-                            <Select
-                                showSearch
-                                placeholder="Tìm ngành dữ liệu mẫu"
-                                options={presetOptions}
-                                optionLabelProp="label"
-                                filterOption={(input, option) => {
-                                    const label = (option?.label ?? option?.data?.label ?? '').toString();
-                                    const desc = (option?.data?.description ?? option?.description ?? '').toString();
-
-                                    return `${label} ${desc}`.toLowerCase().includes(String(input).toLowerCase());
-                                }}
-                                optionRender={(option) => {
-                                    const label = option?.label ?? option?.data?.label ?? '';
-                                    const desc = option?.data?.description ?? option?.description ?? '';
-
-                                    return (
-                                        <div>
-                                            <div>{label}</div>
-                                            {desc ? <Text type="secondary">{desc}</Text> : null}
-                                        </div>
-                                    );
-                                }}
-                            />
+                <Alert type="info" showIcon message="He thong chi tao va quan ly cac ban ghi demo co marker rieng." />
+                <div><Text className="card-label">Theme dang chon</Text><Paragraph style={{ marginBottom: 0 }}>{theme?.name ?? 'Chua chon theme'}</Paragraph></div>
+                <Form form={form} layout="vertical">
+                    <Form.Item name="preset" label="Nganh du lieu mau" rules={[{ required: true, message: 'Chon loai du lieu test can tao' }]}>
+                        <Select options={presetOptions} optionLabelProp="label" />
                     </Form.Item>
                 </Form>
+                <Checkbox checked={resetAll} onChange={(event) => setResetAll(event.target.checked)}>
+                    Reset toan bo data test da duoc he thong tao
+                </Checkbox>
+                {resetAll ? <Alert type="warning" showIcon message={countdown > 0 ? `Cho ${countdown} giay de xac nhan reset data test.` : 'Ban co the xac nhan reset data test.'} description="Chi cac ban ghi demo co marker cua he thong moi bi xoa. Du lieu tao thu cong khong bi anh huong." /> : null}
             </Space>
         </Modal>
     );

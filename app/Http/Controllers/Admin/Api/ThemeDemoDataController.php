@@ -16,10 +16,11 @@ class ThemeDemoDataController
 
         $validated = $request->validate([
             'preset' => ['required', 'string', 'max:120'],
+            'reset_all' => ['nullable', 'boolean'],
         ]);
 
         try {
-            $result = $generator->generate($key, $validated['preset']);
+            $result = $generator->generate($key, $validated['preset'], (bool) ($validated['reset_all'] ?? false));
         } catch (InvalidArgumentException $exception) {
             return response()->json([
                 'message' => $exception->getMessage(),

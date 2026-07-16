@@ -1,0 +1,13 @@
+{
+  "name": "XD321 Cargo Logistics",
+  "key": "XD321",
+  "version": "0.1.0",
+  "description": "Logistics and cargo theme with transport services, solutions, process, products, testimonials and partner network.",
+  "website_type": "service",
+  "parent": null,
+  "preview": { "thumbnail": "preview-xd321.png", "cover": "cover-xd321.png" },
+  "blocks": ["hero-slider", "featured-categories", "about-experience", "content-mosaic", "project-gallery", "process-steps", "featured-products", "testimonials", "partner-logos", "bizmax-latest-posts"],
+  "supports": { "dark_mode": false, "multi_homepage": false, "custom_css": true, "block_mapping": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "xd321-cargo-logistics" }
+}

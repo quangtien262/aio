@@ -74,8 +74,8 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
                         }
                     },
                 )}
-                onGenerateDemoData={(themeKey, preset) => runAdminAction(
-                    () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'POST', body: JSON.stringify({ preset }) }),
+                onGenerateDemoData={(themeKey, preset, options = {}) => runAdminAction(
+                    () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'POST', body: JSON.stringify({ preset, reset_all: Boolean(options.resetAll) }) }),
                     'Đã tạo data test cho theme.',
                     reload,
                 )}

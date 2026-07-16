@@ -98,8 +98,8 @@ export default function ThemeActionOverlayHost({
                         mode={activeType === 'rebuild' ? 'rebuild' : 'generate'}
                         canGenerateDemoData={canManageThemeActions}
                         onCancel={onClose}
-                        onSubmit={async (preset) => {
-                            const didGenerate = await onGenerateDemoData?.(activeTheme.key, preset);
+                        onSubmit={async (preset, options = {}) => {
+                            const didGenerate = await onGenerateDemoData?.(activeTheme.key, preset, options);
 
                             if (didGenerate !== false) {
                                 onClose?.();

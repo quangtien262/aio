@@ -47,8 +47,12 @@ class ThemeDemoContentGenerator
         ));
     }
 
-    public function generate(string $themeKey, string $presetKey): array
+    public function generate(string $themeKey, string $presetKey, bool $resetAllDemoData = false): array
     {
+        if ($resetAllDemoData) {
+            $this->resetAllDemoContent();
+        }
+
         if ($provider = $this->providerRegistry->forTheme($themeKey)) {
             return $provider->generate($presetKey);
         }
@@ -147,6 +151,23 @@ class ThemeDemoContentGenerator
     public function defaultPresetForTheme(string $themeKey): ?string
     {
         return $this->providerRegistry->forTheme($themeKey)?->defaultPreset();
+    }
+
+    private function resetAllDemoContent(): void
+    {
+        ThemeDemoRecord::query()
+            ->select('theme_key')
+            ->distinct()
+            ->pluck('theme_key')
+            ->each(function (string $themeKey): void {
+                if ($provider = $this->providerRegistry->forTheme($themeKey)) {
+                    $provider->delete();
+
+                    return;
+                }
+
+                $this->purgeDemoContent($themeKey);
+            });
     }
 
     private function replaceMenuLocations(): void
