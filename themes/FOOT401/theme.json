@@ -1,0 +1,34 @@
+{
+  "name": "FOOT401 Restaurant",
+  "key": "FOOT401",
+  "version": "0.1.0",
+  "description": "Restaurant and culinary service theme with editorial hero, food menu, story, team and flexible content carousels.",
+  "website_type": "service",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-foot401.png",
+    "cover": "cover-foot401.png"
+  },
+  "blocks": [
+    "hero-slider",
+    "content-mosaic",
+    "about-experience",
+    "featured-products",
+    "bizmax-latest-posts",
+    "team-members"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}

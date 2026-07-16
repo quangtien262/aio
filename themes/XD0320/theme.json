@@ -1,0 +1,13 @@
+{
+  "name": "XD0320 Industrial",
+  "key": "XD0320",
+  "version": "0.1.0",
+  "description": "Industrial services theme with bold hero, quality promises, company stories, projects, team and partners.",
+  "website_type": "service",
+  "parent": null,
+  "preview": { "thumbnail": "preview-xd0320.png", "cover": "cover-xd0320.png" },
+  "blocks": ["hero-slider", "featured-categories", "about-experience", "logistics-feature-panel", "content-mosaic", "team-members", "partner-logos"],
+  "supports": { "dark_mode": false, "multi_homepage": false, "custom_css": true, "block_mapping": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings" }
+}

@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320'], true);
     }
 
     /**
@@ -1139,6 +1139,8 @@ class LandingPageBuilder
             'XD0315' => $this->xd0315DefaultBlocks(),
             'XD0314' => $this->xd0314DefaultBlocks(),
             'XD0313' => $this->xd0313DefaultBlocks(),
+            'FOOT401' => $this->foot401DefaultBlocks(),
+            'XD0320' => $this->xd0320DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1791,6 +1793,146 @@ class LandingPageBuilder
                 ],
             ],
         ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0320DefaultBlocks(): array
+    {
+        $industrial = collect($this->xd0314DefaultBlocks())->keyBy('block_type');
+        $legacy = collect($this->xd0313DefaultBlocks())->keyBy('block_type');
+        $logistics = collect($this->xd0312DefaultBlocks())->keyBy('block_type');
+
+        $hero = $industrial->get('hero_slider');
+        $hero['label'] = 'Header và hero công nghiệp';
+        $hero['description'] = 'Header không có ô tìm kiếm, có đăng nhập/đăng ký và hero ảnh công nghiệp.';
+        $hero['settings'] = ['source' => 'site_banners', 'placement' => 'xd0320-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500];
+        $hero['data']['vi'] = ['title' => 'Giải pháp công nghiệp cho vận hành bền vững', 'subtitle' => 'XD0320 Industrial', 'description' => 'Tư vấn kỹ thuật, thi công và bảo trì cho doanh nghiệp.', 'button_label' => 'Nhận báo giá', 'content' => ['slides' => [['title' => 'Giải pháp công nghiệp cho vận hành bền vững', 'summary' => 'Đồng hành cùng doanh nghiệp từ tư vấn kỹ thuật đến thi công và bảo trì.', 'button_label' => 'Nhận báo giá', 'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#lien-he']]]];
+
+        $quality = $industrial->get('featured_categories');
+        $quality['label'] = 'Cam kết chất lượng';
+        $quality['description'] = 'Các tiêu chí chất lượng, dùng icon Font Awesome.';
+        $quality['anchor_id'] = 'dich-vu';
+        $quality['data']['vi'] = ['title' => 'Cam kết chất lượng', 'subtitle' => 'Năng lực dịch vụ', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+            ['title' => 'Hài lòng 100%', 'summary' => 'Lấy khách hàng làm trung tâm.', 'icon' => 'fa-regular fa-face-smile'],
+            ['title' => 'Kiểm tra chính xác', 'summary' => 'Quy trình kiểm định rõ ràng.', 'icon' => 'fa-solid fa-ruler-combined'],
+            ['title' => 'Nhân sự chuyên nghiệp', 'summary' => 'Đội ngũ kỹ thuật giàu kinh nghiệm.', 'icon' => 'fa-solid fa-users'],
+            ['title' => 'Điều kiện tiêu chuẩn', 'summary' => 'Thiết bị và quy chuẩn đầy đủ.', 'icon' => 'fa-solid fa-gear'],
+            ['title' => 'Giá cả minh bạch', 'summary' => 'Báo giá minh bạch và kịp thời.', 'icon' => 'fa-regular fa-money-bill-1'],
+        ]]];
+
+        $about = $industrial->get('about_experience');
+        $about['label'] = 'Giới thiệu doanh nghiệp';
+        $about['description'] = 'Khối giới thiệu nhanh dùng dữ liệu tùy chỉnh.';
+        $about['media'] = ['image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1100&q=85'];
+        $about['data']['vi'] = ['title' => 'Giúp khách hàng đạt được những thành tựu', 'subtitle' => 'Chào mừng bạn đến với XD0320', 'description' => 'XD0320 là doanh nghiệp cung cấp dịch vụ sản xuất và công nghệ chuyên nghiệp. Với nền tảng kỹ thuật vững chắc, chúng tôi cùng khách hàng tạo ra các giải pháp vận hành hiệu quả và bền vững.', 'button_label' => '', 'content' => ['years' => '20+', 'years_label' => 'Năm kinh nghiệm', 'items' => [['title' => 'Năng lực kỹ thuật đã được kiểm chứng'], ['title' => 'Đội ngũ chuyên nghiệp'], ['title' => 'Lắng nghe để đồng hành cùng khách hàng'], ['title' => 'Vật liệu và tiêu chuẩn chất lượng cao']]]];
+
+        $feature = $legacy->get('logistics_feature_panel');
+        $feature['label'] = 'Năng lực và dịch vụ';
+        $feature['description'] = 'Khối giới thiệu nhanh thứ hai, dùng dữ liệu tùy chỉnh.';
+        $feature['anchor_id'] = 'nang-luc';
+        $feature['media'] = ['image' => 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=1500&q=85'];
+        $feature['data']['vi'] = ['title' => 'Dịch vụ tốt nhất để tiến bộ bền vững', 'subtitle' => 'Năng lực kỹ thuật', 'description' => 'Giải pháp thực tế giúp doanh nghiệp gia tăng hiệu quả vận hành và tạo lợi thế cạnh tranh dài hạn.', 'button_label' => '', 'content' => ['items' => [['title' => 'Hỗ trợ kỹ thuật tận tâm'], ['title' => 'Công nghệ phù hợp'], ['title' => 'Đội ngũ giàu kinh nghiệm'], ['title' => 'Vật liệu chất lượng'], ['title' => 'Quy trình thông minh']]]];
+
+        $projects = $industrial->get('content_mosaic');
+        $projects['label'] = 'Dự án đa nguồn';
+        $projects['description'] = 'Carousel ngang lấy từ tin tức, sản phẩm, dịch vụ, dự án hoặc nhập tay.';
+        $projects['anchor_id'] = 'du-an';
+        $projects['settings'] = ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => true];
+        $projects['data']['vi'] = ['title' => 'Một số dự án đã thực hiện cho khách hàng', 'subtitle' => 'Dự án tiêu biểu', 'description' => 'Các dự án chuyên ngành tiêu biểu đã giúp XD0320 khẳng định vị thế và năng lực triển khai.', 'button_label' => 'Tất cả dự án', 'content' => ['items' => []]];
+
+        $team = $industrial->get('team_members');
+        $team['label'] = 'Đội ngũ kỹ sư';
+        $team['description'] = 'Đội ngũ đồng nhất layout, gồm hình, tên và chức danh.';
+        $team['data']['vi'] = ['title' => 'Đội ngũ kỹ sư có năng lực', 'subtitle' => 'Thành viên chuyên gia', 'description' => 'Những con người tâm huyết, kinh nghiệm và cùng hướng về kết quả cho khách hàng.', 'button_label' => '', 'content' => ['items' => [
+            ['name' => 'Anwar Ramadan', 'role' => 'Giám đốc nhân sự', 'image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'Osama Bakri', 'role' => 'Giám đốc điều hành', 'image' => 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'Sana El-Shamy', 'role' => 'Kỹ sư xây dựng', 'image' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'Jackson Ckumanni', 'role' => 'Quản lý dự án', 'image' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=700&q=85'],
+        ]]];
+
+        $partners = $logistics->get('partner_logos');
+        $partners['label'] = 'Đối tác';
+        $partners['description'] = 'Danh sách logo đối tác từ CMS Partners.';
+        $partners['data']['vi'] = ['title' => 'Đối tác của chúng tôi', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        return [$hero, $quality, $about, $feature, $projects, $team, $partners];
+    }
+
+    private function foot401DefaultBlocks(): array
+    {
+        $blocks = collect($this->xd0314DefaultBlocks())->keyBy('block_type');
+
+        $hero = $blocks->get('hero_slider');
+        $hero['label'] = 'Header và hero FOOT401';
+        $hero['description'] = 'Header không có ô tìm kiếm, có đăng nhập/đăng ký và hero slider ảnh ẩm thực.';
+        $hero['settings'] = ['source' => 'site_banners', 'placement' => 'foot401-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500];
+        $hero['data']['vi'] = [
+            'title' => 'Ẩm thực được kể bằng ký ức',
+            'subtitle' => 'FOOT401 Restaurant',
+            'description' => 'Những nguyên liệu theo mùa, căn bếp mở và các cuộc gặp gỡ được chuẩn bị thật riêng.',
+            'button_label' => 'Khám phá thực đơn',
+            'content' => ['slides' => [
+                ['title' => 'Ẩm thực được kể bằng ký ức', 'summary' => 'Một bàn ăn ấm áp, những nguyên liệu theo mùa và trải nghiệm được chuẩn bị dành riêng cho từng vị khách.', 'button_label' => 'Khám phá thực đơn', 'image' => 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#thuc-don'],
+                ['title' => 'Một buổi tối thật đáng nhớ', 'summary' => 'Không gian riêng, hương vị tinh tế và nhịp phục vụ vừa đủ để bạn ở lại lâu hơn.', 'button_label' => 'Xem dịch vụ', 'image' => 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#dich-vu'],
+            ]],
+        ];
+
+        $services = $blocks->get('content_mosaic');
+        $services['label'] = 'Dịch vụ nổi bật';
+        $services['description'] = 'Carousel có tiêu đề nằm trong ảnh; lấy từ tin tức, sản phẩm, dịch vụ, dự án hoặc nhập tay.';
+        $services['anchor_id'] = 'dich-vu';
+        $services['settings'] = ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true];
+        $services['data']['vi'] = ['title' => 'Dịch vụ nổi bật', 'subtitle' => 'Trải nghiệm FOOT401', 'description' => '', 'button_label' => 'Khám phá', 'content' => ['items' => [
+            ['title' => 'Bữa tối riêng', 'summary' => 'Không gian bàn tiệc được thiết kế theo câu chuyện của riêng bạn.', 'image' => 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Bếp tại bàn', 'summary' => 'Đầu bếp chia sẻ hành trình của nguyên liệu ngay trước mắt thực khách.', 'image' => 'https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Sự kiện ẩm thực', 'summary' => 'Một buổi gặp gỡ chỉn chu cho doanh nghiệp và những dịp đặc biệt.', 'image' => 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=85'],
+        ]]];
+
+        $about = $blocks->get('about_experience');
+        $about['label'] = 'Giới thiệu nhà hàng';
+        $about['description'] = 'Khối giới thiệu nhanh, dùng dữ liệu do người dùng nhập.';
+        $about['media'] = ['image' => 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1100&q=85', 'background' => 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=2200&q=90'];
+        $about['data']['vi'] = ['title' => 'Một căn bếp mở cho những cuộc gặp gỡ', 'subtitle' => 'Câu chuyện FOOT401', 'description' => 'FOOT401 tin rằng một bữa ăn đẹp bắt đầu từ sự tôn trọng nguyên liệu. Chúng tôi chọn món theo mùa, lắng nghe từng vị khách và dành thời gian để mỗi cuộc gặp gỡ trở nên ấm áp hơn.', 'button_label' => 'Tìm hiểu thêm', 'content' => ['items' => [], 'stats' => []]];
+
+        $products = [
+            'block_type' => 'featured_products',
+            'label' => 'Thực đơn sản phẩm',
+            'description' => 'Carousel món ăn lấy trực tiếp từ bảng sản phẩm.',
+            'preview_image' => '/theme-previews/FOOT401/preview-foot401.png',
+            'anchor_id' => 'thuc-don',
+            'dynamic' => true,
+            'settings' => ['limit' => 8, 'featured_only' => true],
+            'settings_schema' => [
+                'limit' => ['type' => 'number', 'label' => 'Số món hiển thị'],
+                'category_id' => ['type' => 'number', 'label' => 'Danh mục sản phẩm'],
+                'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy món nổi bật'],
+            ],
+            'data' => ['vi' => ['title' => 'Thực đơn theo mùa', 'subtitle' => 'Từ bếp', 'description' => '', 'button_label' => 'Xem món', 'content' => ['items' => []]], 'en' => ['title' => 'Seasonal menu', 'subtitle' => 'From the kitchen', 'description' => '', 'button_label' => 'View dish', 'content' => ['items' => []]]],
+        ];
+
+        $stories = $blocks->get('featured_services');
+        $stories['block_type'] = 'bizmax_latest_posts';
+        $stories['label'] = 'Tin tức và sự kiện';
+        $stories['description'] = 'Carousel ngang lấy từ tin tức, sản phẩm, dịch vụ, dự án hoặc nhập tay.';
+        $stories['anchor_id'] = 'tin-tuc';
+        $stories['settings'] = ['source' => 'cms_posts', 'limit' => 6, 'featured_only' => true];
+        $stories['data']['vi'] = ['title' => 'Tin tức và sự kiện', 'subtitle' => 'Nhật ký bàn ăn', 'description' => '', 'button_label' => 'Đọc thêm', 'content' => ['items' => [
+            ['title' => 'Những nguyên liệu làm nên một mùa mới', 'summary' => 'Câu chuyện về những chuyến đi tìm hương vị cho thực đơn FOOT401.', 'image' => 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Một buổi tối cùng những người bạn', 'summary' => 'Gợi ý cho buổi gặp gỡ thật chậm rãi và nhiều dư vị.', 'image' => 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Bếp mở và hành trình của món ăn', 'summary' => 'Chúng tôi chuẩn bị món ăn như thế nào trước giờ phục vụ.', 'image' => 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&q=85'],
+        ]]];
+
+        $team = $blocks->get('team_members');
+        $team['label'] = 'Đội ngũ FOOT401';
+        $team['description'] = 'Giới thiệu đội ngũ theo một layout thống nhất, có tên và chức danh.';
+        $team['data']['vi'] = ['title' => 'Đội ngũ của chúng tôi', 'subtitle' => 'Những con người tạo nên trải nghiệm', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+            ['name' => 'Linh Nguyễn', 'role' => 'Bếp trưởng', 'image' => 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'Minh Trần', 'role' => 'Bếp phó', 'image' => 'https://images.unsplash.com/photo-1583394293214-28ded15ee548?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'An Phạm', 'role' => 'Quản lý nhà hàng', 'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'Quang Lê', 'role' => 'Chuyên gia đồ uống', 'image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=700&q=85'],
+        ]]];
+
+        return [$hero, $services, $about, $products, $stories, $team];
     }
 
     /** @return array<int, array<string, mixed>> */
