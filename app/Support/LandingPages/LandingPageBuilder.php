@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501'], true);
     }
 
     /**
@@ -1141,6 +1141,7 @@ class LandingPageBuilder
             'XD0313' => $this->xd0313DefaultBlocks(),
             'FOOT401' => $this->foot401DefaultBlocks(),
             'XD0320' => $this->xd0320DefaultBlocks(),
+            'NT501' => $this->nt501DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1856,6 +1857,69 @@ class LandingPageBuilder
         $partners['data']['vi'] = ['title' => 'Đối tác của chúng tôi', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
         return [$hero, $quality, $about, $feature, $projects, $team, $partners];
+    }
+
+    private function nt501DefaultBlocks(): array
+    {
+        $interior = collect($this->xd0314DefaultBlocks())->keyBy('block_type');
+        $legacy = collect($this->xd0313DefaultBlocks())->keyBy('block_type');
+        $foot = collect($this->foot401DefaultBlocks())->keyBy('block_type');
+        $partners = collect($this->xd0312DefaultBlocks())->keyBy('block_type');
+
+        $hero = $interior->get('hero_slider');
+        $hero['label'] = 'Header va hero NT501';
+        $hero['description'] = 'Hero slider cho studio thiet ke noi that.';
+        $hero['settings'] = ['source' => 'site_banners', 'placement' => 'nt501-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500];
+        $hero['data']['vi'] = ['title' => 'Khong gian dep, chat luong ben vung', 'subtitle' => 'NT501 Interior Studio', 'description' => 'Thiet ke va thi cong noi that cho nhung ngoi nha mang dau an rieng.', 'button_label' => 'Kham pha du an', 'content' => ['slides' => [['title' => 'Khong gian dep, chat luong ben vung', 'summary' => 'Dong hanh cung ban kien tao mot khong gian song tinh te va ben vung.', 'button_label' => 'Kham pha du an', 'image' => 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#du-an']]]];
+
+        $about = $interior->get('about_experience');
+        $about['label'] = 'Gioi thieu studio';
+        $about['description'] = 'Khoi gioi thieu nhanh dung du lieu tuy chinh.';
+        $about['media'] = ['image' => 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=90'];
+        $about['data']['vi'] = ['title' => 'Kien tao khong gian song day cam hung', 'subtitle' => 'Gioi thieu ve NT501', 'description' => 'NT501 ket hop tu duy thiet ke tinh te, vat lieu chat luong va quy trinh thi cong ky luong de bien moi y tuong thanh mot khong gian dang song.', 'button_label' => 'Xem dich vu', 'content' => ['items' => []]];
+
+        $showcase = $interior->get('content_mosaic');
+        $showcase['label'] = 'Khong gian tieu bieu';
+        $showcase['description'] = 'Lay tu tin tuc, san pham, dich vu, du an hoac nhap tay.';
+        $showcase['anchor_id'] = 'khong-gian';
+        $showcase['settings'] = ['source' => 'cms_projects', 'limit' => 2, 'featured_only' => true];
+        $showcase['data']['vi'] = ['title' => 'Giai phap cho moi phong cach song', 'subtitle' => 'Khong gian tieu bieu', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        $projects = $interior->get('content_mosaic');
+        $projects['block_type'] = 'project_gallery';
+        $projects['label'] = 'Du an noi bat';
+        $projects['description'] = 'Du an hien thi thanh thanh truot ngang.';
+        $projects['anchor_id'] = 'du-an';
+        $projects['settings'] = ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => true];
+        $projects['data']['vi'] = ['title' => 'Nhung cong trinh noi bat', 'subtitle' => 'Du an da thuc hien', 'description' => '', 'button_label' => 'Xem tat ca', 'content' => ['items' => []]];
+
+        $services = $interior->get('featured_services');
+        $services['label'] = 'Dich vu noi that';
+        $services['description'] = 'Lay tu nhieu nguon du lieu hoac nhap tay.';
+        $services['anchor_id'] = 'dich-vu';
+        $services['settings'] = ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true];
+        $services['data']['vi'] = ['title' => 'Dong hanh tu y tuong den hoan thien', 'subtitle' => 'Dich vu cua chung toi', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        $testimonials = $legacy->get('testimonials');
+        $testimonials['label'] = 'Cam nhan khach hang';
+        $testimonials['description'] = 'Phan hoi khach hang va hinh anh dai dien.';
+        $testimonials['data']['vi'] = ['title' => 'Dieu khach hang noi ve chung toi', 'subtitle' => 'Cam nhan khach hang', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        $posts = $foot->get('bizmax_latest_posts');
+        $posts['label'] = 'Bai viet noi that';
+        $posts['description'] = 'Lay tu tin tuc, san pham, dich vu, du an hoac nhap tay.';
+        $posts['settings'] = ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => true];
+        $posts['data']['vi'] = ['title' => 'Bai viet gan day', 'subtitle' => 'Tin tuc va cap nhat', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        $partnerLogos = $partners->get('partner_logos');
+        $partnerLogos['label'] = 'Doi tac NT501';
+
+        $stats = $interior->get('featured_categories');
+        $stats['label'] = 'Chi so nang luc';
+        $stats['description'] = 'Ba chi so nang luc dung du lieu tuy chinh.';
+        $stats['data']['vi'] = ['title' => 'Nang luc NT501', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => '10+', 'summary' => 'Nam lam viec'], ['title' => '20', 'summary' => 'Chuyen gia noi that'], ['title' => '1000', 'summary' => 'Du an tiem nang']]]];
+
+        return [$hero, $about, $showcase, $projects, $services, $testimonials, $posts, $partnerLogos, $stats];
     }
 
     private function foot401DefaultBlocks(): array
