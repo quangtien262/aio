@@ -1670,20 +1670,25 @@ class CmsSiteController
             ];
         }
 
-        return $items->values()->map(function (array $item, int $index) use ($websiteKey, $themeKey): array {
-            $fallbackUrl = $this->isCommerceThemeKey($themeKey) ? route('site.home') : null;
+        $fallbackUrl = $this->isCommerceThemeKey($themeKey) ? route('site.home') : null;
+        $normalizeItems = function (array $menuItems, string $baseKey = 'cms_menu.primary-navigation') use (&$normalizeItems, $websiteKey, $fallbackUrl): array {
+            return collect($menuItems)
+                ->filter(fn (mixed $item): bool => is_array($item))
+                ->values()
+                ->map(function (array $item, int $index) use (&$normalizeItems, $websiteKey, $fallbackUrl, $baseKey): array {
+                    $itemKey = "{$baseKey}.{$index}";
 
-            return [
-                'label' => $this->contentText($websiteKey, sprintf('cms_menu.primary-navigation.%d.label', $index), (string) ($item['label'] ?? '')),
-                'url' => $this->localizedUrl((string) ($item['url'] ?? '#'), $fallbackUrl),
-                'target' => $item['target'] ?? '_self',
-                'children' => collect($item['children'] ?? [])->filter(fn (mixed $child): bool => is_array($child))->values()->map(fn (array $child, int $childIndex): array => [
-                    'label' => $this->contentText($websiteKey, sprintf('cms_menu.primary-navigation.%d.children.%d.label', $index, $childIndex), (string) ($child['label'] ?? '')),
-                    'url' => $this->localizedUrl((string) ($child['url'] ?? '#'), $fallbackUrl),
-                    'target' => $child['target'] ?? '_self',
-                ])->all(),
-            ];
-        })->all();
+                    return [
+                        'label' => $this->contentText($websiteKey, "{$itemKey}.label", (string) ($item['label'] ?? '')),
+                        'url' => $this->localizedUrl((string) ($item['url'] ?? '#'), $fallbackUrl),
+                        'target' => $item['target'] ?? '_self',
+                        'children' => $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : [], "{$itemKey}.children"),
+                    ];
+                })
+                ->all();
+        };
+
+        return $normalizeItems($items->all());
     }
 
     private function resolveProductMenuItems(array $menus, Collection $parentCategories): array
@@ -1697,12 +1702,26 @@ class CmsSiteController
             ->all();
 
         if ($configured->isNotEmpty()) {
-            return $configured->map(function (array $item, int $index) use ($validCategorySlugs, $websiteKey): array {
-                $children = collect($item['children'] ?? [])->filter(fn (mixed $child): bool => is_array($child))->values()->map(fn (array $child, int $childIndex): array => [
-                    'label' => $this->contentText($websiteKey, sprintf('cms_menu.product-navigation.%d.children.%d.label', $index, $childIndex), (string) ($child['label'] ?? '')),
-                    'url' => $this->localizedUrl((string) ($child['url'] ?? '#'), route('site.catalog.search')),
-                    'target' => $child['target'] ?? '_self',
-                ])->values()->all();
+            $normalizeItems = function (array $menuItems, string $baseKey = 'cms_menu.product-navigation') use (&$normalizeItems, $websiteKey): array {
+                return collect($menuItems)
+                    ->filter(fn (mixed $item): bool => is_array($item))
+                    ->values()
+                    ->map(function (array $item, int $index) use (&$normalizeItems, $websiteKey, $baseKey): array {
+                        $itemKey = "{$baseKey}.{$index}";
+
+                        return [
+                            'label' => $this->contentText($websiteKey, "{$itemKey}.label", (string) ($item['label'] ?? '')),
+                            'url' => $this->localizedUrl((string) ($item['url'] ?? '#'), route('site.catalog.search')),
+                            'target' => $item['target'] ?? '_self',
+                            'children' => $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : [], "{$itemKey}.children"),
+                        ];
+                    })
+                    ->values()
+                    ->all();
+            };
+
+            return $configured->map(function (array $item, int $index) use ($validCategorySlugs, $websiteKey, $normalizeItems): array {
+                $children = $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : [], sprintf('cms_menu.product-navigation.%d.children', $index));
                 $resolvedUrl = $this->localizedUrl((string) ($item['url'] ?? '#'), route('site.catalog.search'));
 
                 if ($this->hasMissingCategorySlug($resolvedUrl, $validCategorySlugs) && ($children[0]['url'] ?? null)) {

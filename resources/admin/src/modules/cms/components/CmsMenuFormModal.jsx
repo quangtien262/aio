@@ -236,20 +236,20 @@ function updateItemAtPath(items, path, updater) {
         return items;
     }
 
-    const [currentIndex, childIndex] = path;
+    const [currentIndex, ...restPath] = path;
 
     return items.map((item, index) => {
         if (index !== currentIndex) {
             return item;
         }
 
-        if (childIndex === undefined || childIndex === null) {
+        if (!restPath.length) {
             return updater(item);
         }
 
         return {
             ...item,
-            children: (item.children ?? []).map((child, nestedIndex) => (nestedIndex === childIndex ? updater(child) : child)),
+            children: updateItemAtPath(item.children ?? [], restPath, updater),
         };
     });
 }
@@ -259,9 +259,9 @@ function removeItemAtPath(items, path) {
         return items;
     }
 
-    const [currentIndex, childIndex] = path;
+    const [currentIndex, ...restPath] = path;
 
-    if (childIndex === undefined || childIndex === null) {
+    if (!restPath.length) {
         return items.filter((_, index) => index !== currentIndex);
     }
 
@@ -272,7 +272,7 @@ function removeItemAtPath(items, path) {
 
         return {
             ...item,
-            children: (item.children ?? []).filter((_, nestedIndex) => nestedIndex !== childIndex),
+            children: removeItemAtPath(item.children ?? [], restPath),
         };
     });
 }
@@ -284,7 +284,7 @@ function removeItemsByKeys(items, selectedKeys) {
         .filter((item) => !selectedSet.has(item?.__menuKey))
         .map((item) => ({
             ...item,
-            children: (item.children ?? []).filter((child) => !selectedSet.has(child?.__menuKey)),
+            children: removeItemsByKeys(item.children ?? [], selectedSet),
         }));
 }
 
@@ -295,46 +295,34 @@ function collectMenuItemKeys(items = []) {
     ]).filter(Boolean);
 }
 
-function appendChildItem(items, parentIndex, nextChild) {
-    return items.map((item, index) => {
-        if (index !== parentIndex) {
-            return item;
-        }
-
-        return {
-            ...item,
-            children: [...(item.children ?? []), nextChild],
-        };
-    });
-}
-
 function getItemAtPath(items, path) {
-    const [currentIndex, childIndex] = path;
+    const [currentIndex, ...restPath] = path;
     const currentItem = items[currentIndex] ?? null;
 
     if (!currentItem) {
         return null;
     }
 
-    if (childIndex === undefined || childIndex === null) {
+    if (!restPath.length) {
         return currentItem;
     }
 
-    return currentItem.children?.[childIndex] ?? null;
+    return getItemAtPath(currentItem.children ?? [], restPath);
 }
 
-function findItemPathByKey(items, itemKey) {
+function findItemPathByKey(items, itemKey, parentPath = []) {
     for (let index = 0; index < (items ?? []).length; index += 1) {
         const item = items[index];
+        const path = [...parentPath, index];
 
         if (item?.__menuKey === itemKey) {
-            return [index];
+            return path;
         }
 
-        for (let childIndex = 0; childIndex < (item?.children ?? []).length; childIndex += 1) {
-            if (item.children[childIndex]?.__menuKey === itemKey) {
-                return [index, childIndex];
-            }
+        const childPath = findItemPathByKey(item?.children ?? [], itemKey, path);
+
+        if (childPath) {
+            return childPath;
         }
     }
 
@@ -351,16 +339,22 @@ function insertItemAtPath(items, path, item, index = null) {
         return nextItems;
     }
 
-    const [parentIndex] = path;
+    const [parentIndex, ...restPath] = path;
 
     return (items ?? []).map((entry, indexOfEntry) => {
         if (indexOfEntry !== parentIndex) {
             return entry;
         }
 
+        if (restPath.length) {
+            return {
+                ...entry,
+                children: insertItemAtPath(entry.children ?? [], restPath, item, index),
+            };
+        }
+
         const nextChildren = [...(entry.children ?? [])];
         const targetIndex = index ?? nextChildren.length;
-
         nextChildren.splice(targetIndex, 0, item);
 
         return {
@@ -392,12 +386,12 @@ function collectExpandableKeys(items) {
     });
 }
 
-function buildEditorTitle(mode, isChild) {
+function buildEditorTitle(mode, level) {
     if (mode === 'create') {
-        return isChild ? 'Thêm menu cấp 2' : 'Thêm menu';
+        return level > 1 ? `Thêm menu cấp ${level}` : 'Thêm menu';
     }
 
-    return isChild ? 'Sửa menu cấp 2' : 'Sửa menu';
+    return level > 1 ? `Sửa menu cấp ${level}` : 'Sửa menu';
 }
 
 export default function CmsMenuFormModal({ open, canManage, editingMenu, locationOptions = [], linkOptions = {}, callAdminApi, runAdminAction, onLocationsChanged, onCancel, onSubmit }) {
@@ -409,7 +403,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
     const [locationError, setLocationError] = useState('');
     const [menuItems, setMenuItems] = useState([createEmptyMenuItem()]);
     const [itemEditorOpen, setItemEditorOpen] = useState(false);
-    const [itemEditorState, setItemEditorState] = useState({ mode: 'create', path: null, parentIndex: null, isChild: false });
+    const [itemEditorState, setItemEditorState] = useState({ mode: 'create', path: null, parentPath: null, level: 1 });
     const [selectedLocation, setSelectedLocation] = useState(editingMenu?.location ?? 'primary');
     const [itemLinkType, setItemLinkType] = useState('custom');
     const [manualExpandedKeys, setManualExpandedKeys] = useState([]);
@@ -509,14 +503,15 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         );
     };
 
-    const showChildrenEditor = (selectedLocation ?? editingMenu?.location ?? 'primary') === 'product-navigation';
+    const showChildrenEditor = true;
 
-    const openItemEditor = ({ mode, path = null, parentIndex = null, isChild = false }) => {
+    const openItemEditor = ({ mode, path = null, parentPath = null }) => {
         const targetItem = path ? getItemAtPath(menuItems, path) : createEmptyMenuItem();
+        const level = path ? path.length : (parentPath ? parentPath.length + 1 : 1);
 
         itemForm.setFieldsValue(targetItem ?? createEmptyMenuItem());
         setItemLinkType(targetItem?.link_type ?? 'custom');
-        setItemEditorState({ mode, path, parentIndex, isChild });
+        setItemEditorState({ mode, path, parentPath, level });
         setItemEditorOpen(true);
     };
 
@@ -524,7 +519,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         itemForm.resetFields();
         setItemLinkType('custom');
         setItemEditorOpen(false);
-        setItemEditorState({ mode: 'create', path: null, parentIndex: null, isChild: false });
+        setItemEditorState({ mode: 'create', path: null, parentPath: null, level: 1 });
     };
 
     const handleSaveItem = async () => {
@@ -532,17 +527,23 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         const nextItem = {
             ...createEmptyMenuItem(),
             ...values,
-            children: itemEditorState.isChild ? [] : (values.children ?? []),
+            children: values.children ?? [],
         };
 
         if (itemEditorState.mode === 'edit' && itemEditorState.path) {
             setMenuItems((current) => updateItemAtPath(current, itemEditorState.path, () => ({
                 ...getItemAtPath(current, itemEditorState.path),
                 ...nextItem,
-                children: itemEditorState.isChild ? [] : (getItemAtPath(current, itemEditorState.path)?.children ?? nextItem.children ?? []),
+                children: getItemAtPath(current, itemEditorState.path)?.children ?? nextItem.children ?? [],
             })));
-        } else if (itemEditorState.isChild && itemEditorState.parentIndex !== null) {
-            setMenuItems((current) => appendChildItem(current, itemEditorState.parentIndex, nextItem));
+        } else if (itemEditorState.parentPath) {
+            setMenuItems((current) => insertItemAtPath(current, itemEditorState.parentPath, nextItem));
+            setManualExpandedKeys((current) => {
+                const parentItem = getItemAtPath(menuItems, itemEditorState.parentPath);
+                return parentItem?.__menuKey && !current.includes(parentItem.__menuKey)
+                    ? [...current, parentItem.__menuKey]
+                    : current;
+            });
         } else {
             setMenuItems((current) => [...current, nextItem]);
         }
@@ -646,10 +647,13 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
             }
 
             const draggedItem = getItemAtPath(current, dragPath);
-            const draggedHasChildren = (draggedItem?.children ?? []).length > 0;
             const dropPath = findItemPathByKey(current, dropKey);
 
             if (!draggedItem || !dropPath) {
+                return current;
+            }
+
+            if (dropPath.length > dragPath.length && dragPath.every((part, index) => part === dropPath[index])) {
                 return current;
             }
 
@@ -662,32 +666,14 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
             }
 
             if (!info.dropToGap) {
-                if (!showChildrenEditor || nextDropPath.length !== 1 || draggedHasChildren) {
-                    return current;
-                }
-
-                return insertItemAtPath(withoutDragged, nextDropPath, {
-                    ...draggedItem,
-                    children: [],
-                });
+                return insertItemAtPath(withoutDragged, nextDropPath, draggedItem);
             }
 
-            if (nextDropPath.length === 1) {
-                const targetIndex = nextDropPath[0] + (rawDropPosition > 0 ? 1 : 0);
+            const parentPath = nextDropPath.slice(0, -1);
+            const siblingIndex = nextDropPath.at(-1) ?? 0;
+            const targetIndex = siblingIndex + (rawDropPosition > 0 ? 1 : 0);
 
-                return insertItemAtPath(withoutDragged, [], draggedItem, targetIndex);
-            }
-
-            if (!showChildrenEditor || draggedHasChildren) {
-                return current;
-            }
-
-            const targetIndex = nextDropPath[1] + (rawDropPosition > 0 ? 1 : 0);
-
-            return insertItemAtPath(withoutDragged, [nextDropPath[0]], {
-                ...draggedItem,
-                children: [],
-            }, targetIndex);
+            return insertItemAtPath(withoutDragged, parentPath, draggedItem, targetIndex);
         });
     };
 
@@ -696,17 +682,10 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
             return false;
         }
 
-        const draggedHasChildren = (dragNode?.item?.children ?? []).length > 0;
+        const dragPath = dragNode?.path ?? [];
+        const dropPath = dropNode?.path ?? [];
 
-        if (!showChildrenEditor) {
-            return !dropNode?.isChild && dropPosition !== 0;
-        }
-
-        if (dropPosition === 0) {
-            return !dropNode?.isChild && !draggedHasChildren;
-        }
-
-        if (dropNode?.isChild && draggedHasChildren) {
+        if (dropPath.length > dragPath.length && dragPath.every((part, index) => part === dropPath[index])) {
             return false;
         }
 
@@ -803,7 +782,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                         <Alert
                             type="info"
                             showIcon
-                            message="Vị trí product-navigation hỗ trợ menu cấp 1 và cấp 2 để khớp mega menu ngoài storefront."
+                            message="Menu hỗ trợ đa cấp. Có thể thêm menu con hoặc kéo thả để sắp xếp lại cấu trúc."
                         />
                     ) : null}
 
@@ -841,7 +820,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                 <Col xs={24} md={8}>
                                     <Card size="small">
                                         <Text type="secondary">Loại hiển thị</Text>
-                                        <Title level={4} style={{ margin: '6px 0 0' }}>{showChildrenEditor ? 'Đa cấp' : 'Một cấp'}</Title>
+                                        <Title level={4} style={{ margin: '6px 0 0' }}>Đa cấp</Title>
                                     </Card>
                                 </Col>
                             </Row>
@@ -875,6 +854,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                         const item = node.item;
                                         const path = node.path ?? [];
                                         const isChild = node.isChild;
+                                        const level = path.length || 1;
                                         const isDragging = draggingKey === node.key;
                                         const isDragOver = dragOverState.key === node.key;
                                         const dropMode = isDragOver ? dragOverState.mode : null;
@@ -896,7 +876,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                                                 <HolderOutlined style={{ color: '#7c948d' }} />
                                                                 <Text strong>{item.label || 'Chưa có label'}</Text>
                                                             </Space>
-                                                            {isChild ? <Tag color="blue">Cấp 2</Tag> : <Tag color="green">Cấp 1</Tag>}
+                                                            <Tag color={level > 1 ? 'blue' : 'green'}>{`Cấp ${level}`}</Tag>
                                                             <Text type="secondary" style={{ fontSize: 12 }}>
                                                                 {linkTypeLabel(item.link_type)}
                                                             </Text>
@@ -907,17 +887,15 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                                     </Space>
 
                                                     <Space size={4} wrap>
-                                                        {showChildrenEditor && !isChild ? (
-                                                            <Button
-                                                                type="text"
-                                                                icon={<PlusOutlined />}
-                                                                style={{ color: '#0f766e' }}
-                                                                onClick={() => openItemEditor({ mode: 'create', isChild: true, parentIndex: path[0] })}
-                                                            >
-                                                                Thêm cấp 2
-                                                            </Button>
-                                                        ) : null}
-                                                        <Button type="text" icon={<EditOutlined />} style={{ color: '#2563eb' }} onClick={() => openItemEditor({ mode: 'edit', path, isChild })}>Sửa</Button>
+                                                        <Button
+                                                            type="text"
+                                                            icon={<PlusOutlined />}
+                                                            style={{ color: '#0f766e' }}
+                                                            onClick={() => openItemEditor({ mode: 'create', parentPath: path })}
+                                                        >
+                                                            Thêm con
+                                                        </Button>
+                                                        <Button type="text" icon={<EditOutlined />} style={{ color: '#2563eb' }} onClick={() => openItemEditor({ mode: 'edit', path })}>Sửa</Button>
                                                         <Popconfirm title="Xóa item menu này?" onConfirm={() => handleDeleteItem(path)}>
                                                             <Button type="text" icon={<DeleteOutlined />} style={{ color: '#3f3f46' }}>Xóa</Button>
                                                         </Popconfirm>
@@ -935,7 +913,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
             </Drawer>
 
             <Modal
-                title={buildEditorTitle(itemEditorState.mode, itemEditorState.isChild)}
+                title={buildEditorTitle(itemEditorState.mode, itemEditorState.level)}
                 open={itemEditorOpen}
                 onCancel={closeItemEditor}
                 onOk={handleSaveItem}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsMedia;
 use App\Models\CmsService;
+use App\Support\FrontendLocalization;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
 
@@ -81,6 +82,9 @@ class ServiceIndexController
             'featured_image_url' => $featuredImage['image_url'] ?? null,
             'featured_image_alt' => $featuredImage['alt_text'] ?? null,
             'images' => $images,
+            'public_url' => $service->slug
+                ? route('site.services.show', array_merge(FrontendLocalization::routeParameterDefaults(null), ['slug' => $service->slug]))
+                : null,
         ];
     }
 }

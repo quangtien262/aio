@@ -1778,6 +1778,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
     };
 
+    const handleCopyPublicUrl = async (url) => {
+        if (!url) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(url);
+            messageApi.success('Đã copy link website.');
+        } catch {
+            messageApi.error('Không thể copy link website.');
+        }
+    };
+
     const openEditMediaTitle = (record) => {
         setEditingMediaRecord(record);
         mediaEditForm.setFieldsValue({
@@ -1855,6 +1868,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 label: 'Mở public',
                 icon: <EyeOutlined />,
             });
+            actionItems.push({
+                key: 'copy-public-url',
+                label: 'Copy link',
+                icon: <CopyOutlined />,
+            });
         }
 
         if (record.preview_url && (sectionPermissions.canPublish || sectionKey === 'cms-products')) {
@@ -1912,6 +1930,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             if (key === 'public' && record.public_url) {
                 window.open(record.public_url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            if (key === 'copy-public-url') {
+                handleCopyPublicUrl(record.public_url);
                 return;
             }
 
