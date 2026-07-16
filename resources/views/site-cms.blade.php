@@ -7,6 +7,9 @@
         @if (!empty($pageDescription))
             <meta name="description" content="{{ $pageDescription }}">
         @endif
+        @if (!empty($pageKeywords))
+            <meta name="keywords" content="{{ $pageKeywords }}">
+        @endif
         @vite('resources/css/app.css')
         <style>
             :root {

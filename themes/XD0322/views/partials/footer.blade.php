@@ -18,7 +18,7 @@
             </form>
         </section>
         <section class="foot-footer__brand">
-            <span class="foot-brand__monogram">X</span>
+            <span class="foot-brand__monogram">N</span>
             <strong>{{ $companyName }}</strong>
             <small>@themeT('xd0322.brand.tagline')</small>
         </section>

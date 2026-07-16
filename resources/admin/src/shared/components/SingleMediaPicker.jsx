@@ -15,6 +15,7 @@ export default function SingleMediaPicker({
     open,
     value,
     onChange,
+    onMediaSelect,
     canManage,
     callAdminApi,
     mediaOptions = EMPTY_MEDIA_OPTIONS,
@@ -157,6 +158,7 @@ export default function SingleMediaPicker({
     const selectMedia = (media) => {
         setAvailableMediaOptions((currentOptions) => [media, ...currentOptions.filter((item) => item.id !== media.id)]);
         onChange?.(media.file_url);
+        onMediaSelect?.(media);
     };
 
     const handleUpload = async (event) => {
@@ -316,7 +318,7 @@ export default function SingleMediaPicker({
                                 type="button"
                                 className={`cms-featured-media-library-item${item.file_url === value ? ' is-selected' : ''}`}
                                 onClick={() => {
-                                    onChange?.(item.file_url);
+                                    selectMedia(item);
                                     setMediaLibraryOpen(false);
                                 }}
                             >

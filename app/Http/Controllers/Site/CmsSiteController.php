@@ -1072,6 +1072,7 @@ class CmsSiteController
             'isPreview' => false,
             'pageTitle' => $entry->meta_title ?: $entry->title,
             'pageDescription' => $entry->meta_description ?: ($entry->excerpt ?? null),
+            'pageKeywords' => $entry->meta_keywords ?? null,
         ], $extra));
     }
 
@@ -2822,6 +2823,7 @@ class CmsSiteController
         $localized->content = $this->contentText($websiteKey, sprintf('cms_service.%d.content', $service->id), $service->content);
         $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_title', $service->id), $service->meta_title);
         $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_description', $service->id), $service->meta_description);
+        $localized->meta_keywords = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_keywords', $service->id), $service->meta_keywords);
         $localized->excerpt = $localized->summary;
         $localized->body = $localized->content;
 

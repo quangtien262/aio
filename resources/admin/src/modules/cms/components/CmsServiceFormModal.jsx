@@ -43,6 +43,7 @@ function toSlug(value) {
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'd')
+        .replace(/\u0111|\u0110/g, 'd')
         .toLowerCase()
         .trim()
         .replace(/[^a-z0-9]+/g, '-')
@@ -51,8 +52,8 @@ function toSlug(value) {
 
 export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
-    const slugEditedRef = useRef(Boolean(editingService?.id));
     const editorInstanceRef = useRef(null);
+    const lastTitleRef = useRef('');
     const [contentMode, setContentMode] = useState('editor');
     const [editorContentVersion, setEditorContentVersion] = useState(0);
     const titleValue = Form.useWatch('title', form) ?? '';
@@ -77,19 +78,21 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             images: editingService?.images?.length ? editingService.images : [],
             featured_image_url: editingService?.featured_image_url || featuredImage?.image_url || '',
             featured_image_alt: editingService?.featured_image_alt || featuredImage?.alt_text || '',
+            featured_media_id: featuredImage?.cms_media_id || null,
         });
-        slugEditedRef.current = Boolean(editingService?.id || editingService?.slug);
+        lastTitleRef.current = String(editingService?.title ?? '');
         setContentMode('editor');
         setEditorContentVersion((current) => current + 1);
         editorInstanceRef.current = null;
     }, [editingService, form]);
 
     useEffect(() => {
-        if (slugEditedRef.current) {
+        if (titleValue === lastTitleRef.current) {
             return;
         }
 
         form.setFieldValue('slug', toSlug(titleValue));
+        lastTitleRef.current = titleValue;
     }, [form, titleValue]);
 
     const editorConfig = useMemo(() => ({
@@ -161,7 +164,6 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
     }), []);
 
     const handleSlugChange = (event) => {
-        slugEditedRef.current = true;
         form.setFieldValue('slug', toSlug(event.target.value));
     };
 
@@ -191,6 +193,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
         const {
             featured_image_url: rawFeaturedImageUrl,
             featured_image_alt: featuredImageAlt,
+            featured_media_id: featuredMediaId,
             ...payloadValues
         } = values;
         const featuredImageUrl = String(rawFeaturedImageUrl ?? '').trim();
@@ -198,6 +201,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
         const normalizedImages = featuredImageUrl
             ? [
                 {
+                    cms_media_id: featuredMediaId || null,
                     image_url: featuredImageUrl,
                     alt_text: featuredImageAlt || values.title || null,
                     caption: null,
@@ -224,6 +228,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             link_url: values.link_url || null,
             meta_title: values.meta_title || null,
             meta_description: values.meta_description || null,
+            meta_keywords: values.meta_keywords || null,
             sort_order: Number(values.sort_order ?? 0),
             is_featured: Boolean(values.is_featured),
             is_highlight: Boolean(values.is_highlight),
@@ -299,12 +304,22 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                         </Row>
                         <Row gutter={16}>
                             <Col xs={24} md={8}>
-                                <Form.Item name="is_featured" label="Dịch vụ nổi bật" valuePropName="checked">
+                                <Form.Item
+                                    name="is_featured"
+                                    label="Hiển thị trong khối Dịch vụ nổi bật"
+                                    extra="Dùng cho các block chỉ lấy dịch vụ nổi bật."
+                                    valuePropName="checked"
+                                >
                                     <Switch />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
-                                <Form.Item name="is_highlight" label="Đánh dấu highlight" valuePropName="checked">
+                                <Form.Item
+                                    name="is_highlight"
+                                    label="Ưu tiên trong khối nội dung động"
+                                    extra="Dùng khi block tổng hợp bật lọc nội dung ưu tiên."
+                                    valuePropName="checked"
+                                >
                                     <Switch />
                                 </Form.Item>
                             </Col>
@@ -338,8 +353,12 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                 libraryButtonLabel="Mở thư viện media"
                                 libraryHint="Chọn lại từ media CMS đã có sẵn."
                                 urlPlaceholder="https://example.com/service.jpg"
+                                onMediaSelect={(media) => form.setFieldValue('featured_media_id', media?.id ?? null)}
                                 urlButtonLabel="Lưu URL và gắn ảnh"
                             />
+                        </Form.Item>
+                        <Form.Item name="featured_media_id" hidden>
+                            <Input />
                         </Form.Item>
                         <Form.Item name="featured_image_alt" label="Alt text" style={{ marginTop: 12, marginBottom: 0 }}>
                             <Input placeholder="Mô tả ảnh dịch vụ" />
@@ -359,6 +378,14 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                 </Form.Item>
                             </Col>
                         </Row>
+                        <Form.Item
+                            name="meta_keywords"
+                            label="SEO Keywords"
+                            extra="Nhập các từ khóa chính, phân tách bằng dấu phẩy."
+                            style={{ marginTop: 16, marginBottom: 0 }}
+                        >
+                            <Input.TextArea rows={2} placeholder="thiet ke noi that, thi cong nha pho, bao gia xay dung" />
+                        </Form.Item>
                     </Card>
 
                     <Card size="small" className="cms-post-form-card cms-post-form-card-editor" title="Nội dung chi tiết">

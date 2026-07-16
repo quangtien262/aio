@@ -194,6 +194,7 @@
         && in_array($entrySlug, ['lien-he', 'contact'], true);
     $title = $pageTitle ?? ($entry->title ?? data_get($siteProfile, 'site_name', 'Arkit'));
     $description = $pageDescription ?? ($entry->excerpt ?? '');
+    $keywords = trim((string) ($pageKeywords ?? ''));
     $canEditLanding = false;
     $footerNewsletterSource = 'theme-footer-xd321-cms';
 @endphp
@@ -205,6 +206,12 @@
 @if (!empty($description))
     @push('head')
         <meta name="description" content="{{ $description }}">
+    @endpush
+@endif
+
+@if ($keywords !== '')
+    @push('head')
+        <meta name="keywords" content="{{ $keywords }}">
     @endpush
 @endif
 

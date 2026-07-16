@@ -13,7 +13,7 @@ class ServiceIndexController
     {
         /** @var EloquentBuilder<CmsService> $query */
         $query = CmsService::query();
-        $query->with(['category:id,name', 'images'])->orderBy('sort_order')->orderByDesc('updated_at');
+        $query->with(['category:id,name', 'images.media'])->orderBy('sort_order')->orderByDesc('updated_at');
 
         $items = $query->get()->map(fn (CmsService $service): array => $this->serialize($service))->values()->all();
 
@@ -48,7 +48,7 @@ class ServiceIndexController
         $images = $service->images->map(fn ($image): array => [
             'id' => $image->id,
             'cms_media_id' => $image->cms_media_id,
-            'image_url' => $image->image_url,
+            'image_url' => $image->media?->file_url ?: $image->image_url,
             'alt_text' => $image->alt_text,
             'caption' => $image->caption,
             'is_featured' => $image->is_featured,
@@ -70,6 +70,7 @@ class ServiceIndexController
             'link_url' => $service->link_url,
             'meta_title' => $service->meta_title,
             'meta_description' => $service->meta_description,
+            'meta_keywords' => $service->meta_keywords,
             'publish_at' => $service->publish_at?->toAtomString(),
             'is_featured' => $service->is_featured,
             'is_highlight' => $service->is_highlight,

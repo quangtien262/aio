@@ -23,7 +23,7 @@ class ServiceManagementController
             $service = CmsService::query()->create($validated);
             $this->syncImages($service, $images);
 
-            return $service->load(['category', 'images']);
+            return $service->load(['category', 'images.media']);
         });
 
         return response()->json(['message' => 'Đã tạo dịch vụ CMS.', 'data' => $this->serialize($service)], 201);
@@ -42,7 +42,7 @@ class ServiceManagementController
             $record->update($validated);
             $this->syncImages($record, $images);
 
-            return $record->fresh(['category', 'images']);
+            return $record->fresh(['category', 'images.media']);
         });
 
         return response()->json(['message' => 'Đã cập nhật dịch vụ CMS.', 'data' => $this->serialize($record)]);
@@ -71,6 +71,7 @@ class ServiceManagementController
             'link_url' => ['nullable', 'string', 'max:255'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
+            'meta_keywords' => ['nullable', 'string', 'max:1000'],
             'publish_at' => ['nullable', 'date'],
             'is_featured' => ['boolean'],
             'is_highlight' => ['boolean'],
@@ -135,7 +136,7 @@ class ServiceManagementController
         $images = $service->images->map(fn (CmsServiceImage $image): array => [
             'id' => $image->id,
             'cms_media_id' => $image->cms_media_id,
-            'image_url' => $image->image_url,
+            'image_url' => $image->media?->file_url ?: $image->image_url,
             'alt_text' => $image->alt_text,
             'caption' => $image->caption,
             'is_featured' => $image->is_featured,
@@ -157,6 +158,7 @@ class ServiceManagementController
             'link_url' => $service->link_url,
             'meta_title' => $service->meta_title,
             'meta_description' => $service->meta_description,
+            'meta_keywords' => $service->meta_keywords,
             'publish_at' => $service->publish_at?->toAtomString(),
             'is_featured' => $service->is_featured,
             'is_highlight' => $service->is_highlight,

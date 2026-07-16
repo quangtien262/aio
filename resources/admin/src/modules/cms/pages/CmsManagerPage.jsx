@@ -51,6 +51,42 @@ const CatalogProductFormModal = lazy(() => import('../../catalog/components/Cata
 const { Paragraph, Text, Title } = Typography;
 const { RangePicker } = DatePicker;
 
+function CmsMediaThumbnail({ src, alt, size = 64, radius = 12 }) {
+    const [failed, setFailed] = useState(false);
+
+    useEffect(() => {
+        setFailed(false);
+    }, [src]);
+
+    const style = {
+        width: size,
+        height: size,
+        borderRadius: radius,
+        border: '1px solid #dbe7e4',
+        background: '#f4f7f6',
+        display: 'block',
+    };
+
+    if (!src || failed) {
+        return (
+            <div style={{ ...style, display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
+                No Img
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setFailed(true)}
+            style={{ ...style, objectFit: 'cover' }}
+        />
+    );
+}
+
 const orderStatusOptions = [
     { label: 'Tất cả trạng thái', value: 'all' },
     { label: 'Mới đặt', value: 'placed' },
@@ -691,11 +727,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     render: (value, record) => (
                         <Space size={12} align="start">
                             {record.featured_image_url ? (
-                                <img
-                                    src={record.featured_image_url}
-                                    alt={record.featured_image_alt || value}
-                                    style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 12, border: '1px solid #dbe7e4', display: 'block' }}
-                                />
+                                <CmsMediaThumbnail src={record.featured_image_url} alt={record.featured_image_alt || value} />
                             ) : (
                                 <div style={{ width: 64, height: 64, borderRadius: 12, border: '1px solid #dbe7e4', background: '#f4f7f6', display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
                                     No Img
@@ -708,7 +740,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 <Text type="secondary">{record.summary || 'Chưa có mô tả ngắn'}</Text>
                                 <Space size={6} wrap>
                                     {record.category_name ? <Tag color="blue">{record.category_name}</Tag> : <Tag>Chưa phân loại</Tag>}
-                                    {record.is_highlight ? <Tag color="gold">Nổi bật</Tag> : null}
                                     <Tag>{`${record.images?.length ?? 0} ảnh`}</Tag>
                                 </Space>
                             </Space>
@@ -717,7 +748,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 },
                 { title: 'Danh mục', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa phân loại' },
                 { title: 'Slug', dataIndex: 'slug', key: 'slug' },
-                { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
+                {
+                    title: 'Trạng thái',
+                    key: 'status',
+                    render: (_, record) => (
+                        <Space size={[4, 4]} wrap>
+                            {renderStatusTag(record.status)}
+                            {record.is_featured ? <Tag color="gold">Dịch vụ nổi bật</Tag> : null}
+                            {record.is_highlight ? <Tag color="blue">Ưu tiên block động</Tag> : null}
+                        </Space>
+                    ),
+                },
                 { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
@@ -734,11 +775,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     render: (value, record) => (
                         <Space size={12} align="start">
                             {record.featured_image_url ? (
-                                <img
-                                    src={record.featured_image_url}
-                                    alt={record.featured_image_alt || value}
-                                    style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 12, border: '1px solid #dbe7e4', display: 'block' }}
-                                />
+                                <CmsMediaThumbnail src={record.featured_image_url} alt={record.featured_image_alt || value} />
                             ) : (
                                 <div style={{ width: 64, height: 64, borderRadius: 12, border: '1px solid #dbe7e4', background: '#f4f7f6', display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
                                     No Img
@@ -809,11 +846,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     render: (value, record) => (
                         <Space size={12} align="start">
                             {record.featured_image_url ? (
-                                <img
-                                    src={record.featured_image_url}
-                                    alt={record.featured_image_alt || value}
-                                    style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 12, border: '1px solid #dbe7e4', display: 'block' }}
-                                />
+                                <CmsMediaThumbnail src={record.featured_image_url} alt={record.featured_image_alt || value} />
                             ) : (
                                 <div style={{ width: 64, height: 64, borderRadius: 12, border: '1px solid #dbe7e4', background: '#f4f7f6', display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
                                     No Img
@@ -2425,7 +2458,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 key: 'media',
                 render: (_, record) => (
                     <Space>
-                        <img src={record.file_url} alt={record.title} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 12, border: '1px solid #dbe7e4' }} />
+                        <CmsMediaThumbnail src={record.file_url} alt={record.title} size={56} />
                         <Space direction="vertical" size={0}>
                             <Text strong>{record.title}</Text>
                             <Text type="secondary">{record.alt_text || record.mime_type || 'Media asset'}</Text>
