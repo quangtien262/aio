@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323'], true);
     }
 
     /**
@@ -678,6 +678,7 @@ class LandingPageBuilder
             'cms_products', 'catalog_products', 'featured_products' => $this->featuredProductItems($settings, $limit, $locale, $websiteKey),
             'cms_projects' => $this->cmsProjectItems($settings, $limit, $locale, $websiteKey),
             'cms_services' => $this->cmsServiceItems($settings, $limit, $locale, $websiteKey),
+            'catalog_categories', 'cms_categories', 'cms_service_categories' => $this->featuredCategoryItems($settings, $limit, $locale, $websiteKey),
             'cms_menus' => $this->cmsMenuItems($settings, $limit),
             default => $this->contentSourceItems([...$settings, 'source' => $defaultSource], $defaultSource, $limit, $locale, $websiteKey),
         };
@@ -1144,6 +1145,7 @@ class LandingPageBuilder
             'NT501' => $this->nt501DefaultBlocks(),
             'XD321' => $this->xd321DefaultBlocks(),
             'XD0322' => $this->xd0322DefaultBlocks(),
+            'XD0323' => $this->xd0323DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1157,6 +1159,210 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0323DefaultBlocks(): array
+    {
+        $contentSources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+            ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+            ['value' => 'cms_categories', 'label' => 'Danh mục tin tức'],
+        ];
+
+        $sourceSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+            'limit' => ['type' => 'number', 'label' => 'Số item hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'ID danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero Avex',
+                'description' => 'Header ảnh lớn, CTA và slide ưu điểm chạy ngang.',
+                'preview_image' => '/theme-previews/XD0323/hero-slider.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0323-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Giải pháp Hiệu quả & Chất lượng',
+                        'subtitle' => 'Avex Construction',
+                        'description' => 'Chúng tôi tự hào mang đến cho bạn những giải pháp thiết kế hiệu quả nhất.',
+                        'button_label' => 'Xem chi tiết',
+                        'content' => [
+                            'slides' => [
+                                ['title' => 'Giải pháp Hiệu quả & Chất lượng', 'summary' => 'Chúng tôi tự hào mang đến cho bạn những giải pháp thiết kế hiệu quả nhất', 'button_label' => 'Xem chi tiết', 'secondary_button_label' => 'Liên hệ ngay', 'image' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#gioi-thieu', 'secondary_link_url' => '#lien-he'],
+                                ['title' => 'Thi công trọn gói, đúng tiến độ', 'summary' => 'Đội ngũ kỹ sư và kiến trúc sư đồng hành từ tư vấn đến bàn giao', 'button_label' => 'Dự án', 'secondary_button_label' => 'Nhận tư vấn', 'image' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#du-an', 'secondary_link_url' => '#lien-he'],
+                            ],
+                            'items' => [
+                                ['title' => 'Bền vững', 'summary' => 'Chúng tôi chọn vật liệu tốt nhất và thiết kế luôn được cập nhật liên tục.', 'icon' => 'fa-solid fa-gear'],
+                                ['title' => 'Thẩm mỹ', 'summary' => 'Đội ngũ kỹ sư, kiến trúc sư trẻ, táo bạo và đầy sáng tạo.', 'icon' => 'fa-solid fa-drafting-compass'],
+                                ['title' => 'Tiết kiệm', 'summary' => 'Khách hàng được tư vấn giải pháp phù hợp với ngân sách và nhu cầu.', 'icon' => 'fa-solid fa-hand-holding-dollar'],
+                            ],
+                        ],
+                    ],
+                    'en' => ['title' => 'Efficient & Quality Solutions', 'subtitle' => 'Avex Construction', 'description' => 'Reliable design and construction solutions.', 'button_label' => 'View details', 'content' => ['slides' => [], 'items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'about_experience',
+                'label' => 'Giới thiệu công ty',
+                'description' => 'Giới thiệu ngắn gọn kèm ảnh và chỉ số phụ.',
+                'preview_image' => '/theme-previews/XD0323/about.png',
+                'anchor_id' => 'gioi-thieu',
+                'settings' => ['cta_url' => '#du-an'],
+                'media' => ['image' => 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Chúng tôi là nhà xây dựng dân dụng chuyên nghiệp xây nhà trọn gói, chìa khóa trao tay.',
+                        'subtitle' => 'Về chúng tôi',
+                        'description' => 'Với hơn 10 năm trong nghề, Avex Construct luôn tự hào là đơn vị thiết kế thi công chuyên nghiệp, luôn mang lại giá trị thiết thực nhất tới khách hàng.',
+                        'button_label' => 'Xem chi tiết',
+                        'content' => ['items' => [
+                            ['title' => '1000+', 'summary' => 'Dự án ấn tượng đã hoàn thiện và được khách hàng đánh giá cao.', 'icon' => 'fa-regular fa-building'],
+                            ['title' => '300+', 'summary' => 'Chuyên gia tư vấn, kiến trúc sư được đào tạo chuyên sâu.', 'icon' => 'fa-solid fa-helmet-safety'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Professional residential design and build contractor.', 'subtitle' => 'About us', 'description' => 'More than 10 years of practical construction experience.', 'button_label' => 'View details', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'stats_strip',
+                'label' => 'Con số thống kê',
+                'description' => 'Dải thống kê nền cam.',
+                'preview_image' => '/theme-previews/XD0323/stats.png',
+                'anchor_id' => 'thong-ke',
+                'data' => [
+                    'vi' => ['title' => 'Thống kê', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => '13+', 'summary' => 'Giải thưởng', 'icon' => 'fa-solid fa-award'],
+                        ['title' => '100+', 'summary' => 'Kỹ sư xuất sắc', 'icon' => 'fa-solid fa-users-gear'],
+                        ['title' => '1500+', 'summary' => 'Đánh giá chất lượng tốt', 'icon' => 'fa-regular fa-thumbs-up'],
+                        ['title' => '1000+', 'summary' => 'Dự án hoàn thành', 'icon' => 'fa-regular fa-building'],
+                    ]]],
+                    'en' => ['title' => 'Stats', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'project_gallery',
+                'label' => 'Dự án của chúng tôi',
+                'description' => 'Grid nội dung động, hỗ trợ mọi nguồn dữ liệu chính.',
+                'preview_image' => '/theme-previews/XD0323/projects.png',
+                'anchor_id' => 'du-an',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Dự án của chúng tôi', 'subtitle' => '', 'description' => 'Avex Construction tự hào là đơn vị thi công các công trình nhà phố, biệt thự, căn hộ cao cấp, khách sạn - resort.', 'button_label' => 'Xem chi tiết', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Our projects', 'subtitle' => '', 'description' => 'Selected construction and interior projects.', 'button_label' => 'View details', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'process_steps',
+                'label' => 'Tư vấn khách hàng',
+                'description' => 'Khối sửa nhanh cho quy trình tư vấn.',
+                'preview_image' => '/theme-previews/XD0323/process.png',
+                'anchor_id' => 'tu-van',
+                'media' => ['background' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=2200&q=85'],
+                'data' => [
+                    'vi' => ['title' => 'Tư vấn khách hàng', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Tư vấn khách hàng', 'summary' => 'Ngay sau khi tiếp nhận thông báo và nhận được lịch gặp mặt của khách hàng.', 'icon' => 'fa-regular fa-comments'],
+                        ['title' => 'Thiết kế 3D miễn phí', 'summary' => 'Lên bản vẽ bối cảnh 3D mô phỏng yêu cầu của khách.', 'icon' => 'fa-solid fa-ruler-combined'],
+                        ['title' => 'Tiến hành thi công', 'summary' => 'Lên kế hoạch và thi công, đảm bảo bàn giao đúng tiến độ.', 'icon' => 'fa-solid fa-trowel-bricks'],
+                    ]]],
+                    'en' => ['title' => 'Customer consulting', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'pricing_cards',
+                'label' => 'Báo giá thi công',
+                'description' => 'Khối sửa nhanh cho các gói báo giá.',
+                'preview_image' => '/theme-previews/XD0323/pricing.png',
+                'anchor_id' => 'bao-gia',
+                'data' => [
+                    'vi' => ['title' => 'Báo giá thi công', 'subtitle' => '', 'description' => 'Các gói thi công được phân tích theo từng hạng mục riêng, phù hợp với nhu cầu ngân sách của mỗi gia đình.', 'button_label' => 'Đăng ký ngay', 'content' => ['items' => [
+                        ['title' => 'Gói thi công tiết kiệm', 'summary' => 'Kinh phí dự kiến: 80 - 120 triệu', 'bullets' => ['Phong cách hiện đại, Bắc Âu, Vintage', 'Chất liệu MDF chống ẩm phủ Melamine', 'Thi công đúng tiến độ', 'Giám sát hoàn thiện 24/7']],
+                        ['title' => 'Gói thi công tiêu chuẩn', 'summary' => 'Kinh phí dự kiến: 300 - 500 triệu', 'bullets' => ['Phong cách Luxury, tân cổ điển', 'Chất liệu cao cấp', 'Hồ sơ cấp phép thi công', 'Kỹ sư giám sát kinh nghiệm trên 5 năm']],
+                        ['title' => 'Gói thi công cao cấp', 'summary' => 'Kinh phí dự kiến: 500 triệu - 1 tỷ', 'bullets' => ['Phong cách Modern Luxury', 'Gỗ tự nhiên nhập khẩu', 'Giám sát hoàn thiện 24/7', 'Kỹ sư giám sát kinh nghiệm trên 7 năm']],
+                    ]]],
+                    'en' => ['title' => 'Construction pricing', 'subtitle' => '', 'description' => 'Flexible construction packages.', 'button_label' => 'Register now', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'business_service_grid',
+                'label' => 'Sản phẩm mới nhất',
+                'description' => 'Grid sản phẩm hoặc nội dung động.',
+                'preview_image' => '/theme-previews/XD0323/products.png',
+                'anchor_id' => 'san-pham',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 10, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Sản phẩm mới nhất', 'subtitle' => '', 'description' => 'Chúng tôi luôn cam kết đem đến những sản phẩm chất lượng với giá thành ưu đãi lớn.', 'button_label' => '', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Latest products', 'subtitle' => '', 'description' => 'Quality products and practical construction solutions.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'content_showcase',
+                'label' => 'Đội ngũ kỹ sư',
+                'description' => 'Slider nhân sự hoặc nội dung động.',
+                'preview_image' => '/theme-previews/XD0323/team.png',
+                'anchor_id' => 'doi-ngu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 4, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Đội ngũ kỹ sư Avex', 'subtitle' => '', 'description' => 'Đội ngũ chuyên gia tư vấn, kiến trúc sư, giám sát công trình được đào tạo chuyên sâu.', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Huỳnh Ngọc Thanh', 'summary' => 'Kỹ sư công trình', 'image' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=900&q=85'],
+                        ['title' => 'Hanah Phạm', 'summary' => 'Kiến trúc sư', 'image' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=900&q=85'],
+                        ['title' => 'Trần Trung Anh', 'summary' => 'Giám sát thi công', 'image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=85'],
+                        ['title' => 'Tuấn Dino', 'summary' => 'Chuyên viên kỹ thuật', 'image' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=900&q=85'],
+                    ]]],
+                    'en' => ['title' => 'Avex engineers', 'subtitle' => '', 'description' => 'Experienced consultants, architects and supervisors.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'latest_posts',
+                'label' => 'Tạp chí xây dựng',
+                'description' => 'Slider bài viết, không hiển thị ngày đăng và người đăng.',
+                'preview_image' => '/theme-previews/XD0323/posts.png',
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 6, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Tạp chí xây dựng', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Construction journal', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'faq_showcase',
+                'label' => 'Hỏi đáp',
+                'description' => 'FAQ và CTA liên hệ.',
+                'preview_image' => '/theme-previews/XD0323/faq.png',
+                'anchor_id' => 'hoi-dap',
+                'data' => [
+                    'vi' => ['title' => 'Bạn hãy để lại câu hỏi hoặc liên hệ ngay với chúng tôi', 'subtitle' => 'Hãy để chúng tôi giải đáp những thắc mắc của bạn.', 'description' => '', 'button_label' => 'Liên hệ ngay', 'content' => ['items' => [
+                        ['title' => 'Tôi cần thiết kế thi công nhà ở thì cần bao nhiêu tiền?', 'summary' => 'Avex thường có các hợp đồng thiết kế và thi công riêng biệt. Khi khách hàng đồng ý thi công, Avex sẽ đưa ra bảng báo giá và hợp đồng để tham khảo và ký kết.'],
+                        ['title' => 'Tôi chỉ có nhu cầu thiết kế, không có thi công có được không?', 'summary' => 'Có. Chúng tôi hỗ trợ riêng từng nhu cầu thiết kế hoặc thi công.'],
+                        ['title' => 'Bản thiết kế căn hộ của tôi có bị copy hay trùng lặp không?', 'summary' => 'Mỗi bản thiết kế được phát triển theo hiện trạng, nhu cầu và phong cách riêng của khách hàng.'],
+                        ['title' => 'Sẽ làm sao nếu chúng tôi không hài lòng với bản thiết kế?', 'summary' => 'Đội ngũ sẽ tiếp nhận phản hồi và điều chỉnh theo phạm vi đã thống nhất.'],
+                    ]]],
+                    'en' => ['title' => 'Leave your questions or contact us now', 'subtitle' => 'Let us answer your questions.', 'description' => '', 'button_label' => 'Contact now', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

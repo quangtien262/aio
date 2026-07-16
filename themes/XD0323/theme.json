@@ -1,0 +1,13 @@
+﻿{
+  "name": "XD0323 Construction",
+  "key": "XD0323",
+  "version": "0.1.0",
+  "description": "Construction and interior design theme with projects, services, products, pricing, testimonials and news.",
+  "website_type": "service",
+  "parent": null,
+  "preview": { "thumbnail": "preview-XD0323.png", "cover": "cover-XD0323.png" },
+  "blocks": ["hero-slider", "featured-categories", "about-experience", "content-mosaic", "featured-products", "team-members", "project-gallery", "process-steps", "testimonials", "bizmax-latest-posts", "partner-logos"],
+  "supports": { "dark_mode": false, "multi_homepage": false, "custom_css": true, "block_mapping": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "XD0323-construction" }
+}

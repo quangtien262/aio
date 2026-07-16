@@ -1,4 +1,67 @@
+        @php
+            $logoUrl = $logoUrl ?? '';
+            $logoAlt = $logoAlt ?? 'Arkit';
+            $hotline = $hotline ?? '0399162342';
+            $phoneHref = $phoneHref ?? (preg_replace('/\D+/', '', (string) $hotline) ?: $hotline);
+            $supportEmail = $supportEmail ?? ($email ?? 'admin@htvietnam.vn');
+            $navItems = collect($navItems ?? []);
+            $topbarLocales = collect(\App\Support\FrontendLocalization::localeOptions())
+                ->filter(fn (array $locale): bool => (bool) ($locale['is_active'] ?? false) && (bool) ($locale['is_published'] ?? true))
+                ->values();
+            $currentLocale = app()->getLocale();
+            $knownLocaleCodes = \App\Support\FrontendLocalization::knownLocaleCodes();
+            $languageUrl = function (string $locale) use ($knownLocaleCodes): string {
+                $segments = request()->segments();
+
+                if (isset($segments[0]) && in_array($segments[0], $knownLocaleCodes, true)) {
+                    $segments[0] = $locale;
+                } else {
+                    array_unshift($segments, $locale);
+                }
+
+                $url = url('/'.implode('/', $segments));
+                $query = request()->getQueryString();
+
+                return $query ? $url.'?'.$query : $url;
+            };
+            $adminLoggedIn = auth('admin')->check();
+            $customerLoggedIn = auth('customer')->check();
+        @endphp
+
         <header class="xd-header">
+            <div class="xd-header-top">
+                <div class="xd-container xd-header-top-inner">
+                    <div class="xd-header-contact">
+                        <a href="tel:{{ $phoneHref }}">Hotline: {{ $hotline }}</a>
+                        <a href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a>
+                    </div>
+                    <div class="xd-header-tools" aria-label="Tác vụ nhanh">
+                        @if ($adminLoggedIn)
+                            <a class="xd-top-link is-admin" href="{{ url('/admin') }}" target="_blank" rel="noopener">Admin</a>
+                        @endif
+                        @if ($customerLoggedIn)
+                            <a class="xd-top-link" href="{{ route('customer.account') }}">Tài khoản</a>
+                        @else
+                            <button type="button" class="xd-top-link" data-xd-auth-open="login">Đăng nhập</button>
+                            <button type="button" class="xd-top-link" data-xd-auth-open="register">Đăng ký</button>
+                        @endif
+                        <a class="xd-top-link" href="{{ route('site.cart.index') }}">Giỏ hàng</a>
+                        @if ($topbarLocales->count() > 1)
+                            <div class="xd-language-switcher" aria-label="Ngôn ngữ">
+                                @foreach ($topbarLocales as $locale)
+                                    @php
+                                        $localeCode = (string) ($locale['code'] ?? '');
+                                        $localeLabel = strtoupper($localeCode);
+                                    @endphp
+                                    @if ($localeCode !== '')
+                                        <a class="{{ $localeCode === $currentLocale ? 'is-active' : '' }}" href="{{ $languageUrl($localeCode) }}">{{ $localeLabel }}</a>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
             <div class="xd-container xd-header-inner">
                 <a class="xd-logo" href="{{ route('site.home') }}" aria-label="{{ $logoAlt }} trang chủ">
                     @if ($logoUrl !== '')
@@ -41,16 +104,6 @@
                         </div>
                     @endforeach
                 </nav>
-                <div class="xd-header-actions">
-                    <a class="xd-cart-link" href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng" title="Giỏ hàng">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6h15l-1.5 8.5H8L6 3H3"/><circle cx="9" cy="20" r="1.7"/><circle cx="18" cy="20" r="1.7"/></svg>
-                    </a>
-                    @if (auth('customer')->check())
-                        <a class="xd-login-button" href="{{ route('customer.account') }}">Tài khoản</a>
-                    @else
-                        <button type="button" class="xd-login-button" data-xd-auth-open="login">Đăng nhập</button>
-                    @endif
-                </div>
                 <div id="xd-mobile-menu" class="xd-mobile-panel" data-xd-mobile-menu hidden>
                     <ul class="xd-mobile-list">
                         @foreach ($navItems as $item)
@@ -85,16 +138,6 @@
                             </li>
                         @endforeach
                     </ul>
-                    <div class="xd-mobile-actions">
-                        <a class="xd-cart-link" href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng" title="Giỏ hàng">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6h15l-1.5 8.5H8L6 3H3"/><circle cx="9" cy="20" r="1.7"/><circle cx="18" cy="20" r="1.7"/></svg>
-                        </a>
-                        @if (auth('customer')->check())
-                            <a class="xd-login-button" href="{{ route('customer.account') }}">Tài khoản</a>
-                        @else
-                            <button type="button" class="xd-login-button" data-xd-auth-open="login">Đăng nhập</button>
-                        @endif
-                    </div>
                 </div>
             </div>
         </header>
