@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Core\Cms\CmsMenuLocationRegistry;
 use App\Models\CatalogCategory;
+use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
+use App\Models\CmsPost;
+use App\Models\CmsService;
+use App\Models\CmsServiceCategory;
 use Illuminate\Http\JsonResponse;
 
 class MenuIndexController
@@ -49,6 +53,17 @@ class MenuIndexController
                         ])
                         ->values()
                         ->all(),
+                    'products' => CatalogProduct::query()
+                        ->orderBy('sort_order')
+                        ->orderBy('name')
+                        ->get()
+                        ->map(fn (CatalogProduct $product): array => [
+                            'label' => $product->name,
+                            'value' => (string) $product->id,
+                            'url' => '/san-pham/'.$product->slug,
+                        ])
+                        ->values()
+                        ->all(),
                     'postCategories' => CmsCategory::query()
                         ->orderBy('name')
                         ->get()
@@ -56,6 +71,38 @@ class MenuIndexController
                             'label' => $category->name,
                             'value' => (string) $category->id,
                             'url' => '/c/'.$category->slug,
+                        ])
+                        ->values()
+                        ->all(),
+                    'posts' => CmsPost::query()
+                        ->orderBy('title')
+                        ->get()
+                        ->map(fn (CmsPost $post): array => [
+                            'label' => $post->title,
+                            'value' => (string) $post->id,
+                            'url' => '/n/'.$post->slug,
+                        ])
+                        ->values()
+                        ->all(),
+                    'serviceCategories' => CmsServiceCategory::query()
+                        ->orderBy('sort_order')
+                        ->orderBy('name')
+                        ->get()
+                        ->map(fn (CmsServiceCategory $category): array => [
+                            'label' => $category->name,
+                            'value' => (string) $category->id,
+                            'url' => '/s/'.$category->slug,
+                        ])
+                        ->values()
+                        ->all(),
+                    'services' => CmsService::query()
+                        ->orderBy('sort_order')
+                        ->orderBy('title')
+                        ->get()
+                        ->map(fn (CmsService $service): array => [
+                            'label' => $service->title,
+                            'value' => (string) $service->id,
+                            'url' => '/ser/'.$service->slug,
                         ])
                         ->values()
                         ->all(),

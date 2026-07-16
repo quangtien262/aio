@@ -41,7 +41,11 @@ const LINK_TYPE_OPTIONS = [
     { label: 'Liên hệ', value: 'contact' },
     { label: 'Theo page', value: 'page' },
     { label: 'Theo danh mục sản phẩm', value: 'product-category' },
+    { label: 'Theo sản phẩm', value: 'product' },
     { label: 'Theo danh mục tin tức', value: 'post-category' },
+    { label: 'Theo tin tức', value: 'post' },
+    { label: 'Theo danh mục dịch vụ', value: 'service-category' },
+    { label: 'Theo dịch vụ', value: 'service' },
     { label: 'Liên kết khác', value: 'custom' },
 ];
 
@@ -83,7 +87,11 @@ function buildLinkLookups(linkOptions = {}) {
     return {
         page: new Map((linkOptions.pages ?? []).map((item) => [String(item.value), item])),
         'product-category': new Map((linkOptions.productCategories ?? []).map((item) => [String(item.value), item])),
+        product: new Map((linkOptions.products ?? []).map((item) => [String(item.value), item])),
         'post-category': new Map((linkOptions.postCategories ?? []).map((item) => [String(item.value), item])),
+        post: new Map((linkOptions.posts ?? []).map((item) => [String(item.value), item])),
+        'service-category': new Map((linkOptions.serviceCategories ?? []).map((item) => [String(item.value), item])),
+        service: new Map((linkOptions.services ?? []).map((item) => [String(item.value), item])),
     };
 }
 
@@ -725,13 +733,16 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
 
     const isSpecialLinkType = Boolean(SPECIAL_LINK_URLS[itemLinkType]);
 
-    const itemUrlOptions = itemLinkType === 'page'
-        ? buildUrlSelectOptions(linkOptions.pages ?? [])
-        : itemLinkType === 'product-category'
-            ? buildUrlSelectOptions(linkOptions.productCategories ?? [])
-            : itemLinkType === 'post-category'
-                ? buildUrlSelectOptions(linkOptions.postCategories ?? [])
-                : [];
+    const itemLinkOptionSources = {
+        page: linkOptions.pages ?? [],
+        'product-category': linkOptions.productCategories ?? [],
+        product: linkOptions.products ?? [],
+        'post-category': linkOptions.postCategories ?? [],
+        post: linkOptions.posts ?? [],
+        'service-category': linkOptions.serviceCategories ?? [],
+        service: linkOptions.services ?? [],
+    };
+    const itemUrlOptions = buildUrlSelectOptions(itemLinkOptionSources[itemLinkType] ?? []);
 
     const handleItemUrlChange = (value, option) => {
         itemForm.setFieldValue('link_value', value);
