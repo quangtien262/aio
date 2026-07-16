@@ -1,34 +1,64 @@
 # Theme Starter Checklist
 
-Copy-paste checklist này khi bắt đầu làm một theme mới trong AIO.
+Checklist này dùng khi tạo theme mới trong AIO. Mục tiêu là để AI/dev khác mở file ra là biết phải làm gì, cần đọc file nào, và phải kiểm thử gì trước khi báo xong.
 
-## 1. Metadata nhanh
+## 0. Đọc nhanh trước khi code
 
-- Theme key: `_____`
-- Theme name: `_____`
-- Website type: `ecommerce | service | corporate | news | landing | _____`
-- Theme parent: `null | _____`
-- Locale built-in: `vi`, `en`, `_____`
-- Cần demo data: `yes | no`
-- Cần auth modal: `yes | no`
-- Cần config riêng trong Theme Manager: `yes | no`
+- [ ] Đọc `docs/ai-session-bootstrap-prompt.md` để hiểu định hướng dự án.
+- [ ] Đọc `docs/theme-authoring-guide.md` để hiểu theme registry, namespace Blade, route và translation.
+- [ ] Đọc `docs/landing-page-builder.md` nếu theme có homepage/landing dạng block.
+- [ ] Đọc `docs/theme-demo-data.md` nếu theme cần nút tạo data test.
+- [ ] Xem theme gần nhất cùng loại website để copy pattern, ví dụ `XD0323`, `XD0322`, `XD0301`, `SER0100`.
 
-## 2. Folder tối thiểu
+## 1. Metadata cần chốt
 
-Tạo đủ:
+- [ ] Theme key: `_____`, ví dụ `XD0324`.
+- [ ] Theme name: `_____`.
+- [ ] Website type: `ecommerce | service | corporate | news | landing | _____`.
+- [ ] Theme parent: `null | _____`.
+- [ ] Locale built-in: `vi`, `en`, `_____`.
+- [ ] Có landing builder/homepage block: `yes | no`.
+- [ ] Cần demo data/test data: `yes | no`.
+- [ ] Cần auth modal: `yes | no`.
+- [ ] Cần config riêng trong Theme Manager: `yes | no`.
+- [ ] Nguồn dữ liệu động cần hỗ trợ: `products | posts | services | projects | service categories | product categories | post categories | custom`.
 
-- `themes/{KEY}/theme.json`
-- `themes/{KEY}/views/`
-- `themes/{KEY}/lang/vi.json`
-- `themes/{KEY}/lang/en.json`
+## 2. Folder và file tối thiểu
 
-Nếu cần preview/avatar:
+- [ ] `themes/{KEY}/theme.json`
+- [ ] `themes/{KEY}/views/home.blade.php`
+- [ ] `themes/{KEY}/views/layout.blade.php`
+- [ ] `themes/{KEY}/views/partials/header.blade.php`
+- [ ] `themes/{KEY}/views/partials/footer.blade.php`
+- [ ] `themes/{KEY}/views/partials/styles.blade.php`
+- [ ] `themes/{KEY}/views/partials/shell-scripts.blade.php`
+- [ ] `themes/{KEY}/lang/vi.json`
+- [ ] `themes/{KEY}/lang/en.json`
 
-- `public/theme-previews/{KEY}/avatar.*`
-- `public/theme-previews/{KEY}/preview-*`
-- `public/theme-previews/{KEY}/cover-*`
+Các trang storefront phụ nên có đủ, vì `CmsSiteController` render trực tiếp theo namespace theme:
 
-## 3. Manifest template
+- [ ] `views/cms.blade.php`
+- [ ] `views/category.blade.php`
+- [ ] `views/product.blade.php`
+- [ ] `views/search.blade.php`
+- [ ] `views/cart.blade.php`
+- [ ] `views/checkout.blade.php`
+- [ ] `views/checkout-success.blade.php`
+- [ ] `views/news.blade.php`
+- [ ] `views/news-detail.blade.php`
+- [ ] `views/services.blade.php`
+- [ ] `views/service.blade.php`
+- [ ] `views/contact.blade.php`
+
+Preview/avatar cho `/admin/themes`:
+
+- [ ] `public/theme-previews/{KEY}/avatar.png`
+- [ ] `public/theme-previews/{KEY}/preview-{key}.png`
+- [ ] `public/theme-previews/{KEY}/cover-{key}.png`
+
+## 3. Manifest `theme.json`
+
+Template:
 
 ```json
 {
@@ -43,8 +73,8 @@ Nếu cần preview/avatar:
     "cover": "cover-_____.png"
   },
   "blocks": [
-    "_____",
-    "_____"
+    "hero-slider",
+    "about-experience"
   ],
   "supports": {
     "dark_mode": false,
@@ -58,84 +88,188 @@ Nếu cần preview/avatar:
   },
   "demo": {
     "content_path": "demo/content",
-    "settings_path": "demo/settings"
+    "settings_path": "demo/settings",
+    "default_preset": "_____-demo"
   }
 }
 ```
 
-## 4. View tối thiểu phải có
+Checklist:
 
-Tạo đủ các file storefront chính này trước khi đi sâu UI:
+- [ ] `key` phải trùng tên thư mục theme.
+- [ ] `preview.thumbnail` và `preview.cover` phải đúng tên file trong `public/theme-previews/{KEY}`.
+- [ ] `blocks` phải phản ánh đúng các block homepage/landing thực tế.
+- [ ] Nếu có data test riêng, phải có `demo.default_preset`.
+- [ ] JSON phải hợp lệ, không BOM/lỗi encoding.
 
-- `views/home.blade.php`
-- `views/cms.blade.php`
-- `views/category.blade.php`
-- `views/product.blade.php`
-- `views/search.blade.php`
-- `views/cart.blade.php`
-- `views/checkout.blade.php`
-- `views/checkout-success.blade.php`
+## 4. Namespace Blade và layout
 
-Nếu thiếu, storefront có thể `404` vì `CmsSiteController` render trực tiếp theo namespace theme.
+Namespace theme được auto-register theo format:
 
-## 5. Copy/translation rules
+- `themes/XD0323/views/home.blade.php` => `theme-xd0323::home`
 
-- Đưa static copy vào `lang/*.json`
-- Dùng `@themeT(...)` hoặc `ThemeTranslationService`
-- Không hardcode text tĩnh tràn lan trong Blade
-- Không trộn business content translation vào static copy
+Checklist:
 
-## 6. Auth modal rules
+- [ ] Tất cả `@extends(...)` dùng namespace lowercase: `theme-{lowercase_key}::layout`.
+- [ ] Không còn namespace copy nhầm từ theme cũ, ví dụ `theme-xd0322`.
+- [ ] `layout.blade.php` include header/footer dùng chung cho toàn website.
+- [ ] Header/footer có fallback dữ liệu nếu chưa có `SiteProfile`/menu.
+- [ ] Dùng route helper, không hardcode URL legacy:
+  - `route('site.home')`
+  - `route('site.catalog.search')`
+  - `route('site.cart.index')`
+  - `route('site.blog.show', ['slug' => ...])`
+  - `route('site.services.show', ['slug' => ...])`
+  - `route('site.catalog.product', ['slug' => ...])`
 
-Nếu theme có login modal, phải theo shared login hiện tại:
+## 5. Translation/static copy
 
-- label field login: `Email khách hàng / Username admin`
-- input name: `login`
-- submit vào `route('customer.auth.store')`
-- backend sẽ thử admin trước, rồi fallback customer
+- [ ] Static copy đặt trong `themes/{KEY}/lang/vi.json` và `themes/{KEY}/lang/en.json`.
+- [ ] Blade dùng `ThemeTranslationService` hoặc `@themeT(...)` cho copy tĩnh.
+- [ ] Không trộn business content vào static copy của theme.
+- [ ] Không hardcode tiếng Việt dài trong layout/header/footer nếu đó là copy cố định.
+- [ ] Kiểm tra JSON bằng:
 
-Không làm lại:
+```bash
+php -r "json_decode(file_get_contents('themes/{KEY}/lang/vi.json'), true, 512, JSON_THROW_ON_ERROR); echo 'ok';"
+```
 
-- `/admin/login`
-- form admin login riêng ngoài storefront
-- validate login field như email-only
+## 6. Landing Page Builder
 
-## 7. Nếu theme cần config riêng
+Nếu theme dùng homepage/landing dạng block:
 
-- Config branding cơ bản: để setup giữ
-- Config UI chuyên biệt theo theme: đưa vào Theme Manager
-- Không để một loại dữ liệu chỉnh ở 2 nơi
+- [ ] Thêm theme key vào `LandingPageBuilder::supportsTheme`.
+- [ ] Thêm case trong `defaultBlocksForTheme`.
+- [ ] Tạo hàm default blocks riêng, ví dụ `xd0323DefaultBlocks()`.
+- [ ] Mỗi block có đủ:
+  - `block_type`
+  - `label`
+  - `description`
+  - `anchor_id`
+  - `settings`
+  - `settings_schema` nếu có cấu hình nguồn dữ liệu
+  - `data.vi`
+  - `data.en`
+  - `media` nếu cần ảnh/background
+- [ ] Block động dùng `settings.source`, không hardcode nguồn trong Blade.
+- [ ] Nếu cần nguồn danh mục, đảm bảo builder resolve được:
+  - `catalog_categories`
+  - `cms_categories`
+  - `cms_service_categories`
+- [ ] Homepage Blade ưu tiên `dynamic_items`, fallback về `data.content.items`.
+- [ ] Các block sửa nhanh dùng `data.content.items` để user tự nhập được.
 
-Ví dụ pattern đúng: palette của `TH0002`
+## 7. Header/footer dùng chung
 
-## 8. Nếu theme cần demo data
+- [ ] Header và footer nằm trong layout, không chỉ nằm trong homepage.
+- [ ] Header đọc menu từ `primary-navigation` hoặc `primary`.
+- [ ] Có fallback menu nếu chưa tạo menu.
+- [ ] Nếu đang login admin, có thể show link `Admin` mở tab mới nếu theme yêu cầu.
+- [ ] Nếu có account/cart/search, dùng route đúng của hệ thống.
+- [ ] Mobile menu có script hoạt động, không phụ thuộc thư viện ngoài chưa nạp.
 
-- khai báo `demo` trong `theme.json`
-- thêm preset/mapping trong `ThemeDemoContentGenerator`
-- chuẩn bị asset local nếu cần ở `public/theme-demo/...`
+## 8. Demo data/test data
 
-## 9. Validate cuối
+Nếu theme cần nút **Tạo data test**:
 
-Tick hết trước khi coi là xong phase đầu:
+- [ ] Thêm `demo.default_preset` trong `themes/{KEY}/theme.json`.
+- [ ] Tạo provider trong `app/Core/Themes/Demo/{StudlyKey}DemoContentProvider.php`.
+- [ ] Provider implements `ThemeDemoContentProvider`.
+- [ ] Provider có:
+  - `themeKey()`
+  - `defaultPreset()`
+  - `preset()`
+  - `generate()`
+  - `delete()`
+- [ ] Đăng ký provider trong `AppServiceProvider` tại `ThemeDemoContentProviderRegistry`.
+- [ ] Mọi model do provider tạo phải được ghi vào `theme_demo_records`.
+- [ ] `delete()` chỉ xóa record demo của theme đó, không xóa dữ liệu user nhập tay.
+- [ ] Nếu tạo `CmsMedia`, phải set `file_path`; không chỉ set `file_url`.
+- [ ] Nếu media dùng file local, đặt trong `storage/app/public/...` để `CmsMedia::file_url` resolve đúng `/storage/...`.
+- [ ] Tạo menu `primary-navigation`.
+- [ ] Tạo `SiteBanner` đúng `placement` mà block hero đang dùng.
+- [ ] Gọi `LandingPageBuilder->resolveHome('website-main', KEY, true)` để sinh landing page mặc định.
+- [ ] Nếu muốn drawer chi tiết hiện nút riêng, kiểm tra `ThemePreviewDetailsPanel.jsx` có cho theme key đó mở `onOpenDemoCreate`.
 
-- [ ] Theme xuất hiện trong Theme Manager
-- [ ] Preview/avatar hiện đúng
-- [ ] Activate theme được
-- [ ] Homepage render được
-- [ ] CMS page render được
-- [ ] Category/Product/Search render được
-- [ ] Checkout flow render được
-- [ ] Static copy lấy từ `lang/*.json`
-- [ ] Translation drawer load được entries
-- [ ] Auth modal đúng shared login flow nếu có
-- [ ] Demo data chạy được nếu có
-- [ ] Không đụng schema nếu chưa thật sự cần
+Kiểm thử provider không làm bẩn DB bằng transaction rollback:
 
-## 10. File nên mở ngay khi bắt đầu
+```bash
+php artisan tinker --execute="DB::beginTransaction(); try { `$result = app('App\\Core\\Themes\\ThemeDemoContentGenerator')->generate('{KEY}', '{PRESET}'); dump(`$result['counts']); } finally { DB::rollBack(); }"
+```
+
+## 9. Admin Theme Manager
+
+- [ ] Theme xuất hiện ở `/admin/themes`.
+- [ ] Ảnh đại diện/preview/cover hiển thị đúng.
+- [ ] Drawer chi tiết mở được.
+- [ ] Nút kích hoạt hoạt động.
+- [ ] Nếu có data test, nút **Tạo data test** xuất hiện và dùng đúng preset.
+- [ ] Nếu có palette/config riêng, editor nằm trong Theme Manager, không nhét vào Setup Wizard nếu chỉ phục vụ riêng theme đó.
+- [ ] Sau khi sửa React admin, chạy `npm run build`.
+
+## 10. Kiểm thử cuối
+
+Chạy các kiểm tra tối thiểu:
+
+```bash
+php -l app/Support/LandingPages/LandingPageBuilder.php
+php -l app/Providers/AppServiceProvider.php
+php artisan optimize:clear
+npm run build
+```
+
+Nếu có provider demo:
+
+```bash
+php -l app/Core/Themes/Demo/{StudlyKey}DemoContentProvider.php
+php artisan tinker --execute="dump(app('App\\Core\\Themes\\ThemeDemoContentGenerator')->defaultPresetForTheme('{KEY}'));"
+```
+
+Render view nhanh:
+
+```bash
+php artisan tinker --execute="URL::defaults(['locale'=>'vi']); view('theme-{lowercase_key}::home', ['landingBlocks'=>[], 'landingPage'=>[], 'siteProfile'=>[], 'menus'=>[]])->render(); dump('render-ok');"
+```
+
+Checklist UI:
+
+- [ ] Homepage render được.
+- [ ] CMS page render được.
+- [ ] Category/Product/Search render được.
+- [ ] Cart/Checkout render được.
+- [ ] Header/footer xuất hiện trên các trang phụ.
+- [ ] Static copy lấy từ `lang/*.json`.
+- [ ] Block động hiển thị dữ liệu thật hoặc fallback ổn.
+- [ ] Tạp chí/tin tức không hiện ngày/người đăng nếu yêu cầu thiết kế nói bỏ.
+- [ ] Mobile không vỡ layout.
+- [ ] Không còn text mojibake như `Ä`, `áº`, `Ã`.
+- [ ] Không còn namespace/theme key copy nhầm.
+- [ ] Không đụng schema nếu chưa thật sự cần.
+
+## 11. Bài học từ XD0323
+
+- [ ] Nếu copy theme cũ sang theme mới, phải thay toàn bộ namespace trong tất cả view phụ, không chỉ `home.blade.php`.
+- [ ] `theme.json` có preview thôi chưa đủ; phải có file thật trong `public/theme-previews/{KEY}`.
+- [ ] `avatar.png` được Theme Manager ưu tiên ở một số danh sách, nên nên tạo cả `avatar.png`, `preview-*.png`, `cover-*.png`.
+- [ ] Nếu thêm nút **Tạo data test** trong drawer, backend cũng phải có provider riêng; nếu không sẽ rơi về preset chung và data không khớp layout.
+- [ ] Provider demo phải chạy thử bằng transaction rollback trước khi báo xong.
+- [ ] Với `CmsMedia`, thiếu `file_path` sẽ lỗi SQL ở MySQL strict mode.
+- [ ] Sau khi sửa admin React, phải chạy `npm run build`; chỉ sửa source JSX chưa đủ cho bản đang chạy bằng build assets.
+
+## 12. File nên mở khi bắt đầu
 
 - `docs/theme-authoring-guide.md`
+- `docs/landing-page-builder.md`
+- `docs/theme-demo-data.md`
 - `app/Core/Themes/ThemeRegistry.php`
 - `app/Core/Themes/ThemeTranslationService.php`
+- `app/Support/LandingPages/LandingPageBuilder.php`
 - `app/Http/Controllers/Site/CmsSiteController.php`
-- `themes/TH0001/theme.json`
-- `themes/SER0100/theme.json`
+- `app/Providers/AppServiceProvider.php`
+- `app/Http/Controllers/Admin/Api/ThemeDemoDataController.php`
+- `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`
+- `resources/admin/src/modules/themes/components/ThemePreviewDetailsPanel.jsx`
+- `resources/admin/src/modules/themes/components/ThemeDemoDataModal.jsx`
+- `themes/XD0323/theme.json`
+- `themes/XD0323/views/home.blade.php`
+- `app/Core/Themes/Demo/Xd0323DemoContentProvider.php`

@@ -16,6 +16,7 @@ use App\Core\Themes\Demo\Xd0310DemoContentProvider;
 use App\Core\Themes\Demo\Xd0311DemoContentProvider;
 use App\Core\Themes\Demo\Xd0312DemoContentProvider;
 use App\Core\Themes\Demo\Xd0322DemoContentProvider;
+use App\Core\Themes\Demo\Xd0323DemoContentProvider;
 use App\Core\Themes\Demo\Xd321DemoContentProvider;
 use App\Support\FrontendLocalization;
 use Illuminate\Support\Facades\Blade;
@@ -44,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
             $this->app->make(Xd0312DemoContentProvider::class),
             $this->app->make(Xd321DemoContentProvider::class),
             $this->app->make(Xd0322DemoContentProvider::class),
+            $this->app->make(Xd0323DemoContentProvider::class),
         ]));
     }
 

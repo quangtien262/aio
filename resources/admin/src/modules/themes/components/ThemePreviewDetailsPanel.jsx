@@ -100,9 +100,9 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPa
                     </Button>
                 ) : null}
 
-                {['XD321', 'XD0322'].includes(theme.key) ? (
+                {['XD321', 'XD0322', 'XD0323'].includes(theme.key) ? (
                     <Button icon={<DatabaseOutlined />} disabled={!canGenerateDemoData} onClick={() => onOpenDemoCreate?.(theme)}>
-                        Tao data test
+                        Tạo data test
                     </Button>
                 ) : null}
             </Space>

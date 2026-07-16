@@ -197,7 +197,7 @@
     $footerNewsletterSource = 'theme-footer-XD0323-product';
 @endphp
 
-@extends('theme-XD0323::layout')
+@extends('theme-xd0323::layout')
 
 @section('title', $seoTitle.' | '.$logoAlt)
 

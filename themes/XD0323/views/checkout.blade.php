@@ -124,7 +124,7 @@
     $footerNewsletterSource = 'theme-footer-XD0323-checkout';
 @endphp
 
-@extends('theme-XD0323::layout')
+@extends('theme-xd0323::layout')
 
 @section('title'){{ $isEnglish ? 'Checkout' : 'Thanh toÃƒÆ’Ã‚Â¡n' }} | {{ $logoAlt }}@endsection
 

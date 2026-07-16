@@ -35,16 +35,18 @@ class CmsMenuLocationRegistry
     public function save(array $locations): array
     {
         $normalized = $this->normalize($locations);
-        $siteProfile = SiteProfile::query()->firstOrCreate(
-            ['site_name' => 'AIO Website'],
-            [
+        $siteProfile = SiteProfile::query()->first();
+
+        if (! $siteProfile) {
+            $siteProfile = new SiteProfile([
+                'site_name' => 'AIO Website',
                 'website_type' => 'ecommerce',
                 'active_theme_key' => null,
                 'is_setup_completed' => false,
                 'completed_steps' => [],
                 'branding' => [],
-            ],
-        );
+            ]);
+        }
 
         $branding = $siteProfile->branding ?? [];
         data_set($branding, 'cms.menu_locations', $normalized);

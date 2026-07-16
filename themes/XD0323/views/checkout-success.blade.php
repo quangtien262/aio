@@ -123,7 +123,7 @@
     $footerNewsletterSource = 'theme-footer-XD0323-checkout-success';
 @endphp
 
-@extends('theme-XD0323::layout')
+@extends('theme-xd0323::layout')
 
 @section('title'){{ $isEnglish ? 'Order confirmed' : 'Ãƒâ€žÃ‚ÂÃƒÂ¡Ã‚ÂºÃ‚Â·t hÃƒÆ’Ã‚Â ng thÃƒÆ’Ã‚Â nh cÃƒÆ’Ã‚Â´ng' }} | {{ $logoAlt }}@endsection
 

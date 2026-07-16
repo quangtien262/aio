@@ -193,7 +193,7 @@
     $footerNewsletterSource = 'theme-footer-XD0323-category';
 @endphp
 
-@extends('theme-XD0323::layout')
+@extends('theme-xd0323::layout')
 
 @section('title'){{ $category->name }} | {{ $logoAlt }}@endsection
 

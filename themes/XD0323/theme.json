@@ -1,13 +1,40 @@
-﻿{
-  "name": "XD0323 Construction",
+{
+  "name": "XD0323 Euro Farm",
   "key": "XD0323",
-  "version": "0.1.0",
-  "description": "Construction and interior design theme with projects, services, products, pricing, testimonials and news.",
-  "website_type": "service",
+  "version": "0.2.0",
+  "description": "Agriculture and organic food theme inspired by Euro Farm with shared header/footer, visual landing blocks, dynamic product/content sections, FAQ, testimonials and team.",
+  "website_type": "ecommerce",
   "parent": null,
-  "preview": { "thumbnail": "preview-XD0323.png", "cover": "cover-XD0323.png" },
-  "blocks": ["hero-slider", "featured-categories", "about-experience", "content-mosaic", "featured-products", "team-members", "project-gallery", "process-steps", "testimonials", "bizmax-latest-posts", "partner-logos"],
-  "supports": { "dark_mode": false, "multi_homepage": false, "custom_css": true, "block_mapping": true },
-  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
-  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "XD0323-construction" }
+  "preview": {
+    "thumbnail": "preview-xd0323.png",
+    "cover": "cover-xd0323.png"
+  },
+  "blocks": [
+    "hero-slider",
+    "about-experience",
+    "stats-strip",
+    "featured-categories",
+    "business-service-grid",
+    "featured-services",
+    "process-steps",
+    "faq-showcase",
+    "testimonials",
+    "team-members",
+    "latest-posts"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "xd0323-euro-farm"
+  }
 }

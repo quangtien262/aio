@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324'], true);
     }
 
     /**
@@ -1145,7 +1145,8 @@ class LandingPageBuilder
             'NT501' => $this->nt501DefaultBlocks(),
             'XD321' => $this->xd321DefaultBlocks(),
             'XD0322' => $this->xd0322DefaultBlocks(),
-            'XD0323' => $this->xd0323DefaultBlocks(),
+            'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
+            'XD0324' => $this->xd0324DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1159,6 +1160,446 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0324DefaultBlocks(): array
+    {
+        $contentSources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+            ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+            ['value' => 'cms_categories', 'label' => 'Danh mục tin tức'],
+        ];
+
+        $sourceSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+            'limit' => ['type' => 'number', 'label' => 'Số item hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'ID danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero WolfArch',
+                'description' => 'Hero toàn màn hình với header trong suốt và ảnh nền lớn.',
+                'preview_image' => '/theme-previews/XD0324/preview-xd0324.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0324-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Thiết kế độc đáo',
+                        'subtitle' => 'Sáng tạo không giới hạn',
+                        'description' => 'Mỗi dự án là một câu chuyện, mỗi thiết kế là một tác phẩm nghệ thuật độc lập.',
+                        'button_label' => 'Khám phá',
+                        'content' => [
+                            'slides' => [
+                                ['title' => 'Thiết kế độc đáo', 'subtitle' => 'Sáng tạo không giới hạn', 'summary' => 'Mỗi dự án là một câu chuyện, mỗi thiết kế là một tác phẩm nghệ thuật độc lập.', 'image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#gioi-thieu'],
+                                ['title' => 'Không gian sống có chiều sâu', 'subtitle' => 'WolfArch Studio', 'summary' => 'Chúng tôi kết hợp kiến trúc, nội thất và ánh sáng để tạo nên nơi chốn giàu cảm xúc.', 'image' => 'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#du-an'],
+                            ],
+                        ],
+                    ],
+                    'en' => ['title' => 'Distinctive design', 'subtitle' => 'Unlimited creativity', 'description' => 'Every project is a story and every space is a crafted work.', 'button_label' => 'Explore', 'content' => ['slides' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'about_experience',
+                'label' => 'Về chúng tôi',
+                'description' => 'Giới thiệu công ty với cụm ảnh collage và chỉ số nhanh.',
+                'preview_image' => '/theme-previews/XD0324/about.png',
+                'anchor_id' => 'gioi-thieu',
+                'settings' => ['cta_url' => '#du-an'],
+                'media' => [
+                    'images' => [
+                        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1493857671505-72967e2e2760?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85',
+                    ],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Tạo ra những không gian đẹp',
+                        'subtitle' => 'Về chúng tôi',
+                        'description' => 'Với hơn 15 năm kinh nghiệm trong lĩnh vực kiến trúc, chúng tôi đã tạo ra hàng trăm dự án ấn tượng trên toàn quốc. Mỗi dự án là sự kết hợp hài hòa giữa thẩm mỹ, chức năng và bền vững.',
+                        'button_label' => 'Tìm hiểu thêm',
+                        'content' => ['items' => [
+                            ['title' => '500+', 'summary' => 'Dự án hoàn thành'],
+                            ['title' => '50+', 'summary' => 'Giải thưởng'],
+                            ['title' => '100%', 'summary' => 'Hài lòng khách hàng'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Creating beautiful spaces', 'subtitle' => 'About us', 'description' => 'More than 15 years crafting memorable architecture and interiors.', 'button_label' => 'Learn more', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_categories',
+                'label' => 'Giá trị chúng tôi mang lại',
+                'description' => 'Khối lý do chọn WolfArch với icon và mosaic ảnh.',
+                'preview_image' => '/theme-previews/XD0324/values.png',
+                'anchor_id' => 'gia-tri',
+                'settings' => ['source' => 'custom', 'limit' => 4],
+                'settings_schema' => $sourceSchema,
+                'media' => [
+                    'images' => [
+                        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85',
+                    ],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Khám phá <em>giá trị chúng tôi mang lại</em> trong mỗi dự án', 'subtitle' => 'Tại sao chọn chúng tôi', 'description' => 'Chúng tôi kết hợp sự sáng tạo, quy trình tối ưu và kinh nghiệm chuyên môn để mang đến những dự án chất lượng cao, bền vững và đạt chuẩn quốc tế.', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Kiến tạo Dấu ấn Độc bản', 'summary' => 'Kiến trúc không chỉ là sự sắp đặt của gạch đá, mà là bản giao hưởng giữa không gian, ánh sáng và cảm xúc.', 'icon' => 'fa-regular fa-lightbulb'],
+                        ['title' => 'Vẻ đẹp Thách thức Thời gian', 'summary' => 'Một công trình hoàn mỹ không chỉ lộng lẫy ở hiện tại mà còn là một di sản vững bền cho mai sau.', 'icon' => 'fa-regular fa-gem'],
+                        ['title' => 'Tinh hoa từ Tâm huyết & Kinh nghiệm', 'summary' => 'Đằng sau sự hoàn hảo là những trái tim nóng và khối óc tinh anh của đội ngũ kiến trúc sư.', 'icon' => 'fa-solid fa-people-group'],
+                        ['title' => 'Hành trình Đồng hành Trọn vẹn', 'summary' => 'Xây nhà là hành trình kiến tạo hạnh phúc, và chúng tôi vinh dự được trở thành người bạn tri kỷ.', 'icon' => 'fa-solid fa-handshake'],
+                    ]]],
+                    'en' => ['title' => 'Discover the values we bring to every project', 'subtitle' => 'Why choose us', 'description' => 'Creative thinking, refined workflow and deep practice in every project.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'content_mosaic',
+                'label' => 'Dấu ấn độc bản',
+                'description' => 'Biến thể khối giá trị để người dùng sửa nhanh nội dung và ảnh.',
+                'preview_image' => '/theme-previews/XD0324/signature.png',
+                'anchor_id' => 'dau-an',
+                'settings' => ['source' => 'custom', 'limit' => 4],
+                'settings_schema' => $sourceSchema,
+                'media' => [
+                    'images' => [
+                        'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=900&q=85',
+                        'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=crop&w=900&q=85',
+                    ],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Khám phá <em>giá trị chúng tôi mang lại</em> trong mỗi dự án', 'subtitle' => 'Tại sao chọn chúng tôi', 'description' => 'Từ ý tưởng đến thi công, đội ngũ chuyên gia luôn đồng hành để mỗi công trình đều vượt trên mong đợi.', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Thiết kế có bản sắc', 'summary' => 'Mỗi không gian được phát triển theo cá tính và lối sống riêng của chủ nhân.', 'icon' => 'fa-regular fa-object-group'],
+                        ['title' => 'Vật liệu được tuyển chọn', 'summary' => 'Ưu tiên chất liệu bền vững, tinh tế và phù hợp với nhịp sống thực tế.', 'icon' => 'fa-solid fa-layer-group'],
+                        ['title' => 'Quản lý chặt chẽ', 'summary' => 'Quy trình minh bạch từ khảo sát, concept, bản vẽ đến bàn giao.', 'icon' => 'fa-solid fa-list-check'],
+                        ['title' => 'Bàn giao trọn vẹn', 'summary' => 'Không gian hoàn thiện đồng bộ từ kiến trúc đến nội thất.', 'icon' => 'fa-solid fa-key'],
+                    ]]],
+                    'en' => ['title' => 'A signature in every project', 'subtitle' => 'Our values', 'description' => 'From concept to handover, every detail is intentional.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_services',
+                'label' => 'Dịch vụ của chúng tôi',
+                'description' => 'Slider ảnh ngang cho dịch vụ, hỗ trợ kéo chuột.',
+                'preview_image' => '/theme-previews/XD0324/services.png',
+                'anchor_id' => 'dich-vu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 8, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Kiến tạo <em>Sự khác biệt</em> - Gói trọn mọi Ý tưởng', 'subtitle' => 'Dịch vụ của chúng tôi', 'description' => 'Thổi hồn vào không gian với dịch vụ thiết kế nội thất độc bản, nơi mọi mong muốn của bạn được lắng nghe và hiện thực hóa.', 'button_label' => 'Xem thêm dịch vụ', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Create difference - complete every idea', 'subtitle' => 'Our services', 'description' => 'Bespoke design services from concept to final installation.', 'button_label' => 'More services', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'project_gallery',
+                'label' => 'Dự án nổi bật',
+                'description' => 'Slider ảnh ngang cho dự án, hỗ trợ kéo chuột.',
+                'preview_image' => '/theme-previews/XD0324/projects.png',
+                'anchor_id' => 'du-an',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Dấu ấn Sáng tạo - <em>Tuyên ngôn Phong cách</em>', 'subtitle' => 'Dự án nổi bật', 'description' => 'Khám phá bộ sưu tập đa sắc màu của chúng tôi: nơi hội tụ từ những tổ ấm bình yên đến không gian thương mại đẳng cấp.', 'button_label' => 'Xem thêm Dự án', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Creative marks - style statements', 'subtitle' => 'Featured projects', 'description' => 'A curated collection of homes, villas and commercial spaces.', 'button_label' => 'More projects', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'process_steps',
+                'label' => 'Quy trình thực hiện',
+                'description' => 'Khối nền tối mô tả quy trình 4 bước.',
+                'preview_image' => '/theme-previews/XD0324/process.png',
+                'anchor_id' => 'quy-trinh',
+                'data' => [
+                    'vi' => ['title' => 'Từ Bản vẽ Sơ phác đến <em>Công trình Hoàn thiện</em>', 'subtitle' => 'Quy trình thực hiện', 'description' => 'Quy trình thiết kế khép kín là kim chỉ nam dẫn lối cho bạn: từ bước phác thảo concept, phát triển ý tưởng cho đến hiện thực hóa không gian sống đẳng cấp.', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => '01. Khơi nguồn Cảm hứng & Thấu hiểu', 'summary' => 'Chúng tôi bắt đầu bằng việc lắng nghe mong muốn sâu kín và phong cách sống của bạn.', 'icon' => 'fa-regular fa-lightbulb'],
+                        ['title' => '02. Phác họa Giấc mơ & Concept', 'summary' => 'Kiến trúc sư vẽ nên giấc mơ bằng ngôn ngữ hình khối và ánh sáng.', 'icon' => 'fa-regular fa-map'],
+                        ['title' => '03. Tinh chỉnh Chi tiết & Kỹ thuật', 'summary' => 'Chuyển hóa ý tưởng thành hệ thống bản vẽ kỹ thuật chính xác.', 'icon' => 'fa-solid fa-compass-drafting'],
+                        ['title' => '04. Hiện thực hóa & Trao gửi', 'summary' => 'Đội ngũ thi công biến bản vẽ thành công trình vững chãi và tinh tế.', 'icon' => 'fa-solid fa-house-lock'],
+                    ]]],
+                    'en' => ['title' => 'From sketch to complete work', 'subtitle' => 'Our process', 'description' => 'A closed design workflow from concept to finished space.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'latest_posts',
+                'label' => 'Tin mới nhất',
+                'description' => 'Slider ảnh ngang cho tin tức/xu hướng, hỗ trợ kéo chuột.',
+                'preview_image' => '/theme-previews/XD0324/posts.png',
+                'anchor_id' => 'xu-huong',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 8, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Góc nhìn & <em>Xu hướng</em>', 'subtitle' => 'Tin mới nhất', 'description' => 'Khởi đầu hành trình sáng tạo không gian sống. Khám phá kho kiến thức đa dạng, bao gồm bí quyết thiết kế thực tiễn và xu hướng nội thất dẫn đầu thị trường.', 'button_label' => '', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Insights & trends', 'subtitle' => 'Latest news', 'description' => 'Practical design knowledge and leading interior trends.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0323EuroFarmDefaultBlocks(): array
+    {
+        $contentSources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+            ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+            ['value' => 'cms_categories', 'label' => 'Danh mục tin tức'],
+        ];
+
+        $sourceSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+            'limit' => ['type' => 'number', 'label' => 'Số item hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'ID danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
+        ];
+
+        $farmHero = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2200&q=90';
+        $vegetables = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=85';
+        $tractor = 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=85';
+        $farmer = 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=900&q=85';
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero Euro Farm',
+                'description' => 'Header, hero image slider và các item chất lượng dịch vụ chạy ngang.',
+                'preview_image' => '/theme-previews/XD0323/hero-slider.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0323-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Thực phẩm hữu cơ tươi chất lượng cao',
+                        'subtitle' => 'Sản phẩm nông nghiệp tự nhiên',
+                        'description' => 'Nguồn nông sản sạch được tuyển chọn từ trang trại hữu cơ và giao đến khách hàng mỗi ngày.',
+                        'button_label' => 'Xem ngay',
+                        'content' => [
+                            'slides' => [
+                                ['title' => 'Thực phẩm hữu cơ tươi chất lượng cao', 'summary' => 'Sản phẩm nông nghiệp tự nhiên', 'button_label' => 'Xem ngay', 'image' => $farmHero, 'link_url' => '#san-pham'],
+                                ['title' => 'Nông sản sạch cho bữa ăn xanh', 'summary' => 'Từ trang trại đến bàn ăn', 'button_label' => 'Khám phá', 'image' => 'https://images.unsplash.com/photo-1492496913980-501348b61469?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#danh-muc'],
+                            ],
+                            'items' => [
+                                ['title' => 'Giao hàng nhanh', 'summary' => 'Giao hàng nhanh chóng trên toàn quốc', 'icon' => 'fa-solid fa-truck-fast'],
+                                ['title' => 'Chính sách đổi trả', 'summary' => 'Đổi trả nhanh chóng, linh hoạt', 'icon' => 'fa-solid fa-rotate-left'],
+                                ['title' => 'Hỗ trợ trực tuyến', 'summary' => 'Hỗ trợ nhanh chóng 24/7', 'icon' => 'fa-solid fa-headset'],
+                            ],
+                        ],
+                    ],
+                    'en' => ['title' => 'Fresh organic food with premium quality', 'subtitle' => 'Natural farm produce', 'description' => 'Clean produce selected from organic farms and delivered daily.', 'button_label' => 'Shop now', 'content' => ['slides' => [], 'items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'about_experience',
+                'label' => 'Giới thiệu công ty',
+                'description' => 'Giới thiệu ngắn gọn về Euro Farm với ảnh lá và ảnh tròn.',
+                'preview_image' => '/theme-previews/XD0323/about.png',
+                'anchor_id' => 'gioi-thieu',
+                'settings' => ['cta_url' => '#san-pham'],
+                'media' => ['image' => 'https://images.unsplash.com/photo-1492496913980-501348b61469?auto=format&fit=crop&w=1000&q=85', 'secondary_image' => $tractor],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Thực phẩm hữu cơ & tốt cho sức khỏe',
+                        'subtitle' => 'Về Euro Farm',
+                        'description' => 'Euro Farm là doanh nghiệp nông nghiệp tiên phong chuyên sản xuất và cung cấp thực phẩm hữu cơ, an toàn và tốt cho sức khỏe. Chúng tôi áp dụng quy trình canh tác hiện đại theo tiêu chuẩn châu Âu, nói không với hóa chất và chất bảo quản.',
+                        'button_label' => 'Xem thêm',
+                        'content' => ['phone' => '1900 6750', 'items' => [
+                            ['title' => 'Nông nghiệp và Thực phẩm', 'summary' => '', 'icon' => 'fa-solid fa-seedling'],
+                            ['title' => 'Rau củ và trái cây', 'summary' => '', 'icon' => 'fa-solid fa-carrot'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Organic food for better health', 'subtitle' => 'About Euro Farm', 'description' => 'Euro Farm produces safe organic food using modern farming standards.', 'button_label' => 'Learn more', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'stats_strip',
+                'label' => 'Con số thống kê',
+                'description' => 'Khối số liệu ấn tượng về trang trại.',
+                'preview_image' => '/theme-previews/XD0323/stats.png',
+                'anchor_id' => 'thong-ke',
+                'data' => [
+                    'vi' => ['title' => 'Những con số ấn tượng về trang trại của chúng tôi', 'subtitle' => 'Hiểu rõ hơn về chúng tôi', 'description' => 'Mỗi con số đều thể hiện hành trình phát triển bền vững của chúng tôi, từ những cánh đồng hữu cơ đến hàng nghìn sản phẩm sạch trao tận tay người tiêu dùng.', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => '250+', 'summary' => 'Sản phẩm nông nghiệp', 'icon' => 'fa-solid fa-box-open'],
+                        ['title' => '690+', 'summary' => 'Dự án đã hoàn thành', 'icon' => 'fa-brands fa-pagelines'],
+                        ['title' => '460+', 'summary' => 'Khách hàng hài lòng', 'icon' => 'fa-regular fa-face-smile'],
+                        ['title' => '1200+', 'summary' => 'Expert Farmers', 'icon' => 'fa-solid fa-user-tie'],
+                    ]]],
+                    'en' => ['title' => 'Impressive numbers from our farm', 'subtitle' => 'Know us better', 'description' => 'Numbers that reflect our sustainable farming journey.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_categories',
+                'label' => 'Nông sản phân theo loại',
+                'description' => 'Slider danh mục có thể lấy từ sản phẩm, tin tức, dịch vụ, dự án hoặc danh mục.',
+                'preview_image' => '/theme-previews/XD0323/categories.png',
+                'anchor_id' => 'danh-muc',
+                'dynamic' => true,
+                'settings' => ['source' => 'catalog_categories', 'limit' => 8, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Nông sản phân theo loại', 'subtitle' => 'Danh mục', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Trái Cây Việt', 'image' => 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=500&q=85', 'url' => '#san-pham'],
+                        ['title' => 'Rau lá hữu cơ', 'image' => 'https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=500&q=85', 'url' => '#san-pham'],
+                        ['title' => 'Củ Quả hữu cơ', 'image' => 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&w=500&q=85', 'url' => '#san-pham'],
+                    ]]],
+                    'en' => ['title' => 'Farm produce by category', 'subtitle' => 'Categories', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'business_service_grid',
+                'label' => 'Nông sản phẩm nổi bật',
+                'description' => 'Grid sản phẩm hoặc nội dung động có thể đổi nguồn.',
+                'preview_image' => '/theme-previews/XD0323/products.png',
+                'anchor_id' => 'san-pham',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Nông sản phẩm nổi bật', 'subtitle' => 'Sản phẩm', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Bắp ngọt hữu cơ 500gr', 'summary' => '46.000đ', 'price' => '46.000đ', 'image' => 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=700&q=85', 'url' => '#'],
+                        ['title' => 'Bí đao hữu cơ - 500g', 'summary' => '85.000đ', 'price' => '85.000đ', 'image' => 'https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=700&q=85', 'url' => '#'],
+                        ['title' => 'Cà chua bee ngọt hữu cơ - 300g', 'summary' => '59.400đ', 'price' => '59.400đ', 'image' => 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=700&q=85', 'url' => '#'],
+                        ['title' => 'Cà rốt baby hữu cơ - 250g', 'summary' => '74.750đ', 'price' => '74.750đ', 'image' => 'https://images.unsplash.com/photo-1445282768818-728615cc910a?auto=format&fit=crop&w=700&q=85', 'url' => '#'],
+                    ]]],
+                    'en' => ['title' => 'Featured farm products', 'subtitle' => 'Products', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_services',
+                'label' => 'Dịch vụ của chúng tôi',
+                'description' => 'Slider dịch vụ có thể đổi nguồn dữ liệu.',
+                'preview_image' => '/theme-previews/XD0323/services.png',
+                'anchor_id' => 'dich-vu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 5, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Chúng tôi mang đến những gì', 'subtitle' => 'Dịch vụ của chúng tôi', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Giải pháp trồng rau củ sạch', 'summary' => '', 'image' => $vegetables, 'icon' => 'fa-solid fa-basket-shopping', 'url' => '#'],
+                        ['title' => 'Giải pháp thu hoạch', 'summary' => '', 'image' => 'https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=900&q=85', 'icon' => 'fa-solid fa-tractor', 'url' => '#'],
+                        ['title' => 'Giải pháp dinh dưỡng', 'summary' => '', 'image' => 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=900&q=85', 'icon' => 'fa-solid fa-apple-whole', 'url' => '#'],
+                    ]]],
+                    'en' => ['title' => 'What we provide', 'subtitle' => 'Our services', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'process_steps',
+                'label' => 'Quy trình làm việc',
+                'description' => 'Khối user tự nhập cho quy trình sản xuất thực phẩm sạch.',
+                'preview_image' => '/theme-previews/XD0323/process.png',
+                'anchor_id' => 'quy-trinh',
+                'data' => [
+                    'vi' => ['title' => 'Quy trình sản xuất thực phẩm sạch', 'subtitle' => 'Quy trình làm việc', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Trải nghiệm quy trình sản xuất', 'image' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=700&q=85'],
+                        ['title' => 'Được chuyên gia hướng dẫn tận tình', 'image' => 'https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=700&q=85'],
+                        ['title' => 'Tìm hiểu đội ngũ chuyên nghiệp của chúng tôi', 'image' => $farmer],
+                        ['title' => 'Nhận ngay những sản phẩm chất lượng nhất', 'image' => 'https://images.unsplash.com/photo-1595475207225-428b62bda831?auto=format&fit=crop&w=700&q=85'],
+                    ]]],
+                    'en' => ['title' => 'Clean food production process', 'subtitle' => 'Working process', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'faq_showcase',
+                'label' => 'Hỏi đáp',
+                'description' => 'FAQ cùng ảnh minh họa.',
+                'preview_image' => '/theme-previews/XD0323/faq.png',
+                'anchor_id' => 'hoi-dap',
+                'media' => ['image' => $farmer],
+                'data' => [
+                    'vi' => ['title' => 'Chúng tôi sẵn sàng trả lời mọi câu hỏi của bạn.', 'subtitle' => 'Những câu hỏi thường gặp', 'description' => 'Chúng tôi luôn sẵn lòng hỗ trợ và giải đáp mọi thắc mắc của bạn. Hãy gửi câu hỏi cho chúng tôi để được tư vấn nhanh chóng và chính xác nhất!', 'button_label' => '', 'content' => ['items' => [
+                        ['title' => 'Làm thế nào để chúng ta bảo vệ nền nông nghiệp hữu cơ?', 'summary' => 'Chúng tôi ưu tiên canh tác tự nhiên, quản lý nguồn nước, đất và quy trình thu hoạch theo tiêu chuẩn an toàn.'],
+                        ['title' => 'Chúng tôi mang đến giải pháp gì cho nông nghiệp xanh cho tương lai?', 'summary' => 'Euro Farm cung cấp quy trình, sản phẩm và tư vấn giúp khách hàng xây dựng chuỗi cung ứng nông sản bền vững.'],
+                        ['title' => 'Làm thế nào để đạt được sự phát triển bền vững trong nông nghiệp?', 'summary' => 'Kết hợp công nghệ, kiểm soát chất lượng và đào tạo nông dân là nền tảng phát triển dài hạn.'],
+                        ['title' => 'Làm thế nào để cân bằng giữa năng suất và sự bền vững trong nông nghiệp?', 'summary' => 'Chúng tôi chọn giống phù hợp, tối ưu đất và giảm phụ thuộc hóa chất để giữ năng suất ổn định.'],
+                    ]]],
+                    'en' => ['title' => 'We are ready to answer your questions.', 'subtitle' => 'FAQ', 'description' => 'Send us your questions for fast and accurate advice.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'testimonials',
+                'label' => 'Phản hồi khách hàng',
+                'description' => 'Đánh giá khách hàng, lấy từ CMS Testimonials hoặc nhập tay.',
+                'preview_image' => '/theme-previews/XD0323/testimonials.png',
+                'anchor_id' => 'danh-gia',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_testimonials', 'limit' => 2, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_testimonials', 'label' => 'Đánh giá']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số đánh giá hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Khách hàng nói gì về Euro Farm', 'subtitle' => 'Đánh giá', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+                        ['name' => 'Nguyễn Văn Huy', 'company' => 'Khách hàng thân thiết', 'quote' => 'Tôi rất hài lòng với sản phẩm của farm. Rau củ luôn tươi, sạch và có mùi vị tự nhiên.', 'image' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=85'],
+                        ['name' => 'Trần Quốc Anh', 'company' => 'Nhân viên văn phòng', 'quote' => 'Mình đặt hàng vài lần và lần nào cũng ưng ý. Rau quả tươi lâu, đóng gói gọn gàng.', 'image' => 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=500&q=85'],
+                    ]]],
+                    'en' => ['title' => 'What customers say about Euro Farm', 'subtitle' => 'Reviews', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'team_members',
+                'label' => 'Đội ngũ nhân sự',
+                'description' => 'Đội ngũ chuyên gia, lấy từ CMS Team hoặc nhập tay.',
+                'preview_image' => '/theme-previews/XD0323/team.png',
+                'anchor_id' => 'doi-ngu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_team_members', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_team_members', 'label' => 'Đội ngũ']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số thành viên hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Chuyên gia hàng đầu từ nước ngoài', 'subtitle' => 'Đội ngũ của chúng tôi', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+                        ['name' => 'Mike Brown', 'role' => 'Founder & owner', 'image' => 'https://images.unsplash.com/photo-1530268729831-4b0b9e170218?auto=format&fit=crop&w=700&q=85'],
+                        ['name' => 'Alees Hardson', 'role' => 'Winery Master', 'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=700&q=85'],
+                        ['name' => 'Hailey Simpson', 'role' => 'Agricultural Development Specialist', 'image' => 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=700&q=85'],
+                        ['name' => 'Jassica Andrew', 'role' => 'Agricultural Systems Technician', 'image' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=700&q=85'],
+                    ]]],
+                    'en' => ['title' => 'Leading experts from abroad', 'subtitle' => 'Our team', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'latest_posts',
+                'label' => 'Tin tức',
+                'description' => 'Tin cập nhật, có thể đổi nguồn sang sản phẩm/dịch vụ/dự án/danh mục hoặc nhập tay.',
+                'preview_image' => '/theme-previews/XD0323/posts.png',
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => ['title' => 'Tin được cập nhật thường xuyên', 'subtitle' => 'Tin tức', 'description' => '', 'button_label' => 'Đọc tiếp', 'content' => ['items' => []]],
+                    'en' => ['title' => 'News updated regularly', 'subtitle' => 'News', 'description' => '', 'button_label' => 'Read more', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

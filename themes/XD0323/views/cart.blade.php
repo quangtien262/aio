@@ -122,7 +122,7 @@
     $footerNewsletterSource = 'theme-footer-XD0323-cart';
 @endphp
 
-@extends('theme-XD0323::layout')
+@extends('theme-xd0323::layout')
 
 @section('title')GiÃƒÂ¡Ã‚Â»Ã‚Â hÃƒÆ’Ã‚Â ng | {{ $logoAlt }}@endsection
 

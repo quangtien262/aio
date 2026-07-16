@@ -1,1 +1,24 @@
-﻿<script>(()=>{const t=document.querySelector('[data-foot-menu-toggle]'),m=document.querySelector('[data-foot-menu]');t?.addEventListener('click',()=>m?.classList.toggle('is-open'));const s=[...document.querySelectorAll('[data-c323-slide]')];if(s.length>1){let i=0;setInterval(()=>{s[i].classList.remove('is-active');i=(i+1)%s.length;s[i].classList.add('is-active')},6500)}})();</script>
+<script>
+(() => {
+    const toggle = document.querySelector('[data-foot-menu-toggle]');
+    const menu = document.querySelector('[data-foot-menu]');
+    toggle?.addEventListener('click', () => {
+        const isOpen = menu?.classList.toggle('is-open') ?? false;
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    const slides = [...document.querySelectorAll('[data-c323-slide]')];
+    if (slides.length > 1) {
+        let index = slides.findIndex((slide) => slide.classList.contains('is-active'));
+        if (index < 0) index = 0;
+        const show = (next) => {
+            slides[index].classList.remove('is-active');
+            index = (next + slides.length) % slides.length;
+            slides[index].classList.add('is-active');
+        };
+        document.querySelector('[data-c323-prev]')?.addEventListener('click', () => show(index - 1));
+        document.querySelector('[data-c323-next]')?.addEventListener('click', () => show(index + 1));
+        window.setInterval(() => show(index + 1), 6500);
+    }
+})();
+</script>

@@ -1,24 +1,254 @@
-﻿@php
-    $blocks=collect($landingBlocks??[])->values(); $canEditLanding=auth('admin')->check()&&request('mod')==='admin'&&is_array($landingPage??null); $blockUpdateUrlTemplate=$canEditLanding?route('admin.api.landing.blocks.update',['block'=>'__BLOCK_ID__']):''; $blockSourcePreviewUrlTemplate=$canEditLanding?route('admin.api.landing.blocks.source-preview',['block'=>'__BLOCK_ID__']):''; $blockPayload=$canEditLanding?$blocks->keyBy('id')->toArray():[]; $editorLocales=[];
-    $block=fn($type)=>$blocks->firstWhere('block_type',$type)??[]; $items=fn($item)=>collect($item['dynamic_items']??[])->filter()->isNotEmpty()?collect($item['dynamic_items'])->filter()->values()->all():collect(data_get($item,'data.content.items',[]))->filter()->values()->all();
-    $hero=$block('hero_slider'); $quality=$block('featured_categories'); $about=$block('about_experience'); $services=$block('content_mosaic'); $products=$block('featured_products'); $team=$block('team_members'); $projects=$block('project_gallery'); $pricing=$block('process_steps'); $testimonials=$block('testimonials'); $news=$block('bizmax_latest_posts'); $partners=$block('partner_logos');
-    $slides=collect(data_get($hero,'data.content.slides',[]))->filter()->values(); if($slides->isEmpty())$slides=collect([['title'=>'Cung cap giai phap xay dung tot nhat','summary'=>'Thiet ke va thi cong tron goi, chat luong va an toan.','image'=>'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=2200&q=90','button_label'=>'Lien he bao gia','link_url'=>'#lien-he']]); $short=fn($text,$limit=120)=>\Illuminate\Support\Str::limit(strip_tags((string)$text),$limit);
+@php
+    $blocks = collect($landingBlocks ?? [])->values();
+    $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
+    $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
+    $blockSourcePreviewUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.source-preview', ['block' => '__BLOCK_ID__']) : '';
+    $blockPayload = $canEditLanding ? $blocks->keyBy('id')->toArray() : [];
+    $editorLocales = collect(\App\Support\FrontendLocalization::supportedLocales())->map(fn ($locale) => ['code' => $locale, 'label' => strtoupper($locale)])->all();
+    $block = fn (string $type) => $blocks->firstWhere('block_type', $type) ?? [];
+    $items = function (array $item): array {
+        $dynamic = collect($item['dynamic_items'] ?? [])->filter()->values();
+        if ($dynamic->isNotEmpty()) {
+            return $dynamic->all();
+        }
+
+        return collect(data_get($item, 'data.content.items', []))->filter()->values()->all();
+    };
+    $image = fn (array $item, string $fallback): string => (string) data_get($item, 'image', data_get($item, 'image_url', data_get($item, 'avatar', $fallback)));
+    $summary = fn ($text, int $limit = 150): string => \Illuminate\Support\Str::limit(trim(strip_tags((string) $text)), $limit);
+    $hero = $block('hero_slider');
+    $about = $block('about_experience');
+    $stats = $block('stats_strip');
+    $categories = $block('featured_categories');
+    $products = $block('business_service_grid');
+    $services = $block('featured_services');
+    $process = $block('process_steps');
+    $faq = $block('faq_showcase');
+    $testimonials = $block('testimonials');
+    $team = $block('team_members');
+    $news = $block('latest_posts');
+    $slides = collect(data_get($hero, 'dynamic_items', []))->filter()->values();
+    if ($slides->isEmpty()) {
+        $slides = collect(data_get($hero, 'data.content.slides', []))->filter()->values();
+    }
+    if ($slides->isEmpty()) {
+        $slides = collect([['title' => 'Thực phẩm hữu cơ tươi chất lượng cao', 'summary' => 'Sản phẩm nông nghiệp tự nhiên', 'button_label' => 'Xem ngay', 'image' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#san-pham']]);
+    }
+    $benefits = collect(data_get($hero, 'data.content.items', []))->filter()->values();
 @endphp
-@extends('theme-XD0323::layout')
-@section('title',data_get($landingPage??[],'meta_title',data_get($siteProfile??[],'site_name','XD0323 Construction')))
+@extends('theme-xd0323::layout')
+@section('title', data_get($landingPage ?? [], 'meta_title', data_get($siteProfile ?? [], 'site_name', 'XD0323 Euro Farm')))
 @section('content')
-<main class="c323-main">
-<section class="c323-hero">@foreach($slides as $index=>$slide)<article class="c323-hero__slide {{ $index===0?'is-active':'' }}" data-c323-slide><img src="{{ data_get($slide,'image') }}" alt="{{ data_get($slide,'title') }}"><div></div><div class="c323-container"><p>{{ data_get($hero,'data.subtitle','Chat luong - An toan - Hieu qua') }}</p><h1>{{ data_get($slide,'title') }}</h1><span>{{ data_get($slide,'summary') }}</span><a class="c323-button" href="{{ data_get($slide,'link_url','#lien-he') }}">{{ data_get($slide,'button_label','Lien he bao gia') }} -></a></div></article>@endforeach</section>
-<section class="c323-values"><div class="c323-container">@foreach($items($quality) as $item)<article><i class="{{ data_get($item,'icon','fa-solid fa-helmet-safety') }}"></i><h3>{{ data_get($item,'title') }}</h3><p>{{ data_get($item,'summary') }}</p></article>@endforeach</div></section>
-<section id="gioi-thieu" class="c323-section"><div class="c323-container c323-about"><div><p class="c323-eyebrow">{{ data_get($about,'data.subtitle','Ve chung toi') }}</p><h2>{{ data_get($about,'data.title','Chung toi dan dau trong linh vuc xay dung') }}</h2><strong>Chat luong - An toan - Hieu qua - Chuyen nghiep</strong><p>{{ data_get($about,'data.description','') }}</p><a class="c323-button c323-button--dark" href="#dich-vu">{{ data_get($about,'data.button_label','Xem them') }}</a></div><div class="c323-about__images"><img src="{{ data_get($about,'media.image','https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1100&q=85') }}" alt="{{ data_get($about,'data.title') }}"><img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=85" alt="Construction team"></div></div></section>
-<section id="dich-vu" class="c323-section c323-services"><div class="c323-container"><header class="c323-head"><p>{{ data_get($services,'data.subtitle','Dich vu cua chung toi') }}</p><h2>{{ data_get($services,'data.title','Dich vu tot nhat cho ban') }}</h2></header><div>@forelse($items($services) as $item)<article><i class="fa-solid fa-compass-drafting"></i><h3>{{ data_get($item,'title','Dich vu thi cong') }}</h3><p>{{ $short(data_get($item,'summary',data_get($item,'description','')),155) }}</p></article>@empty <p>Dang cap nhat dich vu.</p>@endforelse</div></div></section>
-<section id="san-pham" class="c323-products"><div class="c323-container"><header class="c323-head c323-head--light"><p>{{ data_get($products,'data.subtitle','Noi that va vat lieu') }}</p><h2>{{ data_get($products,'data.title','San pham cua chung toi') }}</h2></header><div>@forelse($items($products) as $item)<article><a href="{{ data_get($item,'url','#') }}"><img src="{{ data_get($item,'image','https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=85') }}" alt="{{ data_get($item,'title') }}"><h3>{{ data_get($item,'title','Noi that hoan thien') }}</h3><strong>{{ data_get($item,'price_formatted',data_get($item,'price','Lien he')) }}</strong></a></article>@empty <p>Dang cap nhat san pham.</p>@endforelse</div></div></section>
-<section id="doi-ngu" class="c323-section"><div class="c323-container"><header class="c323-head"><p>{{ data_get($team,'data.subtitle','Tan tam, chuyen nghiep') }}</p><h2>{{ data_get($team,'data.title','Doi ngu cua chung toi') }}</h2></header><div class="c323-team">@forelse($items($team) as $member)<article><img src="{{ data_get($member,'image','https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=700&q=85') }}" alt="{{ data_get($member,'name') }}"><h3>{{ data_get($member,'name',data_get($member,'title','Thanh vien')) }}</h3><p>{{ data_get($member,'role','Chuyen gia thi cong') }}</p></article>@empty <p>Dang cap nhat doi ngu.</p>@endforelse</div></div></section>
-<section id="du-an" class="c323-projects"><div class="c323-container"><header class="c323-head c323-head--light"><h2>{{ data_get($projects,'data.title','Du an cua chung toi') }}</h2><p>{{ data_get($projects,'data.description','') }}</p></header><div>@forelse($items($projects) as $item)<article><a href="{{ data_get($item,'url','#') }}"><img src="{{ data_get($item,'image','https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($item,'title') }}"><h3>{{ data_get($item,'title','Cong trinh tieu bieu') }}</h3></a></article>@empty <p>Dang cap nhat du an.</p>@endforelse</div></div></section>
-<section class="c323-section c323-achievements"><div class="c323-container"><div><p class="c323-eyebrow">Thanh tuu</p><h2>Thanh tuu cua chung toi</h2><p>Hanh trinh hon 18 nam kien tao cong trinh chat luong va ben vung.</p><div class="c323-stats"><span><b>18000</b>Khach hang</span><span><b>3800</b>Du an</span><span><b>1000</b>Nhan vien</span><span><b>16</b>Van phong</span></div></div><img src="https://images.unsplash.com/photo-1542621334-a254cf47733d?auto=format&fit=crop&w=1000&q=85" alt="Construction site"></div></section>
-<section class="c323-testimonials"><div class="c323-container"><header class="c323-head c323-head--light"><h2>{{ data_get($testimonials,'data.title','Nhan xet cua khach hang') }}</h2><p>{{ data_get($testimonials,'data.subtitle','Phan hoi sau thi cong') }}</p></header><div>@forelse($items($testimonials) as $item)<article><blockquote>â€œ{{ data_get($item,'quote',data_get($item,'summary','Dich vu thi cong chuyen nghiep va dung tien do.')) }}â€</blockquote><footer>{{ data_get($item,'name',data_get($item,'title','Khach hang')) }}<small>{{ data_get($item,'role','Khach hang') }}</small></footer></article>@empty <p>Dang cap nhat phan hoi.</p>@endforelse</div></div></section>
-<section class="c323-section c323-pricing"><div class="c323-container"><header class="c323-head"><p>{{ data_get($pricing,'data.subtitle','Goi dich vu') }}</p><h2>{{ data_get($pricing,'data.title','Bao gia thi cong') }}</h2><p>{{ data_get($pricing,'data.description','') }}</p></header><div>@foreach(data_get($pricing,'data.content.items',[]) as $item)<article><h3>{{ data_get($item,'title') }}</h3><strong>{{ data_get($item,'summary') }}</strong><ul><li>Tu van phong thuy</li><li>Ban ve chi tiet kien truc</li><li>Quan ly tien do thi cong</li><li>Ho tro sau ban giao</li></ul><a class="c323-button c323-button--dark" href="#lien-he">Dang ky ngay</a></article>@endforeach</div></div></section>
-<section id="tin-tuc" class="c323-section"><div class="c323-container"><header class="c323-head"><p>{{ data_get($news,'data.subtitle','Tin tuc va cap nhat') }}</p><h2>{{ data_get($news,'data.title','Bai viet moi nhat') }}</h2></header><div class="c323-news">@forelse($items($news) as $item)<article><a href="{{ data_get($item,'url','#') }}"><img src="{{ data_get($item,'image','https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($item,'title') }}"><small>{{ data_get($item,'published_at','XD0323 Construction') }}</small><h3>{{ data_get($item,'title','Kien thuc xay dung') }}</h3><p>{{ $short(data_get($item,'summary',data_get($item,'description','')),110) }}</p></a></article>@empty <p>Dang cap nhat bai viet.</p>@endforelse</div></div></section>
-<section class="c323-partners"><div class="c323-container">@forelse($items($partners) as $item)<a href="{{ data_get($item,'url','#') }}"><img src="{{ data_get($item,'image','https://placehold.co/200x100/ffffff/071638?text=Partner') }}" alt="{{ data_get($item,'title','Partner') }}"></a>@empty <span>COMPANY</span><span>COMPANY</span><span>COMPANY</span><span>COMPANY</span><span>COMPANY</span>@endforelse</div></section>
+<main class="xd323-main">
+    <section class="xd323-hero xd-landing-block" data-landing-block-id="{{ data_get($hero, 'id') }}" data-block-type="hero_slider">
+        @foreach ($slides as $index => $slide)
+            <article class="xd323-hero__slide {{ $index === 0 ? 'is-active' : '' }}" data-c323-slide>
+                <img src="{{ $image($slide, 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2200&q=90') }}" alt="{{ data_get($slide, 'title', data_get($hero, 'data.title')) }}">
+                <div class="xd323-hero__overlay"></div>
+                <div class="xd323-container xd323-hero__content">
+                    <p>{{ data_get($slide, 'summary', data_get($hero, 'data.subtitle')) }}</p>
+                    <h1>{{ data_get($slide, 'title', data_get($hero, 'data.title')) }}</h1>
+                    <a class="xd323-btn" href="{{ data_get($slide, 'link_url', '#san-pham') }}">{{ data_get($slide, 'button_label', data_get($hero, 'data.button_label', 'Xem ngay')) }}</a>
+                </div>
+            </article>
+        @endforeach
+        <button class="xd323-hero__arrow xd323-hero__arrow--prev" type="button" data-c323-prev aria-label="Slide trước"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="xd323-hero__arrow xd323-hero__arrow--next" type="button" data-c323-next aria-label="Slide sau"><i class="fa-solid fa-chevron-right"></i></button>
+    </section>
+
+    <section class="xd323-benefits">
+        <div class="xd323-container xd323-benefits__track">
+            @foreach ($benefits as $item)
+                <article>
+                    <span><i class="{{ data_get($item, 'icon', 'fa-solid fa-truck-fast') }}"></i></span>
+                    <div>
+                        <h3>{{ data_get($item, 'title') }}</h3>
+                        <p>{{ data_get($item, 'summary') }}</p>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+    <section id="gioi-thieu" class="xd323-section xd323-about xd-landing-block" data-landing-block-id="{{ data_get($about, 'id') }}" data-block-type="about_experience">
+        <div class="xd323-container xd323-about__grid">
+            <div class="xd323-about__media">
+                <img class="xd323-about__leaf" src="{{ data_get($about, 'media.image', 'https://images.unsplash.com/photo-1492496913980-501348b61469?auto=format&fit=crop&w=1000&q=85') }}" alt="{{ data_get($about, 'data.title') }}">
+                <img class="xd323-about__round" src="{{ data_get($about, 'media.secondary_image', 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($about, 'data.title') }}">
+            </div>
+            <div class="xd323-about__body">
+                <p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($about, 'data.subtitle', 'Về Euro Farm') }}</p>
+                <h2>{{ data_get($about, 'data.title') }}</h2>
+                <p>{{ data_get($about, 'data.description') }}</p>
+                <div class="xd323-about__features">
+                    @foreach ($items($about) as $item)
+                        <article>
+                            <span><i class="{{ data_get($item, 'icon', 'fa-solid fa-seedling') }}"></i></span>
+                            <strong>{{ data_get($item, 'title') }}</strong>
+                        </article>
+                    @endforeach
+                </div>
+                <div class="xd323-about__cta">
+                    <a class="xd323-btn" href="{{ data_get($about, 'settings.cta_url', '#san-pham') }}">{{ data_get($about, 'data.button_label', 'Xem thêm') }} <i class="fa-solid fa-arrow-right"></i></a>
+                    <div><i class="fa-solid fa-phone-volume"></i><span>Liên hệ ngay cho chúng tôi</span><b>{{ data_get($about, 'data.content.phone', '1900 6750') }}</b></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="thong-ke" class="xd323-section xd323-stats xd-landing-block" data-landing-block-id="{{ data_get($stats, 'id') }}" data-block-type="stats_strip">
+        <div class="xd323-container xd323-stats__grid">
+            <div>
+                <p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($stats, 'data.subtitle') }}</p>
+                <h2>{{ data_get($stats, 'data.title') }}</h2>
+                <p>{{ data_get($stats, 'data.description') }}</p>
+            </div>
+            <div class="xd323-stats__cards">
+                @foreach ($items($stats) as $item)
+                    <article>
+                        <i class="{{ data_get($item, 'icon', 'fa-solid fa-box-open') }}"></i>
+                        <div><strong>{{ data_get($item, 'title') }}</strong><span>{{ data_get($item, 'summary') }}</span></div>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section id="danh-muc" class="xd323-section xd323-categories xd-landing-block" data-landing-block-id="{{ data_get($categories, 'id') }}" data-block-type="featured_categories">
+        <div class="xd323-container">
+            <header class="xd323-heading"><p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($categories, 'data.subtitle') }}</p><h2>{{ data_get($categories, 'data.title') }}</h2></header>
+            <div class="xd323-circle-track">
+                @foreach ($items($categories) as $item)
+                    <a href="{{ data_get($item, 'url', '#') }}">
+                        <span><img src="{{ $image($item, 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=500&q=85') }}" alt="{{ data_get($item, 'title') }}"></span>
+                        <strong>{{ data_get($item, 'title') }}</strong>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section id="san-pham" class="xd323-section xd323-products xd-landing-block" data-landing-block-id="{{ data_get($products, 'id') }}" data-block-type="business_service_grid">
+        <div class="xd323-container">
+            <header class="xd323-heading"><p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($products, 'data.subtitle') }}</p><h2>{{ data_get($products, 'data.title') }}</h2></header>
+            <div class="xd323-product-grid">
+                @foreach ($items($products) as $item)
+                    <article>
+                        <button type="button" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i></button>
+                        <a href="{{ data_get($item, 'url', '#') }}"><img src="{{ $image($item, 'https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=700&q=85') }}" alt="{{ data_get($item, 'title') }}"></a>
+                        <h3>{{ data_get($item, 'title') }}</h3>
+                        @if (filled(data_get($item, 'price_formatted', data_get($item, 'price'))))
+                            <strong>{{ data_get($item, 'price_formatted', data_get($item, 'price')) }}</strong>
+                        @elseif (filled(data_get($item, 'summary')))
+                            <p>{{ $summary(data_get($item, 'summary'), 70) }}</p>
+                        @endif
+                        <a class="xd323-cart-fab" href="{{ data_get($item, 'url', '#') }}" aria-label="Xem sản phẩm"><i class="fa-solid fa-cart-shopping"></i></a>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section id="dich-vu" class="xd323-section xd323-services xd-landing-block" data-landing-block-id="{{ data_get($services, 'id') }}" data-block-type="featured_services">
+        <div class="xd323-container">
+            <header class="xd323-heading"><p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($services, 'data.subtitle') }}</p><h2>{{ data_get($services, 'data.title') }}</h2></header>
+        </div>
+        <div class="xd323-wide-track">
+            @foreach ($items($services) as $item)
+                <article>
+                    <img src="{{ $image($item, 'https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($item, 'title') }}">
+                    <a href="{{ data_get($item, 'url', '#') }}"><i class="{{ data_get($item, 'icon', 'fa-solid fa-seedling') }}"></i><strong>{{ data_get($item, 'title') }}</strong><span><i class="fa-solid fa-arrow-right"></i></span></a>
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+    <section id="quy-trinh" class="xd323-section xd323-process xd-landing-block" data-landing-block-id="{{ data_get($process, 'id') }}" data-block-type="process_steps">
+        <div class="xd323-container">
+            <header class="xd323-heading"><p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($process, 'data.subtitle') }}</p><h2>{{ data_get($process, 'data.title') }}</h2></header>
+            <div class="xd323-process__steps">
+                @foreach ($items($process) as $index => $item)
+                    <article>
+                        <img src="{{ $image($item, 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=700&q=85') }}" alt="{{ data_get($item, 'title') }}">
+                        <span>{{ $index + 1 }}</span>
+                        <h3>{{ data_get($item, 'title') }}</h3>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section id="hoi-dap" class="xd323-section xd323-faq xd-landing-block" data-landing-block-id="{{ data_get($faq, 'id') }}" data-block-type="faq_showcase">
+        <div class="xd323-container xd323-faq__grid">
+            <img src="{{ data_get($faq, 'media.image', 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($faq, 'data.title') }}">
+            <div>
+                <p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($faq, 'data.subtitle') }}</p>
+                <h2>{{ data_get($faq, 'data.title') }}</h2>
+                <p>{{ data_get($faq, 'data.description') }}</p>
+                <div class="xd323-faq__list">
+                    @foreach ($items($faq) as $index => $item)
+                        <details {{ $index === 0 ? 'open' : '' }}>
+                            <summary>{{ data_get($item, 'title') }} <i class="fa-solid fa-chevron-down"></i></summary>
+                            <p>{{ data_get($item, 'summary') }}</p>
+                        </details>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="danh-gia" class="xd323-section xd323-testimonials xd-landing-block" data-landing-block-id="{{ data_get($testimonials, 'id') }}" data-block-type="testimonials">
+        <div class="xd323-container">
+            <header class="xd323-heading"><p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($testimonials, 'data.subtitle') }}</p><h2>{{ data_get($testimonials, 'data.title') }}</h2></header>
+            <div class="xd323-testimonial-grid">
+                @foreach ($items($testimonials) as $item)
+                    <article>
+                        <img src="{{ $image($item, 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=500&q=85') }}" alt="{{ data_get($item, 'name', data_get($item, 'title')) }}">
+                        <div>
+                            <span>★★★★★</span>
+                            <p>"{{ data_get($item, 'quote', data_get($item, 'summary')) }}"</p>
+                            <h3>{{ data_get($item, 'name', data_get($item, 'title')) }}</h3>
+                            <small>{{ data_get($item, 'company', data_get($item, 'role')) }}</small>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section id="doi-ngu" class="xd323-section xd323-team xd-landing-block" data-landing-block-id="{{ data_get($team, 'id') }}" data-block-type="team_members">
+        <div class="xd323-container">
+            <header class="xd323-heading"><p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($team, 'data.subtitle') }}</p><h2>{{ data_get($team, 'data.title') }}</h2></header>
+            <div class="xd323-team-grid">
+                @foreach ($items($team) as $item)
+                    <article>
+                        <img src="{{ $image($item, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=85') }}" alt="{{ data_get($item, 'name', data_get($item, 'title')) }}">
+                        <a href="#doi-ngu" aria-label="Chia sẻ"><i class="fa-solid fa-share-nodes"></i></a>
+                        <h3>{{ data_get($item, 'name', data_get($item, 'title')) }}</h3>
+                        <p>{{ data_get($item, 'role', data_get($item, 'summary')) }}</p>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section id="tin-tuc" class="xd323-section xd323-news xd-landing-block" data-landing-block-id="{{ data_get($news, 'id') }}" data-block-type="latest_posts">
+        <div class="xd323-container">
+            <header class="xd323-heading"><p class="xd323-kicker"><i class="fa-brands fa-pagelines"></i>{{ data_get($news, 'data.subtitle') }}</p><h2>{{ data_get($news, 'data.title') }}</h2></header>
+            <div class="xd323-news-grid">
+                @foreach ($items($news) as $item)
+                    <article>
+                        <a href="{{ data_get($item, 'url', '#') }}">
+                            <div><img src="{{ $image($item, 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($item, 'title') }}"><time>{{ data_get($item, 'published_at', now()->format('d/m/Y')) }}</time></div>
+                            <p><i class="fa-regular fa-user"></i>{{ data_get($item, 'author', 'Trần Tấn Phát') }} <i class="fa-regular fa-comment-dots"></i>0 bình luận</p>
+                            <h3>{{ data_get($item, 'title') }}</h3>
+                            <span class="xd323-btn">Đọc tiếp <i class="fa-solid fa-arrow-right"></i></span>
+                        </a>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    <span id="lien-he"></span>
 </main>
 @endsection

@@ -115,7 +115,7 @@
     $footerNewsletterSource = 'theme-footer-XD0323-search';
 @endphp
 
-@extends('theme-XD0323::layout')
+@extends('theme-xd0323::layout')
 
 @section('title'){{ $searchQuery !== '' ? 'TÃƒÆ’Ã‚Â¬m kiÃƒÂ¡Ã‚ÂºÃ‚Â¿m: '.$searchQuery : 'TÃƒÆ’Ã‚Â¬m kiÃƒÂ¡Ã‚ÂºÃ‚Â¿m sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' }} | {{ $logoAlt }}@endsection
 
