@@ -100,7 +100,8 @@
         ->values();
 
     $homeUrl = route('site.home');
-    $homeLabel = \Illuminate\Support\Facades\Lang::has('common.home') ? __('common.home') : 'Trang chủ';
+    $homeLabel = app(\App\Core\Themes\ThemeTranslationService::class)
+        ->bladeText((string) data_get($activeTheme ?? [], 'key', 'XD0301'), app()->getLocale(), 'common.home', 'Trang chủ');
     $hasHomeItem = $navItems->contains(function (array $item) use ($homeUrl): bool {
         $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
         $href = rtrim((string) ($item['href'] ?? ''), '/');

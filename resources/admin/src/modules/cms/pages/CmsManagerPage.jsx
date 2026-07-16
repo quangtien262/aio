@@ -87,6 +87,21 @@ function CmsMediaThumbnail({ src, alt, size = 64, radius = 12 }) {
     );
 }
 
+function resolveRecordImageUrl(record) {
+    if (record?.featured_image_url) {
+        return record.featured_image_url;
+    }
+
+    if (record?.image_url) {
+        return record.image_url;
+    }
+
+    const featuredImage = (record?.images ?? []).find((image) => image?.is_featured && image?.image_url);
+    const firstImage = (record?.images ?? []).find((image) => image?.image_url);
+
+    return featuredImage?.image_url || firstImage?.image_url || record?.file_url || '';
+}
+
 const orderStatusOptions = [
     { label: 'Tất cả trạng thái', value: 'all' },
     { label: 'Mới đặt', value: 'placed' },
@@ -287,7 +302,7 @@ const sectionConfigMap = {
         permissionPublish: null,
     },
     'cms-media': {
-        title: 'Media',
+        title: 'Ảnh',
         description: 'Upload và chọn media cơ bản cho page/post.',
         endpoint: '/admin/api/cms/media',
         permissionView: 'cms.view',
@@ -726,13 +741,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     key: 'title',
                     render: (value, record) => (
                         <Space size={12} align="start">
-                            {record.featured_image_url ? (
-                                <CmsMediaThumbnail src={record.featured_image_url} alt={record.featured_image_alt || value} />
-                            ) : (
-                                <div style={{ width: 64, height: 64, borderRadius: 12, border: '1px solid #dbe7e4', background: '#f4f7f6', display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
-                                    No Img
-                                </div>
-                            )}
+                            <CmsMediaThumbnail src={resolveRecordImageUrl(record)} alt={record.featured_image_alt || value} />
                             <Space direction="vertical" size={2} align="start">
                                 <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openEditModal(record)}>
                                     <Text strong style={{ color: '#1677ff' }}>{value}</Text>
@@ -774,13 +783,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     key: 'title',
                     render: (value, record) => (
                         <Space size={12} align="start">
-                            {record.featured_image_url ? (
-                                <CmsMediaThumbnail src={record.featured_image_url} alt={record.featured_image_alt || value} />
-                            ) : (
-                                <div style={{ width: 64, height: 64, borderRadius: 12, border: '1px solid #dbe7e4', background: '#f4f7f6', display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
-                                    No Img
-                                </div>
-                            )}
+                            <CmsMediaThumbnail src={resolveRecordImageUrl(record)} alt={record.featured_image_alt || value} />
                             <Space direction="vertical" size={2} align="start">
                                 <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openEditModal(record)}>
                                     <Text strong style={{ color: '#1677ff' }}>{value}</Text>
@@ -845,13 +848,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     key: 'name',
                     render: (value, record) => (
                         <Space size={12} align="start">
-                            {record.featured_image_url ? (
-                                <CmsMediaThumbnail src={record.featured_image_url} alt={record.featured_image_alt || value} />
-                            ) : (
-                                <div style={{ width: 64, height: 64, borderRadius: 12, border: '1px solid #dbe7e4', background: '#f4f7f6', display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
-                                    No Img
-                                </div>
-                            )}
+                            <CmsMediaThumbnail src={resolveRecordImageUrl(record)} alt={record.featured_image_alt || value} />
                             <Space direction="vertical" size={2} align="start">
                                 <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openEditModal(record)}>
                                     <Text strong style={{ color: '#1677ff' }}>{value}</Text>
@@ -1269,7 +1266,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         const didSave = editingServiceCategoryRecord?.id
             ? await runAdminAction(
                 () => callAdminApi(`/admin/api/cms/service-categories/${editingServiceCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
-                'ÄÃ£ cáº­p nháº­t danh má»¥c dá»‹ch vá»¥.',
+                'Đã cập nhật danh mục dịch vụ.',
                 async () => {
                     await loadServiceCategoryItems();
                     await reload();
@@ -1277,7 +1274,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             )
             : await runAdminAction(
                 () => callAdminApi('/admin/api/cms/service-categories', { method: 'POST', body: JSON.stringify(payload) }),
-                'ÄÃ£ táº¡o danh má»¥c dá»‹ch vá»¥.',
+                'Đã tạo danh mục dịch vụ.',
                 async () => {
                     await loadServiceCategoryItems();
                     await reload();
@@ -1292,15 +1289,15 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
     const handleDeleteServiceCategory = (record) => {
         Modal.confirm({
-            title: 'XÃ³a danh má»¥c dá»‹ch vá»¥?',
-            content: `Danh má»¥c "${record.name}" sáº½ bá»‹ xÃ³a. CÃ¡c dá»‹ch vá»¥ Ä‘ang gáº¯n danh má»¥c nÃ y cÃ³ thá»ƒ cáº§n cáº­p nháº­t láº¡i.`,
-            okText: 'XÃ³a',
+            title: 'Xóa danh mục dịch vụ?',
+            content: `Danh mục "${record.name}" sẽ bị xóa. Các dịch vụ đang gắn danh mục này có thể cần cập nhật lại.`,
+            okText: 'Xóa',
             okButtonProps: { danger: true },
-            cancelText: 'Há»§y',
+            cancelText: 'Hủy',
             onOk: async () => {
                 await runAdminAction(
                     () => callAdminApi(`/admin/api/cms/service-categories/${record.id}`, { method: 'DELETE' }),
-                    'ÄÃ£ xÃ³a danh má»¥c dá»‹ch vá»¥.',
+                    'Đã xóa danh mục dịch vụ.',
                     async () => {
                         await loadServiceCategoryItems();
                         await reload();
@@ -2454,11 +2451,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         return [
             {
-                title: 'Media',
+                title: 'Ảnh',
                 key: 'media',
                 render: (_, record) => (
                     <Space>
-                        <CmsMediaThumbnail src={record.file_url} alt={record.title} size={56} />
+                        <CmsMediaThumbnail src={resolveRecordImageUrl(record)} alt={record.title} size={56} />
                         <Space direction="vertical" size={0}>
                             <Text strong>{record.title}</Text>
                             <Text type="secondary">{record.alt_text || record.mime_type || 'Media asset'}</Text>
