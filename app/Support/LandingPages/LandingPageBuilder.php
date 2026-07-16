@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322'], true);
     }
 
     /**
@@ -1143,6 +1143,7 @@ class LandingPageBuilder
             'XD0320' => $this->xd0320DefaultBlocks(),
             'NT501' => $this->nt501DefaultBlocks(),
             'XD321' => $this->xd321DefaultBlocks(),
+            'XD0322' => $this->xd0322DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1858,6 +1859,50 @@ class LandingPageBuilder
         $partners['data']['vi'] = ['title' => 'Đối tác của chúng tôi', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
         return [$hero, $quality, $about, $feature, $projects, $team, $partners];
+    }
+
+    private function xd0322DefaultBlocks(): array
+    {
+        $base = collect($this->xd321DefaultBlocks())->keyBy('block_type');
+        $industrial = collect($this->xd0320DefaultBlocks())->keyBy('block_type');
+
+        $hero = $base->get('hero_slider');
+        $hero['label'] = 'Header va hero XD0322';
+        $hero['settings'] = ['source' => 'site_banners', 'placement' => 'xd0322-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500];
+        $hero['data']['vi'] = ['title' => 'Cung cap giai phap xay dung tot nhat', 'subtitle' => 'Chat luong - An toan - Hieu qua - Chuyen nghiep', 'description' => 'Thiet ke va thi cong tron goi cho cac cong trinh dan dung va thuong mai.', 'button_label' => 'Lien he bao gia', 'content' => ['slides' => [['title' => 'Cung cap giai phap xay dung tot nhat', 'summary' => 'Dich vu thi cong tron goi voi chien luoc linh hoat trong qua trinh van hanh va phat trien.', 'button_label' => 'Lien he bao gia', 'image' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#lien-he']]]];
+
+        $quality = $base->get('featured_categories');
+        $quality['label'] = 'Cam ket XD0322';
+        $quality['data']['vi'] = ['title' => 'Cam ket chat luong', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => 'Cam ket chat luong', 'summary' => 'Kiem soat ky tung hang muc.', 'icon' => 'fa-regular fa-lightbulb'], ['title' => 'Dung tien do', 'summary' => 'Bao dam ke hoach thi cong.', 'icon' => 'fa-solid fa-hand-holding-heart'], ['title' => 'Tan tam voi khach hang', 'summary' => 'Dong hanh trong tung giai doan.', 'icon' => 'fa-solid fa-trowel-bricks'], ['title' => 'Bao hanh dai han', 'summary' => 'Chinh sach sau ban giao ro rang.', 'icon' => 'fa-solid fa-helmet-safety']]]];
+
+        $about = $base->get('about_experience');
+        $about['data']['vi'] = ['title' => 'Chung toi dan dau trong linh vuc xay dung', 'subtitle' => 'Ve chung toi', 'description' => 'XD0322 la don vi thiet ke va thi cong tron goi. Chung toi giu vung cam ket ve chat luong, an toan, hieu qua va tinh chuyen nghiep trong moi cong trinh.', 'button_label' => 'Xem them', 'content' => ['years' => '18+', 'years_label' => 'Nam trong nghe', 'items' => []]];
+
+        $services = $base->get('content_mosaic');
+        $services['data']['vi'] = ['title' => 'Dich vu tot nhat cho ban', 'subtitle' => 'Dich vu cua chung toi', 'description' => 'Giai phap thiet ke, thi cong va hoan thien phu hop voi moi nhu cau.', 'button_label' => '', 'content' => ['items' => []]];
+
+        $projects = $base->get('project_gallery');
+        $projects['data']['vi'] = ['title' => 'Du an cua chung toi', 'subtitle' => 'Cong trinh tieu bieu', 'description' => 'Nhung cong trinh chung cu, biet thu, nha pho va van phong da hoan thien.', 'button_label' => '', 'content' => ['items' => []]];
+
+        $products = $base->get('featured_products');
+        $products['data']['vi']['title'] = 'San pham cua chung toi';
+        $products['data']['vi']['subtitle'] = 'Noi that va vat lieu hoan thien';
+
+        $team = $industrial->get('team_members');
+        $team['data']['vi'] = ['title' => 'Doi ngu cua chung toi', 'subtitle' => 'Tan tam, chuyen nghiep', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        $testimonials = $base->get('testimonials');
+        $testimonials['data']['vi'] = ['title' => 'Nhan xet cua khach hang', 'subtitle' => 'Phan hoi sau thi cong', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        $pricing = $base->get('process_steps');
+        $pricing['label'] = 'Bao gia thi cong';
+        $pricing['data']['vi'] = ['title' => 'Bao gia thi cong', 'subtitle' => 'Goi dich vu', 'description' => 'Cac goi thi cong linh hoat phu hop voi quy mo va ngan sach cong trinh.', 'button_label' => 'Dang ky ngay', 'content' => ['items' => [['title' => 'Goi co ban', 'summary' => '280.000d/m2'], ['title' => 'Goi nang cao', 'summary' => '350.000d/m2'], ['title' => 'Goi cao cap', 'summary' => '500.000d/m2']]]];
+
+        $partners = $base->get('partner_logos');
+        $news = $base->get('bizmax_latest_posts');
+        $news['data']['vi'] = ['title' => 'Bai viet moi nhat', 'subtitle' => 'Tin tuc va cap nhat', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+
+        return [$hero, $quality, $about, $services, $products, $team, $projects, $pricing, $testimonials, $news, $partners];
     }
 
     private function xd321DefaultBlocks(): array
