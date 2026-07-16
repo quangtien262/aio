@@ -29,7 +29,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0314', 'XD0315', 'XD0318'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318'], true);
     }
 
     /**
@@ -1138,6 +1138,7 @@ class LandingPageBuilder
             'XD0318' => $this->xd0318DefaultBlocks(),
             'XD0315' => $this->xd0315DefaultBlocks(),
             'XD0314' => $this->xd0314DefaultBlocks(),
+            'XD0313' => $this->xd0313DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1151,6 +1152,260 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function xd0313DefaultBlocks(): array
+    {
+        $contentSources = [
+            ['value' => 'custom', 'label' => 'Nhap thu cong'],
+            ['value' => 'cms_posts', 'label' => 'Tin tuc'],
+            ['value' => 'cms_products', 'label' => 'San pham'],
+            ['value' => 'cms_services', 'label' => 'Dich vu'],
+            ['value' => 'cms_projects', 'label' => 'Du an'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero RouteX',
+                'description' => 'Banner bo tron nen xanh, CTA va video.',
+                'preview_image' => '/theme-previews/XD0313/hero-slider.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'xd0313-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vi tri banner'],
+                    'limit' => ['type' => 'number', 'label' => 'So slide'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Visa De Dang, Giac Mo Thanh Hien Thuc',
+                        'subtitle' => '',
+                        'description' => 'Visa chi la phuong tien, con giac mo du hoc, du lich, dinh cu moi la muc tieu cuoi cung.',
+                        'button_label' => 'Doc Them',
+                        'content' => ['slides' => [
+                            ['title' => 'Visa De Dang, Giac Mo Thanh Hien Thuc', 'summary' => 'Visa chi la phuong tien, con giac mo du hoc, du lich, dinh cu moi la muc tieu cuoi cung. Su de dang trong viec co visa se giup ban tap trung hon vao viec thuc hien giac mo cua minh.', 'button_label' => 'Doc Them', 'image' => 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=900&q=85', 'link_url' => '#gioi-thieu', 'video_url' => '#video'],
+                            ['title' => 'Dong Hanh Tren Moi Hanh Trinh Quoc Te', 'summary' => 'Tu van ho so, dat lich hen va ho tro visa nhanh chong cho tung muc tieu cua ban.', 'button_label' => 'Dich Vu Visa', 'image' => 'https://images.unsplash.com/photo-1521791055366-0d553872125f?auto=format&fit=crop&w=900&q=85', 'link_url' => '#dich-vu', 'video_url' => '#video'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Easy visa, real dreams', 'subtitle' => '', 'description' => 'RouteX helps make your travel, study and work dreams easier.', 'button_label' => 'Read more', 'content' => ['slides' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_categories',
+                'label' => 'Uu diem RouteX',
+                'description' => 'Bon card loi ich dau trang.',
+                'preview_image' => '/theme-previews/XD0313/benefits.png',
+                'anchor_id' => 'uu-diem',
+                'settings' => ['limit' => 4],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Uu diem',
+                        'subtitle' => '',
+                        'description' => '',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['title' => 'Ho So Don Gian', 'summary' => 'Co cong viec chinh thuc voi thu nhap tot, co the chung minh qua hop dong lao dong va bang luong.', 'icon' => '01'],
+                            ['title' => 'Nhanh Chong Tuc Thi', 'summary' => 'Hay lien he voi chung toi de nhan duoc su tu van mien phi va chuyen sau nhat.', 'icon' => '02'],
+                            ['title' => 'Tu Van Tan Tam', 'summary' => 'RouteX tu hao la doi tac tin cay, chuyen cung cap dich vu tu van va ho tro visa chuyen nghiep.', 'icon' => '03'],
+                            ['title' => 'Bao Mat Tuyet Doi', 'summary' => 'Moi du lieu khach hang deu duoc bao mat tuyet doi, dam bao su an tam va tin tuong.', 'icon' => '04'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Benefits', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'about_experience',
+                'label' => 'Ve RouteX',
+                'description' => 'Gioi thieu cong ty voi hinh anh va goi dich vu.',
+                'preview_image' => '/theme-previews/XD0313/about.png',
+                'anchor_id' => 'gioi-thieu',
+                'settings' => ['cta_url' => '#dich-vu'],
+                'media' => [
+                    'image_one' => 'https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=900&q=85',
+                    'image_two' => 'https://images.unsplash.com/photo-1521791055366-0d553872125f?auto=format&fit=crop&w=900&q=85',
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Noi Niem Dam Me Nhung Diem Den Trong Mo',
+                        'subtitle' => 'Ve chung toi',
+                        'description' => 'RouteX Visa tu hao la doi tac tin cay cua ban tren moi hanh trinh kham pha the gioi. Chung toi cung cap cac giai phap visa toan dien va hieu qua nhat.',
+                        'button_label' => 'Doc Them',
+                        'content' => [
+                            'years' => '25',
+                            'items' => [
+                                ['title' => 'Ho Chieu Plus', 'icon' => 'P', 'bullets' => ['Di tru vuot bien gioi', 'Ho tro thi thuc toan cau']],
+                                ['title' => 'Nhap Canh Toan Cau', 'icon' => 'G', 'bullets' => ['Dich vu Visa GlobeTrot', 'Giai phap Visa Infinity']],
+                            ],
+                        ],
+                    ],
+                    'en' => ['title' => 'Passion for dream destinations', 'subtitle' => 'About us', 'description' => 'RouteX provides complete visa consulting solutions.', 'button_label' => 'Read more', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'content_mosaic',
+                'label' => 'Danh muc visa noi bat',
+                'description' => 'Slider anh danh muc visa tren nen xanh dam.',
+                'preview_image' => '/theme-previews/XD0313/featured-visa.png',
+                'anchor_id' => 'visa-noi-bat',
+                'dynamic' => true,
+                'settings' => ['source' => 'custom', 'limit' => 6],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Danh Muc Visa Noi Bat',
+                        'subtitle' => 'Visa noi bat',
+                        'description' => '',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['title' => 'Visa Chau My', 'image' => 'https://images.unsplash.com/photo-1508433957232-3107f5fd5995?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa Chau Au', 'image' => 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa Du Hoc', 'image' => 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Featured visa categories', 'subtitle' => 'Featured visas', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_services',
+                'label' => 'Cac loai visa pho bien',
+                'description' => 'Grid dich vu visa lay tu service/post/product/project hoac custom.',
+                'preview_image' => '/theme-previews/XD0313/services.png',
+                'anchor_id' => 'dich-vu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Cac Loai Visa Pho Bien',
+                        'subtitle' => 'Visa noi bat',
+                        'description' => '',
+                        'button_label' => 'Xem Chi Tiet',
+                        'content' => ['items' => [
+                            ['title' => 'Dich Vu Xin Visa Brunei Nhanh Chong - Chuyen Nghiep Tai', 'summary' => 'Doi voi cong dan Viet Nam, viec xin visa di Brunei can duoc thuc hien neu muon luu tru qua 14 ngay.', 'image' => 'https://images.unsplash.com/photo-1560264280-88b68371db39?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa Du Hoc Chau Au', 'summary' => 'Thu tuc xin visa du hoc Chau Au co the phuc tap vi moi quoc gia co nhung quy dinh rieng.', 'image' => 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Dich Vu Gia Han Visa My', 'summary' => 'Ho tro gia han thi thuc My cho ca nhan da co visa du dieu kien.', 'image' => 'https://images.unsplash.com/photo-1527853787696-f7be74f2e39a?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa Tham Nguoi Than', 'summary' => 'Loai visa danh cho muc dich tham than, du lich ngan han hoac bao lanh dac biet.', 'image' => 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa Du Lich', 'summary' => 'Thi thuc cho phep nhap canh voi muc dich tham quan, nghi duong va kham pha.', 'image' => 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa Cong Tac', 'summary' => 'Ho tro ho so cong tac, thuong mai, ky ket hop dong va tham du su kien.', 'image' => 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=900&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Popular visa services', 'subtitle' => 'Featured visas', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'logistics_feature_panel',
+                'label' => 'Uu dai va thong ke',
+                'description' => 'Khoi CTA kem thong ke RouteX.',
+                'preview_image' => '/theme-previews/XD0313/promo.png',
+                'anchor_id' => 'uu-dai',
+                'settings' => ['cta_url' => '#footer'],
+                'media' => [
+                    'image' => 'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=900&q=85',
+                    'card_image' => 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=85',
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Nhan uu dai tot nhat cua chung toi mot cach nhanh chong',
+                        'subtitle' => '',
+                        'description' => 'Dung ngan ngai lien he truc tiep voi cac cong ty visa qua hotline hoac email. Ban co the hoi thang ve cac chuong trinh khuyen mai hien tai.',
+                        'button_label' => 'Lien He Ngay',
+                        'content' => ['stats' => [
+                            ['value' => '17+', 'label' => 'Nam kinh nghiem'],
+                            ['value' => '99,8%', 'label' => 'Khach hang hai long'],
+                            ['value' => '24/7', 'label' => 'Tu van mien phi'],
+                            ['value' => '98,6%', 'label' => 'Ti le dau visa'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Get our best offer quickly', 'subtitle' => '', 'description' => 'Contact RouteX for the latest visa consulting offers.', 'button_label' => 'Contact now', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'process_steps',
+                'label' => 'Quy trinh visa',
+                'description' => 'Cac buoc lam visa tai RouteX.',
+                'preview_image' => '/theme-previews/XD0313/process.png',
+                'anchor_id' => 'quy-trinh',
+                'settings' => [],
+                'media' => ['image' => 'https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=900&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Cac Buoc Lam Visa Tai RouteX',
+                        'subtitle' => 'Quy trinh tu van',
+                        'description' => '',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['title' => 'Dang Ky (1 Phut)', 'summary' => 'Form dien thong tin don gian, nhanh chong. Thong tin duoc bao mat an toan.'],
+                            ['title' => 'Tu Van', 'summary' => 'Nhan vien se lien he lai voi ban trong vong 4h. Hoac lien he qua Hotline 1900 9477.'],
+                            ['title' => 'Hoan Thien Ho So (2 - 3 Ngay)', 'summary' => 'Mot nhan vien giau kinh nghiem se dong hanh ho tro ban suot qua trinh.'],
+                            ['title' => 'Nhan Visa', 'summary' => 'Khach hang nhan Visa se den lay truc tiep hoac chuyen phat tan tay.'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'RouteX visa process', 'subtitle' => 'Consulting process', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'testimonials',
+                'label' => 'Danh gia khach hang',
+                'description' => 'Khoi testimonial xanh.',
+                'preview_image' => '/theme-previews/XD0313/testimonials.png',
+                'anchor_id' => 'danh-gia',
+                'settings' => ['source' => 'custom', 'limit' => 3],
+                'media' => ['image' => 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=900&q=85'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Danh gia',
+                        'subtitle' => '',
+                        'description' => 'Toi la chu doanh nghiep, khong co thoi gian tim hieu thu tuc phuc tap. Cong ty dich vu da lam moi thu tu A den Z, toi chi can den va nop ho so.',
+                        'button_label' => '',
+                        'content' => ['items' => [
+                            ['name' => 'Tran Minh Hoang', 'role' => 'SEO cong ty ABC', 'quote' => 'Toi la chu doanh nghiep, khong co thoi gian tim hieu thu tuc phuc tap. Cong ty dich vu da lam moi thu tu A den Z, tu dich thuat cong chung den dat lich hen, toi chi can den va nop ho so. Rat tien loi va chuyen nghiep.', 'avatar' => 'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=300&q=85'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Testimonials', 'subtitle' => '', 'description' => 'RouteX made the process simple and professional.', 'button_label' => '', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'bizmax_latest_posts',
+                'label' => 'Blog gan day',
+                'description' => 'Bai viet RouteX dang card.',
+                'preview_image' => '/theme-previews/XD0313/blog.png',
+                'anchor_id' => 'blog',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Mot So Bai Viet Cua Chung Toi',
+                        'subtitle' => 'Blog gan day',
+                        'description' => '',
+                        'button_label' => 'Xem Chi Tiet',
+                        'content' => ['items' => [
+                            ['title' => 'Hoc Bong Du Hoc Duc 2021 Len Toi 100% Hoc Phi - Co Hoi', 'summary' => 'Dai hoc Jacobs xep hang 1 trong bang xep hang cac truong dai hoc tu cua Duc.', 'image' => 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 238],
+                            ['title' => 'Vuong Quoc Anh: Cac Truong Dai Hoc Giu Cho Cho Sinh', 'summary' => 'Theo cac ben lien quan trong nganh, cac du hoc sinh Anh se khong mat di co hoi ghi danh.', 'image' => 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 138],
+                            ['title' => 'Thong Tin Cap Nhat Ve Cac Chinh Sach Lien Quan Den Tinh', 'summary' => 'Thong tin cap nhat ve cac chinh sach lien quan den tinh hinh moi.', 'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 192],
+                            ['title' => 'Soi Dong Hoi Thao Du Hoc: Cuoc Song Noi Xu Nguoi', 'summary' => 'Buoi hoi thao ve chu de du hoc va cuoc song noi xu nguoi thu hut nhieu ban tre.', 'image' => 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 920],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Some of our articles', 'subtitle' => 'Recent blog', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

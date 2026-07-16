@@ -1,0 +1,38 @@
+{
+  "name": "XD0313 RouteX Visa",
+  "key": "XD0313",
+  "version": "0.1.0",
+  "description": "RouteX visa and travel consulting landing page with rounded hero, visa cards, process, testimonials, blog and dark green footer.",
+  "website_type": "service",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-XD0313.svg",
+    "cover": "cover-XD0313.svg"
+  },
+  "blocks": [
+    "hero-slider",
+    "featured-categories",
+    "about-experience",
+    "content-mosaic",
+    "featured-services",
+    "logistics-feature-panel",
+    "process-steps",
+    "testimonials",
+    "bizmax-latest-posts"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": false
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "xd0313-routex-visa"
+  }
+}

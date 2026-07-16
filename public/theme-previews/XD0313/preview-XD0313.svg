@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-label="XD0313 RouteX preview">
+  <rect width="640" height="420" fill="#f2f7ec"/>
+  <rect y="0" width="640" height="66" fill="#f2f7ec"/>
+  <circle cx="30" cy="32" r="14" fill="none" stroke="#005138" stroke-width="2"/>
+  <path d="M20 34h26l-13-9" fill="none" stroke="#005138" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="56" y="41" fill="#005138" font-family="Arial, sans-serif" font-size="26" font-weight="900">RouteX</text>
+  <g fill="#005138" font-family="Arial, sans-serif" font-size="10" font-weight="800">
+    <text x="214" y="39" fill="#7bd615">TRANG CHU</text><text x="292" y="39">GIOI THIEU</text><text x="378" y="39">DICH VU VISA</text><text x="482" y="39">LIEN HE</text>
+  </g>
+  <circle cx="546" cy="32" r="18" fill="#005138"/>
+  <rect x="570" y="14" width="58" height="36" rx="18" fill="#7bd615"/>
+  <rect x="8" y="76" width="624" height="250" rx="34" fill="#005138"/>
+  <circle cx="450" cy="220" r="82" fill="#7bd615"/>
+  <rect x="424" y="116" width="110" height="210" rx="48" fill="#d7e9ff"/>
+  <rect x="444" y="96" width="74" height="48" rx="24" fill="#f0b49a"/>
+  <rect x="432" y="186" width="100" height="124" rx="44" fill="#24527c"/>
+  <text x="42" y="174" fill="#fff" font-family="Arial, sans-serif" font-size="40" font-weight="900">Visa De Dang,</text>
+  <text x="42" y="224" fill="#fff" font-family="Arial, sans-serif" font-size="40" font-weight="900">Giac Mo Thanh</text>
+  <text x="42" y="274" fill="#fff" font-family="Arial, sans-serif" font-size="40" font-weight="900">Hien Thuc</text>
+  <rect x="42" y="290" width="90" height="34" rx="17" fill="none" stroke="#fff"/>
+  <circle cx="158" cy="307" r="17" fill="#7bd615"/>
+  <g transform="translate(18 350)">
+    <rect width="140" height="52" rx="12" fill="none" stroke="#dce8d3"/>
+    <rect x="170" width="140" height="52" rx="12" fill="none" stroke="#dce8d3"/>
+    <rect x="340" width="140" height="52" rx="12" fill="none" stroke="#dce8d3"/>
+    <rect x="510" width="110" height="52" rx="12" fill="none" stroke="#dce8d3"/>
+  </g>
+</svg>
