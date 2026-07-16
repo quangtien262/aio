@@ -4,7 +4,6 @@
             $hotline = $hotline ?? '0399162342';
             $phoneHref = $phoneHref ?? (preg_replace('/\D+/', '', (string) $hotline) ?: $hotline);
             $supportEmail = $supportEmail ?? ($email ?? 'admin@htvietnam.vn');
-            $navItems = collect($navItems ?? []);
             $topbarLocales = collect(\App\Support\FrontendLocalization::localeOptions())
                 ->filter(fn (array $locale): bool => (bool) ($locale['is_active'] ?? false) && (bool) ($locale['is_published'] ?? true))
                 ->values();
@@ -24,6 +23,144 @@
 
                 return $query ? $url.'?'.$query : $url;
             };
+            $localizeMenuUrl = function (?string $href): string {
+                $href = trim((string) $href);
+
+                if ($href === '' || $href === '#' || str_starts_with($href, '#') || preg_match('/^(https?:)?\/\//i', $href) || preg_match('/^(mailto|tel):/i', $href)) {
+                    return $href !== '' ? $href : '#';
+                }
+
+                $parts = parse_url($href) ?: [];
+                $path = trim((string) ($parts['path'] ?? ''), '/');
+                $query = isset($parts['query']) && $parts['query'] !== '' ? '?'.$parts['query'] : '';
+                $fragment = isset($parts['fragment']) && $parts['fragment'] !== '' ? '#'.$parts['fragment'] : '';
+
+                if ($path === '') {
+                    return route('site.home').$query.$fragment;
+                }
+
+                $segments = explode('/', $path);
+                $knownLocales = \App\Support\FrontendLocalization::knownLocaleCodes();
+
+                if (! in_array($segments[0] ?? '', $knownLocales, true)) {
+                    array_unshift($segments, app()->getLocale());
+                }
+
+                return url('/'.implode('/', $segments)).$query.$fragment;
+            };
+            $repairXdLabel = static function (string $label): string {
+                return strtr(trim($label), [
+                    'Trang chá»§' => 'Trang chủ',
+                    'TRANG CHÁ»§' => 'TRANG CHỦ',
+                    'trang chá»§' => 'trang chủ',
+                    'Sáº£n pháº©m' => 'Sản phẩm',
+                    'SÁº£N PHÁº©M' => 'SẢN PHẨM',
+                    'sáº£n pháº©m' => 'sản phẩm',
+                    'sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'sản phẩm',
+                    'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'Sản phẩm',
+                    'TÃ i khoáº£n' => 'Tài khoản',
+                ]);
+            };
+            $normalizeNavItem = function (array $item) use (&$normalizeNavItem, $localizeMenuUrl, $repairXdLabel): array {
+                $href = (string) ($item['url'] ?? $item['href'] ?? '#');
+
+                return [
+                    'label' => $repairXdLabel((string) ($item['label'] ?? $item['title'] ?? 'Menu')),
+                    'href' => $localizeMenuUrl($href),
+                    'target' => $item['target'] ?? '_self',
+                    'active' => false,
+                    'children' => collect($item['children'] ?? [])
+                        ->filter(fn ($child): bool => is_array($child) && filled($child['label'] ?? $child['title'] ?? null))
+                        ->map(fn (array $child): array => $normalizeNavItem($child))
+                        ->values()
+                        ->all(),
+                ];
+            };
+            $legacyPageNavItems = $navItems ?? [];
+            $headerMenuSource = collect(data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', [])));
+            $headerMenuSource = $headerMenuSource->isNotEmpty()
+                ? $headerMenuSource
+                : collect(data_get($themeHomeData ?? [], 'top_menu',
+                    data_get($homeData ?? [], 'top_menu',
+                    data_get($themeShellData ?? [], 'top_menu',
+                    $legacyPageNavItems))));
+
+            if ($headerMenuSource->isEmpty() && isset($blocks)) {
+                $headerMenuSource = collect($blocks)
+                    ->filter(fn ($block): bool => filled($block['anchor_id'] ?? null))
+                    ->map(fn ($block): array => [
+                        'label' => data_get($block, 'data.subtitle') ?: data_get($block, 'data.title') ?: \Illuminate\Support\Str::headline((string) ($block['block_type'] ?? 'Menu')),
+                        'url' => '#'.$block['anchor_id'],
+                    ]);
+            }
+
+            $navItems = $headerMenuSource
+                ->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
+                ->map(fn (array $item): array => $normalizeNavItem($item))
+                ->values();
+
+            $homeUrl = route('site.home');
+            $hasHomeItem = $navItems->contains(function (array $item) use ($homeUrl): bool {
+                $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
+                $href = rtrim((string) ($item['href'] ?? ''), '/');
+
+                return in_array($label, ['trang chủ', 'home'], true) || $href === rtrim($homeUrl, '/');
+            });
+
+            if (! $hasHomeItem) {
+                $navItems->prepend([
+                    'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ',
+                    'href' => $homeUrl,
+                    'target' => '_self',
+                    'active' => request()->routeIs('site.home'),
+                    'children' => [],
+                ]);
+            }
+
+            $productNavigationItems = collect(data_get($menus ?? [], 'product-navigation', data_get($themeShellData ?? [], 'product_menu', [])))
+                ->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
+                ->map(fn (array $item): array => $normalizeNavItem($item))
+                ->values();
+
+            if ($productNavigationItems->isNotEmpty()) {
+                $hasProductItem = $navItems->contains(function (array $item): bool {
+                    return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
+                });
+
+                if ($hasProductItem) {
+                    $navItems = $navItems
+                        ->map(function (array $item) use ($productNavigationItems): array {
+                            $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
+
+                            if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                                $item['children'] = $productNavigationItems->all();
+                            }
+
+                            return $item;
+                        })
+                        ->values();
+                }
+            }
+
+            $currentUrl = rtrim(url()->current(), '/');
+            $markActive = function (array $items) use (&$markActive, $currentUrl): array {
+                return collect($items)
+                    ->map(function (array $item) use (&$markActive, $currentUrl): array {
+                        $href = (string) ($item['href'] ?? '#');
+                        $absoluteHref = str_starts_with($href, 'http') ? rtrim($href, '/') : rtrim(url($href), '/');
+                        $children = $markActive($item['children'] ?? []);
+                        $childActive = collect($children)->contains(fn (array $child): bool => (bool) ($child['active'] ?? false));
+
+                        $item['children'] = $children;
+                        $item['active'] = (bool) ($item['active'] ?? false) || $childActive || ($href !== '#' && $absoluteHref === $currentUrl);
+
+                        return $item;
+                    })
+                    ->values()
+                    ->all();
+            };
+
+            $navItems = collect($markActive($navItems->all()));
             $adminLoggedIn = auth('admin')->check();
             $customerLoggedIn = auth('customer')->check();
             $menuHref = fn (array $item, string $fallback = '#'): string => (string) ($item['href'] ?? $item['url'] ?? $fallback);
