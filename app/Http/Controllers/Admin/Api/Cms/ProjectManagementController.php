@@ -48,6 +48,55 @@ class ProjectManagementController
         return response()->json(['message' => 'Da cap nhat du an CMS.', 'data' => $this->serialize($record)]);
     }
 
+    public function bulkUpdate(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('cms_projects', 'id')],
+            'cms_project_category_id' => ['sometimes', 'nullable', 'integer', Rule::exists('cms_project_categories', 'id')],
+            'is_featured' => ['sometimes', 'boolean'],
+            'is_highlight' => ['sometimes', 'boolean'],
+        ]);
+
+        $updates = [];
+
+        if (array_key_exists('cms_project_category_id', $validated)) {
+            $updates['cms_project_category_id'] = $validated['cms_project_category_id'];
+        }
+
+        if (array_key_exists('is_featured', $validated)) {
+            $updates['is_featured'] = (bool) $validated['is_featured'];
+        }
+
+        if (array_key_exists('is_highlight', $validated)) {
+            $updates['is_highlight'] = (bool) $validated['is_highlight'];
+        }
+
+        if ($updates === []) {
+            return response()->json(['message' => 'Khong co thong tin can cap nhat.'], 422);
+        }
+
+        $count = CmsProject::query()
+            ->whereIn('id', $validated['ids'])
+            ->update($updates);
+
+        return response()->json(['message' => 'Da cap nhat du an da chon.', 'data' => ['updated' => $count]]);
+    }
+
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('cms_projects', 'id')],
+        ]);
+
+        $count = CmsProject::query()
+            ->whereIn('id', $validated['ids'])
+            ->delete();
+
+        return response()->json(['message' => 'Da xoa du an da chon.', 'data' => ['deleted' => $count]]);
+    }
+
     public function destroy(Request $request, int $project): JsonResponse
     {
         /** @var CmsProject $record */

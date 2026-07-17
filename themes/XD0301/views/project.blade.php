@@ -1,5 +1,7 @@
 @php
-    $title = $pageTitle ?? ($entry->title ?? (app()->getLocale() === 'en' ? 'Project' : 'Dự án'));
+    $isEnglish = app()->getLocale() === 'en';
+    $projectLabel = $isEnglish ? 'Project' : html_entity_decode('D&#7921; &aacute;n', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $title = $pageTitle ?? ($entry->title ?? $projectLabel);
     $description = $pageDescription ?? ($entry->summary ?? '');
     $projectImages = $entry->relationLoaded('images')
         ? $entry->images->filter(fn ($image) => filled($image->image_url))->values()
@@ -9,6 +11,7 @@
         $projectImages = collect([$entry->featuredImage]);
     }
 
+    $recentProjectItems = collect($recentProjects ?? []);
     $footerNewsletterSource = 'theme-footer-xd0301-project';
     $canEditLanding = false;
 @endphp
@@ -53,10 +56,18 @@
         .xd-detail-summary{margin:0 0 28px;color:var(--muted);font-size:20px}
         .xd-rich-content{color:#465461;font-size:18px}
         .xd-rich-content :first-child{margin-top:0}
+        .xd-side-stack{display:grid;gap:22px;align-content:start}
         .xd-side-card{padding:28px}
         .xd-side-card h3{margin:0 0 18px;font-size:24px}
         .xd-side-card a,.xd-side-card span{display:block;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-weight:750}
         .xd-side-card a:hover{color:var(--lime-dark)}
+        .xd-recent-projects{display:grid;gap:14px}
+        .xd-recent-project{display:grid!important;grid-template-columns:82px minmax(0,1fr);gap:14px;align-items:center;padding:12px 0!important;border-top:1px solid var(--line);color:var(--ink)!important}
+        .xd-recent-project:first-child{border-top:0}
+        .xd-recent-project img,.xd-recent-project-placeholder{width:82px;height:62px;object-fit:cover;background:#eef2ef}
+        .xd-recent-project-placeholder{display:block;border:1px solid var(--line)}
+        .xd-recent-project strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:15px;line-height:1.35}
+        .xd-recent-project:hover strong{color:var(--lime-dark)}
         @media (max-width:1180px){.xd-detail{grid-template-columns:1fr}}
         @media (max-width:640px){.xd-page-main{padding:38px 0 56px}.xd-project-detail-stage{aspect-ratio:4/3;min-height:260px}.xd-project-detail-nav{display:none}.xd-project-detail-caption{left:18px;right:18px;bottom:18px}.xd-project-detail-thumb{flex-basis:78px;width:78px;height:56px}.xd-detail-body{padding:28px 22px}.xd-detail-body h1{font-size:34px}.xd-detail-summary,.xd-rich-content{font-size:16px}}
     </style>
@@ -79,8 +90,8 @@
                                 >
                             @endforeach
                             @if ($projectImages->count() > 1)
-                                <button class="xd-project-detail-nav prev" type="button" data-project-detail-prev aria-label="Ảnh trước">&#8249;</button>
-                                <button class="xd-project-detail-nav next" type="button" data-project-detail-next aria-label="Ảnh tiếp theo">&#8250;</button>
+                                <button class="xd-project-detail-nav prev" type="button" data-project-detail-prev aria-label="Previous image">&#8249;</button>
+                                <button class="xd-project-detail-nav next" type="button" data-project-detail-next aria-label="Next image">&#8250;</button>
                             @endif
                             <div class="xd-project-detail-caption">
                                 <span data-project-detail-counter>1 / {{ $projectImages->count() }}</span>
@@ -88,14 +99,14 @@
                             </div>
                         </div>
                         @if ($projectImages->count() > 1)
-                            <div class="xd-project-detail-thumbs" aria-label="Chọn ảnh dự án">
+                            <div class="xd-project-detail-thumbs" aria-label="Project images">
                                 @foreach ($projectImages as $image)
                                     <button
                                         class="xd-project-detail-thumb {{ $loop->first ? 'is-active' : '' }}"
                                         type="button"
                                         data-project-detail-thumb="{{ $loop->index }}"
                                         data-caption="{{ $image->caption }}"
-                                        aria-label="Xem ảnh {{ $loop->iteration }} của {{ $entry->title }}"
+                                        aria-label="View image {{ $loop->iteration }} of {{ $entry->title }}"
                                     >
                                         <img src="{{ $image->image_url }}" alt="">
                                     </button>
@@ -105,22 +116,74 @@
                     </div>
                 @endif
                 <div class="xd-detail-body">
-                    <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Project' : 'Dự án' }}</span>
+                    <span class="xd-kicker">
+                        @if ($isEnglish)
+                            Project
+                        @else
+                            D&#7921; &aacute;n
+                        @endif
+                    </span>
                     <h1>{{ $entry->title }}</h1>
                     @if (!empty($entry->summary))
                         <p class="xd-detail-summary">{{ $entry->summary }}</p>
                     @endif
                     <div class="xd-rich-content">
-                        {!! $entry->content ?: '<p>Nội dung đang được cập nhật.</p>' !!}
+                        {!! $entry->content ?: '<p>N&#7897;i dung &#273;ang &#273;&#432;&#7907;c c&#7853;p nh&#7853;t.</p>' !!}
                     </div>
                 </div>
             </article>
-            <aside class="xd-side-card">
-                <h3>{{ app()->getLocale() === 'en' ? 'Project info' : 'Thông tin dự án' }}</h3>
-                @if ($entry->category?->name)
-                    <span>{{ $entry->category->name }}</span>
+            <aside class="xd-side-stack">
+                <div class="xd-side-card">
+                    <h3>
+                        @if ($isEnglish)
+                            Project categories
+                        @else
+                            Danh m&#7909;c d&#7921; &aacute;n
+                        @endif
+                    </h3>
+                    @if ($entry->category?->name)
+                        @if ($entry->category?->slug)
+                            <a href="{{ route('site.projects.category', ['slug' => $entry->category->slug]) }}">{{ $entry->category->name }}</a>
+                        @else
+                            <span>{{ $entry->category->name }}</span>
+                        @endif
+                    @endif
+                    <a href="{{ route('site.projects.index') }}">
+                        @if ($isEnglish)
+                            All projects
+                        @else
+                            T&#7845;t c&#7843; d&#7921; &aacute;n
+                        @endif
+                    </a>
+                </div>
+
+                @if ($recentProjectItems->isNotEmpty())
+                    <div class="xd-side-card">
+                        <h3>
+                            @if ($isEnglish)
+                                Recent projects
+                            @else
+                                D&#7921; &aacute;n g&#7847;n &#273;&acirc;y
+                            @endif
+                        </h3>
+                        <div class="xd-recent-projects">
+                            @foreach ($recentProjectItems as $recentProject)
+                                @php
+                                    $recentImage = $recentProject->featuredImage?->image_url;
+                                    $recentAlt = $recentProject->featuredImage?->alt_text ?: $recentProject->title;
+                                @endphp
+                                <a class="xd-recent-project" href="{{ route('site.projects.show', ['slug' => $recentProject->slug]) }}">
+                                    @if ($recentImage)
+                                        <img src="{{ $recentImage }}" alt="{{ $recentAlt }}">
+                                    @else
+                                        <i class="xd-recent-project-placeholder" aria-hidden="true"></i>
+                                    @endif
+                                    <strong>{{ $recentProject->title }}</strong>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
                 @endif
-                <a href="{{ route('site.projects.index') }}">{{ app()->getLocale() === 'en' ? 'All projects' : 'Tất cả dự án' }}</a>
             </aside>
         </section>
     </div>

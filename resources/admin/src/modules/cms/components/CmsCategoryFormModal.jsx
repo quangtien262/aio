@@ -19,7 +19,7 @@ export const emptyCmsCategoryForm = {
     tenant_key: '',
 };
 
-export default function CmsCategoryFormModal({ open, canManage, editingCategory, parentOptions = [], onCancel, onSubmit }) {
+export default function CmsCategoryFormModal({ open, canManage, editingCategory, parentOptions = [], submitLoading = false, onCancel, onSubmit }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export default function CmsCategoryFormModal({ open, canManage, editingCategory,
     const handleSubmit = async () => {
         const values = await form.validateFields();
 
-        await onSubmit?.({
+        const didSubmit = await onSubmit?.({
             ...values,
             description: values.description || null,
             meta_title: values.meta_title || null,
@@ -37,7 +37,9 @@ export default function CmsCategoryFormModal({ open, canManage, editingCategory,
             parent_id: values.parent_id || null,
         });
 
-        form.resetFields();
+        if (didSubmit !== false) {
+            form.resetFields();
+        }
     };
 
     const handleCancel = () => {
@@ -52,6 +54,7 @@ export default function CmsCategoryFormModal({ open, canManage, editingCategory,
             onCancel={handleCancel}
             onOk={handleSubmit}
             okButtonProps={{ disabled: !canManage }}
+            confirmLoading={submitLoading}
             width={820}
             destroyOnHidden
         >

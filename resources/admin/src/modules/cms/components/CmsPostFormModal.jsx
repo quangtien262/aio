@@ -586,8 +586,16 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                             </Col>
                         </Row>
 
-                        <Form.Item name="excerpt" label="Mô tả ngắn" style={{ marginBottom: 0 }}>
+                        <Form.Item name="excerpt" label="Mô tả ngắn">
                             <Input.TextArea rows={3} placeholder="Tóm tắt ngắn để hiển thị ở listing, SEO snippet hoặc block nổi bật." />
+                        </Form.Item>
+                        <Form.Item
+                            name="meta_keywords"
+                            label="Keyword bài viết"
+                            extra="Nhập các từ khóa chính của bài viết, phân tách bằng dấu phẩy."
+                            style={{ marginBottom: 0 }}
+                        >
+                            <Input.TextArea rows={2} placeholder="tu khoa 1, tu khoa 2, tu khoa 3" />
                         </Form.Item>
                     </Card>
 
@@ -697,16 +705,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
 
                     <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
                         <Row gutter={16}>
-                            <Col xs={24} md={12}>
-                                <Form.Item
-                                    name="meta_keywords"
-                                    label="SEO Keyword"
-                                    extra="Nhập các từ khóa chính, phân tách bằng dấu phẩy."
-                                >
-                                    <Input.TextArea rows={3} placeholder="tu khoa 1, tu khoa 2, tu khoa 3" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={12}>
+                            <Col xs={24}>
                                 <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
                                     <Input.TextArea rows={3} placeholder="Meta description bài viết" />
                                 </Form.Item>

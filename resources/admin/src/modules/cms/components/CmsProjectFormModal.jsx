@@ -353,6 +353,49 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                         </Form.Item>
                     </Card>
 
+                    <Card size="small" title="Gallery ảnh dự án">
+                        <Form.Item name="images" hidden>
+                            <FormValueBridge />
+                        </Form.Item>
+                        <Form.Item label="Danh sách hình ảnh" style={{ marginBottom: 0 }}>
+                            <MultiMediaPicker
+                                open={open}
+                                value={projectImageUrls}
+                                onChange={(nextValue) => syncProjectImages(nextValue)}
+                                coverValue={featuredProjectImageUrl}
+                                onSetCover={setProjectCoverImage}
+                                canManage={canManage}
+                                callAdminApi={callAdminApi}
+                                mediaOptions={mediaOptions}
+                                recordTitle={titleValue || 'Project images'}
+                                previewTitle="Ảnh dự án"
+                                uploadButtonLabel="Upload ảnh dự án"
+                                uploadHint="Có thể upload nhiều ảnh. Ảnh đầu tiên sẽ tự làm ảnh đại diện."
+                                libraryModalTitle="Chọn ảnh dự án từ thư viện"
+                                urlPlaceholder={['https://cdn.example.com/project-1.jpg', 'https://cdn.example.com/project-2.jpg'].join('\n')}
+                                uploadSuccessMessage="Đã thêm ảnh dự án."
+                                urlSuccessMessage="Đã lưu URL vào thư viện media và thêm ảnh dự án."
+                                uploadErrorMessage="Upload ảnh dự án không thành công."
+                                urlErrorMessage="Không thể lưu ảnh dự án từ URL."
+                                emptyValueMessage="Nhập ít nhất một URL ảnh trước khi lưu."
+                                compactPreview
+                            />
+                        </Form.Item>
+                    </Card>
+                    <Card size="small" title="SEO">
+                        <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_title" label="SEO Title">
+                                    <Input.TextArea rows={3} placeholder="SEO title" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
+                                    <Input.TextArea rows={3} placeholder="Meta description dự án" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
                     <Card size="small" className="cms-post-form-card cms-post-form-card-editor" title="Nội dung chi tiết">
                         <div className="cms-editor-upload-panel">
                             <Space wrap className="cms-editor-toolbar-row" size={12}>
@@ -400,48 +443,6 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                         <Form.Item name="content" hidden>
                             <Input.TextArea />
                         </Form.Item>
-                    </Card>
-                    <Card size="small" title="Gallery ảnh dự án">
-                        <Form.Item name="images" hidden>
-                            <FormValueBridge />
-                        </Form.Item>
-                        <Form.Item label="Danh sách hình ảnh" style={{ marginBottom: 0 }}>
-                            <MultiMediaPicker
-                                open={open}
-                                value={projectImageUrls}
-                                onChange={(nextValue) => syncProjectImages(nextValue)}
-                                coverValue={featuredProjectImageUrl}
-                                onSetCover={setProjectCoverImage}
-                                canManage={canManage}
-                                callAdminApi={callAdminApi}
-                                mediaOptions={mediaOptions}
-                                recordTitle={titleValue || 'Project images'}
-                                previewTitle="Ảnh dự án"
-                                uploadButtonLabel="Upload ảnh dự án"
-                                uploadHint="Có thể upload nhiều ảnh. Ảnh đầu tiên sẽ tự làm ảnh đại diện."
-                                libraryModalTitle="Chọn ảnh dự án từ thư viện"
-                                urlPlaceholder={['https://cdn.example.com/project-1.jpg', 'https://cdn.example.com/project-2.jpg'].join('\n')}
-                                uploadSuccessMessage="Đã thêm ảnh dự án."
-                                urlSuccessMessage="Đã lưu URL vào thư viện media và thêm ảnh dự án."
-                                uploadErrorMessage="Upload ảnh dự án không thành công."
-                                urlErrorMessage="Không thể lưu ảnh dự án từ URL."
-                                emptyValueMessage="Nhập ít nhất một URL ảnh trước khi lưu."
-                            />
-                        </Form.Item>
-                    </Card>
-                    <Card size="small" title="SEO">
-                        <Row gutter={16}>
-                            <Col xs={24} md={12}>
-                                <Form.Item name="meta_title" label="SEO Title">
-                                    <Input.TextArea rows={3} placeholder="SEO title" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={12}>
-                                <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
-                                    <Input.TextArea rows={3} placeholder="Meta description dự án" />
-                                </Form.Item>
-                            </Col>
-                        </Row>
                     </Card>
                 </Space>
             </Form>

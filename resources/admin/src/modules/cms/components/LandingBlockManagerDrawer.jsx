@@ -158,6 +158,7 @@ export default function LandingBlockManagerDrawer({
     const [availableBlocks, setAvailableBlocks] = useState([]);
     const [selectedBlockType, setSelectedBlockType] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [visibilityUpdatingIds, setVisibilityUpdatingIds] = useState(() => new Set());
     const [draggingId, setDraggingId] = useState(null);
     const [addBlockModalOpen, setAddBlockModalOpen] = useState(false);
     const [editingBlock, setEditingBlock] = useState(null);
@@ -259,17 +260,35 @@ export default function LandingBlockManagerDrawer({
     };
 
     const handleToggleVisible = async (block, checked) => {
-        await runAdminAction(
+        const previousBlocks = blocks;
+
+        setVisibilityUpdatingIds((currentIds) => new Set(currentIds).add(block.id));
+        setBlocks((currentBlocks) => currentBlocks.map((currentBlock) => (
+            currentBlock.id === block.id
+                ? { ...currentBlock, is_visible: checked }
+                : currentBlock
+        )));
+
+        const didUpdate = await runAdminAction(
             () => callAdminApi(`/admin/api/landing/blocks/${block.id}`, {
                 method: 'PUT',
                 body: JSON.stringify({ is_visible: checked, locale }),
             }),
             checked ? 'Đã bật hiển thị khối.' : 'Đã ẩn khối.',
             async () => {
-                await loadBlocks();
                 await onChanged?.();
             },
         );
+
+        if (!didUpdate) {
+            setBlocks(previousBlocks);
+        }
+
+        setVisibilityUpdatingIds((currentIds) => {
+            const nextIds = new Set(currentIds);
+            nextIds.delete(block.id);
+            return nextIds;
+        });
     };
 
     const handleDeleteBlock = async (block) => {
@@ -492,7 +511,8 @@ export default function LandingBlockManagerDrawer({
                                         <Space size={6}>
                                             <Switch
                                                 checked={Boolean(block.is_visible)}
-                                                disabled={!canUpdate}
+                                                disabled={!canUpdate || visibilityUpdatingIds.has(block.id)}
+                                                loading={visibilityUpdatingIds.has(block.id)}
                                                 onChange={(checked) => handleToggleVisible(block, checked)}
                                             />
                                             <Text type={block.is_visible ? 'success' : 'secondary'} strong>

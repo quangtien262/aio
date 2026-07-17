@@ -9,7 +9,7 @@ import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 
-export default function CatalogCategoryFormModal({ open, canManage, editingCategory, categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
+export default function CatalogCategoryFormModal({ open, canManage, editingCategory, categoryOptions = [], callAdminApi, submitLoading = false, onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const imageUrl = Form.useWatch('image_url', form) ?? '';
     const categoryName = Form.useWatch('name', form) ?? '';
@@ -20,14 +20,17 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
 
     const handleSubmit = async () => {
         const values = await form.validateFields();
-        await onSubmit?.({
+        const didSubmit = await onSubmit?.({
             ...values,
             parent_id: values.parent_id || null,
             slug: undefined,
             image_url: values.image_url || null,
             is_active: Boolean(values.is_active),
         });
-        form.resetFields();
+
+        if (didSubmit !== false) {
+            form.resetFields();
+        }
     };
 
     return (
@@ -37,6 +40,7 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
             onCancel={onCancel}
             onOk={handleSubmit}
             okButtonProps={{ disabled: !canManage }}
+            confirmLoading={submitLoading}
             width={860}
             destroyOnHidden
         >

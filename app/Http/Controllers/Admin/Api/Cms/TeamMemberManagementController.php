@@ -48,6 +48,45 @@ class TeamMemberManagementController
         return response()->json(['message' => 'Da cap nhat nhan su CMS.', 'data' => $this->serialize($record)]);
     }
 
+    public function bulkUpdate(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('cms_team_members', 'id')],
+            'is_featured' => ['sometimes', 'boolean'],
+        ]);
+
+        $updates = [];
+
+        if (array_key_exists('is_featured', $validated)) {
+            $updates['is_featured'] = (bool) $validated['is_featured'];
+        }
+
+        if ($updates === []) {
+            return response()->json(['message' => 'Khong co thong tin can cap nhat.'], 422);
+        }
+
+        $count = CmsTeamMember::query()
+            ->whereIn('id', $validated['ids'])
+            ->update($updates);
+
+        return response()->json(['message' => 'Da cap nhat nhan su da chon.', 'data' => ['updated' => $count]]);
+    }
+
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('cms_team_members', 'id')],
+        ]);
+
+        $count = CmsTeamMember::query()
+            ->whereIn('id', $validated['ids'])
+            ->delete();
+
+        return response()->json(['message' => 'Da xoa nhan su da chon.', 'data' => ['deleted' => $count]]);
+    }
+
     public function destroy(Request $request, int $member): JsonResponse
     {
         /** @var CmsTeamMember $record */

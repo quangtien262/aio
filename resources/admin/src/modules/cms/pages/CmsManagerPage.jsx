@@ -622,6 +622,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [bulkProductActiveForm] = Form.useForm();
     const [bulkOrderStatusForm] = Form.useForm();
     const [bulkServiceCategoryForm] = Form.useForm();
+    const [bulkContentCategoryForm] = Form.useForm();
     const [mediaEditForm] = Form.useForm();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
@@ -634,11 +635,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [selectedOrderRowKeys, setSelectedOrderRowKeys] = useState([]);
     const [selectedPartnerRowKeys, setSelectedPartnerRowKeys] = useState([]);
     const [selectedServiceRowKeys, setSelectedServiceRowKeys] = useState([]);
+    const [selectedPostRowKeys, setSelectedPostRowKeys] = useState([]);
+    const [selectedProjectRowKeys, setSelectedProjectRowKeys] = useState([]);
+    const [selectedTeamMemberRowKeys, setSelectedTeamMemberRowKeys] = useState([]);
+    const [selectedTestimonialRowKeys, setSelectedTestimonialRowKeys] = useState([]);
     const [bulkProductEditOpen, setBulkProductEditOpen] = useState(false);
     const [bulkProductStockOpen, setBulkProductStockOpen] = useState(false);
     const [bulkProductActiveOpen, setBulkProductActiveOpen] = useState(false);
     const [bulkOrderStatusOpen, setBulkOrderStatusOpen] = useState(false);
     const [bulkServiceCategoryOpen, setBulkServiceCategoryOpen] = useState(false);
+    const [bulkContentCategoryOpen, setBulkContentCategoryOpen] = useState(false);
     const [keyword, setKeyword] = useState('');
     const [orderStatusFilter, setOrderStatusFilter] = useState('all');
     const [orderDatePreset, setOrderDatePreset] = useState('custom');
@@ -659,21 +665,25 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [categoryFormOpen, setCategoryFormOpen] = useState(false);
     const [categoryItems, setCategoryItems] = useState([]);
     const [categoryLoading, setCategoryLoading] = useState(false);
+    const [categorySaving, setCategorySaving] = useState(false);
     const [editingCategoryRecord, setEditingCategoryRecord] = useState(emptyCategory);
     const [serviceCategoryManagerOpen, setServiceCategoryManagerOpen] = useState(false);
     const [serviceCategoryFormOpen, setServiceCategoryFormOpen] = useState(false);
     const [serviceCategoryItems, setServiceCategoryItems] = useState([]);
     const [serviceCategoryLoading, setServiceCategoryLoading] = useState(false);
+    const [serviceCategorySaving, setServiceCategorySaving] = useState(false);
     const [editingServiceCategoryRecord, setEditingServiceCategoryRecord] = useState(emptyServiceCategory);
     const [projectCategoryManagerOpen, setProjectCategoryManagerOpen] = useState(false);
     const [projectCategoryFormOpen, setProjectCategoryFormOpen] = useState(false);
     const [projectCategoryItems, setProjectCategoryItems] = useState([]);
     const [projectCategoryLoading, setProjectCategoryLoading] = useState(false);
+    const [projectCategorySaving, setProjectCategorySaving] = useState(false);
     const [editingProjectCategoryRecord, setEditingProjectCategoryRecord] = useState(emptyProjectCategory);
     const [productCategoryManagerOpen, setProductCategoryManagerOpen] = useState(false);
     const [productCategoryFormOpen, setProductCategoryFormOpen] = useState(false);
     const [productCategoryItems, setProductCategoryItems] = useState([]);
     const [productCategoryLoading, setProductCategoryLoading] = useState(false);
+    const [productCategorySaving, setProductCategorySaving] = useState(false);
     const [editingProductCategoryRecord, setEditingProductCategoryRecord] = useState(emptyProductCategory);
     const productCategorySensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
     const createButtonLabel = sectionKey === 'cms-menus'
@@ -695,7 +705,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     }), [currentPermissions, sectionConfig]);
     const canManageCategories = (currentPermissions ?? []).includes('cms.category.manage');
 
-    const { data, loading, error, reload } = useAdminRouteResource({
+    const { data, loading, error, reload, mutateData } = useAdminRouteResource({
         enabled: sectionPermissions.canView,
         loader: async () => {
             if (sectionKey === 'cms-products') {
@@ -1057,6 +1067,22 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         return (data?.items ?? []).filter((service) => selectedServiceRowKeys.includes(service.id));
     }, [data?.items, sectionKey, selectedServiceRowKeys]);
 
+    const selectedPosts = useMemo(() => {
+        if (sectionKey !== 'cms-posts') {
+            return [];
+        }
+
+        return (data?.items ?? []).filter((post) => selectedPostRowKeys.includes(post.id));
+    }, [data?.items, sectionKey, selectedPostRowKeys]);
+
+    const selectedProjects = useMemo(() => {
+        if (sectionKey !== 'cms-projects') {
+            return [];
+        }
+
+        return (data?.items ?? []).filter((project) => selectedProjectRowKeys.includes(project.id));
+    }, [data?.items, sectionKey, selectedProjectRowKeys]);
+
     useEffect(() => {
         if (sectionKey !== 'cms-products') {
             return;
@@ -1232,7 +1258,59 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         openEditModal(selectedPost);
     };
 
+    const refreshCurrentSectionDataSilently = async () => {
+        if (sectionKey === 'cms-products') {
+            const [itemsPayload, categoriesPayload] = await Promise.all([
+                callAdminApi('/admin/api/cms/products'),
+                callAdminApi('/admin/api/cms/product-categories'),
+            ]);
+
+            mutateData({
+                ...(itemsPayload.data ?? { items: [], total: 0, metrics: {} }),
+                categories: categoriesPayload.data?.items ?? [],
+            });
+            return;
+        }
+
+        if (sectionKey === 'cms-projects') {
+            const [itemsPayload, categoriesPayload] = await Promise.all([
+                callAdminApi('/admin/api/cms/projects'),
+                callAdminApi('/admin/api/cms/project-categories'),
+            ]);
+
+            mutateData({
+                ...(itemsPayload.data ?? { items: [], total: 0, metrics: {}, media: [] }),
+                categories: categoriesPayload.data?.items ?? [],
+            });
+            return;
+        }
+
+        const payload = await callAdminApi(sectionConfig.endpoint);
+        mutateData(payload.data ?? null);
+    };
+
     const handleSaveRecord = async (payload) => {
+        if (['cms-pages', 'cms-posts', 'cms-products', 'cms-projects'].includes(sectionKey)) {
+            const isUpdate = Boolean(editingRecord?.id);
+
+            try {
+                await callAdminApi(
+                    isUpdate ? `${sectionConfig.endpoint}/${editingRecord.id}` : sectionConfig.endpoint,
+                    {
+                        method: isUpdate ? 'PUT' : 'POST',
+                        body: JSON.stringify(payload),
+                    },
+                );
+                await refreshCurrentSectionDataSilently();
+                messageApi.success(isUpdate ? `Đã cập nhật ${sectionConfig.title}.` : `Đã tạo ${sectionConfig.title}.`);
+                setModalOpen(false);
+                return true;
+            } catch (error) {
+                messageApi.error(error instanceof Error ? error.message : 'Không thể lưu dữ liệu.');
+                return false;
+            }
+        }
+
         const didSave = editingRecord?.id
             ? await runAdminAction(() => callAdminApi(`${sectionConfig.endpoint}/${editingRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }), `Đã cập nhật ${sectionConfig.title}.`, reload)
             : await runAdminAction(() => callAdminApi(sectionConfig.endpoint, { method: 'POST', body: JSON.stringify(payload) }), `Đã tạo ${sectionConfig.title}.`, reload);
@@ -1248,14 +1326,28 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         await runAdminAction(() => callAdminApi(`${sectionConfig.endpoint}/${recordId}`, { method: 'DELETE' }), `Đã xóa ${sectionConfig.title}.`, reload);
     };
 
-    const loadCategoryItems = async () => {
-        setCategoryLoading(true);
+    const loadCategoryItems = async ({ showLoading = true } = {}) => {
+        if (showLoading) {
+            setCategoryLoading(true);
+        }
 
         try {
             const payload = await callAdminApi('/admin/api/cms/categories');
-            setCategoryItems(payload.data?.items ?? []);
+            const items = payload.data?.items ?? [];
+            setCategoryItems(items);
+
+            if (sectionKey === 'cms-posts') {
+                mutateData((currentData) => currentData ? ({
+                    ...currentData,
+                    categories: items,
+                }) : currentData);
+            }
+
+            return items;
         } finally {
-            setCategoryLoading(false);
+            if (showLoading) {
+                setCategoryLoading(false);
+            }
         }
     };
 
@@ -1275,6 +1367,39 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const handleSaveCategory = async (payload) => {
+        if (categorySaving) {
+            return false;
+        }
+
+        const isUpdate = Boolean(editingCategoryRecord?.id);
+        setCategorySaving(true);
+
+        let didSaveWithoutPageReload = false;
+
+        try {
+            await callAdminApi(
+                isUpdate ? `/admin/api/cms/categories/${editingCategoryRecord.id}` : '/admin/api/cms/categories',
+                {
+                    method: isUpdate ? 'PUT' : 'POST',
+                    body: JSON.stringify(payload),
+                },
+            );
+            await loadCategoryItems({ showLoading: false });
+            messageApi.success(isUpdate ? 'Đã cập nhật danh mục tin tức.' : 'Đã tạo danh mục tin tức.');
+            didSaveWithoutPageReload = true;
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể lưu danh mục tin tức.');
+        } finally {
+            setCategorySaving(false);
+        }
+
+        if (didSaveWithoutPageReload) {
+            setCategoryFormOpen(false);
+            setEditingCategoryRecord(emptyCategory);
+        }
+
+        return didSaveWithoutPageReload;
+
         const didSave = editingCategoryRecord?.id
             ? await runAdminAction(
                 () => callAdminApi(`/admin/api/cms/categories/${editingCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
@@ -1319,14 +1444,28 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
     };
 
-    const loadServiceCategoryItems = async () => {
-        setServiceCategoryLoading(true);
+    const loadServiceCategoryItems = async ({ showLoading = true } = {}) => {
+        if (showLoading) {
+            setServiceCategoryLoading(true);
+        }
 
         try {
             const payload = await callAdminApi('/admin/api/cms/service-categories');
-            setServiceCategoryItems(payload.data?.items ?? []);
+            const items = payload.data?.items ?? [];
+            setServiceCategoryItems(items);
+
+            if (sectionKey === 'cms-services') {
+                mutateData((currentData) => currentData ? ({
+                    ...currentData,
+                    categories: items,
+                }) : currentData);
+            }
+
+            return items;
         } finally {
-            setServiceCategoryLoading(false);
+            if (showLoading) {
+                setServiceCategoryLoading(false);
+            }
         }
     };
 
@@ -1349,6 +1488,39 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const handleSaveServiceCategory = async (payload) => {
+        if (serviceCategorySaving) {
+            return false;
+        }
+
+        const isUpdate = Boolean(editingServiceCategoryRecord?.id);
+        setServiceCategorySaving(true);
+
+        let didSaveWithoutPageReload = false;
+
+        try {
+            await callAdminApi(
+                isUpdate ? `/admin/api/cms/service-categories/${editingServiceCategoryRecord.id}` : '/admin/api/cms/service-categories',
+                {
+                    method: isUpdate ? 'PUT' : 'POST',
+                    body: JSON.stringify(payload),
+                },
+            );
+            await loadServiceCategoryItems({ showLoading: false });
+            messageApi.success(isUpdate ? 'Đã cập nhật danh mục dịch vụ.' : 'Đã tạo danh mục dịch vụ.');
+            didSaveWithoutPageReload = true;
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể lưu danh mục dịch vụ.');
+        } finally {
+            setServiceCategorySaving(false);
+        }
+
+        if (didSaveWithoutPageReload) {
+            setServiceCategoryFormOpen(false);
+            setEditingServiceCategoryRecord(emptyServiceCategory);
+        }
+
+        return didSaveWithoutPageReload;
+
         const didSave = editingServiceCategoryRecord?.id
             ? await runAdminAction(
                 () => callAdminApi(`/admin/api/cms/service-categories/${editingServiceCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
@@ -1393,14 +1565,28 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
     };
 
-    const loadProjectCategoryItems = async () => {
-        setProjectCategoryLoading(true);
+    const loadProjectCategoryItems = async ({ showLoading = true } = {}) => {
+        if (showLoading) {
+            setProjectCategoryLoading(true);
+        }
 
         try {
             const payload = await callAdminApi('/admin/api/cms/project-categories');
-            setProjectCategoryItems(payload.data?.items ?? []);
+            const items = payload.data?.items ?? [];
+            setProjectCategoryItems(items);
+
+            if (sectionKey === 'cms-projects') {
+                mutateData((currentData) => currentData ? ({
+                    ...currentData,
+                    categories: items,
+                }) : currentData);
+            }
+
+            return items;
         } finally {
-            setProjectCategoryLoading(false);
+            if (showLoading) {
+                setProjectCategoryLoading(false);
+            }
         }
     };
 
@@ -1423,6 +1609,39 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const handleSaveProjectCategory = async (payload) => {
+        if (projectCategorySaving) {
+            return false;
+        }
+
+        const isUpdate = Boolean(editingProjectCategoryRecord?.id);
+        setProjectCategorySaving(true);
+
+        let didSaveWithoutPageReload = false;
+
+        try {
+            await callAdminApi(
+                isUpdate ? `/admin/api/cms/project-categories/${editingProjectCategoryRecord.id}` : '/admin/api/cms/project-categories',
+                {
+                    method: isUpdate ? 'PUT' : 'POST',
+                    body: JSON.stringify(payload),
+                },
+            );
+            await loadProjectCategoryItems({ showLoading: false });
+            messageApi.success(isUpdate ? 'Đã cập nhật danh mục dự án.' : 'Đã tạo danh mục dự án.');
+            didSaveWithoutPageReload = true;
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể lưu danh mục dự án.');
+        } finally {
+            setProjectCategorySaving(false);
+        }
+
+        if (didSaveWithoutPageReload) {
+            setProjectCategoryFormOpen(false);
+            setEditingProjectCategoryRecord(emptyProjectCategory);
+        }
+
+        return didSaveWithoutPageReload;
+
         const didSave = editingProjectCategoryRecord?.id
             ? await runAdminAction(
                 () => callAdminApi(`/admin/api/cms/project-categories/${editingProjectCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
@@ -1474,7 +1693,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         try {
             const payload = await callAdminApi('/admin/api/cms/product-categories');
-            setProductCategoryItems(payload.data?.items ?? []);
+            const items = payload.data?.items ?? [];
+            setProductCategoryItems(items);
+
+            if (sectionKey === 'cms-products') {
+                mutateData((currentData) => currentData ? ({
+                    ...currentData,
+                    categories: items,
+                }) : currentData);
+            }
+
+            return items;
         } finally {
             if (! silent) {
                 setProductCategoryLoading(false);
@@ -1501,6 +1730,39 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const handleSaveProductCategory = async (payload) => {
+        if (productCategorySaving) {
+            return false;
+        }
+
+        const isUpdate = Boolean(editingProductCategoryRecord?.id);
+        setProductCategorySaving(true);
+
+        let didSaveWithoutPageReload = false;
+
+        try {
+            await callAdminApi(
+                isUpdate ? `/admin/api/cms/product-categories/${editingProductCategoryRecord.id}` : '/admin/api/cms/product-categories',
+                {
+                    method: isUpdate ? 'PUT' : 'POST',
+                    body: JSON.stringify(payload),
+                },
+            );
+            await loadProductCategoryItems({ silent: true });
+            messageApi.success(isUpdate ? 'Đã cập nhật danh mục sản phẩm.' : 'Đã tạo danh mục sản phẩm.');
+            didSaveWithoutPageReload = true;
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể lưu danh mục sản phẩm.');
+        } finally {
+            setProductCategorySaving(false);
+        }
+
+        if (didSaveWithoutPageReload) {
+            setProductCategoryFormOpen(false);
+            setEditingProductCategoryRecord(emptyProductCategory);
+        }
+
+        return didSaveWithoutPageReload;
+
         const didSave = editingProductCategoryRecord?.id
             ? await runAdminAction(
                 () => callAdminApi(`/admin/api/cms/product-categories/${editingProductCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
@@ -1817,6 +2079,227 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             { status },
             (count) => status === 'published' ? `Đã xuất bản ${count} dịch vụ.` : `Đã chuyển ${count} dịch vụ về bản nháp.`,
         );
+    };
+
+    const currentContentBulkState = () => {
+        if (sectionKey === 'cms-posts') {
+            return {
+                endpoint: '/admin/api/cms/posts',
+                ids: selectedPostRowKeys,
+                label: 'bài viết',
+                categoryField: 'category_id',
+                clearSelection: () => setSelectedPostRowKeys([]),
+            };
+        }
+
+        if (sectionKey === 'cms-projects') {
+            return {
+                endpoint: '/admin/api/cms/projects',
+                ids: selectedProjectRowKeys,
+                label: 'dự án',
+                categoryField: 'cms_project_category_id',
+                clearSelection: () => setSelectedProjectRowKeys([]),
+            };
+        }
+
+        return null;
+    };
+
+    const handleBulkDeleteContentItems = async () => {
+        const state = currentContentBulkState();
+
+        if (!state?.ids.length) {
+            return;
+        }
+
+        const ids = [...state.ids];
+        const didDelete = await runAdminAction(
+            () => callAdminApi(`${state.endpoint}/bulk`, {
+                method: 'DELETE',
+                body: JSON.stringify({ ids }),
+            }),
+            `Đã xóa ${ids.length} ${state.label}.`,
+            refreshCurrentSectionDataSilently,
+        );
+
+        if (didDelete) {
+            state.clearSelection();
+        }
+    };
+
+    const confirmBulkDeleteContentItems = () => {
+        const state = currentContentBulkState();
+
+        if (!state?.ids.length) {
+            return;
+        }
+
+        Modal.confirm({
+            title: `Xóa ${state.ids.length} ${state.label} đã chọn?`,
+            content: 'Thao tác này không thể hoàn tác.',
+            okText: 'Xóa tất cả',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: handleBulkDeleteContentItems,
+        });
+    };
+
+    const openBulkContentCategory = () => {
+        const state = currentContentBulkState();
+
+        if (!state?.ids.length) {
+            return;
+        }
+
+        bulkContentCategoryForm.setFieldsValue({
+            category_id: null,
+        });
+        setBulkContentCategoryOpen(true);
+    };
+
+    const handleBulkContentCategory = async () => {
+        const state = currentContentBulkState();
+
+        if (!state?.ids.length) {
+            return false;
+        }
+
+        const values = await bulkContentCategoryForm.validateFields();
+        const didUpdate = await runAdminAction(
+            () => callAdminApi(`${state.endpoint}/bulk`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    ids: state.ids,
+                    [state.categoryField]: values.category_id ?? null,
+                }),
+            }),
+            `Đã cập nhật danh mục cho ${state.ids.length} ${state.label}.`,
+            refreshCurrentSectionDataSilently,
+        );
+
+        if (didUpdate) {
+            setBulkContentCategoryOpen(false);
+            state.clearSelection();
+            bulkContentCategoryForm.resetFields();
+        }
+
+        return didUpdate;
+    };
+
+    const handleBulkFeatureContentItems = (isFeatured) => {
+        const state = currentContentBulkState();
+
+        if (!state?.ids.length) {
+            return;
+        }
+
+        const body = sectionKey === 'cms-projects'
+            ? { ids: state.ids, is_featured: isFeatured, is_highlight: isFeatured }
+            : { ids: state.ids, is_highlight: isFeatured };
+
+        runAdminAction(
+            () => callAdminApi(`${state.endpoint}/bulk`, {
+                method: 'PUT',
+                body: JSON.stringify(body),
+            }),
+            isFeatured ? `Đã đánh dấu nổi bật ${state.ids.length} ${state.label}.` : `Đã bỏ nổi bật ${state.ids.length} ${state.label}.`,
+            refreshCurrentSectionDataSilently,
+        ).then((didUpdate) => {
+            if (didUpdate) {
+                state.clearSelection();
+            }
+        });
+    };
+
+    const currentFeaturedBulkState = () => {
+        if (sectionKey === 'cms-team-members') {
+            return {
+                endpoint: '/admin/api/cms/team-members',
+                ids: selectedTeamMemberRowKeys,
+                label: 'nhân sự',
+                clearSelection: () => setSelectedTeamMemberRowKeys([]),
+            };
+        }
+
+        if (sectionKey === 'cms-partners') {
+            return {
+                endpoint: '/admin/api/cms/partners',
+                ids: selectedPartnerRowKeys,
+                label: 'đối tác',
+                clearSelection: () => setSelectedPartnerRowKeys([]),
+            };
+        }
+
+        if (sectionKey === 'cms-testimonials') {
+            return {
+                endpoint: '/admin/api/cms/testimonials',
+                ids: selectedTestimonialRowKeys,
+                label: 'nhận xét',
+                clearSelection: () => setSelectedTestimonialRowKeys([]),
+            };
+        }
+
+        return null;
+    };
+
+    const handleBulkDeleteFeaturedItems = async () => {
+        const state = currentFeaturedBulkState();
+
+        if (!state?.ids.length) {
+            return;
+        }
+
+        const ids = [...state.ids];
+        const didDelete = await runAdminAction(
+            () => callAdminApi(`${state.endpoint}/bulk`, {
+                method: 'DELETE',
+                body: JSON.stringify({ ids }),
+            }),
+            `Đã xóa ${ids.length} ${state.label}.`,
+            refreshCurrentSectionDataSilently,
+        );
+
+        if (didDelete) {
+            state.clearSelection();
+        }
+    };
+
+    const confirmBulkDeleteFeaturedItems = () => {
+        const state = currentFeaturedBulkState();
+
+        if (!state?.ids.length) {
+            return;
+        }
+
+        Modal.confirm({
+            title: `Xóa ${state.ids.length} ${state.label} đã chọn?`,
+            content: 'Thao tác này không thể hoàn tác.',
+            okText: 'Xóa tất cả',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: handleBulkDeleteFeaturedItems,
+        });
+    };
+
+    const handleBulkFeatureFeaturedItems = (isFeatured) => {
+        const state = currentFeaturedBulkState();
+
+        if (!state?.ids.length) {
+            return;
+        }
+
+        runAdminAction(
+            () => callAdminApi(`${state.endpoint}/bulk`, {
+                method: 'PUT',
+                body: JSON.stringify({ ids: state.ids, is_featured: isFeatured }),
+            }),
+            isFeatured ? `Đã đánh dấu nổi bật ${state.ids.length} ${state.label}.` : `Đã bỏ nổi bật ${state.ids.length} ${state.label}.`,
+            refreshCurrentSectionDataSilently,
+        ).then((didUpdate) => {
+            if (didUpdate) {
+                state.clearSelection();
+            }
+        });
     };
 
     const openBulkEditProducts = () => {
@@ -2417,10 +2900,24 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             preserveSelectedRowKeys: true,
         }
         : undefined;
-    const partnerRowSelection = sectionKey === 'cms-partners' && sectionPermissions.canDelete
+    const partnerRowSelection = sectionKey === 'cms-partners' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
         ? {
             selectedRowKeys: selectedPartnerRowKeys,
             onChange: (nextSelectedRowKeys) => setSelectedPartnerRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
+    const teamMemberRowSelection = sectionKey === 'cms-team-members' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
+        ? {
+            selectedRowKeys: selectedTeamMemberRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedTeamMemberRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
+    const testimonialRowSelection = sectionKey === 'cms-testimonials' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
+        ? {
+            selectedRowKeys: selectedTestimonialRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedTestimonialRowKeys(nextSelectedRowKeys),
             preserveSelectedRowKeys: true,
         }
         : undefined;
@@ -2428,6 +2925,20 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         ? {
             selectedRowKeys: selectedServiceRowKeys,
             onChange: (nextSelectedRowKeys) => setSelectedServiceRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
+    const postRowSelection = sectionKey === 'cms-posts' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
+        ? {
+            selectedRowKeys: selectedPostRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedPostRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
+    const projectRowSelection = sectionKey === 'cms-projects' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
+        ? {
+            selectedRowKeys: selectedProjectRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedProjectRowKeys(nextSelectedRowKeys),
             preserveSelectedRowKeys: true,
         }
         : undefined;
@@ -2592,6 +3103,82 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ) : null}
         </Space>
     ) : null;
+    const featuredBulkActions = ['cms-partners', 'cms-team-members', 'cms-testimonials'].includes(sectionKey) ? (() => {
+        const selectedKeys = sectionKey === 'cms-partners'
+            ? selectedPartnerRowKeys
+            : sectionKey === 'cms-team-members'
+                ? selectedTeamMemberRowKeys
+                : selectedTestimonialRowKeys;
+        const clearSelection = sectionKey === 'cms-partners'
+            ? () => setSelectedPartnerRowKeys([])
+            : sectionKey === 'cms-team-members'
+                ? () => setSelectedTeamMemberRowKeys([])
+                : () => setSelectedTestimonialRowKeys([]);
+        const label = sectionKey === 'cms-partners'
+            ? 'đối tác'
+            : sectionKey === 'cms-team-members'
+                ? 'nhân sự'
+                : 'nhận xét';
+
+        return (
+            <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+                <Space wrap>
+                    <Dropdown
+                        trigger={['click']}
+                        menu={{
+                            items: [
+                                {
+                                    key: 'bulk-feature',
+                                    label: 'Đánh dấu nổi bật',
+                                    icon: <EditOutlined />,
+                                    disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
+                                },
+                                {
+                                    key: 'bulk-unfeature',
+                                    label: 'Bỏ nổi bật',
+                                    icon: <EditOutlined />,
+                                    disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
+                                },
+                                {
+                                    key: 'bulk-delete',
+                                    label: 'Xóa đã chọn',
+                                    icon: <DeleteOutlined />,
+                                    danger: true,
+                                    disabled: !sectionPermissions.canDelete || !selectedKeys.length,
+                                },
+                            ],
+                            onClick: ({ key }) => {
+                                if (key === 'bulk-feature') {
+                                    handleBulkFeatureFeaturedItems(true);
+                                }
+
+                                if (key === 'bulk-unfeature') {
+                                    handleBulkFeatureFeaturedItems(false);
+                                }
+
+                                if (key === 'bulk-delete') {
+                                    confirmBulkDeleteFeaturedItems();
+                                }
+                            },
+                        }}
+                    >
+                        <Button icon={<MoreOutlined />} disabled={!selectedKeys.length}>
+                            Thao tác đã chọn
+                        </Button>
+                    </Dropdown>
+                    {selectedKeys.length ? (
+                        <Text type="secondary">Đã chọn {selectedKeys.length} {label}.</Text>
+                    ) : null}
+                </Space>
+                {selectedKeys.length ? (
+                    <Button size="small" type="link" onClick={clearSelection}>
+                        Bỏ chọn
+                    </Button>
+                ) : null}
+            </Space>
+        );
+    })() : null;
+
     const serviceBulkActions = sectionKey === 'cms-services' ? (
         <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
             <Space wrap>
@@ -2679,6 +3266,79 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ) : null}
         </Space>
     ) : null;
+    const contentBulkActions = ['cms-posts', 'cms-projects'].includes(sectionKey) ? (() => {
+        const selectedKeys = sectionKey === 'cms-posts' ? selectedPostRowKeys : selectedProjectRowKeys;
+        const clearSelection = sectionKey === 'cms-posts' ? () => setSelectedPostRowKeys([]) : () => setSelectedProjectRowKeys([]);
+        const label = sectionKey === 'cms-posts' ? 'bài viết' : 'dự án';
+
+        return (
+            <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+                <Space wrap>
+                    <Dropdown
+                        trigger={['click']}
+                        menu={{
+                            items: [
+                                {
+                                    key: 'bulk-feature',
+                                    label: 'Đánh dấu nổi bật',
+                                    icon: <EditOutlined />,
+                                    disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
+                                },
+                                {
+                                    key: 'bulk-unfeature',
+                                    label: 'Bỏ nổi bật',
+                                    icon: <EditOutlined />,
+                                    disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
+                                },
+                                {
+                                    key: 'bulk-category',
+                                    label: 'Đổi danh mục đã chọn',
+                                    icon: <EditOutlined />,
+                                    disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
+                                },
+                                {
+                                    key: 'bulk-delete',
+                                    label: 'Xóa đã chọn',
+                                    icon: <DeleteOutlined />,
+                                    danger: true,
+                                    disabled: !sectionPermissions.canDelete || !selectedKeys.length,
+                                },
+                            ],
+                            onClick: ({ key }) => {
+                                if (key === 'bulk-feature') {
+                                    handleBulkFeatureContentItems(true);
+                                }
+
+                                if (key === 'bulk-unfeature') {
+                                    handleBulkFeatureContentItems(false);
+                                }
+
+                                if (key === 'bulk-category') {
+                                    openBulkContentCategory();
+                                }
+
+                                if (key === 'bulk-delete') {
+                                    confirmBulkDeleteContentItems();
+                                }
+                            },
+                        }}
+                    >
+                        <Button icon={<MoreOutlined />} disabled={!selectedKeys.length}>
+                            Thao tác đã chọn
+                        </Button>
+                    </Dropdown>
+                    {selectedKeys.length ? (
+                        <Text type="secondary">Đã chọn {selectedKeys.length} {label}.</Text>
+                    ) : null}
+                </Space>
+                {selectedKeys.length ? (
+                    <Button size="small" type="link" onClick={clearSelection}>
+                        Bỏ chọn
+                    </Button>
+                ) : null}
+            </Space>
+        );
+    })() : null;
 
     const columns = useMemo(() => {
         if (sectionKey === 'cms-landing-pages') {
@@ -3668,13 +4328,23 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <Space direction="vertical" size={12} style={{ width: '100%' }}>
                         {sectionKey === 'cms-orders' ? orderBulkActions : null}
                         {sectionKey === 'cms-services' ? serviceBulkActions : null}
+                        {['cms-posts', 'cms-projects'].includes(sectionKey) ? contentBulkActions : null}
+                        {['cms-partners', 'cms-team-members', 'cms-testimonials'].includes(sectionKey) ? featuredBulkActions : null}
                         <Table
                             rowKey="id"
                             rowSelection={sectionKey === 'cms-orders'
                                 ? orderRowSelection
                                 : sectionKey === 'cms-services'
                                     ? serviceRowSelection
-                                    : partnerRowSelection}
+                                    : sectionKey === 'cms-posts'
+                                        ? postRowSelection
+                                        : sectionKey === 'cms-projects'
+                                            ? projectRowSelection
+                                            : sectionKey === 'cms-team-members'
+                                                ? teamMemberRowSelection
+                                                : sectionKey === 'cms-testimonials'
+                                                    ? testimonialRowSelection
+                                                    : partnerRowSelection}
                             columns={columns}
                             dataSource={filteredItems}
                             pagination={{ pageSize: 10, hideOnSinglePage: true }}
@@ -3707,7 +4377,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         setBlockManagerOpen(false);
                         setSelectedLandingPage(null);
                     }}
-                    onChanged={reload}
+                    onChanged={refreshCurrentSectionDataSilently}
                 />
             </Suspense>
 
@@ -4056,6 +4726,38 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 </Form>
             </Modal>
 
+            <Modal
+                title={`Đổi danh mục ${sectionKey === 'cms-posts' ? selectedPostRowKeys.length : selectedProjectRowKeys.length} ${sectionKey === 'cms-posts' ? 'bài viết' : 'dự án'}`}
+                open={['cms-posts', 'cms-projects'].includes(sectionKey) && bulkContentCategoryOpen}
+                onCancel={() => {
+                    setBulkContentCategoryOpen(false);
+                    bulkContentCategoryForm.resetFields();
+                }}
+                onOk={handleBulkContentCategory}
+                okText="Áp dụng"
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Form form={bulkContentCategoryForm} layout="vertical">
+                    <Alert
+                        type="info"
+                        showIcon
+                        message={`Danh mục mới sẽ được áp dụng cho ${sectionKey === 'cms-posts' ? selectedPostRowKeys.length : selectedProjectRowKeys.length} ${sectionKey === 'cms-posts' ? 'bài viết' : 'dự án'} đang chọn.`}
+                        style={{ marginBottom: 16 }}
+                    />
+                    <Form.Item name="category_id" label="Danh mục">
+                        <Select
+                            allowClear
+                            placeholder="Chọn danh mục"
+                            options={(data?.categories ?? []).map((category) => ({
+                                label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
+                                value: category.id,
+                            }))}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
             <Drawer
                 title={selectedPost?.title ?? 'Chi tiết bài viết'}
                 open={sectionKey === 'cms-posts' && Boolean(selectedPost)}
@@ -4291,6 +4993,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     canManage={canManageCategories}
                     editingCategory={editingCategoryRecord}
                     parentOptions={categoryParentOptions}
+                    submitLoading={categorySaving}
                     onCancel={() => {
                         setCategoryFormOpen(false);
                         setEditingCategoryRecord(emptyCategory);
@@ -4372,6 +5075,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     editingCategory={editingServiceCategoryRecord}
                     categoryOptions={serviceCategoryParentOptions}
                     callAdminApi={callAdminApi}
+                    submitLoading={serviceCategorySaving}
                     onCancel={() => {
                         setServiceCategoryFormOpen(false);
                         setEditingServiceCategoryRecord(emptyServiceCategory);
@@ -4480,6 +5184,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     editingCategory={editingProductCategoryRecord}
                     categoryOptions={productCategoryParentOptions}
                     callAdminApi={callAdminApi}
+                    submitLoading={productCategorySaving}
                     onCancel={() => {
                         setProductCategoryFormOpen(false);
                         setEditingProductCategoryRecord(emptyProductCategory);
@@ -4561,6 +5266,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     editingCategory={editingProjectCategoryRecord}
                     categoryOptions={projectCategoryParentOptions}
                     callAdminApi={callAdminApi}
+                    submitLoading={projectCategorySaving}
                     onCancel={() => {
                         setProjectCategoryFormOpen(false);
                         setEditingProjectCategoryRecord(emptyProjectCategory);

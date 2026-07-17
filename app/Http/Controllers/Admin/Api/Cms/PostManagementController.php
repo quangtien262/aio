@@ -31,6 +31,50 @@ class PostManagementController
         return response()->json(['message' => 'Đã cập nhật bài viết CMS.', 'data' => $this->serialize($record->fresh())]);
     }
 
+    public function bulkUpdate(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('cms_posts', 'id')],
+            'category_id' => ['sometimes', 'nullable', 'integer', Rule::exists('cms_categories', 'id')],
+            'is_highlight' => ['sometimes', 'boolean'],
+        ]);
+
+        $updates = [];
+
+        if (array_key_exists('category_id', $validated)) {
+            $updates['category_id'] = $validated['category_id'];
+        }
+
+        if (array_key_exists('is_highlight', $validated)) {
+            $updates['is_highlight'] = (bool) $validated['is_highlight'];
+        }
+
+        if ($updates === []) {
+            return response()->json(['message' => 'Khong co thong tin can cap nhat.'], 422);
+        }
+
+        $count = CmsPost::query()
+            ->whereIn('id', $validated['ids'])
+            ->update($updates);
+
+        return response()->json(['message' => 'Da cap nhat bai viet da chon.', 'data' => ['updated' => $count]]);
+    }
+
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('cms_posts', 'id')],
+        ]);
+
+        $count = CmsPost::query()
+            ->whereIn('id', $validated['ids'])
+            ->delete();
+
+        return response()->json(['message' => 'Da xoa bai viet da chon.', 'data' => ['deleted' => $count]]);
+    }
+
     public function destroy(Request $request, int $post): JsonResponse
     {
         /** @var CmsPost $record */

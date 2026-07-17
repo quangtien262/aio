@@ -50,6 +50,7 @@ export default function MultiMediaPicker({
     uploadErrorMessage = 'Upload gallery không thành công.',
     urlErrorMessage = 'Không thể lưu ảnh gallery từ URL.',
     emptyValueMessage = 'Nhập ít nhất một URL ảnh trước khi lưu.',
+    compactPreview = false,
 }) {
     const normalizedValue = useMemo(() => normalizeMediaList(value), [value]);
     const [messageApi, messageContextHolder] = message.useMessage();
@@ -272,6 +273,32 @@ export default function MultiMediaPicker({
     const renderPreview = () => {
         if (!normalizedValue.length) {
             return null;
+        }
+
+        if (compactPreview) {
+            return (
+                <div className="cms-multi-media-preview-grid">
+                    {normalizedValue.map((mediaUrlValue, index) => (
+                        <div className="cms-multi-media-preview-card" key={`${mediaUrlValue}-${index}`}>
+                            <div className="cms-multi-media-preview-thumb">
+                                <img src={mediaUrlValue} alt={`${previewTitle} ${index + 1}`} />
+                                <span>{index + 1}</span>
+                                {coverValue === mediaUrlValue ? (
+                                    <Text className="cms-multi-media-preview-badge">{coverBadgeLabel}</Text>
+                                ) : null}
+                            </div>
+                            <Space size={6} wrap className="cms-multi-media-preview-actions">
+                                {onSetCover && coverValue !== mediaUrlValue ? (
+                                    <Button size="small" type="primary" ghost onClick={() => onSetCover(mediaUrlValue)}>
+                                        {setCoverButtonLabel}
+                                    </Button>
+                                ) : null}
+                                <Button size="small" onClick={() => removeValue(mediaUrlValue)}>Bỏ chọn</Button>
+                            </Space>
+                        </div>
+                    ))}
+                </div>
+            );
         }
 
         return (

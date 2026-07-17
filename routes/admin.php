@@ -399,6 +399,12 @@ Route::prefix('admin')
                 Route::post('/cms/posts', [PostManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.post.create')
                     ->name('cms.posts.store');
+                Route::put('/cms/posts/bulk', [PostManagementController::class, 'bulkUpdate'])
+                    ->middleware('admin.permission:cms.post.update')
+                    ->name('cms.posts.bulk-update');
+                Route::delete('/cms/posts/bulk', [PostManagementController::class, 'bulkDestroy'])
+                    ->middleware('admin.permission:cms.post.delete')
+                    ->name('cms.posts.bulk-destroy');
                 Route::put('/cms/posts/{post}', [PostManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.post.update')
                     ->name('cms.posts.update');
@@ -447,6 +453,12 @@ Route::prefix('admin')
                 Route::post('/cms/projects', [CmsProjectManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.create')
                     ->name('cms.projects.store');
+                Route::put('/cms/projects/bulk', [CmsProjectManagementController::class, 'bulkUpdate'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.projects.bulk-update');
+                Route::delete('/cms/projects/bulk', [CmsProjectManagementController::class, 'bulkDestroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.projects.bulk-destroy');
                 Route::put('/cms/projects/{project}', [CmsProjectManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.update')
                     ->name('cms.projects.update');
@@ -459,6 +471,12 @@ Route::prefix('admin')
                 Route::post('/cms/testimonials', [TestimonialManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.create')
                     ->name('cms.testimonials.store');
+                Route::put('/cms/testimonials/bulk', [TestimonialManagementController::class, 'bulkUpdate'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.testimonials.bulk-update');
+                Route::delete('/cms/testimonials/bulk', [TestimonialManagementController::class, 'bulkDestroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.testimonials.bulk-destroy');
                 Route::put('/cms/testimonials/{testimonial}', [TestimonialManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.update')
                     ->name('cms.testimonials.update');
@@ -471,6 +489,12 @@ Route::prefix('admin')
                 Route::post('/cms/team-members', [TeamMemberManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.create')
                     ->name('cms.team-members.store');
+                Route::put('/cms/team-members/bulk', [TeamMemberManagementController::class, 'bulkUpdate'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.team-members.bulk-update');
+                Route::delete('/cms/team-members/bulk', [TeamMemberManagementController::class, 'bulkDestroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.team-members.bulk-destroy');
                 Route::put('/cms/team-members/{member}', [TeamMemberManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.update')
                     ->name('cms.team-members.update');
@@ -483,6 +507,12 @@ Route::prefix('admin')
                 Route::post('/cms/partners', [PartnerManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.create')
                     ->name('cms.partners.store');
+                Route::put('/cms/partners/bulk', [PartnerManagementController::class, 'bulkUpdate'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.partners.bulk-update');
+                Route::delete('/cms/partners/bulk', [PartnerManagementController::class, 'bulkDestroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.partners.bulk-destroy');
                 Route::put('/cms/partners/{partner}', [PartnerManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.update')
                     ->name('cms.partners.update');

@@ -381,8 +381,21 @@ class CmsSiteController
 
         $project = $query->firstOrFail();
 
+        $recentProjectsQuery = CmsProject::query()
+            ->with(['category', 'featuredImage'])
+            ->where('status', 'published')
+            ->whereKeyNot($project->getKey())
+            ->latest('updated_at');
+        $this->applyWebsiteScope($recentProjectsQuery, $websiteKey);
+
+        $recentProjects = $recentProjectsQuery
+            ->take(10)
+            ->get()
+            ->map(fn (CmsProject $recentProject): CmsProject => $this->localizeProjectModel($recentProject, $websiteKey));
+
         return $this->renderContent('project', $project, [
             'siteProfile' => $siteProfile,
+            'recentProjects' => $recentProjects,
         ]);
     }
 

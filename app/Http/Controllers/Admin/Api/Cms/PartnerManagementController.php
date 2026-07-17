@@ -31,6 +31,45 @@ class PartnerManagementController
         return response()->json(['message' => 'Da cap nhat doi tac CMS.', 'data' => $this->serialize($record->fresh())]);
     }
 
+    public function bulkUpdate(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('cms_partners', 'id')],
+            'is_featured' => ['sometimes', 'boolean'],
+        ]);
+
+        $updates = [];
+
+        if (array_key_exists('is_featured', $validated)) {
+            $updates['is_featured'] = (bool) $validated['is_featured'];
+        }
+
+        if ($updates === []) {
+            return response()->json(['message' => 'Khong co thong tin can cap nhat.'], 422);
+        }
+
+        $count = CmsPartner::query()
+            ->whereIn('id', $validated['ids'])
+            ->update($updates);
+
+        return response()->json(['message' => 'Da cap nhat doi tac da chon.', 'data' => ['updated' => $count]]);
+    }
+
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('cms_partners', 'id')],
+        ]);
+
+        $count = CmsPartner::query()
+            ->whereIn('id', $validated['ids'])
+            ->delete();
+
+        return response()->json(['message' => 'Da xoa doi tac da chon.', 'data' => ['deleted' => $count]]);
+    }
+
     public function destroy(Request $request, int $partner): JsonResponse
     {
         /** @var CmsPartner $record */

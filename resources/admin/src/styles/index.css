@@ -306,6 +306,13 @@ a {
     padding-inline: 14px;
 }
 
+.admin-section-menu.ant-menu-horizontal > .ant-menu-item .ant-menu-title-content,
+.admin-section-menu.ant-menu-horizontal > .ant-menu-submenu > .ant-menu-submenu-title,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-item .ant-menu-title-content,
+.admin-workspace-menu.ant-menu-horizontal > .ant-menu-submenu > .ant-menu-submenu-title {
+    font-weight: 600;
+}
+
 .admin-section-menu.ant-menu-horizontal > .ant-menu-item-selected,
 .admin-section-menu.ant-menu-horizontal > .ant-menu-item-active,
 .admin-section-menu.ant-menu-horizontal > .ant-menu-item:hover,
@@ -337,7 +344,7 @@ a {
 .admin-workspace-menu.ant-menu-horizontal > .ant-menu-item-active .ant-menu-title-content,
 .admin-workspace-menu.ant-menu-horizontal > .ant-menu-item:hover .ant-menu-title-content {
     color: #0f4c81 !important;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .admin-section-menu.ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-item-icon,
@@ -687,6 +694,72 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.cms-multi-media-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 10px;
+}
+
+.cms-multi-media-preview-card {
+    display: grid;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #dbe7e4;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.cms-multi-media-preview-thumb {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid #dbe7e4;
+    background: #f4f8f7;
+}
+
+.cms-multi-media-preview-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cms-multi-media-preview-thumb > span {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(9, 31, 45, 0.78);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cms-multi-media-preview-badge {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    max-width: calc(100% - 12px);
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(126, 164, 0, 0.92);
+    color: #ffffff !important;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.cms-multi-media-preview-actions {
+    justify-content: flex-end;
 }
 
 .cms-featured-media-library-grid {
