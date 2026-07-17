@@ -2720,16 +2720,57 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         },
     });
 
-    const handleCopyMediaUrl = async (record) => {
-        if (!record?.file_url) {
-            return;
+    const resolveFullUrl = (url) => {
+        const trimmedUrl = String(url ?? '').trim();
+
+        if (!trimmedUrl) {
+            return '';
         }
 
         try {
-            await navigator.clipboard.writeText(record.file_url);
-            messageApi.success('Đã copy URL media.');
+            return new URL(trimmedUrl, window.location.origin).href;
         } catch {
-            messageApi.error('Không thể copy URL media.');
+            return trimmedUrl;
+        }
+    };
+
+    const copyTextToClipboard = async (value) => {
+        if (navigator.clipboard?.writeText) {
+            try {
+                await navigator.clipboard.writeText(value);
+                return true;
+            } catch {
+                // Fallback below handles browsers or contexts that block Clipboard API.
+            }
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const didCopy = document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        return didCopy;
+    };
+
+    const handleCopyMediaUrl = async (record) => {
+        const fullUrl = resolveFullUrl(record?.file_url);
+
+        if (!fullUrl) {
+            return;
+        }
+
+        const didCopy = await copyTextToClipboard(fullUrl);
+
+        if (didCopy) {
+            messageApi.success('Đã copy đường dẫn ảnh.');
+        } else {
+            messageApi.error('Không thể copy đường dẫn ảnh.');
         }
     };
 
@@ -2738,10 +2779,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             return;
         }
 
-        try {
-            await navigator.clipboard.writeText(url);
+        const didCopy = await copyTextToClipboard(resolveFullUrl(url));
+
+        if (didCopy) {
             messageApi.success('Đã copy link website.');
-        } catch {
+        } else {
             messageApi.error('Không thể copy link website.');
         }
     };
@@ -4214,8 +4256,25 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                                 </div>
                                             )}
                                             actions={[
-                                                <Button key="copy" type="text" size="small" icon={<CopyOutlined />} onClick={() => handleCopyMediaUrl(record)}>Copy</Button>,
-                                                <Button key="edit" type="text" size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditMediaTitle(record)}>Sửa</Button>,
+                                                <Button
+                                                    key="copy"
+                                                    size="small"
+                                                    type="primary"
+                                                    ghost
+                                                    icon={<CopyOutlined />}
+                                                    onClick={() => handleCopyMediaUrl(record)}
+                                                >
+                                                    Copy
+                                                </Button>,
+                                                <Button
+                                                    key="edit"
+                                                    size="small"
+                                                    icon={<EditOutlined />}
+                                                    disabled={!sectionPermissions.canUpdate}
+                                                    onClick={() => openEditMediaTitle(record)}
+                                                >
+                                                    Sửa
+                                                </Button>,
                                             ]}
                                             style={{ overflow: 'hidden' }}
                                         >

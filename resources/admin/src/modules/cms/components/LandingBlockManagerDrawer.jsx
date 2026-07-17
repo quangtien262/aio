@@ -49,6 +49,10 @@ function editorItemKey(blockType) {
     return blockType === 'hero_slider' ? 'slides' : 'items';
 }
 
+function FormValueBridge() {
+    return null;
+}
+
 function editorItemFields(blockType) {
     if (blockType === 'hero_slider') {
         return [
@@ -329,7 +333,8 @@ export default function LandingBlockManagerDrawer({
             return;
         }
 
-        const values = await form.validateFields();
+        await form.validateFields();
+        const values = form.getFieldsValue(true);
         const locales = Object.keys(editingBlock.data_by_locale ?? { [locale]: editingBlock.data ?? {} });
 
         setSavingBlock(true);
@@ -337,6 +342,7 @@ export default function LandingBlockManagerDrawer({
         try {
             for (const localeCode of locales) {
                 const localeData = values.data_by_locale?.[localeCode] ?? {};
+                const existingLocaleData = editingBlock.data_by_locale?.[localeCode] ?? {};
 
                 await callAdminApi(`/admin/api/landing/blocks/${editingBlock.id}`, {
                     method: 'PUT',
@@ -350,7 +356,7 @@ export default function LandingBlockManagerDrawer({
                             subtitle: localeData.subtitle ?? '',
                             description: localeData.description ?? '',
                             button_label: localeData.button_label ?? '',
-                            content: localeData.content ?? {},
+                            content: localeData.content ?? existingLocaleData.content ?? {},
                         },
                     }),
                 });
@@ -639,6 +645,9 @@ export default function LandingBlockManagerDrawer({
                                     </Form.Item>
                                     <Form.Item name={['data_by_locale', localeCode, 'button_label']} label="Nút CTA">
                                         <Input />
+                                    </Form.Item>
+                                    <Form.Item name={['data_by_locale', localeCode, 'content']} hidden>
+                                        <FormValueBridge />
                                     </Form.Item>
                                     {localeCode === activeEditLocale ? (
                                         <Card
