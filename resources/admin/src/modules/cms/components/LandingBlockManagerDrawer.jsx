@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
+import HolderOutlined from '@ant-design/icons/HolderOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
@@ -19,6 +20,7 @@ import Switch from 'antd/es/switch';
 import Tag from 'antd/es/tag';
 import Tabs from 'antd/es/tabs';
 import Typography from 'antd/es/typography';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -51,6 +53,10 @@ function editorItemKey(blockType) {
 
 function FormValueBridge() {
     return null;
+}
+
+function isMediaItemField(key) {
+    return ['image', 'logo', 'avatar'].includes(key);
 }
 
 function editorItemFields(blockType) {
@@ -164,6 +170,7 @@ export default function LandingBlockManagerDrawer({
     const [loading, setLoading] = useState(false);
     const [visibilityUpdatingIds, setVisibilityUpdatingIds] = useState(() => new Set());
     const [draggingId, setDraggingId] = useState(null);
+    const [dragOverId, setDragOverId] = useState(null);
     const [addBlockModalOpen, setAddBlockModalOpen] = useState(false);
     const [editingBlock, setEditingBlock] = useState(null);
     const [savingBlock, setSavingBlock] = useState(false);
@@ -242,9 +249,30 @@ export default function LandingBlockManagerDrawer({
         }
     };
 
+    const handleDragStart = (event, blockId) => {
+        setDraggingId(blockId);
+        setDragOverId(null);
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', String(blockId));
+    };
+
+    const handleDragOver = (event, blockId) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+
+        if (draggingId && draggingId !== blockId) {
+            setDragOverId(blockId);
+        }
+    };
+
+    const handleDragEnd = () => {
+        setDraggingId(null);
+        setDragOverId(null);
+    };
+
     const handleDrop = async (targetId) => {
         if (!draggingId || draggingId === targetId) {
-            setDraggingId(null);
+            handleDragEnd();
             return;
         }
 
@@ -252,14 +280,14 @@ export default function LandingBlockManagerDrawer({
         const targetIndex = blocks.findIndex((block) => block.id === targetId);
 
         if (currentIndex < 0 || targetIndex < 0) {
-            setDraggingId(null);
+            handleDragEnd();
             return;
         }
 
         const nextBlocks = [...blocks];
         const [movingBlock] = nextBlocks.splice(currentIndex, 1);
         nextBlocks.splice(targetIndex, 0, movingBlock);
-        setDraggingId(null);
+        handleDragEnd();
         await reorderBlocks(nextBlocks);
     };
 
@@ -487,52 +515,96 @@ export default function LandingBlockManagerDrawer({
                 {loading ? (
                     <Card loading />
                 ) : blocks.length ? (
-                    <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                        {blocks.map((block, index) => (
-                            <Card
-                                key={block.id}
-                                size="small"
-                                draggable={canUpdate}
-                                onDragStart={() => setDraggingId(block.id)}
-                                onDragOver={(event) => event.preventDefault()}
-                                onDrop={() => handleDrop(block.id)}
-                                style={{
-                                    borderColor: draggingId === block.id ? '#bed600' : undefined,
-                                    cursor: canUpdate ? 'grab' : 'default',
-                                }}
-                            >
-                                <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr auto', gap: 12, alignItems: 'center' }}>
-                                    <div style={{ width: 44, height: 44, borderRadius: 14, display: 'grid', placeItems: 'center', background: '#eef6d1', color: '#6a8a00', fontWeight: 800 }}>
-                                        {index + 1}
-                                    </div>
-                                    <Space direction="vertical" size={2}>
-                                        <Space wrap>
-                                            <Title level={5} style={{ margin: 0 }}>{blockTitle(block)}</Title>
-                                            <Tag>{block.block_type}</Tag>
-                                            {block.anchor_id ? <Tag color="blue">#{block.anchor_id}</Tag> : null}
-                                        </Space>
-                                        <Text type="secondary">{block.data?.description || block.data?.subtitle || 'Khối nội dung landingpage'}</Text>
-                                    </Space>
-                                    <Space>
-                                        <Space size={6}>
-                                            <Switch
-                                                checked={Boolean(block.is_visible)}
-                                                disabled={!canUpdate || visibilityUpdatingIds.has(block.id)}
-                                                loading={visibilityUpdatingIds.has(block.id)}
-                                                onChange={(checked) => handleToggleVisible(block, checked)}
-                                            />
-                                            <Text type={block.is_visible ? 'success' : 'secondary'} strong>
-                                                {block.is_visible ? 'Hiện' : 'Ẩn'}
-                                            </Text>
-                                        </Space>
-                                        <Button icon={<EditOutlined />} disabled={!canUpdate} onClick={() => openBlockEditor(block)}>Sửa</Button>
-                                        <Popconfirm title="Xóa khối này?" disabled={!canDelete} onConfirm={() => handleDeleteBlock(block)}>
-                                            <Button danger icon={<DeleteOutlined />} disabled={!canDelete}>Xóa</Button>
-                                        </Popconfirm>
-                                    </Space>
+                    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                        {blocks.map((block, index) => {
+                            const isDragging = draggingId === block.id;
+                            const isDropTarget = dragOverId === block.id && draggingId !== block.id;
+
+                            return (
+                                <div
+                                    key={block.id}
+                                    onDragEnter={(event) => handleDragOver(event, block.id)}
+                                    onDragOver={(event) => handleDragOver(event, block.id)}
+                                    onDrop={() => handleDrop(block.id)}
+                                    style={{
+                                        position: 'relative',
+                                        paddingTop: isDropTarget ? 12 : 0,
+                                        transition: 'padding 160ms ease',
+                                    }}
+                                >
+                                    <div
+                                        aria-hidden="true"
+                                        style={{
+                                            position: 'absolute',
+                                            top: 2,
+                                            left: 16,
+                                            right: 16,
+                                            height: 4,
+                                            borderRadius: 999,
+                                            background: '#0f8f82',
+                                            boxShadow: '0 0 0 4px rgba(15, 143, 130, 0.12)',
+                                            opacity: isDropTarget ? 1 : 0,
+                                            transform: isDropTarget ? 'scaleX(1)' : 'scaleX(0.92)',
+                                            transition: 'opacity 140ms ease, transform 140ms ease',
+                                            pointerEvents: 'none',
+                                        }}
+                                    />
+                                    <Card
+                                        size="small"
+                                        draggable={canUpdate}
+                                        onDragStart={(event) => handleDragStart(event, block.id)}
+                                        onDragEnd={handleDragEnd}
+                                        style={{
+                                            borderColor: isDragging ? '#0f8f82' : isDropTarget ? '#8fd8d1' : undefined,
+                                            cursor: canUpdate ? 'grab' : 'default',
+                                            opacity: isDragging ? 0.62 : 1,
+                                            transform: isDragging ? 'scale(0.985)' : isDropTarget ? 'translateY(2px)' : 'translateY(0)',
+                                            boxShadow: isDragging ? '0 14px 30px rgba(15, 23, 42, 0.16)' : undefined,
+                                            transition: 'transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease, border-color 160ms ease',
+                                            userSelect: isDragging ? 'none' : undefined,
+                                        }}
+                                    >
+                                        <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr auto', gap: 12, alignItems: 'center' }}>
+                                            <div style={{ width: 44, height: 44, borderRadius: 14, display: 'grid', placeItems: 'center', background: '#eef6d1', color: '#6a8a00', fontWeight: 800 }}>
+                                                {index + 1}
+                                            </div>
+                                            <Space direction="vertical" size={2}>
+                                                <Space wrap>
+                                                    <Title level={5} style={{ margin: 0 }}>{blockTitle(block)}</Title>
+                                                    <Tag>{block.block_type}</Tag>
+                                                    {block.anchor_id ? <Tag color="blue">#{block.anchor_id}</Tag> : null}
+                                                </Space>
+                                                <Text type="secondary">{block.data?.description || block.data?.subtitle || 'Khối nội dung landingpage'}</Text>
+                                            </Space>
+                                            <Space>
+                                                <Button
+                                                    icon={<HolderOutlined />}
+                                                    disabled={!canUpdate}
+                                                    aria-label="Kéo để sắp xếp"
+                                                    title="Kéo để sắp xếp"
+                                                    style={{ cursor: canUpdate ? 'grab' : 'default' }}
+                                                />
+                                                <Space size={6}>
+                                                    <Switch
+                                                        checked={Boolean(block.is_visible)}
+                                                        disabled={!canUpdate || visibilityUpdatingIds.has(block.id)}
+                                                        loading={visibilityUpdatingIds.has(block.id)}
+                                                        onChange={(checked) => handleToggleVisible(block, checked)}
+                                                    />
+                                                    <Text type={block.is_visible ? 'success' : 'secondary'} strong>
+                                                        {block.is_visible ? 'Hiện' : 'Ẩn'}
+                                                    </Text>
+                                                </Space>
+                                                <Button icon={<EditOutlined />} disabled={!canUpdate} onClick={() => openBlockEditor(block)}>Sửa</Button>
+                                                <Popconfirm title="Xóa khối này?" disabled={!canDelete} onConfirm={() => handleDeleteBlock(block)}>
+                                                    <Button danger icon={<DeleteOutlined />} disabled={!canDelete}>Xóa</Button>
+                                                </Popconfirm>
+                                            </Space>
+                                        </div>
+                                    </Card>
                                 </div>
-                            </Card>
-                        ))}
+                            );
+                        })}
                     </Space>
                 ) : (
                     <Empty description="Landingpage này chưa có khối nào." />
@@ -708,25 +780,52 @@ export default function LandingBlockManagerDrawer({
             okText="Lưu mục"
             cancelText="Hủy"
             destroyOnHidden
+            width={680}
         >
             <div style={{ display: 'grid', gap: 12 }}>
-                {editingBlock ? editorItemFields(editingBlock.block_type).map(([key, label, type]) => (
-                    <label key={key} style={{ display: 'grid', gap: 6, fontWeight: 700 }}>
-                        <span>{label}</span>
-                        {type === 'textarea' ? (
-                            <Input.TextArea
-                                rows={4}
-                                value={itemDraft[key] ?? ''}
-                                onChange={(event) => setItemDraft((draft) => ({ ...draft, [key]: event.target.value }))}
-                            />
-                        ) : (
-                            <Input
-                                value={itemDraft[key] ?? ''}
-                                onChange={(event) => setItemDraft((draft) => ({ ...draft, [key]: event.target.value }))}
-                            />
-                        )}
-                    </label>
-                )) : null}
+                {editingBlock ? editorItemFields(editingBlock.block_type).map(([key, label, type]) => {
+                    if (isMediaItemField(key)) {
+                        return (
+                            <div key={key} style={{ display: 'grid', gap: 6 }}>
+                                <Text strong>{label}</Text>
+                                <SingleMediaPicker
+                                    open={itemModalOpen}
+                                    canManage={canUpdate}
+                                    callAdminApi={callAdminApi}
+                                    value={itemDraft[key] ?? ''}
+                                    onChange={(value) => setItemDraft((draft) => ({ ...draft, [key]: value }))}
+                                    recordTitle={itemDraft.title || itemDraft.name || itemDraft.kicker || blockTitle(editingBlock)}
+                                    previewTitle={label}
+                                    uploadButtonLabel="Upload ảnh trực tiếp"
+                                    uploadHint="Ảnh upload xong sẽ tự gắn vào mục nội dung này."
+                                    libraryButtonLabel="Mở thư viện media"
+                                    libraryHint="Chọn ảnh từ thư viện CMS đã có sẵn."
+                                    urlPlaceholder="https://example.com/image.jpg"
+                                    urlButtonLabel="Lưu URL và gắn ảnh"
+                                    libraryModalTitle={`Chọn ${label.toLowerCase()} từ thư viện`}
+                                />
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <label key={key} style={{ display: 'grid', gap: 6, fontWeight: 700 }}>
+                            <span>{label}</span>
+                            {type === 'textarea' ? (
+                                <Input.TextArea
+                                    rows={4}
+                                    value={itemDraft[key] ?? ''}
+                                    onChange={(event) => setItemDraft((draft) => ({ ...draft, [key]: event.target.value }))}
+                                />
+                            ) : (
+                                <Input
+                                    value={itemDraft[key] ?? ''}
+                                    onChange={(event) => setItemDraft((draft) => ({ ...draft, [key]: event.target.value }))}
+                                />
+                            )}
+                        </label>
+                    );
+                }) : null}
             </div>
         </Modal>
         </>

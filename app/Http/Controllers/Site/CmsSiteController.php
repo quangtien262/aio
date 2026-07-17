@@ -1176,6 +1176,10 @@ class CmsSiteController
             $extra['relatedPosts'] = $this->resolveRelatedPosts($entry, $siteProfile);
         }
 
+        if ($contentType === 'service' && $entry instanceof CmsService && ! array_key_exists('latestServices', $extra)) {
+            $extra['latestServices'] = $this->resolveLatestServices($siteProfile, $entry, 15);
+        }
+
         return view($viewName, array_merge([
             'contentType' => $contentType,
             'entry' => $entry,
@@ -1335,6 +1339,28 @@ class CmsSiteController
         return $sameCategory
             ->concat($fallbackQuery->take(3 - $sameCategory->count())->get())
             ->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))
+            ->values();
+    }
+
+    private function resolveLatestServices(?SiteProfile $siteProfile, ?CmsService $currentService = null, int $limit = 15): Collection
+    {
+        $websiteKey = (string) ($currentService?->website_key ?: $this->resolveWebsiteKey($siteProfile));
+
+        $query = CmsService::query()
+            ->with('featuredImage')
+            ->where('status', 'published')
+            ->latest('publish_at')
+            ->latest('updated_at');
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        if ($currentService?->getKey() !== null) {
+            $query->whereKeyNot($currentService->getKey());
+        }
+
+        return $query
+            ->take($limit)
+            ->get()
+            ->map(fn (CmsService $service): CmsService => $this->localizeServiceModel($service, $websiteKey))
             ->values();
     }
 

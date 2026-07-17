@@ -246,6 +246,16 @@
         .xd-side-card h3{margin:0 0 18px;font-size:24px}
         .xd-side-card a{display:block;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-weight:750}
         .xd-side-card a:hover{color:var(--lime-dark)}
+        .xd-latest-services{margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}
+        .xd-latest-services h4{margin:0 0 16px;color:var(--ink);font-size:19px;line-height:1.25}
+        .xd-latest-service-link{display:grid!important;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:center;padding:12px 0!important;border-top:1px solid var(--line);color:var(--ink)!important}
+        .xd-latest-service-link:first-of-type{border-top:0}
+        .xd-latest-service-thumb{width:64px;height:54px;overflow:hidden;background:#eef2ef}
+        .xd-latest-service-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:.25s}
+        .xd-latest-service-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:var(--ink);color:var(--lime);font-size:20px;font-weight:950}
+        .xd-latest-service-title{display:block;color:var(--ink);font-size:14px;font-weight:850;line-height:1.35}
+        .xd-latest-service-link:hover .xd-latest-service-title{color:var(--lime-dark)}
+        .xd-latest-service-link:hover img{transform:scale(1.06)}
         .xd-contact-page{display:grid;grid-template-columns:minmax(0,.9fr) minmax(420px,.72fr);gap:34px;align-items:stretch}
         .xd-contact-panel,.xd-contact-form-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.06)}
         .xd-contact-panel{padding:44px 48px;background:linear-gradient(135deg,#fff 0%,#f7faee 100%)}
@@ -319,6 +329,28 @@
                             @foreach ($navItems->take(5) as $item)
                                 <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
                             @endforeach
+
+                            @if (!empty($latestServices) && $latestServices->count() > 0)
+                                <div class="xd-latest-services">
+                                    <h4>{{ app()->getLocale() === 'en' ? 'Latest services' : 'Dịch vụ mới nhất' }}</h4>
+                                    @foreach ($latestServices->take(15) as $service)
+                                        @php
+                                            $serviceImage = $service->featuredImage?->image_url;
+                                            $serviceAlt = $service->featuredImage?->alt_text ?: $service->title;
+                                        @endphp
+                                        <a class="xd-latest-service-link" href="{{ route('site.services.show', ['slug' => $service->slug]) }}">
+                                            <span class="xd-latest-service-thumb">
+                                                @if ($serviceImage)
+                                                    <img src="{{ $serviceImage }}" alt="{{ $serviceAlt }}" loading="lazy">
+                                                @else
+                                                    <span class="xd-latest-service-placeholder">+</span>
+                                                @endif
+                                            </span>
+                                            <span class="xd-latest-service-title">{{ $service->title }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
                         </aside>
                     </section>
             </div>
