@@ -953,6 +953,17 @@ class LandingPageBuilder
 
         return $query->take($limit)->get()->map(function (CmsProject $project) use ($locale, $resolvedWebsiteKey): array {
             $featuredImage = $project->images->firstWhere('is_featured', true) ?? $project->images->first();
+            $projectImages = $project->images
+                ->filter(fn ($image): bool => filled($image->image_url))
+                ->map(fn ($image): array => [
+                    'image' => $image->image_url,
+                    'image_url' => $image->image_url,
+                    'alt' => $image->alt_text ?: $project->title,
+                    'caption' => $image->caption,
+                    'is_featured' => (bool) $image->is_featured,
+                ])
+                ->values()
+                ->all();
 
             return [
                 'title' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project.%d.title', $project->id), $project->title),
@@ -960,6 +971,8 @@ class LandingPageBuilder
                 'tag' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project.%d.summary', $project->id), $project->summary),
                 'image' => $featuredImage?->image_url ?: $this->fallbackContentImage(),
                 'alt' => $featuredImage?->alt_text ?: $project->title,
+                'images' => $projectImages,
+                'gallery_images' => $projectImages,
                 'url' => $project->link_url ?: '#lien-he',
                 'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project.%d.button_label', $project->id), $project->button_label),
             ];

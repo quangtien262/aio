@@ -145,6 +145,26 @@
                 restartRow();
             });
 
+            document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
+                const slides = Array.from(gallery.querySelectorAll('[data-project-slide]'));
+                const thumbs = Array.from(gallery.querySelectorAll('[data-project-thumb]'));
+                if (slides.length <= 1 || !thumbs.length) return;
+
+                const showProjectImage = (nextIndex = 0) => {
+                    const resolvedIndex = ((nextIndex % slides.length) + slides.length) % slides.length;
+                    slides.forEach((slide, index) => slide.classList.toggle('is-active', index === resolvedIndex));
+                    thumbs.forEach((thumb, index) => thumb.classList.toggle('is-active', index === resolvedIndex));
+                };
+
+                thumbs.forEach((thumb) => {
+                    thumb.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        showProjectImage(Number(thumb.dataset.projectThumb || 0));
+                    });
+                });
+            });
+
             const canEdit = @json($canEditLanding);
             if (!canEdit) return;
             const blocks = @json($blockPayload);
@@ -436,6 +456,17 @@
                     ];
                 }
 
+                if (blockType === 'project_gallery') {
+                    return [
+                        ['title', 'Tiêu đề'],
+                        ['summary', 'Mô tả', 'textarea'],
+                        ['image', 'Ảnh đại diện'],
+                        ['gallery_images', 'Album ảnh, mỗi dòng một URL', 'textarea'],
+                        ['url', 'Link'],
+                        ['button_label', 'Nút bấm'],
+                    ];
+                }
+
                 if (blockType === 'testimonials') {
                     return [
                         ['name', 'Tên khách hàng'],
@@ -479,7 +510,10 @@
                 row.dataset.xdItem = JSON.stringify(item || {});
                 const title = item.title || item.name || item.kicker || `Mục ${index + 1}`;
                 const summary = item.summary || item.description || item.quote || item.role || item.company || item.url || item.link_url || 'Chưa có mô tả.';
-                const image = item.image || item.image_url || item.thumbnail || item.logo || item.avatar || '';
+                const firstGalleryImage = Array.isArray(item.gallery_images)
+                    ? item.gallery_images[0]
+                    : String(item.gallery_images || '').split(/\r?\n/).map((value) => value.trim()).filter(Boolean)[0];
+                const image = item.image || item.image_url || firstGalleryImage || item.thumbnail || item.logo || item.avatar || '';
                 const imageAlt = item.alt || title;
                 const thumb = image
                     ? `<span class="xd-editor-item-thumb"><img src="${escapeHtml(image)}" alt="${escapeHtml(imageAlt)}"></span>`
@@ -536,7 +570,7 @@
                         ? `<span>${escapeHtml(label)}</span><textarea data-xd-item-modal-field="${escapeHtml(key)}"></textarea>`
                         : `<span>${escapeHtml(label)}</span><input data-xd-item-modal-field="${escapeHtml(key)}">`;
                     const input = control.querySelector('[data-xd-item-modal-field]');
-                    input.value = item?.[key] ?? '';
+                    input.value = Array.isArray(item?.[key]) ? item[key].join('\n') : (item?.[key] ?? '');
                     if (key === 'image') {
                         const modeWrap = document.createElement('div');
                         modeWrap.className = 'xd-image-mode';
@@ -715,7 +749,11 @@
                 const item = {};
                 itemForm.querySelectorAll('[data-xd-item-modal-field]').forEach((input) => {
                     const value = input.value.trim();
-                    if (value !== '') item[input.dataset.xdItemModalField] = value;
+                    if (value !== '') {
+                        item[input.dataset.xdItemModalField] = input.dataset.xdItemModalField === 'gallery_images'
+                            ? value.split(/\r?\n/).map((entry) => entry.trim()).filter(Boolean)
+                            : value;
+                    }
                 });
                 const indexValue = itemIndexInput?.value ?? '';
                 const rows = Array.from(itemList.querySelectorAll('[data-xd-item-row]'));
