@@ -265,6 +265,25 @@ class CmsSiteController
             });
         }
 
+        if (
+            strtoupper((string) ($activeTheme['key'] ?? '')) === 'XD0301'
+            && $categorySlug !== ''
+            && $search === ''
+        ) {
+            $singleServiceCandidates = (clone $servicesQuery)
+                ->with(['category', 'images', 'featuredImage'])
+                ->limit(2)
+                ->get();
+
+            if ($singleServiceCandidates->count() === 1) {
+                return $this->renderContent('service', $singleServiceCandidates->first(), [
+                    'siteProfile' => $siteProfile,
+                    'activeTheme' => $activeTheme,
+                    'menus' => $menus,
+                ]);
+            }
+        }
+
         $services = $servicesQuery->paginate(12)->withQueryString();
         $currentServiceCategory = null;
 

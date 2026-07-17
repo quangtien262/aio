@@ -6,7 +6,6 @@ import Col from 'antd/es/col';
 import Drawer from 'antd/es/drawer';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
-import InputNumber from 'antd/es/input-number';
 import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
@@ -321,7 +320,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                     />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={8}>
+                            <Col xs={24} md={12}>
                                 <Form.Item name="icon" label="Icon ngắn">
                                     <Select
                                         allowClear
@@ -339,11 +338,6 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                             ),
                                         }))}
                                     />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={8}>
-                                <Form.Item name="sort_order" label="Thứ tự">
-                                    <InputNumber min={0} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                         </Row>

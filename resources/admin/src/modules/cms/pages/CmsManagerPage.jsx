@@ -654,6 +654,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productActiveFilter, setProductActiveFilter] = useState('all');
     const [productPublishFilter, setProductPublishFilter] = useState('all');
     const [productSort, setProductSort] = useState('newest');
+    const [serviceCategoryFilter, setServiceCategoryFilter] = useState('all');
+    const [serviceStatusFilter, setServiceStatusFilter] = useState('all');
+    const [serviceFeaturedFilter, setServiceFeaturedFilter] = useState('all');
     const [productPagination, setProductPagination] = useState({ current: 1, pageSize: 10 });
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '', folder_path: null });
     const [mediaFiles, setMediaFiles] = useState([]);
@@ -798,6 +801,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 { label: 'Đã xuất bản', value: data.metrics?.published ?? 0 },
                 { label: 'Bản nháp', value: data.metrics?.draft ?? 0 },
             ];
+        }
+
+        if (['cms-services', 'cms-projects', 'cms-testimonials', 'cms-team-members', 'cms-partners'].includes(sectionKey)) {
+            return [];
         }
 
         if (sectionKey === 'cms-services') {
@@ -1168,6 +1175,26 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             });
         }
 
+        if (sectionKey === 'cms-services') {
+            return (data?.items ?? []).filter((service) => {
+                const matchesKeyword = normalizedKeyword === '' || [
+                    service.title,
+                    service.slug,
+                    service.category_name,
+                    service.summary,
+                    service.meta_keywords,
+                ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
+                const matchesCategory = serviceCategoryFilter === 'all'
+                    || String(service.cms_service_category_id ?? '') === String(serviceCategoryFilter);
+                const matchesStatus = serviceStatusFilter === 'all' || service.status === serviceStatusFilter;
+                const matchesFeatured = serviceFeaturedFilter === 'all'
+                    || (serviceFeaturedFilter === 'featured' && service.is_featured)
+                    || (serviceFeaturedFilter === 'normal' && !service.is_featured);
+
+                return matchesKeyword && matchesCategory && matchesStatus && matchesFeatured;
+            });
+        }
+
         if (sectionKey === 'cms-media') {
             return (data?.items ?? []).filter((mediaItem) => {
                 const folderMatches = activeMediaFolder === 'all'
@@ -1191,7 +1218,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return data?.items ?? [];
-    }, [activeMediaFolder, data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey]);
+    }, [activeMediaFolder, data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey, serviceCategoryFilter, serviceFeaturedFilter, serviceStatusFilter]);
 
     const openCreateModal = () => {
         if (sectionKey === 'cms-landing-pages') {
@@ -2031,20 +2058,28 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         const values = await bulkServiceCategoryForm.validateFields();
         const services = [...selectedServices];
 
-        const didUpdate = await runAdminAction(async () => {
-            for (const service of services) {
-                await callAdminApi(`${sectionConfig.endpoint}/${service.id}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(buildBulkServicePayload(service, values)),
-                });
-            }
-        }, `Đã cập nhật danh mục cho ${services.length} dịch vụ.`, reload);
+        Modal.confirm({
+            title: `Đổi danh mục ${services.length} dịch vụ đã chọn?`,
+            content: 'Danh mục mới sẽ được áp dụng cho toàn bộ dịch vụ đang chọn.',
+            okText: 'Đổi danh mục',
+            cancelText: 'Hủy',
+            onOk: async () => {
+                const didUpdate = await runAdminAction(async () => {
+                    for (const service of services) {
+                        await callAdminApi(`${sectionConfig.endpoint}/${service.id}`, {
+                            method: 'PUT',
+                            body: JSON.stringify(buildBulkServicePayload(service, values)),
+                        });
+                    }
+                }, `Đã cập nhật danh mục cho ${services.length} dịch vụ.`, reload);
 
-        if (didUpdate) {
-            setBulkServiceCategoryOpen(false);
-            setSelectedServiceRowKeys([]);
-            bulkServiceCategoryForm.resetFields();
-        }
+                if (didUpdate) {
+                    setBulkServiceCategoryOpen(false);
+                    setSelectedServiceRowKeys([]);
+                    bulkServiceCategoryForm.resetFields();
+                }
+            },
+        });
     };
 
     const handleBulkUpdateServices = async (values, successMessage) => {
@@ -2068,17 +2103,47 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const handleBulkFeatureServices = (isFeatured) => {
-        handleBulkUpdateServices(
-            { is_featured: isFeatured },
-            (count) => isFeatured ? `Đã đánh dấu nổi bật ${count} dịch vụ.` : `Đã bỏ nổi bật ${count} dịch vụ.`,
-        );
+        const count = selectedServiceRowKeys.length;
+
+        if (!count) {
+            return;
+        }
+
+        Modal.confirm({
+            title: isFeatured ? `Đánh dấu nổi bật ${count} dịch vụ đã chọn?` : `Bỏ nổi bật ${count} dịch vụ đã chọn?`,
+            content: isFeatured
+                ? 'Các dịch vụ đang chọn sẽ được ưu tiên hiển thị trong các khối nổi bật.'
+                : 'Các dịch vụ đang chọn sẽ không còn được ưu tiên trong các khối nổi bật.',
+            okText: isFeatured ? 'Đánh dấu nổi bật' : 'Bỏ nổi bật',
+            cancelText: 'Hủy',
+            onOk: () => handleBulkUpdateServices(
+                { is_featured: isFeatured },
+                (updatedCount) => isFeatured ? `Đã đánh dấu nổi bật ${updatedCount} dịch vụ.` : `Đã bỏ nổi bật ${updatedCount} dịch vụ.`,
+            ),
+        });
     };
 
     const handleBulkPublishServices = (status) => {
-        handleBulkUpdateServices(
-            { status },
-            (count) => status === 'published' ? `Đã xuất bản ${count} dịch vụ.` : `Đã chuyển ${count} dịch vụ về bản nháp.`,
-        );
+        const count = selectedServiceRowKeys.length;
+        const isPublishing = status === 'published';
+
+        if (!count) {
+            return;
+        }
+
+        Modal.confirm({
+            title: isPublishing ? `Xuất bản ${count} dịch vụ đã chọn?` : `Chuyển ${count} dịch vụ đã chọn về bản nháp?`,
+            content: isPublishing
+                ? 'Các dịch vụ này sẽ được phép hiển thị ngoài website nếu theme/block đang sử dụng.'
+                : 'Các dịch vụ này sẽ bị ẩn khỏi các danh sách công khai ngoài website.',
+            okText: isPublishing ? 'Xuất bản' : 'Chuyển bản nháp',
+            okButtonProps: isPublishing ? undefined : { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => handleBulkUpdateServices(
+                { status },
+                (updatedCount) => isPublishing ? `Đã xuất bản ${updatedCount} dịch vụ.` : `Đã chuyển ${updatedCount} dịch vụ về bản nháp.`,
+            ),
+        });
     };
 
     const currentContentBulkState = () => {
@@ -3509,19 +3574,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     ),
                 },
                 { title: 'Danh mục', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa phân loại' },
-                { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: renderStatusTag },
                 {
-                    title: 'Hiển thị',
-                    key: 'visibility',
+                    title: 'Trạng thái',
+                    key: 'status',
                     render: (_, record) => (
                         <Space size={[4, 4]} wrap>
+                            {renderStatusTag(record.status)}
                             {record.is_featured ? <Tag color="gold">Nổi bật</Tag> : null}
                             {record.is_highlight ? <Tag color="green">Ưu tiên</Tag> : null}
-                            {!record.is_highlight && !record.is_featured ? <Text type="secondary">Thường</Text> : null}
                         </Space>
                     ),
                 },
-                { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
         }
@@ -4206,7 +4269,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Card
                 className="admin-table-card"
-                title={`${sectionConfig.title} (${sectionKey === 'cms-orders' || sectionKey === 'cms-media' ? filteredItems.length : (data?.total ?? 0)})`}
+                title={`${sectionConfig.title} (${sectionKey === 'cms-orders' || sectionKey === 'cms-media' || sectionKey === 'cms-services' ? filteredItems.length : (data?.total ?? 0)})`}
                 extra={tableExtra}
             >
                 {sectionKey === 'cms-products' ? (
@@ -4322,12 +4385,93 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </Row>
                 ) : null}
 
+                {sectionKey === 'cms-services' ? (
+                    <Row gutter={[16, 16]} align="top">
+                        <Col xs={24} xl={7}>
+                            <Card size="small" title="Tìm kiếm dịch vụ" className="admin-table-filters">
+                                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Từ khóa</Text>
+                                        <Input
+                                            allowClear
+                                            value={keyword}
+                                            onChange={(event) => setKeyword(event.target.value)}
+                                            placeholder="Tìm theo tên, slug, danh mục, mô tả..."
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Danh mục</Text>
+                                        <Select
+                                            value={serviceCategoryFilter}
+                                            onChange={setServiceCategoryFilter}
+                                            options={[{ label: 'Tất cả danh mục', value: 'all' }, ...serviceCategoryOptions]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Trạng thái</Text>
+                                        <Select
+                                            value={serviceStatusFilter}
+                                            onChange={setServiceStatusFilter}
+                                            options={[
+                                                { label: 'Tất cả trạng thái', value: 'all' },
+                                                { label: 'Đã xuất bản', value: 'published' },
+                                                { label: 'Bản nháp', value: 'draft' },
+                                            ]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Nổi bật</Text>
+                                        <Select
+                                            value={serviceFeaturedFilter}
+                                            onChange={setServiceFeaturedFilter}
+                                            options={[
+                                                { label: 'Tất cả', value: 'all' },
+                                                { label: 'Nổi bật', value: 'featured' },
+                                                { label: 'Thường', value: 'normal' },
+                                            ]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Button
+                                        block
+                                        onClick={() => {
+                                            setKeyword('');
+                                            setServiceCategoryFilter('all');
+                                            setServiceStatusFilter('all');
+                                            setServiceFeaturedFilter('all');
+                                        }}
+                                    >
+                                        Xóa bộ lọc
+                                    </Button>
+                                </Space>
+                            </Card>
+                        </Col>
+                        <Col xs={24} xl={17}>
+                            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                {serviceBulkActions}
+                                {filteredItems.length ? (
+                                    <Table
+                                        rowKey="id"
+                                        rowSelection={serviceRowSelection}
+                                        columns={columns}
+                                        dataSource={filteredItems}
+                                        pagination={{ pageSize: 10, hideOnSinglePage: true }}
+                                    />
+                                ) : (
+                                    <Empty description="Không có dịch vụ phù hợp với bộ lọc." />
+                                )}
+                            </Space>
+                        </Col>
+                    </Row>
+                ) : null}
+
                 {sectionKey === 'cms-media' ? renderMediaLibrary() : null}
 
-                {sectionKey !== 'cms-products' && sectionKey !== 'cms-media' && filteredItems.length ? (
+                {sectionKey !== 'cms-products' && sectionKey !== 'cms-services' && sectionKey !== 'cms-media' && filteredItems.length ? (
                     <Space direction="vertical" size={12} style={{ width: '100%' }}>
                         {sectionKey === 'cms-orders' ? orderBulkActions : null}
-                        {sectionKey === 'cms-services' ? serviceBulkActions : null}
                         {['cms-posts', 'cms-projects'].includes(sectionKey) ? contentBulkActions : null}
                         {['cms-partners', 'cms-team-members', 'cms-testimonials'].includes(sectionKey) ? featuredBulkActions : null}
                         <Table
@@ -4358,7 +4502,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             }) : undefined}
                         />
                     </Space>
-                ) : sectionKey !== 'cms-products' && sectionKey !== 'cms-media' ? (
+                ) : sectionKey !== 'cms-products' && sectionKey !== 'cms-services' && sectionKey !== 'cms-media' ? (
                     <Empty description={`Chưa có dữ liệu cho ${sectionConfig.title}.`} />
                 ) : null}
             </Card>
@@ -4716,6 +4860,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         rules={[{ required: true, message: 'Chọn danh mục cần áp dụng' }]}
                     >
                         <Select
+                            showSearch
+                            optionFilterProp="label"
                             options={[
                                 { label: 'Bỏ danh mục', value: BULK_CLEAR_VALUE },
                                 ...serviceCategoryOptions,
