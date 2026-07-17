@@ -24,9 +24,6 @@
                                             @endif
                                             <span class="xd-featured-cat-body">
                                                 <h3>{{ $category['title'] ?? $category['name'] ?? '' }}</h3>
-                                                @if(filled($category['count_label'] ?? $category['summary'] ?? null))
-                                                    <span>{{ $category['count_label'] ?? $category['summary'] }}</span>
-                                                @endif
                                             </span>
                                         </a>
                                     @endforeach
