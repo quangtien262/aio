@@ -315,7 +315,7 @@
                         </article>
                         <aside class="xd-side-card">
                             <h3>{{ app()->getLocale() === 'en' ? 'Quick links' : 'Liên kết nhanh' }}</h3>
-                            <a href="{{ route('site.services.index') }}">{{ app()->getLocale() === 'en' ? 'All services' : 'Táº¥t cáº£ dá»‹ch vá»¥' }}</a>
+                            <a href="{{ route('site.services.index') }}">{{ app()->getLocale() === 'en' ? 'All services' : 'Tất cả dịch vụ' }}</a>
                             @foreach ($navItems->take(5) as $item)
                                 <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
                             @endforeach

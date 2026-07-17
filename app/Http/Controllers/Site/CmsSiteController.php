@@ -320,7 +320,7 @@ class CmsSiteController
         $categorySlug = trim((string) ($request->route('slug') ?? $request->query('category', '')));
 
         $projectsQuery = CmsProject::query()
-            ->with(['category', 'featuredImage'])
+            ->with(['category', 'images', 'featuredImage'])
             ->where('status', 'published')
             ->orderByDesc('is_featured')
             ->orderBy('sort_order')

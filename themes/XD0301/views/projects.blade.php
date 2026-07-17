@@ -27,18 +27,10 @@
         .xd-cms-stats strong{font-size:46px;line-height:1}
         .xd-cms-stats span{color:rgba(255,255,255,.75);font-weight:800;text-transform:uppercase}
         .xd-projects-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px}
-        .xd-project-card{background:#fff;box-shadow:0 5px 20px rgba(16,29,40,.08);transition:.25s}
-        .xd-project-card:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
-        .xd-project-image{display:block;height:300px;overflow:hidden;background:#eef2ef}
-        .xd-project-image img{width:100%;height:100%;object-fit:cover;transition:.4s}
-        .xd-project-card:hover img{transform:scale(1.05)}
-        .xd-project-body{padding:34px 36px 38px}
-        .xd-project-card h2{margin:0 0 14px;font-size:22px;line-height:1.32;letter-spacing:.015em;text-transform:uppercase}
-        .xd-project-card p{margin:0 0 24px;color:var(--muted);font-size:17px}
-        .xd-project-category{display:inline-flex;margin-bottom:14px;padding:5px 10px;background:#eef7d7;color:var(--lime-dark);font-size:12px;font-weight:950;text-transform:uppercase}
-        .xd-text-link{color:var(--lime-dark);font-weight:900;text-transform:uppercase}
+        .xd-projects-list .xd-project-card{min-height:520px}
+        .xd-projects-list .xd-project-caption small{color:rgba(255,255,255,.82)}
         @media (max-width:1180px){.xd-cms-hero{grid-template-columns:1fr}.xd-projects-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
-        @media (max-width:640px){.xd-page-main{padding:38px 0 56px}.xd-cms-hero{padding:30px 22px;margin-bottom:26px}.xd-cms-hero h1{font-size:36px}.xd-cms-hero p{font-size:16px}.xd-projects-list{grid-template-columns:1fr}.xd-project-card{border-radius:18px;overflow:hidden}.xd-project-image{height:215px}.xd-project-body{padding:26px 22px}.xd-project-card h2{font-size:19px}}
+        @media (max-width:640px){.xd-page-main{padding:38px 0 56px}.xd-cms-hero{padding:30px 22px;margin-bottom:26px}.xd-cms-hero h1{font-size:36px}.xd-cms-hero p{font-size:16px}.xd-projects-list{grid-template-columns:1fr}.xd-projects-list .xd-project-card{min-height:430px;border-radius:18px}}
     </style>
 @endpush
 
@@ -61,23 +53,47 @@
             @forelse ($listingItems as $project)
                 @php
                     $projectUrl = route('site.projects.show', ['slug' => $project->slug]);
-                    $image = $project->featuredImage?->image_url;
-                    $alt = $project->featuredImage?->alt_text ?: $project->title;
+                    $projectImages = $project->relationLoaded('images')
+                        ? $project->images->filter(fn ($image) => filled($image->image_url))->values()
+                        : collect();
+
+                    if ($projectImages->isEmpty() && $project->featuredImage?->image_url) {
+                        $projectImages = collect([$project->featuredImage]);
+                    }
+
+                    $summary = $project->summary ?: \Illuminate\Support\Str::limit(strip_tags($project->content ?? ''), 150);
                 @endphp
-                <article class="xd-project-card">
-                    <a class="xd-project-image" href="{{ $projectUrl }}" aria-label="{{ $project->title }}">
-                        @if ($image)
-                            <img src="{{ $image }}" alt="{{ $alt }}">
-                        @endif
-                    </a>
-                    <div class="xd-project-body">
-                        @if ($project->category?->name)
-                            <span class="xd-project-category">{{ $project->category->name }}</span>
-                        @endif
-                        <h2><a href="{{ $projectUrl }}">{{ $project->title }}</a></h2>
-                        <p>{{ $project->summary ?: \Illuminate\Support\Str::limit(strip_tags($project->content ?? ''), 150) }}</p>
-                        <a class="xd-text-link" href="{{ $projectUrl }}">{{ app()->getLocale() === 'en' ? 'View project' : 'Xem dự án' }}</a>
+                <article class="xd-project-card" data-project-gallery>
+                    <div class="xd-project-media">
+                        @foreach ($projectImages as $projectImage)
+                            <img
+                                class="xd-project-slide {{ $loop->first ? 'is-active' : '' }}"
+                                src="{{ $projectImage->image_url }}"
+                                alt="{{ $projectImage->alt_text ?: $project->title }}"
+                                data-project-slide="{{ $loop->index }}"
+                            >
+                        @endforeach
                     </div>
+                    @if ($projectImages->count() > 1)
+                        <div class="xd-project-thumbs" aria-label="Chọn ảnh dự án">
+                            @foreach ($projectImages as $projectImage)
+                                <button
+                                    class="xd-project-thumb {{ $loop->first ? 'is-active' : '' }}"
+                                    type="button"
+                                    data-project-thumb="{{ $loop->index }}"
+                                    aria-label="Xem ảnh {{ $loop->iteration }} của {{ $project->title }}"
+                                >
+                                    <img src="{{ $projectImage->image_url }}" alt="">
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+                    <span class="xd-project-caption">
+                        @if ($summary)
+                            <small>{{ $summary }}</small>
+                        @endif
+                        <a href="{{ $projectUrl }}">{{ $project->title }}</a>
+                    </span>
                 </article>
             @empty
                 <p>{{ app()->getLocale() === 'en' ? 'No projects are available yet.' : 'Chưa có dự án nào được xuất bản.' }}</p>
@@ -86,3 +102,32 @@
     </div>
 </main>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
+                const slides = Array.from(gallery.querySelectorAll('[data-project-slide]'));
+                const thumbs = Array.from(gallery.querySelectorAll('[data-project-thumb]'));
+
+                if (slides.length <= 1 || !thumbs.length) {
+                    return;
+                }
+
+                const showProjectImage = (nextIndex = 0) => {
+                    const resolvedIndex = ((nextIndex % slides.length) + slides.length) % slides.length;
+                    slides.forEach((slide, index) => slide.classList.toggle('is-active', index === resolvedIndex));
+                    thumbs.forEach((thumb, index) => thumb.classList.toggle('is-active', index === resolvedIndex));
+                };
+
+                thumbs.forEach((thumb) => {
+                    thumb.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        showProjectImage(Number(thumb.dataset.projectThumb || 0));
+                    });
+                });
+            });
+        });
+    </script>
+@endpush
