@@ -13,7 +13,7 @@ class ProjectIndexController
     {
         /** @var EloquentBuilder<CmsProject> $query */
         $query = CmsProject::query();
-        $query->with(['images'])->orderBy('sort_order')->orderByDesc('updated_at');
+        $query->with(['category', 'images'])->orderBy('sort_order')->orderByDesc('updated_at');
 
         $items = $query->get()->map(fn (CmsProject $project): array => $this->serialize($project))->values()->all();
 
@@ -58,6 +58,8 @@ class ProjectIndexController
 
         return [
             'id' => $project->id,
+            'cms_project_category_id' => $project->cms_project_category_id,
+            'category_name' => $project->category?->name,
             'title' => $project->title,
             'slug' => $project->slug,
             'status' => $project->status,

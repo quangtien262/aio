@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsMedia;
+use App\Models\CmsMediaFolder;
 use Illuminate\Http\JsonResponse;
 
 class MediaIndexController
@@ -19,11 +20,26 @@ class MediaIndexController
             'mime_type' => $media->mime_type,
             'size' => $media->size,
             'alt_text' => $media->alt_text,
+            'folder_path' => $media->folder_path,
         ])->values()->all();
+        $folders = CmsMediaFolder::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'path', 'sort_order'])
+            ->map(fn (CmsMediaFolder $folder): array => [
+                'id' => $folder->id,
+                'name' => $folder->name,
+                'path' => $folder->path,
+                'sort_order' => $folder->sort_order,
+                'count' => collect($items)->where('folder_path', $folder->path)->count(),
+            ])
+            ->values()
+            ->all();
 
         return response()->json([
             'data' => [
                 'items' => $items,
+                'folders' => $folders,
                 'total' => count($items),
             ],
         ]);

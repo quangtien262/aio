@@ -72,7 +72,7 @@ function FormValueBridge() {
     return null;
 }
 
-export default function CmsProjectFormModal({ open, canManage, editingProject, mediaOptions = [], callAdminApi, onCancel, onSubmit }) {
+export default function CmsProjectFormModal({ open, canManage, editingProject, mediaOptions = [], categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const slugEditedRef = useRef(Boolean(editingProject?.id));
     const editorInstanceRef = useRef(null);
@@ -253,6 +253,7 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
 
         await onSubmit?.({
             ...values,
+            cms_project_category_id: values.cms_project_category_id || null,
             summary: values.summary || null,
             content: values.content || null,
             button_label: values.button_label || null,
@@ -312,6 +313,11 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                             <Col xs={24} md={8}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
                                     <Select options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]} />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={8}>
+                                <Form.Item name="cms_project_category_id" label="Danh mục dự án">
+                                    <Select allowClear showSearch optionFilterProp="label" placeholder="Chọn danh mục" options={categoryOptions} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsMedia;
+use App\Models\CmsMediaFolder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,9 @@ class MediaManagementController
             'file_url' => ['nullable', 'url', 'required_without:file'],
             'title' => ['nullable', 'string', 'max:255'],
             'alt_text' => ['nullable', 'string', 'max:255'],
+            'folder_path' => ['nullable', 'string', 'max:255'],
         ]);
+        $folderPath = $this->normalizeFolderPath($validated['folder_path'] ?? null);
 
         if (! empty($validated['file'])) {
             $file = $validated['file'];
@@ -29,6 +32,7 @@ class MediaManagementController
                 'mime_type' => $file->getClientMimeType(),
                 'size' => $file->getSize() ?: 0,
                 'alt_text' => $validated['alt_text'] ?? null,
+                'folder_path' => $folderPath,
             ]);
         } else {
             $remoteUrl = $validated['file_url'];
@@ -39,6 +43,7 @@ class MediaManagementController
                 'mime_type' => 'image/external',
                 'size' => 0,
                 'alt_text' => $validated['alt_text'] ?? null,
+                'folder_path' => $folderPath,
             ]);
         }
 
@@ -50,6 +55,7 @@ class MediaManagementController
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'alt_text' => ['nullable', 'string', 'max:255'],
+            'folder_path' => ['nullable', 'string', 'max:255'],
         ]);
 
         /** @var CmsMedia $record */
@@ -57,9 +63,40 @@ class MediaManagementController
         $record->update([
             'title' => $validated['title'],
             'alt_text' => $validated['alt_text'] ?? null,
+            'folder_path' => $this->normalizeFolderPath($validated['folder_path'] ?? null),
         ]);
 
         return response()->json(['message' => 'Đã cập nhật tên hiển thị media.', 'data' => $this->serialize($record->fresh())]);
+    }
+
+    public function storeFolder(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+        ]);
+        $name = trim((string) $validated['name']);
+        $path = Str::slug($name) ?: 'folder';
+        $basePath = $path;
+        $suffix = 2;
+
+        while (CmsMediaFolder::query()->where('path', $path)->exists()) {
+            $path = $basePath.'-'.$suffix;
+            $suffix++;
+        }
+
+        $folder = CmsMediaFolder::query()->create([
+            'name' => $name,
+            'path' => $path,
+            'sort_order' => (int) CmsMediaFolder::query()->max('sort_order') + 1,
+        ]);
+
+        return response()->json(['message' => 'Da tao thu muc media.', 'data' => [
+            'id' => $folder->id,
+            'name' => $folder->name,
+            'path' => $folder->path,
+            'sort_order' => $folder->sort_order,
+            'count' => 0,
+        ]], 201);
     }
 
     public function destroy(Request $request, int $media): JsonResponse
@@ -86,6 +123,21 @@ class MediaManagementController
             'mime_type' => $media->mime_type,
             'size' => $media->size,
             'alt_text' => $media->alt_text,
+            'folder_path' => $media->folder_path,
         ];
+    }
+
+    private function normalizeFolderPath(?string $folderPath): ?string
+    {
+        $folderPath = trim((string) $folderPath);
+
+        if ($folderPath === '') {
+            return null;
+        }
+
+        /** @var CmsMediaFolder|null $folder */
+        $folder = CmsMediaFolder::query()->where('path', $folderPath)->first();
+
+        return $folder?->path;
     }
 }

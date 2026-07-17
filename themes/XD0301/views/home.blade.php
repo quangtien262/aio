@@ -22,7 +22,7 @@
         $values = [
             $slide['kicker'] ?? $data['subtitle'] ?? null,
             $slide['title'] ?? $data['title'] ?? null,
-            $slide['summary'] ?? $data['description'] ?? null,
+            $slide['summary'] ?? null,
             $slide['button_label'] ?? $data['button_label'] ?? null,
         ];
 

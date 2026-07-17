@@ -16,6 +16,8 @@ use App\Models\CustomerFavorite;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
+use App\Models\CmsProject;
+use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
 use App\Models\NewsletterSubscriber;
@@ -304,6 +306,82 @@ class CmsSiteController
         $service = $query->firstOrFail();
 
         return $this->renderContent('service', $service, [
+            'siteProfile' => $siteProfile,
+        ]);
+    }
+
+    public function projectsIndex(Request $request): View
+    {
+        $siteProfile = SiteProfile::query()->first();
+        $activeTheme = $this->resolveActiveTheme($siteProfile);
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $menus = $this->resolveMenus($websiteKey);
+        $search = trim((string) $request->query('q', ''));
+        $categorySlug = trim((string) ($request->route('slug') ?? $request->query('category', '')));
+
+        $projectsQuery = CmsProject::query()
+            ->with(['category', 'featuredImage'])
+            ->where('status', 'published')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->latest('updated_at');
+        $this->applyWebsiteScope($projectsQuery, $websiteKey);
+
+        if ($search !== '') {
+            $projectsQuery->where(function (EloquentBuilder $query) use ($search): void {
+                $query->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('summary', 'like', '%'.$search.'%')
+                    ->orWhere('content', 'like', '%'.$search.'%');
+            });
+        }
+
+        if ($categorySlug !== '') {
+            $projectsQuery->whereHas('category', function (EloquentBuilder $query) use ($categorySlug): void {
+                $query->where('slug', $categorySlug);
+            });
+        }
+
+        $projects = $projectsQuery->paginate(12)->withQueryString();
+        $currentProjectCategory = null;
+
+        if ($categorySlug !== '') {
+            $categoryQuery = CmsProjectCategory::query()->where('slug', $categorySlug);
+            $this->applyWebsiteScope($categoryQuery, $websiteKey);
+            $currentProjectCategory = $categoryQuery->first();
+
+            if ($currentProjectCategory !== null) {
+                $currentProjectCategory = clone $currentProjectCategory;
+                $currentProjectCategory->name = $this->contentText($websiteKey, sprintf('cms_project_category.%d.name', $currentProjectCategory->id), $currentProjectCategory->name);
+                $currentProjectCategory->description = $this->contentText($websiteKey, sprintf('cms_project_category.%d.description', $currentProjectCategory->id), $currentProjectCategory->description);
+            }
+        }
+
+        return $this->renderListing('projects', $currentProjectCategory?->name ?? 'Dự án', $currentProjectCategory?->description ?? 'Danh sách dự án đã xuất bản.', $projects, [
+            'siteProfile' => $siteProfile,
+            'activeTheme' => $activeTheme,
+            'menus' => $menus,
+            'projectFilters' => [
+                'q' => $search,
+                'category' => $categorySlug,
+            ],
+        ]);
+    }
+
+    public function project(Request $request): View
+    {
+        $slug = (string) $request->route('slug');
+        $siteProfile = SiteProfile::query()->first();
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+
+        $query = CmsProject::query()
+            ->with(['category', 'images', 'featuredImage'])
+            ->where('slug', $slug)
+            ->where('status', 'published');
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        $project = $query->firstOrFail();
+
+        return $this->renderContent('project', $project, [
             'siteProfile' => $siteProfile,
         ]);
     }
@@ -1053,6 +1131,10 @@ class CmsSiteController
             $entry = $this->localizeServiceModel($entry, $websiteKey);
         }
 
+        if ($entry instanceof CmsProject) {
+            $entry = $this->localizeProjectModel($entry, $websiteKey);
+        }
+
         if ($contentType === 'page' && ! array_key_exists('latestPosts', $extra)) {
             $extra['latestPosts'] = CmsPost::query()->where('status', 'published')->latest('publish_at')->take(3)->get()
                 ->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
@@ -1089,12 +1171,14 @@ class CmsSiteController
             $items->setCollection($items->getCollection()->map(fn (mixed $item): mixed => match (true) {
                 $item instanceof CmsPost => $this->localizePostModel($item, $websiteKey),
                 $item instanceof CmsService => $this->localizeServiceModel($item, $websiteKey),
+                $item instanceof CmsProject => $this->localizeProjectModel($item, $websiteKey),
                 default => $item,
             }));
         } elseif ($items instanceof Collection) {
             $items = $items->map(fn (mixed $item): mixed => match (true) {
                 $item instanceof CmsPost => $this->localizePostModel($item, $websiteKey),
                 $item instanceof CmsService => $this->localizeServiceModel($item, $websiteKey),
+                $item instanceof CmsProject => $this->localizeProjectModel($item, $websiteKey),
                 default => $item,
             });
         }
@@ -1174,6 +1258,8 @@ class CmsSiteController
         $viewKey = match ($contentType) {
             'services' => 'services',
             'service' => 'service',
+            'projects' => 'projects',
+            'project' => 'project',
             'posts' => 'news',
             'post' => 'news-detail',
             'contact' => 'contact',
@@ -2845,6 +2931,27 @@ class CmsSiteController
         $localized->meta_keywords = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_keywords', $service->id), $service->meta_keywords);
         $localized->excerpt = $localized->summary;
         $localized->body = $localized->content;
+
+        return $localized;
+    }
+
+    private function localizeProjectModel(CmsProject $project, string $websiteKey): CmsProject
+    {
+        $localized = clone $project;
+        $localized->title = $this->contentText($websiteKey, sprintf('cms_project.%d.title', $project->id), $project->title);
+        $localized->summary = $this->contentText($websiteKey, sprintf('cms_project.%d.summary', $project->id), $project->summary);
+        $localized->content = $this->contentText($websiteKey, sprintf('cms_project.%d.content', $project->id), $project->content);
+        $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_project.%d.meta_title', $project->id), $project->meta_title);
+        $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_project.%d.meta_description', $project->id), $project->meta_description);
+        $localized->excerpt = $localized->summary;
+        $localized->body = $localized->content;
+
+        if ($project->relationLoaded('category') && $project->category) {
+            $localizedCategory = clone $project->category;
+            $localizedCategory->name = $this->contentText($websiteKey, sprintf('cms_project_category.%d.name', $project->category->id), $project->category->name);
+            $localizedCategory->description = $this->contentText($websiteKey, sprintf('cms_project_category.%d.description', $project->category->id), $project->category->description);
+            $localized->setRelation('category', $localizedCategory);
+        }
 
         return $localized;
     }

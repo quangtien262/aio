@@ -61,6 +61,7 @@ class ProjectManagementController
     {
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
+            'cms_project_category_id' => ['nullable', 'integer', Rule::exists('cms_project_categories', 'id')],
             'slug' => ['required', 'string', 'max:255', Rule::unique('cms_projects', 'slug')->ignore($project?->id)],
             'status' => ['required', 'string', Rule::in(config('cms.workflow.statuses', ['draft', 'published']))],
             'summary' => ['nullable', 'string'],
@@ -143,6 +144,8 @@ class ProjectManagementController
 
         return [
             'id' => $project->id,
+            'cms_project_category_id' => $project->cms_project_category_id,
+            'category_name' => $project->category?->name,
             'title' => $project->title,
             'slug' => $project->slug,
             'status' => $project->status,

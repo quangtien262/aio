@@ -973,7 +973,7 @@ class LandingPageBuilder
                 'alt' => $featuredImage?->alt_text ?: $project->title,
                 'images' => $projectImages,
                 'gallery_images' => $projectImages,
-                'url' => $project->link_url ?: '#lien-he',
+                'url' => route('site.projects.show', ['slug' => $project->slug]),
                 'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project.%d.button_label', $project->id), $project->button_label),
             ];
         })->all();

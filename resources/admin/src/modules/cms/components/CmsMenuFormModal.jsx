@@ -46,6 +46,8 @@ const LINK_TYPE_OPTIONS = [
     { label: 'Theo tin tức', value: 'post' },
     { label: 'Theo danh mục dịch vụ', value: 'service-category' },
     { label: 'Theo dịch vụ', value: 'service' },
+    { label: 'Theo danh mục dự án', value: 'project-category' },
+    { label: 'Theo dự án', value: 'project' },
     { label: 'Liên kết khác', value: 'custom' },
 ];
 
@@ -92,6 +94,8 @@ function buildLinkLookups(linkOptions = {}) {
         post: new Map((linkOptions.posts ?? []).map((item) => [String(item.value), item])),
         'service-category': new Map((linkOptions.serviceCategories ?? []).map((item) => [String(item.value), item])),
         service: new Map((linkOptions.services ?? []).map((item) => [String(item.value), item])),
+        'project-category': new Map((linkOptions.projectCategories ?? []).map((item) => [String(item.value), item])),
+        project: new Map((linkOptions.projects ?? []).map((item) => [String(item.value), item])),
     };
 }
 
@@ -720,6 +724,8 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         post: linkOptions.posts ?? [],
         'service-category': linkOptions.serviceCategories ?? [],
         service: linkOptions.services ?? [],
+        'project-category': linkOptions.projectCategories ?? [],
+        project: linkOptions.projects ?? [],
     };
     const itemUrlOptions = buildUrlSelectOptions(itemLinkOptionSources[itemLinkType] ?? []);
 

@@ -9,6 +9,8 @@ use App\Models\CmsCategory;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
+use App\Models\CmsProject;
+use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
 use Illuminate\Http\JsonResponse;
@@ -103,6 +105,28 @@ class MenuIndexController
                             'label' => $service->title,
                             'value' => (string) $service->id,
                             'url' => '/ser/'.$service->slug,
+                        ])
+                        ->values()
+                        ->all(),
+                    'projectCategories' => CmsProjectCategory::query()
+                        ->orderBy('sort_order')
+                        ->orderBy('name')
+                        ->get()
+                        ->map(fn (CmsProjectCategory $category): array => [
+                            'label' => $category->name,
+                            'value' => (string) $category->id,
+                            'url' => '/pj/'.$category->slug,
+                        ])
+                        ->values()
+                        ->all(),
+                    'projects' => CmsProject::query()
+                        ->orderBy('sort_order')
+                        ->orderBy('title')
+                        ->get()
+                        ->map(fn (CmsProject $project): array => [
+                            'label' => $project->title,
+                            'value' => (string) $project->id,
+                            'url' => '/prj/'.$project->slug,
                         ])
                         ->values()
                         ->all(),

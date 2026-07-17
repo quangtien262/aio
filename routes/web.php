@@ -109,6 +109,12 @@ Route::prefix('{locale}')
 			->name('site.services.category');
 		Route::get('/ser/{slug}', [CmsSiteController::class, 'service'])
 			->name('site.services.show');
+		Route::get('/pj', [CmsSiteController::class, 'projectsIndex'])
+			->name('site.projects.index');
+		Route::get('/pj/{slug}', [CmsSiteController::class, 'projectsIndex'])
+			->name('site.projects.category');
+		Route::get('/prj/{slug}', [CmsSiteController::class, 'project'])
+			->name('site.projects.show');
 		Route::get('/contact', [CmsSiteController::class, 'contact'])
 			->name('site.contact');
 		Route::post('/contact', [CmsSiteController::class, 'submitContact'])

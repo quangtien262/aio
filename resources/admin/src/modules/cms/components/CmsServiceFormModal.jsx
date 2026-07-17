@@ -50,6 +50,29 @@ function toSlug(value) {
         .replace(/^-+|-+$/g, '');
 }
 
+const SERVICE_ICON_OPTIONS = [
+    { label: 'Nhà ở', value: 'fa-solid fa-house' },
+    { label: 'Tòa nhà', value: 'fa-regular fa-building' },
+    { label: 'Bản vẽ', value: 'fa-solid fa-compass-drafting' },
+    { label: 'Thước thiết kế', value: 'fa-solid fa-ruler-combined' },
+    { label: 'Thi công', value: 'fa-solid fa-trowel-bricks' },
+    { label: 'An toàn lao động', value: 'fa-solid fa-helmet-safety' },
+    { label: 'Cài đặt kỹ thuật', value: 'fa-solid fa-gear' },
+    { label: 'Danh sách kiểm tra', value: 'fa-solid fa-list-check' },
+    { label: 'Vật liệu nhiều lớp', value: 'fa-solid fa-layer-group' },
+    { label: 'Chìa khóa bàn giao', value: 'fa-solid fa-key' },
+    { label: 'Ý tưởng', value: 'fa-regular fa-lightbulb' },
+    { label: 'Đối tượng thiết kế', value: 'fa-regular fa-object-group' },
+    { label: 'Bắt tay hợp tác', value: 'fa-solid fa-handshake' },
+    { label: 'Ngân sách', value: 'fa-solid fa-hand-holding-dollar' },
+    { label: 'Đội ngũ', value: 'fa-solid fa-users-gear' },
+    { label: 'Tư vấn', value: 'fa-regular fa-comments' },
+    { label: 'Đồng hồ tiến độ', value: 'fa-solid fa-clock' },
+    { label: 'Bảo vệ', value: 'fa-solid fa-shield-halved' },
+    { label: 'Giải thưởng', value: 'fa-solid fa-award' },
+    { label: 'Nông nghiệp', value: 'fa-solid fa-seedling' },
+];
+
 export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const editorInstanceRef = useRef(null);
@@ -225,7 +248,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             content: values.content || null,
             icon: values.icon || null,
             button_label: values.button_label || null,
-            link_url: values.link_url || null,
+            link_url: null,
             meta_title: values.meta_title || null,
             meta_description: values.meta_description || null,
             meta_keywords: values.meta_keywords || null,
@@ -277,7 +300,14 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                         <Row gutter={16}>
                             <Col xs={24} md={8}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-                                    <Select options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]} />
+                                    <Radio.Group
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                        options={[
+                                            { label: 'Bản nháp', value: 'draft' },
+                                            { label: 'Đã xuất bản', value: 'published' },
+                                        ]}
+                                    />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
@@ -293,7 +323,22 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="icon" label="Icon ngắn">
-                                    <Input placeholder="VD: building, home..." maxLength={20} />
+                                    <Select
+                                        allowClear
+                                        showSearch
+                                        optionFilterProp="searchLabel"
+                                        placeholder="Chọn icon dịch vụ"
+                                        options={SERVICE_ICON_OPTIONS.map((option) => ({
+                                            ...option,
+                                            searchLabel: `${option.label} ${option.value}`,
+                                            label: (
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                                    <i className={option.value} style={{ width: 18, textAlign: 'center' }} />
+                                                    <span>{option.label}</span>
+                                                </span>
+                                            ),
+                                        }))}
+                                    />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
@@ -326,11 +371,6 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                             <Col xs={24} md={8}>
                                 <Form.Item name="button_label" label="Nhãn nút">
                                     <Input placeholder="Tìm hiểu ngay" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={8}>
-                                <Form.Item name="link_url" label="Link click">
-                                    <Input placeholder="/vi/lien-he hoặc https://..." />
                                 </Form.Item>
                             </Col>
                         </Row>

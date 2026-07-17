@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['title', 'slug', 'status', 'summary', 'content', 'button_label', 'link_url', 'meta_title', 'meta_description', 'publish_at', 'is_featured', 'is_highlight', 'sort_order', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['cms_project_category_id', 'title', 'slug', 'status', 'summary', 'content', 'button_label', 'link_url', 'meta_title', 'meta_description', 'publish_at', 'is_featured', 'is_highlight', 'sort_order', 'website_key', 'owner_key', 'tenant_key'])]
 class CmsProject extends Model
 {
     use HasFactory;
@@ -23,6 +24,11 @@ class CmsProject extends Model
             'is_highlight' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(CmsProjectCategory::class, 'cms_project_category_id');
     }
 
     public function images(): HasMany

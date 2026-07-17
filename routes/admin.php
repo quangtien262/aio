@@ -25,6 +25,8 @@ use App\Http\Controllers\Admin\Api\Cms\PartnerManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PostIndexController;
 use App\Http\Controllers\Admin\Api\Cms\PostManagementController;
 use App\Http\Controllers\Admin\Api\Cms\ProjectIndexController as CmsProjectIndexController;
+use App\Http\Controllers\Admin\Api\Cms\ProjectCategoryIndexController;
+use App\Http\Controllers\Admin\Api\Cms\ProjectCategoryManagementController;
 use App\Http\Controllers\Admin\Api\Cms\ProjectManagementController as CmsProjectManagementController;
 use App\Http\Controllers\Admin\Api\Cms\ServiceIndexController;
 use App\Http\Controllers\Admin\Api\Cms\ServiceCategoryIndexController;
@@ -430,6 +432,18 @@ Route::prefix('admin')
                 Route::get('/cms/projects', CmsProjectIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.projects.index');
+                Route::get('/cms/project-categories', ProjectCategoryIndexController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.project-categories.index');
+                Route::post('/cms/project-categories', [ProjectCategoryManagementController::class, 'store'])
+                    ->middleware('admin.permission:cms.create')
+                    ->name('cms.project-categories.store');
+                Route::put('/cms/project-categories/{category}', [ProjectCategoryManagementController::class, 'update'])
+                    ->middleware('admin.permission:cms.update')
+                    ->name('cms.project-categories.update');
+                Route::delete('/cms/project-categories/{category}', [ProjectCategoryManagementController::class, 'destroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.project-categories.destroy');
                 Route::post('/cms/projects', [CmsProjectManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.create')
                     ->name('cms.projects.store');
@@ -541,6 +555,9 @@ Route::prefix('admin')
                 Route::post('/cms/media', [MediaManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.media.manage')
                     ->name('cms.media.store');
+                Route::post('/cms/media/folders', [MediaManagementController::class, 'storeFolder'])
+                    ->middleware('admin.permission:cms.media.manage')
+                    ->name('cms.media.folders.store');
                 Route::put('/cms/media/{media}', [MediaManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.media.manage')
                     ->name('cms.media.update');

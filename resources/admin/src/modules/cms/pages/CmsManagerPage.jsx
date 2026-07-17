@@ -3,7 +3,10 @@ import CopyOutlined from '@ant-design/icons/CopyOutlined';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
+import FolderOpenOutlined from '@ant-design/icons/FolderOpenOutlined';
+import FolderOutlined from '@ant-design/icons/FolderOutlined';
 import HolderOutlined from '@ant-design/icons/HolderOutlined';
+import InboxOutlined from '@ant-design/icons/InboxOutlined';
 import MoreOutlined from '@ant-design/icons/MoreOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import UploadOutlined from '@ant-design/icons/UploadOutlined';
@@ -30,6 +33,7 @@ import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
+import Upload from 'antd/es/upload';
 import dayjs from 'dayjs';
 import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
 
@@ -50,6 +54,7 @@ const CatalogCategoryFormModal = lazy(() => import('../../catalog/components/Cat
 const CatalogProductFormModal = lazy(() => import('../../catalog/components/CatalogProductFormModal'));
 const { Paragraph, Text, Title } = Typography;
 const { RangePicker } = DatePicker;
+const { Dragger } = Upload;
 
 function CmsMediaThumbnail({ src, alt, size = 64, radius = 12 }) {
     const [failed, setFailed] = useState(false);
@@ -392,8 +397,20 @@ const emptyServiceCategory = {
     is_active: true,
 };
 
+const emptyProjectCategory = {
+    id: null,
+    parent_id: null,
+    name: '',
+    slug: '',
+    description: '',
+    image_url: '',
+    sort_order: 0,
+    is_active: true,
+};
+
 const emptyProject = {
     id: null,
+    cms_project_category_id: null,
     title: '',
     slug: '',
     status: 'draft',
@@ -604,6 +621,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [bulkProductStockForm] = Form.useForm();
     const [bulkProductActiveForm] = Form.useForm();
     const [bulkOrderStatusForm] = Form.useForm();
+    const [bulkServiceCategoryForm] = Form.useForm();
     const [mediaEditForm] = Form.useForm();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
@@ -615,10 +633,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [selectedProductRowKeys, setSelectedProductRowKeys] = useState([]);
     const [selectedOrderRowKeys, setSelectedOrderRowKeys] = useState([]);
     const [selectedPartnerRowKeys, setSelectedPartnerRowKeys] = useState([]);
+    const [selectedServiceRowKeys, setSelectedServiceRowKeys] = useState([]);
     const [bulkProductEditOpen, setBulkProductEditOpen] = useState(false);
     const [bulkProductStockOpen, setBulkProductStockOpen] = useState(false);
     const [bulkProductActiveOpen, setBulkProductActiveOpen] = useState(false);
     const [bulkOrderStatusOpen, setBulkOrderStatusOpen] = useState(false);
+    const [bulkServiceCategoryOpen, setBulkServiceCategoryOpen] = useState(false);
     const [keyword, setKeyword] = useState('');
     const [orderStatusFilter, setOrderStatusFilter] = useState('all');
     const [orderDatePreset, setOrderDatePreset] = useState('custom');
@@ -629,10 +649,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productPublishFilter, setProductPublishFilter] = useState('all');
     const [productSort, setProductSort] = useState('newest');
     const [productPagination, setProductPagination] = useState({ current: 1, pageSize: 10 });
-    const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '' });
-    const [mediaFile, setMediaFile] = useState(null);
+    const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '', folder_path: null });
+    const [mediaFiles, setMediaFiles] = useState([]);
     const [mediaUploadOpen, setMediaUploadOpen] = useState(false);
     const [editingMediaRecord, setEditingMediaRecord] = useState(null);
+    const [activeMediaFolder, setActiveMediaFolder] = useState('all');
+    const [mediaDragActive, setMediaDragActive] = useState(false);
     const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
     const [categoryFormOpen, setCategoryFormOpen] = useState(false);
     const [categoryItems, setCategoryItems] = useState([]);
@@ -643,6 +665,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [serviceCategoryItems, setServiceCategoryItems] = useState([]);
     const [serviceCategoryLoading, setServiceCategoryLoading] = useState(false);
     const [editingServiceCategoryRecord, setEditingServiceCategoryRecord] = useState(emptyServiceCategory);
+    const [projectCategoryManagerOpen, setProjectCategoryManagerOpen] = useState(false);
+    const [projectCategoryFormOpen, setProjectCategoryFormOpen] = useState(false);
+    const [projectCategoryItems, setProjectCategoryItems] = useState([]);
+    const [projectCategoryLoading, setProjectCategoryLoading] = useState(false);
+    const [editingProjectCategoryRecord, setEditingProjectCategoryRecord] = useState(emptyProjectCategory);
     const [productCategoryManagerOpen, setProductCategoryManagerOpen] = useState(false);
     const [productCategoryFormOpen, setProductCategoryFormOpen] = useState(false);
     const [productCategoryItems, setProductCategoryItems] = useState([]);
@@ -695,6 +722,18 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 };
             }
 
+            if (sectionKey === 'cms-projects') {
+                const [projectsPayload, categoriesPayload] = await Promise.all([
+                    callAdminApi('/admin/api/cms/projects'),
+                    callAdminApi('/admin/api/cms/project-categories'),
+                ]);
+
+                return {
+                    ...(projectsPayload.data ?? { items: [], total: 0, metrics: {}, media: [] }),
+                    categories: categoriesPayload.data?.items ?? [],
+                };
+            }
+
             if (sectionKey === 'cms-side-promos') {
                 const [sidePromosPayload, mediaPayload] = await Promise.all([
                     callAdminApi('/admin/api/cms/side-promos'),
@@ -712,6 +751,24 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         },
         deps: [sectionConfig.endpoint, sectionPermissions.canView],
     });
+
+    const mediaItems = data?.items ?? [];
+    const mediaFolders = data?.folders ?? [];
+    const mediaFolderOptions = useMemo(() => (
+        mediaFolders.map((folder) => ({ label: folder.name, value: folder.path }))
+    ), [mediaFolders]);
+    const mediaFolderCounts = useMemo(() => {
+        const counts = new Map([
+            ['all', mediaItems.length],
+            ['uncategorized', mediaItems.filter((item) => !item.folder_path).length],
+        ]);
+
+        mediaFolders.forEach((folder) => {
+            counts.set(folder.path, mediaItems.filter((item) => item.folder_path === folder.path).length);
+        });
+
+        return counts;
+    }, [mediaFolders, mediaItems]);
 
     const metrics = useMemo(() => {
         if (!data) {
@@ -790,6 +847,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 </Button>
                                 <Text type="secondary">{record.summary || 'Chua co mo ta ngan'}</Text>
                                 <Space size={6} wrap>
+                                    {sectionKey === 'cms-projects' ? (record.category_name ? <Tag color="blue">{record.category_name}</Tag> : <Tag>Chua phan loai</Tag>) : null}
                                     {record.is_highlight ? <Tag color="gold">Noi bat</Tag> : null}
                                     <Tag>{`${record.images?.length ?? 0} anh`}</Tag>
                                 </Space>
@@ -797,6 +855,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         </Space>
                     ),
                 },
+                ...(sectionKey === 'cms-projects' ? [{ title: 'Danh muc', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chua phan loai' }] : []),
                 { title: 'Slug', dataIndex: 'slug', key: 'slug' },
                 { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
                 { title: 'Thu tu', dataIndex: 'sort_order', key: 'sort_order' },
@@ -941,6 +1000,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         value: category.id,
     })), [data?.categories]);
 
+    const projectCategoryOptions = useMemo(() => (data?.categories ?? []).map((category) => ({
+        label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
+        value: category.id,
+    })), [data?.categories]);
+
     const categoryParentOptions = useMemo(() => categoryItems
         .filter((category) => category.id !== editingCategoryRecord?.id)
         .map((category) => ({
@@ -962,6 +1026,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             value: category.id,
         })), [editingServiceCategoryRecord?.id, serviceCategoryItems]);
 
+    const projectCategoryParentOptions = useMemo(() => projectCategoryItems
+        .filter((category) => category.id !== editingProjectCategoryRecord?.id)
+        .map((category) => ({
+            label: category.parent_name ? `${category.parent_name} / ${category.name}` : category.name,
+            value: category.id,
+        })), [editingProjectCategoryRecord?.id, projectCategoryItems]);
+
     const selectedProducts = useMemo(() => {
         if (sectionKey !== 'cms-products') {
             return [];
@@ -977,6 +1048,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         return (data?.orders ?? []).filter((order) => selectedOrderRowKeys.includes(order.id));
     }, [data?.orders, sectionKey, selectedOrderRowKeys]);
+
+    const selectedServices = useMemo(() => {
+        if (sectionKey !== 'cms-services') {
+            return [];
+        }
+
+        return (data?.items ?? []).filter((service) => selectedServiceRowKeys.includes(service.id));
+    }, [data?.items, sectionKey, selectedServiceRowKeys]);
 
     useEffect(() => {
         if (sectionKey !== 'cms-products') {
@@ -1065,6 +1144,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-media') {
             return (data?.items ?? []).filter((mediaItem) => {
+                const folderMatches = activeMediaFolder === 'all'
+                    || (activeMediaFolder === 'uncategorized' ? !mediaItem.folder_path : mediaItem.folder_path === activeMediaFolder);
+
+                if (!folderMatches) {
+                    return false;
+                }
+
                 if (normalizedKeyword === '') {
                     return true;
                 }
@@ -1079,7 +1165,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return data?.items ?? [];
-    }, [data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey]);
+    }, [activeMediaFolder, data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey]);
 
     const openCreateModal = () => {
         if (sectionKey === 'cms-landing-pages') {
@@ -1307,6 +1393,80 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
     };
 
+    const loadProjectCategoryItems = async () => {
+        setProjectCategoryLoading(true);
+
+        try {
+            const payload = await callAdminApi('/admin/api/cms/project-categories');
+            setProjectCategoryItems(payload.data?.items ?? []);
+        } finally {
+            setProjectCategoryLoading(false);
+        }
+    };
+
+    const openProjectCategoryManager = async () => {
+        setProjectCategoryManagerOpen(true);
+        await loadProjectCategoryItems();
+    };
+
+    const openCreateProjectCategory = () => {
+        setEditingProjectCategoryRecord(emptyProjectCategory);
+        setProjectCategoryFormOpen(true);
+    };
+
+    const openEditProjectCategory = (record) => {
+        setEditingProjectCategoryRecord({
+            ...emptyProjectCategory,
+            ...record,
+        });
+        setProjectCategoryFormOpen(true);
+    };
+
+    const handleSaveProjectCategory = async (payload) => {
+        const didSave = editingProjectCategoryRecord?.id
+            ? await runAdminAction(
+                () => callAdminApi(`/admin/api/cms/project-categories/${editingProjectCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+                'Đã cập nhật danh mục dự án.',
+                async () => {
+                    await loadProjectCategoryItems();
+                    await reload();
+                },
+            )
+            : await runAdminAction(
+                () => callAdminApi('/admin/api/cms/project-categories', { method: 'POST', body: JSON.stringify(payload) }),
+                'Đã tạo danh mục dự án.',
+                async () => {
+                    await loadProjectCategoryItems();
+                    await reload();
+                },
+            );
+
+        if (didSave) {
+            setProjectCategoryFormOpen(false);
+            setEditingProjectCategoryRecord(emptyProjectCategory);
+        }
+    };
+
+    const handleDeleteProjectCategory = (record) => {
+        Modal.confirm({
+            title: 'Xóa danh mục dự án?',
+            content: `Danh mục "${record.name}" sẽ bị xóa. Các dự án đang gắn danh mục này có thể cần cập nhật lại.`,
+            okText: 'Xóa',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: async () => {
+                await runAdminAction(
+                    () => callAdminApi(`/admin/api/cms/project-categories/${record.id}`, { method: 'DELETE' }),
+                    'Đã xóa danh mục dự án.',
+                    async () => {
+                        await loadProjectCategoryItems();
+                        await reload();
+                    },
+                );
+            },
+        });
+    };
+
     const loadProductCategoryItems = async ({ silent = false } = {}) => {
         if (! silent) {
             setProductCategoryLoading(true);
@@ -1468,6 +1628,45 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         is_active: values.is_active === BULK_KEEP_VALUE ? product.is_active : values.is_active === 'true',
     });
 
+    const buildBulkServicePayload = (service, values = {}) => {
+        const hasCategoryChange = Object.prototype.hasOwnProperty.call(values, 'cms_service_category_id');
+        const hasStatusChange = Object.prototype.hasOwnProperty.call(values, 'status');
+        const hasFeaturedChange = Object.prototype.hasOwnProperty.call(values, 'is_featured');
+        const hasHighlightChange = Object.prototype.hasOwnProperty.call(values, 'is_highlight');
+        const nextStatus = hasStatusChange ? values.status : service.status;
+        const nextFeatured = hasFeaturedChange
+            ? (values.is_featured === true || values.is_featured === 'true')
+            : service.is_featured;
+        const nextHighlight = hasHighlightChange
+            ? (values.is_highlight === true || values.is_highlight === 'true')
+            : service.is_highlight;
+
+        return {
+            cms_service_category_id: hasCategoryChange
+                ? (values.cms_service_category_id === BULK_CLEAR_VALUE ? null : values.cms_service_category_id)
+                : service.cms_service_category_id,
+            title: service.title,
+            slug: service.slug,
+            status: nextStatus,
+            summary: service.summary,
+            content: service.content,
+            icon: service.icon,
+            button_label: service.button_label,
+            link_url: service.link_url,
+            meta_title: service.meta_title,
+            meta_description: service.meta_description,
+            meta_keywords: service.meta_keywords,
+            publish_at: nextStatus === 'published' ? (service.publish_at || dayjs().format('YYYY-MM-DDTHH:mm:ss')) : null,
+            is_featured: nextFeatured,
+            is_highlight: nextHighlight,
+            sort_order: service.sort_order,
+            website_key: service.website_key,
+            owner_key: service.owner_key,
+            tenant_key: service.tenant_key,
+            images: service.images ?? [],
+        };
+    };
+
     const handleBulkDeleteProducts = async () => {
         const ids = [...selectedProductRowKeys];
 
@@ -1524,6 +1723,100 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             cancelText: 'Hủy',
             onOk: handleBulkDeletePartners,
         });
+    };
+
+    const handleBulkDeleteServices = async () => {
+        const ids = [...selectedServiceRowKeys];
+
+        const didDelete = await runAdminAction(async () => {
+            for (const id of ids) {
+                await callAdminApi(`${sectionConfig.endpoint}/${id}`, { method: 'DELETE' });
+            }
+        }, `Đã xóa ${ids.length} dịch vụ.`, reload);
+
+        if (didDelete) {
+            setSelectedServiceRowKeys([]);
+        }
+    };
+
+    const confirmBulkDeleteServices = () => {
+        if (!selectedServiceRowKeys.length) {
+            return;
+        }
+
+        Modal.confirm({
+            title: `Xóa ${selectedServiceRowKeys.length} dịch vụ đã chọn?`,
+            content: 'Thao tác này không thể hoàn tác.',
+            okText: 'Xóa tất cả',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: handleBulkDeleteServices,
+        });
+    };
+
+    const openBulkServiceCategory = () => {
+        if (!selectedServiceRowKeys.length) {
+            return;
+        }
+
+        bulkServiceCategoryForm.setFieldsValue({
+            cms_service_category_id: null,
+        });
+        setBulkServiceCategoryOpen(true);
+    };
+
+    const handleBulkServiceCategory = async () => {
+        const values = await bulkServiceCategoryForm.validateFields();
+        const services = [...selectedServices];
+
+        const didUpdate = await runAdminAction(async () => {
+            for (const service of services) {
+                await callAdminApi(`${sectionConfig.endpoint}/${service.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(buildBulkServicePayload(service, values)),
+                });
+            }
+        }, `Đã cập nhật danh mục cho ${services.length} dịch vụ.`, reload);
+
+        if (didUpdate) {
+            setBulkServiceCategoryOpen(false);
+            setSelectedServiceRowKeys([]);
+            bulkServiceCategoryForm.resetFields();
+        }
+    };
+
+    const handleBulkUpdateServices = async (values, successMessage) => {
+        if (!selectedServiceRowKeys.length) {
+            return;
+        }
+
+        const services = [...selectedServices];
+        const didUpdate = await runAdminAction(async () => {
+            for (const service of services) {
+                await callAdminApi(`${sectionConfig.endpoint}/${service.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(buildBulkServicePayload(service, values)),
+                });
+            }
+        }, successMessage(services.length), reload);
+
+        if (didUpdate) {
+            setSelectedServiceRowKeys([]);
+        }
+    };
+
+    const handleBulkFeatureServices = (isFeatured) => {
+        handleBulkUpdateServices(
+            { is_featured: isFeatured },
+            (count) => isFeatured ? `Đã đánh dấu nổi bật ${count} dịch vụ.` : `Đã bỏ nổi bật ${count} dịch vụ.`,
+        );
+    };
+
+    const handleBulkPublishServices = (status) => {
+        handleBulkUpdateServices(
+            { status },
+            (count) => status === 'published' ? `Đã xuất bản ${count} dịch vụ.` : `Đã chuyển ${count} dịch vụ về bản nháp.`,
+        );
     };
 
     const openBulkEditProducts = () => {
@@ -1743,27 +2036,141 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
     };
 
+    const openMediaUploadModal = () => {
+        setMediaUpload((current) => ({
+            ...current,
+            folder_path: activeMediaFolder === 'all' || activeMediaFolder === 'uncategorized' ? null : activeMediaFolder,
+        }));
+        setMediaUploadOpen(true);
+    };
+
+    const handleCreateMediaFolder = () => {
+        let folderName = '';
+
+        Modal.confirm({
+            title: 'Tạo thư mục media',
+            icon: <FolderOutlined />,
+            content: <Input autoFocus placeholder="VD: Banner trang chủ" onChange={(event) => { folderName = event.target.value; }} />,
+            okText: 'Tạo thư mục',
+            cancelText: 'Hủy',
+            onOk: async () => {
+                const name = folderName.trim();
+
+                if (!name) {
+                    messageApi.warning('Nhập tên thư mục trước khi tạo.');
+                    return Promise.reject();
+                }
+
+                const created = await callAdminApi('/admin/api/cms/media/folders', {
+                    method: 'POST',
+                    body: JSON.stringify({ name }),
+                });
+
+                if (created?.data?.path) {
+                    messageApi.success('Đã tạo thư mục media.');
+                    await reload();
+                    setActiveMediaFolder(created.data.path);
+                }
+            },
+        });
+    };
+
     const handleUploadMedia = async () => {
-        if (!mediaFile) {
+        if (!mediaFiles.length) {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('file', mediaFile);
-        Object.entries(mediaUpload).forEach(([key, value]) => {
-            if (value) {
-                formData.append(key, value);
+        let uploadedCount = 0;
+        for (const [index, file] of mediaFiles.entries()) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('title', mediaUpload.title || file.name.replace(/\.[^.]+$/, ''));
+            if (mediaFiles.length > 1 && mediaUpload.title) {
+                formData.set('title', `${mediaUpload.title} ${index + 1}`);
             }
-        });
+            if (mediaUpload.alt_text) {
+                formData.append('alt_text', mediaUpload.alt_text);
+            }
+            if (mediaUpload.folder_path) {
+                formData.append('folder_path', mediaUpload.folder_path);
+            }
 
-        const didUpload = await runAdminAction(() => callAdminApi('/admin/api/cms/media', { method: 'POST', body: formData }), 'Đã upload media CMS.', reload);
+            const payload = await callAdminApi('/admin/api/cms/media', { method: 'POST', body: formData });
+            if (payload?.data?.id) {
+                uploadedCount++;
+            }
+        }
 
-        if (didUpload) {
-            setMediaFile(null);
-            setMediaUpload({ title: '', alt_text: '' });
+        if (uploadedCount > 0) {
+            messageApi.success(`Đã upload ${uploadedCount} media.`);
+            await reload();
+            setMediaFiles([]);
+            setMediaUpload({ title: '', alt_text: '', folder_path: null });
             setMediaUploadOpen(false);
         }
     };
+
+    const updateMediaFolder = async (record, folderPath) => {
+        const didSave = await runAdminAction(
+            () => callAdminApi(`/admin/api/cms/media/${record.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    title: record.title || `Media #${record.id}`,
+                    alt_text: record.alt_text || null,
+                    folder_path: folderPath || null,
+                }),
+            }),
+            folderPath ? 'Đã chuyển media vào thư mục.' : 'Đã đưa media về thư mục gốc.',
+            reload,
+        );
+
+        return didSave;
+    };
+
+    const mediaActionMenu = (record) => ({
+        items: [
+            { key: 'open', label: 'Mở media', icon: <EyeOutlined /> },
+            { key: 'copy-url', label: 'Copy URL', icon: <CopyOutlined /> },
+            { key: 'edit-media-title', label: 'Sửa thông tin', icon: <EditOutlined />, disabled: !sectionPermissions.canUpdate },
+            {
+                key: 'move-media',
+                label: 'Chuyển thư mục',
+                icon: <FolderOpenOutlined />,
+                disabled: !sectionPermissions.canUpdate,
+                children: [
+                    { key: 'move-media:root', label: 'Thư mục gốc' },
+                    ...mediaFolders.map((folder) => ({ key: `move-media:${folder.path}`, label: folder.name })),
+                ],
+            },
+            { key: 'delete', label: 'Xóa', icon: <DeleteOutlined />, danger: true, disabled: !sectionPermissions.canDelete },
+        ],
+        onClick: ({ key }) => {
+            if (key === 'open' && record.file_url) {
+                window.open(record.file_url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            if (key === 'copy-url') {
+                handleCopyMediaUrl(record);
+                return;
+            }
+
+            if (key === 'edit-media-title') {
+                openEditMediaTitle(record);
+                return;
+            }
+
+            if (key.startsWith('move-media:')) {
+                const nextFolder = key.replace('move-media:', '');
+                updateMediaFolder(record, nextFolder === 'root' ? null : nextFolder);
+                return;
+            }
+
+            if (key === 'delete') {
+                confirmDeleteRecord(record.id);
+            }
+        },
+    });
 
     const handleCopyMediaUrl = async (record) => {
         if (!record?.file_url) {
@@ -1796,6 +2203,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         mediaEditForm.setFieldsValue({
             title: record.title ?? '',
             alt_text: record.alt_text ?? '',
+            folder_path: record.folder_path ?? null,
         });
     };
 
@@ -1811,6 +2219,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 body: JSON.stringify({
                     title: values.title,
                     alt_text: values.alt_text || null,
+                    folder_path: values.folder_path || null,
                 }),
             }),
             'Da cap nhat ten hien thi media.',
@@ -1907,6 +2316,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 icon: <EditOutlined />,
                 disabled: !sectionPermissions.canUpdate,
             });
+            actionItems.push({
+                key: 'move-media',
+                label: 'Chuyển thư mục',
+                icon: <FolderOpenOutlined />,
+                disabled: !sectionPermissions.canUpdate,
+                children: [
+                    { key: 'move-media:root', label: 'Thư mục gốc' },
+                    ...mediaFolders.map((folder) => ({
+                        key: `move-media:${folder.path}`,
+                        label: folder.name,
+                    })),
+                ],
+            });
         }
 
         actionItems.push({
@@ -1958,6 +2380,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 return;
             }
 
+            if (key.startsWith('move-media:')) {
+                const nextFolder = key.replace('move-media:', '');
+                updateMediaFolder(record, nextFolder === 'root' ? null : nextFolder);
+                return;
+            }
+
             if (key === 'edit') {
                 openEditModal(record);
                 return;
@@ -1993,6 +2421,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         ? {
             selectedRowKeys: selectedPartnerRowKeys,
             onChange: (nextSelectedRowKeys) => setSelectedPartnerRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
+    const serviceRowSelection = sectionKey === 'cms-services' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
+        ? {
+            selectedRowKeys: selectedServiceRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedServiceRowKeys(nextSelectedRowKeys),
             preserveSelectedRowKeys: true,
         }
         : undefined;
@@ -2157,6 +2592,93 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ) : null}
         </Space>
     ) : null;
+    const serviceBulkActions = sectionKey === 'cms-services' ? (
+        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Space wrap>
+                <Dropdown
+                    trigger={['click']}
+                    menu={{
+                        items: [
+                            {
+                                key: 'bulk-feature',
+                                label: 'Đánh dấu nổi bật',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedServiceRowKeys.length,
+                            },
+                            {
+                                key: 'bulk-unfeature',
+                                label: 'Bỏ nổi bật',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedServiceRowKeys.length,
+                            },
+                            {
+                                key: 'bulk-publish',
+                                label: 'Xuất bản đã chọn',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedServiceRowKeys.length,
+                            },
+                            {
+                                key: 'bulk-draft',
+                                label: 'Chuyển về bản nháp',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedServiceRowKeys.length,
+                            },
+                            {
+                                key: 'bulk-category',
+                                label: 'Đổi danh mục đã chọn',
+                                icon: <EditOutlined />,
+                                disabled: !sectionPermissions.canUpdate || !selectedServiceRowKeys.length,
+                            },
+                            {
+                                key: 'bulk-delete',
+                                label: 'Xóa đã chọn',
+                                icon: <DeleteOutlined />,
+                                danger: true,
+                                disabled: !sectionPermissions.canDelete || !selectedServiceRowKeys.length,
+                            },
+                        ],
+                        onClick: ({ key }) => {
+                            if (key === 'bulk-feature') {
+                                handleBulkFeatureServices(true);
+                            }
+
+                            if (key === 'bulk-unfeature') {
+                                handleBulkFeatureServices(false);
+                            }
+
+                            if (key === 'bulk-publish') {
+                                handleBulkPublishServices('published');
+                            }
+
+                            if (key === 'bulk-draft') {
+                                handleBulkPublishServices('draft');
+                            }
+
+                            if (key === 'bulk-category') {
+                                openBulkServiceCategory();
+                            }
+
+                            if (key === 'bulk-delete') {
+                                confirmBulkDeleteServices();
+                            }
+                        },
+                    }}
+                >
+                    <Button icon={<MoreOutlined />} disabled={!selectedServiceRowKeys.length}>
+                        Thao tác đã chọn
+                    </Button>
+                </Dropdown>
+                {selectedServiceRowKeys.length ? (
+                    <Text type="secondary">Đã chọn {selectedServiceRowKeys.length} dịch vụ.</Text>
+                ) : null}
+            </Space>
+            {selectedServiceRowKeys.length ? (
+                <Button size="small" type="link" onClick={() => setSelectedServiceRowKeys([])}>
+                    Bỏ chọn
+                </Button>
+            ) : null}
+        </Space>
+    ) : null;
 
     const columns = useMemo(() => {
         if (sectionKey === 'cms-landing-pages') {
@@ -2303,6 +2825,42 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     ),
                 },
                 { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: renderStatusTag },
+                { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
+                { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
+            ];
+        }
+
+        if (sectionKey === 'cms-services') {
+            return [
+                {
+                    title: 'Dịch vụ',
+                    dataIndex: 'title',
+                    key: 'title',
+                    render: (value, record) => (
+                        <Space size={12} align="start">
+                            <CmsMediaThumbnail src={record.featured_image_url} alt={record.featured_image_alt || value} size={56} />
+                            <Space direction="vertical" size={2} align="start">
+                                <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openEditModal(record)}>
+                                    <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                                </Button>
+                                <Text type="secondary">{record.summary || record.slug || 'Chưa có mô tả ngắn'}</Text>
+                            </Space>
+                        </Space>
+                    ),
+                },
+                { title: 'Danh mục', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa phân loại' },
+                { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: renderStatusTag },
+                {
+                    title: 'Hiển thị',
+                    key: 'visibility',
+                    render: (_, record) => (
+                        <Space size={[4, 4]} wrap>
+                            {record.is_featured ? <Tag color="gold">Nổi bật</Tag> : null}
+                            {record.is_highlight ? <Tag color="green">Ưu tiên</Tag> : null}
+                            {!record.is_highlight && !record.is_featured ? <Text type="secondary">Thường</Text> : null}
+                        </Space>
+                    ),
+                },
                 { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
@@ -2558,6 +3116,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingProject={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        categoryOptions={projectCategoryOptions}
                         callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
@@ -2765,7 +3324,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         placeholder="Tìm theo tên file, alt text, loại file..."
                         style={{ width: 320 }}
                     />
-                    <Button type="primary" icon={<UploadOutlined />} disabled={!sectionPermissions.canCreate} onClick={() => setMediaUploadOpen(true)}>
+                    <Button icon={<FolderOutlined />} disabled={!sectionPermissions.canCreate} onClick={handleCreateMediaFolder}>
+                        Tạo thư mục
+                    </Button>
+                    <Button type="primary" icon={<UploadOutlined />} disabled={!sectionPermissions.canCreate} onClick={openMediaUploadModal}>
                         Upload media
                     </Button>
                 </Space>
@@ -2798,6 +3360,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                     </Space>
                 )
+            : sectionKey === 'cms-projects'
+                ? (
+                    <Space wrap>
+                        <Button onClick={openProjectCategoryManager}>Cài đặt danh mục dự án</Button>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
+                    </Space>
+                )
             : sectionKey === 'cms-partners'
                 ? (
                     <Space wrap>
@@ -2808,6 +3377,145 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             : sectionKey !== 'cms-media' && sectionKey !== 'cms-products'
                 ? <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                 : null;
+
+    const renderMediaFolderButton = (folder) => {
+        const isActive = activeMediaFolder === folder.path;
+        const count = mediaFolderCounts.get(folder.path) ?? 0;
+
+        return (
+            <button
+                key={folder.path}
+                type="button"
+                onClick={() => setActiveMediaFolder(folder.path)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => {
+                    event.preventDefault();
+                    const mediaId = Number(event.dataTransfer.getData('application/x-cms-media-id'));
+                    const record = mediaItems.find((item) => Number(item.id) === mediaId);
+                    if (record) updateMediaFolder(record, folder.path === 'uncategorized' ? null : folder.path);
+                }}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                    width: '100%',
+                    minHeight: 42,
+                    padding: '0 12px',
+                    border: isActive ? '1px solid #0f766e' : '1px solid #e7ecef',
+                    borderRadius: 12,
+                    background: isActive ? '#ecfdf5' : '#fff',
+                    color: isActive ? '#0f766e' : '#344054',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                }}
+            >
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                    {isActive ? <FolderOpenOutlined /> : <FolderOutlined />}
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{folder.name}</span>
+                </span>
+                <Tag color={isActive ? 'green' : 'default'}>{count}</Tag>
+            </button>
+        );
+    };
+
+    const renderMediaLibrary = () => (
+        <Row gutter={[16, 16]} align="top">
+            <Col xs={24} lg={6} xl={5}>
+                <Card size="small" title="Thư mục" extra={<Button size="small" type="link" onClick={handleCreateMediaFolder}>Tạo</Button>}>
+                    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                        {renderMediaFolderButton({ name: 'Tất cả media', path: 'all' })}
+                        {renderMediaFolderButton({ name: 'Chưa phân loại', path: 'uncategorized' })}
+                        {mediaFolders.map(renderMediaFolderButton)}
+                    </Space>
+                    <Alert
+                        type="info"
+                        showIcon
+                        style={{ marginTop: 14 }}
+                        message="Thư mục chỉ dùng để gom media trong CMS. URL ảnh không thay đổi."
+                    />
+                </Card>
+            </Col>
+            <Col xs={24} lg={18} xl={19}>
+                <Space direction="vertical" size={14} style={{ width: '100%' }}>
+                    <div
+                        onDragOver={(event) => {
+                            event.preventDefault();
+                            if (sectionPermissions.canCreate) setMediaDragActive(true);
+                        }}
+                        onDragLeave={() => setMediaDragActive(false)}
+                        onDrop={(event) => {
+                            event.preventDefault();
+                            setMediaDragActive(false);
+                            const files = Array.from(event.dataTransfer.files ?? []).filter((file) => file.type.startsWith('image/'));
+                            if (!files.length || !sectionPermissions.canCreate) return;
+                            setMediaFiles(files);
+                            setMediaUpload((current) => ({
+                                ...current,
+                                folder_path: activeMediaFolder === 'all' || activeMediaFolder === 'uncategorized' ? null : activeMediaFolder,
+                            }));
+                            setMediaUploadOpen(true);
+                        }}
+                        style={{
+                            display: 'grid',
+                            placeItems: 'center',
+                            minHeight: 118,
+                            border: mediaDragActive ? '2px solid #0f766e' : '1px dashed #b7c4c2',
+                            borderRadius: 18,
+                            background: mediaDragActive ? '#ecfdf5' : '#f8faf9',
+                            color: '#475467',
+                            textAlign: 'center',
+                            transition: 'border-color .18s ease, background .18s ease',
+                        }}
+                    >
+                        <Space direction="vertical" size={4} align="center">
+                            <InboxOutlined style={{ fontSize: 28, color: '#0f766e' }} />
+                            <Text strong>Kéo thả ảnh vào đây để upload nhanh</Text>
+                            <Text type="secondary">Có thể chọn nhiều ảnh cùng lúc. Ảnh sẽ vào thư mục đang mở.</Text>
+                        </Space>
+                    </div>
+
+                    {filteredItems.length ? (
+                        <Row gutter={[14, 14]}>
+                            {filteredItems.map((record) => (
+                                <Col key={record.id} xs={24} sm={12} md={8} xl={6} xxl={4}>
+                                    <Dropdown menu={mediaActionMenu(record)} trigger={['contextMenu']}>
+                                        <Card
+                                            hoverable
+                                            size="small"
+                                            draggable
+                                            onDragStart={(event) => event.dataTransfer.setData('application/x-cms-media-id', String(record.id))}
+                                            cover={(
+                                                <div style={{ height: 150, overflow: 'hidden', background: '#f4f7f6' }}>
+                                                    <CmsMediaThumbnail src={record.file_url} alt={record.title} size="100%" radius={0} />
+                                                </div>
+                                            )}
+                                            actions={[
+                                                <Button key="copy" type="text" size="small" icon={<CopyOutlined />} onClick={() => handleCopyMediaUrl(record)}>Copy</Button>,
+                                                <Button key="edit" type="text" size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditMediaTitle(record)}>Sửa</Button>,
+                                            ]}
+                                            style={{ overflow: 'hidden' }}
+                                        >
+                                            <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                                                <Text strong ellipsis title={record.title}>{record.title || `Media #${record.id}`}</Text>
+                                                <Text type="secondary" ellipsis title={record.alt_text || record.file_url}>{record.alt_text || record.mime_type || 'Media asset'}</Text>
+                                                <Space size={6} wrap>
+                                                    <Tag>{formatBytes(record.size)}</Tag>
+                                                    {record.folder_path ? <Tag color="green">{mediaFolders.find((folder) => folder.path === record.folder_path)?.name || record.folder_path}</Tag> : <Tag>Gốc</Tag>}
+                                                </Space>
+                                            </Space>
+                                        </Card>
+                                    </Dropdown>
+                                </Col>
+                            ))}
+                        </Row>
+                    ) : (
+                        <Empty description="Chưa có media trong thư mục này." />
+                    )}
+                </Space>
+            </Col>
+        </Row>
+    );
 
     if (!sectionPermissions.canView) {
         return <Alert type="warning" showIcon message="Tài khoản hiện tại chưa có quyền truy cập khu vực CMS này." />;
@@ -2954,12 +3662,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </Row>
                 ) : null}
 
-                {sectionKey !== 'cms-products' && filteredItems.length ? (
+                {sectionKey === 'cms-media' ? renderMediaLibrary() : null}
+
+                {sectionKey !== 'cms-products' && sectionKey !== 'cms-media' && filteredItems.length ? (
                     <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                        {orderBulkActions}
+                        {sectionKey === 'cms-orders' ? orderBulkActions : null}
+                        {sectionKey === 'cms-services' ? serviceBulkActions : null}
                         <Table
                             rowKey="id"
-                            rowSelection={sectionKey === 'cms-orders' ? orderRowSelection : partnerRowSelection}
+                            rowSelection={sectionKey === 'cms-orders'
+                                ? orderRowSelection
+                                : sectionKey === 'cms-services'
+                                    ? serviceRowSelection
+                                    : partnerRowSelection}
                             columns={columns}
                             dataSource={filteredItems}
                             pagination={{ pageSize: 10, hideOnSinglePage: true }}
@@ -2973,7 +3688,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             }) : undefined}
                         />
                     </Space>
-                ) : sectionKey !== 'cms-products' ? (
+                ) : sectionKey !== 'cms-products' && sectionKey !== 'cms-media' ? (
                     <Empty description={`Chưa có dữ liệu cho ${sectionConfig.title}.`} />
                 ) : null}
             </Card>
@@ -3089,27 +3804,62 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 open={sectionKey === 'cms-media' && mediaUploadOpen}
                 onCancel={() => {
                     setMediaUploadOpen(false);
-                    setMediaFile(null);
-                    setMediaUpload({ title: '', alt_text: '' });
+                    setMediaFiles([]);
+                    setMediaUpload({ title: '', alt_text: '', folder_path: null });
                 }}
                 onOk={handleUploadMedia}
-                okText="Upload media"
-                okButtonProps={{ disabled: !sectionPermissions.canCreate || !mediaFile }}
+                okText={`Upload ${mediaFiles.length || ''} media`}
+                okButtonProps={{ disabled: !sectionPermissions.canCreate || !mediaFiles.length }}
                 cancelText="Hủy"
                 destroyOnHidden
             >
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    <Select
+                        allowClear
+                        value={mediaUpload.folder_path}
+                        onChange={(value) => setMediaUpload((current) => ({ ...current, folder_path: value ?? null }))}
+                        placeholder="Chọn thư mục"
+                        options={mediaFolderOptions}
+                    />
                     <Input
                         value={mediaUpload.title}
                         onChange={(event) => setMediaUpload((current) => ({ ...current, title: event.target.value }))}
-                        placeholder="Tiêu đề media"
+                        placeholder="Tiêu đề media. Nếu bỏ trống sẽ lấy theo tên file."
                     />
                     <Input
                         value={mediaUpload.alt_text}
                         onChange={(event) => setMediaUpload((current) => ({ ...current, alt_text: event.target.value }))}
                         placeholder="Alt text"
                     />
-                    <input type="file" onChange={(event) => setMediaFile(event.target.files?.[0] ?? null)} />
+                    <Dragger
+                        accept="image/*"
+                        multiple
+                        beforeUpload={() => false}
+                        fileList={mediaFiles.map((file, index) => ({
+                            uid: `${file.name}-${file.lastModified}-${index}`,
+                            name: file.name,
+                            status: 'done',
+                            originFileObj: file,
+                        }))}
+                        onChange={({ fileList }) => {
+                            setMediaFiles(fileList.map((item) => item.originFileObj).filter(Boolean));
+                        }}
+                        onRemove={(file) => {
+                            setMediaFiles((current) => current.filter((item) => item !== file.originFileObj));
+                        }}
+                    >
+                        <p className="ant-upload-drag-icon"><InboxOutlined /></p>
+                        <p className="ant-upload-text">Kéo thả ảnh vào đây hoặc bấm để chọn ảnh</p>
+                        <p className="ant-upload-hint">Có thể upload nhiều ảnh cùng lúc. URL ảnh sau khi upload không thay đổi theo thư mục.</p>
+                    </Dragger>
+                    {mediaFiles.length ? (
+                        <Alert
+                            type="success"
+                            showIcon
+                            message={`Đã chọn ${mediaFiles.length} file`}
+                            description={mediaFiles.slice(0, 5).map((file) => file.name).join(', ')}
+                        />
+                    ) : null}
                 </Space>
             </Modal>
 
@@ -3135,6 +3885,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </Form.Item>
                     <Form.Item name="alt_text" label="Alt text" style={{ marginBottom: 0 }}>
                         <Input placeholder="Mô tả ngắn cho ảnh/file" />
+                    </Form.Item>
+                    <Form.Item name="folder_path" label="Thư mục" style={{ marginTop: 16, marginBottom: 0 }}>
+                        <Select allowClear placeholder="Thư mục gốc" options={mediaFolderOptions} />
                     </Form.Item>
                 </Form>
             </Modal>
@@ -3263,6 +4016,41 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 { label: 'Kích hoạt sản phẩm', value: 'true' },
                                 { label: 'Tắt sản phẩm', value: 'false' },
                             ]}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Modal
+                title={`Đổi danh mục ${selectedServiceRowKeys.length} dịch vụ`}
+                open={sectionKey === 'cms-services' && bulkServiceCategoryOpen}
+                onCancel={() => {
+                    setBulkServiceCategoryOpen(false);
+                    bulkServiceCategoryForm.resetFields();
+                }}
+                onOk={handleBulkServiceCategory}
+                okText="Lưu thay đổi"
+                cancelText="Hủy"
+                destroyOnHidden
+            >
+                <Form form={bulkServiceCategoryForm} layout="vertical">
+                    <Alert
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                        message={`Danh mục mới sẽ được áp dụng cho ${selectedServiceRowKeys.length} dịch vụ đang chọn.`}
+                    />
+                    <Form.Item
+                        name="cms_service_category_id"
+                        label="Danh mục dịch vụ"
+                        rules={[{ required: true, message: 'Chọn danh mục cần áp dụng' }]}
+                    >
+                        <Select
+                            options={[
+                                { label: 'Bỏ danh mục', value: BULK_CLEAR_VALUE },
+                                ...serviceCategoryOptions,
+                            ]}
+                            placeholder="Chọn danh mục dịch vụ"
                         />
                     </Form.Item>
                 </Form>
@@ -3697,6 +4485,87 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         setEditingProductCategoryRecord(emptyProductCategory);
                     }}
                     onSubmit={handleSaveProductCategory}
+                />
+            </Suspense>
+
+            <Modal
+                title="Cài đặt danh mục dự án"
+                open={projectCategoryManagerOpen}
+                onCancel={() => setProjectCategoryManagerOpen(false)}
+                footer={null}
+                width={1040}
+                destroyOnHidden
+            >
+                <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+                        <Text type="secondary">Quản lý danh mục dự án ngay trong màn Projects để tiện tạo, sửa và gắn danh mục.</Text>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateProjectCategory}>
+                            Thêm danh mục dự án
+                        </Button>
+                    </Space>
+
+                    <Table
+                        rowKey="id"
+                        loading={projectCategoryLoading}
+                        dataSource={projectCategoryItems}
+                        pagination={{ pageSize: 8, hideOnSinglePage: true }}
+                        columns={[
+                            {
+                                title: 'Danh mục dự án',
+                                dataIndex: 'name',
+                                key: 'name',
+                                render: (value, record) => (
+                                    <Space size={12} align="start">
+                                        {record.image_url ? (
+                                            <img src={record.image_url} alt={value} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 12, border: '1px solid #dbe7e4' }} />
+                                        ) : (
+                                            <div style={{ width: 56, height: 56, borderRadius: 12, border: '1px solid #dbe7e4', background: '#f4f7f6', display: 'grid', placeItems: 'center', color: '#8aa19a', fontSize: 12, fontWeight: 600 }}>
+                                                No Img
+                                            </div>
+                                        )}
+                                        <Space direction="vertical" size={0}>
+                                            <Text strong>{value}</Text>
+                                            <Text type="secondary">{record.description || record.slug}</Text>
+                                        </Space>
+                                    </Space>
+                                ),
+                            },
+                            { title: 'Slug', dataIndex: 'slug', key: 'slug' },
+                            { title: 'Danh mục cha', dataIndex: 'parent_name', key: 'parent_name', render: (value) => value || '-' },
+                            { title: 'Dự án', dataIndex: 'projects_count', key: 'projects_count', render: (value) => value ?? 0 },
+                            { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order' },
+                            { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', render: (value) => value ? <Tag color="green">Đang bật</Tag> : <Tag>Tắt</Tag> },
+                            {
+                                title: 'Tác vụ',
+                                key: 'actions',
+                                render: (_, record) => (
+                                    <Space>
+                                        <Button size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditProjectCategory(record)}>
+                                            Sửa
+                                        </Button>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete} onClick={() => handleDeleteProjectCategory(record)}>
+                                            Xóa
+                                        </Button>
+                                    </Space>
+                                ),
+                            },
+                        ]}
+                    />
+                </Space>
+            </Modal>
+
+            <Suspense fallback={null}>
+                <CatalogCategoryFormModal
+                    open={projectCategoryFormOpen}
+                    canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    editingCategory={editingProjectCategoryRecord}
+                    categoryOptions={projectCategoryParentOptions}
+                    callAdminApi={callAdminApi}
+                    onCancel={() => {
+                        setProjectCategoryFormOpen(false);
+                        setEditingProjectCategoryRecord(emptyProjectCategory);
+                    }}
+                    onSubmit={handleSaveProjectCategory}
                 />
             </Suspense>
 

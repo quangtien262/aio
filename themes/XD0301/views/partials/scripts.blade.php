@@ -28,7 +28,11 @@
                 if (heroCard) heroCard.hidden = !hasMeaningfulHeroText(copy[index] || {});
                 if (title) title.textContent = copy[index]?.title || '';
                 if (kicker) kicker.textContent = copy[index]?.kicker || '';
-                if (summary) summary.textContent = copy[index]?.summary || '';
+                if (summary) {
+                    const nextSummary = String(copy[index]?.summary || '').trim();
+                    summary.textContent = nextSummary;
+                    summary.hidden = nextSummary === '';
+                }
                 if (heroLink) {
                     heroLink.href = copy[index]?.link_url || '#du-an';
                     heroLink.textContent = copy[index]?.button_label || heroLink.textContent;
