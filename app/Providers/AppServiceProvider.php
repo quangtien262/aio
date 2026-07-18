@@ -19,6 +19,7 @@ use App\Core\Themes\Demo\Xd0322DemoContentProvider;
 use App\Core\Themes\Demo\Xd0323DemoContentProvider;
 use App\Core\Themes\Demo\Xd321DemoContentProvider;
 use App\Support\FrontendLocalization;
+use App\Support\SiteContext;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\File;
@@ -31,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(SiteContext::class);
+
         $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
             $this->app->make(Xd0302DemoContentProvider::class),
             $this->app->make(Xd0303DemoContentProvider::class),

@@ -2,6 +2,7 @@
 .env.*
 !.env.example
 
+.user.ini
 public/.user.ini
 public/files/
 .well-known/

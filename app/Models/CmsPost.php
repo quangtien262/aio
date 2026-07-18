@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasWebsiteScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['title', 'slug', 'status', 'excerpt', 'body', 'meta_title', 'meta_description', 'meta_keywords', 'featured_media_id', 'category_id', 'publish_at', 'is_highlight'])]
+#[Fillable(['title', 'slug', 'status', 'excerpt', 'body', 'meta_title', 'meta_description', 'meta_keywords', 'featured_media_id', 'category_id', 'publish_at', 'is_highlight', 'website_key', 'owner_key', 'tenant_key'])]
 class CmsPost extends Model
 {
     use HasFactory;
+    use HasWebsiteScope;
 
     protected $table = 'cms_posts';
 

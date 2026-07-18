@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasWebsiteScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['title', 'file_path', 'file_url', 'mime_type', 'size', 'alt_text', 'folder_path'])]
+#[Fillable(['title', 'file_path', 'file_url', 'mime_type', 'size', 'alt_text', 'folder_path', 'website_key', 'owner_key', 'tenant_key'])]
 class CmsMedia extends Model
 {
     use HasFactory;
+    use HasWebsiteScope;
 
     protected $table = 'cms_media';
 

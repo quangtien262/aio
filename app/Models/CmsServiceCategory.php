@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasWebsiteScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['parent_id', 'name', 'slug', 'description', 'image_url', 'sort_order', 'is_active'])]
+#[Fillable(['parent_id', 'name', 'slug', 'description', 'image_url', 'sort_order', 'is_active', 'website_key', 'owner_key', 'tenant_key'])]
 class CmsServiceCategory extends Model
 {
     use HasFactory;
+    use HasWebsiteScope;
 
     protected $table = 'cms_service_categories';
 

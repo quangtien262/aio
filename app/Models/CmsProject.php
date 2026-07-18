@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasWebsiteScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class CmsProject extends Model
 {
     use HasFactory;
+    use HasWebsiteScope;
 
     protected $table = 'cms_projects';
 

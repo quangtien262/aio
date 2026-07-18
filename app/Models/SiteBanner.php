@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasWebsiteScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['theme_key', 'placement', 'title', 'subtitle', 'image_url', 'link_url', 'badge', 'metadata', 'sort_order', 'is_active'])]
+#[Fillable(['theme_key', 'placement', 'title', 'subtitle', 'image_url', 'link_url', 'badge', 'metadata', 'sort_order', 'is_active', 'website_key', 'owner_key', 'tenant_key'])]
 class SiteBanner extends Model
 {
     use HasFactory;
+    use HasWebsiteScope;
 
     protected $table = 'site_banners';
 

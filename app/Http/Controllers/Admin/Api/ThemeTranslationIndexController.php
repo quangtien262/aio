@@ -7,6 +7,7 @@ use App\Core\Themes\ThemeTranslationService;
 use App\Models\SiteProfile;
 use App\Support\BusinessContentTranslationService;
 use App\Support\FrontendLocalization;
+use App\Support\SiteContext;
 use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -160,6 +161,6 @@ class ThemeTranslationIndexController
         $branding = SiteProfile::query()->value('branding');
         $decoded = is_array($branding) ? $branding : json_decode((string) $branding, true);
 
-        return (string) data_get($decoded, 'website_key', 'website-main');
+        return (string) data_get($decoded, 'website_key', app(SiteContext::class)->websiteKey());
     }
 }

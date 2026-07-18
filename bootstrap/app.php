@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAdminHasPermission;
+use App\Http\Middleware\ResolveCurrentSite;
 use App\Http\Middleware\SetFrontendLocale;
 use App\Support\FrontendLocalization;
 use Illuminate\Http\Request;
@@ -18,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(prepend: [
+            ResolveCurrentSite::class,
+        ]);
+
         $middleware->alias([
             'admin.permission' => EnsureAdminHasPermission::class,
             'frontend.locale' => SetFrontendLocale::class,

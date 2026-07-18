@@ -8,6 +8,7 @@ use App\Models\LandingPageData;
 use App\Models\SiteProfile;
 use App\Support\FrontendLocalization;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -170,7 +171,7 @@ class LandingPageController
     {
         $siteProfile = SiteProfile::query()->first();
         $branding = $siteProfile?->branding ?? [];
-        $websiteKey = (string) ($branding['website_key'] ?? 'website-main');
+        $websiteKey = (string) ($branding['website_key'] ?? app(SiteContext::class)->websiteKey());
         $themeKey = strtoupper((string) ($siteProfile?->active_theme_key ?? 'XD0301'));
 
         if ($themeRegistry->all()->firstWhere('key', $themeKey) === null) {

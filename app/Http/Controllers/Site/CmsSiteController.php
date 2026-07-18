@@ -28,6 +28,7 @@ use App\Support\FrontendLocalization;
 use App\Support\BusinessContentTranslationService;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\OrderConfirmationSender;
+use App\Support\SiteContext;
 use App\Support\StorefrontCart;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -1724,7 +1725,7 @@ class CmsSiteController
     {
         $branding = $siteProfile?->branding ?? [];
 
-        return (string) ($branding['website_key'] ?? self::DEFAULT_WEBSITE_KEY);
+        return (string) ($branding['website_key'] ?? app(SiteContext::class)->websiteKey() ?? self::DEFAULT_WEBSITE_KEY);
     }
 
     private function resolvePresetSwitcher(?SiteProfile $siteProfile, ?array $activeTheme): array
