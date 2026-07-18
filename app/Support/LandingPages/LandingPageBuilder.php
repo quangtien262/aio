@@ -9,6 +9,7 @@ use App\Models\CmsMenu;
 use App\Models\CmsPartner;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
+use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
 use App\Models\CmsTeamMember;
@@ -29,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501'], true);
     }
 
     /**
@@ -150,6 +151,7 @@ class LandingPageBuilder
                 'catalog_categories' => [],
                 'cms_categories' => [],
                 'cms_service_categories' => [],
+                'cms_project_categories' => [],
             ],
         ];
     }
@@ -678,7 +680,7 @@ class LandingPageBuilder
             'cms_products', 'catalog_products', 'featured_products' => $this->featuredProductItems($settings, $limit, $locale, $websiteKey),
             'cms_projects' => $this->cmsProjectItems($settings, $limit, $locale, $websiteKey),
             'cms_services' => $this->cmsServiceItems($settings, $limit, $locale, $websiteKey),
-            'catalog_categories', 'cms_categories', 'cms_service_categories' => $this->featuredCategoryItems($settings, $limit, $locale, $websiteKey),
+            'catalog_categories', 'cms_categories', 'cms_service_categories', 'cms_project_categories' => $this->featuredCategoryItems($settings, $limit, $locale, $websiteKey),
             'cms_menus' => $this->cmsMenuItems($settings, $limit),
             default => $this->contentSourceItems([...$settings, 'source' => $defaultSource], $defaultSource, $limit, $locale, $websiteKey),
         };
@@ -810,6 +812,36 @@ class LandingPageBuilder
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->services_count > 0 ? $category->services_count.' dịch vụ' : null,
                         'url' => route('site.services.category', ['locale' => $locale, 'slug' => $category->slug]),
+                    ];
+                })
+                ->all();
+        }
+
+        if ($source === 'cms_project_categories') {
+            if (! Schema::hasTable('cms_project_categories')) {
+                return [];
+            }
+
+            return CmsProjectCategory::query()
+                ->where('is_active', true)
+                ->withCount(['projects' => fn (Builder $query) => $query->where('status', 'published')])
+                ->orderByDesc('projects_count')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->take($limit)
+                ->get()
+                ->map(function (CmsProjectCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
+                    $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project_category.%d.name', $category->id), $category->name);
+                    $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project_category.%d.description', $category->id), $category->description);
+
+                    return [
+                        'title' => $title,
+                        'summary' => $summary,
+                        'image' => $category->image_url ?: $this->fallbackCategoryImage($index),
+                        'alt' => $title,
+                        'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
+                        'count_label' => (int) $category->projects_count > 0 ? $category->projects_count.' dự án' : null,
+                        'url' => route('site.projects.category', ['locale' => $locale, 'slug' => $category->slug]),
                     ];
                 })
                 ->all();
@@ -1160,6 +1192,7 @@ class LandingPageBuilder
             'XD0322' => $this->xd0322DefaultBlocks(),
             'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
             'XD0324' => $this->xd0324DefaultBlocks(),
+            'BZ501' => $this->bz501DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1173,6 +1206,311 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function bz501DefaultBlocks(): array
+    {
+        $contentSources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+            ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+            ['value' => 'cms_categories', 'label' => 'Danh mục tin tức'],
+            ['value' => 'cms_project_categories', 'label' => 'Danh mục dự án'],
+        ];
+
+        $sourceSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+            'limit' => ['type' => 'number', 'label' => 'Số item hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'ID danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero slider HaluFin',
+                'description' => 'Header, slide ảnh lớn và lời giới thiệu chính ở đầu trang.',
+                'preview_image' => '/theme-previews/BZ501/preview-bz501.png',
+                'anchor_id' => 'trang-chu',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'bz501-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
+                    'autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Xây nhà trọn gói',
+                        'subtitle' => 'Thiết kế & thi công',
+                        'description' => 'Cung cấp dịch vụ thi công trọn gói các công trình dân dụng với quy trình linh hoạt và đội ngũ chuyên nghiệp.',
+                        'button_label' => 'Liên hệ báo giá',
+                        'content' => ['slides' => [
+                            ['title' => 'Xây nhà trọn gói', 'kicker' => 'Thiết kế & thi công', 'summary' => 'Cung cấp dịch vụ thi công trọn gói các công trình dân dụng với quy trình linh hoạt và đội ngũ chuyên nghiệp.', 'button_label' => 'Liên hệ báo giá', 'link_url' => '#lien-he', 'image' => 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1920&q=85'],
+                            ['title' => 'Tư vấn kinh doanh hiệu quả', 'kicker' => 'Giải pháp vận hành', 'summary' => 'Đồng hành từ chiến lược, thiết kế dịch vụ đến triển khai thực tế cho từng mô hình doanh nghiệp.', 'button_label' => 'Tìm hiểu thêm', 'link_url' => '#gioi-thieu', 'image' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1920&q=85'],
+                        ]],
+                    ],
+                    'en' => [
+                        'title' => 'Complete business solutions',
+                        'subtitle' => 'Design & delivery',
+                        'description' => 'End-to-end consulting and delivery services for ambitious teams.',
+                        'button_label' => 'Request a quote',
+                        'content' => ['slides' => []],
+                    ],
+                ],
+            ],
+            [
+                'block_type' => 'featured_categories',
+                'label' => 'Thẻ cam kết dịch vụ',
+                'description' => 'Danh sách item chất lượng dịch vụ hoặc danh mục dịch vụ, hiển thị dạng trượt ngang.',
+                'preview_image' => '/theme-previews/BZ501/preview-bz501.png',
+                'anchor_id' => 'cam-ket',
+                'dynamic' => true,
+                'settings' => ['source' => 'custom', 'limit' => 6],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => [
+                        'title' => 'Cam kết dịch vụ',
+                        'subtitle' => 'Năng lực',
+                        'description' => '',
+                        'button_label' => 'Xem thêm',
+                        'content' => ['items' => [
+                            ['title' => 'Tư vấn xây dựng', 'summary' => 'Đội ngũ chuyên gia đồng hành từ khảo sát, lập kế hoạch đến triển khai.', 'icon' => 'chart', 'color' => '#ff1748', 'url' => '#dich-vu'],
+                            ['title' => 'Cam kết chất lượng', 'summary' => 'Quy trình kiểm soát rõ ràng, cập nhật thường xuyên theo nhu cầu thực tế.', 'icon' => 'piggy', 'color' => '#05bdb4', 'url' => '#dich-vu'],
+                            ['title' => 'Chính sách ưu đãi', 'summary' => 'Linh hoạt cho khách hàng thân thiết, đối tác và các chương trình cộng đồng.', 'icon' => 'saving', 'color' => '#ffc400', 'url' => '#dich-vu'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Service commitments', 'subtitle' => 'Capabilities', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'about_experience',
+                'label' => 'Giới thiệu công ty',
+                'description' => 'Khối giới thiệu ngắn gọn, nội dung do người dùng nhập.',
+                'preview_image' => '/theme-previews/BZ501/cover-bz501.png',
+                'anchor_id' => 'gioi-thieu',
+                'dynamic' => false,
+                'settings' => ['source' => 'custom'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Chúng tôi giúp khách hàng đạt được mục tiêu kinh doanh của họ',
+                        'subtitle' => 'Giới thiệu',
+                        'description' => 'Tài chính chỉ có thể vững mạnh khi đội ngũ của chúng tôi đều hành công việc kinh doanh của họ.',
+                        'content' => [
+                            'image' => 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1100&q=85',
+                            'mini_image' => 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=500&q=85',
+                            'items' => ['Kế hoạch kinh doanh tốt', 'Cải thiện kinh doanh', 'Dịch vụ chúng tôi cung cấp'],
+                            'body' => 'Đội ngũ chuyên gia nhiều năm kinh nghiệm trực tiếp tư vấn, tổ chức, điều hành và giám sát dự án, đảm bảo chuyên nghiệp, nhanh chóng, chính xác.',
+                            'author_name' => 'Mr. Robert Smith',
+                            'author_role' => 'CEO & Founder',
+                            'author_image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+                        ],
+                    ],
+                    'en' => ['title' => 'We help clients reach their business goals', 'subtitle' => 'About', 'description' => '', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'featured_services',
+                'label' => 'Dịch vụ nổi bật',
+                'description' => 'Card dịch vụ có thể lấy từ nhiều nguồn dữ liệu hoặc nhập thủ công.',
+                'preview_image' => '/theme-previews/BZ501/preview-bz501.png',
+                'anchor_id' => 'dich-vu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 3, 'featured_only' => true],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => [
+                        'title' => 'Những dịch vụ chúng tôi cung cấp cho khách hàng của mình',
+                        'subtitle' => 'Dịch vụ',
+                        'button_label' => 'Xem thêm',
+                        'content' => ['items' => [
+                            ['title' => 'Tư vấn xây dựng', 'summary' => 'Khảo sát, thiết kế và tổ chức đấu thầu để mua sắm thiết bị, xây lắp công trình.', 'image' => 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Thiết kế kiến trúc', 'summary' => 'Tối ưu công năng, thẩm mỹ và ngân sách cho từng loại công trình.', 'image' => 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Ký kết chung', 'summary' => 'Hợp tác minh bạch, bình đẳng, đảm bảo tiến độ theo thỏa thuận.', 'image' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Services we provide', 'subtitle' => 'Services', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'content_showcase',
+                'label' => 'Chia sẻ mục tiêu',
+                'description' => 'Khối giới thiệu/chia sẻ ngắn gọn do người dùng nhập.',
+                'preview_image' => '/theme-previews/BZ501/cover-bz501.png',
+                'anchor_id' => 'muc-tieu',
+                'dynamic' => false,
+                'settings' => ['source' => 'custom'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Tạo một doanh nghiệp với sự liêm chính đích thực',
+                        'subtitle' => 'Mục tiêu',
+                        'description' => 'Không chỉ đem những điều tốt đẹp đến cho khách hàng, chúng tôi còn tạo ra nhiều cơ hội thành công cho đội ngũ nhân viên của mình.',
+                        'content' => [
+                            'image' => 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1000&q=85',
+                            'image_secondary' => 'https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=600&q=85',
+                            'items' => [
+                                ['title' => 'Tầm nhìn chiến lược', 'summary' => 'Từng bước trở thành một trong những công ty được tôn trọng hàng đầu trong lĩnh vực của mình.', 'icon' => 'pie'],
+                                ['title' => 'Sứ mệnh', 'summary' => 'Đem lại giải pháp tốt nhất nhằm đáp ứng kỳ vọng của khách hàng và mục tiêu dài hạn.', 'icon' => 'growth'],
+                            ],
+                        ],
+                    ],
+                    'en' => ['title' => 'Build a company with integrity', 'subtitle' => 'Mission', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'content_mosaic',
+                'label' => 'Nghiên cứu / trường hợp',
+                'description' => 'Slider ngang có thể lấy từ sản phẩm, tin tức, dịch vụ, dự án hoặc các danh mục.',
+                'preview_image' => '/theme-previews/BZ501/preview-bz501.png',
+                'anchor_id' => 'nghien-cuu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_projects', 'limit' => 5, 'featured_only' => true],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => [
+                        'title' => 'Chúng tôi là chuyên gia tư vấn cho nhiều trường hợp',
+                        'subtitle' => 'Nghiên cứu',
+                        'content' => ['items' => [
+                            ['title' => 'Thiết kế nội thất hiện đại', 'tag' => 'Thiết kế nội thất', 'image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Thi công nhà phố trọn gói', 'tag' => 'Thi công nhà phố', 'image' => 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Các dịch vụ giải trí', 'tag' => 'Thi công nhà hàng, cafe', 'image' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Căn hộ nội thất cao cấp', 'tag' => 'Thi công căn hộ', 'image' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Biệt thự là loại hình cao cấp', 'tag' => 'Thi công biệt thự', 'image' => 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Case studies we consult for', 'subtitle' => 'Research', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'logistics_feature_panel',
+                'label' => 'Lý do chọn chúng tôi',
+                'description' => 'Khối chia sẻ nền tối, nội dung người dùng nhập.',
+                'preview_image' => '/theme-previews/BZ501/cover-bz501.png',
+                'anchor_id' => 'ly-do',
+                'dynamic' => false,
+                'settings' => ['source' => 'custom'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Để có hiệu suất xuất sắc, chúng tôi tập trung vào quan trọng.',
+                        'subtitle' => 'Lý do chọn chúng tôi',
+                        'description' => 'Tính trung thực mang lại sự tin cậy trong mọi mối quan hệ, giao dịch, với đồng nghiệp, khách hàng, đối tác.',
+                        'content' => [
+                            'image' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=85',
+                            'background_image' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1920&q=85',
+                            'video_image' => 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=85',
+                            'support_label' => '12/7 Support Team',
+                            'phone' => '+123-55-05800',
+                            'items' => ['Năm 2021: Chứng nhận ISO 45001:2018', 'Kinh doanh là kế hoạch tốt nhất', 'Làm thế nào để cải thiện kinh doanh', 'Năm 2021: Chứng nhận ISO 14001:2015', 'Dịch vụ chúng tôi cung cấp', 'Bằng khen trong công tác An toàn'],
+                        ],
+                    ],
+                    'en' => ['title' => 'We focus on what matters', 'subtitle' => 'Why choose us', 'content' => []],
+                ],
+            ],
+            [
+                'block_type' => 'team_members',
+                'label' => 'Đội ngũ nhân sự',
+                'description' => 'Danh sách nhân sự, có thể lấy từ CMS hoặc nhập thủ công.',
+                'preview_image' => '/theme-previews/BZ501/cover-bz501.png',
+                'anchor_id' => 'doi-ngu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_team_members', 'limit' => 3, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_team_members', 'label' => 'Nhân sự CMS']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số item hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Luôn luôn tận tâm và chuyên nghiệp',
+                        'subtitle' => 'Đội ngũ nhân viên',
+                        'content' => ['items' => [
+                            ['name' => 'Hoàng Văn Sơn', 'role' => 'Tổng giám đốc', 'image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=85', 'facebook_url' => '#'],
+                            ['name' => 'Lê Thị Thúy', 'role' => 'Trưởng phòng nhân sự', 'image' => 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=85', 'instagram_url' => '#'],
+                            ['name' => 'Nguyễn Văn Anh', 'role' => 'Giám đốc thi công', 'image' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=85', 'facebook_url' => '#'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Dedicated and professional', 'subtitle' => 'Team', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_products',
+                'label' => 'Sản phẩm nổi bật',
+                'description' => 'Slider sản phẩm hoặc nguồn dữ liệu tương đương.',
+                'preview_image' => '/theme-previews/BZ501/cover-bz501.png',
+                'anchor_id' => 'san-pham',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => [
+                        'title' => 'Nội thất đảm bảo chất lượng số 1 Việt Nam',
+                        'subtitle' => 'Sản phẩm',
+                        'content' => ['items' => [
+                            ['title' => 'Bàn Trang Điểm Gỗ Đa Năng', 'price' => '3.690.000đ', 'rating' => 4, 'image' => 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Giường Ngủ Bọc Nệm', 'price' => '3.290.000đ', 'rating' => 0, 'image' => 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Giường Ngủ Gỗ VLINE 601', 'price' => '4.290.000đ', 'rating' => 4, 'image' => 'https://images.unsplash.com/photo-1617325247661-675ab4b64ae2?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Bàn Sofa - Bàn Cafe - Bàn Trà Gỗ Thông', 'price' => '1.290.000đ', 'rating' => 0, 'image' => 'https://images.unsplash.com/photo-1532372320572-cda25653a26d?auto=format&fit=crop&w=900&q=85', 'url' => '#lien-he'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Quality furniture products', 'subtitle' => 'Products', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'partner_logos',
+                'label' => 'Đối tác',
+                'description' => 'Dải logo đối tác.',
+                'preview_image' => '/theme-previews/BZ501/cover-bz501.png',
+                'anchor_id' => 'doi-tac',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_partners', 'limit' => 6],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_partners', 'label' => 'Đối tác CMS']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số logo hiển thị'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Đối tác',
+                        'content' => ['items' => [
+                            ['name' => 'Zikzac', 'logo' => ''],
+                            ['name' => 'SinTech', 'logo' => ''],
+                            ['name' => 'Recyclepro', 'logo' => ''],
+                            ['name' => 'WOWAVE', 'logo' => ''],
+                            ['name' => 'Octakle', 'logo' => ''],
+                            ['name' => '7Tekart', 'logo' => ''],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Partners', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'latest_posts',
+                'label' => 'Tin tức mới nhất',
+                'description' => 'Danh sách bài viết mới hoặc nguồn dữ liệu khác theo cấu hình.',
+                'preview_image' => '/theme-previews/BZ501/cover-bz501.png',
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => [
+                        'title' => 'Những bài viết mới nhất',
+                        'subtitle' => 'Tin tức',
+                        'button_label' => 'Đọc thêm',
+                        'content' => ['items' => [
+                            ['title' => 'Bình Định tham gia chuỗi công viên phần mềm Quang Trung', 'summary' => 'Thủ tướng Chính phủ đã có quyết định kết nạp trung tâm công nghệ thông tin...', 'date' => '02/04/2023', 'image' => 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+                            ['title' => 'Thương mại điện tử là động lực thúc đẩy nền kinh tế số', 'summary' => 'Tại sự kiện, vai trò là cơ quan đồng hành phát triển và công bố báo cáo ngành...', 'date' => '02/04/2023', 'image' => 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+                            ['title' => 'Cộng đồng doanh nghiệp Việt tại San Jose gặp khó', 'summary' => 'Đại dịch đã khiến nhiều doanh nghiệp nhỏ cần tái cấu trúc chiến lược vận hành...', 'date' => '02/04/2023', 'image' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Latest posts', 'subtitle' => 'News', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

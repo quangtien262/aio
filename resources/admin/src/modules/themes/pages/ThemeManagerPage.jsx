@@ -149,7 +149,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                 />
             </aside>
             <div style={{ flex: 1 }}>
-                <Card title="Theme Engine Flow">
+                <Card title="Quản lý các mẫu giao diện website" bordered={false} style={{ marginBottom: 16 }}>
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label" strong>Theme Activation</Text>
                 <Paragraph style={{ marginBottom: 0 }}>
@@ -161,7 +161,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                 <div style={{ marginBottom: 16 }}>
                     <Card size="small" bordered style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                         <div style={{ width: 260, flex: '0 0 260px', borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
-                            <img src={activeThemeFromList.preview_urls?.cover ?? activeThemeFromList.preview_urls?.thumbnail ?? activeThemeFromList.avatar_url ?? ''} alt={activeThemeFromList.name} style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
+                            <img src={activeThemeFromList.preview_urls?.thumbnail ?? activeThemeFromList.avatar_url ?? ''} alt={activeThemeFromList.name} style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
                         </div>
 
                         <div style={{ flex: 1 }}>
