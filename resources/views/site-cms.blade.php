@@ -259,7 +259,6 @@
                                 </div>
                                 <div class="site-auth-actions">
                                     <button type="submit" class="site-auth-submit">Đăng nhập</button>
-                                    <span class="site-auth-note">Tài khoản seed mặc định: <strong>admin</strong> / <strong>password</strong></span>
                                 </div>
                             </form>
                         @endauth
