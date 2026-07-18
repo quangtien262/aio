@@ -1,0 +1,36 @@
+{
+  "name": "SPA502 Cosmetics Spa",
+  "key": "SPA502",
+  "version": "0.1.0",
+  "description": "Theme spa, thẩm mỹ viện và mỹ phẩm với tone tím, hero slider, danh mục dịch vụ, ưu đãi, sản phẩm, tin tức, đối tác, newsletter và footer.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-spa502.png",
+    "cover": "cover-spa502.png"
+  },
+  "blocks": [
+    "hero-slider",
+    "featured-categories",
+    "collection-gallery",
+    "featured-products",
+    "content-mosaic",
+    "content-showcase",
+    "latest-posts",
+    "partner-logos"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}

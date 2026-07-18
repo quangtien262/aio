@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502'], true);
     }
 
     /**
@@ -1193,6 +1193,7 @@ class LandingPageBuilder
             'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
             'XD0324' => $this->xd0324DefaultBlocks(),
             'BZ501' => $this->bz501DefaultBlocks(),
+            'SPA502' => $this->spa502DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1206,6 +1207,251 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function spa502DefaultBlocks(): array
+    {
+        $categorySources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+            ['value' => 'cms_categories', 'label' => 'Danh mục tin tức'],
+        ];
+
+        $contentSources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+            ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+            ['value' => 'cms_categories', 'label' => 'Danh mục tin tức'],
+            ['value' => 'cms_project_categories', 'label' => 'Danh mục dự án'],
+        ];
+
+        $categorySchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $categorySources],
+            'limit' => ['type' => 'number', 'label' => 'Số item hiển thị'],
+        ];
+
+        $sourceSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+            'limit' => ['type' => 'number', 'label' => 'Số item hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'ID danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Header và hero slider SPA502',
+                'description' => 'Header, menu và banner hình ảnh chạy ở đầu trang.',
+                'preview_image' => '/theme-previews/SPA502/preview-spa502.png',
+                'anchor_id' => 'trang-chu',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'spa502-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
+                    'autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Viện thẩm mỹ Cosmetics',
+                        'subtitle' => 'Bùng nổ khai trương cơ sở mới',
+                        'description' => 'Giảm giá 50% tất cả các dịch vụ',
+                        'button_label' => 'Xem thêm',
+                        'content' => ['slides' => [
+                            ['title' => 'Viện thẩm mỹ Cosmetics', 'kicker' => 'Bùng nổ khai trương cơ sở mới', 'summary' => 'Giảm giá 50% tất cả các dịch vụ', 'button_label' => 'Xem thêm', 'link_url' => '#dich-vu', 'image' => 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=2200&q=88'],
+                            ['title' => 'Spa thư giãn chuyên sâu', 'kicker' => 'Chăm sóc sắc đẹp', 'summary' => 'Trải nghiệm liệu trình chăm sóc da và cơ thể chuẩn spa.', 'button_label' => 'Đặt lịch ngay', 'link_url' => '#lien-he', 'image' => 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=2200&q=88'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Cosmetics Beauty Spa', 'subtitle' => 'Grand opening offer', 'description' => 'Up to 50% off selected services', 'button_label' => 'View more', 'content' => ['slides' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_categories',
+                'label' => 'Dịch vụ đa dạng',
+                'description' => 'Danh mục dịch vụ/sản phẩm/tin tức hoặc nhập thủ công, hiển thị dạng ảnh tròn.',
+                'preview_image' => '/theme-previews/SPA502/cover-spa502.png',
+                'anchor_id' => 'dich-vu',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_service_categories', 'limit' => 5],
+                'settings_schema' => $categorySchema,
+                'data' => [
+                    'vi' => [
+                        'title' => 'Dịch Vụ Đa Dạng',
+                        'subtitle' => 'Toàn bộ dịch vụ sản phẩm',
+                        'content' => ['items' => [
+                            ['title' => 'Trị liệu da', 'image' => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=700&q=85', 'url' => '#san-pham'],
+                            ['title' => 'Tóc & Làm đẹp', 'image' => 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=700&q=85', 'url' => '#san-pham'],
+                            ['title' => 'Tẩy lông', 'badge' => '50% Off', 'image' => 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=700&q=85', 'url' => '#uu-dai'],
+                            ['title' => 'Thư giãn cơ thể', 'image' => 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=700&q=85', 'url' => '#san-pham'],
+                            ['title' => 'Tắm thảo dược', 'image' => 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=700&q=85', 'url' => '#san-pham'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Diverse Services', 'subtitle' => 'Spa and beauty categories', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'collection_gallery',
+                'label' => 'Gói ưu đãi đặc biệt',
+                'description' => 'Người dùng tự nhập ảnh khuyến mại và link đích.',
+                'preview_image' => '/theme-previews/SPA502/cover-spa502.png',
+                'anchor_id' => 'uu-dai',
+                'dynamic' => false,
+                'settings' => ['source' => 'custom', 'limit' => 4],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số banner'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Gói Ưu Đãi Đặc Biệt',
+                        'subtitle' => 'Hãy đến và trải nghiệm ngay hôm nay!',
+                        'content' => ['items' => [
+                            ['title' => 'Trị hôi nách', 'image' => 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Điều trị mụn', 'image' => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Sinh nhật vui khui quà', 'image' => 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=85', 'url' => '#lien-he'],
+                            ['title' => 'Đón sinh nhật sang', 'image' => 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=800&q=85', 'url' => '#lien-he'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Special Offers', 'subtitle' => 'Visit us and experience today', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_products',
+                'label' => 'Sản phẩm',
+                'description' => 'Lưới sản phẩm hoặc dữ liệu lấy từ nhiều nguồn.',
+                'preview_image' => '/theme-previews/SPA502/cover-spa502.png',
+                'anchor_id' => 'san-pham',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => true],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => [
+                        'title' => 'Sản Phẩm',
+                        'subtitle' => 'Đảm bảo chất lượng số 1 Việt Nam',
+                        'content' => ['items' => [
+                            ['title' => 'Gel Phục Hồi Hàng Rào Bảo Vệ Da', 'price' => '2.300.000đ', 'rating' => 0, 'tags' => ['Mới', 'Bán chạy'], 'image' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'SEPTONA Care Cotton Pads', 'price' => '50.000đ', 'old_price' => '100.000đ', 'sale_label' => '- 50%', 'rating' => 0, 'tags' => ['Bán chạy'], 'image' => 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'Priori The Recovery Kit', 'price' => '1.500.000đ', 'rating' => 5, 'tags' => [], 'image' => 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'Balance Active Formula Hyaluronic', 'price' => '210.000đ', 'rating' => 0, 'tags' => ['Mới', 'Bán chạy'], 'image' => 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'RevitaBrow Advanced Serum', 'price' => '2.700.000đ', 'rating' => 0, 'tags' => ['Bán chạy'], 'image' => 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'Combo ASAP Cải Thiện Da Dầu Mụn', 'price' => '5.500.000đ', 'rating' => 0, 'tags' => ['Mới'], 'image' => 'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'Endorecare Expert Drops', 'price' => '1.700.000đ', 'rating' => 0, 'tags' => ['Mới'], 'image' => 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'Tinh Chất Dưỡng Ẩm Kích Thích Collagen', 'price' => '2.600.000đ', 'rating' => 0, 'tags' => [], 'image' => 'https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Products', 'subtitle' => 'Premium cosmetic products', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'content_mosaic',
+                'label' => 'Deal cực hấp dẫn',
+                'description' => 'Khu sản phẩm/deal nền tím, nguồn dữ liệu có thể đổi linh hoạt.',
+                'preview_image' => '/theme-previews/SPA502/cover-spa502.png',
+                'anchor_id' => 'deal',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true],
+                'settings_schema' => $sourceSchema,
+                'media' => ['background_image' => 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1800&q=80'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Deal Cực Hấp Dẫn',
+                        'subtitle' => 'Chương trình giảm giá:',
+                        'description' => 'Expired',
+                        'content' => ['items' => [
+                            ['title' => 'Minerals Fx350 Uber Finishing', 'price' => '1.300.000đ', 'old_price' => '1.600.000đ', 'sale_label' => '- 19%', 'sold_label' => '10 sản phẩm', 'rating' => 0, 'tags' => ['Bán chạy'], 'image' => 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'Priori Q+SOD Brightening Serum', 'price' => '2.250.000đ', 'old_price' => '3.000.000đ', 'sale_label' => '- 25%', 'sold_label' => '46 sản phẩm', 'rating' => 0, 'tags' => ['Mới'], 'image' => 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'Dermedic HYDRAIN3 Hialuro Creamy', 'price' => '530.000đ', 'old_price' => '800.000đ', 'sale_label' => '- 34%', 'sold_label' => '5 sản phẩm', 'rating' => 0, 'tags' => ['Mới'], 'image' => 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                            ['title' => 'Balance Active Formula Vitamin C', 'price' => '250.000đ', 'old_price' => '360.000đ', 'sale_label' => '- 31%', 'sold_label' => '10 sản phẩm', 'rating' => 0, 'tags' => ['Mới', 'Bán chạy'], 'image' => 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=800&q=85', 'url' => '#'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Hot Deals', 'subtitle' => 'Promotion program', 'description' => 'Expired', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'content_showcase',
+                'label' => 'Giới thiệu sản phẩm',
+                'description' => 'Khối giới thiệu/chia sẻ ngắn, người dùng tự nhập.',
+                'preview_image' => '/theme-previews/SPA502/cover-spa502.png',
+                'anchor_id' => 'gioi-thieu',
+                'dynamic' => false,
+                'settings' => ['source' => 'custom'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Kem Dưỡng Da Dịu Nhẹ',
+                        'subtitle' => 'Biến đổi tình trạng da',
+                        'description' => 'Nhắc đến top kem dưỡng ẩm tốt và được yêu thích hiện nay, sản phẩm cấp ẩm dịu nhẹ luôn góp mặt trong chu trình chăm sóc da sau liệu trình thẩm mỹ.',
+                        'content' => [
+                            'heading' => 'Kem dưỡng da - Có tác dụng rất nhanh',
+                            'image' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1000&q=85',
+                            'items' => [
+                                ['title' => 'Được tạo từ thảo mộc tự nhiên', 'icon' => 'fa-solid fa-leaf'],
+                                ['title' => 'An toàn 100% cho làn da của bạn', 'icon' => 'fa-solid fa-heart'],
+                                ['title' => 'Không chứa paraben và cồn', 'icon' => 'fa-solid fa-shield-halved'],
+                                ['title' => 'Quà tặng và ưu đãi đặc biệt dành cho bạn', 'icon' => 'fa-solid fa-gift'],
+                                ['title' => 'Được tạo bởi các chuyên gia y tế của Halu Cosmetics', 'icon' => 'fa-solid fa-user-doctor'],
+                            ],
+                        ],
+                    ],
+                    'en' => ['title' => 'Gentle Face Cream', 'subtitle' => 'Transform your skin', 'description' => 'A gentle moisturizer for healthier, calmer skin.', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'latest_posts',
+                'label' => 'Tin tức',
+                'description' => 'Tin tức hoặc dữ liệu động từ nhiều nguồn theo cấu hình.',
+                'preview_image' => '/theme-previews/SPA502/cover-spa502.png',
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false],
+                'settings_schema' => $sourceSchema,
+                'data' => [
+                    'vi' => [
+                        'title' => 'Tin Tức',
+                        'subtitle' => 'Những bài viết mới nhất',
+                        'content' => ['items' => [
+                            ['title' => 'Review GoodnDoc Hydra B5 Serum - Có thực sự gây sốt?', 'summary' => 'Sản phẩm được quan tâm và bàn luận sôi nổi trên các diễn đàn làm đẹp.', 'date' => '30/10/2023', 'image' => 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+                            ['title' => 'Top 5 kem chống nắng tốt nhất dành cho da', 'summary' => 'Bảo vệ da khỏi tia UV và ánh sáng xanh là một điều cực kỳ quan trọng.', 'date' => '30/10/2023', 'image' => 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+                            ['title' => 'Điểm mặt các thành phần dưỡng da mà ai cũng nên có', 'summary' => 'Lựa chọn đúng thành phần giúp quá trình chăm sóc da hiệu quả hơn.', 'date' => '30/10/2023', 'image' => 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+                            ['title' => 'Gallinée - Chìa khóa đánh thức nét đẹp tươi sáng', 'summary' => 'Nguồn lợi khuẩn khỏe mạnh là bí quyết cho một làn da căng tràn sức sống.', 'date' => '30/10/2023', 'image' => 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'News', 'subtitle' => 'Latest articles', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'partner_logos',
+                'label' => 'Đối tác',
+                'description' => 'Logo đối tác lấy từ CMS Partners hoặc nhập thủ công.',
+                'preview_image' => '/theme-previews/SPA502/cover-spa502.png',
+                'anchor_id' => 'doi-tac',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_partners', 'limit' => 6],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_partners', 'label' => 'Đối tác CMS']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số logo hiển thị'],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Đối tác',
+                        'content' => ['items' => [
+                            ['name' => 'BEAUTY'],
+                            ['name' => 'INFINITY WELLNESS'],
+                            ['name' => 'MANDALA HOTEL SPA'],
+                            ['name' => 'VAIJACH'],
+                            ['name' => 'Beauty Salon'],
+                            ['name' => 'BEAUTY'],
+                        ]],
+                    ],
+                    'en' => ['title' => 'Partners', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */
