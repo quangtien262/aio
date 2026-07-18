@@ -120,7 +120,7 @@ class SiteMappingController
     {
         $domain = strtolower(trim($domain));
         $domain = preg_replace('#^https?://#', '', $domain) ?? $domain;
-        $domain = preg_replace('#[/:?#].*$#', '', $domain) ?? $domain;
+        $domain = preg_replace('~[/:?#].*$~', '', $domain) ?? $domain;
 
         return trim($domain, '.');
     }
