@@ -83,6 +83,7 @@ use App\Http\Controllers\Admin\Api\SetupStepController;
 use App\Http\Controllers\Admin\Api\SetupWizardStateController;
 use App\Http\Controllers\Admin\Api\SiteBannerIndexController;
 use App\Http\Controllers\Admin\Api\SiteBannerManagementController;
+use App\Http\Controllers\Admin\Api\SiteMappingController;
 use App\Http\Controllers\Admin\Api\ThemeActivationController;
 use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
 use App\Http\Controllers\Admin\Api\ThemePaletteController;
@@ -669,6 +670,18 @@ Route::prefix('admin')
                 Route::get('/themes', ThemeRegistryController::class)
                     ->middleware('admin.permission:theme.view')
                     ->name('themes');
+                Route::get('/site-mappings', [SiteMappingController::class, 'index'])
+                    ->middleware('admin.permission:theme.view')
+                    ->name('site-mappings.index');
+                Route::post('/site-mappings', [SiteMappingController::class, 'store'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.store');
+                Route::put('/site-mappings/{site}', [SiteMappingController::class, 'update'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.update');
+                Route::delete('/site-mappings/{site}', [SiteMappingController::class, 'destroy'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.destroy');
                 Route::post('/themes/{key}/avatar', \App\Http\Controllers\Admin\Api\ThemeAvatarController::class)
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.avatar');

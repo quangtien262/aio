@@ -1,6 +1,6 @@
 import Card from 'antd/es/card';
 import Menu from 'antd/es/menu';
-import { AppstoreOutlined, GlobalOutlined, BgColorsOutlined, MessageOutlined, FileTextOutlined, SettingOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, GlobalOutlined, BgColorsOutlined, MessageOutlined, FileTextOutlined, SettingOutlined, ReloadOutlined, DeleteOutlined, LinkOutlined } from '@ant-design/icons';
 
 export default function ThemeActionMenuCard({
     theme = null,
@@ -14,10 +14,12 @@ export default function ThemeActionMenuCard({
     onOpenThemeTranslations,
     onOpenFrontendTranslations,
     onOpenDemoCreate,
+    onOpenSiteMappings,
     onOpenSetup,
     onOpenRebuild,
     onOpenDelete,
     isThemeManagerActive = false,
+    isSiteMappingsActive = false,
     isSetupActive = false,
 }) {
     const canOpenThemeActions = Boolean(theme) && canManageThemeActions;
@@ -39,6 +41,14 @@ export default function ThemeActionMenuCard({
             disabled: isSetupActive,
             onClick: () => onOpenSetup?.(),
             style: { marginBottom: 6, fontWeight: isSetupActive ? 600 : 400 },
+        },
+        {
+            key: 'site-mappings',
+            icon: <LinkOutlined />,
+            label: 'Domain demo',
+            disabled: isSiteMappingsActive,
+            onClick: () => onOpenSiteMappings?.(),
+            style: { marginBottom: 6, fontWeight: isSiteMappingsActive ? 600 : 400 },
         },
         {
             key: 'lang',

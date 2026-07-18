@@ -15,6 +15,7 @@ const { Paragraph, Text } = Typography;
 const ThemeGrid = lazy(() => import('../components/ThemeGrid'));
 const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDetailsPanel'));
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
+const SiteDomainMappingPanel = lazy(() => import('../components/SiteDomainMappingPanel'));
 
 export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
@@ -22,6 +23,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
     const [searchParams, setSearchParams] = useSearchParams();
     const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
+    const [activePanel, setActivePanel] = useState('themes');
     const themeActionController = useThemeActionOverlayController();
 
     useEffect(() => {
@@ -136,19 +138,31 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                     canManageThemeActions={canGenerateDemoData}
                     frontendLocale={frontendLocale}
                     defaultFrontendLocale={defaultFrontendLocale}
-                    onOpenThemeManager={() => navigate('../themes')}
+                    onOpenThemeManager={() => setActivePanel('themes')}
                     onOpenLocale={themeActionController.openLocale}
                     onOpenPalette={themeActionController.openPalette}
                     onOpenThemeTranslations={themeActionController.openThemeTranslations}
                     onOpenFrontendTranslations={themeActionController.openFrontendTranslations}
                     onOpenDemoCreate={themeActionController.openDemoCreate}
+                    onOpenSiteMappings={() => setActivePanel('site-mappings')}
                     onOpenSetup={() => navigate('../setup')}
                     onOpenRebuild={themeActionController.openRebuild}
                     onOpenDelete={themeActionController.openDelete}
-                    isThemeManagerActive
+                    isThemeManagerActive={activePanel === 'themes'}
+                    isSiteMappingsActive={activePanel === 'site-mappings'}
                 />
             </aside>
             <div style={{ flex: 1 }}>
+                {activePanel === 'site-mappings' ? (
+                    <Suspense fallback={<Card loading title="Domain demo" />}>
+                        <SiteDomainMappingPanel
+                            callAdminApi={callAdminApi}
+                            runAdminAction={runAdminAction}
+                            canManage={canGenerateDemoData}
+                            themes={themes}
+                        />
+                    </Suspense>
+                ) : (
                 <Card title="Quản lý các mẫu giao diện website" bordered={false} style={{ marginBottom: 16 }}>
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label" strong>Theme Activation</Text>
@@ -252,6 +266,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                 onClose={themeActionController.closeOverlay}
             />
                 </Card>
+                )}
             </div>
         </div>
     );

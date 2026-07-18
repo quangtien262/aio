@@ -59,7 +59,7 @@ class CmsSiteController
 
     public function home(): View
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $themeKey = (string) ($activeTheme['key'] ?? '');
@@ -101,7 +101,7 @@ class CmsSiteController
             return to_route('site.contact', ['locale' => $this->currentLocale()], 301);
         }
 
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $page = CmsPage::query()->with('featuredMedia')->where('slug', $slug)->where('status', 'published')->firstOrFail();
@@ -112,7 +112,7 @@ class CmsSiteController
     public function landing(Request $request): View
     {
         $slug = (string) $request->route('slug');
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $themeKey = (string) ($activeTheme['key'] ?? '');
@@ -142,7 +142,7 @@ class CmsSiteController
 
         $preset = (string) $request->route('preset');
 
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $themeKey = $this->resolveServiceThemeKey($activeTheme);
 
@@ -169,7 +169,7 @@ class CmsSiteController
 
     public function postsIndex(Request $request): View
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -237,7 +237,7 @@ class CmsSiteController
 
     public function servicesIndex(Request $request): View
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -314,7 +314,7 @@ class CmsSiteController
     public function service(Request $request): View
     {
         $slug = (string) $request->route('slug');
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
 
         $query = CmsService::query()
@@ -332,7 +332,7 @@ class CmsSiteController
 
     public function projectsIndex(Request $request): View
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -390,7 +390,7 @@ class CmsSiteController
     public function project(Request $request): View
     {
         $slug = (string) $request->route('slug');
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
 
         $query = CmsProject::query()
@@ -421,7 +421,7 @@ class CmsSiteController
 
     public function contact(): View
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
 
         $query = CmsPage::query()
@@ -451,7 +451,7 @@ class CmsSiteController
             'message' => ['required', 'string', 'min:10', 'max:5000'],
         ]);
 
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $branding = array_merge([
             'company_name' => $siteProfile?->site_name ?? 'AIO Website',
             'support_hotline' => '1900 6760',
@@ -508,7 +508,7 @@ class CmsSiteController
     {
         $slug = (string) $request->route('slug');
 
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -696,7 +696,7 @@ class CmsSiteController
 
     private function renderProductDetailView(CatalogProduct $product, bool $isPreview): View
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -736,7 +736,7 @@ class CmsSiteController
 
     public function searchProducts(Request $request): View
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -844,7 +844,7 @@ class CmsSiteController
 
     public function searchProductSuggestions(Request $request): JsonResponse
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $search = trim((string) $request->query('q', ''));
 
@@ -876,7 +876,7 @@ class CmsSiteController
 
         return response()->json([
             'data' => $products->map(function (CatalogProduct $product): array {
-                $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
+                $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
                 $product = $this->localizeProductModel($product, $websiteKey);
 
                 return [
@@ -907,7 +907,7 @@ class CmsSiteController
             ]);
         }
 
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -1029,7 +1029,7 @@ class CmsSiteController
                 ->with('post_login_redirect', route('site.checkout.index'));
         }
 
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -1112,7 +1112,7 @@ class CmsSiteController
 
         abort_unless(auth('customer')->id() === $order->customer_id, 403);
 
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
@@ -1146,7 +1146,7 @@ class CmsSiteController
 
     private function renderContent(string $contentType, object $entry, array $extra = []): View
     {
-        $siteProfile = $this->localizeSiteProfile($extra['siteProfile'] ?? SiteProfile::query()->first());
+        $siteProfile = $this->localizeSiteProfile($extra['siteProfile'] ?? $this->currentSiteProfile());
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
         $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
@@ -1197,7 +1197,7 @@ class CmsSiteController
 
     private function renderListing(string $contentType, string $title, string $description, mixed $items, array $extra = []): View
     {
-        $siteProfile = $this->localizeSiteProfile($extra['siteProfile'] ?? SiteProfile::query()->first());
+        $siteProfile = $this->localizeSiteProfile($extra['siteProfile'] ?? $this->currentSiteProfile());
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
         $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
@@ -1261,14 +1261,22 @@ class CmsSiteController
 
     private function resolveActiveTheme(?SiteProfile $siteProfile): ?array
     {
-        if (! $siteProfile?->active_theme_key) {
+        $themeKey = app(SiteContext::class)->themeKey() ?: $siteProfile?->active_theme_key;
+
+        if (! $themeKey) {
             return null;
         }
 
         /** @var array<string, mixed>|null $activeTheme */
-        $activeTheme = $this->themeRegistry->all()->firstWhere('key', $siteProfile->active_theme_key);
+        $activeTheme = $this->themeRegistry->all()->firstWhere('key', strtoupper((string) $themeKey));
 
         return $activeTheme;
+    }
+
+    private function currentSiteProfile(): ?SiteProfile
+    {
+        return app(SiteContext::class)->profile()
+            ?? SiteProfile::query()->first();
     }
 
     private function resolveThemeHomeView(?array $activeTheme): ?string
@@ -1723,9 +1731,15 @@ class CmsSiteController
 
     private function resolveWebsiteKey(?SiteProfile $siteProfile): string
     {
+        $siteContext = app(SiteContext::class);
+
+        if ($siteContext->site() !== null) {
+            return $siteContext->websiteKey();
+        }
+
         $branding = $siteProfile?->branding ?? [];
 
-        return (string) ($branding['website_key'] ?? app(SiteContext::class)->websiteKey() ?? self::DEFAULT_WEBSITE_KEY);
+        return (string) ($branding['website_key'] ?? $siteContext->websiteKey() ?? self::DEFAULT_WEBSITE_KEY);
     }
 
     private function resolvePresetSwitcher(?SiteProfile $siteProfile, ?array $activeTheme): array
@@ -1791,7 +1805,7 @@ class CmsSiteController
 
     private function resolveTopMenuItems(array $menus, ?string $themeKey = null): array
     {
-        $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
+        $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
         $items = collect($menus['primary-navigation'] ?? $menus['primary'] ?? [])
             ->filter(fn (mixed $item): bool => is_array($item))
             ->values();
@@ -1838,7 +1852,7 @@ class CmsSiteController
 
     private function resolveProductMenuItems(array $menus, Collection $parentCategories): array
     {
-        $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
+        $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
         $configured = collect($menus['product-navigation'] ?? [])->filter(fn (mixed $item): bool => is_array($item))->values();
         $validCategorySlugs = $parentCategories
             ->flatMap(fn (CatalogCategory $parent): array => array_merge([$parent->slug], $parent->children->pluck('slug')->all()))
@@ -2123,7 +2137,7 @@ class CmsSiteController
 
     private function resolveBrandHighlights(Collection $parentCategories, string $themeKey = 'TH0001'): array
     {
-        $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
+        $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
 
         return $parentCategories->take(5)->values()->map(fn (CatalogCategory $category, int $index): array => [
             'name' => $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $category->id), $category->name),
@@ -2621,7 +2635,7 @@ class CmsSiteController
 
     private function mapProductCard(CatalogProduct $product, ?string $themeKey = null): array
     {
-        $websiteKey = $this->resolveWebsiteKey(SiteProfile::query()->first());
+        $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
         $resolvedThemeKey = $themeKey ?: 'TH0001';
         $product = $this->localizeProductModel($product, $websiteKey);
         $originalPrice = $product->original_price !== null ? (float) $product->original_price : null;
@@ -3056,7 +3070,7 @@ class CmsSiteController
 
     private function resolvePurchasableProduct(string $slug): CatalogProduct
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $query = CatalogProduct::query()->where('slug', $slug)->where('is_active', true);
         $this->applyWebsiteScope($query, $websiteKey);
@@ -3066,7 +3080,7 @@ class CmsSiteController
 
     private function resolveProductPreviewModel(string $identifier, bool $allowInactive): CatalogProduct
     {
-        $siteProfile = SiteProfile::query()->first();
+        $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $query = CatalogProduct::query()->with(['category.parent', 'images']);
         $this->applyWebsiteScope($query, $websiteKey);
