@@ -11,7 +11,7 @@ import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text } = Typography;
 
@@ -25,6 +25,20 @@ function domainToWebsiteKey(domain) {
         .slice(0, 100);
 }
 
+function domainHref(domain) {
+    const normalized = String(domain || '').trim();
+
+    if (!normalized) {
+        return null;
+    }
+
+    if (/^https?:\/\//i.test(normalized)) {
+        return normalized;
+    }
+
+    return `https://${normalized}`;
+}
+
 export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, canManage = false, themes = [] }) {
     const [form] = Form.useForm();
     const [bulkForm] = Form.useForm();
@@ -35,6 +49,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const [editingItem, setEditingItem] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [bulkModalOpen, setBulkModalOpen] = useState(false);
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
     const availableThemes = themeOptions.length ? themeOptions : themes;
     const themeNameMap = useMemo(() => new Map(availableThemes.map((theme) => [theme.key, theme.name])), [availableThemes]);
@@ -46,6 +61,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
             const payload = await callAdminApi('/admin/api/site-mappings');
             setItems(payload.data ?? []);
+            setSelectedRowKeys([]);
             setThemeOptions(payload.meta?.themes ?? themes);
         } catch (loadError) {
             setError(loadError instanceof Error ? loadError.message : 'Không tải được cấu hình domain.');
@@ -124,12 +140,68 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         );
     };
 
+    const bulkUpdateStatus = async (status) => {
+        const ids = [...selectedRowKeys];
+
+        if (!ids.length) {
+            return;
+        }
+
+        await runAdminAction(
+            () => callAdminApi('/admin/api/site-mappings/bulk/status', {
+                method: 'PUT',
+                body: JSON.stringify({ ids, status }),
+            }),
+            status === 'active' ? `Đã kích hoạt ${ids.length} domain.` : `Đã tạm tắt ${ids.length} domain.`,
+            loadItems,
+        );
+    };
+
+    const bulkDelete = async () => {
+        const ids = [...selectedRowKeys];
+
+        if (!ids.length) {
+            return;
+        }
+
+        await runAdminAction(
+            () => callAdminApi('/admin/api/site-mappings/bulk', {
+                method: 'DELETE',
+                body: JSON.stringify({ ids }),
+            }),
+            `Đã xóa ${ids.length} cấu hình domain.`,
+            loadItems,
+        );
+    };
+
+    const rowSelection = {
+        selectedRowKeys,
+        onChange: setSelectedRowKeys,
+        getCheckboxProps: (item) => ({
+            disabled: !canManage || !item.domain,
+        }),
+    };
+
+    const selectedCount = selectedRowKeys.length;
+
     const columns = [
         {
             title: 'Domain',
             dataIndex: 'domain',
             key: 'domain',
-            render: (domain) => <Text strong>{domain || 'Domain mặc định'}</Text>,
+            render: (domain) => {
+                const href = domainHref(domain);
+
+                if (!href) {
+                    return <Text strong>Domain mặc định</Text>;
+                }
+
+                return (
+                    <a href={href} target="_blank" rel="noreferrer">
+                        <Text strong>{domain}</Text>
+                    </a>
+                );
+            },
         },
         {
             title: 'Website key',
@@ -199,8 +271,38 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
                 {error ? <Alert type="error" showIcon message={error} /> : null}
 
+                <Space wrap>
+                    <Text type="secondary">Đã chọn {selectedCount} domain</Text>
+                    <Button
+                        icon={<CheckCircleOutlined />}
+                        disabled={!canManage || !selectedCount}
+                        onClick={() => bulkUpdateStatus('active')}
+                    >
+                        Kích hoạt
+                    </Button>
+                    <Button
+                        icon={<StopOutlined />}
+                        disabled={!canManage || !selectedCount}
+                        onClick={() => bulkUpdateStatus('inactive')}
+                    >
+                        Tạm tắt
+                    </Button>
+                    <Popconfirm
+                        title={`Xóa ${selectedCount} cấu hình domain đã chọn?`}
+                        okText="Xóa"
+                        cancelText="Hủy"
+                        disabled={!canManage || !selectedCount}
+                        onConfirm={bulkDelete}
+                    >
+                        <Button danger icon={<DeleteOutlined />} disabled={!canManage || !selectedCount}>
+                            Xóa
+                        </Button>
+                    </Popconfirm>
+                </Space>
+
                 <Table
                     rowKey="id"
+                    rowSelection={rowSelection}
                     loading={loading}
                     columns={columns}
                     dataSource={items}

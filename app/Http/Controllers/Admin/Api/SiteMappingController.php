@@ -131,6 +131,27 @@ class SiteMappingController
         ]);
     }
 
+    public function bulkStatus(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('sites', 'id')],
+            'status' => ['required', 'string', Rule::in(['active', 'inactive'])],
+        ]);
+
+        $updated = Site::query()
+            ->whereIn('id', $validated['ids'])
+            ->whereNotNull('domain')
+            ->update(['status' => $validated['status']]);
+
+        return response()->json([
+            'message' => sprintf('Đã cập nhật trạng thái cho %d cấu hình domain.', $updated),
+            'data' => [
+                'updated' => $updated,
+            ],
+        ]);
+    }
+
     public function destroy(Site $site): JsonResponse
     {
         abort_if($site->domain === null, 422, 'Không thể xóa site mặc định.');
@@ -139,6 +160,33 @@ class SiteMappingController
 
         return response()->json([
             'message' => 'Đã xóa cấu hình domain demo.',
+        ]);
+    }
+
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', Rule::exists('sites', 'id')],
+        ]);
+
+        $defaultSelected = Site::query()
+            ->whereIn('id', $validated['ids'])
+            ->whereNull('domain')
+            ->exists();
+
+        abort_if($defaultSelected, 422, 'Không thể xóa site mặc định.');
+
+        $deleted = Site::query()
+            ->whereIn('id', $validated['ids'])
+            ->whereNotNull('domain')
+            ->delete();
+
+        return response()->json([
+            'message' => sprintf('Đã xóa %d cấu hình domain.', $deleted),
+            'data' => [
+                'deleted' => $deleted,
+            ],
         ]);
     }
 

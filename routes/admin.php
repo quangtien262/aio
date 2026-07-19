@@ -679,6 +679,12 @@ Route::prefix('admin')
                 Route::post('/site-mappings/bulk', [SiteMappingController::class, 'bulkStore'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.bulk-store');
+                Route::put('/site-mappings/bulk/status', [SiteMappingController::class, 'bulkStatus'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.bulk-status');
+                Route::delete('/site-mappings/bulk', [SiteMappingController::class, 'bulkDestroy'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.bulk-destroy');
                 Route::put('/site-mappings/{site}', [SiteMappingController::class, 'update'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.update');
