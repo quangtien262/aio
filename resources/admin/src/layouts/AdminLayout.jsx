@@ -687,6 +687,9 @@ export default function AdminLayout() {
                                 value={selectedAdminWebsiteKey}
                                 style={{ minWidth: 220 }}
                                 popupMatchSelectWidth={false}
+                                showSearch
+                                optionFilterProp="label"
+                                placeholder="Tìm theo domain"
                                 onChange={(value) => {
                                     setSelectedAdminWebsiteKey(value);
                                     window.localStorage.setItem('aio.admin.websiteKey', value);
@@ -703,7 +706,7 @@ export default function AdminLayout() {
                                 }}
                                 options={(currentAdmin?.site_options?.length ? currentAdmin.site_options : [{ website_key: selectedAdminWebsiteKey, label: selectedAdminWebsiteKey }]).map((site) => ({
                                     value: site.website_key,
-                                    label: site.domain ? `${site.label} (${site.domain})` : site.label,
+                                    label: site.domain || (site.website_key === 'website-main' ? 'Website mặc định' : 'Chưa cấu hình domain'),
                                 }))}
                             />
                             <Button href="/" target="_blank" rel="noopener noreferrer" className="admin-header-utility-button" icon={<HomeOutlined />} aria-label="Website">Website</Button>

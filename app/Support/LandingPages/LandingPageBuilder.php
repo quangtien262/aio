@@ -4496,8 +4496,16 @@ class LandingPageBuilder
                 'settings' => ['years' => 29, 'cta_url' => '/gioi-thieu'],
                 'media' => [],
                 'data' => [
-                    'vi' => ['title' => 'Chúng tôi đang phát triển các giải pháp năng lượng mặt trời', 'subtitle' => 'Giới thiệu của chúng tôi', 'description' => 'Giải pháp năng lượng xanh giúp doanh nghiệp chủ động chi phí và hướng tới tương lai bền vững.', 'button_label' => 'Về chúng tôi', 'content' => ['tabs' => ['Về chúng tôi', 'Tầm nhìn', 'Sứ mệnh'], 'image_secondary' => '']],
-                    'en' => ['title' => 'We develop solar energy solutions', 'subtitle' => 'About us', 'description' => 'Clean energy solutions for long-term operations.', 'button_label' => 'About us', 'content' => ['tabs' => ['About', 'Vision', 'Mission'], 'image_secondary' => '']],
+                    'vi' => ['title' => 'Chúng tôi đang phát triển các giải pháp năng lượng mặt trời', 'subtitle' => 'Giới thiệu của chúng tôi', 'description' => 'Giải pháp năng lượng xanh giúp doanh nghiệp chủ động chi phí và hướng tới tương lai bền vững.', 'button_label' => 'Về chúng tôi', 'content' => ['tabs' => [
+                        ['label' => 'Về chúng tôi', 'description' => 'Giải pháp năng lượng xanh giúp doanh nghiệp chủ động chi phí và hướng tới tương lai bền vững.'],
+                        ['label' => 'Tầm nhìn', 'description' => 'Trở thành đối tác năng lượng đáng tin cậy, đồng hành cùng doanh nghiệp trên hành trình vận hành xanh.'],
+                        ['label' => 'Sứ mệnh', 'description' => 'Mang đến giải pháp năng lượng hiệu quả, an toàn và phù hợp với nhu cầu vận hành thực tế.'],
+                    ], 'image_secondary' => '']],
+                    'en' => ['title' => 'We develop solar energy solutions', 'subtitle' => 'About us', 'description' => 'Clean energy solutions for long-term operations.', 'button_label' => 'About us', 'content' => ['tabs' => [
+                        ['label' => 'About', 'description' => 'Clean energy solutions help businesses control costs and build sustainable operations.'],
+                        ['label' => 'Vision', 'description' => 'To become a trusted energy partner for businesses pursuing greener operations.'],
+                        ['label' => 'Mission', 'description' => 'To deliver efficient and safe energy solutions tailored to real operational needs.'],
+                    ], 'image_secondary' => '']],
                 ],
             ],
             [

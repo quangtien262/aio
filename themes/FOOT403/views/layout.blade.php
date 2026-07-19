@@ -6,5 +6,5 @@
     @include('theme-foot403::partials.styles')
     @stack('head')
 </head>
-<body><div class="dr-page" id="top">@include('theme-foot403::partials.header')<main>@yield('content')</main>@include('theme-foot403::partials.footer')</div>@include('theme-foot403::partials.order-modal')@include('theme-foot403::partials.scripts')@stack('scripts')</body>
+<body><div class="dr-page" id="top">@include('theme-foot403::partials.header')<main>@yield('content')</main>@include('theme-foot403::partials.footer')</div>@include('theme-foot403::partials.order-modal')@include('theme-foot403::partials.auth-modal')@include('theme-foot403::partials.scripts')@stack('scripts')</body>
 </html>
