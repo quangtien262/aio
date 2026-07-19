@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'LAN0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502'], true);
     }
 
     /**
@@ -1186,7 +1186,7 @@ class LandingPageBuilder
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
             'TH0002', 'TH0003', 'TH0020' => $this->legacyCommerceDefaultBlocks($themeKey),
-            'LAN0201', 'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
+            'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
             'SER0100', 'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
             'XD0318' => $this->xd0318DefaultBlocks(),
@@ -1194,6 +1194,7 @@ class LandingPageBuilder
             'XD0314' => $this->xd0314DefaultBlocks(),
             'XD0313' => $this->xd0313DefaultBlocks(),
             'FOOT401' => $this->foot401DefaultBlocks(),
+            'FOOT403' => $this->foot403DefaultBlocks(),
             'XD0320' => $this->xd0320DefaultBlocks(),
             'NT501' => $this->nt501DefaultBlocks(),
             'XD321' => $this->xd321DefaultBlocks(),
@@ -3740,6 +3741,61 @@ class LandingPageBuilder
 
         return [$hero, $services, $about, $products, $stories, $team];
     }
+
+    /** @return array<int, array<string, mixed>> */
+    private function foot403DefaultBlocks(): array
+    {
+        $sources = [
+            ['value' => 'custom', 'label' => 'Người dùng tự nhập'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+        ];
+        $schema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $sources],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
+        ];
+        $preview = '/theme-previews/FOOT403/preview-foot403.svg';
+        $dishes = [
+            ['title' => 'Salad rau mùa sốt cam', 'category' => 'Khai vị', 'image' => 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=900&q=86', 'price' => 68000, 'old_price' => 70000, 'discount' => '-3%', 'url' => '#lien-he'],
+            ['title' => 'Salad rau mùa sốt mắc mật', 'category' => 'Khai vị', 'image' => 'https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=900&q=86', 'price' => 68000, 'url' => '#lien-he'],
+            ['title' => 'Phở cuốn', 'category' => 'Món chính', 'image' => 'https://images.unsplash.com/photo-1555126634-323283e090fa?auto=format&fit=crop&w=900&q=86', 'price' => 82000, 'old_price' => 90000, 'discount' => '-9%', 'url' => '#lien-he'],
+            ['title' => 'Gỏi tai heo hoa chuối', 'category' => 'Khai vị', 'image' => 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=86', 'price' => 125000, 'url' => '#lien-he'],
+            ['title' => 'Gà cuốn lá dứa', 'category' => 'Món chính', 'image' => 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=900&q=86', 'price' => 168000, 'url' => '#lien-he'],
+            ['title' => 'Ức gà đút lò phủ lá chanh', 'category' => 'Món chính', 'image' => 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=900&q=86', 'price' => 185000, 'url' => '#lien-he'],
+            ['title' => 'Sụn gà xóc muối Tây Ninh', 'category' => 'Món chính', 'image' => 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=900&q=86', 'price' => 135000, 'url' => '#lien-he'],
+            ['title' => 'Nem lụi nướng mía', 'category' => 'Món chính', 'image' => 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=900&q=86', 'price' => 158000, 'old_price' => 170000, 'discount' => '-7%', 'url' => '#lien-he'],
+            ['title' => 'Mì spaghetti sốt kem nấm', 'category' => 'Cơm - mì - cháo', 'image' => 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=86', 'price' => 99000, 'url' => '#lien-he'],
+            ['title' => 'Cơm chiên hải sản', 'category' => 'Cơm - mì - cháo', 'image' => 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=900&q=86', 'price' => 89000, 'old_price' => 99000, 'discount' => '-10%', 'url' => '#lien-he'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Header và banner nhà hàng', 'description' => 'Header dùng chung toàn website và banner ảnh lớn.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'foot403-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Vị trí banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => ['title' => 'Dola Restaurant', 'subtitle' => 'Món ăn đa dạng', 'description' => 'Không gian ấm cúng, nguyên liệu tuyển chọn và những món ăn được chăm chút mỗi ngày.', 'button_label' => 'Đặt bàn ngay', 'content' => ['slides' => [
+                ['kicker' => 'Dola Restaurant', 'title' => 'Món ăn đa dạng', 'summary' => 'Mỗi bữa ăn là một trải nghiệm đáng nhớ.', 'button_label' => 'Đặt bàn ngay', 'link_url' => '#lien-he', 'image' => 'https://images.unsplash.com/photo-1516211697506-8360dbcfe9a4?auto=format&fit=crop&w=2200&q=90'],
+                ['kicker' => 'Tinh hoa ẩm thực', 'title' => 'Hương vị được nấu bằng đam mê', 'summary' => 'Tươi ngon từ nguyên liệu đến cách phục vụ.', 'button_label' => 'Khám phá thực đơn', 'link_url' => '#thuc-don', 'image' => 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=2200&q=90'],
+            ]]]]],
+            ['block_type' => 'about_experience', 'label' => 'Về Dola Restaurant', 'description' => 'Giới thiệu nhà hàng với cụm bốn ảnh.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'settings' => ['source' => 'custom'], 'media' => ['images' => ['https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=900&q=86', 'https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=900&q=86', 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=86', 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=900&q=86']], 'data' => ['vi' => ['title' => 'Dola Restaurant', 'subtitle' => 'Về chúng tôi', 'description' => 'Nhà hàng chúng tôi luôn đặt khách hàng lên hàng đầu, tận tâm phục vụ và mang lại những trải nghiệm tuyệt vời nhất. Các món ăn với công thức độc quyền sẽ mang lại hương vị mới mẻ cho thực khách.', 'button_label' => 'Xem thêm', 'content' => []]]],
+            ['block_type' => 'featured_categories', 'label' => 'Danh mục nổi bật', 'description' => 'Danh mục món ăn dạng thẻ trượt ngang.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 8], 'settings_schema' => $schema, 'data' => ['vi' => ['title' => 'Danh mục nổi bật', 'subtitle' => 'Khám phá hương vị', 'content' => ['items' => [
+                ['title' => 'Món bò', 'summary' => 'Các món bò được chế biến tinh tế với hương vị đặc biệt.', 'image' => 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=700&q=85'],
+                ['title' => 'Món gà', 'summary' => 'Thịt gà tươi mềm cùng công thức riêng của bếp trưởng.', 'image' => 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=700&q=85'],
+                ['title' => 'Món heo', 'summary' => 'Đậm đà, tròn vị và phù hợp cho mọi bữa ăn.', 'image' => 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=700&q=85'],
+                ['title' => 'Món cá', 'summary' => 'Nguồn hải sản tuyển chọn, chế biến giữ vị tươi ngon.', 'image' => 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=700&q=85'],
+            ]]]]],
+            ['block_type' => 'featured_products', 'label' => 'Thực đơn của chúng tôi', 'description' => 'Thực đơn có tab danh mục, lấy từ sản phẩm hoặc nhập tay.', 'preview_image' => $preview, 'anchor_id' => 'thuc-don', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 10], 'settings_schema' => $schema, 'data' => ['vi' => ['title' => 'Thực đơn của chúng tôi', 'subtitle' => 'Món ngon mỗi ngày', 'button_label' => 'Xem chi tiết', 'content' => ['items' => $dishes]]]],
+            ['block_type' => 'featured_products', 'label' => 'Món ăn nổi bật', 'description' => 'Dải món ăn được yêu thích nhất.', 'preview_image' => $preview, 'anchor_id' => 'mon-noi-bat', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 5, 'featured_only' => true], 'settings_schema' => $schema, 'data' => ['vi' => ['title' => 'Món ăn nổi bật', 'subtitle' => 'Bếp trưởng đề xuất', 'button_label' => 'Xem chi tiết', 'content' => ['items' => array_slice($dishes, 0, 5)]]]],
+            ['block_type' => 'content_mosaic', 'label' => 'Con số ấn tượng', 'description' => 'Ảnh không gian và các chỉ số nổi bật của nhà hàng.', 'preview_image' => $preview, 'anchor_id' => 'con-so', 'settings' => ['source' => 'custom'], 'data' => ['vi' => ['title' => 'Trải nghiệm được tạo nên mỗi ngày', 'subtitle' => 'Dola Restaurant', 'content' => ['images' => ['https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=800&q=85', 'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=800&q=85', 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=85', 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=85'], 'items' => [['title' => '8+', 'summary' => 'Cửa hàng'], ['title' => '200+', 'summary' => 'Nhân viên'], ['title' => '5000+', 'summary' => 'Khách hàng'], ['title' => '50+', 'summary' => 'Món ăn']]]]]],
+            ['block_type' => 'bizmax_latest_posts', 'label' => 'Tin tức ẩm thực', 'description' => 'Tin tức, công thức và câu chuyện từ căn bếp.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 3], 'settings_schema' => $schema, 'data' => ['vi' => ['title' => 'Tin tức', 'subtitle' => 'Chuyện từ căn bếp', 'button_label' => 'Xem thêm', 'content' => ['items' => [
+                ['title' => 'Mách bạn công thức làm canh cá nấu mẻ thơm ngon đậm vị', 'summary' => 'Một món ăn dân dã, quen thuộc trong mâm cơm gia đình Việt.', 'author' => 'Admin Dola', 'published_at' => '24/10/2026', 'image' => 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=86'],
+                ['title' => 'Tuyển tập 8 món xào đơn giản, tiết kiệm thời gian', 'summary' => 'Các công thức nhanh gọn dành cho những ngày bận rộn.', 'author' => 'Admin Dola', 'published_at' => '24/10/2026', 'image' => 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=86'],
+                ['title' => 'Chìa khóa vàng giúp thiết lập công thức nấu ăn ngon', 'summary' => 'Nguyên liệu tươi ngon và cách cân bằng gia vị.', 'author' => 'Admin Dola', 'published_at' => '24/10/2026', 'image' => 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1000&q=86'],
+            ]]]]],
+            ['block_type' => 'testimonials', 'label' => 'Khách hàng nói gì', 'description' => 'Cảm nhận của thực khách trên nền ảnh bếp.', 'preview_image' => $preview, 'anchor_id' => 'cam-nhan', 'settings' => ['source' => 'custom'], 'data' => ['vi' => ['title' => 'Khách hàng nói gì', 'subtitle' => 'Cảm nhận thực khách', 'content' => ['background' => 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=2200&q=88', 'items' => [['name' => 'Hoàng Dung', 'role' => 'Nhân viên văn phòng', 'quote' => 'Món ăn ở đây rất ngon, khẩu vị phù hợp với tôi. Không gian ấm cúng và nhân viên phục vụ chu đáo.', 'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=85'], ['name' => 'Minh Anh', 'role' => 'Khách hàng thân thiết', 'quote' => 'Một địa chỉ lý tưởng cho những bữa tối cùng gia đình và bạn bè.', 'image' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=85']]]]]],
+            ['block_type' => 'landing_contact', 'label' => 'Đặt bàn nhanh', 'description' => 'Khối liên hệ và đặt bàn do FOOT403 thiết kế.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => ['source' => 'custom'], 'data' => ['vi' => ['title' => 'Đặt bàn cho một bữa ăn đáng nhớ', 'subtitle' => 'Liên hệ với Dola', 'description' => 'Để lại thông tin, đội ngũ nhà hàng sẽ liên hệ xác nhận trong thời gian sớm nhất.', 'button_label' => 'Gửi yêu cầu đặt bàn', 'content' => ['address' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM', 'phone' => '1900 6750', 'email' => 'support@sapo.vn', 'hours' => '10:00 – 22:30, tất cả các ngày']]]],
+        ];
+    }
+
 
     /** @return array<int, array<string, mixed>> */
     private function xd0314DefaultBlocks(): array

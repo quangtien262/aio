@@ -18,6 +18,21 @@ class LandingPageBuilderSourceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_foot403_seeds_complete_restaurant_homepage(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('foot403-builder-test', 'FOOT403');
+        $blocks = $page->blocks()->orderBy('sort_order')->get();
+
+        $this->assertTrue($builder->supportsTheme('FOOT403'));
+        $this->assertSame(9, $blocks->count());
+        $this->assertSame(
+            ['top', 'gioi-thieu', 'danh-muc', 'thuc-don', 'mon-noi-bat', 'con-so', 'tin-tuc', 'cam-nhan', 'lien-he'],
+            $blocks->pluck('anchor_id')->all(),
+        );
+        $this->assertSame('landing_contact', $blocks->firstWhere('anchor_id', 'lien-he')->block_type);
+    }
+
     public function test_th0001_supports_configurable_commerce_landing_blocks(): void
     {
         $builder = app(LandingPageBuilder::class);

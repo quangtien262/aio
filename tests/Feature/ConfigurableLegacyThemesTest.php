@@ -18,17 +18,16 @@ class ConfigurableLegacyThemesTest extends TestCase
     /** @return array<string, array{0:string}> */
     public static function configurableThemes(): array
     {
-        return collect(['SER0100', 'SER0101', 'SER102', 'TH0002', 'TH0003', 'TH0020', 'TH0201', 'LAN0201'])
+        return collect(['SER0100', 'SER0101', 'SER102', 'TH0002', 'TH0003', 'TH0020', 'TH0201'])
             ->mapWithKeys(fn (string $theme): array => [$theme => [$theme]])
             ->all();
     }
 
-    public function test_th0201_and_lan0201_have_distinct_theme_registry_keys(): void
+    public function test_th0201_has_a_unique_theme_registry_key(): void
     {
         $keys = app(ThemeRegistry::class)->all()->pluck('key');
 
         $this->assertSame(1, $keys->filter(fn (string $key): bool => $key === 'TH0201')->count());
-        $this->assertSame(1, $keys->filter(fn (string $key): bool => $key === 'LAN0201')->count());
     }
 
     #[DataProvider('configurableThemes')]

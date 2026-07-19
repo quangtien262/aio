@@ -3,7 +3,7 @@
     $newsletterState = $newsletterState ?? ['is_subscribed' => false];
     $postLoginRedirect = $postLoginRedirect ?? request()->fullUrl();
     $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
-    $themeText = static fn (string $key, string $default): string => $themeTranslator->bladeText('LAN0201', app()->getLocale(), $key, $default);
+    $themeText = static fn (string $key, string $default): string => $themeTranslator->bladeText('TH0201', app()->getLocale(), $key, $default);
     $themeMessages = [
         'required_email' => $themeText('modal.error.required_email', 'Vui lòng nhập email.'),
         'required_login' => $themeText('modal.error.required_login', 'Vui lòng nhập email khách hàng hoặc username admin.'),

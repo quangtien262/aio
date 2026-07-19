@@ -9,7 +9,7 @@ import Typography from 'antd/es/typography';
 const { Paragraph, Text, Title } = Typography;
 
 function buildDefaultPalette(themeKey) {
-    if (themeKey === 'LAN0201') {
+    if (themeKey === 'TH0201') {
         return {
             primary_color: '#0f3557',
             primary_color_deep: '#0a2741',

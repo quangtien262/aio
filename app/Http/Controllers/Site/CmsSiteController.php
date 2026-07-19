@@ -2353,7 +2353,7 @@ class CmsSiteController
     private function commerceThemeDefaults(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
-            'LAN0201' => [
+            'TH0201' => [
                 'hero_slide' => [
                     'eyebrow' => 'Landing dự án mở bán',
                     'badge' => 'Nhận brochure, bảng giá và timeline',
@@ -2365,14 +2365,14 @@ class CmsSiteController
                     ['title' => 'Kết nối sales gallery', 'links' => ['Đặt lịch xem nhà mẫu', 'Nhận brochure PDF', 'Liên hệ phòng kinh doanh', 'Chính sách bảo mật lead']],
                 ],
                 'company_footer' => [
-                    'address_line_1' => 'Sales gallery: Đại lộ trung tâm dự án LAN0201, khu đông thành phố',
+                    'address_line_1' => 'Sales gallery: Đại lộ trung tâm dự án TH0201, khu đông thành phố',
                     'address_line_2' => 'Private appointment lounge: Hotline nhận lịch hẹn, tư vấn tài chính và bảng hàng mở bán',
                 ],
                 'branding' => [
-                    'company_name' => 'LAN0201 Project Landing',
+                    'company_name' => 'TH0201 Project Landing',
                     'slogan' => 'Landing page mở bán bất động sản, tối ưu lead và kể chuyện bảng hàng theo từng phân khu',
-                    'logo_url' => url('theme-previews/LAN0201/preview-lan0201.svg'),
-                    'favicon_url' => url('theme-previews/LAN0201/preview-lan0201.svg'),
+                    'logo_url' => url('theme-previews/TH0201/preview-th0201.svg'),
+                    'favicon_url' => url('theme-previews/TH0201/preview-th0201.svg'),
                     'primary_color' => '#0f3557',
                     'primary_color_deep' => '#0a2741',
                     'accent_color' => '#c7923e',
@@ -2381,7 +2381,7 @@ class CmsSiteController
                     'surface_color' => '#ffffff',
                     'surface_tint_color' => '#f8f4ee',
                     'support_hotline' => '1900 6760 / 0909 020 201',
-                    'support_email' => 'sales@lan0201.demo',
+                    'support_email' => 'sales@th0201.demo',
                     'support_location' => 'TP.HCM - hành lang mở bán khu Đông',
                 ],
                 'section_tabs' => ['Tổng quan mở bán', 'Căn đẹp chủ lực', 'Gói ưu đãi tài chính'],
@@ -2585,7 +2585,7 @@ class CmsSiteController
 
     private function isCommerceThemeKey(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0201', 'LAN0201'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0201'], true);
     }
 
     private function isLandingHybridThemeKey(?string $themeKey): bool

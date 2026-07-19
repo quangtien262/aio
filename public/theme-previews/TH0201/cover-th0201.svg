@@ -10,13 +10,8 @@
   <rect x="960" y="468" width="220" height="24" rx="12" fill="#FFFFFF" fill-opacity="0.86"/>
   <rect x="960" y="510" width="176" height="20" rx="10" fill="#E6C98E"/>
   <rect x="120" y="650" width="1200" height="1" fill="#FFFFFF" fill-opacity="0.12"/>
-  <text x="120" y="724" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">LAN0201</text>
+  <text x="120" y="724" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">TH0201</text>
   <text x="120" y="792" fill="#F4E6C0" font-family="Segoe UI, Arial, sans-serif" font-size="74" font-weight="800">LANDING DU AN MO BAN</text>
   <text x="120" y="844" fill="#E3D9C5" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="500">Theme bat dong san dung CatalogProduct lam listing va giu kha nang switch theme qua lai.</text>
-  <defs>
-    <linearGradient id="cover" x1="60" y1="60" x2="1380" y2="900" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#12395C"/>
-      <stop offset="1" stop-color="#0B243A"/>
-    </linearGradient>
-  </defs>
+  <defs><linearGradient id="cover" x1="60" y1="60" x2="1380" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#12395C"/><stop offset="1" stop-color="#0B243A"/></linearGradient></defs>
 </svg>

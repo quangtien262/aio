@@ -267,7 +267,7 @@ class ThemeDemoContentGenerator
                         'title' => 'Giới thiệu dự án',
                         'slug' => $pageSlugs['about'],
                         'excerpt' => 'Tổng quan quy mô, vị trí, pháp lý và hệ tiện ích của '.$preset['company_name'],
-                        'body' => '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Trang demo này mô phỏng cách LAN0201 trình bày tổng quan dự án, phân khu mở bán, lợi thế vị trí và các điểm nhấn tiện ích trên landing page bất động sản.</p><p>Preset hiện ưu tiên nhóm sản phẩm '.$preset['departments'][0]['name'].', để đội ngũ review nhanh hero, bảng hàng, CTA nhận brochure, lịch hẹn private tour và điều hướng sang listing.</p><p>Sếp có thể thay nội dung này bằng hồ sơ pháp lý, tiến độ thi công, bản đồ kết nối vùng, bộ tài liệu bán hàng và timeline ra hàng thật.</p>',
+                        'body' => '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Trang demo này mô phỏng cách TH0201 trình bày tổng quan dự án, phân khu mở bán, lợi thế vị trí và các điểm nhấn tiện ích trên landing page bất động sản.</p><p>Preset hiện ưu tiên nhóm sản phẩm '.$preset['departments'][0]['name'].', để đội ngũ review nhanh hero, bảng hàng, CTA nhận brochure, lịch hẹn private tour và điều hướng sang listing.</p><p>Sếp có thể thay nội dung này bằng hồ sơ pháp lý, tiến độ thi công, bản đồ kết nối vùng, bộ tài liệu bán hàng và timeline ra hàng thật.</p>',
                     ],
                     [
                         'title' => 'Nhận bảng giá và đặt lịch xem',
@@ -818,7 +818,7 @@ class ThemeDemoContentGenerator
                 default => 'REA',
             };
 
-            return sprintf('LAN0201-%s-%02d%02d%02d', $typeCode, $parentIndex + 1, $childIndex + 1, $productIndex);
+            return sprintf('TH0201-%s-%02d%02d%02d', $typeCode, $parentIndex + 1, $childIndex + 1, $productIndex);
         }
 
         return strtoupper(Str::slug($preset['key'].'-'.$parentIndex.'-'.$childIndex.'-'.$productIndex, '-'));
@@ -1366,7 +1366,7 @@ class ThemeDemoContentGenerator
 
         if ($this->isRealEstatePreset($preset)) {
             return implode(PHP_EOL, [
-                'Sản phẩm '.$childName.' thuộc phân khu '.$departmentName.', dùng để test card mở bán, banner ưu đãi và trang chi tiết listing cho LAN0201.',
+                'Sản phẩm '.$childName.' thuộc phân khu '.$departmentName.', dùng để test card mở bán, banner ưu đãi và trang chi tiết listing cho TH0201.',
                 'Tập trung vào mã căn, vị trí, tiến độ mở bán và CTA nhận bảng giá để đội sales chuyển đổi lead nhanh hơn.',
                 'Có thể chỉnh trực tiếp để chuyển từ data demo sang bảng hàng thật cho dự án đang mở bán.',
             ]);
@@ -1669,7 +1669,7 @@ class ThemeDemoContentGenerator
 
         if ($this->isRealEstatePreset($preset)) {
             return implode(PHP_EOL.PHP_EOL, [
-                $productName.' là dữ liệu demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage dự án, trang bảng hàng và trang chi tiết listing của LAN0201.',
+                $productName.' là dữ liệu demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage dự án, trang bảng hàng và trang chi tiết listing của TH0201.',
                 'Sản phẩm này thuộc nhóm '.$departmentName.' với cấu hình '.$childName.', nên nội dung dài được viết theo hướng giới thiệu vị trí, lợi thế phân khu, chính sách thanh toán và CTA nhận tư vấn.',
                 'Bản seed đang nhấn vào thông tin mở bán, phương án giữ chỗ và lịch xem nhà mẫu để Sếp có thể đổi nhanh sang nội dung dự án thật trong admin Catalog.',
                 'Sếp có thể sửa trực tiếp mô tả, gallery ảnh, bảng giá, mã căn, ghi chú chính sách và thông tin liên hệ để biến trang từ demo thành nội dung vận hành thật.',
@@ -1830,7 +1830,7 @@ class ThemeDemoContentGenerator
             return [
                 'name' => 'Tin mở bán & cẩm nang',
                 'slug' => Str::slug('tin-mo-ban-'.$preset['key']),
-                'description' => 'Chuyên mục demo cho tin thị trường, hướng dẫn chọn căn và cập nhật mở bán của LAN0201.',
+                'description' => 'Chuyên mục demo cho tin thị trường, hướng dẫn chọn căn và cập nhật mở bán của TH0201.',
                 'meta_title' => 'Tin mở bán '.$preset['company_name'],
                 'meta_description' => 'Tin thị trường, thông tin mở bán và bài viết tư vấn demo cho '.$preset['company_name'],
             ];
@@ -1862,14 +1862,14 @@ class ThemeDemoContentGenerator
                 'key' => 'real-estate-launchpad',
                 'label' => 'Bất động sản mở bán dự án',
                 'short_label' => 'bất động sản',
-                'description' => 'Preset cho LAN0201 theo hướng landing dự án mở bán, bảng hàng listing, CTA nhận brochure và đặt lịch xem nhà mẫu.',
-                'company_name' => 'LAN0201 Project Landing',
-                'domain' => 'lan0201landing.demo',
+                'description' => 'Preset cho TH0201 theo hướng landing dự án mở bán, bảng hàng listing, CTA nhận brochure và đặt lịch xem nhà mẫu.',
+                'company_name' => 'TH0201 Project Landing',
+                'domain' => 'th0201landing.demo',
                 'address' => 'Nhà mẫu ven sông, Thủ Đức, TP.HCM',
                 'theme_flavor' => 'project launch landing',
                 'hero_eyebrow' => 'Dự án mở bán',
                 'hero_title' => 'Bảng hàng mở bán và ưu đãi cho dự án đang ra mắt',
-                'hero_subtitle' => 'Dùng để test LAN0201 với hero landing, listing bất động sản, pricing ribbon, timeline mở bán và CTA nhận bảng giá.',
+                'hero_subtitle' => 'Dùng để test TH0201 với hero landing, listing bất động sản, pricing ribbon, timeline mở bán và CTA nhận bảng giá.',
                 'hero_badge' => 'Nhận bảng giá và brochure mới nhất',
                 'product_prefix' => 'Căn',
                 'industry_family' => 'real-estate',

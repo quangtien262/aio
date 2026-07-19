@@ -2,7 +2,7 @@
     $documentHomeData = $themeHomeData ?? [];
     $documentShellData = $themeShellData ?? $documentHomeData;
     $documentBranding = $documentShellData['branding'] ?? $documentHomeData['branding'] ?? data_get($siteProfile ?? [], 'branding', []);
-    $documentThemeKey = strtoupper((string) data_get($activeTheme ?? [], 'key', data_get($landingPage ?? [], 'theme_key', 'LAN0201')));
+    $documentThemeKey = strtoupper((string) data_get($activeTheme ?? [], 'key', data_get($landingPage ?? [], 'theme_key', 'TH0201')));
     $documentViewNamespace = 'theme-'.strtolower($documentThemeKey);
     $documentMenu = collect(data_get($documentHomeData, 'top_menu', data_get($menus ?? [], 'primary-navigation', [])))
         ->whenEmpty(fn () => collect($landingMenuItems ?? []))
