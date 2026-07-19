@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Core\Themes\ThemeTranslationService;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Core\Themes\Demo\Ser102DemoContentProvider;
 use App\Core\Themes\Demo\Xd0302DemoContentProvider;
 use App\Core\Themes\Demo\Xd0303DemoContentProvider;
 use App\Core\Themes\Demo\Xd0304DemoContentProvider;
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SiteContext::class);
 
         $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
+            $this->app->make(Ser102DemoContentProvider::class),
             $this->app->make(Xd0302DemoContentProvider::class),
             $this->app->make(Xd0303DemoContentProvider::class),
             $this->app->make(Xd0304DemoContentProvider::class),

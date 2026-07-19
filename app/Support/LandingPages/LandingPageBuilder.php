@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SER102'], true);
     }
 
     /**
@@ -1181,6 +1181,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'SER102' => $this->ser102DefaultBlocks(),
             'XD0318' => $this->xd0318DefaultBlocks(),
             'XD0315' => $this->xd0315DefaultBlocks(),
             'XD0314' => $this->xd0314DefaultBlocks(),
@@ -1207,6 +1208,158 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ser102DefaultBlocks(): array
+    {
+        $categorySources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+        ];
+        $productSources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+        ];
+        $insightSources = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+        ];
+        $sourceSchema = fn (array $options): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $options],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'ID danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
+        ];
+        $hero = '/theme-previews/SER102/cover-ser102.png';
+        $appointment = '/theme-previews/SER102/appointment.png';
+        $product = '/theme-previews/SER102/avatar.png';
+
+        return [
+            [
+                'block_type' => 'hero_slider', 'label' => 'Header và slide hình ảnh',
+                'description' => 'Hero toàn màn hình lấy banner SER102, có CTA và tự chuyển slide.',
+                'preview_image' => $hero, 'anchor_id' => 'trang-chu', 'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'ser102-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner', 'default' => 'ser102-hero-slider'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide', 'default' => 3],
+                    'autoplay_ms' => ['type' => 'number', 'label' => 'Thời gian tự chuyển (ms)', 'default' => 6000],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Chăm sóc xe chuẩn chuyên gia', 'subtitle' => 'SER102 Auto Detailing', 'description' => 'Sản phẩm chính hãng, quy trình an toàn và hiệu quả vượt trội cho từng chi tiết.', 'button_label' => 'Khám phá ngay', 'content' => ['slides' => [
+                        ['kicker' => 'SER102 Auto Detailing', 'title' => 'Chăm sóc xe chuẩn chuyên gia', 'summary' => 'Bảo vệ toàn diện, hoàn thiện từng chi tiết bằng quy trình chuyên nghiệp.', 'button_label' => 'Khám phá ngay', 'link_url' => '#dich-vu', 'image' => $hero],
+                    ]]],
+                    'en' => ['title' => 'Professional auto detailing', 'subtitle' => 'SER102 Auto Detailing', 'description' => 'Premium products, safe process and meticulous results.', 'button_label' => 'Explore', 'content' => ['slides' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_categories', 'label' => 'Dịch vụ nổi bật',
+                'description' => 'Mặc định nhập thủ công; có thể đổi sang danh mục dịch vụ hoặc danh mục sản phẩm.',
+                'preview_image' => $appointment, 'anchor_id' => 'dich-vu', 'dynamic' => true,
+                'settings' => ['source' => 'custom'], 'settings_schema' => $sourceSchema($categorySources),
+                'data' => [
+                    'vi' => ['title' => 'Chăm sóc toàn diện - hoàn hảo từng chi tiết', 'subtitle' => 'Dịch vụ nổi bật', 'description' => 'Đội ngũ kỹ thuật chuyên nghiệp cùng sản phẩm cao cấp mang đến diện mạo hoàn hảo cho xe yêu.', 'content' => ['items' => [
+                        ['title' => 'Ceramic coating', 'summary' => 'Bảo vệ sơn vượt trội, chống trầy xước và giữ màu bóng lâu dài.', 'image' => $appointment, 'url' => '#bang-gia'],
+                        ['title' => 'Hiệu chỉnh sơn', 'summary' => 'Loại bỏ vết xoáy và xước nhẹ, phục hồi độ bóng sâu.', 'image' => $hero, 'url' => '#bang-gia'],
+                        ['title' => 'Dán phim bảo vệ', 'summary' => 'Bảo vệ toàn diện bề mặt sơn khỏi đá văng và tác nhân bên ngoài.', 'image' => $product, 'url' => '#bang-gia'],
+                        ['title' => 'Vệ sinh nội thất', 'summary' => 'Làm sạch sâu, khử khuẩn và khử mùi toàn bộ khoang xe.', 'image' => $appointment, 'url' => '#bang-gia'],
+                        ['title' => 'Chăm sóc khoang máy', 'summary' => 'Làm sạch chi tiết, bảo vệ và duy trì hiệu suất vận hành.', 'image' => $product, 'url' => '#bang-gia'],
+                        ['title' => 'Rửa xe cao cấp', 'summary' => 'Công nghệ rửa hiện đại, an toàn tuyệt đối cho bề mặt sơn.', 'image' => $hero, 'url' => '#bang-gia'],
+                    ]]],
+                    'en' => ['title' => 'Complete care for every detail', 'subtitle' => 'Featured services', 'description' => 'Professional technicians and premium products for a flawless vehicle.', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'process_steps', 'label' => 'Quy trình chăm sóc xe',
+                'description' => 'Năm bước do người dùng tự nhập và sắp xếp.', 'preview_image' => $appointment,
+                'anchor_id' => 'quy-trinh', 'dynamic' => false, 'settings' => ['source' => 'custom'],
+                'data' => [
+                    'vi' => ['title' => 'Chăm sóc xe chuyên nghiệp', 'subtitle' => 'Quy trình', 'description' => 'Đúng quy trình – Đúng kỹ thuật – Đúng chất lượng', 'content' => ['items' => [
+                        ['title' => 'Kiểm tra xe', 'description' => 'Kiểm tra tổng thể tình trạng xe và tư vấn dịch vụ phù hợp.', 'icon' => 'fa-solid fa-clipboard-check'],
+                        ['title' => 'Tư vấn dịch vụ', 'description' => 'Tư vấn chi tiết gói dịch vụ và báo giá rõ ràng.', 'icon' => 'fa-regular fa-comments'],
+                        ['title' => 'Thực hiện', 'description' => 'Chăm sóc xe theo quy trình chuẩn xác với sản phẩm chuyên dụng.', 'icon' => 'fa-solid fa-car-on'],
+                        ['title' => 'Kiểm tra chất lượng', 'description' => 'Kiểm tra kỹ lưỡng trước khi bàn giao.', 'icon' => 'fa-solid fa-shield-halved'],
+                        ['title' => 'Bàn giao xe', 'description' => 'Hướng dẫn bảo quản để duy trì hiệu quả lâu dài.', 'icon' => 'fa-solid fa-key'],
+                    ]]],
+                    'en' => ['title' => 'Professional car care', 'subtitle' => 'Process', 'description' => 'The right process, technique and quality.', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'collection_gallery', 'label' => 'Banner quảng cáo',
+                'description' => 'Ảnh, tiêu đề, mô tả và liên kết do người dùng tự nhập.', 'preview_image' => $hero,
+                'anchor_id' => 'uu-dai', 'dynamic' => false, 'settings' => ['source' => 'custom'],
+                'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công']]]],
+                'data' => [
+                    'vi' => ['title' => 'Ưu đãi', 'subtitle' => 'Chương trình nổi bật', 'content' => ['items' => [
+                        ['title' => 'Bảo vệ sơn toàn diện', 'summary' => 'Ưu đãi đến 10%', 'badge' => 'Dán phim bảo vệ', 'image' => $hero, 'url' => '#bang-gia'],
+                        ['title' => 'Nâng tầm diện mạo xe', 'summary' => 'Ưu đãi đến 20%', 'badge' => 'Chăm sóc chuyên sâu', 'image' => $product, 'url' => '#bang-gia'],
+                    ]]],
+                    'en' => ['title' => 'Offers', 'subtitle' => 'Featured promotions', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'service_pricing', 'label' => 'Bảng giá dịch vụ',
+                'description' => 'Gói giá và quyền lợi do người dùng tự nhập; nút đặt lịch mở modal.', 'preview_image' => $appointment,
+                'anchor_id' => 'bang-gia', 'dynamic' => false, 'settings' => ['source' => 'custom'],
+                'data' => [
+                    'vi' => ['title' => 'Dịch vụ chăm sóc xe', 'subtitle' => 'Bảng giá', 'description' => 'Chăm sóc toàn diện – Bảo vệ tối ưu – Nâng tầm đẳng cấp xế yêu', 'content' => ['items' => [
+                        ['title' => 'Rửa xe tiêu chuẩn', 'price' => '200.000đ', 'features' => "Rửa xe ngoại thất|Hút bụi nội thất|Lau chùi cơ bản|Dưỡng lốp", 'icon' => 'fa-solid fa-car-side'],
+                        ['title' => 'Rửa xe cao cấp', 'price' => '400.000đ', 'features' => "Rửa xe chi tiết|Vệ sinh nội thất|Dưỡng lốp, phủ bóng|Khử mùi", 'icon' => 'fa-solid fa-spray-can-sparkles'],
+                        ['title' => 'Phủ ceramic', 'price' => '4.500.000đ', 'features' => "Phủ ceramic cao cấp|Bảo vệ sơn xe|Kéo dài độ bóng|Hiệu chỉnh bề mặt", 'icon' => 'fa-solid fa-shield-halved', 'featured' => true],
+                        ['title' => 'Vệ sinh nội thất', 'price' => '800.000đ', 'features' => "Vệ sinh chi tiết|Khử mùi, diệt khuẩn|Dưỡng da và nhựa|Vệ sinh trần xe", 'icon' => 'fa-solid fa-couch'],
+                    ]]],
+                    'en' => ['title' => 'Vehicle care services', 'subtitle' => 'Pricing', 'description' => 'Complete care and lasting protection.', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'business_service_grid', 'label' => 'Sản phẩm và dịch vụ',
+                'description' => 'Nguồn Sản phẩm, Dịch vụ hoặc nhập thủ công; dịch vụ không hiện giá và mở modal đặt lịch.',
+                'preview_image' => $product, 'anchor_id' => 'san-pham', 'dynamic' => true,
+                'settings' => ['source' => 'custom'], 'settings_schema' => $sourceSchema($productSources),
+                'data' => [
+                    'vi' => ['title' => 'Sản phẩm chăm sóc xe', 'subtitle' => 'Sản phẩm nổi bật', 'description' => 'Giải pháp chăm sóc chuyên dụng, an toàn và hiệu quả cho từng bề mặt.', 'content' => ['items' => [
+                        ['title' => 'Bộ chăm sóc ngoại thất', 'summary' => 'Dung dịch và phụ kiện làm sạch chuyên sâu.', 'price' => '680.000đ', 'image' => $product, 'url' => '#'],
+                        ['title' => 'Dung dịch vệ sinh kính', 'summary' => 'Làm sạch nhanh, hạn chế bám nước.', 'price' => '180.000đ', 'image' => $product, 'url' => '#'],
+                        ['title' => 'Bộ khăn microfiber', 'summary' => 'Mềm mịn, thấm hút tốt, an toàn cho sơn.', 'price' => '250.000đ', 'image' => $product, 'url' => '#'],
+                        ['title' => 'Ceramic coating', 'summary' => 'Dịch vụ phủ bảo vệ sơn chuyên nghiệp.', 'type' => 'service', 'image' => $appointment, 'url' => '#bang-gia'],
+                        ['title' => 'Bàn chải detailing', 'summary' => 'Vệ sinh các khe nhỏ và chi tiết khó tiếp cận.', 'price' => '120.000đ', 'image' => $product, 'url' => '#'],
+                        ['title' => 'Vệ sinh nội thất', 'summary' => 'Dịch vụ làm sạch và khử khuẩn toàn diện.', 'type' => 'service', 'image' => $appointment, 'url' => '#bang-gia'],
+                        ['title' => 'Pad đánh bóng', 'summary' => 'Hoàn thiện bề mặt sơn với độ bóng cao.', 'price' => '190.000đ', 'image' => $product, 'url' => '#'],
+                        ['title' => 'Hiệu chỉnh sơn', 'summary' => 'Loại bỏ xoáy xước và phục hồi độ sâu màu.', 'type' => 'service', 'image' => $hero, 'url' => '#bang-gia'],
+                    ]]],
+                    'en' => ['title' => 'Car care products', 'subtitle' => 'Featured products', 'description' => 'Purpose-built products and services for every surface.', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'latest_posts', 'label' => 'Kiến thức và kinh nghiệm',
+                'description' => 'Nguồn Tin tức, Dịch vụ, Dự án hoặc nhập thủ công.', 'preview_image' => $appointment,
+                'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'custom'],
+                'settings_schema' => $sourceSchema($insightSources),
+                'data' => [
+                    'vi' => ['title' => 'Kiến thức và kinh nghiệm chăm sóc xe', 'subtitle' => 'Tin mới nhất', 'description' => 'Thông tin hữu ích giúp bạn chăm sóc và bảo vệ xe luôn bền đẹp.', 'content' => ['items' => [
+                        ['title' => 'Bảo dưỡng ô tô thế nào sau hành trình dài?', 'summary' => 'Những hạng mục nên kiểm tra để chiếc xe luôn an toàn và vận hành ổn định.', 'image' => $appointment, 'url' => route('site.blog.index')],
+                        ['title' => 'Khi nào nên hiệu chỉnh bề mặt sơn?', 'summary' => 'Nhận biết các dấu hiệu xoáy xước và xuống màu.', 'image' => $hero, 'url' => route('site.blog.index')],
+                        ['title' => 'Phủ ceramic có thực sự cần thiết?', 'summary' => 'Ưu điểm và cách chăm sóc lớp phủ đúng cách.', 'image' => $product, 'url' => route('site.blog.index')],
+                        ['title' => 'Mẹo giữ nội thất xe luôn sạch', 'summary' => 'Những thói quen nhỏ giúp hạn chế mùi và bụi bẩn.', 'image' => $appointment, 'url' => route('site.blog.index')],
+                    ]]],
+                    'en' => ['title' => 'Car care knowledge and experience', 'subtitle' => 'Latest insights', 'description' => 'Useful guidance to keep your vehicle looking its best.', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'landing_contact', 'label' => 'Liên hệ tư vấn',
+                'description' => 'Khối liên hệ nền tối với form gửi yêu cầu trực tiếp.', 'preview_image' => $hero,
+                'anchor_id' => 'lien-he', 'dynamic' => false, 'settings' => ['source' => 'custom'],
+                'data' => [
+                    'vi' => ['title' => 'Sẵn sàng nâng tầm chiếc xe của bạn?', 'subtitle' => 'Liên hệ với chúng tôi', 'description' => 'Để lại thông tin, đội ngũ SER102 sẽ tư vấn gói chăm sóc phù hợp với tình trạng và nhu cầu thực tế.', 'button_label' => 'Gửi yêu cầu', 'content' => ['form_title' => 'Nhận tư vấn miễn phí']],
+                    'en' => ['title' => 'Ready to elevate your vehicle?', 'subtitle' => 'Contact us', 'description' => 'Leave your details and our team will recommend the right care package.', 'button_label' => 'Send request', 'content' => []],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

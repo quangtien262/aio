@@ -1,0 +1,38 @@
+{
+  "name": "SER102 Auto Detailing",
+  "key": "SER102",
+  "version": "0.1.0",
+  "description": "Theme dịch vụ chăm sóc xe cao cấp với lịch hẹn, bảng giá, sản phẩm và nội dung đa nguồn.",
+  "website_type": "service",
+  "parent": null,
+  "preview": {
+    "thumbnail": "cover-ser102.png",
+    "cover": "cover-ser102.png"
+  },
+  "blocks": [
+    "hero_slider",
+    "featured_categories",
+    "process_steps",
+    "collection_gallery",
+    "service_pricing",
+    "business_service_grid",
+    "latest_posts",
+    "landing_contact"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true,
+    "booking_modal": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "ser102-auto-detailing"
+  }
+}
