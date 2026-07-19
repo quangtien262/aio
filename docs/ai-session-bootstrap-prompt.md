@@ -128,7 +128,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Locale manager cho phép xem `default/source/fallback`, bật/tắt `active/published`, đổi `default locale`, thêm locale custom và phân biệt locale built-in của theme.
 - Translation drawer đã hỗ trợ locale động, tách `static` / `business content`, search, pagination, entity filter và edit từng entry.
 - Business content translation đã phủ các nhóm chính như `site_profile`, `site_banner`, `cms_menu`, `cms_page`, `cms_post`, `cms_category`, `catalog_category`, `catalog_product`.
-- Auth modal storefront hiện đã được đồng bộ shared login admin/customer trên tất cả các theme đang có engagement modal chính: `TH0001`, `TH0002`, `SER0100`, `SER0101`.
+- Auth modal storefront hiện đã được đồng bộ shared login admin/customer trên tất cả các theme đang có engagement modal chính: `TH0001`, `XD0301`, `XD0302`.....
 - Rule cần giữ: login panel của các theme này phải dùng field identity chung `Email khách hàng / Username admin`, post về `customer.auth.store`, để backend thử admin trước rồi mới fallback customer.
 - Có guide riêng để AI đọc trước khi dựng theme mới: `docs/theme-authoring-guide.md`.
 - Có checklist 1 trang để AI/dev copy-paste khi bắt đầu dựng theme mới: `docs/theme-starter-checklist.md`.
@@ -164,6 +164,76 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Test đã khóa phần auth/account mới tại:
   - `tests/Feature/AuthSplitTest.php`
   - `tests/Feature/AdminFoundationApiTest.php`
+
+## 7.1. Theme demo / cấu hình domain nội bộ
+
+Phần này rất quan trọng cho các session AI khác: hệ thống có cơ chế chạy nhiều theme demo trên nhiều subdomain trong cùng một source code, nhưng mục tiêu chính là **test nội bộ / demo theme**, không phải mô hình multi-tenant runtime để bán trực tiếp cho nhiều khách dùng chung source.
+
+Nguyên tắc chốt:
+
+- Không gắn data vào theme. Theme chỉ là giao diện.
+- Data CMS gắn vào `website_key`.
+- Domain demo quyết định cặp `website_key` + `theme_key`.
+- Website khách triển khai thật thường chỉ dùng một theme và một bộ data mặc định; nếu không có cấu hình domain nào match thì hệ thống fallback về `website-main`.
+- Không dùng cơ chế "data dùng chung" mặc định để tránh lẫn data. Nếu cần tận dụng nội dung/media từ website khác thì copy/chọn có chủ đích.
+
+Các bảng/cột chính:
+
+- `sites`: lưu domain -> `website_key` -> `theme_key`.
+  - `domain`: ví dụ `xd0313.demo.htvietnam.vn`.
+  - `website_key`: ví dụ `xd0313-demo-htvietnam-vn`.
+  - `theme_key`: ví dụ `XD0313`.
+  - `status`: chỉ site `active` mới được resolve ở storefront.
+- `site_profiles`: có `website_key`, `active_theme_key`, branding/profile theo từng website.
+- Các bảng CMS có prefix `cms_` lưu `website_key` để tách data, gồm các nhóm chính như pages, posts, services, projects, products/catalog, team members, testimonials, partners, menus, media.
+
+Runtime resolve:
+
+- Middleware chính: `app/Http/Middleware/ResolveCurrentSite.php`.
+- Context chính: `app/Support/SiteContext.php`.
+- Storefront public:
+  - Resolve theo host/domain hiện tại trong bảng `sites`.
+  - Nếu không match domain active nào thì fallback `website-main`.
+  - Theme active lấy ưu tiên từ `SiteContext::themeKey()` / `sites.theme_key`, sau đó fallback profile/theme mặc định.
+- Admin:
+  - Header admin có bộ chọn "website đang quản trị".
+  - Frontend admin gửi `X-Website-Key` trên mọi request admin.
+  - Backend đọc `X-Website-Key` trong `ResolveCurrentSite` để set `SiteContext`.
+  - Nhờ trait `App\Models\Concerns\HasWebsiteScope`, phần lớn model CMS tự lọc/tự gán `website_key` theo context hiện tại.
+
+Admin UI liên quan:
+
+- `/admin/themes` -> Theme Manager -> menu trái **Cấu hình domain**.
+- Component chính: `resources/admin/src/modules/themes/components/SiteDomainMappingPanel.jsx`.
+- API chính: `app/Http/Controllers/Admin/Api/SiteMappingController.php`.
+- Routes chính:
+  - `GET /admin/api/site-mappings`
+  - `POST /admin/api/site-mappings`
+  - `POST /admin/api/site-mappings/bulk`
+  - `PUT /admin/api/site-mappings/{site}`
+  - `DELETE /admin/api/site-mappings/{site}`
+- Chức năng tạo nhanh subdomain:
+  - User nhập domain chính, ví dụ `demo.htvietnam.vn`.
+  - Hệ thống tạo cấu hình theo mã theme, ví dụ `XD0301.demo.htvietnam.vn`, `XD0302.demo.htvietnam.vn`, ...
+  - Cấu hình đã tồn tại sẽ được bỏ qua, không ghi đè.
+
+Media theo theme demo:
+
+- Media cũng tách theo `website_key`, không dùng chung mặc định.
+- Upload media mới lưu record theo website đang chọn và file vật lý dưới path dạng `cms/{website_key}/...`.
+- Trang quản trị Media có option **Show toàn bộ** để xem media của tất cả website trong trường hợp cần copy URL dùng chung hình ảnh.
+- Khi đang show toàn bộ, media thuộc website khác chỉ nên copy URL; thao tác sửa/xóa/chuyển thư mục bị chặn ở UI để tránh ảnh hưởng data website khác.
+- Backend Media chính:
+  - `app/Http/Controllers/Admin/Api/Cms/MediaIndexController.php`
+  - `app/Http/Controllers/Admin/Api/Cms/MediaManagementController.php`
+- Trang Media hiển thị cảnh báo/tag file chưa được dùng dựa trên các liên kết chuẩn bằng `featured_media_id` và `cms_media_id`. Nếu ảnh chỉ được copy URL rồi dán thủ công vào HTML/text thì hệ thống chưa thể nhận diện chắc chắn là đã dùng.
+
+Lưu ý khi tiếp tục phát triển:
+
+- Không thêm dropdown "data thuộc theme nào" vào từng form CMS; chọn website quản trị một lần ở header là hướng đúng.
+- Khi thêm model CMS mới, nếu data cần tách theo website thì thêm `website_key` và dùng trait `HasWebsiteScope`.
+- Khi query admin cần nhìn xuyên toàn bộ website, phải chủ động dùng `withoutGlobalScope('current_website')` và bảo vệ thao tác ghi/xóa thật kỹ.
+- Không biến cơ chế demo domain thành multi-tenant thương mại shared runtime; đây là tiện ích nội bộ để review nhiều theme nhanh trên một source.
 
 ## 8. Những capability nghiệp vụ cần luôn ghi nhớ khi làm việc
 
