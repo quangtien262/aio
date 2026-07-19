@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin\Api\Catalog;
 
 use App\Models\CatalogProduct;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProductManagementController
@@ -70,11 +71,27 @@ class ProductManagementController
 
     private function validatePayload(Request $request, ?CatalogProduct $product = null): array
     {
+        $websiteKey = $product?->website_key ?: app(SiteContext::class)->websiteKey();
+
         return $request->validate([
             'catalog_category_id' => ['required', 'integer', 'exists:catalog_categories,id'],
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('catalog_products', 'slug')->ignore($product?->id)],
-            'sku' => ['nullable', 'string', 'max:255', Rule::unique('catalog_products', 'sku')->ignore($product?->id)],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('catalog_products', 'slug')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($product?->id),
+            ],
+            'sku' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('catalog_products', 'sku')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($product?->id),
+            ],
             'price' => ['required', 'numeric', 'min:0'],
             'original_price' => ['nullable', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
@@ -189,6 +206,7 @@ class ProductManagementController
     {
         $baseSlug = Str::slug($name) ?: 'san-pham-'.$id;
         $exists = CatalogProduct::query()
+            ->where('website_key', app(SiteContext::class)->websiteKey())
             ->where('slug', $baseSlug)
             ->whereKeyNot($id)
             ->exists();
