@@ -266,4 +266,25 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->get('/vi')->assertOk()->assertSee('Đăng nhập');
     }
+
+    public function test_th0050_wellness_homepage_and_demo_preset_render(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('th0050-wellness-test', 'TH0050');
+
+        $this->assertCount(9, $page->blocks);
+        $this->assertSame('custom', $page->blocks->firstWhere('block_type', 'content_showcase')->settings['source']);
+        $this->assertSame('catalog_products', $page->blocks->firstWhere('block_type', 'featured_products')->settings['source']);
+        $this->assertTrue($page->blocks()->where('block_type', 'landing_contact')->exists());
+
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('TH0050');
+        $this->assertSame('th0050-premium-wellness', $provider->defaultPreset());
+        $result = $provider->generate($provider->defaultPreset());
+
+        $this->assertSame(8, $result['counts']['products']);
+        $this->get('/vi')
+            ->assertOk()
+            ->assertSee('Tinh hoa chăm sóc sức khỏe')
+            ->assertSee('Cần một món quà thật sự ý nghĩa?');
+    }
 }

@@ -1,0 +1,38 @@
+{
+  "name": "TH0050 Premium Wellness",
+  "key": "TH0050",
+  "version": "0.1.0",
+  "description": "Theme thương mại cao cấp cho yến sào, quà tặng sức khỏe và sản phẩm wellness; xây dựng theo chuẩn XD0301.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "/theme-previews/TH0050/hero-th0050.png",
+    "cover": "/theme-previews/TH0050/hero-th0050.png"
+  },
+  "blocks": [
+    "hero-slider-benefits",
+    "premium-collections",
+    "special-offers",
+    "company-story",
+    "product-grid",
+    "quality-reasons",
+    "latest-insights",
+    "contact-consultation",
+    "partner-logos"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": false
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "presets": ["th0050-premium-wellness"]
+  }
+}

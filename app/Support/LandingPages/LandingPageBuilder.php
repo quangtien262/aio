@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SER102'], true);
+        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SER102', 'TH0050'], true);
     }
 
     /**
@@ -957,6 +957,8 @@ class LandingPageBuilder
             'icon' => '▦',
             'image' => $product->image_url ?: $this->fallbackContentImage(),
             'alt' => $product->name,
+            'price' => (float) $product->price,
+            'original_price' => filled($product->original_price) ? (float) $product->original_price : null,
             'url' => route('site.catalog.product', ['slug' => $product->slug]),
         ])->all();
     }
@@ -1181,6 +1183,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'TH0050' => $this->th0050DefaultBlocks(),
             'SER102' => $this->ser102DefaultBlocks(),
             'XD0318' => $this->xd0318DefaultBlocks(),
             'XD0315' => $this->xd0315DefaultBlocks(),
@@ -1208,6 +1211,65 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function th0050DefaultBlocks(): array
+    {
+        $hero = '/theme-previews/TH0050/hero-th0050.png';
+        $about = '/theme-previews/TH0050/about-th0050.png';
+        $quality = '/theme-previews/TH0050/quality-th0050.png';
+        $flexSources = [
+            ['value' => 'custom', 'label' => 'Người dùng tự nhập'],
+            ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+            ['value' => 'catalog_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+        ];
+        $newsSources = [
+            ['value' => 'custom', 'label' => 'Người dùng tự nhập'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+        ];
+        $sourceSchema = ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $flexSources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị']];
+        $heading = static fn (string $title, string $subtitle, string $description, string $buttonLabel = ''): array => [
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $buttonLabel,
+        ];
+
+        $blocks = [];
+        $blocks[] = [
+            'block_type' => 'hero_slider', 'label' => 'Hero và cam kết dịch vụ', 'description' => 'Slider ảnh và dải cam kết chạy ngang.', 'preview_image' => $hero, 'anchor_id' => 'top', 'dynamic' => true,
+            'settings' => ['source' => 'site_banners', 'placement' => 'th0050-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600],
+            'settings_schema' => [['key' => 'placement', 'label' => 'Placement banner', 'type' => 'text', 'default' => 'th0050-hero-slider'], ['key' => 'limit', 'label' => 'Số slide', 'type' => 'number', 'default' => 3], ['key' => 'autoplay_ms', 'label' => 'Autoplay ms', 'type' => 'number', 'default' => 5600]],
+            'data' => ['vi' => array_merge($heading('Tinh hoa chăm sóc sức khỏe', 'Quà tặng cao cấp', 'Sản phẩm wellness tuyển chọn, nguồn gốc minh bạch và trình bày tinh tế.', 'Khám phá ngay'), ['content' => ['slides' => [['kicker' => 'An Nhiên Wellness', 'title' => 'Tinh hoa chăm sóc sức khỏe', 'summary' => 'Quà tặng cao cấp được chăm chút trong từng chi tiết.', 'button_label' => 'Khám phá ngay', 'link_url' => '#bo-suu-tap', 'image' => $hero]], 'benefits' => [['title' => 'Giao hàng nhanh', 'summary' => 'Đóng gói cẩn thận', 'icon' => 'fa-solid fa-truck-fast'], ['title' => 'Tư vấn tận tâm', 'summary' => 'Đồng hành cùng bạn', 'icon' => 'fa-solid fa-headset'], ['title' => 'Thanh toán an toàn', 'summary' => 'Nhiều phương thức', 'icon' => 'fa-solid fa-credit-card'], ['title' => 'Quà tặng doanh nghiệp', 'summary' => 'Thiết kế theo nhu cầu', 'icon' => 'fa-solid fa-gift']]]]), 'en' => array_merge($heading('A refined wellness experience', 'Premium gifting', 'Thoughtfully selected wellness products.', 'Explore now'), ['content' => ['slides' => [], 'benefits' => []]])],
+        ];
+
+        $collectionItems = [['title' => 'Bộ quà Bốn Mùa', 'summary' => 'Thanh lịch và trang nhã', 'image' => $quality, 'url' => '#san-pham'], ['title' => 'Bộ quà Lộc Phát', 'summary' => 'Gửi trao lời chúc thịnh vượng', 'image' => $hero, 'url' => '#san-pham'], ['title' => 'Bộ quà Tinh Hoa', 'summary' => 'Tuyển chọn cho dịp đặc biệt', 'image' => $about, 'url' => '#san-pham'], ['title' => 'Bộ quà Doanh Nghiệp', 'summary' => 'Cá nhân hóa theo nhu cầu', 'image' => $quality, 'url' => '#lien-he']];
+        $blocks[] = ['block_type' => 'content_showcase', 'label' => 'Bộ sưu tập cao cấp', 'description' => 'Nguồn dữ liệu linh hoạt, mặc định tự nhập.', 'preview_image' => $quality, 'anchor_id' => 'bo-suu-tap', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 4], 'settings_schema' => $sourceSchema, 'data' => ['vi' => array_merge($heading('Bộ sưu tập quà tặng cao cấp', 'An Nhiên Wellness', 'Giải pháp quà tặng tinh tế cho những mối quan hệ bền chặt.', 'Xem ngay'), ['content' => ['items' => $collectionItems]]), 'en' => array_merge($heading('Premium gift collection', 'An Nhien Wellness', 'Elegant gifts for meaningful relationships.', 'View now'), ['content' => ['items' => []]])]];
+
+        $offerItems = [['title' => 'Set quà chăm sóc sức khỏe', 'summary' => 'Ưu đãi mùa lễ hội', 'price' => '1.250.000đ', 'badge' => '-20%', 'image' => $hero, 'url' => '#'], ['title' => 'Hộp quà thượng hạng', 'summary' => 'Thiết kế sang trọng', 'price' => '1.690.000đ', 'badge' => '-15%', 'image' => $quality, 'url' => '#'], ['title' => 'Tinh chất wellness', 'summary' => 'Bổ sung năng lượng mỗi ngày', 'price' => '890.000đ', 'badge' => 'Mới', 'image' => $about, 'url' => '#'], ['title' => 'Bộ quà tri ân', 'summary' => 'Dành cho đối tác và khách hàng', 'price' => '2.100.000đ', 'badge' => '-10%', 'image' => $hero, 'url' => '#']];
+        $blocks[] = ['block_type' => 'collection_gallery', 'label' => 'Ưu đãi đặc biệt', 'description' => 'Nguồn dữ liệu linh hoạt, mặc định tự nhập.', 'preview_image' => $hero, 'anchor_id' => 'uu-dai', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 4], 'settings_schema' => $sourceSchema, 'data' => ['vi' => array_merge($heading('Khuyến mãi đặc biệt', 'An Nhiên Wellness', 'Những lựa chọn được yêu thích với ưu đãi giới hạn.', 'Xem tất cả'), ['content' => ['items' => $offerItems]]), 'en' => array_merge($heading('Special offers', 'An Nhien Wellness', 'Limited seasonal favorites.', 'View all'), ['content' => ['items' => []]])]];
+
+        $blocks[] = ['block_type' => 'about_experience', 'label' => 'Giới thiệu công ty', 'description' => 'Giới thiệu ngắn gọn, có thể đổi ảnh nền.', 'preview_image' => $about, 'anchor_id' => 'gioi-thieu', 'dynamic' => false, 'media' => ['image' => $about], 'settings' => ['cta_url' => '#lien-he'], 'settings_schema' => ['cta_url' => ['type' => 'text', 'label' => 'Liên kết nút']], 'data' => ['vi' => array_merge($heading('Câu chuyện về An Nhiên', 'Tinh hoa wellness', 'Chúng tôi tin món quà sức khỏe có giá trị nhất khi hội tụ chất lượng, sự chân thành và vẻ đẹp tinh tế.', 'Xem chi tiết'), ['content' => ['background_image' => $about]]), 'en' => array_merge($heading('Our story', 'Wellness refined', 'Quality, sincerity and refined presentation.', 'Learn more'), ['content' => ['background_image' => $about]])]];
+
+        $productItems = [['title' => 'Tổ yến tinh chế cao cấp', 'summary' => 'Sợi nguyên vẹn, màu sắc tự nhiên', 'price' => 2900000, 'image' => $quality, 'url' => '#'], ['title' => 'Hộp quà wellness thượng hạng', 'summary' => 'Món quà trọn vẹn và tinh tế', 'price' => 3200000, 'image' => $hero, 'url' => '#'], ['title' => 'Yến chưng dinh dưỡng', 'summary' => 'Tiện lợi cho ngày bận rộn', 'price' => 890000, 'image' => $about, 'url' => '#']];
+        $blocks[] = ['block_type' => 'featured_products', 'label' => 'Sản phẩm nổi bật', 'description' => 'Dữ liệu lấy từ sản phẩm.', 'preview_image' => $quality, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'catalog_products', 'limit' => 8], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số sản phẩm']], 'data' => ['vi' => array_merge($heading('Sản phẩm tuyển chọn', 'An Nhiên Wellness', 'Sản phẩm chất lượng cao cho chăm sóc sức khỏe và quà tặng.', 'Xem tất cả'), ['content' => ['tabs' => ['Tất cả', 'Quà tặng', 'Tinh chế', 'Cao cấp'], 'items' => $productItems]]), 'en' => array_merge($heading('Selected products', 'An Nhien Wellness', 'Premium wellness products.', 'View all'), ['content' => ['tabs' => ['All'], 'items' => []]])]];
+
+        $reasonItems = [['title' => 'Nguyên liệu cao cấp', 'summary' => 'Tuyển chọn kỹ lưỡng', 'icon' => 'fa-solid fa-gem'], ['title' => 'Chất lượng tuyệt đối', 'summary' => 'Quy trình kiểm định', 'icon' => 'fa-solid fa-shield-heart'], ['title' => 'Sản phẩm đạt chuẩn', 'summary' => 'Thông tin minh bạch', 'icon' => 'fa-solid fa-award'], ['title' => 'Giá cả hợp lý', 'summary' => 'Giá trị tương xứng', 'icon' => 'fa-solid fa-hand-holding-dollar'], ['title' => 'Giao hàng nhanh', 'summary' => 'Đóng gói cẩn thận', 'icon' => 'fa-solid fa-truck-fast'], ['title' => 'Thanh toán an toàn', 'summary' => 'Linh hoạt và bảo mật', 'icon' => 'fa-solid fa-credit-card']];
+        $blocks[] = ['block_type' => 'content_mosaic', 'label' => 'Lý do lựa chọn', 'description' => 'Nội dung tự nhập, đổi được ảnh trung tâm.', 'preview_image' => $quality, 'anchor_id' => 'tai-sao-chon', 'dynamic' => true, 'media' => ['image' => $quality], 'settings' => ['source' => 'custom', 'limit' => 6], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số lý do']], 'data' => ['vi' => array_merge($heading('Vì sao chọn chúng tôi', 'An Nhiên Wellness', 'Cam kết chất lượng xuyên suốt từ sản phẩm đến dịch vụ.'), ['content' => ['background_image' => $quality, 'items' => $reasonItems]]), 'en' => array_merge($heading('Why choose us', 'An Nhien Wellness', 'Quality in every interaction.'), ['content' => ['background_image' => $quality, 'items' => []]])]];
+
+        $postItems = [['title' => 'Cách lựa chọn quà tặng sức khỏe phù hợp', 'summary' => 'Tiêu chí quan trọng cho từng người nhận.', 'image' => $about, 'url' => '#'], ['title' => 'Dùng yến vào thời điểm nào tốt nhất?', 'summary' => 'Gợi ý từ chuyên gia dinh dưỡng.', 'image' => $quality, 'url' => '#'], ['title' => 'Bảo quản sản phẩm wellness đúng cách', 'summary' => 'Giữ nguyên chất lượng và hương vị.', 'image' => $hero, 'url' => '#']];
+        $blocks[] = ['block_type' => 'latest_posts', 'label' => 'Tin tức và tư vấn', 'description' => 'Nguồn tin tức, dịch vụ, dự án hoặc tự nhập.', 'preview_image' => $about, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 7], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $newsSources], 'limit' => ['type' => 'number', 'label' => 'Số bài hiển thị']], 'data' => ['vi' => array_merge($heading('Tin tức và tư vấn', 'An Nhiên Wellness', 'Kiến thức hữu ích giúp lựa chọn và sử dụng sản phẩm đúng cách.', 'Xem thêm'), ['content' => ['items' => $postItems]]), 'en' => array_merge($heading('News and advice', 'An Nhien Wellness', 'Helpful knowledge for better wellness choices.', 'View more'), ['content' => ['items' => []]])]];
+
+        $blocks[] = ['block_type' => 'landing_contact', 'label' => 'Liên hệ tư vấn', 'description' => 'Khối liên hệ cao cấp.', 'preview_image' => $hero, 'anchor_id' => 'lien-he', 'dynamic' => false, 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => array_merge($heading('Cần một món quà thật sự ý nghĩa?', 'Liên hệ tư vấn', 'Đội ngũ của chúng tôi sẽ giúp bạn lựa chọn sản phẩm phù hợp.', 'Gửi yêu cầu'), ['content' => []]), 'en' => array_merge($heading('Looking for a meaningful gift?', 'Get in touch', 'Our team will help you choose.', 'Send request'), ['content' => []])]];
+        $partners = [['name' => 'Green Bank'], ['name' => 'Fresh Market'], ['name' => 'Golden Care'], ['name' => 'Lotus Group'], ['name' => 'Viet Wellness'], ['name' => 'An Tâm']];
+        $blocks[] = ['block_type' => 'partner_logos', 'label' => 'Đối tác', 'description' => 'Logo các đối tác đồng hành.', 'preview_image' => $quality, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 8], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => array_merge($heading('Đối tác của chúng tôi', 'An Nhiên Wellness', 'Đồng hành cùng những đơn vị uy tín.'), ['content' => ['items' => $partners]]), 'en' => array_merge($heading('Our partners', 'An Nhien Wellness', 'Trusted organizations growing with us.'), ['content' => ['items' => []]])]];
+
+        return $blocks;
     }
 
     /** @return array<int, array<string, mixed>> */

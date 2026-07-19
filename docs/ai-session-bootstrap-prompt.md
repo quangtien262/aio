@@ -125,10 +125,11 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 
 ### Themes
 - `/admin/themes` hiện quản lý cả preview theme, locale storefront và translation. Preview mở bằng drawer khi click tiêu đề theme; nút `Kích hoạt theme` nằm ở đầu drawer.
+- Theme `XD0301` là theme chuẩn nhất, nếu có chỗ nào khó hiểu thì hãy tham khảo code của theme này nhé, đặc biệt là cách cài đặt trang chủ và landingpage, xem chi tiết hơn ở file `docs/landing-page-builder.md` và `theme-starter-checklist.md`
 - Locale manager cho phép xem `default/source/fallback`, bật/tắt `active/published`, đổi `default locale`, thêm locale custom và phân biệt locale built-in của theme.
 - Translation drawer đã hỗ trợ locale động, tách `static` / `business content`, search, pagination, entity filter và edit từng entry.
 - Business content translation đã phủ các nhóm chính như `site_profile`, `site_banner`, `cms_menu`, `cms_page`, `cms_post`, `cms_category`, `catalog_category`, `catalog_product`.
-- Auth modal storefront hiện đã được đồng bộ shared login admin/customer trên tất cả các theme đang có engagement modal chính: `TH0001`, `XD0301`, `XD0302`.....
+- Auth modal storefront hiện đã được đồng bộ shared login admin/customer trên tất cả các theme đang có engagement modal chính: `XD0301`, `XD0302`.....
 - Rule cần giữ: login panel của các theme này phải dùng field identity chung `Email khách hàng / Username admin`, post về `customer.auth.store`, để backend thử admin trước rồi mới fallback customer.
 - Có guide riêng để AI đọc trước khi dựng theme mới: `docs/theme-authoring-guide.md`.
 - Có checklist 1 trang để AI/dev copy-paste khi bắt đầu dựng theme mới: `docs/theme-starter-checklist.md`.
@@ -137,9 +138,6 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Đã có test/backstop cho phần này:
   - `tests/Feature/ThemeContentTranslationTest.php`
   - `tests/browser/admin-theme-translations.spec.js`
-- TH0002 hiện đã được làm sâu hơn ở phần theme configurability:
-- TH0002 hiện đọc palette từ `site_profiles.branding`, đã có partial token chung `themes/TH0002/views/partials/palette-tokens.blade.php`, và homepage đã có shared badge token cho pill/badge.
-- Palette editor của TH0002 đã tách khỏi Setup Wizard sang Theme Manager. File neo chính: `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`, `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`, `resources/admin/src/pages/routes/ThemesRoutePage.jsx`.
 - Save palette hiện vẫn đi qua endpoint setup hiện có (`PUT /admin/api/setup`) chứ chưa tách API riêng.
 - Palette persist trong `site_profiles.branding` với các key chính: `primary_color`, `primary_color_deep`, `accent_color`, `accent_soft_color`, `background_color`, `surface_color`, `surface_tint_color`.
 - Setup flow liên quan: `app/Http/Controllers/Admin/Api/SetupProfileController.php`, `app/Http/Controllers/Admin/Api/SetupWizardStateController.php`, `app/Http/Controllers/Admin/Api/SetupStepController.php`.
@@ -149,7 +147,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 ### Setup
 - `/admin/setup` đã được format lại cho gọn hơn, theo layout nhóm section rõ ràng
 - Setup Wizard hiện chỉ giữ branding cơ bản như site/profile/logo/favicon/contact.
-- Không đưa palette editor đầy đủ của TH0002 quay lại Setup Wizard; palette chi tiết chỉnh ở Theme Manager.
+
 
 ### Auth / Admin Accounts
 - Admin account hiện có field persisted `username` trong bảng `admins`.
