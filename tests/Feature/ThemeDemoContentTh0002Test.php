@@ -19,7 +19,7 @@ class ThemeDemoContentTh0002Test extends TestCase
         $this->activateThemePreset('garment-workshop');
 
         $aboutPage = CmsPage::query()->where('slug', 'demo-th0002-gioi-thieu')->firstOrFail();
-        $contactPage = CmsPage::query()->where('slug', 'demo-th0002-lien-he')->firstOrFail();
+        $contactPage = CmsPage::query()->where('slug', 'contact')->firstOrFail();
         $oemProduct = CatalogProduct::query()->where('name', 'like', '%Techpack cơ bản%')->firstOrFail();
         $uniformProduct = CatalogProduct::query()->where('name', 'like', '%Polo công ty%')->firstOrFail();
         $lookbookPost = \App\Models\CmsPost::query()->orderBy('id')->firstOrFail();
@@ -36,7 +36,7 @@ class ThemeDemoContentTh0002Test extends TestCase
             ->assertSee('đồng phục doanh nghiệp, local brand capsule và line OEM / ODM')
             ->assertSee('Về xưởng may');
 
-        $this->get($this->storefrontPath('tin-tuc'))
+        $this->get($this->storefrontRoute('site.blog.index'))
             ->assertOk()
             ->assertSee('Lookbook')
             ->assertSee('Lookbook capsule mới cho line xưởng may');
@@ -48,7 +48,7 @@ class ThemeDemoContentTh0002Test extends TestCase
         $this->activateThemePreset('fashion-studio');
 
         $aboutPage = CmsPage::query()->where('slug', 'demo-th0002-gioi-thieu')->firstOrFail();
-        $contactPage = CmsPage::query()->where('slug', 'demo-th0002-lien-he')->firstOrFail();
+        $contactPage = CmsPage::query()->where('slug', 'contact')->firstOrFail();
         $blazerProduct = CatalogProduct::query()->where('name', 'like', '%Blazer%')->firstOrFail();
         $accessoryProduct = CatalogProduct::query()->where('name', 'like', '%Canvas tote%')->firstOrFail();
         $lookbookPost = \App\Models\CmsPost::query()->orderBy('id')->firstOrFail();
@@ -60,12 +60,12 @@ class ThemeDemoContentTh0002Test extends TestCase
         $this->assertStringContainsString('ready-to-wear nữ, cân bằng giữa phom dáng ứng dụng và visual showroom', (string) $blazerProduct->detail_content);
         $this->assertStringContainsString('editorial note cho từng drop, caption cho lookbook card và CTA đặt lịch thử đồ', (string) $lookbookPost->body);
 
-        $this->get($this->storefrontPath('demo-th0002-lien-he'))
+        $this->get($this->storefrontRoute('site.contact'))
             ->assertOk()
             ->assertSee('Đặt lịch stylist &amp; tư vấn', false)
             ->assertSee('lịch stylist cho capsule mới, line ready-to-wear và lookbook set theo mùa');
 
-        $this->get($this->storefrontPath('tin-tuc'))
+        $this->get($this->storefrontRoute('site.blog.index'))
             ->assertOk()
             ->assertSee('Lookbook')
             ->assertSee('Lookbook season mới cho line thời trang');

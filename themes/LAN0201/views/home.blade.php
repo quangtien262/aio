@@ -67,4 +67,8 @@
     }
 @endphp
 
-@include('theme-lan0201::partials.redesign.home-page', get_defined_vars())
+@if (isset($landingBlocks) && is_array($landingPage ?? null))
+    @include('partials.configurable-landing-document')
+@else
+    @include('theme-lan0201::partials.redesign.home-page', get_defined_vars())
+@endif

@@ -1311,9 +1311,16 @@ class CmsSiteController
             default => 'cms',
         };
 
+        $viewFactory = app(\Illuminate\Contracts\View\Factory::class);
         $viewName = "theme-{$themeKey}::{$viewKey}";
 
-        return app(\Illuminate\Contracts\View\Factory::class)->exists($viewName) ? $viewName : null;
+        if ($viewFactory->exists($viewName)) {
+            return $viewName;
+        }
+
+        $fallbackView = "theme-{$themeKey}::cms";
+
+        return $viewFactory->exists($fallbackView) ? $fallbackView : null;
     }
 
     private function resolveRelatedPosts(CmsPost $post, ?SiteProfile $siteProfile): Collection
@@ -2578,7 +2585,7 @@ class CmsSiteController
 
     private function isCommerceThemeKey(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'LAN0201'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0201', 'LAN0201'], true);
     }
 
     private function isLandingHybridThemeKey(?string $themeKey): bool

@@ -10,14 +10,10 @@
     "cover": "cover-th0020.svg"
   },
   "blocks": [
-    "interior-topbar",
-    "studio-header",
-    "room-hero",
-    "room-category-rail",
-    "side-banner-promos",
-    "featured-products",
-    "material-stories",
-    "interior-footer"
+    "hero_slider",
+    "featured_categories",
+    "featured_products",
+    "content_mosaic"
   ],
   "supports": {
     "dark_mode": false,

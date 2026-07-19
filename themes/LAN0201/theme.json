@@ -10,14 +10,10 @@
     "cover": "cover-lan0201.svg"
   },
   "blocks": [
-    "project-hero",
-    "search-lead-panel",
-    "project-category-strip",
-    "featured-listing-grid",
-    "launch-offer-band",
-    "trust-metrics",
-    "market-insight-teasers",
-    "footer-project-sales"
+    "hero_slider",
+    "featured_categories",
+    "featured_products",
+    "content_mosaic"
   ],
   "supports": {
     "dark_mode": false,

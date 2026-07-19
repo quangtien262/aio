@@ -69,6 +69,45 @@ class ThemeDemoContentTest extends TestCase
         $response->assertSee('Deal sốc cho điện thoại, laptop và điện gia dụng');
         $response->assertSee('Tin tức');
         $response->assertDontSee('Demo theme TH0001');
+        $response->assertSee('data-block-type="hero_slider"', false);
+        $response->assertSee('data-block-type="featured_products"', false);
+        $this->assertDatabaseHas('landing_pages', [
+            'website_key' => 'website-main',
+            'theme_key' => 'TH0001',
+            'slug' => 'home',
+            'is_home' => true,
+        ]);
+    }
+
+    public function test_th0001_landing_page_renders_through_site_landing_show_route(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->where('email', 'admin@aio.local')->firstOrFail();
+        $this->actingAs($admin, 'admin');
+        $this->postJson('/admin/api/themes/TH0001/activate')->assertOk();
+        $this->postJson('/admin/api/themes/TH0001/demo-data', [
+            'preset' => 'electronics-superstore',
+        ])->assertOk();
+
+        $pageResponse = $this->postJson('/admin/api/landing/pages', [
+            'slug' => 'summer-sale',
+            'status' => 'published',
+            'data_by_locale' => [
+                'vi' => ['title' => 'Ưu đãi mùa hè'],
+                'en' => ['title' => 'Summer sale'],
+            ],
+        ])->assertCreated();
+        $pageId = (int) $pageResponse->json('data.id');
+
+        $this->postJson("/admin/api/landing/pages/{$pageId}/blocks", [
+            'block_type' => 'featured_products',
+        ])->assertCreated();
+
+        $this->get(route('site.landing.show', ['locale' => 'vi', 'slug' => 'summer-sale']))
+            ->assertOk()
+            ->assertSee('Ưu đãi mùa hè')
+            ->assertSee('data-block-type="featured_products"', false);
     }
 
     public function test_th0001_homepage_uses_theme_specific_palette_tokens(): void
@@ -227,9 +266,9 @@ class ThemeDemoContentTest extends TestCase
         $menu = CmsMenu::query()->where('location', 'primary-navigation')->latest('id')->firstOrFail();
         $menu->update([
             'items' => [
-                ['label' => 'Tin tức', 'url' => '/tin-tuc', 'target' => '_self'],
+                ['label' => 'Tin tức', 'url' => '/c', 'target' => '_self'],
                 ['label' => 'Giới thiệu', 'url' => '/gioi-thieu', 'target' => '_self'],
-                ['label' => 'Liên hệ', 'url' => '/lien-he', 'target' => '_self'],
+                ['label' => 'Liên hệ', 'url' => '/contact', 'target' => '_self'],
                 ['label' => 'Test', 'url' => '/test', 'target' => '_self'],
             ],
         ]);
@@ -238,7 +277,7 @@ class ThemeDemoContentTest extends TestCase
             ->assertOk()
             ->assertSee('Test');
 
-        $this->get($this->storefrontPath('tin-tuc'))
+        $this->get($this->storefrontRoute('site.blog.index'))
             ->assertOk()
             ->assertSee('Test');
     }
@@ -319,9 +358,9 @@ class ThemeDemoContentTest extends TestCase
         ])->assertOk();
 
         $aboutPage = CmsPage::query()->where('slug', 'demo-th0001-gioi-thieu')->firstOrFail();
-        $contactPage = CmsPage::query()->where('slug', 'demo-th0001-lien-he')->firstOrFail();
+        CmsPage::query()->where('slug', 'contact')->firstOrFail();
 
-        $this->get($this->storefrontPath('tin-tuc'))
+        $this->get($this->storefrontRoute('site.blog.index'))
             ->assertOk()
             ->assertDontSee('Bản tin thương hiệu')
             ->assertDontSee('Demo theme TH0001')
@@ -335,7 +374,7 @@ class ThemeDemoContentTest extends TestCase
             ->assertDontSee('Hồ sơ vận hành')
             ->assertDontSee('Đồng bộ CMS và storefront');
 
-        $this->get($this->storefrontPath($contactPage->slug))
+        $this->get($this->storefrontRoute('site.contact'))
             ->assertOk()
             ->assertSee('Liên hệ')
             ->assertSee('Liên hệ tư vấn')
@@ -356,17 +395,17 @@ class ThemeDemoContentTest extends TestCase
             'preset' => 'electronics-superstore',
         ])->assertOk();
 
-        $contactPage = CmsPage::query()->where('slug', 'demo-th0001-lien-he')->firstOrFail();
+        CmsPage::query()->where('slug', 'contact')->firstOrFail();
 
-        $this->from($this->storefrontPath($contactPage->slug))
-            ->post($this->storefrontPath('lien-he'), [
+        $this->from($this->storefrontRoute('site.contact'))
+            ->post($this->storefrontRoute('site.contact.submit'), [
             'name' => 'Nguyen Van A',
             'email' => 'lead@example.com',
             'phone' => '0909123456',
             'subject' => 'Booking campaign',
             'message' => 'Toi can duoc tu van chien dich truyen thong cho landing page moi.',
         ])
-            ->assertRedirect($this->storefrontPath($contactPage->slug))
+            ->assertRedirect($this->storefrontRoute('site.contact'))
             ->assertSessionHas('contact_status');
 
         Mail::assertQueued(ContactInquiryMail::class, function (ContactInquiryMail $mail): bool {
@@ -390,7 +429,7 @@ class ThemeDemoContentTest extends TestCase
         $post = \App\Models\CmsPost::query()->where('status', 'published')->orderBy('id')->firstOrFail();
         $relatedPost = \App\Models\CmsPost::query()->where('status', 'published')->whereKeyNot($post->id)->orderBy('id')->firstOrFail();
 
-        $this->get($this->storefrontPath('tin-tuc/'.$post->slug))
+        $this->get($this->storefrontRoute('site.blog.show', ['slug' => $post->slug]))
             ->assertOk()
             ->assertDontSee('Đơn vị vận hành storefront và nội dung CMS trên cùng một nền tảng.')
             ->assertDontSee('Kênh tiếp nhận liên hệ hợp tác, booking truyền thông và CSKH.')
@@ -410,7 +449,7 @@ class ThemeDemoContentTest extends TestCase
             'preset' => 'electronics-superstore',
         ])->assertOk();
 
-        $response = $this->get($this->storefrontPath('tin-tuc', ['q' => 'landing page']));
+        $response = $this->get($this->storefrontRoute('site.blog.index').'?'.http_build_query(['q' => 'landing page']));
 
         $response
             ->assertOk()

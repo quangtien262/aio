@@ -344,7 +344,7 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                             </Col>
                             <Col xs={24} md={12}>
                                 <Form.Item name="link_url" label="Link click">
-                                    <Input placeholder="/vi/lien-he hoặc https://..." />
+                                    <Input placeholder="/vi/contact hoặc https://..." />
                                 </Form.Item>
                             </Col>
                         </Row>

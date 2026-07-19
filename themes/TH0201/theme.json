@@ -1,23 +1,19 @@
 {
-  "name": "LAN0201 Project Landing",
-  "key": "LAN0201",
+  "name": "TH0201 Project Commerce",
+  "key": "TH0201",
   "version": "0.1.0",
   "description": "Theme landing mo ban bat dong san, dung CatalogProduct lam listing va giu contract commerce de chuyen doi qua lai voi cac theme khac.",
   "website_type": "ecommerce",
   "parent": null,
   "preview": {
-    "thumbnail": "preview-lan0201.svg",
-    "cover": "cover-lan0201.svg"
+    "thumbnail": "preview-th0201.svg",
+    "cover": "cover-th0201.svg"
   },
   "blocks": [
-    "project-hero",
-    "search-lead-panel",
-    "project-category-strip",
-    "featured-listing-grid",
-    "launch-offer-band",
-    "trust-metrics",
-    "market-insight-teasers",
-    "footer-project-sales"
+    "hero_slider",
+    "featured_categories",
+    "featured_products",
+    "content_mosaic"
   ],
   "supports": {
     "dark_mode": false,

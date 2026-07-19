@@ -10,13 +10,10 @@
     "cover": "cover-th0003.svg"
   },
   "blocks": [
-    "fashion-topbar",
-    "editorial-header",
-    "lookbook-hero",
-    "collection-rail",
-    "featured-products",
-    "seasonal-promos",
-    "fashion-footer"
+    "hero_slider",
+    "featured_categories",
+    "featured_products",
+    "content_mosaic"
   ],
   "supports": {
     "dark_mode": false,

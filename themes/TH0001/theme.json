@@ -10,14 +10,10 @@
     "cover": "cover-th0001.png"
   },
   "blocks": [
-    "topbar",
-    "header-search",
-    "category-sidebar",
-    "hero-promo",
-    "brand-strip",
-    "deal-tabs",
-    "deal-section-grid",
-    "footer-commerce"
+    "hero_slider",
+    "featured_categories",
+    "featured_products",
+    "content_mosaic"
   ],
   "supports": {
     "dark_mode": false,
