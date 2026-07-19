@@ -24,7 +24,7 @@ export default function ThemeGrid({ themes = [], selectedThemeKey, onSelectTheme
                         {theme.is_active ? (
                             <Tag color="green" style={{ position: 'absolute', top: 8, right: 8, zIndex: 3 }}>Đang kích hoạt</Tag>
                         ) : null}
-                        <img src={theme.preview_urls?.thumbnail ?? theme.avatar_url ?? ''} alt={theme.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={theme.avatar_url ?? theme.preview_urls?.thumbnail ?? ''} alt={theme.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                         <div style={{ marginTop: 8 }}>
                             <div style={{ fontWeight: 700 }}>{theme.name}</div>

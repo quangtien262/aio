@@ -175,7 +175,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                 <div style={{ marginBottom: 16 }}>
                     <Card size="small" bordered style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                         <div style={{ width: 260, flex: '0 0 260px', borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
-                            <img src={activeThemeFromList.preview_urls?.thumbnail ?? activeThemeFromList.avatar_url ?? ''} alt={activeThemeFromList.name} style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
+                            <img src={activeThemeFromList.avatar_url ?? activeThemeFromList.preview_urls?.thumbnail ?? ''} alt={activeThemeFromList.name} style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
                         </div>
 
                         <div style={{ flex: 1 }}>

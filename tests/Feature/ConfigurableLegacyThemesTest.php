@@ -30,6 +30,17 @@ class ConfigurableLegacyThemesTest extends TestCase
         $this->assertSame(1, $keys->filter(fn (string $key): bool => $key === 'TH0201')->count());
     }
 
+    public function test_legacy_theme_avatar_uses_the_first_landing_block_preview_and_skips_th_themes(): void
+    {
+        $themes = app(ThemeRegistry::class)->all()->keyBy('key');
+
+        $this->assertStringEndsWith(
+            '/theme-previews/XD0303/hero-slider.png',
+            $themes->get('XD0303')['avatar_url'],
+        );
+        $this->assertNull($themes->get('TH0201')['avatar_url']);
+    }
+
     #[DataProvider('configurableThemes')]
     public function test_theme_home_and_landing_page_use_the_configurable_builder(string $themeKey): void
     {

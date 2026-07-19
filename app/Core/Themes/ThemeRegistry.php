@@ -49,7 +49,7 @@ class ThemeRegistry
                     'activated_at' => $installation?->activated_at,
                     'has_demo_data' => $demoRecordCount > 0,
                     'demo_record_count' => $demoRecordCount,
-                    'avatar_url' => $this->resolveAvatarUrl($manifest->key),
+                    'avatar_url' => $this->resolveAvatarUrl($manifest->key, $manifest->blocks),
                 ];
             })
             ->values();
@@ -97,7 +97,10 @@ class ThemeRegistry
         return URL::to($relativePath);
     }
 
-    private function resolveAvatarUrl(string $themeKey): ?string
+    /**
+     * @param  array<int, string>  $blocks
+     */
+    private function resolveAvatarUrl(string $themeKey, array $blocks): ?string
     {
         $relativeDir = 'theme-previews/'.$themeKey;
         $absoluteDir = public_path(str_replace('/', DIRECTORY_SEPARATOR, $relativeDir));
@@ -108,13 +111,34 @@ class ThemeRegistry
 
         $candidates = glob($absoluteDir.DIRECTORY_SEPARATOR.'avatar.*');
 
-        if (empty($candidates)) {
+        if (! empty($candidates)) {
+            $fileName = basename($candidates[0]);
+
+            return URL::to($relativeDir.'/'.$fileName);
+        }
+
+        if (str_starts_with(strtoupper($themeKey), 'TH')) {
             return null;
         }
 
-        // Use first match
-        $fileName = basename($candidates[0]);
+        foreach ($blocks as $block) {
+            $blockNames = array_unique([
+                trim($block),
+                str_replace('_', '-', trim($block)),
+                str_replace('-', '_', trim($block)),
+            ]);
 
-        return URL::to($relativeDir.'/'.$fileName);
+            foreach ($blockNames as $blockName) {
+                foreach (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'] as $extension) {
+                    $fileName = $blockName.'.'.$extension;
+
+                    if (File::exists($absoluteDir.DIRECTORY_SEPARATOR.$fileName)) {
+                        return URL::to($relativeDir.'/'.$fileName);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }
