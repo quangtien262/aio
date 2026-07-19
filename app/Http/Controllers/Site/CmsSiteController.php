@@ -2585,7 +2585,7 @@ class CmsSiteController
 
     private function isCommerceThemeKey(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0201', 'SHOP601'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0201', 'SHOP601', 'SHOP602'], true);
     }
 
     private function isLandingHybridThemeKey(?string $themeKey): bool

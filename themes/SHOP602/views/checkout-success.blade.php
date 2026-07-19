@@ -1,0 +1,1 @@
+@extends('theme-shop602::layout') @section('title','Đặt hàng thành công') @section('content')<main class="s602-section"><div class="s602-container s602-prose" style="text-align:center"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã mua sắm tại Wolf Yoga.</p><a class="s602-button" href="{{ route('site.home') }}">Về trang chủ</a></div></main>@endsection

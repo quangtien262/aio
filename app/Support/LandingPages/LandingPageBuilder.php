@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SHOP601'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602'], true);
     }
 
     /**
@@ -1189,6 +1189,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'SHOP602' => $this->shop602DefaultBlocks(),
             'SHOP601' => $this->shop601DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
@@ -1223,6 +1224,41 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function shop602DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/SHOP602/preview-shop602.svg';
+        $productOptions = [['value' => 'cms_products', 'label' => 'Sản phẩm']];
+        $productSchema = fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $productOptions],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy sản phẩm nổi bật', 'default' => false],
+        ];
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $items = fn (array $values): array => ['content' => ['items' => $values]];
+        $products = [
+            ['title' => 'Set đồ tập yoga nữ Flow', 'summary' => 'WOLF ACTIVE', 'image' => 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=900&q=85', 'price' => 650000, 'original_price' => 900000, 'url' => '#'],
+            ['title' => 'Áo bra thể thao nữ Cushion', 'summary' => 'WOLF YOGA', 'image' => 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=85', 'price' => 349000, 'original_price' => 500000, 'url' => '#'],
+            ['title' => 'Quần legging yoga nâng dáng', 'summary' => 'WOLF STUDIO', 'image' => 'https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=900&q=85', 'price' => 475000, 'original_price' => 500000, 'url' => '#'],
+            ['title' => 'Túi trống thể thao Origin', 'summary' => 'WOLF GEAR', 'image' => 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=900&q=85', 'price' => 790000, 'original_price' => 950000, 'url' => '#'],
+            ['title' => 'Thảm tập yoga cân bằng', 'summary' => 'WOLF BALANCE', 'image' => 'https://images.unsplash.com/photo-1592432678016-e910b452f9a2?auto=format&fit=crop&w=900&q=85', 'price' => 420000, 'original_price' => 550000, 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Slider Wolf Yoga', 'description' => 'Slider ảnh lớn đầu trang.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'shop602-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy (ms)']], 'data' => ['vi' => array_merge($heading('Sống khỏe mạnh, sống an yên', 'WOLF YOGA', 'Đồng hành cùng bạn trên hành trình cân bằng thân - tâm - trí.', 'Mua sắm ngay'), ['content' => ['slides' => [['title' => 'Sống khỏe mạnh<br>Sống an yên', 'summary' => 'Wolf Yoga đồng hành cùng bạn trên hành trình cân bằng thân - tâm - trí.', 'button_label' => 'Mua sắm ngay', 'image' => 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#san-pham-moi']]]]), 'en' => $heading('Live healthy, live peacefully', 'WOLF YOGA', 'Balance your body, mind and spirit.', 'Shop now')]],
+            ['block_type' => 'shop602_quality_slider', 'label' => 'Cam kết / danh mục dịch vụ', 'description' => 'Carousel ảnh chạy ngang, toàn bộ nội dung do người dùng tự nhập.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'settings' => ['autoplay_ms' => 3600], 'settings_schema' => ['autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy (ms)']], 'data' => ['vi' => array_merge($heading(), $items([['title' => 'Sản phẩm chất lượng', 'summary' => 'Được lựa chọn kỹ lưỡng, an toàn và bền bỉ.', 'image' => 'https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=300&q=85'], ['title' => 'Hỗ trợ sức khỏe toàn diện', 'summary' => 'Nâng cao sức khỏe thể chất và tinh thần.', 'image' => 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=300&q=85'], ['title' => 'Trải nghiệm an yên', 'summary' => 'Thiết kế tối giản, tinh tế và thoải mái.', 'image' => 'https://images.unsplash.com/photo-1599447292180-45fd84092ef4?auto=format&fit=crop&w=300&q=85'], ['title' => 'Đồng hành tận tâm', 'summary' => 'Đội ngũ Wolf Yoga luôn lắng nghe bạn.', 'image' => 'https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=300&q=85']])), 'en' => $heading()]],
+            ['block_type' => 'shop602_flash_sale', 'label' => 'Flash sale', 'description' => 'Sản phẩm theo điều kiện lọc và đồng hồ đếm ngược.', 'preview_image' => $preview, 'anchor_id' => 'flash-sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => false, 'ends_at' => now()->addDays(7)->toIso8601String()], 'settings_schema' => array_merge($productSchema(5), ['ends_at' => ['type' => 'text', 'label' => 'Thời điểm kết thúc']]), 'data' => ['vi' => array_merge($heading('Flash Sale', 'Ưu đãi chớp nhoáng', 'Số lượng có hạn'), $items($products)), 'en' => $heading('Flash Sale')]],
+            ['block_type' => 'shop602_dual_ads', 'label' => 'Hai banner quảng cáo', 'description' => 'Hai ảnh quảng cáo do người dùng chọn và chèn link.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai', 'settings' => [], 'data' => ['vi' => array_merge($heading(), $items([['title' => 'New Arrival', 'image' => 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=1400&q=85', 'url' => '#san-pham-moi'], ['title' => 'Ưu đãi Combo', 'image' => 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1400&q=85', 'url' => '#flash-sale']])), 'en' => $heading()]],
+            ['block_type' => 'shop602_new_arrivals', 'label' => 'Sản phẩm mới về', 'description' => 'Sản phẩm theo điều kiện lọc, kèm ảnh giới thiệu lớn.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => true, 'feature_image' => 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=85'], 'settings_schema' => array_merge($productSchema(5), ['feature_image' => ['type' => 'text', 'label' => 'Ảnh giới thiệu']]), 'data' => ['vi' => array_merge($heading('Sản phẩm Mới về', 'Bộ sưu tập mới 2026', 'Thiết kế mới, chất liệu cao cấp cho trải nghiệm tập luyện thoải mái.', 'Xem thêm'), $items($products)), 'en' => $heading('New arrivals')]],
+            ['block_type' => 'shop602_product_explorer', 'label' => 'Khám phá sản phẩm', 'description' => 'Sản phẩm theo bộ lọc, trình bày dạng thẻ khám phá.', 'preview_image' => $preview, 'anchor_id' => 'kham-pha', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => array_merge($heading('Khám phá Sản phẩm', 'Danh mục sản phẩm', 'Đa dạng sản phẩm chất lượng, thiết kế tối ưu cho từng bài tập.'), $items(array_slice($products, 0, 4))), 'en' => $heading('Explore products')]],
+            ['block_type' => 'shop602_accessories', 'label' => 'Phụ kiện tập Yoga', 'description' => 'Sản phẩm phụ kiện theo điều kiện lọc, kèm ảnh giới thiệu.', 'preview_image' => $preview, 'anchor_id' => 'phu-kien', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => false, 'feature_image' => 'https://images.unsplash.com/photo-1592432678016-e910b452f9a2?auto=format&fit=crop&w=1600&q=85'], 'settings_schema' => array_merge($productSchema(5), ['feature_image' => ['type' => 'text', 'label' => 'Ảnh giới thiệu']]), 'data' => ['vi' => array_merge($heading('Phụ kiện Tập Yoga', 'Bộ sưu tập', 'Phụ kiện chất lượng cao, thiết kế tiện dụng cho hành trình tập luyện.', 'Xem thêm'), $items($products)), 'en' => $heading('Yoga accessories')]],
+            ['block_type' => 'shop602_single_ad', 'label' => 'Banner đơn', 'description' => 'Một ảnh quảng cáo toàn chiều rộng, cho phép gắn link.', 'preview_image' => $preview, 'anchor_id' => 'banner-bo-suu-tap', 'settings' => [], 'data' => ['vi' => array_merge($heading(), $items([['title' => 'Bộ sưu tập tôn dáng', 'image' => 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=2200&q=88', 'url' => '#san-pham-moi']])), 'en' => $heading()]],
+            ['block_type' => 'shop602_latest_news', 'label' => 'Tin mới nhất', 'description' => 'Tin tức mới nhất từ hệ thống.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức']]], 'limit' => ['type' => 'number', 'label' => 'Số bài viết'], 'category_id' => ['type' => 'select', 'label' => 'Danh mục tin tức'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy tin nổi bật']], 'data' => ['vi' => $heading('Cập nhật Tin tức mới', 'Tin mới nhất', 'Khám phá sản phẩm mới, xu hướng nổi bật và thông tin hữu ích.', 'Xem tất cả tin tức'), 'en' => $heading('Latest news')]],
+            ['block_type' => 'shop602_contact_form', 'label' => 'Form gửi liên hệ', 'description' => 'Form liên hệ ở cuối trang, nội dung tiêu đề có thể chỉnh sửa.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => [], 'data' => ['vi' => $heading('Bắt đầu hành trình an yên', 'Liên hệ Wolf Yoga', 'Để lại thông tin, đội ngũ của chúng tôi sẽ tư vấn sản phẩm phù hợp cho bạn.', 'Gửi liên hệ'), 'en' => $heading('Start your wellness journey', 'Contact Wolf Yoga', 'Leave your details and our team will get back to you.', 'Send message')]],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

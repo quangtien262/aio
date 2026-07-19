@@ -1,0 +1,13 @@
+{
+  "name": "SHOP602 Wolf Yoga Commerce",
+  "key": "SHOP602",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử Yoga với slider, sản phẩm lọc động, quảng cáo, tin tức và form liên hệ.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-shop602.svg", "cover": "cover-shop602.svg" },
+  "blocks": ["hero-slider", "quality-slider", "flash-sale", "dual-ads", "new-arrivals", "product-explorer", "yoga-accessories", "single-ad", "latest-news", "contact-form"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "shop602-wolf-yoga" }
+}
