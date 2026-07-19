@@ -676,6 +676,9 @@ Route::prefix('admin')
                 Route::post('/site-mappings', [SiteMappingController::class, 'store'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.store');
+                Route::post('/site-mappings/bulk', [SiteMappingController::class, 'bulkStore'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.bulk-store');
                 Route::put('/site-mappings/{site}', [SiteMappingController::class, 'update'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.update');

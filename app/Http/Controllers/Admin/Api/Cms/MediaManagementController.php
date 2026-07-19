@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsMedia;
 use App\Models\CmsMediaFolder;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -24,7 +25,7 @@ class MediaManagementController
 
         if (! empty($validated['file'])) {
             $file = $validated['file'];
-            $storedPath = $file->store('cms', 'public');
+            $storedPath = $file->store($this->storageDirectory(), 'public');
             $media = CmsMedia::query()->create([
                 'title' => $validated['title'] ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
                 'file_path' => $storedPath,
@@ -124,6 +125,10 @@ class MediaManagementController
             'size' => $media->size,
             'alt_text' => $media->alt_text,
             'folder_path' => $media->folder_path,
+            'website_key' => $media->website_key,
+            'is_current_website' => $media->website_key === app(SiteContext::class)->websiteKey(),
+            'usage_count' => 0,
+            'is_unused' => true,
         ];
     }
 
@@ -139,5 +144,13 @@ class MediaManagementController
         $folder = CmsMediaFolder::query()->where('path', $folderPath)->first();
 
         return $folder?->path;
+    }
+
+    private function storageDirectory(): string
+    {
+        $websiteKey = app(SiteContext::class)->websiteKey();
+        $websiteKey = Str::slug($websiteKey) ?: 'website-main';
+
+        return 'cms/'.$websiteKey;
     }
 }

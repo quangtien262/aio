@@ -7,6 +7,7 @@ use App\Models\Site;
 use App\Models\SiteProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -47,6 +48,64 @@ class SiteMappingController
         return response()->json([
             'message' => 'Đã thêm cấu hình domain demo.',
             'data' => $this->sitePayload($site->fresh()),
+        ], 201);
+    }
+
+    public function bulkStore(Request $request, ThemeRegistry $themeRegistry): JsonResponse
+    {
+        $validated = $request->validate([
+            'root_domain' => ['required', 'string', 'max:255'],
+        ]);
+
+        $rootDomain = $this->normalizeDomain($validated['root_domain']);
+
+        if (! preg_match('/^[A-Za-z0-9.-]+$/', $rootDomain)) {
+            throw ValidationException::withMessages([
+                'root_domain' => 'Domain chính không hợp lệ.',
+            ]);
+        }
+
+        $created = [];
+        $skipped = [];
+
+        foreach ($themeRegistry->all() as $theme) {
+            $themeKey = strtoupper((string) ($theme['key'] ?? ''));
+
+            if ($themeKey === '') {
+                continue;
+            }
+
+            $domain = $this->normalizeDomain($themeKey.'.'.$rootDomain);
+            $websiteKey = Str::slug($domain) ?: strtolower($themeKey);
+
+            $existing = Site::query()
+                ->where(fn ($query) => $query->where('domain', $domain)->orWhere('website_key', $websiteKey))
+                ->first();
+
+            if ($existing !== null) {
+                $skipped[] = $this->sitePayload($existing);
+                continue;
+            }
+
+            $site = Site::query()->create([
+                'domain' => $domain,
+                'website_key' => $websiteKey,
+                'theme_key' => $themeKey,
+                'name' => 'Demo '.$themeKey,
+                'status' => 'active',
+                'settings' => [],
+            ]);
+
+            $this->syncSiteProfile($site, $theme);
+            $created[] = $this->sitePayload($site->fresh());
+        }
+
+        return response()->json([
+            'message' => sprintf('Đã tạo %d cấu hình domain, bỏ qua %d cấu hình đã tồn tại.', count($created), count($skipped)),
+            'data' => [
+                'created' => $created,
+                'skipped' => $skipped,
+            ],
         ], 201);
     }
 

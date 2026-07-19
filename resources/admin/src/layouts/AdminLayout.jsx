@@ -19,6 +19,7 @@ import Dropdown from 'antd/es/dropdown';
 import Grid from 'antd/es/grid';
 import Layout from 'antd/es/layout';
 import Menu from 'antd/es/menu';
+import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
 import MenuOutlined from '@ant-design/icons/MenuOutlined';
@@ -141,6 +142,7 @@ export default function AdminLayout() {
     const { message } = App.useApp();
     const screens = useBreakpoint();
     const [frontendLocale, setFrontendLocale] = useState(() => window.localStorage.getItem('aio.frontendLocale') || 'vi');
+    const [selectedAdminWebsiteKey, setSelectedAdminWebsiteKey] = useState(() => window.localStorage.getItem('aio.admin.websiteKey') || 'website-main');
     const [currentAdmin, setCurrentAdmin] = useState(null);
     const [modules, setModules] = useState([]);
     const [loadError, setLoadError] = useState(null);
@@ -164,6 +166,7 @@ export default function AdminLayout() {
             headers: {
                 'X-CSRF-TOKEN': token ?? '',
                 Accept: 'application/json',
+                'X-Website-Key': selectedAdminWebsiteKey,
                 ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
                 ...(options.headers ?? {}),
             },
@@ -188,7 +191,7 @@ export default function AdminLayout() {
         }
 
         return response.json();
-    }, []);
+    }, [selectedAdminWebsiteKey]);
 
     const hasPermission = useCallback((permission) => (currentAdmin?.permissions ?? []).includes(permission), [currentAdmin]);
 
@@ -235,6 +238,10 @@ export default function AdminLayout() {
     useEffect(() => {
         window.localStorage.setItem('aio.frontendLocale', frontendLocale);
     }, [frontendLocale]);
+
+    useEffect(() => {
+        window.localStorage.setItem('aio.admin.websiteKey', selectedAdminWebsiteKey);
+    }, [selectedAdminWebsiteKey]);
 
     useEffect(() => {
         if (!frontendLocaleOptions.length) {
@@ -676,6 +683,29 @@ export default function AdminLayout() {
                                     <span className="admin-section-dropdown-caret" aria-hidden="true" />
                                 </Button>
                             </Dropdown>
+                            <Select
+                                value={selectedAdminWebsiteKey}
+                                style={{ minWidth: 220 }}
+                                popupMatchSelectWidth={false}
+                                onChange={(value) => {
+                                    setSelectedAdminWebsiteKey(value);
+                                    window.localStorage.setItem('aio.admin.websiteKey', value);
+
+                                    try {
+                                        Object.keys(window.sessionStorage)
+                                            .filter((key) => key.startsWith('admin.route.'))
+                                            .forEach((key) => window.sessionStorage.removeItem(key));
+                                    } catch {
+                                        // Ignore storage cleanup failures.
+                                    }
+
+                                    window.location.reload();
+                                }}
+                                options={(currentAdmin?.site_options?.length ? currentAdmin.site_options : [{ website_key: selectedAdminWebsiteKey, label: selectedAdminWebsiteKey }]).map((site) => ({
+                                    value: site.website_key,
+                                    label: site.domain ? `${site.label} (${site.domain})` : site.label,
+                                }))}
+                            />
                             <Button href="/" target="_blank" rel="noopener noreferrer" className="admin-header-utility-button" icon={<HomeOutlined />} aria-label="Website">Website</Button>
 
                             <Dropdown

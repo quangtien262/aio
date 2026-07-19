@@ -27,16 +27,17 @@ function domainToWebsiteKey(domain) {
 
 export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, canManage = false, themes = [] }) {
     const [form] = Form.useForm();
+    const [bulkForm] = Form.useForm();
     const [items, setItems] = useState([]);
     const [themeOptions, setThemeOptions] = useState(themes);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
-    const themeNameMap = useMemo(() => {
-        return new Map((themeOptions.length ? themeOptions : themes).map((theme) => [theme.key, theme.name]));
-    }, [themeOptions, themes]);
+    const availableThemes = themeOptions.length ? themeOptions : themes;
+    const themeNameMap = useMemo(() => new Map(availableThemes.map((theme) => [theme.key, theme.name])), [availableThemes]);
 
     const loadItems = useCallback(async () => {
         try {
@@ -83,14 +84,12 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
     const saveItem = async () => {
         const values = await form.validateFields();
-        const url = editingItem
-            ? `/admin/api/site-mappings/${editingItem.id}`
-            : '/admin/api/site-mappings';
+        const url = editingItem ? `/admin/api/site-mappings/${editingItem.id}` : '/admin/api/site-mappings';
         const method = editingItem ? 'PUT' : 'POST';
 
         const ok = await runAdminAction(
             () => callAdminApi(url, { method, body: JSON.stringify(values) }),
-            editingItem ? 'Đã cập nhật domain demo.' : 'Đã thêm domain demo.',
+            editingItem ? 'Đã cập nhật cấu hình domain.' : 'Đã thêm cấu hình domain.',
             loadItems,
         );
 
@@ -100,10 +99,27 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         }
     };
 
+    const createBulkDomains = async () => {
+        const values = await bulkForm.validateFields();
+        const ok = await runAdminAction(
+            () => callAdminApi('/admin/api/site-mappings/bulk', {
+                method: 'POST',
+                body: JSON.stringify(values),
+            }),
+            'Đã tạo nhanh cấu hình domain.',
+            loadItems,
+        );
+
+        if (ok) {
+            setBulkModalOpen(false);
+            bulkForm.resetFields();
+        }
+    };
+
     const deleteItem = async (item) => {
         await runAdminAction(
             () => callAdminApi(`/admin/api/site-mappings/${item.id}`, { method: 'DELETE' }),
-            'Đã xóa domain demo.',
+            'Đã xóa cấu hình domain.',
             loadItems,
         );
     };
@@ -147,7 +163,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                 <Space>
                     <Button icon={<EditOutlined />} disabled={!canManage} onClick={() => openEdit(item)} />
                     <Popconfirm
-                        title="Xóa cấu hình domain demo?"
+                        title="Xóa cấu hình domain?"
                         okText="Xóa"
                         cancelText="Hủy"
                         disabled={!canManage || !item.domain}
@@ -162,10 +178,11 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
     return (
         <Card
-            title="Cấu hình domain demo"
+            title="Cấu hình domain"
             extra={(
-                <Space>
+                <Space wrap>
                     <Button icon={<ReloadOutlined />} onClick={loadItems}>Tải lại</Button>
+                    <Button disabled={!canManage} onClick={() => setBulkModalOpen(true)}>Tạo nhanh sub domain</Button>
                     <Button type="primary" icon={<PlusOutlined />} disabled={!canManage} onClick={openCreate}>Thêm domain</Button>
                 </Space>
             )}
@@ -173,11 +190,11 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         >
             <Space direction="vertical" size={16} style={{ width: '100%' }}>
                 <Paragraph style={{ marginBottom: 0 }}>
-                    Mỗi dòng liên kết một subdomain demo với một website_key và theme riêng. Khi khách truy cập domain đó, frontend sẽ tự lấy đúng data và giao diện theo cấu hình này.
+                    Mỗi dòng liên kết một domain với một website_key và theme riêng. Khi khách truy cập domain đó, frontend sẽ tự lấy đúng data và giao diện theo cấu hình này.
                 </Paragraph>
 
                 {!canManage ? (
-                    <Alert type="info" showIcon message="Tài khoản hiện tại chỉ có quyền xem. Cần quyền theme.customize để thêm, sửa hoặc xóa domain demo." />
+                    <Alert type="info" showIcon message="Tài khoản hiện tại chỉ có quyền xem. Cần quyền theme.customize để thêm, sửa hoặc xóa cấu hình domain." />
                 ) : null}
 
                 {error ? <Alert type="error" showIcon message={error} /> : null}
@@ -193,7 +210,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
             </Space>
 
             <Modal
-                title={editingItem ? 'Sửa domain demo' : 'Thêm domain demo'}
+                title={editingItem ? 'Sửa cấu hình domain' : 'Thêm cấu hình domain'}
                 open={modalOpen}
                 okText="Lưu"
                 cancelText="Hủy"
@@ -209,7 +226,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                         label="Domain"
                         name="domain"
                         rules={[
-                            { required: true, message: 'Nhập subdomain demo.' },
+                            { required: true, message: 'Nhập domain.' },
                             { pattern: /^[A-Za-z0-9.-]+$/, message: 'Domain chỉ gồm chữ, số, dấu chấm và dấu gạch ngang.' },
                         ]}
                     >
@@ -242,7 +259,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                         <Select
                             showSearch
                             optionFilterProp="label"
-                            options={(themeOptions.length ? themeOptions : themes).map((theme) => ({
+                            options={availableThemes.map((theme) => ({
                                 value: theme.key,
                                 label: `${theme.key} - ${theme.name}`,
                             }))}
@@ -258,6 +275,39 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                                 { value: 'inactive', label: 'inactive' },
                             ]}
                         />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            <Modal
+                title="Tạo nhanh sub domain"
+                open={bulkModalOpen}
+                okText="Tạo cấu hình"
+                cancelText="Hủy"
+                onOk={createBulkDomains}
+                onCancel={() => {
+                    setBulkModalOpen(false);
+                    bulkForm.resetFields();
+                }}
+                destroyOnHidden
+            >
+                <Form form={bulkForm} layout="vertical">
+                    <Alert
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                        message="Hệ thống sẽ tạo cấu hình theo mã theme, ví dụ XD0301.demo.htvietnam.vn. Cấu hình đã tồn tại sẽ được bỏ qua."
+                    />
+                    <Form.Item
+                        label="Domain chính"
+                        name="root_domain"
+                        extra={`Dự kiến tạo tối đa ${availableThemes.length} cấu hình theo danh sách theme hiện có.`}
+                        rules={[
+                            { required: true, message: 'Nhập domain chính.' },
+                            { pattern: /^(https?:\/\/)?[A-Za-z0-9.-]+([/:?#].*)?$/, message: 'Domain chính không hợp lệ.' },
+                        ]}
+                    >
+                        <Input placeholder="demo.htvietnam.vn" />
                     </Form.Item>
                 </Form>
             </Modal>

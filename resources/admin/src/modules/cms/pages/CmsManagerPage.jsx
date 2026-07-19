@@ -663,6 +663,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [mediaUploadOpen, setMediaUploadOpen] = useState(false);
     const [editingMediaRecord, setEditingMediaRecord] = useState(null);
     const [activeMediaFolder, setActiveMediaFolder] = useState('all');
+    const [mediaShowAll, setMediaShowAll] = useState(false);
     const [mediaDragActive, setMediaDragActive] = useState(false);
     const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
     const [categoryFormOpen, setCategoryFormOpen] = useState(false);
@@ -759,10 +760,15 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 };
             }
 
+            if (sectionKey === 'cms-media') {
+                const payload = await callAdminApi(`/admin/api/cms/media${mediaShowAll ? '?scope=all' : ''}`);
+                return payload.data ?? null;
+            }
+
             const payload = await callAdminApi(sectionConfig.endpoint);
             return payload.data ?? null;
         },
-        deps: [sectionConfig.endpoint, sectionPermissions.canView],
+        deps: [sectionConfig.endpoint, sectionPermissions.canView, mediaShowAll],
     });
 
     const mediaItems = data?.items ?? [];
@@ -2659,6 +2665,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const updateMediaFolder = async (record, folderPath) => {
+        if (record?.is_current_website === false) {
+            messageApi.warning('Media này thuộc website khác. Bạn chỉ nên copy URL để dùng chung.');
+
+            return false;
+        }
+
         const didSave = await runAdminAction(
             () => callAdminApi(`/admin/api/cms/media/${record.id}`, {
                 method: 'PUT',
@@ -2704,6 +2716,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             }
 
             if (key === 'edit-media-title') {
+                if (record?.is_current_website === false) {
+                    messageApi.warning('Media này thuộc website khác. Bạn chỉ nên copy URL để dùng chung.');
+
+                    return;
+                }
+
                 openEditMediaTitle(record);
                 return;
             }
@@ -2715,6 +2733,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             }
 
             if (key === 'delete') {
+                if (record?.is_current_website === false) {
+                    messageApi.warning('Media này thuộc website khác. Bạn chỉ nên copy URL để dùng chung.');
+
+                    return;
+                }
+
                 confirmDeleteRecord(record.id);
             }
         },
@@ -4203,6 +4227,30 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             </Col>
             <Col xs={24} lg={18} xl={19}>
                 <Space direction="vertical" size={14} style={{ width: '100%' }}>
+                    <Card size="small">
+                        <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+                            <Space direction="vertical" size={0}>
+                                <Text strong>Phạm vi media</Text>
+                                <Text type="secondary">
+                                    Mặc định chỉ hiện media của website đang quản trị. Bật show toàn bộ để copy URL ảnh từ website khác khi cần.
+                                </Text>
+                            </Space>
+                            <Space wrap>
+                                <Tag color="blue">{data?.current_website_key ?? 'website-main'}</Tag>
+                                {(data?.unused_total ?? 0) > 0 ? <Tag color="warning">{data.unused_total} file chưa dùng</Tag> : <Tag color="green">Không có file thừa</Tag>}
+                                <Button
+                                    type={mediaShowAll ? 'primary' : 'default'}
+                                    onClick={() => {
+                                        setMediaShowAll((current) => !current);
+                                        setActiveMediaFolder('all');
+                                    }}
+                                >
+                                    {mediaShowAll ? 'Đang show toàn bộ' : 'Show toàn bộ'}
+                                </Button>
+                            </Space>
+                        </Space>
+                    </Card>
+
                     <div
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -4248,7 +4296,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         <Card
                                             hoverable
                                             size="small"
-                                            draggable
+                                            draggable={record?.is_current_website !== false}
                                             onDragStart={(event) => event.dataTransfer.setData('application/x-cms-media-id', String(record.id))}
                                             cover={(
                                                 <div style={{ height: 150, overflow: 'hidden', background: '#f4f7f6' }}>
@@ -4270,8 +4318,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                                     key="edit"
                                                     size="small"
                                                     icon={<EditOutlined />}
-                                                    disabled={!sectionPermissions.canUpdate}
-                                                    onClick={() => openEditMediaTitle(record)}
+                                                    disabled={!sectionPermissions.canUpdate || record?.is_current_website === false}
+                                                    onClick={() => {
+                                                        if (record?.is_current_website === false) {
+                                                            messageApi.warning('Media này thuộc website khác. Bạn chỉ nên copy URL để dùng chung.');
+
+                                                            return;
+                                                        }
+
+                                                        openEditMediaTitle(record);
+                                                    }}
                                                 >
                                                     Sửa
                                                 </Button>,
@@ -4283,6 +4339,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                                 <Text type="secondary" ellipsis title={record.alt_text || record.file_url}>{record.alt_text || record.mime_type || 'Media asset'}</Text>
                                                 <Space size={6} wrap>
                                                     <Tag>{formatBytes(record.size)}</Tag>
+                                                    {record.website_key ? <Tag color={record.is_current_website ? 'blue' : 'purple'}>{record.website_key}</Tag> : null}
+                                                    {record.is_unused ? <Tag color="warning">Chưa dùng</Tag> : <Tag color="green">{record.usage_count} nơi dùng</Tag>}
                                                     {record.folder_path ? <Tag color="green">{mediaFolders.find((folder) => folder.path === record.folder_path)?.name || record.folder_path}</Tag> : <Tag>Gốc</Tag>}
                                                 </Space>
                                             </Space>

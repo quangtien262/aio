@@ -45,7 +45,7 @@ export default function ThemeActionMenuCard({
         {
             key: 'site-mappings',
             icon: <LinkOutlined />,
-            label: 'Domain demo',
+            label: 'Cấu hình domain',
             disabled: isSiteMappingsActive,
             onClick: () => onOpenSiteMappings?.(),
             style: { marginBottom: 6, fontWeight: isSiteMappingsActive ? 600 : 400 },

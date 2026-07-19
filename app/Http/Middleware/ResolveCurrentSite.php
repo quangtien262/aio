@@ -17,6 +17,21 @@ class ResolveCurrentSite
 
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->is('admin/*') && Schema::hasTable('sites')) {
+            $websiteKey = trim((string) $request->header('X-Website-Key', ''));
+
+            if ($websiteKey !== '') {
+                $site = Site::query()
+                    ->where('status', 'active')
+                    ->where('website_key', $websiteKey)
+                    ->first();
+
+                $this->siteContext->set($site, $site?->website_key ?? $websiteKey);
+
+                return $next($request);
+            }
+        }
+
         $host = $this->normalizeHost($request->getHost());
         $site = null;
 
