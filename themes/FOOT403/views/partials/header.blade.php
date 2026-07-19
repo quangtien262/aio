@@ -11,6 +11,6 @@
         <a class="dr-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">@if($logoUrl)<img src="{{ $logoUrl }}" alt="{{ $companyName }}">@else<span class="dr-brand__seal">♨</span><span><strong>Dola</strong><small>Restaurant</small></span>@endif</a>
         <button class="dr-menu-toggle" type="button" data-dr-menu-toggle aria-expanded="false">☰</button>
         <nav class="dr-nav" data-dr-menu>@foreach($navItems as $item)<a href="{{ $item['href'] }}">{{ $item['label'] }}</a>@endforeach</nav>
-        <div class="dr-tools"><a href="{{ route('site.catalog.search', ['locale'=>app()->getLocale(),'searchSegment'=>app()->getLocale()==='en'?'search':'tim-kiem']) }}" aria-label="Tìm kiếm">⌕</a><a href="{{ route('site.cart.index', ['locale'=>app()->getLocale(),'cartSegment'=>app()->getLocale()==='en'?'cart':'gio-hang']) }}" aria-label="Giỏ hàng">♧</a><a class="dr-book" href="#lien-he">Đặt bàn</a></div>
+        <div class="dr-tools"><a href="{{ route('site.catalog.search', ['locale'=>app()->getLocale(),'searchSegment'=>app()->getLocale()==='en'?'search':'tim-kiem']) }}" aria-label="Tìm kiếm">⌕</a><a href="{{ route('site.cart.index', ['locale'=>app()->getLocale(),'cartSegment'=>app()->getLocale()==='en'?'cart':'gio-hang']) }}" aria-label="Giỏ hàng">♧</a><button class="dr-book" type="button" data-dr-order-open>Đặt bàn</button></div>
     </div>
 </header>

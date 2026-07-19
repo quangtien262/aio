@@ -1,0 +1,5 @@
+@extends('theme-shop601::layout')
+@section('title','Liên hệ')
+@section('content')<main class="s601-inner"><section class="s601-inner-hero"><div class="s601-container"><p>SHOP601</p><h1>Liên hệ với chúng tôi</h1></div></section><section class="s601-section"><form class="s601-contact s601-container" method="POST" action="{{ route('site.contact.submit') }}">@csrf<input name="name" required placeholder="Họ và tên"><input name="email" type="email" required placeholder="Email"><input name="phone" placeholder="Số điện thoại"><textarea name="message" required placeholder="Nội dung"></textarea><button class="s601-more">Gửi liên hệ</button></form></section></main>
+@endsection
+@push('head')<style>.s601-contact{max-width:850px;display:grid;grid-template-columns:1fr 1fr;gap:18px}.s601-contact input,.s601-contact textarea{padding:16px;border:1px solid #ddd;border-radius:9px;font:inherit}.s601-contact textarea{grid-column:1/-1;min-height:180px}.s601-contact button{border:0;margin:0}@media(max-width:600px){.s601-contact{grid-template-columns:1fr}}</style>@endpush

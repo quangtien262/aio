@@ -1,0 +1,13 @@
+{
+  "name": "SHOP601 Bean Style Commerce",
+  "key": "SHOP601",
+  "version": "1.0.0",
+  "description": "Theme thời trang thương mại điện tử với slider, bộ sưu tập, flash sale, khối sản phẩm linh hoạt, TikTok, đánh giá và tin tức.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-shop601.svg", "cover": "cover-shop601.svg" },
+  "blocks": ["hero-slider", "shopping-benefits", "collection-cards", "flash-sale", "advertising-banners", "product-grid", "feature-collection", "product-carousel", "testimonials", "tiktok-embed", "latest-content"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "shop601-bean-style" }
+}

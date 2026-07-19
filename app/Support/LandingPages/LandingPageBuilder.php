@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SHOP601'], true);
     }
 
     /**
@@ -481,6 +481,10 @@ class LandingPageBuilder
             'team_members' => 4,
             'testimonials' => 2,
             'partner_logos' => 6,
+            'shop601_collection_cards', 'shop601_latest_content' => 4,
+            'shop601_flash_sale', 'shop601_product_grid' => 10,
+            'shop601_feature_collection' => 4,
+            'shop601_product_carousel' => 5,
             default => 3,
         };
         $limit = max(1, min(12, (int) ($settings['limit'] ?? $defaultLimit)));
@@ -497,12 +501,14 @@ class LandingPageBuilder
             return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
                 'project_gallery' => 'cms_projects',
-                'bizmax_latest_posts' => 'cms_posts',
+                'bizmax_latest_posts', 'shop601_latest_content' => 'cms_posts',
+                'shop601_collection_cards' => 'custom',
+                'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel' => 'cms_products',
                 'solutions_split_list', 'collection_gallery' => 'cms_services',
                 default => 'cms_services',
             };
@@ -1183,6 +1189,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'SHOP601' => $this->shop601DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
             'TH0002', 'TH0003', 'TH0020' => $this->legacyCommerceDefaultBlocks($themeKey),
@@ -1216,6 +1223,55 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function shop601DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/SHOP601/preview-shop601.svg';
+        $source = fn (array $options, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $options],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật', 'default' => false],
+        ];
+        $productSources = [
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+        ];
+        $collectionSources = [
+            ['value' => 'custom', 'label' => 'Người dùng tự nhập'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+            ['value' => 'cms_categories', 'label' => 'Danh mục tin tức'],
+        ];
+        $contentSources = [
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+        ];
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $buttonLabel = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $buttonLabel];
+        $custom = fn (array $items): array => ['content' => ['items' => $items]];
+        $products = [
+            ['title' => 'Đầm xòe đính nơ', 'summary' => 'BABYDOLL', 'image' => 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=85', 'price' => 460000, 'original_price' => 530000, 'url' => '#'],
+            ['title' => 'Đầm cổ tròn cánh tiên', 'summary' => 'MANGO', 'image' => 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=85', 'price' => 515000, 'original_price' => 535000, 'url' => '#'],
+            ['title' => 'Áo khoác blazer', 'summary' => 'GRACE', 'image' => 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=85', 'price' => 705000, 'original_price' => 850000, 'url' => '#'],
+            ['title' => 'Váy Babydoll viền ren', 'summary' => 'LADIES', 'image' => 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=900&q=85', 'price' => 590000, 'original_price' => 640000, 'url' => '#'],
+            ['title' => 'Đầm suông cổ lệch', 'summary' => 'BESTY', 'image' => 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=85', 'price' => 720000, 'original_price' => 750000, 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Slider trang chủ', 'description' => 'Slider ảnh đầu trang lấy từ banner SHOP601.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['placement' => 'shop601-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy (ms)']], 'data' => ['vi' => array_merge($heading('Săn deal chào thu', 'BEAN Style', 'Phong cách chuẩn gu, giá chỉ từ 99K.', 'Mua ngay'), ['content' => ['slides' => [['title' => 'Săn deal chào thu', 'summary' => 'Phong cách chuẩn gu · Chỉ từ 99K', 'button_label' => 'Khám phá ngay', 'image' => 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#san-pham']]]]), 'en' => $heading('Autumn style deals', 'BEAN Style', 'Signature looks from only 99K.', 'Shop now')]],
+            ['block_type' => 'shop601_benefits', 'label' => 'Cam kết mua hàng', 'description' => 'Các lợi ích do người dùng tự nhập.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'settings' => [], 'data' => ['vi' => array_merge($heading(), $custom([['icon' => 'fa-solid fa-truck-fast', 'title' => 'Miễn phí vận chuyển', 'summary' => 'Đơn từ 399K'], ['icon' => 'fa-solid fa-rotate-left', 'title' => 'Đổi hàng tận nhà', 'summary' => 'Trong vòng 15 ngày'], ['icon' => 'fa-solid fa-money-bill-wave', 'title' => 'Thanh toán COD', 'summary' => 'Yên tâm mua sắm'], ['icon' => 'fa-solid fa-headset', 'title' => 'Hotline: 1800 6750', 'summary' => 'Hỗ trợ từ 8h00-22h00']])), 'en' => $heading()]],
+            ['block_type' => 'shop601_collection_cards', 'label' => 'Bộ sưu tập / danh mục', 'description' => 'Lấy từ sản phẩm, tin tức, các loại danh mục hoặc tự nhập.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $source($collectionSources, 4), 'data' => ['vi' => array_merge($heading('Bộ sưu tập mới', null, null, 'Xem chi tiết'), $custom([['title' => 'Mini BST Xuân - Hè', 'image' => 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=85', 'url' => '#'], ['title' => 'Mini BST Thu - Đông', 'image' => 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=85', 'url' => '#'], ['title' => 'Baby BST dạ hội', 'image' => 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=85', 'url' => '#'], ['title' => 'Mini BST ngoài trời', 'image' => 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=85', 'url' => '#']])), 'en' => $heading('New collections')]],
+            ['block_type' => 'shop601_flash_sale', 'label' => 'Flash sale', 'description' => 'Danh sách sản phẩm khuyến mại.', 'preview_image' => $preview, 'anchor_id' => 'flash-sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => false, 'ends_at' => now()->addDays(7)->toIso8601String()], 'settings_schema' => array_merge($source($productSources, 5), ['ends_at' => ['type' => 'text', 'label' => 'Thời điểm kết thúc']]), 'data' => ['vi' => array_merge($heading('Flash Sale', null, 'Giảm ngay 120K cho đơn hàng trên 500K'), $custom($products)), 'en' => $heading('Flash Sale')]],
+            ['block_type' => 'shop601_ads', 'label' => 'Banner quảng cáo', 'description' => 'Ảnh quảng cáo do người dùng tự nhập và gắn link.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'settings' => [], 'data' => ['vi' => array_merge($heading(), $custom([['title' => 'Khám phá BST mới', 'image' => 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1400&q=85', 'url' => '#san-pham'], ['title' => 'Ưu đãi online', 'image' => 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1400&q=85', 'url' => '#flash-sale']])), 'en' => $heading()]],
+            ['block_type' => 'shop601_product_grid', 'label' => 'Lưới sản phẩm', 'description' => 'Sản phẩm theo điều kiện lọc.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 10, 'featured_only' => true], 'settings_schema' => $source($productSources, 10), 'data' => ['vi' => array_merge($heading('Sản Phẩm Nổi Bật', null, null, 'Xem tất cả'), $custom(array_merge($products, $products))), 'en' => $heading('Featured Products', null, null, 'View all')]],
+            ['block_type' => 'shop601_feature_collection', 'label' => 'Bộ sưu tập nổi bật', 'description' => 'Sản phẩm đầu tiên hiển thị ảnh lớn, các sản phẩm sau hiển thị nhỏ bên cạnh.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap-noi-bat', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $source($productSources, 4), 'data' => ['vi' => array_merge($heading('Bộ Sưu Tập Trang Phục Leo Núi', 'Chính thức ra mắt', null, 'Khám phá ngay'), $custom($products)), 'en' => $heading('Outdoor Collection', 'Now available', null, 'Explore')]],
+            ['block_type' => 'shop601_product_carousel', 'label' => 'Sản phẩm phổ biến', 'description' => 'Carousel sản phẩm theo điều kiện lọc.', 'preview_image' => $preview, 'anchor_id' => 'pho-bien', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => false], 'settings_schema' => $source($productSources, 5), 'data' => ['vi' => array_merge($heading('Sản phẩm phổ biến', null, 'Một trải nghiệm đặc biệt'), $custom($products)), 'en' => $heading('Popular products', null, 'A special experience')]],
+            ['block_type' => 'testimonials', 'label' => 'Đánh giá khách hàng', 'description' => 'Đánh giá thật từ khách hàng.', 'preview_image' => $preview, 'anchor_id' => 'danh-gia', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $source([['value' => 'cms_testimonials', 'label' => 'Đánh giá khách hàng'], ['value' => 'custom', 'label' => 'Người dùng tự nhập']], 3), 'data' => ['vi' => array_merge($heading('Hơn 5K Khách Hàng Tin Tưởng', null, 'Những lời đánh giá chân thật của khách hàng'), $custom([['name' => 'Trang Trang', 'role' => 'Nhân viên văn phòng', 'quote' => 'Sản phẩm giao nhanh, chất lượng tốt và đóng gói rất chỉn chu.', 'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=85'], ['name' => 'Gia Kỳ', 'role' => 'Tiktoker', 'quote' => 'Sản phẩm tốt, ổn áp trong tầm giá. Mình rất hài lòng.', 'image' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=85'], ['name' => 'Thúy Hằng', 'role' => 'Người mẫu ảnh', 'quote' => 'Chất liệu cực kỳ mát mẻ và dễ phối đồ trong nhiều dịp.', 'image' => 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=85']])), 'en' => $heading('Trusted by 5K+ Customers')]],
+            ['block_type' => 'shop601_tiktok', 'label' => 'TikTok embed', 'description' => 'Mã nhúng TikTok và phần mô tả.', 'preview_image' => $preview, 'anchor_id' => 'tiktok', 'settings' => ['cta_url' => 'https://www.tiktok.com/'], 'data' => ['vi' => array_merge($heading('Theo dõi chúng tôi trên TikTok', '@BEANSTYLETIKTOK', 'Cập nhật nhanh nhất về sản phẩm và xu hướng thời trang.', 'Theo dõi ngay'), ['content' => ['embed_html' => '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/" data-unique-id="tiktok"><section><a href="https://www.tiktok.com/">TikTok</a></section></blockquote>']]), 'en' => $heading('Follow us on TikTok', '@BEANSTYLETIKTOK', 'Fresh product and fashion updates.', 'Follow now')]],
+            ['block_type' => 'shop601_latest_content', 'label' => 'Tin tức / dịch vụ', 'description' => 'Lấy dữ liệu từ tin tức hoặc dịch vụ.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $source($contentSources, 4), 'data' => ['vi' => array_merge($heading('Tin Tức Mới Nhất', null, 'Cập nhật những tin tức thời trang mới nhất', 'Xem tất cả'), $custom([['title' => 'Áo khoác công sở nữ ghi điểm phong cách', 'summary' => 'Gợi ý những item tiện lợi cho môi trường công sở.', 'image' => 'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&w=900&q=85', 'url' => '#'], ['title' => 'Các kiểu váy đầm đi đám cưới đẹp nhất', 'summary' => 'Lựa chọn nổi bật cho những cô nàng hiện đại.', 'image' => 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=85', 'url' => '#'], ['title' => 'Tips phối đồ với quần jean ống rộng', 'summary' => 'Bí quyết trẻ trung cuốn hút mọi dịp.', 'image' => 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=85', 'url' => '#'], ['title' => 'Phụ nữ hiện đại hãy mặc vest', 'summary' => 'Tuyên ngôn phong cách và sự tự tin.', 'image' => 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=900&q=85', 'url' => '#']])), 'en' => $heading('Latest News')]],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */
