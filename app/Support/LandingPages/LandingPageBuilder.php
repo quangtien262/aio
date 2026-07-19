@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602'], true);
     }
 
     /**
@@ -1205,6 +1205,7 @@ class LandingPageBuilder
             'FOOT403' => $this->foot403DefaultBlocks(),
             'XD0320' => $this->xd0320DefaultBlocks(),
             'NT501' => $this->nt501DefaultBlocks(),
+            'NT502' => $this->nt502DefaultBlocks(),
             'XD321' => $this->xd321DefaultBlocks(),
             'XD0322' => $this->xd0322DefaultBlocks(),
             'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
@@ -3692,6 +3693,39 @@ class LandingPageBuilder
         $news['settings'] = ['source' => 'cms_posts', 'limit' => 6, 'featured_only' => true];
         $news['data']['vi'] = ['title' => 'Cap nhat tin tuc logistics', 'subtitle' => 'Kien thuc va thi truong', 'description' => '', 'button_label' => 'Xem them', 'content' => ['items' => []]];
         return [$hero, $quality, $about, $services, $solutions, $process, $products, $testimonials, $partners, $news];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function nt502DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/NT502/preview-nt502.svg';
+        $sourceSchema = fn (array $options, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $options],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật', 'default' => false],
+        ];
+        $productsSource = [['value' => 'cms_products', 'label' => 'Sản phẩm']];
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $items = fn (array $values): array => ['content' => ['items' => $values]];
+        $products = [
+            ['title' => 'Bàn sofa gỗ cao su', 'image' => 'https://images.unsplash.com/photo-1532372320572-cda25653a26d?auto=format&fit=crop&w=900&q=85', 'price' => 1790000, 'original_price' => 2000000, 'url' => '#'],
+            ['title' => 'Tủ kệ tivi gỗ', 'image' => 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=85', 'price' => 2490000, 'original_price' => 3000000, 'url' => '#'],
+            ['title' => 'Ghế đơn sofa tự nhiên', 'image' => 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=900&q=85', 'price' => 1990000, 'original_price' => 2300000, 'url' => '#'],
+            ['title' => 'Tủ đầu giường gỗ', 'image' => 'https://images.unsplash.com/photo-1615874694520-474822394e73?auto=format&fit=crop&w=900&q=85', 'price' => 1190000, 'original_price' => 1390000, 'url' => '#'],
+            ['title' => 'Giường ngủ gỗ hiện đại', 'image' => 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=85', 'price' => 4990000, 'original_price' => 5500000, 'url' => '#'],
+            ['title' => 'Tủ quần áo gỗ', 'image' => 'https://images.unsplash.com/photo-1558997519-83ea9252edf8?auto=format&fit=crop&w=900&q=85', 'price' => 4490000, 'original_price' => 5000000, 'url' => '#'],
+        ];
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero nội thất', 'description' => 'Slider banner lớn đầu trang.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'nt502-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy (ms)']], 'data' => ['vi' => array_merge($heading('Nội thất phòng khách', 'DOLA FURNITURE', 'Giảm đến 50% khi đặt hàng qua web', 'Xem ngay'), ['content' => ['slides' => [['title' => 'Nội thất phòng khách', 'summary' => 'Giảm đến 50% khi đặt hàng qua web', 'button_label' => 'Xem ngay', 'image' => 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#phong-khach']]]]), 'en' => $heading('Living room furniture', 'DOLA FURNITURE', 'Save up to 50% when ordering online.', 'Shop now')]],
+            ['block_type' => 'nt502_categories', 'label' => 'Danh mục nổi bật', 'description' => 'Carousel danh mục sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 9], 'settings_schema' => $sourceSchema([['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm']], 9), 'data' => ['vi' => array_merge($heading('Danh mục nổi bật'), $items([])), 'en' => $heading('Featured categories')]],
+            ['block_type' => 'nt502_about', 'label' => 'Giới thiệu Dola Furniture', 'description' => 'Giới thiệu thương hiệu, ảnh và ba cam kết do người dùng nhập.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'settings' => ['image' => 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1500&q=90'], 'settings_schema' => ['image' => ['type' => 'text', 'label' => 'Ảnh giới thiệu']], 'data' => ['vi' => array_merge($heading('Dola Furniture', 'Về chúng tôi', 'Với mong muốn phát triển thương hiệu Việt bằng nội lực, Dola Furniture chú trọng thiết kế và sản xuất nội thất trong nước.'), $items([['icon' => 'fa-solid fa-truck-fast', 'title' => 'Miễn phí vận chuyển', 'summary' => 'Cho tất cả đơn hàng trong nội thành'], ['icon' => 'fa-solid fa-box-open', 'title' => 'Miễn phí đổi - trả', 'summary' => 'Đối với sản phẩm lỗi sản xuất'], ['icon' => 'fa-solid fa-headset', 'title' => 'Hỗ trợ nhanh chóng', 'summary' => 'Gọi Hotline 19006750 để được hỗ trợ']])), 'en' => $heading('Dola Furniture', 'About us', 'Vietnamese furniture designed and produced with care.')]],
+            ['block_type' => 'nt502_promotion', 'label' => 'Khuyến mãi đặc biệt', 'description' => 'Sản phẩm khuyến mãi theo điều kiện lọc và ảnh nền.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'featured_only' => true, 'background_image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2200&q=90'], 'settings_schema' => array_merge($sourceSchema($productsSource, 3), ['background_image' => ['type' => 'text', 'label' => 'Ảnh nền']]), 'data' => ['vi' => array_merge($heading('Khuyến mãi đặc biệt', null, 'Ưu đãi giới hạn dành cho không gian sống hiện đại.', 'Xem tất cả'), $items(array_slice($products, 0, 3))), 'en' => $heading('Special promotion')]],
+            ['block_type' => 'nt502_living_room', 'label' => 'Nội thất phòng khách', 'description' => 'Banner lớn và lưới sản phẩm theo điều kiện lọc.', 'preview_image' => $preview, 'anchor_id' => 'phong-khach', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 6, 'featured_only' => false, 'feature_image' => 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1500&q=90'], 'settings_schema' => array_merge($sourceSchema($productsSource, 6), ['feature_image' => ['type' => 'text', 'label' => 'Ảnh phòng khách']]), 'data' => ['vi' => array_merge($heading('Nội thất phòng khách', null, 'Nhiều sản phẩm giúp phòng khách của bạn trở nên phong phú hơn.', 'Xem ngay'), $items($products)), 'en' => $heading('Living room furniture')]],
+            ['block_type' => 'nt502_bedroom', 'label' => 'Nội thất phòng ngủ', 'description' => 'Lưới sản phẩm và banner lớn đảo chiều.', 'preview_image' => $preview, 'anchor_id' => 'phong-ngu', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 6, 'featured_only' => false, 'feature_image' => 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1500&q=90'], 'settings_schema' => array_merge($sourceSchema($productsSource, 6), ['feature_image' => ['type' => 'text', 'label' => 'Ảnh phòng ngủ']]), 'data' => ['vi' => array_merge($heading('Nội thất phòng ngủ', null, 'Nhiều sản phẩm giúp căn phòng của bạn trở nên ấm cúng hơn.', 'Xem ngay'), $items(array_reverse($products))), 'en' => $heading('Bedroom furniture')]],
+            ['block_type' => 'testimonials', 'label' => 'Đánh giá từ khách hàng', 'description' => 'Slider đánh giá khách hàng.', 'preview_image' => $preview, 'anchor_id' => 'danh-gia', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 5, 'featured_only' => true, 'background_image' => 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=2200&q=90'], 'settings_schema' => array_merge($sourceSchema([['value' => 'cms_testimonials', 'label' => 'Đánh giá khách hàng'], ['value' => 'custom', 'label' => 'Người dùng tự nhập']], 5), ['background_image' => ['type' => 'text', 'label' => 'Ảnh nền']]), 'data' => ['vi' => array_merge($heading('Đánh giá từ khách hàng'), $items([['name' => 'Ngọc Tuyến', 'role' => 'Đầu bếp', 'quote' => 'Những mẫu phòng ngủ của Dola Furniture mang đến cảm giác ấm cúng, gần gũi và thoải mái.', 'image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=85']])), 'en' => $heading('Customer reviews')]],
+            ['block_type' => 'nt502_latest_news', 'label' => 'Tin tức mới nhất', 'description' => 'Bài nổi bật lớn và danh sách bài viết mới.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 7, 'featured_only' => false], 'settings_schema' => $sourceSchema([['value' => 'cms_posts', 'label' => 'Tin tức']], 7), 'data' => ['vi' => $heading('Tin tức mới nhất'), 'en' => $heading('Latest news')]],
+        ];
     }
 
     private function nt501DefaultBlocks(): array

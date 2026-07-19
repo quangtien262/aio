@@ -7,6 +7,7 @@ use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\Demo\Ser102DemoContentProvider;
 use App\Core\Themes\Demo\Shop601DemoContentProvider;
 use App\Core\Themes\Demo\Shop602DemoContentProvider;
+use App\Core\Themes\Demo\Nt502DemoContentProvider;
 use App\Core\Themes\Demo\Th0050DemoContentProvider;
 use App\Core\Themes\Demo\Xd0302DemoContentProvider;
 use App\Core\Themes\Demo\Xd0303DemoContentProvider;
@@ -39,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SiteContext::class);
 
         $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
+            $this->app->make(Nt502DemoContentProvider::class),
             $this->app->make(Shop602DemoContentProvider::class),
             $this->app->make(Shop601DemoContentProvider::class),
             $this->app->make(Th0050DemoContentProvider::class),
