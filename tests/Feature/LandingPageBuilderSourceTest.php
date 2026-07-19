@@ -33,6 +33,38 @@ class LandingPageBuilderSourceTest extends TestCase
         $this->assertContains('featured_products', collect($builder->availableBlocks('TH0001'))->pluck('block_type')->all());
     }
 
+    public function test_foot401_homepage_can_render_shortened_service_and_product_summaries(): void
+    {
+        $html = view('theme-foot401::home', [
+            'landingPage' => ['title' => 'FOOT401'],
+            'landingBlocks' => [
+                [
+                    'id' => 1,
+                    'block_type' => 'content_mosaic',
+                    'anchor_id' => 'dich-vu',
+                    'data' => ['title' => 'Dịch vụ', 'content' => ['items' => [[
+                        'title' => 'Tiệc riêng',
+                        'summary' => 'Mô tả dịch vụ nhà hàng cần được rút gọn.',
+                    ]]]],
+                ],
+                [
+                    'id' => 2,
+                    'block_type' => 'featured_products',
+                    'anchor_id' => 'thuc-don',
+                    'data' => ['title' => 'Thực đơn', 'content' => ['items' => [[
+                        'title' => 'Món theo mùa',
+                        'summary' => 'Mô tả món ăn cần được rút gọn.',
+                        'price' => 120000,
+                    ]]]],
+                ],
+            ],
+        ])->render();
+
+        $this->assertStringContainsString('Mô tả dịch vụ nhà hàng', $html);
+        $this->assertStringContainsString('Mô tả món ăn cần được rút gọn.', $html);
+        $this->assertStringContainsString('120.000đ', $html);
+    }
+
     public function test_landing_page_menu_uses_site_landing_show_route(): void
     {
         $page = LandingPage::query()->create([

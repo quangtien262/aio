@@ -69,7 +69,7 @@
                         <article class="foot-service-card foot-rail__item">
                             <a href="{{ data_get($item, 'url', '#') }}">
                                 <div class="foot-service-card__image"><img src="{{ data_get($item, 'image', 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($item, 'title', '') }}"><h3>{{ data_get($item, 'title', 'Trải nghiệm ẩm thực') }}</h3></div>
-                                <div class="foot-service-card__copy">{{ IlluminateSupportStr::limit(strip_tags((string) data_get($item, 'summary', data_get($item, 'description', ''))), 150) }}</div>
+                                <div class="foot-service-card__copy">{{ \Illuminate\Support\Str::limit(strip_tags((string) data_get($item, 'summary', data_get($item, 'description', ''))), 150) }}</div>
                             </a>
                         </article>
                     @empty
@@ -96,7 +96,7 @@
                 <header class="foot-section-heading foot-section-heading--light"><p>{{ data_get($productBlock, 'data.subtitle', 'Từ bếp') }}</p><h2>{{ data_get($productBlock, 'data.title', 'Thực đơn theo mùa') }}</h2><span></span></header>
                 <div class="foot-rail foot-rail--menu" data-foot-rail>
                     @forelse ($productItems as $item)
-                        <article class="foot-menu-card foot-rail__item"><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image', 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($item, 'title', '') }}"><div><h3>{{ data_get($item, 'title', 'Món ăn theo mùa') }}</h3><strong>{{ $formatPrice(data_get($item, 'price')) }}</strong><p>{{ IlluminateSupportStr::limit(strip_tags((string) data_get($item, 'summary', '')), 120) }}</p></div></a></article>
+                        <article class="foot-menu-card foot-rail__item"><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image', 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($item, 'title', '') }}"><div><h3>{{ data_get($item, 'title', 'Món ăn theo mùa') }}</h3><strong>{{ $formatPrice(data_get($item, 'price')) }}</strong><p>{{ \Illuminate\Support\Str::limit(strip_tags((string) data_get($item, 'summary', '')), 120) }}</p></div></a></article>
                     @empty
                         <p class="foot-empty foot-empty--light">Thực đơn đang được cập nhật.</p>
                     @endforelse
