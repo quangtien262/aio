@@ -102,6 +102,32 @@
 
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
     $formatDiscount = fn ($value) => '-'.(int) $value.'%';
+    $blocks = collect($landingBlocks ?? [])->values();
+
+    if ($blocks->isEmpty()) {
+        $blocks = collect([
+            ['id' => null, 'block_type' => 'hero_slider', 'anchor_id' => 'top', 'is_visible' => true, 'settings' => [], 'media' => [], 'data' => ['title' => 'Ưu đãi nổi bật', 'subtitle' => 'Khám phá ngay', 'description' => '', 'button_label' => 'Xem ngay', 'content' => []], 'dynamic_items' => []],
+            ['id' => null, 'block_type' => 'featured_categories', 'anchor_id' => 'danh-muc-noi-bat', 'is_visible' => true, 'settings' => [], 'media' => [], 'data' => ['title' => 'Danh mục nổi bật', 'subtitle' => 'Khám phá nhanh', 'description' => '', 'button_label' => '', 'content' => []], 'dynamic_items' => []],
+            ['id' => null, 'block_type' => 'featured_products', 'anchor_id' => 'featured', 'is_visible' => true, 'settings' => [], 'media' => [], 'data' => ['title' => $featuredTitle, 'subtitle' => 'Đề xuất hôm nay', 'description' => '', 'button_label' => '', 'content' => []], 'dynamic_items' => []],
+            ['id' => null, 'block_type' => 'content_mosaic', 'anchor_id' => 'chu-de-noi-bat', 'is_visible' => true, 'settings' => [], 'media' => [], 'data' => ['title' => 'Khám phá thêm', 'subtitle' => 'Chủ đề nổi bật', 'description' => '', 'button_label' => '', 'content' => []], 'dynamic_items' => []],
+        ]);
+    }
+
+    $landingNavigation = collect($landingMenuItems ?? [])->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? null))->values();
+    $primaryNavigation = collect($homeData['top_menu'] ?? [])->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? null))->values();
+    $pageNavigation = $primaryNavigation->isNotEmpty() ? $primaryNavigation : $landingNavigation;
+    $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
+    $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
+    $blockPayload = $canEditLanding ? $blocks->filter(fn ($block): bool => filled($block['id'] ?? null))->keyBy('id')->toArray() : [];
+    $editorLocales = $canEditLanding ? collect(\App\Support\FrontendLocalization::localeOptions())
+        ->filter(fn (array $locale): bool => (bool) ($locale['is_active'] ?? false))
+        ->map(fn (array $locale): array => [
+            'code' => (string) ($locale['code'] ?? ''),
+            'label' => (string) (($locale['native_name'] ?? null) ?: ($locale['name'] ?? $locale['code'] ?? '')),
+        ])
+        ->filter(fn (array $locale): bool => $locale['code'] !== '')
+        ->values()
+        ->all() : [];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -109,7 +135,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $companyTitle }}</title>
+        <title>{{ data_get($landingPage ?? [], 'meta_title') ?: data_get($landingPage ?? [], 'title') ?: $companyTitle }}</title>
         <link rel="icon" href="{{ data_get($branding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
         @vite('resources/css/app.css')
         <style>
@@ -254,6 +280,9 @@
             .th-inline-edit-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 32px; padding-right: 96px; position: relative; z-index: 2; pointer-events: none; }
             .th-inline-edit-head > * { pointer-events: auto; }
             .th-inline-edit-head .sf-inline-edit-btn { position: absolute; top: 0; right: 0; z-index: 3; }
+            .th-landing-block { position: relative; scroll-margin-top: 18px; }
+            .th-landing-edit { position: absolute; top: 10px; right: 10px; z-index: 20; border: 1px solid rgba(255,255,255,.8); border-radius: 999px; padding: 8px 13px; background: rgba(20,24,32,.86); color: #fff; font: 700 12px/1 'Segoe UI', sans-serif; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+            .th-landing-block > .th-landing-edit + * { position: relative; }
 
             @media (max-width: 1100px) {
                 .th-hero-layout { grid-template-columns: 1fr; }
@@ -322,7 +351,7 @@
                 <div class="th-container th-main-nav-inner">
                     <div class="th-main-nav-categories">@themeT('common.categories', 'DANH MỤC')</div>
                     <div class="th-main-nav-menu">
-                        @foreach (($homeData['top_menu'] ?? []) as $menuItem)
+                        @foreach ($pageNavigation as $menuItem)
                             <a href="{{ $menuItem['url'] ?? '#' }}" target="{{ $menuItem['target'] ?? '_self' }}">{{ $menuItem['label'] ?? __('common.menu') }}</a>
                         @endforeach
                     </div>
@@ -331,195 +360,18 @@
 
             <main class="th-content">
                 <div class="th-container">
-                    <section class="th-hero-layout">
-                        <aside class="th-sidebar">
-                            @foreach ($sidebarCategories as $category)
-                                <div class="th-sidebar-entry">
-                                    <a href="{{ $category['url'] ?? '#' }}" target="{{ $category['target'] ?? '_self' }}" class="th-sidebar-item {{ !empty($category['highlight']) ? 'is-accent' : '' }}">
-                                        <span><span class="th-sidebar-icon">{{ $category['icon'] ?? '◌' }}</span> {{ $category['label'] }}</span>
-                                        <span>›</span>
-                                    </a>
-
-                                    @if (!empty($category['children']))
-                                        @php
-                                            $submenuColumns = collect($category['children'])->chunk(3);
-                                        @endphp
-                                        <div class="th-sidebar-mega {{ $loop->first ? 'mega-hot' : ($loop->index % 2 === 0 ? 'mega-beauty' : 'mega-food') }}">
-                                            <div class="th-sidebar-mega-content {{ $submenuColumns->count() > 3 ? 'has-four' : '' }}">
-                                                @foreach ($submenuColumns as $chunk)
-                                                    <div class="th-sidebar-mega-column">
-                                                        <h4>{{ $category['label'] }}</h4>
-                                                        <ul>
-                                                            @foreach ($chunk as $child)
-                                                                <li><a href="{{ $child['url'] ?? ($category['url'] ?? '#') }}" target="{{ $child['target'] ?? '_self' }}">{{ $child['label'] ?? __('common.child_group') }}</a></li>
-                                                            @endforeach
-                                                        </ul>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-
-                                            <div class="th-sidebar-mega-promo">
-                                                @foreach ($sidePromos as $promo)
-                                                        <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}">
-                                                        <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
-                                                        <span>{{ $promo['title'] }} · {{ $promo['subtitle'] }}</span>
-                                                    </a>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </aside>
-
-                        <div>
-                            <div class="th-hero-stack">
-                                @include('theme-th0001::partials.home-hero-slider', [
-                                    'heroSlides' => $heroSlides,
-                                    'canQuickEditThemeBlocks' => $canQuickEditThemeBlocks,
-                                    'heroQuickEditFields' => $heroQuickEditFields,
-                                    'heroBannerEditKeyMap' => $heroBannerEditKeyMap,
-                                    'heroSlideDefaultKeyMap' => $heroSlideDefaultKeyMap,
-                                ])
-
-                                <div class="th-side-promo-grid">
-                                    @foreach ($sidePromos as $promo)
-                                        <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}" class="th-side-promo">
-                                            <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
-                                            <span>{{ $promo['title'] }} · {{ $promo['subtitle'] }}</span>
-                                        </a>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <section class="th-brand-strip">
-                                @foreach ($featuredCategories as $category)
-                                    <a href="{{ $category['url'] ?? '#' }}" target="{{ $category['target'] ?? '_self' }}" class="th-brand">
-                                        <div class="th-brand-badge" style="background: {{ $category['tone'] }}">{{ $category['name'] }}</div>
-                                    </a>
-                                @endforeach
-                            </section>
-
-                        </div>
-                    </section>
-
-                    <section id="featured" class="th-featured-panel">
-                        <div class="th-featured-topbar">
-                            <div class="th-section-tabs">
-                                <span>{{ $featuredTitle }}</span>
-                                <span>@themeT('home.updated_tab', 'Mới cập nhật')</span>
-                                <span>@themeT('home.good_price_tab', 'Giá tốt')</span>
-                            </div>
-                        </div>
-
-                        <div class="th-card-grid">
-                            @foreach ($featuredDeals as $deal)
-                                <article class="th-deal-card">
-                                    <div class="th-deal-image-wrap">
-                                        <a href="{{ $deal['url'] ?? '#' }}">
-                                            <img src="{{ $deal['image'] }}" alt="{{ $deal['title'] }}">
-                                        </a>
-                                        <span class="th-deal-chip">{{ $deal['tag'] ?? 'Sản phẩm' }}</span>
-                                    </div>
-                                    <div class="th-deal-body">
-                                        <h3 class="th-deal-title"><a href="{{ $deal['url'] ?? '#' }}">{{ $deal['title'] }}</a></h3>
-                                        <div class="th-pricing">
-                                            <span class="th-price">{{ $formatCurrency($deal['price'] ?? null) }}</span>
-                                            <span class="th-discount">{{ $formatDiscount($deal['discount'] ?? 0) }}</span>
-                                        </div>
-                                        <div class="th-old-price-row">
-                                            <span class="th-old-price">{{ $formatCurrency($deal['old_price'] ?? null) }}</span>
-                                            <span class="th-stat">{{ str_replace(':count', (string) ($deal['meta'] ?? 0), $t('home.stock', 'Tồn kho :count')) }}</span>
-                                        </div>
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-                    </section>
-
-                    @foreach ($sections as $section)
+                    @foreach ($blocks as $block)
                         @php
-                            $sectionItems = collect($section['items'] ?? [])->take(4)->all();
+                            $blockType = (string) ($block['block_type'] ?? '');
+                            $anchor = $block['anchor_id'] ?: $blockType;
                         @endphp
-                        <section id="section-{{ $section['slug'] }}" class="th-category-section">
-                            <div class="th-category-header">
-                                <div class="th-category-title">
-                                    <span class="th-category-title-badge">🍴</span>
-                                    <span>{{ $section['title'] }}</span>
-                                </div>
-
-                                <div class="th-category-tabs">
-                                    @foreach ($section['tabs'] as $tab)
-                                        <span>{{ $tab }}</span>
-                                    @endforeach
-                                </div>
-
-                                <div class="th-category-filters">
-                                    @foreach ($section['filters'] as $filter)
-                                        <a href="#">{{ $filter }}</a>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <div class="th-category-grid">
-                                @foreach ($sectionItems as $item)
-                                    <article class="th-deal-card">
-                                        <div class="th-deal-image-wrap">
-                                            <a href="{{ $item['url'] ?? '#' }}">
-                                                <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}">
-                                            </a>
-                                            <span class="th-deal-countdown">{{ str_replace(':days', '21', $t('home.deal_days_left', '⏱ Còn :days ngày')) }}</span>
-                                            <span class="th-deal-chip">{{ $item['tag'] }}</span>
-                                        </div>
-                                        <div class="th-deal-body">
-                                            <h3 class="th-deal-title"><a href="{{ $item['url'] ?? '#' }}">{{ $item['title'] }}</a></h3>
-                                            <div class="th-pricing">
-                                                <span class="th-price">{{ $formatCurrency($item['price'] ?? null) }}</span>
-                                                <span class="th-discount">{{ $formatDiscount($item['discount'] ?? 0) }}</span>
-                                            </div>
-                                            <div class="th-old-price-row">
-                                                <span class="th-old-price">{{ $formatCurrency($item['old_price'] ?? null) }}</span>
-                                                <span class="th-stat">{{ str_replace(':count', (string) ($item['meta'] ?? 0), $t('home.stock', 'Tồn kho :count')) }}</span>
-                                            </div>
-                                        </div>
-                                    </article>
-                                @endforeach
-                            </div>
-
-                            <div class="th-category-footer">
-                                <a href="{{ $section['url'] ?? route('site.catalog.category', ['slug' => $section['slug']]) }}" class="th-more-button">{{ str_replace(':title', $section['title'], __('home.view_all_latest')) }}</a>
-                            </div>
-                        </section>
+                        <div id="{{ $anchor }}" class="th-landing-block" data-landing-block-id="{{ $block['id'] ?? '' }}" data-block-type="{{ $blockType }}">
+                            @if ($canEditLanding && filled($block['id'] ?? null))
+                                <button type="button" class="th-landing-edit" data-th-edit-block="{{ $block['id'] }}">Sửa khối</button>
+                            @endif
+                            @includeIf('theme-th0001::partials.blocks.'.$blockType, ['block' => $block])
+                        </div>
                     @endforeach
-
-                    @if (!empty($secondarySidePromos))
-                        <section class="th-secondary-promo-section">
-                            <div class="th-secondary-promo-head">
-                                <div>
-                                    <h3>@themeT('home.secondary_promos_title', 'Khám phá nhanh')</h3>
-                                    <p>@themeT('home.secondary_promos_summary', 'Demo cho location secondary_side_promos để theme khác tái sử dụng cùng cơ chế quản trị.')</p>
-                                </div>
-                            </div>
-
-                            <div class="th-secondary-promo-grid">
-                                @foreach ($secondarySidePromos as $promo)
-                                    <a href="{{ $promo['link_url'] ?? '#featured' }}" target="{{ $promo['target'] ?? '_self' }}" class="th-secondary-promo-card">
-                                        <img src="{{ $promo['image'] }}" alt="{{ $promo['title'] }}">
-                                        @if (!empty($promo['badge']))
-                                            <span class="th-secondary-promo-badge">{{ $promo['badge'] }}</span>
-                                        @endif
-                                        <div class="th-secondary-promo-copy">
-                                            <strong>{{ $promo['title'] }}</strong>
-                                            <span>{{ $promo['subtitle'] }}</span>
-                                            @if (!empty($promo['cta_label']))
-                                                <span class="th-secondary-promo-cta">{{ $promo['cta_label'] }}</span>
-                                            @endif
-                                        </div>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </section>
-                    @endif
                 </div>
             </main>
 
@@ -590,6 +442,9 @@
                 'supportedLocales' => $quickEditLocales,
                 'localeOptions' => $quickEditLocaleOptions,
             ])
+        @endif
+        @if ($canEditLanding)
+            @include('theme-th0001::partials.landing-inline-editor')
         @endif
     </body>
 </html>

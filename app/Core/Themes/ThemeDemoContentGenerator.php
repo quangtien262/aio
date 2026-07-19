@@ -548,7 +548,7 @@ class ThemeDemoContentGenerator
                 return [
                     ['label' => 'Lookbook', 'url' => '/c', 'target' => '_self'],
                     ['label' => $this->isFashionPreset($preset) ? 'Về studio' : 'Về xưởng may', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
-                    ['label' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist' : 'Gửi yêu cầu may', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
+                    ['label' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist' : 'Gửi yêu cầu may', 'url' => '/contact', 'target' => '_self'],
                 ];
             }
 
@@ -556,14 +556,14 @@ class ThemeDemoContentGenerator
                 return [
                     ['label' => 'Tin thị trường', 'url' => '/c', 'target' => '_self'],
                     ['label' => 'Tổng quan dự án', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
-                    ['label' => 'Nhận bảng giá', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
+                    ['label' => 'Nhận bảng giá', 'url' => '/contact', 'target' => '_self'],
                 ];
             }
 
             return [
                 ['label' => 'Tin tức', 'url' => '/c', 'target' => '_self'],
                 ['label' => 'Giới thiệu', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
-                ['label' => 'Liên hệ', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
+                ['label' => 'Liên hệ', 'url' => '/contact', 'target' => '_self'],
             ];
         }
 
@@ -588,11 +588,11 @@ class ThemeDemoContentGenerator
             ],
             [
                 'label' => 'Báo giá',
-                'url' => '/'.$pageSlugs['contact'],
+                'url' => '/contact',
                 'target' => '_self',
                 'children' => [
-                    ['label' => 'Gửi yêu cầu báo giá', 'summary' => 'Điền nhu cầu tuyến, số khách và khung giờ để nhận tư vấn nhanh.', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
-                    ['label' => 'Liên hệ điều phối', 'summary' => 'Xem thông tin liên hệ và đầu mối hỗ trợ cho từng loại nhu cầu.', 'url' => '/'.$pageSlugs['contact'], 'target' => '_self'],
+                    ['label' => 'Gửi yêu cầu báo giá', 'summary' => 'Điền nhu cầu tuyến, số khách và khung giờ để nhận tư vấn nhanh.', 'url' => '/contact', 'target' => '_self'],
+                    ['label' => 'Liên hệ điều phối', 'summary' => 'Xem thông tin liên hệ và đầu mối hỗ trợ cho từng loại nhu cầu.', 'url' => '/contact', 'target' => '_self'],
                 ],
             ],
         ];

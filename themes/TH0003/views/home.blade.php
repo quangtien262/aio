@@ -639,6 +639,9 @@
             </nav>
 
             <main class="th-content">
+                @if (isset($landingBlocks) && is_array($landingPage ?? null))
+                    <div class="th-container">@include('partials.configurable-landing-blocks')</div>
+                @else
                 <div class="th-container">
                     <section class="fashion-banner-slider" data-fashion-banner-slider>
                         <div class="fashion-banner-track">
@@ -831,6 +834,7 @@
                         </section>
                     @endif
                 </div>
+                @endif
             </main>
 
             <footer class="th-footer">

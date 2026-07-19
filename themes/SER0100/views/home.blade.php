@@ -544,6 +544,9 @@
         @include('theme-ser0100::partials.shell-header', ['branding' => $branding, 'topMenu' => $topMenu, 'productMenu' => $productMenu, 'cartSummary' => $cartSummary, 'customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'presetSwitcher' => $presetSwitcher, 'contactHotline' => $contactHotline, 'contactEmail' => $contactEmail, 'contactLocation' => $contactLocation, 'postLoginRedirect' => $postLoginRedirect, 't' => $t])
 
         <main class="wrap">
+            @if (isset($landingBlocks) && is_array($landingPage ?? null))
+                @include('partials.configurable-landing-blocks')
+            @else
             <section class="hero">
                 <div class="hero-grid">
                     <div class="hero-card">
@@ -843,6 +846,7 @@
                     </div>
                 </div>
             </section>
+            @endif
         </main>
 
         <footer class="footer">

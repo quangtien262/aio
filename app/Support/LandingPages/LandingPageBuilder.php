@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SER102', 'TH0050'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'LAN0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'XD0320', 'NT501', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502'], true);
     }
 
     /**
@@ -1184,6 +1184,10 @@ class LandingPageBuilder
     {
         return match (strtoupper($themeKey)) {
             'TH0050' => $this->th0050DefaultBlocks(),
+            'TH0001' => $this->th0001DefaultBlocks(),
+            'TH0002', 'TH0003', 'TH0020' => $this->legacyCommerceDefaultBlocks($themeKey),
+            'LAN0201', 'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
+            'SER0100', 'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
             'XD0318' => $this->xd0318DefaultBlocks(),
             'XD0315' => $this->xd0315DefaultBlocks(),
@@ -1270,6 +1274,187 @@ class LandingPageBuilder
         $blocks[] = ['block_type' => 'partner_logos', 'label' => 'Đối tác', 'description' => 'Logo các đối tác đồng hành.', 'preview_image' => $quality, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 8], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => array_merge($heading('Đối tác của chúng tôi', 'An Nhiên Wellness', 'Đồng hành cùng những đơn vị uy tín.'), ['content' => ['items' => $partners]]), 'en' => array_merge($heading('Our partners', 'An Nhien Wellness', 'Trusted organizations growing with us.'), ['content' => ['items' => []]])]];
 
         return $blocks;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function legacyCommerceDefaultBlocks(string $themeKey): array
+    {
+        $labels = match (strtoupper($themeKey)) {
+            'TH0002' => ['hero' => 'Bộ sưu tập xưởng may', 'categories' => 'Dòng sản phẩm', 'products' => 'Sản phẩm may mặc', 'content' => 'Lookbook và câu chuyện xưởng'],
+            'TH0003' => ['hero' => 'Lookbook thời trang', 'categories' => 'Bộ sưu tập', 'products' => 'Sản phẩm nổi bật', 'content' => 'Fashion journal'],
+            default => ['hero' => 'Không gian sống nổi bật', 'categories' => 'Bộ sưu tập theo phòng', 'products' => 'Nội thất nổi bật', 'content' => 'Câu chuyện vật liệu'],
+        };
+        $blocks = $this->th0001DefaultBlocks();
+
+        foreach ($blocks as &$block) {
+            $block['preview_image'] = '/theme-previews/'.strtoupper($themeKey).'/preview-'.strtolower($themeKey).'.svg';
+
+            if ($block['block_type'] === 'hero_slider') {
+                $block['label'] = $labels['hero'];
+                $block['settings']['placement'] = 'hero-slider';
+                $block['settings_schema'][0]['default'] = 'hero-slider';
+            } elseif ($block['block_type'] === 'featured_categories') {
+                $block['label'] = $labels['categories'];
+            } elseif ($block['block_type'] === 'featured_products') {
+                $block['label'] = $labels['products'];
+            } elseif ($block['block_type'] === 'content_mosaic') {
+                $block['label'] = $labels['content'];
+            }
+        }
+        unset($block);
+
+        return $blocks;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function legacyServiceDefaultBlocks(string $themeKey): array
+    {
+        $blocks = $this->ser102DefaultBlocks();
+
+        foreach ($blocks as &$block) {
+            $block['preview_image'] = '/theme-previews/'.strtoupper($themeKey).'/preview-'.strtolower($themeKey).'.svg';
+
+            if ($block['block_type'] === 'hero_slider') {
+                $block['settings']['placement'] = 'hero-slider';
+                $block['settings']['theme_key'] = strtoupper($themeKey);
+                $block['label'] = strtoupper($themeKey).' hero và báo giá';
+            }
+        }
+        unset($block);
+
+        return $blocks;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function projectLandingDefaultBlocks(string $themeKey): array
+    {
+        $blocks = $this->th0001DefaultBlocks();
+
+        foreach ($blocks as &$block) {
+            $block['preview_image'] = '/theme-previews/'.strtoupper($themeKey).'/preview-'.strtolower($themeKey).'.svg';
+
+            if ($block['block_type'] === 'hero_slider') {
+                $block['label'] = 'Hero dự án mở bán';
+                $block['description'] = 'Banner dự án, thông điệp mở bán và CTA nhận bảng giá.';
+                $block['settings']['placement'] = 'hero-slider';
+                $block['settings_schema'][0]['default'] = 'hero-slider';
+            } elseif ($block['block_type'] === 'featured_categories') {
+                $block['label'] = 'Phân khu nổi bật';
+            } elseif ($block['block_type'] === 'featured_products') {
+                $block['label'] = 'Bảng hàng mở bán';
+            } elseif ($block['block_type'] === 'content_mosaic') {
+                $block['label'] = 'Thông tin dự án';
+                $block['settings']['source'] = 'cms_posts';
+            }
+        }
+        unset($block);
+
+        return $blocks;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function th0001DefaultBlocks(): array
+    {
+        $productSourceOptions = [
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero thương mại',
+                'description' => 'Danh mục sản phẩm, banner chính và banner khuyến mãi của TH0001.',
+                'preview_image' => '/theme-previews/TH0001/preview-th0001.png',
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'hero-main', 'limit' => 4, 'autoplay_ms' => 5200],
+                'settings_schema' => [
+                    ['key' => 'placement', 'label' => 'Vị trí banner', 'type' => 'text', 'default' => 'hero-main'],
+                    ['key' => 'limit', 'label' => 'Số slide', 'type' => 'number', 'default' => 4],
+                    ['key' => 'autoplay_ms', 'label' => 'Thời gian tự chuyển (ms)', 'type' => 'number', 'default' => 5200],
+                ],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Ưu đãi nổi bật',
+                        'subtitle' => 'Khám phá ngay',
+                        'description' => 'Khám phá sản phẩm và chương trình ưu đãi mới nhất.',
+                        'button_label' => 'Xem ngay',
+                        'content' => ['slides' => []],
+                    ],
+                    'en' => [
+                        'title' => 'Featured deals',
+                        'subtitle' => 'Discover now',
+                        'description' => 'Explore the latest products and promotions.',
+                        'button_label' => 'Shop now',
+                        'content' => ['slides' => []],
+                    ],
+                ],
+            ],
+            [
+                'block_type' => 'featured_categories',
+                'label' => 'Danh mục nổi bật',
+                'description' => 'Các nhóm sản phẩm nổi bật dạng nhãn tròn của TH0001.',
+                'preview_image' => '/theme-previews/TH0001/preview-th0001.png',
+                'anchor_id' => 'danh-muc-noi-bat',
+                'dynamic' => true,
+                'settings' => ['source' => 'catalog_categories', 'limit' => 5, 'featured_only' => false],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
+                        ['value' => 'custom', 'label' => 'Nhập thủ công'],
+                        ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
+                        ['value' => 'cms_categories', 'label' => 'Danh mục bài viết'],
+                        ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
+                    ]],
+                    'limit' => ['type' => 'number', 'label' => 'Số danh mục hiển thị', 'default' => 5],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Danh mục nổi bật', 'subtitle' => 'Khám phá nhanh', 'description' => '', 'button_label' => 'Xem danh mục', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Featured categories', 'subtitle' => 'Quick access', 'description' => '', 'button_label' => 'View category', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'featured_products',
+                'label' => 'Sản phẩm nổi bật',
+                'description' => 'Lưới sản phẩm ưu tiên của storefront.',
+                'preview_image' => '/theme-previews/TH0001/preview-th0001.png',
+                'anchor_id' => 'featured',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => true],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $productSourceOptions],
+                    'limit' => ['type' => 'number', 'label' => 'Số sản phẩm hiển thị', 'default' => 8],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Sản phẩm nổi bật', 'subtitle' => 'Đề xuất hôm nay', 'description' => '', 'button_label' => 'Xem tất cả', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Featured products', 'subtitle' => 'Today picks', 'description' => '', 'button_label' => 'View all', 'content' => ['items' => []]],
+                ],
+            ],
+            [
+                'block_type' => 'content_mosaic',
+                'label' => 'Khối sản phẩm theo chủ đề',
+                'description' => 'Khối card có thể đổi nguồn sang sản phẩm, tin tức, dịch vụ hoặc dự án.',
+                'preview_image' => '/theme-previews/TH0001/preview-th0001.png',
+                'anchor_id' => 'chu-de-noi-bat',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => false],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $productSourceOptions],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => 8],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
+                ],
+                'data' => [
+                    'vi' => ['title' => 'Khám phá thêm', 'subtitle' => 'Chủ đề nổi bật', 'description' => 'Các lựa chọn mới dành cho bạn.', 'button_label' => 'Xem thêm', 'content' => ['items' => []]],
+                    'en' => ['title' => 'Explore more', 'subtitle' => 'Featured topic', 'description' => 'More picks curated for you.', 'button_label' => 'View more', 'content' => ['items' => []]],
+                ],
+            ],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

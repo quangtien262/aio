@@ -684,6 +684,9 @@
             </div>
 
             <main class="th-content">
+                @if (isset($landingBlocks) && is_array($landingPage ?? null))
+                    <div class="th-container">@include('partials.configurable-landing-blocks')</div>
+                @else
                 <div class="th-container">
                     <section class="th20-hero-promos">
                         <div class="interior-banner-slider" data-interior-banner-slider>
@@ -890,6 +893,7 @@
                         </section>
                     @endif
                 </div>
+                @endif
             </main>
 
             <footer class="th-footer">

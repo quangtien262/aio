@@ -5,6 +5,10 @@ namespace Tests\Feature;
 use App\Models\CmsMenu;
 use App\Models\CmsService;
 use App\Models\CmsTestimonial;
+use App\Models\LandingPage;
+use App\Models\LandingPageBlock;
+use App\Models\LandingPageBlockData;
+use App\Models\LandingPageData;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,6 +18,64 @@ class LandingPageBuilderSourceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_th0001_supports_configurable_commerce_landing_blocks(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('th0001-builder-test', 'TH0001');
+        $blocks = $page->blocks()->orderBy('sort_order')->get();
+
+        $this->assertTrue($builder->supportsTheme('TH0001'));
+        $this->assertSame(
+            ['hero_slider', 'featured_categories', 'featured_products', 'content_mosaic'],
+            $blocks->pluck('block_type')->all(),
+        );
+        $this->assertSame('cms_products', $blocks->firstWhere('block_type', 'featured_products')->settings['source']);
+        $this->assertContains('featured_products', collect($builder->availableBlocks('TH0001'))->pluck('block_type')->all());
+    }
+
+    public function test_landing_page_menu_uses_site_landing_show_route(): void
+    {
+        $page = LandingPage::query()->create([
+            'website_key' => 'landing-route-test',
+            'theme_key' => 'TH0001',
+            'page_type' => 'landing',
+            'slug' => 'summer-sale',
+            'status' => 'published',
+            'template' => 'home',
+            'is_home' => false,
+            'settings' => ['menu_display_type' => 'landingpage'],
+            'published_at' => now(),
+        ]);
+        LandingPageData::query()->create([
+            'landing_page_id' => $page->id,
+            'locale' => 'vi',
+            'title' => 'Summer sale',
+        ]);
+        $block = LandingPageBlock::query()->create([
+            'landing_page_id' => $page->id,
+            'theme_key' => 'TH0001',
+            'block_type' => 'featured_products',
+            'sort_order' => 10,
+            'is_visible' => true,
+            'anchor_id' => 'san-pham-hot',
+            'settings' => ['source' => 'cms_products', 'limit' => 4],
+        ]);
+        LandingPageBlockData::query()->create([
+            'landing_page_block_id' => $block->id,
+            'locale' => 'vi',
+            'title' => 'Sản phẩm hot',
+            'subtitle' => 'Ưu đãi',
+            'content' => json_encode([], JSON_UNESCAPED_UNICODE),
+        ]);
+
+        $viewData = app(LandingPageBuilder::class)->viewData($page->load(['data', 'blocks.data']), 'vi');
+
+        $this->assertSame(
+            route('site.landing.show', ['locale' => 'vi', 'slug' => 'summer-sale']).'#san-pham-hot',
+            $viewData['landingMenuItems'][0]['url'],
+        );
+    }
+
     public function test_xd0302_featured_service_list_can_use_menu_items_as_its_source(): void
     {
         CmsMenu::query()->create([
@@ -21,7 +83,7 @@ class LandingPageBuilderSourceTest extends TestCase
             'location' => 'landing-source-test',
             'items' => [[
                 'label' => 'Installation service',
-                'url' => '/vi/dich-vu/lap-dat',
+                'url' => '/vi/ser/lap-dat',
                 'children' => [
                     ['label' => 'Site survey'],
                 ],
@@ -45,7 +107,7 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->assertSame('Installation service', $items[0]['title']);
         $this->assertSame('Site survey', $items[0]['summary']);
-        $this->assertSame('/vi/dich-vu/lap-dat', $items[0]['url']);
+        $this->assertSame('/vi/ser/lap-dat', $items[0]['url']);
     }
 
     public function test_xd0302_completed_projects_list_defaults_to_services(): void
@@ -270,6 +332,7 @@ class LandingPageBuilderSourceTest extends TestCase
     public function test_th0050_wellness_homepage_and_demo_preset_render(): void
     {
         $builder = app(LandingPageBuilder::class);
+        $this->assertTrue($builder->supportsTheme('TH0050'));
         $page = $builder->seedHome('th0050-wellness-test', 'TH0050');
 
         $this->assertCount(9, $page->blocks);

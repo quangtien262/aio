@@ -10,17 +10,14 @@
     "cover": "cover-ser0101.svg"
   },
   "blocks": [
-    "service-hero-quote",
-    "service-quick-actions",
-    "fleet-capacity-grid",
-    "service-category-strip",
-    "popular-routes-table",
-    "featured-service-packages",
-    "trust-metrics",
-    "customer-logo-wall",
-    "testimonials",
-    "service-blog-teasers",
-    "footer-service-contact"
+    "hero_slider",
+    "featured_categories",
+    "process_steps",
+    "collection_gallery",
+    "service_pricing",
+    "business_service_grid",
+    "latest_posts",
+    "landing_contact"
   ],
   "supports": {
     "dark_mode": false,

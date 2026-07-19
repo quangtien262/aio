@@ -1,4 +1,4 @@
-<section class="th-hero-card" data-th-hero-slider>
+<section class="th-hero-card" data-th-hero-slider data-th-autoplay-ms="{{ max(1500, (int) ($autoplayMs ?? 4500)) }}">
     @foreach ($heroSlides as $slide)
         <article class="th-hero-slide {{ $loop->first ? 'is-active' : '' }}" data-th-hero-slide>
             <img src="{{ $slide['image'] ?? 'https://picsum.photos/seed/th0001-fallback-hero/960/520' }}" alt="{{ $slide['title'] ?? 'Hero banner' }}">
@@ -53,6 +53,7 @@
 
                 let activeIndex = 0;
                 let intervalId = null;
+                const autoplayMs = Math.max(1500, Number(slider.dataset.thAutoplayMs || 4500));
 
                 const render = (index) => {
                     activeIndex = (index + slides.length) % slides.length;
@@ -74,7 +75,7 @@
                     stop();
                     intervalId = window.setInterval(() => {
                         render(activeIndex + 1);
-                    }, 4500);
+                    }, autoplayMs);
                 };
 
                 dots.forEach((dot, dotIndex) => {
