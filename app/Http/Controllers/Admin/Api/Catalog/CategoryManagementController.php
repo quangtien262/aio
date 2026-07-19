@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Api\Catalog;
 
 use App\Models\CatalogCategory;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -50,10 +51,19 @@ class CategoryManagementController
 
     private function validatePayload(Request $request, ?CatalogCategory $category = null): array
     {
+        $websiteKey = $category?->website_key ?: app(SiteContext::class)->websiteKey();
+
         return $request->validate([
             'parent_id' => ['nullable', 'integer', 'exists:catalog_categories,id'],
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('catalog_categories', 'slug')->ignore($category?->id)],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('catalog_categories', 'slug')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($category?->id),
+            ],
             'description' => ['nullable', 'string'],
             'image_url' => ['nullable', 'url', 'max:2048'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -76,6 +86,7 @@ class CategoryManagementController
     {
         $baseSlug = Str::slug($name) ?: 'danh-muc-'.$id;
         $exists = CatalogCategory::query()
+            ->where('website_key', app(SiteContext::class)->websiteKey())
             ->where('slug', $baseSlug)
             ->whereKeyNot($id)
             ->exists();

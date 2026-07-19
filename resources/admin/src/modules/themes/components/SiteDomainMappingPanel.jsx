@@ -11,7 +11,7 @@ import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CopyOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text } = Typography;
 
@@ -42,6 +42,7 @@ function domainHref(domain) {
 export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, canManage = false, themes = [] }) {
     const [form] = Form.useForm();
     const [bulkForm] = Form.useForm();
+    const [copyForm] = Form.useForm();
     const [items, setItems] = useState([]);
     const [themeOptions, setThemeOptions] = useState(themes);
     const [loading, setLoading] = useState(false);
@@ -49,6 +50,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const [editingItem, setEditingItem] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [bulkModalOpen, setBulkModalOpen] = useState(false);
+    const [copySource, setCopySource] = useState(null);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
     const availableThemes = themeOptions.length ? themeOptions : themes;
@@ -138,6 +140,29 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
             'Đã xóa cấu hình domain.',
             loadItems,
         );
+    };
+
+    const openCopy = (item) => {
+        setCopySource(item);
+        copyForm.resetFields();
+    };
+
+    const copyContent = async () => {
+        const values = await copyForm.validateFields();
+        const target = items.find((item) => item.id === values.target_site_id);
+        const ok = await runAdminAction(
+            () => callAdminApi(`/admin/api/site-mappings/${copySource.id}/copy-content`, {
+                method: 'POST',
+                body: JSON.stringify(values),
+            }),
+            `Đã sao chép dữ liệu sang ${target?.domain || target?.website_key || 'domain đã chọn'}.`,
+            loadItems,
+        );
+
+        if (ok) {
+            setCopySource(null);
+            copyForm.resetFields();
+        }
     };
 
     const bulkUpdateStatus = async (status) => {
@@ -230,9 +255,15 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         {
             title: '',
             key: 'actions',
-            width: 150,
+            width: 190,
             render: (_, item) => (
                 <Space>
+                    <Button
+                        title="Sao chép dữ liệu sang domain khác"
+                        icon={<CopyOutlined />}
+                        disabled={!canManage || items.length < 2}
+                        onClick={() => openCopy(item)}
+                    />
                     <Button icon={<EditOutlined />} disabled={!canManage} onClick={() => openEdit(item)} />
                     <Popconfirm
                         title="Xóa cấu hình domain?"
@@ -310,6 +341,54 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                     scroll={{ x: 860 }}
                 />
             </Space>
+
+            <Modal
+                title="Sao chép dữ liệu sang domain khác"
+                open={copySource !== null}
+                okText="Sao chép dữ liệu"
+                cancelText="Hủy"
+                onOk={copyContent}
+                onCancel={() => {
+                    setCopySource(null);
+                    copyForm.resetFields();
+                }}
+                destroyOnHidden
+            >
+                <Alert
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                    message="Dữ liệu trùng slug hoặc mã sản phẩm ở domain đích sẽ được cập nhật. Các dữ liệu khác vẫn được giữ nguyên."
+                />
+                <Form form={copyForm} layout="vertical">
+                    <Form.Item label="Domain nguồn">
+                        <Input
+                            value={copySource ? `${copySource.domain || 'Domain mặc định'} (${copySource.website_key})` : ''}
+                            disabled
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        label="Chọn domain đích"
+                        name="target_site_id"
+                        rules={[{ required: true, message: 'Chọn domain nhận dữ liệu.' }]}
+                    >
+                        <Select
+                            showSearch
+                            optionFilterProp="label"
+                            placeholder="Chọn domain đích"
+                            options={items
+                                .filter((item) => item.id !== copySource?.id)
+                                .map((item) => ({
+                                    value: item.id,
+                                    label: `${item.domain || 'Domain mặc định'} (${item.website_key})`,
+                                }))}
+                        />
+                    </Form.Item>
+                    <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                        Hệ thống sẽ sao chép sản phẩm, tin tức, dự án, dịch vụ, toàn bộ danh mục tương ứng và ảnh đính kèm; quan hệ danh mục cha–con được giữ nguyên.
+                    </Paragraph>
+                </Form>
+            </Modal>
 
             <Modal
                 title={editingItem ? 'Sửa cấu hình domain' : 'Thêm cấu hình domain'}

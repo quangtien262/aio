@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Api;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Site;
 use App\Models\SiteProfile;
+use App\Support\SiteContentCopier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -148,6 +149,40 @@ class SiteMappingController
             'message' => sprintf('Đã cập nhật trạng thái cho %d cấu hình domain.', $updated),
             'data' => [
                 'updated' => $updated,
+            ],
+        ]);
+    }
+
+    public function copyContent(Site $site, Request $request, SiteContentCopier $copier): JsonResponse
+    {
+        $validated = $request->validate([
+            'target_site_id' => [
+                'required',
+                'integer',
+                Rule::exists('sites', 'id')->where(fn ($query) => $query->where('id', '!=', $site->id)),
+            ],
+        ]);
+
+        $targetSite = Site::query()->findOrFail($validated['target_site_id']);
+
+        abort_if(
+            $site->website_key === $targetSite->website_key,
+            422,
+            'Domain nguồn và domain đích phải khác nhau.',
+        );
+
+        $counts = $copier->copy($site->website_key, $targetSite->website_key);
+
+        return response()->json([
+            'message' => sprintf(
+                'Đã sao chép dữ liệu từ %s sang %s.',
+                $site->domain ?: $site->website_key,
+                $targetSite->domain ?: $targetSite->website_key,
+            ),
+            'data' => [
+                'source' => $this->sitePayload($site),
+                'target' => $this->sitePayload($targetSite),
+                'counts' => $counts,
             ],
         ]);
     }

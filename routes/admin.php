@@ -685,6 +685,9 @@ Route::prefix('admin')
                 Route::delete('/site-mappings/bulk', [SiteMappingController::class, 'bulkDestroy'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.bulk-destroy');
+                Route::post('/site-mappings/{site}/copy-content', [SiteMappingController::class, 'copyContent'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.copy-content');
                 Route::put('/site-mappings/{site}', [SiteMappingController::class, 'update'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.update');
