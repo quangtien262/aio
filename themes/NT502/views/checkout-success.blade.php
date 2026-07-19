@@ -1,0 +1,1 @@
+@extends('theme-nt502::layout') @section('title','Đặt hàng thành công') @section('content')<main class="n502-section"><div class="n502-container" style="text-align:center"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã mua sắm tại Dola Furniture.</p><a href="{{ route('site.home') }}">Về trang chủ</a></div></main>@endsection
