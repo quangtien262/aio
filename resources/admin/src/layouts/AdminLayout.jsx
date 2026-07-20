@@ -130,6 +130,15 @@ function toAntMenuItem(item) {
     };
 }
 
+function normalizeWebsiteSearch(value) {
+    return String(value ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[đĐ]/g, 'd')
+        .toLowerCase()
+        .trim();
+}
+
 function renderLazyRouteElement(Component, props, fallbackTitle) {
     return (
         <Suspense fallback={<Card loading title={fallbackTitle} />}>
@@ -689,6 +698,9 @@ export default function AdminLayout() {
                                 popupMatchSelectWidth={false}
                                 showSearch
                                 optionFilterProp="label"
+                                filterOption={(input, option) => (
+                                    normalizeWebsiteSearch(option?.label).includes(normalizeWebsiteSearch(input))
+                                )}
                                 placeholder="Tìm theo domain"
                                 onChange={(value) => {
                                     setSelectedAdminWebsiteKey(value);
