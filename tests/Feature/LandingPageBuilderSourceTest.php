@@ -208,7 +208,7 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->assertSame('Customer feedback', $items[0]['name']);
         $this->assertSame('The delivery was clear and well coordinated.', $items[0]['quote']);
-        $this->assertArrayNotHasKey('source', $block->settings);
+        $this->assertSame('cms_testimonials', $block->settings['source']);
     }
 
     public function test_xd0304_creates_logistics_blocks_with_flexible_content_sources(): void

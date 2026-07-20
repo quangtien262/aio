@@ -78,8 +78,8 @@
         ];
     };
 
-    $cmsNavItems = collect(data_get($themeHomeData ?? $homeData ?? [], 'top_menu', []))
-        ->whenEmpty(fn () => collect(data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
+    $cmsNavItems = collect(data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', [])))
+        ->whenEmpty(fn () => collect(data_get($themeHomeData ?? $homeData ?? [], 'top_menu', [])))
         ->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
         ->map(fn (array $item, int $index): array => $normalizeNavItem($item, $index))
         ->values();

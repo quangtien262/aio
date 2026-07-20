@@ -1,5 +1,10 @@
 @php
-    $items = collect($block['dynamic_items'] ?? [])->whenEmpty(fn () => collect($content['items'] ?? []))->take($settings['limit'] ?? 3);
+    $customItems = collect($content['items'] ?? []);
+    $source = $settings['source'] ?? ($customItems->isNotEmpty() ? 'custom' : 'cms_testimonials');
+    $items = ($source === 'custom'
+        ? $customItems
+        : collect($block['dynamic_items'] ?? [])->whenEmpty(fn () => $customItems))
+        ->take($settings['limit'] ?? 3);
 @endphp
 <section id="{{ $anchor }}" class="xd2-testimonial-showcase xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     <div class="xd2-container xd2-testimonial-showcase__layout">
@@ -13,11 +18,16 @@
             <button class="xd2-testimonial-showcase__nav is-prev" type="button" data-row-prev aria-label="Đánh giá trước">←</button>
             <div class="xd2-testimonial-showcase__track" data-row-track>
                 @foreach ($items as $item)
+                    @php
+                        $itemName = $item['name'] ?? $item['title'] ?? '';
+                        $itemQuote = $item['quote'] ?? $item['summary'] ?? $item['description'] ?? '';
+                        $itemCompany = $item['company'] ?? $item['role'] ?? '';
+                    @endphp
                     <article class="xd2-testimonial-showcase__card">
-                        @if (filled($item['image'] ?? null))<img src="{{ $item['image'] }}" alt="{{ $item['alt'] ?? $item['name'] ?? '' }}">@endif
-                        <p>{{ \Illuminate\Support\Str::limit(strip_tags($item['quote'] ?? ''), 310) }}</p>
-                        <strong>{{ $item['name'] ?? '' }}</strong>
-                        @if (filled($item['company'] ?? $item['role'] ?? null))<small>{{ $item['company'] ?? $item['role'] }}</small>@endif
+                        @if (filled($item['image'] ?? null))<img src="{{ $item['image'] }}" alt="{{ $item['alt'] ?? $itemName }}">@endif
+                        <p>{{ \Illuminate\Support\Str::limit(strip_tags($itemQuote), 310) }}</p>
+                        <strong>{{ $itemName }}</strong>
+                        @if (filled($itemCompany))<small>{{ $itemCompany }}</small>@endif
                     </article>
                 @endforeach
             </div>

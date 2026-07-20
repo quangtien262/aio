@@ -590,6 +590,10 @@ class LandingPageBuilder
 
         if (in_array($block->block_type, ['testimonials', 'testimonial_showcase', 'bizmax_testimonial_carousel'], true)) {
             if ($block->block_type === 'testimonial_showcase') {
+                if (($settings['source'] ?? 'cms_testimonials') === 'custom') {
+                    return [];
+                }
+
                 return $this->cmsTestimonialItems($settings, $limit, $locale, $block->landingPage?->website_key);
             }
 
@@ -4684,8 +4688,9 @@ class LandingPageBuilder
                 'preview_image' => '/theme-previews/XD0302/testimonials.png',
                 'anchor_id' => 'cam-nhan-khach-hang',
                 'dynamic' => true,
-                'settings' => ['limit' => 3, 'featured_only' => true],
+                'settings' => ['source' => 'cms_testimonials', 'limit' => 3, 'featured_only' => true],
                 'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_testimonials', 'label' => 'CMS Testimonials'], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
                     'limit' => ['type' => 'number', 'label' => 'Số đánh giá hiển thị'],
                     'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy đánh giá nổi bật'],
                 ],

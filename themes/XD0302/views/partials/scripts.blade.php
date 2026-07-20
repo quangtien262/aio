@@ -473,7 +473,11 @@
                     sourceSelect.innerHTML = options
                         .map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`)
                         .join('');
-                    sourceSelect.value = settings.source || options[0]?.value || '';
+                    const storedItems = block?.data?.content?.items;
+                    const inferredSource = block?.block_type === 'testimonial_showcase' && Array.isArray(storedItems) && storedItems.length
+                        ? 'custom'
+                        : '';
+                    sourceSelect.value = settings.source || inferredSource || options[0]?.value || '';
                     sourceSelect.onchange = () => {
                         renderCategorySelect(sourceSelect.value, '');
                         syncSourceModeUi();
@@ -596,7 +600,7 @@
                     ];
                 }
 
-                if (blockType === 'testimonials') {
+                if (['testimonials', 'testimonial_showcase'].includes(blockType)) {
                     return [
                         ['name', 'Tên khách hàng'],
                         ['company', 'Công ty / vai trò'],
@@ -741,6 +745,14 @@
                     items = items.map((item) => typeof item === 'string'
                         ? {label: item, description: field('description')?.value || block.data?.description || ''}
                         : normalizeContentObject(item));
+                }
+                if (blockType === 'testimonial_showcase') {
+                    items = items.map((item) => ({
+                        ...normalizeContentObject(item),
+                        name: item?.name ?? item?.title ?? '',
+                        quote: item?.quote ?? item?.summary ?? item?.description ?? '',
+                        company: item?.company ?? item?.role ?? '',
+                    }));
                 }
                 const canEditList = ['hero_slider', 'about_experience', 'featured_categories', 'content_mosaic', 'content_showcase', 'latest_posts', 'featured_services', 'featured_service_list', 'completed_projects_list', 'project_gallery', 'faq_showcase', 'team_members', 'testimonials', 'testimonial_showcase', 'partner_logos'].includes(blockType);
 
