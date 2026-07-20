@@ -47,6 +47,27 @@
                             <label class="xd-editor-field is-wide"><span>Nội dung ghi chú</span><textarea data-xd-content-field="note_text"></textarea></label>
                         </div>
                     </section>
+                    <section class="xd-editor-source" data-xd-faq-editor hidden>
+                        <div>
+                            <h4>Nội dung minh họa bên phải</h4>
+                            <p class="xd-editor-source-note">Chỉnh ảnh, tiêu đề, mô tả và nút tư vấn thuộc chính khối Hỏi đáp.</p>
+                        </div>
+                        <div class="xd-editor-grid">
+                            <div class="xd-editor-field is-wide" data-xd-faq-media-row>
+                                <span>Ảnh minh họa</span>
+                                <input data-xd-faq-media-field="aside_image" aria-label="Ảnh minh họa FAQ" placeholder="https://... hoặc /storage/...">
+                                <div class="xd-item-upload">
+                                    <input type="file" accept="image/*" data-xd-faq-media-upload="aside_image" hidden>
+                                    <button type="button" data-xd-faq-media-upload-trigger>Upload ảnh minh họa</button>
+                                    <small data-xd-faq-media-upload-status></small>
+                                </div>
+                            </div>
+                            <label class="xd-editor-field"><span>Tiêu đề minh họa</span><input data-xd-faq-content-field="aside_title"></label>
+                            <label class="xd-editor-field"><span>Tên nút</span><input data-xd-faq-content-field="aside_button_label"></label>
+                            <label class="xd-editor-field is-wide"><span>Mô tả minh họa</span><textarea data-xd-faq-content-field="aside_description"></textarea></label>
+                            <label class="xd-editor-field is-wide"><span>Link nút</span><input data-xd-faq-content-field="aside_button_url" placeholder="/contact hoặc #lien-he"></label>
+                        </div>
+                    </section>
                     <section class="xd-editor-source" data-xd-source-editor hidden>
                         <div>
                             <h4>Nguồn nội dung</h4>

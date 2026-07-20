@@ -187,7 +187,11 @@
             const field = (name) => form?.querySelector(`[data-xd-field="${name}"]`);
             const blockCtaFields = Array.from(form?.querySelectorAll('[data-xd-block-cta]') || []);
             const syncBlockCtaVisibility = (blockType) => {
-                blockCtaFields.forEach((element) => { element.hidden = blockType === 'hero_slider'; });
+                blockCtaFields.forEach((element) => {
+                    const shouldHide = ['hero_slider', 'faq_showcase'].includes(blockType);
+                    element.hidden = shouldHide;
+                    element.style.display = shouldHide ? 'none' : '';
+                });
             };
             const pretty = (value) => JSON.stringify(value || {}, null, 2);
             const parseJson = (value, fallback) => {
@@ -206,6 +210,9 @@
             const sourceEditor = document.querySelector('[data-xd-source-editor]');
             const contactEditor = document.querySelector('[data-xd-contact-editor]');
             const contactContentFields = Array.from(document.querySelectorAll('[data-xd-content-field]'));
+            const faqEditor = document.querySelector('[data-xd-faq-editor]');
+            const faqContentFields = Array.from(document.querySelectorAll('[data-xd-faq-content-field]'));
+            const faqMediaFields = Array.from(document.querySelectorAll('[data-xd-faq-media-field]'));
             const mediaEditor = document.querySelector('[data-xd-media-editor]');
             const mediaFields = Array.from(document.querySelectorAll('[data-xd-media-field]'));
             const manageSourceLink = document.querySelector('[data-xd-manage-source]');
@@ -357,6 +364,51 @@
                     next[input.dataset.xdContentField] = input.value.trim();
                 });
 
+                return next;
+            };
+            const faqContentDefaults = {
+                aside_title: 'Giải pháp được triển khai thực tế',
+                aside_description: 'Đội ngũ tư vấn cùng doanh nghiệp xác định quy mô, mục tiêu tiết kiệm và lộ trình đầu tư phù hợp.',
+                aside_button_label: 'Nhận tư vấn',
+                aside_button_url: '#lien-he',
+            };
+            const faqMediaDefaults = {
+                aside_image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=85',
+            };
+            const syncFaqEditorVisibility = (block) => {
+                if (!faqEditor) return;
+                faqEditor.hidden = (block?.block_type || '') !== 'faq_showcase';
+            };
+            const loadFaqFields = (block, content = {}) => {
+                const media = normalizeContentObject(block?.media);
+                faqContentFields.forEach((input) => {
+                    const key = input.dataset.xdFaqContentField;
+                    input.value = content?.[key] ?? faqContentDefaults[key] ?? '';
+                });
+                faqMediaFields.forEach((input) => {
+                    const key = input.dataset.xdFaqMediaField;
+                    input.value = media[key] ?? faqMediaDefaults[key] ?? '';
+                });
+            };
+            const mergeFaqContentFields = (content = {}) => {
+                if (!faqEditor || faqEditor.hidden) return content;
+
+                const next = {...normalizeContentObject(content)};
+                faqContentFields.forEach((input) => {
+                    next[input.dataset.xdFaqContentField] = input.value.trim();
+                });
+                return next;
+            };
+            const mergeFaqMediaFields = (media = {}) => {
+                if (!faqEditor || faqEditor.hidden) return media;
+
+                const next = {...normalizeContentObject(media)};
+                faqMediaFields.forEach((input) => {
+                    const key = input.dataset.xdFaqMediaField;
+                    const value = input.value.trim();
+                    if (value !== '') next[key] = value;
+                    else delete next[key];
+                });
                 return next;
             };
             const settingField = (name) => sourceSettingFields.find((input) => input.dataset.xdSettingField === name);
@@ -585,8 +637,8 @@
                 row.className = 'xd-editor-item';
                 row.dataset.xdItemRow = '1';
                 row.dataset.xdItem = JSON.stringify(item || {});
-                const title = item.title || item.label || item.name || item.kicker || `Mục ${index + 1}`;
-                const summary = item.summary || item.description || item.quote || item.role || item.company || item.url || item.link_url || 'Chưa có mô tả.';
+                const title = item.title || item.question || item.label || item.name || item.kicker || `Mục ${index + 1}`;
+                const summary = item.summary || item.answer || item.description || item.quote || item.role || item.company || item.url || item.link_url || 'Chưa có mô tả.';
                 const image = item.image || item.image_url || item.thumbnail || item.logo || item.avatar || '';
                 const imageAlt = item.alt || title;
                 const thumb = image
@@ -792,6 +844,7 @@
                 const editorItems = collectEditorItems();
                 if (editorItems) content[activeItemKey] = editorItems;
                 content = mergeContactContentFields(content);
+                content = mergeFaqContentFields(content);
 
                 return {
                     locale: activeEditorLocale,
@@ -813,6 +866,7 @@
                 field('button_label').value = activeBlock?.block_type === 'hero_slider' ? '' : (draft.button_label || '');
                 field('content').value = pretty(normalizeContentObject(draft.content || {}));
                 loadContactContentFields(normalizeContentObject(draft.content || {}));
+                loadFaqFields(activeBlock, normalizeContentObject(draft.content || {}));
                 renderItemsEditor(activeBlock, normalizeContentObject(draft.content || {}));
                 if (!isCustomSource()) scheduleSourcePreview();
                 localeTabs.forEach((button) => button.classList.toggle('is-active', button.dataset.xdLocaleTab === locale));
@@ -859,6 +913,17 @@
                     if (file) uploadItemImage(file, targetInput, statusNode, triggerButton);
                 });
             });
+            document.querySelectorAll('[data-xd-faq-media-upload]').forEach((fileInput) => {
+                const row = fileInput.closest('[data-xd-faq-media-row]');
+                const targetInput = faqMediaFields.find((input) => input.dataset.xdFaqMediaField === fileInput.dataset.xdFaqMediaUpload);
+                const triggerButton = row?.querySelector('[data-xd-faq-media-upload-trigger]');
+                const statusNode = row?.querySelector('[data-xd-faq-media-upload-status]');
+                triggerButton?.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', () => {
+                    const file = fileInput.files?.[0];
+                    if (file) uploadItemImage(file, targetInput, statusNode, triggerButton);
+                });
+            });
 
             document.querySelectorAll('[data-xd-edit-block]').forEach((button) => {
                 button.addEventListener('click', () => {
@@ -885,6 +950,7 @@
                     syncMediaEditorVisibility(block);
                     loadMediaFields(block);
                     syncContactEditorVisibility(block);
+                    syncFaqEditorVisibility(block);
                     renderSourceEditor(block);
                     loadLocaleDraft(block.data?.locale || activeEditorLocale);
                     editor.hidden = false;
@@ -906,7 +972,8 @@
                         if (ctaUrl !== '') settingsPayload.cta_url = ctaUrl;
                         else delete settingsPayload.cta_url;
                     }
-                    const mediaPayload = mergeMediaFields(parseJson(field('media').value, {}));
+                    let mediaPayload = mergeMediaFields(parseJson(field('media').value, {}));
+                    mediaPayload = mergeFaqMediaFields(mediaPayload);
                     field('media').value = pretty(mediaPayload);
 
                     for (const draft of localePayloads) {
