@@ -122,8 +122,8 @@ class Xd321DemoContentProvider implements ThemeDemoContentProvider
             $profile = SiteProfile::query()->firstOrNew();
             $profile->forceFill(['site_name' => 'XD321 Cargo', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'XD321 Cargo', 'company_description' => 'Doi tac logistics tin cay, ket noi hang hoa toan cau.', 'support_hotline' => '1900 6750', 'support_email' => 'support@xd321cargo.local', 'support_location' => '70 Lu Gia, Phuong 15, Quan 11, TP.HCM'])])->save();
 
-            $existingPage = LandingPage::query()->where('website_key', 'website-main')->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
-            $page = $this->landingPageBuilder->resolveHome('website-main', self::THEME_KEY, true);
+            $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
+            $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
             }

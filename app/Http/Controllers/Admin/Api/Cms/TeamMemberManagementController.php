@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsTeamMember;
 use App\Models\CmsTeamMemberImage;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -98,9 +99,18 @@ class TeamMemberManagementController
 
     private function validatePayload(Request $request, ?CmsTeamMember $member = null): array
     {
+        $websiteKey = $member?->website_key ?: app(SiteContext::class)->websiteKey();
+
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('cms_team_members', 'slug')->ignore($member?->id)],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('cms_team_members', 'slug')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($member?->id),
+            ],
             'role' => ['nullable', 'string', 'max:255'],
             'department' => ['nullable', 'string', 'max:255'],
             'summary' => ['nullable', 'string'],

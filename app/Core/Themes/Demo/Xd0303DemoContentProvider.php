@@ -78,8 +78,8 @@ class Xd0303DemoContentProvider implements ThemeDemoContentProvider
             $profile = SiteProfile::query()->firstOrNew();
             $profile->forceFill(['site_name' => 'Dịch vụ vận hành', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Dịch vụ vận hành', 'company_description' => 'Giải pháp dịch vụ linh hoạt, rõ ràng và đặt trải nghiệm khách hàng làm trọng tâm.', 'support_hotline' => '1900 9477', 'support_email' => 'admin@example.vn', 'support_location' => '344 Huỳnh Tấn Phát, Quận 7, TP.HCM'])])->save();
 
-            $existingPage = LandingPage::query()->where('website_key', 'website-main')->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
-            $page = $this->landingPageBuilder->resolveHome('website-main', self::THEME_KEY, true);
+            $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
+            $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
             }

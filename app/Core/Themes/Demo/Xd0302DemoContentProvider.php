@@ -116,11 +116,11 @@ class Xd0302DemoContentProvider implements ThemeDemoContentProvider
             $profile->forceFill(['site_name' => 'Soler Panel', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Soler Panel', 'company_description' => 'Giải pháp năng lượng sạch cho doanh nghiệp.', 'support_hotline' => '1900 9477', 'support_email' => 'admin@solerpanel.vn', 'support_location' => '344 Huỳnh Tấn Phát, Quận 7, TP.HCM'])])->save();
 
             $existingPage = LandingPage::query()
-                ->where('website_key', 'website-main')
+                ->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())
                 ->where('theme_key', self::THEME_KEY)
                 ->where('is_home', true)
                 ->first();
-            $page = $this->landingPageBuilder->resolveHome('website-main', self::THEME_KEY, true);
+            $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
                 $about = $page->blocks()->where('block_type', 'about_experience')->first();

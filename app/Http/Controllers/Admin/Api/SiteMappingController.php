@@ -6,8 +6,11 @@ use App\Core\Themes\ThemeRegistry;
 use App\Models\Site;
 use App\Models\SiteProfile;
 use App\Support\SiteContentCopier;
+use App\Support\SiteContentInitializer;
+use App\Support\SiteDataPurger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -30,32 +33,47 @@ class SiteMappingController
         ]);
     }
 
-    public function store(Request $request, ThemeRegistry $themeRegistry): JsonResponse
+    public function store(Request $request, ThemeRegistry $themeRegistry, SiteContentInitializer $initializer): JsonResponse
     {
         $validated = $this->validatedPayload($request, $themeRegistry);
         $theme = $this->resolveTheme($themeRegistry, $validated['theme_key']);
 
-        $site = Site::query()->create([
-            'domain' => $this->normalizeDomain($validated['domain']),
-            'website_key' => $this->normalizeWebsiteKey($validated['website_key']),
-            'theme_key' => $theme['key'],
-            'name' => $validated['name'] ?? null,
-            'status' => $validated['status'],
-            'settings' => [],
-        ]);
+        $initialization = [];
 
-        $this->syncSiteProfile($site, $theme);
+        $site = DB::transaction(function () use ($validated, $theme, $initializer, &$initialization): Site {
+            $site = Site::query()->create([
+                'domain' => $this->normalizeDomain($validated['domain']),
+                'website_key' => $this->normalizeWebsiteKey($validated['website_key']),
+                'theme_key' => $theme['key'],
+                'name' => $validated['name'] ?? null,
+                'status' => $validated['status'],
+                'settings' => [],
+            ]);
+
+            $this->syncSiteProfile($site, $theme);
+            $initialization = $initializer->initialize($site, $validated['content_mode']);
+
+            return $site;
+        });
 
         return response()->json([
             'message' => 'Đã thêm cấu hình domain demo.',
             'data' => $this->sitePayload($site->fresh()),
+            'meta' => [
+                'initialization' => $initialization,
+            ],
         ], 201);
     }
 
-    public function bulkStore(Request $request, ThemeRegistry $themeRegistry): JsonResponse
+    public function bulkStore(Request $request, ThemeRegistry $themeRegistry, SiteContentInitializer $initializer): JsonResponse
     {
         $validated = $request->validate([
             'root_domain' => ['required', 'string', 'max:255'],
+            'content_mode' => ['nullable', 'string', Rule::in([
+                SiteContentInitializer::MODE_BLANK,
+                SiteContentInitializer::MODE_SAMPLE,
+                SiteContentInitializer::MODE_COPY_MAIN,
+            ])],
         ]);
 
         $rootDomain = $this->normalizeDomain($validated['root_domain']);
@@ -68,6 +86,8 @@ class SiteMappingController
 
         $created = [];
         $skipped = [];
+        $initializations = [];
+        $contentMode = $validated['content_mode'] ?? SiteContentInitializer::MODE_BLANK;
 
         foreach ($themeRegistry->all() as $theme) {
             $themeKey = strtoupper((string) ($theme['key'] ?? ''));
@@ -88,16 +108,21 @@ class SiteMappingController
                 continue;
             }
 
-            $site = Site::query()->create([
-                'domain' => $domain,
-                'website_key' => $websiteKey,
-                'theme_key' => $themeKey,
-                'name' => 'Demo '.$themeKey,
-                'status' => 'active',
-                'settings' => [],
-            ]);
+            $site = DB::transaction(function () use ($domain, $websiteKey, $themeKey, $theme, $initializer, $contentMode, &$initializations): Site {
+                $site = Site::query()->create([
+                    'domain' => $domain,
+                    'website_key' => $websiteKey,
+                    'theme_key' => $themeKey,
+                    'name' => 'Demo '.$themeKey,
+                    'status' => 'active',
+                    'settings' => [],
+                ]);
 
-            $this->syncSiteProfile($site, $theme);
+                $this->syncSiteProfile($site, $theme);
+                $initializations[$websiteKey] = $initializer->initialize($site, $contentMode);
+
+                return $site;
+            });
             $created[] = $this->sitePayload($site->fresh());
         }
 
@@ -106,6 +131,7 @@ class SiteMappingController
             'data' => [
                 'created' => $created,
                 'skipped' => $skipped,
+                'initializations' => $initializations,
             ],
         ], 201);
     }
@@ -187,22 +213,39 @@ class SiteMappingController
         ]);
     }
 
-    public function destroy(Site $site): JsonResponse
+    public function destroy(Site $site, Request $request, SiteDataPurger $purger): JsonResponse
     {
         abort_if($site->domain === null, 422, 'Không thể xóa site mặc định.');
 
-        $site->delete();
+        $validated = $request->validate([
+            'delete_content' => ['sometimes', 'boolean'],
+        ]);
+
+        $websiteKey = $site->website_key;
+        $purged = [];
+
+        DB::transaction(function () use ($site, $validated, $websiteKey, $purger, &$purged): void {
+            $site->delete();
+
+            if ((bool) ($validated['delete_content'] ?? false)) {
+                $purged = $purger->purge($websiteKey);
+            }
+        });
 
         return response()->json([
             'message' => 'Đã xóa cấu hình domain demo.',
+            'data' => [
+                'purged' => $purged,
+            ],
         ]);
     }
 
-    public function bulkDestroy(Request $request): JsonResponse
+    public function bulkDestroy(Request $request, SiteDataPurger $purger): JsonResponse
     {
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer', Rule::exists('sites', 'id')],
+            'delete_content' => ['sometimes', 'boolean'],
         ]);
 
         $defaultSelected = Site::query()
@@ -212,15 +255,34 @@ class SiteMappingController
 
         abort_if($defaultSelected, 422, 'Không thể xóa site mặc định.');
 
-        $deleted = Site::query()
+        $sites = Site::query()
             ->whereIn('id', $validated['ids'])
             ->whereNotNull('domain')
-            ->delete();
+            ->get();
+
+        $purged = [];
+
+        $deleted = DB::transaction(function () use ($sites, $validated, $purger, &$purged): int {
+            $count = 0;
+
+            foreach ($sites as $site) {
+                $websiteKey = $site->website_key;
+                $site->delete();
+                $count++;
+
+                if ((bool) ($validated['delete_content'] ?? false)) {
+                    $purged[$websiteKey] = $purger->purge($websiteKey);
+                }
+            }
+
+            return $count;
+        });
 
         return response()->json([
             'message' => sprintf('Đã xóa %d cấu hình domain.', $deleted),
             'data' => [
                 'deleted' => $deleted,
+                'purged' => $purged,
             ],
         ]);
     }
@@ -250,10 +312,16 @@ class SiteMappingController
             'theme_key' => ['required', 'string', Rule::in($themeKeys)],
             'name' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in(['active', 'inactive'])],
+            'content_mode' => ['nullable', 'string', Rule::in([
+                SiteContentInitializer::MODE_BLANK,
+                SiteContentInitializer::MODE_SAMPLE,
+                SiteContentInitializer::MODE_COPY_MAIN,
+            ])],
         ]);
 
         $validated['domain'] = $this->normalizeDomain($validated['domain']);
         $validated['website_key'] = $this->normalizeWebsiteKey($validated['website_key']);
+        $validated['content_mode'] ??= SiteContentInitializer::MODE_BLANK;
 
         return $validated;
     }

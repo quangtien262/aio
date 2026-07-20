@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsCategory;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -39,9 +40,18 @@ class CategoryManagementController
 
     private function validatePayload(Request $request, ?CmsCategory $category = null): array
     {
+        $websiteKey = $category?->website_key ?: app(SiteContext::class)->websiteKey();
+
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('cms_categories', 'slug')->ignore($category?->id)],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('cms_categories', 'slug')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($category?->id),
+            ],
             'description' => ['nullable', 'string'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],

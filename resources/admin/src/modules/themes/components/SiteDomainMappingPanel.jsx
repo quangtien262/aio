@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
+import Checkbox from 'antd/es/checkbox';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import Modal from 'antd/es/modal';
@@ -14,6 +15,12 @@ import Typography from 'antd/es/typography';
 import { CheckCircleOutlined, CopyOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text } = Typography;
+
+const contentModeOptions = [
+    { value: 'blank', label: 'Bỏ trống' },
+    { value: 'sample', label: 'Tạo dữ liệu mẫu' },
+    { value: 'copy_main', label: 'Copy từ website-main' },
+];
 
 function domainToWebsiteKey(domain) {
     return String(domain || '')
@@ -52,6 +59,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const [bulkModalOpen, setBulkModalOpen] = useState(false);
     const [copySource, setCopySource] = useState(null);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [deleteContentOnRemove, setDeleteContentOnRemove] = useState(false);
 
     const availableThemes = themeOptions.length ? themeOptions : themes;
     const themeNameMap = useMemo(() => new Map(availableThemes.map((theme) => [theme.key, theme.name])), [availableThemes]);
@@ -84,6 +92,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
             theme_key: themes[0]?.key ?? themeOptions[0]?.key,
             name: '',
             status: 'active',
+            content_mode: 'blank',
         });
         setModalOpen(true);
     };
@@ -136,7 +145,10 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
     const deleteItem = async (item) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/site-mappings/${item.id}`, { method: 'DELETE' }),
+            () => callAdminApi(`/admin/api/site-mappings/${item.id}`, {
+                method: 'DELETE',
+                body: JSON.stringify({ delete_content: deleteContentOnRemove }),
+            }),
             'Đã xóa cấu hình domain.',
             loadItems,
         );
@@ -192,7 +204,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         await runAdminAction(
             () => callAdminApi('/admin/api/site-mappings/bulk', {
                 method: 'DELETE',
-                body: JSON.stringify({ ids }),
+                body: JSON.stringify({ ids, delete_content: deleteContentOnRemove }),
             }),
             `Đã xóa ${ids.length} cấu hình domain.`,
             loadItems,
@@ -329,6 +341,13 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                             Xóa
                         </Button>
                     </Popconfirm>
+                    <Checkbox
+                        checked={deleteContentOnRemove}
+                        disabled={!canManage}
+                        onChange={(event) => setDeleteContentOnRemove(event.target.checked)}
+                    >
+                        Xóa cả dữ liệu website_key khi xóa domain
+                    </Checkbox>
                 </Space>
 
                 <Table
@@ -385,7 +404,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                         />
                     </Form.Item>
                     <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                        Hệ thống sẽ sao chép sản phẩm, tin tức, dự án, dịch vụ, toàn bộ danh mục tương ứng và ảnh đính kèm; quan hệ danh mục cha–con được giữ nguyên.
+                        Hệ thống sẽ sao chép landing page, page tĩnh, menu, banner, media, sản phẩm, tin tức, dự án, dịch vụ, team, testimonial và các danh mục tương ứng; dữ liệu trùng khóa ở domain đích sẽ được cập nhật.
                     </Paragraph>
                 </Form>
             </Modal>
@@ -457,6 +476,16 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                             ]}
                         />
                     </Form.Item>
+                    {!editingItem ? (
+                        <Form.Item
+                            label="Dữ liệu ban đầu"
+                            name="content_mode"
+                            extra="Bỏ trống chỉ tạo cấu hình domain. Tạo dữ liệu mẫu sẽ sinh data riêng cho website_key. Copy từ website-main sẽ sao chép dữ liệu hiện có của site mặc định."
+                            rules={[{ required: true, message: 'Chọn cách khởi tạo dữ liệu.' }]}
+                        >
+                            <Select options={contentModeOptions} />
+                        </Form.Item>
+                    ) : null}
                 </Form>
             </Modal>
 
@@ -489,6 +518,15 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                         ]}
                     >
                         <Input placeholder="demo.htvietnam.vn" />
+                    </Form.Item>
+                    <Form.Item
+                        label="Dữ liệu ban đầu"
+                        name="content_mode"
+                        initialValue="blank"
+                        extra="Áp dụng cho tất cả domain mới được tạo. Các cấu hình đã tồn tại vẫn được bỏ qua."
+                        rules={[{ required: true, message: 'Chọn cách khởi tạo dữ liệu.' }]}
+                    >
+                        <Select options={contentModeOptions} />
                     </Form.Item>
                 </Form>
             </Modal>

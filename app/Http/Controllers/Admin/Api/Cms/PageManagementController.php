@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsPage;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -48,9 +49,18 @@ class PageManagementController
 
     private function validatePayload(Request $request, ?CmsPage $page = null): array
     {
+        $websiteKey = $page?->website_key ?: app(SiteContext::class)->websiteKey();
+
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('cms_pages', 'slug')->ignore($page?->id)],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('cms_pages', 'slug')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($page?->id),
+            ],
             'status' => ['required', 'string', Rule::in(config('cms.workflow.statuses', ['draft', 'published']))],
             'excerpt' => ['nullable', 'string'],
             'body' => ['nullable', 'string'],

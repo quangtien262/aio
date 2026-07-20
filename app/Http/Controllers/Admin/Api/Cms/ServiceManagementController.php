@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsService;
 use App\Models\CmsServiceImage;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,10 +60,19 @@ class ServiceManagementController
 
     private function validatePayload(Request $request, ?CmsService $service = null): array
     {
+        $websiteKey = $service?->website_key ?: app(SiteContext::class)->websiteKey();
+
         return $request->validate([
             'cms_service_category_id' => ['nullable', 'integer', Rule::exists('cms_service_categories', 'id')],
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('cms_services', 'slug')->ignore($service?->id)],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('cms_services', 'slug')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($service?->id),
+            ],
             'status' => ['required', 'string', Rule::in(config('cms.workflow.statuses', ['draft', 'published']))],
             'summary' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],

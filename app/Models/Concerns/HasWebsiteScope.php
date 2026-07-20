@@ -51,7 +51,10 @@ trait HasWebsiteScope
 
     protected static function usesCurrentWebsiteGlobalScope(): bool
     {
-        return property_exists(static::class, 'usesCurrentWebsiteGlobalScope')
-            && (bool) static::$usesCurrentWebsiteGlobalScope;
+        if (property_exists(static::class, 'usesCurrentWebsiteGlobalScope')) {
+            return (bool) static::$usesCurrentWebsiteGlobalScope;
+        }
+
+        return true;
     }
 }

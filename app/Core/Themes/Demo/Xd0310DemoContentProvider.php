@@ -93,8 +93,8 @@ class Xd0310DemoContentProvider implements ThemeDemoContentProvider
             $profile = SiteProfile::query()->firstOrNew();
             $profile->forceFill(['site_name' => 'Logistics ViÃ¡Â»â€¡t', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Logistics ViÃ¡Â»â€¡t', 'company_description' => 'GiÃ¡ÂºÂ£i phÃƒÂ¡p vÃ¡ÂºÂ­n tÃ¡ÂºÂ£i vÃƒÂ  hÃ¡ÂºÂ­u cÃ¡ÂºÂ§n linh hoÃ¡ÂºÂ¡t, kÃ¡ÂºÂ¿t nÃ¡Â»â€˜i doanh nghiÃ¡Â»â€¡p vÃ¡Â»â€ºi mÃ¡Â»Âi hÃƒÂ nh trÃƒÂ¬nh.', 'support_hotline' => '1900 9477', 'support_email' => 'hello@logisticsviet.vn', 'support_location' => '344 HuÃ¡Â»Â³nh TÃ¡ÂºÂ¥n PhÃƒÂ¡t, QuÃ¡ÂºÂ­n 7, TP.HCM'])])->save();
 
-            $existingPage = LandingPage::query()->where('website_key', 'website-main')->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
-            $page = $this->landingPageBuilder->resolveHome('website-main', self::THEME_KEY, true);
+            $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
+            $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
             }
