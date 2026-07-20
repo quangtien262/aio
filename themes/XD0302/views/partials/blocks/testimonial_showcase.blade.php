@@ -24,10 +24,19 @@
                         $itemCompany = $item['company'] ?? $item['role'] ?? '';
                     @endphp
                     <article class="xd2-testimonial-showcase__card">
-                        @if (filled($item['image'] ?? null))<img src="{{ $item['image'] }}" alt="{{ $item['alt'] ?? $itemName }}">@endif
+                        <span class="xd2-testimonial-showcase__quote" aria-hidden="true">“</span>
                         <p>{{ \Illuminate\Support\Str::limit(strip_tags($itemQuote), 310) }}</p>
-                        <strong>{{ $itemName }}</strong>
-                        @if (filled($itemCompany))<small>{{ $itemCompany }}</small>@endif
+                        <div class="xd2-testimonial-showcase__author">
+                            @if (filled($item['image'] ?? null))
+                                <img src="{{ $item['image'] }}" alt="{{ $item['alt'] ?? $itemName }}">
+                            @else
+                                <span class="xd2-testimonial-showcase__avatar" aria-hidden="true">{{ mb_substr($itemName, 0, 1) }}</span>
+                            @endif
+                            <div>
+                                <strong>{{ $itemName }}</strong>
+                                @if (filled($itemCompany))<small>{{ $itemCompany }}</small>@endif
+                            </div>
+                        </div>
                     </article>
                 @endforeach
             </div>

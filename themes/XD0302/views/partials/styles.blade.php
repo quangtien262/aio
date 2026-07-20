@@ -156,6 +156,38 @@
 </style>
 
 <style>
+/* Refined testimonial showcase. */
+.xd2-testimonial-showcase{position:relative;isolation:isolate;padding:112px 0;background:linear-gradient(135deg,#f7faf8 0%,#fff 52%,#f1f7f2 100%)}
+.xd2-testimonial-showcase:before,.xd2-testimonial-showcase:after{position:absolute;z-index:-1;border-radius:50%;content:"";pointer-events:none}
+.xd2-testimonial-showcase:before{top:-210px;right:-150px;width:480px;height:480px;background:radial-gradient(circle,rgba(0,155,44,.1),rgba(0,155,44,0) 68%)}
+.xd2-testimonial-showcase:after{bottom:-250px;left:-190px;width:520px;height:520px;border:1px solid rgba(0,155,44,.1)}
+.xd2-testimonial-showcase__layout{grid-template-columns:minmax(300px,.68fr) minmax(0,1.32fr);gap:72px;align-items:center}
+.xd2-testimonial-showcase__intro{position:relative;padding-left:24px}
+.xd2-testimonial-showcase__intro:before{position:absolute;top:2px;bottom:4px;left:0;width:4px;border-radius:8px;background:linear-gradient(180deg,#009b2c,#7bc98f);content:""}
+.xd2-testimonial-showcase__intro .xd2-kicker{margin-bottom:16px;letter-spacing:.08em;text-transform:uppercase}
+.xd2-testimonial-showcase__intro h2{max-width:470px;margin:0 0 24px;font:800 clamp(36px,3.45vw,54px)/1.08 Arial,Helvetica,sans-serif;letter-spacing:-.035em}
+.xd2-testimonial-showcase__intro>p:last-child{max-width:470px;font-size:16px;line-height:1.8}
+.xd2-testimonial-showcase__slider{padding:12px 4px 48px}
+.xd2-testimonial-showcase__track{gap:22px;padding:10px 2px 22px}
+.xd2-testimonial-showcase__card{position:relative;min-height:350px;flex:0 0 calc((100% - 22px)/2);padding:38px 34px 30px;overflow:hidden;border:1px solid rgba(23,18,47,.08);border-radius:18px;background:rgba(255,255,255,.94);box-shadow:0 18px 48px rgba(23,18,47,.09);transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease}
+.xd2-testimonial-showcase__card:before{position:absolute;top:0;right:0;left:0;height:4px;background:linear-gradient(90deg,#009b2c,#77ca8d);content:""}
+.xd2-testimonial-showcase__card:hover{border-color:rgba(0,155,44,.24);box-shadow:0 26px 64px rgba(23,18,47,.14);transform:translateY(-6px)}
+.xd2-testimonial-showcase__quote{display:block;height:58px;color:rgba(0,155,44,.16);font:700 88px/1 Georgia,serif}
+.xd2-testimonial-showcase__card p{margin:8px 0 30px;color:#555c64;font-size:16px;line-height:1.75}
+.xd2-testimonial-showcase__author{display:flex;align-items:center;gap:14px;margin-top:auto;padding-top:20px;border-top:1px solid #edf0ee}
+.xd2-testimonial-showcase__card .xd2-testimonial-showcase__author img,.xd2-testimonial-showcase__avatar{display:grid;width:58px;height:58px;flex:0 0 58px;margin:0;place-items:center;border:3px solid #fff;border-radius:50%;background:linear-gradient(135deg,#009b2c,#63bd7b);box-shadow:0 0 0 1px rgba(0,155,44,.25),0 8px 22px rgba(23,18,47,.12);object-fit:cover;color:#fff;font-size:22px;font-weight:800}
+.xd2-testimonial-showcase__author>div{display:grid;gap:3px;min-width:0}
+.xd2-testimonial-showcase__card strong{margin:0;color:var(--xd2-ink);font-size:17px;line-height:1.35}
+.xd2-testimonial-showcase__card small{margin:0;color:var(--xd2-muted);font-size:13px;line-height:1.45}
+.xd2-testimonial-showcase__nav{top:calc(50% - 18px);width:46px;height:46px;border:0;background:#fff;box-shadow:0 12px 30px rgba(23,18,47,.16);font-size:24px;transition:background .18s ease,color .18s ease,transform .18s ease}
+.xd2-testimonial-showcase__nav:hover{background:#009b2c;color:#fff}
+.xd2-testimonial-showcase__nav.is-prev{left:-19px}.xd2-testimonial-showcase__nav.is-next{right:-19px}
+.xd2-testimonial-showcase__dots{bottom:8px}.xd2-testimonial-showcase__dots button{height:7px;background:#cfd8d1;cursor:pointer}.xd2-testimonial-showcase__dots button.is-active{width:30px;background:#009b2c}
+@media(max-width:900px){.xd2-testimonial-showcase{padding:88px 0}.xd2-testimonial-showcase__layout{gap:44px}.xd2-testimonial-showcase__intro{max-width:680px}.xd2-testimonial-showcase__card{flex-basis:calc((100% - 22px)/2);padding:32px 28px 26px}}
+@media(max-width:620px){.xd2-testimonial-showcase{padding:72px 0}.xd2-testimonial-showcase__layout{gap:30px}.xd2-testimonial-showcase__intro{padding-left:17px}.xd2-testimonial-showcase__intro h2{font-size:34px}.xd2-testimonial-showcase__slider{padding-top:0}.xd2-testimonial-showcase__track{gap:14px}.xd2-testimonial-showcase__card{min-height:330px;flex-basis:min(86vw,350px);padding:30px 24px 24px}.xd2-testimonial-showcase__quote{height:48px;font-size:72px}.xd2-testimonial-showcase__card p{font-size:15px}}
+</style>
+
+<style>
 /* Recursive primary navigation for XD0302. */
 .xd2-navigation{position:relative;z-index:30}
 .xd2-nav{gap:0}
