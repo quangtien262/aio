@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsProject;
 use App\Models\CmsProjectImage;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -108,10 +109,19 @@ class ProjectManagementController
 
     private function validatePayload(Request $request, ?CmsProject $project = null): array
     {
+        $websiteKey = $project?->website_key ?: app(SiteContext::class)->websiteKey();
+
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'cms_project_category_id' => ['nullable', 'integer', Rule::exists('cms_project_categories', 'id')],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('cms_projects', 'slug')->ignore($project?->id)],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('cms_projects', 'slug')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($project?->id),
+            ],
             'status' => ['required', 'string', Rule::in(config('cms.workflow.statuses', ['draft', 'published']))],
             'summary' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],

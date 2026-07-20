@@ -36,8 +36,8 @@ import {
 } from 'ckeditor5';
 import 'ckeditor5/ckeditor5.css';
 
-function toSlug(value) {
-    return String(value ?? '')
+function toSlug(value, { trimEdges = true } = {}) {
+    const slug = String(value ?? '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/đ/g, 'd')
@@ -45,8 +45,9 @@ function toSlug(value) {
         .replace(/\u0111|\u0110/g, 'd')
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/[^a-z0-9]+/g, '-');
+
+    return trimEdges ? slug.replace(/^-+|-+$/g, '') : slug.replace(/^-+/g, '');
 }
 
 const SERVICE_ICON_OPTIONS = [
@@ -186,7 +187,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
     }), []);
 
     const handleSlugChange = (event) => {
-        form.setFieldValue('slug', toSlug(event.target.value));
+        form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
     };
 
     const syncCurrentEditorBodyToForm = () => {

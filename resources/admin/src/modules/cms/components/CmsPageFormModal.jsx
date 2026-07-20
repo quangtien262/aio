@@ -54,16 +54,17 @@ export const emptyCmsPageForm = {
     tenant_key: '',
 };
 
-function toSlug(value) {
-    return String(value ?? '')
+function toSlug(value, { trimEdges = true } = {}) {
+    const slug = String(value ?? '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'd')
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/[^a-z0-9]+/g, '-');
+
+    return trimEdges ? slug.replace(/^-+|-+$/g, '') : slug.replace(/^-+/g, '');
 }
 
 function getYoutubeEmbedUrl(value) {
@@ -468,7 +469,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
 
         const values = await form.validateFields();
 
-        await onSubmit?.({
+        const didSave = await onSubmit?.({
             ...values,
             excerpt: values.excerpt || null,
             body: values.body || null,
@@ -478,7 +479,9 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
             featured_media_id: values.featured_media_id || null,
         });
 
-        form.resetFields();
+        if (didSave !== false) {
+            form.resetFields();
+        }
     };
 
     const handleCancel = () => {
@@ -488,7 +491,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
 
     const handleSlugChange = (event) => {
         slugEditedRef.current = true;
-        form.setFieldValue('slug', toSlug(event.target.value));
+        form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
     };
 
     return (

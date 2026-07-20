@@ -80,8 +80,8 @@ class Xd0307DemoContentProvider implements ThemeDemoContentProvider
             $profile = SiteProfile::query()->firstOrNew();
             $profile->forceFill(['site_name' => 'Logistics Viá»‡t', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Logistics Viá»‡t', 'company_description' => 'Giáº£i phÃ¡p váº­n táº£i vÃ  háº­u cáº§n linh hoáº¡t, káº¿t ná»‘i doanh nghiá»‡p vá»›i má»i hÃ nh trÃ¬nh.', 'support_hotline' => '1900 9477', 'support_email' => 'hello@logisticsviet.vn', 'support_location' => '344 Huá»³nh Táº¥n PhÃ¡t, Quáº­n 7, TP.HCM'])])->save();
 
-            $existingPage = LandingPage::query()->where('website_key', 'website-main')->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
-            $page = $this->landingPageBuilder->resolveHome('website-main', self::THEME_KEY, true);
+            $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
+            $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
             }

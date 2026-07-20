@@ -180,8 +180,8 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
                 ]),
             ])->save();
 
-            $existingPage = LandingPage::query()->where('website_key', 'website-main')->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
-            $page = $this->landingPageBuilder->resolveHome('website-main', self::THEME_KEY, true);
+            $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
+            $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
             }

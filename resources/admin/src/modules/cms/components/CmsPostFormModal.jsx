@@ -62,16 +62,17 @@ export const emptyCmsPostForm = {
     tenant_key: '',
 };
 
-function toSlug(value) {
-    return String(value ?? '')
+function toSlug(value, { trimEdges = true } = {}) {
+    const slug = String(value ?? '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'd')
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/[^a-z0-9]+/g, '-');
+
+    return trimEdges ? slug.replace(/^-+|-+$/g, '') : slug.replace(/^-+/g, '');
 }
 
 function getYoutubeEmbedUrl(value) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsPost;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -86,9 +87,18 @@ class PostManagementController
 
     private function validatePayload(Request $request, ?CmsPost $post = null): array
     {
+        $websiteKey = $post?->website_key ?: app(SiteContext::class)->websiteKey();
+
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('cms_posts', 'slug')->ignore($post?->id)],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('cms_posts', 'slug')
+                    ->where(fn ($query) => $query->where('website_key', $websiteKey))
+                    ->ignore($post?->id),
+            ],
             'status' => ['required', 'string', Rule::in(config('cms.workflow.statuses', ['draft', 'published']))],
             'excerpt' => ['nullable', 'string'],
             'body' => ['nullable', 'string'],

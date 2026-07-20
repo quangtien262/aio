@@ -13,16 +13,17 @@ import Switch from 'antd/es/switch';
 import dayjs from 'dayjs';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 
-function toSlug(value) {
-    return String(value ?? '')
+function toSlug(value, { trimEdges = true } = {}) {
+    const slug = String(value ?? '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'd')
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/[^a-z0-9]+/g, '-');
+
+    return trimEdges ? slug.replace(/^-+|-+$/g, '') : slug.replace(/^-+/g, '');
 }
 
 export default function CmsTeamMemberFormModal({ open, canManage, editingMember, mediaOptions = [], callAdminApi, onCancel, onSubmit }) {
@@ -54,7 +55,7 @@ export default function CmsTeamMemberFormModal({ open, canManage, editingMember,
 
     const handleSlugChange = (event) => {
         slugEditedRef.current = true;
-        form.setFieldValue('slug', toSlug(event.target.value));
+        form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
     };
 
     const handleSubmit = async () => {

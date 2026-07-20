@@ -179,6 +179,13 @@ export default function AdminLayout() {
             try {
                 const payload = await response.json();
                 errorMessage = payload.message ?? errorMessage;
+                const firstValidationError = Object.values(payload.errors ?? {})
+                    .flat()
+                    .find(Boolean);
+
+                if (firstValidationError) {
+                    errorMessage = String(firstValidationError);
+                }
             } catch {
                 // Ignore invalid JSON body.
             }
