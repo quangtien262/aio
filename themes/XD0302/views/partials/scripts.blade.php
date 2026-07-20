@@ -185,6 +185,10 @@
             const editor = document.querySelector('[data-xd-editor]');
             const form = document.querySelector('[data-xd-editor-form]');
             const field = (name) => form?.querySelector(`[data-xd-field="${name}"]`);
+            const blockCtaFields = Array.from(form?.querySelectorAll('[data-xd-block-cta]') || []);
+            const syncBlockCtaVisibility = (blockType) => {
+                blockCtaFields.forEach((element) => { element.hidden = blockType === 'hero_slider'; });
+            };
             const pretty = (value) => JSON.stringify(value || {}, null, 2);
             const parseJson = (value, fallback) => {
                 try { return value.trim() ? JSON.parse(value) : fallback; } catch (error) { throw new Error('JSON không hợp lệ: ' + error.message); }
@@ -317,16 +321,16 @@
             };
             const loadMediaFields = (block) => {
                 const media = normalizeContentObject(block?.media);
-                const legacyContent = normalizeContentObject(block?.data?.content);
                 mediaFields.forEach((input) => {
                     const key = input.dataset.xdMediaField;
-                    input.value = media[key] ?? (key === 'image_secondary' ? legacyContent.image_secondary : '') ?? '';
+                    input.value = media[key] ?? '';
                 });
             };
             const mergeMediaFields = (media = {}) => {
                 if (!mediaEditor || mediaEditor.hidden) return media;
 
                 const next = {...normalizeContentObject(media)};
+                delete next.image_secondary;
                 mediaFields.forEach((input) => {
                     const key = input.dataset.xdMediaField;
                     const value = input.value.trim();
@@ -806,7 +810,7 @@
                 field('title').value = draft.title || '';
                 field('subtitle').value = draft.subtitle || '';
                 field('description').value = draft.description || '';
-                field('button_label').value = draft.button_label || '';
+                field('button_label').value = activeBlock?.block_type === 'hero_slider' ? '' : (draft.button_label || '');
                 field('content').value = pretty(normalizeContentObject(draft.content || {}));
                 loadContactContentFields(normalizeContentObject(draft.content || {}));
                 renderItemsEditor(activeBlock, normalizeContentObject(draft.content || {}));
@@ -875,7 +879,8 @@
                     field('anchor_id').value = block.anchor_id || '';
                     field('is_visible').checked = Boolean(block.is_visible);
                     field('settings').value = pretty(block.settings || {});
-                    if (field('cta_url')) field('cta_url').value = block.settings?.cta_url || '';
+                    syncBlockCtaVisibility(block.block_type);
+                    if (field('cta_url')) field('cta_url').value = block.block_type === 'hero_slider' ? '' : (block.settings?.cta_url || '');
                     field('media').value = pretty(block.media || {});
                     syncMediaEditorVisibility(block);
                     loadMediaFields(block);
@@ -894,9 +899,13 @@
                     localeDrafts[activeEditorLocale] = collectCurrentLocaleDraft();
                     const localePayloads = Object.values(localeDrafts);
                     const settingsPayload = collectSourceSettings(parseJson(field('settings').value, {}));
-                    const ctaUrl = field('cta_url')?.value.trim() || '';
-                    if (ctaUrl !== '') settingsPayload.cta_url = ctaUrl;
-                    else delete settingsPayload.cta_url;
+                    if (activeBlock?.block_type === 'hero_slider') {
+                        delete settingsPayload.cta_url;
+                    } else {
+                        const ctaUrl = field('cta_url')?.value.trim() || '';
+                        if (ctaUrl !== '') settingsPayload.cta_url = ctaUrl;
+                        else delete settingsPayload.cta_url;
+                    }
                     const mediaPayload = mergeMediaFields(parseJson(field('media').value, {}));
                     field('media').value = pretty(mediaPayload);
 

@@ -19,6 +19,7 @@ import Input from 'antd/es/input';
 import List from 'antd/es/list';
 import Modal from 'antd/es/modal';
 import Popconfirm from 'antd/es/popconfirm';
+import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
@@ -928,29 +929,37 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
             >
                 <Form form={itemForm} layout="vertical" initialValues={createEmptyMenuItem()}>
                     <Row gutter={16}>
-                        <Col span={10}>
+                        <Col span={16}>
                             <Form.Item name="label" label="Label" rules={[{ required: true, message: 'Nhập label' }]}>
                                 <Input placeholder="Giới thiệu" />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="link_type" label="Loại link" rules={[{ required: true, message: 'Chọn loại link' }]}>
-                                <Select
-                                    options={LINK_TYPE_OPTIONS}
-                                    onChange={(value) => {
-                                        setItemLinkType(value);
-                                        itemForm.setFieldValue('link_value', null);
-                                        itemForm.setFieldValue('custom_url', '');
-                                    }}
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={6}>
                             <Form.Item name="target" label="Target">
                                 <Select options={[{ label: 'Self', value: '_self' }, { label: 'Blank', value: '_blank' }]} />
                             </Form.Item>
                         </Col>
                     </Row>
+
+                    <Form.Item name="link_type" label="Loại link" rules={[{ required: true, message: 'Chọn loại link' }]}>
+                        <Radio.Group
+                            style={{ width: '100%' }}
+                            onChange={(event) => {
+                                const value = event.target.value;
+                                setItemLinkType(value);
+                                itemForm.setFieldValue('link_value', null);
+                                itemForm.setFieldValue('custom_url', '');
+                            }}
+                        >
+                            <Row gutter={[8, 8]}>
+                                {LINK_TYPE_OPTIONS.map((option) => (
+                                    <Col key={option.value} xs={24} sm={12} md={8}>
+                                        <Radio value={option.value}>{option.label}</Radio>
+                                    </Col>
+                                ))}
+                            </Row>
+                        </Radio.Group>
+                    </Form.Item>
 
                     {itemLinkType === 'custom' ? (
                         <Form.Item name="custom_url" label="URL" rules={[{ required: true, message: 'Nhập URL' }]}>

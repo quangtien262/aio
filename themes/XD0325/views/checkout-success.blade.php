@@ -1,0 +1,1 @@
+@extends('theme-xd0325::layout') @section('title','Đặt hàng thành công') @section('content')<main class="x325-section" style="padding-top:220px;text-align:center"><div class="x325-container"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã lựa chọn Bean Construction.</p><a class="x325-btn" href="{{ route('site.home') }}">Về trang chủ</a></div></main>@endsection

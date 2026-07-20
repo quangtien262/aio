@@ -48,7 +48,15 @@ function normalizeFormLocales(block) {
 }
 
 function editorItemKey(blockType) {
-    return blockType === 'hero_slider' ? 'slides' : 'items';
+    if (blockType === 'hero_slider') {
+        return 'slides';
+    }
+
+    if (blockType === 'about_experience') {
+        return 'tabs';
+    }
+
+    return 'items';
 }
 
 function FormValueBridge() {
@@ -68,6 +76,13 @@ function editorItemFields(blockType) {
             ['image', 'Ảnh'],
             ['link_url', 'Link'],
             ['button_label', 'Nút bấm'],
+        ];
+    }
+
+    if (blockType === 'about_experience') {
+        return [
+            ['label', 'Tên tab'],
+            ['description', 'Nội dung tab', 'textarea'],
         ];
     }
 
@@ -351,6 +366,9 @@ export default function LandingBlockManagerDrawer({
             anchor_id: block.anchor_id ?? '',
             is_visible: Boolean(block.is_visible),
             settings: block.settings ?? {},
+            media: block.block_type === 'about_experience'
+                ? { image: block.media?.image ?? '' }
+                : (block.media ?? {}),
             data_by_locale: normalizeFormLocales(block),
         });
         setContentVersion((version) => version + 1);
@@ -379,6 +397,9 @@ export default function LandingBlockManagerDrawer({
                         anchor_id: values.anchor_id || null,
                         is_visible: Boolean(values.is_visible),
                         settings: values.settings ?? {},
+                        media: editingBlock.block_type === 'about_experience'
+                            ? { image: values.media?.image ?? '' }
+                            : (editingBlock.media ?? {}),
                         data: {
                             title: localeData.title ?? '',
                             subtitle: localeData.subtitle ?? '',
@@ -696,6 +717,28 @@ export default function LandingBlockManagerDrawer({
                         <Form.Item name={['settings', 'cta_url']} label="Link CTA">
                             <Input placeholder="/gioi-thieu hoac https://..." />
                         </Form.Item>
+                        {editingBlock.block_type === 'about_experience' ? (
+                            <Form.Item
+                                name={['media', 'image']}
+                                label="Ảnh tổng hợp bên trái"
+                                extra="Chỉ dùng một ảnh hoàn chỉnh; nếu cần hiển thị số năm kinh nghiệm, hãy thiết kế trực tiếp trong ảnh."
+                            >
+                                <SingleMediaPicker
+                                    open={Boolean(editingBlock)}
+                                    canManage={canUpdate}
+                                    callAdminApi={callAdminApi}
+                                    recordTitle={blockTitle(editingBlock)}
+                                    previewTitle="Ảnh giới thiệu"
+                                    uploadButtonLabel="Upload ảnh giới thiệu"
+                                    uploadHint="Ảnh upload xong sẽ thay toàn bộ cột trái của khối giới thiệu."
+                                    libraryButtonLabel="Chọn từ thư viện media"
+                                    libraryHint="Chọn một ảnh tổng hợp đã có trong thư viện CMS."
+                                    urlPlaceholder="https://example.com/about-composite.jpg"
+                                    urlButtonLabel="Lưu URL và gắn ảnh"
+                                    libraryModalTitle="Chọn ảnh tổng hợp khối giới thiệu"
+                                />
+                            </Form.Item>
+                        ) : null}
                     </Card>
 
                     <Tabs
@@ -724,14 +767,14 @@ export default function LandingBlockManagerDrawer({
                                     {localeCode === activeEditLocale ? (
                                         <Card
                                             size="small"
-                                            title="Danh sách nội dung"
-                                            extra={<Button size="small" icon={<PlusOutlined />} onClick={() => openItemEditor(null, {})}>Thêm mục</Button>}
+                                            title={editingBlock.block_type === 'about_experience' ? 'Danh sách tab giới thiệu' : 'Danh sách nội dung'}
+                                            extra={<Button size="small" icon={<PlusOutlined />} onClick={() => openItemEditor(null, {})}>{editingBlock.block_type === 'about_experience' ? 'Thêm tab' : 'Thêm mục'}</Button>}
                                         >
                                             <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                                <Text type="secondary">Chỉnh từng mục bằng form, không cần nhập JSON.</Text>
+                                                <Text type="secondary">{editingBlock.block_type === 'about_experience' ? 'Mỗi mục tương ứng một tab hiển thị ở cột nội dung bên phải.' : 'Chỉnh từng mục bằng form, không cần nhập JSON.'}</Text>
                                                 {activeItems.length ? activeItems.map((item, index) => {
                                                     const image = item.image || item.logo || item.avatar || '';
-                                                    const title = item.title || item.name || item.kicker || `Mục ${index + 1}`;
+                                                    const title = item.title || item.label || item.name || item.kicker || `Mục ${index + 1}`;
                                                     const summary = item.summary || item.description || item.quote || item.role || item.company || item.url || item.link_url || 'Chưa có mô tả.';
 
                                                     return (

@@ -16,30 +16,21 @@
                     <label class="xd-editor-field"><span>Tiêu đề</span><input data-xd-field="title"></label>
                     <label class="xd-editor-field"><span>Nhãn phụ</span><input data-xd-field="subtitle"></label>
                     <label class="xd-editor-field is-wide"><span>Mô tả</span><textarea data-xd-field="description"></textarea></label>
-                    <label class="xd-editor-field"><span>Nút CTA</span><input data-xd-field="button_label"></label>
-                    <label class="xd-editor-field"><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/gioi-thieu hoặc https://..."></label>
+                    <label class="xd-editor-field" data-xd-block-cta><span>Nút CTA</span><input data-xd-field="button_label"></label>
+                    <label class="xd-editor-field" data-xd-block-cta><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/gioi-thieu hoặc https://..."></label>
                     <label class="xd-editor-field"><span>Hiển thị</span><input data-xd-field="is_visible" type="checkbox"></label>
                     <section class="xd-editor-source" data-xd-media-editor hidden>
                         <div>
-                            <h4>Hình ảnh khối giới thiệu</h4>
-                            <p class="xd-editor-source-note">Nhập liên kết ảnh hoặc upload ảnh mới. Hai ảnh này dùng chung cho mọi ngôn ngữ.</p>
+                            <h4>Ảnh tổng hợp khối giới thiệu</h4>
+                            <p class="xd-editor-source-note">Cột trái dùng duy nhất một ảnh hoàn chỉnh, bao gồm cả hình ảnh và nội dung kinh nghiệm nếu cần.</p>
                         </div>
                         <div class="xd-editor-grid">
                             <div class="xd-editor-field is-wide" data-xd-media-row>
-                                <span>Ảnh chính</span>
-                                <input data-xd-media-field="image" aria-label="Ảnh chính" placeholder="https://... hoặc /storage/...">
+                                <span>Ảnh giới thiệu</span>
+                                <input data-xd-media-field="image" aria-label="Ảnh giới thiệu" placeholder="https://... hoặc /storage/...">
                                 <div class="xd-item-upload">
                                     <input type="file" accept="image/*" data-xd-media-upload="image" hidden>
-                                    <button type="button" data-xd-media-upload-trigger>Upload ảnh chính</button>
-                                    <small data-xd-media-upload-status></small>
-                                </div>
-                            </div>
-                            <div class="xd-editor-field is-wide" data-xd-media-row>
-                                <span>Ảnh phụ</span>
-                                <input data-xd-media-field="image_secondary" aria-label="Ảnh phụ" placeholder="https://... hoặc /storage/...">
-                                <div class="xd-item-upload">
-                                    <input type="file" accept="image/*" data-xd-media-upload="image_secondary" hidden>
-                                    <button type="button" data-xd-media-upload-trigger>Upload ảnh phụ</button>
+                                    <button type="button" data-xd-media-upload-trigger>Upload ảnh giới thiệu</button>
                                     <small data-xd-media-upload-status></small>
                                 </div>
                             </div>

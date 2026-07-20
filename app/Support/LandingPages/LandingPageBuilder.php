@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603'], true);
     }
 
     /**
@@ -1229,6 +1229,7 @@ class LandingPageBuilder
             'XD0322' => $this->xd0322DefaultBlocks(),
             'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
             'XD0324' => $this->xd0324DefaultBlocks(),
+            'XD0325' => $this->xd0325DefaultBlocks(),
             'BZ501' => $this->bz501DefaultBlocks(),
             'SPA502' => $this->spa502DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
@@ -2317,6 +2318,62 @@ class LandingPageBuilder
     }
 
     /** @return array<int, array<string, mixed>> */
+    private function xd0325DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/XD0325/preview-xd0325.png';
+        $hero = '/theme-demo/xd0325/hero-construction.png';
+        $interior = '/theme-demo/curated/home/bathroom/bathroom-02.jpg';
+        $product = '/theme-demo/xd0325/safety-products.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $items = fn (array $values): array => ['content' => ['items' => $values]];
+        $sourceSchema = fn (string $source, string $label): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số lượng', 'default' => 4],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm kiếm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ nội dung nổi bật', 'default' => false],
+        ];
+
+        $services = [
+            ['title' => 'Kiến trúc xây dựng', 'summary' => 'Thiết kế sáng tạo và tính toán toàn vẹn kết cấu, tạo ra không gian chức năng và đẹp mắt.', 'image' => $hero, 'icon' => 'fa-solid fa-building', 'url' => '#lien-he'],
+            ['title' => 'Lắp đặt sàn gỗ', 'summary' => 'Vật liệu chất lượng cao và tay nghề chính xác mang lại vẻ đẹp bền vững.', 'image' => $interior, 'icon' => 'fa-solid fa-layer-group', 'url' => '#lien-he'],
+            ['title' => 'Thiết kế nội thất', 'summary' => 'Biến đổi không gian bằng khái niệm sáng tạo, thẩm mỹ và bố cục công năng.', 'image' => $interior, 'icon' => 'fa-solid fa-pen-ruler', 'url' => '#lien-he'],
+            ['title' => 'Bảo trì công trình', 'summary' => 'Làm mới công trình bằng tư duy hiện đại, nâng cao sự thoải mái và giá trị.', 'image' => $hero, 'icon' => 'fa-solid fa-hammer', 'url' => '#lien-he'],
+        ];
+        $projects = [
+            ['title' => 'Thiết kế nội thất biệt thự Mùa Xuân', 'summary' => 'Chủ đầu tư: Bean Company · Quy mô: 1000m² · Đắk Lắk', 'image' => $interior, 'url' => '#lien-he'],
+            ['title' => 'Tòa nhà văn phòng Bean Center', 'summary' => 'Thiết kế và thi công trọn gói theo tiêu chuẩn hiện đại.', 'image' => $hero, 'url' => '#lien-he'],
+            ['title' => 'Căn hộ cao cấp Bình Dương', 'summary' => 'Nội thất tối giản, tinh tế và tối ưu công năng.', 'image' => '/theme-demo/curated/home/bathroom/bathroom-03.jpg', 'url' => '#lien-he'],
+        ];
+        $why = [
+            ['title' => 'Giải pháp hiện đại', 'summary' => 'Công nghệ và phương pháp thi công tiên tiến, tối ưu chi phí và thời gian.'],
+            ['title' => 'Đội ngũ chuyên nghiệp', 'summary' => 'Kiến trúc sư, kỹ sư và công nhân lành nghề, tận tâm với nghề.'],
+            ['title' => 'Kinh nghiệm lâu năm', 'summary' => 'Mang đến những công trình chất lượng, bền vững và đúng tiến độ.'],
+            ['title' => 'Cam kết lâu dài', 'summary' => 'Mỗi công trình là lời hứa về sự an toàn và giá trị sử dụng lâu dài.'],
+        ];
+        $team = [
+            ['name' => 'Hoàng Quân', 'title' => 'Hoàng Quân', 'role' => 'Kiến trúc sư', 'image' => $hero],
+            ['name' => 'Quang Hiệp', 'title' => 'Quang Hiệp', 'role' => 'Kỹ sư xây dựng', 'image' => $hero],
+            ['name' => 'Văn Mạnh', 'title' => 'Văn Mạnh', 'role' => 'Kỹ sư công trình', 'image' => $hero],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Bean Construction', 'description' => 'Slider ảnh lớn đầu trang.', 'preview_image' => $preview, 'anchor_id' => 'top', 'settings' => ['autoplay_ms' => 6000], 'settings_schema' => ['autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Kiến Tạo Tương Lai Cùng Bean Construction', 'Bean Construction', 'Chúng tôi đồng hành cùng bạn trong mọi công trình, mang đến giải pháp xây dựng bền vững và hiện đại.', 'Xem thêm'), ['content' => ['slides' => [['title' => 'Kiến Tạo Tương Lai Cùng Bean Construction', 'summary' => 'Giải pháp xây dựng bền vững và hiện đại.', 'image' => $hero]]]]), 'en' => $heading('Building the future with Bean Construction')]],
+            ['block_type' => 'about_experience', 'label' => 'Về Bean Construction', 'description' => 'Giới thiệu, ảnh ghép và cam kết.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'settings' => [], 'data' => ['vi' => array_merge($heading('Về Bean Construction', 'Chúng tôi là ai?', 'Chuyên thi công và phát triển công trình uy tín, cung cấp giải pháp xây dựng hiện đại, bền vững và tối ưu chi phí.', 'Xem chi tiết'), $items([['title' => 'Phân tích và đánh giá tính khả thi của dự án.'], ['title' => 'Cam kết chất lượng hài lòng 100% từ khách hàng.'], ['title' => 'Thiết kế phù hợp nhu cầu và mục tiêu công trình.'], ['title' => 'Giải pháp bền vững, tiết kiệm và thân thiện.']])), 'en' => $heading('About Bean Construction')], 'media' => ['images' => [$hero, $interior, $hero]]],
+            ['block_type' => 'project_gallery', 'label' => 'Các dự án mới nhất', 'description' => 'Dự án động hoặc nội dung nhập tay, hiển thị dạng carousel ngang.', 'preview_image' => $preview, 'anchor_id' => 'du-an', 'dynamic' => true, 'settings' => ['source' => 'cms_projects', 'limit' => 6, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_projects', 'Dự án CMS'), 'data' => ['vi' => array_merge($heading('Các Dự Án Mới Nhất', 'Dự án của chúng tôi', 'Khám phá những công trình tiêu biểu Bean Construction đã và đang thực hiện.'), $items($projects)), 'en' => $heading('Latest projects')]],
+            ['block_type' => 'featured_services', 'label' => 'Dịch vụ xây dựng', 'description' => 'Dịch vụ động hoặc nhập tay.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_services', 'Dịch vụ CMS'), 'data' => ['vi' => array_merge($heading('Chúng Tôi Cung Cấp Các Dịch Vụ', 'Dịch vụ của chúng tôi', 'Giải pháp xây dựng hiện đại, bền vững và tối ưu chi phí.'), $items($services)), 'en' => $heading('Our services')]],
+            ['block_type' => 'featured_products', 'label' => 'Sản phẩm nổi bật', 'description' => 'Sản phẩm công trình theo điều kiện lọc.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false, 'fallback_image' => $product], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm'), 'data' => ['vi' => array_merge($heading('✦ Sản Phẩm Nổi Bật ✦', null, 'Đồ bảo hộ lao động, dụng cụ cầm tay và thiết bị an toàn công trình.'), $items([['title' => 'Găng tay chống dầu Safety', 'image' => $product, 'price' => 170000, 'original_price' => 175000], ['title' => 'Găng tay da hàn TIG', 'image' => $product, 'price' => 100000, 'original_price' => 120000], ['title' => 'Áo gile phản quang', 'image' => $product, 'price' => 150000, 'original_price' => 177000], ['title' => 'Áo vest an toàn công trường', 'image' => $product, 'price' => 225000, 'original_price' => 385000]])), 'en' => $heading('Featured products')]],
+            ['block_type' => 'featured_categories', 'label' => 'Tại sao chọn chúng tôi', 'description' => 'Bốn lợi thế nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'ly-do', 'settings' => [], 'data' => ['vi' => array_merge($heading('Từ Ý Tưởng Đến Công Trình Hoàn Thiện', 'Tại sao chọn chúng tôi', 'Sự hợp tác chặt chẽ, kiến thức ngành và kinh nghiệm lâu năm mang lại sự hoàn hảo cho khách hàng.'), $items($why)), 'en' => $heading('Why choose us')], 'media' => ['image' => $hero]],
+            ['block_type' => 'testimonials', 'label' => 'Phản hồi khách hàng', 'description' => 'Đánh giá khách hàng.', 'preview_image' => $preview, 'anchor_id' => 'phan-hoi', 'settings' => ['source' => 'custom', 'limit' => 3], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_testimonials', 'label' => 'Đánh giá CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số đánh giá']], 'data' => ['vi' => array_merge($heading('Khách Hàng Nói Gì?', 'Phản hồi từ khách hàng'), $items([['name' => 'Nguyễn Thảo – Hà Nội', 'role' => 'Chủ đầu tư', 'quote' => 'Bean Construction mang đến trải nghiệm chuyên nghiệp từ tư vấn đến thi công. Tiến độ và chất lượng công trình luôn được đảm bảo.']])), 'en' => $heading('What clients say')]],
+            ['block_type' => 'team_members', 'label' => 'Đội ngũ chuyên nghiệp', 'description' => 'Nhân sự động hoặc nhập tay.', 'preview_image' => $preview, 'anchor_id' => 'doi-ngu', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 3], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_team_members', 'label' => 'Nhân sự CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số nhân sự']], 'data' => ['vi' => array_merge($heading('Đội Ngũ Nhân Viên Chuyên Nghiệp', 'Đội ngũ nhân viên', 'Đội ngũ có kiến thức chuyên môn, kinh nghiệm dày dạn và khả năng thích ứng linh hoạt.'), $items($team)), 'en' => $heading('Professional team')]],
+            ['block_type' => 'faq_showcase', 'label' => 'Câu hỏi thường gặp', 'description' => 'Danh sách câu hỏi accordion.', 'preview_image' => $preview, 'anchor_id' => 'faq', 'settings' => [], 'data' => ['vi' => array_merge($heading('Giải Đáp Thắc Mắc Cùng Bean Construction', 'Câu hỏi thường gặp', 'Nếu chưa tìm thấy câu trả lời phù hợp, hãy liên hệ với chúng tôi.'), $items([['title' => 'Bean Construction có đảm bảo tiến độ thi công không?', 'summary' => 'Chúng tôi cam kết thi công đúng tiến độ đã thống nhất trong hợp đồng với quy trình kiểm soát chặt chẽ.'], ['title' => 'Công trình có được bảo hành sau khi hoàn thành không?', 'summary' => 'Mọi công trình đều có chính sách bảo hành minh bạch theo từng hạng mục.'], ['title' => 'Có hỗ trợ tư vấn thiết kế và lựa chọn vật liệu không?', 'summary' => 'Đội ngũ kiến trúc sư hỗ trợ trọn gói từ ý tưởng đến vật liệu hoàn thiện.']])), 'en' => $heading('Frequently asked questions')]],
+            ['block_type' => 'process_steps', 'label' => 'Quy trình thi công', 'description' => 'Bốn bước từ yêu cầu đến thi công.', 'preview_image' => $preview, 'anchor_id' => 'quy-trinh', 'settings' => [], 'data' => ['vi' => array_merge($heading('Quy trình làm việc'), $items([['title' => 'Lấy yêu cầu', 'summary' => 'Tổng hợp yêu cầu và tư vấn giải pháp từ đội ngũ chuyên nghiệp.'], ['title' => 'Lên ý tưởng', 'summary' => 'Đưa ra ý tưởng và thiết kế tối ưu nhất.'], ['title' => 'Đưa giải pháp', 'summary' => 'Tư vấn giải pháp phù hợp cho từng yêu cầu.'], ['title' => 'Thi công ngay', 'summary' => 'Tiến hành thi công theo giải pháp đã thống nhất.']])), 'en' => $heading('Our process')]],
+            ['block_type' => 'latest_posts', 'label' => 'Tin tức xây dựng', 'description' => 'Tin tức động theo bộ lọc.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false, 'fallback_image' => $interior], 'settings_schema' => $sourceSchema('cms_posts', 'Tin tức'), 'data' => ['vi' => $heading('Cập Nhật Những Tin Tức Xây Dựng', 'Tin tức mới nhất', 'Thông tin mới nhất về xu hướng, công nghệ và giải pháp trong lĩnh vực xây dựng.'), 'en' => $heading('Construction news')]],
+            ['block_type' => 'landing_contact', 'label' => 'Liên hệ tư vấn', 'description' => 'Form liên hệ và hotline.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => [], 'data' => ['vi' => $heading('Liên Hệ Ngay Để Được Tư Vấn', 'Tư vấn miễn phí', 'Đội ngũ chuyên viên luôn sẵn sàng hỗ trợ và mang đến giải pháp phù hợp nhất.'), 'en' => $heading('Contact us for consultation')]],
+            ['block_type' => 'partner_logos', 'label' => 'Đối tác lâu năm', 'description' => 'Đối tác CMS hoặc nhập tay.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 8], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_partners', 'label' => 'Đối tác CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => array_merge($heading('Đối Tác Lâu Năm Của Chúng Tôi', 'Đối tác chúng tôi', 'Đồng hành cùng nhiều đối tác uy tín, xây dựng quan hệ lâu dài dựa trên niềm tin và chất lượng.'), $items(array_map(fn ($name) => ['title' => $name], ['CC14', 'ELand', 'BuildMax', 'Blanco Construction', 'Athens Holding', 'Kim Gia Hưng', 'Đất Xanh Group', 'Thăng Long']))), 'en' => $heading('Long-term partners')]],
+        ];
+    }
+
     private function xd0324DefaultBlocks(): array
     {
         $contentSources = [
@@ -4556,19 +4613,19 @@ class LandingPageBuilder
                 'description' => 'Giới thiệu năng lực, kinh nghiệm và định hướng doanh nghiệp.',
                 'preview_image' => '/theme-previews/XD0302/about-experience.png',
                 'anchor_id' => 'gioi-thieu',
-                'settings' => ['years' => 29, 'cta_url' => '/gioi-thieu'],
+                'settings' => ['cta_url' => '/gioi-thieu'],
                 'media' => [],
                 'data' => [
                     'vi' => ['title' => 'Chúng tôi đang phát triển các giải pháp năng lượng mặt trời', 'subtitle' => 'Giới thiệu của chúng tôi', 'description' => 'Giải pháp năng lượng xanh giúp doanh nghiệp chủ động chi phí và hướng tới tương lai bền vững.', 'button_label' => 'Về chúng tôi', 'content' => ['tabs' => [
                         ['label' => 'Về chúng tôi', 'description' => 'Giải pháp năng lượng xanh giúp doanh nghiệp chủ động chi phí và hướng tới tương lai bền vững.'],
                         ['label' => 'Tầm nhìn', 'description' => 'Trở thành đối tác năng lượng đáng tin cậy, đồng hành cùng doanh nghiệp trên hành trình vận hành xanh.'],
                         ['label' => 'Sứ mệnh', 'description' => 'Mang đến giải pháp năng lượng hiệu quả, an toàn và phù hợp với nhu cầu vận hành thực tế.'],
-                    ], 'image_secondary' => '']],
+                    ]]],
                     'en' => ['title' => 'We develop solar energy solutions', 'subtitle' => 'About us', 'description' => 'Clean energy solutions for long-term operations.', 'button_label' => 'About us', 'content' => ['tabs' => [
                         ['label' => 'About', 'description' => 'Clean energy solutions help businesses control costs and build sustainable operations.'],
                         ['label' => 'Vision', 'description' => 'To become a trusted energy partner for businesses pursuing greener operations.'],
                         ['label' => 'Mission', 'description' => 'To deliver efficient and safe energy solutions tailored to real operational needs.'],
-                    ], 'image_secondary' => '']],
+                    ]]],
                 ],
             ],
             [

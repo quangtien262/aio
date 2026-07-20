@@ -1,6 +1,6 @@
 @php
     $aboutUrl = $localizeMenuUrl($settings['cta_url'] ?? '/gioi-thieu');
-    $secondaryImage = ($media['image_secondary'] ?? data_get($content, 'image_secondary')) ?: 'https://images.unsplash.com/photo-1551830820-330a71b99659?auto=format&fit=crop&w=900&q=85';
+    $aboutImage = trim((string) ($media['image'] ?? ''));
     $aboutTabs = collect(data_get($content, 'tabs', []))
         ->map(function ($tab) use ($data) {
             if (is_array($tab)) {
@@ -23,9 +23,11 @@
     {!! $editButton !!}
     <div class="xd2-container xd2-about__grid">
         <div class="xd2-about__media">
-            <img src="{{ $media['image'] ?? 'https://images.unsplash.com/photo-1486406146926-c627a92ad742?auto=format&fit=crop&w=800&q=85' }}" alt="{{ $data['title'] ?? 'Giới thiệu' }}">
-            <img src="{{ $secondaryImage }}" alt="">
-            <div><strong>{{ $settings['years'] ?? 29 }}+</strong><span>Năm kinh nghiệm</span></div>
+            @if (filled($aboutImage))
+                <img src="{{ $aboutImage }}" alt="{{ $data['title'] ?? 'Giới thiệu' }}">
+            @else
+                <div class="xd2-about__media-placeholder">Chưa chọn ảnh giới thiệu</div>
+            @endif
         </div>
         <div>
             <p class="xd2-kicker">{{ $data['subtitle'] ?? '' }}</p>
