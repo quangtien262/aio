@@ -315,7 +315,7 @@
     margin-bottom: 28px;
     color: #101a35;
     font-family: Arial, sans-serif;
-    font-size: clamp(38px, 4vw, 58px);
+    font-size: 30px;
     font-weight: 800;
     letter-spacing: -.035em;
     line-height: 1.08;
@@ -383,7 +383,7 @@
 }
 @media (max-width: 620px) {
     .xd2-about h2 {
-        font-size: 34px;
+        font-size: 30px;
     }
     .xd2-tabs {
         gap: 5px;
