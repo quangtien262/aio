@@ -19,6 +19,32 @@
                     <label class="xd-editor-field"><span>Nút CTA</span><input data-xd-field="button_label"></label>
                     <label class="xd-editor-field"><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/gioi-thieu hoặc https://..."></label>
                     <label class="xd-editor-field"><span>Hiển thị</span><input data-xd-field="is_visible" type="checkbox"></label>
+                    <section class="xd-editor-source" data-xd-media-editor hidden>
+                        <div>
+                            <h4>Hình ảnh khối giới thiệu</h4>
+                            <p class="xd-editor-source-note">Nhập liên kết ảnh hoặc upload ảnh mới. Hai ảnh này dùng chung cho mọi ngôn ngữ.</p>
+                        </div>
+                        <div class="xd-editor-grid">
+                            <div class="xd-editor-field is-wide" data-xd-media-row>
+                                <span>Ảnh chính</span>
+                                <input data-xd-media-field="image" aria-label="Ảnh chính" placeholder="https://... hoặc /storage/...">
+                                <div class="xd-item-upload">
+                                    <input type="file" accept="image/*" data-xd-media-upload="image" hidden>
+                                    <button type="button" data-xd-media-upload-trigger>Upload ảnh chính</button>
+                                    <small data-xd-media-upload-status></small>
+                                </div>
+                            </div>
+                            <div class="xd-editor-field is-wide" data-xd-media-row>
+                                <span>Ảnh phụ</span>
+                                <input data-xd-media-field="image_secondary" aria-label="Ảnh phụ" placeholder="https://... hoặc /storage/...">
+                                <div class="xd-item-upload">
+                                    <input type="file" accept="image/*" data-xd-media-upload="image_secondary" hidden>
+                                    <button type="button" data-xd-media-upload-trigger>Upload ảnh phụ</button>
+                                    <small data-xd-media-upload-status></small>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                     <section class="xd-editor-source" data-xd-contact-editor hidden>
                         <div>
                             <h4>Nội dung liên hệ</h4>
@@ -46,7 +72,7 @@
                     <section class="xd-editor-items" data-xd-items-editor hidden>
                         <div class="xd-editor-items-head">
                             <div>
-                                <h4>Danh sách nội dung</h4>
+                                <h4 data-xd-items-title>Danh sách nội dung</h4>
                                 <p class="xd-editor-help" data-xd-items-help>Chỉnh từng mục bằng form, không cần nhập JSON.</p>
                             </div>
                             <div class="xd-editor-items-actions">

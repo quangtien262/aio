@@ -168,6 +168,20 @@ class LandingPageBuilderSourceTest extends TestCase
         $this->assertSame('primary-navigation', $block->settings['menu_location']);
     }
 
+    public function test_xd0302_about_tabs_are_seeded_as_editable_sub_data(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0302-about-tabs-test', 'XD0302');
+        $block = $page->blocks()->where('block_type', 'about_experience')->firstOrFail();
+        $content = json_decode($block->data()->where('locale', 'vi')->firstOrFail()->content, true, flags: JSON_THROW_ON_ERROR);
+        $tabs = $content['tabs'];
+
+        $this->assertCount(3, $tabs);
+        $this->assertSame(['label', 'description'], array_keys($tabs[0]));
+        $this->assertSame('Về chúng tôi', $tabs[0]['label']);
+        $this->assertNotSame($tabs[0]['description'], $tabs[1]['description']);
+    }
+
     public function test_footer_is_not_created_as_a_landing_page_block(): void
     {
         $builder = app(LandingPageBuilder::class);

@@ -145,6 +145,34 @@
                 restartRow();
             });
 
+            document.querySelectorAll('[data-xd2-tabs]').forEach((tabList) => {
+                const tabButtons = Array.from(tabList.querySelectorAll('[data-xd2-tab]'));
+                const tabRoot = tabList.closest('[data-block-type="about_experience"]');
+                const tabPanels = Array.from(tabRoot?.querySelectorAll('[data-xd2-tab-panel]') || []);
+                const activateTab = (nextIndex, focus = false) => {
+                    const normalizedIndex = (nextIndex + tabButtons.length) % tabButtons.length;
+                    tabButtons.forEach((button, index) => {
+                        const active = index === normalizedIndex;
+                        button.classList.toggle('is-active', active);
+                        button.setAttribute('aria-selected', active ? 'true' : 'false');
+                        button.tabIndex = active ? 0 : -1;
+                        if (active && focus) button.focus();
+                    });
+                    tabPanels.forEach((panel, index) => { panel.hidden = index !== normalizedIndex; });
+                };
+
+                tabButtons.forEach((button, index) => {
+                    button.addEventListener('click', () => activateTab(index));
+                    button.addEventListener('keydown', (event) => {
+                        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                        event.preventDefault();
+                        if (event.key === 'Home') activateTab(0, true);
+                        else if (event.key === 'End') activateTab(tabButtons.length - 1, true);
+                        else activateTab(index + (event.key === 'ArrowRight' ? 1 : -1), true);
+                    });
+                });
+            });
+
             const canEdit = @json($canEditLanding);
             if (!canEdit) return;
             const blocks = @json($blockPayload);
@@ -163,6 +191,7 @@
             };
             const itemsEditor = document.querySelector('[data-xd-items-editor]');
             const itemList = document.querySelector('[data-xd-item-list]');
+            const itemsTitle = document.querySelector('[data-xd-items-title]');
             const itemHelp = document.querySelector('[data-xd-items-help]');
             const addItemButton = document.querySelector('[data-xd-add-item]');
             const itemModal = document.querySelector('[data-xd-item-modal]');
@@ -173,6 +202,8 @@
             const sourceEditor = document.querySelector('[data-xd-source-editor]');
             const contactEditor = document.querySelector('[data-xd-contact-editor]');
             const contactContentFields = Array.from(document.querySelectorAll('[data-xd-content-field]'));
+            const mediaEditor = document.querySelector('[data-xd-media-editor]');
+            const mediaFields = Array.from(document.querySelectorAll('[data-xd-media-field]'));
             const manageSourceLink = document.querySelector('[data-xd-manage-source]');
             const sourceSettingFields = Array.from(document.querySelectorAll('[data-xd-setting-field]'));
             const localeTabs = Array.from(document.querySelectorAll('[data-xd-locale-tab]'));
@@ -279,6 +310,31 @@
             };
             const normalizeContentObject = (value) => {
                 return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+            };
+            const syncMediaEditorVisibility = (block) => {
+                if (!mediaEditor) return;
+                mediaEditor.hidden = (block?.block_type || '') !== 'about_experience';
+            };
+            const loadMediaFields = (block) => {
+                const media = normalizeContentObject(block?.media);
+                const legacyContent = normalizeContentObject(block?.data?.content);
+                mediaFields.forEach((input) => {
+                    const key = input.dataset.xdMediaField;
+                    input.value = media[key] ?? (key === 'image_secondary' ? legacyContent.image_secondary : '') ?? '';
+                });
+            };
+            const mergeMediaFields = (media = {}) => {
+                if (!mediaEditor || mediaEditor.hidden) return media;
+
+                const next = {...normalizeContentObject(media)};
+                mediaFields.forEach((input) => {
+                    const key = input.dataset.xdMediaField;
+                    const value = input.value.trim();
+                    if (value !== '') next[key] = value;
+                    else delete next[key];
+                });
+
+                return next;
             };
             const syncContactEditorVisibility = (block) => {
                 if (!contactEditor) return;
@@ -424,7 +480,11 @@
                 return next;
             };
 
-            const editorItemKey = (blockType) => blockType === 'hero_slider' ? 'slides' : 'items';
+            const editorItemKey = (blockType) => {
+                if (blockType === 'hero_slider') return 'slides';
+                if (blockType === 'about_experience') return 'tabs';
+                return 'items';
+            };
             const editorItemFields = (blockType) => {
                 if (blockType === 'hero_slider') {
                     return [
@@ -461,6 +521,13 @@
                     return [
                         ['question', 'Câu hỏi'],
                         ['answer', 'Câu trả lời', 'textarea'],
+                    ];
+                }
+
+                if (blockType === 'about_experience') {
+                    return [
+                        ['label', 'Tên tab'],
+                        ['description', 'Nội dung tab', 'textarea'],
                     ];
                 }
 
@@ -514,7 +581,7 @@
                 row.className = 'xd-editor-item';
                 row.dataset.xdItemRow = '1';
                 row.dataset.xdItem = JSON.stringify(item || {});
-                const title = item.title || item.name || item.kicker || `Mục ${index + 1}`;
+                const title = item.title || item.label || item.name || item.kicker || `Mục ${index + 1}`;
                 const summary = item.summary || item.description || item.quote || item.role || item.company || item.url || item.link_url || 'Chưa có mô tả.';
                 const image = item.image || item.image_url || item.thumbnail || item.logo || item.avatar || '';
                 const imageAlt = item.alt || title;
@@ -614,7 +681,12 @@
                 activeItemKey = editorItemKey(blockType);
                 const content = normalizeContentObject(contentOverride || block.data?.content || {});
                 let items = Array.isArray(content[activeItemKey]) ? content[activeItemKey] : [];
-                const canEditList = ['hero_slider', 'featured_categories', 'content_mosaic', 'content_showcase', 'latest_posts', 'featured_services', 'featured_service_list', 'completed_projects_list', 'project_gallery', 'faq_showcase', 'team_members', 'testimonials', 'testimonial_showcase', 'partner_logos'].includes(blockType);
+                if (blockType === 'about_experience') {
+                    items = items.map((item) => typeof item === 'string'
+                        ? {label: item, description: field('description')?.value || block.data?.description || ''}
+                        : normalizeContentObject(item));
+                }
+                const canEditList = ['hero_slider', 'about_experience', 'featured_categories', 'content_mosaic', 'content_showcase', 'latest_posts', 'featured_services', 'featured_service_list', 'completed_projects_list', 'project_gallery', 'faq_showcase', 'team_members', 'testimonials', 'testimonial_showcase', 'partner_logos'].includes(blockType);
 
                 itemList.innerHTML = '';
                 if (!canEditList) {
@@ -629,7 +701,10 @@
                 itemsEditor.hidden = false;
                 const customMode = isCustomSource();
                 syncSourceModeUi();
-                itemHelp.textContent = customMode
+                if (itemsTitle) itemsTitle.textContent = blockType === 'about_experience' ? 'Danh sách tab giới thiệu' : 'Danh sách nội dung';
+                itemHelp.textContent = blockType === 'about_experience'
+                    ? 'Mỗi mục là một tab. Có thể thêm, sửa hoặc xóa tab cho từng ngôn ngữ.'
+                    : customMode
                     ? 'Nội dung tùy chỉnh: có thể thêm, sửa hoặc xóa từng mục ngay tại đây.'
                     : `Danh sách đang lấy tự động từ ${sourceLabels[currentSourceValue()] || 'CMS'}. Muốn sửa từng item, mở trang quản lý tương ứng.`;
 
@@ -769,6 +844,17 @@
             });
             document.querySelectorAll('[data-xd-item-close]').forEach((button) => button.addEventListener('click', closeItemModal));
             localeTabs.forEach((button) => button.addEventListener('click', () => switchEditorLocale(button.dataset.xdLocaleTab || activeEditorLocale)));
+            document.querySelectorAll('[data-xd-media-upload]').forEach((fileInput) => {
+                const row = fileInput.closest('[data-xd-media-row]');
+                const targetInput = mediaFields.find((input) => input.dataset.xdMediaField === fileInput.dataset.xdMediaUpload);
+                const triggerButton = row?.querySelector('[data-xd-media-upload-trigger]');
+                const statusNode = row?.querySelector('[data-xd-media-upload-status]');
+                triggerButton?.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', () => {
+                    const file = fileInput.files?.[0];
+                    if (file) uploadItemImage(file, targetInput, statusNode, triggerButton);
+                });
+            });
 
             document.querySelectorAll('[data-xd-edit-block]').forEach((button) => {
                 button.addEventListener('click', () => {
@@ -791,6 +877,8 @@
                     field('settings').value = pretty(block.settings || {});
                     if (field('cta_url')) field('cta_url').value = block.settings?.cta_url || '';
                     field('media').value = pretty(block.media || {});
+                    syncMediaEditorVisibility(block);
+                    loadMediaFields(block);
                     syncContactEditorVisibility(block);
                     renderSourceEditor(block);
                     loadLocaleDraft(block.data?.locale || activeEditorLocale);
@@ -809,7 +897,8 @@
                     const ctaUrl = field('cta_url')?.value.trim() || '';
                     if (ctaUrl !== '') settingsPayload.cta_url = ctaUrl;
                     else delete settingsPayload.cta_url;
-                    const mediaPayload = parseJson(field('media').value, {});
+                    const mediaPayload = mergeMediaFields(parseJson(field('media').value, {}));
+                    field('media').value = pretty(mediaPayload);
 
                     for (const draft of localePayloads) {
                         const payload = {

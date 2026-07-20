@@ -275,4 +275,29 @@
 @media (max-width: 620px) {
     .xd2-utility__inner > .xd2-utility__right { display: none; }
 }
+.xd2-tabs {
+    flex-wrap: wrap;
+}
+.xd2-tabs button {
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 4px;
+    background: var(--xd2-ink);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.xd2-tabs button:hover,
+.xd2-tabs button:focus-visible {
+    background: #2d254f;
+    outline: 3px solid rgba(239, 57, 42, .2);
+    outline-offset: 2px;
+}
+.xd2-tabs button.is-active {
+    background: var(--xd2-red);
+}
+.xd2-about__tab-panel[hidden] {
+    display: none;
+}
 </style>

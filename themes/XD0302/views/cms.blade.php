@@ -282,7 +282,6 @@
             <div class="xd-container">
                     <section class="xd-detail-card">
                         <div class="xd-detail-body">
-                            <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
                             <h1>{{ $entry->title }}</h1>
                             @if (!empty($entry->excerpt))
                                 <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
