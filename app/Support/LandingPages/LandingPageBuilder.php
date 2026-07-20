@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603'], true);
     }
 
     /**
@@ -485,6 +485,8 @@ class LandingPageBuilder
             'shop601_flash_sale', 'shop601_product_grid' => 10,
             'shop601_feature_collection' => 4,
             'shop601_product_carousel' => 5,
+            'shop603_hot_products', 'shop603_sale_slider' => 5,
+            'shop603_new_arrivals' => 7,
             default => 3,
         };
         $limit = max(1, min(12, (int) ($settings['limit'] ?? $defaultLimit)));
@@ -501,7 +503,7 @@ class LandingPageBuilder
             return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
@@ -509,6 +511,7 @@ class LandingPageBuilder
                 'bizmax_latest_posts', 'shop601_latest_content' => 'cms_posts',
                 'shop601_collection_cards' => 'custom',
                 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel' => 'cms_products',
+                'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider' => 'cms_products',
                 'solutions_split_list', 'collection_gallery' => 'cms_services',
                 default => 'cms_services',
             };
@@ -922,6 +925,13 @@ class LandingPageBuilder
         /** @var Builder $query */
         $query = CmsPost::query()->with('featuredMedia')->where('status', 'published')->latest('publish_at');
 
+        if (filled($settings['search'] ?? null)) {
+            $search = '%'.trim((string) $settings['search']).'%';
+            $query->where(fn (Builder $nested) => $nested
+                ->where('title', 'like', $search)
+                ->orWhere('excerpt', 'like', $search));
+        }
+
         if (filled($settings['category_id'] ?? null)) {
             $query->where('category_id', (int) $settings['category_id']);
         }
@@ -933,7 +943,7 @@ class LandingPageBuilder
             'title' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.title', $post->id), $post->title),
             'summary' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.excerpt', $post->id), $post->excerpt),
             'icon' => '▦',
-            'image' => $post->featuredMedia?->file_url ?: $this->fallbackContentImage(),
+            'image' => $post->featuredMedia?->file_url ?: (string) ($settings['fallback_image'] ?? $this->fallbackContentImage()),
             'alt' => $post->featuredMedia?->alt_text ?: $post->title,
             'url' => route('site.blog.show', ['slug' => $post->slug]),
         ])->all();
@@ -949,6 +959,14 @@ class LandingPageBuilder
         $query = CatalogProduct::query()->where('is_active', true);
         $this->orderByHighlight($query, 'catalog_products');
         $query->latest();
+
+        if (filled($settings['search'] ?? null)) {
+            $search = '%'.trim((string) $settings['search']).'%';
+            $query->where(fn (Builder $nested) => $nested
+                ->where('name', 'like', $search)
+                ->orWhere('short_description', 'like', $search)
+                ->orWhere('sku', 'like', $search));
+        }
 
         if (filled($settings['category_id'] ?? null)) {
             $query->where('catalog_category_id', (int) $settings['category_id']);
@@ -1189,6 +1207,7 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'SHOP603' => $this->shop603DefaultBlocks(),
             'SHOP602' => $this->shop602DefaultBlocks(),
             'SHOP601' => $this->shop601DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
@@ -1225,6 +1244,50 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function shop603DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/SHOP603/preview-shop603.svg';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $items = fn (array $values): array => ['content' => ['items' => $values]];
+        $productSchema = fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm sản phẩm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy sản phẩm nổi bật', 'default' => false],
+        ];
+        $newsSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 3],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm tin tức'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin tức'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy tin nổi bật', 'default' => false],
+            'fallback_image' => ['type' => 'text', 'label' => 'Ảnh mặc định khi tin chưa có ảnh'],
+        ];
+        $products = [
+            ['title' => 'Áo len nữ thanh lịch', 'image' => '/theme-demo/shop603/product-women-knit.png', 'price' => 110000, 'original_price' => 130000, 'url' => '#'],
+            ['title' => 'Chân váy nữ', 'image' => '/theme-demo/shop603/product-women-knit.png', 'price' => 70000, 'url' => '#'],
+            ['title' => 'Áo khoác nữ', 'image' => '/theme-demo/shop603/product-women-rose.png', 'price' => 300000, 'original_price' => 500000, 'url' => '#'],
+            ['title' => 'Đồ thể thao nữ', 'image' => '/theme-demo/shop603/product-women-rose.png', 'price' => 0, 'url' => '#'],
+            ['title' => 'Sơ mi trẻ em', 'image' => '/theme-demo/shop603/product-women-knit.png', 'price' => 0, 'url' => '#'],
+            ['title' => 'Đồ ngủ nam', 'image' => '/theme-demo/shop603/product-men-green.png', 'price' => 130000, 'url' => '#'],
+            ['title' => 'Bộ đồ hè nam', 'image' => '/theme-demo/shop603/product-men-green.png', 'price' => 200000, 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Header và slider Alena', 'description' => 'Slider ảnh lớn đầu trang lấy từ banner SHOP603.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'shop603-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Mùa lễ hội', 'Tuần lễ mặc đẹp', 'Mua 2 sản phẩm tặng 20%', 'Khám phá ngay'), ['content' => ['slides' => [['title' => 'Mùa lễ hội', 'summary' => 'Mua 2 sản phẩm tặng 20%', 'button_label' => 'Khám phá ngay', 'image' => '/theme-demo/shop603/hero-fashion.png', 'link_url' => '#san-pham-hot']]]]), 'en' => $heading('Holiday season', 'Style week', 'Buy two items and save 20%', 'Explore now')]],
+            ['block_type' => 'shop603_quality_slider', 'label' => 'Cam kết / danh mục dịch vụ', 'description' => 'Dải item ảnh chạy ngang; nội dung do người dùng tự nhập.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'settings' => ['autoplay_ms' => 3400], 'settings_schema' => ['autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading(), $items([['title' => 'Miễn phí giao hàng', 'summary' => 'Miễn phí ship với đơn hàng từ 498K', 'icon' => 'truck'], ['title' => 'Thanh toán COD', 'summary' => 'Thanh toán khi nhận hàng', 'icon' => 'handshake'], ['title' => 'Khách hàng VIP', 'summary' => 'Ưu đãi dành cho khách hàng VIP', 'icon' => 'crown'], ['title' => 'Hỗ trợ bảo hành', 'summary' => 'Đổi, sửa đồ tại tất cả cửa hàng', 'icon' => 'shirt'], ['title' => 'Tư vấn tận tâm', 'summary' => 'Hỗ trợ lựa chọn sản phẩm phù hợp', 'icon' => 'headset']])), 'en' => $heading()]],
+            ['block_type' => 'shop603_hot_products', 'label' => 'Sản phẩm hot', 'description' => 'Danh sách sản phẩm theo điều kiện lọc.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-hot', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => true], 'settings_schema' => $productSchema(5), 'data' => ['vi' => array_merge($heading('Sản phẩm hot'), $items(array_slice($products, 0, 5))), 'en' => $heading('Hot products')]],
+            ['block_type' => 'shop603_new_arrivals', 'label' => 'Hàng mới về', 'description' => 'Sản phẩm đầu tiên dạng ảnh lớn, các sản phẩm sau dạng lưới nhỏ.', 'preview_image' => $preview, 'anchor_id' => 'hang-moi-ve', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 7, 'featured_only' => false], 'settings_schema' => $productSchema(7), 'data' => ['vi' => array_merge($heading('Hàng mới về', null, 'Sản phẩm mới cập nhật theo bộ lọc.'), $items($products)), 'en' => $heading('New arrivals')]],
+            ['block_type' => 'shop603_single_ad', 'label' => 'Banner quảng cáo', 'description' => 'Một banner ảnh quảng cáo toàn chiều rộng.', 'preview_image' => $preview, 'anchor_id' => 'banner-quang-cao', 'settings' => [], 'data' => ['vi' => array_merge($heading(), $items([['title' => 'Mini collection - Lạc quan mang về', 'image' => '/theme-demo/shop603/ad-lac-quan.png', 'url' => '#sale-dong-gia']])), 'en' => $heading()]],
+            ['block_type' => 'shop603_sale_slider', 'label' => 'Sale đồng giá', 'description' => 'Sản phẩm theo bộ lọc hiển thị dạng carousel ngang.', 'preview_image' => $preview, 'anchor_id' => 'sale-dong-gia', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 10, 'featured_only' => false, 'autoplay_ms' => 3600], 'settings_schema' => array_merge($productSchema(10), ['autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']]), 'data' => ['vi' => array_merge($heading('Sale đồng giá - Đừng lo về giá'), $items($products)), 'en' => $heading('One-price sale')]],
+            ['block_type' => 'shop603_newsletter', 'label' => 'Đăng ký nhận khuyến mãi', 'description' => 'Form đăng ký email nhận tin khuyến mãi.', 'preview_image' => $preview, 'anchor_id' => 'dang-ky-email', 'settings' => [], 'data' => ['vi' => $heading('Nhập thông tin khuyến mãi từ chúng tôi', null, null, 'Gửi'), 'en' => $heading('Get our latest promotions', null, null, 'Subscribe')]],
+            ['block_type' => 'latest_posts', 'label' => 'Tin tức thời trang', 'description' => 'Tin tức theo điều kiện tìm kiếm và danh mục.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false, 'fallback_image' => '/theme-demo/shop603/product-women-rose.png'], 'settings_schema' => $newsSchema, 'data' => ['vi' => $heading('Tin tức thời trang'), 'en' => $heading('Fashion news')]],
+            ['block_type' => 'partner_logos', 'label' => 'Logo đối tác', 'description' => 'Logo lấy từ CMS Partners hoặc nội dung nhập tay.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_partners', 'label' => 'Đối tác CMS'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số logo', 'default' => 6]], 'data' => ['vi' => array_merge($heading(), $items([['title' => 'CHANEL'], ['title' => 'LOUIS VUITTON'], ['title' => 'GIVENCHY'], ['title' => 'BALENCIAGA'], ['title' => 'HERMÈS'], ['title' => 'YSL']])), 'en' => $heading()]],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

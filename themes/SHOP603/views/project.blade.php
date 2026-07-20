@@ -1,0 +1,1 @@
+@extends('theme-shop603::layout') @section('title',data_get($project??null,'title','Dự án')) @section('content') @include('theme-shop603::partials.content-shell',['title'=>data_get($project??null,'title'),'summary'=>data_get($project??null,'summary'),'cover'=>data_get($project??null,'cover_image_url'),'body'=>data_get($project??null,'body')]) @endsection

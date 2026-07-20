@@ -1,0 +1,1 @@
+@extends('theme-shop603::layout') @section('title','Đặt hàng thành công') @section('content')<main class="s603-section"><div class="s603-container s603-prose" style="text-align:center"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã mua sắm tại Alena.</p><a class="s603-button" href="{{ route('site.home') }}">Về trang chủ</a></div></main>@endsection
