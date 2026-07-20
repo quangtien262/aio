@@ -1,0 +1,17 @@
+{
+  "DN302": {
+    "common": {
+      "discover": "Discover now",
+      "read_more": "Read more",
+      "view_more": "View more",
+      "send": "Send request"
+    },
+    "header": {
+      "consultation": "Book a consultation",
+      "address": "344 Huynh Tan Phat, District 7, Ho Chi Minh City"
+    },
+    "footer": {
+      "copyright": "A product by HT Vietnam"
+    }
+  }
+}

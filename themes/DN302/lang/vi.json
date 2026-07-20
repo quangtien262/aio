@@ -1,0 +1,17 @@
+{
+  "DN302": {
+    "common": {
+      "discover": "Tìm hiểu ngay",
+      "read_more": "Đọc thêm",
+      "view_more": "Xem thêm",
+      "send": "Gửi yêu cầu"
+    },
+    "header": {
+      "consultation": "Đăng ký tư vấn",
+      "address": "344 Huỳnh Tấn Phát, Phường Bình Thuận, Quận 7, TP.HCM"
+    },
+    "footer": {
+      "copyright": "Sản phẩm của HT Việt Nam"
+    }
+  }
+}

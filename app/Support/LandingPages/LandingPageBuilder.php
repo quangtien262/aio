@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603'], true);
     }
 
     /**
@@ -1234,6 +1234,7 @@ class LandingPageBuilder
             'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
             'XD0324' => $this->xd0324DefaultBlocks(),
             'XD0325' => $this->xd0325DefaultBlocks(),
+            'DN302' => $this->dn302DefaultBlocks(),
             'BZ501' => $this->bz501DefaultBlocks(),
             'SPA502' => $this->spa502DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
@@ -2318,6 +2319,72 @@ class LandingPageBuilder
                     'en' => ['title' => 'Latest posts', 'subtitle' => 'News', 'content' => ['items' => []]],
                 ],
             ],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function dn302DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/DN302/preview-dn302.png';
+        $living = '/theme-demo/dn302/dn302-living-room.png';
+        $villa = '/theme-demo/dn302/dn302-villa.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số lượng', 'default' => 4],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm kiếm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ nội dung nổi bật', 'default' => false],
+        ];
+
+        $services = [
+            ['title' => 'Cửa trượt quay', 'summary' => 'Hệ cửa nhôm có công năng ưu việt, vận hành linh hoạt và phù hợp nhiều loại công trình.', 'image' => $living, 'url' => '#lien-he'],
+            ['title' => 'Cửa nhôm lùa 1 cánh', 'summary' => 'Giải pháp tối ưu cho không gian hẹp, cần tiết kiệm diện tích và đón sáng tự nhiên.', 'image' => $villa, 'url' => '#lien-he'],
+            ['title' => 'Cửa nhôm lùa 2 cánh đẹp', 'summary' => 'Vận hành êm, thẩm mỹ tối giản và bền bỉ trong điều kiện thời tiết Việt Nam.', 'image' => $living, 'url' => '#lien-he'],
+        ];
+        $features = [
+            ['title' => 'Cách nhiệt', 'icon' => 'fa-solid fa-temperature-half'],
+            ['title' => 'Chịu lực tốt', 'icon' => 'fa-regular fa-window-restore'],
+            ['title' => 'Không phai mờ', 'icon' => 'fa-solid fa-sun'],
+            ['title' => 'Nhẹ', 'icon' => 'fa-solid fa-feather-pointed'],
+            ['title' => 'Dễ lắp đặt', 'icon' => 'fa-solid fa-screwdriver-wrench'],
+            ['title' => 'Nhiều màu sắc', 'icon' => 'fa-solid fa-palette'],
+        ];
+        $projects = [
+            ['title' => 'Biệt thự Mojec', 'summary' => 'Hệ cửa kính mở rộng tầm nhìn và kết nối sân vườn.', 'image' => $villa, 'url' => '#lien-he'],
+            ['title' => 'Tropical Green House', 'summary' => 'Cửa nhôm kính đồng bộ cho không gian nghỉ dưỡng.', 'image' => $living, 'url' => '#lien-he'],
+            ['title' => 'Nhà phố hiện đại', 'summary' => 'Thi công hệ mặt dựng kính và cửa ra vào cao cấp.', 'image' => $villa, 'url' => '#lien-he'],
+            ['title' => 'Ban công xanh', 'summary' => 'Giải pháp mở linh hoạt cho không gian sống.', 'image' => $living, 'url' => '#lien-he'],
+        ];
+        $doorStyles = [
+            ['title' => 'Kiểu mái vòm', 'icon' => 'fa-solid fa-archway'],
+            ['title' => 'Kiểu lưới', 'icon' => 'fa-solid fa-border-all'],
+            ['title' => 'Kiểu 1 cánh', 'icon' => 'fa-solid fa-door-closed'],
+            ['title' => 'Kiểu 2 cánh', 'icon' => 'fa-solid fa-door-open'],
+        ];
+        $testimonials = [
+            ['name' => 'Lê Hoàng Bảo', 'role' => 'Chủ nhà', 'quote' => 'Sản phẩm sử dụng tuyệt vời, gia đình và bạn bè đều đánh giá cao sự lựa chọn của tôi.', 'image' => $villa],
+            ['name' => 'Hứa Thị Quỳnh', 'role' => 'Khách hàng', 'quote' => 'Đội ngũ phục vụ tận tâm, tư vấn rõ ràng và hoàn thiện đúng tiến độ đã cam kết.', 'image' => $living],
+        ];
+        $posts = [
+            ['title' => 'Ứng dụng đa dạng của cửa nhôm Xingfa trong cuộc sống', 'summary' => 'Tìm hiểu những ứng dụng phổ biến và cách chọn hệ cửa phù hợp.', 'date' => '15/04/2022', 'image' => $living, 'url' => '#'],
+            ['title' => 'Top những mẫu cửa sổ nhôm kính đẹp mới nhất', 'summary' => 'Các xu hướng thiết kế giúp công trình thông thoáng và hiện đại.', 'date' => '15/04/2022', 'image' => $villa, 'url' => '#'],
+            ['title' => 'Kinh nghiệm lựa chọn cửa nhôm kính cho ngôi nhà', 'summary' => 'Những tiêu chí về profile, kính, phụ kiện và kỹ thuật lắp đặt.', 'date' => '15/04/2022', 'image' => $living, 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Janelas', 'description' => 'Header và slider ảnh lớn đầu trang.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'dn302-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Vị trí banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Thi công lắp đặt các loại cửa dân dụng', 'Cung cấp giải pháp trọn gói', 'Cung cấp cửa sổ, cửa ra vào bằng nhôm kính an toàn, tiện nghi và thân thiện với môi trường.', 'Tìm hiểu ngay'), ['content' => ['slides' => [['title' => 'Thi công lắp đặt các loại cửa dân dụng', 'summary' => 'Giải pháp cửa nhôm kính đồng bộ cho nhà ở hiện đại.', 'image' => $living], ['title' => 'Kiến tạo không gian mở', 'summary' => 'Thẩm mỹ, bền vững và tối ưu ánh sáng tự nhiên.', 'image' => $villa]]]]), 'en' => $heading('Premium windows and doors', 'Complete solutions')]],
+            ['block_type' => 'about_experience', 'label' => 'Giới thiệu Janelas', 'description' => 'Giới thiệu và bốn giá trị thương hiệu.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'settings' => [], 'media' => ['image' => $living], 'data' => ['vi' => $withItems($heading('Tạo nên không gian hiện đại cho ngôi nhà của bạn', 'Giới thiệu', 'Với nhiều năm kinh nghiệm, chúng tôi luôn tôn trọng khách hàng, giữ vững uy tín và mang đến các giải pháp nhôm kính bền vững.'), array_map(fn ($title) => ['title' => $title], ['Chất lượng', 'Tiến bộ', 'Uy tín', 'Chuyên nghiệp'])), 'en' => $heading('Modern spaces for your home', 'About us')]],
+            ['block_type' => 'featured_services', 'label' => 'Dịch vụ cửa nhôm kính', 'description' => 'Dịch vụ động từ CMS hoặc nhập thủ công.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_services', 'Dịch vụ CMS'), 'data' => ['vi' => $withItems($heading('Dịch vụ của chúng tôi', 'Nổi bật', 'Chất lượng là nền tảng thành công. Chúng tôi cam kết sản phẩm chuẩn xác, dịch vụ chuyên nghiệp và bảo hành dài hạn.'), $services), 'en' => $heading('Our services', 'Featured')]],
+            ['block_type' => 'featured_categories', 'label' => 'Ưu điểm cửa kính', 'description' => 'Sáu ưu điểm của hệ cửa kính cao cấp.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'settings' => ['source' => 'custom', 'limit' => 6], 'media' => ['image' => $living], 'data' => ['vi' => $withItems($heading('Cửa kính cao cấp', 'Khám phá', 'Sản xuất từ nhôm nhập khẩu, kính cường lực, gioăng cao su và bộ phụ kiện kim khí đồng bộ.'), $features), 'en' => $heading('Premium glass doors', 'Explore')]],
+            ['block_type' => 'project_gallery', 'label' => 'Dự án hoàn thành', 'description' => 'Dự án động theo điều kiện lọc hoặc nhập thủ công.', 'preview_image' => $preview, 'anchor_id' => 'du-an', 'dynamic' => true, 'settings' => ['source' => 'cms_projects', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_projects', 'Dự án CMS'), 'data' => ['vi' => $withItems($heading('Hoàn thành', 'Dự án'), $projects), 'en' => $heading('Completed projects', 'Projects')]],
+            ['block_type' => 'content_showcase', 'label' => 'Các kiểu cửa chính', 'description' => 'Bốn kiểu cửa và ảnh giới thiệu.', 'preview_image' => $preview, 'anchor_id' => 'kieu-cua', 'settings' => ['source' => 'custom', 'limit' => 4], 'media' => ['image' => $living], 'data' => ['vi' => $withItems($heading('Các kiểu cửa chính', 'Lắp đặt', 'Cửa ra vào, cửa sổ, cửa cuốn, cửa kéo, mái tôn, mái che và mái hiên di động'), $doorStyles), 'en' => $heading('Main door styles', 'Installation')]],
+            ['block_type' => 'newsletter_signup', 'label' => 'Đăng ký nhận tin', 'description' => 'Form đăng ký email.', 'preview_image' => $preview, 'anchor_id' => 'dang-ky', 'settings' => [], 'data' => ['vi' => $heading('Đăng ký nhận bản tin và tin tức cập nhật mới nhất', 'Đăng ký'), 'en' => $heading('Subscribe for our latest updates', 'Newsletter')]],
+            ['block_type' => 'testimonials', 'label' => 'Khách hàng nhận xét', 'description' => 'Đánh giá khách hàng và chỉ số kinh nghiệm.', 'preview_image' => $preview, 'anchor_id' => 'khach-hang', 'settings' => ['source' => 'custom', 'limit' => 2], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_testimonials', 'label' => 'Đánh giá CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số đánh giá']], 'data' => ['vi' => $withItems($heading('Khách hàng', 'Nhận xét từ', 'Cửa nhôm kính đẹp cần vật liệu đạt chuẩn, phụ kiện đồng bộ chính xác và nhân viên lắp đặt có quy trình.'), $testimonials), 'en' => $heading('Clients', 'Testimonials')]],
+            ['block_type' => 'latest_posts', 'label' => 'Kiến thức & Kinh nghiệm', 'description' => 'Bài viết động theo điều kiện lọc.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_posts', 'Tin tức CMS'), 'data' => ['vi' => $withItems($heading('Kiến thức & Kinh nghiệm', 'Tin tức cập nhật'), $posts), 'en' => $heading('Knowledge & Experience', 'Latest news')]],
+            ['block_type' => 'landing_contact', 'label' => 'Đăng ký tư vấn', 'description' => 'Form tư vấn và thông tin liên hệ.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => [], 'media' => ['image' => $living], 'data' => ['vi' => $heading('Đăng ký tư vấn dịch vụ', 'Liên hệ'), 'en' => $heading('Book a consultation', 'Contact')]],
+            ['block_type' => 'partner_logos', 'label' => 'Logo đối tác', 'description' => 'Đối tác CMS hoặc nhập thủ công.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 10], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_partners', 'label' => 'Đối tác CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => $withItems($heading('Đối tác của chúng tôi'), array_map(fn ($name) => ['title' => $name], ['SMALLHOUSE', 'GARDENHOUSE', 'STARTUP HAUS', 'REALHOUSE', 'HOUSESMART'])), 'en' => $heading('Our partners')]],
         ];
     }
 

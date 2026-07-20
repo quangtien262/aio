@@ -1,0 +1,41 @@
+{
+  "name": "DN302 Janelas Windows & Doors",
+  "key": "DN302",
+  "version": "1.0.0",
+  "description": "Theme doanh nghiệp cửa nhôm kính cao cấp với dự án, dịch vụ, tư vấn và chuyển động cuộn trang.",
+  "website_type": "service",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-dn302.png",
+    "cover": "cover-dn302.png",
+    "avatar": "avatar-dn302.png"
+  },
+  "blocks": [
+    "hero-slider",
+    "about-experience",
+    "featured-services",
+    "featured-categories",
+    "project-gallery",
+    "content-showcase",
+    "newsletter-signup",
+    "testimonials",
+    "latest-posts",
+    "landing-contact",
+    "partner-logos"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": true,
+    "scroll_reveal": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}
