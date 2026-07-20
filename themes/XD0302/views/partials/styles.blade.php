@@ -269,6 +269,14 @@
         max-height: 64px;
     }
 }
+
+/* Keep Vietnamese testimonial headings crisp and readable. */
+.xd2-testimonial-showcase .xd2-testimonial-showcase__intro h2 {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
+    font-weight: 700;
+    letter-spacing: -.025em;
+    line-height: 1.14;
+}
 </style>
 <style>
 /* XD0302 landing palette and block layout. */
