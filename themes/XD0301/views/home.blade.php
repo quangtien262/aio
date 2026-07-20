@@ -174,7 +174,7 @@
     $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? 'admin@htvietnam.vn')) ?: 'admin@htvietnam.vn';
-    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM')) ?: '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM';
+    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? '')) ?: '';
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
     $blockSourcePreviewUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.source-preview', ['block' => '__BLOCK_ID__']) : '';

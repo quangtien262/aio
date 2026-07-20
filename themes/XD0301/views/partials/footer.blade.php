@@ -11,7 +11,7 @@
     $footerHotline = trim((string) ($footerBranding['support_hotline'] ?? ($hotline ?? '0399162342'))) ?: '0399162342';
     $footerPhoneHref = preg_replace('/\D+/', '', $footerHotline) ?: $footerHotline;
     $footerEmail = trim((string) ($footerBranding['support_email'] ?? $footerBranding['email'] ?? ($email ?? 'admin@htvietnam.vn'))) ?: 'admin@htvietnam.vn';
-    $footerAddress = trim((string) ($footerBranding['support_location'] ?? $footerBranding['address'] ?? ($address ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'))) ?: '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM';
+    $footerAddress = trim((string) ($footerBranding['support_location'] ?? $footerBranding['address'] ?? ($address ?? ''))) ?: '';
     $footerSource = $footerNewsletterSource ?? 'theme-footer-xd0301';
     $footerBocStatus = trim((string) ($footerBranding['boc_status'] ?? 'not_notified'));
     $footerBocConfirmationUrl = trim((string) ($footerBranding['boc_confirmation_url'] ?? ''));
