@@ -107,7 +107,11 @@ class ModuleManager
 
         $this->lifecycleHooks->dispatch('preDisable', $context);
 
-        DB::transaction(function () use ($installation): void {
+        DB::transaction(function () use ($module, $installation): void {
+            Permission::query()
+                ->where('module_key', $module['key'])
+                ->update(['is_active' => false]);
+
             $installation->forceFill([
                 'status' => 'disabled',
                 'enabled_at' => null,

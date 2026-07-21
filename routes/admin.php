@@ -2,15 +2,15 @@
 
 use App\Http\Controllers\Admin\AdminShellController;
 use App\Http\Controllers\Admin\Api\AccessControlIndexController;
-use App\Http\Controllers\Admin\Api\AuditLogIndexController;
 use App\Http\Controllers\Admin\Api\AdminAccountController;
 use App\Http\Controllers\Admin\Api\AdminCurrentProfileController;
-use App\Http\Controllers\Admin\Api\AdminTwoFactorController;
 use App\Http\Controllers\Admin\Api\AdminRoleAssignmentController;
-use App\Http\Controllers\Admin\Api\Catalog\ProductManagementController;
-use App\Http\Controllers\Admin\Api\Catalog\ProductIndexController;
+use App\Http\Controllers\Admin\Api\AdminTwoFactorController;
+use App\Http\Controllers\Admin\Api\AuditLogIndexController;
 use App\Http\Controllers\Admin\Api\Catalog\CategoryIndexController as CatalogCategoryIndexController;
 use App\Http\Controllers\Admin\Api\Catalog\CategoryManagementController as CatalogCategoryManagementController;
+use App\Http\Controllers\Admin\Api\Catalog\ProductIndexController;
+use App\Http\Controllers\Admin\Api\Catalog\ProductManagementController;
 use App\Http\Controllers\Admin\Api\Cms\CategoryIndexController;
 use App\Http\Controllers\Admin\Api\Cms\CategoryManagementController;
 use App\Http\Controllers\Admin\Api\Cms\FeaturedCategoryIndexController;
@@ -20,19 +20,19 @@ use App\Http\Controllers\Admin\Api\Cms\MediaManagementController;
 use App\Http\Controllers\Admin\Api\Cms\MenuIndexController;
 use App\Http\Controllers\Admin\Api\Cms\MenuLocationController;
 use App\Http\Controllers\Admin\Api\Cms\MenuManagementController;
-use App\Http\Controllers\Admin\Api\Cms\PageManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PageIndexController;
+use App\Http\Controllers\Admin\Api\Cms\PageManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PartnerIndexController;
 use App\Http\Controllers\Admin\Api\Cms\PartnerManagementController;
 use App\Http\Controllers\Admin\Api\Cms\PostIndexController;
 use App\Http\Controllers\Admin\Api\Cms\PostManagementController;
-use App\Http\Controllers\Admin\Api\Cms\ProjectIndexController as CmsProjectIndexController;
 use App\Http\Controllers\Admin\Api\Cms\ProjectCategoryIndexController;
 use App\Http\Controllers\Admin\Api\Cms\ProjectCategoryManagementController;
+use App\Http\Controllers\Admin\Api\Cms\ProjectIndexController as CmsProjectIndexController;
 use App\Http\Controllers\Admin\Api\Cms\ProjectManagementController as CmsProjectManagementController;
-use App\Http\Controllers\Admin\Api\Cms\ServiceIndexController;
 use App\Http\Controllers\Admin\Api\Cms\ServiceCategoryIndexController;
 use App\Http\Controllers\Admin\Api\Cms\ServiceCategoryManagementController;
+use App\Http\Controllers\Admin\Api\Cms\ServiceIndexController;
 use App\Http\Controllers\Admin\Api\Cms\ServiceManagementController;
 use App\Http\Controllers\Admin\Api\Cms\SidePromoIndexController;
 use App\Http\Controllers\Admin\Api\Cms\SidePromoManagementController;
@@ -41,6 +41,13 @@ use App\Http\Controllers\Admin\Api\Cms\TeamMemberManagementController;
 use App\Http\Controllers\Admin\Api\Cms\TestimonialIndexController;
 use App\Http\Controllers\Admin\Api\Cms\TestimonialManagementController;
 use App\Http\Controllers\Admin\Api\DashboardController;
+use App\Http\Controllers\Admin\Api\Hrm\HrmAttendanceController;
+use App\Http\Controllers\Admin\Api\Hrm\HrmContractController;
+use App\Http\Controllers\Admin\Api\Hrm\HrmDashboardController;
+use App\Http\Controllers\Admin\Api\Hrm\HrmEmployeeController;
+use App\Http\Controllers\Admin\Api\Hrm\HrmLeaveController;
+use App\Http\Controllers\Admin\Api\Hrm\HrmOrganizationController;
+use App\Http\Controllers\Admin\Api\Hrm\HrmSelfServiceController;
 use App\Http\Controllers\Admin\Api\Inventory\BarcodeLookupController as InventoryBarcodeLookupController;
 use App\Http\Controllers\Admin\Api\Inventory\BatchIndexController as InventoryBatchIndexController;
 use App\Http\Controllers\Admin\Api\Inventory\InventoryDashboardController;
@@ -65,6 +72,8 @@ use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberManagementController;
 use App\Http\Controllers\Admin\Api\OrderIndexController;
 use App\Http\Controllers\Admin\Api\OrderManagementController;
+use App\Http\Controllers\Admin\Api\Payroll\PayrollPayslipController;
+use App\Http\Controllers\Admin\Api\Payroll\PayrollPeriodController;
 use App\Http\Controllers\Admin\Api\Project\ProjectChecklistManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectDetailController;
 use App\Http\Controllers\Admin\Api\Project\ProjectFileManagementController;
@@ -87,10 +96,11 @@ use App\Http\Controllers\Admin\Api\SiteBannerIndexController;
 use App\Http\Controllers\Admin\Api\SiteBannerManagementController;
 use App\Http\Controllers\Admin\Api\SiteMappingController;
 use App\Http\Controllers\Admin\Api\ThemeActivationController;
+use App\Http\Controllers\Admin\Api\ThemeAvatarController;
 use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
+use App\Http\Controllers\Admin\Api\ThemeLocaleController;
 use App\Http\Controllers\Admin\Api\ThemePaletteController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
-use App\Http\Controllers\Admin\Api\ThemeLocaleController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationManagementController;
 use App\Http\Controllers\Admin\AuthenticatedSessionController;
@@ -710,7 +720,7 @@ Route::prefix('admin')
                 Route::delete('/site-mappings/{site}', [SiteMappingController::class, 'destroy'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.destroy');
-                Route::post('/themes/{key}/avatar', \App\Http\Controllers\Admin\Api\ThemeAvatarController::class)
+                Route::post('/themes/{key}/avatar', ThemeAvatarController::class)
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.avatar');
                 Route::post('/themes/{key}/activate', ThemeActivationController::class)
@@ -731,6 +741,64 @@ Route::prefix('admin')
                 Route::post('/setup/steps/{step}', SetupStepController::class)
                     ->middleware('admin.permission:setup.complete')
                     ->name('setup.steps.complete');
+
+                Route::prefix('hrm')->middleware('module.enabled:hrm')->name('hrm.')->group(function (): void {
+                    Route::get('/dashboard', HrmDashboardController::class)
+                        ->middleware('admin.permission:hrm.dashboard.view')->name('dashboard');
+                    Route::get('/employees', [HrmEmployeeController::class, 'index'])
+                        ->middleware('admin.permission:hrm.employee.view')->name('employees.index');
+                    Route::post('/employees', [HrmEmployeeController::class, 'store'])
+                        ->middleware('admin.permission:hrm.employee.create')->name('employees.store');
+                    Route::put('/employees/{employee}', [HrmEmployeeController::class, 'update'])
+                        ->middleware('admin.permission:hrm.employee.update')->name('employees.update');
+                    Route::post('/employees/{employee}/archive', [HrmEmployeeController::class, 'archive'])
+                        ->middleware('admin.permission:hrm.employee.archive')->name('employees.archive');
+                    Route::post('/employees/{employee}/account', [HrmEmployeeController::class, 'assignAccount'])
+                        ->middleware('admin.permission:hrm.employee.account.assign')->name('employees.account');
+                    Route::get('/employees/{employee}/contracts', [HrmContractController::class, 'index'])
+                        ->middleware('admin.permission:hrm.contract.view')->name('contracts.index');
+                    Route::post('/employees/{employee}/contracts', [HrmContractController::class, 'store'])
+                        ->middleware('admin.permission:hrm.contract.manage')->name('contracts.store');
+                    Route::put('/contracts/{contract}', [HrmContractController::class, 'update'])
+                        ->middleware('admin.permission:hrm.contract.manage')->name('contracts.update');
+                    Route::get('/organization', [HrmOrganizationController::class, 'index'])
+                        ->middleware('admin.permission:hrm.organization.manage')->name('organization.index');
+                    Route::post('/organization/{type}', [HrmOrganizationController::class, 'store'])
+                        ->middleware('admin.permission:hrm.organization.manage')->name('organization.store');
+                    Route::put('/organization/{type}/{id}', [HrmOrganizationController::class, 'update'])
+                        ->middleware('admin.permission:hrm.organization.manage')->name('organization.update');
+                    Route::get('/leave', [HrmLeaveController::class, 'index'])
+                        ->middleware('admin.permission:hrm.leave.request')->name('leave.index');
+                    Route::post('/leave', [HrmLeaveController::class, 'store'])
+                        ->middleware('admin.permission:hrm.leave.request')->name('leave.store');
+                    Route::put('/leave/{leaveRequest}/review', [HrmLeaveController::class, 'review'])
+                        ->middleware('admin.permission:hrm.leave.approve')->name('leave.review');
+                    Route::get('/attendance', [HrmAttendanceController::class, 'index'])
+                        ->middleware('admin.permission:hrm.attendance.self.view')->name('attendance.index');
+                    Route::post('/attendance', [HrmAttendanceController::class, 'store'])
+                        ->middleware('admin.permission:hrm.attendance.manage')->name('attendance.store');
+                    Route::get('/me', [HrmSelfServiceController::class, 'show'])
+                        ->middleware('admin.permission:hrm.profile.self.view')->name('me.show');
+                    Route::put('/me', [HrmSelfServiceController::class, 'update'])
+                        ->middleware('admin.permission:hrm.profile.self.update')->name('me.update');
+                });
+
+                Route::prefix('payroll')->middleware('module.enabled:payroll')->name('payroll.')->group(function (): void {
+                    Route::get('/periods', [PayrollPeriodController::class, 'index'])
+                        ->middleware('admin.permission:payroll.dashboard.view')->name('periods.index');
+                    Route::post('/periods', [PayrollPeriodController::class, 'store'])
+                        ->middleware('admin.permission:payroll.period.manage')->name('periods.store');
+                    Route::put('/periods/{period}', [PayrollPeriodController::class, 'update'])
+                        ->middleware('admin.permission:payroll.period.manage')->name('periods.update');
+                    Route::post('/periods/{period}/transition', [PayrollPeriodController::class, 'transition'])
+                        ->name('periods.transition');
+                    Route::get('/payslips', [PayrollPayslipController::class, 'index'])
+                        ->middleware('admin.permission:payroll.payslip.view')->name('payslips.index');
+                    Route::post('/payslips', [PayrollPayslipController::class, 'store'])
+                        ->middleware('admin.permission:payroll.run.calculate')->name('payslips.store');
+                    Route::get('/me/payslips', [PayrollPayslipController::class, 'self'])
+                        ->middleware('admin.permission:payroll.payslip.self.view')->name('me.payslips');
+                });
             });
 
             Route::get('/{any?}', AdminShellController::class)

@@ -14,6 +14,8 @@ const CmsManagerPage = lazy(() => import('../../modules/cms/pages/CmsManagerPage
 const CatalogManagerPage = lazy(() => import('../../modules/catalog/pages/CatalogManagerPage'));
 const InventoryManagerPage = lazy(() => import('../../modules/inventory/pages/InventoryManagerPage'));
 const ProjectManagerPage = lazy(() => import('../../modules/project/pages/ProjectManagerPage'));
+const HrmManagerPage = lazy(() => import('../../modules/hrm/pages/HrmManagerPage'));
+const PayrollManagerPage = lazy(() => import('../../modules/payroll/pages/PayrollManagerPage'));
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentPermissions }) {
     const resourceEndpointMap = {
@@ -108,6 +110,22 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
         return (
             <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
                 <InventoryManagerPage
+                    moduleMenu={moduleMenu}
+                    modulePayload={modulePayload}
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    currentPermissions={currentPermissions}
+                />
+            </Suspense>
+        );
+    }
+
+    if (modulePayload.key === 'hrm' || modulePayload.key === 'payroll') {
+        const ManagerPage = modulePayload.key === 'hrm' ? HrmManagerPage : PayrollManagerPage;
+
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <ManagerPage
                     moduleMenu={moduleMenu}
                     modulePayload={modulePayload}
                     callAdminApi={callAdminApi}

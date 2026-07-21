@@ -1,0 +1,40 @@
+{
+  "name": "Quản lý nhân sự",
+  "key": "hrm",
+  "version": "1.0.0",
+  "description": "Quản lý cơ cấu tổ chức, hồ sơ nhân sự, hợp đồng, tài khoản đăng nhập, nghỉ phép và cổng thông tin cá nhân.",
+  "website_type": ["backoffice", "corporate", "ecommerce", "news", "landingpage"],
+  "dependencies": [],
+  "permissions": [
+    "hrm.dashboard.view",
+    "hrm.employee.view",
+    "hrm.employee.create",
+    "hrm.employee.update",
+    "hrm.employee.archive",
+    "hrm.employee.sensitive.view",
+    "hrm.employee.account.assign",
+    "hrm.organization.manage",
+    "hrm.contract.view",
+    "hrm.contract.manage",
+    "hrm.leave.request",
+    "hrm.leave.team.view",
+    "hrm.leave.approve",
+    "hrm.attendance.view",
+    "hrm.attendance.manage",
+    "hrm.attendance.self.view",
+    "hrm.profile.self.view",
+    "hrm.profile.self.update",
+    "hrm.report.view"
+  ],
+  "hooks": ["Modules\\Hrm\\Hooks\\HrmLifecycleHook"],
+  "menus": [
+    {"key":"hrm-dashboard","label":"Tổng quan nhân sự","description":"Theo dõi nhanh nhân sự và đơn nghỉ phép.","icon":"dashboard","route":"/admin/hrm/dashboard","permission":"hrm.dashboard.view"},
+    {"key":"hrm-employees","label":"Hồ sơ nhân sự","description":"Quản lý hồ sơ, công việc và tài khoản đăng nhập.","icon":"team","route":"/admin/hrm/employees","permission":"hrm.employee.view"},
+    {"key":"hrm-organization","label":"Cơ cấu tổ chức","description":"Quản lý phòng ban và chức vụ.","icon":"apartment","route":"/admin/hrm/organization","permission":"hrm.organization.manage"},
+    {"key":"hrm-leave","label":"Nghỉ phép","description":"Gửi, theo dõi và phê duyệt đơn nghỉ phép.","icon":"calendar","route":"/admin/hrm/leave","permission":"hrm.leave.request"},
+    {"key":"hrm-attendance","label":"Chấm công","description":"Theo dõi ngày công, giờ vào ra và trạng thái làm việc.","icon":"clock-circle","route":"/admin/hrm/attendance","permission":"hrm.attendance.self.view"},
+    {"key":"hrm-my-profile","label":"Hồ sơ của tôi","description":"Xem hồ sơ và quyền lợi cá nhân.","icon":"user","route":"/admin/hrm/my-profile","permission":"hrm.profile.self.view"}
+  ],
+  "package": {"migrations":["database/migrations"],"seeders":[],"config":[],"assets":[]},
+  "lifecycle": {"install":true,"enable":true,"disable":true,"upgrade":true,"uninstall":false}
+}

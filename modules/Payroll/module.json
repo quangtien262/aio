@@ -1,0 +1,28 @@
+{
+  "name": "Tiền lương",
+  "key": "payroll",
+  "version": "1.0.0",
+  "description": "Add-on quản lý kỳ lương, phiếu lương, quy trình phê duyệt và công bố cho nhân sự.",
+  "website_type": ["backoffice", "corporate", "ecommerce", "news", "landingpage"],
+  "dependencies": ["hrm"],
+  "permissions": [
+    "payroll.dashboard.view",
+    "payroll.period.manage",
+    "payroll.run.calculate",
+    "payroll.run.review",
+    "payroll.run.approve",
+    "payroll.run.publish",
+    "payroll.run.lock",
+    "payroll.payslip.view",
+    "payroll.payslip.self.view",
+    "payroll.report.view"
+  ],
+  "hooks": ["Modules\\Payroll\\Hooks\\PayrollLifecycleHook"],
+  "menus": [
+    {"key":"payroll-periods","label":"Kỳ lương","description":"Quản lý kỳ lương và trạng thái xử lý.","icon":"calendar","route":"/admin/payroll/periods","permission":"payroll.dashboard.view"},
+    {"key":"payroll-payslips","label":"Bảng lương","description":"Lập và duyệt phiếu lương nhân sự.","icon":"profile","route":"/admin/payroll/payslips","permission":"payroll.payslip.view"},
+    {"key":"payroll-my-payslips","label":"Phiếu lương của tôi","description":"Xem các phiếu lương đã công bố.","icon":"file","route":"/admin/payroll/my-payslips","permission":"payroll.payslip.self.view"}
+  ],
+  "package": {"migrations":["database/migrations"],"seeders":[],"config":[],"assets":[]},
+  "lifecycle": {"install":true,"enable":true,"disable":true,"upgrade":true,"uninstall":false}
+}

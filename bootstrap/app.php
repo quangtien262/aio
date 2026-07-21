@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureAdminHasPermission;
 use App\Http\Middleware\EnsureAdminAccountIsActive;
 use App\Http\Middleware\EnsureAdminWebsiteAccess;
+use App\Http\Middleware\EnsureModuleIsEnabled;
 use App\Http\Middleware\ResolveCurrentSite;
 use App\Http\Middleware\SetFrontendLocale;
 use App\Support\FrontendLocalization;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.active' => EnsureAdminAccountIsActive::class,
             'admin.website' => EnsureAdminWebsiteAccess::class,
             'frontend.locale' => SetFrontendLocale::class,
+            'module.enabled' => EnsureModuleIsEnabled::class,
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request): string {

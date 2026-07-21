@@ -276,6 +276,22 @@ Lưu ý khi tiếp tục phát triển:
 - Đây là hệ thống định hướng rộng, không chỉ có CMS. Các nhóm trọng tâm dài hạn gồm CRM, Project, Purchasing, Inventory, HRM, Sales, Accounting, CMS / website builder / theme marketplace.
 - Khi đề xuất model, route, permission, menu, settings, dashboard hay schema, phải ưu tiên pattern dùng lại được cho nhiều module.
 
+## 8.1. Module Quản lý nhân sự và Tiền lương
+
+- App Store có hai package mới: `hrm` (HRM Core) và `payroll` (add-on phụ thuộc HRM).
+- HRM gồm phòng ban, chức vụ, hồ sơ nhân sự, hợp đồng, liên kết tài khoản, nghỉ phép, chấm công và hồ sơ cá nhân.
+- Payroll gồm kỳ lương, phiếu lương và phiếu lương cá nhân; trạng thái một chiều `draft -> approved -> published -> locked`.
+- Không tạo bảng tài khoản HR riêng: `hrm_employees.admin_id` nullable/unique liên kết tới `admins`. RBAC quyết định được làm gì; query policy quyết định được xem dữ liệu của ai.
+- Dữ liệu HRM/Payroll là dữ liệu doanh nghiệp toàn cục, không gắn `website_key`; role CMS của cùng tài khoản vẫn có thể gắn theo website.
+- API module bắt buộc qua `module.enabled:hrm|payroll`. Disable module làm permission inactive và chặn API nhưng giữ nguyên dữ liệu.
+- Hai module không cho uninstall từ App Store để tránh rollback dữ liệu nhân sự/lương.
+- Role mặc định: `hrm.employee-self`, `hrm.staff`, `hrm.manager`, `payroll.employee-self`, `payroll.officer`, `payroll.approver`.
+- Nhân viên chỉ thấy hồ sơ, đơn nghỉ, chấm công và phiếu lương đã công bố của chính mình.
+- Khi kết thúc làm việc, tài khoản liên kết bị archive/khóa và tăng `auth_version`.
+- File neo: `modules/Hrm`, `modules/Payroll`, `app/Http/Controllers/Admin/Api/Hrm`, `app/Http/Controllers/Admin/Api/Payroll`, `resources/admin/src/modules/hrm`, `resources/admin/src/modules/payroll`.
+- Test bắt buộc: `tests/Feature/HrmModuleTest.php`.
+- Tài liệu đầy đủ: `docs/architecture/hrm-and-payroll-modules.md`.
+
 ## 9. Các file quan trọng nên kiểm tra trước khi sửa
 
 - `resources/admin/src/modules/cms/components/CmsPostFormModal.jsx`

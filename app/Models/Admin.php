@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\AdminFactory;
 use App\Support\SiteContext;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -74,6 +75,11 @@ class Admin extends Authenticatable
     public function roleAssignments(): HasMany
     {
         return $this->hasMany(AdminRoleAssignment::class);
+    }
+
+    public function employeeProfile(): HasOne
+    {
+        return $this->hasOne(HrmEmployee::class, 'admin_id');
     }
 
     public function permissions(?string $websiteKey = null): array
