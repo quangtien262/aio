@@ -221,6 +221,29 @@ class Dn302ThemeTest extends TestCase
             ->assertDontSee('Dịch vụ cửa nhôm kính');
     }
 
+    public function test_dn302_cms_page_hero_and_body_use_the_current_database_entry(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+
+        $page = CmsPage::query()->create([
+            'title' => 'Giới thiệu lấy từ database',
+            'slug' => 'dn302-page-db',
+            'status' => 'published',
+            'excerpt' => 'Mô tả page được lưu và quản lý trong CMS.',
+            'body' => '<h2>Nội dung chi tiết của page trong database</h2><p>Thông tin giới thiệu đã được cập nhật.</p>',
+            'meta_title' => 'SEO title của page',
+            'publish_at' => now(),
+        ]);
+
+        $this->get('/vi/'.$page->slug)
+            ->assertOk()
+            ->assertSee('Giới thiệu lấy từ database')
+            ->assertSee('Mô tả page được lưu và quản lý trong CMS.')
+            ->assertSee('Nội dung chi tiết của page trong database')
+            ->assertSee('Thông tin giới thiệu đã được cập nhật.')
+            ->assertDontSee('Janelas Windows &amp; Doors', false);
+    }
+
     public function test_dn302_hero_becomes_full_width_when_shared_copy_and_cta_are_empty(): void
     {
         app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');

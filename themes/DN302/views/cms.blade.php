@@ -1,5 +1,6 @@
 @extends('theme-dn302::layout')
-@section('title', data_get($page ?? null, 'title', 'Janelas'))
+@php($contentEntry = $page ?? $entry ?? null)
+@section('title', $pageTitle ?? data_get($contentEntry, 'title', 'Nội dung'))
 @section('content')
-    @include('theme-dn302::partials.content-shell', ['title' => data_get($page ?? null, 'title'), 'summary' => data_get($page ?? null, 'excerpt'), 'cover' => data_get($page ?? null, 'cover_image_url'), 'body' => data_get($page ?? null, 'body')])
+    @include('theme-dn302::partials.content-shell', ['title' => data_get($contentEntry, 'title'), 'summary' => data_get($contentEntry, 'excerpt'), 'cover' => data_get($contentEntry, 'featuredMedia.file_url'), 'body' => data_get($contentEntry, 'body')])
 @endsection
