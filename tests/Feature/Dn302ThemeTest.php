@@ -7,6 +7,7 @@ use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogProduct;
 use App\Models\CmsPost;
 use App\Models\LandingPage;
+use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -41,10 +42,20 @@ class Dn302ThemeTest extends TestCase
     {
         app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
 
+        $siteProfile = SiteProfile::query()->firstOrFail();
+        $siteProfile->forceFill([
+            'branding' => array_merge((array) $siteProfile->branding, [
+                'company_name' => 'Build Mart Custom',
+                'logo_url' => 'https://cdn.example.com/branding/build-mart-custom.svg',
+            ]),
+        ])->save();
+
         $this->assertGreaterThan(0, CatalogProduct::query()->count());
         $this->get(route('site.home', ['locale' => 'vi']))
             ->assertOk()
-            ->assertSee('janelas')
+            ->assertSee('https://cdn.example.com/branding/build-mart-custom.svg', false)
+            ->assertSee('Build Mart Custom - Trang chủ')
+            ->assertDontSee('Janelas - Trang chủ')
             ->assertSee('data-block-type="featured_services"', false)
             ->assertSee('data-block-type="newsletter_signup"', false)
             ->assertSee('data-dn-reveal', false)

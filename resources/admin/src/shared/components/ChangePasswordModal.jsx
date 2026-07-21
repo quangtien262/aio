@@ -37,7 +37,25 @@ export default function ChangePasswordModal({ open, onClose, callAdminApi, runAd
                     <Input.Password />
                 </Form.Item>
 
-                <Form.Item name="password" label="Mật khẩu mới" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới.' }, { min: 12, message: 'Mật khẩu cần ít nhất 12 ký tự.' }]}>
+                <Form.Item
+                    name="password"
+                    label="Mật khẩu mới"
+                    extra="Ít nhất 12 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt."
+                    rules={[
+                        { required: true, message: 'Vui lòng nhập mật khẩu mới.' },
+                        { min: 12, message: 'Mật khẩu cần ít nhất 12 ký tự.' },
+                        { pattern: /[a-z]/, message: 'Mật khẩu cần có ít nhất một chữ thường.' },
+                        { pattern: /[A-Z]/, message: 'Mật khẩu cần có ít nhất một chữ hoa.' },
+                        { pattern: /[0-9]/, message: 'Mật khẩu cần có ít nhất một chữ số.' },
+                        { pattern: /[^A-Za-z0-9]/, message: 'Mật khẩu cần có ít nhất một ký tự đặc biệt.' },
+                        ({ getFieldValue }) => ({
+                            validator(_, value) {
+                                if (!value || value !== getFieldValue('current_password')) return Promise.resolve();
+                                return Promise.reject(new Error('Mật khẩu mới phải khác mật khẩu hiện tại.'));
+                            },
+                        }),
+                    ]}
+                >
                     <Input.Password />
                 </Form.Item>
 

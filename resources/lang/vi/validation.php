@@ -81,7 +81,13 @@ return [
     'not_in'               => 'Trường :attribute chọn không hợp lệ.',
     'not_regex'            => 'Định dạng của trường :attribute không hợp lệ.',
     'numeric'              => 'Trường :attribute phải là số.',
-    'password'             => 'Mật khẩu không đúng.',
+    'password'             => [
+        'letters' => 'Mật khẩu phải có ít nhất một chữ cái.',
+        'mixed' => 'Mật khẩu phải có ít nhất một chữ hoa và một chữ thường.',
+        'numbers' => 'Mật khẩu phải có ít nhất một chữ số.',
+        'symbols' => 'Mật khẩu phải có ít nhất một ký tự đặc biệt.',
+        'uncompromised' => 'Mật khẩu này đã xuất hiện trong một vụ rò rỉ dữ liệu. Vui lòng chọn mật khẩu khác.',
+    ],
     'present'              => 'Trường :attribute phải tồn tại.',
     'regex'                => 'Định dạng của trường :attribute không hợp lệ.',
     'required'             => 'Trường :attribute là bắt buộc.',
@@ -112,5 +118,13 @@ return [
         ],
     ],
 
-    'attributes' => [],
+    'attributes' => [
+        'current_password' => 'mật khẩu hiện tại',
+        'password' => 'mật khẩu',
+        'password_confirmation' => 'xác nhận mật khẩu',
+        'username' => 'tên đăng nhập',
+        'email' => 'email',
+        'name' => 'họ và tên',
+        'two_factor_code' => 'mã xác thực hai lớp',
+    ],
 ];

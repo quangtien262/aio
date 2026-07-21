@@ -1,8 +1,9 @@
 @php
-    $branding = (array) data_get($siteProfile ?? [], 'branding', []);
+    $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
+    $siteName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Website')));
     $hotline = $branding['support_hotline'] ?? '1900 9477';
     $email = $branding['support_email'] ?? data_get($siteProfile ?? [], 'email', 'admin@demo.web30s.vn');
-    $logo = data_get($siteProfile ?? [], 'logo_url', data_get($siteProfile ?? [], 'logo'));
+    $logo = trim((string) ($branding['logo_url'] ?? ''));
     $menuItems = collect(data_get($primaryMenu ?? [], 'items', []));
     if ($menuItems->isEmpty()) {
         $menuItems = collect([
@@ -18,12 +19,12 @@
 @endphp
 <header class="dn-header" data-dn-header>
     <div class="dn-header-inner dn-container">
-        <a class="dn-logo" href="{{ route('site.home') }}" aria-label="Janelas - Trang chủ">
-            @if($logo)
-                <img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'Janelas') }}">
+        <a class="dn-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
+            @if($logo !== '')
+                <img src="{{ $logo }}" alt="{{ $siteName }}">
             @else
                 <i class="fa-regular fa-window-maximize"></i>
-                <span>janelas<small>Windows &amp; Doors</small></span>
+                <span>{{ $siteName }}<small>{{ data_get($siteProfile ?? [], 'description', 'Windows &amp; Doors') }}</small></span>
             @endif
         </a>
         <div class="dn-head-main">

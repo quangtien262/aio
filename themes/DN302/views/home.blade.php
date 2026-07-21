@@ -30,7 +30,7 @@
     }
 @endphp
 @extends('theme-dn302::layout')
-@section('title', data_get($landingPage ?? [], 'meta_title', 'DN302 Janelas Windows & Doors'))
+@section('title', data_get($landingPage ?? [], 'meta_title', data_get($themeShellData ?? [], 'branding.company_name', data_get($siteProfile ?? [], 'site_name', 'Website'))))
 @section('content')
 <main>
     <section class="dn-hero xd-landing-block" data-block-type="hero_slider" data-dn-slider data-autoplay="{{ data_get($hero, 'settings.autoplay_ms', 6500) }}">

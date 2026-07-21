@@ -107,6 +107,23 @@ class AccessControlSecurityTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['action' => 'admin.password.changed', 'target_id' => (string) $admin->id]);
     }
 
+    public function test_admin_password_policy_returns_readable_vietnamese_messages(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = Admin::query()->findOrFail(1);
+        $this->actingAs($admin, 'admin');
+
+        $this->putJson('/admin/api/me/password', [
+            'current_password' => 'password',
+            'password' => 'alllowercase1!',
+            'password_confirmation' => 'alllowercase1!',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Mật khẩu phải có ít nhất một chữ hoa và một chữ thường.')
+            ->assertJsonPath('errors.password.0', 'Mật khẩu phải có ít nhất một chữ hoa và một chữ thường.');
+    }
+
     public function test_legacy_tenant_and_owner_access_columns_are_removed(): void
     {
         $this->assertFalse(Schema::hasTable('admin_role'));
