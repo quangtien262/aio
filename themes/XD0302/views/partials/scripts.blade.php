@@ -187,6 +187,7 @@
             const field = (name) => form?.querySelector(`[data-xd-field="${name}"]`);
             const blockCtaFields = Array.from(form?.querySelectorAll('[data-xd-block-cta]') || []);
             const heroUsesBlockCta = window.xdHeroUsesBlockCta === true;
+            const aboutUsesValueButtons = window.xdAboutUsesValueButtons === true;
             const syncBlockCtaVisibility = (blockType) => {
                 blockCtaFields.forEach((element) => {
                     const shouldHide = blockType === 'faq_showcase' || (blockType === 'hero_slider' && !heroUsesBlockCta);
@@ -543,7 +544,7 @@
 
             const editorItemKey = (blockType) => {
                 if (blockType === 'hero_slider') return 'slides';
-                if (blockType === 'about_experience') return 'tabs';
+                if (blockType === 'about_experience') return aboutUsesValueButtons ? 'items' : 'tabs';
                 return 'items';
             };
             const editorItemFields = (blockType) => {
@@ -586,6 +587,13 @@
                 }
 
                 if (blockType === 'about_experience') {
+                    if (aboutUsesValueButtons) {
+                        return [
+                            ['title', 'Tên nút'],
+                            ['url', 'Link khi click'],
+                        ];
+                    }
+
                     return [
                         ['label', 'Tên tab'],
                         ['description', 'Nội dung tab', 'textarea'],
@@ -742,7 +750,7 @@
                 activeItemKey = editorItemKey(blockType);
                 const content = normalizeContentObject(contentOverride || block.data?.content || {});
                 let items = Array.isArray(content[activeItemKey]) ? content[activeItemKey] : [];
-                if (blockType === 'about_experience') {
+                if (blockType === 'about_experience' && !aboutUsesValueButtons) {
                     items = items.map((item) => typeof item === 'string'
                         ? {label: item, description: field('description')?.value || block.data?.description || ''}
                         : normalizeContentObject(item));
@@ -770,8 +778,12 @@
                 itemsEditor.hidden = false;
                 const customMode = isCustomSource();
                 syncSourceModeUi();
-                if (itemsTitle) itemsTitle.textContent = blockType === 'about_experience' ? 'Danh sách tab giới thiệu' : 'Danh sách nội dung';
-                itemHelp.textContent = blockType === 'about_experience'
+                if (itemsTitle) itemsTitle.textContent = blockType === 'about_experience'
+                    ? (aboutUsesValueButtons ? 'Danh sách nút giá trị' : 'Danh sách tab giới thiệu')
+                    : 'Danh sách nội dung';
+                itemHelp.textContent = blockType === 'about_experience' && aboutUsesValueButtons
+                    ? 'Mỗi mục là một nút gồm tên hiển thị và liên kết khi click.'
+                    : blockType === 'about_experience'
                     ? 'Mỗi mục là một tab. Có thể thêm, sửa hoặc xóa tab cho từng ngôn ngữ.'
                     : customMode
                     ? 'Nội dung tùy chỉnh: có thể thêm, sửa hoặc xóa từng mục ngay tại đây.'

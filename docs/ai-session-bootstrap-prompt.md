@@ -9,7 +9,7 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 ## 0. Trình tự đọc bắt buộc cho AI session mới
 
 1. Đọc hết file bootstrap này để nắm định hướng sản phẩm, module, theme, website context và convention.
-2. Nếu công việc liên quan tài khoản, đăng nhập, permission, middleware, module lifecycle hoặc dữ liệu admin, đọc tiếp `docs/architecture/admin-access-control.md` trước khi sửa code.
+2. Nếu công việc liên quan tài khoản, đăng nhập, permission, middleware, module lifecycle hoặc dữ liệu admin, đọc tiếp `docs/architecture/admin-access-control.md` trước khi sửa code. Nếu liên quan nhân sự/tiền lương, bắt buộc đọc thêm `docs/architecture/hrm-and-payroll-modules.md`.
 3. Kiểm tra migration đã chạy bằng `php artisan migrate:status`; không sửa migration production đã chạy để thay đổi hành vi, hãy tạo migration mới.
 4. Kiểm tra `git status --short` trước khi sửa và không ghi đè thay đổi đang có của người dùng/session khác.
 5. Với auth/RBAC, luôn đọc test `AccessControlSecurityTest`, `AuthSplitTest`, `AdminFoundationApiTest` để hiểu invariant đã được khóa.
@@ -283,12 +283,12 @@ Lưu ý khi tiếp tục phát triển:
 - Payroll gồm kỳ lương, phiếu lương và phiếu lương cá nhân; trạng thái một chiều `draft -> approved -> published -> locked`.
 - Không tạo bảng tài khoản HR riêng: `hrm_employees.admin_id` nullable/unique liên kết tới `admins`. RBAC quyết định được làm gì; query policy quyết định được xem dữ liệu của ai.
 - Dữ liệu HRM/Payroll là dữ liệu doanh nghiệp toàn cục, không gắn `website_key`; role CMS của cùng tài khoản vẫn có thể gắn theo website.
-- API module bắt buộc qua `module.enabled:hrm|payroll`. Disable module làm permission inactive và chặn API nhưng giữ nguyên dữ liệu.
+- API module bắt buộc qua `module.enabled:hrm|payroll`. Disable/module chưa cài trả 404 có chủ đích, làm permission inactive và giữ nguyên dữ liệu; UI không được gọi API hoặc crash khi module chưa enabled.
 - Hai module không cho uninstall từ App Store để tránh rollback dữ liệu nhân sự/lương.
 - Role mặc định: `hrm.employee-self`, `hrm.staff`, `hrm.manager`, `payroll.employee-self`, `payroll.officer`, `payroll.approver`.
 - Nhân viên chỉ thấy hồ sơ, đơn nghỉ, chấm công và phiếu lương đã công bố của chính mình.
 - Khi kết thúc làm việc, tài khoản liên kết bị archive/khóa và tăng `auth_version`.
-- File neo: `modules/Hrm`, `modules/Payroll`, `app/Http/Controllers/Admin/Api/Hrm`, `app/Http/Controllers/Admin/Api/Payroll`, `resources/admin/src/modules/hrm`, `resources/admin/src/modules/payroll`.
+- File neo: `modules/hrm`, `modules/payroll`, `app/Http/Controllers/Admin/Api/Hrm`, `app/Http/Controllers/Admin/Api/Payroll`, `resources/admin/src/modules/hrm`, `resources/admin/src/modules/payroll`.
 - Test bắt buộc: `tests/Feature/HrmModuleTest.php`.
 - Tài liệu đầy đủ: `docs/architecture/hrm-and-payroll-modules.md`.
 

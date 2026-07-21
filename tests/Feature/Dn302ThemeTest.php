@@ -298,4 +298,39 @@ class Dn302ThemeTest extends TestCase
         }
         $response->assertSee('Đối tác nhập từ DB');
     }
+
+    public function test_dn302_about_value_buttons_use_saved_names_and_links(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->first()
+            ?? app(LandingPageBuilder::class)->seedHome('website-main', 'DN302');
+        $about = $landing->blocks()->where('block_type', 'about_experience')->firstOrFail();
+        $about->data()->where('locale', 'vi')->firstOrFail()->update([
+            'content' => json_encode(['items' => [
+                ['title' => 'Chất lượng từ DB', 'url' => '/vi/chat-luong'],
+                ['title' => 'Tiến bộ từ DB', 'url' => '#du-an'],
+                ['title' => 'Uy tín từ DB', 'url' => 'https://example.test/uy-tin'],
+                ['title' => 'Chuyên nghiệp từ DB', 'url' => '/vi/lien-he'],
+            ]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ]);
+
+        $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        $response->assertSee('<a class="dn-value" href="/vi/chat-luong"', false);
+        $response->assertSee('Chất lượng từ DB');
+        $response->assertSee('<a class="dn-value" href="#du-an"', false);
+        $response->assertSee('https://example.test/uy-tin', false);
+        $response->assertSee('Chuyên nghiệp từ DB');
+    }
+
+    public function test_dn302_editors_expose_value_button_name_and_link_fields(): void
+    {
+        $inlineEditor = file_get_contents(theme_path('XD0302/views/partials/scripts.blade.php'));
+        $adminEditor = file_get_contents(resource_path('admin/src/modules/cms/components/LandingBlockManagerDrawer.jsx'));
+
+        $this->assertStringContainsString("['title', 'Tên nút']", $inlineEditor);
+        $this->assertStringContainsString("['url', 'Link khi click']", $inlineEditor);
+        $this->assertStringContainsString('xdAboutUsesValueButtons', file_get_contents(theme_path('DN302/views/home.blade.php')));
+        $this->assertStringContainsString("['title', 'Tên nút']", $adminEditor);
+        $this->assertStringContainsString("['url', 'Link khi click']", $adminEditor);
+    }
 }

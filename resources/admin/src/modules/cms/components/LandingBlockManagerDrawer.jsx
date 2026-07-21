@@ -47,13 +47,17 @@ function normalizeFormLocales(block) {
     );
 }
 
-function editorItemKey(blockType) {
+function isValueButtonAbout(blockType, themeKey) {
+    return blockType === 'about_experience' && String(themeKey || '').toUpperCase() === 'DN302';
+}
+
+function editorItemKey(blockType, themeKey) {
     if (blockType === 'hero_slider') {
         return 'slides';
     }
 
     if (blockType === 'about_experience') {
-        return 'tabs';
+        return isValueButtonAbout(blockType, themeKey) ? 'items' : 'tabs';
     }
 
     return 'items';
@@ -67,7 +71,7 @@ function isMediaItemField(key) {
     return ['image', 'logo', 'avatar'].includes(key);
 }
 
-function editorItemFields(blockType) {
+function editorItemFields(blockType, themeKey) {
     if (blockType === 'hero_slider') {
         return [
             ['kicker', 'Nhãn nhỏ'],
@@ -80,6 +84,13 @@ function editorItemFields(blockType) {
     }
 
     if (blockType === 'about_experience') {
+        if (isValueButtonAbout(blockType, themeKey)) {
+            return [
+                ['title', 'Tên nút'],
+                ['url', 'Link khi click'],
+            ];
+        }
+
         return [
             ['label', 'Tên tab'],
             ['description', 'Nội dung tab', 'textarea'],
@@ -196,7 +207,8 @@ export default function LandingBlockManagerDrawer({
     const [itemDraft, setItemDraft] = useState({});
 
     const editingLocales = useMemo(() => Object.keys(editingBlock?.data_by_locale ?? { [locale]: {} }), [editingBlock, locale]);
-    const activeItemKey = editingBlock ? editorItemKey(editingBlock.block_type) : 'items';
+    const aboutUsesValueButtons = isValueButtonAbout(editingBlock?.block_type, page?.theme_key);
+    const activeItemKey = editingBlock ? editorItemKey(editingBlock.block_type, page?.theme_key) : 'items';
     const activeContent = editingBlock ? (form.getFieldValue(['data_by_locale', activeEditLocale, 'content']) ?? {}) : {};
     const activeItems = Array.isArray(activeContent?.[activeItemKey]) ? activeContent[activeItemKey] : [];
 
@@ -767,11 +779,11 @@ export default function LandingBlockManagerDrawer({
                                     {localeCode === activeEditLocale ? (
                                         <Card
                                             size="small"
-                                            title={editingBlock.block_type === 'about_experience' ? 'Danh sách tab giới thiệu' : 'Danh sách nội dung'}
-                                            extra={<Button size="small" icon={<PlusOutlined />} onClick={() => openItemEditor(null, {})}>{editingBlock.block_type === 'about_experience' ? 'Thêm tab' : 'Thêm mục'}</Button>}
+                                            title={aboutUsesValueButtons ? 'Danh sách nút giá trị' : editingBlock.block_type === 'about_experience' ? 'Danh sách tab giới thiệu' : 'Danh sách nội dung'}
+                                            extra={<Button size="small" icon={<PlusOutlined />} onClick={() => openItemEditor(null, {})}>{aboutUsesValueButtons ? 'Thêm nút' : editingBlock.block_type === 'about_experience' ? 'Thêm tab' : 'Thêm mục'}</Button>}
                                         >
                                             <Space direction="vertical" size={10} style={{ width: '100%' }}>
-                                                <Text type="secondary">{editingBlock.block_type === 'about_experience' ? 'Mỗi mục tương ứng một tab hiển thị ở cột nội dung bên phải.' : 'Chỉnh từng mục bằng form, không cần nhập JSON.'}</Text>
+                                                <Text type="secondary">{aboutUsesValueButtons ? 'Mỗi mục là một nút gồm tên hiển thị và liên kết khi click.' : editingBlock.block_type === 'about_experience' ? 'Mỗi mục tương ứng một tab hiển thị ở cột nội dung bên phải.' : 'Chỉnh từng mục bằng form, không cần nhập JSON.'}</Text>
                                                 {activeItems.length ? activeItems.map((item, index) => {
                                                     const image = item.image || item.logo || item.avatar || '';
                                                     const title = item.title || item.label || item.name || item.kicker || `Mục ${index + 1}`;
@@ -826,7 +838,7 @@ export default function LandingBlockManagerDrawer({
             width={680}
         >
             <div style={{ display: 'grid', gap: 12 }}>
-                {editingBlock ? editorItemFields(editingBlock.block_type).map(([key, label, type]) => {
+                {editingBlock ? editorItemFields(editingBlock.block_type, page?.theme_key).map(([key, label, type]) => {
                     if (isMediaItemField(key)) {
                         return (
                             <div key={key} style={{ display: 'grid', gap: 6 }}>

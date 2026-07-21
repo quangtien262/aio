@@ -91,7 +91,12 @@
                 <p>{{ data_get($about, 'data.description', 'Với nhiều năm kinh nghiệm, chúng tôi luôn tôn trọng khách hàng, giữ vững uy tín và mang đến các giải pháp nhôm kính bền vững.') }}</p>
                 <div class="dn-values">
                     @foreach($items($about) as $index => $item)
-                        <article class="dn-value" style="--dn-delay:{{ $index * 90 }}ms" data-dn-reveal="up"><i class="fa-solid fa-check"></i><span>{{ data_get($item, 'title') }}</span></article>
+                        @php($valueUrl = trim((string) (data_get($item, 'url') ?: data_get($item, 'link_url'))))
+                        @if($valueUrl !== '')
+                            <a class="dn-value" href="{{ $valueUrl }}" style="--dn-delay:{{ $index * 90 }}ms" data-dn-reveal="up"><i class="fa-solid fa-check"></i><span>{{ data_get($item, 'title') }}</span></a>
+                        @else
+                            <article class="dn-value" style="--dn-delay:{{ $index * 90 }}ms" data-dn-reveal="up"><i class="fa-solid fa-check"></i><span>{{ data_get($item, 'title') }}</span></article>
+                        @endif
                     @endforeach
                 </div>
             </div>
@@ -217,6 +222,7 @@
     @push('scripts')
         <script>
             window.xdHeroUsesBlockCta = true;
+            window.xdAboutUsesValueButtons = true;
             (() => {
                 const blockIds = @json($blocks
                     ->filter(fn (array $block): bool => filled($block['id'] ?? null) && filled($block['block_type'] ?? null))

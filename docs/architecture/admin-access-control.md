@@ -43,6 +43,7 @@ Không sửa lại migration đã chạy để thay đổi hành vi production. 
 - Route admin phải có middleware permission cụ thể; truy vấn dữ liệu website vẫn phải đi qua `HasWebsiteScope`.
 - Tác vụ quản trị quan trọng phải ghi audit log, không ghi mật khẩu, token, TOTP secret hay recovery code.
 - UI chỉ hiển thị thao tác được phép, nhưng backend/Gate/middleware luôn là lớp quyết định cuối cùng.
+- Với module nhân sự và tiền lương, đọc thêm `docs/architecture/hrm-and-payroll-modules.md`; đặc biệt phải giữ tách biệt giữa tài khoản `admins`, hồ sơ `hrm_employees`, RBAC và policy dữ liệu self-service.
 
 ## Bản đồ implementation
 
