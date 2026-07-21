@@ -1,0 +1,35 @@
+@php
+    $blocks = collect($landingBlocks ?? []);
+    $get = fn (string $type) => $blocks->firstWhere('block_type', $type) ?? [];
+    $items = function (array $block) {
+        $dynamic = collect($block['dynamic_items'] ?? [])->filter()->values();
+        return $dynamic->isNotEmpty() ? $dynamic : collect(data_get($block, 'data.content.items', []))->filter()->values();
+    };
+    $image = fn ($item, string $fallback = '') => data_get($item, 'image', data_get($item, 'image_url', $fallback));
+    $hero = $get('hero_slider');
+    $services = $get('featured_services');
+    $villas = $get('project_gallery');
+    $products = $get('featured_products');
+    $completed = $get('content_showcase');
+    $partners = $get('partner_logos');
+    $slides = collect($hero['dynamic_items'] ?? [])->filter()->values();
+    if ($slides->isEmpty()) $slides = collect(data_get($hero, 'data.content.slides', []))->filter()->values();
+    $t = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('DN202', app()->getLocale(), $key);
+    $colors = ['#8fbd49', '#5ba4e9', '#f06f78', '#d782ee', '#cabd28', '#f2a039'];
+    $serviceIcons = ['fa-solid fa-truck-moving', 'fa-solid fa-solar-panel', 'fa-solid fa-truck-fast', 'fa-solid fa-warehouse', 'fa-solid fa-broom', 'fa-solid fa-helmet-safety'];
+@endphp
+@extends('theme-dn202::layout')
+@section('title', data_get($landingPage ?? [], 'meta_title', data_get($siteProfile ?? [], 'site_name', 'DN202 Arc')))
+@section('content')
+<main>
+    <section class="d202-hero" data-d202-slider data-autoplay="{{ data_get($hero, 'settings.autoplay_ms', 6000) }}" data-landing-block-id="{{ data_get($hero, 'id') }}" data-block-type="hero_slider">
+        @forelse($slides as $index => $slide)<article class="d202-slide {{ $index === 0 ? 'is-active' : '' }}" data-d202-slide><img src="{{ $image($slide, data_get($hero, 'media.image', '/theme-demo/dn202/hero-studio.png')) }}" alt="{{ data_get($slide, 'title', 'DN202 Arc') }}">@if(filled(data_get($slide, 'title')))<div class="d202-hero-copy"><h1>{{ data_get($slide, 'title') }}</h1><p>{{ data_get($slide, 'summary') }}</p></div>@endif</article>@empty<article class="d202-slide is-active" data-d202-slide><img src="/theme-demo/dn202/hero-studio.png" alt="DN202 Arc"></article>@endforelse
+        <div class="d202-dots">@foreach($slides as $index => $slide)<button type="button" class="{{ $index === 0 ? 'is-active' : '' }}" data-d202-dot aria-label="Slide {{ $index + 1 }}"></button>@endforeach</div>
+    </section>
+    <section id="dich-vu" class="d202-section d202-soft" data-landing-block-id="{{ data_get($services, 'id') }}" data-block-type="featured_services"><div class="d202-container"><header class="d202-heading"><p>{{ data_get($services, 'data.subtitle') }}</p><h2>{{ data_get($services, 'data.title') }}</h2></header><div class="d202-service-grid">@foreach($items($services)->take(6) as $index => $item)<a class="d202-service" href="{{ data_get($item, 'url', '#lien-he') }}" style="--service-color:{{ $colors[$index] ?? '#3799ee' }}"><span class="d202-service-icon"><i class="{{ $serviceIcons[$index] ?? 'fa-solid fa-couch' }}"></i></span><h3>{{ data_get($item, 'title') }}</h3></a>@endforeach</div></div></section>
+    <section id="thiet-ke-biet-thu" class="d202-section" data-landing-block-id="{{ data_get($villas, 'id') }}" data-block-type="project_gallery"><div class="d202-container"><header class="d202-heading"><p>{{ data_get($villas, 'data.subtitle') }}</p><h2>{{ data_get($villas, 'data.title') }}</h2></header><div class="d202-villa-grid">@foreach($items($villas)->take(4) as $item)<a class="d202-villa" href="{{ data_get($item, 'url', '#lien-he') }}"><img src="{{ $image($item, '/theme-demo/dn202/villa-01.jpg') }}" alt="{{ data_get($item, 'title') }}"><div><h3>{{ data_get($item, 'title') }}</h3><p><i class="fa-regular fa-bookmark"></i> {{ data_get($item, 'summary', $t('project.updated')) }}</p></div></a>@endforeach</div></div></section>
+    <section id="san-pham" class="d202-section d202-soft" data-landing-block-id="{{ data_get($products, 'id') }}" data-block-type="featured_products"><div class="d202-container"><header class="d202-heading"><h2>{{ data_get($products, 'data.title') }}</h2></header><div class="d202-product-grid">@forelse($items($products)->take(4) as $item)<article class="d202-product"><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ $image($item, '/theme-demo/dn202/interior-01.jpg') }}" alt="{{ data_get($item, 'title') }}"></a><div class="d202-product-body"><h3><a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a></h3><div class="d202-product-row"><span class="d202-price">{{ number_format((float) data_get($item, 'price'), 0, ',', '.') }}đ @if(data_get($item, 'original_price'))<del>{{ number_format((float) data_get($item, 'original_price'), 0, ',', '.') }}đ</del>@endif</span><a class="d202-buy" href="{{ data_get($item, 'url', '#') }}">{{ $t('product.buy_now') }}</a></div></div></article>@empty<p>{{ $t('common.no_data') }}</p>@endforelse</div></div></section>
+    <section id="du-an" class="d202-section" data-landing-block-id="{{ data_get($completed, 'id') }}" data-block-type="content_showcase"><div class="d202-container"><header class="d202-heading"><p>{{ data_get($completed, 'data.subtitle') }}</p><h2>{{ data_get($completed, 'data.title') }}</h2></header><div class="d202-completed-grid">@forelse($items($completed)->take(4) as $item)<a class="d202-completed" href="{{ data_get($item, 'url', '#') }}"><img src="{{ $image($item, '/theme-demo/dn202/interior-01.jpg') }}" alt="{{ data_get($item, 'title') }}"><div class="d202-completed-meta"><span><i class="fa-regular fa-calendar-check"></i> {{ data_get($item, 'date', now()->format('d/m/Y')) }}</span><span><i class="fa-regular fa-bookmark"></i> {{ $t('project.updated') }}</span></div><h3>{{ data_get($item, 'title') }}</h3></a>@empty<p>{{ $t('common.no_data') }}</p>@endforelse</div></div></section>
+    <section id="doi-tac" class="d202-section d202-soft" data-landing-block-id="{{ data_get($partners, 'id') }}" data-block-type="partner_logos"><div class="d202-container"><header class="d202-heading"><p>{{ data_get($partners, 'data.subtitle') }}</p><h2>{{ data_get($partners, 'data.title') }}</h2></header><div class="d202-partners">@foreach($items($partners)->take(6) as $item)<a class="d202-partner" href="{{ data_get($item, 'url', data_get($item, 'href', '#')) }}">@if($image($item))<img src="{{ $image($item) }}" alt="{{ data_get($item, 'title', data_get($item, 'name')) }}">@else<span>{{ data_get($item, 'title', data_get($item, 'name')) }}</span>@endif</a>@endforeach</div></div></section>
+</main>
+@endsection

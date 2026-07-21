@@ -1,0 +1,2 @@
+@php($resolvedTitle = $title ?? $pageTitle ?? data_get($entry ?? null, 'title', 'DN202 Arc'))
+<main><section class="d202-inner-hero"><div class="d202-container"><h1>{{ $resolvedTitle }}</h1>@if(filled($summary ?? null))<p>{{ $summary }}</p>@endif</div></section><section class="d202-content"><article class="d202-container d202-content-card">@if(filled($cover ?? null))<img src="{{ $cover }}" alt="{{ $resolvedTitle }}">@endif<div>{!! $body ?? '' !!}</div></article></section></main>

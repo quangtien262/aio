@@ -30,7 +30,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603'], true);
     }
 
     /**
@@ -1040,6 +1040,7 @@ class LandingPageBuilder
                 'images' => $projectImages,
                 'gallery_images' => $projectImages,
                 'url' => route('site.projects.show', ['slug' => $project->slug]),
+                'date' => $project->publish_at?->format('d/m/Y'),
                 'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project.%d.button_label', $project->id), $project->button_label),
             ];
         })->all();
@@ -1238,6 +1239,7 @@ class LandingPageBuilder
             'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
             'XD0324' => $this->xd0324DefaultBlocks(),
             'XD0325' => $this->xd0325DefaultBlocks(),
+            'DN202' => $this->dn202DefaultBlocks(),
             'DN302' => $this->dn302DefaultBlocks(),
             'BZ501' => $this->bz501DefaultBlocks(),
             'SPA502' => $this->spa502DefaultBlocks(),
@@ -1254,6 +1256,47 @@ class LandingPageBuilder
             'XD0302' => $this->xd0302DefaultBlocks(),
             default => $this->xd0301DefaultBlocks(),
         };
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function dn202DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/DN202/preview-dn202.png';
+        $hero = '/theme-demo/dn202/hero-studio.png';
+        $villa = '/theme-demo/dn202/villa-01.jpg';
+        $interior = '/theme-demo/dn202/interior-01.jpg';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số lượng', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm kiếm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ nội dung nổi bật', 'default' => true],
+        ];
+        $serviceItems = [
+            ['title' => 'Nội thất biệt thự', 'icon' => 'fa-solid fa-house-chimney-window', 'url' => '#thiet-ke-biet-thu'],
+            ['title' => 'Nội thất chung cư', 'icon' => 'fa-solid fa-building', 'url' => '#san-pham'],
+            ['title' => 'Nội thất khách sạn', 'icon' => 'fa-solid fa-hotel', 'url' => '#du-an'],
+            ['title' => 'Nội thất nhà phố', 'icon' => 'fa-solid fa-house', 'url' => '#thiet-ke-biet-thu'],
+            ['title' => 'Nội thất showroom', 'icon' => 'fa-solid fa-shop', 'url' => '#san-pham'],
+            ['title' => 'Nội thất văn phòng', 'icon' => 'fa-solid fa-chair', 'url' => '#du-an'],
+        ];
+        $villaItems = [
+            ['title' => 'Thiết kế biệt thự sân vườn', 'summary' => 'Đẳng cấp mới', 'image' => '/theme-demo/dn202/villa-01.jpg', 'url' => '#lien-he'],
+            ['title' => 'Mẫu thiết kế biệt thự song lập', 'summary' => 'Không gian cân bằng', 'image' => '/theme-demo/dn202/villa-02.jpg', 'url' => '#lien-he'],
+            ['title' => 'Biệt thự hiện đại 2 tầng', 'summary' => 'Tối ưu công năng', 'image' => '/theme-demo/dn202/villa-03.jpg', 'url' => '#lien-he'],
+            ['title' => 'Biệt thự phố thanh lịch', 'summary' => 'Dấu ấn riêng', 'image' => '/theme-demo/dn202/villa-04.jpg', 'url' => '#lien-he'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero kiến trúc DN202', 'description' => 'Slider ảnh toàn chiều rộng ngay dưới header.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'dn202-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Vị trí banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'media' => ['image' => $hero], 'data' => ['vi' => array_merge($heading(null, null), ['content' => ['slides' => [['title' => 'Không gian sống được thiết kế cho riêng bạn', 'summary' => 'Thiết kế và thi công nội thất trọn gói.', 'image' => $hero]]]]), 'en' => array_merge($heading(null, null), ['content' => ['slides' => [['title' => 'Spaces designed around you', 'summary' => 'Complete interior design and build.', 'image' => $hero]]]])]],
+            ['block_type' => 'featured_services', 'label' => 'Bạn đang cần tìm?', 'description' => 'Sáu nhóm dịch vụ nội thất từ CMS hoặc nhập thủ công.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_services', 'Dịch vụ CMS', 6), 'data' => ['vi' => $withItems($heading('Bạn đang cần tìm?', 'Những sản phẩm, dịch vụ DN202 cung cấp cho bạn'), $serviceItems), 'en' => $withItems($heading('What are you looking for?', 'Interior solutions made for your space'), $serviceItems)]],
+            ['block_type' => 'project_gallery', 'label' => 'Thiết kế biệt thự', 'description' => 'Bộ sưu tập mẫu biệt thự nhập trực tiếp trong block.', 'preview_image' => $preview, 'anchor_id' => 'thiet-ke-biet-thu', 'settings' => ['source' => 'custom', 'limit' => 4], 'settings_schema' => $sourceSchema('cms_projects', 'Dự án CMS', 4), 'data' => ['vi' => $withItems($heading('Thiết kế biệt thự', 'Những mẫu biệt thự đẹp của DN202'), $villaItems), 'en' => $withItems($heading('Villa design', 'Selected villa concepts by DN202'), $villaItems)]],
+            ['block_type' => 'featured_products', 'label' => 'Sản phẩm nội thất', 'description' => 'Sản phẩm nổi bật lấy động từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 4), 'media' => ['image' => $interior], 'data' => ['vi' => $heading('Sản phẩm nội thất'), 'en' => $heading('Interior products')]],
+            ['block_type' => 'content_showcase', 'label' => 'Dự án hoàn thành', 'description' => 'Các dự án đã bàn giao lấy động từ CMS Projects.', 'preview_image' => $preview, 'anchor_id' => 'du-an', 'dynamic' => true, 'settings' => ['source' => 'cms_projects', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_projects', 'Dự án CMS', 4), 'data' => ['vi' => $heading('Dự án hoàn thành', 'Những mẫu dự án đã bàn giao'), 'en' => $heading('Completed projects', 'A selection of delivered spaces')]],
+            ['block_type' => 'partner_logos', 'label' => 'Đối tác tiêu biểu', 'description' => 'Logo đối tác lấy động từ CMS Partners.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_partners', 'Đối tác CMS', 6), 'data' => ['vi' => $heading('Đối tác tiêu biểu', 'Những đối tác lâu năm tại DN202'), 'en' => $heading('Featured partners', 'Long-term partners of DN202')]],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */
