@@ -8,6 +8,7 @@ use App\Models\Admin;
 use App\Models\CatalogProduct;
 use App\Models\CmsPost;
 use App\Models\CmsMenu;
+use App\Models\CmsPage;
 use App\Models\LandingPage;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
@@ -83,7 +84,14 @@ class Dn302ThemeTest extends TestCase
         $post = CmsPost::query()->firstOrFail();
         $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))->assertOk();
         $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))->assertOk();
-        $this->get(route('site.contact', ['locale' => 'vi']))->assertOk()->assertSee('Đăng ký tư vấn');
+        $this->get(route('site.contact', ['locale' => 'vi']))
+            ->assertOk()
+            ->assertSee('Thông tin liên hệ')
+            ->assertSee('1900 6760')
+            ->assertSee('hello@buildmart.demo')
+            ->assertSee('QL1A, Thủ Đức, TP.HCM')
+            ->assertSee('name="source" value="contact"', false)
+            ->assertSee('Gửi yêu cầu tư vấn');
     }
 
     public function test_dn302_storefront_admin_mode_renders_landing_block_editor(): void
@@ -165,6 +173,18 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Menu con từ DB')
             ->assertSee('href="#menu-db"', false)
             ->assertSee('href="#menu-con-db"', false);
+    }
+
+    public function test_dn302_contact_page_does_not_require_a_published_cms_page(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        CmsPage::query()->whereIn('slug', ['contact', 'lien-he'])->delete();
+
+        $this->get(route('site.contact', ['locale' => 'vi']))
+            ->assertOk()
+            ->assertSee('Liên hệ')
+            ->assertSee('Thông tin liên hệ')
+            ->assertSee('name="source" value="contact"', false);
     }
 
     public function test_dn302_hero_becomes_full_width_when_shared_copy_and_cta_are_empty(): void

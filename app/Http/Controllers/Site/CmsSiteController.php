@@ -432,7 +432,19 @@ class CmsSiteController
 
         $page = $query
             ->orderByRaw("CASE WHEN slug = 'contact' THEN 0 WHEN slug = 'lien-he' THEN 1 ELSE 2 END")
-            ->firstOrFail();
+            ->first();
+
+        if ($page === null) {
+            $page = new CmsPage([
+                'slug' => 'contact',
+                'status' => 'published',
+                'title' => 'Liên hệ',
+                'excerpt' => 'Kết nối với đội ngũ tư vấn để nhận hỗ trợ phù hợp với nhu cầu của bạn.',
+                'body' => '',
+                'meta_title' => 'Liên hệ',
+                'meta_description' => 'Thông tin liên hệ và biểu mẫu gửi yêu cầu tư vấn.',
+            ]);
+        }
 
         return $this->renderContent('contact', $page, [
             'siteProfile' => $siteProfile,
