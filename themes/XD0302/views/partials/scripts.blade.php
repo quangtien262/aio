@@ -186,9 +186,10 @@
             const form = document.querySelector('[data-xd-editor-form]');
             const field = (name) => form?.querySelector(`[data-xd-field="${name}"]`);
             const blockCtaFields = Array.from(form?.querySelectorAll('[data-xd-block-cta]') || []);
+            const heroUsesBlockCta = window.xdHeroUsesBlockCta === true;
             const syncBlockCtaVisibility = (blockType) => {
                 blockCtaFields.forEach((element) => {
-                    const shouldHide = ['hero_slider', 'faq_showcase'].includes(blockType);
+                    const shouldHide = blockType === 'faq_showcase' || (blockType === 'hero_slider' && !heroUsesBlockCta);
                     element.hidden = shouldHide;
                     element.style.display = shouldHide ? 'none' : '';
                 });
@@ -875,7 +876,7 @@
                 field('title').value = draft.title || '';
                 field('subtitle').value = draft.subtitle || '';
                 field('description').value = draft.description || '';
-                field('button_label').value = activeBlock?.block_type === 'hero_slider' ? '' : (draft.button_label || '');
+                field('button_label').value = activeBlock?.block_type === 'hero_slider' && !heroUsesBlockCta ? '' : (draft.button_label || '');
                 field('content').value = pretty(normalizeContentObject(draft.content || {}));
                 loadContactContentFields(normalizeContentObject(draft.content || {}));
                 loadFaqFields(activeBlock, normalizeContentObject(draft.content || {}));
@@ -957,7 +958,7 @@
                     field('is_visible').checked = Boolean(block.is_visible);
                     field('settings').value = pretty(block.settings || {});
                     syncBlockCtaVisibility(block.block_type);
-                    if (field('cta_url')) field('cta_url').value = block.block_type === 'hero_slider' ? '' : (block.settings?.cta_url || '');
+                    if (field('cta_url')) field('cta_url').value = block.block_type === 'hero_slider' && !heroUsesBlockCta ? '' : (block.settings?.cta_url || '');
                     field('media').value = pretty(block.media || {});
                     syncMediaEditorVisibility(block);
                     loadMediaFields(block);
@@ -977,7 +978,7 @@
                     localeDrafts[activeEditorLocale] = collectCurrentLocaleDraft();
                     const localePayloads = Object.values(localeDrafts);
                     const settingsPayload = collectSourceSettings(parseJson(field('settings').value, {}));
-                    if (activeBlock?.block_type === 'hero_slider') {
+                    if (activeBlock?.block_type === 'hero_slider' && !heroUsesBlockCta) {
                         delete settingsPayload.cta_url;
                     } else {
                         const ctaUrl = field('cta_url')?.value.trim() || '';

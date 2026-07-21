@@ -3,8 +3,13 @@
     $siteName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Website')));
     $hotline = $branding['support_hotline'] ?? '1900 9477';
     $email = $branding['support_email'] ?? data_get($siteProfile ?? [], 'email', 'admin@demo.web30s.vn');
+    $address = trim((string) ($branding['support_location'] ?? ''));
     $logo = trim((string) ($branding['logo_url'] ?? ''));
-    $menuItems = collect(data_get($primaryMenu ?? [], 'items', []));
+    $menuItems = collect(data_get(
+        $themeShellData ?? [],
+        'top_menu',
+        data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))
+    ))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label', data_get($item, 'title'))))->values();
     if ($menuItems->isEmpty()) {
         $menuItems = collect([
             ['label' => 'Trang chủ', 'url' => route('site.home')],
@@ -29,7 +34,9 @@
         </a>
         <div class="dn-head-main">
             <div class="dn-topbar">
-                <span><i class="fa-solid fa-location-dot"></i> @themeT('DN302.header.address', '344 Huỳnh Tấn Phát, Phường Bình Thuận, Quận 7, TP.HCM')</span>
+                @if($address !== '')
+                    <span><i class="fa-solid fa-location-dot"></i> {{ $address }}</span>
+                @endif
                 <a href="mailto:{{ $email }}"><i class="fa-solid fa-envelope"></i> {{ $email }}</a>
                 <span class="dn-socials"><i class="fa-brands fa-facebook-f"></i><i class="fa-brands fa-youtube"></i><i class="fa-brands fa-pinterest-p"></i></span>
                 <div class="dn-auth-actions">
@@ -48,7 +55,7 @@
                 <button class="dn-menu-toggle" type="button" data-dn-menu aria-expanded="false" aria-controls="dn-main-menu"><i class="fa-solid fa-bars"></i><span>Menu</span></button>
                 <nav id="dn-main-menu" data-dn-nav>
                     @foreach($menuItems as $item)
-                        <a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label', data_get($item, 'title')) }}</a>
+                        @include('theme-dn302::partials.menu-item', ['item' => $item, 'level' => 0])
                     @endforeach
                     @guest('customer')
                         @guest('admin')

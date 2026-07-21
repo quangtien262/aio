@@ -174,6 +174,7 @@ class ThemeDemoContentGenerator
     {
         $locations = collect($this->menuLocationRegistry->all())
             ->concat([
+                ['label' => 'Primary', 'value' => 'primary'],
                 ['label' => 'Primary Navigation', 'value' => 'primary-navigation'],
                 ['label' => 'Product Navigation', 'value' => 'product-navigation'],
             ])
@@ -502,6 +503,7 @@ class ThemeDemoContentGenerator
     private function seedMenus(array $preset, array $categoryMap, string $themeKey, array $pageSlugs): int
     {
         $isServicePreset = ($preset['catalog_style'] ?? 'commerce') === 'service';
+        $primaryLocation = strtoupper($themeKey) === 'DN302' ? 'primary' : 'primary-navigation';
         $productItems = collect($categoryMap)->map(function (array $entry, int $index): array {
             /** @var CatalogCategory $parent */
             $parent = $entry['parent'];
@@ -523,8 +525,8 @@ class ThemeDemoContentGenerator
         })->all();
 
         $primaryMenu = CmsMenu::query()->create([
-            'name' => 'Primary Navigation',
-            'location' => 'primary-navigation',
+            'name' => strtoupper($themeKey) === 'DN302' ? 'DN302 Primary Menu' : 'Primary Navigation',
+            'location' => $primaryLocation,
             'items' => $this->buildPrimaryMenuItems($preset, $pageSlugs),
         ]);
         $this->recordDemoModel($primaryMenu, $themeKey, $preset['key']);

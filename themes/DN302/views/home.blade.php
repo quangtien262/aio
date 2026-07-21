@@ -31,8 +31,13 @@
             ['title' => 'Không gian mở, sống trọn từng khoảnh khắc', 'summary' => 'Giải pháp nhôm kính cao cấp được thiết kế riêng cho phong cách sống hiện đại.', 'image' => $villa],
         ]);
     }
-    $heroTitle = trim((string) data_get($hero, 'data.title')) ?: data_get($slides->first(), 'title', 'Thi công lắp đặt các loại cửa dân dụng');
-    $heroDescription = trim((string) data_get($hero, 'data.description')) ?: data_get($slides->first(), 'summary', '');
+    $heroSubtitle = trim((string) data_get($hero, 'data.subtitle'));
+    $heroTitle = trim((string) data_get($hero, 'data.title'));
+    $heroDescription = trim((string) data_get($hero, 'data.description'));
+    $heroButtonLabel = trim((string) data_get($hero, 'data.button_label'));
+    $heroButtonUrl = trim((string) data_get($hero, 'settings.cta_url'));
+    $heroHasCta = $heroButtonLabel !== '' && $heroButtonUrl !== '';
+    $heroHasCopy = $heroSubtitle !== '' || $heroTitle !== '' || $heroDescription !== '' || $heroHasCta;
     $heroSlides = $slides;
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
@@ -53,13 +58,15 @@
 @section('content')
 <main>
     <section class="dn-hero xd-landing-block" data-block-type="hero_slider" data-dn-slider data-autoplay="{{ data_get($hero, 'settings.autoplay_ms', 6500) }}">
-        <div class="dn-container dn-hero-stage">
-            <div class="dn-hero-copy" data-dn-reveal="left">
-                <p class="dn-eyebrow">{{ data_get($hero, 'data.subtitle', 'Cung cấp giải pháp trọn gói') }}</p>
-                <h1>{{ $heroTitle }}</h1>
-                <p>{{ $heroDescription }}</p>
-                <a class="dn-btn" href="#gioi-thieu">{{ data_get($hero, 'data.button_label', 'Tìm hiểu ngay') }} <i class="fa-solid fa-arrow-right-long"></i></a>
-            </div>
+        <div class="dn-container dn-hero-stage {{ $heroHasCopy ? '' : 'dn-hero-stage--media-only' }}">
+            @if($heroHasCopy)
+                <div class="dn-hero-copy" data-dn-reveal="left">
+                    @if($heroSubtitle !== '')<p class="dn-eyebrow">{{ $heroSubtitle }}</p>@endif
+                    @if($heroTitle !== '')<h1>{{ $heroTitle }}</h1>@endif
+                    @if($heroDescription !== '')<p>{{ $heroDescription }}</p>@endif
+                    @if($heroHasCta)<a class="dn-btn" href="{{ $heroButtonUrl }}">{{ $heroButtonLabel }} <i class="fa-solid fa-arrow-right-long"></i></a>@endif
+                </div>
+            @endif
             <div class="dn-hero-media" data-dn-reveal="right" data-dn-parallax>
                 @foreach($slides as $index => $slide)
                     <article class="dn-hero-slide {{ $index === 0 ? 'is-active' : '' }}" data-dn-slide>
@@ -126,7 +133,7 @@
 
     <section id="du-an" class="dn-section dn-projects xd-landing-block" data-block-type="project_gallery">
         <div class="dn-container">
-            <header class="dn-heading center" data-dn-reveal="up"><p class="dn-eyebrow">{{ data_get($projects, 'data.subtitle', 'Dự án') }}</p><h2 class="dn-title">{{ data_get($projects, 'data.title', 'Hoàn thành') }}</h2></header>
+            <header class="dn-heading center" data-dn-reveal="up"><p class="dn-eyebrow">{{ data_get($projects, 'data.subtitle', 'Dự án') }}</p><h2 class="dn-title">{{ data_get($projects, 'data.title', 'Hoàn thành') }}</h2>@if(filled(data_get($projects, 'data.description')))<p>{{ data_get($projects, 'data.description') }}</p>@endif</header>
             <div class="dn-project-tabs" data-dn-reveal="up"><button class="is-active" type="button" data-dn-project-tab="all">Tất cả</button><button type="button" data-dn-project-tab="villa">Biệt thự - Nhà phố</button><button type="button" data-dn-project-tab="store">Cửa hàng</button><button type="button" data-dn-project-tab="office">Tòa nhà văn phòng</button></div>
             <div class="dn-project-grid">
                 @foreach($items($projects)->take(4) as $index => $item)
@@ -153,7 +160,7 @@
 
     <section class="dn-newsletter-wrap xd-landing-block" data-block-type="newsletter_signup">
         <div class="dn-container dn-newsletter" data-dn-reveal="up">
-            <div><p class="dn-eyebrow">{{ data_get($newsletter, 'data.subtitle', 'Đăng ký') }}</p><h2 class="dn-title">{{ data_get($newsletter, 'data.title', 'Đăng ký nhận bản tin và tin tức cập nhật mới nhất') }}</h2></div>
+            <div><p class="dn-eyebrow">{{ data_get($newsletter, 'data.subtitle', 'Đăng ký') }}</p><h2 class="dn-title">{{ data_get($newsletter, 'data.title', 'Đăng ký nhận bản tin và tin tức cập nhật mới nhất') }}</h2>@if(filled(data_get($newsletter, 'data.description')))<p>{{ data_get($newsletter, 'data.description') }}</p>@endif</div>
             <form method="POST" action="{{ route('site.newsletter.subscribe') }}">@csrf<input type="hidden" name="source" value="dn302-home"><input type="email" name="email" required placeholder="Địa chỉ email....."><button type="submit">Đăng ký</button></form>
         </div>
     </section>
@@ -174,7 +181,7 @@
 
     <section id="tin-tuc" class="dn-section xd-landing-block" data-block-type="latest_posts">
         <div class="dn-container">
-            <div class="dn-heading dn-news-head" data-dn-reveal="up"><header><p class="dn-eyebrow">{{ data_get($news, 'data.subtitle', 'Tin tức cập nhật') }}</p><h2 class="dn-title">{{ data_get($news, 'data.title', 'Kiến thức & Kinh nghiệm') }}</h2></header><a class="dn-btn" href="{{ route('site.blog.index') }}">@themeT('DN302.common.view_more', 'Xem thêm')</a></div>
+            <div class="dn-heading dn-news-head" data-dn-reveal="up"><header><p class="dn-eyebrow">{{ data_get($news, 'data.subtitle', 'Tin tức cập nhật') }}</p><h2 class="dn-title">{{ data_get($news, 'data.title', 'Kiến thức & Kinh nghiệm') }}</h2>@if(filled(data_get($news, 'data.description')))<p>{{ data_get($news, 'data.description') }}</p>@endif</header><a class="dn-btn" href="{{ route('site.blog.index') }}">@themeT('DN302.common.view_more', 'Xem thêm')</a></div>
             <div class="dn-news-grid">
                 @foreach($items($news)->take(3) as $index => $item)
                     <article class="dn-news-card" style="--dn-delay:{{ $index * 110 }}ms" data-dn-reveal="up"><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ $image($item, $index === 1 ? $living : $villa) }}" alt="{{ data_get($item, 'title') }}"></a><time class="dn-news-date">{{ data_get($item, 'date', '15/04/2022') }}</time><div class="dn-news-body"><h3>{{ data_get($item, 'title') }}</h3><p>{{ $short(data_get($item, 'summary')) }}</p><a href="{{ data_get($item, 'url', '#') }}"><i class="fa-solid fa-circle-arrow-right"></i> @themeT('DN302.common.read_more', 'Đọc thêm')</a></div></article>
@@ -185,7 +192,7 @@
 
     <section id="lien-he" class="dn-section dn-contact xd-landing-block" data-block-type="landing_contact">
         <div class="dn-container">
-            <header class="dn-heading center" data-dn-reveal="up"><p class="dn-eyebrow">{{ data_get($contact, 'data.subtitle', 'Liên hệ') }}</p><h2 class="dn-title">{{ data_get($contact, 'data.title', 'Đăng ký tư vấn dịch vụ') }}</h2></header>
+            <header class="dn-heading center" data-dn-reveal="up"><p class="dn-eyebrow">{{ data_get($contact, 'data.subtitle', 'Liên hệ') }}</p><h2 class="dn-title">{{ data_get($contact, 'data.title', 'Đăng ký tư vấn dịch vụ') }}</h2>@if(filled(data_get($contact, 'data.description')))<p>{{ data_get($contact, 'data.description') }}</p>@endif</header>
             <div class="dn-contact-grid">
                 <aside class="dn-contact-info" data-dn-reveal="left"><img src="{{ data_get($contact, 'media.image', $living) }}" alt="Liên hệ Janelas"><div class="dn-contact-panel"><p><i class="fa-solid fa-clock"></i><span>Thời gian làm việc<br><strong>Thứ 2 - thứ 7 (9:00 - 17:00)</strong></span></p><p><i class="fa-solid fa-phone"></i><span>Hotline<br><strong>1900 9477</strong></span></p></div></aside>
                 <div class="dn-contact-form" data-dn-reveal="right"><form method="POST" action="{{ route('site.contact.submit') }}">@csrf<input type="hidden" name="source" value="contact"><input name="name" required placeholder="* Họ và tên"><input type="email" name="email" required placeholder="* Email"><input name="phone" required placeholder="* Số điện thoại"><input name="address" placeholder="Địa chỉ"><textarea name="message" required minlength="10" placeholder="* Nội dung"></textarea><button class="dn-btn" type="submit">@themeT('DN302.common.send', 'Gửi yêu cầu')</button></form></div>
@@ -194,10 +201,13 @@
     </section>
 
     <section class="dn-partners xd-landing-block" data-block-type="partner_logos">
-        <div class="dn-container dn-partner-track">
-            @foreach($items($partners)->take(10) as $index => $item)
-                <a class="dn-partner" href="{{ data_get($item, 'url', '#') }}" style="--dn-delay:{{ $index * 60 }}ms" data-dn-reveal="scale">@if($image($item))<img src="{{ $image($item) }}" alt="{{ data_get($item, 'title') }}">@else<span>{{ data_get($item, 'title') }}</span>@endif</a>
-            @endforeach
+        <div class="dn-container">
+            <header class="dn-heading center" data-dn-reveal="up">@if(filled(data_get($partners, 'data.subtitle')))<p class="dn-eyebrow">{{ data_get($partners, 'data.subtitle') }}</p>@endif<h2 class="dn-title">{{ data_get($partners, 'data.title', 'Đối tác của chúng tôi') }}</h2>@if(filled(data_get($partners, 'data.description')))<p>{{ data_get($partners, 'data.description') }}</p>@endif</header>
+            <div class="dn-partner-track">
+                @foreach($items($partners)->take(10) as $index => $item)
+                    <a class="dn-partner" href="{{ data_get($item, 'url', '#') }}" style="--dn-delay:{{ $index * 60 }}ms" data-dn-reveal="scale">@if($image($item))<img src="{{ $image($item) }}" alt="{{ data_get($item, 'title') }}">@else<span>{{ data_get($item, 'title') }}</span>@endif</a>
+                @endforeach
+            </div>
         </div>
     </section>
 </main>
@@ -206,6 +216,7 @@
 @if ($canEditLanding)
     @push('scripts')
         <script>
+            window.xdHeroUsesBlockCta = true;
             (() => {
                 const blockIds = @json($blocks
                     ->filter(fn (array $block): bool => filled($block['id'] ?? null) && filled($block['block_type'] ?? null))

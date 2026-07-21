@@ -609,6 +609,10 @@ class LandingPageBuilder
         }
 
         if ($block->block_type === 'partner_logos') {
+            if (($settings['source'] ?? 'cms_partners') === 'custom') {
+                return [];
+            }
+
             return $this->cmsPartnerItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 

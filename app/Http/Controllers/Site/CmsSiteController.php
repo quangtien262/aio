@@ -1813,7 +1813,13 @@ class CmsSiteController
     private function resolveTopMenuItems(array $menus, ?string $themeKey = null): array
     {
         $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
-        $items = collect($menus['primary-navigation'] ?? $menus['primary'] ?? [])
+        $locationCandidates = strtoupper((string) $themeKey) === 'DN302'
+            ? ['primary', 'primary-navigation']
+            : ['primary-navigation', 'primary'];
+        $resolvedLocation = collect($locationCandidates)
+            ->first(fn (string $location): bool => ! empty($menus[$location] ?? []))
+            ?? $locationCandidates[0];
+        $items = collect($menus[$resolvedLocation] ?? [])
             ->filter(fn (mixed $item): bool => is_array($item))
             ->values();
 
@@ -1837,7 +1843,7 @@ class CmsSiteController
         }
 
         $fallbackUrl = $this->isCommerceThemeKey($themeKey) ? route('site.home') : null;
-        $normalizeItems = function (array $menuItems, string $baseKey = 'cms_menu.primary-navigation') use (&$normalizeItems, $websiteKey, $fallbackUrl): array {
+        $normalizeItems = function (array $menuItems, string $baseKey) use (&$normalizeItems, $websiteKey, $fallbackUrl): array {
             return collect($menuItems)
                 ->filter(fn (mixed $item): bool => is_array($item))
                 ->values()
@@ -1854,7 +1860,7 @@ class CmsSiteController
                 ->all();
         };
 
-        return $normalizeItems($items->all());
+        return $normalizeItems($items->all(), 'cms_menu.'.$resolvedLocation);
     }
 
     private function resolveProductMenuItems(array $menus, Collection $parentCategories): array
