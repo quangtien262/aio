@@ -68,7 +68,6 @@ const cmsContentMenuOrder = [
     { key: 'cms-services', label: 'Dịch vụ' },
     { key: 'cms-posts', label: 'Tin tức' },
     { key: 'cms-projects', label: 'Dự án' },
-    { key: 'cms-landing-pages', label: 'Landing pages' },
     { key: 'cms-team-members', label: 'Đội ngũ nhân sự' },
     { key: 'cms-partners', label: 'Đối tác' },
     { key: 'cms-testimonials', label: 'Testimonials' },
@@ -77,6 +76,7 @@ const cmsContentMenuOrder = [
 const cmsContentMenuKeySet = new Set(cmsContentMenuOrder.map((item) => item.key));
 const cmsContentMenuLabelMap = new Map(cmsContentMenuOrder.map((item) => [item.key, item.label]));
 const cmsStandaloneMenuLabelMap = new Map([
+    ['cms-landing-pages', 'Landing pages'],
     ['cms-orders', 'Đơn đặt hàng'],
     ['cms-newsletter', 'ĐK nhận tin'],
 ]);

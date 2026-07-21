@@ -21,13 +21,18 @@
     $living = '/theme-demo/dn302/dn302-living-room.png';
     $villa = '/theme-demo/dn302/dn302-villa.png';
     $bathroom = '/theme-demo/curated/home/bathroom/bathroom-02.jpg';
-    $slides = collect($hero['dynamic_items'] ?? data_get($hero, 'data.content.slides', []));
+    $slides = collect($hero['dynamic_items'] ?? [])->filter()->values();
+    if ($slides->isEmpty()) {
+        $slides = collect(data_get($hero, 'data.content.slides', []))->filter()->values();
+    }
     if ($slides->isEmpty()) {
         $slides = collect([
             ['title' => 'Thi công lắp đặt các loại cửa dân dụng', 'summary' => 'Cung cấp cửa sổ, cửa ra vào bằng nhôm kính an toàn, tiện nghi và thân thiện với môi trường.', 'image' => $living],
             ['title' => 'Không gian mở, sống trọn từng khoảnh khắc', 'summary' => 'Giải pháp nhôm kính cao cấp được thiết kế riêng cho phong cách sống hiện đại.', 'image' => $villa],
         ]);
     }
+    $heroTitle = trim((string) data_get($hero, 'data.title')) ?: data_get($slides->first(), 'title', 'Thi công lắp đặt các loại cửa dân dụng');
+    $heroDescription = trim((string) data_get($hero, 'data.description')) ?: data_get($slides->first(), 'summary', '');
     $heroSlides = $slides;
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
@@ -51,8 +56,8 @@
         <div class="dn-container dn-hero-stage">
             <div class="dn-hero-copy" data-dn-reveal="left">
                 <p class="dn-eyebrow">{{ data_get($hero, 'data.subtitle', 'Cung cấp giải pháp trọn gói') }}</p>
-                <h1>{{ data_get($slides->first(), 'title', data_get($hero, 'data.title', 'Thi công lắp đặt các loại cửa dân dụng')) }}</h1>
-                <p>{{ data_get($slides->first(), 'summary', data_get($hero, 'data.description')) }}</p>
+                <h1>{{ $heroTitle }}</h1>
+                <p>{{ $heroDescription }}</p>
                 <a class="dn-btn" href="#gioi-thieu">{{ data_get($hero, 'data.button_label', 'Tìm hiểu ngay') }} <i class="fa-solid fa-arrow-right-long"></i></a>
             </div>
             <div class="dn-hero-media" data-dn-reveal="right" data-dn-parallax>

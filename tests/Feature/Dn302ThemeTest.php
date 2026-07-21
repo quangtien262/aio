@@ -96,4 +96,46 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('data-xd-editor', false)
             ->assertSee('Sửa khối');
     }
+
+    public function test_dn302_hero_uses_saved_database_slides_when_dynamic_source_is_empty(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->first()
+            ?? app(LandingPageBuilder::class)->seedHome('website-main', 'DN302');
+        $hero = $landing->blocks()->where('block_type', 'hero_slider')->firstOrFail();
+        $heroData = $hero->data()->where('locale', 'vi')->firstOrFail();
+
+        $heroData->update([
+            'content' => json_encode([
+                'slides' => [[
+                    'title' => 'Ảnh hero đã cập nhật',
+                    'summary' => 'Dữ liệu được lưu từ form quản trị.',
+                    'image' => '/files/dn302-hero-updated.jpg',
+                ]],
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ]);
+
+        $this->get(route('site.home', ['locale' => 'vi']))
+            ->assertOk()
+            ->assertSee('/files/dn302-hero-updated.jpg', false)
+            ->assertSee('Ảnh hero đã cập nhật');
+    }
+
+    public function test_dn302_hero_copy_uses_saved_block_title_and_description(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->first()
+            ?? app(LandingPageBuilder::class)->seedHome('website-main', 'DN302');
+        $hero = $landing->blocks()->where('block_type', 'hero_slider')->firstOrFail();
+        $heroData = $hero->data()->where('locale', 'vi')->firstOrFail();
+        $heroData->update([
+            'title' => 'Tiêu đề hero lấy từ DB',
+            'description' => 'Mô tả hero lấy từ form sửa khối.',
+        ]);
+
+        $this->get(route('site.home', ['locale' => 'vi']))
+            ->assertOk()
+            ->assertSee('Tiêu đề hero lấy từ DB')
+            ->assertSee('Mô tả hero lấy từ form sửa khối.');
+    }
 }
