@@ -6,6 +6,7 @@ use App\Models\PayrollPeriod;
 use App\Support\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class PayrollPeriodController
@@ -19,7 +20,12 @@ class PayrollPeriodController
 
     public function store(Request $request): JsonResponse
     {
-        $period = PayrollPeriod::query()->create($this->validated($request));
+        $data = $this->validated($request);
+        $period = DB::transaction(function () use ($data) {
+            $data['code'] = $this->nextPeriodCode();
+
+            return PayrollPeriod::query()->create($data);
+        });
         $this->auditLogger->record('payroll.period.created', $period, null, $period->toArray(), moduleKey: 'payroll');
 
         return response()->json(['message' => 'Đã tạo kỳ lương.', 'data' => $period], 201);
@@ -57,10 +63,21 @@ class PayrollPeriodController
     private function validated(Request $request, ?PayrollPeriod $period = null): array
     {
         return $request->validate([
-            'code' => ['required', 'string', 'max:60', Rule::unique('payroll_periods', 'code')->ignore($period?->id)],
             'name' => ['required', 'string', 'max:255'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ]);
+    }
+
+    private function nextPeriodCode(): string
+    {
+        $lastNumber = PayrollPeriod::query()
+            ->where('code', 'like', 'LUONG%')
+            ->lockForUpdate()
+            ->pluck('code')
+            ->map(fn (string $code): int => preg_match('/^LUONG(\d+)$/', $code, $matches) ? (int) $matches[1] : 0)
+            ->max() ?? 0;
+
+        return 'LUONG'.str_pad((string) ($lastNumber + 1), 3, '0', STR_PAD_LEFT);
     }
 }

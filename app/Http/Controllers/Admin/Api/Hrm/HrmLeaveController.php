@@ -7,7 +7,9 @@ use App\Models\HrmLeaveRequest;
 use App\Support\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class HrmLeaveController
 {
@@ -43,9 +45,15 @@ class HrmLeaveController
             'leave_type' => ['required', Rule::in(['annual', 'sick', 'unpaid', 'maternity', 'paternity', 'other'])],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'days' => ['required', 'numeric', 'min:0.5', 'max:366'],
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $data['days'] = Carbon::parse($data['start_date'])->diffInDays(Carbon::parse($data['end_date'])) + 1;
+        if ($data['days'] > 366) {
+            throw ValidationException::withMessages([
+                'end_date' => ['Khoảng nghỉ phép không được vượt quá 366 ngày.'],
+            ]);
+        }
 
         $employeeId = $canCreateForOthers && ! empty($data['employee_id']) ? (int) $data['employee_id'] : $ownEmployee?->id;
         abort_if(! $employeeId, 422, 'Tài khoản chưa được liên kết với hồ sơ nhân sự.');
