@@ -46,7 +46,13 @@
                 @endif
                 <span>{{ $siteName }}</span>
             </a>
-            <p>{{ $description !== '' ? $description : themeT('DN302.footer.description', 'Giải pháp đồng bộ, tận tâm và bền vững cho mọi công trình.') }}</p>
+            <p>
+                @if($description !== '')
+                    {{ $description }}
+                @else
+                    @themeT('DN302.footer.description', 'Giải pháp đồng bộ, tận tâm và bền vững cho mọi công trình.')
+                @endif
+            </p>
             @if($socials->isNotEmpty())
                 <div class="dn-social-list" aria-label="Mạng xã hội">
                     @foreach($socials as $social)
