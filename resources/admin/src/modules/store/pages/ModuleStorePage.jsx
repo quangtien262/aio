@@ -30,16 +30,16 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
     const changelogModule = useMemo(() => modules.find((moduleCard) => moduleCard.key === changelogModuleKey) ?? null, [modules, changelogModuleKey]);
 
     return (
-        <Card title="App Store Flow">
+        <Card title="Quản lý App">
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
-                <Text className="card-label">Module Lifecycle</Text>
+                <Text className="card-label">VÒNG ĐỜI APP</Text>
                 <Paragraph style={{ marginBottom: 0 }}>
-                    Tach rieng danh sach module, panel hanh dong lifecycle va changelog/upgrade modal de shell admin chi tai phan can dung.
+                    Quản lý danh sách App, trạng thái cài đặt, kích hoạt, nâng cấp và nhật ký thay đổi ngay tại một nơi.
                 </Paragraph>
             </Space>
             <Row gutter={[16, 16]}>
                 <Col xs={24} xl={15}>
-                    <Suspense fallback={<Card loading title="Module Table" />}>
+                    <Suspense fallback={<Card loading title="Danh sách App" />}>
                         <ModuleStoreTable
                             modules={modules}
                             selectedModuleKey={selectedModuleKey}
@@ -50,7 +50,7 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                 </Col>
 
                 <Col xs={24} xl={9}>
-                    <Suspense fallback={<Card loading title="Module Lifecycle" />}>
+                    <Suspense fallback={<Card loading title="Quản lý App" />}>
                         <ModuleLifecycleActionPanel
                             moduleCard={selectedModule}
                             permissions={permissions}

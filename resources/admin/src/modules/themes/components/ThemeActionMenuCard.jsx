@@ -106,7 +106,7 @@ export default function ThemeActionMenuCard({
             onClick: () => onOpenDelete?.(theme),
             style: { marginBottom: 6 },
         },
-    ];
+    ].filter((item) => !(isSetupActive && item.key === 'setup'));
 
     return (
         <Card size="small" title="Actions">

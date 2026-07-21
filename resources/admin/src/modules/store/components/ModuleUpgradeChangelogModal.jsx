@@ -3,6 +3,7 @@ import Modal from 'antd/es/modal';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
+import { toAppTerminology } from '../utils/appTerminology';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -37,7 +38,7 @@ export default function ModuleUpgradeChangelogModal({ open, moduleCard, onCancel
                                 <div key={`${moduleCard.key}-${entry.version}`}>
                                     <Text strong>{entry.version}</Text>
                                     {entry.date ? <Text type="secondary"> {' '}({entry.date})</Text> : null}
-                                    <Paragraph style={{ marginBottom: 0 }}>{(entry.notes ?? []).join(' | ')}</Paragraph>
+                                    <Paragraph style={{ marginBottom: 0 }}>{(entry.notes ?? []).map(toAppTerminology).join(' | ')}</Paragraph>
                                 </div>
                             ))}
                         </Space>

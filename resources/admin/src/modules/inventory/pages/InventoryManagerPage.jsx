@@ -534,7 +534,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     );
 
     if (loading) {
-        return <Card loading title={moduleMenu?.label ?? 'Inventory'} />;
+        return <Card loading title={moduleMenu?.label ?? 'Quản lý kho'} />;
     }
 
     if (error) {
@@ -547,9 +547,9 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
             <Space direction="vertical" size={16} style={{ width: '100%' }}>
                 <Card>
                     <Space direction="vertical" size={4}>
-                        <Text className="card-label">Inventory</Text>
-                        <Title level={3} style={{ margin: 0 }}>{moduleMenu?.label ?? 'Tong quan kho'}</Title>
-                        <Text type="secondary">Quan ly nhieu kho, dong bo hang hoa tu CMS/Catalog va theo doi stock ledger.</Text>
+                        <Text className="card-label">QUẢN LÝ KHO</Text>
+                        <Title level={3} style={{ margin: 0 }}>{moduleMenu?.label ?? 'Tổng quan kho'}</Title>
+                        <Text type="secondary">Quản lý nhiều kho, đồng bộ hàng hóa từ CMS/Catalog và theo dõi lịch sử tồn kho.</Text>
                     </Space>
                 </Card>
 

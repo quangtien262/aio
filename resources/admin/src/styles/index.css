@@ -435,6 +435,25 @@ a {
     color: #0f4c81 !important;
 }
 
+.admin-header-settings-button.ant-btn {
+    width: 42px;
+    min-width: 42px;
+    padding-inline: 0;
+}
+
+.admin-header-settings-button.ant-btn-primary {
+    border-color: #0f6ba8;
+    background: #0f6ba8;
+    color: #fff;
+}
+
+.admin-header-settings-button.ant-btn-primary:hover,
+.admin-header-settings-button.ant-btn-primary:focus {
+    border-color: #0c5b91 !important;
+    background: #0c5b91 !important;
+    color: #fff !important;
+}
+
 .sidebar-brand-logo {
     display: block;
     max-width: 180px;

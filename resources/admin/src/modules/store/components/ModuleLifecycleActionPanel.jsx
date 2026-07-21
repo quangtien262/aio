@@ -7,6 +7,7 @@ import Modal from 'antd/es/modal';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
+import { toAppTerminology } from '../utils/appTerminology';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -30,7 +31,7 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
     const [submittingDemoData, setSubmittingDemoData] = useState(false);
 
     if (!moduleCard) {
-        return <Card title="Module Lifecycle" loading />;
+        return <Card title="Quản lý App" loading />;
     }
 
     const openDemoDataModal = () => {
@@ -65,14 +66,14 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
 
     return (
         <>
-            <Card title="Module Lifecycle">
+            <Card title="Quản lý App">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
                 <div>
                     <Space>
                         <Title level={4} style={{ margin: 0 }}>{moduleCard.name}</Title>
                         <Tag color={statusColorMap[moduleCard.status] ?? 'default'}>{moduleCard.status}</Tag>
                     </Space>
-                    <Paragraph style={{ marginBottom: 0 }}>{moduleCard.description}</Paragraph>
+                    <Paragraph style={{ marginBottom: 0 }}>{toAppTerminology(moduleCard.description)}</Paragraph>
                 </div>
 
                 <div>
@@ -85,7 +86,7 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
                     <Text strong>Phụ thuộc:</Text> {(moduleCard.dependencies ?? []).join(', ') || 'Không có'}
                 </div>
                 <div>
-                    <Text strong>Module phụ thuộc vào nó:</Text> {(moduleCard.dependents ?? []).map((item) => item.key).join(', ') || 'Không có'}
+                    <Text strong>App phụ thuộc vào App này:</Text> {(moduleCard.dependents ?? []).map((item) => item.key).join(', ') || 'Không có'}
                 </div>
                 <div>
                     <Text strong>Menu:</Text> {(moduleCard.menus ?? []).map((item) => item.label).join(', ') || 'Không có'}
@@ -130,7 +131,7 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
                 {Object.entries(moduleCard.blockers ?? {}).map(([actionKey, blockers]) => (
                     blockers?.length ? (
                         <Paragraph key={actionKey} type="secondary" style={{ marginBottom: 0 }}>
-                            <Text strong>{actionKey}:</Text> {blockers.join(' | ')}
+                            <Text strong>{actionKey}:</Text> {blockers.map(toAppTerminology).join(' | ')}
                         </Paragraph>
                     ) : null
                 ))}

@@ -35,12 +35,12 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
 
     const onAction = (moduleKey, action, payload = null) => {
         const endpointMap = {
-            install: { url: `/admin/api/modules/${moduleKey}/install`, method: 'POST', success: 'Đã cài đặt module.' },
-            enable: { url: `/admin/api/modules/${moduleKey}/enable`, method: 'POST', success: 'Đã kích hoạt module.' },
-            disable: { url: `/admin/api/modules/${moduleKey}/disable`, method: 'POST', success: 'Đã tắt module.' },
-            upgrade: { url: `/admin/api/modules/${moduleKey}/upgrade`, method: 'POST', success: 'Đã nâng cấp module.' },
-            'demo-data': { url: `/admin/api/modules/${moduleKey}/demo-data`, method: 'POST', success: 'Đã tạo data test cho module.' },
-            uninstall: { url: `/admin/api/modules/${moduleKey}`, method: 'DELETE', success: 'Đã gỡ module.' },
+            install: { url: `/admin/api/modules/${moduleKey}/install`, method: 'POST', success: 'Đã cài đặt App.' },
+            enable: { url: `/admin/api/modules/${moduleKey}/enable`, method: 'POST', success: 'Đã kích hoạt App.' },
+            disable: { url: `/admin/api/modules/${moduleKey}/disable`, method: 'POST', success: 'Đã tắt App.' },
+            upgrade: { url: `/admin/api/modules/${moduleKey}/upgrade`, method: 'POST', success: 'Đã nâng cấp App.' },
+            'demo-data': { url: `/admin/api/modules/${moduleKey}/demo-data`, method: 'POST', success: 'Đã tạo dữ liệu mẫu cho App.' },
+            uninstall: { url: `/admin/api/modules/${moduleKey}`, method: 'DELETE', success: 'Đã gỡ App.' },
         };
 
         const target = endpointMap[action];
@@ -50,7 +50,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
         }
 
         const successMessage = action === 'demo-data'
-            ? (payload?.remove_existing === false ? 'Đã thêm mới một batch data test cho module.' : 'Đã thay thế data demo cũ bằng batch mới.')
+            ? (payload?.remove_existing === false ? 'Đã thêm một nhóm dữ liệu mẫu mới cho App.' : 'Đã thay thế dữ liệu mẫu cũ bằng nhóm mới.')
             : target.success;
 
         return runAdminAction(async () => {
@@ -76,7 +76,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <div>
                             <Text className="card-label">Setup Return</Text>
-                            <Paragraph style={{ marginBottom: 0 }}>Sau khi hoàn tất thao tác module cho bước này, hệ thống sẽ tự quay lại Cài đặt website.</Paragraph>
+                            <Paragraph style={{ marginBottom: 0 }}>Sau khi hoàn tất thao tác App cho bước này, hệ thống sẽ tự quay lại Cài đặt website.</Paragraph>
                         </div>
                         <Button onClick={() => navigate(returnTo)}>Quay lại Cài đặt website</Button>
                     </Space>

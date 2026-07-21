@@ -664,6 +664,35 @@ export default function AdminLayout() {
                         </Dropdown>
                     ) : (
                         <Space size={10} className="admin-header-actions-desktop">
+                            <Select
+                                value={selectedAdminWebsiteKey}
+                                style={{ minWidth: 220 }}
+                                popupMatchSelectWidth={false}
+                                showSearch
+                                optionFilterProp="label"
+                                filterOption={(input, option) => (
+                                    normalizeWebsiteSearch(option?.label).includes(normalizeWebsiteSearch(input))
+                                )}
+                                placeholder="Tìm theo domain"
+                                onChange={(value) => {
+                                    setSelectedAdminWebsiteKey(value);
+                                    window.localStorage.setItem('aio.admin.websiteKey', value);
+
+                                    try {
+                                        Object.keys(window.sessionStorage)
+                                            .filter((key) => key.startsWith('admin.route.'))
+                                            .forEach((key) => window.sessionStorage.removeItem(key));
+                                    } catch {
+                                        // Ignore storage cleanup failures.
+                                    }
+
+                                    window.location.reload();
+                                }}
+                                options={(currentAdmin?.site_options?.length ? currentAdmin.site_options : [{ website_key: selectedAdminWebsiteKey, label: selectedAdminWebsiteKey }]).map((site) => ({
+                                    value: site.website_key,
+                                    label: site.domain || (site.website_key === 'website-main' ? 'Website mặc định' : 'Chưa cấu hình domain'),
+                                }))}
+                            />
                             <Dropdown
                                 menu={{
                                     items: sectionDropdownItems,
@@ -708,34 +737,13 @@ export default function AdminLayout() {
                                     <span className="admin-section-dropdown-caret" aria-hidden="true" />
                                 </Button>
                             </Dropdown>
-                            <Select
-                                value={selectedAdminWebsiteKey}
-                                style={{ minWidth: 220 }}
-                                popupMatchSelectWidth={false}
-                                showSearch
-                                optionFilterProp="label"
-                                filterOption={(input, option) => (
-                                    normalizeWebsiteSearch(option?.label).includes(normalizeWebsiteSearch(input))
-                                )}
-                                placeholder="Tìm theo domain"
-                                onChange={(value) => {
-                                    setSelectedAdminWebsiteKey(value);
-                                    window.localStorage.setItem('aio.admin.websiteKey', value);
-
-                                    try {
-                                        Object.keys(window.sessionStorage)
-                                            .filter((key) => key.startsWith('admin.route.'))
-                                            .forEach((key) => window.sessionStorage.removeItem(key));
-                                    } catch {
-                                        // Ignore storage cleanup failures.
-                                    }
-
-                                    window.location.reload();
-                                }}
-                                options={(currentAdmin?.site_options?.length ? currentAdmin.site_options : [{ website_key: selectedAdminWebsiteKey, label: selectedAdminWebsiteKey }]).map((site) => ({
-                                    value: site.website_key,
-                                    label: site.domain || (site.website_key === 'website-main' ? 'Website mặc định' : 'Chưa cấu hình domain'),
-                                }))}
+                            <Button
+                                type={location.pathname === '/admin/setup' ? 'primary' : 'default'}
+                                className="admin-header-utility-button admin-header-settings-button"
+                                icon={<SettingOutlined />}
+                                href="/admin/setup"
+                                aria-label="Cài đặt website"
+                                title="Cài đặt website"
                             />
                             <Button href="/" target="_blank" rel="noopener noreferrer" className="admin-header-utility-button" icon={<HomeOutlined />} aria-label="Website">Website</Button>
 

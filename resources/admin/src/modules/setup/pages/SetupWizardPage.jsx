@@ -17,8 +17,7 @@ import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import ThemeActionMenuCard from '../../themes/components/ThemeActionMenuCard';
+import { useSearchParams } from 'react-router-dom';
 import ThemeActionOverlayHost from '../../themes/components/ThemeActionOverlayHost';
 import useThemeActionOverlayController from '../../themes/hooks/useThemeActionOverlayController';
 
@@ -71,7 +70,6 @@ function ProfileFieldLabel({ children, tooltip }) {
 
 export default function SetupWizardPage({ setup, themes = [], activeTheme = null, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps, canViewThemeManager = false, canManageThemeActions = false, frontendLocale = 'vi', defaultFrontendLocale = 'vi', onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, runAdminAction, callAdminApi }) {
     const { message } = App.useApp();
-    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const themeActionController = useThemeActionOverlayController();
     const [siteName, setSiteName] = useState('');
@@ -307,29 +305,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                 </Space>
             </Card>
 
-            <div className="setup-shell">
-                <div className="setup-side-column">
-                    <div style={{ marginBottom: 12 }}>
-                        <ThemeActionMenuCard
-                            theme={activeTheme}
-                            canViewThemeManager={canViewThemeManager}
-                            canManageThemeActions={canManageThemeActions}
-                            frontendLocale={frontendLocale}
-                            defaultFrontendLocale={defaultFrontendLocale}
-                            onOpenThemeManager={() => navigate('../themes')}
-                            onOpenLocale={themeActionController.openLocale}
-                            onOpenPalette={themeActionController.openPalette}
-                            onOpenThemeTranslations={themeActionController.openThemeTranslations}
-                            onOpenFrontendTranslations={themeActionController.openFrontendTranslations}
-                            onOpenDemoCreate={themeActionController.openDemoCreate}
-                            onOpenSetup={() => navigate('../setup')}
-                            onOpenRebuild={themeActionController.openRebuild}
-                            onOpenDelete={themeActionController.openDelete}
-                            isSetupActive
-                        />
-                    </div>
-                </div>
-                <div className="setup-main-column">
+            <div className="setup-main-column">
                     <Card className="setup-profile-card">
                         <div className="setup-profile-hero">
                             <div className="setup-profile-logo">
@@ -685,7 +661,6 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                         onSaveThemePalette={onSaveThemePalette}
                         onClose={themeActionController.closeOverlay}
                     />
-                </div>
             </div>
         </Space>
     );

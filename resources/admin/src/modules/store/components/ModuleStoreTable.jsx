@@ -14,10 +14,18 @@ const statusColorMap = {
     upgrade_pending: 'gold',
 };
 
+const statusLabelMap = {
+    available: 'Có thể cài đặt',
+    installed: 'Đã cài đặt',
+    enabled: 'Đang bật',
+    disabled: 'Đang tắt',
+    upgrade_pending: 'Chờ nâng cấp',
+};
+
 export default function ModuleStoreTable({ modules, selectedModuleKey, onSelectModule, onOpenChangelog }) {
     const columns = [
         {
-            title: 'Module',
+            title: 'App',
             key: 'module',
             render: (_, moduleCard) => (
                 <Space direction="vertical" size={0}>
@@ -27,33 +35,33 @@ export default function ModuleStoreTable({ modules, selectedModuleKey, onSelectM
             ),
         },
         {
-            title: 'Status',
+            title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
-            render: (status) => <Tag color={statusColorMap[status] ?? 'default'}>{status}</Tag>,
+            render: (status) => <Tag color={statusColorMap[status] ?? 'default'}>{statusLabelMap[status] ?? status}</Tag>,
         },
         {
-            title: 'Version',
+            title: 'Phiên bản',
             key: 'version',
             render: (_, moduleCard) => `${moduleCard.installed_version ?? 'N/A'} / ${moduleCard.latest_version}`,
         },
         {
-            title: 'Dependencies',
+            title: 'Phụ thuộc',
             key: 'dependencies',
-            render: (_, moduleCard) => (moduleCard.dependencies ?? []).join(', ') || 'None',
+            render: (_, moduleCard) => (moduleCard.dependencies ?? []).join(', ') || 'Không có',
         },
         {
-            title: 'Upgrade',
+            title: 'Nâng cấp',
             key: 'upgrade',
             render: (_, moduleCard) => (
                 <Space>
                     {moduleCard.upgrade_available ? (
-                        <Tag color="gold">Upgrade available</Tag>
+                        <Tag color="gold">Có bản nâng cấp</Tag>
                     ) : (
-                        <Tag>Up to date</Tag>
+                        <Tag>Đã mới nhất</Tag>
                     )}
                     <Button size="small" onClick={() => onOpenChangelog?.(moduleCard)}>
-                        Changelog
+                        Nhật ký thay đổi
                     </Button>
                 </Space>
             ),

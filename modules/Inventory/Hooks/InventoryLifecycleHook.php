@@ -63,8 +63,8 @@ class InventoryLifecycleHook implements ModuleLifecycleHook
         $role = Role::query()->firstOrCreate(
             ['key' => 'inventory.manager'],
             [
-                'name' => 'Inventory Manager',
-                'description' => 'Quan ly kho, hang hoa, ton kho va giao dich nhap xuat chuyen kho.',
+                'name' => 'Quản lý kho',
+                'description' => 'Quản lý kho, hàng hóa, tồn kho và giao dịch nhập, xuất, chuyển kho.',
             ],
         );
 
