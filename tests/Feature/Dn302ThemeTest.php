@@ -329,12 +329,12 @@ class Dn302ThemeTest extends TestCase
 
     public function test_dn302_editors_expose_value_button_name_and_link_fields(): void
     {
-        $inlineEditor = file_get_contents(theme_path('XD0302/views/partials/scripts.blade.php'));
+        $inlineEditor = file_get_contents(base_path('themes/XD0302/views/partials/scripts.blade.php'));
         $adminEditor = file_get_contents(resource_path('admin/src/modules/cms/components/LandingBlockManagerDrawer.jsx'));
 
         $this->assertStringContainsString("['title', 'Tên nút']", $inlineEditor);
         $this->assertStringContainsString("['url', 'Link khi click']", $inlineEditor);
-        $this->assertStringContainsString('xdAboutUsesValueButtons', file_get_contents(theme_path('DN302/views/home.blade.php')));
+        $this->assertStringContainsString('xdAboutUsesValueButtons', file_get_contents(base_path('themes/DN302/views/home.blade.php')));
         $this->assertStringContainsString("['title', 'Tên nút']", $adminEditor);
         $this->assertStringContainsString("['url', 'Link khi click']", $adminEditor);
     }
