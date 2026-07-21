@@ -24,10 +24,12 @@ class Admin extends Authenticatable
     /** @use HasFactory<AdminFactory> */
     use HasFactory, Notifiable;
 
+    public const SYSTEM_OWNER_ID = 1;
+
     protected static function booted(): void
     {
         static::saving(function (Admin $admin): void {
-            if ((int) $admin->getKey() === 1) {
+            if ((int) $admin->getKey() === self::SYSTEM_OWNER_ID) {
                 $admin->is_system_owner = true;
                 $admin->is_active = true;
                 $admin->status = 'active';
@@ -36,7 +38,7 @@ class Admin extends Authenticatable
             }
         });
 
-        static::deleting(fn (Admin $admin): bool => (int) $admin->getKey() !== 1);
+        static::deleting(fn (Admin $admin): bool => (int) $admin->getKey() !== self::SYSTEM_OWNER_ID);
     }
 
     protected static function newFactory(): AdminFactory
@@ -149,7 +151,7 @@ class Admin extends Authenticatable
 
     public function isSystemOwner(): bool
     {
-        return (int) $this->getKey() === 1 || (bool) $this->is_system_owner;
+        return (int) $this->getKey() === self::SYSTEM_OWNER_ID || (bool) $this->is_system_owner;
     }
 
     public function isSuperAdmin(): bool

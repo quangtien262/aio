@@ -59,7 +59,7 @@
                         @endguest
                     @endguest
                 </nav>
-                <a class="dn-consult" href="{{ route('site.contact') }}">@themeT('DN302.header.consultation', 'Đăng ký tư vấn')</a>
+                <a class="dn-consult" href="{{ route('site.contact') }}" data-dn-consult-open>@themeT('DN302.header.consultation', 'Đăng ký tư vấn')</a>
             </div>
         </div>
     </div>

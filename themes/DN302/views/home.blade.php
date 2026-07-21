@@ -28,6 +28,20 @@
             ['title' => 'Không gian mở, sống trọn từng khoảnh khắc', 'summary' => 'Giải pháp nhôm kính cao cấp được thiết kế riêng cho phong cách sống hiện đại.', 'image' => $villa],
         ]);
     }
+    $heroSlides = $slides;
+    $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
+    $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
+    $blockSourcePreviewUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.source-preview', ['block' => '__BLOCK_ID__']) : '';
+    $blockPayload = $canEditLanding ? $blocks->filter(fn (array $block): bool => filled($block['id'] ?? null))->keyBy('id')->toArray() : [];
+    $editorLocales = $canEditLanding ? collect(\App\Support\FrontendLocalization::localeOptions())
+        ->filter(fn (array $locale): bool => (bool) ($locale['is_active'] ?? false))
+        ->map(fn (array $locale): array => [
+            'code' => (string) ($locale['code'] ?? ''),
+            'label' => (string) (($locale['native_name'] ?? null) ?: ($locale['name'] ?? $locale['code'] ?? '')),
+        ])
+        ->filter(fn (array $locale): bool => $locale['code'] !== '')
+        ->values()
+        ->all() : [];
 @endphp
 @extends('theme-dn302::layout')
 @section('title', data_get($landingPage ?? [], 'meta_title', data_get($themeShellData ?? [], 'branding.company_name', data_get($siteProfile ?? [], 'site_name', 'Website'))))
@@ -169,7 +183,7 @@
             <header class="dn-heading center" data-dn-reveal="up"><p class="dn-eyebrow">{{ data_get($contact, 'data.subtitle', 'Liên hệ') }}</p><h2 class="dn-title">{{ data_get($contact, 'data.title', 'Đăng ký tư vấn dịch vụ') }}</h2></header>
             <div class="dn-contact-grid">
                 <aside class="dn-contact-info" data-dn-reveal="left"><img src="{{ data_get($contact, 'media.image', $living) }}" alt="Liên hệ Janelas"><div class="dn-contact-panel"><p><i class="fa-solid fa-clock"></i><span>Thời gian làm việc<br><strong>Thứ 2 - thứ 7 (9:00 - 17:00)</strong></span></p><p><i class="fa-solid fa-phone"></i><span>Hotline<br><strong>1900 9477</strong></span></p></div></aside>
-                <div class="dn-contact-form" data-dn-reveal="right"><form method="POST" action="{{ route('site.contact.submit') }}">@csrf<input type="hidden" name="source" value="dn302-landing"><input name="name" required placeholder="* Họ và tên"><input type="email" name="email" required placeholder="* Email"><input name="phone" required placeholder="* Số điện thoại"><input name="address" placeholder="Địa chỉ"><textarea name="message" required minlength="10" placeholder="* Nội dung"></textarea><button class="dn-btn" type="submit">@themeT('DN302.common.send', 'Gửi yêu cầu')</button></form></div>
+                <div class="dn-contact-form" data-dn-reveal="right"><form method="POST" action="{{ route('site.contact.submit') }}">@csrf<input type="hidden" name="source" value="contact"><input name="name" required placeholder="* Họ và tên"><input type="email" name="email" required placeholder="* Email"><input name="phone" required placeholder="* Số điện thoại"><input name="address" placeholder="Địa chỉ"><textarea name="message" required minlength="10" placeholder="* Nội dung"></textarea><button class="dn-btn" type="submit">@themeT('DN302.common.send', 'Gửi yêu cầu')</button></form></div>
             </div>
         </div>
     </section>
@@ -183,3 +197,29 @@
     </section>
 </main>
 @endsection
+
+@if ($canEditLanding)
+    @push('scripts')
+        <script>
+            (() => {
+                const blockIds = @json($blocks
+                    ->filter(fn (array $block): bool => filled($block['id'] ?? null) && filled($block['block_type'] ?? null))
+                    ->mapWithKeys(fn (array $block): array => [(string) $block['block_type'] => (string) $block['id']])
+                    ->all());
+
+                document.querySelectorAll('.xd-landing-block[data-block-type]').forEach((section) => {
+                    const blockId = blockIds[section.dataset.blockType];
+                    if (!blockId || section.querySelector('[data-xd-edit-block]')) return;
+
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'xd-edit-block';
+                    button.dataset.xdEditBlock = blockId;
+                    button.textContent = 'Sửa khối';
+                    section.appendChild(button);
+                });
+            })();
+        </script>
+        @include('theme-xd0302::partials.scripts')
+    @endpush
+@endif

@@ -25,8 +25,8 @@ class AdminAccountController
     public function index(): JsonResponse
     {
         $admins = Admin::query()
+            ->where('id', '!=', Admin::SYSTEM_OWNER_ID)
             ->with(['roles:id,name,key,is_system', 'roleAssignments:id,admin_id,role_id,scope_type,scope_value,expires_at'])
-            ->orderByDesc('is_system_owner')
             ->orderBy('name')
             ->get(['id', 'name', 'username', 'email', 'status', 'is_active', 'is_system_owner', 'must_change_password', 'locked_at', 'locked_reason', 'last_login_at', 'last_login_ip'])
             ->map(fn (Admin $admin): array => $this->serializeAdmin($admin))

@@ -18,6 +18,7 @@ const emptyAccountForm = {
     is_system_owner: false,
     assignments: [],
 };
+const SYSTEM_OWNER_ADMIN_ID = 1;
 
 export default function AdminAccountsPage({
     adminAccounts,
@@ -42,6 +43,10 @@ export default function AdminAccountsPage({
     const [passwordTarget, setPasswordTarget] = useState(null);
     const [lockTarget, setLockTarget] = useState(null);
     const drawerAdminId = searchParams.get('admin');
+    const visibleAdminAccounts = useMemo(
+        () => (adminAccounts ?? []).filter((admin) => Number(admin.id) !== SYSTEM_OWNER_ADMIN_ID),
+        [adminAccounts],
+    );
 
     const roleOptions = useMemo(() => (roles ?? []).map((role) => ({
         label: role.name,
@@ -162,21 +167,21 @@ export default function AdminAccountsPage({
             return null;
         }
 
-        return (adminAccounts ?? []).find((admin) => String(admin.id) === drawerAdminId) ?? null;
-    }, [adminAccounts, drawerAdminId]);
+        return visibleAdminAccounts.find((admin) => String(admin.id) === drawerAdminId) ?? null;
+    }, [drawerAdminId, visibleAdminAccounts]);
 
     useEffect(() => {
-        if (!drawerAdminId || detailsTarget || (adminAccounts ?? []).length === 0) {
+        if (!drawerAdminId || detailsTarget || visibleAdminAccounts.length === 0) {
             return;
         }
 
         const nextParams = new URLSearchParams(searchParams);
         nextParams.delete('admin');
         setSearchParams(nextParams, { replace: true });
-    }, [adminAccounts, detailsTarget, drawerAdminId, searchParams, setSearchParams]);
+    }, [detailsTarget, drawerAdminId, searchParams, setSearchParams, visibleAdminAccounts]);
 
     const adminStats = useMemo(() => {
-        const accounts = adminAccounts ?? [];
+        const accounts = visibleAdminAccounts;
 
         return {
             total: accounts.length,
@@ -184,14 +189,14 @@ export default function AdminAccountsPage({
             locked: accounts.filter((admin) => admin.is_locked).length,
             withScopes: accounts.filter((admin) => (admin.assignments ?? []).some((assignment) => assignment.scope_type === 'website')).length,
         };
-    }, [adminAccounts]);
+    }, [visibleAdminAccounts]);
 
     return (
         <Row gutter={[16, 16]}>
             <Col span={24}>
                 <Suspense fallback={<Card loading title="Admin Accounts" />}>
                     <AdminAccountsTableCard
-                        adminAccounts={adminAccounts}
+                        adminAccounts={visibleAdminAccounts}
                         roles={roles}
                         scopeTypes={scopeTypes}
                         stats={adminStats}

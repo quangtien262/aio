@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
+use App\Models\Admin;
 use App\Models\CatalogProduct;
 use App\Models\CmsPost;
 use App\Models\LandingPage;
@@ -64,7 +65,13 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('data-dn-auth-modal', false)
             ->assertSee('data-dn-auth-panel="login"', false)
             ->assertSee('data-dn-auth-panel="register"', false)
-            ->assertSee('name="two_factor_code"', false);
+            ->assertSee('name="two_factor_code"', false)
+            ->assertSee('data-dn-consult-open', false)
+            ->assertSee('data-dn-consult-modal', false)
+            ->assertSee('data-dn-consult-form', false)
+            ->assertSee('Gửi yêu cầu tư vấn')
+            ->assertSee('name="source" value="contact"', false)
+            ->assertDontSee('name="source" value="dn302-landing"', false);
 
         $this->assertDatabaseHas('landing_pages', ['theme_key' => 'DN302', 'slug' => 'home', 'is_home' => true]);
         $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->firstOrFail();
@@ -75,5 +82,18 @@ class Dn302ThemeTest extends TestCase
         $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))->assertOk();
         $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))->assertOk();
         $this->get(route('site.contact', ['locale' => 'vi']))->assertOk()->assertSee('Đăng ký tư vấn');
+    }
+
+    public function test_dn302_storefront_admin_mode_renders_landing_block_editor(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $admin = Admin::factory()->create();
+        $this->actingAs($admin, 'admin');
+
+        $this->get(route('site.home', ['locale' => 'vi', 'mod' => 'admin']))
+            ->assertOk()
+            ->assertSee('data-xd-edit-block', false)
+            ->assertSee('data-xd-editor', false)
+            ->assertSee('Sửa khối');
     }
 }

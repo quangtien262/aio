@@ -49,6 +49,24 @@ class AccessControlSecurityTest extends TestCase
         $this->assertDatabaseHas('admins', ['id' => $owner->id, 'is_system_owner' => true, 'status' => 'active']);
     }
 
+    public function test_system_owner_is_never_returned_in_admin_account_list(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $owner = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
+        $visibleAdmin = Admin::factory()->create([
+            'name' => 'Content Manager',
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        $this->actingAs($owner, 'admin');
+
+        $response = $this->getJson('/admin/api/admins?search=admin')->assertOk();
+        $adminIds = collect($response->json('data.admins'))->pluck('id')->map(fn ($id): int => (int) $id);
+
+        $this->assertFalse($adminIds->contains(Admin::SYSTEM_OWNER_ID));
+        $this->assertTrue($adminIds->contains($visibleAdmin->id));
+    }
+
     public function test_role_assignment_is_bound_to_its_website_scope(): void
     {
         $this->seed(DatabaseSeeder::class);

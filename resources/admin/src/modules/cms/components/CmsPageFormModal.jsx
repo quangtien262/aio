@@ -495,9 +495,9 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
             title={editingPage?.id ? 'Cập nhật trang CMS' : 'Tạo trang CMS'}
             open={open}
             onClose={handleCancel}
-            width="100%"
+            width="min(1280px, 90vw)"
             destroyOnHidden
-            className="cms-page-drawer"
+            className="cms-page-drawer cms-page-form-drawer"
             extra={(
                 <Space>
                     <Button onClick={handleCancel}>Hủy</Button>

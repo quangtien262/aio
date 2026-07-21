@@ -30,11 +30,6 @@ export default function AccessControlPage({ accessControl, onCreateRole, onUpdat
         display_name: formatPermissionLabel(permission.key),
     })), [permissions]);
 
-    const permissionOptions = useMemo(() => normalizedPermissions.map((permission) => ({
-        label: `${permission.display_name} (${permission.key})`,
-        value: permission.id,
-    })), [normalizedPermissions]);
-
     const groupedPermissions = useMemo(() => normalizedPermissions.reduce((carry, permission) => {
         const groupKey = permission.module_key ?? 'platform';
         return {
@@ -79,17 +74,17 @@ export default function AccessControlPage({ accessControl, onCreateRole, onUpdat
             <Col span={24}>
                 <Card>
                     <Space direction="vertical" size={4}>
-                        <Text className="card-label">Access Control</Text>
-                        <Title level={3}>RBAC UI cho admin, role và permission</Title>
+                        <Text className="card-label">Quản trị truy cập</Text>
+                        <Title level={3}>Vai trò và quyền sử dụng hệ thống</Title>
                         <Paragraph>
-                            Quản lý role theo module, gán role cho admin và kiểm soát quyền truy cập thực tế ngay trong admin shell.
+                            Tạo vai trò theo từng nhóm công việc, sau đó gán cho tài khoản quản trị để kiểm soát phạm vi sử dụng.
                         </Paragraph>
                     </Space>
                 </Card>
             </Col>
 
             <Col xs={24} xl={15}>
-                <Suspense fallback={<Card loading title="Role Management" />}>
+                <Suspense fallback={<Card loading title="Danh sách vai trò" />}>
                     <RoleTableCard
                         roles={roles}
                         canManageRoles={canManageRoles}
@@ -101,7 +96,7 @@ export default function AccessControlPage({ accessControl, onCreateRole, onUpdat
             </Col>
 
             <Col xs={24} xl={9}>
-                <Suspense fallback={<Card loading title="Permission Catalog" />}>
+                <Suspense fallback={<Card loading title="Danh mục quyền" />}>
                     <PermissionCatalogCard groupedPermissions={groupedPermissions} />
                 </Suspense>
             </Col>
@@ -112,7 +107,7 @@ export default function AccessControlPage({ accessControl, onCreateRole, onUpdat
                         open={roleModalOpen}
                         canManageRoles={canManageRoles}
                         editingRole={editingRole}
-                        permissionOptions={permissionOptions}
+                        permissions={normalizedPermissions}
                         onCancel={handleCancelRoleModal}
                         onSubmit={handleSaveRole}
                     />

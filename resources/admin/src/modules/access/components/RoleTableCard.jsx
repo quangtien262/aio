@@ -10,30 +10,30 @@ const { Text } = Typography;
 export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onEditRole, onDeleteRole }) {
     const roleColumns = [
         {
-            title: 'Role',
+            title: 'Vai trò',
             dataIndex: 'name',
             key: 'name',
             render: (_, role) => (
                 <Space direction="vertical" size={0}>
                     <Text strong>{role.name}</Text>
-                    <Text type="secondary">{role.key}</Text>
+                    <Text type="secondary">Mã: {role.key}</Text>
                     {role.is_system ? <Text type="warning">Vai trò hệ thống · không thể chỉnh sửa</Text> : null}
                 </Space>
             ),
         },
         {
-            title: 'Description',
+            title: 'Mô tả trách nhiệm',
             dataIndex: 'description',
             key: 'description',
             render: (value) => value || 'Không có mô tả',
         },
         {
-            title: 'Permissions',
+            title: 'Số quyền',
             dataIndex: 'permissions_count',
             key: 'permissions_count',
         },
         {
-            title: 'Admins',
+            title: 'Tài khoản',
             dataIndex: 'admins_count',
             key: 'admins_count',
         },
@@ -62,8 +62,8 @@ export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onE
     return (
         <Card
             className="admin-table-card"
-            title="Role Management"
-            extra={<Button type="primary" disabled={!canManageRoles} onClick={onCreateRole}>Tạo role</Button>}
+            title="Danh sách vai trò"
+            extra={<Button type="primary" disabled={!canManageRoles} onClick={onCreateRole}>Tạo vai trò</Button>}
         >
             <Table rowKey="id" columns={roleColumns} dataSource={roles} pagination={false} scroll={{ x: 760 }} />
         </Card>

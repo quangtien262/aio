@@ -590,6 +590,13 @@ a {
     padding-bottom: 32px;
 }
 
+@media (max-width: 767px) {
+    .cms-page-form-drawer {
+        width: 100vw !important;
+        max-width: 100vw;
+    }
+}
+
 .cms-post-form-shell {
     display: grid;
     gap: 16px;
@@ -1931,6 +1938,209 @@ a {
 
 .admin-responsive-table .ant-btn-link {
     white-space: normal;
+}
+
+.role-form-drawer .ant-drawer-header {
+    min-height: 18px;
+    padding: 14px 24px 0;
+    border-bottom: 0;
+}
+
+.role-form-drawer .ant-drawer-body {
+    padding: 8px 28px 32px;
+    background: #f7faf9;
+}
+
+.role-form-drawer .ant-drawer-footer {
+    padding: 14px 28px;
+    background: #fff;
+}
+
+.role-drawer-footer,
+.role-drawer-heading,
+.role-permission-toolbar,
+.role-permission-module__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.role-drawer-heading {
+    align-items: flex-start;
+    margin-bottom: 22px;
+}
+
+.role-drawer-heading .ant-typography {
+    margin-bottom: 4px;
+}
+
+.role-form-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 18px;
+    padding: 22px 22px 4px;
+    border: 1px solid #dfe8e5;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 10px 32px rgba(16, 48, 41, 0.04);
+}
+
+.role-description-field {
+    grid-column: 1 / -1;
+}
+
+.role-form-info-grid .ant-form-item-label > label:has(.role-key-label) {
+    width: 100%;
+}
+
+.role-key-label,
+.role-key-auto {
+    display: inline-flex;
+    align-items: center;
+}
+
+.role-key-label {
+    width: 100%;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.role-key-auto {
+    gap: 7px;
+    color: #65746f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.role-permission-section {
+    margin-top: 22px;
+}
+
+.role-permission-toolbar {
+    align-items: flex-end;
+    padding: 18px 20px;
+    border: 1px solid #dfe8e5;
+    border-radius: 18px 18px 0 0;
+    background: #fff;
+}
+
+.role-permission-toolbar .ant-typography {
+    margin: 0;
+}
+
+.role-permission-search {
+    width: 240px;
+}
+
+.role-permission-modules {
+    display: grid;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid #dfe8e5;
+    border-top: 0;
+    border-radius: 0 0 18px 18px;
+    background: #eef4f2;
+}
+
+.role-permission-module {
+    overflow: hidden;
+    border: 1px solid #dbe6e2;
+    border-radius: 15px;
+    background: #fff;
+}
+
+.role-permission-module__head {
+    padding: 15px 18px;
+    border-bottom: 1px solid #e8efed;
+    background: linear-gradient(135deg, #f8fbfa, #f1f7f5);
+}
+
+.role-permission-module__head .ant-typography {
+    margin: 0;
+}
+
+.role-permission-module .ant-table-thead > tr > th {
+    color: #53625e;
+    background: #fbfcfc;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.role-permission-module .ant-table-cell {
+    vertical-align: middle;
+}
+
+.role-permission-module .ant-table-tbody > tr:hover > td {
+    background: #f5faf8 !important;
+}
+
+.role-permission-cell {
+    width: 100%;
+}
+
+.role-permission-cell .ant-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-inline-start: 0;
+}
+
+.role-permission-cell .ant-checkbox-wrapper:has(.ant-tag) {
+    justify-content: flex-start;
+}
+
+.role-permission-cell--left .ant-checkbox-wrapper {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.role-permission-check-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.role-permission-empty {
+    padding: 48px 20px;
+    border-radius: 14px;
+    color: #72817d;
+    background: #fff;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .role-form-drawer .ant-drawer-body {
+        padding: 6px 16px 24px;
+    }
+
+    .role-form-info-grid {
+        grid-template-columns: 1fr;
+        padding: 18px 16px 2px;
+    }
+
+    .role-description-field {
+        grid-column: auto;
+    }
+
+    .role-drawer-heading,
+    .role-permission-toolbar,
+    .role-drawer-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .role-permission-toolbar .ant-space,
+    .role-permission-search {
+        width: 100%;
+    }
+
+    .role-drawer-footer .ant-space {
+        justify-content: flex-end;
+    }
 }
 
 @media (max-width: 992px) {

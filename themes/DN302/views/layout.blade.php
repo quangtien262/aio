@@ -19,6 +19,10 @@
         @include('theme-dn302::partials.footer')
     </div>
     @include('theme-dn302::partials.auth-modal')
+    @include('theme-dn302::partials.consultation-modal')
+    @if ($canEditLanding ?? false)
+        @include('theme-xd0302::partials.inline-editor')
+    @endif
     @include('theme-dn302::partials.shell-scripts')
     @stack('scripts')
 </body>
