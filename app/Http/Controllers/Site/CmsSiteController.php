@@ -20,6 +20,7 @@ use App\Models\CmsProject;
 use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
+use App\Models\ContactInquiry;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\SiteBanner;
@@ -463,6 +464,10 @@ class CmsSiteController
             'message' => ['required', 'string', 'min:10', 'max:5000'],
         ]);
 
+        $siteContext = app(SiteContext::class);
+        $site = $siteContext->site();
+        $websiteKey = $siteContext->websiteKey();
+        $submittedHost = strtolower($request->getHost());
         $siteProfile = $this->currentSiteProfile();
         $branding = array_merge([
             'company_name' => $siteProfile?->site_name ?? 'AIO Website',
@@ -478,10 +483,15 @@ class CmsSiteController
             : ($source === 'quote_modal' ? 'Yeu cau bao gia tu website' : 'Yeu cau tu van tu website');
         $payload['submitted_at'] = now()->toDateTimeString();
         $payload['page_url'] = $request->headers->get('referer', $request->fullUrl());
+        $payload['website_key'] = $websiteKey;
+        $payload['submitted_host'] = $submittedHost;
+
+        $order = null;
 
         if ($source === 'quote_modal') {
-            Order::query()->create([
+            $order = Order::query()->create([
                 'order_code' => 'QTE'.now()->format('ymdHis').str_pad((string) random_int(0, 999), 3, '0', STR_PAD_LEFT),
+                'website_key' => $websiteKey,
                 'customer_id' => $request->user('customer')?->id,
                 'status' => 'pending',
                 'customer_name' => $payload['name'],
@@ -496,6 +506,27 @@ class CmsSiteController
                 'placed_at' => now(),
             ]);
         }
+
+        ContactInquiry::query()->create([
+            'site_id' => $site?->id,
+            'website_key' => $websiteKey,
+            'submitted_host' => $submittedHost,
+            'customer_id' => $request->user('customer')?->id,
+            'order_id' => $order?->id,
+            'source' => $source,
+            'status' => 'new',
+            'name' => $payload['name'],
+            'email' => $payload['email'],
+            'phone' => $payload['phone'] ?? null,
+            'subject' => $payload['subject'],
+            'route_summary' => $payload['route_summary'] ?? null,
+            'message' => $payload['message'],
+            'page_url' => $payload['page_url'],
+            'locale' => app()->getLocale(),
+            'ip_address' => $request->ip(),
+            'user_agent' => Str::limit((string) $request->userAgent(), 1024, ''),
+            'submitted_at' => now(),
+        ]);
 
         Mail::to($branding['support_email'])
             ->queue((new ContactInquiryMail($payload, $branding))->onQueue('mail'));
@@ -1084,6 +1115,7 @@ class CmsSiteController
 
         $order = Order::query()->create([
             'order_code' => 'AIO'.now()->format('ymdHis').str_pad((string) random_int(0, 999), 3, '0', STR_PAD_LEFT),
+            'website_key' => app(SiteContext::class)->websiteKey(),
             'customer_id' => $customer?->id,
             'status' => 'placed',
             'customer_name' => $validated['customer_name'],

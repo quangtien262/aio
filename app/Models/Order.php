@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'order_code',
+    'website_key',
     'customer_id',
     'status',
     'customer_name',

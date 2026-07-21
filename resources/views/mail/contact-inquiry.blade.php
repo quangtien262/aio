@@ -47,6 +47,7 @@
                     <div style="margin-top:24px; padding:18px; border-radius:16px; background:#fff6f6; border:1px solid #ffd7d7;">
                         <div style="font-weight:700; margin-bottom:8px;">Thông tin hệ thống</div>
                         <div style="line-height:1.7; color:#4b5563;">Gửi lúc: {{ $payload['submitted_at'] ?? now()->toDateTimeString() }}</div>
+                        <div style="line-height:1.7; color:#4b5563;">Website: {{ $payload['website_key'] ?? '-' }} ({{ $payload['submitted_host'] ?? '-' }})</div>
                         <div style="line-height:1.7; color:#4b5563;">Trang gửi: {{ $payload['page_url'] ?? '-' }}</div>
                     </div>
 

@@ -9,6 +9,8 @@ use App\Models\CatalogProduct;
 use App\Models\CmsPost;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
+use App\Models\CmsService;
+use App\Models\CmsServiceCategory;
 use App\Models\LandingPage;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
@@ -185,6 +187,38 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Liên hệ')
             ->assertSee('Thông tin liên hệ')
             ->assertSee('name="source" value="contact"', false);
+    }
+
+    public function test_dn302_service_category_hero_and_entries_use_database_values(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+
+        $category = CmsServiceCategory::query()->create([
+            'name' => 'Thiết kế theo dữ liệu DB',
+            'slug' => 'thiet-ke-db',
+            'description' => 'Mô tả danh mục dịch vụ được quản trị trong database.',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+        $service = CmsService::query()->create([
+            'cms_service_category_id' => $category->id,
+            'title' => 'Dịch vụ lấy từ database',
+            'slug' => 'dich-vu-db',
+            'status' => 'published',
+            'summary' => 'Tóm tắt dịch vụ trong database.',
+            'content' => '<p>Nội dung dịch vụ trong database.</p>',
+            'sort_order' => 1,
+            'publish_at' => now(),
+        ]);
+
+        $this->get(route('site.services.category', ['locale' => 'vi', 'slug' => $category->slug]))
+            ->assertOk()
+            ->assertSee('Thiết kế theo dữ liệu DB')
+            ->assertSee('Mô tả danh mục dịch vụ được quản trị trong database.')
+            ->assertSee($service->title)
+            ->assertSee(route('site.services.show', ['locale' => 'vi', 'slug' => $service->slug]), false)
+            ->assertDontSee('Janelas Windows &amp; Doors', false)
+            ->assertDontSee('Dịch vụ cửa nhôm kính');
     }
 
     public function test_dn302_hero_becomes_full_width_when_shared_copy_and_cta_are_empty(): void

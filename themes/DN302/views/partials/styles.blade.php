@@ -54,4 +54,5 @@
 @media(max-width:600px){.dn-contact-details,.dn-contact-request{padding:28px 20px}.dn-contact-detail{grid-template-columns:46px minmax(0,1fr);padding:14px 12px}.dn-contact-detail>b{display:none}.dn-contact-page-hero h1{font-size:44px}}
 @media(max-width:600px){.xd-editor-grid,.xd-item-form,.xd-editor-source-grid{grid-template-columns:1fr}.xd-editor,.xd-item-modal{padding:10px}.xd-editor-card,.xd-item-card{padding:18px}.xd-edit-block{right:10px;top:10px;padding:8px 12px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.dn-motion-ready [data-dn-reveal]{opacity:1;transform:none}}
+.dn-inner-hero__description{max-width:780px;margin:22px 0 0;color:rgba(255,255,255,.78);font-size:18px;line-height:1.75}
 </style>

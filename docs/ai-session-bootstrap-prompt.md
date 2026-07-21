@@ -264,6 +264,15 @@ Lưu ý khi tiếp tục phát triển:
 
 ## 8. Những capability nghiệp vụ cần luôn ghi nhớ khi làm việc
 
+### Yêu cầu liên hệ theo domain/website
+
+- Mọi form liên hệ public gửi về `CmsSiteController::submitContact`; client không được tự quyết định `website_key`.
+- `ResolveCurrentSite` ánh xạ hostname trong `sites` và đặt `SiteContext`; backend lấy `site_id`/`website_key` từ context này.
+- `contact_inquiries` lưu tập trung mọi yêu cầu `contact` và `quote_modal`, gồm `site_id`, `website_key`, `submitted_host`, người gửi, nội dung, trạng thái và thông tin đối soát request.
+- Yêu cầu `quote_modal` đồng thời tạo `orders` và gắn cùng `website_key`; `contact_inquiries.order_id` liên kết về đơn báo giá.
+- Email nhận liên hệ lấy từ `site_profiles.branding.support_email` của website đã resolve, không dùng domain/key do form gửi lên.
+- Khi bổ sung nguồn form mới, phải mở rộng validation `source`, vẫn lưu qua `contact_inquiries` và có test xác nhận phân tách ít nhất hai domain.
+
 - Đây là hệ thống định hướng rộng, không chỉ có CMS. Các nhóm trọng tâm dài hạn gồm CRM, Project, Purchasing, Inventory, HRM, Sales, Accounting, CMS / website builder / theme marketplace.
 - Khi đề xuất model, route, permission, menu, settings, dashboard hay schema, phải ưu tiên pattern dùng lại được cho nhiều module.
 
