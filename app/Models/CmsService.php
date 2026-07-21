@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['cms_service_category_id', 'title', 'slug', 'status', 'summary', 'content', 'icon', 'button_label', 'link_url', 'meta_title', 'meta_description', 'meta_keywords', 'publish_at', 'is_featured', 'is_highlight', 'sort_order', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['cms_service_category_id', 'title', 'slug', 'status', 'summary', 'content', 'icon', 'button_label', 'link_url', 'meta_title', 'meta_description', 'meta_keywords', 'publish_at', 'is_featured', 'is_highlight', 'sort_order', 'website_key'])]
 class CmsService extends Model
 {
     use HasFactory;

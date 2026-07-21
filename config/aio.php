@@ -35,13 +35,12 @@ return [
         'admin.account.manage',
         'admin.account.reset_password',
         'admin.account.lock',
+        'admin.audit.view',
     ],
 
     'scope_types' => [
+        'global' => 'Toàn hệ thống',
         'website' => 'Website',
-        'module' => 'Module',
-        'owner' => 'Owner',
-        'tenant' => 'Tenant',
     ],
 
     'setup_steps' => [

@@ -49,6 +49,7 @@
                 <label class="ser-modal-field">
                     <span>{{ $themeText('modal.password', 'Mật khẩu') }}</span>
                     <input type="password" name="password" required>
+                    <input type="text" name="two_factor_code" inputmode="numeric" autocomplete="one-time-code" maxlength="32" placeholder="Mã xác thực 2 lớp (nếu đã bật)">
                     <small data-ser-field-error="password"></small>
                 </label>
                 <button type="submit" class="ser-modal-submit">{{ $themeText('modal.login_submit', 'Đăng nhập') }}</button>

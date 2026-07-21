@@ -106,8 +106,6 @@ class FeaturedCategorySeeder extends Seeder
                 ],
                 [
                     'website_key' => $group['website_key'],
-                    'owner_key' => null,
-                    'tenant_key' => null,
                     'items' => $group['items'],
                 ],
             );

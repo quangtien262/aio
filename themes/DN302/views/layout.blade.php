@@ -18,6 +18,7 @@
         @yield('content')
         @include('theme-dn302::partials.footer')
     </div>
+    @include('theme-dn302::partials.auth-modal')
     @include('theme-dn302::partials.shell-scripts')
     @stack('scripts')
 </body>

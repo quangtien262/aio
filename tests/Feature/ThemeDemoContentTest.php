@@ -529,8 +529,6 @@ class ThemeDemoContentTest extends TestCase
             'sort_order' => 1,
             'is_active' => true,
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ]);
 
         CatalogProduct::query()->create([
@@ -549,8 +547,6 @@ class ThemeDemoContentTest extends TestCase
             'sort_order' => 2,
             'is_active' => true,
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ]);
 
         CatalogProduct::query()->create([
@@ -569,8 +565,6 @@ class ThemeDemoContentTest extends TestCase
             'sort_order' => 3,
             'is_active' => true,
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ]);
 
         $response = $this->get($this->storefrontPath('tim-kiem', [
@@ -604,8 +598,6 @@ class ThemeDemoContentTest extends TestCase
             'description' => 'Danh mục phục vụ test CRUD.',
             'sort_order' => 1,
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])
             ->assertCreated()
             ->json('data.id');
@@ -621,8 +613,6 @@ class ThemeDemoContentTest extends TestCase
             'sort_order' => 2,
             'is_active' => true,
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])->assertOk();
 
         $bannerId = $this->postJson('/admin/api/site-banners', [
@@ -637,8 +627,6 @@ class ThemeDemoContentTest extends TestCase
             'summary' => 'Summary',
             'button_label' => 'Xem ngay',
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])
             ->assertCreated()
             ->json('data.id');
@@ -659,8 +647,6 @@ class ThemeDemoContentTest extends TestCase
             'summary' => 'Updated summary',
             'button_label' => 'Mở ngay',
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])->assertOk();
 
         $this->deleteJson("/admin/api/site-banners/{$bannerId}")->assertOk();
@@ -684,8 +670,6 @@ class ThemeDemoContentTest extends TestCase
             'name' => 'Deal buffet',
             'slug' => 'deal-buffet',
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ]);
 
         $productId = $this->postJson('/admin/api/catalog/products', [
@@ -709,8 +693,6 @@ class ThemeDemoContentTest extends TestCase
             'sold_count' => 12,
             'deal_end_at' => '2026-06-30 21:00:00',
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])
             ->assertCreated()
             ->assertJsonPath('data.gallery_images.1', 'https://picsum.photos/seed/product-gallery-2/960/720')
@@ -736,8 +718,6 @@ class ThemeDemoContentTest extends TestCase
             'sold_count' => 18,
             'deal_end_at' => '2026-07-01 21:00:00',
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])
             ->assertOk()
             ->assertJsonPath('data.gallery_images.0', 'https://picsum.photos/seed/product-gallery-3/960/720')

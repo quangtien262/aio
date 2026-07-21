@@ -284,8 +284,6 @@ export default function CmsFeaturedCategoryFormModal({ open, canManage, editingG
         await onSubmit?.({
             ...values,
             website_key: editingGroup?.website_key ?? '',
-            owner_key: editingGroup?.owner_key ?? '',
-            tenant_key: editingGroup?.tenant_key ?? '',
             items: normalizeFeaturedCategoryItemsForSubmit(groupItems, linkLookups),
         });
 

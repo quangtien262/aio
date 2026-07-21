@@ -21,6 +21,12 @@ class ResolveCurrentSite
             $websiteKey = trim((string) $request->header('X-Website-Key', ''));
 
             if ($websiteKey !== '') {
+                $admin = $request->user('admin');
+
+                if ($admin && ! $admin->canAccessWebsite($websiteKey)) {
+                    abort(403, 'Bạn không được phân quyền quản lý website này.');
+                }
+
                 $site = Site::query()
                     ->where('status', 'active')
                     ->where('website_key', $websiteKey)

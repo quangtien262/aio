@@ -3,17 +3,28 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Models\Admin;
+use App\Models\SiteProfile;
+use App\Support\AuditLogger;
+use App\Support\Totp;
 use Illuminate\Support\Arr;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController
 {
+    public function __construct(
+        private readonly AuditLogger $auditLogger,
+        private readonly Totp $totp,
+    )
+    {
+    }
+
     private const REDIRECT_QUERY_KEYS_TO_DROP = [
         'loginSegment',
         'registerSegment',
@@ -41,7 +52,9 @@ class AuthenticatedSessionController
 
     public function create(): View
     {
-        return view('auth.customer-login');
+        return view('auth.customer-login', [
+            'siteProfile' => SiteProfile::query()->first(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse|JsonResponse
@@ -50,6 +63,7 @@ class AuthenticatedSessionController
             'login' => ['nullable', 'string', 'max:255', 'required_without:email'],
             'email' => ['nullable', 'string', 'max:255', 'required_without:login'],
             'password' => ['required', 'string'],
+            'two_factor_code' => ['nullable', 'string', 'max:32'],
             'redirect_to' => ['nullable', 'string', 'max:5000'],
         ]);
 
@@ -72,21 +86,38 @@ class AuthenticatedSessionController
             /** @var Admin|null $admin */
             $admin = Auth::guard('admin')->user();
 
-            if (! $admin?->is_active || $admin->isLocked()) {
+            if (! $admin?->isAvailable()) {
                 Auth::guard('admin')->logout();
+
+                $this->auditLogger->record('auth.admin.rejected', Admin::class, null, ['identity' => $identifier]);
 
                 return $this->failedResponse(
                     $request,
-                    'Tài khoản admin đang bị khóa hoặc vô hiệu hóa.',
+                    'Thông tin đăng nhập không chính xác hoặc tài khoản không khả dụng.',
                     $errorField,
                 );
             }
 
+            if ($admin->two_factor_confirmed_at !== null && ! $this->validTwoFactorChallenge($admin, (string) ($payload['two_factor_code'] ?? ''))) {
+                Auth::guard('admin')->logout();
+                $this->auditLogger->record('auth.admin.two_factor_failed', $admin, null, null, $admin);
+
+                return $this->failedResponse(
+                    $request,
+                    'Vui lòng nhập mã xác thực hai lớp hợp lệ.',
+                    'two_factor_code',
+                );
+            }
+
             $request->session()->regenerate();
+            $request->session()->put('admin_auth_version', $admin->auth_version);
 
             $admin->forceFill([
                 'last_login_at' => now(),
+                'last_login_ip' => $request->ip(),
             ])->save();
+
+            $this->auditLogger->record('auth.admin.login', $admin, null, ['remember' => $remember], $admin);
 
             return $this->successfulResponse($request, route('admin.index'), 'Đăng nhập admin thành công.', 'admin');
         }
@@ -94,7 +125,7 @@ class AuthenticatedSessionController
         if (! Auth::guard('customer')->attempt($customerCredentials, $remember)) {
             return $this->failedResponse(
                 $request,
-                'Thông tin đăng nhập không chính xác.',
+                'Thông tin đăng nhập không chính xác hoặc tài khoản không khả dụng.',
                 $errorField,
             );
         }
@@ -187,5 +218,24 @@ class AuthenticatedSessionController
         }
 
         return $normalized;
+    }
+
+    private function validTwoFactorChallenge(Admin $admin, string $code): bool
+    {
+        if (filled($admin->two_factor_secret) && $this->totp->verify($admin->two_factor_secret, $code)) {
+            return true;
+        }
+
+        foreach ($admin->two_factor_recovery_codes ?? [] as $index => $hash) {
+            if (Hash::check($code, $hash)) {
+                $codes = $admin->two_factor_recovery_codes;
+                unset($codes[$index]);
+                $admin->forceFill(['two_factor_recovery_codes' => array_values($codes)])->save();
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

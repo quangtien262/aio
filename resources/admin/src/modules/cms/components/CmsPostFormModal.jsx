@@ -58,8 +58,6 @@ export const emptyCmsPostForm = {
     publish_at: null,
     is_highlight: false,
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 function toSlug(value, { trimEdges = true } = {}) {

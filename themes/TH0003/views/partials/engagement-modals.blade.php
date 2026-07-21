@@ -1,4 +1,4 @@
-﻿@php
+@php
     $customerAuth = $customerAuth ?? ['is_authenticated' => false];
     $newsletterState = $newsletterState ?? ['is_subscribed' => false];
     $postLoginRedirect = $postLoginRedirect ?? request()->fullUrl();
@@ -50,6 +50,7 @@
                 <label class="th-modal-field">
                     <span class="sr-only">@themeT('modal.password', 'Mật khẩu')</span>
                     <input type="password" name="password" required placeholder="@themeT('modal.password', 'Mật khẩu')" aria-label="@themeT('modal.password', 'Mật khẩu')">
+                    <input type="text" name="two_factor_code" inputmode="numeric" autocomplete="one-time-code" maxlength="32" placeholder="Mã xác thực 2 lớp (nếu đã bật)">
                     <small class="th-modal-field-error" data-th-field-error="password"></small>
                 </label>
                 <button type="submit" class="th-modal-submit">@themeT('modal.login_submit', 'Đăng nhập')</button>

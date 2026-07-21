@@ -31,6 +31,17 @@
                 <span><i class="fa-solid fa-location-dot"></i> @themeT('DN302.header.address', '344 Huỳnh Tấn Phát, Phường Bình Thuận, Quận 7, TP.HCM')</span>
                 <a href="mailto:{{ $email }}"><i class="fa-solid fa-envelope"></i> {{ $email }}</a>
                 <span class="dn-socials"><i class="fa-brands fa-facebook-f"></i><i class="fa-brands fa-youtube"></i><i class="fa-brands fa-pinterest-p"></i></span>
+                <div class="dn-auth-actions">
+                    @auth('admin')
+                        <a href="{{ route('admin.index') }}">Quản trị</a>
+                    @elseif(auth('customer')->check())
+                        <a href="{{ route('customer.account') }}">Tài khoản</a>
+                    @else
+                        <button type="button" data-dn-auth-open="login">Đăng nhập</button>
+                        <span aria-hidden="true">/</span>
+                        <button type="button" data-dn-auth-open="register">Đăng ký</button>
+                    @endauth
+                </div>
             </div>
             <div class="dn-navbar">
                 <button class="dn-menu-toggle" type="button" data-dn-menu aria-expanded="false" aria-controls="dn-main-menu"><i class="fa-solid fa-bars"></i><span>Menu</span></button>
@@ -38,6 +49,14 @@
                     @foreach($menuItems as $item)
                         <a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label', data_get($item, 'title')) }}</a>
                     @endforeach
+                    @guest('customer')
+                        @guest('admin')
+                            <span class="dn-auth-mobile">
+                                <button type="button" data-dn-auth-open="login">Đăng nhập</button>
+                                <button type="button" data-dn-auth-open="register">Đăng ký</button>
+                            </span>
+                        @endguest
+                    @endguest
                 </nav>
                 <a class="dn-consult" href="{{ route('site.contact') }}">@themeT('DN302.header.consultation', 'Đăng ký tư vấn')</a>
             </div>

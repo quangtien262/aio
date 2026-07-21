@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['catalog_category_id', 'name', 'slug', 'sku', 'price', 'original_price', 'stock', 'short_description', 'detail_content', 'meta_title', 'meta_description', 'meta_keywords', 'highlights', 'usage_terms', 'usage_location', 'image_url', 'sold_count', 'deal_end_at', 'is_featured', 'is_highlight', 'sort_order', 'is_active', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['catalog_category_id', 'name', 'slug', 'sku', 'price', 'original_price', 'stock', 'short_description', 'detail_content', 'meta_title', 'meta_description', 'meta_keywords', 'highlights', 'usage_terms', 'usage_location', 'image_url', 'sold_count', 'deal_end_at', 'is_featured', 'is_highlight', 'sort_order', 'is_active', 'website_key'])]
 class CatalogProduct extends Model
 {
     use HasFactory;

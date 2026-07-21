@@ -20,6 +20,11 @@
     "cms.product.update",
     "cms.product.delete",
     "cms.order.view",
+    "cms.order.update",
+    "cms.order.delete",
+    "cms.newsletter.view",
+    "cms.newsletter.update",
+    "cms.newsletter.delete",
     "cms.category.manage",
     "cms.menu.manage",
     "cms.media.manage"
@@ -136,7 +141,7 @@
       "color": "cyan",
       "icon": "read",
       "route": "/admin/cms/newsletter",
-      "permission": "platform.dashboard.view"
+      "permission": "cms.newsletter.view"
     },
     {
       "key": "cms-setup",

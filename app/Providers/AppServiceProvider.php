@@ -26,9 +26,16 @@ use App\Core\Themes\Demo\Xd0323DemoContentProvider;
 use App\Core\Themes\Demo\Xd321DemoContentProvider;
 use App\Support\FrontendLocalization;
 use App\Support\SiteContext;
+use App\Models\Admin;
+use App\Models\Permission;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -69,6 +76,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('login', function (Request $request): Limit {
+            $identity = strtolower(trim((string) ($request->input('login') ?: $request->input('email'))));
+
+            return Limit::perMinute(5)->by($identity.'|'.$request->ip());
+        });
+
+        Gate::before(function (mixed $user): ?bool {
+            return $user instanceof Admin && $user->isSuperAdmin() ? true : null;
+        });
+
+        if (Schema::hasTable('permissions') && Schema::hasColumn('permissions', 'is_active')) {
+            Permission::query()
+                ->where('is_active', true)
+                ->pluck('key')
+                ->each(fn (string $permission): mixed => Gate::define(
+                    $permission,
+                    fn (Admin $admin): bool => $admin->hasPermission($permission),
+                ));
+        }
+
         app()->setLocale(FrontendLocalization::defaultLocale());
         URL::defaults(FrontendLocalization::routeParameterDefaults(FrontendLocalization::defaultLocale()));
         Blade::directive('themeT', function (string $expression): string {

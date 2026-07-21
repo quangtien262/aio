@@ -17,8 +17,6 @@ if (! class_exists(__NAMESPACE__.'\\CatalogModuleSeeder', false)) {
                     'price' => 100000,
                     'stock' => 10,
                     'website_key' => 'website-main',
-                    'owner_key' => 'owner-system',
-                    'tenant_key' => 'tenant-a',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],

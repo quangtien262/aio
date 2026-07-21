@@ -16,8 +16,6 @@ return new class extends Migration
             $table->text('body')->nullable();
 
             $table->string('website_key')->nullable();
-            $table->string('owner_key')->nullable();
-            $table->string('tenant_key')->nullable();
 
             $table->timestamps();
         });

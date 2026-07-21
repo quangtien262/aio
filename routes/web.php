@@ -35,6 +35,7 @@ Route::prefix('{locale}')
 				->whereIn('loginSegment', FrontendLocalization::segmentValues('login'))
 				->name('customer.auth.login');
 			Route::post('/{loginSegment}', [CustomerAuthenticatedSessionController::class, 'store'])
+				->middleware('throttle:login')
 				->whereIn('loginSegment', FrontendLocalization::segmentValues('login'))
 				->name('customer.auth.store');
 			Route::get('/{registerSegment}', [RegisteredUserController::class, 'create'])

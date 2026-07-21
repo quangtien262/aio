@@ -13,6 +13,8 @@ use Database\Seeders\FeaturedCategorySeeder;
 use Database\Seeders\HeroSideBannerSeeder;
 use Database\Seeders\SidePromoSeeder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
@@ -44,6 +46,9 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'description' => 'Toan quyen quan tri he thong.',
+                'is_system' => true,
+                'is_assignable' => false,
+                'status' => 'active',
             ],
         );
 
@@ -52,23 +57,44 @@ class DatabaseSeeder extends Seeder
 
     private function seedDefaultAdmin(): void
     {
-        $admin = Admin::query()->updateOrCreate(
-            ['username' => 'admin'],
+        $configuredPassword = env('AIO_SYSTEM_OWNER_PASSWORD');
+
+        if (blank($configuredPassword) && ! app()->environment(['local', 'testing'])) {
+            throw new RuntimeException('AIO_SYSTEM_OWNER_PASSWORD must be configured before seeding a non-local environment.');
+        }
+
+        $admin = Admin::query()->firstOrCreate(
+            ['id' => 1],
             [
                 'name' => 'System Admin',
                 'username' => 'admin',
                 'email' => 'admin@aio.local',
-                'password' => 'password',
+                'password' => $configuredPassword ?: (app()->environment('testing') ? 'password' : Str::password(24)),
                 'is_active' => true,
+                'status' => 'active',
+                'is_system_owner' => true,
+                'must_change_password' => true,
                 'locked_at' => null,
                 'locked_reason' => null,
             ],
         );
 
+        $admin->forceFill([
+            'is_active' => true,
+            'status' => 'active',
+            'is_system_owner' => true,
+            'locked_at' => null,
+            'locked_reason' => null,
+        ])->save();
+
         $roleId = Role::query()->where('key', 'super-admin')->value('id');
 
         if ($roleId !== null) {
-            $admin->roles()->syncWithoutDetaching([$roleId]);
+            $admin->roleAssignments()->firstOrCreate([
+                'role_id' => $roleId,
+                'scope_type' => 'global',
+                'scope_value' => null,
+            ]);
         }
     }
 

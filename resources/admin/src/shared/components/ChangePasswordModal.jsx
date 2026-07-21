@@ -4,7 +4,7 @@ import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import Button from 'antd/es/button';
 
-export default function ChangePasswordModal({ open, onClose, callAdminApi, runAdminAction, adminId }) {
+export default function ChangePasswordModal({ open, onClose, callAdminApi, runAdminAction, forceChange = false }) {
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (values) => {
@@ -12,13 +12,10 @@ export default function ChangePasswordModal({ open, onClose, callAdminApi, runAd
 
         try {
             await runAdminAction(
-                () => callAdminApi(`/admin/api/admins/${adminId}/password`, { method: 'PUT', body: JSON.stringify(values) }),
+                () => callAdminApi('/admin/api/me/password', { method: 'PUT', body: JSON.stringify(values) }),
                 'Đã cập nhật mật khẩu.',
                 onClose,
             );
-        } catch (err) {
-            // runAdminAction will show message on success; on error we can show Modal error via catch
-            // Convert to thrown Error so caller can inspect if needed
         } finally {
             setLoading(false);
         }
@@ -26,9 +23,12 @@ export default function ChangePasswordModal({ open, onClose, callAdminApi, runAd
 
     return (
         <Modal
-            title="Đổi mật khẩu"
+            title={forceChange ? 'Đổi mật khẩu trước khi tiếp tục' : 'Đổi mật khẩu'}
             open={open}
-            onCancel={onClose}
+            onCancel={forceChange ? undefined : onClose}
+            closable={!forceChange}
+            maskClosable={!forceChange}
+            keyboard={!forceChange}
             footer={null}
             destroyOnHidden
         >
@@ -37,17 +37,17 @@ export default function ChangePasswordModal({ open, onClose, callAdminApi, runAd
                     <Input.Password />
                 </Form.Item>
 
-                <Form.Item name="password" label="Mật khẩu mới" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới.' }, { min: 8, message: 'Mật khẩu ít nhất 8 ký tự.' }]}>
+                <Form.Item name="password" label="Mật khẩu mới" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới.' }, { min: 12, message: 'Mật khẩu cần ít nhất 12 ký tự.' }]}>
                     <Input.Password />
                 </Form.Item>
 
-                <Form.Item name="password_confirmation" label="Xác nhận mật khẩu" dependencies={["password"]} rules={[{ required: true, message: 'Vui lòng xác nhận mật khẩu.' }, ({ getFieldValue }) => ({ validator(_, value) { if (!value || getFieldValue('password') === value) { return Promise.resolve(); } return Promise.reject(new Error('Xác nhận mật khẩu không khớp.')); }, })]}>
+                <Form.Item name="password_confirmation" label="Xác nhận mật khẩu" dependencies={['password']} rules={[{ required: true, message: 'Vui lòng xác nhận mật khẩu.' }, ({ getFieldValue }) => ({ validator(_, value) { if (!value || getFieldValue('password') === value) { return Promise.resolve(); } return Promise.reject(new Error('Xác nhận mật khẩu không khớp.')); }, })]}>
                     <Input.Password />
                 </Form.Item>
 
                 <Form.Item>
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                        <Button onClick={onClose}>Hủy</Button>
+                        {!forceChange ? <Button onClick={onClose}>Hủy</Button> : null}
                         <Button type="primary" htmlType="submit" loading={loading}>Lưu</Button>
                     </div>
                 </Form.Item>

@@ -92,8 +92,6 @@ class PartnerManagementController
             'is_featured' => ['boolean'],
             'sort_order' => ['nullable', 'integer'],
             'website_key' => ['nullable', 'string', 'max:255'],
-            'owner_key' => ['nullable', 'string', 'max:255'],
-            'tenant_key' => ['nullable', 'string', 'max:255'],
         ]);
     }
 
@@ -123,8 +121,6 @@ class PartnerManagementController
             'is_featured' => $partner->is_featured,
             'sort_order' => $partner->sort_order,
             'website_key' => $partner->website_key,
-            'owner_key' => $partner->owner_key,
-            'tenant_key' => $partner->tenant_key,
         ];
     }
 }

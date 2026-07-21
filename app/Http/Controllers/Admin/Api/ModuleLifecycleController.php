@@ -8,12 +8,18 @@ use Illuminate\Database\Seeder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
+use App\Support\AuditLogger;
 
 class ModuleLifecycleController
 {
+    public function __construct(private readonly AuditLogger $auditLogger)
+    {
+    }
+
     public function install(string $key, ModuleManager $moduleManager): JsonResponse
     {
         $moduleManager->install($key);
+        $this->auditLogger->record('module.installed', $key, null, ['module_key' => $key], moduleKey: $key);
 
         return response()->json([
             'message' => 'Module installed successfully.',
@@ -23,6 +29,7 @@ class ModuleLifecycleController
     public function enable(string $key, ModuleManager $moduleManager): JsonResponse
     {
         $moduleManager->enable($key);
+        $this->auditLogger->record('module.enabled', $key, null, ['module_key' => $key], moduleKey: $key);
 
         return response()->json([
             'message' => 'Module enabled successfully.',
@@ -32,6 +39,7 @@ class ModuleLifecycleController
     public function disable(string $key, ModuleManager $moduleManager): JsonResponse
     {
         $moduleManager->disable($key);
+        $this->auditLogger->record('module.disabled', $key, null, ['module_key' => $key], moduleKey: $key);
 
         return response()->json([
             'message' => 'Module disabled successfully.',
@@ -41,6 +49,7 @@ class ModuleLifecycleController
     public function upgrade(string $key, ModuleManager $moduleManager): JsonResponse
     {
         $moduleManager->upgrade($key);
+        $this->auditLogger->record('module.upgraded', $key, null, ['module_key' => $key], moduleKey: $key);
 
         return response()->json([
             'message' => 'Module upgraded successfully.',
@@ -73,6 +82,7 @@ class ModuleLifecycleController
     public function uninstall(string $key, ModuleManager $moduleManager): JsonResponse
     {
         $moduleManager->uninstall($key);
+        $this->auditLogger->record('module.uninstalled', $key, null, ['module_key' => $key], moduleKey: $key);
 
         return response()->json([
             'message' => 'Module uninstalled successfully.',

@@ -57,8 +57,6 @@ class TestimonialIndexController
             'is_featured' => $testimonial->is_featured,
             'sort_order' => $testimonial->sort_order,
             'website_key' => $testimonial->website_key,
-            'owner_key' => $testimonial->owner_key,
-            'tenant_key' => $testimonial->tenant_key,
         ];
     }
 }

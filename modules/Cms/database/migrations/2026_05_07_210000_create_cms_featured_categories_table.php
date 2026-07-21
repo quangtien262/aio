@@ -14,8 +14,6 @@ return new class extends Migration
             $table->string('location')->index();
             $table->json('items');
             $table->string('website_key')->nullable()->index();
-            $table->string('owner_key')->nullable()->index();
-            $table->string('tenant_key')->nullable()->index();
             $table->timestamps();
         });
     }

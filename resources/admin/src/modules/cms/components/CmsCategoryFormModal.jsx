@@ -15,8 +15,6 @@ export const emptyCmsCategoryForm = {
     meta_description: '',
     parent_id: null,
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 export default function CmsCategoryFormModal({ open, canManage, editingCategory, parentOptions = [], submitLoading = false, onCancel, onSubmit }) {

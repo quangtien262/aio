@@ -70,8 +70,6 @@ class TeamMemberIndexController
             'is_featured' => $member->is_featured,
             'sort_order' => $member->sort_order,
             'website_key' => $member->website_key,
-            'owner_key' => $member->owner_key,
-            'tenant_key' => $member->tenant_key,
             'featured_image_url' => $featuredImage['image_url'] ?? null,
             'featured_image_alt' => $featuredImage['alt_text'] ?? null,
             'images' => $images,

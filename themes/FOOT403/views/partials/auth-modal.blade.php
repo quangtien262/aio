@@ -42,7 +42,8 @@
                     @csrf
                     <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
                     <label class="dr-auth-field"><span>Email khách hàng / Username admin</span><input type="text" name="login" autocomplete="username" required></label>
-                    <label class="dr-auth-field"><span>Mật khẩu</span><input type="password" name="password" autocomplete="current-password" required></label>
+                    <label class="dr-auth-field"><span>Mật khẩu</span><input type="password" name="password" autocomplete="current-password" required>
+                    <input type="text" name="two_factor_code" inputmode="numeric" autocomplete="one-time-code" maxlength="32" placeholder="Mã xác thực 2 lớp (nếu đã bật)"></label>
                     <label class="dr-auth-check"><input type="checkbox" name="remember" value="1"><span>Ghi nhớ đăng nhập</span></label>
                     <button type="submit" class="dr-auth-submit">Đăng nhập</button>
                 </form>

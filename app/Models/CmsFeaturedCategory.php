@@ -18,8 +18,6 @@ class CmsFeaturedCategory extends Model
         'location',
         'items',
         'website_key',
-        'owner_key',
-        'tenant_key',
     ];
 
     protected function casts(): array

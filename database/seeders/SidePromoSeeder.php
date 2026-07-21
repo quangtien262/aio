@@ -17,8 +17,6 @@ class SidePromoSeeder extends Seeder
                 ],
                 [
                     'website_key' => null,
-                    'owner_key' => null,
-                    'tenant_key' => null,
                     'items' => $group['items'],
                 ]
             );

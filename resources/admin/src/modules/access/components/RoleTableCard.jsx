@@ -17,6 +17,7 @@ export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onE
                 <Space direction="vertical" size={0}>
                     <Text strong>{role.name}</Text>
                     <Text type="secondary">{role.key}</Text>
+                    {role.is_system ? <Text type="warning">Vai trò hệ thống · không thể chỉnh sửa</Text> : null}
                 </Space>
             ),
         },
@@ -41,15 +42,15 @@ export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onE
             key: 'actions',
             render: (_, role) => (
                 <Space>
-                    <Button size="small" disabled={!canManageRoles} onClick={() => onEditRole?.(role)}>
+                    <Button size="small" disabled={!canManageRoles || role.is_system} onClick={() => onEditRole?.(role)}>
                         Sửa
                     </Button>
                     <Popconfirm
-                        disabled={!canManageRoles || role.key === 'super-admin'}
+                        disabled={!canManageRoles || role.is_system}
                         title="Xóa role này?"
                         onConfirm={() => onDeleteRole?.(role.id)}
                     >
-                        <Button danger size="small" disabled={!canManageRoles || role.key === 'super-admin'}>
+                        <Button danger size="small" disabled={!canManageRoles || role.is_system}>
                             Xóa
                         </Button>
                     </Popconfirm>

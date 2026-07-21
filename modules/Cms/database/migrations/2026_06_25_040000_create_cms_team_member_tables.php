@@ -25,8 +25,6 @@ return new class extends Migration
                 $table->boolean('is_featured')->default(false)->index();
                 $table->integer('sort_order')->default(0)->index();
                 $table->string('website_key')->nullable()->index();
-                $table->string('owner_key')->nullable()->index();
-                $table->string('tenant_key')->nullable()->index();
                 $table->timestamps();
             });
         }

@@ -331,8 +331,6 @@ const emptyPage = {
     featured_media_id: null,
     publish_at: null,
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyLandingPage = {
@@ -359,8 +357,6 @@ const emptyPost = {
     publish_at: null,
     is_highlight: false,
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyService = {
@@ -382,8 +378,6 @@ const emptyService = {
     sort_order: 0,
     images: [],
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyServiceCategory = {
@@ -426,8 +420,6 @@ const emptyProject = {
     sort_order: 0,
     images: [],
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyTestimonial = {
@@ -444,8 +436,6 @@ const emptyTestimonial = {
     is_featured: true,
     sort_order: 0,
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyTeamMember = {
@@ -465,8 +455,6 @@ const emptyTeamMember = {
     sort_order: 0,
     images: [],
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyPartner = {
@@ -482,8 +470,6 @@ const emptyPartner = {
     is_featured: true,
     sort_order: 0,
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyProduct = {
@@ -530,8 +516,6 @@ const emptyCategory = {
     meta_description: '',
     parent_id: null,
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyMenu = {
@@ -540,8 +524,6 @@ const emptyMenu = {
     location: 'primary',
     items: [{ label: '', url: '', target: '_self', link_type: 'custom', link_value: null, custom_url: '', children: [] }],
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptyFeaturedCategory = {
@@ -550,8 +532,6 @@ const emptyFeaturedCategory = {
     location: 'home-featured-categories',
     items: [{ label: '', url: '', target: '_self', link_type: 'custom', link_value: null, custom_url: '' }],
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const emptySidePromo = {
@@ -560,8 +540,6 @@ const emptySidePromo = {
     location: 'home-hero-side-promos',
     items: [{ title: '', subtitle: '', image: '', url: '', target: '_self', link_type: 'custom', link_value: null, custom_url: '' }],
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 const BULK_KEEP_VALUE = '__KEEP__';
@@ -1956,8 +1934,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             is_highlight: nextHighlight,
             sort_order: service.sort_order,
             website_key: service.website_key,
-            owner_key: service.owner_key,
-            tenant_key: service.tenant_key,
             images: service.images ?? [],
         };
     };

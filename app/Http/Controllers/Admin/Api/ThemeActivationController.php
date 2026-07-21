@@ -9,10 +9,11 @@ use App\Models\ThemeInstallation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Support\AuditLogger;
 
 class ThemeActivationController
 {
-    public function __invoke(Request $request, string $key, ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $demoGenerator): JsonResponse
+    public function __invoke(Request $request, string $key, ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $demoGenerator, AuditLogger $auditLogger): JsonResponse
     {
         $validated = $request->validate([
             'create_demo_data' => ['sometimes', 'boolean'],
@@ -48,6 +49,8 @@ class ThemeActivationController
         if (($validated['create_demo_data'] ?? false) === true && ($preset = $demoGenerator->defaultPresetForTheme($theme->key))) {
             $demo = $demoGenerator->generate($theme->key, $preset);
         }
+
+        $auditLogger->record('theme.activated', $theme, null, ['theme_key' => $theme->key, 'create_demo_data' => (bool) ($validated['create_demo_data'] ?? false)], moduleKey: 'theme');
 
         return response()->json([
             'message' => $demo ? 'Đã kích hoạt theme và tạo dữ liệu mẫu.' : 'Đã kích hoạt theme.',

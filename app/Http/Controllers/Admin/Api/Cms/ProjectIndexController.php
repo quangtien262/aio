@@ -74,8 +74,6 @@ class ProjectIndexController
             'is_highlight' => $project->is_highlight,
             'sort_order' => $project->sort_order,
             'website_key' => $project->website_key,
-            'owner_key' => $project->owner_key,
-            'tenant_key' => $project->tenant_key,
             'featured_image_url' => $featuredImage['image_url'] ?? null,
             'featured_image_alt' => $featuredImage['alt_text'] ?? null,
             'images' => $images,

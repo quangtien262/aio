@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Admin\AdminShellController;
 use App\Http\Controllers\Admin\Api\AccessControlIndexController;
+use App\Http\Controllers\Admin\Api\AuditLogIndexController;
 use App\Http\Controllers\Admin\Api\AdminAccountController;
 use App\Http\Controllers\Admin\Api\AdminCurrentProfileController;
+use App\Http\Controllers\Admin\Api\AdminTwoFactorController;
 use App\Http\Controllers\Admin\Api\AdminRoleAssignmentController;
 use App\Http\Controllers\Admin\Api\Catalog\ProductManagementController;
 use App\Http\Controllers\Admin\Api\Catalog\ProductIndexController;
@@ -97,7 +99,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')
     ->name('admin.')
     ->group(function (): void {
-        Route::middleware('auth:admin')->group(function (): void {
+        Route::middleware(['auth:admin', 'admin.active', 'admin.website'])->group(function (): void {
             Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 
             Route::prefix('api')->name('api.')->group(function (): void {
@@ -107,20 +109,23 @@ Route::prefix('admin')
                     ->middleware('admin.permission:platform.dashboard.view')
                     ->name('dashboard');
                 Route::get('/orders', OrderIndexController::class)
-                    ->middleware('admin.permission:platform.dashboard.view')
+                    ->middleware('admin.permission:cms.order.view')
                     ->name('orders.index');
                 Route::get('/newsletter-subscribers', NewsletterSubscriberIndexController::class)
-                    ->middleware('admin.permission:platform.dashboard.view')
+                    ->middleware('admin.permission:cms.newsletter.view')
                     ->name('newsletter-subscribers.index');
                 Route::put('/newsletter-subscribers/{subscriber}', [NewsletterSubscriberManagementController::class, 'update'])
-                    ->middleware('admin.permission:platform.dashboard.view')
+                    ->middleware('admin.permission:cms.newsletter.update')
                     ->name('newsletter-subscribers.update');
                 Route::delete('/newsletter-subscribers/{subscriber}', [NewsletterSubscriberManagementController::class, 'destroy'])
-                    ->middleware('admin.permission:platform.dashboard.view')
+                    ->middleware('admin.permission:cms.newsletter.delete')
                     ->name('newsletter-subscribers.destroy');
                 Route::get('/access', AccessControlIndexController::class)
                     ->middleware('admin.permission:rbac.role.view')
                     ->name('access.index');
+                Route::get('/audit-logs', AuditLogIndexController::class)
+                    ->middleware('admin.permission:admin.audit.view')
+                    ->name('audit-logs.index');
                 Route::post('/roles', [RoleManagementController::class, 'store'])
                     ->middleware('admin.permission:rbac.role.manage')
                     ->name('roles.store');
@@ -145,6 +150,17 @@ Route::prefix('admin')
                 Route::put('/admins/{admin}/password', [AdminAccountController::class, 'resetPassword'])
                     ->middleware('admin.permission:admin.account.reset_password')
                     ->name('admins.password.reset');
+                Route::put('/me/password', [AdminAccountController::class, 'changeOwnPassword'])
+                    ->name('me.password.update');
+                Route::post('/me/two-factor/setup', [AdminTwoFactorController::class, 'setup'])
+                    ->name('me.two-factor.setup');
+                Route::post('/me/two-factor/confirm', [AdminTwoFactorController::class, 'confirm'])
+                    ->name('me.two-factor.confirm');
+                Route::delete('/me/two-factor', [AdminTwoFactorController::class, 'disable'])
+                    ->name('me.two-factor.disable');
+                Route::post('/admins/{admin}/sessions/revoke', [AdminAccountController::class, 'revokeSessions'])
+                    ->middleware('admin.permission:admin.account.manage')
+                    ->name('admins.sessions.revoke');
                 Route::post('/admins/{admin}/lock', [AdminAccountController::class, 'lock'])
                     ->middleware('admin.permission:admin.account.lock')
                     ->name('admins.lock');
@@ -623,13 +639,13 @@ Route::prefix('admin')
                     ->middleware('admin.permission:cms.order.view')
                     ->name('cms.orders.index');
                 Route::put('/cms/orders/{order}', [OrderManagementController::class, 'update'])
-                    ->middleware('admin.permission:cms.order.view')
+                    ->middleware('admin.permission:cms.order.update')
                     ->name('cms.orders.update');
                 Route::put('/cms/orders/{order}/read', [OrderManagementController::class, 'markRead'])
                     ->middleware('admin.permission:cms.order.view')
                     ->name('cms.orders.read');
                 Route::delete('/cms/orders/{order}', [OrderManagementController::class, 'destroy'])
-                    ->middleware('admin.permission:cms.order.view')
+                    ->middleware('admin.permission:cms.order.delete')
                     ->name('cms.orders.destroy');
                 Route::get('/catalog/products', ProductIndexController::class)
                     ->middleware('admin.permission:catalog.view')

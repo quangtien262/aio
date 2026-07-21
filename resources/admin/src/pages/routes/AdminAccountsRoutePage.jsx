@@ -50,6 +50,7 @@ export default function AdminAccountsRoutePage({ canAccess, currentAdmin, permis
                 adminAccounts={data?.admins ?? []}
                 roles={data?.roles ?? []}
                 scopeTypes={data?.scope_types ?? {}}
+                websites={data?.websites ?? []}
                 currentAdmin={currentAdmin}
                 canManageAdmins={permissions.manage}
                 canResetPassword={permissions.resetPassword}

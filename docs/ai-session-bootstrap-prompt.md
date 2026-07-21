@@ -6,6 +6,16 @@
 
 Base source này phải được thiết kế rất kỹ từ đầu để sau này mở rộng thành nhiều nhóm tính năng lớn mà vẫn giữ kiến trúc sạch, tách biệt, dễ cài đặt, dễ gỡ bỏ, dễ nâng cấp.
 
+## 0. Trình tự đọc bắt buộc cho AI session mới
+
+1. Đọc hết file bootstrap này để nắm định hướng sản phẩm, module, theme, website context và convention.
+2. Nếu công việc liên quan tài khoản, đăng nhập, permission, middleware, module lifecycle hoặc dữ liệu admin, đọc tiếp `docs/architecture/admin-access-control.md` trước khi sửa code.
+3. Kiểm tra migration đã chạy bằng `php artisan migrate:status`; không sửa migration production đã chạy để thay đổi hành vi, hãy tạo migration mới.
+4. Kiểm tra `git status --short` trước khi sửa và không ghi đè thay đổi đang có của người dùng/session khác.
+5. Với auth/RBAC, luôn đọc test `AccessControlSecurityTest`, `AuthSplitTest`, `AdminFoundationApiTest` để hiểu invariant đã được khóa.
+
+Trạng thái chốt ngày 2026-07-21: kiến trúc quản lý tài khoản/RBAC mới đã được triển khai và migrate trên database local. Session admin cũ bị thu hồi; admin ID 1 phải đổi mật khẩu ở lần đăng nhập kế tiếp. Không được quay lại mô hình scope legacy.
+
 Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM, xuất phát đi lên từ kỹ thuật và đây là sản phẩm chiến lược của công ty nên tôi sẽ trực tiếp quản lý dự án này. hãy xưng em và gọi tôi là Sếp.
 
 ## 1. Tầm nhìn sản phẩm và định hướng phát triển
@@ -49,14 +59,16 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Hệ thống có 2 loại tài khoản chính:
   - `admin`: đăng nhập quản trị hệ thống
   - `customer` hoặc người dùng đăng ký trên website frontend
-- Admin hiện đã đi theo hướng đăng nhập bằng `username` thay vì `email` để thao tác nhanh hơn khi login.
-- Customer storefront vẫn đăng nhập bằng `email`.
+- Admin đăng nhập bằng `username` hoặc `email`; customer storefront đăng nhập bằng `email`.
 - Modal login storefront hiện là form dùng chung cho cả admin và customer:
-  - backend sẽ thử guard `admin` trước bằng `username`
+  - backend sẽ thử guard `admin` trước, lần lượt theo `username` và `email`
   - nếu không khớp admin thì mới fallback sang guard `customer` bằng `email`
   - UI field login trong modal nên được hiểu là `Email khách hàng / Username admin`, không quay lại hardcode thuần `email` cho flow login chung này.
-- Phân quyền phải đi theo hướng **RBAC theo từng module**, nghĩa là mỗi module có tập permission riêng.
-- Khi module được cài đặt/gỡ bỏ thì permission liên quan cũng phải đồng bộ theo module đó.
+- Phân quyền hiện dùng **RBAC theo từng module**. Mỗi assignment gắn role và scope ngay trên cùng một dòng trong `admin_role_assignments`.
+- Scope hợp lệ chỉ có `global` và `website`. Không được đưa lại `tenant`, `owner`, `tenant_key`, `owner_key`, `admin_role` hoặc `admin_role_scopes`.
+- Admin ID `1` là System Owner bất biến. Role `super-admin` là role hệ thống bất biến và luôn có toàn bộ permission active.
+- Khi module bị gỡ, permission được đánh dấu inactive/deprecated để giữ lịch sử, không xóa vật lý.
+- Tài liệu kiến trúc chuẩn: `docs/architecture/admin-access-control.md`.
 
 ## 4. Tech stack
 
@@ -81,7 +93,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 
 ## 6. Kiến trúc và convention cần giữ
 
-- Không reintroduce kiến trúc multi-tenant cũ. Các check/runtime field kiểu `website_key`, `owner_key`, `tenant_key` đã được dọn khỏi flow chính, giữ đúng tinh thần single-site.
+- Không reintroduce kiến trúc multi-tenant cũ. `owner_key` và `tenant_key` đã bị xóa hoàn toàn khỏi runtime/schema mới; `website_key` chỉ dùng cho website context/demo-domain nội bộ.
 - Mỗi khách hàng triển khai thực tế sẽ clone ra source riêng, nên đây là **single-tenant by codebase**, không phải multi-tenant shared runtime.
 - Tư duy đúng của dự án: **core platform + module ecosystem + theme ecosystem**.
 - Module phải đủ độc lập để cài/xóa tùy ý; theme phải đổi được trong cùng nhóm website mà không hỏng dữ liệu business/CMS.
@@ -149,19 +161,36 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Setup Wizard hiện chỉ giữ branding cơ bản như site/profile/logo/favicon/contact.
 
 
-### Auth / Admin Accounts
-- Admin account hiện có field persisted `username` trong bảng `admins`.
-- Migration bổ sung gần đây: `database/migrations/2026_05_13_000001_add_username_to_admins_table.php`
-- Default admin seed hiện là `username=admin`, `email=admin@aio.local`, `password=password`.
-- Seeder/factory đã được cập nhật để admin luôn có `username`: `database/seeders/DatabaseSeeder.php`, `database/factories/AdminFactory.php`.
-- Dedicated admin login page riêng đã được bỏ để giảm bề mặt truy cập; admin login đi qua shared storefront login modal ngoài website.
-- Khi admin hết session hoặc logout, hệ thống phải quay về storefront homepage thay vì `/admin/login`.
-- File neo auth: `app/Http/Controllers/Admin/AuthenticatedSessionController.php`, `app/Http/Controllers/Customer/AuthenticatedSessionController.php`, `bootstrap/app.php`, `resources/admin/src/layouts/AdminLayout.jsx`.
-- Admin account management UI/API đã được cập nhật để tạo/sửa/list/drawer đều có `username`: `app/Http/Controllers/Admin/Api/AdminAccountController.php`, `resources/admin/src/modules/admins/components/AdminAccountFormModal.jsx`, `resources/admin/src/modules/admins/components/AdminAccountsTableCard.jsx`, `resources/admin/src/modules/admins/components/AdminAccountDetailsDrawer.jsx`, `resources/admin/src/modules/admins/pages/AdminAccountsPage.jsx`.
-- Ở admin account table/drawer, UX hiện ưu tiên hiển thị `username` rõ hơn `email`.
-- Test đã khóa phần auth/account mới tại:
+### Auth / Admin Accounts / RBAC — trạng thái hiện hành
+
+- Dedicated `/admin/login` đã bị bỏ. Admin và customer dùng chung modal login storefront qua `customer.auth.store`; backend thử guard admin trước rồi mới fallback customer.
+- Tất cả auth modal của các theme chính đã có field `two_factor_code`. Không tạo lại form login admin riêng.
+- Login admin bị rate-limit 5 lần/phút theo định danh + IP; thông báo lỗi không tiết lộ tài khoản tồn tại, bị khóa hay bị vô hiệu hóa.
+- Mật khẩu admin tạo mới/reset phải có tối thiểu 12 ký tự, chữ hoa/thường, số và ký hiệu. Tài khoản mới/reset phải đổi mật khẩu trước khi tiếp tục.
+- Session mặc định 120 phút. `auth_version` thu hồi session cũ khi đổi/reset mật khẩu, đổi role/scope, khóa tài khoản hoặc thay đổi TOTP.
+- TOTP theo RFC 6238 và recovery code dùng một lần đã có trong menu tài khoản admin. Secret được encrypted cast; recovery code được hash trước khi lưu.
+- Admin ID `1` luôn là System Owner: active, không khóa, không sửa/xóa/reset mật khẩu từ màn quản lý. System Owner chỉ tự đổi mật khẩu sau khi xác nhận mật khẩu hiện tại.
+- Role `super-admin` luôn `is_system=true`, `is_assignable=false`, `status=active`; không sửa, đổi key, xóa hoặc cấp thủ công. System Owner và tài khoản mang role này luôn có toàn bộ permission active.
+- Role/scope dùng bảng `admin_role_assignments`; mỗi dòng gồm `admin_id`, `role_id`, `scope_type=global|website`, `scope_value`, `expires_at`.
+- Audit log lưu actor/action/module/website/target/before/after/IP/user-agent/request-id. Logger lọc đệ quy mật khẩu, token, TOTP secret và recovery code.
+- Permission module khi ngừng dùng chuyển inactive/deprecated, không xóa vật lý.
+- Admin UI hiện có các khu vực: `Vai trò & quyền`, `Tài khoản quản trị`, `Nhật ký bảo mật`, đổi mật khẩu và xác thực hai lớp.
+- Migration chốt kiến trúc:
+  - `database/migrations/2026_07_21_000001_rebuild_admin_access_control.php`
+  - `database/migrations/2026_07_21_000002_enforce_system_owner_invariants.php`
+- File backend neo:
+  - `app/Models/Admin.php`, `app/Models/Role.php`, `app/Models/Permission.php`
+  - `app/Models/AdminRoleAssignment.php`, `app/Models/AuditLog.php`
+  - `app/Http/Controllers/Admin/Api/AdminAccountController.php`
+  - `app/Http/Controllers/Admin/Api/AdminTwoFactorController.php`
+  - `app/Http/Middleware/EnsureAdminAccountIsActive.php`
+  - `app/Http/Middleware/EnsureAdminWebsiteAccess.php`
+  - `app/Support/AuditLogger.php`, `app/Support/Totp.php`
+- Regression test bắt buộc:
+  - `tests/Feature/AccessControlSecurityTest.php`
   - `tests/Feature/AuthSplitTest.php`
   - `tests/Feature/AdminFoundationApiTest.php`
+- Tài liệu chi tiết và checklist production: `docs/architecture/admin-access-control.md`.
 
 ## 7.1. Theme demo / cấu hình domain nội bộ
 
@@ -249,6 +278,11 @@ Lưu ý khi tiếp tục phát triển:
 - `resources/admin/src/styles/index.css`
 - `app/Http/Controllers/Customer/AuthenticatedSessionController.php`
 - `app/Http/Controllers/Admin/Api/AdminAccountController.php`
+- `app/Http/Controllers/Admin/Api/AdminTwoFactorController.php`
+- `app/Http/Controllers/Admin/Api/AuditLogIndexController.php`
+- `app/Models/AdminRoleAssignment.php`
+- `app/Support/AuditLogger.php`
+- `docs/architecture/admin-access-control.md`
 - `themes/TH0002/views/partials/palette-tokens.blade.php`
 - `themes/TH0002/views/partials/engagement-modals.blade.php`
 - `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`
@@ -265,10 +299,13 @@ Lưu ý khi tiếp tục phát triển:
 - Nếu người dùng hỏi “tiếp tục phần trước”, hãy giả định ngữ cảnh gần nhất xoay quanh CMS admin, media, posts, permissions, themes, setup, và UX quản trị.
 - Ở ngữ cảnh gần đây hơn của repo này, hãy đặc biệt nhớ thêm:
   - palette TH0002 đã nằm trong Theme Manager, không còn ở Setup Wizard
-  - admin login dùng `username`
+  - admin login dùng `username` hoặc `email`, customer dùng `email`
   - modal storefront login là form dùng chung `admin username` + `customer email`
   - các theme `TH0001`, `TH0002`, `SER0100`, `SER0101` đều đã đồng bộ flow shared login này
   - không reintroduce lại `/admin/login` hoặc dedicated admin login page riêng
+  - không reintroduce `tenant`, `owner`, `tenant_key`, `owner_key`, `admin_role` hoặc `admin_role_scopes`
+  - không cho phép sửa/xóa role `super-admin` hay sửa/khóa/xóa admin ID `1`
+  - permission module phải inactive/deprecated khi gỡ module, không xóa vật lý
 - Khi cần đề xuất kiến trúc, hãy ưu tiên các thiết kế có thể tái sử dụng cho nhiều module khác nhau trong hệ sinh thái AIO.
 - Khi nói về roadmap hay solution, hãy nhớ CMS/theme marketplace là một trụ cột thương mại quan trọng của dự án.
 

@@ -77,8 +77,6 @@ class ServiceIndexController
             'is_highlight' => $service->is_highlight,
             'sort_order' => $service->sort_order,
             'website_key' => $service->website_key,
-            'owner_key' => $service->owner_key,
-            'tenant_key' => $service->tenant_key,
             'featured_image_url' => $featuredImage['image_url'] ?? null,
             'featured_image_alt' => $featuredImage['alt_text'] ?? null,
             'images' => $images,

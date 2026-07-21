@@ -57,8 +57,6 @@ class PartnerIndexController
             'is_featured' => $partner->is_featured,
             'sort_order' => $partner->sort_order,
             'website_key' => $partner->website_key,
-            'owner_key' => $partner->owner_key,
-            'tenant_key' => $partner->tenant_key,
         ];
     }
 }

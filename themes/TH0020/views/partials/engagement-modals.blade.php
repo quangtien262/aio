@@ -50,6 +50,7 @@
                 <label class="th-modal-field">
                     <span class="sr-only">@themeT('modal.password', 'M?t kh?u')</span>
                     <input type="password" name="password" required placeholder="@themeT('modal.password', 'M?t kh?u')" aria-label="@themeT('modal.password', 'M?t kh?u')">
+                    <input type="text" name="two_factor_code" inputmode="numeric" autocomplete="one-time-code" maxlength="32" placeholder="Mã xác thực 2 lớp (nếu đã bật)">
                     <small class="th-modal-field-error" data-th-field-error="password"></small>
                 </label>
                 <button type="submit" class="th-modal-submit">@themeT('modal.login_submit', 'Ðang nh?p')</button>

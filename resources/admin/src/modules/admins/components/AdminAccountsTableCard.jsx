@@ -69,7 +69,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                 || admin.username?.toLowerCase().includes(normalizedKeyword)
                 || admin.email?.toLowerCase().includes(normalizedKeyword)
                 || (admin.roles ?? []).some((role) => role.name?.toLowerCase().includes(normalizedKeyword))
-                || (admin.scopes ?? []).some((scope) => `${scope.scope_type}:${scope.scope_value}`.toLowerCase().includes(normalizedKeyword));
+                || (admin.assignments ?? []).some((assignment) => `${assignment.scope_type}:${assignment.scope_value ?? ''}`.toLowerCase().includes(normalizedKeyword));
 
             const matchesStatus = statusFilter === 'all'
                 || (statusFilter === 'active' && admin.is_active && !admin.is_locked)
@@ -80,7 +80,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                 || (admin.role_ids ?? []).includes(Number(roleFilter));
 
             const matchesScopeType = scopeTypeFilter === 'all'
-                || (admin.scopes ?? []).some((scope) => scope.scope_type === scopeTypeFilter);
+                || (admin.assignments ?? []).some((assignment) => assignment.scope_type === scopeTypeFilter);
 
             return matchesKeyword && matchesStatus && matchesRole && matchesScopeType;
         });
@@ -99,7 +99,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                 admin.locked_reason ?? '',
                 formatLastLogin(admin.last_login_at),
                 (admin.roles ?? []).map((role) => role.name).join(' | '),
-                (admin.scopes ?? []).map((scope) => `${scopeTypes?.[scope.scope_type] ?? scope.scope_type}:${scope.scope_value}`).join(' | '),
+                (admin.assignments ?? []).map((assignment) => `${scopeTypes?.[assignment.scope_type] ?? assignment.scope_type}:${assignment.scope_value ?? '*'}`).join(' | '),
             ]),
         ];
 
@@ -129,6 +129,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                     </Button>
                     <Text strong>Username: @{admin.username}</Text>
                     <Text type="secondary">Email: {admin.email}</Text>
+                    {admin.is_system_owner ? <Tag color="gold">System Owner</Tag> : null}
                 </Space>
             ),
         },
@@ -161,9 +162,9 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
             key: 'scopes',
             render: (_, admin) => (
                 <Space wrap>
-                    {(admin.scopes ?? []).map((scope) => (
-                        <Tag key={`${admin.id}-${scope.role_id}-${scope.scope_type}-${scope.scope_value}`} color="blue">
-                            {scope.scope_type}:{scope.scope_value}
+                    {(admin.assignments ?? []).map((assignment) => (
+                        <Tag key={`${admin.id}-${assignment.role_id}-${assignment.scope_type}-${assignment.scope_value ?? 'all'}`} color="blue">
+                            {assignment.scope_type}:{assignment.scope_value ?? '*'}
                         </Tag>
                     ))}
                 </Space>
@@ -184,23 +185,23 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                     {
                         key: 'edit',
                         label: 'Sửa admin',
-                        disabled: !canManageAdmins,
+                        disabled: !canManageAdmins || admin.is_system_owner,
                     },
                     {
                         key: 'password',
                         label: 'Đặt lại mật khẩu',
-                        disabled: !canResetPassword,
+                        disabled: !canResetPassword || admin.is_system_owner,
                     },
                     admin.is_locked
                         ? {
                             key: 'unlock',
                             label: 'Mở khóa tài khoản',
-                            disabled: !canLockAdmins,
+                            disabled: !canLockAdmins || admin.is_system_owner,
                         }
                         : {
                             key: 'lock',
                             label: isCurrentAdmin ? 'Không thể tự khóa tài khoản đang dùng' : 'Khóa tài khoản',
-                            disabled: !canLockAdmins || isCurrentAdmin,
+                            disabled: !canLockAdmins || isCurrentAdmin || admin.is_system_owner,
                             danger: true,
                         },
                 ];
@@ -254,9 +255,9 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
         >
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label">Admin Management</Text>
-                <Title level={4}>Quản lý tài khoản admin, role, scope và trạng thái khóa/mở khóa</Title>
+                <Title level={4}>Quản lý tài khoản, vai trò và phạm vi website</Title>
                 <Paragraph>
-                    Tài khoản admin có thể được gán role, data scope theo website/module/owner/tenant, đặt lại mật khẩu và khóa mở khóa trực tiếp.
+                    Mỗi vai trò được gán ở phạm vi toàn hệ thống hoặc theo website. System Owner luôn toàn quyền và không thể bị khóa.
                 </Paragraph>
             </Space>
 

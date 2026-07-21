@@ -51,8 +51,6 @@ class FeaturedCategoryManagementController
             'name' => ['required', 'string', 'max:255'],
             'location' => ['required', 'string', Rule::in(collect(self::DEFAULT_LOCATIONS)->pluck('value')->all())],
             'website_key' => ['nullable', 'string', 'max:100'],
-            'owner_key' => ['nullable', 'string', 'max:100'],
-            'tenant_key' => ['nullable', 'string', 'max:100'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.label' => ['required', 'string', 'max:255'],
             'items.*.url' => ['nullable', 'string', 'max:2000'],
@@ -70,8 +68,6 @@ class FeaturedCategoryManagementController
             'name' => $group->name,
             'location' => $group->location,
             'website_key' => $group->website_key,
-            'owner_key' => $group->owner_key,
-            'tenant_key' => $group->tenant_key,
             'items' => $group->items ?? [],
         ];
     }

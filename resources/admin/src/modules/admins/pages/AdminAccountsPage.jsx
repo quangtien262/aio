@@ -14,15 +14,16 @@ const emptyAccountForm = {
     name: '',
     username: '',
     email: '',
-    is_active: true,
-    role_ids: [],
-    scopes: [],
+    status: 'active',
+    is_system_owner: false,
+    assignments: [],
 };
 
 export default function AdminAccountsPage({
     adminAccounts,
     roles,
     scopeTypes,
+    websites,
     currentAdmin,
     canManageAdmins,
     canResetPassword,
@@ -51,6 +52,10 @@ export default function AdminAccountsPage({
         label,
         value,
     })), [scopeTypes]);
+    const websiteOptions = useMemo(() => (websites ?? []).map((website) => ({
+        value: website.website_key,
+        label: website.name || website.domain || website.website_key,
+    })), [websites]);
 
     const openCreateModal = () => {
         setEditingAccount(emptyAccountForm);
@@ -63,9 +68,9 @@ export default function AdminAccountsPage({
             name: admin.name,
             username: admin.username,
             email: admin.email,
-            is_active: admin.is_active,
-            role_ids: admin.role_ids ?? [],
-            scopes: admin.scopes ?? [],
+            status: admin.status,
+            is_system_owner: admin.is_system_owner,
+            assignments: admin.assignments ?? [],
         });
         setAccountModalOpen(true);
     };
@@ -177,7 +182,7 @@ export default function AdminAccountsPage({
             total: accounts.length,
             active: accounts.filter((admin) => admin.is_active).length,
             locked: accounts.filter((admin) => admin.is_locked).length,
-            withScopes: accounts.filter((admin) => (admin.scopes ?? []).length > 0).length,
+            withScopes: accounts.filter((admin) => (admin.assignments ?? []).some((assignment) => assignment.scope_type === 'website')).length,
         };
     }, [adminAccounts]);
 
@@ -242,6 +247,7 @@ export default function AdminAccountsPage({
                         editingAccount={editingAccount}
                         roleOptions={roleOptions}
                         scopeTypeOptions={scopeTypeOptions}
+                        websiteOptions={websiteOptions}
                         onCancel={handleCloseAccountModal}
                         onSubmit={handleSaveAccount}
                     />

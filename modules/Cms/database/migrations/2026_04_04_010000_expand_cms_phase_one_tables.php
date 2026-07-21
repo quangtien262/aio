@@ -26,8 +26,6 @@ return new class extends Migration
             $table->text('meta_description')->nullable();
             $table->foreignId('parent_id')->nullable()->constrained('cms_categories')->nullOnDelete();
             $table->string('website_key')->nullable()->index();
-            $table->string('owner_key')->nullable()->index();
-            $table->string('tenant_key')->nullable()->index();
             $table->timestamps();
         });
 
@@ -40,8 +38,6 @@ return new class extends Migration
             $table->unsignedBigInteger('size')->default(0);
             $table->string('alt_text')->nullable();
             $table->string('website_key')->nullable()->index();
-            $table->string('owner_key')->nullable()->index();
-            $table->string('tenant_key')->nullable()->index();
             $table->timestamps();
         });
 
@@ -58,8 +54,6 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained('cms_categories')->nullOnDelete();
             $table->timestamp('publish_at')->nullable();
             $table->string('website_key')->nullable()->index();
-            $table->string('owner_key')->nullable()->index();
-            $table->string('tenant_key')->nullable()->index();
             $table->timestamps();
         });
 
@@ -69,8 +63,6 @@ return new class extends Migration
             $table->string('location')->index();
             $table->json('items');
             $table->string('website_key')->nullable()->index();
-            $table->string('owner_key')->nullable()->index();
-            $table->string('tenant_key')->nullable()->index();
             $table->timestamps();
         });
     }

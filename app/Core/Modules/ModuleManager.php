@@ -130,11 +130,10 @@ class ModuleManager
         DB::transaction(function () use ($module, $installation): void {
             Permission::query()
                 ->where('module_key', $module['key'])
-                ->get()
-                ->each(function (Permission $permission): void {
-                    $permission->roles()->detach();
-                    $permission->delete();
-                });
+                ->update([
+                    'is_active' => false,
+                    'deprecated_at' => now(),
+                ]);
 
             $installation->forceFill([
                 'status' => 'available',
@@ -188,6 +187,8 @@ class ModuleManager
                 [
                     'name' => PermissionLabel::make($permissionKey),
                     'module_key' => $module['key'],
+                    'is_active' => true,
+                    'deprecated_at' => null,
                 ],
             );
         }
@@ -195,17 +196,16 @@ class ModuleManager
         Permission::query()
             ->where('module_key', $module['key'])
             ->whereNotIn('key', $permissionKeys->all())
-            ->get()
-            ->each(function (Permission $permission): void {
-                $permission->roles()->detach();
-                $permission->delete();
-            });
+            ->update([
+                'is_active' => false,
+                'deprecated_at' => now(),
+            ]);
 
         $superAdminRole = Role::query()->where('key', 'super-admin')->first();
 
         if ($superAdminRole) {
             $superAdminRole->permissions()->syncWithoutDetaching(
-                Permission::query()->pluck('id')->all(),
+                Permission::query()->where('is_active', true)->pluck('id')->all(),
             );
         }
     }

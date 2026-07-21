@@ -78,8 +78,11 @@ class AuthSplitTest extends TestCase
     {
         $this->get($this->storefrontRoute('customer.auth.login'))
             ->assertOk()
+            ->assertSee('Đăng nhập vào hệ thống')
             ->assertSee('name="login"', false)
             ->assertSee('type="text"', false)
+            ->assertSee('name="two_factor_code"', false)
+            ->assertSee('name="remember"', false)
             ->assertDontSee('type="email"', false);
     }
 

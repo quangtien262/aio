@@ -16,8 +16,6 @@ return new class extends Migration
             $table->unsignedInteger('stock')->default(0);
 
             $table->string('website_key')->nullable()->index();
-            $table->string('owner_key')->nullable()->index();
-            $table->string('tenant_key')->nullable()->index();
 
             $table->longText('detail_content')->nullable();
             $table->longText('highlights')->nullable();

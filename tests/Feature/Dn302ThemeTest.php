@@ -47,7 +47,13 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('janelas')
             ->assertSee('data-block-type="featured_services"', false)
             ->assertSee('data-block-type="newsletter_signup"', false)
-            ->assertSee('data-dn-reveal', false);
+            ->assertSee('data-dn-reveal', false)
+            ->assertSee('data-dn-auth-open="login"', false)
+            ->assertSee('data-dn-auth-open="register"', false)
+            ->assertSee('data-dn-auth-modal', false)
+            ->assertSee('data-dn-auth-panel="login"', false)
+            ->assertSee('data-dn-auth-panel="register"', false)
+            ->assertSee('name="two_factor_code"', false);
 
         $this->assertDatabaseHas('landing_pages', ['theme_key' => 'DN302', 'slug' => 'home', 'is_home' => true]);
         $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->firstOrFail();

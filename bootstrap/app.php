@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\EnsureAdminHasPermission;
+use App\Http\Middleware\EnsureAdminAccountIsActive;
+use App\Http\Middleware\EnsureAdminWebsiteAccess;
 use App\Http\Middleware\ResolveCurrentSite;
 use App\Http\Middleware\SetFrontendLocale;
 use App\Support\FrontendLocalization;
@@ -25,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin.permission' => EnsureAdminHasPermission::class,
+            'admin.active' => EnsureAdminAccountIsActive::class,
+            'admin.website' => EnsureAdminWebsiteAccess::class,
             'frontend.locale' => SetFrontendLocale::class,
         ]);
 

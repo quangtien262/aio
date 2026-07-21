@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Col from 'antd/es/col';
 import Form from 'antd/es/form';
@@ -7,7 +8,6 @@ import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
-import Switch from 'antd/es/switch';
 import Typography from 'antd/es/typography';
 
 const { Text } = Typography;
@@ -17,12 +17,12 @@ export const emptyAccountForm = {
     name: '',
     username: '',
     email: '',
-    is_active: true,
-    role_ids: [],
-    scopes: [],
+    status: 'active',
+    is_system_owner: false,
+    assignments: [],
 };
 
-export default function AdminAccountFormModal({ open, canManageAdmins, editingAccount, roleOptions, scopeTypeOptions, onCancel, onSubmit }) {
+export default function AdminAccountFormModal({ open, canManageAdmins, editingAccount, roleOptions, scopeTypeOptions, websiteOptions, onCancel, onSubmit }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -32,12 +32,7 @@ export default function AdminAccountFormModal({ open, canManageAdmins, editingAc
     const handleSubmit = async () => {
         const payload = await form.validateFields();
         const didSave = await onSubmit?.(payload);
-
-        if (!didSave) {
-            return;
-        }
-
-        form.resetFields();
+        if (didSave) form.resetFields();
     };
 
     const handleCancel = () => {
@@ -47,109 +42,88 @@ export default function AdminAccountFormModal({ open, canManageAdmins, editingAc
 
     return (
         <Modal
-            title={editingAccount.id ? 'Cập nhật admin' : 'Tạo admin mới'}
+            title={editingAccount.id ? 'Cập nhật tài khoản quản trị' : 'Tạo tài khoản quản trị'}
             open={open}
             onCancel={handleCancel}
             onOk={handleSubmit}
             okButtonProps={{ disabled: !canManageAdmins }}
-            width={860}
+            width={900}
             destroyOnHidden
         >
             <Form form={form} layout="vertical" initialValues={editingAccount}>
+                {editingAccount.is_system_owner ? (
+                    <Alert type="info" showIcon message="System Owner luôn hoạt động, luôn có toàn quyền và không thể thay đổi vai trò." style={{ marginBottom: 16 }} />
+                ) : null}
+
                 <Row gutter={16}>
-                    <Col span={8}>
-                        <Form.Item name="name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên admin' }]}>
-                            <Input placeholder="VD: Nguyễn Văn A" />
+                    <Col xs={24} md={8}>
+                        <Form.Item name="name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
+                            <Input />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
-                        <Form.Item
-                            name="username"
-                            label="Username"
-                            rules={[
-                                { required: true, message: 'Nhập username admin' },
-                                { pattern: /^[A-Za-z0-9._-]+$/, message: 'Username chỉ gồm chữ, số, dấu chấm, gạch dưới hoặc gạch ngang' },
-                            ]}
-                        >
-                            <Input placeholder="admin" />
+                    <Col xs={24} md={8}>
+                        <Form.Item name="username" label="Username" rules={[{ required: true }, { pattern: /^[A-Za-z0-9._-]+$/, message: 'Chỉ dùng chữ, số, dấu chấm, gạch dưới hoặc gạch ngang' }]}>
+                            <Input />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
-                        <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Nhập email admin' }, { type: 'email', message: 'Email admin không hợp lệ' }]}>
-                            <Input placeholder="admin@aio.local" />
+                    <Col xs={24} md={8}>
+                        <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
+                            <Input />
                         </Form.Item>
                     </Col>
                 </Row>
 
                 {!editingAccount.id ? (
                     <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Nhập mật khẩu' }, { min: 8, message: 'Mật khẩu phải có ít nhất 8 ký tự' }]}>
+                        <Col xs={24} md={12}>
+                            <Form.Item name="password" label="Mật khẩu tạm thời" rules={[{ required: true }, { min: 12, message: 'Ít nhất 12 ký tự' }]}>
                                 <Input.Password />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="password_confirmation"
-                                label="Xác nhận mật khẩu"
-                                dependencies={['password']}
-                                rules={[
-                                    { required: true, message: 'Xác nhận mật khẩu' },
-                                    ({ getFieldValue }) => ({
-                                        validator(_, value) {
-                                            if (!value || getFieldValue('password') === value) {
-                                                return Promise.resolve();
-                                            }
-
-                                            return Promise.reject(new Error('Xác nhận mật khẩu không khớp.'));
-                                        },
-                                    }),
-                                ]}
-                            >
+                        <Col xs={24} md={12}>
+                            <Form.Item name="password_confirmation" label="Xác nhận mật khẩu" dependencies={['password']} rules={[{ required: true }, ({ getFieldValue }) => ({ validator(_, value) { return !value || getFieldValue('password') === value ? Promise.resolve() : Promise.reject(new Error('Mật khẩu xác nhận không khớp')); } })]}>
                                 <Input.Password />
                             </Form.Item>
                         </Col>
                     </Row>
                 ) : null}
 
-                <Form.Item name="is_active" label="Kích hoạt tài khoản" valuePropName="checked">
-                    <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
+                <Form.Item name="status" label="Trạng thái">
+                    <Select disabled={editingAccount.is_system_owner} options={[
+                        { value: 'active', label: 'Đang hoạt động' },
+                        { value: 'suspended', label: 'Tạm ngừng' },
+                        { value: 'archived', label: 'Lưu trữ' },
+                    ]} />
                 </Form.Item>
 
-                <Form.Item name="role_ids" label="Roles">
-                    <Select mode="multiple" options={roleOptions} placeholder="Chon roles" />
-                </Form.Item>
-
-                <Form.List name="scopes">
+                <Form.List name="assignments">
                     {(fields, { add, remove }) => (
                         <Space direction="vertical" style={{ width: '100%' }} size={12}>
-                            <Text strong>Data Scopes</Text>
+                            <Text strong>Vai trò và phạm vi</Text>
                             {fields.map((field) => (
                                 <Row gutter={12} key={field.key}>
-                                    <Col span={7}>
-                                        <Form.Item {...field} name={[field.name, 'role_id']} label="Role" rules={[{ required: true, message: 'Chon role' }]}>
-                                            <Select options={roleOptions} placeholder="Role" />
+                                    <Col xs={24} md={8}>
+                                        <Form.Item {...field} name={[field.name, 'role_id']} label="Vai trò" rules={[{ required: true }]}>
+                                            <Select options={roleOptions} />
                                         </Form.Item>
                                     </Col>
-                                    <Col span={7}>
-                                        <Form.Item {...field} name={[field.name, 'scope_type']} label="Loại scope" rules={[{ required: true, message: 'Chọn scope' }]}>
-                                            <Select options={scopeTypeOptions} placeholder="Loại scope" />
+                                    <Col xs={24} md={6}>
+                                        <Form.Item {...field} name={[field.name, 'scope_type']} label="Phạm vi" rules={[{ required: true }]}>
+                                            <Select options={scopeTypeOptions} />
                                         </Form.Item>
                                     </Col>
-                                    <Col span={8}>
-                                        <Form.Item {...field} name={[field.name, 'scope_value']} label="Giá trị" rules={[{ required: true, message: 'Nhập giá trị scope' }]}>
-                                            <Input placeholder="VD: cms / tenant-a / website-main" />
+                                    <Col xs={20} md={8}>
+                                        <Form.Item {...field} name={[field.name, 'scope_value']} label="Website">
+                                            <Select allowClear options={websiteOptions} placeholder="Chỉ chọn khi phạm vi là Website" />
                                         </Form.Item>
                                     </Col>
-                                    <Col span={2}>
-                                        <Button danger style={{ marginTop: 30 }} onClick={() => remove(field.name)}>
-                                            Xóa
-                                        </Button>
+                                    <Col xs={4} md={2}>
+                                        <Button danger style={{ marginTop: 30 }} disabled={editingAccount.is_system_owner} onClick={() => remove(field.name)}>Xóa</Button>
                                     </Col>
                                 </Row>
                             ))}
-                            <Button onClick={() => add({ role_id: undefined, scope_type: undefined, scope_value: '' })}>
-                                Thêm scope
+                            <Button disabled={editingAccount.is_system_owner} onClick={() => add({ role_id: undefined, scope_type: 'global', scope_value: null })}>
+                                Thêm vai trò
                             </Button>
                         </Space>
                     )}

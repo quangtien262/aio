@@ -3,8 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\CatalogProduct;
+use App\Models\CatalogCategory;
 use App\Models\Admin;
-use App\Models\AdminRoleScope;
+use App\Models\AdminRoleAssignment;
 use App\Models\CmsPage;
 use App\Models\ModuleInstallation;
 use App\Models\Permission;
@@ -131,8 +132,9 @@ class AdminFoundationApiTest extends TestCase
             'status' => 'available',
         ]);
 
-        $this->assertDatabaseMissing('permissions', [
+        $this->assertDatabaseHas('permissions', [
             'key' => 'catalog.view',
+            'is_active' => false,
         ]);
         $this->assertFalse(Schema::hasTable('catalog_products'));
         $this->assertFalse(File::exists(config_path('catalog.php')));
@@ -181,7 +183,7 @@ class AdminFoundationApiTest extends TestCase
         $this->assertContains('finish', $siteProfile->completed_steps);
 
         $this->assertSame('enabled', ModuleInstallation::query()->where('key', 'cms')->value('status'));
-        $this->assertNull(Permission::query()->where('key', 'catalog.view')->first());
+        $this->assertFalse((bool) Permission::query()->where('key', 'catalog.view')->value('is_active'));
         $this->assertTrue((bool) ThemeInstallation::query()->where('key', 'corporate-starter')->value('is_active'));
     }
 
@@ -319,7 +321,7 @@ class AdminFoundationApiTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_manage_admin_accounts_and_scopes(): void
+    public function test_admin_can_manage_admin_accounts_and_role_assignments(): void
     {
         $this->seed(DatabaseSeeder::class);
 
@@ -350,20 +352,14 @@ class AdminFoundationApiTest extends TestCase
             'name' => 'Scope Admin',
             'username' => 'scope-admin',
             'email' => 'scope-admin@aio.local',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
             'is_active' => true,
-            'role_ids' => [$role->id],
-            'scopes' => [
+            'assignments' => [
                 [
                     'role_id' => $role->id,
-                    'scope_type' => 'module',
-                    'scope_value' => 'cms',
-                ],
-                [
-                    'role_id' => $role->id,
-                    'scope_type' => 'tenant',
-                    'scope_value' => 'tenant-a',
+                    'scope_type' => 'global',
+                    'scope_value' => null,
                 ],
             ],
         ])->assertCreated();
@@ -376,12 +372,12 @@ class AdminFoundationApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->assertDatabaseHas('admin_role', [
+        $this->assertDatabaseHas('admin_role_assignments', [
             'admin_id' => $scopedAdmin->id,
             'role_id' => $role->id,
         ]);
 
-        $this->assertSame(2, AdminRoleScope::query()->where('admin_id', $scopedAdmin->id)->count());
+        $this->assertSame(1, AdminRoleAssignment::query()->where('admin_id', $scopedAdmin->id)->count());
 
         $this->getJson('/admin/api/me')
             ->assertOk()
@@ -408,25 +404,24 @@ class AdminFoundationApiTest extends TestCase
             'username' => 'scope-admin',
             'email' => 'scope-admin@aio.local',
             'is_active' => true,
-            'role_ids' => [$role->id],
-            'scopes' => [
+            'assignments' => [
                 [
                     'role_id' => $role->id,
-                    'scope_type' => 'website',
-                    'scope_value' => 'corporate-main',
+                    'scope_type' => 'global',
+                    'scope_value' => null,
                 ],
             ],
         ])->assertOk();
 
-        $this->assertDatabaseHas('admin_role_scopes', [
+        $this->assertDatabaseHas('admin_role_assignments', [
             'admin_id' => $scopedAdmin->id,
-            'scope_type' => 'website',
-            'scope_value' => 'corporate-main',
+            'scope_type' => 'global',
+            'scope_value' => null,
         ]);
 
         $this->putJson("/admin/api/admins/{$scopedAdmin->id}/password", [
-            'password' => 'new-password123',
-            'password_confirmation' => 'new-password123',
+            'password' => 'NewPassword123!',
+            'password_confirmation' => 'NewPassword123!',
         ])->assertOk();
 
         $this->postJson("/admin/api/admins/{$scopedAdmin->id}/lock", [
@@ -446,10 +441,10 @@ class AdminFoundationApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->assertTrue(Hash::check('new-password123', $scopedAdmin->fresh()->password));
+        $this->assertTrue(Hash::check('NewPassword123!', $scopedAdmin->fresh()->password));
     }
 
-    public function test_admin_account_validation_rejects_scopes_for_unassigned_roles(): void
+    public function test_admin_account_validation_rejects_legacy_scope_types(): void
     {
         $this->seed(DatabaseSeeder::class);
 
@@ -480,11 +475,10 @@ class AdminFoundationApiTest extends TestCase
             'name' => 'Broken Scope Admin',
             'username' => 'broken-scope-admin',
             'email' => 'broken-scope-admin@aio.local',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
             'is_active' => true,
-            'role_ids' => [],
-            'scopes' => [
+            'assignments' => [
                 [
                     'role_id' => $role->id,
                     'scope_type' => 'module',
@@ -493,7 +487,7 @@ class AdminFoundationApiTest extends TestCase
             ],
         ])
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['scopes']);
+            ->assertJsonValidationErrors(['assignments.0.scope_type']);
 
         $this->assertDatabaseMissing('admins', [
             'email' => 'broken-scope-admin@aio.local',
@@ -533,7 +527,7 @@ class AdminFoundationApiTest extends TestCase
             'reason' => 'Should fail for self lock.',
         ])
             ->assertStatus(422)
-            ->assertJsonPath('message', 'Không thể khóa tài khoản admin đang sử dụng.');
+            ->assertJsonPath('message', 'System Owner không thể bị khóa.');
 
         $this->assertDatabaseHas('admins', [
             'id' => $admin->id,
@@ -542,7 +536,7 @@ class AdminFoundationApiTest extends TestCase
         ]);
     }
 
-    public function test_cms_and_catalog_queries_are_filtered_by_tenant_owner_and_website_scopes(): void
+    public function test_cms_and_catalog_queries_are_isolated_by_current_website(): void
     {
         $this->seed(DatabaseSeeder::class);
 
@@ -558,8 +552,6 @@ class AdminFoundationApiTest extends TestCase
             'status' => 'published',
             'body' => 'Visible page',
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ]);
 
         CmsPage::query()->create([
@@ -568,8 +560,6 @@ class AdminFoundationApiTest extends TestCase
             'status' => 'draft',
             'body' => 'Hidden page',
             'website_key' => 'website-other',
-            'owner_key' => 'owner-other',
-            'tenant_key' => 'tenant-b',
         ]);
 
         CatalogProduct::query()->create([
@@ -578,8 +568,6 @@ class AdminFoundationApiTest extends TestCase
             'price' => 120000,
             'stock' => 15,
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ]);
 
         CatalogProduct::query()->create([
@@ -588,8 +576,13 @@ class AdminFoundationApiTest extends TestCase
             'price' => 150000,
             'stock' => 5,
             'website_key' => 'website-other',
-            'owner_key' => 'owner-other',
-            'tenant_key' => 'tenant-b',
+        ]);
+
+        $catalogCategory = CatalogCategory::query()->create([
+            'name' => 'Scoped Category',
+            'slug' => 'scoped-category',
+            'website_key' => 'website-main',
+            'is_active' => true,
         ]);
 
         $accessPayload = $this->getJson('/admin/api/access')
@@ -615,14 +608,11 @@ class AdminFoundationApiTest extends TestCase
             'name' => 'Scoped Data Admin',
             'username' => 'scoped-data-admin',
             'email' => 'scoped-data-admin@aio.local',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'is_active' => true,
-            'role_ids' => [$role->id],
-            'scopes' => [
-                ['role_id' => $role->id, 'scope_type' => 'tenant', 'scope_value' => 'tenant-a'],
-                ['role_id' => $role->id, 'scope_type' => 'owner', 'scope_value' => 'owner-system'],
-                ['role_id' => $role->id, 'scope_type' => 'website', 'scope_value' => 'website-main'],
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+            'status' => 'active',
+            'assignments' => [
+                ['role_id' => $role->id, 'scope_type' => 'global', 'scope_value' => null],
             ],
         ])->assertCreated();
 
@@ -631,7 +621,6 @@ class AdminFoundationApiTest extends TestCase
 
         $this->getJson('/admin/api/cms/pages')
             ->assertOk()
-            ->assertJsonPath('data.total', 2)
             ->assertJsonMissing(['slug' => 'hidden-cms-page']);
 
         $createdCmsPageId = $this->postJson('/admin/api/cms/pages', [
@@ -640,21 +629,19 @@ class AdminFoundationApiTest extends TestCase
             'status' => 'draft',
             'body' => 'Scoped create',
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])
             ->assertCreated()
             ->json('data.id');
 
-        $this->postJson('/admin/api/cms/pages', [
+        $forcedCmsPageId = $this->postJson('/admin/api/cms/pages', [
             'title' => 'Out of Scope CMS Draft',
             'slug' => 'out-of-scope-cms-draft',
             'status' => 'draft',
             'body' => 'Hidden create',
             'website_key' => 'website-other',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
-        ])->assertStatus(422);
+        ])->assertCreated()->json('data.id');
+
+        $this->assertDatabaseHas('cms_pages', ['id' => $forcedCmsPageId, 'website_key' => 'website-main']);
 
         $this->putJson("/admin/api/cms/pages/{$createdCmsPageId}", [
             'title' => 'Scoped CMS Draft Updated',
@@ -662,11 +649,9 @@ class AdminFoundationApiTest extends TestCase
             'status' => 'published',
             'body' => 'Scoped update',
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])->assertOk();
 
-        $hiddenCmsPageId = CmsPage::query()->where('slug', 'hidden-cms-page')->value('id');
+        $hiddenCmsPageId = CmsPage::withoutGlobalScopes()->where('slug', 'hidden-cms-page')->value('id');
 
         $this->putJson("/admin/api/cms/pages/{$hiddenCmsPageId}", [
             'title' => 'Hidden CMS Updated',
@@ -674,48 +659,44 @@ class AdminFoundationApiTest extends TestCase
             'status' => 'draft',
             'body' => 'Should fail',
             'website_key' => 'website-other',
-            'owner_key' => 'owner-other',
-            'tenant_key' => 'tenant-b',
         ])->assertNotFound();
 
         $this->getJson('/admin/api/catalog/products')
             ->assertOk()
-            ->assertJsonPath('data.total', 2)
             ->assertJsonMissing(['sku' => 'HIDDEN-001']);
 
         $createdProductId = $this->postJson('/admin/api/catalog/products', [
+            'catalog_category_id' => $catalogCategory->id,
             'name' => 'Scoped Product New',
             'sku' => 'SCOPED-NEW-001',
             'price' => 99000,
             'stock' => 9,
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])
             ->assertCreated()
             ->json('data.id');
 
-        $this->postJson('/admin/api/catalog/products', [
+        $forcedProductId = $this->postJson('/admin/api/catalog/products', [
+            'catalog_category_id' => $catalogCategory->id,
             'name' => 'Out of Scope Product',
             'sku' => 'OUT-SCOPE-001',
             'price' => 110000,
             'stock' => 2,
-            'website_key' => 'website-main',
-            'owner_key' => 'owner-other',
-            'tenant_key' => 'tenant-a',
-        ])->assertStatus(422);
+            'website_key' => 'website-other',
+        ])->assertCreated()->json('data.id');
+
+        $this->assertDatabaseHas('catalog_products', ['id' => $forcedProductId, 'website_key' => 'website-main']);
 
         $this->putJson("/admin/api/catalog/products/{$createdProductId}", [
+            'catalog_category_id' => $catalogCategory->id,
             'name' => 'Scoped Product Updated',
             'sku' => 'SCOPED-NEW-001',
             'price' => 129000,
             'stock' => 11,
             'website_key' => 'website-main',
-            'owner_key' => 'owner-system',
-            'tenant_key' => 'tenant-a',
         ])->assertOk();
 
-        $hiddenProductId = CatalogProduct::query()->where('sku', 'HIDDEN-001')->value('id');
+        $hiddenProductId = CatalogProduct::withoutGlobalScopes()->where('sku', 'HIDDEN-001')->value('id');
 
         $this->deleteJson("/admin/api/catalog/products/{$hiddenProductId}")
             ->assertNotFound();
@@ -725,6 +706,9 @@ class AdminFoundationApiTest extends TestCase
 
         $this->deleteJson("/admin/api/catalog/products/{$createdProductId}")
             ->assertOk();
+
+        $this->deleteJson("/admin/api/cms/pages/{$forcedCmsPageId}")->assertOk();
+        $this->deleteJson("/admin/api/catalog/products/{$forcedProductId}")->assertOk();
 
         $this->assertDatabaseMissing('cms_pages', [
             'id' => $createdCmsPageId,

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['cms_project_category_id', 'title', 'slug', 'status', 'summary', 'content', 'button_label', 'link_url', 'meta_title', 'meta_description', 'publish_at', 'is_featured', 'is_highlight', 'sort_order', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['cms_project_category_id', 'title', 'slug', 'status', 'summary', 'content', 'button_label', 'link_url', 'meta_title', 'meta_description', 'publish_at', 'is_featured', 'is_highlight', 'sort_order', 'website_key'])]
 class CmsProject extends Model
 {
     use HasFactory;

@@ -37,16 +37,23 @@ export const adminNavigation = [
     },
     {
         key: 'access-control',
-        label: 'RBAC',
+        label: 'Vai trò & quyền',
         section: 'security',
         route: '/access',
         permission: 'rbac.role.view',
     },
     {
         key: 'admin-accounts',
-        label: 'QL Admin Account',
+        label: 'Tài khoản quản trị',
         section: 'security',
         route: '/admins',
         permission: 'admin.account.view',
+    },
+    {
+        key: 'audit-logs',
+        label: 'Nhật ký bảo mật',
+        section: 'security',
+        route: '/audit-logs',
+        permission: 'admin.audit.view',
     },
 ];

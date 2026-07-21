@@ -20,7 +20,23 @@ class AdminCurrentProfileController
         $siteProfile = SiteProfile::query()->first();
         $siteContext = app(SiteContext::class);
         $siteOptions = Schema::hasTable('sites')
-            ? Site::query()
+                ? Site::query()
+                ->when(! $admin?->isSystemOwner(), fn ($query) => $query->where(function ($siteQuery) use ($admin): void {
+                    $websiteKeys = $admin?->roleAssignments()
+                        ->where('scope_type', 'website')
+                        ->where(fn ($assignmentQuery) => $assignmentQuery->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                        ->pluck('scope_value')
+                        ->filter()
+                        ->all() ?? [];
+                    $hasGlobal = $admin?->roleAssignments()
+                        ->where('scope_type', 'global')
+                        ->where(fn ($assignmentQuery) => $assignmentQuery->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                        ->exists() ?? false;
+
+                    if (! $hasGlobal) {
+                        $siteQuery->whereIn('website_key', $websiteKeys);
+                    }
+                }))
                 ->orderByRaw('domain is null')
                 ->orderBy('domain')
                 ->orderBy('website_key')
@@ -41,7 +57,11 @@ class AdminCurrentProfileController
             'data' => [
                 'id' => $admin?->id,
                 'name' => $admin?->name,
+                'username' => $admin?->username,
                 'email' => $admin?->email,
+                'is_system_owner' => $admin?->isSystemOwner() ?? false,
+                'must_change_password' => (bool) $admin?->must_change_password,
+                'two_factor_enabled' => $admin?->two_factor_confirmed_at !== null,
                 'is_active' => (bool) $admin?->is_active,
                 'is_locked' => $admin?->isLocked() ?? false,
                 'locked_reason' => $admin?->locked_reason,

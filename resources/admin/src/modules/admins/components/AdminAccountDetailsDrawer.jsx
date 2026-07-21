@@ -61,21 +61,22 @@ export default function AdminAccountDetailsDrawer({ open, admin, scopeTypes, can
                                 <Tag color={admin.is_active ? 'green' : 'default'}>{admin.is_active ? 'active' : 'inactive'}</Tag>
                                 {admin.is_locked ? <Tag color="red">locked</Tag> : <Tag color="cyan">ready</Tag>}
                                 <Tag color="blue">{(admin.roles ?? []).length} roles</Tag>
-                                <Tag color="purple">{(admin.scopes ?? []).length} scopes</Tag>
+                                <Tag color="purple">{(admin.assignments ?? []).length} phạm vi</Tag>
+                                {admin.is_system_owner ? <Tag color="gold">System Owner</Tag> : null}
                             </Space>
                         </div>
                     </div>
 
                     <Card className="admin-account-drawer-action-card" title="Thao tác nhanh">
                         <Space wrap>
-                            <Button type="primary" disabled={!canManageAdmins} onClick={onEditAdmin}>
+                            <Button type="primary" disabled={!canManageAdmins || admin.is_system_owner} onClick={onEditAdmin}>
                                 Sửa admin
                             </Button>
-                            <Button disabled={!canResetPassword} onClick={onOpenPasswordModal}>
+                            <Button disabled={!canResetPassword || admin.is_system_owner} onClick={onOpenPasswordModal}>
                                 Reset password
                             </Button>
                             {!admin.is_locked ? (
-                                <Button danger disabled={!canLockAdmins || isCurrentAdmin} onClick={onOpenLockModal}>
+                                <Button danger disabled={!canLockAdmins || isCurrentAdmin || admin.is_system_owner} onClick={onOpenLockModal}>
                                     Khóa tài khoản
                                 </Button>
                             ) : (
@@ -127,15 +128,15 @@ export default function AdminAccountDetailsDrawer({ open, admin, scopeTypes, can
                     </Card>
 
                     <Card title="Data scope matrix">
-                        {(admin.scopes ?? []).length ? (
+                        {(admin.assignments ?? []).length ? (
                             <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                                {(admin.scopes ?? []).map((scope) => (
-                                    <div className="admin-scope-row" key={`${admin.id}-${scope.role_id}-${scope.scope_type}-${scope.scope_value}`}>
+                                {(admin.assignments ?? []).map((assignment) => (
+                                    <div className="admin-scope-row" key={`${admin.id}-${assignment.role_id}-${assignment.scope_type}-${assignment.scope_value ?? 'all'}`}>
                                         <div>
-                                            <Text className="detail-label">{scopeTypes?.[scope.scope_type] ?? scope.scope_type}</Text>
-                                            <Title level={5} style={{ margin: '4px 0 0' }}>{scope.scope_value}</Title>
+                                            <Text className="detail-label">{scopeTypes?.[assignment.scope_type] ?? assignment.scope_type}</Text>
+                                            <Title level={5} style={{ margin: '4px 0 0' }}>{assignment.scope_value ?? 'Tất cả website'}</Title>
                                         </div>
-                                        <Tag>{`role #${scope.role_id}`}</Tag>
+                                        <Tag>{`role #${assignment.role_id}`}</Tag>
                                     </div>
                                 ))}
                             </Space>

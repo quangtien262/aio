@@ -50,8 +50,6 @@ export const emptyCmsPageForm = {
     template: '',
     featured_media_id: null,
     website_key: '',
-    owner_key: '',
-    tenant_key: '',
 };
 
 function toSlug(value, { trimEdges = true } = {}) {
@@ -120,7 +118,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     const slugEditedRef = useRef(Boolean(editingPage?.id));
     const titleValue = Form.useWatch('title', form) ?? '';
     const bodyValue = Form.useWatch('body', form) ?? '';
-    const scopeValues = Form.useWatch(['website_key', 'owner_key', 'tenant_key'], form);
+    const websiteKey = Form.useWatch('website_key', form);
     const editorInitialData = useMemo(
         () => form.getFieldValue('body') ?? editingPage?.body ?? '',
         [editingPage?.id, editingPage?.slug, editingPage?.body, editorContentVersion, form]
@@ -315,9 +313,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         formData.append('title', file.name.replace(/\.[^.]+$/, '') || typeLabel);
 
         [
-            ['website_key', scopeValues?.[0] || null],
-            ['owner_key', scopeValues?.[1] || null],
-            ['tenant_key', scopeValues?.[2] || null],
+            ['website_key', websiteKey || null],
         ].forEach(([key, value]) => {
             if (value) {
                 formData.append(key, value);

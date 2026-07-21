@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['name', 'slug', 'role', 'department', 'summary', 'bio', 'email', 'phone', 'link_url', 'status', 'publish_at', 'is_featured', 'sort_order', 'website_key', 'owner_key', 'tenant_key'])]
+#[Fillable(['name', 'slug', 'role', 'department', 'summary', 'bio', 'email', 'phone', 'link_url', 'status', 'publish_at', 'is_featured', 'sort_order', 'website_key'])]
 class CmsTeamMember extends Model
 {
     use HasFactory;

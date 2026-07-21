@@ -50,6 +50,7 @@
                     <label class="xd-auth-field">
                         <span>Mật khẩu</span>
                         <input type="password" name="password" autocomplete="current-password" required>
+                        <input type="text" name="two_factor_code" inputmode="numeric" autocomplete="one-time-code" maxlength="32" placeholder="Mã xác thực 2 lớp (nếu đã bật)">
                     </label>
                     <label class="xd-auth-check">
                         <input type="checkbox" name="remember" value="1">

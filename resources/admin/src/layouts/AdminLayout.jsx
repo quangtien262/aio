@@ -30,6 +30,7 @@ import LockOutlined from '@ant-design/icons/LockOutlined';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { adminNavigation, adminNavigationSections } from '../shared/config/navigation';
 import ChangePasswordModal from '../shared/components/ChangePasswordModal';
+import TwoFactorModal from '../shared/components/TwoFactorModal';
 
 const ModuleRoutePage = lazy(() => import('../pages/modules/ModuleRoutePage'));
 const DashboardRoutePage = lazy(() => import('../pages/routes/DashboardRoutePage'));
@@ -37,6 +38,7 @@ const OrdersRoutePage = lazy(() => import('../pages/routes/OrdersRoutePage'));
 const NewsletterSubscribersRoutePage = lazy(() => import('../pages/routes/NewsletterSubscribersRoutePage'));
 const AccessRoutePage = lazy(() => import('../pages/routes/AccessRoutePage'));
 const AdminAccountsRoutePage = lazy(() => import('../pages/routes/AdminAccountsRoutePage'));
+const AuditLogsRoutePage = lazy(() => import('../pages/routes/AuditLogsRoutePage'));
 const ModulesRoutePage = lazy(() => import('../pages/routes/ModulesRoutePage'));
 const ThemesRoutePage = lazy(() => import('../pages/routes/ThemesRoutePage'));
 const SetupRoutePage = lazy(() => import('../pages/routes/SetupRoutePage'));
@@ -160,12 +162,19 @@ export default function AdminLayout() {
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const [mobileSectionKey, setMobileSectionKey] = useState(null);
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+    const [twoFactorOpen, setTwoFactorOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const isMobile = !screens.lg;
     const frontendLocaleRecords = currentAdmin?.frontend_localization?.locales ?? [];
     const frontendLocaleOptions = frontendLocaleRecords.filter((localeItem) => localeItem.is_active).map((localeItem) => localeItem.code);
     const defaultFrontendLocale = currentAdmin?.frontend_localization?.default_locale ?? 'vi';
+
+    useEffect(() => {
+        if (currentAdmin?.must_change_password) {
+            setChangePasswordOpen(true);
+        }
+    }, [currentAdmin?.must_change_password]);
 
     const callAdminApi = useCallback(async (url, options = {}) => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -734,11 +743,16 @@ export default function AdminLayout() {
                                 menu={{
                                     items: [
                                         { key: 'change_password', label: 'Đổi mật khẩu', icon: <LockOutlined /> },
+                                        { key: 'two_factor', label: 'Xác thực hai lớp', icon: <SafetyCertificateOutlined /> },
                                         { key: 'logout', label: 'Đăng xuất', icon: <LogoutOutlined />, danger: true },
                                     ],
                                     onClick: ({ key }) => {
                                         if (key === 'change_password') {
                                             setChangePasswordOpen(true);
+                                        }
+
+                                        if (key === 'two_factor') {
+                                            setTwoFactorOpen(true);
                                         }
 
                                         if (key === 'logout') {
@@ -761,7 +775,14 @@ export default function AdminLayout() {
                 onClose={() => setChangePasswordOpen(false)}
                 callAdminApi={callAdminApi}
                 runAdminAction={runAdminAction}
-                adminId={currentAdmin?.id}
+                forceChange={Boolean(currentAdmin?.must_change_password)}
+            />
+            <TwoFactorModal
+                open={twoFactorOpen}
+                enabled={Boolean(currentAdmin?.two_factor_enabled)}
+                onClose={() => setTwoFactorOpen(false)}
+                onChanged={(enabled) => setCurrentAdmin((current) => current ? { ...current, two_factor_enabled: enabled } : current)}
+                callAdminApi={callAdminApi}
             />
 
             {!isMobile ? (
@@ -820,10 +841,11 @@ export default function AdminLayout() {
                                     <Routes>
                                         <Route path="/" element={<Navigate to={defaultRoute} replace />} />
                                         <Route path="dashboard" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(DashboardRoutePage, { canAccess: true, callAdminApi }, 'Dashboard') : <Navigate to={defaultRoute} replace />} />
-                                        <Route path="orders" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(OrdersRoutePage, { canAccess: true, callAdminApi }, 'Đơn hàng') : <Navigate to={defaultRoute} replace />} />
-                                        <Route path="newsletter" element={hasPermission('platform.dashboard.view') ? renderLazyRouteElement(NewsletterSubscribersRoutePage, { canAccess: true, callAdminApi }, 'Bản tin') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="orders" element={hasPermission('cms.order.view') ? renderLazyRouteElement(OrdersRoutePage, { canAccess: true, callAdminApi }, 'Đơn hàng') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="newsletter" element={hasPermission('cms.newsletter.view') ? renderLazyRouteElement(NewsletterSubscribersRoutePage, { canAccess: true, callAdminApi }, 'Bản tin') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="access" element={hasPermission('rbac.role.view') ? renderLazyRouteElement(AccessRoutePage, { canAccess: true, canManageRoles: hasPermission('rbac.role.manage'), callAdminApi, runAdminAction }, 'Access Control') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="admins" element={hasPermission('admin.account.view') ? renderLazyRouteElement(AdminAccountsRoutePage, { canAccess: true, currentAdmin, permissions: { manage: hasPermission('admin.account.manage'), resetPassword: hasPermission('admin.account.reset_password'), lock: hasPermission('admin.account.lock') }, callAdminApi, runAdminAction }, 'Admin Accounts') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="audit-logs" element={hasPermission('admin.audit.view') ? renderLazyRouteElement(AuditLogsRoutePage, { canAccess: true, callAdminApi }, 'Nhật ký bảo mật') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall'), demoData: hasPermission('store.module.upgrade') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'App Store') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), canGenerateDemoData: hasPermission('theme.customize'), callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }, 'Themes') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="setup" element={hasPermission('setup.view') ? renderLazyRouteElement(SetupRoutePage, { canAccess: true, canComplete: hasPermission('setup.complete'), canViewThemeManager: hasPermission('theme.view'), canManageThemeActions: hasPermission('theme.customize'), callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }, 'Setup') : <Navigate to={defaultRoute} replace />} />

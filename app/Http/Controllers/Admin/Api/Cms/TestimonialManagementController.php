@@ -88,8 +88,6 @@ class TestimonialManagementController
             'is_featured' => ['boolean'],
             'sort_order' => ['nullable', 'integer'],
             'website_key' => ['nullable', 'string', 'max:255'],
-            'owner_key' => ['nullable', 'string', 'max:255'],
-            'tenant_key' => ['nullable', 'string', 'max:255'],
         ]);
     }
 
@@ -109,8 +107,6 @@ class TestimonialManagementController
             'is_featured' => $testimonial->is_featured,
             'sort_order' => $testimonial->sort_order,
             'website_key' => $testimonial->website_key,
-            'owner_key' => $testimonial->owner_key,
-            'tenant_key' => $testimonial->tenant_key,
         ];
     }
 }
