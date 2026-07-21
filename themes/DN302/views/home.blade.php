@@ -39,6 +39,8 @@
     $heroHasCta = $heroButtonLabel !== '' && $heroButtonUrl !== '';
     $heroHasCopy = $heroSubtitle !== '' || $heroTitle !== '' || $heroDescription !== '' || $heroHasCta;
     $heroSlides = $slides;
+    $styleItems = $items($styles);
+    $styleFallbackImage = data_get($styles, 'media.image', $living);
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
     $blockSourcePreviewUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.source-preview', ['block' => '__BLOCK_ID__']) : '';
@@ -151,13 +153,31 @@
     <section class="dn-section xd-landing-block" data-block-type="content_showcase">
         <div class="dn-container">
             <header class="dn-heading center" data-dn-reveal="up"><p class="dn-eyebrow">{{ data_get($styles, 'data.subtitle', 'Lắp đặt') }}</p><h2 class="dn-title">{{ data_get($styles, 'data.title', 'Các kiểu cửa chính') }}</h2><p>{{ data_get($styles, 'data.description', 'Cửa ra vào, cửa sổ, cửa cuốn, cửa kéo, mái tôn, mái che và mái hiên di động') }}</p></header>
-            <div class="dn-styles-grid">
-                <div class="dn-style-cards">
-                    @foreach($items($styles) as $index => $item)
-                        <article class="dn-style-card" style="--dn-delay:{{ $index * 80 }}ms" data-dn-reveal="left"><i class="{{ data_get($item, 'icon', 'fa-regular fa-window-maximize') }}"></i><h3>{{ data_get($item, 'title') }}</h3></article>
+            <div class="dn-styles-grid" data-dn-style-showcase>
+                <div class="dn-style-cards" role="tablist" aria-label="{{ data_get($styles, 'data.title', 'Các kiểu cửa chính') }}">
+                    @foreach($styleItems as $index => $item)
+                        <button class="dn-style-card {{ $index === 0 ? 'is-active' : '' }}" type="button" role="tab" aria-selected="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="dn-style-panel-{{ $index }}" style="--dn-delay:{{ $index * 80 }}ms" data-dn-style-tab="{{ $index }}" data-dn-reveal="left"><i class="{{ data_get($item, 'icon', 'fa-regular fa-window-maximize') }}"></i><h3>{{ data_get($item, 'title') }}</h3></button>
                     @endforeach
                 </div>
-                <div class="dn-styles-image" data-dn-reveal="right"><img src="{{ data_get($styles, 'media.image', $living) }}" alt="Các kiểu cửa chính"><a class="dn-btn" href="{{ route('site.services.index') }}">@themeT('DN302.common.view_more', 'Xem thêm') <i class="fa-solid fa-arrow-right-long"></i></a></div>
+                <div class="dn-styles-stage" data-dn-reveal="right">
+                    @forelse($styleItems as $index => $item)
+                        @php
+                            $styleTitle = trim((string) data_get($item, 'title'));
+                            $styleDescription = trim((string) data_get($item, 'summary', data_get($item, 'description')));
+                            $styleUrl = trim((string) data_get($item, 'url', data_get($item, 'link_url')));
+                        @endphp
+                        <article id="dn-style-panel-{{ $index }}" class="dn-style-panel {{ $index === 0 ? 'is-active' : '' }}" role="tabpanel" data-dn-style-panel="{{ $index }}" {{ $index === 0 ? '' : 'hidden' }}>
+                            <img src="{{ $image($item, $styleFallbackImage) }}" alt="{{ $styleTitle }}">
+                            <div class="dn-style-panel__overlay">
+                                @if($styleTitle !== '')<h3>{{ $styleTitle }}</h3>@endif
+                                @if($styleDescription !== '')<p>{{ $styleDescription }}</p>@endif
+                                @if($styleUrl !== '')<a class="dn-btn" href="{{ $styleUrl }}">{{ data_get($item, 'button_label', 'Xem chi tiết') }} <i class="fa-solid fa-arrow-right-long"></i></a>@endif
+                            </div>
+                        </article>
+                    @empty
+                        <article class="dn-style-panel is-active"><img src="{{ $styleFallbackImage }}" alt="{{ data_get($styles, 'data.title', 'Các kiểu cửa chính') }}"></article>
+                    @endforelse
+                </div>
             </div>
         </div>
     </section>
@@ -207,10 +227,14 @@
     <section class="dn-partners xd-landing-block" data-block-type="partner_logos">
         <div class="dn-container">
             <header class="dn-heading center" data-dn-reveal="up">@if(filled(data_get($partners, 'data.subtitle')))<p class="dn-eyebrow">{{ data_get($partners, 'data.subtitle') }}</p>@endif<h2 class="dn-title">{{ data_get($partners, 'data.title', 'Đối tác của chúng tôi') }}</h2>@if(filled(data_get($partners, 'data.description')))<p>{{ data_get($partners, 'data.description') }}</p>@endif</header>
-            <div class="dn-partner-track">
-                @foreach($items($partners)->take(10) as $index => $item)
-                    <a class="dn-partner" href="{{ data_get($item, 'url', '#') }}" style="--dn-delay:{{ $index * 60 }}ms" data-dn-reveal="scale">@if($image($item))<img src="{{ $image($item) }}" alt="{{ data_get($item, 'title') }}">@else<span>{{ data_get($item, 'title') }}</span>@endif</a>
-                @endforeach
+            <div class="dn-partner-slider" data-dn-partner-slider data-autoplay="3600">
+                <div class="dn-partner-track" data-dn-partner-track>
+                    @foreach($items($partners)->take(10) as $index => $item)
+                        <a class="dn-partner" href="{{ data_get($item, 'url', '#') }}" style="--dn-delay:{{ $index * 60 }}ms" data-dn-reveal="scale">@if($image($item))<img src="{{ $image($item) }}" alt="{{ data_get($item, 'title') }}">@else<span>{{ data_get($item, 'title') }}</span>@endif</a>
+                    @endforeach
+                </div>
+                <button class="dn-partner-nav prev" type="button" data-dn-partner-prev aria-label="Đối tác trước"><i class="fa-solid fa-arrow-left"></i></button>
+                <button class="dn-partner-nav next" type="button" data-dn-partner-next aria-label="Đối tác tiếp theo"><i class="fa-solid fa-arrow-right"></i></button>
             </div>
         </div>
     </section>

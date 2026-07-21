@@ -3,7 +3,6 @@
     $siteName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Website')));
     $hotline = $branding['support_hotline'] ?? '1900 9477';
     $email = $branding['support_email'] ?? data_get($siteProfile ?? [], 'email', 'admin@demo.web30s.vn');
-    $address = trim((string) ($branding['support_location'] ?? ''));
     $logo = trim((string) ($branding['logo_url'] ?? ''));
     $menuItems = collect(data_get(
         $themeShellData ?? [],
@@ -34,9 +33,6 @@
         </a>
         <div class="dn-head-main">
             <div class="dn-topbar">
-                @if($address !== '')
-                    <span><i class="fa-solid fa-location-dot"></i> {{ $address }}</span>
-                @endif
                 <a href="mailto:{{ $email }}"><i class="fa-solid fa-envelope"></i> {{ $email }}</a>
                 <span class="dn-socials"><i class="fa-brands fa-facebook-f"></i><i class="fa-brands fa-youtube"></i><i class="fa-brands fa-pinterest-p"></i></span>
                 <div class="dn-auth-actions">

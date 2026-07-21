@@ -55,6 +55,10 @@ class Dn302ThemeTest extends TestCase
             ]),
         ])->save();
 
+        $headerTemplate = file_get_contents(base_path('themes/DN302/views/partials/header.blade.php'));
+        $this->assertStringNotContainsString('fa-location-dot', $headerTemplate);
+        $this->assertStringNotContainsString('$address', $headerTemplate);
+
         $this->assertGreaterThan(0, CatalogProduct::query()->count());
         $this->get(route('site.home', ['locale' => 'vi']))
             ->assertOk()
@@ -337,5 +341,65 @@ class Dn302ThemeTest extends TestCase
         $this->assertStringContainsString('xdAboutUsesValueButtons', file_get_contents(base_path('themes/DN302/views/home.blade.php')));
         $this->assertStringContainsString("['title', 'Tên nút']", $adminEditor);
         $this->assertStringContainsString("['url', 'Link khi click']", $adminEditor);
+    }
+
+    public function test_dn302_inline_editor_uses_menu_select_and_shared_icon_picker(): void
+    {
+        $editor = file_get_contents(base_path('themes/XD0302/views/partials/inline-editor.blade.php'));
+        $scripts = file_get_contents(base_path('themes/XD0302/views/partials/scripts.blade.php'));
+
+        $this->assertStringContainsString('<select data-xd-setting-field="menu_location">', $editor);
+        $this->assertStringContainsString('Chỉ hiển thị dữ liệu, không chọn menu', $editor);
+        $this->assertStringContainsString("@include('partials.font-awesome-icon-picker')", $editor);
+        $this->assertStringContainsString('window.AioFontAwesomeIconPicker?.open', $scripts);
+        $this->assertStringContainsString("['icon', 'Biểu tượng']", $scripts);
+        $this->assertStringContainsString("if (blockType === 'content_showcase')", $scripts);
+        $this->assertStringContainsString("['about_experience', 'landing_contact'].includes(blockType)", $scripts);
+        $this->assertStringContainsString('Ảnh nền khu vực liên hệ', $scripts);
+    }
+
+    public function test_dn302_content_showcase_uses_each_items_image_description_and_link(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->first()
+            ?? app(LandingPageBuilder::class)->seedHome('website-main', 'DN302');
+        $showcase = $landing->blocks()->where('block_type', 'content_showcase')->firstOrFail();
+        $showcase->update(['settings' => ['source' => 'custom', 'limit' => 4]]);
+        $showcase->data()->where('locale', 'vi')->firstOrFail()->update([
+            'content' => json_encode(['items' => [[
+                'title' => 'Cửa mở quay từ DB',
+                'summary' => 'Mô tả phủ trên ảnh lấy đúng từ DB.',
+                'image' => '/files/dn302-style-from-db.jpg',
+                'url' => '/vi/lien-he-kieu-cua',
+            ]]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ]);
+
+        $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        $response->assertSee('data-dn-style-showcase', false);
+        $response->assertSee('data-dn-style-tab="0"', false);
+        $response->assertSee('data-dn-style-panel="0"', false);
+        $response->assertSee('/files/dn302-style-from-db.jpg', false);
+        $response->assertSee('Mô tả phủ trên ảnh lấy đúng từ DB.');
+        $response->assertSee('href="/vi/lien-he-kieu-cua"', false);
+        $this->assertStringContainsString('data-dn-style-panel', file_get_contents(base_path('themes/DN302/views/partials/shell-scripts.blade.php')));
+    }
+
+    public function test_dn302_partner_logos_render_as_a_single_row_autoplay_slider(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+
+        $this->get(route('site.home', ['locale' => 'vi']))
+            ->assertOk()
+            ->assertSee('data-dn-partner-slider', false)
+            ->assertSee('data-dn-partner-track', false)
+            ->assertSee('data-dn-partner-prev', false)
+            ->assertSee('data-dn-partner-next', false);
+
+        $scripts = file_get_contents(base_path('themes/DN302/views/partials/shell-scripts.blade.php'));
+        $styles = file_get_contents(base_path('themes/DN302/views/partials/styles.blade.php'));
+        $this->assertStringContainsString("querySelectorAll('[data-dn-partner-slider]')", $scripts);
+        $this->assertStringContainsString('window.setInterval(() => move(1)', $scripts);
+        $this->assertStringContainsString('display:flex;gap:25px', $styles);
+        $this->assertStringContainsString('scroll-snap-type:x mandatory', $styles);
     }
 }

@@ -378,8 +378,8 @@ export default function LandingBlockManagerDrawer({
             anchor_id: block.anchor_id ?? '',
             is_visible: Boolean(block.is_visible),
             settings: block.settings ?? {},
-            media: block.block_type === 'about_experience'
-                ? { image: block.media?.image ?? '' }
+            media: ['about_experience', 'landing_contact'].includes(block.block_type)
+                ? { ...(block.media ?? {}), image: block.media?.image ?? '' }
                 : (block.media ?? {}),
             data_by_locale: normalizeFormLocales(block),
         });
@@ -409,8 +409,8 @@ export default function LandingBlockManagerDrawer({
                         anchor_id: values.anchor_id || null,
                         is_visible: Boolean(values.is_visible),
                         settings: values.settings ?? {},
-                        media: editingBlock.block_type === 'about_experience'
-                            ? { image: values.media?.image ?? '' }
+                        media: ['about_experience', 'landing_contact'].includes(editingBlock.block_type)
+                            ? { ...(editingBlock.media ?? {}), image: values.media?.image ?? '' }
                             : (editingBlock.media ?? {}),
                         data: {
                             title: localeData.title ?? '',
@@ -729,11 +729,11 @@ export default function LandingBlockManagerDrawer({
                         <Form.Item name={['settings', 'cta_url']} label="Link CTA">
                             <Input placeholder="/gioi-thieu hoac https://..." />
                         </Form.Item>
-                        {editingBlock.block_type === 'about_experience' ? (
+                        {['about_experience', 'landing_contact'].includes(editingBlock.block_type) ? (
                             <Form.Item
                                 name={['media', 'image']}
-                                label="Ảnh tổng hợp bên trái"
-                                extra="Chỉ dùng một ảnh hoàn chỉnh; nếu cần hiển thị số năm kinh nghiệm, hãy thiết kế trực tiếp trong ảnh."
+                                label={editingBlock.block_type === 'landing_contact' ? 'Ảnh nền khu vực liên hệ' : 'Ảnh tổng hợp bên trái'}
+                                extra={editingBlock.block_type === 'landing_contact' ? 'Ảnh hiển thị bên trái form liên hệ.' : 'Chỉ dùng một ảnh hoàn chỉnh; nếu cần hiển thị số năm kinh nghiệm, hãy thiết kế trực tiếp trong ảnh.'}
                             >
                                 <SingleMediaPicker
                                     open={Boolean(editingBlock)}

@@ -326,7 +326,19 @@
             };
             const syncMediaEditorVisibility = (block) => {
                 if (!mediaEditor) return;
-                mediaEditor.hidden = (block?.block_type || '') !== 'about_experience';
+                const blockType = block?.block_type || '';
+                mediaEditor.hidden = !['about_experience', 'landing_contact'].includes(blockType);
+                if (mediaEditor.hidden) return;
+
+                const isContact = blockType === 'landing_contact';
+                const title = mediaEditor.querySelector('[data-xd-media-title]');
+                const note = mediaEditor.querySelector('[data-xd-media-note]');
+                const label = mediaEditor.querySelector('[data-xd-media-label]');
+                if (title) title.textContent = isContact ? 'Ảnh nền khu vực liên hệ' : 'Ảnh tổng hợp khối giới thiệu';
+                if (note) note.textContent = isContact
+                    ? 'Ảnh hiển thị bên trái form liên hệ. Có thể nhập liên kết hoặc upload ảnh mới.'
+                    : 'Cột trái dùng duy nhất một ảnh hoàn chỉnh, bao gồm cả hình ảnh và nội dung kinh nghiệm nếu cần.';
+                if (label) label.textContent = isContact ? 'Ảnh nền liên hệ' : 'Ảnh giới thiệu';
             };
             const loadMediaFields = (block) => {
                 const media = normalizeContentObject(block?.media);
@@ -442,7 +454,7 @@
             const normalizeSourceOptions = (options = []) => options
                 .map((option) => typeof option === 'string' ? {value: option, label: sourceLabels[option] || option} : {
                     value: option.value || option.key || '',
-                    label: option.label || sourceLabels[option.value || option.key] || option.value || option.key || '',
+                    label: sourceLabels[option.value || option.key] || option.label || option.value || option.key || '',
                 })
                 .filter((option) => option.value !== '');
             const renderCategorySelect = (source, selectedValue = '') => {
@@ -507,8 +519,8 @@
 
                 const menuLocationInput = settingField('menu_location');
                 if (menuLocationInput) {
-                    menuLocationInput.value = settings.menu_location || 'primary-navigation';
-                    menuLocationInput.oninput = () => scheduleSourcePreview();
+                    menuLocationInput.value = settings.menu_location || '';
+                    menuLocationInput.onchange = () => scheduleSourcePreview();
                 }
 
                 sourceEditor.hidden = false;
@@ -564,7 +576,7 @@
                         ['title', 'Tiêu đề'],
                         ['summary', 'Mô tả / nhãn phụ', 'textarea'],
                         ['image', 'Ảnh'],
-                        ['icon', 'Icon / ký tự'],
+                        ['icon', 'Biểu tượng'],
                         ['url', 'Link'],
                         ['count_label', 'Nhãn số lượng'],
                     ];
@@ -600,7 +612,17 @@
                     ];
                 }
 
-                if (['content_showcase', 'latest_posts', 'featured_service_list', 'completed_projects_list'].includes(blockType)) {
+                if (blockType === 'content_showcase') {
+                    return [
+                        ['title', 'Tiêu đề'],
+                        ['summary', 'Mô tả', 'textarea'],
+                        ['image', 'Ảnh'],
+                        ['icon', 'Biểu tượng'],
+                        ['url', 'Link'],
+                    ];
+                }
+
+                if (['latest_posts', 'featured_service_list', 'completed_projects_list'].includes(blockType)) {
                     return [
                         ['title', 'Tiêu đề'],
                         ['summary', 'Mô tả', 'textarea'],
@@ -705,11 +727,32 @@
                     const control = document.createElement('label');
                     control.className = type === 'textarea' ? 'is-wide' : '';
                     if (key === 'image') control.className = `${control.className} xd-item-image-field`.trim();
-                    control.innerHTML = type === 'textarea'
+                    if (key === 'icon') control.className = `${control.className} xd-icon-picker-field`.trim();
+                    control.innerHTML = key === 'icon'
+                        ? `<span>${escapeHtml(label)}</span><input type="hidden" data-xd-item-modal-field="${escapeHtml(key)}"><button type="button" class="xd-icon-picker-trigger"><i class="fa-solid fa-icons" aria-hidden="true"></i><span>Chọn icon</span><small>Font Awesome Free</small></button>`
+                        : type === 'textarea'
                         ? `<span>${escapeHtml(label)}</span><textarea data-xd-item-modal-field="${escapeHtml(key)}"></textarea>`
                         : `<span>${escapeHtml(label)}</span><input data-xd-item-modal-field="${escapeHtml(key)}">`;
                     const input = control.querySelector('[data-xd-item-modal-field]');
                     input.value = item?.[key] ?? '';
+                    if (key === 'icon') {
+                        const trigger = control.querySelector('.xd-icon-picker-trigger');
+                        const syncIconPreview = () => {
+                            const value = input.value.trim();
+                            trigger.querySelector('i').className = value || 'fa-solid fa-icons';
+                            trigger.querySelector('span').textContent = value ? 'Đổi icon' : 'Chọn icon';
+                            trigger.classList.toggle('has-value', value !== '');
+                        };
+                        trigger?.addEventListener('click', () => window.AioFontAwesomeIconPicker?.open({
+                            value: input.value,
+                            trigger,
+                            onSelect: (value) => {
+                                input.value = value;
+                                syncIconPreview();
+                            },
+                        }));
+                        syncIconPreview();
+                    }
                     if (key === 'image') {
                         const modeWrap = document.createElement('div');
                         modeWrap.className = 'xd-image-mode';

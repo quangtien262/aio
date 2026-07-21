@@ -1,4 +1,7 @@
     @if ($canEditLanding)
+        @php
+            $landingMenuLocations = app(\App\Core\Cms\CmsMenuLocationRegistry::class)->all();
+        @endphp
         <div class="xd-editor" data-xd-editor hidden>
             <form class="xd-editor-card" data-xd-editor-form>
                 <div class="xd-editor-head"><h3>Sửa khối landing</h3><button type="button" class="xd-editor-close" data-xd-editor-close>&times;</button></div>
@@ -18,15 +21,18 @@
                     <label class="xd-editor-field is-wide"><span>Mô tả</span><textarea data-xd-field="description"></textarea></label>
                     <label class="xd-editor-field" data-xd-block-cta><span>Nút CTA</span><input data-xd-field="button_label"></label>
                     <label class="xd-editor-field" data-xd-block-cta><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/gioi-thieu hoặc https://..."></label>
-                    <label class="xd-editor-field"><span>Hiển thị</span><input data-xd-field="is_visible" type="checkbox"></label>
+                    <label class="xd-editor-field xd-editor-field--visibility">
+                        <span>Trạng thái</span>
+                        <span class="xd-editor-switch"><input data-xd-field="is_visible" type="checkbox"><i aria-hidden="true"></i><b>Hiển thị khối này</b></span>
+                    </label>
                     <section class="xd-editor-source" data-xd-media-editor hidden>
                         <div>
-                            <h4>Ảnh tổng hợp khối giới thiệu</h4>
-                            <p class="xd-editor-source-note">Cột trái dùng duy nhất một ảnh hoàn chỉnh, bao gồm cả hình ảnh và nội dung kinh nghiệm nếu cần.</p>
+                            <h4 data-xd-media-title>Ảnh tổng hợp khối giới thiệu</h4>
+                            <p class="xd-editor-source-note" data-xd-media-note>Cột trái dùng duy nhất một ảnh hoàn chỉnh, bao gồm cả hình ảnh và nội dung kinh nghiệm nếu cần.</p>
                         </div>
                         <div class="xd-editor-grid">
                             <div class="xd-editor-field is-wide" data-xd-media-row>
-                                <span>Ảnh giới thiệu</span>
+                                <span data-xd-media-label>Ảnh giới thiệu</span>
                                 <input data-xd-media-field="image" aria-label="Ảnh giới thiệu" placeholder="https://... hoặc /storage/...">
                                 <div class="xd-item-upload">
                                     <input type="file" accept="image/*" data-xd-media-upload="image" hidden>
@@ -75,7 +81,15 @@
                         </div>
                         <div class="xd-editor-source-grid">
                             <label><span>Lấy từ bảng</span><select data-xd-setting-field="source"></select></label>
-                            <label><span>Vị trí menu</span><input type="text" data-xd-setting-field="menu_location" placeholder="primary-navigation"></label>
+                            <label data-xd-menu-location-control>
+                                <span>Vị trí menu</span>
+                                <select data-xd-setting-field="menu_location">
+                                    <option value="">Chỉ hiển thị dữ liệu, không chọn menu</option>
+                                    @foreach ($landingMenuLocations as $location)
+                                        <option value="{{ $location['value'] }}">{{ $location['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
                             <label><span>Số lượng</span><input type="number" min="1" max="12" data-xd-setting-field="limit"></label>
                             <label><span>Danh mục</span><select data-xd-setting-field="category_id"></select></label>
                             <label class="xd-editor-source-check"><input type="checkbox" data-xd-setting-field="featured_only"><span>Chỉ nổi bật</span></label>
@@ -115,4 +129,5 @@
                 </div>
             </form>
         </div>
+        @include('partials.font-awesome-icon-picker')
     @endif
