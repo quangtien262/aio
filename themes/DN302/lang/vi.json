@@ -11,7 +11,16 @@
       "address": "344 Huỳnh Tấn Phát, Phường Bình Thuận, Quận 7, TP.HCM"
     },
     "footer": {
-      "copyright": "Sản phẩm của HT Việt Nam"
+      "copyright": "Sản phẩm của HT Việt Nam",
+      "description": "Giải pháp đồng bộ, tận tâm và bền vững cho mọi công trình.",
+      "quick_links": "Liên kết nhanh",
+      "contact": "Thông tin liên hệ",
+      "address": "Địa chỉ",
+      "cta_kicker": "Bạn cần tư vấn?",
+      "cta_title": "Cùng chúng tôi hiện thực hóa không gian của bạn",
+      "cta_description": "Để lại nhu cầu, đội ngũ chuyên môn sẽ liên hệ và đề xuất giải pháp phù hợp.",
+      "cta_button": "Đăng ký tư vấn",
+      "rights": "Bảo lưu mọi quyền."
     }
   }
 }

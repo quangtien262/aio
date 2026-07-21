@@ -174,7 +174,12 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Menu chính từ DB')
             ->assertSee('Menu con từ DB')
             ->assertSee('href="#menu-db"', false)
-            ->assertSee('href="#menu-con-db"', false);
+            ->assertSee('href="#menu-con-db"', false)
+            ->assertSee('Liên kết nhanh')
+            ->assertSee('Thông tin liên hệ')
+            ->assertSee('Cùng chúng tôi hiện thực hóa không gian của bạn')
+            ->assertSee('data-dn-consult-open', false)
+            ->assertDontSee('href="#"><i class="fa-brands', false);
     }
 
     public function test_dn302_contact_page_does_not_require_a_published_cms_page(): void

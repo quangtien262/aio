@@ -11,7 +11,16 @@
       "address": "344 Huynh Tan Phat, District 7, Ho Chi Minh City"
     },
     "footer": {
-      "copyright": "A product by HT Vietnam"
+      "copyright": "A product by HT Vietnam",
+      "description": "Integrated, dedicated and sustainable solutions for every project.",
+      "quick_links": "Quick links",
+      "contact": "Contact information",
+      "address": "Address",
+      "cta_kicker": "Need a consultation?",
+      "cta_title": "Let us bring your ideal space to life",
+      "cta_description": "Share your needs and our specialists will recommend the right solution.",
+      "cta_button": "Book a consultation",
+      "rights": "All rights reserved."
     }
   }
 }
