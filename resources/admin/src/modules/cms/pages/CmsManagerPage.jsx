@@ -610,6 +610,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [selectedProductRowKeys, setSelectedProductRowKeys] = useState([]);
+    const [selectedPageRowKeys, setSelectedPageRowKeys] = useState([]);
     const [selectedOrderRowKeys, setSelectedOrderRowKeys] = useState([]);
     const [selectedPartnerRowKeys, setSelectedPartnerRowKeys] = useState([]);
     const [selectedServiceRowKeys, setSelectedServiceRowKeys] = useState([]);
@@ -1938,6 +1939,38 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         };
     };
 
+    const handleBulkDeletePages = async () => {
+        const ids = [...selectedPageRowKeys];
+
+        const didDelete = await runAdminAction(
+            () => callAdminApi('/admin/api/cms/pages/bulk', {
+                method: 'DELETE',
+                body: JSON.stringify({ ids }),
+            }),
+            `Đã xóa ${ids.length} page.`,
+            refreshCurrentSectionDataSilently,
+        );
+
+        if (didDelete) {
+            setSelectedPageRowKeys([]);
+        }
+    };
+
+    const confirmBulkDeletePages = () => {
+        if (!selectedPageRowKeys.length) {
+            return;
+        }
+
+        Modal.confirm({
+            title: `Xóa ${selectedPageRowKeys.length} page đã chọn?`,
+            content: 'Các page đã chọn sẽ bị xóa vĩnh viễn. Thao tác này không thể hoàn tác.',
+            okText: 'Xóa tất cả',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: handleBulkDeletePages,
+        });
+    };
+
     const handleBulkDeleteProducts = async () => {
         const ids = [...selectedProductRowKeys];
 
@@ -2993,6 +3026,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         );
     };
 
+    const pageRowSelection = sectionKey === 'cms-pages' && sectionPermissions.canDelete
+        ? {
+            selectedRowKeys: selectedPageRowKeys,
+            onChange: (nextSelectedRowKeys) => setSelectedPageRowKeys(nextSelectedRowKeys),
+            preserveSelectedRowKeys: true,
+        }
+        : undefined;
     const productRowSelection = sectionKey === 'cms-products' && (sectionPermissions.canUpdate || sectionPermissions.canDelete)
         ? {
             selectedRowKeys: selectedProductRowKeys,
@@ -3049,6 +3089,26 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             preserveSelectedRowKeys: true,
         }
         : undefined;
+    const pageBulkActions = sectionKey === 'cms-pages' ? (
+        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Space wrap>
+                <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    disabled={!sectionPermissions.canDelete || !selectedPageRowKeys.length}
+                    onClick={confirmBulkDeletePages}
+                >
+                    Xóa đã chọn
+                </Button>
+                <Text type="secondary">Đã chọn {selectedPageRowKeys.length} page.</Text>
+            </Space>
+            {selectedPageRowKeys.length ? (
+                <Button size="small" type="link" onClick={() => setSelectedPageRowKeys([])}>
+                    Bỏ chọn
+                </Button>
+            ) : null}
+        </Space>
+    ) : null;
     const productBulkActions = sectionKey === 'cms-products' ? (
         <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
             <Space wrap>
@@ -4564,6 +4624,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                 {sectionKey !== 'cms-products' && sectionKey !== 'cms-services' && sectionKey !== 'cms-media' && filteredItems.length ? (
                     <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                        {sectionKey === 'cms-pages' ? pageBulkActions : null}
                         {sectionKey === 'cms-orders' ? orderBulkActions : null}
                         {['cms-posts', 'cms-projects'].includes(sectionKey) ? contentBulkActions : null}
                         {['cms-partners', 'cms-team-members', 'cms-testimonials'].includes(sectionKey) ? featuredBulkActions : null}
@@ -4571,6 +4632,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             rowKey="id"
                             rowSelection={sectionKey === 'cms-orders'
                                 ? orderRowSelection
+                                : sectionKey === 'cms-pages'
+                                    ? pageRowSelection
                                 : sectionKey === 'cms-services'
                                     ? serviceRowSelection
                                     : sectionKey === 'cms-posts'

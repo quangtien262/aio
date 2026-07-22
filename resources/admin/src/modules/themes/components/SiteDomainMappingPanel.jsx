@@ -322,33 +322,29 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
             ),
         },
         {
-            title: 'Đã test',
-            key: 'tested',
-            width: 100,
+            title: 'Checklist',
+            key: 'checklist',
+            width: 220,
             align: 'center',
             render: (_, item) => (
-                <Switch
-                    size="small"
-                    checked={Boolean(item.checklist?.tested)}
-                    loading={checklistUpdatingSiteId === item.id}
-                    disabled={!canManage || checklistUpdatingSiteId === item.id}
-                    onChange={(checked) => updateChecklist(item, 'tested', checked)}
-                />
-            ),
-        },
-        {
-            title: 'Data test',
-            key: 'demo_data_created',
-            width: 110,
-            align: 'center',
-            render: (_, item) => (
-                <Switch
-                    size="small"
-                    checked={Boolean(item.checklist?.demo_data_created)}
-                    loading={checklistUpdatingSiteId === item.id}
-                    disabled={!canManage || checklistUpdatingSiteId === item.id}
-                    onChange={(checked) => updateChecklist(item, 'demo_data_created', checked)}
-                />
+                <Space size={8} wrap>
+                    <Switch
+                        checked={Boolean(item.checklist?.tested)}
+                        checkedChildren="Đã test"
+                        unCheckedChildren="Chưa test"
+                        loading={checklistUpdatingSiteId === item.id}
+                        disabled={!canManage || checklistUpdatingSiteId === item.id}
+                        onChange={(checked) => updateChecklist(item, 'tested', checked)}
+                    />
+                    <Switch
+                        checked={Boolean(item.checklist?.demo_data_created)}
+                        checkedChildren="Có data"
+                        unCheckedChildren="Chưa data"
+                        loading={checklistUpdatingSiteId === item.id}
+                        disabled={!canManage || checklistUpdatingSiteId === item.id}
+                        onChange={(checked) => updateChecklist(item, 'demo_data_created', checked)}
+                    />
+                </Space>
             ),
         },
         {

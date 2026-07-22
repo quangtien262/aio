@@ -6,6 +6,7 @@ use App\Models\CmsPage;
 use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class PageManagementController
@@ -44,6 +45,24 @@ class PageManagementController
 
         return response()->json([
             'message' => 'Đã xóa trang CMS.',
+        ]);
+    }
+
+    public function bulkDestroy(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:100'],
+            'ids.*' => ['required', 'integer', 'distinct'],
+        ]);
+
+        $ids = array_values(array_unique(array_map('intval', $validated['ids'])));
+        $deleted = DB::transaction(
+            fn (): int => CmsPage::query()->whereKey($ids)->delete(),
+        );
+
+        return response()->json([
+            'message' => sprintf('Đã xóa %d trang CMS.', $deleted),
+            'data' => ['deleted' => $deleted],
         ]);
     }
 

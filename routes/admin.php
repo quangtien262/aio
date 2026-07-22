@@ -414,6 +414,9 @@ Route::prefix('admin')
                 Route::post('/cms/pages', [PageManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.create')
                     ->name('cms.pages.store');
+                Route::delete('/cms/pages/bulk', [PageManagementController::class, 'bulkDestroy'])
+                    ->middleware('admin.permission:cms.delete')
+                    ->name('cms.pages.bulk-destroy');
                 Route::put('/cms/pages/{page}', [PageManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.update')
                     ->name('cms.pages.update');
