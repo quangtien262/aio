@@ -487,6 +487,10 @@ class LandingPageBuilder
             'shop601_product_carousel' => 5,
             'shop603_hot_products', 'shop603_sale_slider' => 5,
             'shop603_new_arrivals' => 7,
+            'nt502_categories' => 9,
+            'nt502_promotion' => 3,
+            'nt502_living_room', 'nt502_bedroom' => 6,
+            'nt502_latest_news' => 7,
             default => 3,
         };
         $limit = max(1, min(12, (int) ($settings['limit'] ?? $defaultLimit)));
@@ -503,7 +507,7 @@ class LandingPageBuilder
             return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
@@ -512,6 +516,9 @@ class LandingPageBuilder
                 'shop601_collection_cards' => 'custom',
                 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel' => 'cms_products',
                 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider' => 'cms_products',
+                'nt502_categories' => 'catalog_categories',
+                'nt502_promotion', 'nt502_living_room', 'nt502_bedroom' => 'cms_products',
+                'nt502_latest_news' => 'cms_posts',
                 'solutions_split_list', 'collection_gallery' => 'cms_services',
                 default => 'cms_services',
             };

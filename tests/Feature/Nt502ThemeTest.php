@@ -30,10 +30,40 @@ class Nt502ThemeTest extends TestCase
     public function test_nt502_demo_and_storefront_render(): void
     {
         $provider=app(ThemeDemoContentProviderRegistry::class)->forTheme('NT502');$this->assertNotNull($provider);$result=$provider->generate('nt502-dola-furniture');$this->assertSame(10,data_get($result,'counts.products'));$this->assertDatabaseHas('site_banners',['theme_key'=>'NT502','placement'=>'nt502-hero-slider']);$this->assertDatabaseHas('landing_pages',['theme_key'=>'NT502','slug'=>'home','is_home'=>true]);
-        $this->get(route('site.home',['locale'=>'vi']))->assertOk()->assertSee('data-block-type="nt502_living_room"',false)->assertSee('data-block-type="nt502_latest_news"',false)->assertSee('DOLA FURNITURE');
+        $latestPost=CmsPost::query()->latest('publish_at')->firstOrFail();
+        $this->get(route('site.home',['locale'=>'vi']))->assertOk()->assertSee('data-block-type="nt502_living_room"',false)->assertSee('data-block-type="nt502_latest_news"',false)->assertSee('DOLA FURNITURE')->assertSee($latestPost->title);
         $category=CatalogCategory::query()->firstOrFail();$product=CatalogProduct::query()->firstOrFail();$post=CmsPost::query()->firstOrFail();
         $this->get(route('site.catalog.category',['locale'=>'vi','slug'=>$category->slug]))->assertOk()->assertSee($category->name);$this->get(route('site.catalog.product',['locale'=>'vi','slug'=>$product->slug]))->assertOk()->assertSee($product->name);$this->get(route('site.catalog.search',['locale'=>'vi','q'=>'Gỗ']))->assertOk()->assertSee('Kết quả tìm kiếm');$this->get(route('site.cart.index',['locale'=>'vi']))->assertOk()->assertSee('Giỏ hàng');$this->get(route('site.blog.index',['locale'=>'vi']))->assertOk()->assertSee('Tin tức');$this->get(route('site.blog.show',['locale'=>'vi','slug'=>$post->slug]))->assertOk()->assertSee($post->title);$this->get(route('site.contact',['locale'=>'vi']))->assertOk()->assertSee('Liên hệ Dola Furniture');
         $this->assertCount(8,LandingPage::query()->where('theme_key','NT502')->where('is_home',true)->firstOrFail()->blocks);
+    }
+
+    public function test_nt502_dynamic_blocks_resolve_their_configured_content_sources(): void
+    {
+        app(ThemeDemoContentProviderRegistry::class)
+            ->forTheme('NT502')
+            ?->generate('nt502-dola-furniture');
+
+        $page = LandingPage::query()
+            ->where('theme_key', 'NT502')
+            ->where('is_home', true)
+            ->firstOrFail();
+        $builder = app(LandingPageBuilder::class);
+
+        $expectedSources = [
+            'nt502_categories' => CatalogCategory::query()->count(),
+            'nt502_promotion' => CatalogProduct::query()->where('is_featured', true)->count(),
+            'nt502_living_room' => CatalogProduct::query()->count(),
+            'nt502_bedroom' => CatalogProduct::query()->count(),
+            'nt502_latest_news' => CmsPost::query()->where('status', 'published')->count(),
+        ];
+
+        foreach ($expectedSources as $blockType => $availableCount) {
+            $block = $page->blocks()->where('block_type', $blockType)->firstOrFail();
+            $resolved = $builder->previewDynamicItems($block, 'vi');
+            $limit = (int) data_get($block->settings, 'limit', 3);
+
+            $this->assertCount(min($availableCount, $limit), $resolved, $blockType);
+        }
     }
 
     public function test_nt502_renders_named_landing_route(): void
