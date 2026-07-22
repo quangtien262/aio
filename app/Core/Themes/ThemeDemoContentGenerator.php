@@ -47,6 +47,24 @@ class ThemeDemoContentGenerator
         ));
     }
 
+    /**
+     * @return list<array{key: string, label: string, description: string}>
+     */
+    public function presetsForTheme(string $themeKey): array
+    {
+        $defaultPreset = $this->defaultPresetForTheme($themeKey);
+
+        if ($defaultPreset !== null) {
+            return [[
+                'key' => $defaultPreset,
+                'label' => 'Dữ liệu mẫu dành riêng cho '.$themeKey,
+                'description' => 'Nội dung được thiết kế riêng cho bố cục và nguồn dữ liệu của theme.',
+            ]];
+        }
+
+        return $this->presets();
+    }
+
     public function generate(string $themeKey, string $presetKey, bool $resetAllDemoData = false): array
     {
         if ($resetAllDemoData) {

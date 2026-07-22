@@ -714,6 +714,12 @@ Route::prefix('admin')
                 Route::post('/site-mappings/{site}/copy-content', [SiteMappingController::class, 'copyContent'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.copy-content');
+                Route::post('/site-mappings/{site}/demo-data', [SiteMappingController::class, 'generateDemoData'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.demo-data');
+                Route::patch('/site-mappings/{site}/checklist', [SiteMappingController::class, 'updateChecklist'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('site-mappings.checklist');
                 Route::put('/site-mappings/{site}', [SiteMappingController::class, 'update'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('site-mappings.update');

@@ -40,7 +40,7 @@ class SiteContentInitializer
     /**
      * @return array<string, mixed>
      */
-    public function initialize(Site $site, string $mode): array
+    public function initialize(Site $site, string $mode, ?string $presetKey = null): array
     {
         $mode = $this->normalizeMode($mode);
 
@@ -48,7 +48,7 @@ class SiteContentInitializer
             return ['mode' => $mode, 'counts' => []];
         }
 
-        return $this->runForSite($site, function () use ($site, $mode): array {
+        return $this->runForSite($site, function () use ($site, $mode, $presetKey): array {
             if ($mode === self::MODE_COPY_MAIN) {
                 $counts = $this->contentCopier->copy(SiteContext::DEFAULT_WEBSITE_KEY, $site->website_key);
                 $this->landingPageBuilder->resolveHome($site->website_key, $site->theme_key, true);
@@ -56,7 +56,7 @@ class SiteContentInitializer
                 return ['mode' => $mode, 'counts' => $counts];
             }
 
-            $preset = $this->demoContentGenerator->defaultPresetForTheme($site->theme_key);
+            $preset = $presetKey ?: $this->demoContentGenerator->defaultPresetForTheme($site->theme_key);
 
             if ($preset !== null) {
                 $result = $this->demoContentGenerator->generate($site->theme_key, $preset);
@@ -124,23 +124,26 @@ class SiteContentInitializer
                 'branding' => $branding,
             ])->save();
 
-            $newsCategory = CmsCategory::query()->create([
-                'name' => 'Tin tuc',
+            $newsCategory = CmsCategory::query()->updateOrCreate([
                 'slug' => 'tin-tuc',
+            ], [
+                'name' => 'Tin tuc',
                 'description' => 'Cac bai viet mau cho website demo.',
                 'sort_order' => 0,
             ]);
 
-            $serviceCategory = CmsServiceCategory::query()->create([
-                'name' => 'Dich vu noi bat',
+            $serviceCategory = CmsServiceCategory::query()->updateOrCreate([
                 'slug' => 'dich-vu-noi-bat',
+            ], [
+                'name' => 'Dich vu noi bat',
                 'description' => 'Nhom dich vu mau cho website demo.',
                 'sort_order' => 0,
             ]);
 
-            $projectCategory = CmsProjectCategory::query()->create([
-                'name' => 'Du an tieu bieu',
+            $projectCategory = CmsProjectCategory::query()->updateOrCreate([
                 'slug' => 'du-an-tieu-bieu',
+            ], [
+                'name' => 'Du an tieu bieu',
                 'description' => 'Nhom du an mau cho website demo.',
                 'sort_order' => 0,
             ]);
@@ -149,9 +152,10 @@ class SiteContentInitializer
                 ['Gioi thieu', 'gioi-thieu', 'Cau chuyen thuong hieu va nang luc trien khai cua chung toi.'],
                 ['Lien he', 'lien-he', 'Thong tin lien he va form yeu cau tu van.'],
             ] as [$title, $slug, $excerpt]) {
-                CmsPage::query()->create([
-                    'title' => $title,
+                CmsPage::query()->updateOrCreate([
                     'slug' => $slug,
+                ], [
+                    'title' => $title,
                     'status' => 'published',
                     'excerpt' => $excerpt,
                     'body' => '<p>'.$excerpt.'</p>',
@@ -167,10 +171,11 @@ class SiteContentInitializer
                 ['Cach chuan bi thong tin truoc khi gui yeu cau', 'Noi dung mau cho bai viet huong dan va CTA.'],
                 ['Nhung diem can luu y khi chon don vi dich vu', 'Bai viet mau de kiem thu danh sach tin lien quan.'],
             ] as $index => [$title, $excerpt]) {
-                CmsPost::query()->create([
+                CmsPost::query()->updateOrCreate([
+                    'slug' => Str::slug($title),
+                ], [
                     'category_id' => $newsCategory->id,
                     'title' => $title,
-                    'slug' => Str::slug($title),
                     'status' => 'published',
                     'excerpt' => $excerpt,
                     'body' => '<p>'.$excerpt.'</p>',
@@ -184,10 +189,11 @@ class SiteContentInitializer
                 ['Xu ly ho so nhanh', 'Toi uu quy trinh de tiet kiem thoi gian cho khach hang.'],
                 ['Cham soc sau dich vu', 'Theo doi phan hoi va ho tro cac nhu cau phat sinh.'],
             ] as $index => [$title, $summary]) {
-                $service = CmsService::query()->create([
+                $service = CmsService::query()->updateOrCreate([
+                    'slug' => Str::slug($title),
+                ], [
                     'cms_service_category_id' => $serviceCategory->id,
                     'title' => $title,
-                    'slug' => Str::slug($title),
                     'status' => 'published',
                     'summary' => $summary,
                     'content' => '<p>'.$summary.'</p>',
@@ -199,12 +205,13 @@ class SiteContentInitializer
                     'sort_order' => $index,
                 ]);
 
-                CmsServiceImage::query()->create([
+                CmsServiceImage::query()->updateOrCreate([
                     'cms_service_id' => $service->id,
+                    'sort_order' => 0,
+                ], [
                     'image_url' => $image('service-'.$index, 900, 600),
                     'alt_text' => $title,
                     'is_featured' => true,
-                    'sort_order' => 0,
                 ]);
             }
 
@@ -212,10 +219,11 @@ class SiteContentInitializer
                 ['Du an demo so 1', 'Mau noi dung du an de kiem thu block gallery.'],
                 ['Du an demo so 2', 'Mau noi dung du an de kiem thu danh sach project.'],
             ] as $index => [$title, $summary]) {
-                $project = CmsProject::query()->create([
+                $project = CmsProject::query()->updateOrCreate([
+                    'slug' => Str::slug($title),
+                ], [
                     'cms_project_category_id' => $projectCategory->id,
                     'title' => $title,
-                    'slug' => Str::slug($title),
                     'status' => 'published',
                     'summary' => $summary,
                     'content' => '<p>'.$summary.'</p>',
@@ -227,12 +235,13 @@ class SiteContentInitializer
                     'sort_order' => $index,
                 ]);
 
-                CmsProjectImage::query()->create([
+                CmsProjectImage::query()->updateOrCreate([
                     'cms_project_id' => $project->id,
+                    'sort_order' => 0,
+                ], [
                     'image_url' => $image('project-'.$index, 900, 600),
                     'alt_text' => $title,
                     'is_featured' => true,
-                    'sort_order' => 0,
                 ]);
             }
 
@@ -241,9 +250,10 @@ class SiteContentInitializer
                 ['Tran Linh', 'Chuyen vien tu van'],
                 ['Le Hoang', 'Quan ly van hanh'],
             ] as $index => [$name, $role]) {
-                $member = CmsTeamMember::query()->create([
-                    'name' => $name,
+                $member = CmsTeamMember::query()->updateOrCreate([
                     'slug' => Str::slug($name.'-'.$index),
+                ], [
+                    'name' => $name,
                     'role' => $role,
                     'summary' => 'Thanh vien mau trong doi ngu '.$companyName.'.',
                     'status' => 'published',
@@ -252,12 +262,13 @@ class SiteContentInitializer
                     'sort_order' => $index,
                 ]);
 
-                CmsTeamMemberImage::query()->create([
+                CmsTeamMemberImage::query()->updateOrCreate([
                     'cms_team_member_id' => $member->id,
+                    'sort_order' => 0,
+                ], [
                     'image_url' => $image('team-'.$index, 640, 760),
                     'alt_text' => $name,
                     'is_featured' => true,
-                    'sort_order' => 0,
                 ]);
             }
 
@@ -265,9 +276,10 @@ class SiteContentInitializer
                 ['Pham Anh', 'CEO cong ty ABC', 'Dich vu nhanh, ro rang va rat de lam viec.'],
                 ['Minh Quan', 'Quan ly marketing', 'Bo giao dien va du lieu demo giup chung toi review nhanh hon.'],
             ] as $index => [$name, $role, $quote]) {
-                CmsTestimonial::query()->create([
+                CmsTestimonial::query()->updateOrCreate([
                     'name' => $name,
                     'role' => $role,
+                ], [
                     'company' => $companyName,
                     'quote' => $quote,
                     'image_url' => $image('testimonial-'.$index, 400, 400),
@@ -278,9 +290,10 @@ class SiteContentInitializer
                 ]);
             }
 
-            CmsMenu::query()->create([
-                'name' => $themeKey.' Main Menu',
+            CmsMenu::query()->updateOrCreate([
                 'location' => 'primary-navigation',
+                'name' => $themeKey.' Main Menu',
+            ], [
                 'items' => [
                     ['label' => 'Trang chu', 'url' => '#top'],
                     ['label' => 'Gioi thieu', 'url' => '#gioi-thieu'],
@@ -290,16 +303,17 @@ class SiteContentInitializer
                 ],
             ]);
 
-            SiteBanner::query()->create([
+            SiteBanner::query()->updateOrCreate([
                 'theme_key' => $themeKey,
                 'placement' => strtolower($themeKey).'-hero',
+                'sort_order' => 0,
+            ], [
                 'title' => $companyName,
                 'subtitle' => 'Du lieu mau duoc tao rieng cho '.$site->website_key.'.',
                 'image_url' => $image('hero', 1920, 900),
                 'link_url' => '#lien-he',
                 'badge' => 'Demo '.$themeKey,
                 'metadata' => ['button_label' => 'Lien he ngay'],
-                'sort_order' => 0,
                 'is_active' => true,
             ]);
 

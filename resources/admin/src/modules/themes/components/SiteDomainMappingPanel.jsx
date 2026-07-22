@@ -9,10 +9,11 @@ import Modal from 'antd/es/modal';
 import Popconfirm from 'antd/es/popconfirm';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
+import Switch from 'antd/es/switch';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { CheckCircleOutlined, CopyOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CopyOutlined, DatabaseOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text } = Typography;
 
@@ -50,16 +51,21 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const [form] = Form.useForm();
     const [bulkForm] = Form.useForm();
     const [copyForm] = Form.useForm();
+    const [demoForm] = Form.useForm();
     const [items, setItems] = useState([]);
     const [themeOptions, setThemeOptions] = useState(themes);
+    const [demoPresetsByTheme, setDemoPresetsByTheme] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [bulkModalOpen, setBulkModalOpen] = useState(false);
+    const [bulkSubmitting, setBulkSubmitting] = useState(false);
     const [copySource, setCopySource] = useState(null);
+    const [demoSite, setDemoSite] = useState(null);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [deleteContentOnRemove, setDeleteContentOnRemove] = useState(false);
+    const [checklistUpdatingSiteId, setChecklistUpdatingSiteId] = useState(null);
 
     const availableThemes = themeOptions.length ? themeOptions : themes;
     const themeNameMap = useMemo(() => new Map(availableThemes.map((theme) => [theme.key, theme.name])), [availableThemes]);
@@ -73,6 +79,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
             setItems(payload.data ?? []);
             setSelectedRowKeys([]);
             setThemeOptions(payload.meta?.themes ?? themes);
+            setDemoPresetsByTheme(payload.meta?.demo_presets_by_theme ?? {});
         } catch (loadError) {
             setError(loadError instanceof Error ? loadError.message : 'Không tải được cấu hình domain.');
         } finally {
@@ -128,18 +135,24 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
     const createBulkDomains = async () => {
         const values = await bulkForm.validateFields();
-        const ok = await runAdminAction(
-            () => callAdminApi('/admin/api/site-mappings/bulk', {
-                method: 'POST',
-                body: JSON.stringify(values),
-            }),
-            'Đã tạo nhanh cấu hình domain.',
-            loadItems,
-        );
+        setBulkSubmitting(true);
 
-        if (ok) {
-            setBulkModalOpen(false);
-            bulkForm.resetFields();
+        try {
+            const ok = await runAdminAction(
+                () => callAdminApi('/admin/api/site-mappings/bulk', {
+                    method: 'POST',
+                    body: JSON.stringify(values),
+                }),
+                'Đã tạo nhanh cấu hình domain.',
+                loadItems,
+            );
+
+            if (ok) {
+                setBulkModalOpen(false);
+                bulkForm.resetFields();
+            }
+        } finally {
+            setBulkSubmitting(false);
         }
     };
 
@@ -157,6 +170,29 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const openCopy = (item) => {
         setCopySource(item);
         copyForm.resetFields();
+    };
+
+    const openDemoData = (item) => {
+        const presets = demoPresetsByTheme[item.theme_key] ?? [];
+        setDemoSite(item);
+        demoForm.setFieldsValue({ preset: presets[0]?.key });
+    };
+
+    const createDemoData = async () => {
+        const values = await demoForm.validateFields();
+        const ok = await runAdminAction(
+            () => callAdminApi(`/admin/api/site-mappings/${demoSite.id}/demo-data`, {
+                method: 'POST',
+                body: JSON.stringify(values),
+            }),
+            `Đã tạo data test cho ${demoSite.domain || demoSite.website_key}.`,
+            loadItems,
+        );
+
+        if (ok) {
+            setDemoSite(null);
+            demoForm.resetFields();
+        }
     };
 
     const copyContent = async () => {
@@ -192,6 +228,34 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
             status === 'active' ? `Đã kích hoạt ${ids.length} domain.` : `Đã tạm tắt ${ids.length} domain.`,
             loadItems,
         );
+    };
+
+    const updateChecklist = async (item, field, checked) => {
+        const previousItem = item;
+        setChecklistUpdatingSiteId(item.id);
+        setError(null);
+        setItems((current) => current.map((entry) => (
+            entry.id === item.id
+                ? { ...entry, checklist: { ...entry.checklist, [field]: checked } }
+                : entry
+        )));
+
+        try {
+            const payload = await callAdminApi(`/admin/api/site-mappings/${item.id}/checklist`, {
+                method: 'PATCH',
+                body: JSON.stringify({ [field]: checked }),
+            });
+            setItems((current) => current.map((entry) => (
+                entry.id === item.id ? payload.data : entry
+            )));
+        } catch (updateError) {
+            setItems((current) => current.map((entry) => (
+                entry.id === item.id ? previousItem : entry
+            )));
+            setError(updateError instanceof Error ? updateError.message : 'Không cập nhật được checklist domain.');
+        } finally {
+            setChecklistUpdatingSiteId(null);
+        }
     };
 
     const bulkDelete = async () => {
@@ -258,6 +322,36 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
             ),
         },
         {
+            title: 'Đã test',
+            key: 'tested',
+            width: 100,
+            align: 'center',
+            render: (_, item) => (
+                <Switch
+                    size="small"
+                    checked={Boolean(item.checklist?.tested)}
+                    loading={checklistUpdatingSiteId === item.id}
+                    disabled={!canManage || checklistUpdatingSiteId === item.id}
+                    onChange={(checked) => updateChecklist(item, 'tested', checked)}
+                />
+            ),
+        },
+        {
+            title: 'Data test',
+            key: 'demo_data_created',
+            width: 110,
+            align: 'center',
+            render: (_, item) => (
+                <Switch
+                    size="small"
+                    checked={Boolean(item.checklist?.demo_data_created)}
+                    loading={checklistUpdatingSiteId === item.id}
+                    disabled={!canManage || checklistUpdatingSiteId === item.id}
+                    onChange={(checked) => updateChecklist(item, 'demo_data_created', checked)}
+                />
+            ),
+        },
+        {
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
@@ -267,9 +361,17 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         {
             title: '',
             key: 'actions',
-            width: 190,
+            width: 300,
             render: (_, item) => (
                 <Space>
+                    <Button
+                        title="Tạo data test"
+                        icon={<DatabaseOutlined />}
+                        disabled={!canManage || !(demoPresetsByTheme[item.theme_key]?.length)}
+                        onClick={() => openDemoData(item)}
+                    >
+                        Tạo data
+                    </Button>
                     <Button
                         title="Sao chép dữ liệu sang domain khác"
                         icon={<CopyOutlined />}
@@ -357,9 +459,59 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                     columns={columns}
                     dataSource={items}
                     pagination={false}
-                    scroll={{ x: 860 }}
+                    scroll={{ x: 1080 }}
                 />
             </Space>
+
+            <Modal
+                title="Tạo data test cho domain"
+                open={demoSite !== null}
+                okText="Xác nhận tạo data"
+                cancelText="Hủy"
+                onOk={createDemoData}
+                onCancel={() => {
+                    setDemoSite(null);
+                    demoForm.resetFields();
+                }}
+                destroyOnHidden
+            >
+                <Alert
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                    message="Dữ liệu test cũ do hệ thống tạo cho domain này sẽ được làm mới. Dữ liệu nhập thủ công không bị xóa."
+                />
+                <Form form={demoForm} layout="vertical">
+                    <Form.Item label="Domain">
+                        <Input
+                            value={demoSite ? `${demoSite.domain || 'Domain mặc định'} (${demoSite.website_key})` : ''}
+                            disabled
+                        />
+                    </Form.Item>
+                    <Form.Item label="Theme">
+                        <Input
+                            value={demoSite ? `${demoSite.theme_key} - ${themeNameMap.get(demoSite.theme_key) ?? demoSite.theme_key}` : ''}
+                            disabled
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        label="Chọn lĩnh vực"
+                        name="preset"
+                        rules={[{ required: true, message: 'Chọn lĩnh vực dữ liệu test cần tạo.' }]}
+                    >
+                        <Select
+                            showSearch
+                            optionFilterProp="label"
+                            placeholder="Chọn lĩnh vực"
+                            options={(demoPresetsByTheme[demoSite?.theme_key] ?? []).map((preset) => ({
+                                value: preset.key,
+                                label: preset.label,
+                                title: preset.description,
+                            }))}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
 
             <Modal
                 title="Sao chép dữ liệu sang domain khác"
@@ -494,8 +646,15 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                 open={bulkModalOpen}
                 okText="Tạo cấu hình"
                 cancelText="Hủy"
+                confirmLoading={bulkSubmitting}
+                okButtonProps={{ disabled: bulkSubmitting }}
+                cancelButtonProps={{ disabled: bulkSubmitting }}
                 onOk={createBulkDomains}
                 onCancel={() => {
+                    if (bulkSubmitting) {
+                        return;
+                    }
+
                     setBulkModalOpen(false);
                     bulkForm.resetFields();
                 }}

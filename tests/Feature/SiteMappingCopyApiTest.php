@@ -4,7 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Admin;
 use App\Models\Site;
-use Database\Seeders\DatabaseSeeder;
+use App\Models\SiteProfile;
+use App\Support\SiteContentInitializer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -15,8 +16,7 @@ class SiteMappingCopyApiTest extends TestCase
 
     public function test_authorized_admin_can_copy_content_between_site_mappings(): void
     {
-        $this->seed(DatabaseSeeder::class);
-        $this->actingAs(Admin::query()->where('email', 'admin@aio.local')->firstOrFail(), 'admin');
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
 
         $source = Site::query()->create([
             'domain' => 'source.demo.test',
@@ -68,5 +68,156 @@ class SiteMappingCopyApiTest extends TestCase
             'sku' => 'API-COPY-001',
             'name' => 'API Product',
         ]);
+    }
+
+    public function test_authorized_admin_can_generate_selected_demo_preset_for_one_domain(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+
+        $site = Site::query()->create([
+            'domain' => 'electronics.demo.test',
+            'website_key' => 'electronics-demo',
+            'theme_key' => 'TH0001',
+            'name' => 'Electronics Demo',
+            'status' => 'active',
+        ]);
+
+        $this->postJson("/admin/api/site-mappings/{$site->id}/demo-data", [
+            'preset' => 'electronics-superstore',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.site.website_key', 'electronics-demo')
+            ->assertJsonPath('data.site.checklist.demo_data_created', true)
+            ->assertJsonPath('data.initialization.mode', 'sample')
+            ->assertJsonPath('data.initialization.preset', 'electronics-superstore');
+
+        $this->assertDatabaseHas('site_profiles', [
+            'website_key' => 'electronics-demo',
+            'active_theme_key' => 'TH0001',
+        ]);
+        $this->assertDatabaseHas('catalog_products', [
+            'website_key' => 'electronics-demo',
+        ]);
+        $this->assertDatabaseHas('landing_pages', [
+            'website_key' => 'electronics-demo',
+            'theme_key' => 'TH0001',
+            'is_home' => true,
+        ]);
+    }
+
+    public function test_domain_demo_endpoint_rejects_a_preset_not_supported_by_its_theme(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+
+        $site = Site::query()->create([
+            'domain' => 'nt502.demo.test',
+            'website_key' => 'nt502-demo',
+            'theme_key' => 'NT502',
+            'status' => 'active',
+        ]);
+
+        $this->postJson("/admin/api/site-mappings/{$site->id}/demo-data", [
+            'preset' => 'electronics-superstore',
+        ])->assertUnprocessable()->assertJsonValidationErrors('preset');
+    }
+
+    public function test_default_domain_uses_active_theme_from_site_profile_for_demo_data(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+
+        $site = Site::query()->where('website_key', 'website-main')->firstOrFail();
+        $site->forceFill(['theme_key' => null, 'status' => 'active'])->save();
+        SiteProfile::query()->withoutGlobalScope('current_website')->updateOrCreate(
+            ['website_key' => 'website-main'],
+            ['site_name' => 'Default website', 'active_theme_key' => 'NT502'],
+        );
+
+        $this->getJson('/admin/api/site-mappings')
+            ->assertOk()
+            ->assertJsonPath('data.0.theme_key', 'NT502')
+            ->assertJsonPath('meta.demo_presets_by_theme.NT502.0.key', 'nt502-dola-furniture');
+
+        $this->postJson("/admin/api/site-mappings/{$site->id}/demo-data", [
+            'preset' => 'nt502-dola-furniture',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.site.theme_key', 'NT502');
+    }
+
+    public function test_creating_a_domain_with_sample_content_reuses_existing_fallback_slugs(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+
+        DB::table('cms_categories')->insert([
+            'website_key' => 'dn302-demo',
+            'name' => 'Tin tức đã có',
+            'slug' => 'tin-tuc',
+            'description' => 'Dữ liệu còn lại từ lần tạo trước.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->postJson('/admin/api/site-mappings', [
+            'domain' => 'dn302.demo.test',
+            'website_key' => 'dn302-demo',
+            'theme_key' => 'DN302',
+            'name' => 'DN302 Demo',
+            'status' => 'active',
+            'content_mode' => 'sample',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.website_key', 'dn302-demo')
+            ->assertJsonPath('data.checklist.demo_data_created', true)
+            ->assertJsonPath('meta.initialization.mode', 'sample');
+
+        $this->assertSame(1, DB::table('cms_categories')
+            ->where('website_key', 'dn302-demo')
+            ->where('slug', 'tin-tuc')
+            ->count());
+        $this->assertDatabaseHas('cms_posts', ['website_key' => 'dn302-demo']);
+        $this->assertDatabaseHas('landing_pages', [
+            'website_key' => 'dn302-demo',
+            'theme_key' => 'DN302',
+            'is_home' => true,
+        ]);
+
+        $site = Site::query()->where('website_key', 'dn302-demo')->firstOrFail();
+        app(SiteContentInitializer::class)->initialize($site, SiteContentInitializer::MODE_SAMPLE);
+
+        $this->assertSame(3, DB::table('cms_posts')->where('website_key', 'dn302-demo')->count());
+        $this->assertSame(3, DB::table('cms_services')->where('website_key', 'dn302-demo')->count());
+        $this->assertSame(2, DB::table('cms_projects')->where('website_key', 'dn302-demo')->count());
+        $this->assertSame(3, DB::table('cms_team_members')->where('website_key', 'dn302-demo')->count());
+        $this->assertSame(2, DB::table('cms_testimonials')->where('website_key', 'dn302-demo')->count());
+    }
+
+    public function test_admin_can_update_each_domain_checklist_inline(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+
+        $site = Site::query()->create([
+            'domain' => 'checklist.demo.test',
+            'website_key' => 'checklist-demo',
+            'theme_key' => 'DN302',
+            'status' => 'active',
+            'settings' => [],
+        ]);
+
+        $this->patchJson("/admin/api/site-mappings/{$site->id}/checklist", [
+            'tested' => true,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.checklist.tested', true)
+            ->assertJsonPath('data.checklist.demo_data_created', false);
+
+        $this->patchJson("/admin/api/site-mappings/{$site->id}/checklist", [
+            'demo_data_created' => true,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.checklist.tested', true)
+            ->assertJsonPath('data.checklist.demo_data_created', true);
+
+        $this->assertTrue((bool) data_get($site->fresh()->settings, 'checklist.tested'));
+        $this->assertTrue((bool) data_get($site->fresh()->settings, 'checklist.demo_data_created'));
     }
 }

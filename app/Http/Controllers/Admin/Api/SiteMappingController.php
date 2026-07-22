@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Site;
 use App\Models\SiteProfile;
@@ -14,11 +15,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 class SiteMappingController
 {
-    public function index(ThemeRegistry $themeRegistry): JsonResponse
+    public function index(ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $demoContentGenerator): JsonResponse
     {
+        $themes = $this->themeOptions($themeRegistry);
+
         return response()->json([
             'data' => Site::query()
                 ->orderByRaw('domain is null')
@@ -28,7 +32,12 @@ class SiteMappingController
                 ->map(fn (Site $site): array => $this->sitePayload($site))
                 ->values(),
             'meta' => [
-                'themes' => $this->themeOptions($themeRegistry),
+                'themes' => $themes,
+                'demo_presets_by_theme' => collect($themes)
+                    ->mapWithKeys(fn (array $theme): array => [
+                        $theme['key'] => $demoContentGenerator->presetsForTheme($theme['key']),
+                    ])
+                    ->all(),
             ],
         ]);
     }
@@ -52,6 +61,10 @@ class SiteMappingController
 
             $this->syncSiteProfile($site, $theme);
             $initialization = $initializer->initialize($site, $validated['content_mode']);
+
+            if ($validated['content_mode'] === SiteContentInitializer::MODE_SAMPLE) {
+                $this->markDemoDataCreated($site);
+            }
 
             return $site;
         });
@@ -120,6 +133,10 @@ class SiteMappingController
 
                 $this->syncSiteProfile($site, $theme);
                 $initializations[$websiteKey] = $initializer->initialize($site, $contentMode);
+
+                if ($contentMode === SiteContentInitializer::MODE_SAMPLE) {
+                    $this->markDemoDataCreated($site);
+                }
 
                 return $site;
             });
@@ -210,6 +227,64 @@ class SiteMappingController
                 'target' => $this->sitePayload($targetSite),
                 'counts' => $counts,
             ],
+        ]);
+    }
+
+    public function generateDemoData(
+        Site $site,
+        Request $request,
+        ThemeDemoContentGenerator $demoContentGenerator,
+        SiteContentInitializer $initializer,
+    ): JsonResponse {
+        $themeKey = $this->siteThemeKey($site);
+        abort_if($themeKey === null, 422, 'Domain chưa được gán theme để tạo data test.');
+
+        $site->setAttribute('theme_key', $themeKey);
+        $availablePresets = collect($demoContentGenerator->presetsForTheme($themeKey));
+        $validated = $request->validate([
+            'preset' => ['required', 'string', Rule::in($availablePresets->pluck('key')->all())],
+        ]);
+
+        try {
+            $result = $initializer->initialize(
+                $site,
+                SiteContentInitializer::MODE_SAMPLE,
+                $validated['preset'],
+            );
+            $this->markDemoDataCreated($site);
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json([
+            'message' => sprintf(
+                'Đã tạo data test cho %s.',
+                $site->domain ?: $site->website_key,
+            ),
+            'data' => [
+                'site' => $this->sitePayload($site),
+                'initialization' => $result,
+            ],
+        ]);
+    }
+
+    public function updateChecklist(Site $site, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'tested' => ['sometimes', 'boolean'],
+            'demo_data_created' => ['sometimes', 'boolean'],
+        ]);
+
+        abort_if($validated === [], 422, 'Cần chọn ít nhất một trạng thái checklist.');
+
+        $settings = (array) $site->settings;
+        $checklist = array_merge((array) ($settings['checklist'] ?? []), $validated);
+        $settings['checklist'] = $checklist;
+        $site->forceFill(['settings' => $settings])->save();
+
+        return response()->json([
+            'message' => 'Đã cập nhật checklist domain.',
+            'data' => $this->sitePayload($site->fresh()),
         ]);
     }
 
@@ -415,10 +490,39 @@ class SiteMappingController
             'id' => $site->id,
             'domain' => $site->domain,
             'website_key' => $site->website_key,
-            'theme_key' => $site->theme_key,
+            'theme_key' => $this->siteThemeKey($site),
             'name' => $site->name,
             'status' => $site->status,
+            'checklist' => [
+                'tested' => (bool) data_get($site->settings, 'checklist.tested', false),
+                'demo_data_created' => (bool) data_get($site->settings, 'checklist.demo_data_created', false),
+            ],
             'updated_at' => optional($site->updated_at)->toISOString(),
         ];
+    }
+
+    private function siteThemeKey(Site $site): ?string
+    {
+        $themeKey = trim((string) $site->theme_key);
+
+        if ($themeKey !== '') {
+            return $themeKey;
+        }
+
+        $profileThemeKey = SiteProfile::query()
+            ->withoutGlobalScope('current_website')
+            ->where('website_key', $site->website_key)
+            ->value('active_theme_key');
+
+        $profileThemeKey = trim((string) $profileThemeKey);
+
+        return $profileThemeKey !== '' ? $profileThemeKey : null;
+    }
+
+    private function markDemoDataCreated(Site $site): void
+    {
+        $settings = (array) $site->settings;
+        data_set($settings, 'checklist.demo_data_created', true);
+        $site->forceFill(['settings' => $settings])->save();
     }
 }
