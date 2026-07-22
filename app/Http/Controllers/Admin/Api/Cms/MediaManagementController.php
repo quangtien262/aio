@@ -7,8 +7,10 @@ use App\Models\CmsMediaFolder;
 use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class MediaManagementController
 {
@@ -98,6 +100,73 @@ class MediaManagementController
             'sort_order' => $folder->sort_order,
             'count' => 0,
         ]], 201);
+    }
+
+    public function updateFolder(Request $request, int $folder): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+        ]);
+
+        /** @var CmsMediaFolder $record */
+        $record = CmsMediaFolder::query()->findOrFail($folder);
+        $name = trim((string) $validated['name']);
+        $path = Str::slug($name) ?: 'folder';
+
+        if (CmsMediaFolder::query()->where('path', $path)->whereKeyNot($record->id)->exists()) {
+            throw ValidationException::withMessages([
+                'name' => 'Tên thư mục này đã tồn tại.',
+            ]);
+        }
+
+        $previousPath = $record->path;
+
+        DB::transaction(function () use ($record, $name, $path, $previousPath): void {
+            $record->update([
+                'name' => $name,
+                'path' => $path,
+            ]);
+
+            if ($previousPath !== $path) {
+                CmsMedia::query()
+                    ->where('folder_path', $previousPath)
+                    ->update(['folder_path' => $path]);
+            }
+        });
+
+        return response()->json([
+            'message' => 'Đã đổi tên thư mục media.',
+            'data' => [
+                'id' => $record->id,
+                'name' => $record->name,
+                'path' => $record->path,
+                'previous_path' => $previousPath,
+                'sort_order' => $record->sort_order,
+            ],
+        ]);
+    }
+
+    public function destroyFolder(Request $request, int $folder): JsonResponse
+    {
+        /** @var CmsMediaFolder $record */
+        $record = CmsMediaFolder::query()->findOrFail($folder);
+        $folderPath = $record->path;
+        $movedMediaCount = 0;
+
+        DB::transaction(function () use ($record, $folderPath, &$movedMediaCount): void {
+            $movedMediaCount = CmsMedia::query()
+                ->where('folder_path', $folderPath)
+                ->update(['folder_path' => null]);
+            $record->delete();
+        });
+
+        return response()->json([
+            'message' => 'Đã xóa thư mục media.',
+            'data' => [
+                'deleted_folder_id' => $folder,
+                'moved_media_count' => $movedMediaCount,
+            ],
+        ]);
     }
 
     public function destroy(Request $request, int $media): JsonResponse

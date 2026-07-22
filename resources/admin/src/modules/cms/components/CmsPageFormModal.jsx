@@ -10,11 +10,12 @@ import Input from 'antd/es/input';
 import message from 'antd/es/message';
 import Modal from 'antd/es/modal';
 import AntList from 'antd/es/list';
+import Pagination from 'antd/es/pagination';
 import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
-import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Tooltip from 'antd/es/tooltip';
+import Typography from 'antd/es/typography';
 import {
     BlockQuote,
     Bold,
@@ -38,6 +39,8 @@ import {
 } from 'ckeditor5';
 import 'ckeditor5/ckeditor5.css';
 
+const { Text } = Typography;
+
 export const emptyCmsPageForm = {
     id: null,
     title: '',
@@ -47,7 +50,7 @@ export const emptyCmsPageForm = {
     body: '',
     meta_title: '',
     meta_description: '',
-    template: '',
+    meta_keywords: '',
     featured_media_id: null,
     website_key: '',
 };
@@ -105,6 +108,12 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     const [form] = Form.useForm();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [uploadingAsset, setUploadingAsset] = useState(null);
+    const [featuredMediaMode, setFeaturedMediaMode] = useState('upload');
+    const [featuredMediaLibraryOpen, setFeaturedMediaLibraryOpen] = useState(false);
+    const [featuredMediaLibraryPage, setFeaturedMediaLibraryPage] = useState(1);
+    const [featuredMediaKeyword, setFeaturedMediaKeyword] = useState('');
+    const [featuredMediaUrl, setFeaturedMediaUrl] = useState('');
+    const [featuredMediaOptions, setFeaturedMediaOptions] = useState(mediaOptions);
     const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [sampleModalOpen, setSampleModalOpen] = useState(false);
@@ -115,8 +124,10 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
     const sampleImageInputRef = useRef(null);
+    const featuredMediaInputRef = useRef(null);
     const slugEditedRef = useRef(Boolean(editingPage?.id));
     const titleValue = Form.useWatch('title', form) ?? '';
+    const featuredMediaId = Form.useWatch('featured_media_id', form) ?? null;
     const bodyValue = Form.useWatch('body', form) ?? '';
     const websiteKey = Form.useWatch('website_key', form);
     const editorInitialData = useMemo(
@@ -136,7 +147,22 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         setEditorContentVersion((current) => current + 1);
         editorInstanceRef.current = null;
         editorSelectionRef.current = null;
+        setFeaturedMediaMode(editingPage?.featured_media_id ? 'library' : 'upload');
+        setFeaturedMediaUrl('');
+        setFeaturedMediaKeyword('');
+        setFeaturedMediaLibraryPage(1);
+        setFeaturedMediaLibraryOpen(false);
     }, [editingPage, form]);
+
+    useEffect(() => {
+        setFeaturedMediaOptions((currentOptions) => {
+            const nextMap = new Map(currentOptions.map((item) => [item.id, item]));
+
+            mediaOptions.forEach((item) => nextMap.set(item.id, item));
+
+            return Array.from(nextMap.values());
+        });
+    }, [mediaOptions]);
 
     useEffect(() => {
         if (slugEditedRef.current) {
@@ -285,6 +311,29 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
 
     const [pendingPresetToInsert, setPendingPresetToInsert] = useState(null);
 
+    const selectedFeaturedMedia = useMemo(
+        () => featuredMediaOptions.find((item) => item.id === featuredMediaId) ?? null,
+        [featuredMediaId, featuredMediaOptions],
+    );
+
+    const filteredFeaturedMediaOptions = useMemo(() => {
+        const normalizedKeyword = featuredMediaKeyword.trim().toLowerCase();
+
+        if (!normalizedKeyword) {
+            return featuredMediaOptions;
+        }
+
+        return featuredMediaOptions.filter((item) => [item.title, item.file_url]
+            .some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword)));
+    }, [featuredMediaKeyword, featuredMediaOptions]);
+
+    const featuredMediaPageSize = 8;
+    const paginatedFeaturedMediaOptions = useMemo(() => {
+        const startIndex = (featuredMediaLibraryPage - 1) * featuredMediaPageSize;
+
+        return filteredFeaturedMediaOptions.slice(startIndex, startIndex + featuredMediaPageSize);
+    }, [featuredMediaLibraryPage, filteredFeaturedMediaOptions]);
+
     const handleSampleImageSelected = (event) => {
         const file = event?.target?.files?.[0];
 
@@ -332,6 +381,26 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         }
 
         return url;
+    };
+
+    const createFeaturedMediaRecord = async ({ file, fileUrl, title }) => {
+        const formData = new FormData();
+
+        if (file) formData.append('file', file);
+        if (fileUrl) formData.append('file_url', fileUrl);
+        if (title) formData.append('title', title);
+        if (websiteKey) formData.append('website_key', websiteKey);
+
+        const payload = await callAdminApi('/admin/api/cms/media', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!payload?.data?.id) {
+            throw new Error('Không thể tạo media đại diện trang.');
+        }
+
+        return payload.data;
     };
 
     const syncEditorBodyToForm = (editor) => {
@@ -460,6 +529,71 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
         messageApi.success('Đã nhúng video YouTube vào nội dung.');
     };
 
+    const handleUploadFeaturedMedia = async (event) => {
+        const file = event.target.files?.[0];
+
+        if (!file) return;
+
+        setUploadingAsset('featured-image');
+
+        try {
+            const media = await createFeaturedMediaRecord({
+                file,
+                title: file.name.replace(/\.[^.]+$/, ''),
+            });
+
+            setFeaturedMediaOptions((currentOptions) => [media, ...currentOptions.filter((item) => item.id !== media.id)]);
+            form.setFieldValue('featured_media_id', media.id);
+            messageApi.success(`Đã upload và gán ảnh đại diện "${file.name}".`);
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Upload ảnh đại diện không thành công.');
+        } finally {
+            setUploadingAsset(null);
+            event.target.value = '';
+        }
+    };
+
+    const handleCreateFeaturedMediaFromUrl = async () => {
+        const trimmedUrl = featuredMediaUrl.trim();
+
+        if (!trimmedUrl) {
+            messageApi.warning('Nhập URL ảnh trước khi lưu.');
+            return;
+        }
+
+        setUploadingAsset('featured-url');
+
+        try {
+            const media = await createFeaturedMediaRecord({
+                fileUrl: trimmedUrl,
+                title: form.getFieldValue('title') || 'Ảnh đại diện trang',
+            });
+
+            setFeaturedMediaOptions((currentOptions) => [media, ...currentOptions.filter((item) => item.id !== media.id)]);
+            form.setFieldValue('featured_media_id', media.id);
+            messageApi.success('Đã lưu URL và gán làm ảnh đại diện trang.');
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể lưu ảnh đại diện từ URL.');
+        } finally {
+            setUploadingAsset(null);
+        }
+    };
+
+    const renderFeaturedMediaPreview = () => {
+        if (!selectedFeaturedMedia?.file_url) return null;
+
+        return (
+            <div className="cms-featured-media-preview">
+                <img src={selectedFeaturedMedia.file_url} alt={selectedFeaturedMedia.title || 'Ảnh đại diện trang'} />
+                <div className="cms-featured-media-preview-copy">
+                    <strong>{selectedFeaturedMedia.title || 'Ảnh đại diện trang'}</strong>
+                    <span>{selectedFeaturedMedia.file_url}</span>
+                </div>
+                <Button size="small" onClick={() => form.setFieldValue('featured_media_id', null)}>Bỏ chọn</Button>
+            </div>
+        );
+    };
+
     const handleSubmit = async () => {
         syncCurrentEditorBodyToForm();
 
@@ -471,7 +605,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
             body: values.body || null,
             meta_title: values.meta_title || null,
             meta_description: values.meta_description || null,
-            template: values.template || null,
+            meta_keywords: values.meta_keywords || null,
             featured_media_id: values.featured_media_id || null,
         });
 
@@ -512,7 +646,14 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
                                 <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề trang' }]}>
-                                    <Input placeholder="VD: Trang giới thiệu" />
+                                    <Input
+                                        placeholder="VD: Trang giới thiệu"
+                                        onChange={(event) => {
+                                            if (!editingPage?.id && !slugEditedRef.current) {
+                                                form.setFieldValue('slug', toSlug(event.target.value));
+                                            }
+                                        }}
+                                    />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>
@@ -522,17 +663,14 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                             </Col>
                             <Col xs={24} md={12}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-                                    <Select
+                                    <Radio.Group
+                                        optionType="button"
+                                        buttonStyle="solid"
                                         options={[
                                             { label: 'Bản nháp', value: 'draft' },
                                             { label: 'Đã xuất bản', value: 'published' },
                                         ]}
                                     />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={12}>
-                                <Form.Item name="template" label="Template">
-                                    <Input placeholder="default / landing / about" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24}>
@@ -544,17 +682,77 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                     </Card>
 
                     <Card size="small" className="cms-post-form-card" title="Ảnh đại diện bài viết">
-                        <Form.Item name="featured_media_id" label="Chọn media đại diện" style={{ marginBottom: 0 }}>
-                            <Select
-                                allowClear
-                                showSearch
-                                placeholder="Chọn media cơ bản"
-                                optionFilterProp="label"
-                                options={mediaOptions.map((item) => ({
-                                    label: item.title,
-                                    value: item.id,
-                                }))}
-                            />
+                        <Form.Item name="featured_media_id" style={{ marginBottom: 0 }}>
+                            <div className="cms-featured-media-shell">
+                                <Radio.Group
+                                    value={featuredMediaMode}
+                                    onChange={(event) => setFeaturedMediaMode(event.target.value)}
+                                    optionType="button"
+                                    buttonStyle="solid"
+                                    className="cms-featured-media-mode"
+                                    options={[
+                                        { label: 'Upload ảnh trực tiếp', value: 'upload' },
+                                        { label: 'Chọn từ danh sách có sẵn', value: 'library' },
+                                        { label: 'Nhập từ URL', value: 'url' },
+                                    ]}
+                                />
+
+                                {featuredMediaMode === 'upload' ? (
+                                    <div className="cms-featured-media-action-card">
+                                        <input ref={featuredMediaInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUploadFeaturedMedia} />
+                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                                            <Space wrap>
+                                                <Button
+                                                    type="primary"
+                                                    disabled={!canManage}
+                                                    loading={uploadingAsset === 'featured-image'}
+                                                    onClick={() => featuredMediaInputRef.current?.click()}
+                                                >
+                                                    Upload ảnh trực tiếp
+                                                </Button>
+                                                <Text type="secondary">Ảnh upload xong sẽ tự được gán làm ảnh đại diện.</Text>
+                                            </Space>
+                                            {renderFeaturedMediaPreview()}
+                                        </Space>
+                                    </div>
+                                ) : null}
+
+                                {featuredMediaMode === 'library' ? (
+                                    <div className="cms-featured-media-action-card">
+                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                                            <Space wrap>
+                                                <Button type="primary" onClick={() => setFeaturedMediaLibraryOpen(true)}>Mở thư viện media</Button>
+                                                <Text type="secondary">Chọn lại từ media CMS đã có sẵn.</Text>
+                                            </Space>
+                                            {renderFeaturedMediaPreview()}
+                                        </Space>
+                                    </div>
+                                ) : null}
+
+                                {featuredMediaMode === 'url' ? (
+                                    <div className="cms-featured-media-action-card">
+                                        <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                                            <Input
+                                                value={featuredMediaUrl}
+                                                onChange={(event) => setFeaturedMediaUrl(event.target.value)}
+                                                placeholder="https://example.com/featured-image.jpg"
+                                            />
+                                            <Space wrap>
+                                                <Button
+                                                    type="primary"
+                                                    disabled={!canManage}
+                                                    loading={uploadingAsset === 'featured-url'}
+                                                    onClick={handleCreateFeaturedMediaFromUrl}
+                                                >
+                                                    Lưu URL và gán ảnh
+                                                </Button>
+                                                <Text type="secondary">URL sẽ được lưu vào CMS media để tái sử dụng về sau.</Text>
+                                            </Space>
+                                            {renderFeaturedMediaPreview()}
+                                        </Space>
+                                    </div>
+                                ) : null}
+                            </div>
                         </Form.Item>
                     </Card>
 
@@ -568,6 +766,11 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                             <Col xs={24} md={12}>
                                 <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
                                     <Input.TextArea rows={3} placeholder="Meta description cơ bản" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24}>
+                                <Form.Item name="meta_keywords" label="SEO Keywords" style={{ marginBottom: 0 }}>
+                                    <Input.TextArea rows={2} placeholder="Từ khóa 1, từ khóa 2, từ khóa 3" />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -735,6 +938,57 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                         </AntList.Item>
                     )}
                 />
+            </Modal>
+
+            <Modal
+                title="Chọn ảnh đại diện từ thư viện"
+                open={featuredMediaLibraryOpen}
+                onCancel={() => setFeaturedMediaLibraryOpen(false)}
+                footer={null}
+                width={920}
+                destroyOnHidden
+            >
+                <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Input.Search
+                        allowClear
+                        value={featuredMediaKeyword}
+                        onChange={(event) => {
+                            setFeaturedMediaKeyword(event.target.value);
+                            setFeaturedMediaLibraryPage(1);
+                        }}
+                        placeholder="Tìm theo tên media hoặc URL"
+                    />
+
+                    <div className="cms-featured-media-library-grid">
+                        {paginatedFeaturedMediaOptions.map((item) => (
+                            <button
+                                key={item.id}
+                                type="button"
+                                className={`cms-featured-media-library-item${item.id === featuredMediaId ? ' is-selected' : ''}`}
+                                onClick={() => {
+                                    form.setFieldValue('featured_media_id', item.id);
+                                    setFeaturedMediaLibraryOpen(false);
+                                }}
+                            >
+                                <div className="cms-featured-media-library-thumb">
+                                    {item.file_url ? <img src={item.file_url} alt={item.title} /> : null}
+                                </div>
+                                <div className="cms-featured-media-library-copy">
+                                    <strong>{item.title || `Media #${item.id}`}</strong>
+                                    <span>{item.file_url || 'Không có URL'}</span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    <Pagination
+                        current={featuredMediaLibraryPage}
+                        pageSize={featuredMediaPageSize}
+                        total={filteredFeaturedMediaOptions.length}
+                        showSizeChanger={false}
+                        onChange={setFeaturedMediaLibraryPage}
+                    />
+                </Space>
             </Modal>
         </Drawer>
     );

@@ -26,6 +26,7 @@ import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
 import message from 'antd/es/message';
 import Modal from 'antd/es/modal';
+import Pagination from 'antd/es/pagination';
 import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
@@ -638,6 +639,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [serviceStatusFilter, setServiceStatusFilter] = useState('all');
     const [serviceFeaturedFilter, setServiceFeaturedFilter] = useState('all');
     const [productPagination, setProductPagination] = useState({ current: 1, pageSize: 10 });
+    const [mediaPagination, setMediaPagination] = useState({ current: 1, pageSize: 30 });
     const [mediaUpload, setMediaUpload] = useState({ title: '', alt_text: '', folder_path: null });
     const [mediaFiles, setMediaFiles] = useState([]);
     const [mediaUploadOpen, setMediaUploadOpen] = useState(false);
@@ -1084,6 +1086,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         setProductPagination((current) => ({ ...current, current: 1 }));
     }, [keyword, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey]);
 
+    useEffect(() => {
+        if (sectionKey !== 'cms-media') {
+            return;
+        }
+
+        setMediaPagination((current) => ({ ...current, current: 1 }));
+    }, [activeMediaFolder, keyword, mediaShowAll, sectionKey]);
+
     const filteredItems = useMemo(() => {
         const normalizedKeyword = keyword.trim().toLowerCase();
 
@@ -1205,6 +1215,28 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         return data?.items ?? [];
     }, [activeMediaFolder, data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey, serviceCategoryFilter, serviceFeaturedFilter, serviceStatusFilter]);
+
+    const paginatedMediaItems = useMemo(() => {
+        if (sectionKey !== 'cms-media') {
+            return [];
+        }
+
+        const start = (mediaPagination.current - 1) * mediaPagination.pageSize;
+
+        return filteredItems.slice(start, start + mediaPagination.pageSize);
+    }, [filteredItems, mediaPagination.current, mediaPagination.pageSize, sectionKey]);
+
+    useEffect(() => {
+        if (sectionKey !== 'cms-media') {
+            return;
+        }
+
+        const lastPage = Math.max(1, Math.ceil(filteredItems.length / mediaPagination.pageSize));
+
+        if (mediaPagination.current > lastPage) {
+            setMediaPagination((current) => ({ ...current, current: lastPage }));
+        }
+    }, [filteredItems.length, mediaPagination.current, mediaPagination.pageSize, sectionKey]);
 
     const openCreateModal = () => {
         if (sectionKey === 'cms-landing-pages') {
@@ -2644,6 +2676,71 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     messageApi.success('Đã tạo thư mục media.');
                     await reload();
                     setActiveMediaFolder(created.data.path);
+                }
+            },
+        });
+    };
+
+    const handleRenameMediaFolder = (folder) => {
+        let folderName = folder.name;
+
+        Modal.confirm({
+            title: 'Đổi tên thư mục media',
+            icon: <EditOutlined />,
+            content: (
+                <Input
+                    autoFocus
+                    defaultValue={folder.name}
+                    placeholder="Nhập tên thư mục mới"
+                    onChange={(event) => { folderName = event.target.value; }}
+                    onPressEnter={() => {}}
+                />
+            ),
+            okText: 'Lưu tên mới',
+            cancelText: 'Hủy',
+            onOk: async () => {
+                const name = folderName.trim();
+
+                if (!name) {
+                    messageApi.warning('Tên thư mục không được để trống.');
+                    return Promise.reject();
+                }
+
+                const updated = await callAdminApi(`/admin/api/cms/media/folders/${folder.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ name }),
+                });
+
+                if (updated?.data?.path) {
+                    if (activeMediaFolder === folder.path) {
+                        setActiveMediaFolder(updated.data.path);
+                    }
+                    messageApi.success('Đã đổi tên thư mục media.');
+                    await reload();
+                }
+            },
+        });
+    };
+
+    const handleDeleteMediaFolder = (folder) => {
+        Modal.confirm({
+            title: `Xóa thư mục “${folder.name}”?`,
+            icon: <DeleteOutlined />,
+            content: 'Media trong thư mục sẽ được đưa về Chưa phân loại. File và URL ảnh vẫn được giữ nguyên.',
+            okText: 'Xóa thư mục',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: async () => {
+                const deleted = await callAdminApi(`/admin/api/cms/media/folders/${folder.id}`, {
+                    method: 'DELETE',
+                });
+
+                if (deleted?.data?.deleted_folder_id) {
+                    if (activeMediaFolder === folder.path) {
+                        setActiveMediaFolder('all');
+                    }
+                    messageApi.success('Đã xóa thư mục; media bên trong được đưa về Chưa phân loại.');
+                    await reload();
                 }
             },
         });
@@ -4240,12 +4337,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const renderMediaFolderButton = (folder) => {
         const isActive = activeMediaFolder === folder.path;
         const count = mediaFolderCounts.get(folder.path) ?? 0;
+        const isManagedFolder = Number.isInteger(Number(folder.id));
 
-        return (
-            <button
+        const folderButton = (
+            <div
                 key={folder.path}
-                type="button"
-                onClick={() => setActiveMediaFolder(folder.path)}
+                title={isManagedFolder ? 'Nhấp chuột phải để đổi tên hoặc xóa thư mục' : undefined}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={(event) => {
                     event.preventDefault();
@@ -4256,25 +4353,75 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 10,
+                    gap: 4,
                     width: '100%',
                     minHeight: 42,
-                    padding: '0 12px',
+                    padding: '0 6px 0 12px',
                     border: isActive ? '1px solid #0f766e' : '1px solid #e7ecef',
                     borderRadius: 12,
                     background: isActive ? '#ecfdf5' : '#fff',
                     color: isActive ? '#0f766e' : '#344054',
                     fontWeight: 700,
-                    cursor: 'pointer',
                 }}
             >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                <button
+                    type="button"
+                    onClick={() => setActiveMediaFolder(folder.path)}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        minWidth: 0,
+                        flex: 1,
+                        padding: 0,
+                        border: 0,
+                        background: 'transparent',
+                        color: 'inherit',
+                        font: 'inherit',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                    }}
+                >
                     {isActive ? <FolderOpenOutlined /> : <FolderOutlined />}
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{folder.name}</span>
-                </span>
+                </button>
                 <Tag color={isActive ? 'green' : 'default'}>{count}</Tag>
-            </button>
+            </div>
+        );
+
+        if (!isManagedFolder) {
+            return folderButton;
+        }
+
+        return (
+            <Dropdown
+                key={folder.path}
+                trigger={['contextMenu']}
+                menu={{
+                    items: [
+                        {
+                            key: 'rename',
+                            icon: <EditOutlined />,
+                            label: 'Đổi tên thư mục',
+                            disabled: !sectionPermissions.canUpdate,
+                        },
+                        { type: 'divider' },
+                        {
+                            key: 'delete',
+                            icon: <DeleteOutlined />,
+                            label: 'Xóa thư mục',
+                            danger: true,
+                            disabled: !sectionPermissions.canDelete,
+                        },
+                    ],
+                    onClick: ({ key }) => {
+                        if (key === 'rename') handleRenameMediaFolder(folder);
+                        if (key === 'delete') handleDeleteMediaFolder(folder);
+                    },
+                }}
+            >
+                {folderButton}
+            </Dropdown>
         );
     };
 
@@ -4291,7 +4438,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         type="info"
                         showIcon
                         style={{ marginTop: 14 }}
-                        message="Thư mục chỉ dùng để gom media trong CMS. URL ảnh không thay đổi."
+                        message="Nhấp chuột phải vào thư mục để đổi tên hoặc xóa. URL ảnh không thay đổi."
                     />
                 </Card>
             </Col>
@@ -4359,11 +4506,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </div>
 
                     {filteredItems.length ? (
-                        <Row gutter={[14, 14]}>
-                            {filteredItems.map((record) => (
-                                <Col key={record.id} xs={24} sm={12} md={8} xl={6} xxl={4}>
-                                    <Dropdown menu={mediaActionMenu(record)} trigger={['contextMenu']}>
-                                        <Card
+                        <Space direction="vertical" size={18} style={{ width: '100%' }}>
+                            <Row gutter={[14, 14]}>
+                                {paginatedMediaItems.map((record) => (
+                                    <Col key={record.id} xs={24} sm={12} md={8} xl={6} xxl={4}>
+                                        <Dropdown menu={mediaActionMenu(record)} trigger={['contextMenu']}>
+                                            <Card
                                             hoverable
                                             size="small"
                                             draggable={record?.is_current_website !== false}
@@ -4414,11 +4562,22 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                                     {record.folder_path ? <Tag color="green">{mediaFolders.find((folder) => folder.path === record.folder_path)?.name || record.folder_path}</Tag> : <Tag>Gốc</Tag>}
                                                 </Space>
                                             </Space>
-                                        </Card>
-                                    </Dropdown>
-                                </Col>
-                            ))}
-                        </Row>
+                                            </Card>
+                                        </Dropdown>
+                                    </Col>
+                                ))}
+                            </Row>
+                            <Pagination
+                                current={mediaPagination.current}
+                                pageSize={mediaPagination.pageSize}
+                                total={filteredItems.length}
+                                showSizeChanger
+                                pageSizeOptions={[30, 60, 90]}
+                                showTotal={(total, range) => `${range[0]}-${range[1]} / ${total} media`}
+                                onChange={(current, pageSize) => setMediaPagination({ current, pageSize })}
+                                style={{ alignSelf: 'flex-end' }}
+                            />
+                        </Space>
                     ) : (
                         <Empty description="Chưa có media trong thư mục này." />
                     )}
@@ -5159,6 +5318,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 <div className="detail-tile">
                                     <Text className="detail-label">SEO description</Text>
                                     <Text strong>{selectedPage.meta_description || 'Chưa có'}</Text>
+                                </div>
+                                <div className="detail-tile detail-tile-wide">
+                                    <Text className="detail-label">SEO keywords</Text>
+                                    <Text strong>{selectedPage.meta_keywords || 'Chưa có'}</Text>
                                 </div>
                             </div>
                         </Card>

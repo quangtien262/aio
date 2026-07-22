@@ -618,6 +618,12 @@ Route::prefix('admin')
                 Route::post('/cms/media/folders', [MediaManagementController::class, 'storeFolder'])
                     ->middleware('admin.permission:cms.media.manage')
                     ->name('cms.media.folders.store');
+                Route::put('/cms/media/folders/{folder}', [MediaManagementController::class, 'updateFolder'])
+                    ->middleware('admin.permission:cms.media.manage')
+                    ->name('cms.media.folders.update');
+                Route::delete('/cms/media/folders/{folder}', [MediaManagementController::class, 'destroyFolder'])
+                    ->middleware('admin.permission:cms.media.manage')
+                    ->name('cms.media.folders.destroy');
                 Route::put('/cms/media/{media}', [MediaManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.media.manage')
                     ->name('cms.media.update');

@@ -278,6 +278,8 @@ class Dn302ThemeTest extends TestCase
             'excerpt' => 'Mô tả page được lưu và quản lý trong CMS.',
             'body' => '<h2>Nội dung chi tiết của page trong database</h2><p>Thông tin giới thiệu đã được cập nhật.</p>',
             'meta_title' => 'SEO title của page',
+            'meta_description' => 'Mô tả SEO của page DN302',
+            'meta_keywords' => 'noi that, cua kinh, DN302',
             'publish_at' => now(),
         ]);
 
@@ -287,6 +289,8 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Mô tả page được lưu và quản lý trong CMS.')
             ->assertSee('Nội dung chi tiết của page trong database')
             ->assertSee('Thông tin giới thiệu đã được cập nhật.')
+            ->assertSee('<meta name="description" content="Mô tả SEO của page DN302">', false)
+            ->assertSee('<meta name="keywords" content="noi that, cua kinh, DN302">', false)
             ->assertDontSee('Janelas Windows &amp; Doors', false);
     }
 
