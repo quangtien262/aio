@@ -543,14 +543,7 @@ export default function AdminLayout() {
         return initials || normalizedIdentity.slice(0, 2).toUpperCase() || 'AP';
     }, [sidebarIdentity]);
     const fallbackBrandLogoUrl = useMemo(() => {
-        const svg = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="144" height="48" viewBox="0 0 144 48" fill="none">
-                <rect width="144" height="48" rx="14" fill="#0F4C81"/>
-                <rect x="4" y="4" width="40" height="40" rx="12" fill="#ffffff" fill-opacity="0.16"/>
-                <path d="M112 15c5.523 0 10 4.477 10 10s-4.477 10-10 10c-2.53 0-4.841-.94-6.602-2.488l2.23-2.558A6.964 6.964 0 0 0 112 32a7 7 0 1 0 0-14 6.97 6.97 0 0 0-5.162 2.273l-2.224-2.563A9.963 9.963 0 0 1 112 15Z" fill="#FF7A00"/>
-                <text x="24" y="30" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">${brandInitials}</text>
-                <text x="56" y="29" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">${sidebarIdentity}</text>
-            </svg>`;
+        const svg = `https://htvietnam.vn/layouts/HTVietNam/images/logo.png`;
 
         return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
     }, [brandInitials, sidebarIdentity]);
