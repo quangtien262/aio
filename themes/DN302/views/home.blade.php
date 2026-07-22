@@ -59,6 +59,9 @@
 @section('title', data_get($landingPage ?? [], 'meta_title', data_get($themeShellData ?? [], 'branding.company_name', data_get($siteProfile ?? [], 'site_name', 'Website'))))
 @section('content')
 <main>
+@foreach($blocks as $landingBlock)
+    @switch(data_get($landingBlock, 'block_type'))
+    @case('hero_slider')
     <section class="dn-hero xd-landing-block" data-block-type="hero_slider" data-dn-slider data-autoplay="{{ data_get($hero, 'settings.autoplay_ms', 6500) }}">
         <div class="dn-container dn-hero-stage {{ $heroHasCopy ? '' : 'dn-hero-stage--media-only' }}">
             @if($heroHasCopy)
@@ -84,6 +87,9 @@
         </div>
     </section>
 
+    @break
+    @case('about_experience')
+
     <section id="gioi-thieu" class="dn-section xd-landing-block" data-block-type="about_experience">
         <div class="dn-container dn-about-grid">
             <div class="dn-about-media" data-dn-reveal="left"><img src="{{ data_get($about, 'media.image', $living) }}" alt="Không gian hiện đại Janelas"></div>
@@ -103,6 +109,9 @@
             </div>
         </div>
     </section>
+
+    @break
+    @case('featured_services')
 
     <section id="dich-vu" class="dn-section dn-services xd-landing-block" data-block-type="featured_services">
         <div class="dn-container">
@@ -124,6 +133,9 @@
             </div>
         </div>
     </section>
+
+    @break
+    @case('featured_categories')
 
     <section id="san-pham" class="dn-section xd-landing-block" data-block-type="featured_categories">
         <div class="dn-container dn-glass-grid">
@@ -151,6 +163,9 @@
         </div>
     </section>
 
+    @break
+    @case('project_gallery')
+
     <section id="du-an" class="dn-section dn-projects xd-landing-block" data-block-type="project_gallery">
         <div class="dn-container">
             <header class="dn-heading center" data-dn-reveal="up"><p class="dn-eyebrow">{{ data_get($projects, 'data.subtitle', 'Dự án') }}</p><h2 class="dn-title">{{ data_get($projects, 'data.title', 'Hoàn thành') }}</h2>@if(filled(data_get($projects, 'data.description')))<p>{{ data_get($projects, 'data.description') }}</p>@endif</header>
@@ -163,6 +178,9 @@
             </div>
         </div>
     </section>
+
+    @break
+    @case('content_showcase')
 
     <section class="dn-section xd-landing-block" data-block-type="content_showcase">
         <div class="dn-container">
@@ -196,12 +214,18 @@
         </div>
     </section>
 
+    @break
+    @case('newsletter_signup')
+
     <section class="dn-newsletter-wrap xd-landing-block" data-block-type="newsletter_signup">
         <div class="dn-container dn-newsletter" data-dn-reveal="up">
             <div><p class="dn-eyebrow">{{ data_get($newsletter, 'data.subtitle', 'Đăng ký') }}</p><h2 class="dn-title">{{ data_get($newsletter, 'data.title', 'Đăng ký nhận bản tin và tin tức cập nhật mới nhất') }}</h2>@if(filled(data_get($newsletter, 'data.description')))<p>{{ data_get($newsletter, 'data.description') }}</p>@endif</div>
             <form method="POST" action="{{ route('site.newsletter.subscribe') }}">@csrf<input type="hidden" name="source" value="dn302-home"><input type="email" name="email" required placeholder="Địa chỉ email....."><button type="submit">Đăng ký</button></form>
         </div>
     </section>
+
+    @break
+    @case('testimonials')
 
     <section class="dn-section dn-testimonials xd-landing-block" data-block-type="testimonials">
         <div class="dn-container">
@@ -217,6 +241,9 @@
         </div>
     </section>
 
+    @break
+    @case('latest_posts')
+
     <section id="tin-tuc" class="dn-section xd-landing-block" data-block-type="latest_posts">
         <div class="dn-container">
             <div class="dn-heading dn-news-head" data-dn-reveal="up"><header><p class="dn-eyebrow">{{ data_get($news, 'data.subtitle', 'Tin tức cập nhật') }}</p><h2 class="dn-title">{{ data_get($news, 'data.title', 'Kiến thức & Kinh nghiệm') }}</h2>@if(filled(data_get($news, 'data.description')))<p>{{ data_get($news, 'data.description') }}</p>@endif</header><a class="dn-btn" href="{{ route('site.blog.index') }}">@themeT('DN302.common.view_more', 'Xem thêm')</a></div>
@@ -228,6 +255,9 @@
         </div>
     </section>
 
+    @break
+    @case('landing_contact')
+
     <section id="lien-he" class="dn-section dn-contact xd-landing-block" data-block-type="landing_contact">
         <div class="dn-container">
             <header class="dn-heading center" data-dn-reveal="up"><p class="dn-eyebrow">{{ data_get($contact, 'data.subtitle', 'Liên hệ') }}</p><h2 class="dn-title">{{ data_get($contact, 'data.title', 'Đăng ký tư vấn dịch vụ') }}</h2>@if(filled(data_get($contact, 'data.description')))<p>{{ data_get($contact, 'data.description') }}</p>@endif</header>
@@ -237,6 +267,9 @@
             </div>
         </div>
     </section>
+
+    @break
+    @case('partner_logos')
 
     <section class="dn-partners xd-landing-block" data-block-type="partner_logos">
         <div class="dn-container">
@@ -252,6 +285,9 @@
             </div>
         </div>
     </section>
+    @break
+    @endswitch
+@endforeach
 </main>
 @endsection
 

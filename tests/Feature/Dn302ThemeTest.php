@@ -460,4 +460,26 @@ class Dn302ThemeTest extends TestCase
         $this->assertStringContainsString('.dn-service-image{display:block;', $styles);
         $this->assertStringContainsString('scroll-snap-type:x mandatory', $styles);
     }
+
+    public function test_dn302_home_renders_blocks_by_saved_sort_order_and_visibility(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->first()
+            ?? app(LandingPageBuilder::class)->seedHome('website-main', 'DN302');
+
+        $hero = $landing->blocks()->where('block_type', 'hero_slider')->firstOrFail();
+        $services = $landing->blocks()->where('block_type', 'featured_services')->firstOrFail();
+        $partners = $landing->blocks()->where('block_type', 'partner_logos')->firstOrFail();
+        $services->update(['sort_order' => 10]);
+        $hero->update(['sort_order' => 30]);
+        $partners->update(['is_visible' => false]);
+
+        $html = $this->get(route('site.home', ['locale' => 'vi']))->assertOk()->getContent();
+
+        $this->assertLessThan(
+            strpos($html, 'data-block-type="hero_slider"'),
+            strpos($html, 'data-block-type="featured_services"'),
+        );
+        $this->assertStringNotContainsString('data-block-type="partner_logos"', $html);
+    }
 }
