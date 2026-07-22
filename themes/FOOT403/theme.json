@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Theme nhà hàng cao cấp tông xanh rêu và vàng đồng, có thực đơn, tin tức, cảm nhận và đặt bàn nhanh.",
   "website_type": "service",
-  "preview": {"thumbnail": "preview-foot403.svg", "cover": "preview-foot403.svg"},
+  "preview": {"thumbnail": "foot403.png", "cover": "preview-foot403.svg"},
   "blocks": ["hero-slider", "about-experience", "featured-categories", "featured-products", "content-mosaic", "bizmax-latest-posts", "testimonials", "landing-contact"],
   "supports": {"dark_mode": true, "multi_homepage": false, "custom_css": true, "block_mapping": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]}

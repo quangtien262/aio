@@ -1,7 +1,7 @@
 @php
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $company = $branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'HTRestaurant');
+    $company = $branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', '');
     $phone = $branding['phone'] ?? '1900 6750'; $email = $branding['email'] ?? 'support@sapo.vn'; $address = $branding['address'] ?? '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
 @endphp
 <footer class="dr-footer"><div class="dr-container dr-footer__grid">

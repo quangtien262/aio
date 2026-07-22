@@ -6,6 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'FOOT401 Restaurant')</title>
     @include('theme-foot401::partials.styles')
+    @if($canEditLanding ?? false)
+        @include('theme-foot403::partials.inline-editor-styles')
+    @endif
     @stack('head')
 </head>
 <body>
@@ -15,7 +18,9 @@
         @include('theme-foot401::partials.footer')
     </div>
     @include('theme-foot401::partials.auth-modal')
-    @include('theme-foot401::partials.inline-editor')
+    @if($canEditLanding ?? false)
+        @include('theme-xd0302::partials.inline-editor')
+    @endif
     @include('theme-foot401::partials.shell-scripts')
     @stack('scripts')
 </body>

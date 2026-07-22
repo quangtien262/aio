@@ -3,8 +3,12 @@
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
     $blockSourcePreviewUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.source-preview', ['block' => '__BLOCK_ID__']) : '';
-    $blockPayload = $canEditLanding ? $blocks->keyBy('id')->toArray() : [];
-    $editorLocales = [];
+    $blockPayload = $canEditLanding ? $blocks->filter(fn (array $block): bool => filled($block['id'] ?? null))->keyBy('id')->toArray() : [];
+    $editorLocales = $canEditLanding ? collect(\App\Support\FrontendLocalization::localeOptions())
+        ->filter(fn (array $locale): bool => (bool) ($locale['active'] ?? true))
+        ->map(fn (array $locale): array => ['code' => $locale['code'] ?? '', 'label' => $locale['label'] ?? ($locale['code'] ?? '')])
+        ->filter(fn (array $locale): bool => filled($locale['code']))
+        ->values()->all() : [];
     $block = fn (string $type) => $blocks->firstWhere('block_type', $type) ?? [];
     $items = function (array $block): array {
         $dynamic = collect($block['dynamic_items'] ?? [])->filter()->values();
@@ -46,7 +50,8 @@
 
 @section('content')
     <main>
-        <section class="foot-hero" aria-label="{{ data_get($hero, 'data.title', 'Restaurant hero') }}">
+        <section class="foot-hero xd-landing-block" aria-label="{{ data_get($hero, 'data.title', 'Restaurant hero') }}" data-landing-block-id="{{ data_get($hero, 'id') }}" data-block-type="{{ data_get($hero, 'block_type') }}">
+            @include('theme-foot401::partials.edit-block-button', ['block' => $hero])
             @foreach ($heroSlides as $index => $slide)
                 <article class="foot-hero__slide {{ $index === 0 ? 'is-active' : '' }}" data-foot-hero-slide>
                     <img src="{{ data_get($slide, 'image', 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=2200&q=90') }}" alt="{{ data_get($slide, 'title', '') }}">
@@ -61,7 +66,8 @@
             @endforeach
         </section>
 
-        <section id="dich-vu" class="foot-section foot-section--paper">
+        <section id="dich-vu" class="foot-section foot-section--paper xd-landing-block" data-landing-block-id="{{ data_get($serviceBlock, 'id') }}" data-block-type="{{ data_get($serviceBlock, 'block_type') }}">
+            @include('theme-foot401::partials.edit-block-button', ['block' => $serviceBlock])
             <div class="foot-container">
                 <header class="foot-section-heading"><p>{{ data_get($serviceBlock, 'data.subtitle', 'Trải nghiệm') }}</p><h2>{{ data_get($serviceBlock, 'data.title', 'Dịch vụ nổi bật') }}</h2><span></span></header>
                 <div class="foot-rail" data-foot-rail>
@@ -79,7 +85,8 @@
             </div>
         </section>
 
-        <section id="gioi-thieu" class="foot-about" style="--foot-about-image: url('{{ data_get($aboutBlock, 'media.background', 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=2200&q=90') }}')">
+        <section id="gioi-thieu" class="foot-about xd-landing-block" data-landing-block-id="{{ data_get($aboutBlock, 'id') }}" data-block-type="{{ data_get($aboutBlock, 'block_type') }}" style="--foot-about-image: url('{{ data_get($aboutBlock, 'media.background', 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=2200&q=90') }}')">
+            @include('theme-foot401::partials.edit-block-button', ['block' => $aboutBlock])
             <div class="foot-container foot-about__panel">
                 <img src="{{ $aboutImage }}" alt="{{ data_get($aboutBlock, 'data.title', 'FOOT401') }}">
                 <div class="foot-about__copy"><p>{{ data_get($aboutBlock, 'data.subtitle', 'Câu chuyện của chúng tôi') }}</p><h2>{{ data_get($aboutBlock, 'data.title', 'Một căn bếp mở cho những cuộc gặp gỡ') }}</h2><div>{{ data_get($aboutBlock, 'data.description', 'Mỗi trải nghiệm tại FOOT401 bắt đầu từ sự trân trọng nguyên liệu và kết thúc bằng niềm vui được sẻ chia quanh bàn ăn.') }}</div>
@@ -90,7 +97,8 @@
             </div>
         </section>
 
-        <section id="thuc-don" class="foot-menu-section">
+        <section id="thuc-don" class="foot-menu-section xd-landing-block" data-landing-block-id="{{ data_get($productBlock, 'id') }}" data-block-type="{{ data_get($productBlock, 'block_type') }}">
+            @include('theme-foot401::partials.edit-block-button', ['block' => $productBlock])
             <div class="foot-menu-section__backdrop"></div>
             <div class="foot-container foot-menu-section__inner">
                 <header class="foot-section-heading foot-section-heading--light"><p>{{ data_get($productBlock, 'data.subtitle', 'Từ bếp') }}</p><h2>{{ data_get($productBlock, 'data.title', 'Thực đơn theo mùa') }}</h2><span></span></header>
@@ -104,7 +112,8 @@
             </div>
         </section>
 
-        <section id="tin-tuc" class="foot-section foot-section--paper">
+        <section id="tin-tuc" class="foot-section foot-section--paper xd-landing-block" data-landing-block-id="{{ data_get($newsBlock, 'id') }}" data-block-type="{{ data_get($newsBlock, 'block_type') }}">
+            @include('theme-foot401::partials.edit-block-button', ['block' => $newsBlock])
             <div class="foot-container">
                 <header class="foot-section-heading"><p>{{ data_get($newsBlock, 'data.subtitle', 'Nhật ký bàn ăn') }}</p><h2>{{ data_get($newsBlock, 'data.title', 'Tin tức và sự kiện') }}</h2><span></span></header>
                 <div class="foot-rail" data-foot-rail>
@@ -117,7 +126,8 @@
             </div>
         </section>
 
-        <section id="doi-ngu" class="foot-team-section">
+        <section id="doi-ngu" class="foot-team-section xd-landing-block" data-landing-block-id="{{ data_get($teamBlock, 'id') }}" data-block-type="{{ data_get($teamBlock, 'block_type') }}">
+            @include('theme-foot401::partials.edit-block-button', ['block' => $teamBlock])
             <div class="foot-container">
                 <header class="foot-section-heading"><p>{{ data_get($teamBlock, 'data.subtitle', 'Những con người tạo nên trải nghiệm') }}</p><h2>{{ data_get($teamBlock, 'data.title', 'Đội ngũ của chúng tôi') }}</h2><span></span></header>
                 <div class="foot-team-grid">
@@ -131,3 +141,9 @@
         </section>
     </main>
 @endsection
+
+@if($canEditLanding)
+    @push('scripts')
+        @include('theme-xd0302::partials.scripts')
+    @endpush
+@endif
