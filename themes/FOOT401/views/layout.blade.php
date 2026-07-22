@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'FOOT401 Restaurant')</title>
+    @include('theme-foot401::partials.dining-font')
     @include('theme-foot401::partials.styles')
     @if($canEditLanding ?? false)
         @include('theme-foot403::partials.inline-editor-styles')

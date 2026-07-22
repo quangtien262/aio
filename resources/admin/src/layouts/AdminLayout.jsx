@@ -543,9 +543,7 @@ export default function AdminLayout() {
         return initials || normalizedIdentity.slice(0, 2).toUpperCase() || 'AP';
     }, [sidebarIdentity]);
     const fallbackBrandLogoUrl = useMemo(() => {
-        const svg = `https://htvietnam.vn/layouts/HTVietNam/images/logo.png`;
-
-        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+        return `https://htvietnam.vn/layouts/HTVietNam/images/logo.png`;
     }, [brandInitials, sidebarIdentity]);
     const headerLogoUrl = sidebarLogoUrl || fallbackBrandLogoUrl;
 
