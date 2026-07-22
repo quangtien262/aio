@@ -41,6 +41,15 @@ class Dn302ThemeTest extends TestCase
             $this->assertArrayHasKey('search', data_get($block, 'settings_schema'));
             $this->assertArrayHasKey('category_id', data_get($block, 'settings_schema'));
         }
+
+        $serviceBlock = collect($builder->availableBlocks('DN302'))->firstWhere('block_type', 'featured_services');
+        $this->assertSame([
+            'cms_services',
+            'catalog_categories',
+            'cms_products',
+            'cms_service_categories',
+            'custom',
+        ], collect(data_get($serviceBlock, 'settings_schema.source.options'))->pluck('value')->all());
     }
 
     public function test_dn302_demo_and_storefront_routes_render(): void
@@ -354,8 +363,9 @@ class Dn302ThemeTest extends TestCase
         $this->assertStringContainsString('window.AioFontAwesomeIconPicker?.open', $scripts);
         $this->assertStringContainsString("['icon', 'Biểu tượng']", $scripts);
         $this->assertStringContainsString("if (blockType === 'content_showcase')", $scripts);
-        $this->assertStringContainsString("['about_experience', 'landing_contact'].includes(blockType)", $scripts);
+        $this->assertStringContainsString("['about_experience', 'featured_categories', 'landing_contact'].includes(blockType)", $scripts);
         $this->assertStringContainsString('Ảnh nền khu vực liên hệ', $scripts);
+        $this->assertStringContainsString('Ảnh khối danh mục nổi bật', $scripts);
     }
 
     public function test_dn302_content_showcase_uses_each_items_image_description_and_link(): void
@@ -384,6 +394,35 @@ class Dn302ThemeTest extends TestCase
         $this->assertStringContainsString('data-dn-style-panel', file_get_contents(base_path('themes/DN302/views/partials/shell-scripts.blade.php')));
     }
 
+    public function test_dn302_feature_items_render_saved_urls_as_clickable_links(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->first()
+            ?? app(LandingPageBuilder::class)->seedHome('website-main', 'DN302');
+        $features = $landing->blocks()->where('block_type', 'featured_categories')->firstOrFail();
+        $features->update(['settings' => ['source' => 'custom', 'limit' => 6]]);
+        $features->data()->where('locale', 'vi')->firstOrFail()->update([
+            'content' => json_encode(['items' => [
+                ['title' => 'Cách nhiệt có liên kết', 'icon' => 'fa-solid fa-temperature-half', 'url' => '/vi/cach-nhiet'],
+                ['title' => 'Chịu lực không có liên kết', 'icon' => 'fa-regular fa-window-restore'],
+            ]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ]);
+
+        $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        $response->assertSee('<a class="dn-feature" href="/vi/cach-nhiet"', false);
+        $response->assertSee('<article class="dn-feature"', false);
+
+        $template = file_get_contents(base_path('themes/DN302/views/home.blade.php'));
+        $styles = file_get_contents(base_path('themes/DN302/views/partials/styles.blade.php'));
+
+        $this->assertStringContainsString("\$featureUrl = data_get(\$item, 'url')", $template);
+        $this->assertStringContainsString("?: data_get(\$item, 'link_url')", $template);
+        $this->assertStringContainsString("?: data_get(\$item, 'link')", $template);
+        $this->assertStringContainsString('<a class="dn-feature" href="{{ $featureUrl }}"', $template);
+        $this->assertStringContainsString('<article class="dn-feature"', $template);
+        $this->assertStringContainsString('.dn-feature[href]:hover', $styles);
+    }
+
     public function test_dn302_partner_logos_render_as_a_single_row_autoplay_slider(): void
     {
         app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
@@ -400,6 +439,25 @@ class Dn302ThemeTest extends TestCase
         $this->assertStringContainsString("querySelectorAll('[data-dn-partner-slider]')", $scripts);
         $this->assertStringContainsString('window.setInterval(() => move(1)', $scripts);
         $this->assertStringContainsString('display:flex;gap:25px', $styles);
+        $this->assertStringContainsString('scroll-snap-type:x mandatory', $styles);
+    }
+
+    public function test_dn302_services_render_four_per_row_in_a_horizontal_slider(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+
+        $this->get(route('site.home', ['locale' => 'vi']))
+            ->assertOk()
+            ->assertSee('data-dn-service-slider', false)
+            ->assertSee('data-dn-service-track', false)
+            ->assertSee('data-dn-service-prev', false)
+            ->assertSee('data-dn-service-next', false);
+
+        $scripts = file_get_contents(base_path('themes/DN302/views/partials/shell-scripts.blade.php'));
+        $styles = file_get_contents(base_path('themes/DN302/views/partials/styles.blade.php'));
+        $this->assertStringContainsString("querySelectorAll('[data-dn-service-slider]')", $scripts);
+        $this->assertStringContainsString('flex:0 0 calc((100% - 84px)/4)', $styles);
+        $this->assertStringContainsString('.dn-service-image{display:block;', $styles);
         $this->assertStringContainsString('scroll-snap-type:x mandatory', $styles);
     }
 }

@@ -110,13 +110,17 @@
                 <header data-dn-reveal="left"><p class="dn-eyebrow">{{ data_get($services, 'data.subtitle', 'Nổi bật') }}</p><h2 class="dn-title">{{ data_get($services, 'data.title', 'Dịch vụ của chúng tôi') }}</h2></header>
                 <p data-dn-reveal="right">{{ data_get($services, 'data.description', 'Chất lượng là nền tảng thành công. Chúng tôi cam kết mang đến sản phẩm chuẩn xác, dịch vụ chuyên nghiệp và chính sách bảo hành dài hạn.') }}</p>
             </div>
-            <div class="dn-service-grid">
-                @foreach($items($services) as $index => $item)
-                    <article class="dn-card" style="--dn-delay:{{ $index * 110 }}ms" data-dn-reveal="up">
-                        <a class="dn-service-image" href="{{ data_get($item, 'url', '#lien-he') }}"><img src="{{ $image($item, $index === 1 ? $villa : $living) }}" alt="{{ data_get($item, 'title') }}"></a>
-                        <div class="dn-service-body"><h3>{{ data_get($item, 'title') }}</h3><p>{{ $short(data_get($item, 'summary'), 175) }}</p><a class="dn-round-link" href="{{ data_get($item, 'url', '#lien-he') }}" aria-label="Xem {{ data_get($item, 'title') }}"><i class="fa-solid fa-arrow-right-long"></i></a></div>
-                    </article>
-                @endforeach
+            <div class="dn-service-slider" data-dn-service-slider data-autoplay="4200">
+                <button class="dn-service-nav prev" type="button" data-dn-service-prev aria-label="Dịch vụ trước"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="dn-service-grid" data-dn-service-track>
+                    @foreach($items($services) as $index => $item)
+                        <article class="dn-card" style="--dn-delay:{{ $index * 110 }}ms" data-dn-reveal="up">
+                            <a class="dn-service-image" href="{{ data_get($item, 'url', '#lien-he') }}"><img src="{{ $image($item, $index === 1 ? $villa : $living) }}" alt="{{ data_get($item, 'title') }}"></a>
+                            <div class="dn-service-body"><h3>{{ data_get($item, 'title') }}</h3><p>{{ $short(data_get($item, 'summary'), 175) }}</p><a class="dn-round-link" href="{{ data_get($item, 'url', '#lien-he') }}" aria-label="Xem {{ data_get($item, 'title') }}"><i class="fa-solid fa-arrow-right-long"></i></a></div>
+                        </article>
+                    @endforeach
+                </div>
+                <button class="dn-service-nav next" type="button" data-dn-service-next aria-label="Dịch vụ tiếp theo"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
     </section>
@@ -130,7 +134,17 @@
                 <p>{{ data_get($glass, 'data.description', 'Sản xuất từ nhôm nhập khẩu, kính cường lực, gioăng cao su và bộ phụ kiện kim khí đồng bộ.') }}</p>
                 <div class="dn-feature-table">
                     @foreach($items($glass) as $index => $item)
-                        <article class="dn-feature" style="--dn-delay:{{ $index * 70 }}ms" data-dn-reveal="scale"><i class="{{ data_get($item, 'icon', 'fa-regular fa-window-maximize') }}"></i><span>{{ data_get($item, 'title') }}</span></article>
+                        @php
+                            $featureUrl = data_get($item, 'url')
+                                ?: data_get($item, 'link_url')
+                                ?: data_get($item, 'link')
+                                ?: data_get($item, 'href');
+                        @endphp
+                        @if(filled($featureUrl))
+                            <a class="dn-feature" href="{{ $featureUrl }}" style="--dn-delay:{{ $index * 70 }}ms" data-dn-reveal="scale"><i class="{{ data_get($item, 'icon', 'fa-regular fa-window-maximize') }}"></i><span>{{ data_get($item, 'title') }}</span></a>
+                        @else
+                            <article class="dn-feature" style="--dn-delay:{{ $index * 70 }}ms" data-dn-reveal="scale"><i class="{{ data_get($item, 'icon', 'fa-regular fa-window-maximize') }}"></i><span>{{ data_get($item, 'title') }}</span></article>
+                        @endif
                     @endforeach
                 </div>
             </div>

@@ -327,18 +327,30 @@
             const syncMediaEditorVisibility = (block) => {
                 if (!mediaEditor) return;
                 const blockType = block?.block_type || '';
-                mediaEditor.hidden = !['about_experience', 'landing_contact'].includes(blockType);
+                mediaEditor.hidden = !['about_experience', 'featured_categories', 'landing_contact'].includes(blockType);
                 if (mediaEditor.hidden) return;
 
                 const isContact = blockType === 'landing_contact';
+                const isFeaturedCategories = blockType === 'featured_categories';
                 const title = mediaEditor.querySelector('[data-xd-media-title]');
                 const note = mediaEditor.querySelector('[data-xd-media-note]');
                 const label = mediaEditor.querySelector('[data-xd-media-label]');
-                if (title) title.textContent = isContact ? 'Ảnh nền khu vực liên hệ' : 'Ảnh tổng hợp khối giới thiệu';
+                const imageInput = mediaEditor.querySelector('[data-xd-media-field="image"]');
+                const uploadTrigger = mediaEditor.querySelector('[data-xd-media-upload-trigger]');
+                const imageLabel = isContact
+                    ? 'Ảnh nền liên hệ'
+                    : (isFeaturedCategories ? 'Ảnh danh mục nổi bật' : 'Ảnh giới thiệu');
+                if (title) title.textContent = isContact
+                    ? 'Ảnh nền khu vực liên hệ'
+                    : (isFeaturedCategories ? 'Ảnh khối danh mục nổi bật' : 'Ảnh tổng hợp khối giới thiệu');
                 if (note) note.textContent = isContact
                     ? 'Ảnh hiển thị bên trái form liên hệ. Có thể nhập liên kết hoặc upload ảnh mới.'
-                    : 'Cột trái dùng duy nhất một ảnh hoàn chỉnh, bao gồm cả hình ảnh và nội dung kinh nghiệm nếu cần.';
-                if (label) label.textContent = isContact ? 'Ảnh nền liên hệ' : 'Ảnh giới thiệu';
+                    : (isFeaturedCategories
+                        ? 'Ảnh lớn hiển thị bên trái danh sách danh mục. Có thể nhập liên kết hoặc upload ảnh mới.'
+                        : 'Cột trái dùng duy nhất một ảnh hoàn chỉnh, bao gồm cả hình ảnh và nội dung kinh nghiệm nếu cần.');
+                if (label) label.textContent = imageLabel;
+                if (imageInput) imageInput.setAttribute('aria-label', imageLabel);
+                if (uploadTrigger) uploadTrigger.textContent = `Upload ${imageLabel.toLowerCase()}`;
             };
             const loadMediaFields = (block) => {
                 const media = normalizeContentObject(block?.media);

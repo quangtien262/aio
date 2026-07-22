@@ -20,6 +20,8 @@ class Foot401ThemeTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertSee('family=Fraunces', false)
+            ->assertSee("--foot-serif:'Fraunces'", false)
             ->assertSee('data-xd-editor', false)
             ->assertSee('data-xd-edit-block', false)
             ->assertSee('Sửa khối');

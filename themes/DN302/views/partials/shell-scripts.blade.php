@@ -119,6 +119,49 @@
         start();
     });
 
+    document.querySelectorAll('[data-dn-service-slider]').forEach((slider) => {
+        const track = slider.querySelector('[data-dn-service-track]');
+        const previous = slider.querySelector('[data-dn-service-prev]');
+        const next = slider.querySelector('[data-dn-service-next]');
+        if (!track) return;
+
+        let timer = null;
+        const stepSize = () => {
+            const first = track.querySelector('.dn-card');
+            const styles = window.getComputedStyle(track);
+            const gap = Number.parseFloat(styles.columnGap || styles.gap || 0);
+            return (first?.getBoundingClientRect().width || track.clientWidth) + gap;
+        };
+        const hasOverflow = () => track.scrollWidth > track.clientWidth + 2;
+        const updateControls = () => {
+            const enabled = hasOverflow();
+            if (previous) previous.disabled = !enabled;
+            if (next) next.disabled = !enabled;
+        };
+        const move = (direction) => {
+            if (!hasOverflow()) return;
+            const atEnd = track.scrollLeft >= track.scrollWidth - track.clientWidth - 4;
+            const atStart = track.scrollLeft <= 4;
+            if (direction > 0 && atEnd) track.scrollTo({ left: 0, behavior: 'smooth' });
+            else if (direction < 0 && atStart) track.scrollTo({ left: track.scrollWidth, behavior: 'smooth' });
+            else track.scrollBy({ left: direction * stepSize(), behavior: 'smooth' });
+        };
+        const stop = () => { if (timer) window.clearInterval(timer); timer = null; };
+        const start = () => {
+            stop();
+            if (!reduceMotion && hasOverflow()) timer = window.setInterval(() => move(1), Number(slider.dataset.autoplay || 4200));
+        };
+        previous?.addEventListener('click', () => { move(-1); start(); });
+        next?.addEventListener('click', () => { move(1); start(); });
+        slider.addEventListener('mouseenter', stop);
+        slider.addEventListener('mouseleave', start);
+        slider.addEventListener('focusin', stop);
+        slider.addEventListener('focusout', start);
+        window.addEventListener('resize', () => { updateControls(); start(); });
+        updateControls();
+        start();
+    });
+
     if (!reduceMotion) {
         const parallax = document.querySelector('[data-dn-parallax]');
         let ticking = false;

@@ -1335,7 +1335,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const handleDeleteRecord = async (recordId) => {
-        await runAdminAction(() => callAdminApi(`${sectionConfig.endpoint}/${recordId}`, { method: 'DELETE' }), `Đã xóa ${sectionConfig.title}.`, reload);
+        return runAdminAction(() => callAdminApi(`${sectionConfig.endpoint}/${recordId}`, { method: 'DELETE' }), `Đã xóa ${sectionConfig.title}.`, reload);
     };
 
     const loadCategoryItems = async ({ showLoading = true } = {}) => {
@@ -2588,14 +2588,20 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
     };
 
-    const confirmDeleteRecord = (recordId) => {
+    const confirmDeleteRecord = (recordId, onDeleted = null) => {
         Modal.confirm({
             title: 'Xóa bản ghi này?',
             content: 'Thao tác này không thể hoàn tác.',
             okText: 'Xóa',
             okButtonProps: { danger: true },
             cancelText: 'Hủy',
-            onOk: () => handleDeleteRecord(recordId),
+            onOk: async () => {
+                const didDelete = await handleDeleteRecord(recordId);
+
+                if (didDelete !== false) {
+                    onDeleted?.();
+                }
+            },
         });
     };
 
@@ -2855,7 +2861,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
     };
 
-    const renderActions = (record) => {
+    const renderActions = (record, { productDrawer = false } = {}) => {
         const actionItems = [];
 
         if (sectionKey === 'cms-orders') {
@@ -3010,18 +3016,24 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             }
 
             if (key === 'edit') {
+                if (productDrawer) {
+                    setSelectedProduct(null);
+                }
+
                 openEditModal(record);
                 return;
             }
 
             if (key === 'delete') {
-                confirmDeleteRecord(record.id);
+                confirmDeleteRecord(record.id, productDrawer ? () => setSelectedProduct(null) : null);
             }
         };
 
         return (
             <Dropdown menu={{ items: actionItems, onClick: handleActionClick }} trigger={['click']}>
-                <Button size="small" icon={<MoreOutlined />}>Tác vụ</Button>
+                <Button size={productDrawer ? 'middle' : 'small'} icon={<MoreOutlined />}>
+                    {productDrawer ? 'Thao tác' : 'Tác vụ'}
+                </Button>
             </Dropdown>
         );
     };
@@ -5139,6 +5151,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 onClose={() => setSelectedProduct(null)}
                 width={620}
                 destroyOnHidden
+                extra={selectedProduct ? renderActions(selectedProduct, { productDrawer: true }) : null}
             >
                 {selectedProduct ? (
                     <Space direction="vertical" size={16} style={{ width: '100%' }}>
