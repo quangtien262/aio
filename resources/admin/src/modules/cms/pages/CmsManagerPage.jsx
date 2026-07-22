@@ -606,6 +606,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [editingRecord, setEditingRecord] = useState(emptyPage);
     const [blockManagerOpen, setBlockManagerOpen] = useState(false);
     const [selectedLandingPage, setSelectedLandingPage] = useState(null);
+    const [selectedPage, setSelectedPage] = useState(null);
     const [selectedPost, setSelectedPost] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -1259,6 +1260,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
     const openPostDetailsDrawer = (record) => {
         setSelectedPost(record);
+    };
+
+    const openPageDetailsDrawer = (record) => {
+        setSelectedPage(record);
     };
 
     const handleEditPostFromDrawer = () => {
@@ -2861,8 +2866,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
     };
 
-    const renderActions = (record, { productDrawer = false } = {}) => {
+    const renderActions = (record, { productDrawer = false, pageDrawer = false } = {}) => {
         const actionItems = [];
+        const drawerAction = productDrawer || pageDrawer;
 
         if (sectionKey === 'cms-orders') {
             actionItems.push({
@@ -3020,19 +3026,26 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     setSelectedProduct(null);
                 }
 
+                if (pageDrawer) {
+                    setSelectedPage(null);
+                }
+
                 openEditModal(record);
                 return;
             }
 
             if (key === 'delete') {
-                confirmDeleteRecord(record.id, productDrawer ? () => setSelectedProduct(null) : null);
+                const closeDrawer = productDrawer
+                    ? () => setSelectedProduct(null)
+                    : (pageDrawer ? () => setSelectedPage(null) : null);
+                confirmDeleteRecord(record.id, closeDrawer);
             }
         };
 
         return (
             <Dropdown menu={{ items: actionItems, onClick: handleActionClick }} trigger={['click']}>
-                <Button size={productDrawer ? 'middle' : 'small'} icon={<MoreOutlined />}>
-                    {productDrawer ? 'Thao tác' : 'Tác vụ'}
+                <Button size={drawerAction ? 'middle' : 'small'} icon={<MoreOutlined />}>
+                    {drawerAction ? 'Thao tác' : 'Tác vụ'}
                 </Button>
             </Dropdown>
         );
@@ -3558,7 +3571,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-pages') {
             return [
-                { title: 'Title', dataIndex: 'title', key: 'title' },
+                {
+                    title: 'Title',
+                    dataIndex: 'title',
+                    key: 'title',
+                    render: (value, record) => (
+                        <Button type="link" style={{ paddingInline: 0, height: 'auto', textAlign: 'left' }} onClick={() => openPageDetailsDrawer(record)}>
+                            <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                        </Button>
+                    ),
+                },
                 { title: 'Slug', dataIndex: 'slug', key: 'slug' },
                 { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
                 { title: 'SEO', key: 'seo', render: (_, record) => record.meta_title || record.meta_description ? <Text type="secondary">{record.meta_title || record.meta_description}</Text> : 'Chưa có' },
@@ -5071,6 +5093,86 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </Form.Item>
                 </Form>
             </Modal>
+
+            <Drawer
+                title="Chi tiết trang"
+                open={sectionKey === 'cms-pages' && Boolean(selectedPage)}
+                onClose={() => setSelectedPage(null)}
+                width="min(1000px, 100vw)"
+                destroyOnHidden
+                className="cms-page-detail-drawer"
+                extra={selectedPage ? renderActions(selectedPage, { pageDrawer: true }) : null}
+            >
+                {selectedPage ? (
+                    <Space direction="vertical" size={20} style={{ width: '100%' }}>
+                        <section className="cms-page-detail-hero">
+                            <div className="cms-page-detail-hero__copy">
+                                <Space size={[8, 8]} wrap>
+                                    {renderStatusTag(selectedPage.status)}
+                                    {selectedPage.template ? <Tag color="blue">{selectedPage.template}</Tag> : null}
+                                </Space>
+                                <Title level={2}>{selectedPage.title}</Title>
+                                <Paragraph>{selectedPage.excerpt || 'Trang chưa có mô tả ngắn.'}</Paragraph>
+                            </div>
+                            {selectedPage.featured_media_url ? (
+                                <img
+                                    src={selectedPage.featured_media_url}
+                                    alt={selectedPage.title}
+                                    className="cms-page-detail-hero__image"
+                                />
+                            ) : (
+                                <div className="cms-page-detail-hero__placeholder">Chưa có ảnh đại diện</div>
+                            )}
+                        </section>
+
+                        <Card size="small" title="Thông tin trang">
+                            <div className="detail-grid detail-grid-2">
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Slug</Text>
+                                    <Text strong code>{selectedPage.slug || 'Chưa có'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Thời gian xuất bản</Text>
+                                    <Text strong>{formatPublishAt(selectedPage.publish_at)}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Public URL</Text>
+                                    <Text strong copyable={selectedPage.public_url ? { text: selectedPage.public_url } : false} ellipsis>
+                                        {selectedPage.public_url || 'Chưa có'}
+                                    </Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">Preview URL</Text>
+                                    <Text strong copyable={selectedPage.preview_url ? { text: selectedPage.preview_url } : false} ellipsis>
+                                        {selectedPage.preview_url || 'Chưa có'}
+                                    </Text>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card size="small" title="SEO">
+                            <div className="detail-grid detail-grid-2">
+                                <div className="detail-tile">
+                                    <Text className="detail-label">SEO title</Text>
+                                    <Text strong>{selectedPage.meta_title || 'Chưa có'}</Text>
+                                </div>
+                                <div className="detail-tile">
+                                    <Text className="detail-label">SEO description</Text>
+                                    <Text strong>{selectedPage.meta_description || 'Chưa có'}</Text>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card size="small" title="Nội dung trang" className="cms-page-detail-content-card">
+                            {selectedPage.body ? (
+                                <div className="cms-page-detail-content" dangerouslySetInnerHTML={{ __html: selectedPage.body }} />
+                            ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Trang chưa có nội dung." />
+                            )}
+                        </Card>
+                    </Space>
+                ) : null}
+            </Drawer>
 
             <Drawer
                 title={selectedPost?.title ?? 'Chi tiết bài viết'}

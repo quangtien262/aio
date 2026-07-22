@@ -1218,7 +1218,8 @@ class CmsSiteController
         }
 
         if ($contentType === 'post' && $entry instanceof CmsPost && ! array_key_exists('relatedPosts', $extra)) {
-            $extra['relatedPosts'] = $this->resolveRelatedPosts($entry, $siteProfile);
+            $isDn302 = strtoupper((string) data_get($activeTheme, 'key')) === 'DN302';
+            $extra['relatedPosts'] = $this->resolveRelatedPosts($entry, $siteProfile, $isDn302 ? 10 : 3, ! $isDn302);
         }
 
         if ($contentType === 'service' && $entry instanceof CmsService && ! array_key_exists('latestServices', $extra)) {
@@ -1367,9 +1368,22 @@ class CmsSiteController
         return $viewFactory->exists($fallbackView) ? $fallbackView : null;
     }
 
-    private function resolveRelatedPosts(CmsPost $post, ?SiteProfile $siteProfile): Collection
+    private function resolveRelatedPosts(CmsPost $post, ?SiteProfile $siteProfile, int $limit = 3, bool $preferSameCategory = true): Collection
     {
         $websiteKey = (string) ($post->website_key ?: $this->resolveWebsiteKey($siteProfile));
+
+        if (! $preferSameCategory) {
+            $latestQuery = CmsPost::query()
+                ->with(['category', 'featuredMedia'])
+                ->where('status', 'published')
+                ->whereKeyNot($post->id)
+                ->latest('publish_at');
+            $this->applyWebsiteScope($latestQuery, $websiteKey);
+
+            return $latestQuery->take($limit)->get()
+                ->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))
+                ->values();
+        }
 
         $sameCategoryQuery = CmsPost::query()
             ->with(['category', 'featuredMedia'])
@@ -1382,9 +1396,9 @@ class CmsSiteController
             $sameCategoryQuery->where('category_id', $post->category_id);
         }
 
-        $sameCategory = $sameCategoryQuery->take(3)->get();
+        $sameCategory = $sameCategoryQuery->take($limit)->get();
 
-        if ($sameCategory->count() >= 3) {
+        if ($sameCategory->count() >= $limit) {
             return $sameCategory->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey));
         }
 
@@ -1397,7 +1411,7 @@ class CmsSiteController
         $this->applyWebsiteScope($fallbackQuery, $websiteKey);
 
         return $sameCategory
-            ->concat($fallbackQuery->take(3 - $sameCategory->count())->get())
+            ->concat($fallbackQuery->take($limit - $sameCategory->count())->get())
             ->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))
             ->values();
     }

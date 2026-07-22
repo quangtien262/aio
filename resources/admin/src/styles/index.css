@@ -1700,6 +1700,101 @@ a {
     grid-column: 1 / -1;
 }
 
+.cms-page-detail-drawer .ant-drawer-body {
+    padding: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(22, 119, 255, 0.08), transparent 34%),
+        #f5f8f7;
+}
+
+.cms-page-detail-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+    min-height: 280px;
+    overflow: hidden;
+    border: 1px solid #dbe7e4;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff, #edf7f4);
+    box-shadow: 0 20px 55px rgba(32, 72, 61, 0.1);
+}
+
+.cms-page-detail-hero__copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 38px;
+}
+
+.cms-page-detail-hero__copy h2 {
+    margin: 18px 0 10px;
+    color: #173f35;
+    font-size: clamp(28px, 3vw, 42px);
+    line-height: 1.15;
+}
+
+.cms-page-detail-hero__copy .ant-typography {
+    max-width: 650px;
+    margin-bottom: 0;
+    color: #5a766e;
+    font-size: 15px;
+    line-height: 1.75;
+}
+
+.cms-page-detail-hero__image,
+.cms-page-detail-hero__placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+}
+
+.cms-page-detail-hero__image {
+    object-fit: cover;
+}
+
+.cms-page-detail-hero__placeholder {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #e4efec, #cfe0db);
+    color: #6d8880;
+    font-weight: 700;
+}
+
+.cms-page-detail-content-card .ant-card-body {
+    padding: 32px;
+}
+
+.cms-page-detail-content {
+    color: #344e47;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.cms-page-detail-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 14px;
+}
+
+@media (max-width: 760px) {
+    .cms-page-detail-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .cms-page-detail-hero__copy {
+        padding: 26px;
+    }
+
+    .cms-page-detail-hero__image,
+    .cms-page-detail-hero__placeholder {
+        min-height: 220px;
+        max-height: 300px;
+    }
+
+    .cms-page-detail-content-card .ant-card-body {
+        padding: 20px;
+    }
+}
+
 .support-tag-list {
     display: flex;
     flex-wrap: wrap;

@@ -122,6 +122,34 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Sửa khối');
     }
 
+    public function test_dn302_post_detail_shows_ten_latest_related_posts(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $currentPost = CmsPost::query()->firstOrFail();
+        $websiteKey = (string) ($currentPost->website_key ?: 'website-main');
+
+        foreach (range(1, 12) as $index) {
+            CmsPost::query()->create([
+                'website_key' => $websiteKey,
+                'title' => sprintf('RELATED-LATEST-%02d', $index),
+                'slug' => sprintf('related-latest-%02d', $index),
+                'status' => 'published',
+                'excerpt' => 'Bài viết kiểm thử cho khối tin liên quan.',
+                'body' => '<p>Nội dung bài viết liên quan.</p>',
+                'publish_at' => now()->subMinutes(12 - $index),
+            ]);
+        }
+
+        $response = $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $currentPost->slug]))->assertOk();
+        $html = $response->getContent();
+
+        $response->assertSee('Tin liên quan');
+        $response->assertSee('RELATED-LATEST-12');
+        $response->assertSee('RELATED-LATEST-03');
+        $response->assertDontSee('RELATED-LATEST-02');
+        $this->assertSame(10, substr_count($html, 'data-related-post-card'));
+    }
+
     public function test_dn302_hero_uses_saved_database_slides_when_dynamic_source_is_empty(): void
     {
         app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
