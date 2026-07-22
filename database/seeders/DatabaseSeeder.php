@@ -68,8 +68,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'System Admin',
                 'username' => 'admin',
-                'email' => 'admin@aio.local',
-                'password' => $configuredPassword ?: (app()->environment('testing') ? 'password' : Str::password(24)),
+                'email' => 'info@htvietnam.vn',
+                'password' => '$2y$10$AgayGUGyViJqcEB4eaDGVOWKbjHPNdW4SPuHLAv.GsFzuLLuTwKve', // abcd@1234
                 'is_active' => true,
                 'status' => 'active',
                 'is_system_owner' => true,

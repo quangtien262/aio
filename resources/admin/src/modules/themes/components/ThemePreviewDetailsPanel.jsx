@@ -51,7 +51,6 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPa
     }
 
     const thumbnailUrl = theme.preview_urls?.thumbnail || null;
-    const coverUrl = theme.preview_urls?.cover || null;
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
@@ -63,27 +62,6 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPa
                 </Space>
                 <Paragraph style={{ marginBottom: 0 }}>{theme.description || 'Theme chưa có mô tả.'}</Paragraph>
             </div>
-
-            {coverUrl || thumbnailUrl ? (
-                <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                    {coverUrl ? (
-                        <img
-                            src={coverUrl}
-                            alt={`${theme.name} cover`}
-                            style={{ width: '100%', height: 196, objectFit: 'cover', borderRadius: 18, border: '1px solid #d9e6e2', display: 'block' }}
-                        />
-                    ) : null}
-                    {thumbnailUrl ? (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <img
-                                src={thumbnailUrl}
-                                alt={`${theme.name} thumbnail`}
-                                style={{ width: 180, height: 120, objectFit: 'cover', borderRadius: 18, border: '1px solid #d9e6e2', display: 'block' }}
-                            />
-                        </div>
-                    ) : null}
-                </Space>
-            ) : null}
 
             <Space wrap>
                 {!theme.is_active ? (
@@ -107,7 +85,7 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPa
                 ) : null}
             </Space>
 
-            <div className="detail-grid">
+            <div className="detail-grid theme-preview-detail-grid">
                 {[
                     ['Key', theme.key],
                     ['Version', theme.version],
@@ -124,6 +102,14 @@ export default function ThemePreviewDetailsPanel({ theme, canActivate, canOpenPa
                     {renderSupportTags(theme.supports)}
                 </div>
             </div>
+
+            {thumbnailUrl ? (
+                <img
+                    src={thumbnailUrl}
+                    alt={`${theme.name} preview`}
+                    style={{ width: '100%', height: 'auto', borderRadius: 18, border: '1px solid #d9e6e2', display: 'block' }}
+                />
+            ) : null}
         </Space>
     );
 }

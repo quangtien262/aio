@@ -1,7 +1,7 @@
 @php
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Dola Restaurant'))) ?: 'Dola Restaurant';
+    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'HTRestaurant'))) ?: 'HTRestaurant';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $cartCount = max(0, (int) data_get($shell, 'cart_summary.count', 0));
     $locale = app()->getLocale();

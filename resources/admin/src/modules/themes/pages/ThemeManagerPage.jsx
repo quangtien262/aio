@@ -213,7 +213,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
             <Drawer
                 title={previewTheme ? `Theme Preview: ${previewTheme.name}` : 'Theme Preview'}
                 open={Boolean(previewTheme)}
-                width={520}
+                width="min(1000px, 100vw)"
                 onClose={() => setPreviewThemeKey(null)}
                 destroyOnHidden
             >
