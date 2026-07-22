@@ -296,10 +296,13 @@ class ThemeDemoContentGenerator
                 ],
             ]);
 
+        $createdCount = 0;
+
         foreach ($pages as $index => $page) {
-            $record = CmsPage::query()->create([
-                'title' => $page['title'],
+            $record = CmsPage::query()->firstOrCreate([
                 'slug' => $page['slug'],
+            ], [
+                'title' => $page['title'],
                 'status' => 'published',
                 'excerpt' => $page['excerpt'],
                 'body' => $page['body'],
@@ -309,10 +312,15 @@ class ThemeDemoContentGenerator
                 'publish_at' => $timestamp->copy()->subDays(10 - $index),
             ]);
 
+            if (! $record->wasRecentlyCreated) {
+                continue;
+            }
+
             $this->recordDemoModel($record, $themeKey, $preset['key']);
+            $createdCount++;
         }
 
-        return count($pages);
+        return $createdCount;
     }
 
     private function seedPosts(array $preset, int $categoryId, Carbon $timestamp, string $themeKey): int
@@ -2184,9 +2192,9 @@ class ThemeDemoContentGenerator
                 'label' => 'Nhà xe sân bay và city transfer',
                 'short_label' => 'nhà xe sân bay',
                 'description' => 'Preset cho nhà xe tập trung vào đưa đón sân bay, city transfer và thuê xe gia đình ngắn hạn.',
-                'company_name' => 'Saigon Airport Cars',
-                'domain' => 'saigonairportcars.demo',
-                'address' => '12 Trường Sơn, Tân Bình, TP.HCM',
+                'company_name' => 'HT Cars',
+                'domain' => 'htvietnam.vn',
+                'address' => 'Số 7 ngõ 68 đường Nguyễn Khuyến, Đại Mỗ, Hà Nội',
                 'theme_flavor' => 'airport transfer service',
                 'hero_eyebrow' => 'Đúng giờ mỗi chuyến',
                 'hero_title' => 'Đưa đón sân bay và city transfer đúng giờ mỗi ngày',

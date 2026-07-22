@@ -149,13 +149,13 @@
     <div class="xd-auth-modal" data-xd-auth-modal hidden>
         <div class="xd-auth-backdrop" data-xd-auth-close></div>
         <section class="xd-auth-card" role="dialog" aria-modal="true" aria-labelledby="xd-auth-title">
-            <button type="button" class="xd-auth-close" aria-label="Ã„ÂÃƒÂ³ng" data-xd-auth-close>&times;</button>
-            <h2 id="xd-auth-title" class="xd-auth-title">TÃƒÂ i khoÃ¡ÂºÂ£n khÃƒÂ¡ch hÃƒÂ ng</h2>
-            <p class="xd-auth-note">Ã„ÂÃ„Æ’ng nhÃ¡ÂºÂ­p Ã„â€˜Ã¡Â»Æ’ lÃ†Â°u thÃƒÂ´ng tin tÃ†Â° vÃ¡ÂºÂ¥n, hoÃ¡ÂºÂ·c Ã„â€˜Ã„Æ’ng kÃƒÂ½ nhanh nÃ¡ÂºÂ¿u bÃ¡ÂºÂ¡n chÃ†Â°a cÃƒÂ³ tÃƒÂ i khoÃ¡ÂºÂ£n.</p>
+            <button type="button" class="xd-auth-close" aria-label="Đóng" data-xd-auth-close>&times;</button>
+            <h2 id="xd-auth-title" class="xd-auth-title">Tài khoản khách hàng</h2>
+            <p class="xd-auth-note">Đăng nhập để lưu thông tin tư vấn, hoặc đăng ký nhanh nếu bạn chưa có tài khoản.</p>
 
-            <div class="xd-auth-tabs" role="tablist" aria-label="TÃƒÂ i khoÃ¡ÂºÂ£n khÃƒÂ¡ch hÃƒÂ ng">
-                <button type="button" class="xd-auth-tab is-active" role="tab" aria-selected="true" data-xd-auth-tab="login">Ã„ÂÃ„Æ’ng nhÃ¡ÂºÂ­p</button>
-                <button type="button" class="xd-auth-tab" role="tab" aria-selected="false" data-xd-auth-tab="register">Ã„ÂÃ„Æ’ng kÃƒÂ½</button>
+            <div class="xd-auth-tabs" role="tablist" aria-label="Tài khoản khách hàng">
+                <button type="button" class="xd-auth-tab is-active" role="tab" aria-selected="true" data-xd-auth-tab="login">Đăng nhập</button>
+                <button type="button" class="xd-auth-tab" role="tab" aria-selected="false" data-xd-auth-tab="register">Đăng ký</button>
             </div>
 
             <div class="xd-auth-panel is-active" data-xd-auth-panel="login">
@@ -163,19 +163,19 @@
                     @csrf
                     <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
                     <label class="xd-auth-field">
-                        <span>Email khÃƒÂ¡ch hÃƒÂ ng / Username admin</span>
+                        <span>Email khách hàng / Username admin</span>
                         <input type="text" name="login" autocomplete="username" required>
                     </label>
                     <label class="xd-auth-field">
-                        <span>MÃ¡ÂºÂ­t khÃ¡ÂºÂ©u</span>
+                        <span>Mật khẩu</span>
                         <input type="password" name="password" autocomplete="current-password" required>
                         <input type="text" name="two_factor_code" inputmode="numeric" autocomplete="one-time-code" maxlength="32" placeholder="Mã xác thực 2 lớp (nếu đã bật)">
                     </label>
                     <label class="xd-auth-check">
                         <input type="checkbox" name="remember" value="1">
-                        <span>Ghi nhÃ¡Â»â€º Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p</span>
+                        <span>Ghi nhớ đăng nhập</span>
                     </label>
-                    <button type="submit" class="xd-auth-submit">Ã„ÂÃ„Æ’ng nhÃ¡ÂºÂ­p</button>
+                    <button type="submit" class="xd-auth-submit">Đăng nhập</button>
                 </form>
             </div>
 
@@ -184,7 +184,7 @@
                     @csrf
                     <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
                     <label class="xd-auth-field">
-                        <span>HÃ¡Â»Â tÃƒÂªn</span>
+                        <span>Họ tên</span>
                         <input type="text" name="name" autocomplete="name" required>
                     </label>
                     <label class="xd-auth-field">
@@ -192,18 +192,18 @@
                         <input type="email" name="email" autocomplete="email" required>
                     </label>
                     <label class="xd-auth-field">
-                        <span>SÃ¡Â»â€˜ Ã„â€˜iÃ¡Â»â€¡n thoÃ¡ÂºÂ¡i</span>
+                        <span>Số điện thoại</span>
                         <input type="tel" name="phone" autocomplete="tel">
                     </label>
                     <label class="xd-auth-field">
-                        <span>MÃ¡ÂºÂ­t khÃ¡ÂºÂ©u</span>
+                        <span>Mật khẩu</span>
                         <input type="password" name="password" autocomplete="new-password" minlength="8" required>
                     </label>
                     <label class="xd-auth-field">
-                        <span>NhÃ¡ÂºÂ­p lÃ¡ÂºÂ¡i mÃ¡ÂºÂ­t khÃ¡ÂºÂ©u</span>
+                        <span>Nhập lại mật khẩu</span>
                         <input type="password" name="password_confirmation" autocomplete="new-password" minlength="8" required>
                     </label>
-                    <button type="submit" class="xd-auth-submit">TÃ¡ÂºÂ¡o tÃƒÂ i khoÃ¡ÂºÂ£n</button>
+                    <button type="submit" class="xd-auth-submit">Tạo tài khoản</button>
                 </form>
             </div>
 
@@ -287,7 +287,7 @@
 
                     if (submit) {
                         submit.disabled = true;
-                        submit.textContent = 'Ã„Âang xÃ¡Â»Â­ lÃƒÂ½...';
+                        submit.textContent = 'Đang xử lý...';
                     }
 
                     try {
@@ -302,12 +302,12 @@
                         const payload = await response.json().catch(() => ({}));
                         if (!response.ok) {
                             const firstError = Object.values(payload.errors || {}).flat()[0];
-                            throw new Error(firstError || payload.message || 'KhÃƒÂ´ng xÃ¡Â»Â­ lÃƒÂ½ Ã„â€˜Ã†Â°Ã¡Â»Â£c yÃƒÂªu cÃ¡ÂºÂ§u.');
+                            throw new Error(firstError || payload.message || 'Không xử lý được yêu cầu.');
                         }
-                        setAuthFeedback(payload.message || 'ThÃƒÂ nh cÃƒÂ´ng. Ã„Âang chuyÃ¡Â»Æ’n trang...', true);
+                        setAuthFeedback(payload.message || 'Thành công. Đang chuyển trang...', true);
                         window.location.href = payload.data?.redirect_to || window.location.href;
                     } catch (error) {
-                        setAuthFeedback(error.message || 'KhÃƒÂ´ng xÃ¡Â»Â­ lÃƒÂ½ Ã„â€˜Ã†Â°Ã¡Â»Â£c yÃƒÂªu cÃ¡ÂºÂ§u.');
+                        setAuthFeedback(error.message || 'Không xử lý được yêu cầu.');
                     } finally {
                         if (submit) {
                             submit.disabled = false;

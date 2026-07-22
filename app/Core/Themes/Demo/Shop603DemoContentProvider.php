@@ -110,8 +110,8 @@ class Shop603DemoContentProvider implements ThemeDemoContentProvider
                 ['label' => 'Bé gái', 'url' => route('site.catalog.search', ['q' => 'bé gái'])], ['label' => 'Tin tức', 'url' => route('site.blog.index')], ['label' => 'Liên hệ', 'url' => route('site.contact')],
             ]]);
             $this->record($menu);
-            $page = CmsPage::query()->create(['title' => 'Liên hệ', 'slug' => 'contact', 'status' => 'published', 'excerpt' => 'Liên hệ Alena Fashion.', 'body' => '<p>Đội ngũ Alena luôn sẵn sàng hỗ trợ bạn.</p>', 'publish_at' => now()]);
-            $this->record($page);
+            $page = CmsPage::query()->firstOrCreate(['slug' => 'contact'], ['title' => 'Liên hệ', 'status' => 'published', 'excerpt' => 'Liên hệ Alena Fashion.', 'body' => '<p>Đội ngũ Alena luôn sẵn sàng hỗ trợ bạn.</p>', 'publish_at' => now()]);
+            if ($page->wasRecentlyCreated) $this->record($page);
 
             $profile = SiteProfile::query()->firstOrNew();
             $profile->forceFill(['site_name' => 'Alena Fashion', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['logo_url' => null, 'company_name' => 'Alena', 'company_description' => 'Shop thời trang và phụ kiện Alena.', 'support_hotline' => '1900 6750', 'support_email' => 'hello@alena.vn', 'support_location' => 'Tầng 6, Tòa nhà Ladeco, 266 Đội Cấn, Phường Liễu Giai, Quận Ba Đình, TP Hà Nội'])])->save();
@@ -119,7 +119,7 @@ class Shop603DemoContentProvider implements ThemeDemoContentProvider
             $landing = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);
             if ($landing && ! $existing) $this->record($landing);
 
-            return ['preset' => $this->preset(), 'counts' => ['categories' => 3, 'products' => 12, 'banners' => 2, 'post_categories' => 1, 'posts' => 3, 'partners' => 6, 'pages' => 1, 'menus' => 1, 'landing_pages' => ! $existing && $landing ? 1 : 0], 'purged' => $purged];
+            return ['preset' => $this->preset(), 'counts' => ['categories' => 3, 'products' => 12, 'banners' => 2, 'post_categories' => 1, 'posts' => 3, 'partners' => 6, 'pages' => $page->wasRecentlyCreated ? 1 : 0, 'menus' => 1, 'landing_pages' => ! $existing && $landing ? 1 : 0], 'purged' => $purged];
         });
     }
 

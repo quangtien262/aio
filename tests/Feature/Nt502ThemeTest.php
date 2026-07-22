@@ -6,6 +6,7 @@ use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
+use App\Models\Admin;
 use App\Models\CmsPost;
 use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
@@ -42,5 +43,20 @@ class Nt502ThemeTest extends TestCase
         $response=$this->get(route('site.landing.show',['locale'=>'vi','slug'=>'living-room-sale']));$response->assertOk()->assertSee('data-block-type="nt502_about"',false);
         while (ob_get_level() > $outputBufferLevel) ob_end_clean();
         $this->assertSame($outputBufferLevel, ob_get_level());
+    }
+
+    public function test_nt502_admin_mode_renders_quick_edit_toolbar(): void
+    {
+        app(ThemeDemoContentProviderRegistry::class)
+            ->forTheme('NT502')
+            ?->generate('nt502-dola-furniture');
+
+        $this->actingAs(Admin::factory()->create(), 'admin')
+            ->get(route('site.home', ['locale' => 'vi', 'mod' => 'admin']))
+            ->assertOk()
+            ->assertSee('aio-landing-editor-toolbar', false)
+            ->assertSee('data-xd-edit-block', false)
+            ->assertSee('data-xd-editor', false)
+            ->assertSee('updateUrlTemplate', false);
     }
 }

@@ -154,8 +154,8 @@ Dùng như “gói dịch vụ” hoặc “tuyến tham khảo”:
 
 Branding đề xuất:
 
-- Company: `Saigon Airport Cars`
-- Domain: `saigonairportcars.demo`
+- Company: `HT Cars`
+- Domain: `htvietnam.vn`
 - Theme flavor: `airport transfer service`
 - Hero title: `Đưa đón sân bay và city transfer đúng giờ mỗi ngày`
 

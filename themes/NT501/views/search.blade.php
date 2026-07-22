@@ -121,7 +121,7 @@
 
 @push('head')
     <style>
-        .xd-search-page,.xd-search-page *{font-family:Arial,Helvetica,sans-serif;letter-spacing:normal}
+        .xd-search-page,.xd-search-page *{font-family:var(--theme-font-body);letter-spacing:normal}
         .xd-cart-link{display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;border:1px solid rgba(38,56,74,.14);border-radius:4px;background:#fff;color:var(--ink);box-shadow:0 12px 24px rgba(16,29,40,.08);transition:.2s ease}
         .xd-cart-link svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
         .xd-cart-link:hover{border-color:var(--lime);background:var(--lime);color:#fff;transform:translateY(-1px)}

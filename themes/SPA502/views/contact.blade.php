@@ -16,7 +16,7 @@
                 <h2>Thông tin liên hệ</h2>
                 <p><strong>Địa chỉ:</strong> {{ data_get($siteProfile ?? [], 'support_location', 'Tòa Ladeco, 266 Đội Cấn - Ba Đình - Hà Nội') }}</p>
                 <p><strong>Hotline:</strong> {{ data_get($siteProfile ?? [], 'hotline', '19006750') }}</p>
-                <p><strong>Email:</strong> {{ data_get($siteProfile ?? [], 'support_email', 'support@sapo.vn') }}</p>
+                <p><strong>Email:</strong> {{ data_get($siteProfile ?? [], 'support_email', 'support@htvietnam.vn') }}</p>
             </div>
             <form class="spa502-form" method="POST" action="{{ route('site.contact.submit') }}">
                 @csrf

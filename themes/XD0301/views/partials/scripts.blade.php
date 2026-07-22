@@ -2,7 +2,7 @@
         (() => {
             const slides = Array.from(document.querySelectorAll('.xd-slide'));
             const dots = Array.from(document.querySelectorAll('.xd-dot'));
-            const copy = @json($heroSlides);
+            const copy = @json($heroSlides ?? []);
             const title = document.querySelector('[data-hero-title]');
             const kicker = document.querySelector('[data-hero-kicker]');
             const summary = document.querySelector('[data-hero-summary]');
@@ -169,13 +169,13 @@
                 });
             });
 
-            const canEdit = @json($canEditLanding);
+            const canEdit = @json($canEditLanding ?? false);
             if (!canEdit) return;
-            const blocks = @json($blockPayload);
-            const editorLocales = @json($editorLocales);
+            const blocks = @json($blockPayload ?? []);
+            const editorLocales = @json($editorLocales ?? []);
             const editorOptions = @json($landingEditorOptions ?? []);
-            const updateUrlTemplate = @json($blockUpdateUrlTemplate);
-            const sourcePreviewUrlTemplate = @json($blockSourcePreviewUrlTemplate);
+            const updateUrlTemplate = @json($blockUpdateUrlTemplate ?? '');
+            const sourcePreviewUrlTemplate = @json($blockSourcePreviewUrlTemplate ?? '');
             const mediaUploadUrl = '/admin/api/cms/media';
             const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
             const editor = document.querySelector('[data-xd-editor]');

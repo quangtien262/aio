@@ -2,7 +2,7 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $company = $branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', '');
-    $phone = $branding['phone'] ?? '1900 6750'; $email = $branding['email'] ?? 'support@sapo.vn'; $address = $branding['address'] ?? '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
+    $phone = $branding['phone'] ?? '1900 6750'; $email = $branding['email'] ?? 'support@htvietnam.vn'; $address = $branding['address'] ?? '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
 @endphp
 <footer class="dr-footer"><div class="dr-container dr-footer__grid">
     <section><div class="dr-footer__brand"><span class="dr-brand__seal">♨</span><strong>{{ $company }}</strong></div><p>Ẩm thực tinh tế, nguyên liệu tươi ngon và sự tận tâm trong từng trải nghiệm.</p><h3>Cửa hàng chính</h3><p><b>Địa chỉ:</b> {{ $address }}</p><p><b>Điện thoại:</b> <a href="tel:{{ preg_replace('/\D+/', '', $phone) }}">{{ $phone }}</a></p><p><b>Email:</b> <a href="mailto:{{ $email }}">{{ $email }}</a></p>

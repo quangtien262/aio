@@ -1,0 +1,9 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --theme-font-display: 'Chakra Petch', 'Arial Narrow', sans-serif;
+        --theme-font-body: 'Manrope', 'Segoe UI', sans-serif;
+    }
+</style>

@@ -1,5 +1,5 @@
 @php
-    $supportEmail = $siteProfile['support_email'] ?? 'support@sapo.vn';
+    $supportEmail = $siteProfile['support_email'] ?? 'support@htvietnam.vn';
     $hotline = $siteProfile['hotline'] ?? '19006750';
     $locations = data_get($siteProfile ?? [], 'branding.locations', [
         ['name' => 'HALU Đội Cấn', 'address' => 'Tòa Ladeco, 266 Đội Cấn - Ba Đình - Hà Nội', 'hotline' => $hotline],

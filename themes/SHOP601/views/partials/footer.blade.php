@@ -3,7 +3,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $name = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'BEAN Style'))) ?: 'BEAN Style';
     $phone = trim((string) ($branding['support_hotline'] ?? '1800 6750'));
-    $email = trim((string) ($branding['support_email'] ?? 'support@sapo.vn'));
+    $email = trim((string) ($branding['support_email'] ?? 'support@htvietnam.vn'));
     $address = trim((string) ($branding['support_location'] ?? '70 Lữ Gia, Phường 15, Quận 11, TP.HCM'));
     $t = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('SHOP601', app()->getLocale(), $key);
 @endphp

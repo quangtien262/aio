@@ -134,6 +134,21 @@ Checklist:
 php -r "json_decode(file_get_contents('themes/{KEY}/lang/vi.json'), true, 512, JSON_THROW_ON_ERROR); echo 'ok';"
 ```
 
+## 5.1. Encoding UTF-8 và modal đăng nhập
+
+Lỗi chữ kiểu `TÃ`, `Ä‘`, `áº`, `á»` là lỗi nội dung bị chuyển mã (mojibake), không phải lỗi font CSS. Không được sửa bằng cách đổi font hoặc thêm fallback font.
+
+- [ ] Tất cả file Blade, JSON, PHP và JavaScript chứa tiếng Việt phải được lưu dưới dạng UTF-8; không chuyển qua ANSI/Windows-1252.
+- [ ] Không copy lại chuỗi tiếng Việt đang hiển thị mojibake từ terminal, trình duyệt, log hoặc theme cũ.
+- [ ] Nếu copy `partials/auth-modal.blade.php` từ theme khác, phải mở cả hai tab **Đăng nhập** và **Đăng ký** để kiểm tra tiêu đề, nhãn, placeholder, trạng thái đang xử lý và thông báo lỗi/thành công.
+- [ ] Ưu tiên dùng translation hoặc partial dùng chung cho nội dung modal; CSS riêng của theme chỉ chịu trách nhiệm trình bày.
+- [ ] Sau khi tạo hoặc sửa theme, chạy audit encoding cho toàn bộ modal đăng nhập:
+
+```bash
+php artisan test tests/Feature/ThemeAuthModalEncodingTest.php
+```
+- [ ] Test trên phải pass trước khi bàn giao; không thêm ngoại lệ/whitelist cho theme mới.
+
 ## 6. Landing Page Builder
 
 Nếu theme dùng homepage/landing dạng block:
@@ -167,6 +182,30 @@ Nếu theme dùng homepage/landing dạng block:
 - [ ] Nếu đang login admin, có thể show link `Admin` mở tab mới nếu theme yêu cầu.
 - [ ] Nếu có account/cart/search, dùng route đúng của hệ thống.
 - [ ] Mobile menu có script hoạt động, không phụ thuộc thư viện ngoài chưa nạp.
+
+## 7.1. Sửa nhanh block ở storefront admin mode
+
+Mọi theme có landing builder phải hỗ trợ chỉnh block khi admin mở homepage/landing với `?mod=admin`. Không được coi việc có modal editor trong source là đủ; phải kiểm tra HTML render thực tế.
+
+- [ ] Điều kiện bật editor phải yêu cầu đồng thời `auth('admin')->check()` và `request('mod') === 'admin'`.
+- [ ] Mỗi block đang render có ID thật và nút mang `data-xd-edit-block="{BLOCK_ID}"`; không ánh xạ chỉ bằng `block_type` vì một trang có thể có nhiều block cùng loại.
+- [ ] Section nên có `data-landing-block-id` và `data-block-type` để debug, định vị và kiểm thử dễ hơn.
+- [ ] Homepage truyền đủ `blockPayload`, `blockUpdateUrlTemplate`, `blockSourcePreviewUrlTemplate` và danh sách `editorLocales` đang active.
+- [ ] Layout nạp đủ modal editor, CSS editor và script xử lý mở/lưu; không chỉ render nút không hoạt động.
+- [ ] Chế độ thường không được render nút/modal editor.
+- [ ] Theme legacy chưa tích hợp editor riêng phải hoạt động qua safety net `InjectLandingAdminEditor`; theme mới vẫn nên render nút cạnh đúng section để trải nghiệm chỉnh sửa trực quan hơn toolbar fallback.
+- [ ] Script editor dùng chung phải có fallback cho biến Blade tùy chọn (`$heroSlides ?? []`, `$blockPayload ?? []`, URL rỗng...) để không làm homepage trả HTTP 500.
+- [ ] Chạy audit toàn bộ theme sau khi thêm/sửa theme:
+
+```bash
+php artisan test tests/Feature/LandingAdminEditorCoverageTest.php
+```
+
+Debug riêng một theme:
+
+```bash
+THEME_AUDIT_KEY=NT501 php artisan test tests/Feature/LandingAdminEditorCoverageTest.php
+```
 
 ## 8. Demo data/test data
 
@@ -240,6 +279,8 @@ Checklist UI:
 - [ ] Header/footer xuất hiện trên các trang phụ.
 - [ ] Static copy lấy từ `lang/*.json`.
 - [ ] Block động hiển thị dữ liệu thật hoặc fallback ổn.
+- [ ] Đăng nhập admin, mở `?mod=admin`: mọi landing theme có nút **Sửa khối**, modal mở được và lưu đúng block ID.
+- [ ] Mở lại không có `mod=admin`: không còn nút/modal quản trị trong HTML.
 - [ ] Tạp chí/tin tức không hiện ngày/người đăng nếu yêu cầu thiết kế nói bỏ.
 - [ ] Mobile không vỡ layout.
 - [ ] Không còn text mojibake như `Ä`, `áº`, `Ã`.

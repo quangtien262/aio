@@ -196,7 +196,7 @@ class Xd0323DemoContentProvider implements ThemeDemoContentProvider
             $this->record($menu);
 
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'Euro Farm', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Euro Farm', 'company_description' => 'Euro Farm là doanh nghiệp nông nghiệp tiên phong chuyên sản xuất và cung cấp thực phẩm hữu cơ, an toàn và tốt cho sức khỏe.', 'support_hotline' => '1900 6750', 'support_email' => 'support@sapo.vn', 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM'])])->save();
+            $profile->forceFill(['site_name' => 'Euro Farm', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Euro Farm', 'company_description' => 'Euro Farm là doanh nghiệp nông nghiệp tiên phong chuyên sản xuất và cung cấp thực phẩm hữu cơ, an toàn và tốt cho sức khỏe.', 'support_hotline' => '1900 6750', 'support_email' => 'support@htvietnam.vn', 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM'])])->save();
 
             $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);

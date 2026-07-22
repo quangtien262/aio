@@ -97,17 +97,17 @@ class Shop601DemoContentProvider implements ThemeDemoContentProvider
             $homeUrl = route('site.home');
             $menu = CmsMenu::query()->create(['name' => 'SHOP601 Main Menu', 'location' => 'primary-navigation', 'items' => [['label' => 'Trang chủ', 'url' => $homeUrl], ['label' => 'Giới thiệu', 'url' => $homeUrl.'#bo-suu-tap'], ['label' => 'Sản phẩm', 'url' => $homeUrl.'#san-pham'], ['label' => 'Mix & Match', 'url' => $homeUrl.'#bo-suu-tap'], ['label' => 'Feedback', 'url' => $homeUrl.'#danh-gia'], ['label' => 'Tin tức', 'url' => route('site.blog.index')], ['label' => 'Liên hệ', 'url' => route('site.contact')]]]);
             $this->record($menu);
-            $contactPage = CmsPage::query()->create(['title' => 'Liên hệ', 'slug' => 'contact', 'status' => 'published', 'excerpt' => 'Kết nối với BEAN Style.', 'body' => '<p>Đội ngũ BEAN Style luôn sẵn sàng hỗ trợ bạn.</p>', 'publish_at' => now()]);
-            $this->record($contactPage);
+            $contactPage = CmsPage::query()->firstOrCreate(['slug' => 'contact'], ['title' => 'Liên hệ', 'status' => 'published', 'excerpt' => 'Kết nối với BEAN Style.', 'body' => '<p>Đội ngũ BEAN Style luôn sẵn sàng hỗ trợ bạn.</p>', 'publish_at' => now()]);
+            if ($contactPage->wasRecentlyCreated) $this->record($contactPage);
 
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'BEAN Style', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'BEAN Style', 'company_description' => 'Thời trang hiện đại, thanh lịch và dễ ứng dụng.', 'support_hotline' => '1800 6750', 'support_email' => 'support@sapo.vn', 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM'])])->save();
+            $profile->forceFill(['site_name' => 'BEAN Style', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'BEAN Style', 'company_description' => 'Thời trang hiện đại, thanh lịch và dễ ứng dụng.', 'support_hotline' => '1800 6750', 'support_email' => 'support@htvietnam.vn', 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM'])])->save();
 
             $existingPage = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $page = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);
             if ($page && $existingPage === null) $this->record($page);
 
-            return ['preset' => $this->preset(), 'counts' => ['categories' => 1, 'products' => 10, 'banners' => 2, 'testimonials' => 3, 'post_categories' => 1, 'posts' => 4, 'pages' => 1, 'menus' => 1, 'landing_pages' => $existingPage === null && $page ? 1 : 0], 'purged' => $purged];
+            return ['preset' => $this->preset(), 'counts' => ['categories' => 1, 'products' => 10, 'banners' => 2, 'testimonials' => 3, 'post_categories' => 1, 'posts' => 4, 'pages' => $contactPage->wasRecentlyCreated ? 1 : 0, 'menus' => 1, 'landing_pages' => $existingPage === null && $page ? 1 : 0], 'purged' => $purged];
         });
     }
 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'NT501 Interior Studio')</title>
+    @include('themes.common.fonts.chakra-manrope')
     @include('theme-nt501::partials.styles')
     @stack('head')
 </head>

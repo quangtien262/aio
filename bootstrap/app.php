@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureAdminHasPermission;
 use App\Http\Middleware\EnsureAdminAccountIsActive;
 use App\Http\Middleware\EnsureAdminWebsiteAccess;
 use App\Http\Middleware\EnsureModuleIsEnabled;
+use App\Http\Middleware\InjectLandingAdminEditor;
 use App\Http\Middleware\ResolveCurrentSite;
 use App\Http\Middleware\SetFrontendLocale;
 use App\Support\FrontendLocalization;
@@ -24,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(prepend: [
             ResolveCurrentSite::class,
+        ]);
+        $middleware->web(append: [
+            InjectLandingAdminEditor::class,
         ]);
 
         $middleware->alias([
