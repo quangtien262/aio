@@ -252,7 +252,12 @@ class Dn302ThemeTest extends TestCase
         $response = $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $currentPost->slug]))->assertOk();
         $html = $response->getContent();
 
-        $response->assertSee('Tin liên quan');
+        $response
+            ->assertSee('data-dn-article-content', false)
+            ->assertSee('Mục lục bài viết')
+            ->assertSee('Chia sẻ bài viết')
+            ->assertSee('data-dn-copy-url', false)
+            ->assertSee('Tin liên quan');
         $response->assertSee('RELATED-LATEST-12');
         $response->assertSee('RELATED-LATEST-03');
         $response->assertDontSee('RELATED-LATEST-02');
