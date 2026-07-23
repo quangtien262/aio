@@ -8,6 +8,7 @@ import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
+import { toSlug } from '../../../shared/utils/slug';
 
 export default function CatalogCategoryFormModal({ open, canManage, editingCategory, categoryOptions = [], callAdminApi, submitLoading = false, onCancel, onSubmit }) {
     const [form] = Form.useForm();
@@ -23,7 +24,7 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
         const didSubmit = await onSubmit?.({
             ...values,
             parent_id: values.parent_id || null,
-            slug: undefined,
+            slug: toSlug(values.slug || values.name),
             image_url: values.image_url || null,
             is_active: Boolean(values.is_active),
         });
@@ -31,6 +32,16 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
         if (didSubmit !== false) {
             form.resetFields();
         }
+    };
+
+    const handleValuesChange = (changedValues) => {
+        if (Object.prototype.hasOwnProperty.call(changedValues, 'name')) {
+            form.setFieldValue('slug', toSlug(changedValues.name));
+        }
+    };
+
+    const handleSlugChange = (event) => {
+        form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
     };
 
     return (
@@ -44,14 +55,26 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
             width={860}
             destroyOnHidden
         >
-            <Form form={form} layout="vertical" initialValues={editingCategory}>
+            <Form form={form} layout="vertical" initialValues={editingCategory} onValuesChange={handleValuesChange}>
                 <Row gutter={16}>
-                    <Col span={12}>
+                    <Col xs={24} md={8}>
                         <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, message: 'Nhập tên danh mục' }]}>
                             <Input placeholder="Điện thoại" />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} md={8}>
+                        <Form.Item
+                            name="slug"
+                            label="Slug"
+                            rules={[
+                                { required: true, message: 'Nhập slug danh mục' },
+                                { pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'Slug chỉ gồm chữ thường, số và dấu gạch ngang' },
+                            ]}
+                        >
+                            <Input placeholder="dien-thoai" onChange={handleSlugChange} />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={8}>
                         <Form.Item name="parent_id" label="Danh mục cha">
                             <Select allowClear options={categoryOptions} placeholder="Danh mục gốc" />
                         </Form.Item>
