@@ -9,23 +9,7 @@
     $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? 'admin@demo031030.web30s.vn')) ?: 'admin@demo031030.web30s.vn';
     $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? '196 Nguyen Dinh Chieu, P.Vo Thi Sau, Q.3, TP.HCM')) ?: '196 Nguyen Dinh Chieu, P.Vo Thi Sau, Q.3, TP.HCM';
 
-    $localizeMenuUrl = function (?string $href): string {
-        $href = trim((string) $href);
-        if ($href === '' || $href === '#' || str_starts_with($href, '#') || preg_match('/^(https?:)?\/\//i', $href) || preg_match('/^(mailto|tel):/i', $href)) {
-            return $href !== '' ? $href : '#';
-        }
-        $path = trim((string) (parse_url($href, PHP_URL_PATH) ?: ''), '/');
-        $query = parse_url($href, PHP_URL_QUERY);
-        $fragment = parse_url($href, PHP_URL_FRAGMENT);
-        if ($path === '') {
-            return route('site.home').($fragment ? '#'.$fragment : '');
-        }
-        $segments = explode('/', $path);
-        if (! in_array($segments[0] ?? '', \App\Support\FrontendLocalization::knownLocaleCodes(), true)) {
-            array_unshift($segments, app()->getLocale());
-        }
-        return url('/'.implode('/', $segments)).($query ? '?'.$query : '').($fragment ? '#'.$fragment : '');
-    };
+    $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
 
     $normalizeNavItem = function (array $item) use ($localizeMenuUrl): array {
         return [

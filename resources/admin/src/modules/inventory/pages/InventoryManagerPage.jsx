@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { useMemo, useState } from 'react';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import SyncOutlined from '@ant-design/icons/SyncOutlined';
@@ -50,15 +51,15 @@ function formatQuantity(value) {
 }
 
 function resolveEndpoint(sectionKey) {
-    if (sectionKey === 'inventory-warehouses') return '/admin/api/inventory/warehouses';
-    if (sectionKey === 'inventory-locations') return '/admin/api/inventory/locations';
-    if (sectionKey === 'inventory-items') return '/admin/api/inventory/items';
-    if (sectionKey === 'inventory-replenishment') return '/admin/api/inventory/replenishment';
-    if (sectionKey === 'inventory-batches') return '/admin/api/inventory/batches';
-    if (sectionKey === 'inventory-balances') return '/admin/api/inventory/balances';
-    if (sectionKey === 'inventory-documents') return '/admin/api/inventory/documents';
-    if (sectionKey === 'inventory-movements') return '/admin/api/inventory/movements';
-    return '/admin/api/inventory/dashboard';
+    if (sectionKey === 'inventory-warehouses') return adminApi('inventory/warehouses');
+    if (sectionKey === 'inventory-locations') return adminApi('inventory/locations');
+    if (sectionKey === 'inventory-items') return adminApi('inventory/items');
+    if (sectionKey === 'inventory-replenishment') return adminApi('inventory/replenishment');
+    if (sectionKey === 'inventory-batches') return adminApi('inventory/batches');
+    if (sectionKey === 'inventory-balances') return adminApi('inventory/balances');
+    if (sectionKey === 'inventory-documents') return adminApi('inventory/documents');
+    if (sectionKey === 'inventory-movements') return adminApi('inventory/movements');
+    return adminApi('inventory/dashboard');
 }
 
 export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdminAction, currentPermissions }) {
@@ -103,9 +104,9 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
             }
 
             const [warehousePayload, itemPayload, locationPayload] = await Promise.all([
-                callAdminApi('/admin/api/inventory/warehouses'),
-                callAdminApi('/admin/api/inventory/items'),
-                callAdminApi('/admin/api/inventory/locations'),
+                callAdminApi(adminApi('inventory/warehouses')),
+                callAdminApi(adminApi('inventory/items')),
+                callAdminApi(adminApi('inventory/locations')),
             ]);
 
             return {
@@ -164,7 +165,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
     const submitWarehouse = async () => {
         const values = await warehouseForm.validateFields();
-        const url = editingWarehouse ? `/admin/api/inventory/warehouses/${editingWarehouse.id}` : '/admin/api/inventory/warehouses';
+        const url = editingWarehouse ? adminApi(`inventory/warehouses/${editingWarehouse.id}`) : adminApi('inventory/warehouses');
         const method = editingWarehouse ? 'PUT' : 'POST';
         const ok = await runAdminAction(
             () => callAdminApi(url, { method, body: JSON.stringify(values) }),
@@ -179,7 +180,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     };
 
     const deleteWarehouse = (warehouse) => runAdminAction(
-        () => callAdminApi(`/admin/api/inventory/warehouses/${warehouse.id}`, { method: 'DELETE' }),
+        () => callAdminApi(adminApi(`inventory/warehouses/${warehouse.id}`), { method: 'DELETE' }),
         'Da xoa kho.',
         reload,
     );
@@ -208,7 +209,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
     const submitLocation = async () => {
         const values = await locationForm.validateFields();
-        const url = editingLocation ? `/admin/api/inventory/locations/${editingLocation.id}` : '/admin/api/inventory/locations';
+        const url = editingLocation ? adminApi(`inventory/locations/${editingLocation.id}`) : adminApi('inventory/locations');
         const method = editingLocation ? 'PUT' : 'POST';
         const ok = await runAdminAction(
             () => callAdminApi(url, { method, body: JSON.stringify(values) }),
@@ -223,7 +224,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     };
 
     const deleteLocation = (location) => runAdminAction(
-        () => callAdminApi(`/admin/api/inventory/locations/${location.id}`, { method: 'DELETE' }),
+        () => callAdminApi(adminApi(`inventory/locations/${location.id}`), { method: 'DELETE' }),
         'Da xoa vi tri kho.',
         reload,
     );
@@ -237,7 +238,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     const submitItem = async () => {
         const values = await itemForm.validateFields();
         const ok = await runAdminAction(
-            () => callAdminApi(`/admin/api/inventory/items/${editingItem.id}`, { method: 'PUT', body: JSON.stringify(values) }),
+            () => callAdminApi(adminApi(`inventory/items/${editingItem.id}`), { method: 'PUT', body: JSON.stringify(values) }),
             'Da cap nhat cau hinh hang hoa.',
             reload,
         );
@@ -251,7 +252,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     const syncProducts = async () => {
         try {
             setSyncing(true);
-            const payload = await callAdminApi('/admin/api/inventory/items/sync-products', { method: 'POST' });
+            const payload = await callAdminApi(adminApi('inventory/items/sync-products'), { method: 'POST' });
             setSyncReport(payload.data ?? null);
             messageApi.success('Da dong bo san pham.');
             await reload();
@@ -269,7 +270,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
         try {
             const query = new URLSearchParams({ code: barcodeCode.trim() });
-            const payload = await callAdminApi(`/admin/api/inventory/barcode-lookup?${query.toString()}`);
+            const payload = await callAdminApi(adminApi(`inventory/barcode-lookup?${query.toString()}`));
             setBarcodeResult(payload.data ?? null);
         } catch (nextError) {
             setBarcodeResult({ type: 'not_found', message: nextError instanceof Error ? nextError.message : 'Khong tim thay.' });
@@ -301,7 +302,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
             })),
         };
         const ok = await runAdminAction(
-            () => callAdminApi('/admin/api/inventory/documents', { method: 'POST', body: JSON.stringify(payload) }),
+            () => callAdminApi(adminApi('inventory/documents'), { method: 'POST', body: JSON.stringify(payload) }),
             'Da tao phieu kho.',
             reload,
         );
@@ -893,7 +894,7 @@ function DocumentDrawer({ open, form, warehouseOptions, locationOptions, itemOpt
 function SerialNumbersTable({ callAdminApi }) {
     const { data, loading, error } = useAdminRouteResource({
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/inventory/serial-numbers');
+            const payload = await callAdminApi(adminApi('inventory/serial-numbers'));
 
             return payload.data ?? null;
         },

@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import Alert from 'antd/es/alert';
 import Card from 'antd/es/card';
 import DashboardPage from '../../pages/DashboardPage';
@@ -6,7 +7,7 @@ import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
 export default function DashboardRoutePage({ canAccess, callAdminApi }) {
     const { data, loading, error } = useAdminRouteResource({
         enabled: canAccess,
-        loader: () => callAdminApi('/admin/api/dashboard'),
+        loader: () => callAdminApi(adminApi('dashboard')),
         cacheKey: 'admin.route.dashboard',
     });
 

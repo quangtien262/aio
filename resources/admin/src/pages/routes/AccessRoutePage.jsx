@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import Alert from 'antd/es/alert';
 import Card from 'antd/es/card';
 import AccessControlPage from '../../modules/access/pages/AccessControlPage';
@@ -7,7 +8,7 @@ export default function AccessRoutePage({ canAccess, canManageRoles, callAdminAp
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/access');
+            const payload = await callAdminApi(adminApi('access'));
 
             return payload.data ?? null;
         },
@@ -23,19 +24,19 @@ export default function AccessRoutePage({ canAccess, canManageRoles, callAdminAp
     }
 
     const onCreateRole = (payload) => runAdminAction(
-        () => callAdminApi('/admin/api/roles', { method: 'POST', body: JSON.stringify(payload) }),
+        () => callAdminApi(adminApi('roles'), { method: 'POST', body: JSON.stringify(payload) }),
         'Đã tạo role.',
         reload,
     );
 
     const onUpdateRole = (roleId, payload) => runAdminAction(
-        () => callAdminApi(`/admin/api/roles/${roleId}`, { method: 'PUT', body: JSON.stringify(payload) }),
+        () => callAdminApi(adminApi(`roles/${roleId}`), { method: 'PUT', body: JSON.stringify(payload) }),
         'Đã cập nhật role.',
         reload,
     );
 
     const onDeleteRole = (roleId) => runAdminAction(
-        () => callAdminApi(`/admin/api/roles/${roleId}`, { method: 'DELETE' }),
+        () => callAdminApi(adminApi(`roles/${roleId}`), { method: 'DELETE' }),
         'Đã xóa role.',
         reload,
     );

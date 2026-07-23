@@ -171,7 +171,8 @@
       "color": "gold",
       "icon": "appstore",
       "route": "/admin/cms/featured-categories",
-      "permission": "cms.view"
+      "permission": "cms.view",
+      "hidden": true
     },
     {
       "key": "cms-side-promos",
@@ -181,7 +182,8 @@
       "color": "volcano",
       "icon": "picture",
       "route": "/admin/cms/side-promos",
-      "permission": "cms.view"
+      "permission": "cms.view",
+      "hidden": true
     },
     {
       "key": "cms-media",

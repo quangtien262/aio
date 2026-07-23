@@ -17,35 +17,7 @@
     $footerBocConfirmationUrl = trim((string) ($footerBranding['boc_confirmation_url'] ?? ''));
     $footerBocNote = trim((string) ($footerBranding['boc_footer_note'] ?? '')) ?: 'Website đang chờ khai báo Bộ Công Thương';
 
-    $footerUrlResolver = function (?string $href): string {
-        $href = trim((string) $href);
-
-        if ($href === '') {
-            return '#';
-        }
-
-        if ($href === '#' || str_starts_with($href, '#') || preg_match('/^(https?:)?\/\//i', $href) || preg_match('/^(mailto|tel):/i', $href)) {
-            return $href;
-        }
-
-        $parts = parse_url($href) ?: [];
-        $path = trim((string) ($parts['path'] ?? ''), '/');
-        $query = isset($parts['query']) && $parts['query'] !== '' ? '?'.$parts['query'] : '';
-        $fragment = isset($parts['fragment']) && $parts['fragment'] !== '' ? '#'.$parts['fragment'] : '';
-
-        if ($path === '') {
-            return route('site.home').$query.$fragment;
-        }
-
-        $segments = explode('/', $path);
-        $knownLocales = \App\Support\FrontendLocalization::knownLocaleCodes();
-
-        if (! in_array($segments[0] ?? '', $knownLocales, true)) {
-            array_unshift($segments, app()->getLocale());
-        }
-
-        return url('/'.implode('/', $segments)).$query.$fragment;
-    };
+    $footerUrlResolver = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
 
     $footerMenuItems = collect(data_get($menus ?? [], 'footer', []))
         ->whenEmpty(fn () => collect(data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))

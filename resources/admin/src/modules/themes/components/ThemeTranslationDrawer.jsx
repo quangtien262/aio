@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { useEffect, useMemo, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
@@ -254,7 +255,7 @@ export default function ThemeTranslationDrawer({
                 params.set('keyword', nextKeyword.trim());
             }
 
-            const payload = await callAdminApi(`/admin/api/themes/${theme.key}/translations?${params.toString()}`);
+            const payload = await callAdminApi(adminApi(`themes/${theme.key}/translations?${params.toString()}`));
 
             setSupportedLocales(payload.data?.supported_locales ?? (locale ? [locale] : ['vi']));
             setLocaleOptions(payload.data?.locale_options ?? []);
@@ -344,7 +345,7 @@ export default function ThemeTranslationDrawer({
                             params.set('entity', entity);
                         }
 
-                        const payload = await callAdminApi(`/admin/api/themes/${theme.key}/translations?${params.toString()}`);
+                        const payload = await callAdminApi(adminApi(`themes/${theme.key}/translations?${params.toString()}`));
                         const matchedEntry = (payload.data?.entries ?? []).find((entry) => entry.key === editingKey);
 
                         return [supportedLocale, matchedEntry ?? null];
@@ -385,7 +386,7 @@ export default function ThemeTranslationDrawer({
         }
 
         await runAdminAction(
-            () => callAdminApi(`/admin/api/themes/${theme.key}/translations/${activeLocale}`, {
+            () => callAdminApi(adminApi(`themes/${theme.key}/translations/${activeLocale}`), {
                 method: 'PUT',
                 body: JSON.stringify({
                     locale: activeLocale,
@@ -431,7 +432,7 @@ export default function ThemeTranslationDrawer({
         await runAdminAction(
             async () => {
                 for (const localeDraft of localeDrafts) {
-                    await callAdminApi(`/admin/api/themes/${theme.key}/translations/${localeDraft.locale}`, {
+                    await callAdminApi(adminApi(`themes/${theme.key}/translations/${localeDraft.locale}`), {
                         method: 'PUT',
                         body: JSON.stringify({
                             locale: localeDraft.locale,
@@ -475,7 +476,7 @@ export default function ThemeTranslationDrawer({
                                     params.set('entity', entity);
                                 }
 
-                                const payload = await callAdminApi(`/admin/api/themes/${theme.key}/translations?${params.toString()}`);
+                                const payload = await callAdminApi(adminApi(`themes/${theme.key}/translations?${params.toString()}`));
                                 const matchedEntry = (payload.data?.entries ?? []).find((entry) => entry.key === editingKey);
 
                                 return [supportedLocale, matchedEntry ?? null];

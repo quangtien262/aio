@@ -2938,19 +2938,7 @@ class CmsSiteController
             return $value;
         }
 
-        $trimmed = ltrim($value, '/');
-
-        if ($trimmed === '') {
-            return route('site.home');
-        }
-
-        $segments = explode('/', $trimmed);
-
-        if (FrontendLocalization::isSupported($segments[0] ?? null)) {
-            return url('/'.$trimmed);
-        }
-
-        return url('/'.$this->currentLocale().'/'.$trimmed);
+        return FrontendRouteUrl::localized($value, $this->currentLocale());
     }
 
     private function currentLocale(): string

@@ -251,6 +251,7 @@ class ModuleRegistry
                     'icon' => $menu['icon'] ?? 'appstore',
                     'route' => $menu['route'] ?? "/admin/modules/{$moduleKey}",
                     'permission' => $menu['permission'] ?? null,
+                    'hidden' => (bool) ($menu['hidden'] ?? false),
                 ];
             })
             ->values()

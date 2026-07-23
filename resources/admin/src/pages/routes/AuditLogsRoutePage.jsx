@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import Alert from 'antd/es/alert';
 import Card from 'antd/es/card';
 import Table from 'antd/es/table';
@@ -11,7 +12,7 @@ export default function AuditLogsRoutePage({ canAccess, callAdminApi }) {
     const { data, loading, error } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/audit-logs?per_page=50');
+            const payload = await callAdminApi(adminApi('audit-logs?per_page=50'));
             return payload.data ?? null;
         },
         cacheKey: 'admin.route.audit-logs',

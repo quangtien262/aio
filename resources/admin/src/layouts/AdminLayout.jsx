@@ -1,3 +1,4 @@
+import { ADMIN_BASE_PATH, STOREFRONT_ROUTES, adminApi, adminPath } from '../shared/config/routes';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import AppstoreOutlined from '@ant-design/icons/AppstoreOutlined';
 import BgColorsOutlined from '@ant-design/icons/BgColorsOutlined';
@@ -224,7 +225,7 @@ export default function AdminLayout() {
         try {
             setLoadError(null);
 
-            const mePayload = await callAdminApi('/admin/api/me');
+            const mePayload = await callAdminApi(adminApi('me'));
             const nextCurrentAdmin = mePayload.data ?? null;
 
             setCurrentAdmin(nextCurrentAdmin);
@@ -232,7 +233,7 @@ export default function AdminLayout() {
 
             if ((nextCurrentAdmin?.permissions ?? []).includes('store.module.view')) {
                 try {
-                    const modulePayload = await callAdminApi('/admin/api/modules');
+                    const modulePayload = await callAdminApi(adminApi('modules'));
                     setModules(modulePayload.data ?? []);
                 } catch {
                     setModules([]);
@@ -343,10 +344,10 @@ export default function AdminLayout() {
             // filter out any module-provided link to the setup page to keep CMS menu tidy
             .filter((item) => {
                 const route = String(item.route ?? '').replace(/\/?$/, '');
-                if (item.key === 'cms-categories' || route === '/admin/cms/categories') {
+                if (item.key === 'cms-categories' || route === adminPath('cms/categories')) {
                     return false;
                 }
-                if (route === '/admin/cms/setup' || route === '/admin/setup' || item.label === 'Cài đặt website') {
+                if (route === adminPath('cms/setup') || route === adminPath('setup') || item.label === 'Cài đặt website') {
                     return false;
                 }
 
@@ -423,8 +424,16 @@ export default function AdminLayout() {
             route: normalizeRoute(item.route),
             source: item.source ?? 'static',
             moduleKey: item.module_key ?? null,
+            hidden: item.hidden === true,
         }));
     }, [navigationItems, normalizeRoute, resolveNavigationIcon]);
+
+    // Legacy storefronts still consume these routes, but modern themes configure
+    // their equivalent content through Landing pages, so hidden items remain routable.
+    const visibleNavigationMenuItems = useMemo(
+        () => navigationMenuItems.filter((item) => !item.hidden),
+        [navigationMenuItems],
+    );
 
     const currentNavigationItem = useMemo(() => {
         return navigationMenuItems.find((item) => location.pathname === item.route)
@@ -433,8 +442,8 @@ export default function AdminLayout() {
     }, [location.pathname, navigationMenuItems]);
 
     const availableTopSections = useMemo(() => {
-        return adminNavigationSections.filter((section) => navigationMenuItems.some((item) => item.section === section.key));
-    }, [navigationMenuItems]);
+        return adminNavigationSections.filter((section) => visibleNavigationMenuItems.some((item) => item.section === section.key));
+    }, [visibleNavigationMenuItems]);
 
     const activeTopSectionKey = currentNavigationItem?.section ?? availableTopSections[0]?.key ?? 'platform';
 
@@ -457,7 +466,7 @@ export default function AdminLayout() {
                 kicker: 'Section',
                 description: 'Đi vào đúng nhóm chức năng quản trị tương ứng.',
             };
-            const sectionItemCount = navigationMenuItems.filter((item) => item.section === section.key).length;
+            const sectionItemCount = visibleNavigationMenuItems.filter((item) => item.section === section.key).length;
 
             return {
                 key: section.key,
@@ -473,7 +482,7 @@ export default function AdminLayout() {
                 ),
             };
         });
-    }, [availableTopSections, navigationMenuItems]);
+    }, [availableTopSections, visibleNavigationMenuItems]);
 
     const activeTopSection = useMemo(() => {
         return availableTopSections.find((section) => section.key === activeTopSectionKey) ?? null;
@@ -483,11 +492,11 @@ export default function AdminLayout() {
 
     const sideMenuItems = useMemo(() => {
         const scopedItems = currentNavigationItem?.source === 'module'
-            ? navigationMenuItems.filter((item) => item.source === 'module' && item.moduleKey === currentNavigationItem.moduleKey)
-            : navigationMenuItems.filter((item) => item.section === effectiveSectionKey && item.source !== 'module');
+            ? visibleNavigationMenuItems.filter((item) => item.source === 'module' && item.moduleKey === currentNavigationItem.moduleKey)
+            : visibleNavigationMenuItems.filter((item) => item.section === effectiveSectionKey && item.source !== 'module');
 
         return buildWorkspaceMenuItems(scopedItems);
-    }, [currentNavigationItem, effectiveSectionKey, navigationMenuItems]);
+    }, [currentNavigationItem, effectiveSectionKey, visibleNavigationMenuItems]);
 
     const selectedMenuKey = useMemo(() => {
         return currentNavigationItem?.key ?? null;
@@ -505,7 +514,9 @@ export default function AdminLayout() {
     }, [currentNavigationItem, isMobile]);
 
     const shellLoadingTitle = useMemo(() => {
-        const normalizedPath = location.pathname.replace(/^\/admin/, '') || '/';
+        const normalizedPath = location.pathname.startsWith(ADMIN_BASE_PATH)
+            ? location.pathname.slice(ADMIN_BASE_PATH.length) || '/'
+            : location.pathname;
         const matchedItem = navigationItems.find((item) => {
             const route = normalizeRoute(item.route);
 
@@ -548,13 +559,13 @@ export default function AdminLayout() {
     const headerLogoUrl = sidebarLogoUrl || fallbackBrandLogoUrl;
 
     const navigateToMenuItem = useCallback((key) => {
-        const target = navigationMenuItems.find((item) => item.key === key);
+        const target = visibleNavigationMenuItems.find((item) => item.key === key);
 
         if (target) {
             setMobileNavigationOpen(false);
             navigate(target.route);
         }
-    }, [navigate, navigationMenuItems]);
+    }, [navigate, visibleNavigationMenuItems]);
 
     const handleTopMenuClick = ({ key }) => {
         if (isMobile) {
@@ -562,7 +573,7 @@ export default function AdminLayout() {
             return;
         }
 
-        const firstItemInSection = navigationMenuItems.find((item) => item.section === key);
+        const firstItemInSection = visibleNavigationMenuItems.find((item) => item.section === key);
 
         if (firstItemInSection) {
             setMobileNavigationOpen(false);
@@ -573,7 +584,7 @@ export default function AdminLayout() {
     const handleAdminLogout = async () => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-        await fetch('/admin/logout', {
+        await fetch(adminPath('logout'), {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': token ?? '',
@@ -582,7 +593,7 @@ export default function AdminLayout() {
             credentials: 'same-origin',
         });
 
-        window.location.href = '/';
+        window.location.href = STOREFRONT_ROUTES.home;
     };
 
     const adminActionItems = [
@@ -729,14 +740,14 @@ export default function AdminLayout() {
                                 </Button>
                             </Dropdown>
                             <Button
-                                type={location.pathname === '/admin/setup' ? 'primary' : 'default'}
+                                type={location.pathname === adminPath('setup') ? 'primary' : 'default'}
                                 className="admin-header-utility-button admin-header-settings-button"
                                 icon={<SettingOutlined />}
-                                href="/admin/setup"
+                                href={adminPath('setup')}
                                 aria-label="Cài đặt website"
                                 title="Cài đặt website"
                             />
-                            <Button href="/" target="_blank" rel="noopener noreferrer" className="admin-header-utility-button" icon={<HomeOutlined />} aria-label="Website">Website</Button>
+                            <Button href={STOREFRONT_ROUTES.home} target="_blank" rel="noopener noreferrer" className="admin-header-utility-button" icon={<HomeOutlined />} aria-label="Website">Website</Button>
 
                             <Dropdown
                                 menu={{

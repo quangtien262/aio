@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { useEffect, useMemo, useState } from 'react';
 import Button from 'antd/es/button';
 import Drawer from 'antd/es/drawer';
@@ -240,7 +241,7 @@ export default function ThemePaletteEditorDrawer({ open, theme, siteProfile, can
                     type="primary"
                     disabled={!canManagePalette}
                     onClick={() => runAdminAction(
-                        () => callAdminApi(`/admin/api/themes/${theme.key}/palette`, {
+                        () => callAdminApi(adminApi(`themes/${theme.key}/palette`), {
                             method: 'PUT',
                             body: JSON.stringify({
                                 primary_color: primaryColor,

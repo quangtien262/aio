@@ -1,3 +1,4 @@
+import { adminApi } from '../config/routes';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Button from 'antd/es/button';
 import Input from 'antd/es/input';
@@ -92,7 +93,7 @@ export default function MultiMediaPicker({
 
         let isActive = true;
 
-        callAdminApi('/admin/api/cms/media')
+        callAdminApi(adminApi('cms/media'))
             .then((payload) => {
                 if (!isActive) {
                     return;
@@ -174,7 +175,7 @@ export default function MultiMediaPicker({
             formData.append('title', file.name.replace(/\.[^.]+$/, ''));
         }
 
-        const payload = await callAdminApi('/admin/api/cms/media', {
+        const payload = await callAdminApi(adminApi('cms/media'), {
             method: 'POST',
             body: formData,
         });

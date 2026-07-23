@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import { useMemo, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Card from 'antd/es/card';
@@ -45,7 +46,7 @@ export default function OrdersRoutePage({ canAccess, callAdminApi }) {
     const { data, loading, error } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/orders');
+            const payload = await callAdminApi(adminApi('orders'));
 
             return payload.data ?? { stats: {}, orders: [] };
         },

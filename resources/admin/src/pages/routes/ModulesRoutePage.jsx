@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
@@ -18,7 +19,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/modules');
+            const payload = await callAdminApi(adminApi('modules'));
 
             return payload.data ?? [];
         },
@@ -35,12 +36,12 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
 
     const onAction = (moduleKey, action, payload = null) => {
         const endpointMap = {
-            install: { url: `/admin/api/modules/${moduleKey}/install`, method: 'POST', success: 'Đã cài đặt App.' },
-            enable: { url: `/admin/api/modules/${moduleKey}/enable`, method: 'POST', success: 'Đã kích hoạt App.' },
-            disable: { url: `/admin/api/modules/${moduleKey}/disable`, method: 'POST', success: 'Đã tắt App.' },
-            upgrade: { url: `/admin/api/modules/${moduleKey}/upgrade`, method: 'POST', success: 'Đã nâng cấp App.' },
-            'demo-data': { url: `/admin/api/modules/${moduleKey}/demo-data`, method: 'POST', success: 'Đã tạo dữ liệu mẫu cho App.' },
-            uninstall: { url: `/admin/api/modules/${moduleKey}`, method: 'DELETE', success: 'Đã gỡ App.' },
+            install: { url: adminApi(`modules/${moduleKey}/install`), method: 'POST', success: 'Đã cài đặt App.' },
+            enable: { url: adminApi(`modules/${moduleKey}/enable`), method: 'POST', success: 'Đã kích hoạt App.' },
+            disable: { url: adminApi(`modules/${moduleKey}/disable`), method: 'POST', success: 'Đã tắt App.' },
+            upgrade: { url: adminApi(`modules/${moduleKey}/upgrade`), method: 'POST', success: 'Đã nâng cấp App.' },
+            'demo-data': { url: adminApi(`modules/${moduleKey}/demo-data`), method: 'POST', success: 'Đã tạo dữ liệu mẫu cho App.' },
+            uninstall: { url: adminApi(`modules/${moduleKey}`), method: 'DELETE', success: 'Đã gỡ App.' },
         };
 
         const target = endpointMap[action];
@@ -63,7 +64,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
             await refreshShell?.();
 
             if (returnTo && completeStep === 'modules') {
-                await callAdminApi(`/admin/api/setup/steps/${completeStep}`, { method: 'POST' });
+                await callAdminApi(adminApi(`setup/steps/${completeStep}`), { method: 'POST' });
                 navigate(`${returnTo}?focusStep=${encodeURIComponent(focusStep || completeStep)}&completedStep=${encodeURIComponent(completeStep)}`);
             }
         });

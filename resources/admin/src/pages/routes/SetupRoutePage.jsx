@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import Alert from 'antd/es/alert';
 import Card from 'antd/es/card';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -11,8 +12,8 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
         enabled: canAccess,
         loader: async () => {
             const [setupPayload, themesPayload] = await Promise.all([
-                callAdminApi('/admin/api/setup'),
-                callAdminApi('/admin/api/themes'),
+                callAdminApi(adminApi('setup')),
+                callAdminApi(adminApi('themes')),
             ]);
 
             return {
@@ -46,7 +47,7 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
             activeTheme={(data?.themes ?? []).find((theme) => theme.is_active) ?? null}
             onSaveProfile={async (payload) => {
                 const didSave = await runAdminAction(
-                    () => callAdminApi('/admin/api/setup', { method: 'PUT', body: JSON.stringify(payload) }),
+                    () => callAdminApi(adminApi('setup'), { method: 'PUT', body: JSON.stringify(payload) }),
                     'Đã lưu cấu hình setup.',
                     reload,
                 );
@@ -57,7 +58,7 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
             }}
             onCompleteStep={async (stepKey) => {
                 const didComplete = await runAdminAction(
-                    () => callAdminApi(`/admin/api/setup/steps/${stepKey}`, { method: 'POST' }),
+                    () => callAdminApi(adminApi(`setup/steps/${stepKey}`), { method: 'POST' }),
                     'Đã cập nhật bước setup.',
                     reload,
                 );
@@ -73,12 +74,12 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
             frontendLocale={frontendLocale}
             defaultFrontendLocale={defaultFrontendLocale}
             onGenerateDemoData={(themeKey, preset) => runAdminAction(
-                () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'POST', body: JSON.stringify({ preset }) }),
+                () => callAdminApi(adminApi(`themes/${themeKey}/demo-data`), { method: 'POST', body: JSON.stringify({ preset }) }),
                 'Đã tạo data test cho theme.',
                 reload,
             )}
             onDeleteDemoData={(themeKey) => runAdminAction(
-                () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'DELETE' }),
+                () => callAdminApi(adminApi(`themes/${themeKey}/demo-data`), { method: 'DELETE' }),
                 'Đã xóa data test cho theme.',
                 reload,
             )}

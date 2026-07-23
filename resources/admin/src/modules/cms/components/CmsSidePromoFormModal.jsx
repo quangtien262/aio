@@ -21,6 +21,7 @@ import Tag from 'antd/es/tag';
 import Tree from 'antd/es/tree';
 import Typography from 'antd/es/typography';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
+import { STOREFRONT_ROUTES } from '../../../shared/config/routes';
 
 const LINK_TYPE_OPTIONS = [
     { label: 'Theo page', value: 'page' },
@@ -88,7 +89,7 @@ function inferLinkMeta(item, linkLookups) {
                 return true;
             }
 
-            return linkType === 'post-category' && legacyPostCategorySlug && option.url === `/c/${legacyPostCategorySlug}`;
+            return linkType === 'post-category' && legacyPostCategorySlug && option.url === STOREFRONT_ROUTES.blogCategory(legacyPostCategorySlug);
         });
 
         if (matched) {

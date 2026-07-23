@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { useEffect, useMemo, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
@@ -82,7 +83,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
         try {
             setLoading(true);
             setError(null);
-            const payload = await callAdminApi(`/admin/api/themes/locales?theme_key=${encodeURIComponent(theme.key)}`);
+            const payload = await callAdminApi(adminApi(`themes/locales?theme_key=${encodeURIComponent(theme.key)}`));
             applyPayload(payload.data ?? {});
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Không tải được cấu hình ngôn ngữ.');
@@ -104,7 +105,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
 
         await runAdminAction(
             async () => {
-                responsePayload = await callAdminApi(`/admin/api/themes/locales/${encodeURIComponent(code)}`, {
+                responsePayload = await callAdminApi(adminApi(`themes/locales/${encodeURIComponent(code)}`), {
                     method: 'PUT',
                     body: JSON.stringify({ theme_key: theme?.key, ...payload }),
                 });
@@ -121,7 +122,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
 
         await runAdminAction(
             async () => {
-                responsePayload = await callAdminApi('/admin/api/themes/locales', {
+                responsePayload = await callAdminApi(adminApi('themes/locales'), {
                     method: 'POST',
                     body: JSON.stringify({ theme_key: theme?.key, code }),
                 });
@@ -138,7 +139,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
 
         await runAdminAction(
             async () => {
-                responsePayload = await callAdminApi('/admin/api/themes/locales', {
+                responsePayload = await callAdminApi(adminApi('themes/locales'), {
                     method: 'POST',
                     body: JSON.stringify({ theme_key: theme?.key, ...formState }),
                 });

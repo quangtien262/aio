@@ -26,7 +26,7 @@ import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Tree from 'antd/es/tree';
 import Typography from 'antd/es/typography';
-import { STOREFRONT_ROUTES } from '../../../shared/config/routes';
+import { STOREFRONT_ROUTES, adminApi } from '../../../shared/config/routes';
 
 export const emptyCmsMenuForm = {
     id: null,
@@ -54,8 +54,8 @@ const LINK_TYPE_OPTIONS = [
 ];
 
 const SPECIAL_LINK_URLS = {
-    home: '/',
-    contact: '/contact',
+    home: STOREFRONT_ROUTES.home,
+    contact: STOREFRONT_ROUTES.contact,
 };
 
 let menuItemKeySeed = 0;
@@ -133,7 +133,7 @@ function inferLinkMeta(item, linkLookups) {
                 return true;
             }
 
-            return linkType === 'post-category' && legacyPostCategorySlug && option.url === `/c/${legacyPostCategorySlug}`;
+            return linkType === 'post-category' && legacyPostCategorySlug && option.url === STOREFRONT_ROUTES.blogCategory(legacyPostCategorySlug);
         });
 
         if (matched) {
@@ -487,7 +487,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         setLocationError('');
 
         const method = editingLocation ? 'PUT' : 'POST';
-        const endpoint = editingLocation ? `/admin/api/cms/menu-locations/${editingLocation.value}` : '/admin/api/cms/menu-locations';
+        const endpoint = editingLocation ? adminApi(`cms/menu-locations/${editingLocation.value}`) : adminApi('cms/menu-locations');
         const didSave = await runAdminAction(
             () => callAdminApi(endpoint, { method, body: JSON.stringify(values) }),
             editingLocation ? 'Đã cập nhật vị trí menu.' : 'Đã tạo vị trí menu.',
@@ -503,7 +503,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
 
     const handleDeleteLocation = async (location) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/cms/menu-locations/${location.value}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`cms/menu-locations/${location.value}`), { method: 'DELETE' }),
             'Đã xóa vị trí menu.',
             onLocationsChanged,
         );
@@ -565,7 +565,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         const values = await form.validateFields();
 
         return runAdminAction?.(
-            () => callAdminApi(`/admin/api/cms/menus/${editingMenu.id}`, {
+            () => callAdminApi(adminApi(`cms/menus/${editingMenu.id}`), {
                 method: 'PUT',
                 body: JSON.stringify({
                     ...values,

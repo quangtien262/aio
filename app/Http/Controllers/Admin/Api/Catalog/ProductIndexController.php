@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin\Api\Catalog;
 
 use App\Models\CatalogProduct;
+use App\Support\FrontendLocalization;
+use App\Support\FrontendRouteUrl;
 use Illuminate\Http\JsonResponse;
 
 class ProductIndexController
@@ -38,8 +40,10 @@ class ProductIndexController
                 'is_highlight' => $product->is_highlight,
                 'sort_order' => $product->sort_order,
                 'is_active' => $product->is_active,
-                'public_url' => $product->slug ? url('/san-pham/'.$product->slug) : null,
-                'preview_url' => url('/preview/products/'.$product->id),
+                'public_url' => $product->slug
+                    ? FrontendRouteUrl::product($product->slug, FrontendLocalization::defaultLocale())
+                    : null,
+                'preview_url' => FrontendRouteUrl::previewProduct($product->id, FrontendLocalization::defaultLocale()),
             ])
             ->values()
             ->all();

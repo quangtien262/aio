@@ -40,7 +40,7 @@
         </nav>
         <div class="xd324-actions">
             @if (auth('admin')->check())
-                <a class="xd324-admin" href="{{ url('/admin') }}" target="_blank" rel="noopener">{{ $themeText('XD0324.header.admin') }}</a>
+                <a class="xd324-admin" href="{{ route('admin.index') }}" target="_blank" rel="noopener">{{ $themeText('XD0324.header.admin') }}</a>
             @endif
             <a href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></a>
             @guest('customer')

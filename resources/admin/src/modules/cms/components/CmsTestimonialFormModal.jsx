@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
@@ -126,7 +127,7 @@ export default function CmsTestimonialFormModal({
             formData.append('title', title);
         }
 
-        const payload = await callAdminApi('/admin/api/cms/media', {
+        const payload = await callAdminApi(adminApi('cms/media'), {
             method: 'POST',
             body: formData,
         });

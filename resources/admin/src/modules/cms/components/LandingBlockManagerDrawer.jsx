@@ -21,7 +21,7 @@ import Tag from 'antd/es/tag';
 import Tabs from 'antd/es/tabs';
 import Typography from 'antd/es/typography';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
-import { STOREFRONT_ROUTES } from '../../../shared/config/routes';
+import { STOREFRONT_ROUTES, adminApi } from '../../../shared/config/routes';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -221,7 +221,7 @@ export default function LandingBlockManagerDrawer({
         setLoading(true);
 
         try {
-            const payload = await callAdminApi(`/admin/api/landing/pages/${page.id}/blocks?locale=${encodeURIComponent(locale)}`);
+            const payload = await callAdminApi(adminApi(`landing/pages/${page.id}/blocks?locale=${encodeURIComponent(locale)}`));
             setBlocks(payload.data ?? []);
             setAvailableBlocks(payload.available_blocks ?? []);
             setSelectedBlockType(null);
@@ -247,7 +247,7 @@ export default function LandingBlockManagerDrawer({
         }
 
         await runAdminAction(
-            () => callAdminApi(`/admin/api/landing/pages/${page.id}/blocks`, {
+            () => callAdminApi(adminApi(`landing/pages/${page.id}/blocks`), {
                 method: 'POST',
                 body: JSON.stringify({ block_type: blockType, locale }),
             }),
@@ -266,7 +266,7 @@ export default function LandingBlockManagerDrawer({
         setBlocks(normalizedBlocks);
 
         try {
-            await callAdminApi(`/admin/api/landing/pages/${page.id}/blocks/reorder`, {
+            await callAdminApi(adminApi(`landing/pages/${page.id}/blocks/reorder`), {
                 method: 'PUT',
                 body: JSON.stringify({
                     blocks: normalizedBlocks.map((block) => ({ id: block.id, sort_order: block.sort_order })),
@@ -330,7 +330,7 @@ export default function LandingBlockManagerDrawer({
         )));
 
         const didUpdate = await runAdminAction(
-            () => callAdminApi(`/admin/api/landing/blocks/${block.id}`, {
+            () => callAdminApi(adminApi(`landing/blocks/${block.id}`), {
                 method: 'PUT',
                 body: JSON.stringify({ is_visible: checked, locale }),
             }),
@@ -353,7 +353,7 @@ export default function LandingBlockManagerDrawer({
 
     const handleDeleteBlock = async (block) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/landing/blocks/${block.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`landing/blocks/${block.id}`), { method: 'DELETE' }),
             'Đã xóa khối landingpage.',
             async () => {
                 await loadBlocks();
@@ -403,7 +403,7 @@ export default function LandingBlockManagerDrawer({
                 const localeData = values.data_by_locale?.[localeCode] ?? {};
                 const existingLocaleData = editingBlock.data_by_locale?.[localeCode] ?? {};
 
-                await callAdminApi(`/admin/api/landing/blocks/${editingBlock.id}`, {
+                await callAdminApi(adminApi(`landing/blocks/${editingBlock.id}`), {
                     method: 'PUT',
                     body: JSON.stringify({
                         locale: localeCode,

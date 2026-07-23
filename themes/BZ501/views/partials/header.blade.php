@@ -71,7 +71,7 @@
             @endguest
             <a class="bz501-cart" href="{{ route('site.cart.index') }}" aria-label="Cart"><i class="fa-solid fa-cart-shopping"></i><span>0</span></a>
             @if (auth('admin')->check())
-                <a class="bz501-admin-link" href="{{ url('/admin') }}" target="_blank" rel="noopener">Admin</a>
+                <a class="bz501-admin-link" href="{{ route('admin.index') }}" target="_blank" rel="noopener">Admin</a>
             @endif
         </div>
     </div>

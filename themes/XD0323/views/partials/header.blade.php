@@ -73,7 +73,7 @@
             </nav>
             <div class="xd323-actions">
                 @if (auth('admin')->check())
-                    <a class="xd323-admin-link" href="{{ url('/admin') }}" target="_blank" rel="noopener">{{ $themeText('XD0323.header.admin') }}</a>
+                    <a class="xd323-admin-link" href="{{ route('admin.index') }}" target="_blank" rel="noopener">{{ $themeText('XD0323.header.admin') }}</a>
                 @endif
                 @guest('customer')
                     <button type="button" data-xd-auth-open="login" aria-label="{{ $themeText('XD0323.header.login') }}"><i class="fa-regular fa-user"></i></button>

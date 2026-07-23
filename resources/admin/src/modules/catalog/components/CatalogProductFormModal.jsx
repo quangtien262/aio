@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import AppstoreOutlined from '@ant-design/icons/AppstoreOutlined';
@@ -347,7 +348,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         formData.append('file', file);
         formData.append('title', file.name.replace(/\.[^.]+$/, '') || typeLabel);
 
-        const payload = await callAdminApi('/admin/api/cms/media', {
+        const payload = await callAdminApi(adminApi('cms/media'), {
             method: 'POST',
             body: formData,
         });

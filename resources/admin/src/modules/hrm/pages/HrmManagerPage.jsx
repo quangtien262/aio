@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import UserAddOutlined from '@ant-design/icons/UserAddOutlined';
 import CalendarOutlined from '@ant-design/icons/CalendarOutlined';
@@ -152,12 +153,12 @@ export default function HrmManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const menuKey = moduleMenu?.key ?? 'hrm-dashboard';
     const can = useCallback((permission) => currentPermissions.includes(permission), [currentPermissions]);
     const endpoint = useMemo(() => ({
-        'hrm-dashboard': '/admin/api/hrm/dashboard',
-        'hrm-employees': '/admin/api/hrm/employees',
-        'hrm-organization': '/admin/api/hrm/organization',
-        'hrm-leave': '/admin/api/hrm/leave',
-        'hrm-attendance': '/admin/api/hrm/attendance',
-        'hrm-my-profile': '/admin/api/hrm/me',
+        'hrm-dashboard': adminApi('hrm/dashboard'),
+        'hrm-employees': adminApi('hrm/employees'),
+        'hrm-organization': adminApi('hrm/organization'),
+        'hrm-leave': adminApi('hrm/leave'),
+        'hrm-attendance': adminApi('hrm/attendance'),
+        'hrm-my-profile': adminApi('hrm/me'),
     })[menuKey], [menuKey]);
     const load = useCallback(async () => {
         if (! endpoint) return;
@@ -200,7 +201,7 @@ export default function HrmManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const openContracts = async (employee) => {
         setDrawer({ type: 'contracts', record: employee });
         setContractModalOpen(false);
-        const response = await callAdminApi(`/admin/api/hrm/employees/${employee.id}/contracts`);
+        const response = await callAdminApi(adminApi(`hrm/employees/${employee.id}/contracts`));
         setContracts(response.data ?? []);
     };
     const openContractModal = () => {
@@ -216,10 +217,10 @@ export default function HrmManagerPage({ moduleMenu, callAdminApi, runAdminActio
             end_date: values.end_date?.format ? values.end_date.format('YYYY-MM-DD') : values.end_date,
         };
         await runAdminAction(
-            () => callAdminApi(`/admin/api/hrm/employees/${drawer.record.id}/contracts`, { method: 'POST', body: JSON.stringify(payload) }),
+            () => callAdminApi(adminApi(`hrm/employees/${drawer.record.id}/contracts`), { method: 'POST', body: JSON.stringify(payload) }),
             'Đã tạo hợp đồng.',
             async () => {
-                const response = await callAdminApi(`/admin/api/hrm/employees/${drawer.record.id}/contracts`);
+                const response = await callAdminApi(adminApi(`hrm/employees/${drawer.record.id}/contracts`));
                 setContracts(response.data ?? []);
                 setContractModalOpen(false);
                 contractForm.resetFields();
@@ -249,7 +250,7 @@ export default function HrmManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 okText: 'Xác nhận nghỉ việc',
                 cancelText: 'Hủy',
                 okButtonProps: { danger: true },
-                onOk: () => runAdminAction(() => callAdminApi(`/admin/api/hrm/employees/${employee.id}/archive`, { method: 'POST' }), 'Đã lưu thay đổi.', load),
+                onOk: () => runAdminAction(() => callAdminApi(adminApi(`hrm/employees/${employee.id}/archive`), { method: 'POST' }), 'Đã lưu thay đổi.', load),
             });
         }
     };
@@ -259,7 +260,7 @@ export default function HrmManagerPage({ moduleMenu, callAdminApi, runAdminActio
         if (! can('hrm.contract.view')) return;
         setProfileContractsLoading(true);
         try {
-            const response = await callAdminApi(`/admin/api/hrm/employees/${employee.id}/contracts`);
+            const response = await callAdminApi(adminApi(`hrm/employees/${employee.id}/contracts`));
             setProfileContracts(response.data ?? []);
         } finally {
             setProfileContractsLoading(false);
@@ -269,23 +270,23 @@ export default function HrmManagerPage({ moduleMenu, callAdminApi, runAdminActio
         const values = await form.validateFields();
         const record = drawer.record;
         let url; let method = record ? 'PUT' : 'POST';
-        if (drawer.type === 'employee') url = record ? `/admin/api/hrm/employees/${record.id}` : '/admin/api/hrm/employees';
+        if (drawer.type === 'employee') url = record ? adminApi(`hrm/employees/${record.id}`) : adminApi('hrm/employees');
         if (drawer.type === 'department' || drawer.type === 'position') {
-            const type = `${drawer.type}s`; url = record ? `/admin/api/hrm/organization/${type}/${record.id}` : `/admin/api/hrm/organization/${type}`;
+            const type = `${drawer.type}s`; url = record ? adminApi(`hrm/organization/${type}/${record.id}`) : adminApi(`hrm/organization/${type}`);
         }
         if (drawer.type === 'leave') {
-            url = '/admin/api/hrm/leave';
+            url = adminApi('hrm/leave');
             values.start_date = values.start_date?.format ? values.start_date.format('YYYY-MM-DD') : values.start_date;
             values.end_date = values.end_date?.format ? values.end_date.format('YYYY-MM-DD') : values.end_date;
         }
         if (drawer.type === 'attendance') {
-            url = '/admin/api/hrm/attendance';
+            url = adminApi('hrm/attendance');
             values.work_date = values.work_date?.format ? values.work_date.format('YYYY-MM-DD') : values.work_date;
             values.check_in_at = values.check_in_at?.format ? values.check_in_at.format('HH:mm') : values.check_in_at;
             values.check_out_at = values.check_out_at?.format ? values.check_out_at.format('HH:mm') : values.check_out_at;
         }
-        if (drawer.type === 'contracts') url = `/admin/api/hrm/employees/${drawer.record.id}/contracts`;
-        if (drawer.type === 'profile') url = '/admin/api/hrm/me';
+        if (drawer.type === 'contracts') url = adminApi(`hrm/employees/${drawer.record.id}/contracts`);
+        if (drawer.type === 'profile') url = adminApi('hrm/me');
         await runAdminAction(() => callAdminApi(url, { method, body: JSON.stringify(values) }), 'Đã lưu thông tin.', async () => { setDrawer(null); await load(); });
     };
 
@@ -329,7 +330,7 @@ export default function HrmManagerPage({ moduleMenu, callAdminApi, runAdminActio
             <Drawer title={drawer?.record ? 'Cập nhật hồ sơ nhân sự' : 'Thêm nhân sự'} open={drawer?.type === 'employee'} width="min(720px, 92vw)" onClose={() => setDrawer(null)} extra={<Button type="primary" onClick={save}>Lưu</Button>}>
                 <Form form={form} layout="vertical"><Row gutter={16}><Col span={12}><Form.Item name="employee_code" label="Mã nhân sự" rules={[{ required: true }]}><Input /></Form.Item></Col><Col span={12}><Form.Item name="full_name" label="Họ và tên" rules={[{ required: true }]}><Input /></Form.Item></Col><Col span={12}><Form.Item name="department_id" label="Phòng ban"><Select allowClear options={(refs.departments ?? []).map(x => ({ value: x.id, label: x.name }))} /></Form.Item></Col><Col span={12}><Form.Item name="position_id" label="Chức vụ"><Select allowClear options={(refs.positions ?? []).map(x => ({ value: x.id, label: x.name }))} /></Form.Item></Col><Col span={12}><Form.Item name="manager_employee_id" label="Quản lý trực tiếp"><Select allowClear options={(refs.managers ?? []).filter(x => x.id !== drawer?.record?.id).map(x => ({ value: x.id, label: `${x.employee_code} · ${x.full_name}` }))} /></Form.Item></Col><Col span={12}><Form.Item name="employment_status" label="Trạng thái" rules={[{ required: true }]}><Select options={Object.entries(statusLabels).filter(([k]) => !['pending','approved','rejected'].includes(k)).map(([value,label]) => ({ value,label }))} /></Form.Item></Col><Col span={12}><Form.Item name="work_email" label="Email công việc"><Input /></Form.Item></Col><Col span={12}><Form.Item name="phone" label="Điện thoại"><Input /></Form.Item></Col><Col span={24}><Form.Item name="work_location" label="Nơi làm việc"><Input /></Form.Item></Col><Col span={24}><Form.Item name="note" label="Ghi chú"><Input.TextArea rows={3} /></Form.Item></Col></Row></Form>
             </Drawer>
-            <Drawer title={`Cấp tài khoản · ${drawer?.record?.full_name ?? ''}`} open={drawer?.type === 'account'} width="min(560px, 92vw)" onClose={() => setDrawer(null)} extra={<Button type="primary" onClick={async () => { const values = await form.validateFields(); await runAdminAction(() => callAdminApi(`/admin/api/hrm/employees/${drawer.record.id}/account`, { method: 'POST', body: JSON.stringify(values) }), 'Đã cấp tài khoản.', async () => { setDrawer(null); await load(); }); }}>Cấp tài khoản</Button>}>
+            <Drawer title={`Cấp tài khoản · ${drawer?.record?.full_name ?? ''}`} open={drawer?.type === 'account'} width="min(560px, 92vw)" onClose={() => setDrawer(null)} extra={<Button type="primary" onClick={async () => { const values = await form.validateFields(); await runAdminAction(() => callAdminApi(adminApi(`hrm/employees/${drawer.record.id}/account`), { method: 'POST', body: JSON.stringify(values) }), 'Đã cấp tài khoản.', async () => { setDrawer(null); await load(); }); }}>Cấp tài khoản</Button>}>
                 <Alert showIcon type="info" message="Tài khoản sẽ được gán quyền xem hồ sơ cá nhân. Người dùng phải đổi mật khẩu ở lần đăng nhập đầu tiên." style={{ marginBottom: 16 }} />
                 <Form form={form} layout="vertical"><Form.Item name="admin_id" label="Dùng tài khoản quản trị hiện có"><Select allowClear placeholder="Hoặc tạo tài khoản mới bên dưới" options={(refs.available_admins ?? []).map(x => ({ value: x.id, label: `${x.name} · ${x.username || x.email}` }))} /></Form.Item><Form.Item name="name" label="Tên hiển thị"><Input /></Form.Item><Form.Item name="username" label="Tên đăng nhập"><Input /></Form.Item><Form.Item name="email" label="Email"><Input /></Form.Item><Form.Item name="password" label="Mật khẩu tạm"><Input.Password /></Form.Item><Form.Item name="password_confirmation" label="Nhập lại mật khẩu"><Input.Password /></Form.Item></Form>
             </Drawer>
@@ -346,7 +347,7 @@ export default function HrmManagerPage({ moduleMenu, callAdminApi, runAdminActio
         content = <Space direction="vertical" size={16} style={{ width: '100%' }}><PageHeader eyebrow="TỔ CHỨC" title="Cơ cấu tổ chức" description="Quản lý phòng ban và chức vụ trong doanh nghiệp." /><Row gutter={[16,16]}><Col xs={24} xl={12}><Card title="Phòng ban" extra={<Button icon={<PlusOutlined />} onClick={() => openDrawer('department')}>Thêm</Button>}><Table rowKey="id" pagination={false} dataSource={data.departments ?? []} columns={columns('department')} /></Card></Col><Col xs={24} xl={12}><Card title="Chức vụ" extra={<Button icon={<PlusOutlined />} onClick={() => openDrawer('position')}>Thêm</Button>}><Table rowKey="id" pagination={false} dataSource={data.positions ?? []} columns={columns('position')} /></Card></Col></Row><Modal title={drawer?.record ? (drawer?.type === 'department' ? 'Cập nhật phòng ban' : 'Cập nhật chức vụ') : (drawer?.type === 'department' ? 'Thêm phòng ban' : 'Thêm chức vụ')} open={['department','position'].includes(drawer?.type)} width={560} okText="Lưu thông tin" cancelText="Hủy" onOk={save} onCancel={() => setDrawer(null)} destroyOnHidden><Form form={form} layout="vertical" style={{ marginTop: 20 }}><Form.Item name="name" label="Tên" rules={[{ required: true }]}><Input placeholder={drawer?.type === 'department' ? 'Nhập tên phòng ban' : 'Nhập tên chức vụ'} /></Form.Item>{drawer?.type === 'department' && <Form.Item name="parent_id" label="Phòng ban cấp trên"><Select allowClear placeholder="Không có phòng ban cấp trên" options={(data.departments ?? []).filter(x => x.id !== drawer?.record?.id).map(x => ({ value:x.id,label:x.name }))} /></Form.Item>}<Form.Item name="description" label="Mô tả"><Input.TextArea rows={4} placeholder="Mô tả ngắn gọn vai trò, nhiệm vụ" /></Form.Item><Form.Item name="is_active" label="Trạng thái" rules={[{ required:true }]}><Select options={[{value:true,label:'Đang sử dụng'},{value:false,label:'Tạm ngưng'}]} /></Form.Item></Form></Modal></Space>;
     }
     if (menuKey === 'hrm-leave') {
-        content = <Space direction="vertical" size={16} style={{ width: '100%' }}><PageHeader eyebrow="NGHỈ PHÉP" title="Đơn nghỉ phép" description="Gửi và theo dõi trạng thái đơn nghỉ phép." action={<Button type="primary" icon={<PlusOutlined />} onClick={() => openDrawer('leave')}>Tạo đơn</Button>} /><Card><Table rowKey="id" dataSource={data.items ?? []} columns={[{ title:'Nhân sự',render:(_,r)=>r.employee?.full_name },{title:'Loại nghỉ',dataIndex:'leave_type'},{title:'Từ ngày',dataIndex:'start_date'},{title:'Đến ngày',dataIndex:'end_date'},{title:'Số ngày',dataIndex:'days'},{title:'Trạng thái',render:(_,r)=><Tag color={statusColors[r.status]}>{statusLabels[r.status] || r.status}</Tag>},{title:'Duyệt',render:(_,r)=>can('hrm.leave.approve')&&r.status==='pending'?<Space><Button size="small" type="primary" onClick={()=>runAdminAction(()=>callAdminApi(`/admin/api/hrm/leave/${r.id}/review`,{method:'PUT',body:JSON.stringify({status:'approved'})}),'Đã duyệt đơn.',load)}>Duyệt</Button><Button size="small" danger onClick={()=>runAdminAction(()=>callAdminApi(`/admin/api/hrm/leave/${r.id}/review`,{method:'PUT',body:JSON.stringify({status:'rejected'})}),'Đã từ chối đơn.',load)}>Từ chối</Button></Space>:'—'}]} /></Card><Modal title="Tạo đơn nghỉ phép" open={drawer?.type==='leave'} width={640} okText="Gửi đơn" cancelText="Hủy" onOk={save} onCancel={()=>setDrawer(null)} destroyOnHidden><Form form={form} layout="vertical" style={{marginTop:20}}>{(data.employees??[]).length>0&&<Form.Item name="employee_id" label="Nhân sự"><Select allowClear placeholder="Chọn nhân sự" options={data.employees.map(x=>({value:x.id,label:`${x.employee_code} · ${x.full_name}`}))}/></Form.Item>}<Form.Item name="leave_type" label="Loại nghỉ" rules={[{required:true}]}><Select options={[['annual','Phép năm'],['sick','Nghỉ ốm'],['unpaid','Không lương'],['maternity','Thai sản'],['paternity','Chế độ cha'],['other','Khác']].map(([value,label])=>({value,label}))}/></Form.Item><Row gutter={16}><Col xs={24} md={12}><Form.Item name="start_date" label="Từ ngày" rules={[{required:true}]}><DatePicker format="DD/MM/YYYY" placeholder="Chọn ngày bắt đầu" style={{width:'100%'}} /></Form.Item></Col><Col xs={24} md={12}><Form.Item name="end_date" label="Đến ngày" rules={[{required:true}]}><DatePicker format="DD/MM/YYYY" placeholder="Chọn ngày kết thúc" disabledDate={(current)=>Boolean(leaveStartDate && current.startOf('day').isBefore(leaveStartDate.startOf('day')))} style={{width:'100%'}} /></Form.Item></Col></Row><Form.Item name="days" label="Số ngày nghỉ" rules={[{required:true}]} extra="Tự động tính theo khoảng thời gian, bao gồm cả ngày bắt đầu và ngày kết thúc."><InputNumber readOnly controls={false} addonAfter="ngày" placeholder="Chọn khoảng thời gian" style={{width:'100%'}} /></Form.Item><Form.Item name="reason" label="Lý do"><Input.TextArea rows={4} placeholder="Nhập lý do nghỉ phép" /></Form.Item></Form></Modal></Space>;
+        content = <Space direction="vertical" size={16} style={{ width: '100%' }}><PageHeader eyebrow="NGHỈ PHÉP" title="Đơn nghỉ phép" description="Gửi và theo dõi trạng thái đơn nghỉ phép." action={<Button type="primary" icon={<PlusOutlined />} onClick={() => openDrawer('leave')}>Tạo đơn</Button>} /><Card><Table rowKey="id" dataSource={data.items ?? []} columns={[{ title:'Nhân sự',render:(_,r)=>r.employee?.full_name },{title:'Loại nghỉ',dataIndex:'leave_type'},{title:'Từ ngày',dataIndex:'start_date'},{title:'Đến ngày',dataIndex:'end_date'},{title:'Số ngày',dataIndex:'days'},{title:'Trạng thái',render:(_,r)=><Tag color={statusColors[r.status]}>{statusLabels[r.status] || r.status}</Tag>},{title:'Duyệt',render:(_,r)=>can('hrm.leave.approve')&&r.status==='pending'?<Space><Button size="small" type="primary" onClick={()=>runAdminAction(()=>callAdminApi(adminApi(`hrm/leave/${r.id}/review`),{method:'PUT',body:JSON.stringify({status:'approved'})}),'Đã duyệt đơn.',load)}>Duyệt</Button><Button size="small" danger onClick={()=>runAdminAction(()=>callAdminApi(adminApi(`hrm/leave/${r.id}/review`),{method:'PUT',body:JSON.stringify({status:'rejected'})}),'Đã từ chối đơn.',load)}>Từ chối</Button></Space>:'—'}]} /></Card><Modal title="Tạo đơn nghỉ phép" open={drawer?.type==='leave'} width={640} okText="Gửi đơn" cancelText="Hủy" onOk={save} onCancel={()=>setDrawer(null)} destroyOnHidden><Form form={form} layout="vertical" style={{marginTop:20}}>{(data.employees??[]).length>0&&<Form.Item name="employee_id" label="Nhân sự"><Select allowClear placeholder="Chọn nhân sự" options={data.employees.map(x=>({value:x.id,label:`${x.employee_code} · ${x.full_name}`}))}/></Form.Item>}<Form.Item name="leave_type" label="Loại nghỉ" rules={[{required:true}]}><Select options={[['annual','Phép năm'],['sick','Nghỉ ốm'],['unpaid','Không lương'],['maternity','Thai sản'],['paternity','Chế độ cha'],['other','Khác']].map(([value,label])=>({value,label}))}/></Form.Item><Row gutter={16}><Col xs={24} md={12}><Form.Item name="start_date" label="Từ ngày" rules={[{required:true}]}><DatePicker format="DD/MM/YYYY" placeholder="Chọn ngày bắt đầu" style={{width:'100%'}} /></Form.Item></Col><Col xs={24} md={12}><Form.Item name="end_date" label="Đến ngày" rules={[{required:true}]}><DatePicker format="DD/MM/YYYY" placeholder="Chọn ngày kết thúc" disabledDate={(current)=>Boolean(leaveStartDate && current.startOf('day').isBefore(leaveStartDate.startOf('day')))} style={{width:'100%'}} /></Form.Item></Col></Row><Form.Item name="days" label="Số ngày nghỉ" rules={[{required:true}]} extra="Tự động tính theo khoảng thời gian, bao gồm cả ngày bắt đầu và ngày kết thúc."><InputNumber readOnly controls={false} addonAfter="ngày" placeholder="Chọn khoảng thời gian" style={{width:'100%'}} /></Form.Item><Form.Item name="reason" label="Lý do"><Input.TextArea rows={4} placeholder="Nhập lý do nghỉ phép" /></Form.Item></Form></Modal></Space>;
     }
     if (menuKey === 'hrm-attendance') {
         const attendanceLabels = { present:'Đủ công',late:'Đi muộn',remote:'Làm từ xa',leave:'Nghỉ phép',absent:'Vắng mặt',holiday:'Ngày lễ' };

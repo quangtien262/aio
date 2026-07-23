@@ -8,46 +8,8 @@
                 ->filter(fn (array $locale): bool => (bool) ($locale['is_active'] ?? false) && (bool) ($locale['is_published'] ?? true))
                 ->values();
             $currentLocale = app()->getLocale();
-            $knownLocaleCodes = \App\Support\FrontendLocalization::knownLocaleCodes();
-            $languageUrl = function (string $locale) use ($knownLocaleCodes): string {
-                $segments = request()->segments();
-
-                if (isset($segments[0]) && in_array($segments[0], $knownLocaleCodes, true)) {
-                    $segments[0] = $locale;
-                } else {
-                    array_unshift($segments, $locale);
-                }
-
-                $url = url('/'.implode('/', $segments));
-                $query = request()->getQueryString();
-
-                return $query ? $url.'?'.$query : $url;
-            };
-            $localizeMenuUrl = function (?string $href): string {
-                $href = trim((string) $href);
-
-                if ($href === '' || $href === '#' || str_starts_with($href, '#') || preg_match('/^(https?:)?\/\//i', $href) || preg_match('/^(mailto|tel):/i', $href)) {
-                    return $href !== '' ? $href : '#';
-                }
-
-                $parts = parse_url($href) ?: [];
-                $path = trim((string) ($parts['path'] ?? ''), '/');
-                $query = isset($parts['query']) && $parts['query'] !== '' ? '?'.$parts['query'] : '';
-                $fragment = isset($parts['fragment']) && $parts['fragment'] !== '' ? '#'.$parts['fragment'] : '';
-
-                if ($path === '') {
-                    return route('site.home').$query.$fragment;
-                }
-
-                $segments = explode('/', $path);
-                $knownLocales = \App\Support\FrontendLocalization::knownLocaleCodes();
-
-                if (! in_array($segments[0] ?? '', $knownLocales, true)) {
-                    array_unshift($segments, app()->getLocale());
-                }
-
-                return url('/'.implode('/', $segments)).$query.$fragment;
-            };
+            $languageUrl = static fn (string $locale): string => \App\Support\FrontendRouteUrl::switchLocale($locale);
+            $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
             $repairXdLabel = static function (string $label): string {
                 return strtr(trim($label), [
                     'Trang chá»§' => 'Trang chủ',
@@ -223,7 +185,7 @@
                     </div>
                     <div class="xd-header-tools" aria-label="Tác vụ nhanh">
                         @if ($adminLoggedIn)
-                            <a class="xd-top-link is-admin" href="{{ url('/admin') }}" target="_blank" rel="noopener">Admin</a>
+                            <a class="xd-top-link is-admin" href="{{ route('admin.index') }}" target="_blank" rel="noopener">Admin</a>
                         @endif
                         @if ($customerLoggedIn)
                             <a class="xd-top-link" href="{{ route('customer.account') }}">Tài khoản</a>

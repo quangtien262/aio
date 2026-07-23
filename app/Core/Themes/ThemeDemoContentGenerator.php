@@ -537,14 +537,14 @@ class ThemeDemoContentGenerator
 
             return [
                 'label' => $parent->name,
-                'url' => '/danh-muc/'.$parent->slug,
+                'url' => FrontendRouteUrl::categoryPath($parent->slug),
                 'target' => '_self',
                 'icon' => $index === 0 ? '🔥' : '▣',
                 'highlight' => $index === 0,
                 'children' => collect($entry['children'])
                     ->map(fn (CatalogCategory $child): array => [
                         'label' => $child->name,
-                        'url' => '/danh-muc/'.$child->slug,
+                        'url' => FrontendRouteUrl::categoryPath($child->slug),
                         'target' => '_self',
                     ])
                     ->all(),
@@ -577,7 +577,7 @@ class ThemeDemoContentGenerator
                 return [
                     ['label' => 'Lookbook', 'url' => '/c', 'target' => '_self'],
                     ['label' => $this->isFashionPreset($preset) ? 'Về studio' : 'Về xưởng may', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
-                    ['label' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist' : 'Gửi yêu cầu may', 'url' => '/contact', 'target' => '_self'],
+                    ['label' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist' : 'Gửi yêu cầu may', 'url' => FrontendRouteUrl::contactPath(), 'target' => '_self'],
                 ];
             }
 
@@ -585,14 +585,14 @@ class ThemeDemoContentGenerator
                 return [
                     ['label' => 'Tin thị trường', 'url' => '/c', 'target' => '_self'],
                     ['label' => 'Tổng quan dự án', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
-                    ['label' => 'Nhận bảng giá', 'url' => '/contact', 'target' => '_self'],
+                    ['label' => 'Nhận bảng giá', 'url' => FrontendRouteUrl::contactPath(), 'target' => '_self'],
                 ];
             }
 
             return [
                 ['label' => 'Tin tức', 'url' => '/c', 'target' => '_self'],
                 ['label' => 'Giới thiệu', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
-                ['label' => 'Liên hệ', 'url' => '/contact', 'target' => '_self'],
+                ['label' => 'Liên hệ', 'url' => FrontendRouteUrl::contactPath(), 'target' => '_self'],
             ];
         }
 
@@ -617,11 +617,11 @@ class ThemeDemoContentGenerator
             ],
             [
                 'label' => 'Báo giá',
-                'url' => '/contact',
+                'url' => FrontendRouteUrl::contactPath(),
                 'target' => '_self',
                 'children' => [
-                    ['label' => 'Gửi yêu cầu báo giá', 'summary' => 'Điền nhu cầu tuyến, số khách và khung giờ để nhận tư vấn nhanh.', 'url' => '/contact', 'target' => '_self'],
-                    ['label' => 'Liên hệ điều phối', 'summary' => 'Xem thông tin liên hệ và đầu mối hỗ trợ cho từng loại nhu cầu.', 'url' => '/contact', 'target' => '_self'],
+                    ['label' => 'Gửi yêu cầu báo giá', 'summary' => 'Điền nhu cầu tuyến, số khách và khung giờ để nhận tư vấn nhanh.', 'url' => FrontendRouteUrl::contactPath(), 'target' => '_self'],
+                    ['label' => 'Liên hệ điều phối', 'summary' => 'Xem thông tin liên hệ và đầu mối hỗ trợ cho từng loại nhu cầu.', 'url' => FrontendRouteUrl::contactPath(), 'target' => '_self'],
                 ],
             ],
         ];
@@ -674,7 +674,7 @@ class ThemeDemoContentGenerator
                 'badge' => null,
                 'metadata' => [],
                 'image_url' => $this->imageUrl($preset['key'].'-hero-side-'.$index, 360, 180),
-                'link_url' => '/danh-muc/'.$departmentSlug,
+                'link_url' => FrontendRouteUrl::categoryPath($departmentSlug),
                 'sort_order' => $index,
             ];
         }
@@ -744,7 +744,7 @@ class ThemeDemoContentGenerator
                     'show_caption' => false,
                 ],
                 'image_url' => $images[$index % count($images)],
-                'link_url' => $index === 0 ? '#featured-services' : '/danh-muc/'.$departmentSlug,
+                'link_url' => $index === 0 ? '#featured-services' : FrontendRouteUrl::categoryPath($departmentSlug),
                 'sort_order' => $index,
             ];
         }

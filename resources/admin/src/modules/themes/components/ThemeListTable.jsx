@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import Button from 'antd/es/button';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
@@ -21,7 +22,7 @@ export default function ThemeListTable({ themes, themesMeta = {}, selectedThemeK
         const formData = new FormData();
         formData.append('avatar', file);
 
-        await runAdminAction(() => callAdminApi(`/admin/api/themes/${encodeURIComponent(theme.key)}/avatar`, { method: 'POST', body: formData }), 'Đã cập nhật ảnh đại diện.', () => { window.location.reload(); });
+        await runAdminAction(() => callAdminApi(adminApi(`themes/${encodeURIComponent(theme.key)}/avatar`), { method: 'POST', body: formData }), 'Đã cập nhật ảnh đại diện.', () => { window.location.reload(); });
     };
 
     const columns = [

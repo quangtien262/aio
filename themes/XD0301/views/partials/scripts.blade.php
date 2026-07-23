@@ -176,7 +176,7 @@
             const editorOptions = @json($landingEditorOptions ?? []);
             const updateUrlTemplate = @json($blockUpdateUrlTemplate ?? '');
             const sourcePreviewUrlTemplate = @json($blockSourcePreviewUrlTemplate ?? '');
-            const mediaUploadUrl = '/admin/api/cms/media';
+            const mediaUploadUrl = @json(route('admin.api.cms.media.store'));
             const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
             const editor = document.querySelector('[data-xd-editor]');
             const form = document.querySelector('[data-xd-editor-form]');
@@ -222,18 +222,18 @@
                 cms_testimonials: 'Đánh giá',
             };
             const sourceManageUrls = {
-                cms_services: '/admin/cms/services',
-                catalog_categories: '/admin/cms/products',
-                cms_service_categories: '/admin/cms/services',
-                cms_categories: '/admin/cms/posts',
-                cms_posts: '/admin/cms/posts',
-                latest_posts: '/admin/cms/posts',
-                cms_products: '/admin/cms/products',
-                catalog_products: '/admin/cms/products',
-                featured_products: '/admin/cms/products',
-                cms_projects: '/admin/cms/projects',
-                cms_team_members: '/admin/cms/team',
-                cms_testimonials: '/admin/cms/testimonials',
+                cms_services: @json(route('admin.index', ['any' => 'cms/services'])),
+                catalog_categories: @json(route('admin.index', ['any' => 'cms/products'])),
+                cms_service_categories: @json(route('admin.index', ['any' => 'cms/services'])),
+                cms_categories: @json(route('admin.index', ['any' => 'cms/posts'])),
+                cms_posts: @json(route('admin.index', ['any' => 'cms/posts'])),
+                latest_posts: @json(route('admin.index', ['any' => 'cms/posts'])),
+                cms_products: @json(route('admin.index', ['any' => 'cms/products'])),
+                catalog_products: @json(route('admin.index', ['any' => 'cms/products'])),
+                featured_products: @json(route('admin.index', ['any' => 'cms/products'])),
+                cms_projects: @json(route('admin.index', ['any' => 'cms/projects'])),
+                cms_team_members: @json(route('admin.index', ['any' => 'cms/team'])),
+                cms_testimonials: @json(route('admin.index', ['any' => 'cms/testimonials'])),
             };
             const defaultBlockLimits = {
                 hero_slider: 3,

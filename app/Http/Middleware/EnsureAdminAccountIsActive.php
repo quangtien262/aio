@@ -40,6 +40,6 @@ class EnsureAdminAccountIsActive
             return response()->json(['message' => $message], 401);
         }
 
-        return redirect('/')->withErrors(['login' => $message]);
+        return redirect()->route('site.entry')->withErrors(['login' => $message]);
     }
 }

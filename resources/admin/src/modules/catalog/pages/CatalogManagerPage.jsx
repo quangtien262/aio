@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { Suspense, lazy, useMemo, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
@@ -86,10 +87,10 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         enabled: true,
         loader: async () => {
             const [productsPayload, categoriesPayload, mediaPayload, bannersPayload] = await Promise.all([
-                callAdminApi('/admin/api/catalog/products'),
-                callAdminApi('/admin/api/catalog/categories'),
-                callAdminApi('/admin/api/cms/media'),
-                callAdminApi('/admin/api/site-banners'),
+                callAdminApi(adminApi('catalog/products')),
+                callAdminApi(adminApi('catalog/categories')),
+                callAdminApi(adminApi('cms/media')),
+                callAdminApi(adminApi('site-banners')),
             ]);
 
             return {
@@ -199,7 +200,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             render: (_, product) => (
                 <Space wrap>
                     <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openProductModal(product)}>Sửa</Button>
-                    <Popconfirm title="Xóa sản phẩm này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: `/admin/api/catalog/products/${product.id}`, method: 'DELETE', successMessage: 'Đã xóa sản phẩm catalog.' })}>
+                    <Popconfirm title="Xóa sản phẩm này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: adminApi(`catalog/products/${product.id}`), method: 'DELETE', successMessage: 'Đã xóa sản phẩm catalog.' })}>
                         <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
                     </Popconfirm>
                 </Space>
@@ -220,7 +221,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             render: (_, category) => (
                 <Space wrap>
                     <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openCategoryModal(category)}>Sửa</Button>
-                    <Popconfirm title="Xóa danh mục này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: `/admin/api/catalog/categories/${category.id}`, method: 'DELETE', successMessage: 'Đã xóa danh mục catalog.' })}>
+                    <Popconfirm title="Xóa danh mục này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: adminApi(`catalog/categories/${category.id}`), method: 'DELETE', successMessage: 'Đã xóa danh mục catalog.' })}>
                         <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
                     </Popconfirm>
                 </Space>
@@ -240,7 +241,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             render: (_, banner) => (
                 <Space wrap>
                     <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openBannerModal(banner)}>Sửa</Button>
-                    <Popconfirm title="Xóa banner này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: `/admin/api/site-banners/${banner.id}`, method: 'DELETE', successMessage: 'Đã xóa banner.' })}>
+                    <Popconfirm title="Xóa banner này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: adminApi(`site-banners/${banner.id}`), method: 'DELETE', successMessage: 'Đã xóa banner.' })}>
                         <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
                     </Popconfirm>
                 </Space>
@@ -278,7 +279,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             render: (_, banner) => (
                 <Space wrap>
                     <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openBannerModal(banner, 'hero-slider')}>Sửa</Button>
-                    <Popconfirm title="Xóa slide banner này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: `/admin/api/site-banners/${banner.id}`, method: 'DELETE', successMessage: 'Đã xóa slide banner.' })}>
+                    <Popconfirm title="Xóa slide banner này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: adminApi(`site-banners/${banner.id}`), method: 'DELETE', successMessage: 'Đã xóa slide banner.' })}>
                         <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
                     </Popconfirm>
                 </Space>
@@ -402,7 +403,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                         }}
                         onSubmit={async (payload) => {
                             const didSave = await runCrud({
-                                endpoint: editingProduct.id ? `/admin/api/catalog/products/${editingProduct.id}` : '/admin/api/catalog/products',
+                                endpoint: editingProduct.id ? adminApi(`catalog/products/${editingProduct.id}`) : adminApi('catalog/products'),
                                 method: editingProduct.id ? 'PUT' : 'POST',
                                 payload,
                                 successMessage: editingProduct.id ? 'Đã cập nhật sản phẩm catalog.' : 'Đã tạo sản phẩm catalog.',
@@ -433,7 +434,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                         }}
                         onSubmit={async (payload) => {
                             const didSave = await runCrud({
-                                endpoint: editingCategory.id ? `/admin/api/catalog/categories/${editingCategory.id}` : '/admin/api/catalog/categories',
+                                endpoint: editingCategory.id ? adminApi(`catalog/categories/${editingCategory.id}`) : adminApi('catalog/categories'),
                                 method: editingCategory.id ? 'PUT' : 'POST',
                                 payload,
                                 successMessage: editingCategory.id ? 'Đã cập nhật danh mục catalog.' : 'Đã tạo danh mục catalog.',
@@ -464,7 +465,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                         }}
                         onSubmit={async (payload) => {
                             const didSave = await runCrud({
-                                endpoint: editingBanner.id ? `/admin/api/site-banners/${editingBanner.id}` : '/admin/api/site-banners',
+                                endpoint: editingBanner.id ? adminApi(`site-banners/${editingBanner.id}`) : adminApi('site-banners'),
                                 method: editingBanner.id ? 'PUT' : 'POST',
                                 payload,
                                 successMessage: editingBanner.id ? 'Đã cập nhật banner.' : 'Đã tạo banner.',

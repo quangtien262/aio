@@ -52,7 +52,7 @@ class MenuIndexController
                         ->map(fn (CatalogCategory $category): array => [
                             'label' => $category->name,
                             'value' => (string) $category->id,
-                            'url' => '/danh-muc/'.$category->slug,
+                            'url' => FrontendRouteUrl::categoryPath($category->slug),
                         ])
                         ->values()
                         ->all(),
@@ -63,7 +63,7 @@ class MenuIndexController
                         ->map(fn (CatalogProduct $product): array => [
                             'label' => $product->name,
                             'value' => (string) $product->id,
-                            'url' => '/san-pham/'.$product->slug,
+                            'url' => FrontendRouteUrl::productPath($product->slug),
                         ])
                         ->values()
                         ->all(),
@@ -73,7 +73,7 @@ class MenuIndexController
                         ->map(fn (CmsCategory $category): array => [
                             'label' => $category->name,
                             'value' => (string) $category->id,
-                            'url' => '/c/'.$category->slug,
+                            'url' => FrontendRouteUrl::blogCategoryPath($category->slug),
                         ])
                         ->values()
                         ->all(),
@@ -83,7 +83,7 @@ class MenuIndexController
                         ->map(fn (CmsPost $post): array => [
                             'label' => $post->title,
                             'value' => (string) $post->id,
-                            'url' => '/n/'.$post->slug,
+                            'url' => FrontendRouteUrl::postPath($post->slug),
                         ])
                         ->values()
                         ->all(),
@@ -94,7 +94,7 @@ class MenuIndexController
                         ->map(fn (CmsServiceCategory $category): array => [
                             'label' => $category->name,
                             'value' => (string) $category->id,
-                            'url' => '/s/'.$category->slug,
+                            'url' => FrontendRouteUrl::serviceCategoryPath($category->slug),
                         ])
                         ->values()
                         ->all(),
@@ -105,7 +105,7 @@ class MenuIndexController
                         ->map(fn (CmsService $service): array => [
                             'label' => $service->title,
                             'value' => (string) $service->id,
-                            'url' => '/ser/'.$service->slug,
+                            'url' => FrontendRouteUrl::servicePath($service->slug),
                         ])
                         ->values()
                         ->all(),
@@ -116,7 +116,7 @@ class MenuIndexController
                         ->map(fn (CmsProjectCategory $category): array => [
                             'label' => $category->name,
                             'value' => (string) $category->id,
-                            'url' => '/pj/'.$category->slug,
+                            'url' => FrontendRouteUrl::projectCategoryPath($category->slug),
                         ])
                         ->values()
                         ->all(),
@@ -127,7 +127,7 @@ class MenuIndexController
                         ->map(fn (CmsProject $project): array => [
                             'label' => $project->title,
                             'value' => (string) $project->id,
-                            'url' => '/prj/'.$project->slug,
+                            'url' => FrontendRouteUrl::projectPath($project->slug),
                         ])
                         ->values()
                         ->all(),

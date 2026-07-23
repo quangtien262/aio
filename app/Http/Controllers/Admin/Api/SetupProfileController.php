@@ -94,7 +94,7 @@ class SetupProfileController
 
         if ($request->exists('favicon_url') && filled($validated['favicon_url'] ?? null)) {
             $this->publishFavicon((string) $validated['favicon_url']);
-            $branding['favicon_url'] = url('/favicon.ico');
+            $branding['favicon_url'] = asset('favicon.ico');
         }
 
         $siteProfile->forceFill([

@@ -1,3 +1,4 @@
+import { adminApi } from '../config/routes';
 import { useState } from 'react';
 import Modal from 'antd/es/modal';
 import Form from 'antd/es/form';
@@ -12,7 +13,7 @@ export default function ChangePasswordModal({ open, onClose, callAdminApi, runAd
 
         try {
             await runAdminAction(
-                () => callAdminApi('/admin/api/me/password', { method: 'PUT', body: JSON.stringify(values) }),
+                () => callAdminApi(adminApi('me/password'), { method: 'PUT', body: JSON.stringify(values) }),
                 'Đã cập nhật mật khẩu.',
                 onClose,
             );

@@ -79,7 +79,7 @@
         @endphp
         <section id="{{ $anchor }}" class="aio-landing-block {{ $type === 'hero_slider' ? 'aio-landing-hero' : '' }}" data-landing-block-id="{{ $block['id'] ?? '' }}" data-block-type="{{ $type }}" @if($type === 'hero_slider' && filled($heroImage)) style="background-image:url('{{ $heroImage }}')" @endif>
             @if ($landingCanEdit && filled($block['id'] ?? null))
-                <a class="aio-landing-edit" href="{{ url('/admin/cms/landing-pages') }}">Cấu hình khối</a>
+                <a class="aio-landing-edit" href="{{ route('admin.index', ['any' => 'cms/landing-pages']) }}">Cấu hình khối</a>
             @endif
 
             @if ($type === 'hero_slider')

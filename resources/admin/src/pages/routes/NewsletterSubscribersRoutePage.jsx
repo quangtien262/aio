@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import { useMemo, useState } from 'react';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
@@ -54,7 +55,7 @@ export default function NewsletterSubscribersRoutePage({ canAccess, callAdminApi
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/newsletter-subscribers');
+            const payload = await callAdminApi(adminApi('newsletter-subscribers'));
 
             return payload.data ?? { stats: {}, subscribers: [] };
         },
@@ -124,7 +125,7 @@ export default function NewsletterSubscribersRoutePage({ canAccess, callAdminApi
 
         const values = await editForm.validateFields();
         const didSave = await runAction(
-            () => callAdminApi(`/admin/api/newsletter-subscribers/${editingSubscriber.id}`, {
+            () => callAdminApi(adminApi(`newsletter-subscribers/${editingSubscriber.id}`), {
                 method: 'PUT',
                 body: JSON.stringify(values),
             }),
@@ -159,7 +160,7 @@ export default function NewsletterSubscribersRoutePage({ canAccess, callAdminApi
 
         const didSave = await runAction(async () => {
             for (const [index, subscriber] of selectedSubscribers.entries()) {
-                await callAdminApi(`/admin/api/newsletter-subscribers/${subscriber.id}`, {
+                await callAdminApi(adminApi(`newsletter-subscribers/${subscriber.id}`), {
                     method: 'PUT',
                     body: JSON.stringify({
                         email: emails[index],
@@ -180,7 +181,7 @@ export default function NewsletterSubscribersRoutePage({ canAccess, callAdminApi
     const deleteSubscribers = async (items) => {
         const didDelete = await runAction(async () => {
             for (const subscriber of items) {
-                await callAdminApi(`/admin/api/newsletter-subscribers/${subscriber.id}`, { method: 'DELETE' });
+                await callAdminApi(adminApi(`newsletter-subscribers/${subscriber.id}`), { method: 'DELETE' });
             }
         }, `Đã xóa ${items.length} email nhận tin.`);
 

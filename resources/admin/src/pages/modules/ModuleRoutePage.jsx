@@ -8,7 +8,7 @@ import Typography from 'antd/es/typography';
 import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
 import NewsletterSubscribersRoutePage from '../routes/NewsletterSubscribersRoutePage';
 import SetupRoutePage from '../routes/SetupRoutePage';
-import { ADMIN_API_ROUTES } from '../../shared/config/routes';
+import { ADMIN_API_ROUTES, adminApi } from '../../shared/config/routes';
 
 const { Paragraph, Title, Text } = Typography;
 const CmsManagerPage = lazy(() => import('../../modules/cms/pages/CmsManagerPage'));
@@ -149,17 +149,17 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
         onCreate: modulePayload?.key === 'cms'
             ? (payload) => runAdminAction(() => callAdminApi(ADMIN_API_ROUTES.cms.pages.collection, { method: 'POST', body: JSON.stringify(payload) }), 'Đã tạo trang CMS.', reload)
             : modulePayload?.key === 'catalog'
-                ? (payload) => runAdminAction(() => callAdminApi('/admin/api/catalog/products', { method: 'POST', body: JSON.stringify(payload) }), 'Đã tạo sản phẩm catalog.', reload)
+                ? (payload) => runAdminAction(() => callAdminApi(adminApi('catalog/products'), { method: 'POST', body: JSON.stringify(payload) }), 'Đã tạo sản phẩm catalog.', reload)
                 : undefined,
         onUpdate: modulePayload?.key === 'cms'
             ? (id, payload) => runAdminAction(() => callAdminApi(ADMIN_API_ROUTES.cms.pages.item(id), { method: 'PUT', body: JSON.stringify(payload) }), 'Đã cập nhật trang CMS.', reload)
             : modulePayload?.key === 'catalog'
-                ? (id, payload) => runAdminAction(() => callAdminApi(`/admin/api/catalog/products/${id}`, { method: 'PUT', body: JSON.stringify(payload) }), 'Đã cập nhật sản phẩm catalog.', reload)
+                ? (id, payload) => runAdminAction(() => callAdminApi(adminApi(`catalog/products/${id}`), { method: 'PUT', body: JSON.stringify(payload) }), 'Đã cập nhật sản phẩm catalog.', reload)
                 : undefined,
         onDelete: modulePayload?.key === 'cms'
             ? (id) => runAdminAction(() => callAdminApi(ADMIN_API_ROUTES.cms.pages.item(id), { method: 'DELETE' }), 'Đã xóa trang CMS.', reload)
             : modulePayload?.key === 'catalog'
-                ? (id) => runAdminAction(() => callAdminApi(`/admin/api/catalog/products/${id}`, { method: 'DELETE' }), 'Đã xóa sản phẩm catalog.', reload)
+                ? (id) => runAdminAction(() => callAdminApi(adminApi(`catalog/products/${id}`), { method: 'DELETE' }), 'Đã xóa sản phẩm catalog.', reload)
                 : undefined,
     };
 

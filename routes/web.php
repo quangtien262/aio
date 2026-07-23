@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
 	$locale = FrontendLocalization::defaultLocale();
 
-	return redirect('/'.$locale);
+	return redirect()->route('site.home', ['locale' => $locale]);
 })->name('site.entry');
 
 require __DIR__.'/admin.php';

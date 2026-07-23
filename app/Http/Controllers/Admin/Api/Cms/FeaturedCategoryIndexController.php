@@ -54,7 +54,7 @@ class FeaturedCategoryIndexController
                         ->map(fn (CatalogCategory $category): array => [
                             'label' => $category->name,
                             'value' => (string) $category->id,
-                            'url' => '/danh-muc/'.$category->slug,
+                            'url' => FrontendRouteUrl::categoryPath($category->slug),
                         ])
                         ->values()
                         ->all(),
@@ -64,7 +64,7 @@ class FeaturedCategoryIndexController
                         ->map(fn (CmsCategory $category): array => [
                             'label' => $category->name,
                             'value' => (string) $category->id,
-                            'url' => '/c/'.$category->slug,
+                            'url' => FrontendRouteUrl::blogCategoryPath($category->slug),
                         ])
                         ->values()
                         ->all(),

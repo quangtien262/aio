@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
@@ -17,7 +18,7 @@ export default function AdminAccountsRoutePage({ canAccess, currentAdmin, permis
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
-            const payload = await callAdminApi('/admin/api/admins');
+            const payload = await callAdminApi(adminApi('admins'));
 
             return payload.data ?? null;
         },
@@ -55,23 +56,23 @@ export default function AdminAccountsRoutePage({ canAccess, currentAdmin, permis
                 canManageAdmins={permissions.manage}
                 canResetPassword={permissions.resetPassword}
                 canLockAdmins={permissions.lock}
-                onCreateAdmin={(payload) => runAdminAction(() => callAdminApi('/admin/api/admins', { method: 'POST', body: JSON.stringify(payload) }), 'Đã tạo tài khoản admin.', async () => {
+                onCreateAdmin={(payload) => runAdminAction(() => callAdminApi(adminApi('admins'), { method: 'POST', body: JSON.stringify(payload) }), 'Đã tạo tài khoản admin.', async () => {
                     await reload();
 
                     if (returnTo) {
                         navigate(`${returnTo}?focusStep=${encodeURIComponent(focusStep || 'admin_account')}&completedStep=${encodeURIComponent('admin_account')}`);
                     }
                 })}
-                onUpdateAdmin={(adminId, payload) => runAdminAction(() => callAdminApi(`/admin/api/admins/${adminId}`, { method: 'PUT', body: JSON.stringify(payload) }), 'Đã cập nhật tài khoản admin.', async () => {
+                onUpdateAdmin={(adminId, payload) => runAdminAction(() => callAdminApi(adminApi(`admins/${adminId}`), { method: 'PUT', body: JSON.stringify(payload) }), 'Đã cập nhật tài khoản admin.', async () => {
                     await reload();
 
                     if (returnTo) {
                         navigate(`${returnTo}?focusStep=${encodeURIComponent(focusStep || 'admin_account')}&completedStep=${encodeURIComponent('admin_account')}`);
                     }
                 })}
-                onResetPassword={(adminId, payload) => runAdminAction(() => callAdminApi(`/admin/api/admins/${adminId}/password`, { method: 'PUT', body: JSON.stringify(payload) }), 'Đã đặt lại mật khẩu admin.', reload)}
-                onLockAdmin={(adminId, payload) => runAdminAction(() => callAdminApi(`/admin/api/admins/${adminId}/lock`, { method: 'POST', body: JSON.stringify(payload ?? {}) }), 'Đã khóa tài khoản admin.', reload)}
-                onUnlockAdmin={(adminId) => runAdminAction(() => callAdminApi(`/admin/api/admins/${adminId}/unlock`, { method: 'POST' }), 'Đã mở khóa tài khoản admin.', reload)}
+                onResetPassword={(adminId, payload) => runAdminAction(() => callAdminApi(adminApi(`admins/${adminId}/password`), { method: 'PUT', body: JSON.stringify(payload) }), 'Đã đặt lại mật khẩu admin.', reload)}
+                onLockAdmin={(adminId, payload) => runAdminAction(() => callAdminApi(adminApi(`admins/${adminId}/lock`), { method: 'POST', body: JSON.stringify(payload ?? {}) }), 'Đã khóa tài khoản admin.', reload)}
+                onUnlockAdmin={(adminId) => runAdminAction(() => callAdminApi(adminApi(`admins/${adminId}/unlock`), { method: 'POST' }), 'Đã mở khóa tài khoản admin.', reload)}
             />
         </Space>
     );

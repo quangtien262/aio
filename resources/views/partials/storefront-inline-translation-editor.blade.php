@@ -4,11 +4,20 @@
     $currentLocale = $currentLocale ?? app()->getLocale();
     $supportedLocales = $supportedLocales ?? [];
     $localeOptions = $localeOptions ?? [];
+    $themeKeyPlaceholder = '__THEME_KEY__';
+    $localePlaceholder = '__LOCALE__';
     $editorConfigJson = json_encode([
         'themeKey' => $themeKey,
         'currentLocale' => $currentLocale,
         'supportedLocales' => $supportedLocales,
         'localeOptions' => $localeOptions,
+        'translationIndexUrlTemplate' => route('admin.api.themes.translations.index', [
+            'key' => $themeKeyPlaceholder,
+        ]),
+        'translationUpdateUrlTemplate' => route('admin.api.themes.translations.update', [
+            'key' => $themeKeyPlaceholder,
+            'locale' => $localePlaceholder,
+        ]),
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 @endphp
 
@@ -255,7 +264,9 @@
                             params.set('entity', field.entity);
                         }
 
-                        const payload = await requestJson(`/admin/api/themes/${config.themeKey}/translations?${params.toString()}`);
+                        const translationIndexUrl = config.translationIndexUrlTemplate
+                            .replace('__THEME_KEY__', encodeURIComponent(config.themeKey));
+                        const payload = await requestJson(`${translationIndexUrl}?${params.toString()}`);
                         const entries = payload.data?.entries || [];
                         const matchedEntry = entries.find((entry) => entry.key === field.key) || {
                             key: field.key,
@@ -322,7 +333,10 @@
                     });
 
                     for (const scope of Object.values(groupedByLocale)) {
-                        await requestJson(`/admin/api/themes/${config.themeKey}/translations/${scope.locale}`, {
+                        const translationUpdateUrl = config.translationUpdateUrlTemplate
+                            .replace('__THEME_KEY__', encodeURIComponent(config.themeKey))
+                            .replace('__LOCALE__', encodeURIComponent(scope.locale));
+                        await requestJson(translationUpdateUrl, {
                             method: 'PUT',
                             headers: { 'X-CSRF-TOKEN': csrfToken },
                             body: JSON.stringify({

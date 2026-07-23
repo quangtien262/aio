@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
@@ -75,7 +76,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
             setLoading(true);
             setError(null);
 
-            const payload = await callAdminApi('/admin/api/site-mappings');
+            const payload = await callAdminApi(adminApi('site-mappings'));
             setItems(payload.data ?? []);
             setSelectedRowKeys([]);
             setThemeOptions(payload.meta?.themes ?? themes);
@@ -118,7 +119,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
     const saveItem = async () => {
         const values = await form.validateFields();
-        const url = editingItem ? `/admin/api/site-mappings/${editingItem.id}` : '/admin/api/site-mappings';
+        const url = editingItem ? adminApi(`site-mappings/${editingItem.id}`) : adminApi('site-mappings');
         const method = editingItem ? 'PUT' : 'POST';
 
         const ok = await runAdminAction(
@@ -139,7 +140,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
         try {
             const ok = await runAdminAction(
-                () => callAdminApi('/admin/api/site-mappings/bulk', {
+                () => callAdminApi(adminApi('site-mappings/bulk'), {
                     method: 'POST',
                     body: JSON.stringify(values),
                 }),
@@ -158,7 +159,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
     const deleteItem = async (item) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/site-mappings/${item.id}`, {
+            () => callAdminApi(adminApi(`site-mappings/${item.id}`), {
                 method: 'DELETE',
                 body: JSON.stringify({ delete_content: deleteContentOnRemove }),
             }),
@@ -181,7 +182,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const createDemoData = async () => {
         const values = await demoForm.validateFields();
         const ok = await runAdminAction(
-            () => callAdminApi(`/admin/api/site-mappings/${demoSite.id}/demo-data`, {
+            () => callAdminApi(adminApi(`site-mappings/${demoSite.id}/demo-data`), {
                 method: 'POST',
                 body: JSON.stringify(values),
             }),
@@ -199,7 +200,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         const values = await copyForm.validateFields();
         const target = items.find((item) => item.id === values.target_site_id);
         const ok = await runAdminAction(
-            () => callAdminApi(`/admin/api/site-mappings/${copySource.id}/copy-content`, {
+            () => callAdminApi(adminApi(`site-mappings/${copySource.id}/copy-content`), {
                 method: 'POST',
                 body: JSON.stringify(values),
             }),
@@ -221,7 +222,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         }
 
         await runAdminAction(
-            () => callAdminApi('/admin/api/site-mappings/bulk/status', {
+            () => callAdminApi(adminApi('site-mappings/bulk/status'), {
                 method: 'PUT',
                 body: JSON.stringify({ ids, status }),
             }),
@@ -241,7 +242,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         )));
 
         try {
-            const payload = await callAdminApi(`/admin/api/site-mappings/${item.id}/checklist`, {
+            const payload = await callAdminApi(adminApi(`site-mappings/${item.id}/checklist`), {
                 method: 'PATCH',
                 body: JSON.stringify({ [field]: checked }),
             });
@@ -266,7 +267,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         }
 
         await runAdminAction(
-            () => callAdminApi('/admin/api/site-mappings/bulk', {
+            () => callAdminApi(adminApi('site-mappings/bulk'), {
                 method: 'DELETE',
                 body: JSON.stringify({ ids, delete_content: deleteContentOnRemove }),
             }),

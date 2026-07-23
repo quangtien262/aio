@@ -1,3 +1,4 @@
+import { adminApi } from '../../shared/config/routes';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
@@ -18,8 +19,8 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
         enabled: canAccess,
         loader: async () => {
             const [themesPayload, setupPayload] = await Promise.all([
-                callAdminApi('/admin/api/themes'),
-                callAdminApi('/admin/api/setup'),
+                callAdminApi(adminApi('themes')),
+                callAdminApi(adminApi('setup')),
             ]);
 
             return {
@@ -64,7 +65,7 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
                 frontendLocale={frontendLocale}
                 defaultFrontendLocale={defaultFrontendLocale ?? data?.meta?.default_locale ?? 'vi'}
                 onActivate={(themeKey, options = {}) => runAdminAction(
-                    () => callAdminApi(`/admin/api/themes/${themeKey}/activate`, { method: 'POST', body: JSON.stringify({ create_demo_data: Boolean(options.createDemoData) }) }),
+                    () => callAdminApi(adminApi(`themes/${themeKey}/activate`), { method: 'POST', body: JSON.stringify({ create_demo_data: Boolean(options.createDemoData) }) }),
                     'Đã kích hoạt theme.',
                     async () => {
                         await reload();
@@ -75,12 +76,12 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
                     },
                 )}
                 onGenerateDemoData={(themeKey, preset, options = {}) => runAdminAction(
-                    () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'POST', body: JSON.stringify({ preset, reset_all: Boolean(options.resetAll) }) }),
+                    () => callAdminApi(adminApi(`themes/${themeKey}/demo-data`), { method: 'POST', body: JSON.stringify({ preset, reset_all: Boolean(options.resetAll) }) }),
                     'Đã tạo data test cho theme.',
                     reload,
                 )}
                 onDeleteDemoData={(themeKey) => runAdminAction(
-                    () => callAdminApi(`/admin/api/themes/${themeKey}/demo-data`, { method: 'DELETE' }),
+                    () => callAdminApi(adminApi(`themes/${themeKey}/demo-data`), { method: 'DELETE' }),
                     'Đã xóa data test cho theme.',
                     reload,
                 )}

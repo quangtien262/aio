@@ -44,7 +44,7 @@ class StorefrontCart
             'image' => $product->image_url,
             'quantity' => $nextQuantity,
             'stock' => $product->stock !== null ? (int) $product->stock : null,
-            'url' => '/san-pham/'.($product->slug ?: $product->getKey()),
+            'url' => FrontendRouteUrl::productPath((string) ($product->slug ?: $product->getKey())),
         ];
 
         $this->session->put(self::SESSION_KEY, $items);

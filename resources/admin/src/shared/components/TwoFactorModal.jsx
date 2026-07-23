@@ -1,3 +1,4 @@
+import { adminApi } from '../config/routes';
 import { useEffect, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
@@ -27,7 +28,7 @@ export default function TwoFactorModal({ open, enabled, onClose, onChanged, call
         setLoading(true);
         setError('');
         try {
-            const payload = await callAdminApi('/admin/api/me/two-factor/setup', { method: 'POST', body: JSON.stringify({ current_password }) });
+            const payload = await callAdminApi(adminApi('me/two-factor/setup'), { method: 'POST', body: JSON.stringify({ current_password }) });
             setSetup(payload.data);
         } catch (exception) {
             setError(exception instanceof Error ? exception.message : 'Không thể khởi tạo xác thực hai lớp.');
@@ -40,7 +41,7 @@ export default function TwoFactorModal({ open, enabled, onClose, onChanged, call
         setLoading(true);
         setError('');
         try {
-            const payload = await callAdminApi('/admin/api/me/two-factor/confirm', { method: 'POST', body: JSON.stringify({ code }) });
+            const payload = await callAdminApi(adminApi('me/two-factor/confirm'), { method: 'POST', body: JSON.stringify({ code }) });
             setRecoveryCodes(payload.data?.recovery_codes ?? []);
             onChanged(true);
         } catch (exception) {
@@ -54,7 +55,7 @@ export default function TwoFactorModal({ open, enabled, onClose, onChanged, call
         setLoading(true);
         setError('');
         try {
-            await callAdminApi('/admin/api/me/two-factor', { method: 'DELETE', body: JSON.stringify(values) });
+            await callAdminApi(adminApi('me/two-factor'), { method: 'DELETE', body: JSON.stringify(values) });
             onChanged(false);
             onClose();
         } catch (exception) {

@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
@@ -296,7 +297,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
         formData.append('file', file);
         formData.append('title', file.name.replace(/\.[^.]+$/, '') || typeLabel);
 
-        const payload = await callAdminApi('/admin/api/cms/media', {
+        const payload = await callAdminApi(adminApi('cms/media'), {
             method: 'POST',
             body: formData,
         });
@@ -325,7 +326,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             formData.append('title', title);
         }
 
-        const payload = await callAdminApi('/admin/api/cms/media', {
+        const payload = await callAdminApi(adminApi('cms/media'), {
             method: 'POST',
             body: formData,
         });

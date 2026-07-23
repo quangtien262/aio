@@ -1,3 +1,4 @@
+import { adminApi } from '../../../shared/config/routes';
 import { DndContext, DragOverlay, MeasuringStrategy, PointerSensor, pointerWithin, useDroppable, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -357,7 +358,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                 : permissions.canViewReports,
         loader: async () => {
             if (sectionKey === 'project-projects' && activeProjectId) {
-                const payload = await callAdminApi(`/admin/api/project/projects/${activeProjectId}`);
+                const payload = await callAdminApi(adminApi(`project/projects/${activeProjectId}`));
 
                 return payload.data ?? null;
             }
@@ -367,7 +368,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                 if (projectFilter.search) query.set('search', projectFilter.search);
                 if (projectFilter.project_status_id) query.set('project_status_id', String(projectFilter.project_status_id));
                 if (projectFilter.project_type_id) query.set('project_type_id', String(projectFilter.project_type_id));
-                const payload = await callAdminApi(`/admin/api/project/projects${query.toString() ? `?${query.toString()}` : ''}`);
+                const payload = await callAdminApi(adminApi(`project/projects${query.toString() ? `?${query.toString()}` : ''}`));
 
                 return payload.data ?? null;
             }
@@ -378,14 +379,14 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
                 if (taskFilter.project_id) query.set('project_id', String(taskFilter.project_id));
                 if (taskFilter.status_name) query.set('status_name', String(taskFilter.status_name));
                 if (taskFilter.assignee_admin_id) query.set('assignee_admin_id', String(taskFilter.assignee_admin_id));
-                const payload = await callAdminApi(`/admin/api/project/tasks${query.toString() ? `?${query.toString()}` : ''}`);
+                const payload = await callAdminApi(adminApi(`project/tasks${query.toString() ? `?${query.toString()}` : ''}`));
 
                 return payload.data ?? null;
             }
 
             const query = new URLSearchParams();
             if (reportFilter.project_id) query.set('project_id', String(reportFilter.project_id));
-            const payload = await callAdminApi(`/admin/api/project/reports${query.toString() ? `?${query.toString()}` : ''}`);
+            const payload = await callAdminApi(adminApi(`project/reports${query.toString() ? `?${query.toString()}` : ''}`));
 
             return payload.data ?? null;
         },
@@ -470,7 +471,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
     };
 
     const submitProject = async (values) => {
-        const endpoint = editingProject ? `/admin/api/project/projects/${editingProject.id}` : '/admin/api/project/projects';
+        const endpoint = editingProject ? adminApi(`project/projects/${editingProject.id}`) : adminApi('project/projects');
         const method = editingProject ? 'PUT' : 'POST';
 
         await runAdminAction(
@@ -489,7 +490,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
             return;
         }
 
-        const endpoint = editingTask ? `/admin/api/project/tasks/${editingTask.id}` : `/admin/api/project/projects/${project.id}/tasks`;
+        const endpoint = editingTask ? adminApi(`project/tasks/${editingTask.id}`) : adminApi(`project/projects/${project.id}/tasks`);
         const method = editingTask ? 'PUT' : 'POST';
 
         await runAdminAction(
@@ -509,7 +510,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
             return;
         }
 
-        const endpoint = editingReport ? `/admin/api/project/reports/${editingReport.id}` : `/admin/api/project/projects/${currentProjectId}/reports`;
+        const endpoint = editingReport ? adminApi(`project/reports/${editingReport.id}`) : adminApi(`project/projects/${currentProjectId}/reports`);
         const method = editingReport ? 'PUT' : 'POST';
 
         await runAdminAction(
@@ -525,7 +526,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const handleDeleteProject = async (record) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/projects/${record.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/projects/${record.id}`), { method: 'DELETE' }),
             'Đã xóa dự án.',
             reload,
         );
@@ -533,7 +534,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const handleDeleteTask = async (record) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/tasks/${record.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/tasks/${record.id}`), { method: 'DELETE' }),
             'Đã xóa công việc.',
             reload,
         );
@@ -559,7 +560,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
         try {
             await runAdminAction(
                 async () => {
-                    const payload = await callAdminApi(`/admin/api/project/tasks/${task.id}`, {
+                    const payload = await callAdminApi(adminApi(`project/tasks/${task.id}`), {
                         method: 'PUT',
                         body: JSON.stringify({
                             title: task.title,
@@ -696,7 +697,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const handleDeleteChecklist = async (record) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/checklists/${record.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/checklists/${record.id}`), { method: 'DELETE' }),
             'Đã xóa checklist.',
             reload,
         );
@@ -704,7 +705,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const handleDeleteFile = async (record) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/files/${record.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/files/${record.id}`), { method: 'DELETE' }),
             'Đã xóa file.',
             reload,
         );
@@ -712,7 +713,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const handleDeleteReport = async (record) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/reports/${record.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/reports/${record.id}`), { method: 'DELETE' }),
             'Đã xóa báo cáo.',
             reload,
         );
@@ -720,7 +721,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const handleChecklistToggle = async (record, checked) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/checklists/${record.id}`, {
+            () => callAdminApi(adminApi(`project/checklists/${record.id}`), {
                 method: 'PUT',
                 body: JSON.stringify({
                     title: record.title,
@@ -741,7 +742,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
         }
 
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/projects/${project.id}/checklists`, {
+            () => callAdminApi(adminApi(`project/projects/${project.id}/checklists`), {
                 method: 'POST',
                 body: JSON.stringify(newChecklist),
             }),
@@ -759,7 +760,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
         }
 
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/projects/${project.id}/members`, {
+            () => callAdminApi(adminApi(`project/projects/${project.id}/members`), {
                 method: 'POST',
                 body: JSON.stringify(newMember),
             }),
@@ -773,7 +774,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const handleDeleteMember = async (record) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/members/${record.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/members/${record.id}`), { method: 'DELETE' }),
             'Đã xóa thành viên.',
             reload,
         );
@@ -792,7 +793,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
         formData.append('file', fileUpload.fileList[0]);
 
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/projects/${project.id}/files`, { method: 'POST', body: formData }),
+            () => callAdminApi(adminApi(`project/projects/${project.id}/files`), { method: 'POST', body: formData }),
             'Đã tải file lên.',
             async () => {
                 setFileUpload({ title: '', task_id: null, fileList: [] });
@@ -891,7 +892,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/projects/${project.id}/task-statuses`, {
+                const response = await callAdminApi(adminApi(`project/projects/${project.id}/task-statuses`), {
                     method: 'POST',
                     body: JSON.stringify(values),
                 });
@@ -914,7 +915,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/task-statuses/${status.id}`, {
+                const response = await callAdminApi(adminApi(`project/task-statuses/${status.id}`), {
                     method: 'PUT',
                     body: JSON.stringify(values),
                 });
@@ -937,7 +938,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/task-statuses/${status.id}`, {
+                const response = await callAdminApi(adminApi(`project/task-statuses/${status.id}`), {
                     method: 'DELETE',
                 });
 
@@ -963,7 +964,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/projects/${project.id}/task-statuses/reorder`, {
+                const response = await callAdminApi(adminApi(`project/projects/${project.id}/task-statuses/reorder`), {
                     method: 'PUT',
                     body: JSON.stringify({ status_ids: statusIds }),
                 });
@@ -1009,7 +1010,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
         try {
             const didSucceed = await runAdminAction(
                 async () => {
-                    const response = await callAdminApi(`/admin/api/project/tasks/${task.id}`, {
+                    const response = await callAdminApi(adminApi(`project/tasks/${task.id}`), {
                         method: 'PUT',
                         body: JSON.stringify({
                             title: task.title,
@@ -1080,7 +1081,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/tasks/${task.id}`, {
+                const response = await callAdminApi(adminApi(`project/tasks/${task.id}`), {
                     method: 'PUT',
                     body: JSON.stringify(payload),
                 });
@@ -1127,7 +1128,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/tasks/${task.id}/checklists`, {
+                const response = await callAdminApi(adminApi(`project/tasks/${task.id}/checklists`), {
                     method: 'POST',
                     body: JSON.stringify(payload),
                 });
@@ -1152,7 +1153,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/task-checklists/${record.id}`, {
+                const response = await callAdminApi(adminApi(`project/task-checklists/${record.id}`), {
                     method: 'PUT',
                     body: JSON.stringify({
                         title: record.title,
@@ -1180,7 +1181,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const deleteTaskDetailChecklist = async (record) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/task-checklists/${record.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/task-checklists/${record.id}`), { method: 'DELETE' }),
             'Đã xóa checklist.',
             () => {
                 mutateProjectCollection('task_checklists', (items) => items.filter((item) => item.id !== record.id));
@@ -1202,7 +1203,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/projects/${project.id}/files`, { method: 'POST', body: formData });
+                const response = await callAdminApi(adminApi(`project/projects/${project.id}/files`), { method: 'POST', body: formData });
 
                 nextFile = response?.data ?? null;
 
@@ -1221,7 +1222,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const deleteDetailFile = async (record) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/files/${record.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/files/${record.id}`), { method: 'DELETE' }),
             'Đã xóa file.',
             () => {
                 mutateProjectCollection('files', (items) => items.filter((item) => item.id !== record.id));
@@ -1238,7 +1239,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/tasks/${task.id}/comments`, {
+                const response = await callAdminApi(adminApi(`project/tasks/${task.id}/comments`), {
                     method: 'POST',
                     body: JSON.stringify(payload),
                 });
@@ -1263,7 +1264,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/task-comments/${comment.id}`, {
+                const response = await callAdminApi(adminApi(`project/task-comments/${comment.id}`), {
                     method: 'PUT',
                     body: JSON.stringify(payload),
                 });
@@ -1285,7 +1286,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const deleteTaskComment = async (comment) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/task-comments/${comment.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/task-comments/${comment.id}`), { method: 'DELETE' }),
             'Đã xóa bình luận.',
             () => {
                 mutateProjectCollection('task_comments', (items) => items.filter((item) => item.id !== comment.id));
@@ -1302,7 +1303,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/tasks/${task.id}/time-entries`, {
+                const response = await callAdminApi(adminApi(`project/tasks/${task.id}/time-entries`), {
                     method: 'POST',
                     body: JSON.stringify(payload),
                 });
@@ -1327,7 +1328,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
         await runAdminAction(
             async () => {
-                const response = await callAdminApi(`/admin/api/project/task-time-entries/${entry.id}`, {
+                const response = await callAdminApi(adminApi(`project/task-time-entries/${entry.id}`), {
                     method: 'PUT',
                     body: JSON.stringify(payload),
                 });
@@ -1349,7 +1350,7 @@ export default function ProjectManagerPage({ moduleMenu, callAdminApi, runAdminA
 
     const deleteTaskTimeEntry = async (entry) => {
         await runAdminAction(
-            () => callAdminApi(`/admin/api/project/task-time-entries/${entry.id}`, { method: 'DELETE' }),
+            () => callAdminApi(adminApi(`project/task-time-entries/${entry.id}`), { method: 'DELETE' }),
             'Đã xóa time tracking.',
             () => {
                 mutateProjectCollection('task_time_entries', (items) => items.filter((item) => item.id !== entry.id));

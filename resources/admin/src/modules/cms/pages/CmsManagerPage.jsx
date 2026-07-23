@@ -37,7 +37,7 @@ import Typography from 'antd/es/typography';
 import Upload from 'antd/es/upload';
 import dayjs from 'dayjs';
 import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
-import { ADMIN_API_ROUTES } from '../../../shared/config/routes';
+import { ADMIN_API_ROUTES, adminApi } from '../../../shared/config/routes';
 
 const CmsPageFormModal = lazy(() => import('../components/CmsPageFormModal'));
 const CmsPartnerFormModal = lazy(() => import('../components/CmsPartnerFormModal'));
@@ -181,7 +181,7 @@ const sectionConfigMap = {
     'cms-landing-pages': {
         title: 'Landing pages',
         description: 'Quản lý trang chủ và các landingpage chiến dịch theo từng khối nội dung của theme.',
-        endpoint: '/admin/api/landing/pages',
+        endpoint: adminApi('landing/pages'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
         permissionUpdate: 'cms.update',
@@ -191,7 +191,7 @@ const sectionConfigMap = {
     'cms-posts': {
         title: 'Tin tức',
         description: 'Quản lý bài viết, category, featured media và public blog.',
-        endpoint: '/admin/api/cms/posts',
+        endpoint: adminApi('cms/posts'),
         permissionView: 'cms.post.view',
         permissionCreate: 'cms.post.create',
         permissionUpdate: 'cms.post.update',
@@ -201,7 +201,7 @@ const sectionConfigMap = {
     'cms-services': {
         title: 'Services',
         description: 'Quan ly dich vu, gallery anh, alt text va du lieu dong cho cac block dich vu.',
-        endpoint: '/admin/api/cms/services',
+        endpoint: adminApi('cms/services'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
         permissionUpdate: 'cms.update',
@@ -211,7 +211,7 @@ const sectionConfigMap = {
     'cms-projects': {
         title: 'Projects',
         description: 'Quan ly du an, gallery anh, alt text va du lieu dong cho cac block du an.',
-        endpoint: '/admin/api/cms/projects',
+        endpoint: adminApi('cms/projects'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
         permissionUpdate: 'cms.update',
@@ -221,7 +221,7 @@ const sectionConfigMap = {
     'cms-testimonials': {
         title: 'Testimonials',
         description: 'Quan ly nhan xet khach hang dung chung cho cac theme.',
-        endpoint: '/admin/api/cms/testimonials',
+        endpoint: adminApi('cms/testimonials'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
         permissionUpdate: 'cms.update',
@@ -231,7 +231,7 @@ const sectionConfigMap = {
     'cms-team-members': {
         title: 'Team Members',
         description: 'Quan ly doi ngu nhan su, gallery anh va anh dai dien dung chung cho cac theme.',
-        endpoint: '/admin/api/cms/team-members',
+        endpoint: adminApi('cms/team-members'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
         permissionUpdate: 'cms.update',
@@ -241,7 +241,7 @@ const sectionConfigMap = {
     'cms-partners': {
         title: 'Partners',
         description: 'Quan ly logo va thong tin doi tac dung chung cho cac theme.',
-        endpoint: '/admin/api/cms/partners',
+        endpoint: adminApi('cms/partners'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
         permissionUpdate: 'cms.update',
@@ -251,7 +251,7 @@ const sectionConfigMap = {
     'cms-products': {
         title: 'Products',
         description: 'Quản lý sản phẩm ecommerce ngay trong workspace CMS.',
-        endpoint: '/admin/api/cms/products',
+        endpoint: adminApi('cms/products'),
         permissionView: 'cms.product.view',
         permissionCreate: 'cms.product.create',
         permissionUpdate: 'cms.product.update',
@@ -261,7 +261,7 @@ const sectionConfigMap = {
     'cms-orders': {
         title: 'Đơn đặt hàng',
         description: 'Theo dõi đơn hàng từ storefront, khách hàng và line-item ngay trong CMS.',
-        endpoint: '/admin/api/cms/orders',
+        endpoint: adminApi('cms/orders'),
         permissionView: 'cms.order.view',
         permissionCreate: null,
         permissionUpdate: 'cms.order.view',
@@ -271,7 +271,7 @@ const sectionConfigMap = {
     'cms-categories': {
         title: 'Categories',
         description: 'Quản lý taxonomy cho post và nội dung phân loại.',
-        endpoint: '/admin/api/cms/categories',
+        endpoint: adminApi('cms/categories'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.category.manage',
         permissionUpdate: 'cms.category.manage',
@@ -281,7 +281,7 @@ const sectionConfigMap = {
     'cms-menus': {
         title: 'Chi tiết menu',
         description: 'Xem và chỉnh cấu trúc menu hiển thị trên website theo từng vị trí.',
-        endpoint: '/admin/api/cms/menus',
+        endpoint: adminApi('cms/menus'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.menu.manage',
         permissionUpdate: 'cms.menu.manage',
@@ -291,7 +291,7 @@ const sectionConfigMap = {
     'cms-featured-categories': {
         title: 'Danh mục nổi bật',
         description: 'Quản lý các cụm danh mục nổi bật dùng chung cho storefront theo từng vị trí.',
-        endpoint: '/admin/api/cms/featured-categories',
+        endpoint: adminApi('cms/featured-categories'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.menu.manage',
         permissionUpdate: 'cms.menu.manage',
@@ -301,7 +301,7 @@ const sectionConfigMap = {
     'cms-side-promos': {
         title: 'Side promos',
         description: 'Quản lý block promo dọc kiểu CMS cũ cạnh hero. Đây không phải nơi quản lý slide banner hero của theme SER0101; slide hero đang nằm ở Catalog > Slide banner.',
-        endpoint: '/admin/api/cms/side-promos',
+        endpoint: adminApi('cms/side-promos'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.menu.manage',
         permissionUpdate: 'cms.menu.manage',
@@ -311,7 +311,7 @@ const sectionConfigMap = {
     'cms-media': {
         title: 'Ảnh',
         description: 'Upload và chọn media cơ bản cho page/post.',
-        endpoint: '/admin/api/cms/media',
+        endpoint: adminApi('cms/media'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.media.manage',
         permissionUpdate: 'cms.media.manage',
@@ -697,8 +697,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         loader: async () => {
             if (sectionKey === 'cms-products') {
                 const [productsPayload, categoriesPayload] = await Promise.all([
-                    callAdminApi('/admin/api/cms/products'),
-                    callAdminApi('/admin/api/cms/product-categories'),
+                    callAdminApi(adminApi('cms/products')),
+                    callAdminApi(adminApi('cms/product-categories')),
                 ]);
 
                 return {
@@ -709,8 +709,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             if (sectionKey === 'cms-services') {
                 const [servicesPayload, categoriesPayload] = await Promise.all([
-                    callAdminApi('/admin/api/cms/services'),
-                    callAdminApi('/admin/api/cms/service-categories'),
+                    callAdminApi(adminApi('cms/services')),
+                    callAdminApi(adminApi('cms/service-categories')),
                 ]);
 
                 return {
@@ -721,8 +721,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             if (sectionKey === 'cms-projects') {
                 const [projectsPayload, categoriesPayload] = await Promise.all([
-                    callAdminApi('/admin/api/cms/projects'),
-                    callAdminApi('/admin/api/cms/project-categories'),
+                    callAdminApi(adminApi('cms/projects')),
+                    callAdminApi(adminApi('cms/project-categories')),
                 ]);
 
                 return {
@@ -733,8 +733,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             if (sectionKey === 'cms-side-promos') {
                 const [sidePromosPayload, mediaPayload] = await Promise.all([
-                    callAdminApi('/admin/api/cms/side-promos'),
-                    callAdminApi('/admin/api/cms/media'),
+                    callAdminApi(adminApi('cms/side-promos')),
+                    callAdminApi(adminApi('cms/media')),
                 ]);
 
                 return {
@@ -744,7 +744,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             }
 
             if (sectionKey === 'cms-media') {
-                const payload = await callAdminApi(`/admin/api/cms/media${mediaShowAll ? '?scope=all' : ''}`);
+                const payload = await callAdminApi(adminApi(`cms/media${mediaShowAll ? '?scope=all' : ''}`));
                 return payload.data ?? null;
             }
 
@@ -1311,8 +1311,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const refreshCurrentSectionDataSilently = async () => {
         if (sectionKey === 'cms-products') {
             const [itemsPayload, categoriesPayload] = await Promise.all([
-                callAdminApi('/admin/api/cms/products'),
-                callAdminApi('/admin/api/cms/product-categories'),
+                callAdminApi(adminApi('cms/products')),
+                callAdminApi(adminApi('cms/product-categories')),
             ]);
 
             mutateData({
@@ -1324,8 +1324,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-projects') {
             const [itemsPayload, categoriesPayload] = await Promise.all([
-                callAdminApi('/admin/api/cms/projects'),
-                callAdminApi('/admin/api/cms/project-categories'),
+                callAdminApi(adminApi('cms/projects')),
+                callAdminApi(adminApi('cms/project-categories')),
             ]);
 
             mutateData({
@@ -1382,7 +1382,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         try {
-            const payload = await callAdminApi('/admin/api/cms/categories');
+            const payload = await callAdminApi(adminApi('cms/categories'));
             const items = payload.data?.items ?? [];
             setCategoryItems(items);
 
@@ -1428,7 +1428,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         try {
             await callAdminApi(
-                isUpdate ? `/admin/api/cms/categories/${editingCategoryRecord.id}` : '/admin/api/cms/categories',
+                isUpdate ? adminApi(`cms/categories/${editingCategoryRecord.id}`) : adminApi('cms/categories'),
                 {
                     method: isUpdate ? 'PUT' : 'POST',
                     body: JSON.stringify(payload),
@@ -1452,7 +1452,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         const didSave = editingCategoryRecord?.id
             ? await runAdminAction(
-                () => callAdminApi(`/admin/api/cms/categories/${editingCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+                () => callAdminApi(adminApi(`cms/categories/${editingCategoryRecord.id}`), { method: 'PUT', body: JSON.stringify(payload) }),
                 'Đã cập nhật danh mục tin tức.',
                 async () => {
                     await loadCategoryItems();
@@ -1460,7 +1460,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 },
             )
             : await runAdminAction(
-                () => callAdminApi('/admin/api/cms/categories', { method: 'POST', body: JSON.stringify(payload) }),
+                () => callAdminApi(adminApi('cms/categories'), { method: 'POST', body: JSON.stringify(payload) }),
                 'Đã tạo danh mục tin tức.',
                 async () => {
                     await loadCategoryItems();
@@ -1483,7 +1483,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             cancelText: 'Hủy',
             onOk: async () => {
                 await runAdminAction(
-                    () => callAdminApi(`/admin/api/cms/categories/${record.id}`, { method: 'DELETE' }),
+                    () => callAdminApi(adminApi(`cms/categories/${record.id}`), { method: 'DELETE' }),
                     'Đã xóa danh mục tin tức.',
                     async () => {
                         await loadCategoryItems();
@@ -1500,7 +1500,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         try {
-            const payload = await callAdminApi('/admin/api/cms/service-categories');
+            const payload = await callAdminApi(adminApi('cms/service-categories'));
             const items = payload.data?.items ?? [];
             setServiceCategoryItems(items);
 
@@ -1549,7 +1549,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         try {
             await callAdminApi(
-                isUpdate ? `/admin/api/cms/service-categories/${editingServiceCategoryRecord.id}` : '/admin/api/cms/service-categories',
+                isUpdate ? adminApi(`cms/service-categories/${editingServiceCategoryRecord.id}`) : adminApi('cms/service-categories'),
                 {
                     method: isUpdate ? 'PUT' : 'POST',
                     body: JSON.stringify(payload),
@@ -1573,7 +1573,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         const didSave = editingServiceCategoryRecord?.id
             ? await runAdminAction(
-                () => callAdminApi(`/admin/api/cms/service-categories/${editingServiceCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+                () => callAdminApi(adminApi(`cms/service-categories/${editingServiceCategoryRecord.id}`), { method: 'PUT', body: JSON.stringify(payload) }),
                 'Đã cập nhật danh mục dịch vụ.',
                 async () => {
                     await loadServiceCategoryItems();
@@ -1581,7 +1581,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 },
             )
             : await runAdminAction(
-                () => callAdminApi('/admin/api/cms/service-categories', { method: 'POST', body: JSON.stringify(payload) }),
+                () => callAdminApi(adminApi('cms/service-categories'), { method: 'POST', body: JSON.stringify(payload) }),
                 'Đã tạo danh mục dịch vụ.',
                 async () => {
                     await loadServiceCategoryItems();
@@ -1604,7 +1604,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             cancelText: 'Hủy',
             onOk: async () => {
                 await runAdminAction(
-                    () => callAdminApi(`/admin/api/cms/service-categories/${record.id}`, { method: 'DELETE' }),
+                    () => callAdminApi(adminApi(`cms/service-categories/${record.id}`), { method: 'DELETE' }),
                     'Đã xóa danh mục dịch vụ.',
                     async () => {
                         await loadServiceCategoryItems();
@@ -1621,7 +1621,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         try {
-            const payload = await callAdminApi('/admin/api/cms/project-categories');
+            const payload = await callAdminApi(adminApi('cms/project-categories'));
             const items = payload.data?.items ?? [];
             setProjectCategoryItems(items);
 
@@ -1670,7 +1670,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         try {
             await callAdminApi(
-                isUpdate ? `/admin/api/cms/project-categories/${editingProjectCategoryRecord.id}` : '/admin/api/cms/project-categories',
+                isUpdate ? adminApi(`cms/project-categories/${editingProjectCategoryRecord.id}`) : adminApi('cms/project-categories'),
                 {
                     method: isUpdate ? 'PUT' : 'POST',
                     body: JSON.stringify(payload),
@@ -1694,7 +1694,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         const didSave = editingProjectCategoryRecord?.id
             ? await runAdminAction(
-                () => callAdminApi(`/admin/api/cms/project-categories/${editingProjectCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+                () => callAdminApi(adminApi(`cms/project-categories/${editingProjectCategoryRecord.id}`), { method: 'PUT', body: JSON.stringify(payload) }),
                 'Đã cập nhật danh mục dự án.',
                 async () => {
                     await loadProjectCategoryItems();
@@ -1702,7 +1702,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 },
             )
             : await runAdminAction(
-                () => callAdminApi('/admin/api/cms/project-categories', { method: 'POST', body: JSON.stringify(payload) }),
+                () => callAdminApi(adminApi('cms/project-categories'), { method: 'POST', body: JSON.stringify(payload) }),
                 'Đã tạo danh mục dự án.',
                 async () => {
                     await loadProjectCategoryItems();
@@ -1725,7 +1725,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             cancelText: 'Hủy',
             onOk: async () => {
                 await runAdminAction(
-                    () => callAdminApi(`/admin/api/cms/project-categories/${record.id}`, { method: 'DELETE' }),
+                    () => callAdminApi(adminApi(`cms/project-categories/${record.id}`), { method: 'DELETE' }),
                     'Đã xóa danh mục dự án.',
                     async () => {
                         await loadProjectCategoryItems();
@@ -1742,7 +1742,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         try {
-            const payload = await callAdminApi('/admin/api/cms/product-categories');
+            const payload = await callAdminApi(adminApi('cms/product-categories'));
             const items = payload.data?.items ?? [];
             setProductCategoryItems(items);
 
@@ -1791,7 +1791,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         try {
             await callAdminApi(
-                isUpdate ? `/admin/api/cms/product-categories/${editingProductCategoryRecord.id}` : '/admin/api/cms/product-categories',
+                isUpdate ? adminApi(`cms/product-categories/${editingProductCategoryRecord.id}`) : adminApi('cms/product-categories'),
                 {
                     method: isUpdate ? 'PUT' : 'POST',
                     body: JSON.stringify(payload),
@@ -1815,14 +1815,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         const didSave = editingProductCategoryRecord?.id
             ? await runAdminAction(
-                () => callAdminApi(`/admin/api/cms/product-categories/${editingProductCategoryRecord.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+                () => callAdminApi(adminApi(`cms/product-categories/${editingProductCategoryRecord.id}`), { method: 'PUT', body: JSON.stringify(payload) }),
                 'Đã cập nhật danh mục sản phẩm.',
                 async () => {
                     await loadProductCategoryItems({ silent: true });
                 },
             )
             : await runAdminAction(
-                () => callAdminApi('/admin/api/cms/product-categories', { method: 'POST', body: JSON.stringify(payload) }),
+                () => callAdminApi(adminApi('cms/product-categories'), { method: 'POST', body: JSON.stringify(payload) }),
                 'Đã tạo danh mục sản phẩm.',
                 async () => {
                     await loadProductCategoryItems({ silent: true });
@@ -1876,7 +1876,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     continue;
                 }
 
-                await callAdminApi(`/admin/api/cms/product-categories/${category.id}`, {
+                await callAdminApi(adminApi(`cms/product-categories/${category.id}`), {
                     method: 'PUT',
                     body: JSON.stringify(buildProductCategoryPayload(category, category.sort_order)),
                 });
@@ -1901,7 +1901,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             cancelText: 'Hủy',
             onOk: async () => {
                 await runAdminAction(
-                    () => callAdminApi(`/admin/api/cms/product-categories/${record.id}`, { method: 'DELETE' }),
+                    () => callAdminApi(adminApi(`cms/product-categories/${record.id}`), { method: 'DELETE' }),
                     'Đã xóa danh mục sản phẩm.',
                     async () => {
                         await loadProductCategoryItems({ silent: true });
@@ -2202,7 +2202,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const currentContentBulkState = () => {
         if (sectionKey === 'cms-posts') {
             return {
-                endpoint: '/admin/api/cms/posts',
+                endpoint: adminApi('cms/posts'),
                 ids: selectedPostRowKeys,
                 label: 'bài viết',
                 categoryField: 'category_id',
@@ -2212,7 +2212,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-projects') {
             return {
-                endpoint: '/admin/api/cms/projects',
+                endpoint: adminApi('cms/projects'),
                 ids: selectedProjectRowKeys,
                 label: 'dự án',
                 categoryField: 'cms_project_category_id',
@@ -2332,7 +2332,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const currentFeaturedBulkState = () => {
         if (sectionKey === 'cms-team-members') {
             return {
-                endpoint: '/admin/api/cms/team-members',
+                endpoint: adminApi('cms/team-members'),
                 ids: selectedTeamMemberRowKeys,
                 label: 'nhân sự',
                 clearSelection: () => setSelectedTeamMemberRowKeys([]),
@@ -2341,7 +2341,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-partners') {
             return {
-                endpoint: '/admin/api/cms/partners',
+                endpoint: adminApi('cms/partners'),
                 ids: selectedPartnerRowKeys,
                 label: 'đối tác',
                 clearSelection: () => setSelectedPartnerRowKeys([]),
@@ -2350,7 +2350,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-testimonials') {
             return {
-                endpoint: '/admin/api/cms/testimonials',
+                endpoint: adminApi('cms/testimonials'),
                 ids: selectedTestimonialRowKeys,
                 label: 'nhận xét',
                 clearSelection: () => setSelectedTestimonialRowKeys([]),
@@ -2548,7 +2548,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         });
 
         if (!order.is_read) {
-            await callAdminApi(`/admin/api/cms/orders/${order.id}/read`, { method: 'PUT' });
+            await callAdminApi(adminApi(`cms/orders/${order.id}/read`), { method: 'PUT' });
             await reload();
         }
     };
@@ -2558,7 +2558,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         const didUpdate = await runAdminAction(async () => {
             for (const order of orders) {
-                await callAdminApi(`/admin/api/cms/orders/${order.id}/read`, { method: 'PUT' });
+                await callAdminApi(adminApi(`cms/orders/${order.id}/read`), { method: 'PUT' });
             }
         }, `Đã đánh dấu đã xem ${orders.length} đơn hàng.`, reload);
 
@@ -2582,7 +2582,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         const didUpdate = await runAdminAction(async () => {
             for (const order of orders) {
-                await callAdminApi(`/admin/api/cms/orders/${order.id}`, {
+                await callAdminApi(adminApi(`cms/orders/${order.id}`), {
                     method: 'PUT',
                     body: JSON.stringify({ status: values.status }),
                 });
@@ -2601,7 +2601,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         const didDelete = await runAdminAction(async () => {
             for (const id of ids) {
-                await callAdminApi(`/admin/api/cms/orders/${id}`, { method: 'DELETE' });
+                await callAdminApi(adminApi(`cms/orders/${id}`), { method: 'DELETE' });
             }
         }, `Đã xóa ${ids.length} đơn hàng.`, reload);
 
@@ -2668,7 +2668,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     return Promise.reject();
                 }
 
-                const created = await callAdminApi('/admin/api/cms/media/folders', {
+                const created = await callAdminApi(adminApi('cms/media/folders'), {
                     method: 'POST',
                     body: JSON.stringify({ name }),
                 });
@@ -2707,7 +2707,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     return Promise.reject();
                 }
 
-                const updated = await callAdminApi(`/admin/api/cms/media/folders/${folder.id}`, {
+                const updated = await callAdminApi(adminApi(`cms/media/folders/${folder.id}`), {
                     method: 'PUT',
                     body: JSON.stringify({ name }),
                 });
@@ -2732,7 +2732,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             okButtonProps: { danger: true },
             cancelText: 'Hủy',
             onOk: async () => {
-                const deleted = await callAdminApi(`/admin/api/cms/media/folders/${folder.id}`, {
+                const deleted = await callAdminApi(adminApi(`cms/media/folders/${folder.id}`), {
                     method: 'DELETE',
                 });
 
@@ -2767,7 +2767,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 formData.append('folder_path', mediaUpload.folder_path);
             }
 
-            const payload = await callAdminApi('/admin/api/cms/media', { method: 'POST', body: formData });
+            const payload = await callAdminApi(adminApi('cms/media'), { method: 'POST', body: formData });
             if (payload?.data?.id) {
                 uploadedCount++;
             }
@@ -2790,7 +2790,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         const didSave = await runAdminAction(
-            () => callAdminApi(`/admin/api/cms/media/${record.id}`, {
+            () => callAdminApi(adminApi(`cms/media/${record.id}`), {
                 method: 'PUT',
                 body: JSON.stringify({
                     title: record.title || `Media #${record.id}`,
@@ -2946,7 +2946,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         const values = await mediaEditForm.validateFields();
         const didSave = await runAdminAction(
-            () => callAdminApi(`/admin/api/cms/media/${editingMediaRecord.id}`, {
+            () => callAdminApi(adminApi(`cms/media/${editingMediaRecord.id}`), {
                 method: 'PUT',
                 body: JSON.stringify({
                     title: values.title,

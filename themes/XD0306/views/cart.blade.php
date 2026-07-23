@@ -19,31 +19,7 @@
         return number_format((float) $value, 0, ',', '.').'đ';
     };
 
-    $localizeMenuUrl = function (?string $href): string {
-        $href = trim((string) $href);
-
-        if ($href === '' || $href === '#' || str_starts_with($href, '#') || preg_match('/^(https?:)?\/\//i', $href) || preg_match('/^(mailto|tel):/i', $href)) {
-            return $href !== '' ? $href : '#';
-        }
-
-        $parts = parse_url($href) ?: [];
-        $path = trim((string) ($parts['path'] ?? ''), '/');
-        $query = isset($parts['query']) && $parts['query'] !== '' ? '?'.$parts['query'] : '';
-        $fragment = isset($parts['fragment']) && $parts['fragment'] !== '' ? '#'.$parts['fragment'] : '';
-
-        if ($path === '') {
-            return route('site.home').$query.$fragment;
-        }
-
-        $segments = explode('/', $path);
-        $knownLocales = \App\Support\FrontendLocalization::knownLocaleCodes();
-
-        if (! in_array($segments[0] ?? '', $knownLocales, true)) {
-            array_unshift($segments, app()->getLocale());
-        }
-
-        return url('/'.implode('/', $segments)).$query.$fragment;
-    };
+    $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
 
     $normalizeNavItem = function (array $item) use (&$normalizeNavItem, $localizeMenuUrl): array {
         $href = (string) ($item['url'] ?? $item['href'] ?? '#');
