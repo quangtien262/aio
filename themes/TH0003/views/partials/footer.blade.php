@@ -8,7 +8,7 @@
     $footerCompanyName = $companyTitle ?? data_get($siteProfile ?? null, 'branding.company_name', data_get($footerBranding, 'company_name', 'TH0003 Fashion'));
     $footerHotline = $contactHotline ?? data_get($footerBranding, 'support_hotline', '1900 6760 / 0354.466.968');
     $footerEmail = $contactEmail ?? data_get($footerBranding, 'support_email', 'cs@TH0003.demo');
-    $staticPageUrl = fn (string $slug): string => url('/'.app()->getLocale().'/'.$slug);
+    $staticPageUrl = fn (string $slug): string => route('site.pages.show', ['slug' => $slug]);
 
     if ($footerColumnsData === []) {
         $footerColumnsData = [

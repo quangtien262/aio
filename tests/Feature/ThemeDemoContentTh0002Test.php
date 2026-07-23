@@ -31,7 +31,7 @@ class ThemeDemoContentTh0002Test extends TestCase
         $this->assertStringContainsString('quy trình nhận techpack và kiểm soát mẫu trước sản xuất', (string) $oemProduct->detail_content);
         $this->assertStringContainsString('checklist size run, brief in thêu và mốc duyệt mẫu trước khi vào chuyền', (string) $lookbookPost->body);
 
-        $this->get($this->storefrontPath('demo-th0002-gioi-thieu'))
+        $this->get($this->storefrontRoute('site.pages.show', ['slug' => 'demo-th0002-gioi-thieu']))
             ->assertOk()
             ->assertSee('đồng phục doanh nghiệp, local brand capsule và line OEM / ODM')
             ->assertSee('Về xưởng may');

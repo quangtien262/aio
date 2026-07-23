@@ -17,7 +17,7 @@
                     <label class="xd-editor-field"><span>NhÃƒÂ£n phÃ¡Â»Â¥</span><input data-xd-field="subtitle"></label>
                     <label class="xd-editor-field is-wide"><span>MÃƒÂ´ tÃ¡ÂºÂ£</span><textarea data-xd-field="description"></textarea></label>
                     <label class="xd-editor-field"><span>NÃƒÂºt CTA</span><input data-xd-field="button_label"></label>
-                    <label class="xd-editor-field"><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/gioi-thieu hoÃ¡ÂºÂ·c https://..."></label>
+                    <label class="xd-editor-field"><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/p/gioi-thieu hoÃ¡ÂºÂ·c https://..."></label>
                     <label class="xd-editor-field"><span>HiÃ¡Â»Æ’n thÃ¡Â»â€¹</span><input data-xd-field="is_visible" type="checkbox"></label>
                     <section class="xd-editor-source" data-xd-contact-editor hidden>
                         <div>

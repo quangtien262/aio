@@ -25,7 +25,7 @@ class Xd0302AboutTest extends TestCase
                 'description' => 'Nội dung mặc định',
                 'button_label' => 'Chi tiết',
             ],
-            'settings' => ['years' => 29, 'cta_url' => '/gioi-thieu'],
+            'settings' => ['years' => 29, 'cta_url' => '/p/gioi-thieu'],
             'media' => [
                 'image' => 'https://example.com/about-composite.jpg',
                 'image_secondary' => 'https://example.com/old-secondary.jpg',

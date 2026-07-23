@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsMedia;
 use App\Models\CmsPage;
+use App\Support\FrontendLocalization;
+use App\Support\FrontendRouteUrl;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
 
@@ -30,8 +32,15 @@ class PageIndexController
                 'featured_media_id' => $page->featured_media_id,
                 'featured_media_url' => $page->featuredMedia?->file_url,
                 'publish_at' => $page->publish_at?->toAtomString(),
-                'public_url' => $page->slug === 'home' ? url('/') : url('/'.$page->slug),
-                'preview_url' => url('/preview/pages/'.$page->id),
+                'public_url' => $page->slug === 'home'
+                    ? route('site.home', ['locale' => FrontendLocalization::defaultLocale()])
+                    : FrontendRouteUrl::page($page->slug, FrontendLocalization::defaultLocale()),
+                'preview_url' => route('site.preview.pages', [
+                    'locale' => FrontendLocalization::defaultLocale(),
+                    'previewSegment' => FrontendLocalization::segment('preview'),
+                    'pagesSegment' => FrontendLocalization::segment('pages'),
+                    'page' => $page->id,
+                ]),
             ])
             ->values()
             ->all();

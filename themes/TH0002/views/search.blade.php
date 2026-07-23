@@ -352,7 +352,7 @@
                             <h4>@themeT('search.discover', 'Khám phá')</h4>
                             <div class="th-footer-links">
                                 <a href="{{ route('site.blog.index') }}">{{ $t('menu.default.blog', 'Tin tức') }}</a>
-                                <a href="{{ url('/'.app()->getLocale().'/gioi-thieu') }}">{{ $t('menu.default.about', 'Giới thiệu') }}</a>
+                                <a href="{{ route('site.pages.show', ['slug' => 'gioi-thieu']) }}">{{ $t('menu.default.about', 'Giới thiệu') }}</a>
                                 <a href="{{ route('site.contact') }}">{{ $t('menu.default.contact', 'Liên hệ') }}</a>
                             </div>
                         </div>

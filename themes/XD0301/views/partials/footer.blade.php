@@ -61,7 +61,7 @@
         $footerMenuItems = collect([
             ['label' => 'Trang chủ', 'href' => route('site.home'), 'target' => '_self'],
             ['label' => 'Tin tức', 'href' => route('site.blog.index'), 'target' => '_self'],
-            ['label' => 'Giới thiệu', 'href' => url('/'.app()->getLocale().'/gioi-thieu'), 'target' => '_self'],
+            ['label' => 'Giới thiệu', 'href' => route('site.pages.show', ['slug' => 'gioi-thieu']), 'target' => '_self'],
             ['label' => 'Liên hệ', 'href' => route('site.contact'), 'target' => '_self'],
         ]);
     }

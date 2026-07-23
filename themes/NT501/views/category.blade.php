@@ -78,7 +78,7 @@
         ->values();
 
     $homeUrl = route('site.home');
-    $aboutUrl = url('/'.app()->getLocale().'/gioi-thieu');
+    $aboutUrl = route('site.pages.show', ['slug' => 'gioi-thieu']);
     $contactUrl = route('site.contact');
     if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chÃ¡Â»Â§', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([

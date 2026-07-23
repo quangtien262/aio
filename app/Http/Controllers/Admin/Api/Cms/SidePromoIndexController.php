@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 use App\Models\CatalogCategory;
 use App\Models\CmsCategory;
 use App\Models\CmsPage;
+use App\Support\FrontendRouteUrl;
 use App\Models\CmsSidePromo;
 use Illuminate\Http\JsonResponse;
 
@@ -42,7 +43,7 @@ class SidePromoIndexController
                         ->map(fn (CmsPage $page): array => [
                             'label' => $page->title,
                             'value' => (string) $page->id,
-                            'url' => $page->slug === 'home' ? '/' : '/'.$page->slug,
+                            'url' => $page->slug === 'home' ? '/' : FrontendRouteUrl::pagePath($page->slug),
                         ])
                         ->values()
                         ->all(),

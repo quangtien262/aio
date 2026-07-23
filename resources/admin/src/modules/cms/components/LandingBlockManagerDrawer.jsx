@@ -21,6 +21,7 @@ import Tag from 'antd/es/tag';
 import Tabs from 'antd/es/tabs';
 import Typography from 'antd/es/typography';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
+import { STOREFRONT_ROUTES } from '../../../shared/config/routes';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -727,7 +728,7 @@ export default function LandingBlockManagerDrawer({
                             </div>
                         ) : null}
                         <Form.Item name={['settings', 'cta_url']} label="Link CTA">
-                            <Input placeholder="/gioi-thieu hoac https://..." />
+                            <Input placeholder={`${STOREFRONT_ROUTES.page('gioi-thieu')} hoac https://...`} />
                         </Form.Item>
                         {['about_experience', 'landing_contact'].includes(editingBlock.block_type) ? (
                             <Form.Item

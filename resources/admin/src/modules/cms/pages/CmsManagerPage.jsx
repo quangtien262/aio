@@ -37,6 +37,7 @@ import Typography from 'antd/es/typography';
 import Upload from 'antd/es/upload';
 import dayjs from 'dayjs';
 import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
+import { ADMIN_API_ROUTES } from '../../../shared/config/routes';
 
 const CmsPageFormModal = lazy(() => import('../components/CmsPageFormModal'));
 const CmsPartnerFormModal = lazy(() => import('../components/CmsPartnerFormModal'));
@@ -170,7 +171,7 @@ const sectionConfigMap = {
     'cms-pages': {
         title: 'Pages',
         description: 'Quản lý page công khai, SEO field cơ bản và preview unpublished.',
-        endpoint: '/admin/api/cms/pages',
+        endpoint: ADMIN_API_ROUTES.cms.pages.collection,
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
         permissionUpdate: 'cms.update',
@@ -1980,7 +1981,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         const ids = [...selectedPageRowKeys];
 
         const didDelete = await runAdminAction(
-            () => callAdminApi('/admin/api/cms/pages/bulk', {
+            () => callAdminApi(ADMIN_API_ROUTES.cms.pages.bulk, {
                 method: 'DELETE',
                 body: JSON.stringify({ ids }),
             }),

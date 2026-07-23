@@ -397,8 +397,10 @@ class Dn302ThemeTest extends TestCase
             'publish_at' => now(),
         ]);
 
-        $this->get('/vi/'.$page->slug)
+        $this->get(route('site.pages.show', ['locale' => 'vi', 'slug' => $page->slug]))
             ->assertOk()
+            ->assertSee('data-dn-page-detail', false)
+            ->assertSee('data-dn-page-content', false)
             ->assertSee('Giới thiệu lấy từ database')
             ->assertSee('Mô tả page được lưu và quản lý trong CMS.')
             ->assertSee('Nội dung chi tiết của page trong database')
@@ -406,6 +408,8 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('<meta name="description" content="Mô tả SEO của page DN302">', false)
             ->assertSee('<meta name="keywords" content="noi that, cua kinh, DN302">', false)
             ->assertDontSee('Janelas Windows &amp; Doors', false);
+
+        $this->get('/vi/'.$page->slug)->assertNotFound();
     }
 
     public function test_dn302_hero_becomes_full_width_when_shared_copy_and_cta_are_empty(): void

@@ -8,6 +8,7 @@ use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
+use App\Support\FrontendRouteUrl;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
 use App\Models\CmsProjectCategory;
@@ -40,7 +41,7 @@ class MenuIndexController
                         ->map(fn (CmsPage $page): array => [
                             'label' => $page->title,
                             'value' => (string) $page->id,
-                            'url' => $page->slug === 'home' ? '/' : '/'.$page->slug,
+                            'url' => $page->slug === 'home' ? '/' : FrontendRouteUrl::pagePath($page->slug),
                         ])
                         ->values()
                         ->all(),

@@ -1,4 +1,4 @@
-﻿@php
+@php
     $shell = $themeShellData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
@@ -78,7 +78,7 @@
         ->values();
 
     $homeUrl = route('site.home');
-    $aboutUrl = url('/'.app()->getLocale().'/gioi-thieu');
+    $aboutUrl = route('site.pages.show', ['slug' => 'gioi-thieu']);
     $contactUrl = route('site.contact');
     if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([

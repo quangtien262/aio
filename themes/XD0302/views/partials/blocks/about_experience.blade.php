@@ -1,5 +1,5 @@
 @php
-    $aboutUrl = $localizeMenuUrl($settings['cta_url'] ?? '/gioi-thieu');
+    $aboutUrl = $localizeMenuUrl($settings['cta_url'] ?? \App\Support\FrontendRouteUrl::pagePath('gioi-thieu'));
     $aboutImage = trim((string) ($media['image'] ?? ''));
     $aboutTabs = collect(data_get($content, 'tabs', []))
         ->map(function ($tab) use ($data) {

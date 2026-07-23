@@ -1,4 +1,4 @@
-﻿    @if ($canEditLanding)
+    @if ($canEditLanding)
         <div class="xd-editor" data-xd-editor hidden>
             <form class="xd-editor-card" data-xd-editor-form>
                 <div class="xd-editor-head"><h3>Sá»­a khá»‘i landing</h3><button type="button" class="xd-editor-close" data-xd-editor-close>&times;</button></div>
@@ -17,7 +17,7 @@
                     <label class="xd-editor-field"><span>NhÃ£n phá»¥</span><input data-xd-field="subtitle"></label>
                     <label class="xd-editor-field is-wide"><span>MÃ´ táº£</span><textarea data-xd-field="description"></textarea></label>
                     <label class="xd-editor-field"><span>NÃºt CTA</span><input data-xd-field="button_label"></label>
-                    <label class="xd-editor-field"><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/gioi-thieu hoáº·c https://..."></label>
+                    <label class="xd-editor-field"><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/p/gioi-thieu hoáº·c https://..."></label>
                     <label class="xd-editor-field"><span>Hiá»ƒn thá»‹</span><input data-xd-field="is_visible" type="checkbox"></label>
                     <section class="xd-editor-source" data-xd-contact-editor hidden>
                         <div>

@@ -93,7 +93,7 @@ class ThemeContentTranslationTest extends TestCase
             'value' => $categoryName,
         ]);
 
-        $this->get('/en/'.$page->slug)
+        $this->get(route('site.pages.show', ['locale' => 'en', 'slug' => $page->slug]))
             ->assertOk()
             ->assertSee($pageTitle);
 

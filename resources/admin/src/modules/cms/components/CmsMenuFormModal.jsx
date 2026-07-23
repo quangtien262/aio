@@ -26,6 +26,7 @@ import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Tree from 'antd/es/tree';
 import Typography from 'antd/es/typography';
+import { STOREFRONT_ROUTES } from '../../../shared/config/routes';
 
 export const emptyCmsMenuForm = {
     id: null,
@@ -963,7 +964,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
 
                     {itemLinkType === 'custom' ? (
                         <Form.Item name="custom_url" label="URL" rules={[{ required: true, message: 'Nhập URL' }]}>
-                            <Input placeholder="/gioi-thieu hoặc https://domain.com" />
+                            <Input placeholder={`${STOREFRONT_ROUTES.page('gioi-thieu')} hoặc https://domain.com`} />
                         </Form.Item>
                     ) : isSpecialLinkType ? null : (
                         <Form.Item name="link_value" label="URL" rules={[{ required: true, message: 'Chọn URL' }]}>

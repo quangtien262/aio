@@ -26,6 +26,7 @@ use App\Models\Order;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Support\FrontendLocalization;
+use App\Support\FrontendRouteUrl;
 use App\Support\BusinessContentTranslationService;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\OrderConfirmationSender;
@@ -1213,7 +1214,7 @@ class CmsSiteController
         }
 
         if ($contentType === 'page' && ! array_key_exists('latestPosts', $extra)) {
-            $extra['latestPosts'] = CmsPost::query()->where('status', 'published')->latest('publish_at')->take(3)->get()
+            $extra['latestPosts'] = CmsPost::query()->with('featuredMedia')->where('status', 'published')->latest('publish_at')->take(3)->get()
                 ->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
         }
 
@@ -1885,7 +1886,7 @@ class CmsSiteController
             return [
                 ['label' => 'Dịch vụ', 'url' => route('site.services.index'), 'target' => '_self'],
                 ['label' => 'Tin tức', 'url' => route('site.blog.index'), 'target' => '_self'],
-                ['label' => 'Giới thiệu', 'url' => url('/'.$this->currentLocale().'/gioi-thieu'), 'target' => '_self'],
+                ['label' => 'Giới thiệu', 'url' => FrontendRouteUrl::page('gioi-thieu', $this->currentLocale()), 'target' => '_self'],
                 ['label' => 'Liên hệ', 'url' => route('site.contact'), 'target' => '_self'],
             ];
         }
@@ -2890,7 +2891,7 @@ class CmsSiteController
             ->orderBy('id')
             ->value('slug') ?: $normalizedSlug;
 
-        return url('/'.$this->currentLocale().'/'.$resolvedSlug);
+        return FrontendRouteUrl::page($resolvedSlug, $this->currentLocale());
     }
 
     private function hasMissingCategorySlug(string $url, array $validSlugs): bool

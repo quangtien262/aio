@@ -20,7 +20,7 @@
                     <label class="xd-editor-field"><span>Nhãn phụ</span><input data-xd-field="subtitle"></label>
                     <label class="xd-editor-field is-wide"><span>Mô tả</span><textarea data-xd-field="description"></textarea></label>
                     <label class="xd-editor-field" data-xd-block-cta><span>Nút CTA</span><input data-xd-field="button_label"></label>
-                    <label class="xd-editor-field" data-xd-block-cta><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/gioi-thieu hoặc https://..."></label>
+                    <label class="xd-editor-field" data-xd-block-cta><span>Link CTA</span><input data-xd-field="cta_url" placeholder="/p/gioi-thieu hoặc https://..."></label>
                     <label class="xd-editor-field xd-editor-field--visibility">
                         <span>Trạng thái</span>
                         <span class="xd-editor-switch"><input data-xd-field="is_visible" type="checkbox"><i aria-hidden="true"></i><b>Hiển thị khối này</b></span>

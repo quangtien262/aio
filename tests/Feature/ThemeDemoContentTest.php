@@ -267,7 +267,7 @@ class ThemeDemoContentTest extends TestCase
         $menu->update([
             'items' => [
                 ['label' => 'Tin tức', 'url' => '/c', 'target' => '_self'],
-                ['label' => 'Giới thiệu', 'url' => '/gioi-thieu', 'target' => '_self'],
+                ['label' => 'Giới thiệu', 'url' => '/p/gioi-thieu', 'target' => '_self'],
                 ['label' => 'Liên hệ', 'url' => '/contact', 'target' => '_self'],
                 ['label' => 'Test', 'url' => '/test', 'target' => '_self'],
             ],
@@ -368,7 +368,7 @@ class ThemeDemoContentTest extends TestCase
             ->assertSee('Lọc tin')
             ->assertSee('Tất cả chuyên mục');
 
-        $this->get($this->storefrontPath($aboutPage->slug))
+        $this->get($this->storefrontRoute('site.pages.show', ['slug' => $aboutPage->slug]))
             ->assertOk()
             ->assertSee('Giới thiệu')
             ->assertDontSee('Hồ sơ vận hành')

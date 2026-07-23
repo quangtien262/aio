@@ -21,6 +21,7 @@ use App\Models\LandingPageData;
 use App\Models\SiteBanner;
 use App\Models\ThemeTranslation;
 use App\Support\FrontendLocalization;
+use App\Support\FrontendRouteUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
@@ -4746,7 +4747,7 @@ class LandingPageBuilder
                 'description' => 'Giới thiệu năng lực, kinh nghiệm và định hướng doanh nghiệp.',
                 'preview_image' => '/theme-previews/XD0302/about-experience.png',
                 'anchor_id' => 'gioi-thieu',
-                'settings' => ['cta_url' => '/gioi-thieu'],
+                'settings' => ['cta_url' => FrontendRouteUrl::pagePath('gioi-thieu')],
                 'media' => [],
                 'data' => [
                     'vi' => ['title' => 'Chúng tôi đang phát triển các giải pháp năng lượng mặt trời', 'subtitle' => 'Giới thiệu của chúng tôi', 'description' => 'Giải pháp năng lượng xanh giúp doanh nghiệp chủ động chi phí và hướng tới tương lai bền vững.', 'button_label' => 'Về chúng tôi', 'content' => ['tabs' => [
@@ -4968,7 +4969,7 @@ class LandingPageBuilder
                 'preview_image' => '/theme-previews/XD0301/about-experience.png',
                 'anchor_id' => 'gioi-thieu',
                 'media' => ['image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1000&q=85'],
-                'settings' => ['years' => 10, 'cta_url' => '/gioi-thieu'],
+                'settings' => ['years' => 10, 'cta_url' => FrontendRouteUrl::pagePath('gioi-thieu')],
                 'data' => [
                     'vi' => [
                         'title' => 'Thiết kế và thi công Nhà ở, Tòa nhà văn phòng.',

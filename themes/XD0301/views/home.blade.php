@@ -1,4 +1,4 @@
-﻿@php
+@php
     $blocks = collect($landingBlocks ?? [])->values();
 
     if ($blocks->isEmpty()) {
@@ -8,7 +8,7 @@
                 ['kicker' => 'Commercial', 'title' => 'Thi công không gian kinh doanh', 'summary' => 'Đội ngũ kỹ sư và kiến trúc sư phối hợp để bàn giao showroom, văn phòng, khách sạn đúng chuẩn vận hành.', 'image' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1920&q=85'],
                 ['kicker' => 'Planning', 'title' => 'Quản lý dự án minh bạch', 'summary' => 'Quy trình báo cáo theo mốc, nghiệm thu từng hạng mục và tối ưu chi phí ngay từ giai đoạn thiết kế.', 'image' => 'https://images.unsplash.com/photo-1485083269755-a7b559a4fe5e?auto=format&fit=crop&w=1920&q=85'],
             ]]]],
-            ['id' => null, 'block_type' => 'about_experience', 'anchor_id' => 'gioi-thieu', 'is_visible' => true, 'settings' => ['years' => 10, 'cta_url' => '/gioi-thieu'], 'media' => ['image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1000&q=85'], 'data' => ['subtitle' => 'Giới thiệu', 'title' => 'Thiết kế và thi công Nhà ở, Tòa nhà văn phòng.', 'description' => 'ARKIT là công ty chuyên về thiết kế và thi công. Được thành lập và phát triển bởi các kiến trúc sư, kỹ sư nhiều năm kinh nghiệm.', 'button_label' => 'Tìm hiểu thêm', 'content' => []]],
+            ['id' => null, 'block_type' => 'about_experience', 'anchor_id' => 'gioi-thieu', 'is_visible' => true, 'settings' => ['years' => 10, 'cta_url' => \App\Support\FrontendRouteUrl::pagePath('gioi-thieu')], 'media' => ['image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1000&q=85'], 'data' => ['subtitle' => 'Giới thiệu', 'title' => 'Thiết kế và thi công Nhà ở, Tòa nhà văn phòng.', 'description' => 'ARKIT là công ty chuyên về thiết kế và thi công. Được thành lập và phát triển bởi các kiến trúc sư, kỹ sư nhiều năm kinh nghiệm.', 'button_label' => 'Tìm hiểu thêm', 'content' => []]],
         ]);
     }
 

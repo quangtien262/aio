@@ -6,6 +6,7 @@ use App\Models\CatalogCategory;
 use App\Models\CmsCategory;
 use App\Models\CmsFeaturedCategory;
 use App\Models\CmsPage;
+use App\Support\FrontendRouteUrl;
 use Illuminate\Http\JsonResponse;
 
 class FeaturedCategoryIndexController
@@ -42,7 +43,7 @@ class FeaturedCategoryIndexController
                         ->map(fn (CmsPage $page): array => [
                             'label' => $page->title,
                             'value' => (string) $page->id,
-                            'url' => $page->slug === 'home' ? '/' : '/'.$page->slug,
+                            'url' => $page->slug === 'home' ? '/' : FrontendRouteUrl::pagePath($page->slug),
                         ])
                         ->values()
                         ->all(),

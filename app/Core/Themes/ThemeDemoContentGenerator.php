@@ -13,6 +13,7 @@ use App\Models\CmsPost;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Models\ThemeDemoRecord;
+use App\Support\FrontendRouteUrl;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -575,7 +576,7 @@ class ThemeDemoContentGenerator
             if ($this->isGarmentFamilyPreset($preset)) {
                 return [
                     ['label' => 'Lookbook', 'url' => '/c', 'target' => '_self'],
-                    ['label' => $this->isFashionPreset($preset) ? 'Về studio' : 'Về xưởng may', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                    ['label' => $this->isFashionPreset($preset) ? 'Về studio' : 'Về xưởng may', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
                     ['label' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist' : 'Gửi yêu cầu may', 'url' => '/contact', 'target' => '_self'],
                 ];
             }
@@ -583,14 +584,14 @@ class ThemeDemoContentGenerator
             if ($this->isRealEstatePreset($preset)) {
                 return [
                     ['label' => 'Tin thị trường', 'url' => '/c', 'target' => '_self'],
-                    ['label' => 'Tổng quan dự án', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                    ['label' => 'Tổng quan dự án', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
                     ['label' => 'Nhận bảng giá', 'url' => '/contact', 'target' => '_self'],
                 ];
             }
 
             return [
                 ['label' => 'Tin tức', 'url' => '/c', 'target' => '_self'],
-                ['label' => 'Giới thiệu', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                ['label' => 'Giới thiệu', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
                 ['label' => 'Liên hệ', 'url' => '/contact', 'target' => '_self'],
             ];
         }
@@ -607,11 +608,11 @@ class ThemeDemoContentGenerator
             ],
             [
                 'label' => 'Giới thiệu',
-                'url' => '/'.$pageSlugs['about'],
+                'url' => FrontendRouteUrl::pagePath($pageSlugs['about']),
                 'target' => '_self',
                 'children' => [
-                    ['label' => 'Về nhà xe', 'summary' => 'Tổng quan thương hiệu, năng lực điều phối và đội xe hiện có.', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
-                    ['label' => 'Quy trình phục vụ', 'summary' => 'Cách tiếp nhận lịch trình, xác nhận chuyến và chăm sóc khách hàng.', 'url' => '/'.$pageSlugs['about'], 'target' => '_self'],
+                    ['label' => 'Về nhà xe', 'summary' => 'Tổng quan thương hiệu, năng lực điều phối và đội xe hiện có.', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
+                    ['label' => 'Quy trình phục vụ', 'summary' => 'Cách tiếp nhận lịch trình, xác nhận chuyến và chăm sóc khách hàng.', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
                 ],
             ],
             [

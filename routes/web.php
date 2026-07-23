@@ -82,6 +82,9 @@ Route::prefix('{locale}')
 			->name('site.theme.preset.switch');
 		Route::get('/land/{slug}', [CmsSiteController::class, 'landing'])
 			->name('site.landing.show');
+		Route::get('/p/{slug}', [CmsSiteController::class, 'page'])
+			->where('slug', '[^/]+')
+			->name('site.pages.show');
 
 		Route::middleware('auth:admin')->group(function (): void {
 			Route::get('/{previewSegment}/{pagesSegment}/{page}', [CmsSiteController::class, 'previewPage'])
@@ -161,5 +164,4 @@ Route::prefix('{locale}')
 		Route::get('/{productSegment}/{slug}', [CmsSiteController::class, 'product'])
 			->whereIn('productSegment', FrontendLocalization::segmentValues('product'))
 			->name('site.catalog.product');
-		Route::get('/{slug}', [CmsSiteController::class, 'page'])->where('slug', '[^/]+');
 	});
