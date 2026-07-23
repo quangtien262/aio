@@ -6,6 +6,7 @@ use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
 use App\Models\CatalogProduct;
+use App\Models\CatalogProductImage;
 use App\Models\CmsPost;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
@@ -120,6 +121,58 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('data-xd-edit-block', false)
             ->assertSee('data-xd-editor', false)
             ->assertSee('Sửa khối');
+    }
+
+    public function test_dn302_product_detail_renders_full_gallery_and_commerce_sections(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+
+        $product = CatalogProduct::query()->firstOrFail();
+        $product->images()->delete();
+        $product->update([
+            'image_url' => 'https://cdn.example.com/dn302-product-main.jpg',
+            'short_description' => 'Mô tả sản phẩm chuyên nghiệp từ CMS.',
+            'detail_content' => '<h2>Thông số kỹ thuật</h2><p>Nội dung chi tiết lấy từ CMS.</p>',
+            'highlights' => "Bền vững\nThiết kế theo nhu cầu",
+            'usage_terms' => "Khảo sát trước triển khai\nXác nhận báo giá",
+        ]);
+        CatalogProductImage::query()->create([
+            'catalog_product_id' => $product->id,
+            'image_url' => 'https://cdn.example.com/dn302-product-angle-1.jpg',
+            'alt_text' => 'Góc nhìn sản phẩm 1',
+            'sort_order' => 1,
+        ]);
+        CatalogProductImage::query()->create([
+            'catalog_product_id' => $product->id,
+            'image_url' => 'https://cdn.example.com/dn302-product-angle-2.jpg',
+            'alt_text' => 'Góc nhìn sản phẩm 2',
+            'sort_order' => 2,
+        ]);
+
+        CatalogProduct::query()->create([
+            'catalog_category_id' => $product->catalog_category_id,
+            'name' => 'Sản phẩm liên quan DN302',
+            'slug' => 'san-pham-lien-quan-dn302',
+            'sku' => 'DN302-RELATED-TEST',
+            'price' => 1250000,
+            'stock' => 5,
+            'image_url' => 'https://cdn.example.com/dn302-related.jpg',
+            'is_active' => true,
+        ]);
+
+        $response = $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))->assertOk();
+        $html = $response->getContent();
+
+        $response
+            ->assertSee('data-dn-product-gallery', false)
+            ->assertSee('https://cdn.example.com/dn302-product-main.jpg', false)
+            ->assertSee('https://cdn.example.com/dn302-product-angle-1.jpg', false)
+            ->assertSee('https://cdn.example.com/dn302-product-angle-2.jpg', false)
+            ->assertSee('Hình ảnh sản phẩm')
+            ->assertSee('Thông tin chi tiết')
+            ->assertSee('Điểm nổi bật')
+            ->assertSee('Sản phẩm liên quan DN302');
+        $this->assertSame(3, substr_count($html, '<button type="button" class="dn-product-thumb'));
     }
 
     public function test_dn302_post_detail_shows_ten_latest_related_posts(): void
