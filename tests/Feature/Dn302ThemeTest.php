@@ -12,6 +12,7 @@ use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
+use App\Models\CmsServiceImage;
 use App\Models\LandingPage;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
@@ -173,6 +174,61 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Điểm nổi bật')
             ->assertSee('Sản phẩm liên quan DN302');
         $this->assertSame(3, substr_count($html, '<button type="button" class="dn-product-thumb'));
+    }
+
+    public function test_dn302_service_detail_renders_gallery_process_and_related_services(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+
+        $category = CmsServiceCategory::query()->create([
+            'name' => 'Thiết kế nội thất',
+            'slug' => 'thiet-ke-noi-that-test',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+        $service = CmsService::query()->create([
+            'cms_service_category_id' => $category->id,
+            'title' => 'Thiết kế phòng ngủ test',
+            'slug' => 'thiet-ke-phong-ngu-test',
+            'status' => 'published',
+            'summary' => 'Tóm tắt dịch vụ chuyên nghiệp từ CMS.',
+            'content' => '<h2>Giải pháp triển khai</h2><p>Nội dung dịch vụ lấy từ CMS.</p>',
+            'publish_at' => now(),
+        ]);
+
+        foreach (range(1, 3) as $index) {
+            CmsServiceImage::query()->create([
+                'cms_service_id' => $service->id,
+                'image_url' => "https://cdn.example.com/dn302-service-{$index}.jpg",
+                'alt_text' => "Ảnh dịch vụ {$index}",
+                'caption' => "Góc nhìn dịch vụ {$index}",
+                'is_featured' => $index === 1,
+                'sort_order' => $index,
+            ]);
+        }
+
+        $related = CmsService::query()->create([
+            'cms_service_category_id' => $category->id,
+            'title' => 'Dịch vụ liên quan DN302',
+            'slug' => 'dich-vu-lien-quan-dn302',
+            'status' => 'published',
+            'summary' => 'Dịch vụ liên quan được lấy từ CMS.',
+            'content' => '<p>Nội dung dịch vụ liên quan.</p>',
+            'publish_at' => now()->subMinute(),
+        ]);
+        $response = $this->get(route('site.services.show', ['locale' => 'vi', 'slug' => $service->slug]))->assertOk();
+        $html = $response->getContent();
+
+        $response
+            ->assertSee('data-dn-service-gallery', false)
+            ->assertSee('https://cdn.example.com/dn302-service-1.jpg', false)
+            ->assertSee('https://cdn.example.com/dn302-service-2.jpg', false)
+            ->assertSee('https://cdn.example.com/dn302-service-3.jpg', false)
+            ->assertSee('Giới thiệu dịch vụ')
+            ->assertSee('4 bước triển khai rõ ràng')
+            ->assertSee('Thư viện dịch vụ')
+            ->assertSee($related->title);
+        $this->assertSame(3, substr_count($html, '<button type="button" class="dn-service-detail-thumb'));
     }
 
     public function test_dn302_post_detail_shows_ten_latest_related_posts(): void

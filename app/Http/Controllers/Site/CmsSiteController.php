@@ -319,7 +319,7 @@ class CmsSiteController
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
 
         $query = CmsService::query()
-            ->with(['images', 'featuredImage'])
+            ->with(['category', 'images', 'featuredImage'])
             ->where('slug', $slug)
             ->where('status', 'published');
         $this->applyWebsiteScope($query, $websiteKey);
