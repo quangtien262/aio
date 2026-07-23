@@ -229,6 +229,8 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Thư viện dịch vụ')
             ->assertSee($related->title);
         $this->assertSame(3, substr_count($html, '<button type="button" class="dn-service-detail-thumb'));
+        $this->assertStringNotContainsString('scrollIntoView', $html);
+        $this->assertStringContainsString('thumbsRail.scrollTo', $html);
     }
 
     public function test_dn302_post_detail_shows_ten_latest_related_posts(): void

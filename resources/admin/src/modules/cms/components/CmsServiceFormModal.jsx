@@ -12,7 +12,7 @@ import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
 import dayjs from 'dayjs';
-import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
+import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
 import {
     BlockQuote,
     Bold,
@@ -35,6 +35,21 @@ import {
     Underline,
 } from 'ckeditor5';
 import 'ckeditor5/ckeditor5.css';
+
+function normalizeImageUrls(value) {
+    if (Array.isArray(value)) {
+        return value.map((item) => String(item ?? '').trim()).filter(Boolean);
+    }
+
+    return String(value ?? '')
+        .split(/\r?\n/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+}
+
+function FormValueBridge() {
+    return null;
+}
 
 function toSlug(value, { trimEdges = true } = {}) {
     const slug = String(value ?? '')
@@ -81,6 +96,12 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
     const [editorContentVersion, setEditorContentVersion] = useState(0);
     const titleValue = Form.useWatch('title', form) ?? '';
     const contentValue = Form.useWatch('content', form) ?? '';
+    const galleryImages = Form.useWatch('gallery_images', form) ?? [];
+    const featuredImageUrl = Form.useWatch('featured_image_url', form) ?? '';
+    const serviceImages = useMemo(() => Array.from(new Set([
+        featuredImageUrl,
+        ...normalizeImageUrls(galleryImages),
+    ].filter(Boolean))), [featuredImageUrl, galleryImages]);
     const editorInitialData = useMemo(
         () => form.getFieldValue('content') ?? editingService?.content ?? '',
         [editingService?.id, editingService?.slug, editingService?.content, editorContentVersion, form]
@@ -102,6 +123,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             featured_image_url: editingService?.featured_image_url || featuredImage?.image_url || '',
             featured_image_alt: editingService?.featured_image_alt || featuredImage?.alt_text || '',
             featured_media_id: featuredImage?.cms_media_id || null,
+            gallery_images: (editingService?.images ?? []).map((image) => image?.image_url).filter(Boolean),
         });
         lastTitleRef.current = String(editingService?.title ?? '');
         setContentMode('editor');
@@ -117,6 +139,24 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
         form.setFieldValue('slug', toSlug(titleValue));
         lastTitleRef.current = titleValue;
     }, [form, titleValue]);
+
+    const syncServiceImages = (nextValue, nextCover = null) => {
+        const normalizedImages = Array.from(new Set(normalizeImageUrls(nextValue)));
+        const selectedCover = nextCover && normalizedImages.includes(nextCover)
+            ? nextCover
+            : normalizedImages[0] ?? '';
+        const orderedImages = selectedCover
+            ? [selectedCover, ...normalizedImages.filter((item) => item !== selectedCover)]
+            : normalizedImages;
+        const existingCover = (editingService?.images ?? []).find((image) => image?.image_url === selectedCover);
+
+        form.setFieldsValue({
+            featured_image_url: selectedCover,
+            featured_image_alt: existingCover?.alt_text || form.getFieldValue('featured_image_alt') || titleValue || '',
+            featured_media_id: existingCover?.cms_media_id || null,
+            gallery_images: orderedImages,
+        });
+    };
 
     const editorConfig = useMemo(() => ({
         licenseKey: 'GPL',
@@ -217,29 +257,30 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             featured_image_url: rawFeaturedImageUrl,
             featured_image_alt: featuredImageAlt,
             featured_media_id: featuredMediaId,
+            gallery_images: rawGalleryImages,
             ...payloadValues
         } = values;
         const featuredImageUrl = String(rawFeaturedImageUrl ?? '').trim();
         const existingImages = editingService?.images ?? [];
-        const normalizedImages = featuredImageUrl
-            ? [
-                {
-                    cms_media_id: featuredMediaId || null,
-                    image_url: featuredImageUrl,
-                    alt_text: featuredImageAlt || values.title || null,
-                    caption: null,
-                    is_featured: true,
-                    sort_order: 0,
-                },
-                ...existingImages
-                    .filter((image) => image?.image_url && image.image_url !== featuredImageUrl)
-                    .map((image, index) => ({
-                        ...image,
-                        is_featured: false,
-                        sort_order: Number(image.sort_order ?? index + 1),
-                    })),
-            ]
-            : [];
+        const submittedImageUrls = Array.from(new Set([
+            featuredImageUrl,
+            ...normalizeImageUrls(rawGalleryImages),
+        ].filter(Boolean)));
+        const normalizedImages = submittedImageUrls.map((imageUrl, index) => {
+            const existingImage = existingImages.find((image) => image?.image_url === imageUrl);
+            const selectedMedia = mediaOptions.find((media) => media?.file_url === imageUrl);
+
+            return {
+                cms_media_id: existingImage?.cms_media_id || selectedMedia?.id || (index === 0 ? featuredMediaId : null) || null,
+                image_url: imageUrl,
+                alt_text: index === 0
+                    ? (featuredImageAlt || existingImage?.alt_text || values.title || null)
+                    : (existingImage?.alt_text || values.title || null),
+                caption: existingImage?.caption || null,
+                is_featured: index === 0,
+                sort_order: index,
+            };
+        });
 
         await onSubmit?.({
             ...payloadValues,
@@ -374,22 +415,31 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                         </Form.Item>
                     </Card>
 
-                    <Card size="small" className="cms-post-form-card" title="Ảnh đại diện dịch vụ">
-                        <Form.Item name="featured_image_url" style={{ marginBottom: 0 }}>
-                            <SingleMediaPicker
+                    <Card size="small" className="cms-post-form-card" title="Thư viện ảnh dịch vụ">
+                        <Form.Item name="featured_image_url" hidden>
+                            <FormValueBridge />
+                        </Form.Item>
+                        <Form.Item name="gallery_images" hidden>
+                            <FormValueBridge />
+                        </Form.Item>
+                        <Form.Item label="Danh sách hình ảnh" style={{ marginBottom: 0 }}>
+                            <MultiMediaPicker
                                 open={open}
+                                value={serviceImages}
+                                onChange={(nextValue) => syncServiceImages(nextValue)}
+                                coverValue={featuredImageUrl}
+                                onSetCover={(nextCover) => syncServiceImages(serviceImages, nextCover)}
                                 canManage={canManage}
                                 callAdminApi={callAdminApi}
                                 mediaOptions={mediaOptions}
-                                recordTitle={titleValue || 'Service image'}
-                                previewTitle="Ảnh đại diện dịch vụ"
-                                uploadButtonLabel="Upload ảnh trực tiếp"
-                                uploadHint="Ảnh upload xong sẽ tự được gắn làm ảnh đại diện dịch vụ."
-                                libraryButtonLabel="Mở thư viện media"
-                                libraryHint="Chọn lại từ media CMS đã có sẵn."
-                                urlPlaceholder="https://example.com/service.jpg"
-                                onMediaSelect={(media) => form.setFieldValue('featured_media_id', media?.id ?? null)}
-                                urlButtonLabel="Lưu URL và gắn ảnh"
+                                recordTitle={titleValue || 'Service images'}
+                                previewTitle="Ảnh dịch vụ"
+                                uploadButtonLabel="Upload nhiều ảnh dịch vụ"
+                                uploadHint="Có thể upload nhiều ảnh. Ảnh đầu tiên sẽ là ảnh đại diện và slide đầu tiên."
+                                libraryButtonLabel="Chọn nhiều ảnh từ thư viện"
+                                libraryHint="Có thể chọn nhiều media CMS để thêm vào slide dịch vụ."
+                                urlPlaceholder={['https://cdn.example.com/service-1.jpg', 'https://cdn.example.com/service-2.jpg'].join('\n')}
+                                urlButtonLabel="Lưu URL và thêm vào slide"
                             />
                         </Form.Item>
                         <Form.Item name="featured_media_id" hidden>

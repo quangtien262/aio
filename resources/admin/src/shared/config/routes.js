@@ -12,7 +12,7 @@ export const adminApi = (path = '') => {
 export const adminPath = (path = '') => {
     const normalizedPath = normalizePath(path);
 
-    return normalizedPath ? `${ADMIN_PREFIX}/${normalizedPath}` : ADMIN_PREFIX;
+    return normalizedPath ? `${ADMIN_BASE_PATH}/${normalizedPath}` : ADMIN_BASE_PATH;
 };
 
 const resource = (path) => {
