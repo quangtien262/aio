@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
+import { useEffect, useMemo, useRef } from 'react';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
@@ -13,28 +12,8 @@ import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
 import dayjs from 'dayjs';
 import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
-import {
-    BlockQuote,
-    Bold,
-    ClassicEditor,
-    Essentials,
-    GeneralHtmlSupport,
-    Heading,
-    Image,
-    ImageCaption,
-    ImageResize,
-    ImageStyle,
-    ImageToolbar,
-    Italic,
-    Link,
-    List,
-    MediaEmbed,
-    Paragraph,
-    Table,
-    TableToolbar,
-    Underline,
-} from 'ckeditor5';
-import 'ckeditor5/ckeditor5.css';
+import RichContentEditor from '../../../shared/components/RichContentEditor';
+import { toSlug } from '../../../shared/utils/slug';
 
 function normalizeImageUrls(value) {
     if (Array.isArray(value)) {
@@ -49,20 +28,6 @@ function normalizeImageUrls(value) {
 
 function FormValueBridge() {
     return null;
-}
-
-function toSlug(value, { trimEdges = true } = {}) {
-    const slug = String(value ?? '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'd')
-        .replace(/\u0111|\u0110/g, 'd')
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-');
-
-    return trimEdges ? slug.replace(/^-+|-+$/g, '') : slug.replace(/^-+/g, '');
 }
 
 const SERVICE_ICON_OPTIONS = [
@@ -90,10 +55,7 @@ const SERVICE_ICON_OPTIONS = [
 
 export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
-    const editorInstanceRef = useRef(null);
     const lastTitleRef = useRef('');
-    const [contentMode, setContentMode] = useState('editor');
-    const [editorContentVersion, setEditorContentVersion] = useState(0);
     const titleValue = Form.useWatch('title', form) ?? '';
     const contentValue = Form.useWatch('content', form) ?? '';
     const galleryImages = Form.useWatch('gallery_images', form) ?? [];
@@ -102,15 +64,6 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
         featuredImageUrl,
         ...normalizeImageUrls(galleryImages),
     ].filter(Boolean))), [featuredImageUrl, galleryImages]);
-    const editorInitialData = useMemo(
-        () => form.getFieldValue('content') ?? editingService?.content ?? '',
-        [editingService?.id, editingService?.slug, editingService?.content, editorContentVersion, form]
-    );
-    const editorInstanceKey = useMemo(
-        () => `${editingService?.id ?? 'new'}:${editingService?.slug ?? 'blank'}:${open ? 'open' : 'closed'}:${contentMode}:${editorContentVersion}`,
-        [editingService?.id, editingService?.slug, open, contentMode, editorContentVersion]
-    );
-
     useEffect(() => {
         const featuredImage = editingService?.images?.find((image) => image?.is_featured)
             ?? editingService?.images?.[0]
@@ -126,9 +79,6 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             gallery_images: (editingService?.images ?? []).map((image) => image?.image_url).filter(Boolean),
         });
         lastTitleRef.current = String(editingService?.title ?? '');
-        setContentMode('editor');
-        setEditorContentVersion((current) => current + 1);
-        editorInstanceRef.current = null;
     }, [editingService, form]);
 
     useEffect(() => {
@@ -158,7 +108,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
         });
     };
 
-    const editorConfig = useMemo(() => ({
+    /* Shared RichContentEditor owns the CKEditor configuration.
         licenseKey: 'GPL',
         plugins: [
             Essentials,
@@ -224,19 +174,19 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                 { name: 'table', classes: true, attributes: true, styles: true },
             ],
         },
-    }), []);
+    }), []); */
 
     const handleSlugChange = (event) => {
         form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
     };
 
-    const syncCurrentEditorBodyToForm = () => {
+    /* Editor mode synchronization moved into RichContentEditor.
         const editor = editorInstanceRef.current;
 
         if (contentMode === 'editor' && editor) {
             form.setFieldValue('content', editor.getData());
         }
-    };
+    }; */
 
     const handleContentModeChange = (event) => {
         const nextMode = event.target.value;
@@ -474,6 +424,17 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                     </Card>
 
                     <Card size="small" className="cms-post-form-card cms-post-form-card-editor" title="Nội dung chi tiết">
+                        <RichContentEditor
+                            value={contentValue}
+                            onChange={(nextContent) => form.setFieldValue('content', nextContent)}
+                            disabled={!canManage}
+                            callAdminApi={callAdminApi}
+                            recordKey={editingService?.id ?? 'new'}
+                            open={open}
+                            htmlPlaceholder="<section>Nhập mã HTML chi tiết dịch vụ...</section>"
+                        />
+                        {false && (
+                        <>
                         <div className="cms-editor-upload-panel">
                             <Space wrap className="cms-editor-toolbar-row" size={12}>
                                 <Radio.Group
@@ -517,6 +478,11 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                 />
                             )}
                         </Form.Item>
+                        <Form.Item name="content" hidden>
+                            <Input.TextArea />
+                        </Form.Item>
+                        </>
+                        )}
                         <Form.Item name="content" hidden>
                             <Input.TextArea />
                         </Form.Item>

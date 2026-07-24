@@ -3,10 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import AppstoreOutlined from '@ant-design/icons/AppstoreOutlined';
 import DollarOutlined from '@ant-design/icons/DollarOutlined';
-import DownOutlined from '@ant-design/icons/DownOutlined';
 import FileTextOutlined from '@ant-design/icons/FileTextOutlined';
 import PictureOutlined from '@ant-design/icons/PictureOutlined';
-import RightOutlined from '@ant-design/icons/RightOutlined';
 import SearchOutlined from '@ant-design/icons/SearchOutlined';
 import StarOutlined from '@ant-design/icons/StarOutlined';
 import Button from 'antd/es/button';
@@ -27,6 +25,8 @@ import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
 import dayjs from 'dayjs';
 import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
+import RichContentEditor from '../../../shared/components/RichContentEditor';
+import { CollapsibleCardTitle } from '../../../shared/components/CollapsibleFormCard';
 import {
     BlockQuote,
     Bold,
@@ -166,29 +166,14 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         const collapsed = isSectionCollapsed(sectionKey);
 
         return (
-            <button
-                type="button"
-                onClick={() => toggleSection(sectionKey)}
-                style={{
-                    width: '100%',
-                    border: 0,
-                    padding: 0,
-                    background: 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                }}
-            >
-                <Space size={8}>
-                    <IconComponent style={{ color: '#1677ff' }} />
-                    <span>{title}</span>
-                    {extra}
-                </Space>
-                {collapsed ? <RightOutlined style={{ color: '#8c8c8c' }} /> : <DownOutlined style={{ color: '#8c8c8c' }} />}
-            </button>
+            <CollapsibleCardTitle
+                sectionKey={sectionKey}
+                title={title}
+                collapsed={collapsed}
+                onToggle={() => toggleSection(sectionKey)}
+                leading={<IconComponent style={{ color: '#1677ff' }} />}
+                extra={extra}
+            />
         );
     };
 
@@ -686,6 +671,17 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                     >
                         {!isSectionCollapsed('detail') ? (
                             <>
+                        <RichContentEditor
+                            value={detailContentValue}
+                            onChange={(nextContent) => form.setFieldValue('detail_content', nextContent)}
+                            disabled={!canManage}
+                            callAdminApi={callAdminApi}
+                            recordKey={editingProduct?.id ?? 'new'}
+                            open={open}
+                            htmlPlaceholder="<section>Nhập mã HTML chi tiết sản phẩm...</section>"
+                        />
+                        {false && (
+                        <>
                         <div className="cms-editor-upload-panel">
                             <Space wrap className="cms-editor-toolbar-row" size={12}>
                                 <Radio.Group
@@ -754,6 +750,11 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 />
                             )}
                         </Form.Item>
+                        <Form.Item name="detail_content" hidden>
+                            <Input />
+                        </Form.Item>
+                        </>
+                        )}
                         <Form.Item name="detail_content" hidden>
                             <Input />
                         </Form.Item>

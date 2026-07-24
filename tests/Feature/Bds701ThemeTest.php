@@ -67,6 +67,7 @@ class Bds701ThemeTest extends TestCase
         $response->assertSee('Tìm kiếm nhà đất mơ ước');
         $response->assertSee('Dự án mới nhất');
         $response->assertSee('bds701_latest_news');
+        $response->assertDontSee('class="bds-tabs"', false);
     }
 
     public function test_demo_provider_reuses_module_seeded_property_types_and_can_run_repeatedly(): void
@@ -116,7 +117,7 @@ class Bds701ThemeTest extends TestCase
             ->assertSee('alt="Delta Platinum"', false);
     }
 
-    public function test_bds701_topbar_uses_branding_contact_and_customer_account_routes(): void
+    public function test_bds701_topbar_uses_branding_contact_and_opens_the_shared_auth_modal(): void
     {
         $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('BDS701');
         $provider->generate($provider->defaultPreset());
@@ -125,7 +126,11 @@ class Bds701ThemeTest extends TestCase
             ->assertOk()
             ->assertSee('href="tel:19006750"', false)
             ->assertSee('href="mailto:hello@deltaplatinum.vn"', false)
-            ->assertSee(route('customer.auth.login', ['locale' => 'vi']), false)
-            ->assertSee(route('customer.auth.register', ['locale' => 'vi']), false);
+            ->assertSee('data-xd-auth-open="login"', false)
+            ->assertSee('data-xd-auth-open="register"', false)
+            ->assertSee('data-xd-auth-modal', false)
+            ->assertSee('action="'.route('customer.auth.store').'"', false)
+            ->assertSee('action="'.route('customer.auth.register.store').'"', false)
+            ->assertSee('name="two_factor_code"', false);
     }
 }

@@ -1,7 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import Card from 'antd/es/card';
-import Col from 'antd/es/col';
-import Row from 'antd/es/row';
+import Drawer from 'antd/es/drawer';
 import Space from 'antd/es/space';
 import Typography from 'antd/es/typography';
 
@@ -12,17 +11,12 @@ const ModuleUpgradeChangelogModal = lazy(() => import('../components/ModuleUpgra
 
 export default function ModuleStorePage({ modules, onAction, permissions }) {
     const canUpgrade = permissions?.upgrade ?? false;
-    const [selectedModuleKey, setSelectedModuleKey] = useState(modules?.[0]?.key ?? null);
+    const [selectedModuleKey, setSelectedModuleKey] = useState(null);
     const [changelogModuleKey, setChangelogModuleKey] = useState(null);
 
     useEffect(() => {
-        if (!modules?.length) {
+        if (selectedModuleKey && !modules?.some((moduleCard) => moduleCard.key === selectedModuleKey)) {
             setSelectedModuleKey(null);
-            return;
-        }
-
-        if (!modules.some((moduleCard) => moduleCard.key === selectedModuleKey)) {
-            setSelectedModuleKey(modules[0].key);
         }
     }, [modules, selectedModuleKey]);
 
@@ -37,19 +31,23 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                     Quản lý danh sách App, trạng thái cài đặt, kích hoạt, nâng cấp và nhật ký thay đổi ngay tại một nơi.
                 </Paragraph>
             </Space>
-            <Row gutter={[16, 16]}>
-                <Col xs={24} xl={15}>
-                    <Suspense fallback={<Card loading title="Danh sách App" />}>
-                        <ModuleStoreTable
-                            modules={modules}
-                            selectedModuleKey={selectedModuleKey}
-                            onSelectModule={setSelectedModuleKey}
-                            onOpenChangelog={(moduleCard) => setChangelogModuleKey(moduleCard.key)}
-                        />
-                    </Suspense>
-                </Col>
+            <Suspense fallback={<Card loading title="Danh sách App" />}>
+                <ModuleStoreTable
+                    modules={modules}
+                    onOpenDetails={(moduleCard) => setSelectedModuleKey(moduleCard.key)}
+                    onOpenChangelog={(moduleCard) => setChangelogModuleKey(moduleCard.key)}
+                />
+            </Suspense>
 
-                <Col xs={24} xl={9}>
+            <Drawer
+                open={Boolean(selectedModuleKey)}
+                onClose={() => setSelectedModuleKey(null)}
+                width="min(760px, 96vw)"
+                title={selectedModule ? `Chi tiết App: ${selectedModule.name}` : 'Chi tiết App'}
+                className="module-detail-drawer"
+                destroyOnHidden
+            >
+                {selectedModule ? (
                     <Suspense fallback={<Card loading title="Quản lý App" />}>
                         <ModuleLifecycleActionPanel
                             moduleCard={selectedModule}
@@ -58,8 +56,8 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                             onOpenChangelog={(moduleCard) => setChangelogModuleKey(moduleCard.key)}
                         />
                     </Suspense>
-                </Col>
-            </Row>
+                ) : null}
+            </Drawer>
 
             {changelogModuleKey ? (
                 <Suspense fallback={null}>

@@ -36,7 +36,6 @@
         <section id="{{ data_get($block, 'anchor_id') }}" class="bds-section soft xd-landing-block" data-block-type="{{ $type }}">
             <div class="bds-container">
                 <header class="bds-heading"><div><h2><em>{{ $type === 'bds701_rental_listings' ? 'Dự án' : 'Dự án' }}</em> {{ $type === 'bds701_rental_listings' ? 'cho thuê' : 'mới nhất' }}</h2><p>{{ data_get($block, 'data.subtitle') }}</p></div>
-                    @if($type === 'bds701_latest_listings')<nav class="bds-tabs"><a href="#">Biệt thự</a><a href="#">Căn hộ</a><a href="#">Chung cư</a><a href="#">Nhà vườn</a></nav>@endif
                 </header>
                 <div class="bds-grid">@foreach($items($block) as $item) @include('theme-bds701::partials.listing-card', ['item' => $item]) @endforeach</div>
             </div>

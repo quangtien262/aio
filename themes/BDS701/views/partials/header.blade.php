@@ -16,9 +16,9 @@
             </div>
             <div class="bds-topbar-account">
                 @guest('customer')
-                    <a href="{{ route('customer.auth.login', ['locale' => app()->getLocale()]) }}"><i class="fa-regular fa-user"></i>Đăng nhập</a>
+                    <button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i>Đăng nhập</button>
                     <span>/</span>
-                    <a href="{{ route('customer.auth.register', ['locale' => app()->getLocale()]) }}">Đăng ký</a>
+                    <button type="button" data-xd-auth-open="register">Đăng ký</button>
                 @else
                     <a href="{{ route('customer.account', ['locale' => app()->getLocale()]) }}"><i class="fa-regular fa-user"></i>Tài khoản</a>
                     <form method="POST" action="{{ route('customer.auth.logout', ['locale' => app()->getLocale()]) }}">

@@ -1,3 +1,13 @@
+import {
+    AppstoreOutlined,
+    DatabaseOutlined,
+    DollarOutlined,
+    FileTextOutlined,
+    HomeOutlined,
+    ProjectOutlined,
+    ShoppingCartOutlined,
+    TeamOutlined,
+} from '@ant-design/icons';
 import Button from 'antd/es/button';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
@@ -22,17 +32,43 @@ const statusLabelMap = {
     upgrade_pending: 'Chờ nâng cấp',
 };
 
-export default function ModuleStoreTable({ modules, selectedModuleKey, onSelectModule, onOpenChangelog }) {
+const appAppearance = {
+    catalog: { icon: ShoppingCartOutlined, color: '#1677ff', background: '#eaf3ff' },
+    cms: { icon: FileTextOutlined, color: '#7c3aed', background: '#f1ebff' },
+    hrm: { icon: TeamOutlined, color: '#08979c', background: '#e6fffb' },
+    inventory: { icon: DatabaseOutlined, color: '#d46b08', background: '#fff7e6' },
+    payroll: { icon: DollarOutlined, color: '#389e0d', background: '#f6ffed' },
+    project: { icon: ProjectOutlined, color: '#c41d7f', background: '#fff0f6' },
+    'real-estate': { icon: HomeOutlined, color: '#1f7a56', background: '#e9f8f0' },
+};
+
+export default function ModuleStoreTable({ modules, onOpenDetails, onOpenChangelog }) {
     const columns = [
         {
             title: 'App',
             key: 'module',
-            render: (_, moduleCard) => (
-                <Space direction="vertical" size={0}>
-                    <Text strong>{moduleCard.name}</Text>
-                    <Text type="secondary">{moduleCard.key}</Text>
-                </Space>
-            ),
+            render: (_, moduleCard) => {
+                const appearance = appAppearance[moduleCard.key] ?? {
+                    icon: AppstoreOutlined,
+                    color: '#475569',
+                    background: '#f1f5f9',
+                };
+                const AppIcon = appearance.icon;
+
+                return (
+                    <Space size={12}>
+                        <span className="module-store-app-icon" style={{ color: appearance.color, background: appearance.background }}>
+                            <AppIcon />
+                        </span>
+                        <Space direction="vertical" size={0}>
+                            <Button type="link" className="module-store-app-name" onClick={() => onOpenDetails?.(moduleCard)}>
+                                {moduleCard.name}
+                            </Button>
+                            <Text type="secondary">{moduleCard.key}</Text>
+                        </Space>
+                    </Space>
+                );
+            },
         },
         {
             title: 'Trạng thái',
@@ -75,10 +111,6 @@ export default function ModuleStoreTable({ modules, selectedModuleKey, onSelectM
             dataSource={modules}
             pagination={false}
             scroll={{ x: 820 }}
-            rowClassName={(record) => (record.key === selectedModuleKey ? 'ant-table-row-selected' : '')}
-            onRow={(record) => ({
-                onClick: () => onSelectModule?.(record.key),
-            })}
         />
     );
 }

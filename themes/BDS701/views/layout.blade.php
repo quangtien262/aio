@@ -23,6 +23,7 @@
     @yield('content')
     @include('theme-bds701::partials.footer')
 </div>
+@include('theme-xd0323::partials.auth-modal')
 @if ($canEditLanding ?? false)
     @include('theme-xd0302::partials.inline-editor')
 @endif

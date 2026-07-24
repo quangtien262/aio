@@ -19,6 +19,9 @@ import Switch from 'antd/es/switch';
 import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
+import RichContentEditor from '../../../shared/components/RichContentEditor';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
+import { toSlug } from '../../../shared/utils/slug';
 import {
     BlockQuote,
     Bold,
@@ -60,19 +63,6 @@ export const emptyCmsPostForm = {
     is_highlight: false,
     website_key: '',
 };
-
-function toSlug(value, { trimEdges = true } = {}) {
-    const slug = String(value ?? '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'd')
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-');
-
-    return trimEdges ? slug.replace(/^-+|-+$/g, '') : slug.replace(/^-+/g, '');
-}
 
 function getYoutubeEmbedUrl(value) {
     const trimmedValue = String(value ?? '').trim();
@@ -627,6 +617,25 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                     </Card>
 
                     <Card size="small" className="cms-post-form-card" title="Ảnh đại diện bài viết">
+                        <SingleMediaPicker
+                            open={open}
+                            value={selectedFeaturedMedia?.file_url ?? ''}
+                            onChange={(nextUrl) => {
+                                if (!nextUrl) {
+                                    form.setFieldValue('featured_media_id', null);
+                                }
+                            }}
+                            onMediaSelect={(media) => {
+                                setFeaturedMediaOptions((current) => [media, ...current.filter((item) => item.id !== media.id)]);
+                                form.setFieldValue('featured_media_id', media.id);
+                            }}
+                            canManage={canManage}
+                            callAdminApi={callAdminApi}
+                            mediaOptions={mediaOptions}
+                            recordTitle={form.getFieldValue('title') || 'Ảnh đại diện bài viết'}
+                            previewTitle="Ảnh đại diện bài viết"
+                        />
+                        {false && (
                         <Form.Item name="featured_media_id" style={{ marginBottom: 0 }}>
                             <div className="cms-featured-media-shell">
                                 <Radio.Group
@@ -701,6 +710,10 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                                 ) : null}
                             </div>
                         </Form.Item>
+                        )}
+                        <Form.Item name="featured_media_id" hidden>
+                            <Input />
+                        </Form.Item>
                     </Card>
 
                     <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
@@ -725,6 +738,17 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                             </Space>
                         )}
                     >
+                        <RichContentEditor
+                            value={bodyValue}
+                            onChange={(nextContent) => form.setFieldValue('body', nextContent)}
+                            disabled={!canManage}
+                            callAdminApi={callAdminApi}
+                            recordKey={editingPost?.id ?? 'new'}
+                            open={open}
+                            htmlPlaceholder="<section>Nhập mã HTML tùy chỉnh...</section>"
+                        />
+                        {false && (
+                        <>
                         <div className="cms-editor-upload-panel">
                             <Space wrap className="cms-editor-toolbar-row" size={12}>
                                 <Radio.Group
@@ -790,6 +814,11 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                                 />
                             )}
                         </Form.Item>
+                        <Form.Item name="body" hidden>
+                            <Input.TextArea />
+                        </Form.Item>
+                        </>
+                        )}
                         <Form.Item name="body" hidden>
                             <Input.TextArea />
                         </Form.Item>

@@ -9,7 +9,7 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 ## 0. Trình tự đọc bắt buộc cho AI session mới
 
 1. Đọc hết file bootstrap này để nắm định hướng sản phẩm, module, theme, website context và convention.
-2. Nếu công việc liên quan tài khoản, đăng nhập, permission, middleware, module lifecycle hoặc dữ liệu admin, đọc tiếp `docs/architecture/admin-access-control.md` trước khi sửa code. Nếu liên quan nhân sự/tiền lương, bắt buộc đọc thêm `docs/architecture/hrm-and-payroll-modules.md`.
+2. Nếu công việc liên quan tài khoản, đăng nhập, permission, middleware, module lifecycle hoặc dữ liệu admin, đọc tiếp `docs/architecture/admin-access-control.md` trước khi sửa code. Nếu liên quan nhân sự/tiền lương, bắt buộc đọc thêm `docs/architecture/hrm-and-payroll-modules.md`. Nếu liên quan bất động sản hoặc theme BDS701, bắt buộc đọc `docs/architecture/real-estate-module-and-bds701-theme.md`.
 3. Kiểm tra migration đã chạy bằng `php artisan migrate:status`; không sửa migration production đã chạy để thay đổi hành vi, hãy tạo migration mới.
 4. Kiểm tra `git status --short` trước khi sửa và không ghi đè thay đổi đang có của người dùng/session khác.
 5. Với auth/RBAC, luôn đọc test `AccessControlSecurityTest`, `AuthSplitTest`, `AdminFoundationApiTest` để hiểu invariant đã được khóa.
