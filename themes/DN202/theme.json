@@ -7,8 +7,8 @@
   "parent": null,
   "preview": {
     "thumbnail": "preview-dn202.png",
-    "cover": "cover-dn202.png",
-    "avatar": "avatar.png"
+    "cover": "cover-dn302.png",
+    "avatar": "cover-dn302.png"
   },
   "blocks": [
     "hero-slider",
