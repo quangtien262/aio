@@ -3,7 +3,7 @@
   "key": "cms",
   "version": "0.2.5",
   "description": "Module quản lý nội dung, trang, bài viết, menu và media cho AIO Platform.",
-  "website_type": ["corporate", "news", "ecommerce", "landingpage"],
+  "website_type": ["corporate", "news", "ecommerce", "landingpage", "real_estate"],
   "dependencies": [],
   "permissions": [
     "cms.view",

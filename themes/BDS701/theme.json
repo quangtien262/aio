@@ -1,0 +1,38 @@
+{
+  "name": "BDS701 Delta Platinum",
+  "key": "BDS701",
+  "version": "1.0.0",
+  "description": "Theme bất động sản hiện đại với tìm kiếm nâng cao, tin bán/cho thuê, loại hình dự án, tin thị trường và landing page builder.",
+  "website_type": "real_estate",
+  "parent": null,
+  "preview": {
+    "thumbnail": "701.png",
+    "cover": "701.png",
+    "avatar": "701-avatar.png"
+  },
+  "blocks": [
+    "bds701-hero-search",
+    "bds701-latest-listings",
+    "bds701-property-types",
+    "bds701-rental-listings",
+    "bds701-market-news",
+    "bds701-latest-news",
+    "bds701-newsletter"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true,
+    "scroll_reveal": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "default_preset": "bds701-delta-platinum",
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}

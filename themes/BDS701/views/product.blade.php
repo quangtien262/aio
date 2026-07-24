@@ -1,0 +1,2 @@
+@extends('theme-bds701::layout')
+@section('content')<section class="bds-inner-hero"><div class="bds-container"><h1>{{ data_get($product ?? $contentEntry ?? null, 'name', data_get($contentEntry ?? null, 'title')) }}</h1></div></section><main class="bds-section"><article class="bds-container bds-content-card">{!! data_get($product ?? $contentEntry ?? null, 'detail_content', data_get($contentEntry ?? null, 'body')) !!}</article></main>@endsection

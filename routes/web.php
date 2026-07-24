@@ -13,6 +13,7 @@ use App\Http\Controllers\Customer\NewsletterSubscriptionController;
 use App\Http\Controllers\Customer\RegisteredUserController;
 use App\Http\Controllers\Site\CmsSiteController;
 use App\Http\Controllers\Site\LandingController;
+use App\Http\Controllers\Site\RealEstateController;
 use App\Support\FrontendLocalization;
 use Illuminate\Support\Facades\Route;
 
@@ -119,6 +120,12 @@ Route::prefix('{locale}')
 			->name('site.projects.category');
 		Route::get('/prj/{slug}', [CmsSiteController::class, 'project'])
 			->name('site.projects.show');
+		Route::get('/bds', [RealEstateController::class, 'index'])
+			->middleware('module.enabled:real-estate')
+			->name('site.real-estate.index');
+		Route::get('/bds/{slug}', [RealEstateController::class, 'show'])
+			->middleware('module.enabled:real-estate')
+			->name('site.real-estate.show');
 		Route::get('/contact', [CmsSiteController::class, 'contact'])
 			->name('site.contact');
 		Route::post('/contact', [CmsSiteController::class, 'submitContact'])

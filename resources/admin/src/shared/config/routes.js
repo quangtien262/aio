@@ -50,6 +50,8 @@ export const STOREFRONT_ROUTES = Object.freeze({
     projects: '/pj',
     projectCategory: (slug) => `/pj/${encodeURIComponent(String(slug ?? '').replace(/^\/+|\/+$/g, ''))}`,
     project: (slug) => `/prj/${encodeURIComponent(String(slug ?? '').replace(/^\/+|\/+$/g, ''))}`,
+    realEstate: '/bds',
+    realEstateListing: (slug) => `/bds/${encodeURIComponent(String(slug ?? '').replace(/^\/+|\/+$/g, ''))}`,
     contact: '/contact',
     cart: '/gio-hang',
     checkout: '/thanh-toan',

@@ -1,0 +1,2 @@
+@extends('theme-bds701::layout')
+@section('content')<section class="bds-inner-hero"><div class="bds-container"><h1>{{ data_get($category ?? null, 'name', 'Danh mục') }}</h1></div></section><main class="bds-section"><div class="bds-container bds-grid">@foreach(($products ?? collect()) as $item)<article class="bds-content-card"><h3>{{ data_get($item, 'name') }}</h3><p>{{ data_get($item, 'short_description') }}</p></article>@endforeach</div></main>@endsection

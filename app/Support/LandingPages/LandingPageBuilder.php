@@ -18,6 +18,8 @@ use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
 use App\Models\LandingPageData;
+use App\Models\RealEstateListing;
+use App\Models\RealEstatePropertyType;
 use App\Models\SiteBanner;
 use App\Models\ThemeTranslation;
 use App\Support\FrontendLocalization;
@@ -31,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'BDS701'], true);
     }
 
     /**
@@ -153,6 +155,8 @@ class LandingPageBuilder
                 'cms_categories' => [],
                 'cms_service_categories' => [],
                 'cms_project_categories' => [],
+                'real_estate_listings' => $this->realEstatePropertyTypeOptions(),
+                'real_estate_property_types' => [],
             ],
         ];
     }
@@ -172,6 +176,28 @@ class LandingPageBuilder
             ->map(fn (CmsCategory $category): array => [
                 'value' => (int) $category->id,
                 'label' => (string) $category->name,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{value:int,label:string}>
+     */
+    private function realEstatePropertyTypeOptions(): array
+    {
+        if (! Schema::hasTable('real_estate_property_types')) {
+            return [];
+        }
+
+        return RealEstatePropertyType::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn (RealEstatePropertyType $type): array => [
+                'value' => (int) $type->id,
+                'label' => (string) $type->name,
             ])
             ->values()
             ->all();
@@ -492,6 +518,12 @@ class LandingPageBuilder
             'nt502_promotion' => 3,
             'nt502_living_room', 'nt502_bedroom' => 6,
             'nt502_latest_news' => 7,
+            'bds701_hero_search' => 5,
+            'bds701_latest_listings' => 6,
+            'bds701_property_types' => 5,
+            'bds701_rental_listings' => 3,
+            'bds701_market_news' => 5,
+            'bds701_latest_news' => 3,
             default => 3,
         };
         $limit = max(1, min(12, (int) ($settings['limit'] ?? $defaultLimit)));
@@ -506,6 +538,22 @@ class LandingPageBuilder
 
         if ($block->block_type === 'latest_posts') {
             return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['bds701_hero_search', 'bds701_property_types'], true)) {
+            return $this->realEstatePropertyTypeItems($limit, $locale);
+        }
+
+        if (in_array($block->block_type, ['bds701_latest_listings', 'bds701_rental_listings'], true)) {
+            if ($block->block_type === 'bds701_rental_listings') {
+                $settings['transaction_type'] = 'rent';
+            }
+
+            return $this->realEstateListingItems($settings, $limit, $locale);
+        }
+
+        if (in_array($block->block_type, ['bds701_market_news', 'bds701_latest_news'], true)) {
+            return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
         if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news'], true)) {
@@ -707,8 +755,89 @@ class LandingPageBuilder
             'cms_services' => $this->cmsServiceItems($settings, $limit, $locale, $websiteKey),
             'catalog_categories', 'cms_categories', 'cms_service_categories', 'cms_project_categories' => $this->featuredCategoryItems($settings, $limit, $locale, $websiteKey),
             'cms_menus' => $this->cmsMenuItems($settings, $limit),
+            'real_estate_listings' => $this->realEstateListingItems($settings, $limit, $locale),
+            'real_estate_property_types' => $this->realEstatePropertyTypeItems($limit, $locale),
             default => $this->contentSourceItems([...$settings, 'source' => $defaultSource], $defaultSource, $limit, $locale, $websiteKey),
         };
+    }
+
+    /**
+     * @param array<string, mixed> $settings
+     * @return array<int, array<string, mixed>>
+     */
+    private function realEstateListingItems(array $settings, int $limit, string $locale): array
+    {
+        if (! Schema::hasTable('real_estate_listings') || ! Schema::hasTable('real_estate_listing_media')) {
+            return [];
+        }
+
+        $query = RealEstateListing::query()
+            ->with(['propertyType', 'media'])
+            ->where('publication_status', 'published')
+            ->where('availability_status', 'available')
+            ->when(filled($settings['transaction_type'] ?? null), fn (Builder $builder) => $builder->where('transaction_type', $settings['transaction_type']))
+            ->when(filled($settings['category_id'] ?? null), fn (Builder $builder) => $builder->where('property_type_id', (int) $settings['category_id']))
+            ->when(($settings['featured_only'] ?? false) === true, fn (Builder $builder) => $builder->where('is_featured', true))
+            ->orderByDesc('is_featured')
+            ->orderByDesc('is_hot')
+            ->orderBy('sort_order')
+            ->latest('published_at');
+
+        return $query->take($limit)->get()->map(function (RealEstateListing $listing) use ($locale): array {
+            $image = $listing->media->firstWhere('is_featured', true) ?? $listing->media->first();
+            $location = collect([$listing->ward, $listing->district, $listing->province])->filter()->implode(', ');
+            $area = $listing->floor_area ?: $listing->land_area;
+
+            return [
+                'id' => $listing->id,
+                'title' => $listing->title,
+                'summary' => $listing->summary,
+                'image' => $image?->media_url ?: $this->fallbackCategoryImage($listing->id),
+                'alt' => $image?->alt_text ?: $listing->title,
+                'url' => FrontendRouteUrl::realEstateListing($listing->slug, $locale),
+                'transaction_type' => $listing->transaction_type,
+                'transaction_label' => $listing->transaction_type === 'rent' ? 'Cho thuê' : 'Bán',
+                'price' => $listing->price !== null ? (float) $listing->price : null,
+                'price_unit' => $listing->price_unit,
+                'currency' => $listing->currency,
+                'location' => $location,
+                'bedrooms' => $listing->bedrooms,
+                'bathrooms' => $listing->bathrooms,
+                'area' => $area !== null ? (float) $area : null,
+                'is_hot' => (bool) $listing->is_hot,
+                'is_featured' => (bool) $listing->is_featured,
+                'virtual_tour_url' => $listing->virtual_tour_url,
+                'property_type' => $listing->propertyType?->name,
+            ];
+        })->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function realEstatePropertyTypeItems(int $limit, string $locale): array
+    {
+        if (! Schema::hasTable('real_estate_property_types')) {
+            return [];
+        }
+
+        return RealEstatePropertyType::query()
+            ->where('is_active', true)
+            ->withCount(['listings' => fn (Builder $builder) => $builder->where('publication_status', 'published')])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->take($limit)
+            ->get()
+            ->map(fn (RealEstatePropertyType $type, int $index): array => [
+                'id' => $type->id,
+                'title' => $type->name,
+                'summary' => $type->description,
+                'image' => $type->image_url ?: $this->fallbackCategoryImage($index),
+                'icon' => $type->icon ?: 'fa-solid fa-building',
+                'count_label' => $type->listings_count.' dự án',
+                'url' => FrontendRouteUrl::realEstate($locale).'?property_type='.rawurlencode($type->slug),
+            ])
+            ->all();
     }
 
     /**
@@ -1251,6 +1380,7 @@ class LandingPageBuilder
             'DN302' => $this->dn302DefaultBlocks(),
             'BZ501' => $this->bz501DefaultBlocks(),
             'SPA502' => $this->spa502DefaultBlocks(),
+            'BDS701' => $this->bds701DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -5226,6 +5356,146 @@ class LandingPageBuilder
                             'note_text' => 'Add your site location, surface area, expected timeline or technical requirements so our team can prepare a practical recommendation.',
                         ],
                     ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function bds701DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/BDS701/preview-bds701.svg';
+        $listingSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
+                ['value' => 'real_estate_listings', 'label' => 'Tin bất động sản'],
+            ]],
+            'limit' => ['type' => 'number', 'label' => 'Số tin hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'Loại hình bất động sản'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy tin nổi bật'],
+            'transaction_type' => ['type' => 'select', 'label' => 'Loại giao dịch', 'options' => [
+                ['value' => '', 'label' => 'Tất cả'],
+                ['value' => 'sale', 'label' => 'Bán'],
+                ['value' => 'rent', 'label' => 'Cho thuê'],
+            ]],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
+                ['value' => 'cms_posts', 'label' => 'Tin tức CMS'],
+            ]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'Danh mục tin'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy tin nổi bật'],
+        ];
+
+        return [
+            [
+                'block_type' => 'bds701_hero_search',
+                'label' => 'Hero tìm kiếm bất động sản',
+                'description' => 'Hero toàn màn hình, thanh tìm kiếm nhanh và lối tắt theo loại hình.',
+                'preview_image' => $preview,
+                'anchor_id' => 'top',
+                'dynamic' => true,
+                'settings' => ['source' => 'real_estate_property_types', 'limit' => 5],
+                'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số loại hình']],
+                'media' => ['image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2200&q=90'],
+                'data' => [
+                    'vi' => [
+                        'title' => 'Tìm kiếm nhà đất mơ ước',
+                        'subtitle' => 'Delta Platinum',
+                        'description' => 'Khám phá không gian sống và cơ hội đầu tư phù hợp nhất với bạn.',
+                        'button_label' => 'Tìm kiếm nhanh',
+                    ],
+                    'en' => [
+                        'title' => 'Find your dream property',
+                        'subtitle' => 'Delta Platinum',
+                        'description' => 'Discover the right home and investment opportunity.',
+                        'button_label' => 'Quick search',
+                    ],
+                ],
+            ],
+            [
+                'block_type' => 'bds701_latest_listings',
+                'label' => 'Dự án mới nhất',
+                'description' => 'Danh sách tin bán và cho thuê mới nhất với bộ lọc loại hình.',
+                'preview_image' => $preview,
+                'anchor_id' => 'du-an-moi',
+                'dynamic' => true,
+                'settings' => ['source' => 'real_estate_listings', 'limit' => 6, 'featured_only' => false],
+                'settings_schema' => $listingSchema,
+                'data' => [
+                    'vi' => ['title' => 'Dự án mới nhất', 'subtitle' => 'Dự án mới nhất hay có đang ở gần bạn?', 'description' => 'Những tin bất động sản được cập nhật gần đây.'],
+                    'en' => ['title' => 'Latest properties', 'subtitle' => 'Discover what is new around you.'],
+                ],
+            ],
+            [
+                'block_type' => 'bds701_property_types',
+                'label' => 'Mẫu dự án tiêu biểu',
+                'description' => 'Mosaic hình ảnh điều hướng tới từng loại hình bất động sản.',
+                'preview_image' => $preview,
+                'anchor_id' => 'loai-hinh',
+                'dynamic' => true,
+                'settings' => ['source' => 'real_estate_property_types', 'limit' => 5],
+                'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số loại hình']],
+                'data' => [
+                    'vi' => ['title' => 'Mẫu dự án tiêu biểu', 'subtitle' => 'Sự khác biệt mang tên phong cách'],
+                    'en' => ['title' => 'Featured property types', 'subtitle' => 'A distinctive living style'],
+                ],
+            ],
+            [
+                'block_type' => 'bds701_rental_listings',
+                'label' => 'Dự án cho thuê',
+                'description' => 'Các bất động sản cho thuê nổi bật.',
+                'preview_image' => $preview,
+                'anchor_id' => 'cho-thue',
+                'dynamic' => true,
+                'settings' => ['source' => 'real_estate_listings', 'limit' => 3, 'transaction_type' => 'rent'],
+                'settings_schema' => $listingSchema,
+                'data' => [
+                    'vi' => ['title' => 'Dự án cho thuê', 'subtitle' => 'Những dự án cho thuê hàng đầu đang được săn đón'],
+                    'en' => ['title' => 'Properties for rent', 'subtitle' => 'Popular rental opportunities'],
+                ],
+            ],
+            [
+                'block_type' => 'bds701_market_news',
+                'label' => 'Tin tức thị trường',
+                'description' => 'Một bài nổi bật và danh sách tin thị trường bên cạnh.',
+                'preview_image' => $preview,
+                'anchor_id' => 'tin-thi-truong',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 5, 'featured_only' => false],
+                'settings_schema' => $postSchema,
+                'data' => [
+                    'vi' => ['title' => 'Tin tức thị trường', 'subtitle' => 'Thông tin thị trường bất động sản 24/7'],
+                    'en' => ['title' => 'Market news', 'subtitle' => 'Real estate insights 24/7'],
+                ],
+            ],
+            [
+                'block_type' => 'bds701_latest_news',
+                'label' => 'Tin bất động sản mới',
+                'description' => 'Danh sách bài viết mới dạng thẻ trượt ngang.',
+                'preview_image' => $preview,
+                'anchor_id' => 'tin-moi',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false],
+                'settings_schema' => $postSchema,
+                'data' => [
+                    'vi' => ['title' => 'Tin bất động sản mới', 'subtitle' => 'Cập nhật nhanh chóng thông tin thị trường bất động sản'],
+                    'en' => ['title' => 'Latest real estate news', 'subtitle' => 'Fresh market updates'],
+                ],
+            ],
+            [
+                'block_type' => 'bds701_newsletter',
+                'label' => 'Đăng ký nhận tin',
+                'description' => 'Khối đăng ký email trên nền hình bất động sản.',
+                'preview_image' => $preview,
+                'anchor_id' => 'nhan-tin',
+                'settings' => [],
+                'media' => ['image' => 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2200&q=85'],
+                'data' => [
+                    'vi' => ['title' => 'Đăng ký nhận tin', 'subtitle' => 'Chúng tôi sẽ gửi bạn những thông tin bất động sản mới nhất', 'button_label' => 'Nhận tin miễn phí'],
+                    'en' => ['title' => 'Subscribe', 'subtitle' => 'Get the latest real estate updates', 'button_label' => 'Subscribe free'],
                 ],
             ],
         ];

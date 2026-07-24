@@ -5,7 +5,7 @@
   "description": "Theme thời trang Alena với header hai tầng, slider, sản phẩm lọc động, banner, sale carousel, newsletter, tin tức và đối tác.",
   "website_type": "ecommerce",
   "parent": null,
-  "preview": { "thumbnail": "preview-shop603.svg", "cover": "cover-shop603.svg" },
+  "preview": { "thumbnail": "603.png", "cover": "603.png" },
   "blocks": ["hero-slider", "quality-slider", "hot-products", "new-arrivals", "single-ad", "sale-slider", "newsletter", "latest-news", "partner-logos"],
   "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
   "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },

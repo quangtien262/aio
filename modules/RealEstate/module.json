@@ -1,0 +1,53 @@
+{
+  "name": "Bất động sản",
+  "key": "real-estate",
+  "version": "0.1.0",
+  "description": "Module quản lý loại hình, tin bán/cho thuê, thư viện media và thông tin tìm kiếm bất động sản.",
+  "website_type": ["real_estate"],
+  "dependencies": ["cms"],
+  "permissions": [
+    "real-estate.view",
+    "real-estate.create",
+    "real-estate.update",
+    "real-estate.delete",
+    "real-estate.type.manage"
+  ],
+  "hooks": [
+    "Modules\\RealEstate\\Hooks\\RealEstateLifecycleHook"
+  ],
+  "menus": [
+    {
+      "key": "real-estate-listings",
+      "label": "Tin bất động sản",
+      "description": "Quản lý tin bán, cho thuê và thông tin tìm kiếm bất động sản.",
+      "badge": "BĐS",
+      "color": "green",
+      "icon": "home",
+      "route": "/admin/real-estate/listings",
+      "permission": "real-estate.view"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-07-24",
+      "notes": [
+        "Khởi tạo loại hình và tin đăng bất động sản theo website.",
+        "Hỗ trợ bán/cho thuê, giá, vị trí, thông số kỹ thuật và gallery nhiều media."
+      ]
+    }
+  ],
+  "package": {
+    "migrations": ["database/migrations"],
+    "seeders": ["Modules\\RealEstate\\Database\\Seeders\\RealEstateModuleSeeder"],
+    "config": [],
+    "assets": []
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": true
+  }
+}

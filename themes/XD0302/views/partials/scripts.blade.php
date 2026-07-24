@@ -2,7 +2,7 @@
         (() => {
             const slides = Array.from(document.querySelectorAll('.xd-slide'));
             const dots = Array.from(document.querySelectorAll('.xd-dot'));
-            const copy = @json($heroSlides);
+            const copy = @json($heroSlides ?? []);
             const title = document.querySelector('[data-hero-title]');
             const kicker = document.querySelector('[data-hero-kicker]');
             const summary = document.querySelector('[data-hero-summary]');
@@ -34,7 +34,7 @@
                     heroLink.textContent = copy[index]?.button_label || heroLink.textContent;
                 }
             };
-            const restart = () => { window.clearInterval(timer); timer = window.setInterval(() => show(index + 1), Number(@json(data_get($hero, 'settings.autoplay_ms', 5200)))); };
+            const restart = () => { window.clearInterval(timer); timer = window.setInterval(() => show(index + 1), Number(@json(data_get($hero ?? [], 'settings.autoplay_ms', 5200)))); };
             document.querySelector('[data-slide-prev]')?.addEventListener('click', () => { show(index - 1); restart(); });
             document.querySelector('[data-slide-next]')?.addEventListener('click', () => { show(index + 1); restart(); });
             dots.forEach((dot) => dot.addEventListener('click', () => { show(Number(dot.dataset.slideDot || 0)); restart(); }));

@@ -89,6 +89,21 @@ final class FrontendRouteUrl
         ], $absolute);
     }
 
+    public static function realEstate(?string $locale = null, bool $absolute = true): string
+    {
+        return route('site.real-estate.index', [
+            'locale' => self::locale($locale),
+        ], $absolute);
+    }
+
+    public static function realEstateListing(string $slug, ?string $locale = null, bool $absolute = true): string
+    {
+        return route('site.real-estate.show', [
+            'locale' => self::locale($locale),
+            'slug' => self::slug($slug),
+        ], $absolute);
+    }
+
     public static function contact(?string $locale = null, bool $absolute = true): string
     {
         return route('site.contact', [

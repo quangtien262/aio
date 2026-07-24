@@ -17,6 +17,7 @@ const InventoryManagerPage = lazy(() => import('../../modules/inventory/pages/In
 const ProjectManagerPage = lazy(() => import('../../modules/project/pages/ProjectManagerPage'));
 const HrmManagerPage = lazy(() => import('../../modules/hrm/pages/HrmManagerPage'));
 const PayrollManagerPage = lazy(() => import('../../modules/payroll/pages/PayrollManagerPage'));
+const RealEstateManagerPage = lazy(() => import('../../modules/real-estate/pages/RealEstateManagerPage'));
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentPermissions }) {
     const resourceEndpointMap = {
@@ -85,6 +86,18 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
         return (
             <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
                 <CatalogManagerPage
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    currentPermissions={currentPermissions}
+                />
+            </Suspense>
+        );
+    }
+
+    if (modulePayload.key === 'real-estate') {
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <RealEstateManagerPage
                     callAdminApi={callAdminApi}
                     runAdminAction={runAdminAction}
                     currentPermissions={currentPermissions}

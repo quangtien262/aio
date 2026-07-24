@@ -78,6 +78,9 @@ use App\Http\Controllers\Admin\Api\Project\ProjectChecklistManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectDetailController;
 use App\Http\Controllers\Admin\Api\Project\ProjectFileManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectIndexController;
+use App\Http\Controllers\Admin\Api\RealEstate\RealEstateIndexController;
+use App\Http\Controllers\Admin\Api\RealEstate\RealEstateListingManagementController;
+use App\Http\Controllers\Admin\Api\RealEstate\RealEstatePropertyTypeManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectMemberManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectReportIndexController;
@@ -756,6 +759,23 @@ Route::prefix('admin')
                 Route::post('/setup/steps/{step}', SetupStepController::class)
                     ->middleware('admin.permission:setup.complete')
                     ->name('setup.steps.complete');
+
+                Route::prefix('real-estate')->middleware('module.enabled:real-estate')->name('real-estate.')->group(function (): void {
+                    Route::get('/listings', RealEstateIndexController::class)
+                        ->middleware('admin.permission:real-estate.view')->name('listings.index');
+                    Route::post('/listings', [RealEstateListingManagementController::class, 'store'])
+                        ->middleware('admin.permission:real-estate.create')->name('listings.store');
+                    Route::put('/listings/{listing}', [RealEstateListingManagementController::class, 'update'])
+                        ->middleware('admin.permission:real-estate.update')->name('listings.update');
+                    Route::delete('/listings/{listing}', [RealEstateListingManagementController::class, 'destroy'])
+                        ->middleware('admin.permission:real-estate.delete')->name('listings.destroy');
+                    Route::post('/property-types', [RealEstatePropertyTypeManagementController::class, 'store'])
+                        ->middleware('admin.permission:real-estate.type.manage')->name('property-types.store');
+                    Route::put('/property-types/{type}', [RealEstatePropertyTypeManagementController::class, 'update'])
+                        ->middleware('admin.permission:real-estate.type.manage')->name('property-types.update');
+                    Route::delete('/property-types/{type}', [RealEstatePropertyTypeManagementController::class, 'destroy'])
+                        ->middleware('admin.permission:real-estate.type.manage')->name('property-types.destroy');
+                });
 
                 Route::prefix('hrm')->middleware('module.enabled:hrm')->name('hrm.')->group(function (): void {
                     Route::get('/dashboard', HrmDashboardController::class)
