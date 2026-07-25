@@ -1,0 +1,1 @@
+@extends('theme-shop604::layout') @section('title','Đặt hàng thành công') @section('content')<main class="s604-section"><div class="s604-container s604-prose" style="text-align:center"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã mua sắm tại Bean Lingerie.</p><a class="s604-button" href="{{ route('site.home') }}">Về trang chủ</a></div></main>@endsection

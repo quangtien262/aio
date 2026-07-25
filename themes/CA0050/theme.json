@@ -1,0 +1,41 @@
+{
+  "name": "CA0050 Sudes Aquarium",
+  "key": "CA0050",
+  "version": "1.0.0",
+  "description": "Theme ecommerce cá cảnh và thủy sinh với bảng màu đại dương, danh mục, sản phẩm, dịch vụ setup, TikTok, FAQ, đánh giá và đối tác.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-ca0050.svg",
+    "cover": "cover-ca0050.svg"
+  },
+  "blocks": [
+    "hero-slider",
+    "aquarium-categories",
+    "about-aquarium",
+    "fish-products",
+    "tiktok-showcase",
+    "aquarium-setup",
+    "tank-accessories",
+    "testimonials",
+    "latest-news",
+    "faq",
+    "partner-logos",
+    "footer-newsletter"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "ca0050-sudes-aquarium"
+  }
+}

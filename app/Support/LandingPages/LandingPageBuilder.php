@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -514,6 +514,12 @@ class LandingPageBuilder
             'shop601_product_carousel' => 5,
             'shop603_hot_products', 'shop603_sale_slider' => 5,
             'shop603_new_arrivals' => 7,
+            'shop604_flash_sale', 'shop604_new_arrivals' => 4,
+            'shop604_collection_tabs' => 8,
+            'ca0050_fish_products' => 8,
+            'ca0050_accessories' => 4,
+            'shop605_sale', 'shop605_new' => 4,
+            'shop605_best' => 10,
             'nt502_categories' => 9,
             'nt502_promotion' => 3,
             'nt502_living_room', 'nt502_bedroom' => 6,
@@ -556,7 +562,7 @@ class LandingPageBuilder
             return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
@@ -564,7 +570,7 @@ class LandingPageBuilder
                 'bizmax_latest_posts', 'shop601_latest_content' => 'cms_posts',
                 'shop601_collection_cards' => 'custom',
                 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel' => 'cms_products',
-                'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider' => 'cms_products',
+                'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ca0050_fish_products', 'ca0050_accessories' => 'cms_products',
                 'nt502_categories' => 'catalog_categories',
                 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom' => 'cms_products',
                 'nt502_latest_news' => 'cms_posts',
@@ -1353,6 +1359,9 @@ class LandingPageBuilder
     private function defaultBlocksForTheme(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
+            'SHOP605' => $this->shop605DefaultBlocks(),
+            'CA0050' => $this->ca0050DefaultBlocks(),
+            'SHOP604' => $this->shop604DefaultBlocks(),
             'SHOP603' => $this->shop603DefaultBlocks(),
             'SHOP602' => $this->shop602DefaultBlocks(),
             'SHOP601' => $this->shop601DefaultBlocks(),
@@ -1434,6 +1443,164 @@ class LandingPageBuilder
             ['block_type' => 'featured_products', 'label' => 'Sản phẩm nội thất', 'description' => 'Sản phẩm nổi bật lấy động từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 4), 'media' => ['image' => $interior], 'data' => ['vi' => $heading('Sản phẩm nội thất'), 'en' => $heading('Interior products')]],
             ['block_type' => 'content_showcase', 'label' => 'Dự án hoàn thành', 'description' => 'Các dự án đã bàn giao lấy động từ CMS Projects.', 'preview_image' => $preview, 'anchor_id' => 'du-an', 'dynamic' => true, 'settings' => ['source' => 'cms_projects', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_projects', 'Dự án CMS', 4), 'data' => ['vi' => $heading('Dự án hoàn thành', 'Những mẫu dự án đã bàn giao'), 'en' => $heading('Completed projects', 'A selection of delivered spaces')]],
             ['block_type' => 'partner_logos', 'label' => 'Đối tác tiêu biểu', 'description' => 'Logo đối tác lấy động từ CMS Partners.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_partners', 'Đối tác CMS', 6), 'data' => ['vi' => $heading('Đối tác tiêu biểu', 'Những đối tác lâu năm tại DN202'), 'en' => $heading('Featured partners', 'Long-term partners of DN202')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function shop605DefaultBlocks(): array
+    {
+        $preview='/theme-previews/SHOP605/preview-shop605.svg';$hero='/theme-demo/shop605/hero-fashion.png';$a='/theme-demo/shop605/product-women-knit.png';$b='/theme-demo/shop605/product-women-rose.png';$c='/theme-demo/shop605/product-men-green.png';$d='/theme-demo/shop605/ad-lac-quan.png';
+        $heading=fn(?string $title=null,?string $subtitle=null,?string $description=null):array=>['title'=>$title,'subtitle'=>$subtitle,'description'=>$description];
+        $with=fn(array $base,array $items):array=>array_merge($base,['content'=>['items'=>$items]]);
+        $schema=fn(int $limit):array=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>[['value'=>'cms_products','label'=>'Sản phẩm Catalog']]],'limit'=>['type'=>'number','label'=>'Số sản phẩm','default'=>$limit],'search'=>['type'=>'text','label'=>'Từ khóa'],'category_id'=>['type'=>'select','label'=>'Danh mục'],'featured_only'=>['type'=>'boolean','label'=>'Chỉ sản phẩm nổi bật','default'=>false]];
+        $products=[['title'=>'Áo ngực su không gọng FA05072292','price'=>359000,'original_price'=>429000,'image'=>$a,'url'=>'#'],['title'=>'Đồ mặc nhà cotton DMN02083646','price'=>399000,'original_price'=>429000,'image'=>$b,'url'=>'#'],['title'=>'Bộ mặc nhà lụa DH04013279','price'=>559000,'image'=>$c,'url'=>'#'],['title'=>'Áo ngực ren không gọng','price'=>329000,'image'=>$d,'url'=>'#']];
+        $benefits=[['title'=>'Freeship toàn quốc đơn > 499k','icon'=>'fa-solid fa-truck'],['title'=>'Kiểm hàng trước khi thanh toán','icon'=>'fa-solid fa-list-check'],['title'=>'Hỗ trợ đóng gói miễn phí','icon'=>'fa-regular fa-bookmark']];
+        $collections=[['title'=>'BST Đến bên em','image'=>$a],['title'=>'BST Mùa yêu dấu','image'=>$b],['title'=>'Giải thưởng Top 100','image'=>$d],['title'=>'BST Em Xinh','image'=>$c],['title'=>'BST Thiết yếu','image'=>$a],['title'=>'BST Tơ vương','image'=>$b]];
+        return [
+            ['block_type'=>'hero_slider','label'=>'Hero gallery OH!Under','description'=>'Ba ảnh lifestyle trên nền hồng.','preview_image'=>$preview,'anchor_id'=>'top','dynamic'=>true,'settings'=>['source'=>'site_banners','placement'=>'shop605-hero-slider','limit'=>3],'settings_schema'=>['placement'=>['type'=>'text','label'=>'Placement'],'limit'=>['type'=>'number','label'=>'Số ảnh']],'media'=>['image'=>$hero],'data'=>['vi'=>array_merge($heading('OH!Under'),['content'=>['slides'=>$products]]),'en'=>$heading('OH!Under')]],
+            ['block_type'=>'shop605_benefits','label'=>'Quyền lợi mua hàng','description'=>'Ba quyền lợi ngay dưới hero.','preview_image'=>$preview,'anchor_id'=>'quyen-loi','settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$with($heading(),$benefits),'en'=>$with($heading(),$benefits)]],
+            ['block_type'=>'shop605_sale','label'=>'End of season sale','description'=>'Bốn sản phẩm sale và bộ đếm.','preview_image'=>$preview,'anchor_id'=>'sale','dynamic'=>true,'settings'=>['source'=>'cms_products','limit'=>4,'featured_only'=>false],'settings_schema'=>$schema(4),'data'=>['vi'=>$with($heading('END OF SEASON SALE - MUA 1 TẶNG 1'),$products),'en'=>$with($heading('END OF SEASON SALE'),$products)]],
+            ['block_type'=>'shop605_new','label'=>'Sản phẩm mới','description'=>'Danh mục bên trái và ba sản phẩm dọc.','preview_image'=>$preview,'anchor_id'=>'san-pham','dynamic'=>true,'settings'=>['source'=>'cms_products','limit'=>3,'featured_only'=>false],'settings_schema'=>$schema(3),'data'=>['vi'=>$with($heading('Sản phẩm mới'),$products),'en'=>$with($heading('New products'),$products)]],
+            ['block_type'=>'shop605_best','label'=>'Sản phẩm bán chạy','description'=>'Lưới mười sản phẩm.','preview_image'=>$preview,'anchor_id'=>'ban-chay','dynamic'=>true,'settings'=>['source'=>'cms_products','limit'=>10,'featured_only'=>false],'settings_schema'=>$schema(10),'data'=>['vi'=>$with($heading('Sản phẩm bán chạy'),$products),'en'=>$with($heading('Best sellers'),$products)]],
+            ['block_type'=>'shop605_editorial','label'=>'BST Mùa yêu dấu','description'=>'Banner editorial toàn chiều rộng.','preview_image'=>$preview,'anchor_id'=>'gioi-thieu','media'=>['image'=>$hero],'settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$heading('Mùa yêu dấu',null,'Hãy thả mình vào tiết trời xuân hè với những mẫu sản phẩm không thể xinh yêu hơn tại OH!Under.'),'en'=>$heading('Beloved season')]],
+            ['block_type'=>'shop605_collections','label'=>'OH!Under Collection','description'=>'Mosaic sáu bộ sưu tập.','preview_image'=>$preview,'anchor_id'=>'bo-suu-tap','settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$with($heading('OH!Under Collection'),$collections),'en'=>$with($heading('OH!Under Collection'),$collections)]],
+            ['block_type'=>'shop605_story','label'=>'Khách hàng cảm nhận','description'=>'Câu chuyện thương hiệu và khách hàng.','preview_image'=>$preview,'anchor_id'=>'cam-nhan','settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$heading('Khách hàng cảm nhận gì về OH! Under',null,'Với OH!Under, sự thành công đến từ đam mê, sáng tạo và nỗ lực thấu hiểu, trân trọng phái đẹp.'),'en'=>$heading('Customer stories')]],
+            ['block_type'=>'latest_posts','label'=>'Blog & Chia sẻ','description'=>'Ba bài viết mới nhất.','preview_image'=>$preview,'anchor_id'=>'blog','dynamic'=>true,'settings'=>['source'=>'cms_posts','limit'=>3],'settings_schema'=>['limit'=>['type'=>'number','label'=>'Số bài']],'data'=>['vi'=>$heading('Blog & Chia sẻ'),'en'=>$heading('Blog & Stories')]],
+            ['block_type'=>'shop605_footer','label'=>'Footer và nhận tin','description'=>'Liên hệ, hướng dẫn và newsletter.','preview_image'=>$preview,'anchor_id'=>'lien-he','settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$heading('NHẬN TIN KHUYẾN MÃI'),'en'=>$heading('NEWSLETTER')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ca0050DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/CA0050/preview-ca0050.svg';
+        $hero = '/theme-demo/ca0050/hero-goldfish.png';
+        $aquascape = '/theme-demo/ca0050/aquascape.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $withItems = fn (array $base, array $values): array => array_merge($base, ['content' => ['items' => $values]]);
+        $productSchema = fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog'], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm sản phẩm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật', 'default' => false],
+        ];
+        $products = [
+            ['title' => 'Cá Ba Đuôi Oranda Đuôi Lụa', 'price' => 999000, 'original_price' => 1200000, 'image' => $hero, 'url' => '#'],
+            ['title' => 'Cá Ba Đuôi Lưu Kim Calico', 'price' => 50000, 'original_price' => 69000, 'image' => $aquascape, 'url' => '#'],
+            ['title' => 'Cá Bảy Màu Koi Đỏ', 'price' => 12000, 'original_price' => 15000, 'image' => $hero, 'url' => '#'],
+            ['title' => 'Cá Bảy Màu Red Albino', 'price' => 8000, 'original_price' => 9000, 'image' => $aquascape, 'url' => '#'],
+            ['title' => 'Cá Hạc Đỉnh Hồng', 'price' => 200000, 'image' => $hero, 'url' => '#'],
+            ['title' => 'Cá Chép Sư Tử Trắng', 'price' => 800000, 'image' => $aquascape, 'url' => '#'],
+            ['title' => 'Cá Bảy Màu Blue Topaz', 'price' => 20000, 'original_price' => 22000, 'image' => $hero, 'url' => '#'],
+            ['title' => 'Betta trống cá xiêm trống', 'price' => 49000, 'original_price' => 55000, 'image' => $aquascape, 'url' => '#'],
+        ];
+        $categories = [
+            ['title' => 'Cá', 'summary' => '9 sản phẩm', 'image' => $hero, 'url' => '#the-gioi-ca-canh'],
+            ['title' => 'Cây', 'summary' => '8 sản phẩm', 'image' => $aquascape, 'url' => '#the-gioi-ca-canh'],
+            ['title' => 'Đèn', 'summary' => '4 sản phẩm', 'icon' => 'fa-regular fa-lightbulb', 'url' => '#phu-kien'],
+            ['title' => 'Thức ăn', 'summary' => '8 sản phẩm', 'icon' => 'fa-solid fa-jar', 'url' => '#phu-kien'],
+            ['title' => 'Hồ', 'summary' => '8 sản phẩm', 'image' => $aquascape, 'url' => '#phu-kien'],
+            ['title' => 'Thuốc', 'summary' => '0 sản phẩm', 'icon' => 'fa-solid fa-flask', 'url' => '#phu-kien'],
+        ];
+        $stats = [
+            ['title' => '199+', 'value' => '199+', 'summary' => 'Loại cá cảnh thủy sinh', 'icon' => 'fa-solid fa-fish'],
+            ['title' => '99+', 'value' => '99+', 'summary' => 'Layout bể cá thủy sinh', 'icon' => 'fa-solid fa-water'],
+            ['title' => '99+', 'value' => '99+', 'summary' => 'Loại thức ăn thủy sinh', 'icon' => 'fa-solid fa-jar'],
+            ['title' => '59+', 'value' => '59+', 'summary' => 'Mẫu hồ cá cảnh', 'icon' => 'fa-solid fa-fish-fins'],
+        ];
+        $setup = [
+            ['title' => 'Thiết kế đẹp – hợp mọi không gian', 'summary' => 'Bể cá được thiết kế theo phong cách riêng, hài hòa với mọi không gian.', 'icon' => 'fa-solid fa-pen-ruler'],
+            ['title' => 'Tư vấn chuẩn – giải pháp tối ưu', 'summary' => 'Kỹ thuật viên tư vấn hệ cá, cây, ánh sáng và lọc nước phù hợp nhất.', 'icon' => 'fa-solid fa-comments'],
+            ['title' => 'Thi công trọn gói – nhanh gọn', 'summary' => 'Sudes đảm nhận toàn bộ quy trình từ thiết kế đến bàn giao.', 'icon' => 'fa-solid fa-screwdriver-wrench'],
+            ['title' => 'Bảo hành & bảo dưỡng định kỳ', 'summary' => 'Bảo dưỡng thường xuyên giúp duy trì chất lượng nước và sức khỏe cá.', 'icon' => 'fa-solid fa-shield-heart'],
+            ['title' => 'Tùy chỉnh theo nhu cầu & ngân sách', 'summary' => 'Dịch vụ linh hoạt theo mục đích, không gian và ngân sách.', 'icon' => 'fa-solid fa-gears'],
+            ['title' => 'Cá nhân hóa – chăm sóc tận tâm', 'summary' => 'Mỗi công trình được theo dõi và chăm sóc tận tâm.', 'icon' => 'fa-solid fa-hand-holding-heart'],
+        ];
+        $faq = [
+            ['title' => 'Mình mới bắt đầu chơi thủy sinh, nên chọn loại cá nào dễ nuôi nhất?', 'summary' => 'Nên bắt đầu với các loại cá khỏe, dễ chăm như cá bảy màu, cá neon, cá molly hoặc cá platy.'],
+            ['title' => 'Nước bể của mình bị đục, làm sao để xử lý?', 'summary' => 'Kiểm tra hệ lọc, giảm lượng thức ăn và thay từng phần nước để ổn định hệ vi sinh.'],
+            ['title' => 'Bao lâu thì nên thay nước cho bể cá thủy sinh?', 'summary' => 'Nên thay 20–30% nước mỗi tuần, tùy mật độ cá và hệ lọc.'],
+            ['title' => 'Mình muốn set up bể cá trọn gói, Sudes có đến tận nhà không?', 'summary' => 'Có. Sudes khảo sát, thiết kế, thi công và bàn giao tận nơi.'],
+            ['title' => 'Mua cá về có được bảo hành không?', 'summary' => 'Sudes có chính sách hỗ trợ riêng theo từng dòng cá và điều kiện vận chuyển.'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Sudes Aquarium', 'description' => 'Slider cá cảnh toàn chiều rộng lấy từ banner CA0050.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ca0050-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'media' => ['image' => $hero], 'data' => ['vi' => array_merge($heading('Sudes Aquarium'), ['content' => ['slides' => [['title' => 'Sudes Aquarium', 'image' => $hero, 'link_url' => '#the-gioi-ca-canh']]]]), 'en' => $heading('Sudes Aquarium')]],
+            ['block_type' => 'featured_categories', 'label' => 'Khám phá danh mục', 'description' => 'Sáu danh mục cá, cây, đèn, thức ăn, hồ và thuốc.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'settings' => ['source' => 'custom', 'limit' => 6], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số danh mục']], 'data' => ['vi' => $withItems($heading('KHÁM PHÁ SUDES AQUARIUM'), $categories), 'en' => $withItems($heading('EXPLORE SUDES AQUARIUM'), $categories)]],
+            ['block_type' => 'ca0050_about', 'label' => 'Giới thiệu Sudes', 'description' => 'Giới thiệu, thống kê và ảnh hồ thủy sinh.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'media' => ['image' => $aquascape], 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $withItems($heading('GIỚI THIỆU VỀ SUDES AQUARIUM', 'Với niềm đam mê và kinh nghiệm, Sudes cam kết sản phẩm chất lượng, dịch vụ tận tâm và tư vấn chuyên nghiệp.', 'Sudes Aquarium là thế giới thu nhỏ dành cho những ai yêu thích vẻ đẹp của thủy sinh và cá cảnh.'), $stats), 'en' => $withItems($heading('ABOUT SUDES AQUARIUM'), $stats)]],
+            ['block_type' => 'ca0050_fish_products', 'label' => 'Thế giới cá cảnh', 'description' => 'Lưới tám sản phẩm cá cảnh từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'the-gioi-ca-canh', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8], 'settings_schema' => $productSchema(8), 'data' => ['vi' => $withItems($heading('THẾ GIỚI CÁ CẢNH'), $products), 'en' => $withItems($heading('ORNAMENTAL FISH'), $products)]],
+            ['block_type' => 'ca0050_tiktok', 'label' => 'Sudes trên TikTok', 'description' => 'Khối social media nền xanh đại dương.', 'preview_image' => $preview, 'anchor_id' => 'tiktok', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $heading('SUDES AQUARIUM ON TIKTOK', null, 'Nếu bạn yêu thích thế giới thủy sinh, TikTok của Sudes Aquarium chính là nơi dành cho bạn!'), 'en' => $heading('SUDES AQUARIUM ON TIKTOK')]],
+            ['block_type' => 'ca0050_setup', 'label' => 'Dịch vụ setup bể cá', 'description' => 'Sáu lợi ích setup bể cá bao quanh ảnh trung tâm.', 'preview_image' => $preview, 'anchor_id' => 'setup', 'media' => ['image' => $aquascape], 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $withItems($heading('SETUP BỂ CÁ THỦY SINH'), $setup), 'en' => $withItems($heading('AQUARIUM SETUP'), $setup)]],
+            ['block_type' => 'ca0050_accessories', 'label' => 'Hồ và phụ kiện', 'description' => 'Bốn sản phẩm hồ và phụ kiện từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'phu-kien', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'CA0050-HO', 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $withItems($heading('HỒ VÀ PHỤ KIỆN'), $products), 'en' => $withItems($heading('TANKS & ACCESSORIES'), $products)]],
+            ['block_type' => 'testimonials', 'label' => 'Review cóng tâm', 'description' => 'Đánh giá khách hàng với ảnh hồ thủy sinh.', 'preview_image' => $preview, 'anchor_id' => 'danh-gia', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 1], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đánh giá']], 'data' => ['vi' => $withItems($heading('REVIEW CÓNG TÂM'), [['name' => 'Ngọc Vy', 'role' => 'Kế toán', 'quote' => 'Cá khỏe, màu đẹp và thích nghi rất nhanh. Shop tư vấn kỹ cách nuôi nên mình mới chơi mà vẫn nuôi ổn.']]), 'en' => $heading('CUSTOMER REVIEW')]],
+            ['block_type' => 'latest_posts', 'label' => 'Tin tức Sudes', 'description' => 'Bốn bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số bài']], 'data' => ['vi' => $heading('TIN TỨC MỚI NHẤT TỪ SUDES CRAFT'), 'en' => $heading('LATEST NEWS FROM SUDES')]],
+            ['block_type' => 'ca0050_faq', 'label' => 'Giải đáp thắc mắc', 'description' => 'Accordion năm câu hỏi thường gặp.', 'preview_image' => $preview, 'anchor_id' => 'faq', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $withItems($heading('GIẢI ĐÁP THẮC MẮC', null, 'Có thắc mắc về cách nuôi cá, chăm bể hay chọn phụ kiện thủy sinh?'), $faq), 'en' => $withItems($heading('FREQUENTLY ASKED QUESTIONS'), $faq)]],
+            ['block_type' => 'partner_logos', 'label' => 'Đối tác Sudes', 'description' => 'Logo đối tác lấy từ CMS Partners.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => $heading('ĐỐI TÁC CỦA SUDES AQUARIUM'), 'en' => $heading('SUDES AQUARIUM PARTNERS')]],
+            ['block_type' => 'ca0050_footer', 'label' => 'Footer và đăng ký nhận tin', 'description' => 'Thông tin liên hệ, chính sách và newsletter.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $heading('ĐĂNG KÝ NHẬN TIN KHUYẾN MÃI', null, 'Đăng ký nhận tin khuyến mãi từ Sudes Aquarium để không bỏ lỡ các ưu đãi hấp dẫn!'), 'en' => $heading('PROMOTION NEWSLETTER')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function shop604DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/SHOP604/preview-shop604.svg';
+        $hero = '/theme-demo/shop604/hero-fashion.png';
+        $rose = '/theme-demo/shop604/product-women-rose.png';
+        $knit = '/theme-demo/shop604/product-women-knit.png';
+        $green = '/theme-demo/shop604/product-men-green.png';
+        $wide = '/theme-demo/shop604/ad-lac-quan.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $withItems = fn (array $base, array $values): array => array_merge($base, ['content' => ['items' => $values]]);
+        $productSchema = fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog'], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm sản phẩm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật', 'default' => false],
+        ];
+        $products = [
+            ['title' => 'Áo ngực nữ thanh lịch', 'summary' => 'BEAN LINGERIE', 'price' => 235000, 'original_price' => 289000, 'image' => $knit, 'url' => '#'],
+            ['title' => 'Bộ nội y ren dịu dàng', 'summary' => 'BRA LIVE', 'price' => 279000, 'original_price' => 399000, 'image' => $rose, 'url' => '#'],
+            ['title' => 'Bralette mềm mại', 'summary' => 'BEAN PUSH', 'price' => 169000, 'original_price' => 199000, 'image' => $green, 'url' => '#'],
+            ['title' => 'Bikini hiện đại', 'summary' => 'BEAN BIKINI', 'price' => 439000, 'original_price' => 559000, 'image' => $wide, 'url' => '#'],
+            ['title' => 'Áo ren không gọng', 'summary' => 'LING BRALETTE', 'price' => 149000, 'original_price' => 188000, 'image' => $green, 'url' => '#'],
+            ['title' => 'Bộ bikini ba mảnh', 'summary' => 'BEAN BIKINI', 'price' => 440000, 'original_price' => 599000, 'image' => $wide, 'url' => '#'],
+            ['title' => 'Đồ bơi nữ thanh lịch', 'summary' => 'BRA LIVE', 'price' => 360000, 'original_price' => 410000, 'image' => $rose, 'url' => '#'],
+            ['title' => 'Bikini đi biển dáng quấn', 'summary' => 'BEAN BIKINI', 'price' => 480000, 'original_price' => 535000, 'image' => $knit, 'url' => '#'],
+        ];
+        $categories = [
+            ['title' => 'Áo ngực', 'summary' => 'Thiết kế tôn dáng, mềm mại và nâng đỡ tự nhiên.', 'image' => $knit, 'url' => '#san-pham-moi'],
+            ['title' => 'Quần lót', 'summary' => 'Thoải mái trong từng khoảnh khắc thường ngày.', 'image' => $rose, 'url' => '#san-pham-moi'],
+            ['title' => 'Bikini', 'summary' => 'Tự tin khoe trọn vẻ đẹp quyến rũ và năng động.', 'image' => $wide, 'url' => '#bo-suu-tap'],
+        ];
+        $benefits = [
+            ['title' => 'Miễn phí vận chuyển', 'summary' => 'Miễn phí vận chuyển cho khu vực TP.HCM', 'icon' => 'fa-solid fa-box'],
+            ['title' => 'Thanh toán bảo mật', 'summary' => 'Thanh toán được bảo mật hoàn toàn', 'icon' => 'fa-solid fa-shield-halved'],
+            ['title' => 'Đổi trả dễ dàng', 'summary' => 'Hỗ trợ đổi trả nếu sản phẩm bị lỗi', 'icon' => 'fa-solid fa-arrows-rotate'],
+            ['title' => 'Hotline 24/7', 'summary' => 'Luôn hỗ trợ mọi lúc khi có yêu cầu', 'icon' => 'fa-solid fa-headset'],
+        ];
+        $testimonials = [
+            ['name' => 'Nguyễn Thảo', 'role' => 'Nhân viên văn phòng', 'quote' => 'Form ôm người đẹp, nâng ngực vừa phải, không lộ hay khó chịu.', 'image' => $knit],
+            ['name' => 'Hoàng Duyên', 'role' => 'Kỹ sư', 'quote' => 'Thiết kế thanh mảnh, nữ tính và tạo cảm giác nhẹ nhàng.', 'image' => $rose],
+            ['name' => 'Thu Hà', 'role' => 'Kinh doanh', 'quote' => 'Chất vải mềm, co giãn tốt, mặc không bí hay cọ rát da.', 'image' => $wide],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Bean Lingerie', 'description' => 'Slider editorial toàn màn hình lấy từ banner SHOP604.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'shop604-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'media' => ['image' => $hero], 'data' => ['vi' => array_merge($heading('Lingerie Bras', 'Bộ Sưu Tập Mới', 'Thiết kế hoàn hảo tôn lên vẻ đẹp nữ tính đầy tinh tế.', 'Mua Ngay'), ['content' => ['slides' => [['title' => 'Lingerie Bras', 'kicker' => 'Bộ Sưu Tập Mới', 'summary' => 'Thiết kế hoàn hảo tôn lên vẻ đẹp nữ tính đầy tinh tế.', 'button_label' => 'Mua Ngay', 'image' => $hero, 'link_url' => '#san-pham-moi']]]]), 'en' => $heading('Lingerie Bras', 'New Collection', 'Refined designs made to celebrate your natural beauty.', 'Shop now')]],
+            ['block_type' => 'featured_categories', 'label' => 'Danh mục sản phẩm', 'description' => 'Ba danh mục nổi bật với ảnh dọc và mô tả.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'settings' => ['source' => 'custom', 'limit' => 3], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số danh mục']], 'data' => ['vi' => $withItems($heading('Danh Mục Sản Phẩm'), $categories), 'en' => $withItems($heading('Product Categories'), $categories)]],
+            ['block_type' => 'shop604_flash_sale', 'label' => 'Flash sale', 'description' => 'Sản phẩm khuyến mãi và đồng hồ đếm ngược.', 'preview_image' => $preview, 'anchor_id' => 'flash-sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $withItems($heading('Flash Sale', 'ƯU ĐÃI CHỚP NHOÁNG'), $products), 'en' => $withItems($heading('Flash Sale', 'LIMITED OFFERS'), $products)]],
+            ['block_type' => 'shop604_editorial_one', 'label' => 'Banner editorial 1', 'description' => 'Thông điệp bên trái, ảnh bên phải.', 'preview_image' => $preview, 'anchor_id' => 'phong-cach', 'media' => ['image' => $rose], 'settings' => ['cta_url' => '#san-pham-moi'], 'settings_schema' => ['cta_url' => ['type' => 'text', 'label' => 'Liên kết nút']], 'data' => ['vi' => $heading('Nét Quyến Rũ Dịu Dàng', 'Gợi Cảm Cuốn Hút', 'Thiết kế hoàn hảo với chất liệu cao cấp, tôn lên vẻ đẹp nữ tính đầy quyến rũ và thanh lịch.', 'Mua Ngay'), 'en' => $heading('Softly Alluring', 'Captivating Style', 'Premium details that feel refined and feminine.', 'Shop now')]],
+            ['block_type' => 'shop604_new_arrivals', 'label' => 'Sản phẩm mới', 'description' => 'Bốn sản phẩm mới nhất từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $withItems($heading('Sản Phẩm Mới'), $products), 'en' => $withItems($heading('New Arrivals'), $products)]],
+            ['block_type' => 'shop604_editorial_two', 'label' => 'Banner editorial 2', 'description' => 'Ảnh bên trái, thông điệp bên phải.', 'preview_image' => $preview, 'anchor_id' => 'net-dep-tu-nhien', 'media' => ['image' => $green], 'settings' => ['cta_url' => '#bo-suu-tap'], 'settings_schema' => ['cta_url' => ['type' => 'text', 'label' => 'Liên kết nút']], 'data' => ['vi' => $heading('Nét Đẹp Tự Nhiên', 'Thanh Lịch Hiện Đại', 'Chất liệu cao cấp mang lại cảm giác êm ái và vừa vặn, giúp bạn tự tin suốt cả ngày.', 'Mua Ngay'), 'en' => $heading('Natural Beauty', 'Modern Elegance', 'Premium fabrics designed for effortless comfort.', 'Shop now')]],
+            ['block_type' => 'shop604_collection_tabs', 'label' => 'Bộ sưu tập dạng tab', 'description' => 'Lưới tám sản phẩm có tab bộ sưu tập.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8], 'settings_schema' => $productSchema(8), 'data' => ['vi' => $withItems($heading('Đồ bơi sexy · Đồ ngủ xinh · Phụ kiện'), $products), 'en' => $withItems($heading('Swim · Sleep · Accessories'), $products)]],
+            ['block_type' => 'shop604_lookbook', 'label' => 'Lookbook hotspot', 'description' => 'Ảnh toàn chiều rộng với các điểm khám phá sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'lookbook', 'media' => ['image' => $hero], 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $heading('Lookbook Bean'), 'en' => $heading('Bean Lookbook')]],
+            ['block_type' => 'testimonials', 'label' => 'Đánh giá khách hàng', 'description' => 'Đánh giá từ CMS Testimonials hoặc nhập thủ công.', 'preview_image' => $preview, 'anchor_id' => 'danh-gia', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 3], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đánh giá']], 'data' => ['vi' => $withItems($heading('Đánh Giá Khách Hàng'), $testimonials), 'en' => $withItems($heading('Customer Reviews'), $testimonials)]],
+            ['block_type' => 'partner_logos', 'label' => 'Thương hiệu đồng hành', 'description' => 'Logo đối tác lấy từ CMS Partners.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 8], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số thương hiệu']], 'data' => ['vi' => $heading('Thương hiệu đồng hành'), 'en' => $heading('Featured brands')]],
+            ['block_type' => 'latest_posts', 'label' => 'Tin tức', 'description' => 'Bốn bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số bài']], 'data' => ['vi' => $heading('Tin Tức'), 'en' => $heading('News')]],
+            ['block_type' => 'shop604_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn chính sách dịch vụ nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $withItems($heading(), $benefits), 'en' => $withItems($heading(), $benefits)]],
+            ['block_type' => 'shop604_gallery', 'label' => 'Gallery cuối trang', 'description' => 'Bốn ảnh lifestyle liền nhau.', 'preview_image' => $preview, 'anchor_id' => 'gallery', 'settings' => ['source' => 'custom', 'limit' => 4], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số ảnh']], 'data' => ['vi' => $withItems($heading('Bean Gallery'), $products), 'en' => $withItems($heading('Bean Gallery'), $products)]],
+            ['block_type' => 'shop604_newsletter', 'label' => 'Đăng ký nhận tin', 'description' => 'Nội dung được render trong footer dùng chung.', 'preview_image' => $preview, 'anchor_id' => 'dang-ky', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $heading('Đăng Ký Nhận Tin', null, 'Nhận thông tin về các chương trình khuyến mãi.', 'Đăng ký'), 'en' => $heading('Newsletter', null, 'Receive our latest promotions.', 'Subscribe')]],
         ];
     }
 

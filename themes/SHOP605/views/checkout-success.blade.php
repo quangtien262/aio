@@ -1,0 +1,1 @@
+@extends('theme-shop605::layout') @section('title','Đặt hàng thành công') @section('content')<main class="s605-section"><div class="s605-container s605-prose" style="text-align:center"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã mua sắm tại OH!Under.</p><a class="s605-button" href="{{ route('site.home') }}">Về trang chủ</a></div></main>@endsection

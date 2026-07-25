@@ -1,0 +1,2 @@
+@php($title=data_get($item,'title','OH!Under')) @php($price=(int)data_get($item,'price',0)) @php($old=(int)data_get($item,'original_price',0))
+<article class="s605-card {{ ($overlay??false)?'is-overlay':'' }}"><a href="{{ data_get($item,'url','#') }}"><img src="{{ data_get($item,'image',data_get($item,'image_url','/theme-demo/shop605/product-women-knit.png')) }}" alt="{{ $title }}"></a><div><span>● ○ ●</span><h3>{{ $title }}</h3><strong>{{ number_format($price,0,',','.') }}₫</strong>@if($old>$price)<del>{{ number_format($old,0,',','.') }}₫</del>@endif</div></article>

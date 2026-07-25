@@ -141,8 +141,13 @@ Lỗi chữ kiểu `TÃ`, `Ä‘`, `áº`, `á»` là lỗi nội dung bị chuy
 
 - [ ] Tất cả file Blade, JSON, PHP và JavaScript chứa tiếng Việt phải được lưu dưới dạng UTF-8; không chuyển qua ANSI/Windows-1252.
 - [ ] Không copy lại chuỗi tiếng Việt đang hiển thị mojibake từ terminal, trình duyệt, log hoặc theme cũ.
+- [ ] Nút/link **Đăng nhập** trên header phải dùng trigger `data-xd-auth-open="login"` và khi click phải mở auth modal ở tab **Đăng nhập**; không điều hướng sang trang login riêng.
+- [ ] Nút/link **Đăng ký** trên header phải dùng trigger `data-xd-auth-open="register"` và khi click phải mở cùng auth modal ở tab **Đăng ký**; không điều hướng sang trang đăng ký riêng.
+- [ ] Nếu header có thêm icon tài khoản hoặc nút auth ở mobile menu, mọi điểm bấm đó cũng phải mở đúng modal và đúng tab tương ứng.
+- [ ] `layout.blade.php` phải nạp partial modal và script điều khiển trigger trên tất cả trang storefront, không chỉ homepage.
 - [ ] Nếu copy `partials/auth-modal.blade.php` từ theme khác, phải mở cả hai tab **Đăng nhập** và **Đăng ký** để kiểm tra tiêu đề, nhãn, placeholder, trạng thái đang xử lý và thông báo lỗi/thành công.
 - [ ] Ưu tiên dùng translation hoặc partial dùng chung cho nội dung modal; CSS riêng của theme chỉ chịu trách nhiệm trình bày.
+- [ ] Kiểm thử tương tác thật trên desktop và mobile: click **Đăng nhập**, xác nhận modal hiển thị và tab đăng nhập được chọn; đóng modal; click **Đăng ký**, xác nhận modal hiển thị và tab đăng ký được chọn.
 - [ ] Sau khi tạo hoặc sửa theme, chạy audit encoding cho toàn bộ modal đăng nhập:
 
 ```bash
@@ -278,6 +283,9 @@ Checklist UI:
 - [ ] Category/Product/Search render được.
 - [ ] Cart/Checkout render được.
 - [ ] Header/footer xuất hiện trên các trang phụ.
+- [ ] Click **Đăng nhập** trên header mở auth modal ở tab đăng nhập; không reload hoặc đổi trang.
+- [ ] Click **Đăng ký** trên header mở auth modal ở tab đăng ký; không reload hoặc đổi trang.
+- [ ] Đóng modal rồi mở lại từng flow vẫn đúng tab; kiểm tra cả header desktop và mobile menu/icon tài khoản nếu có.
 - [ ] Static copy lấy từ `lang/*.json`.
 - [ ] Block động hiển thị dữ liệu thật hoặc fallback ổn.
 - [ ] Đăng nhập admin, mở `?mod=admin`: mọi landing theme có nút **Sửa khối**, modal mở được và lưu đúng block ID.

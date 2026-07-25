@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480">
+  <rect width="720" height="480" fill="#fff9f6"/><rect width="720" height="64" fill="#fff"/>
+  <text x="28" y="46" fill="#f08f95" font-family="Georgia" font-size="44">B<tspan fill="#222" font-size="34">ean</tspan></text><text x="49" y="58" fill="#ff6387" font-family="Arial" font-size="6" letter-spacing="4">LINGERIE</text>
+  <g fill="#252323" font-family="Arial" font-size="9"><text x="160" y="38">TRANG CHỦ</text><text x="235" y="38">ĐỒ LÓT NỮ</text><text x="310" y="38">BIKINI &amp; ĐỒ BƠI</text><text x="420" y="38">FLASH SALE</text><text x="500" y="38">TIN TỨC</text></g>
+  <rect y="64" width="720" height="254" fill="#c7afa3"/><rect x="0" y="64" width="230" height="254" fill="#d6c5b9"/><rect x="475" y="64" width="245" height="254" fill="#b99687"/>
+  <text x="275" y="150" fill="#fff" font-family="Georgia" font-size="18">BỘ SƯU TẬP MỚI</text><text x="250" y="190" fill="#fff" font-family="Georgia" font-size="34" font-weight="700">Lingerie Bras</text><rect x="302" y="236" width="115" height="32" rx="5" fill="#fff"/><text x="331" y="257" fill="#222" font-family="Arial" font-size="11" font-weight="700">MUA NGAY</text>
+  <rect y="318" width="720" height="162" fill="#ff6387"/><text x="35" y="357" fill="#fff" font-family="Georgia" font-size="26" font-weight="700">Danh Mục Sản Phẩm</text>
+  <g><rect x="35" y="375" width="190" height="87" rx="8" fill="#ead9d2"/><rect x="265" y="375" width="190" height="87" rx="8" fill="#f2caca"/><rect x="495" y="375" width="190" height="87" rx="8" fill="#dcc0b3"/></g>
+</svg>

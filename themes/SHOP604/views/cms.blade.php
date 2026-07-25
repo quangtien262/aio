@@ -1,0 +1,1 @@
+@extends('theme-shop604::layout') @section('title',data_get($page??null,'title','Bean Lingerie')) @section('content') @include('theme-shop604::partials.content-shell',['title'=>data_get($page??null,'title'),'summary'=>data_get($page??null,'excerpt'),'cover'=>data_get($page??null,'cover_image_url'),'body'=>data_get($page??null,'body')]) @endsection

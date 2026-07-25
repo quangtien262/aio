@@ -1,0 +1,13 @@
+{
+  "name": "SHOP605 OH!Under",
+  "key": "SHOP605",
+  "version": "1.0.0",
+  "description": "Theme ecommerce thời trang mặc nhà và nội y với màu hồng trẻ trung, sale, sản phẩm mới, bộ sưu tập, câu chuyện khách hàng và blog.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {"thumbnail": "preview-shop605.svg", "cover": "cover-shop605.svg"},
+  "blocks": ["hero-gallery","service-benefits","season-sale","new-products","best-sellers","editorial-banner","collection-mosaic","customer-story","latest-news","footer-newsletter"],
+  "supports": {"dark_mode": false,"multi_homepage": true,"custom_css": true,"block_mapping": true},
+  "localization": {"default_locale": "vi","supported_locales": ["vi","en"]},
+  "demo": {"content_path": "demo/content","settings_path": "demo/settings","default_preset": "shop605-oh-under"}
+}

@@ -1,0 +1,1 @@
+@extends('theme-ca0050::layout') @section('title','Đặt hàng thành công') @section('content')<main class="ca50-section"><div class="ca50-container ca50-prose" style="text-align:center"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã mua sắm tại Sudes Aquarium.</p><a class="ca50-button" href="{{ route('site.home') }}">Về trang chủ</a></div></main>@endsection
