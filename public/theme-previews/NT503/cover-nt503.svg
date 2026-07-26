@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="760" viewBox="0 0 1440 760">
+  <defs><linearGradient id="hero" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5e7d9"/><stop offset="1" stop-color="#caa98c"/></linearGradient></defs>
+  <rect width="1440" height="760" fill="#fff"/>
+  <rect width="1440" height="80" fill="#fff"/>
+  <text x="85" y="54" font-family="Arial" font-size="38" font-weight="900">WOLF<tspan fill="#07563d">BED</tspan></text>
+  <rect y="80" width="1440" height="54" fill="#07563d"/>
+  <rect y="134" width="1440" height="420" fill="url(#hero)"/>
+  <rect x="780" y="322" width="560" height="155" rx="18" fill="#f1d1cf"/>
+  <rect x="805" y="286" width="225" height="140" rx="14" fill="#f8e8e6"/>
+  <circle cx="1040" cy="350" r="60" fill="#e8aaa7"/>
+  <text x="390" y="338" font-family="Georgia" font-size="82" fill="#3d9c70">Wolf Bed CUTIE</text>
+  <text x="505" y="385" font-family="Arial" font-size="25" fill="#fff">Êm dịu và nâng niu giấc mơ của con</text>
+  <rect x="55" y="590" width="315" height="130" rx="14" fill="#07563d"/>
+  <rect x="390" y="590" width="315" height="130" rx="14" fill="#f1ece6"/>
+  <rect x="725" y="590" width="315" height="130" rx="14" fill="#f1ece6"/>
+  <rect x="1060" y="590" width="325" height="130" rx="14" fill="#07563d"/>
+</svg>

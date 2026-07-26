@@ -6,13 +6,13 @@
     $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342'));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $email = trim((string) ($branding['support_email'] ?? 'admin@htvietnam.vn'));
-    $address = trim((string) ($branding['support_location'] ?? '196 NguyÃ¡Â»â€¦n Ã„ÂÃƒÂ¬nh ChiÃ¡Â»Æ’u, QuÃ¡ÂºÂ­n 3, TP.HCM'));
+    $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'));
     $productItems = collect($products ?? []);
     $categoryItems = collect($searchCategories ?? []);
     $filters = $searchFilters ?? [];
     $currentCategory = (string) ($filters['category'] ?? '');
     $searchQuery = (string) ($searchQuery ?? '');
-    $formatCurrency = fn ($value) => $value === null || (float) $value <= 0 ? 'LiÃƒÂªn hÃ¡Â»â€¡' : number_format((float) $value, 0, ',', '.').'Ã„â€˜';
+    $formatCurrency = fn ($value) => $value === null || (float) $value <= 0 ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
 
@@ -38,9 +38,9 @@
         ->values();
 
     $homeUrl = route('site.home');
-    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chÃ¡Â»Â§', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
+    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chÃ¡Â»Â§',
+            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ',
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -54,23 +54,23 @@
         ->values();
 
     $hasProductItem = $navItems->contains(function (array $item): bool {
-        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m', 'san pham', 'products', 'product'], true);
+        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
     });
 
     if ($productNavigationItems->isNotEmpty()) {
         if ($hasProductItem) {
             $navItems = $navItems->map(function (array $item) use ($productNavigationItems): array {
                 $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
-                if (in_array($label, ['sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
                     $item['children'] = $productNavigationItems->all();
                 }
                 return $item;
             })->values();
         } else {
             $navArray = $navItems->values()->all();
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chÃ¡Â»Â§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [[
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m',
+                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -93,7 +93,7 @@
 
 @extends('theme-xd0320::layout')
 
-@section('title'){{ $searchQuery !== '' ? 'TÃƒÂ¬m kiÃ¡ÂºÂ¿m: '.$searchQuery : 'TÃƒÂ¬m kiÃ¡ÂºÂ¿m sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' }} | {{ $logoAlt }}@endsection
+@section('title'){{ $searchQuery !== '' ? 'Tìm kiếm: '.$searchQuery : 'Tìm kiếm sản phẩm' }} | {{ $logoAlt }}@endsection
 
 @push('head')
     <style>
@@ -152,42 +152,42 @@
             <section class="xd-hero">
                 <div class="xd-container">
                     <div class="xd-breadcrumb">
-                        <a href="{{ route('site.home') }}">Trang chÃ¡Â»Â§</a>
+                        <a href="{{ route('site.home') }}">Trang chủ</a>
                         <span>/</span>
-                        <strong>TÃƒÂ¬m kiÃ¡ÂºÂ¿m</strong>
+                        <strong>Tìm kiếm</strong>
                     </div>
                     <span class="xd-kicker">Catalog</span>
-                    <h1>{{ $searchQuery !== '' ? 'KÃ¡ÂºÂ¿t quÃ¡ÂºÂ£ cho "'.$searchQuery.'"' : 'TÃƒÂ¬m kiÃ¡ÂºÂ¿m sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' }}</h1>
-                    <p>Tra cÃ¡Â»Â©u nhanh theo tÃ¡Â»Â« khÃƒÂ³a, danh mÃ¡Â»Â¥c vÃƒÂ  sÃ¡ÂºÂ¯p xÃ¡ÂºÂ¿p theo nhu cÃ¡ÂºÂ§u mua hÃƒÂ ng cÃ¡Â»Â§a khÃƒÂ¡ch.</p>
+                    <h1>{{ $searchQuery !== '' ? 'Kết quả cho "'.$searchQuery.'"' : 'Tìm kiếm sản phẩm' }}</h1>
+                    <p>Tra cứu nhanh theo từ khóa, danh mục và sắp xếp theo nhu cầu mua hàng của khách.</p>
                 </div>
             </section>
 
             <section class="xd-container xd-search-shell">
                 <aside>
                     <div class="xd-panel">
-                        <h2>BÃ¡Â»â„¢ lÃ¡Â»Âc</h2>
+                        <h2>Bộ lọc</h2>
                         <form class="xd-filter-form" method="GET" action="{{ route('site.catalog.search') }}">
-                            <input type="search" name="q" value="{{ $searchQuery }}" placeholder="TÃƒÂ¬m sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m, mÃƒÂ£ SKU...">
+                            <input type="search" name="q" value="{{ $searchQuery }}" placeholder="Tìm sản phẩm, mã SKU...">
                             <select name="category">
-                                <option value="">TÃ¡ÂºÂ¥t cÃ¡ÂºÂ£ danh mÃ¡Â»Â¥c</option>
+                                <option value="">Tất cả danh mục</option>
                                 @foreach ($categoryItems as $category)
                                     <option value="{{ $category->slug }}" {{ $currentCategory === $category->slug ? 'selected' : '' }}>{{ $category->name }}</option>
                                 @endforeach
                             </select>
                             <select name="sort">
-                                <option value="default" {{ ($filters['sort'] ?? 'default') === 'default' ? 'selected' : '' }}>MÃ¡Â»â€ºi nhÃ¡ÂºÂ¥t</option>
-                                <option value="price_asc" {{ ($filters['sort'] ?? '') === 'price_asc' ? 'selected' : '' }}>GiÃƒÂ¡ tÃ„Æ’ng dÃ¡ÂºÂ§n</option>
-                                <option value="price_desc" {{ ($filters['sort'] ?? '') === 'price_desc' ? 'selected' : '' }}>GiÃƒÂ¡ giÃ¡ÂºÂ£m dÃ¡ÂºÂ§n</option>
-                                <option value="bestseller" {{ ($filters['sort'] ?? '') === 'bestseller' ? 'selected' : '' }}>BÃƒÂ¡n chÃ¡ÂºÂ¡y</option>
+                                <option value="default" {{ ($filters['sort'] ?? 'default') === 'default' ? 'selected' : '' }}>Mới nhất</option>
+                                <option value="price_asc" {{ ($filters['sort'] ?? '') === 'price_asc' ? 'selected' : '' }}>Giá tăng dần</option>
+                                <option value="price_desc" {{ ($filters['sort'] ?? '') === 'price_desc' ? 'selected' : '' }}>Giá giảm dần</option>
+                                <option value="bestseller" {{ ($filters['sort'] ?? '') === 'bestseller' ? 'selected' : '' }}>Bán chạy</option>
                             </select>
-                            <button type="submit">LÃ¡Â»Âc sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m</button>
+                            <button type="submit">Lọc sản phẩm</button>
                         </form>
                     </div>
                     <div class="xd-panel">
-                        <h3>Danh mÃ¡Â»Â¥c</h3>
+                        <h3>Danh mục</h3>
                         <div class="xd-side-list">
                             <a class="xd-side-link {{ $currentCategory === '' ? 'is-active' : '' }}" href="{{ route('site.catalog.search', request()->except(['category', 'page'])) }}">
-                                <span>TÃ¡ÂºÂ¥t cÃ¡ÂºÂ£</span>
+                                <span>Tất cả</span>
                                 <small>{{ (int) ($resultCount ?? $productItems->count()) }}</small>
                             </a>
                             @foreach ($categoryItems as $category)
@@ -198,27 +198,27 @@
                         </div>
                     </div>
                     <div class="xd-panel xd-promo">
-                        <h3>CÃ¡ÂºÂ§n tÃ†Â° vÃ¡ÂºÂ¥n nhanh?</h3>
-                        <p>GÃ¡Â»Â­i tÃ¡Â»Â« khÃƒÂ³a hoÃ¡ÂºÂ·c gÃ¡Â»Âi hotline Ã„â€˜Ã¡Â»Æ’ Ã„â€˜Ã¡Â»â„¢i ngÃ…Â© XD0320 gÃ¡Â»Â£i ÃƒÂ½ nhÃƒÂ³m sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m phÃƒÂ¹ hÃ¡Â»Â£p cho cÃƒÂ´ng trÃƒÂ¬nh.</p>
+                        <h3>Cần tư vấn nhanh?</h3>
+                        <p>Gửi từ khóa hoặc gọi hotline để đội ngũ XD0320 gợi ý nhóm sản phẩm phù hợp cho công trình.</p>
                     </div>
                 </aside>
 
                 <div>
                     <div class="xd-toolbar">
                         <div>
-                            <span class="xd-kicker">KÃ¡ÂºÂ¿t quÃ¡ÂºÂ£</span>
-                            <h2>{{ (int) ($resultCount ?? $productItems->count()) }} sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m phÃƒÂ¹ hÃ¡Â»Â£p</h2>
-                            <p>{{ $searchQuery !== '' ? 'Ã„Âang lÃ¡Â»Âc theo tÃ¡Â»Â« khÃƒÂ³a: '. $searchQuery : 'Danh sÃƒÂ¡ch sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m Ã„â€˜ang Ã„â€˜Ã†Â°Ã¡Â»Â£c hiÃ¡Â»Æ’n thÃ¡Â»â€¹ theo bÃ¡Â»â„¢ lÃ¡Â»Âc hiÃ¡Â»â€¡n tÃ¡ÂºÂ¡i.' }}</p>
+                            <span class="xd-kicker">Kết quả</span>
+                            <h2>{{ (int) ($resultCount ?? $productItems->count()) }} sản phẩm phù hợp</h2>
+                            <p>{{ $searchQuery !== '' ? 'Đang lọc theo từ khóa: '. $searchQuery : 'Danh sách sản phẩm đang được hiển thị theo bộ lọc hiện tại.' }}</p>
                         </div>
                         <form method="GET" action="{{ route('site.catalog.search') }}">
                             @foreach (request()->except(['sort', 'page']) as $key => $value)
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                             @endforeach
                             <select class="xd-sort" name="sort" onchange="this.form.submit()">
-                                <option value="default" {{ ($filters['sort'] ?? 'default') === 'default' ? 'selected' : '' }}>MÃ¡Â»â€ºi nhÃ¡ÂºÂ¥t</option>
-                                <option value="price_asc" {{ ($filters['sort'] ?? '') === 'price_asc' ? 'selected' : '' }}>GiÃƒÂ¡ tÃ„Æ’ng dÃ¡ÂºÂ§n</option>
-                                <option value="price_desc" {{ ($filters['sort'] ?? '') === 'price_desc' ? 'selected' : '' }}>GiÃƒÂ¡ giÃ¡ÂºÂ£m dÃ¡ÂºÂ§n</option>
-                                <option value="bestseller" {{ ($filters['sort'] ?? '') === 'bestseller' ? 'selected' : '' }}>BÃƒÂ¡n chÃ¡ÂºÂ¡y</option>
+                                <option value="default" {{ ($filters['sort'] ?? 'default') === 'default' ? 'selected' : '' }}>Mới nhất</option>
+                                <option value="price_asc" {{ ($filters['sort'] ?? '') === 'price_asc' ? 'selected' : '' }}>Giá tăng dần</option>
+                                <option value="price_desc" {{ ($filters['sort'] ?? '') === 'price_desc' ? 'selected' : '' }}>Giá giảm dần</option>
+                                <option value="bestseller" {{ ($filters['sort'] ?? '') === 'bestseller' ? 'selected' : '' }}>Bán chạy</option>
                             </select>
                         </form>
                     </div>
@@ -229,10 +229,10 @@
                                 <a class="xd-product-card" href="{{ $product['url'] ?? '#' }}">
                                     <span class="xd-product-image">
                                         <img src="{{ $product['image'] ?? 'https://picsum.photos/seed/xd0320-product/720/540' }}" alt="{{ $product['title'] ?? '' }}">
-                                        <span class="xd-product-tag">{{ $product['tag'] ?? 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' }}</span>
+                                        <span class="xd-product-tag">{{ $product['tag'] ?? 'Sản phẩm' }}</span>
                                     </span>
                                     <span class="xd-product-body">
-                                        <h3>{{ $product['title'] ?? 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' }}</h3>
+                                        <h3>{{ $product['title'] ?? 'Sản phẩm' }}</h3>
                                         <span class="xd-price-row">
                                             <strong class="xd-price">{{ $formatCurrency($product['price'] ?? null) }}</strong>
                                             @if (!empty($product['old_price']))
@@ -250,9 +250,9 @@
                         @if (($pagination ?? null) && method_exists($pagination, 'previousPageUrl'))
                             <div class="xd-pagination">
                                 @if ($pagination->previousPageUrl())
-                                    <a href="{{ $pagination->previousPageUrl() }}">Trang trÃ†Â°Ã¡Â»â€ºc</a>
+                                    <a href="{{ $pagination->previousPageUrl() }}">Trang trước</a>
                                 @else
-                                    <span>Trang trÃ†Â°Ã¡Â»â€ºc</span>
+                                    <span>Trang trước</span>
                                 @endif
                                 @if ($pagination->nextPageUrl())
                                     <a href="{{ $pagination->nextPageUrl() }}">Trang sau</a>
@@ -262,7 +262,7 @@
                             </div>
                         @endif
                     @else
-                        <div class="xd-empty">ChÃ†Â°a tÃƒÂ¬m thÃ¡ÂºÂ¥y sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m phÃƒÂ¹ hÃ¡Â»Â£p. HÃƒÂ£y thÃ¡Â»Â­ tÃ¡Â»Â« khÃƒÂ³a khÃƒÂ¡c hoÃ¡ÂºÂ·c bÃ¡Â»Â bÃ¡Â»â€ºt bÃ¡Â»â„¢ lÃ¡Â»Âc.</div>
+                        <div class="xd-empty">Chưa tìm thấy sản phẩm phù hợp. Hãy thử từ khóa khác hoặc bỏ bớt bộ lọc.</div>
                     @endif
                 </div>
             </section>

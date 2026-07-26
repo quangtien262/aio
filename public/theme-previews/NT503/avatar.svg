@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360">
+  <rect width="360" height="360" rx="54" fill="#07563d"/>
+  <rect x="48" y="120" width="264" height="116" rx="25" fill="#f4e6df"/>
+  <rect x="68" y="91" width="118" height="92" rx="20" fill="#efc8ca"/>
+  <text x="180" y="292" text-anchor="middle" font-family="Arial" font-size="42" font-weight="900" fill="#fff">WOLF<tspan fill="#cfffab">BED</tspan></text>
+</svg>

@@ -16,10 +16,10 @@
     $isEnglish = app()->getLocale() === 'en';
     $formatCurrency = function ($value): string {
         if ($value === null || (float) $value <= 0) {
-            return 'LiÃƒÂªn hÃ¡Â»â€¡';
+            return 'Liên hệ';
         }
 
-        return number_format((float) $value, 0, ',', '.').'Ã„â€˜';
+        return number_format((float) $value, 0, ',', '.').'đ';
     };
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
@@ -52,7 +52,7 @@
     $homeUrl = route('site.home');
     if (! $navItems->contains(fn (array $item): bool => $isHomeLabel($item['label'] ?? '') || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => $isEnglish ? 'Home' : 'Trang chÃ¡Â»Â§',
+            'label' => $isEnglish ? 'Home' : 'Trang chủ',
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -78,7 +78,7 @@
             $navArray = $navItems->values()->all();
             $homeIndex = $navItems->search(fn (array $item): bool => $isHomeLabel($item['label'] ?? ''));
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [[
-                'label' => $isEnglish ? 'Products' : 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m',
+                'label' => $isEnglish ? 'Products' : 'Sản phẩm',
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -102,7 +102,7 @@
 
 @extends('theme-xd0320::layout')
 
-@section('title'){{ $isEnglish ? 'Checkout' : 'Thanh toÃƒÂ¡n' }} | {{ $logoAlt }}@endsection
+@section('title'){{ $isEnglish ? 'Checkout' : 'Thanh toán' }} | {{ $logoAlt }}@endsection
 
 @push('head')
     <style>
@@ -160,18 +160,18 @@
         <main class="xd-page-main">
             <div class="xd-container">
                 <nav class="xd-breadcrumb" aria-label="Breadcrumb">
-                    <a href="{{ route('site.home') }}">{{ $isEnglish ? 'Home' : 'Trang chÃ¡Â»Â§' }}</a>
+                    <a href="{{ route('site.home') }}">{{ $isEnglish ? 'Home' : 'Trang chủ' }}</a>
                     <span>/</span>
-                    <a href="{{ route('site.cart.index') }}">{{ $isEnglish ? 'Cart' : 'GiÃ¡Â»Â hÃƒÂ ng' }}</a>
+                    <a href="{{ route('site.cart.index') }}">{{ $isEnglish ? 'Cart' : 'Giỏ hàng' }}</a>
                     <span>/</span>
-                    <strong>{{ $isEnglish ? 'Checkout' : 'Thanh toÃƒÂ¡n' }}</strong>
+                    <strong>{{ $isEnglish ? 'Checkout' : 'Thanh toán' }}</strong>
                 </nav>
 
                 <section class="xd-heading">
                     <div>
-                        <span class="xd-kicker">{{ $isEnglish ? 'Checkout' : 'Thanh toÃƒÂ¡n' }}</span>
-                        <h1>{{ $isEnglish ? 'Complete your order' : 'HoÃƒÂ n tÃ¡ÂºÂ¥t Ã„â€˜Ã†Â¡n hÃƒÂ ng' }}</h1>
-                        <p>{{ $isEnglish ? 'Confirm delivery information and payment method before placing the order.' : 'XÃƒÂ¡c nhÃ¡ÂºÂ­n thÃƒÂ´ng tin nhÃ¡ÂºÂ­n hÃƒÂ ng vÃƒÂ  phÃ†Â°Ã†Â¡ng thÃ¡Â»Â©c thanh toÃƒÂ¡n trÃ†Â°Ã¡Â»â€ºc khi gÃ¡Â»Â­i Ã„â€˜Ã†Â¡n.' }}</p>
+                        <span class="xd-kicker">{{ $isEnglish ? 'Checkout' : 'Thanh toán' }}</span>
+                        <h1>{{ $isEnglish ? 'Complete your order' : 'Hoàn tất đơn hàng' }}</h1>
+                        <p>{{ $isEnglish ? 'Confirm delivery information and payment method before placing the order.' : 'Xác nhận thông tin nhận hàng và phương thức thanh toán trước khi gửi đơn.' }}</p>
                     </div>
                 </section>
 
@@ -181,22 +181,22 @@
 
                 @if (empty($cartItems))
                     <section class="xd-empty">
-                        <h2>{{ $isEnglish ? 'Your cart is empty' : 'GiÃ¡Â»Â hÃƒÂ ng Ã„â€˜ang trÃ¡Â»â€˜ng' }}</h2>
-                        <p>{{ $isEnglish ? 'Please add products before checkout.' : 'Vui lÃƒÂ²ng thÃƒÂªm sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m trÃ†Â°Ã¡Â»â€ºc khi thanh toÃƒÂ¡n.' }}</p>
-                        <a class="xd-button" href="{{ route('site.catalog.search') }}">{{ $isEnglish ? 'Browse products' : 'Xem sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' }}</a>
+                        <h2>{{ $isEnglish ? 'Your cart is empty' : 'Giỏ hàng đang trống' }}</h2>
+                        <p>{{ $isEnglish ? 'Please add products before checkout.' : 'Vui lòng thêm sản phẩm trước khi thanh toán.' }}</p>
+                        <a class="xd-button" href="{{ route('site.catalog.search') }}">{{ $isEnglish ? 'Browse products' : 'Xem sản phẩm' }}</a>
                     </section>
                 @else
                     <section class="xd-checkout-grid">
                         <form class="xd-panel xd-form-panel" method="POST" action="{{ route('site.checkout.store') }}">
                             @csrf
-                            <h2 class="xd-section-title">{{ $isEnglish ? 'Delivery information' : 'ThÃƒÂ´ng tin nhÃ¡ÂºÂ­n hÃƒÂ ng' }}</h2>
+                            <h2 class="xd-section-title">{{ $isEnglish ? 'Delivery information' : 'Thông tin nhận hàng' }}</h2>
                             <div class="xd-form-grid">
                                 <label class="xd-field">
-                                    <span>{{ $isEnglish ? 'Full name' : 'HÃ¡Â»Â tÃƒÂªn' }}</span>
+                                    <span>{{ $isEnglish ? 'Full name' : 'Họ tên' }}</span>
                                     <input name="customer_name" value="{{ old('customer_name', $form['customer_name'] ?? '') }}" required>
                                 </label>
                                 <label class="xd-field">
-                                    <span>{{ $isEnglish ? 'Phone' : 'SÃ¡Â»â€˜ Ã„â€˜iÃ¡Â»â€¡n thoÃ¡ÂºÂ¡i' }}</span>
+                                    <span>{{ $isEnglish ? 'Phone' : 'Số điện thoại' }}</span>
                                     <input name="customer_phone" value="{{ old('customer_phone', $form['customer_phone'] ?? '') }}" required>
                                 </label>
                                 <label class="xd-field is-wide">
@@ -204,17 +204,17 @@
                                     <input type="email" name="customer_email" value="{{ old('customer_email', $form['customer_email'] ?? '') }}">
                                 </label>
                                 <label class="xd-field is-wide">
-                                    <span>{{ $isEnglish ? 'Delivery address' : 'Ã„ÂÃ¡Â»â€¹a chÃ¡Â»â€° nhÃ¡ÂºÂ­n hÃƒÂ ng' }}</span>
+                                    <span>{{ $isEnglish ? 'Delivery address' : 'Địa chỉ nhận hàng' }}</span>
                                     <textarea name="delivery_address" required>{{ old('delivery_address', $form['delivery_address'] ?? '') }}</textarea>
                                 </label>
                                 <label class="xd-field is-wide">
-                                    <span>{{ $isEnglish ? 'Order note' : 'Ghi chÃƒÂº' }}</span>
+                                    <span>{{ $isEnglish ? 'Order note' : 'Ghi chú' }}</span>
                                     <textarea name="note">{{ old('note', $form['note'] ?? '') }}</textarea>
                                 </label>
                             </div>
 
                             <div class="xd-payment-list">
-                                <h2 class="xd-section-title">{{ $isEnglish ? 'Payment method' : 'PhÃ†Â°Ã†Â¡ng thÃ¡Â»Â©c thanh toÃƒÂ¡n' }}</h2>
+                                <h2 class="xd-section-title">{{ $isEnglish ? 'Payment method' : 'Phương thức thanh toán' }}</h2>
                                 @foreach ($paymentMethods as $value => $method)
                                     @php
                                         $methodValue = is_array($method) ? (string) ($method['value'] ?? $value) : (string) $value;
@@ -233,11 +233,11 @@
                                 @endforeach
                             </div>
 
-                            <button class="xd-button" type="submit">{{ $isEnglish ? 'Place order' : 'Ã„ÂÃ¡ÂºÂ·t hÃƒÂ ng' }}</button>
+                            <button class="xd-button" type="submit">{{ $isEnglish ? 'Place order' : 'Đặt hàng' }}</button>
                         </form>
 
                         <aside class="xd-panel xd-summary">
-                            <h2>{{ $isEnglish ? 'Order summary' : 'TÃƒÂ³m tÃ¡ÂºÂ¯t Ã„â€˜Ã†Â¡n hÃƒÂ ng' }}</h2>
+                            <h2>{{ $isEnglish ? 'Order summary' : 'Tóm tắt đơn hàng' }}</h2>
                             <div class="xd-summary-items">
                                 @foreach ($cartItems as $item)
                                     <div class="xd-summary-item">
@@ -247,7 +247,7 @@
                                             @endif
                                         </span>
                                         <span>
-                                            <strong class="xd-summary-name">{{ $item['name'] ?? 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' }}</strong>
+                                            <strong class="xd-summary-name">{{ $item['name'] ?? 'Sản phẩm' }}</strong>
                                             <span class="xd-summary-meta">x{{ (int) ($item['quantity'] ?? 1) }}</span>
                                             <span class="xd-summary-price">{{ $formatCurrency($item['line_total'] ?? $item['price'] ?? null) }}</span>
                                         </span>
@@ -255,14 +255,14 @@
                                 @endforeach
                             </div>
                             <div class="xd-summary-row">
-                                <span>{{ $isEnglish ? 'Products' : 'SÃ¡Â»â€˜ sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' }}</span>
+                                <span>{{ $isEnglish ? 'Products' : 'Số sản phẩm' }}</span>
                                 <b>{{ (int) ($cartSummary['count'] ?? 0) }}</b>
                             </div>
                             <div class="xd-summary-row">
-                                <span>{{ $isEnglish ? 'Estimated total' : 'TÃ¡ÂºÂ¡m tÃƒÂ­nh' }}</span>
+                                <span>{{ $isEnglish ? 'Estimated total' : 'Tạm tính' }}</span>
                                 <strong>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
                             </div>
-                            <a class="xd-button is-ghost" href="{{ route('site.cart.index') }}">{{ $isEnglish ? 'Back to cart' : 'Quay lÃ¡ÂºÂ¡i giÃ¡Â»Â hÃƒÂ ng' }}</a>
+                            <a class="xd-button is-ghost" href="{{ route('site.cart.index') }}">{{ $isEnglish ? 'Back to cart' : 'Quay lại giỏ hàng' }}</a>
                         </aside>
                     </section>
                 @endif

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="460" viewBox="0 0 720 460">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5eadf"/><stop offset="1" stop-color="#d9c1ac"/></linearGradient></defs>
+  <rect width="720" height="460" fill="#fff"/>
+  <rect width="720" height="58" fill="#fff"/>
+  <text x="35" y="39" font-family="Arial" font-size="27" font-weight="900">WOLF<tspan fill="#07563d">BED</tspan></text>
+  <rect y="58" width="720" height="42" fill="#07563d"/>
+  <rect y="100" width="720" height="235" fill="url(#g)"/>
+  <rect x="405" y="210" width="270" height="90" rx="12" fill="#f2cfcb"/>
+  <rect x="420" y="190" width="110" height="75" rx="8" fill="#f8e5e4"/>
+  <circle cx="535" cy="225" r="32" fill="#eeb9b5"/>
+  <text x="190" y="205" font-family="Georgia" font-size="43" fill="#39936a">Wolf Bed CUTIE</text>
+  <rect x="32" y="355" width="145" height="80" rx="10" fill="#07563d"/>
+  <rect x="190" y="355" width="145" height="80" rx="10" fill="#eee6dc"/>
+  <rect x="348" y="355" width="145" height="80" rx="10" fill="#eee6dc"/>
+  <rect x="506" y="355" width="182" height="80" rx="10" fill="#07563d"/>
+</svg>

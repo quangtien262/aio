@@ -30,12 +30,12 @@ class Xd0307DemoContentProvider implements ThemeDemoContentProvider
 
     public function themeKey(): string { return self::THEME_KEY; }
     public function defaultPreset(): string { return self::PRESET_KEY; }
-    public function preset(): array { return ['key' => self::PRESET_KEY, 'label' => 'TÆ° váº¥n doanh nghiá»‡p', 'description' => 'Banner, dá»‹ch vá»¥, Ä‘á»‘i tÃ¡c, menu vÃ  landingpage máº«u cho XD0307.']; }
+    public function preset(): array { return ['key' => self::PRESET_KEY, 'label' => 'Tư vấn doanh nghiệp', 'description' => 'Banner, dịch vụ, đối tác, menu và landingpage mẫu cho XD0307.']; }
 
     public function generate(string $presetKey): array
     {
         if ($presetKey !== self::PRESET_KEY) {
-            throw new InvalidArgumentException('Preset demo khÃ´ng há»£p lá»‡ cho XD0307.');
+            throw new InvalidArgumentException('Preset demo không hợp lệ cho XD0307.');
         }
 
         return DB::transaction(function (): array {
@@ -44,41 +44,41 @@ class Xd0307DemoContentProvider implements ThemeDemoContentProvider
             $image = fn (string $id, int $width = 1200): string => "https://images.unsplash.com/{$id}?auto=format&fit=crop&w={$width}&q=85";
 
             foreach ([
-                ['Váº­n táº£i ná»™i Ä‘á»‹a', 'Äiá»u phá»‘i phÆ°Æ¡ng tiá»‡n phÃ¹ há»£p, theo dÃµi lá»™ trÃ¬nh rÃµ rÃ ng vÃ  Ä‘Ãºng háº¹n.', 'photo-1586191582151-f73872dfd183'],
-                ['Váº­n chuyá»ƒn hÃ ng khÃ´ng', 'Káº¿t ná»‘i lá»‹ch bay vÃ  thá»§ tá»¥c hÃ ng hÃ³a vá»›i quy trÃ¬nh theo dÃµi minh báº¡ch.', 'photo-1436491865332-7a61a109cc05'],
-                ['Giáº£i phÃ¡p kho bÃ£i', 'LÆ°u trá»¯, kiá»ƒm soÃ¡t tá»“n kho vÃ  giao nháº­n linh hoáº¡t theo káº¿ hoáº¡ch váº­n hÃ nh.', 'photo-1586528116493-da8c7e6d8e14'],
-                ['Váº­n táº£i Ä‘Æ°á»ng biá»ƒn', 'Tá»‘i Æ°u hÃ nh trÃ¬nh container vÃ  thá»i gian giao nháº­n xuyÃªn biÃªn giá»›i.', 'photo-1494412651409-8963ce7935a7'],
+                ['Vận tải nội địa', 'Điều phối phương tiện phù hợp, theo dõi lộ trình rõ ràng và đúng hẹn.', 'photo-1586191582151-f73872dfd183'],
+                ['Vận chuyển hàng không', 'Kết nối lịch bay và thủ tục hàng hóa với quy trình theo dõi minh bạch.', 'photo-1436491865332-7a61a109cc05'],
+                ['Giải pháp kho bãi', 'Lưu trữ, kiểm soát tồn kho và giao nhận linh hoạt theo kế hoạch vận hành.', 'photo-1586528116493-da8c7e6d8e14'],
+                ['Vận tải đường biển', 'Tối ưu hành trình container và thời gian giao nhận xuyên biên giới.', 'photo-1494412651409-8963ce7935a7'],
             ] as $index => [$title, $summary, $photo]) {
-                $service = CmsService::query()->create(['title' => $title, 'slug' => Str::slug('xd0307-logistics-'.$title), 'status' => 'published', 'summary' => $summary, 'content' => '<p>'.$summary.'</p>', 'button_label' => 'Xem chi tiáº¿t', 'link_url' => '#hotline', 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $index, 'publish_at' => $now]);
+                $service = CmsService::query()->create(['title' => $title, 'slug' => Str::slug('xd0307-logistics-'.$title), 'status' => 'published', 'summary' => $summary, 'content' => '<p>'.$summary.'</p>', 'button_label' => 'Xem chi tiết', 'link_url' => '#hotline', 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $index, 'publish_at' => $now]);
                 CmsServiceImage::query()->create(['cms_service_id' => $service->id, 'image_url' => $image($photo, 900), 'alt_text' => $title, 'is_featured' => true, 'sort_order' => 0]);
                 $this->record($service);
             }
 
             foreach ([
-                ['CargoLink', 'Váº­n táº£i quá»‘c táº¿', 'photo-1494412651409-8963ce7935a7'],
-                ['NorthStar', 'Chuá»—i cung á»©ng', 'photo-1586528116493-da8c7e6d8e14'],
-                ['Global Freight', 'Giao nháº­n hÃ ng hÃ³a', 'photo-1586191582151-f73872dfd183'],
-                ['BluePort', 'Khai thÃ¡c cáº£ng', 'photo-1566576912321-d58ddd7a6088'],
-                ['AirWay', 'Váº­n táº£i hÃ ng khÃ´ng', 'photo-1436491865332-7a61a109cc05'],
-                ['RouteOne', 'Váº­n táº£i ná»™i Ä‘á»‹a', 'photo-1586528116311-ad8dd3c8310d'],
+                ['CargoLink', 'Vận tải quốc tế', 'photo-1494412651409-8963ce7935a7'],
+                ['NorthStar', 'Chuỗi cung ứng', 'photo-1586528116493-da8c7e6d8e14'],
+                ['Global Freight', 'Giao nhận hàng hóa', 'photo-1586191582151-f73872dfd183'],
+                ['BluePort', 'Khai thác cảng', 'photo-1566576912321-d58ddd7a6088'],
+                ['AirWay', 'Vận tải hàng không', 'photo-1436491865332-7a61a109cc05'],
+                ['RouteOne', 'Vận tải nội địa', 'photo-1586528116311-ad8dd3c8310d'],
             ] as $index => [$title, $description, $photo]) {
                 $partner = CmsPartner::query()->create(['title' => $title, 'slug' => Str::slug('xd0307-logistics-'.$title), 'description' => $description, 'image_url' => $image($photo, 420), 'image_alt' => $title, 'link_url' => '#top', 'status' => 'published', 'publish_at' => $now, 'is_featured' => true, 'sort_order' => $index]);
                 $this->record($partner);
             }
 
             foreach ([
-                ['Dá»‹ch vá»¥ váº­n táº£i hÃ ng khÃ´ng Ä‘Æ°á»ng biá»ƒn', 'Tá»‘i Æ°u lá»‹ch trÃ¬nh, phÆ°Æ¡ng thá»©c váº­n chuyá»ƒn vÃ  chi phÃ­ cho tá»«ng lÃ´ hÃ ng.', 'photo-1494412651409-8963ce7935a7'],
-                ['Logistics chá»§ Ä‘á»™ng cho doanh nghiá»‡p', 'Káº¿t ná»‘i kho bÃ£i, váº­n táº£i vÃ  giao nháº­n báº±ng má»™t quy trÃ¬nh rÃµ rÃ ng.', 'photo-1586528116493-da8c7e6d8e14'],
+                ['Dịch vụ vận tải hàng không đường biển', 'Tối ưu lịch trình, phương thức vận chuyển và chi phí cho từng lô hàng.', 'photo-1494412651409-8963ce7935a7'],
+                ['Logistics chủ động cho doanh nghiệp', 'Kết nối kho bãi, vận tải và giao nhận bằng một quy trình rõ ràng.', 'photo-1586528116493-da8c7e6d8e14'],
             ] as $index => [$title, $summary, $photo]) {
-                $banner = SiteBanner::query()->create(['theme_key' => self::THEME_KEY, 'placement' => 'xd0307-hero-slider', 'title' => $title, 'subtitle' => $summary, 'image_url' => $image($photo, 1920), 'link_url' => '#lien-he', 'badge' => 'TÆ° váº¥n doanh nghiá»‡p', 'metadata' => ['kicker' => 'TÆ° váº¥n doanh nghiá»‡p', 'summary' => $summary, 'button_label' => 'Nháº­n bÃ¡o giÃ¡'], 'sort_order' => $index, 'is_active' => true]);
+                $banner = SiteBanner::query()->create(['theme_key' => self::THEME_KEY, 'placement' => 'xd0307-hero-slider', 'title' => $title, 'subtitle' => $summary, 'image_url' => $image($photo, 1920), 'link_url' => '#lien-he', 'badge' => 'Tư vấn doanh nghiệp', 'metadata' => ['kicker' => 'Tư vấn doanh nghiệp', 'summary' => $summary, 'button_label' => 'Nhận báo giá'], 'sort_order' => $index, 'is_active' => true]);
                 $this->record($banner);
             }
 
-            $menu = CmsMenu::query()->create(['name' => 'XD0307 Main Menu', 'location' => 'primary-navigation', 'items' => [['label' => 'Trang chá»§', 'url' => '#top'], ['label' => 'Dá»‹ch vá»¥', 'url' => '#dich-vu'], ['label' => 'Giáº£i phÃ¡p', 'url' => '#giai-phap'], ['label' => 'ThÆ° viá»‡n', 'url' => '#thu-vien'], ['label' => 'Äá»‘i tÃ¡c', 'url' => '#doi-tac'], ['label' => 'LiÃªn há»‡', 'url' => '#footer']]]);
+            $menu = CmsMenu::query()->create(['name' => 'XD0307 Main Menu', 'location' => 'primary-navigation', 'items' => [['label' => 'Trang chủ', 'url' => '#top'], ['label' => 'Dịch vụ', 'url' => '#dich-vu'], ['label' => 'Giải pháp', 'url' => '#giai-phap'], ['label' => 'Thư viện', 'url' => '#thu-vien'], ['label' => 'Đối tác', 'url' => '#doi-tac'], ['label' => 'Liên hệ', 'url' => '#footer']]]);
             $this->record($menu);
 
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'Logistics Viá»‡t', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Logistics Viá»‡t', 'company_description' => 'Giáº£i phÃ¡p váº­n táº£i vÃ  háº­u cáº§n linh hoáº¡t, káº¿t ná»‘i doanh nghiá»‡p vá»›i má»i hÃ nh trÃ¬nh.', 'support_hotline' => '1900 9477', 'support_email' => 'hello@logisticsviet.vn', 'support_location' => '344 Huá»³nh Táº¥n PhÃ¡t, Quáº­n 7, TP.HCM'])])->save();
+            $profile->forceFill(['site_name' => 'Logistics Việt', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Logistics Việt', 'company_description' => 'Giải pháp vận tải và hậu cần linh hoạt, kết nối doanh nghiệp với mọi hành trình.', 'support_hotline' => '1900 9477', 'support_email' => 'hello@logisticsviet.vn', 'support_location' => '344 Huỳnh Tấn Phát, Quận 7, TP.HCM'])])->save();
 
             $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);

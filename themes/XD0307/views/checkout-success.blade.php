@@ -15,10 +15,10 @@
     $orderItems = collect($confirmedOrder->items ?? []);
     $formatCurrency = function ($value): string {
         if ($value === null || (float) $value <= 0) {
-            return 'LiÃªn há»‡';
+            return 'Liên hệ';
         }
 
-        return number_format((float) $value, 0, ',', '.').'Ä‘';
+        return number_format((float) $value, 0, ',', '.').'đ';
     };
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
@@ -51,7 +51,7 @@
     $homeUrl = route('site.home');
     if (! $navItems->contains(fn (array $item): bool => $isHomeLabel($item['label'] ?? '') || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => $isEnglish ? 'Home' : 'Trang chá»§',
+            'label' => $isEnglish ? 'Home' : 'Trang chủ',
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -77,7 +77,7 @@
             $navArray = $navItems->values()->all();
             $homeIndex = $navItems->search(fn (array $item): bool => $isHomeLabel($item['label'] ?? ''));
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [[
-                'label' => $isEnglish ? 'Products' : 'Sáº£n pháº©m',
+                'label' => $isEnglish ? 'Products' : 'Sản phẩm',
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -101,7 +101,7 @@
 
 @extends('theme-xd0307::layout')
 
-@section('title'){{ $isEnglish ? 'Order confirmed' : 'Äáº·t hÃ ng thÃ nh cÃ´ng' }} | {{ $logoAlt }}@endsection
+@section('title'){{ $isEnglish ? 'Order confirmed' : 'Đặt hàng thành công' }} | {{ $logoAlt }}@endsection
 
 @push('head')
     <style>
@@ -146,35 +146,35 @@
         <main class="xd-page-main">
             <div class="xd-container">
                 <nav class="xd-breadcrumb" aria-label="Breadcrumb">
-                    <a href="{{ route('site.home') }}">{{ $isEnglish ? 'Home' : 'Trang chá»§' }}</a>
+                    <a href="{{ route('site.home') }}">{{ $isEnglish ? 'Home' : 'Trang chủ' }}</a>
                     <span>/</span>
-                    <strong>{{ $isEnglish ? 'Order confirmed' : 'Äáº·t hÃ ng thÃ nh cÃ´ng' }}</strong>
+                    <strong>{{ $isEnglish ? 'Order confirmed' : 'Đặt hàng thành công' }}</strong>
                 </nav>
 
                 <section class="xd-success-hero">
-                    <span class="xd-kicker">{{ $isEnglish ? 'Success' : 'ThÃ nh cÃ´ng' }}</span>
-                    <h1>{{ $isEnglish ? 'Your order has been received' : 'ÄÆ¡n hÃ ng Ä‘Ã£ Ä‘Æ°á»£c ghi nháº­n' }}</h1>
-                    <p>{{ $isEnglish ? 'Our team will contact you shortly to confirm product information, delivery and payment.' : 'Äá»™i ngÅ© tÆ° váº¥n sáº½ liÃªn há»‡ láº¡i Ä‘á»ƒ xÃ¡c nháº­n thÃ´ng tin sáº£n pháº©m, giao nháº­n vÃ  phÆ°Æ¡ng thá»©c thanh toÃ¡n.' }}</p>
+                    <span class="xd-kicker">{{ $isEnglish ? 'Success' : 'Thành công' }}</span>
+                    <h1>{{ $isEnglish ? 'Your order has been received' : 'Đơn hàng đã được ghi nhận' }}</h1>
+                    <p>{{ $isEnglish ? 'Our team will contact you shortly to confirm product information, delivery and payment.' : 'Đội ngũ tư vấn sẽ liên hệ lại để xác nhận thông tin sản phẩm, giao nhận và phương thức thanh toán.' }}</p>
                 </section>
 
                 <section class="xd-success-grid">
                     <article class="xd-panel xd-order-panel">
-                        <h2>{{ $isEnglish ? 'Order information' : 'ThÃ´ng tin Ä‘Æ¡n hÃ ng' }}</h2>
+                        <h2>{{ $isEnglish ? 'Order information' : 'Thông tin đơn hàng' }}</h2>
                         <div class="xd-order-lines">
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Order code' : 'MÃ£ Ä‘Æ¡n hÃ ng' }}</span>
+                                <span class="xd-order-label">{{ $isEnglish ? 'Order code' : 'Mã đơn hàng' }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->order_code }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Created at' : 'Thá»i gian táº¡o' }}</span>
+                                <span class="xd-order-label">{{ $isEnglish ? 'Created at' : 'Thời gian tạo' }}</span>
                                 <span class="xd-order-value">{{ optional($confirmedOrder->placed_at ?? $confirmedOrder->created_at)->format('H:i d/m/Y') }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Customer' : 'KhÃ¡ch hÃ ng' }}</span>
+                                <span class="xd-order-label">{{ $isEnglish ? 'Customer' : 'Khách hàng' }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->customer_name }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Phone' : 'Sá»‘ Ä‘iá»‡n thoáº¡i' }}</span>
+                                <span class="xd-order-label">{{ $isEnglish ? 'Phone' : 'Số điện thoại' }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->customer_phone }}</span>
                             </div>
                             <div class="xd-order-line">
@@ -182,27 +182,27 @@
                                 <span class="xd-order-value">{{ $confirmedOrder->customer_email ?: '...' }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Delivery address' : 'Äá»‹a chá»‰ nháº­n hÃ ng' }}</span>
+                                <span class="xd-order-label">{{ $isEnglish ? 'Delivery address' : 'Địa chỉ nhận hàng' }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->delivery_address }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Payment method' : 'PhÆ°Æ¡ng thá»©c thanh toÃ¡n' }}</span>
+                                <span class="xd-order-label">{{ $isEnglish ? 'Payment method' : 'Phương thức thanh toán' }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->payment_label }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Estimated total' : 'Táº¡m tÃ­nh' }}</span>
+                                <span class="xd-order-label">{{ $isEnglish ? 'Estimated total' : 'Tạm tính' }}</span>
                                 <span class="xd-order-value">{{ $formatCurrency($confirmedOrder->subtotal) }}</span>
                             </div>
                         </div>
 
                         <div class="xd-button-row">
-                            <a class="xd-button" href="{{ route('site.home') }}">{{ $isEnglish ? 'Back home' : 'Vá» trang chá»§' }}</a>
-                            <a class="xd-button is-ghost" href="{{ route('customer.account') }}">{{ $isEnglish ? 'My account' : 'TÃ i khoáº£n cá»§a tÃ´i' }}</a>
+                            <a class="xd-button" href="{{ route('site.home') }}">{{ $isEnglish ? 'Back home' : 'Về trang chủ' }}</a>
+                            <a class="xd-button is-ghost" href="{{ route('customer.account') }}">{{ $isEnglish ? 'My account' : 'Tài khoản của tôi' }}</a>
                         </div>
                     </article>
 
                     <aside class="xd-panel xd-order-panel">
-                        <h2>{{ $isEnglish ? 'Products' : 'Sáº£n pháº©m' }}</h2>
+                        <h2>{{ $isEnglish ? 'Products' : 'Sản phẩm' }}</h2>
                         <div class="xd-items">
                             @foreach ($orderItems as $item)
                                 <div class="xd-item">

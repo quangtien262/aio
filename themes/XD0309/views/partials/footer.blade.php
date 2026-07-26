@@ -1,1 +1,32 @@
-<footer id="footer" class="xd5-footer"><div class="xd5-container"><div class="xd5-footer-top"><a class="xd5-brand" href="#top">@if(filled($logoUrl ?? null))<img src="{{ $logoUrl }}" alt="{{ $companyName }}">@else<span>Ã¢â€”Â¢</span><strong>{{ $companyName }}</strong>@endif</a><div><small>Ã„ÂÃ¡ÂºÂ·t cÃƒÂ¢u hÃ¡Â»Âi</small><b>{{ $hotline }}</b></div><div><small>GÃ¡Â»Â­i email</small><b>{{ $supportEmail }}</b></div></div><div class="xd5-footer-grid"><div><p>{{ $companyDescription ?? 'GiÃ¡ÂºÂ£i phÃƒÂ¡p tÃ†Â° vÃ¡ÂºÂ¥n chuyÃƒÂªn nghiÃ¡Â»â€¡p, Ã„â€˜Ã¡Â»â€œng hÃƒÂ nh cÃƒÂ¹ng doanh nghiÃ¡Â»â€¡p phÃƒÂ¡t triÃ¡Â»Æ’n bÃ¡Â»Ân vÃ¡Â»Â¯ng.' }}</p></div><div><h3>KhÃƒÂ¡m phÃƒÂ¡</h3><ul>@foreach($navItems ?? [] as $item)<li><a href="{{ $item['href'] ?? '#' }}">{{ $item['label'] ?? 'LiÃƒÂªn kÃ¡ÂºÂ¿t' }}</a></li>@endforeach</ul></div><div><h3>Ã„ÂÃ„Æ’ng kÃƒÂ½ nhÃ¡ÂºÂ­n tin</h3><form><input type="email" placeholder="Ã„ÂÃ¡Â»â€¹a chÃ¡Â»â€° email"><button>GÃ¡Â»Â­i</button></form></div></div></div></footer>
+<footer id="footer" class="xd5-footer">
+    <div class="xd5-container">
+        <div class="xd5-footer-top">
+            <a class="xd5-brand" href="#top">
+                @if(filled($logoUrl ?? null))
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
+                @else
+                    <span aria-hidden="true">◆</span><strong>{{ $companyName }}</strong>
+                @endif
+            </a>
+            <div><small>Đặt câu hỏi</small><b>{{ $hotline }}</b></div>
+            <div><small>Gửi email</small><b>{{ $supportEmail }}</b></div>
+        </div>
+        <div class="xd5-footer-grid">
+            <div>
+                <p>{{ $companyDescription ?: 'Giải pháp tư vấn chuyên nghiệp, đồng hành cùng doanh nghiệp phát triển bền vững.' }}</p>
+            </div>
+            <div>
+                <h3>Khám phá</h3>
+                <ul>
+                    @foreach($navItems ?? [] as $item)
+                        <li><a href="{{ $item['href'] ?? '#' }}">{{ $item['label'] ?? 'Liên kết' }}</a></li>
+                    @endforeach
+                </ul>
+            </div>
+            <div>
+                <h3>Đăng ký nhận tin</h3>
+                <form><input type="email" placeholder="Địa chỉ email"><button>Gửi</button></form>
+            </div>
+        </div>
+    </div>
+</footer>

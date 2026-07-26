@@ -114,7 +114,7 @@ class Shop604DemoContentProvider implements ThemeDemoContentProvider
             if ($page->wasRecentlyCreated) $this->record($page);
 
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'Bean Lingerie', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['logo_url' => null, 'company_name' => 'Bean Lingerie', 'company_description' => 'Thiết kế nội y và đồ bơi tinh tế, thoải mái và tôn vinh đường cong.', 'support_hotline' => '1800 6750', 'support_email' => 'support@bean.vn', 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP. Hồ Chí Minh'])])->save();
+            $profile->forceFill(['site_name' => 'Bean Lingerie', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Bean Lingerie', 'company_description' => 'Thiết kế nội y và đồ bơi tinh tế, thoải mái và tôn vinh đường cong.', 'support_hotline' => '1800 6750', 'support_email' => 'support@bean.vn', 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP. Hồ Chí Minh'])])->save();
             $existing = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $landing = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);
             if ($landing && ! $existing) $this->record($landing);

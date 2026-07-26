@@ -114,7 +114,7 @@ class Ca0050DemoContentProvider implements ThemeDemoContentProvider
             if ($page->wasRecentlyCreated) $this->record($page);
 
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'Sudes Aquarium', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['logo_url' => null, 'company_name' => 'Sudes Aquarium', 'company_description' => 'Cá cảnh, phụ kiện và dịch vụ setup bể thủy sinh trọn gói.', 'support_hotline' => '1900 6750', 'support_email' => 'support@sudes.vn', 'support_location' => '70 Lữ Gia, Phường Phú Thọ, TP.HCM'])])->save();
+            $profile->forceFill(['site_name' => 'Sudes Aquarium', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Sudes Aquarium', 'company_description' => 'Cá cảnh, phụ kiện và dịch vụ setup bể thủy sinh trọn gói.', 'support_hotline' => '1900 6750', 'support_email' => 'support@sudes.vn', 'support_location' => '70 Lữ Gia, Phường Phú Thọ, TP.HCM'])])->save();
             $existing = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $landing = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);
             if ($landing && ! $existing) $this->record($landing);

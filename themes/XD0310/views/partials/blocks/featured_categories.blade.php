@@ -6,8 +6,8 @@
                             <div class="xd-container">
                                 <div class="xd-featured-cats-head">
                                     <div class="xd-featured-cats-copy">
-                                        <span class="xd-kicker">{{ $data['subtitle'] ?? 'KhÃƒÂ¡m phÃƒÂ¡ nhanh' }}</span>
-                                        <h2>{{ $data['title'] ?? 'Danh mÃ¡Â»Â¥c trÃ¡Â»Âng tÃƒÂ¢m' }}</h2>
+                                        <span class="xd-kicker">{{ $data['subtitle'] ?? 'Khám phá nhanh' }}</span>
+                                        <h2>{{ $data['title'] ?? 'Danh mục trọng tâm' }}</h2>
                                         @if(filled($data['description'] ?? null))
                                             <p>{{ $data['description'] }}</p>
                                         @endif

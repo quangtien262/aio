@@ -334,12 +334,30 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->assertTrue($page->blocks()->where('block_type', 'business_service_grid')->exists());
         $this->assertTrue($page->blocks()->where('block_type', 'bizmax_contact')->exists());
+        $this->assertSame(
+            'Dịch vụ của chúng tôi',
+            $page->blocks()
+                ->where('block_type', 'business_service_grid')
+                ->firstOrFail()
+                ->data()
+                ->where('locale', 'vi')
+                ->firstOrFail()
+                ->title
+        );
 
         $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0309');
         $this->assertSame('xd0309-industrial-safety', $provider->defaultPreset());
         $provider->generate($provider->defaultPreset());
 
-        $this->get('/vi')->assertOk();
+        $response = $this->get('/vi')
+            ->assertOk()
+            ->assertSee('Logistics Việt')
+            ->assertSee('Vận tải nội địa')
+            ->assertSee('Liên hệ chúng tôi');
+
+        foreach (['TÃƒ', 'ÃƒÆ', 'Ãƒâ', 'Ã„', 'Ã¡', 'Ã¢â', 'Ã†', 'Â'] as $marker) {
+            $response->assertDontSee($marker, false);
+        }
     }
 
     public function test_xd0310_garden_homepage_and_demo_preset_render(): void

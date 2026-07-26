@@ -1,1 +1,23 @@
-<section id="{{ $anchor }}" class="xd5-section xd5-contact"><div class="xd5-container xd5-contact-grid"><div><p class="xd5-eyebrow">{{ $data['subtitle']??'' }}</p><h2 class="xd5-title">{{ $data['title']??'' }}</h2><p>{{ $data['description']??'' }}</p><div class="xd5-contact-info"><div><b>Ã„ÂÃ¡ÂºÂ·t cÃƒÂ¢u hÃ¡Â»Âi</b>{{ $hotline }}</div><div><b>GÃ¡Â»Â­i email</b>{{ $supportEmail }}</div><div><b>Ã„ÂÃ¡Â»â€¹a chÃ¡Â»â€°</b>{{ $supportAddress }}</div></div></div><form class="xd5-contact-card"><h2>LiÃƒÂªn hÃ¡Â»â€¡ chÃƒÂºng tÃƒÂ´i</h2><input placeholder="HÃ¡Â»Â vÃƒÂ  tÃƒÂªn" required><input placeholder="SÃ¡Â»â€˜ Ã„â€˜iÃ¡Â»â€¡n thoÃ¡ÂºÂ¡i" required><input type="email" placeholder="Email" required><input placeholder="Ã„ÂÃ¡Â»â€¹a chÃ¡Â»â€°"><textarea rows="6" placeholder="NÃ¡Â»â„¢i dung"></textarea><button class="xd5-btn" type="submit">{{ $data['button_label']??'GÃ¡Â»Â­i ngay' }}</button></form></div></section>
+<section id="{{ $anchor }}" class="xd5-section xd5-contact">
+    <div class="xd5-container xd5-contact-grid">
+        <div>
+            <p class="xd5-eyebrow">{{ $data['subtitle'] ?? '' }}</p>
+            <h2 class="xd5-title">{{ $data['title'] ?? '' }}</h2>
+            <p>{{ $data['description'] ?? '' }}</p>
+            <div class="xd5-contact-info">
+                <div><b>Đặt câu hỏi</b>{{ $hotline }}</div>
+                <div><b>Gửi email</b>{{ $supportEmail }}</div>
+                <div><b>Địa chỉ</b>{{ $supportAddress }}</div>
+            </div>
+        </div>
+        <form class="xd5-contact-card">
+            <h2>Liên hệ chúng tôi</h2>
+            <input placeholder="Họ và tên" required>
+            <input placeholder="Số điện thoại" required>
+            <input type="email" placeholder="Email" required>
+            <input placeholder="Địa chỉ">
+            <textarea rows="6" placeholder="Nội dung"></textarea>
+            <button class="xd5-btn" type="submit">{{ $data['button_label'] ?? 'Gửi ngay' }}</button>
+        </form>
+    </div>
+</section>

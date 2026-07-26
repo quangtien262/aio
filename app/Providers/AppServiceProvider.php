@@ -12,6 +12,7 @@ use App\Core\Themes\Demo\Shop604DemoContentProvider;
 use App\Core\Themes\Demo\Shop605DemoContentProvider;
 use App\Core\Themes\Demo\Ca0050DemoContentProvider;
 use App\Core\Themes\Demo\Nt502DemoContentProvider;
+use App\Core\Themes\Demo\Nt503DemoContentProvider;
 use App\Core\Themes\Demo\Th0050DemoContentProvider;
 use App\Core\Themes\Demo\Dn202DemoContentProvider;
 use App\Core\Themes\Demo\Bds701DemoContentProvider;
@@ -54,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
             $this->app->make(Nt502DemoContentProvider::class),
+            $this->app->make(Nt503DemoContentProvider::class),
             $this->app->make(Shop602DemoContentProvider::class),
             $this->app->make(Shop603DemoContentProvider::class),
             $this->app->make(Shop604DemoContentProvider::class),

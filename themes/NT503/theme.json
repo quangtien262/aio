@@ -1,0 +1,38 @@
+{
+  "name": "NT503 WolfBed",
+  "key": "NT503",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử chăn ga, gối và nệm với phong cách xanh cao cấp.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-nt503.svg",
+    "cover": "cover-nt503.svg"
+  },
+  "blocks": [
+    "hero-slider",
+    "sleep-categories",
+    "mattress-products",
+    "promo-banners",
+    "flash-sale",
+    "kids-collection",
+    "season-promotion",
+    "sleep-advice",
+    "wolfbed-footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "nt503-wolfbed"
+  }
+}

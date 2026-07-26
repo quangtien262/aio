@@ -155,6 +155,29 @@ php artisan test tests/Feature/ThemeAuthModalEncodingTest.php
 ```
 - [ ] Test trên phải pass trước khi bàn giao; không thêm ngoại lệ/whitelist cho theme mới.
 
+## 5.2. Font chữ và hiển thị tiếng Việt
+
+Phải phân biệt đúng hai nhóm lỗi trước khi sửa:
+
+- **Thiếu/sai font:** chữ vẫn đọc đúng nhưng kiểu chữ không đúng thiết kế, glyph bị ô vuông hoặc font tải lỗi.
+- **Sai mã hóa (mojibake):** nội dung xuất hiện các chuỗi như `TÃ`, `Ãƒ`, `Ã„`, `Ã¡`, `Ã¢â`, `Â`; đổi font không thể sửa được lỗi này.
+
+Checklist bắt buộc:
+
+- [ ] `<meta charset="utf-8">` phải nằm trong `<head>` và xuất hiện trước title, style hoặc nội dung có tiếng Việt.
+- [ ] Blade, PHP, JSON, JavaScript và CSS phải là UTF-8 hợp lệ, không BOM và không qua bước chuyển mã ANSI/Windows-1252.
+- [ ] Font chính phải hỗ trợ đầy đủ glyph tiếng Việt; nếu dùng webfont thì kiểm tra đúng bộ chữ Vietnamese và không có request font trả về 404/CORS.
+- [ ] Luôn khai báo fallback an toàn, ví dụ `"Segoe UI", Roboto, Arial, Helvetica, sans-serif`; font tiêu đề riêng cũng phải có fallback.
+- [ ] Không chèn icon bằng ký tự đã bị chuyển mã trong CSS `content`; ưu tiên SVG/icon component hoặc ký tự Unicode đã được xác nhận UTF-8.
+- [ ] Kiểm tra trực tiếp các chuỗi có dấu khó: `Đăng ký – Sản phẩm – Chính sách – Ứng dụng – Nguyễn`.
+- [ ] Mở DevTools, kiểm tra computed `font-family` của heading, body, nút và form; xác nhận font thực tế đang được trình duyệt dùng.
+- [ ] Kiểm tra cả homepage thường và homepage `?mod=admin`, vì modal chỉnh block/toolbar cũng có thể mang copy tiếng Việt bị lỗi.
+- [ ] Sau khi tạo demo data, kiểm tra cả dữ liệu trong provider, landing block đã lưu và HTML trả về; sửa file nguồn thôi là chưa đủ nếu database vẫn chứa nội dung lỗi cũ.
+- [ ] `data.vi`, nội dung mẫu trong provider và fallback Blade phải dùng tiếng Việt có dấu đầy đủ; chuỗi không dấu như `Dang ky`, `San pham`, `Tin tuc` cũng được xem là lỗi nội dung dù vẫn là UTF-8 hợp lệ.
+- [ ] Audit encoding trên **toàn bộ storefront của theme** (homepage, trang sản phẩm/danh mục, tin tức, liên hệ, giỏ hàng, thanh toán, header/footer và inline editor), không chỉ kiểm tra file homepage.
+- [ ] Thêm regression test `assertDontSee` cho các marker mojibake và `assertSee` ít nhất ba chuỗi tiếng Việt đúng trên homepage của theme.
+- [ ] Không báo hoàn tất nếu console còn lỗi tải font, HTML còn marker mojibake hoặc font fallback làm vỡ layout ở desktop/mobile.
+
 ## 6. Landing Page Builder
 
 Nếu theme dùng homepage/landing dạng block:
@@ -183,11 +206,18 @@ Nếu theme dùng homepage/landing dạng block:
 ## 7. Header/footer dùng chung
 
 - [ ] Header và footer nằm trong layout, không chỉ nằm trong homepage.
+- [ ] Logo header/footer phải đọc từ `site_profiles.branding.logo_url` (dữ liệu lưu tại **Cài đặt website**); chỉ hiển thị logo chữ/icon mặc định khi `logo_url` rỗng.
+- [ ] Không hardcode logo thương hiệu bằng text, SVG hoặc ảnh demo nếu `branding.logo_url` đã có giá trị.
+- [ ] CSS cho logo upload phải giới hạn `max-width`, `max-height` và dùng `object-fit: contain` để không làm vỡ header/footer.
+- [ ] Provider tạo dữ liệu demo phải giữ nguyên `branding.logo_url` hiện có; không được gán `logo_url => null` hoặc thay logo người dùng đã cài.
+- [ ] Kiểm thử tích hợp: cài một URL logo tùy chỉnh, chạy/tạo lại demo data, mở storefront và xác nhận header/footer vẫn render đúng URL logo đó.
 - [ ] Header đọc menu từ `primary-navigation` hoặc `primary`.
 - [ ] Có fallback menu nếu chưa tạo menu.
 - [ ] Nếu đang login admin, có thể show link `Admin` mở tab mới nếu theme yêu cầu.
 - [ ] Nếu có account/cart/search, dùng route đúng của hệ thống.
 - [ ] Mobile menu có script hoạt động, không phụ thuộc thư viện ngoài chưa nạp.
+- [ ] Footer không được tạo thanh cuộn ngang: container phải có `max-width: 100%`, các cột grid dùng `minmax(0, ...)`, phần tử con có `min-width: 0`, và email/địa chỉ dài phải xuống dòng an toàn.
+- [ ] Kiểm tra footer ở tối thiểu các mốc 1440px, 1024px, 768px và 375px; số cột phải giảm phù hợp và không có nội dung, nút hoặc logo vượt khỏi viewport.
 
 ## 7.1. Sửa nhanh block ở storefront admin mode
 

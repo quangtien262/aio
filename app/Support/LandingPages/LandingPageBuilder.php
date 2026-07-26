@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -524,6 +524,10 @@ class LandingPageBuilder
             'nt502_promotion' => 3,
             'nt502_living_room', 'nt502_bedroom' => 6,
             'nt502_latest_news' => 7,
+            'nt503_categories' => 10,
+            'nt503_mattresses', 'nt503_kids_collection' => 4,
+            'nt503_flash_sale' => 5,
+            'nt503_advice' => 4,
             'bds701_hero_search' => 5,
             'bds701_latest_listings' => 6,
             'bds701_property_types' => 5,
@@ -562,7 +566,7 @@ class LandingPageBuilder
             return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news', 'nt503_categories', 'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection', 'nt503_advice'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
@@ -574,6 +578,9 @@ class LandingPageBuilder
                 'nt502_categories' => 'catalog_categories',
                 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom' => 'cms_products',
                 'nt502_latest_news' => 'cms_posts',
+                'nt503_categories' => 'catalog_categories',
+                'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection' => 'cms_products',
+                'nt503_advice' => 'cms_posts',
                 'solutions_split_list', 'collection_gallery' => 'cms_services',
                 default => 'cms_services',
             };
@@ -1380,6 +1387,7 @@ class LandingPageBuilder
             'XD0320' => $this->xd0320DefaultBlocks(),
             'NT501' => $this->nt501DefaultBlocks(),
             'NT502' => $this->nt502DefaultBlocks(),
+            'NT503' => $this->nt503DefaultBlocks(),
             'XD321' => $this->xd321DefaultBlocks(),
             'XD0322' => $this->xd0322DefaultBlocks(),
             'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
@@ -3452,11 +3460,11 @@ class LandingPageBuilder
     private function xd0313DefaultBlocks(): array
     {
         $contentSources = [
-            ['value' => 'custom', 'label' => 'Nhap thu cong'],
-            ['value' => 'cms_posts', 'label' => 'Tin tuc'],
-            ['value' => 'cms_products', 'label' => 'San pham'],
-            ['value' => 'cms_services', 'label' => 'Dich vu'],
-            ['value' => 'cms_projects', 'label' => 'Du an'],
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
         ];
 
         return [
@@ -3717,24 +3725,24 @@ class LandingPageBuilder
             [
                 'block_type' => 'hero_slider',
                 'label' => 'Hero Fast Gear',
-                'description' => 'Header sang co dang nhap/dang ky va banner xe tai.',
+                'description' => 'Header sáng có đăng nhập/đăng ký và banner xe tải.',
                 'preview_image' => '/theme-previews/XD0318/hero-slider.png',
                 'anchor_id' => 'top',
                 'dynamic' => true,
                 'settings' => ['source' => 'site_banners', 'placement' => 'xd0318-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000],
                 'settings_schema' => [
-                    'placement' => ['type' => 'text', 'label' => 'Vi tri banner'],
-                    'limit' => ['type' => 'number', 'label' => 'So slide'],
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Van chuyen moi luc moi noi',
+                        'title' => 'Vận chuyển mọi lúc mọi nơi',
                         'subtitle' => '',
-                        'description' => 'Ban lo ngai ve chat luong hang hoa se ra sao duoi thoi tiet nang mua nong lanh that thuong cua Viet Nam',
-                        'button_label' => 'Xem them',
+                        'description' => 'Bạn lo ngại về chất lượng hàng hóa dưới thời tiết nắng mưa, nóng lạnh thất thường của Việt Nam?',
+                        'button_label' => 'Xem thêm',
                         'content' => ['slides' => [
-                            ['title' => 'Van chuyen moi luc moi noi', 'summary' => 'Ban lo ngai ve chat luong hang hoa se ra sao duoi thoi tiet nang mua nong lanh that thuong cua Viet Nam', 'button_label' => 'Xem them', 'image' => 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#gioi-thieu'],
-                            ['title' => 'Giao nhan nhanh chong an toan', 'summary' => 'Mang luoi van tai linh hoat cho hang hoa noi dia va quoc te.', 'button_label' => 'Dich vu', 'image' => 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#dich-vu'],
+                            ['title' => 'Vận chuyển mọi lúc mọi nơi', 'summary' => 'Giải pháp vận chuyển an toàn trước điều kiện thời tiết thất thường tại Việt Nam.', 'button_label' => 'Xem thêm', 'image' => 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#gioi-thieu'],
+                            ['title' => 'Giao nhận nhanh chóng, an toàn', 'summary' => 'Mạng lưới vận tải linh hoạt cho hàng hóa nội địa và quốc tế.', 'button_label' => 'Dịch vụ', 'image' => 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#dich-vu'],
                         ]],
                     ],
                     'en' => ['title' => 'Shipping anywhere, anytime', 'subtitle' => '', 'description' => 'Reliable logistics services for every shipment.', 'button_label' => 'Learn more', 'content' => ['slides' => []]],
@@ -3742,18 +3750,18 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'bizmax_about',
-                'label' => 'Gioi thieu Fast Gear',
-                'description' => 'Khoi gioi thieu 2 cot voi anh tai xe giao hang.',
+                'label' => 'Giới thiệu Fast Gear',
+                'description' => 'Khối giới thiệu 2 cột với ảnh tài xế giao hàng.',
                 'preview_image' => '/theme-previews/XD0318/about.png',
                 'anchor_id' => 'gioi-thieu',
                 'settings' => ['cta_url' => '#dich-vu'],
                 'media' => ['image' => 'https://images.unsplash.com/photo-1580674285054-bed31e145f59?auto=format&fit=crop&w=1200&q=85'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Giai phap logistics toan cau tot nhat',
-                        'subtitle' => 'Ve chung toi',
-                        'description' => "Cong ty Fast Gear duoc thanh lap boi doi ngu nhan vien co hon 20 nam kinh nghiem trong linh vuc giao nhan quoc te, chuyen cung cap cac giai phap logistics cho khach hang.\nMang luoi hoat dong cua cong ty tren toan the gioi - 100 doi tac o 50 quoc gia, tru so chinh tai Viet Nam va van phong chi nhanh tai Hoa Ky.",
-                        'button_label' => 'Xem them',
+                        'title' => 'Giải pháp logistics toàn cầu tốt nhất',
+                        'subtitle' => 'Về chúng tôi',
+                        'description' => "Công ty Fast Gear được thành lập bởi đội ngũ nhân viên có hơn 20 năm kinh nghiệm trong lĩnh vực giao nhận quốc tế, chuyên cung cấp các giải pháp logistics cho khách hàng.\nMạng lưới hoạt động của công ty trên toàn thế giới với 100 đối tác tại 50 quốc gia, trụ sở chính ở Việt Nam và văn phòng chi nhánh tại Hoa Kỳ.",
+                        'button_label' => 'Xem thêm',
                         'content' => [],
                     ],
                     'en' => ['title' => 'Best global logistics solutions', 'subtitle' => 'About us', 'description' => 'Fast Gear provides reliable international forwarding and logistics solutions.', 'button_label' => 'More', 'content' => []],
@@ -3762,43 +3770,43 @@ class LandingPageBuilder
             [
                 'block_type' => 'logistics_feature_panel',
                 'label' => 'Video logistics',
-                'description' => 'Khoi video nen cang container.',
+                'description' => 'Khối video nền cảng container.',
                 'preview_image' => '/theme-previews/XD0318/video.png',
                 'anchor_id' => 'video',
                 'settings' => ['video_url' => '#video'],
                 'media' => ['background' => 'https://images.unsplash.com/photo-1494412685616-a5d310fbb07d?auto=format&fit=crop&w=1800&q=85'],
                 'data' => [
-                    'vi' => ['title' => 'Doi tac Logistics Toan Cau Doi Voi The Gioi', 'subtitle' => 'Ve chung toi', 'description' => '', 'button_label' => '', 'content' => []],
+                    'vi' => ['title' => 'Đối tác logistics toàn cầu của bạn', 'subtitle' => 'Về chúng tôi', 'description' => '', 'button_label' => '', 'content' => []],
                     'en' => ['title' => 'Global logistics partner for the world', 'subtitle' => 'About us', 'description' => '', 'button_label' => '', 'content' => []],
                 ],
             ],
             [
                 'block_type' => 'business_service_grid',
-                'label' => 'Dich vu Fast Gear',
-                'description' => 'Grid dich vu logistics va card nhan bao gia.',
+                'label' => 'Dịch vụ Fast Gear',
+                'description' => 'Lưới dịch vụ logistics và thẻ nhận báo giá.',
                 'preview_image' => '/theme-previews/XD0318/services.png',
                 'anchor_id' => 'dich-vu',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_services', 'limit' => 5, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'media' => ['quote_background' => 'https://images.unsplash.com/photo-1494412685616-a5d310fbb07d?auto=format&fit=crop&w=1000&q=85'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Giai phap thuc te, nhanh chong thuc su',
-                        'subtitle' => 'Dich vu cua chung toi',
+                        'title' => 'Giải pháp thực tế, nhanh chóng',
+                        'subtitle' => 'Dịch vụ của chúng tôi',
                         'description' => '',
-                        'button_label' => 'Xem them',
+                        'button_label' => 'Xem thêm',
                         'content' => ['items' => [
-                            ['title' => 'Van chuyen hang khong', 'summary' => 'Dai ly ban cuoc va hop dong van chuyen voi nhieu hang hang khong lon tren the gioi voi tan suat bay cao.', 'image' => 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Van chuyen vat lieu xay dung', 'summary' => 'Mo rong dich vu van chuyen vat lieu xay dung cho doanh nghiep va cong trinh.', 'image' => 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Van chuyen nha', 'summary' => 'Dich vu chuyen do dac sang nha moi nhanh gon va dam bao an toan.', 'image' => 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Van chuyen thu cung', 'summary' => 'Giai phap dac biet cho khach hang co nhu cau gui dong vat canh.', 'image' => 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Van chuyen hang khong', 'summary' => 'Air cargo la hang hoa van chuyen bang may bay, phu hop don hang can toc do cao.', 'image' => 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Vận chuyển hàng không', 'summary' => 'Đại lý bán cước và hợp đồng vận chuyển với nhiều hãng hàng không lớn trên thế giới, tần suất bay cao.', 'image' => 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Vận chuyển vật liệu xây dựng', 'summary' => 'Dịch vụ vận chuyển vật liệu xây dựng chuyên nghiệp cho doanh nghiệp và công trình.', 'image' => 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Vận chuyển nhà', 'summary' => 'Dịch vụ chuyển đồ đạc sang nhà mới nhanh gọn và bảo đảm an toàn.', 'image' => 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Vận chuyển thú cưng', 'summary' => 'Giải pháp đặc biệt cho khách hàng có nhu cầu gửi động vật cảnh.', 'image' => 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Dịch vụ Air Cargo', 'summary' => 'Vận chuyển hàng hóa bằng máy bay, phù hợp với đơn hàng cần tốc độ cao.', 'image' => 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=900&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'Practical and fast solutions', 'subtitle' => 'Our services', 'description' => '', 'button_label' => 'More', 'content' => ['items' => []]],
@@ -3807,7 +3815,7 @@ class LandingPageBuilder
             [
                 'block_type' => 'faq_showcase',
                 'label' => 'FAQ logistics',
-                'description' => 'Giai dap thac mac va hinh anh kho van.',
+                'description' => 'Giải đáp thắc mắc và hình ảnh kho vận.',
                 'preview_image' => '/theme-previews/XD0318/faq.png',
                 'anchor_id' => 'faq',
                 'settings' => [],
@@ -3817,14 +3825,14 @@ class LandingPageBuilder
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Giai dap cac thac mac ve dich vu cua ban',
-                        'subtitle' => 'Cau hoi thuong gap',
-                        'description' => 'Cac cau hoi se phan nao cho ban cai nhin tong quat nhat ve chung toi, giup ban hieu ro hon dich vu dang cung cap.',
+                        'title' => 'Giải đáp các thắc mắc về dịch vụ',
+                        'subtitle' => 'Câu hỏi thường gặp',
+                        'description' => 'Các câu trả lời giúp bạn có cái nhìn tổng quát về chúng tôi và hiểu rõ hơn những dịch vụ đang cung cấp.',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['question' => 'Cac tieu chi danh gia do uy tin va chat luong cua cong ty van tai chuan nhat?', 'answer' => 'Do uy tin duoc danh gia qua kinh nghiem, mang luoi doi tac, quy trinh giao nhan va kha nang xu ly su co.'],
-                            ['question' => 'Tieu chuan chat luong dich vu van tai hanh khach bang xe o to the nao?', 'answer' => 'Dich vu can dam bao an toan, dung lich trinh, xe dat chuan va thong tin minh bach.'],
-                            ['question' => 'The nao la cac dich vu ho tro van tai duong bo?', 'answer' => 'Bao gom dong goi, kho bai, boc xep, theo doi don hang va giao nhan chang cuoi.'],
+                            ['question' => 'Các tiêu chí đánh giá độ uy tín và chất lượng của công ty vận tải là gì?', 'answer' => 'Độ uy tín được đánh giá qua kinh nghiệm, mạng lưới đối tác, quy trình giao nhận và khả năng xử lý sự cố.'],
+                            ['question' => 'Tiêu chuẩn chất lượng dịch vụ vận tải hành khách bằng ô tô như thế nào?', 'answer' => 'Dịch vụ cần bảo đảm an toàn, đúng lịch trình, xe đạt chuẩn và thông tin minh bạch.'],
+                            ['question' => 'Các dịch vụ hỗ trợ vận tải đường bộ gồm những gì?', 'answer' => 'Bao gồm đóng gói, kho bãi, bốc xếp, theo dõi đơn hàng và giao nhận chặng cuối.'],
                         ]],
                     ],
                     'en' => ['title' => 'Answers to your service questions', 'subtitle' => 'FAQ', 'description' => 'Helpful answers about our logistics services.', 'button_label' => '', 'content' => ['items' => []]],
@@ -3832,18 +3840,18 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'landing_contact',
-                'label' => 'Yeu cau goi lai',
-                'description' => 'Form lien he nen cang container.',
+                'label' => 'Yêu cầu gọi lại',
+                'description' => 'Biểu mẫu liên hệ trên nền cảng container.',
                 'preview_image' => '/theme-previews/XD0318/contact.png',
                 'anchor_id' => 'lien-he',
                 'settings' => [],
                 'media' => ['background' => 'https://images.unsplash.com/photo-1494412685616-a5d310fbb07d?auto=format&fit=crop&w=1800&q=85'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Yeu cau mot cuoc goi lai',
-                        'subtitle' => 'Lien he',
-                        'description' => 'Chi mat 30 giay va sau do chung toi se goi cho ban tro lai, tu Thu Hai den Thu Sau, 8 gio sang - 5 gio chieu. De dang.',
-                        'button_label' => 'Gui tin nhan',
+                        'title' => 'Yêu cầu một cuộc gọi lại',
+                        'subtitle' => 'Liên hệ',
+                        'description' => 'Chỉ mất 30 giây để gửi yêu cầu. Chúng tôi sẽ gọi lại cho bạn từ thứ Hai đến thứ Sáu, 8 giờ sáng đến 5 giờ chiều.',
+                        'button_label' => 'Gửi tin nhắn',
                         'content' => [],
                     ],
                     'en' => ['title' => 'Request a call back', 'subtitle' => 'Contact', 'description' => 'It takes 30 seconds and we will call you back during business hours.', 'button_label' => 'Send message', 'content' => []],
@@ -3851,28 +3859,28 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'bizmax_latest_posts',
-                'label' => 'Tin tuc moi',
-                'description' => 'Tin tuc moi nhat dang 3 cot.',
+                'label' => 'Tin tức mới',
+                'description' => 'Tin tức mới nhất dạng 3 cột.',
                 'preview_image' => '/theme-previews/XD0318/news.png',
                 'anchor_id' => 'tin-tuc',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Doc tin tuc moi nhat cua chung toi',
-                        'subtitle' => 'Tin tuc moi',
+                        'title' => 'Đọc tin tức mới nhất của chúng tôi',
+                        'subtitle' => 'Tin tức mới',
                         'description' => '',
-                        'button_label' => 'Xem them',
+                        'button_label' => 'Xem thêm',
                         'content' => ['items' => [
-                            ['title' => 'Cong thong tin huong dan xuat nhap khau hang hoa chinh thuc', 'summary' => 'Ngay 10/12, tai Ha Noi, Cong thong tin huong dan xuat nhap khau hang hoa duoc gioi thieu den doanh nghiep.', 'image' => 'https://images.unsplash.com/photo-1586528116493-a029325540fa?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 359],
-                            ['title' => 'Ky vong gi tu viec ket thuc thoa thuan FTA giua Viet Nam va Anh?', 'summary' => 'Bien ban ket thuc dam phan thuong mai tu do se mo ra nhieu co hoi cho logistics.', 'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 320],
-                            ['title' => 'Dang sau con so xuat sieu hon 20 ty USD', 'summary' => 'Con so xuat sieu la tin vui trong boi canh hien nay va tao dong luc cho chuoi cung ung.', 'image' => 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 273],
+                            ['title' => 'Cổng thông tin hướng dẫn xuất nhập khẩu hàng hóa chính thức', 'summary' => 'Ngày 10/12 tại Hà Nội, cổng thông tin hướng dẫn xuất nhập khẩu hàng hóa được giới thiệu đến doanh nghiệp.', 'image' => 'https://images.unsplash.com/photo-1586528116493-a029325540fa?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 359],
+                            ['title' => 'Kỳ vọng gì từ việc kết thúc thỏa thuận FTA giữa Việt Nam và Anh?', 'summary' => 'Biên bản kết thúc đàm phán thương mại tự do sẽ mở ra nhiều cơ hội cho ngành logistics.', 'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 320],
+                            ['title' => 'Đằng sau con số xuất siêu hơn 20 tỷ USD', 'summary' => 'Con số xuất siêu là tin vui trong bối cảnh hiện nay và tạo động lực cho chuỗi cung ứng.', 'image' => 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=900&q=85', 'date' => '24/03/2022', 'views' => 273],
                         ]],
                     ],
                     'en' => ['title' => 'Read our latest news', 'subtitle' => 'Latest news', 'description' => '', 'button_label' => 'More', 'content' => ['items' => []]],
@@ -4244,6 +4252,42 @@ class LandingPageBuilder
         $news['settings'] = ['source' => 'cms_posts', 'limit' => 6, 'featured_only' => true];
         $news['data']['vi'] = ['title' => 'Cap nhat tin tuc logistics', 'subtitle' => 'Kien thuc va thi truong', 'description' => '', 'button_label' => 'Xem them', 'content' => ['items' => []]];
         return [$hero, $quality, $about, $services, $solutions, $process, $products, $testimonials, $partners, $news];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function nt503DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/NT503/preview-nt503.svg';
+        $sourceSchema = fn (array $options, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $options],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật', 'default' => false],
+        ];
+        $products = [['value' => 'cms_products', 'label' => 'Sản phẩm']];
+        $posts = [['value' => 'cms_posts', 'label' => 'Tin tức']];
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => [
+            'title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button,
+        ];
+        $items = fn (array $values): array => ['content' => ['items' => $values]];
+        $fallbackProducts = [
+            ['title' => 'Nệm foam Goodnight Eva gấp 3 nâng đỡ', 'image' => '/theme-demo/nt503/mattress.png', 'price' => 3099000, 'original_price' => 4599000, 'url' => '#'],
+            ['title' => 'Nệm foam tổng hợp Erica Smart Tech', 'image' => '/theme-demo/nt503/mattress.png', 'price' => 4299000, 'original_price' => 4999000, 'url' => '#'],
+            ['title' => 'Gối bông trẻ em Deepsleep Khủng Long', 'image' => '/theme-demo/nt503/kids-pillow.png', 'price' => 300000, 'original_price' => 400000, 'url' => '#'],
+            ['title' => 'Bộ chăn ga Cotton Thảo Mộc', 'image' => '/theme-demo/nt503/bedding.png', 'price' => 1290000, 'original_price' => 1690000, 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero WolfBed', 'description' => 'Slider lớn đầu trang.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'nt503-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy (ms)']], 'data' => ['vi' => array_merge($heading('WolfBed CUTIE', null, 'Êm dịu và nâng niu giấc mơ của con', 'Xem thêm sản phẩm'), ['content' => ['slides' => [['title' => 'WolfBed CUTIE', 'summary' => 'Êm dịu và nâng niu giấc mơ của con', 'button_label' => 'Xem thêm sản phẩm', 'image' => '/theme-demo/nt503/hero-wolfbed.png', 'link_url' => '#san-pham']]]]), 'en' => $heading('WolfBed CUTIE', null, 'Gentle comfort for every little dream.', 'Explore products')]],
+            ['block_type' => 'nt503_categories', 'label' => 'Danh mục giấc ngủ', 'description' => 'Mười danh mục sản phẩm dạng ảnh.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 10], 'settings_schema' => $sourceSchema([['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm']], 10), 'data' => ['vi' => array_merge($heading('Trọn bộ sản phẩm cho giấc ngủ của bạn'), $items([])), 'en' => $heading('Everything for your best sleep')]],
+            ['block_type' => 'nt503_mattresses', 'label' => 'Nệm êm giá mềm', 'description' => 'Lưới sản phẩm nệm nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'nem-em', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema($products, 4), 'data' => ['vi' => array_merge($heading('Nệm êm giá mềm'), $items($fallbackProducts)), 'en' => $heading('Soft mattresses, gentle prices')]],
+            ['block_type' => 'nt503_promo_banners', 'label' => 'Banner đôi thiên nhiên', 'description' => 'Hai banner quảng bá chăn ga và gối.', 'preview_image' => $preview, 'anchor_id' => 'banner-thien-nhien', 'settings' => ['image_left' => '/theme-demo/nt503/bedding.png', 'image_right' => '/theme-demo/nt503/kids-pillow.png'], 'settings_schema' => ['image_left' => ['type' => 'text', 'label' => 'Ảnh trái'], 'image_right' => ['type' => 'text', 'label' => 'Ảnh phải']], 'data' => ['vi' => $heading('Giấc ngủ từ thiên nhiên'), 'en' => $heading('Sleep inspired by nature')]],
+            ['block_type' => 'nt503_flash_sale', 'label' => 'Flash Sale', 'description' => 'Khối sản phẩm ưu đãi nền xanh.', 'preview_image' => $preview, 'anchor_id' => 'flash-sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => true], 'settings_schema' => $sourceSchema($products, 5), 'data' => ['vi' => array_merge($heading('Giá tốt, Ưu đãi khủng'), $items($fallbackProducts)), 'en' => $heading('Great prices, huge savings')]],
+            ['block_type' => 'nt503_kids_collection', 'label' => 'Bộ sưu tập trẻ em', 'description' => 'Ảnh bộ sưu tập và sản phẩm gối trẻ em.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap-tre-em', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false, 'cover_image' => '/theme-demo/nt503/hero-wolfbed.png'], 'settings_schema' => array_merge($sourceSchema($products, 4), ['cover_image' => ['type' => 'text', 'label' => 'Ảnh bộ sưu tập']]), 'data' => ['vi' => array_merge($heading('BST Drap Trẻ em', 'BỘ SƯU TẬP MỚI', null, 'Khám phá BST'), $items(array_reverse($fallbackProducts))), 'en' => $heading('Kids bedding collection', 'NEW COLLECTION', null, 'Explore collection')]],
+            ['block_type' => 'nt503_season_promo', 'label' => 'Khuyến mãi theo mùa', 'description' => 'Banner rộng quảng bá bộ sưu tập.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai-mua', 'settings' => ['background_image' => '/theme-demo/nt503/bedding.png'], 'settings_schema' => ['background_image' => ['type' => 'text', 'label' => 'Ảnh nền']], 'data' => ['vi' => $heading('Ngủ ngon mỗi ngày với giá ưu đãi', null, 'Giảm 30% toàn bộ bộ sưu tập mới nhất', 'Mua ngay'), 'en' => $heading('Sleep well every day for less', null, 'Save 30% on the newest collection', 'Shop now')]],
+            ['block_type' => 'nt503_advice', 'label' => 'Góc tư vấn', 'description' => 'Bốn bài viết mới về giấc ngủ.', 'preview_image' => $preview, 'anchor_id' => 'goc-tu-van', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $sourceSchema($posts, 4), 'data' => ['vi' => $heading('Góc tư vấn'), 'en' => $heading('Sleep advice')]],
+            ['block_type' => 'nt503_footer', 'label' => 'Hotline và giới thiệu footer', 'description' => 'Thông điệp thương hiệu và ba hotline hỗ trợ.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Wolf Bed', null, 'Mua nệm, chăn ga gối và phụ kiện chính hãng. Tư vấn cá nhân hoá, nằm thử 120 đêm, đổi trả dễ và giao tận nơi.'), 'en' => $heading('Wolf Bed', null, 'Official mattresses, bedding and accessories with personalized advice and easy returns.')]],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -4788,19 +4832,19 @@ class LandingPageBuilder
 
         $blocks[0]['settings']['placement'] = 'xd0310-hero-slider';
         $blocks[0]['settings_schema'][0]['default'] = 'xd0310-hero-slider';
-        $blocks[0]['data']['vi'] = ['title' => 'Chung toi biet ve cac loai thuc vat tot hon', 'subtitle' => 'Mot khu vuon hon bao gio het', 'description' => 'Thiet ke, thi cong va cham soc canh quan xanh cho khong gian song cua ban.', 'button_label' => '1900 9477', 'content' => ['slides' => []]];
-        $blocks[1]['data']['vi']['title'] = 'Dich vu chinh cua chung toi';
-        $blocks[1]['data']['vi']['subtitle'] = 'Dich vu';
-        $blocks[2]['data']['vi']['title'] = 'Gioi thieu cong ty';
-        $blocks[2]['data']['vi']['subtitle'] = 'Ve chung toi';
-        $blocks[3]['data']['vi']['title'] = 'Hoan thanh cong viec theo dung cach';
-        $blocks[4]['data']['vi']['title'] = 'Mot so du an tieu bieu';
-        $blocks[4]['data']['vi']['subtitle'] = 'Du an canh quan';
-        $blocks[5]['data']['vi']['title'] = 'Cam nhan tu khach hang';
-        $blocks[6]['data']['vi']['title'] = 'Doi ngu kien truc su va ky su';
-        $blocks[7]['data']['vi']['title'] = 'Yeu cau tu van va bao gia';
-        $blocks[8]['data']['vi']['title'] = 'Tin tuc moi';
-        $blocks[9]['data']['vi']['title'] = 'Doi tac dong hanh';
+        $blocks[0]['data']['vi'] = ['title' => 'Chúng tôi am hiểu các loại thực vật', 'subtitle' => 'Một khu vườn xanh hơn bao giờ hết', 'description' => 'Thiết kế, thi công và chăm sóc cảnh quan xanh cho không gian sống của bạn.', 'button_label' => '1900 9477', 'content' => ['slides' => []]];
+        $blocks[1]['data']['vi']['title'] = 'Dịch vụ chính của chúng tôi';
+        $blocks[1]['data']['vi']['subtitle'] = 'Dịch vụ';
+        $blocks[2]['data']['vi']['title'] = 'Giới thiệu công ty';
+        $blocks[2]['data']['vi']['subtitle'] = 'Về chúng tôi';
+        $blocks[3]['data']['vi']['title'] = 'Hoàn thành công việc đúng quy trình';
+        $blocks[4]['data']['vi']['title'] = 'Một số dự án tiêu biểu';
+        $blocks[4]['data']['vi']['subtitle'] = 'Dự án cảnh quan';
+        $blocks[5]['data']['vi']['title'] = 'Cảm nhận từ khách hàng';
+        $blocks[6]['data']['vi']['title'] = 'Đội ngũ kiến trúc sư và kỹ sư';
+        $blocks[7]['data']['vi']['title'] = 'Yêu cầu tư vấn và báo giá';
+        $blocks[8]['data']['vi']['title'] = 'Tin tức mới';
+        $blocks[9]['data']['vi']['title'] = 'Đối tác đồng hành';
 
         return $blocks;
     }
@@ -4811,16 +4855,111 @@ class LandingPageBuilder
         $blocks = $this->xd0305DefaultBlocks();
         $blocks[0]['settings']['placement'] = 'xd0309-hero-slider';
         $blocks[0]['settings_schema'][0]['default'] = 'xd0309-hero-slider';
-        $blocks[0]['data']['vi'] = ['title' => 'Toi uu chat luong chi phi cho doi tac doanh nghiep', 'subtitle' => 'Thiet bi va giai phap an toan', 'description' => 'Cung cap thiet bi bao ho lao dong va giai phap an toan chuyen nghiep cho doanh nghiep.', 'button_label' => 'Nhan bao gia mien phi', 'content' => ['slides' => []]];
-        $blocks[1]['data']['vi']['title'] = 'Dich vu cua chung toi';
-        $blocks[1]['data']['vi']['subtitle'] = 'Dich vu';
-        $blocks[2]['data']['vi']['title'] = 'Gioi thieu cong ty';
-        $blocks[2]['data']['vi']['subtitle'] = 'Ve chung toi';
-        $blocks[3]['data']['vi']['title'] = 'Tu van hop ly va cam ket chat luong';
-        $blocks[4]['data']['vi']['title'] = 'Doi tac noi gi ve Antek';
-        $blocks[5]['data']['vi']['title'] = 'Doi ngu ky thuat cua chung toi';
-        $blocks[6]['data']['vi']['title'] = 'Yeu cau tu van va bao gia';
-        $blocks[7]['data']['vi']['title'] = 'Tin tuc moi';
+        $blocks[0]['label'] = 'Header và banner';
+        $blocks[0]['description'] = 'Banner giới thiệu dịch vụ và nút nhận báo giá.';
+        $blocks[0]['settings_schema'][0]['label'] = 'Vị trí banner';
+        $blocks[0]['data']['vi'] = [
+            'title' => 'Tối ưu chất lượng và chi phí cho đối tác doanh nghiệp',
+            'subtitle' => 'Giải pháp vận tải và hậu cần',
+            'description' => 'Cung cấp giải pháp vận chuyển, kho bãi và giao nhận chuyên nghiệp cho doanh nghiệp.',
+            'button_label' => 'Nhận báo giá miễn phí',
+            'content' => ['slides' => []],
+        ];
+
+        $blocks[1]['label'] = 'Danh sách dịch vụ';
+        $blocks[1]['description'] = 'Các dịch vụ nổi bật được lấy từ hệ thống nội dung.';
+        $blocks[1]['data']['vi'] = [
+            'title' => 'Dịch vụ của chúng tôi',
+            'subtitle' => 'Dịch vụ',
+            'description' => '',
+            'button_label' => 'Xem chi tiết',
+            'content' => ['items' => []],
+        ];
+
+        $blocks[2]['label'] = 'Giới thiệu doanh nghiệp';
+        $blocks[2]['description'] = 'Thông tin doanh nghiệp, kinh nghiệm và năng lực vận hành.';
+        $blocks[2]['data']['vi'] = [
+            'title' => 'Giới thiệu công ty',
+            'subtitle' => 'Về chúng tôi',
+            'description' => 'Đồng hành cùng doanh nghiệp bằng quy trình minh bạch, đội ngũ giàu kinh nghiệm và mạng lưới vận hành linh hoạt.',
+            'button_label' => 'Nhận báo giá',
+            'content' => [
+                'image_primary' => '',
+                'image_secondary' => '',
+                'years' => '15+',
+                'years_label' => 'Năm kinh nghiệm',
+                'progress_label' => 'Mức độ hài lòng',
+                'progress_value' => 95,
+            ],
+        ];
+
+        $blocks[3]['label'] = 'Lý do chọn chúng tôi';
+        $blocks[3]['description'] = 'Các lợi ích nổi bật của dịch vụ.';
+        $blocks[3]['data']['vi'] = [
+            'title' => 'Tư vấn hợp lý và cam kết chất lượng',
+            'subtitle' => 'Vì sao chọn chúng tôi',
+            'description' => 'Mỗi phương án được thiết kế theo nhu cầu thực tế, có đầu mối theo dõi và tiến độ rõ ràng.',
+            'button_label' => '',
+            'content' => [
+                'image' => '',
+                'items' => [
+                    ['title' => 'Cam kết chất lượng'],
+                    ['title' => 'Theo dõi minh bạch'],
+                    ['title' => 'Tối ưu chi phí'],
+                    ['title' => 'Hỗ trợ tận tâm'],
+                ],
+            ],
+        ];
+
+        $blocks[4]['label'] = 'Cảm nhận khách hàng';
+        $blocks[4]['description'] = 'Đánh giá thực tế từ khách hàng.';
+        $blocks[4]['data']['vi'] = [
+            'title' => 'Đối tác nói gì về chúng tôi',
+            'subtitle' => 'Cảm nhận khách hàng',
+            'description' => 'Những trải nghiệm thực tế từ khách hàng đã đồng hành cùng chúng tôi.',
+            'button_label' => '',
+            'content' => ['items' => []],
+        ];
+
+        $blocks[5]['label'] = 'Đội ngũ chuyên gia';
+        $blocks[5]['description'] = 'Danh sách thành viên nổi bật của doanh nghiệp.';
+        $blocks[5]['data']['vi'] = [
+            'title' => 'Đội ngũ kỹ thuật của chúng tôi',
+            'subtitle' => 'Đội ngũ',
+            'description' => '',
+            'button_label' => '',
+            'content' => ['items' => []],
+        ];
+
+        $blocks[6]['label'] = 'Liên hệ';
+        $blocks[6]['description'] = 'Thông tin liên hệ và biểu mẫu tư vấn.';
+        $blocks[6]['data']['vi'] = [
+            'title' => 'Yêu cầu tư vấn và báo giá',
+            'subtitle' => 'Liên hệ với chúng tôi',
+            'description' => 'Đội ngũ sẵn sàng lắng nghe nhu cầu và xây dựng phương án phù hợp.',
+            'button_label' => 'Gửi ngay',
+            'content' => [],
+        ];
+
+        $blocks[7]['label'] = 'Blog và bài viết';
+        $blocks[7]['description'] = 'Các bài viết mới nhất từ hệ thống nội dung.';
+        $blocks[7]['data']['vi'] = [
+            'title' => 'Tin tức mới',
+            'subtitle' => 'Blog và bài viết',
+            'description' => '',
+            'button_label' => 'Đọc thêm',
+            'content' => ['items' => []],
+        ];
+
+        $blocks[8]['label'] = 'Logo đối tác';
+        $blocks[8]['description'] = 'Danh sách đối tác đồng hành.';
+        $blocks[8]['data']['vi'] = [
+            'title' => 'Đối tác đồng hành',
+            'subtitle' => 'Đối tác',
+            'description' => '',
+            'button_label' => '',
+            'content' => ['items' => []],
+        ];
 
         return $blocks;
     }
