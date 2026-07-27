@@ -6,8 +6,6 @@ use App\Support\ThemeBlocks\Definitions\Ser0100ThemeBlockDefinition;
 use App\Support\ThemeBlocks\Definitions\Ser0101ThemeBlockDefinition;
 use App\Support\ThemeBlocks\Definitions\Th0001ThemeBlockDefinition;
 use App\Support\ThemeBlocks\Definitions\Th0201ThemeBlockDefinition;
-use App\Support\ThemeBlocks\Definitions\Th0003ThemeBlockDefinition;
-use App\Support\ThemeBlocks\Definitions\Th0020ThemeBlockDefinition;
 use App\Support\ThemeBlocks\ThemeBlockDefinition;
 
 class ThemeBlockRegistry
@@ -22,8 +20,6 @@ class ThemeBlockRegistry
             'ser0101' => new Ser0101ThemeBlockDefinition(),
             'th0001' => new Th0001ThemeBlockDefinition(),
             'th0201' => new Th0201ThemeBlockDefinition(),
-            'th0003' => new Th0003ThemeBlockDefinition(),
-            'th0020' => new Th0020ThemeBlockDefinition(),
         ];
     }
 

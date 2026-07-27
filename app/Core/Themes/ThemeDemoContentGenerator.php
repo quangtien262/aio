@@ -1275,7 +1275,7 @@ class ThemeDemoContentGenerator
     {
         if ($this->isInteriorPreset($preset)) {
             return implode(PHP_EOL, [
-                'Thiet ke cho nhom '.$childName.' thuoc khong gian '.$departmentName.', phu hop test card san pham, mega menu va goi y theo phong cua TH0020.',
+                'Thiet ke cho nhom '.$childName.' thuoc khong gian '.$departmentName.', phu hop test card san pham, mega menu va goi y theo phong cua giao dien noi that.',
                 'Noi dung tap trung vao vat lieu, kich thuoc, mau sac va kha nang phoi combo trong can ho hoac nha pho.',
                 'Co the chinh truc tiep de doi tu demo sang catalog noi that that, kem thong tin giao lap va bao hanh vat lieu.',
             ]);
@@ -1394,7 +1394,7 @@ class ThemeDemoContentGenerator
     {
         if ($this->isInteriorPreset($preset)) {
             return implode(PHP_EOL.PHP_EOL, [
-                $productName.' la du lieu demo duoc sinh cho preset '.$preset['label'].', giup kiem thu homepage TH0020, trang danh muc va trang chi tiet san pham noi that.',
+                $productName.' la du lieu demo duoc sinh cho preset '.$preset['label'].', giup kiem thu homepage, trang danh muc va trang chi tiet san pham noi that.',
                 'Mau nay thuoc nhom '.$departmentName.' voi dong '.$childName.', nen noi dung dai tap trung vao vat lieu, kich thuoc, ty le phong va cach phoi cung cac san pham lien quan.',
                 'Ban seed nay uu tien trai nghiem mua that: goi y showroom, tu van phoi phong, giao lap theo lich va thong tin bao hanh vat lieu de admin co the doi thanh catalog van hanh that.',
                 'Co the sua truc tiep mo ta, gallery anh, quy cach, kich thuoc va ghi chu lap dat trong admin Catalog de bien trang demo thanh noi dung thuong mai dien tu noi that hoan chinh.',
@@ -1525,7 +1525,7 @@ class ThemeDemoContentGenerator
             return [
                 'name' => 'Y tuong khong gian',
                 'slug' => Str::slug('y-tuong-khong-gian-'.$preset['key']),
-                'description' => 'Chuyen muc demo cho goi y phoi phong, vat lieu va cach chon noi that cua TH0020.',
+                'description' => 'Chuyen muc demo cho goi y phoi phong, vat lieu va cach chon noi that.',
                 'meta_title' => 'Y tuong noi that '.$preset['company_name'],
                 'meta_description' => 'Y tuong phoi phong, vat lieu va bai viet tu van demo cho '.$preset['company_name'],
             ];
@@ -1678,14 +1678,14 @@ class ThemeDemoContentGenerator
                 'key' => 'interior-home',
                 'label' => 'Noi that sang hien dai',
                 'short_label' => 'noi that',
-                'description' => 'Preset cho ecommerce noi that, decor va vat lieu hoan thien, phu hop TH0020 voi menu da cap, banner tren dau va block san pham theo khong gian.',
-                'company_name' => 'TH0020 Living Studio',
-                'domain' => 'th0020living.demo',
+                'description' => 'Preset cho ecommerce noi that, decor va vat lieu hoan thien voi menu da cap, banner tren dau va block san pham theo khong gian.',
+                'company_name' => 'Living Studio',
+                'domain' => 'livingstudio.demo',
                 'address' => '42 Nguyen Co Thach, Nam Tu Liem, Ha Noi',
                 'theme_flavor' => 'interior commerce',
                 'hero_eyebrow' => 'New living',
                 'hero_title' => 'Noi that sang hien dai cho can ho va nha pho',
-                'hero_subtitle' => 'Dung de test TH0020 voi room catalog, mega menu san pham, side banner va luong mua hang that tu Catalog.',
+                'hero_subtitle' => 'Dung de test room catalog, mega menu san pham, side banner va luong mua hang that tu Catalog.',
                 'hero_badge' => 'Tu van phoi phong',
                 'product_prefix' => 'Living',
                 'industry_family' => 'interior',

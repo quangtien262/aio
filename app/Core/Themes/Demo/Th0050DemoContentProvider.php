@@ -67,7 +67,16 @@ class Th0050DemoContentProvider implements ThemeDemoContentProvider
             $this->record($menu);
 
             $profile = SiteProfile::query()->firstOrNew();
+            $currentBranding = (array) $profile->branding;
             $profile->forceFill(['site_name' => $profile->site_name ?: 'An Nhiên Nest', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'An Nhiên Nest', 'company_description' => 'Tinh hoa wellness và quà tặng sức khỏe cao cấp.', 'logo_url' => '', 'support_hotline' => '1900 6750', 'support_email' => 'hello@annhien.vn', 'support_location' => 'TP. Hồ Chí Minh'])])->save();
+
+            $generatedBranding = (array) $profile->branding;
+            foreach (['logo_url', 'support_hotline', 'support_email'] as $field) {
+                if (array_key_exists($field, $currentBranding)) {
+                    $generatedBranding[$field] = $currentBranding[$field];
+                }
+            }
+            $profile->forceFill(['branding' => $generatedBranding])->save();
 
             $existing = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $page = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);

@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -536,6 +536,9 @@ class LandingPageBuilder
             'ec904_tabbed_sale', 'ec904_daily_suggestions' => 5,
             'ec904_technology_products', 'ec904_fashion_products' => 8,
             'ec904_latest_posts' => 4,
+            'ec905_paint_products' => 4,
+            'ec905_tile_products' => 10,
+            'ec905_projects', 'ec905_news' => 5,
             'nt502_categories' => 9,
             'nt502_promotion' => 3,
             'nt502_living_room', 'nt502_bedroom' => 6,
@@ -582,7 +585,7 @@ class LandingPageBuilder
             return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ec900_featured_categories', 'ec900_best_sellers', 'ec900_exclusive_products', 'ec900_advice_posts', 'ec901_featured_categories', 'ec901_flash_deals', 'ec901_best_sellers', 'ec901_product_grid', 'ec901_luxury_collection', 'ec901_latest_posts', 'ec902_featured_categories', 'ec902_product_tabs', 'ec902_featured_deals', 'ec902_phone_collection', 'ec902_tablet_collection', 'ec902_accessory_products', 'ec902_latest_posts', 'ec903_category_rail', 'ec903_featured_deals', 'ec903_food_deals', 'ec903_vegetarian_deals', 'ec903_beauty_deals', 'ec903_travel_deals', 'ec904_category_carousel', 'ec904_tabbed_sale', 'ec904_technology_products', 'ec904_fashion_products', 'ec904_daily_suggestions', 'ec904_latest_posts', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news', 'nt503_categories', 'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection', 'nt503_advice'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ec900_featured_categories', 'ec900_best_sellers', 'ec900_exclusive_products', 'ec900_advice_posts', 'ec901_featured_categories', 'ec901_flash_deals', 'ec901_best_sellers', 'ec901_product_grid', 'ec901_luxury_collection', 'ec901_latest_posts', 'ec902_featured_categories', 'ec902_product_tabs', 'ec902_featured_deals', 'ec902_phone_collection', 'ec902_tablet_collection', 'ec902_accessory_products', 'ec902_latest_posts', 'ec903_category_rail', 'ec903_featured_deals', 'ec903_food_deals', 'ec903_vegetarian_deals', 'ec903_beauty_deals', 'ec903_travel_deals', 'ec904_category_carousel', 'ec904_tabbed_sale', 'ec904_technology_products', 'ec904_fashion_products', 'ec904_daily_suggestions', 'ec904_latest_posts', 'ec905_paint_products', 'ec905_tile_products', 'ec905_projects', 'ec905_news', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news', 'nt503_categories', 'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection', 'nt503_advice'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
@@ -605,6 +608,8 @@ class LandingPageBuilder
                 'ec904_category_carousel' => 'catalog_categories',
                 'ec904_tabbed_sale', 'ec904_technology_products', 'ec904_fashion_products', 'ec904_daily_suggestions' => 'cms_products',
                 'ec904_latest_posts' => 'cms_posts',
+                'ec905_paint_products', 'ec905_tile_products' => 'cms_products',
+                'ec905_projects', 'ec905_news' => 'cms_posts',
                 'nt502_categories' => 'catalog_categories',
                 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom' => 'cms_products',
                 'nt502_latest_news' => 'cms_posts',
@@ -1413,9 +1418,9 @@ class LandingPageBuilder
             'EC902' => $this->ec902DefaultBlocks(),
             'EC903' => $this->ec903DefaultBlocks(),
             'EC904' => $this->ec904DefaultBlocks(),
+            'EC905' => $this->ec905DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
-            'TH0003', 'TH0020' => $this->legacyCommerceDefaultBlocks($themeKey),
             'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
             'SER0100', 'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
@@ -2034,6 +2039,84 @@ class LandingPageBuilder
     }
 
     /** @return array<int, array<string, mixed>> */
+    private function ec905DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC905/preview-ec905.webp';
+        $heading = static fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => [
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $button,
+        ];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ nội dung nổi bật'],
+        ];
+        $product = static fn (string $title, string $image, int $price, int $original): array => [
+            'title' => $title, 'image' => $image, 'price' => $price, 'original_price' => $original, 'url' => '#',
+        ];
+        $paint = [
+            $product('Sơn nội thất mịn HomeCare 18L', '/theme-demo/ec905/product-01.webp', 2090000, 2390000),
+            $product('Sơn ngoại thất WeatherShield 18L', '/theme-demo/ec905/product-02.webp', 2680000, 2980000),
+            $product('Sơn chống thấm AquaGuard 15L', '/theme-demo/ec905/product-03.webp', 2450000, 2750000),
+            $product('Sơn bóng cao cấp SatinPro 5L', '/theme-demo/ec905/product-04.webp', 1800000, 2100000),
+        ];
+        $tiles = collect([
+            ['Gạch bê tông sáng Urban 60×60', 260000, 350000],
+            ['Gạch vân gỗ Nordic Oak 15×90', 597000, 690000],
+            ['Gạch travertine Sandstone 60×120', 475000, 530000],
+            ['Gạch onyx ngọc trai Ivory 80×80', 710000, 720000],
+            ['Gạch đá graphite Slate 60×60', 288000, 330000],
+            ['Gạch marble Frost Grey 60×120', 520000, 590000],
+            ['Gạch vân gỗ Walnut 20×120', 610000, 690000],
+            ['Gạch limestone Cream 60×60', 390000, 450000],
+            ['Gạch slate Cool Grey 30×60', 330000, 380000],
+            ['Gạch marble Pearl 80×80', 680000, 720000],
+        ])->map(fn (array $item, int $index): array => $product($item[0], '/theme-demo/ec905/tile-'.str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT).'.webp', $item[1], $item[2]))->all();
+        $projects = [
+            ['title' => 'Dự án phòng tắm căn hộ Riverside', 'summary' => 'Không gian sáng, gọn với thiết bị vệ sinh đồng bộ.', 'image' => '/theme-demo/ec905/project-01.webp', 'url' => '#'],
+            ['title' => 'Dự án phòng tắm boutique tại Tây Hồ', 'summary' => 'Gạch xanh trầm kết hợp ánh sáng ấm.', 'image' => '/theme-demo/ec905/project-02.webp', 'url' => '#'],
+            ['title' => 'Dự án lắp đặt thiết bị vệ sinh trọn gói', 'summary' => 'Thi công đúng kỹ thuật, bàn giao sạch sẽ.', 'image' => '/theme-demo/ec905/project-03.webp', 'url' => '#'],
+            ['title' => 'Dự án bếp mở cho nhà phố hiện đại', 'summary' => 'Tối ưu lưu trữ và luồng di chuyển.', 'image' => '/theme-demo/ec905/project-04.webp', 'url' => '#'],
+            ['title' => 'Dự án phòng tắm đá tự nhiên', 'summary' => 'Trải nghiệm thư giãn ngay tại nhà.', 'image' => '/theme-demo/ec905/project-05.webp', 'url' => '#'],
+        ];
+        $news = [
+            ['title' => 'Tư vấn chọn sơn nội thất an toàn cho gia đình', 'summary' => 'Cân nhắc độ phủ, khả năng lau chùi và phát thải.', 'image' => '/theme-demo/ec905/project-06.webp', 'url' => '#'],
+            ['title' => 'Tư vấn phối gạch cho phòng tắm nhỏ rộng hơn', 'summary' => 'Màu sáng và đường ron gọn giúp không gian thoáng.', 'image' => '/theme-demo/ec905/project-01.webp', 'url' => '#'],
+            ['title' => 'Tư vấn sử dụng bồn cầu thông minh hiệu quả', 'summary' => 'Lưu ý nguồn điện, cấp nước và vệ sinh định kỳ.', 'image' => '/theme-demo/ec905/project-03.webp', 'url' => '#'],
+            ['title' => 'Tư vấn bảo trì sen tắm và vòi nước tại nhà', 'summary' => 'Vệ sinh đầu phun giúp thiết bị bền hơn.', 'image' => '/theme-demo/ec905/project-05.webp', 'url' => '#'],
+            ['title' => 'Tư vấn chọn thiết bị bếp cho căn hộ mới', 'summary' => 'Ưu tiên kích thước đồng bộ và dễ vệ sinh.', 'image' => '/theme-demo/ec905/project-04.webp', 'url' => '#'],
+        ];
+        $benefits = [
+            ['title' => 'Miễn phí giao hàng', 'summary' => 'Áp dụng toàn quốc', 'icon' => 'fa-truck-fast'],
+            ['title' => 'Đảm bảo chất lượng', 'summary' => 'Sản phẩm đã kiểm định', 'icon' => 'fa-award'],
+            ['title' => 'Hỗ trợ 24/7', 'summary' => 'Chăm sóc khách hàng uy tín', 'icon' => 'fa-headset'],
+            ['title' => 'Tư vấn bán hàng', 'summary' => 'Hotline 1900 6750', 'icon' => 'fa-user-check'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero nhà đẹp', 'description' => 'Banner phòng tắm cùng menu danh mục và ba ô quảng bá.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec905-hero-slider', 'limit' => 3, 'autoplay_ms' => 5200], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Kiến tạo phòng tắm hiện đại', 'Giải pháp nhà đẹp 2026', 'Thiết bị đồng bộ, vật liệu bền đẹp và hỗ trợ thi công tận tâm.', 'Khám phá ngay'), ['content' => ['slides' => [['title' => 'Kiến tạo phòng tắm hiện đại', 'summary' => 'Thiết bị đồng bộ, vật liệu bền đẹp và hỗ trợ thi công tận tâm.', 'button_label' => 'Khám phá ngay', 'image' => '/theme-demo/ec905/hero-bathroom.webp', 'link_url' => '#son-noi-ngoai']]]]), 'en' => $heading('Create a modern bathroom')]],
+            ['block_type' => 'ec905_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết giao hàng, chất lượng, hỗ trợ và tư vấn.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Our commitments'), $benefits)]],
+            ['block_type' => 'ec905_paint_products', 'label' => 'Sơn nội & ngoại thất', 'description' => 'Bốn sản phẩm sơn kèm ảnh tư vấn phối màu.', 'preview_image' => $preview, 'anchor_id' => 'son-noi-ngoai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'EC905-PAINT', 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $withItems($heading('Sơn nội & ngoại thất'), $paint), 'en' => $withItems($heading('Interior & exterior paint'), $paint)]],
+            ['block_type' => 'ec905_tile_products', 'label' => 'Ốp lát cao cấp', 'description' => 'Lưới mười mẫu gạch và bề mặt hoàn thiện.', 'preview_image' => $preview, 'anchor_id' => 'op-lat', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 10, 'search' => 'EC905-TILE', 'featured_only' => false], 'settings_schema' => $productSchema(10), 'data' => ['vi' => $withItems($heading('Ốp lát cao cấp'), $tiles), 'en' => $withItems($heading('Premium tiles'), $tiles)]],
+            ['block_type' => 'ec905_projects', 'label' => 'Dự án thi công', 'description' => 'Thư viện năm dự án nhà tắm và nhà bếp.', 'preview_image' => $preview, 'anchor_id' => 'du-an', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 5, 'search' => 'Dự án', 'featured_only' => false], 'settings_schema' => $postSchema(5), 'data' => ['vi' => $withItems($heading('Dự án thi công nổi bật'), $projects), 'en' => $withItems($heading('Featured projects'), $projects)]],
+            ['block_type' => 'ec905_news', 'label' => 'Tin tức nhà đẹp', 'description' => 'Hai tin lớn và ba tin tư vấn nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 5, 'search' => 'Tư vấn', 'featured_only' => false], 'settings_schema' => $postSchema(5), 'data' => ['vi' => $withItems($heading('Tin tức khuyến mại'), $news), 'en' => $withItems($heading('Home advice'), $news)]],
+            ['block_type' => 'ec905_newsletter', 'label' => 'Đăng ký bản tin', 'description' => 'Biểu mẫu nhận tin sản phẩm và mã giảm giá.', 'preview_image' => $preview, 'anchor_id' => 'newsletter', 'data' => ['vi' => $heading('Đăng ký nhận bản tin', null, 'Tin mới nhất về sản phẩm và mã giảm giá.'), 'en' => $heading('Newsletter', null, 'Latest products and offers.')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
     private function shop602DefaultBlocks(): array
     {
         $preview = '/theme-previews/SHOP602/preview-shop602.svg';
@@ -2172,35 +2255,6 @@ class LandingPageBuilder
         $blocks[] = ['block_type' => 'landing_contact', 'label' => 'Liên hệ tư vấn', 'description' => 'Khối liên hệ cao cấp.', 'preview_image' => $hero, 'anchor_id' => 'lien-he', 'dynamic' => false, 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => array_merge($heading('Cần một món quà thật sự ý nghĩa?', 'Liên hệ tư vấn', 'Đội ngũ của chúng tôi sẽ giúp bạn lựa chọn sản phẩm phù hợp.', 'Gửi yêu cầu'), ['content' => []]), 'en' => array_merge($heading('Looking for a meaningful gift?', 'Get in touch', 'Our team will help you choose.', 'Send request'), ['content' => []])]];
         $partners = [['name' => 'Green Bank'], ['name' => 'Fresh Market'], ['name' => 'Golden Care'], ['name' => 'Lotus Group'], ['name' => 'Viet Wellness'], ['name' => 'An Tâm']];
         $blocks[] = ['block_type' => 'partner_logos', 'label' => 'Đối tác', 'description' => 'Logo các đối tác đồng hành.', 'preview_image' => $quality, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'custom', 'limit' => 8], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => array_merge($heading('Đối tác của chúng tôi', 'An Nhiên Wellness', 'Đồng hành cùng những đơn vị uy tín.'), ['content' => ['items' => $partners]]), 'en' => array_merge($heading('Our partners', 'An Nhien Wellness', 'Trusted organizations growing with us.'), ['content' => ['items' => []]])]];
-
-        return $blocks;
-    }
-
-    /** @return array<int, array<string, mixed>> */
-    private function legacyCommerceDefaultBlocks(string $themeKey): array
-    {
-        $labels = match (strtoupper($themeKey)) {
-            'TH0003' => ['hero' => 'Lookbook thời trang', 'categories' => 'Bộ sưu tập', 'products' => 'Sản phẩm nổi bật', 'content' => 'Fashion journal'],
-            default => ['hero' => 'Không gian sống nổi bật', 'categories' => 'Bộ sưu tập theo phòng', 'products' => 'Nội thất nổi bật', 'content' => 'Câu chuyện vật liệu'],
-        };
-        $blocks = $this->th0001DefaultBlocks();
-
-        foreach ($blocks as &$block) {
-            $block['preview_image'] = '/theme-previews/'.strtoupper($themeKey).'/preview-'.strtolower($themeKey).'.svg';
-
-            if ($block['block_type'] === 'hero_slider') {
-                $block['label'] = $labels['hero'];
-                $block['settings']['placement'] = 'hero-slider';
-                $block['settings_schema'][0]['default'] = 'hero-slider';
-            } elseif ($block['block_type'] === 'featured_categories') {
-                $block['label'] = $labels['categories'];
-            } elseif ($block['block_type'] === 'featured_products') {
-                $block['label'] = $labels['products'];
-            } elseif ($block['block_type'] === 'content_mosaic') {
-                $block['label'] = $labels['content'];
-            }
-        }
-        unset($block);
 
         return $blocks;
     }

@@ -6,8 +6,8 @@
   "website_type": "ecommerce",
   "parent": null,
   "preview": {
-    "thumbnail": "/theme-previews/TH0050/TH0050.png",
-    "cover": "/theme-previews/TH0050/TH0050.png"
+    "thumbnail": "TH0050.png",
+    "cover": "TH0050.png"
   },
   "blocks": [
     "hero-slider-benefits",

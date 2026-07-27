@@ -1,8 +1,12 @@
 @php
-    $th5Branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
+    $th5ProfileBranding = (array) data_get($siteProfile ?? [], 'branding', []);
+    $th5Branding = array_replace(
+        (array) data_get($themeShellData ?? [], 'branding', []),
+        $th5ProfileBranding,
+    );
     $th5Company = trim((string) ($th5Branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'An Nhiên Nest'))) ?: 'An Nhiên Nest';
-    $th5Logo = trim((string) ($th5Branding['logo_url'] ?? ''));
-    $th5Hotline = trim((string) ($th5Branding['support_hotline'] ?? '1900 6750')) ?: '1900 6750';
+    $th5Logo = trim((string) ($th5ProfileBranding['logo_url'] ?? $th5Branding['logo_url'] ?? ''));
+    $th5Hotline = trim((string) ($th5ProfileBranding['support_hotline'] ?? $th5Branding['support_hotline'] ?? ''));
     $th5Phone = preg_replace('/\D+/', '', $th5Hotline) ?: $th5Hotline;
     $th5CartCount = (int) collect(session('storefront_cart.items', []))->sum('quantity');
     $th5Menu = collect(data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', [])))
@@ -20,7 +24,7 @@
     }
 @endphp
 <header class="th5-header" data-th5-header>
-    <div class="th5-topbar"><div class="th5-container"><span><i class="fa-solid fa-bell"></i> @themeT('TH0050.header.promotion')</span><a href="tel:{{ $th5Phone }}"><i class="fa-regular fa-comments"></i><small>@themeT('TH0050.header.hotline')</small><strong>{{ $th5Hotline }}</strong></a></div></div>
+    <div class="th5-topbar"><div class="th5-container"><span><i class="fa-solid fa-bell"></i> @themeT('TH0050.header.promotion')</span>@if($th5Hotline !== '')<a href="tel:{{ $th5Phone }}"><i class="fa-regular fa-comments"></i><small>@themeT('TH0050.header.hotline')</small><strong>{{ $th5Hotline }}</strong></a>@endif</div></div>
     <div class="th5-head-main"><div class="th5-container th5-head-main__inner">
         <a class="th5-logo" href="{{ route('site.home') }}" aria-label="{{ $th5Company }}">
             @if($th5Logo !== '')<img src="{{ $th5Logo }}" alt="{{ $th5Company }}">@else<span class="th5-logo__mark"><i class="fa-solid fa-feather-pointed"></i></span><span><strong>{{ $th5Company }}</strong><small>@themeT('TH0050.brand.tagline')</small></span>@endif
