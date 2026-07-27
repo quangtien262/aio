@@ -1,0 +1,42 @@
+{
+  "name": "SPA111 Bean Spa",
+  "key": "SPA111",
+  "version": "1.0.0",
+  "description": "Theme spa và chăm sóc sức khỏe cao cấp với tone kem, xanh ngọc và cam đào; hỗ trợ dịch vụ, sản phẩm, đội ngũ, đánh giá, FAQ, bài viết và đặt lịch.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "spa111.png",
+    "cover": "spa111.png"
+  },
+  "blocks": [
+    "hero-slider",
+    "spa111-service-highlights",
+    "spa111-about",
+    "spa111-services",
+    "spa111-stats",
+    "spa111-featured-products",
+    "spa111-why-choose",
+    "spa111-testimonials",
+    "spa111-faq",
+    "spa111-team",
+    "spa111-latest-posts",
+    "spa111-partners",
+    "spa111-booking",
+    "spa111-footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": false,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings"
+  }
+}

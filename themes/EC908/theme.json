@@ -1,0 +1,13 @@
+{
+  "name": "EC908 Ego Fitness",
+  "key": "EC908",
+  "version": "1.0.0",
+  "description": "Theme thực phẩm bổ sung và phụ kiện fitness với hero khuyến mãi, danh mục tròn, cụm sản phẩm và góc sức khỏe.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {"thumbnail": "avatar.png", "cover": "cover-ec908.png"},
+  "blocks": ["hero-slider", "category-rail", "best-sellers", "promo-pair", "accessory-products", "health-posts", "benefits", "footer"],
+  "supports": {"dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true},
+  "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},
+  "demo": {"content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "ec908-ego-fitness"}
+}

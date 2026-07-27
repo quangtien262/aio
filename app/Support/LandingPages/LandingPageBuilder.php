@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -539,6 +539,23 @@ class LandingPageBuilder
             'ec905_paint_products' => 4,
             'ec905_tile_products' => 10,
             'ec905_projects', 'ec905_news' => 5,
+            'ec906_flash_sale' => 5,
+            'ec906_family_care' => 6,
+            'ec906_kitchen_products' => 8,
+            'ec906_latest_posts' => 4,
+            'ec907_category_grid' => 16,
+            'ec907_best_sellers', 'ec907_gaming_products' => 4,
+            'ec907_audio_showcase' => 9,
+            'ec907_tech_news' => 4,
+            'ec908_category_rail' => 10,
+            'ec908_best_sellers' => 6,
+            'ec908_accessory_products', 'ec908_health_posts' => 4,
+            'ec909_category_cards', 'ec909_recommendations' => 4,
+            'ec909_headphone_showcase', 'ec909_headphone_products', 'ec909_earphone_products', 'ec909_latest_posts' => 3,
+            'spa111_services', 'spa111_testimonials' => 3,
+            'spa111_featured_products' => 8,
+            'spa111_team', 'spa111_latest_posts' => 4,
+            'spa111_partners' => 9,
             'nt502_categories' => 9,
             'nt502_promotion' => 3,
             'nt502_living_room', 'nt502_bedroom' => 6,
@@ -555,7 +572,8 @@ class LandingPageBuilder
             'bds701_latest_news' => 3,
             default => 3,
         };
-        $limit = max(1, min(12, (int) ($settings['limit'] ?? $defaultLimit)));
+        $maximumLimit = $block->block_type === 'ec907_category_grid' ? 16 : 12;
+        $limit = max(1, min($maximumLimit, (int) ($settings['limit'] ?? $defaultLimit)));
 
         if ($block->block_type === 'hero_slider') {
             return $this->heroSlideItems([...$settings, 'theme_key' => $block->theme_key], $limit, $locale, $block->landingPage?->website_key);
@@ -585,7 +603,7 @@ class LandingPageBuilder
             return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ec900_featured_categories', 'ec900_best_sellers', 'ec900_exclusive_products', 'ec900_advice_posts', 'ec901_featured_categories', 'ec901_flash_deals', 'ec901_best_sellers', 'ec901_product_grid', 'ec901_luxury_collection', 'ec901_latest_posts', 'ec902_featured_categories', 'ec902_product_tabs', 'ec902_featured_deals', 'ec902_phone_collection', 'ec902_tablet_collection', 'ec902_accessory_products', 'ec902_latest_posts', 'ec903_category_rail', 'ec903_featured_deals', 'ec903_food_deals', 'ec903_vegetarian_deals', 'ec903_beauty_deals', 'ec903_travel_deals', 'ec904_category_carousel', 'ec904_tabbed_sale', 'ec904_technology_products', 'ec904_fashion_products', 'ec904_daily_suggestions', 'ec904_latest_posts', 'ec905_paint_products', 'ec905_tile_products', 'ec905_projects', 'ec905_news', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news', 'nt503_categories', 'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection', 'nt503_advice'], true)) {
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ec900_featured_categories', 'ec900_best_sellers', 'ec900_exclusive_products', 'ec900_advice_posts', 'ec901_featured_categories', 'ec901_flash_deals', 'ec901_best_sellers', 'ec901_product_grid', 'ec901_luxury_collection', 'ec901_latest_posts', 'ec902_featured_categories', 'ec902_product_tabs', 'ec902_featured_deals', 'ec902_phone_collection', 'ec902_tablet_collection', 'ec902_accessory_products', 'ec902_latest_posts', 'ec903_category_rail', 'ec903_featured_deals', 'ec903_food_deals', 'ec903_vegetarian_deals', 'ec903_beauty_deals', 'ec903_travel_deals', 'ec904_category_carousel', 'ec904_tabbed_sale', 'ec904_technology_products', 'ec904_fashion_products', 'ec904_daily_suggestions', 'ec904_latest_posts', 'ec905_paint_products', 'ec905_tile_products', 'ec905_projects', 'ec905_news', 'ec906_flash_sale', 'ec906_family_care', 'ec906_kitchen_products', 'ec906_latest_posts', 'ec907_category_grid', 'ec907_best_sellers', 'ec907_audio_showcase', 'ec907_gaming_products', 'ec907_tech_news', 'ec908_category_rail', 'ec908_best_sellers', 'ec908_accessory_products', 'ec908_health_posts', 'ec909_category_cards', 'ec909_headphone_showcase', 'ec909_headphone_products', 'ec909_earphone_products', 'ec909_recommendations', 'ec909_latest_posts', 'spa111_services', 'spa111_featured_products', 'spa111_testimonials', 'spa111_team', 'spa111_latest_posts', 'spa111_partners', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news', 'nt503_categories', 'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection', 'nt503_advice'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
@@ -610,6 +628,23 @@ class LandingPageBuilder
                 'ec904_latest_posts' => 'cms_posts',
                 'ec905_paint_products', 'ec905_tile_products' => 'cms_products',
                 'ec905_projects', 'ec905_news' => 'cms_posts',
+                'ec906_flash_sale', 'ec906_family_care', 'ec906_kitchen_products' => 'cms_products',
+                'ec906_latest_posts' => 'cms_posts',
+                'ec907_category_grid' => 'catalog_categories',
+                'ec907_best_sellers', 'ec907_audio_showcase', 'ec907_gaming_products' => 'cms_products',
+                'ec907_tech_news' => 'cms_posts',
+                'ec908_category_rail' => 'catalog_categories',
+                'ec908_best_sellers', 'ec908_accessory_products' => 'cms_products',
+                'ec908_health_posts' => 'cms_posts',
+                'ec909_category_cards' => 'catalog_categories',
+                'ec909_headphone_showcase', 'ec909_headphone_products', 'ec909_earphone_products', 'ec909_recommendations' => 'cms_products',
+                'ec909_latest_posts' => 'cms_posts',
+                'spa111_services' => 'cms_services',
+                'spa111_featured_products' => 'cms_products',
+                'spa111_testimonials' => 'cms_testimonials',
+                'spa111_team' => 'cms_team_members',
+                'spa111_latest_posts' => 'cms_posts',
+                'spa111_partners' => 'cms_partners',
                 'nt502_categories' => 'catalog_categories',
                 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom' => 'cms_products',
                 'nt502_latest_news' => 'cms_posts',
@@ -801,6 +836,9 @@ class LandingPageBuilder
             'cms_products', 'catalog_products', 'featured_products' => $this->featuredProductItems($settings, $limit, $locale, $websiteKey),
             'cms_projects' => $this->cmsProjectItems($settings, $limit, $locale, $websiteKey),
             'cms_services' => $this->cmsServiceItems($settings, $limit, $locale, $websiteKey),
+            'cms_team_members' => $this->cmsTeamMemberItems($settings, $limit, $locale, $websiteKey),
+            'cms_testimonials' => $this->cmsTestimonialItems($settings, $limit, $locale, $websiteKey),
+            'cms_partners' => $this->cmsPartnerItems($settings, $limit, $locale, $websiteKey),
             'catalog_categories', 'cms_categories', 'cms_service_categories', 'cms_project_categories' => $this->featuredCategoryItems($settings, $limit, $locale, $websiteKey),
             'cms_menus' => $this->cmsMenuItems($settings, $limit),
             'real_estate_listings' => $this->realEstateListingItems($settings, $limit, $locale),
@@ -1062,8 +1100,11 @@ class LandingPageBuilder
                     ->orWhere('slug', 'like', $search));
             })
             ->withCount(['products' => fn (Builder $query) => $query->where('is_active', true)])
-            ->orderByDesc('products_count')
-            ->orderBy('sort_order')
+            ->when(
+                ($settings['order'] ?? null) === 'sort_order',
+                fn (Builder $query) => $query->orderBy('sort_order'),
+                fn (Builder $query) => $query->orderByDesc('products_count')->orderBy('sort_order'),
+            )
             ->orderBy('name')
             ->take($limit)
             ->get()
@@ -1419,6 +1460,10 @@ class LandingPageBuilder
             'EC903' => $this->ec903DefaultBlocks(),
             'EC904' => $this->ec904DefaultBlocks(),
             'EC905' => $this->ec905DefaultBlocks(),
+            'EC906' => $this->ec906DefaultBlocks(),
+            'EC907' => $this->ec907DefaultBlocks(),
+            'EC908' => $this->ec908DefaultBlocks(),
+            'EC909' => $this->ec909DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
             'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
@@ -1443,6 +1488,7 @@ class LandingPageBuilder
             'DN302' => $this->dn302DefaultBlocks(),
             'BZ501' => $this->bz501DefaultBlocks(),
             'SPA502' => $this->spa502DefaultBlocks(),
+            'SPA111' => $this->spa111DefaultBlocks(),
             'BDS701' => $this->bds701DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
@@ -2039,6 +2085,309 @@ class LandingPageBuilder
     }
 
     /** @return array<int, array<string, mixed>> */
+    private function ec906DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC906/preview-ec906.png';
+        $heading = static fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => [
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $button,
+        ];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ nội dung nổi bật'],
+        ];
+        $product = static fn (string $title, string $image, int $price, int $original): array => [
+            'title' => $title, 'image' => $image, 'price' => $price, 'original_price' => $original, 'url' => '#',
+        ];
+        $home = [
+            $product('Nước lau sàn tinh dầu thảo mộc', '/theme-demo/ec906/home-care.png', 30000, 45000),
+            $product('Nước rửa chén hương quế và bồ hòn', '/theme-demo/ec906/home-care.png', 121000, 129000),
+            $product('Nước xả vải hương hoa oải hương', '/theme-demo/ec906/home-care.png', 167000, 182000),
+            $product('Túi nước xả vải thanh khiết 1.7L', '/theme-demo/ec906/home-care.png', 140000, 175000),
+            $product('Nước giặt thiên nhiên dịu nhẹ', '/theme-demo/ec906/home-care.png', 159000, 270000),
+            $product('Sáp thơm phòng khử mùi Pure Aroma', '/theme-demo/ec906/home-care.png', 41000, 65000),
+        ];
+        $kitchenNames = [
+            ['Chảo chiên trứng tạo hình', 20000, 30000],
+            ['Khuôn silicone làm bánh donut', 35000, 50000],
+            ['Cây lăn bột chống dính', 75000, 149000],
+            ['Cán bột gỗ tay cầm dài', 35000, 40000],
+            ['Khay làm kem silicone dễ thương', 36000, 70000],
+            ['Dụng cụ ép bột tiện dụng', 69000, 99000],
+            ['Khuôn làm bánh xếp 2 trong 1', 33000, 77000],
+            ['Máy đánh trứng cầm tay mini', 52000, 80000],
+        ];
+        $kitchen = collect($kitchenNames)->map(fn (array $item): array => $product($item[0], '/theme-demo/ec906/kitchen-tools.png', $item[1], $item[2]))->all();
+        $benefits = [
+            ['title' => 'Giao hỏa tốc', 'summary' => 'Nội thành TP.HCM trong 4h', 'icon' => 'fa-truck-fast'],
+            ['title' => 'Đổi trả miễn phí', 'summary' => 'Trong vòng 30 ngày', 'icon' => 'fa-rotate'],
+            ['title' => 'Hỗ trợ 24/7', 'summary' => 'Hỗ trợ khách hàng 24/7', 'icon' => 'fa-thumbs-up'],
+            ['title' => 'Deal hot bùng nổ', 'summary' => 'Flash sale giảm giá cực sốc', 'icon' => 'fa-ticket'],
+        ];
+        $promos = [
+            ['title' => 'Sữa các loại thông dụng', 'button_label' => 'Mua ngay', 'url' => '#'],
+            ['title' => 'Tã bỉm, hóa phẩm', 'button_label' => 'Mua ngay', 'url' => '#'],
+            ['title' => 'Đồ dùng cho mẹ & bé', 'button_label' => 'Mua ngay', 'url' => '#'],
+        ];
+        $posts = [
+            ['title' => 'Các loại nước chống lão hóa hiệu quả nên uống mỗi ngày', 'summary' => 'Những thức uống giàu dưỡng chất cần thiết cho cơ thể.', 'image' => '/theme-demo/ec906/nutrition.png', 'url' => '#'],
+            ['title' => 'Trái cây mùa đông giúp giảm cân hiệu quả', 'summary' => 'Lựa chọn thực phẩm theo mùa để cân bằng dinh dưỡng.', 'image' => '/theme-demo/ec906/nutrition.png', 'url' => '#'],
+            ['title' => 'Cách chọn rau củ quả sạch, tươi ngon và an toàn', 'summary' => 'Những dấu hiệu đơn giản giúp chọn thực phẩm chất lượng.', 'image' => '/theme-demo/ec906/home-care.png', 'url' => '#'],
+            ['title' => '10 mẹo giúp người bận rộn giữ nhà luôn sạch sẽ', 'summary' => 'Các thói quen nhỏ giúp không gian sống luôn thoáng sạch.', 'image' => '/theme-demo/ec906/home-care.png', 'url' => '#'],
+        ];
+        $brands = collect(['OMO', 'Tide', 'SUNHOUSE', 'Kangaroo', 'THIÊN LONG', 'LG', 'Goldsun', 'Comfort', 'Panasonic', 'Ariel', 'Surf', 'Viso'])
+            ->map(fn (string $title): array => ['title' => $title, 'url' => '#'])->all();
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero đại tiệc khuyến mãi', 'description' => 'Banner toàn chiều rộng với thông điệp giảm giá và ảnh sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec906-hero-slider', 'limit' => 3, 'autoplay_ms' => 5500], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('ĐẠI TIỆC KHUYẾN MÃI', 'Duy nhất tại EGA Mini Mart', 'Giảm giá lên đến 65%', 'Mua ngay'), ['content' => ['slides' => [['title' => 'ĐẠI TIỆC KHUYẾN MÃI', 'summary' => 'Giảm giá lên đến 65%', 'button_label' => 'Mua ngay', 'image' => '/theme-demo/ec906/hero-minimart.png', 'link_url' => '#flash-sale']]]]), 'en' => $heading('MEGA PROMOTION PARTY')]],
+            ['block_type' => 'ec906_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết giao hàng, đổi trả, hỗ trợ và ưu đãi.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service promises'), $benefits)]],
+            ['block_type' => 'ec906_flash_sale', 'label' => 'Flash sale đếm ngược', 'description' => 'Năm sản phẩm nổi bật kèm đồng hồ đếm ngược.', 'preview_image' => $preview, 'anchor_id' => 'flash-sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'search' => 'EC906-HOME', 'featured_only' => false], 'settings_schema' => $productSchema(5), 'data' => ['vi' => $withItems($heading('Chớp thời cơ. Giá như mơ!'), array_slice($home, 0, 5)), 'en' => $heading('Dream prices. Limited time!')]],
+            ['block_type' => 'ec906_family_care', 'label' => 'Chăm sóc gia đình', 'description' => 'Dải sáu sản phẩm vệ sinh và chăm sóc nhà cửa.', 'preview_image' => $preview, 'anchor_id' => 'cham-soc-gia-dinh', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 6, 'search' => 'EC906-HOME', 'featured_only' => false], 'settings_schema' => $productSchema(6), 'data' => ['vi' => $withItems($heading('Chăm sóc gia đình'), $home), 'en' => $heading('Family care')]],
+            ['block_type' => 'ec906_category_promos', 'label' => 'Banner nhóm hàng', 'description' => 'Ba banner sữa, hóa phẩm và đồ dùng mẹ & bé.', 'preview_image' => $preview, 'anchor_id' => 'nhom-hang', 'data' => ['vi' => $withItems($heading('Nhóm hàng nổi bật'), $promos), 'en' => $withItems($heading('Featured categories'), $promos)]],
+            ['block_type' => 'ec906_kitchen_products', 'label' => 'Đồ dùng nhà bếp', 'description' => 'Tám sản phẩm bao quanh banner khuyến mãi dọc.', 'preview_image' => $preview, 'anchor_id' => 'do-dung-nha-bep', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'search' => 'EC906-KITCHEN', 'featured_only' => false], 'settings_schema' => $productSchema(8), 'data' => ['vi' => array_merge($withItems($heading('Đồ dùng nhà bếp'), $kitchen), ['content' => ['items' => $kitchen, 'promo_image' => '/theme-demo/ec906/kitchen-promo.png']]), 'en' => $heading('Kitchen essentials')]],
+            ['block_type' => 'ec906_latest_posts', 'label' => 'Tin tức gia đình', 'description' => 'Bốn bài viết cẩm nang sức khỏe và nhà cửa.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => 'EC906', 'featured_only' => false], 'settings_schema' => $postSchema(4), 'data' => ['vi' => $withItems($heading('Tin tức'), $posts), 'en' => $withItems($heading('News'), $posts)]],
+            ['block_type' => 'ec906_brand_strip', 'label' => 'Thương hiệu đồng hành', 'description' => 'Dải logo chữ đơn sắc của các thương hiệu.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'data' => ['vi' => $withItems($heading('Thương hiệu đồng hành'), $brands), 'en' => $withItems($heading('Our brands'), $brands)]],
+            ['block_type' => 'ec906_newsletter', 'label' => 'Đăng ký ưu đãi', 'description' => 'Biểu mẫu email được trình bày trong chân trang.', 'preview_image' => $preview, 'anchor_id' => 'newsletter', 'data' => ['vi' => $heading('Đăng ký nhận ưu đãi', null, 'Cập nhật khuyến mãi đặc biệt ngay lập tức.'), 'en' => $heading('Get special offers')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec907DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC907/preview-ec907.png';
+        $heading = static fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $product = static fn (string $title, string $image, int $price, int $original): array => ['title' => $title, 'image' => $image, 'price' => $price, 'original_price' => $original, 'url' => '#'];
+        $best = [
+            $product('Bàn phím cơ không dây Dot Foundation', '/theme-demo/ec907/keyboard-white.png', 4700000, 4800000),
+            $product('Bàn phím cơ không dây Flow 75', '/theme-demo/ec907/keyboard-white.png', 4400000, 6800000),
+            $product('Bàn phím cơ Chocolate Retro', '/theme-demo/ec907/keyboard-white.png', 3800000, 4200000),
+            $product('Bàn phím cơ B-Duck Wireless', '/theme-demo/ec907/keyboard-white.png', 3800000, 4200000),
+        ];
+        $audio = collect([
+            ['Tai nghe Studio W830BT', 4350000, 5220000], ['Tai nghe Gaming Barracuda X', 4350000, 5220000],
+            ['Tai nghe SoundForm Play', 2220000, 3500000], ['Tai nghe Virtuoso Pro', 4220000, 4800000],
+            ['Tai nghe Fnatic React+ 7.1', 4520000, 4800000], ['Loa không dây di động MiniBeat', 1850000, 2200000],
+            ['Tai nghe Momentum 4 Wireless', 6520000, 7000000], ['Tai nghe SoundForm Mini Kids', 3220000, 3500000],
+            ['Tai nghe Lightspeed G733', 4520000, 4800000],
+        ])->map(fn (array $item, int $index): array => $product($item[0], $index === 4 ? '/theme-demo/ec907/headset-black.png' : ($index === 5 ? '/theme-demo/ec907/speaker.webp' : '/theme-demo/ec907/headset-black.png'), $item[1], $item[2]))->all();
+        $gaming = [
+            $product('Máy chơi game PlayStation thế hệ mới', '/theme-demo/ec907/game-console.webp', 15900000, 17900000),
+            $product('Kính thực tế ảo Meta Quest', '/theme-demo/ec907/headset.webp', 16690000, 19800000),
+            $product('Tay cầm DualSense Edge', '/theme-demo/ec907/game-console.webp', 6690000, 9800000),
+            $product('Tay cầm chơi game không dây', '/theme-demo/ec907/game-console.webp', 2690000, 3800000),
+        ];
+        $categories = collect([
+            ['Laptop','laptop.webp'],['Máy tính bảng','laptop.webp'],['Điện thoại','phone-front.webp'],['Tai nghe','headset-black.png'],
+            ['Bàn phím','keyboard-white.png'],['Sạc dự phòng','smartwatch.webp'],['Chuột + Lót chuột','keyboard-white.png'],['Củ sạc','earbuds.webp'],
+            ['Máy tính bàn (PC)','television.webp'],['Màn hình','television.webp'],['Thiết bị âm thanh','speaker.webp'],['Máy chơi game','game-console.webp'],
+            ['Ghế gaming','headset.webp'],['Balo laptop','laptop.webp'],['Cáp sạc','earbuds.webp'],['Phụ kiện','smartwatch.webp'],
+        ])->map(fn (array $item): array => ['title' => $item[0], 'image' => '/theme-demo/ec907/'.$item[1], 'url' => '#'])->all();
+        $benefits = [
+            ['title' => 'Giao hỏa tốc', 'summary' => 'Nội thành TP.HCM trong 4h', 'icon' => 'fa-truck-fast'],
+            ['title' => 'Trả góp ưu đãi%', 'summary' => 'Hỗ trợ vay với lãi suất thấp', 'icon' => 'fa-circle-dollar-to-slot'],
+            ['title' => 'Deal hot bùng nổ', 'summary' => 'Flash sale giảm giá cực sốc', 'icon' => 'fa-ticket'],
+            ['title' => 'Miễn phí đổi trả', 'summary' => 'Trong vòng 30 ngày miễn phí', 'icon' => 'fa-rotate'],
+            ['title' => 'Hỗ trợ 24/7', 'summary' => 'Hỗ trợ khách hàng 24/7', 'icon' => 'fa-thumbs-up'],
+        ];
+        $campaigns = [
+            ['title' => 'GIẢM GIÁ NHẬP HỌC 30%', 'summary' => 'Tai nghe, Phụ kiện', 'image' => '/theme-demo/ec907/campaign-gaming.png', 'url' => '#'],
+            ['title' => 'ƯU ĐÃI MÙA HÈ ĐẾN 60%', 'summary' => 'Laptop, Màn hình máy tính', 'image' => '/theme-demo/ec907/campaign-gaming.png', 'url' => '#'],
+            ['title' => 'GIẢM 500K CHO ĐƠN 2TR', 'summary' => 'Laptop Gaming', 'image' => '/theme-demo/ec907/campaign-gaming.png', 'url' => '#'],
+        ];
+        $posts = [
+            ['title' => 'Trình làng trợ lý AI thế hệ mới cho người dùng công nghệ', 'summary' => 'Mô hình thông minh ngày càng hữu ích trong công việc và sáng tạo.', 'image' => '/theme-demo/ec907/news-foldable.webp', 'url' => '#'],
+            ['title' => 'Laptop thế hệ mới được trang bị chip hiệu năng cao', 'summary' => 'Thiết kế mỏng nhẹ đi cùng thời lượng pin và sức mạnh xử lý tốt hơn.', 'image' => '/theme-demo/ec907/laptop.webp', 'url' => '#'],
+            ['title' => 'Cách xuất màn hình laptop ra màn hình ngoài cực đơn giản', 'summary' => 'Hướng dẫn kết nối và tối ưu không gian làm việc đa màn hình.', 'image' => '/theme-demo/ec907/news-tv.webp', 'url' => '#'],
+            ['title' => 'Laptop AI mới: hiệu năng mạnh và siêu mỏng nhẹ', 'summary' => 'Những thay đổi đáng chú ý của thế hệ máy tính cá nhân mới.', 'image' => '/theme-demo/ec907/news-wearables.webp', 'url' => '#'],
+        ];
+        $brands = collect(['SONY','XIAOMI','ASUS','OPPO','SAMSUNG','LG','realme','HUAWEI','NOKIA','MSI','DELL','Apple','GEFORCE RTX','Lenovo','acer','ThinkPad'])->map(fn (string $title): array => ['title' => $title, 'url' => '#'])->all();
+        $promos = [
+            ['title' => 'LAPTOP VĂN PHÒNG', 'summary' => 'Giảm 30% cho sinh viên', 'price' => '8.450.000₫', 'image' => '/theme-demo/ec907/laptop.webp', 'url' => '#'],
+            ['title' => 'MÀN HÌNH 4K', 'summary' => 'Giảm lên đến 20%', 'price' => '7.690.000₫', 'image' => '/theme-demo/ec907/television.webp', 'url' => '#'],
+            ['title' => 'BÀN PHÍM CƠ', 'summary' => 'Giảm lên đến 60%', 'price' => '1.590.000₫', 'image' => '/theme-demo/ec907/keyboard-white.png', 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Gear và banner dọc', 'description' => 'Banner gaming chính và ba banner khuyến mãi sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec907-hero-slider', 'limit' => 3, 'autoplay_ms' => 5200], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Gear giá sốc', 'Giao siêu tốc', 'Giảm giá cực sốc đến 45%', 'Xem ngay'), ['content' => ['slides' => [['title' => 'Gear giá sốc', 'summary' => 'Giao siêu tốc · Giảm đến 45%', 'button_label' => 'Xem ngay', 'image' => '/theme-demo/ec907/hero-gear.png', 'link_url' => '#san-pham-ban-chay']], 'promos' => $promos]]), 'en' => $heading('Gaming gear mega sale')]],
+            ['block_type' => 'ec907_benefits', 'label' => 'Cam kết mua sắm', 'description' => 'Năm cam kết giao hàng, trả góp, deal, đổi trả và hỗ trợ.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $withItems($heading('Cam kết mua sắm'), $benefits), 'en' => $withItems($heading('Shopping benefits'), $benefits)]],
+            ['block_type' => 'ec907_category_grid', 'label' => 'Danh mục thiết bị', 'description' => 'Lưới 16 danh mục thiết bị và phụ kiện.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 16, 'search' => 'ec907-', 'featured_only' => false, 'order' => 'sort_order'], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số danh mục'], 'search' => ['type' => 'text', 'label' => 'Từ khóa']], 'data' => ['vi' => $withItems($heading('Danh mục sản phẩm'), $categories), 'en' => $withItems($heading('Product categories'), $categories)]],
+            ['block_type' => 'ec907_best_sellers', 'label' => 'Sản phẩm bán chạy', 'description' => 'Bốn sản phẩm bàn phím bán chạy.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-ban-chay', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'EC907-KEYBOARD', 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $withItems($heading('Sản phẩm bán chạy'), $best), 'en' => $heading('Best sellers')]],
+            ['block_type' => 'ec907_campaign_cards', 'label' => 'Ba chiến dịch ưu đãi', 'description' => 'Ba banner nhập học, mùa hè và laptop gaming.', 'preview_image' => $preview, 'anchor_id' => 'chien-dich', 'data' => ['vi' => $withItems($heading('Ưu đãi nổi bật'), $campaigns), 'en' => $withItems($heading('Featured offers'), $campaigns)]],
+            ['block_type' => 'ec907_audio_showcase', 'label' => 'Showcase tai nghe', 'description' => 'Lưới tai nghe bất đối xứng với sản phẩm trung tâm.', 'preview_image' => $preview, 'anchor_id' => 'tai-nghe', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 9, 'search' => 'EC907-AUDIO', 'featured_only' => false], 'settings_schema' => $productSchema(9), 'data' => ['vi' => $withItems($heading('Tai nghe và âm thanh'), $audio), 'en' => $heading('Audio showcase')]],
+            ['block_type' => 'ec907_gaming_products', 'label' => 'Phụ kiện chơi game', 'description' => 'Bốn sản phẩm console, kính VR và tay cầm.', 'preview_image' => $preview, 'anchor_id' => 'gaming', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'EC907-GAMING', 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $withItems($heading('Phụ kiện chơi game'), $gaming), 'en' => $heading('Gaming accessories')]],
+            ['block_type' => 'ec907_brand_strip', 'label' => 'Thương hiệu công nghệ', 'description' => 'Dải thương hiệu hai hàng.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'data' => ['vi' => $withItems($heading('Thương hiệu'), $brands), 'en' => $withItems($heading('Brands'), $brands)]],
+            ['block_type' => 'ec907_tech_news', 'label' => 'Bản tin công nghệ', 'description' => 'Bốn bài viết công nghệ mới nhất.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema(4), 'data' => ['vi' => $withItems($heading('Bản tin công nghệ'), $posts), 'en' => $heading('Technology news')]],
+            ['block_type' => 'ec907_newsletter', 'label' => 'Đăng ký ưu đãi', 'description' => 'Biểu mẫu nhận tin trong chân trang.', 'preview_image' => $preview, 'anchor_id' => 'newsletter', 'data' => ['vi' => $heading('Đăng ký nhận ưu đãi'), 'en' => $heading('Get special offers')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec908DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC908/preview-ec908.png';
+        $heading = static fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $product = static fn (string $title, string $image, int $price, int $original): array => ['title' => $title, 'image' => $image, 'price' => $price, 'original_price' => $original, 'delivery' => 'Giao siêu tốc 2H', 'url' => '#'];
+        $categories = collect(['Sản phẩm nổi bật', 'Tăng cân', 'Tăng cơ', 'Sức bền', 'Giảm cân', 'Protein', 'Dầu cá', 'Phụ kiện', 'Dưỡng chất', 'Vitamin'])->map(fn (string $title, int $index): array => ['title' => $title, 'image' => $index % 2 === 0 ? '/theme-demo/ec908/whey-black.png' : '/theme-demo/ec908/whey-white.png', 'url' => '#'])->all();
+        $best = [
+            $product('Premium Whey Protein chuyên nghiệp', '/theme-demo/ec908/whey-black.png', 950000, 1120000),
+            $product('Whey tinh khiết 100% Pure', '/theme-demo/ec908/whey-white.png', 350000, 399000),
+            $product('ISO Whey Zero nhập khẩu', '/theme-demo/ec908/whey-black.png', 840000, 910000),
+            $product('Whey Protein Isolate cao cấp', '/theme-demo/ec908/whey-white.png', 1240000, 1340000),
+            $product('Mass Gainer tăng cân bền vững', '/theme-demo/ec908/whey-black.png', 1580000, 1790000),
+            $product('Creatine Monohydrate sức mạnh', '/theme-demo/ec908/whey-black.png', 1440000, 1650000),
+        ];
+        $promos = [
+            ['badge' => 'CÓ GÌ HOT', 'title' => 'Bán chạy nhất sản phẩm dinh dưỡng', 'summary' => 'Giảm tới 50%', 'button_label' => 'XEM NGAY', 'image' => '/theme-demo/ec908/promo-red.png', 'url' => '#'],
+            ['badge' => 'SIÊU HẠ GIÁ', 'title' => 'Cho tất cả sản phẩm tăng lực', 'summary' => 'Chỉ từ 150.000 VNĐ', 'button_label' => 'MUA NGAY', 'image' => '/theme-demo/ec908/promo-gray.png', 'url' => '#'],
+        ];
+        $posts = [
+            ['title' => 'Cẩn thận với các thói quen tập gym khiến làn da xấu đi', 'summary' => 'Tập gym đúng cách giúp cơ thể khỏe mạnh và hạn chế những tác động không mong muốn.', 'date' => '24/08/2023', 'image' => '/theme-demo/ec908/health-main.png', 'url' => '#'],
+            ['title' => '5 dấu hiệu chứng tỏ bạn đang tập gym sai cách và quá sức', 'summary' => 'Những tín hiệu cơ thể cần được nghỉ ngơi và điều chỉnh cường độ luyện tập.', 'date' => '24/08/2023', 'image' => '/theme-demo/ec908/health-triptych.png', 'url' => '#'],
+            ['title' => 'Bí quyết cho đôi chân thon dài quyến rũ như Wonder Woman', 'summary' => 'Một giáo án cân bằng giúp cải thiện sức mạnh và độ săn chắc của đôi chân.', 'date' => '24/08/2023', 'image' => '/theme-demo/ec908/health-triptych.png', 'url' => '#'],
+            ['title' => 'Cơ bắp cuồn cuộn của nữ vận động viên thể hình', 'summary' => 'Câu chuyện truyền cảm hứng về kỷ luật, dinh dưỡng và luyện tập bền bỉ.', 'date' => '24/08/2023', 'image' => '/theme-demo/ec908/health-triptych.png', 'url' => '#'],
+        ];
+        $benefits = [
+            ['title' => 'Hàng chính hãng', 'summary' => 'Đa dạng và chuyên sâu', 'icon' => 'fa-award'],
+            ['title' => 'Đổi trả trong 7 ngày', 'summary' => 'Kể từ ngày mua hàng', 'icon' => 'fa-rotate-left'],
+            ['title' => 'Cam kết 100%', 'summary' => 'Chất lượng sản phẩm', 'icon' => 'fa-shield-halved'],
+            ['title' => 'Giao hàng 2H', 'summary' => 'Theo từng sản phẩm', 'icon' => 'fa-truck-fast'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Hot Deal', 'description' => 'Banner ưu đãi thực phẩm bổ sung toàn chiều ngang.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec908-hero-slider', 'limit' => 3, 'autoplay_ms' => 5500], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Hot Deal tháng này', null, 'Quà tặng thể thao cho mọi đơn hàng', 'Mua ngay'), ['content' => ['slides' => [['badge' => 'HOT DEAL', 'title' => 'Bùng nổ ưu đãi', 'summary' => 'Giảm đến 50% sản phẩm dinh dưỡng thể thao', 'button_label' => 'Mua ngay', 'image' => '/theme-demo/ec908/hero-fitness.png', 'link_url' => '#san-pham-ban-chay']]]]), 'en' => $heading('Fitness hot deals')]],
+            ['block_type' => 'ec908_category_rail', 'label' => 'Danh mục dinh dưỡng', 'description' => 'Mười danh mục tròn theo dạng thanh trượt.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 10, 'search' => 'ec908-', 'featured_only' => false, 'order' => 'sort_order'], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số danh mục'], 'search' => ['type' => 'text', 'label' => 'Từ khóa']], 'data' => ['vi' => $withItems($heading('Danh mục sản phẩm'), $categories), 'en' => $withItems($heading('Product categories'), $categories)]],
+            ['block_type' => 'ec908_best_sellers', 'label' => 'Sản phẩm bán chạy', 'description' => 'Sáu sản phẩm dinh dưỡng bán chạy.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-ban-chay', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 6, 'search' => 'EC908-BEST', 'featured_only' => false], 'settings_schema' => $productSchema(6), 'data' => ['vi' => $withItems($heading('Sản phẩm bán chạy'), $best), 'en' => $heading('Best sellers')]],
+            ['block_type' => 'ec908_promo_pair', 'label' => 'Banner ưu đãi đôi', 'description' => 'Hai banner whey và tăng lực.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai', 'data' => ['vi' => $withItems($heading('Ưu đãi nổi bật'), $promos), 'en' => $withItems($heading('Featured offers'), $promos)]],
+            ['block_type' => 'ec908_accessory_products', 'label' => 'Phụ kiện hot', 'description' => 'Banner phụ kiện lớn và bốn sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'phu-kien-hot', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'EC908-ACCESSORY', 'featured_only' => false, 'banner_image' => '/theme-demo/ec908/accessory-banner.png', 'banner_url' => '#'], 'settings_schema' => array_merge($productSchema(4), ['banner_image' => ['type' => 'text', 'label' => 'Ảnh banner'], 'banner_url' => ['type' => 'text', 'label' => 'Liên kết banner']]), 'data' => ['vi' => $withItems($heading('Phụ kiện hot'), array_slice($best, 0, 4)), 'en' => $heading('Hot accessories')]],
+            ['block_type' => 'ec908_health_posts', 'label' => 'Góc sức khỏe', 'description' => 'Một bài nổi bật và ba bài viết luyện tập.', 'preview_image' => $preview, 'anchor_id' => 'goc-suc-khoe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema(4), 'data' => ['vi' => $withItems($heading('Góc sức khỏe'), $posts), 'en' => $heading('Health corner')]],
+            ['block_type' => 'ec908_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết chính hãng, đổi trả, chất lượng và giao 2H.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
+            ['block_type' => 'ec908_footer', 'label' => 'Chân trang', 'description' => 'Các nhóm hỗ trợ, chính sách, thông tin và liên hệ.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Ego Fitness'), 'en' => $heading('Ego Fitness information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec909DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC909/preview-ec909.png';
+        $heading = static fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => [
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'summary' => $description,
+            'button_label' => $button,
+        ];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $product = static fn (string $title, string $image, int $price, int $original): array => [
+            'title' => $title, 'image' => $image, 'price' => $price, 'original_price' => $original, 'url' => '#',
+        ];
+        $categories = [
+            ['title' => 'All Products', 'summary' => 'Khám phá tất cả sản phẩm.', 'image' => '/theme-demo/ec909/headphone-black.png', 'url' => '#'],
+            ['title' => 'Headphones', 'summary' => 'Đắm mình trong âm thanh.', 'image' => '/theme-demo/ec909/headphone-burgundy.png', 'url' => '#'],
+            ['title' => 'Earphones', 'summary' => 'Thiết kế nhỏ gọn, âm thanh tuyệt vời.', 'image' => '/theme-demo/ec909/earbuds-silver.png', 'url' => '#'],
+            ['title' => 'Speakers', 'summary' => 'Âm thanh sống động cho mọi không gian.', 'image' => '/theme-demo/ec909/speaker-oak.png', 'url' => '#'],
+        ];
+        $headphones = [
+            $product('Cloud Dream', '/theme-demo/ec909/headphone-burgundy.png', 26329000, 28329000),
+            $product('Nebula Whisper', '/theme-demo/ec909/headphone-beige.png', 9724000, 10724000),
+            $product('Oasis Flow', '/theme-demo/ec909/headphone-black.png', 7906000, 9906000),
+        ];
+        $earphones = [
+            $product('Trio Athletica', '/theme-demo/ec909/earbuds-silver.png', 5270000, 6750000),
+            $product('Stealth Precision', '/theme-demo/ec909/earbuds-silver.png', 6590000, 7990000),
+            $product('Aqua Sprint', '/theme-demo/ec909/earbuds-silver.png', 9200000, 11300000),
+        ];
+        $recommendations = [
+            $product('Air Beats Black', '/theme-demo/ec909/headphone-black.png', 13151000, 14151000),
+            $headphones[0],
+            $product('Cover for Echo Sphere', '/theme-demo/ec909/speaker-oak.png', 2690000, 3490000),
+            $product('Echo Elegance', '/theme-demo/ec909/speaker-oak.png', 88000000, 99490000),
+        ];
+        $brands = collect(['Bowers & Wilkins', 'B&O', 'urbanista', 'Apple', 'logitech', 'Master & Dynamic', 'BOSE'])
+            ->map(fn (string $title): array => ['title' => $title, 'url' => '#'])
+            ->all();
+        $posts = [
+            ['title' => 'JBL Tune 520BT và Tune 720BT khác biệt thực sự nằm ở đâu?', 'summary' => 'So sánh chi tiết trước khi xuống tiền.', 'date' => '25/07/2026', 'image' => '/theme-demo/ec909/news-audio.png', 'url' => '#'],
+            ['title' => 'Wave Beam hay Wave Buds? So sánh chi tiết trước khi xuống tiền', 'summary' => 'Những khác biệt đáng chú ý giữa hai dòng tai nghe true wireless.', 'date' => '25/07/2026', 'image' => '/theme-demo/ec909/earbud-feature.png', 'url' => '#'],
+            ['title' => 'Top loa bluetooth karaoke bass mạnh, quẩy cực sung', 'summary' => 'Gợi ý thiết bị cho tiệc tại nhà và những chuyến đi cuối tuần.', 'date' => '25/07/2026', 'image' => '/theme-demo/ec909/stereo-feature.png', 'url' => '#'],
+        ];
+        $benefits = [
+            ['title' => 'Giao hàng nhanh chóng', 'summary' => 'Xử lý đơn nhanh, giao hàng toàn quốc.', 'icon' => 'fa-truck-fast'],
+            ['title' => 'Đổi trả dễ dàng', 'summary' => 'Hỗ trợ đổi trả linh hoạt nếu sản phẩm lỗi.', 'icon' => 'fa-headphones-simple'],
+            ['title' => 'Bảo hành uy tín', 'summary' => 'Cam kết bảo hành chính hãng, hỗ trợ tận tâm.', 'icon' => 'fa-award'],
+            ['title' => 'Thanh toán tiện lợi', 'summary' => 'Đa dạng phương thức, an toàn và nhanh chóng.', 'icon' => 'fa-cube'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero âm thanh điện ảnh', 'description' => 'Banner dưới nước toàn chiều ngang với nội dung và nút điều hướng.', 'preview_image' => $preview, 'anchor_id' => 'hero', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec909-hero-slider', 'limit' => 2, 'autoplay_ms' => 6500], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Âm thanh stereo sống động – Kết nối đôi, trải nghiệm gấp bội', null, null, 'Xem ngay'), ['content' => ['slides' => [['title' => 'Âm thanh stereo sống động – Kết nối đôi, trải nghiệm gấp bội', 'button_label' => 'Xem ngay', 'image' => '/theme-demo/ec909/hero-underwater.png', 'link_url' => '#goi-y']]]]), 'en' => $heading('Immersive stereo sound', null, null, 'Discover')]],
+            ['block_type' => 'ec909_about', 'label' => 'Giới thiệu Euro Sound', 'description' => 'Khối editorial ảnh studio và nội dung thương hiệu.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'settings' => ['image' => '/theme-demo/ec909/about-studio.png', 'secondary_image' => '/theme-demo/ec909/headphone-black.png'], 'settings_schema' => ['image' => ['type' => 'text', 'label' => 'Ảnh chính'], 'secondary_image' => ['type' => 'text', 'label' => 'Ảnh phụ']], 'data' => ['vi' => array_merge($heading('Euro Sound - Âm Thanh Chuẩn, Công Nghệ Chất', null, 'Euro Sound là cửa hàng chuyên cung cấp các thiết bị âm thanh chính hãng như loa, tai nghe có dây, tai nghe không dây và headphone chất lượng cao.'), ['description' => 'Với tiêu chí đặt trải nghiệm người dùng lên hàng đầu, Euro Sound luôn chú trọng vào chất lượng sản phẩm, giá thành hợp lý và dịch vụ tận tâm.']), 'en' => $heading('Euro Sound - Precision sound, premium technology')]],
+            ['block_type' => 'ec909_category_cards', 'label' => 'Danh mục âm thanh', 'description' => 'Bốn thẻ danh mục sản phẩm cỡ lớn.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 4, 'search' => 'ec909-', 'featured_only' => false, 'order' => 'sort_order'], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số danh mục'], 'search' => ['type' => 'text', 'label' => 'Từ khóa']], 'data' => ['vi' => $withItems($heading('Danh mục sản phẩm'), $categories), 'en' => $withItems($heading('Product categories'), $categories)]],
+            ['block_type' => 'ec909_headphone_showcase', 'label' => 'Bộ sưu tập Headphones', 'description' => 'Nền lifestyle và ba sản phẩm headphones.', 'preview_image' => $preview, 'anchor_id' => 'headphones-showcase', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'search' => 'EC909-HEADPHONE', 'featured_only' => false, 'background_image' => '/theme-demo/ec909/headphone-beige.png'], 'settings_schema' => array_merge($productSchema(3), ['background_image' => ['type' => 'text', 'label' => 'Ảnh nền']]), 'data' => ['vi' => $withItems($heading('Âm Thanh Định Hình Phong Cách', null, 'Khám phá bộ sưu tập headphones mới với thiết kế tinh giản, chất âm sâu và chi tiết.'), $headphones), 'en' => $heading('Sound that defines your style')]],
+            ['block_type' => 'ec909_headphone_products', 'label' => 'Sản phẩm Headphones', 'description' => 'Banner dọc và ba thẻ sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'headphones', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'search' => 'EC909-HEADPHONE', 'featured_only' => false, 'promo_image' => '/theme-demo/ec909/about-studio.png', 'promo_url' => '#'], 'settings_schema' => array_merge($productSchema(3), ['promo_image' => ['type' => 'text', 'label' => 'Ảnh banner'], 'promo_url' => ['type' => 'text', 'label' => 'Liên kết banner']]), 'data' => ['vi' => $withItems($heading('Headphones'), $headphones), 'en' => $heading('Headphones')]],
+            ['block_type' => 'ec909_microphone_feature', 'label' => 'Tính năng microphone', 'description' => 'Khối chia đôi nội dung và ảnh cận cảnh tai nghe.', 'preview_image' => $preview, 'anchor_id' => 'microphone', 'settings' => ['image' => '/theme-demo/ec909/earbud-feature.png'], 'settings_schema' => ['image' => ['type' => 'text', 'label' => 'Ảnh tính năng']], 'data' => ['vi' => $heading('Micro rõ nét – Thu âm chuẩn xác', null, 'Thiết bị tích hợp hệ thống microphone tối ưu giúp giọng nói luôn nổi bật và rõ ràng trong mọi cuộc gọi.'), 'en' => $heading('Clear microphone, precise voice pickup')]],
+            ['block_type' => 'ec909_earphone_products', 'label' => 'Sản phẩm Earphones', 'description' => 'Ba thẻ earphones và banner dọc.', 'preview_image' => $preview, 'anchor_id' => 'earphones', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'search' => 'EC909-EARPHONE', 'featured_only' => false, 'promo_image' => '/theme-demo/ec909/earbuds-silver.png', 'promo_url' => '#'], 'settings_schema' => array_merge($productSchema(3), ['promo_image' => ['type' => 'text', 'label' => 'Ảnh banner'], 'promo_url' => ['type' => 'text', 'label' => 'Liên kết banner']]), 'data' => ['vi' => $withItems($heading('Earphones'), $earphones), 'en' => $heading('Earphones')]],
+            ['block_type' => 'ec909_stereo_feature', 'label' => 'Tính năng stereo', 'description' => 'Khối chia đôi ảnh loa và nội dung kết nối đôi.', 'preview_image' => $preview, 'anchor_id' => 'stereo', 'settings' => ['image' => '/theme-demo/ec909/stereo-feature.png'], 'settings_schema' => ['image' => ['type' => 'text', 'label' => 'Ảnh tính năng']], 'data' => ['vi' => $heading('Âm thanh stereo sống động - Kết nối đôi, trải nghiệm gấp bội', null, 'Nhân đôi trải nghiệm âm thanh ấn tượng bằng cách kết nối hai loa cùng lúc. Ghép nối nhanh chóng chỉ trong vài giây.'), 'en' => $heading('Immersive stereo sound')]],
+            ['block_type' => 'ec909_recommendations', 'label' => 'Gợi ý sản phẩm', 'description' => 'Tabs và bốn sản phẩm gợi ý.', 'preview_image' => $preview, 'anchor_id' => 'goi-y', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'EC909-RECOMMEND', 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $withItems($heading('Gợi ý sản phẩm cho bạn', null, 'Đây là những sản phẩm chúng tôi tổng hợp lại cho bạn tham khảo'), $recommendations), 'en' => $heading('Recommended for you')]],
+            ['block_type' => 'ec909_brand_strip', 'label' => 'Thương hiệu nổi bật', 'description' => 'Dải tên thương hiệu âm thanh cao cấp.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'data' => ['vi' => $withItems($heading('Thương hiệu nổi bật', null, 'Chúng tôi cung cấp sản phẩm từ các thương hiệu uy tín'), $brands), 'en' => $withItems($heading('Featured brands'), $brands)]],
+            ['block_type' => 'ec909_latest_posts', 'label' => 'Tin tức mới nhất', 'description' => 'Một bài nổi bật và hai bài viết liên quan.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema(3), 'data' => ['vi' => $withItems($heading('Tin tức mới nhất', null, 'Thông tin thực tế, dễ hiểu giúp bạn đưa ra quyết định đầu tư hiệu quả'), $posts), 'en' => $heading('Latest news')]],
+            ['block_type' => 'ec909_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn lợi ích giao hàng, đổi trả, bảo hành và thanh toán.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
+            ['block_type' => 'ec909_footer', 'label' => 'Chân trang Euro Sound', 'description' => 'Thông tin, chính sách, hỗ trợ và danh mục.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Euro Sound'), 'en' => $heading('Euro Sound information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
     private function ec905DefaultBlocks(): array
     {
         $preview = '/theme-previews/EC905/preview-ec905.webp';
@@ -2563,6 +2912,64 @@ class LandingPageBuilder
     }
 
     /** @return array<int, array<string, mixed>> */
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function spa111DefaultBlocks(): array
+    {
+        $preview = fn (string $name): string => '/theme-previews/SPA111/'.$name.'.png';
+        $sourceSchema = fn (array $sources, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $sources],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
+        ];
+        $static = fn (string $type, string $label, string $anchor, string $title, string $subtitle, string $description, string $previewName, array $settings = []): array => [
+            'block_type' => $type, 'label' => $label, 'description' => $description,
+            'preview_image' => $preview($previewName), 'anchor_id' => $anchor, 'dynamic' => false,
+            'settings' => array_merge(['source' => 'custom'], $settings), 'settings_schema' => [],
+            'data' => [
+                'vi' => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => 'Xem chi tiết', 'content' => ['items' => []]],
+                'en' => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => 'View details', 'content' => ['items' => []]],
+            ],
+        ];
+        $dynamic = fn (string $type, string $label, string $anchor, string $title, string $subtitle, string $description, string $previewName, string $source, int $limit): array => [
+            'block_type' => $type, 'label' => $label, 'description' => $description,
+            'preview_image' => $preview($previewName), 'anchor_id' => $anchor, 'dynamic' => true,
+            'settings' => ['source' => $source, 'limit' => $limit, 'featured_only' => true],
+            'settings_schema' => $sourceSchema([
+                ['value' => $source, 'label' => Str::headline($source)],
+                ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ], $limit),
+            'data' => [
+                'vi' => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => 'Xem chi tiết', 'content' => ['items' => []]],
+                'en' => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => 'View details', 'content' => ['items' => []]],
+            ],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider', 'label' => 'Hero Bean Spa', 'description' => 'Ảnh chủ đạo, thông điệp và nút đặt lịch.',
+                'preview_image' => $preview('hero'), 'anchor_id' => 'trang-chu', 'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'spa111-hero-slider', 'limit' => 2, 'autoplay_ms' => 6500],
+                'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']],
+                'data' => ['vi' => ['title' => 'Nâng Niu Vẻ Đẹp Của Bạn', 'subtitle' => 'Chăm Sóc Sắc Đẹp Toàn Diện', 'description' => '', 'button_label' => 'Xem thêm', 'content' => ['slides' => []]], 'en' => ['title' => 'Elevate Your Beauty', 'subtitle' => 'Complete Beauty Care', 'description' => '', 'button_label' => 'Discover', 'content' => ['slides' => []]]],
+            ],
+            $static('spa111_service_highlights', 'Điểm nổi bật dịch vụ', 'noi-bat', 'Ba liệu pháp thư giãn', 'Chăm sóc tinh tế', 'Bấm huyệt bàn chân, massage đầu và massage đá nóng thư giãn.', 'service-highlights'),
+            $static('spa111_about', 'Giới thiệu Bean Spa', 'gioi-thieu', 'Chào mừng bạn đến với', 'Về chúng tôi', 'Bean Spa mang đến trải nghiệm chăm sóc sức khỏe và sắc đẹp trọn vẹn.', 'about'),
+            $dynamic('spa111_services', 'Hành trình dịch vụ', 'dich-vu', 'Hành Trình Nâng Niu Bản Thân', 'Dịch vụ của chúng tôi', 'Liệu trình tinh chỉnh, sản phẩm cao cấp và không gian yên tĩnh.', 'services', 'cms_services', 3),
+            $static('spa111_stats', 'Số liệu Bean Spa', 'thanh-tuu', 'Hành trình được tin yêu', 'Thành tựu', '5000+ khách hàng, 98% đánh giá tích cực, 10+ liệu trình và 5 năm kinh nghiệm.', 'stats'),
+            $dynamic('spa111_featured_products', 'Sản phẩm nổi bật', 'san-pham', 'Sản Phẩm Nổi Bật', 'Sản phẩm chọn lọc', 'Sản phẩm chăm sóc spa được tuyển chọn kỹ lưỡng và an toàn.', 'products', 'cms_products', 8),
+            $static('spa111_why_choose', 'Tại sao chọn Bean Spa', 'ly-do', 'Đồng hành cùng khách hàng chăm sóc Sức Khỏe & Thư Giãn', 'Tại sao chọn chúng tôi', 'Chuyên môn vững vàng, liệu trình cá nhân hóa và sự tận tâm.', 'why-choose'),
+            $dynamic('spa111_testimonials', 'Phản hồi khách hàng', 'danh-gia', 'Khách Hàng Nói Gì?', 'Phản hồi từ khách hàng', 'Những lời chia sẻ chân thành là động lực để Bean Spa hoàn thiện mỗi ngày.', 'testimonials', 'cms_testimonials', 3),
+            $static('spa111_faq', 'Câu hỏi thường gặp', 'faq', 'Giải Đáp Thắc Mắc Cùng Bean Spa', 'Câu hỏi thường gặp', 'Thông tin về liệu trình, chi phí và cách chuẩn bị trước khi massage.', 'faq'),
+            $dynamic('spa111_team', 'Đội ngũ chuyên viên', 'doi-ngu', 'Đội Ngũ Nhân Viên Chuyên Nghiệp', 'Nhân viên tận tâm', 'Đội ngũ chuyên viên trị liệu được đào tạo bài bản và giàu kinh nghiệm.', 'team', 'cms_team_members', 4),
+            $dynamic('spa111_latest_posts', 'Tin tức làm đẹp', 'tin-tuc', 'Xu Hướng Làm Đẹp & Chăm Sóc Sức Khỏe', 'Tin tức mới nhất', 'Thông tin mới nhất giúp bạn luôn khỏe đẹp từ bên trong.', 'latest-posts', 'cms_posts', 4),
+            $dynamic('spa111_partners', 'Đối tác tin cậy', 'doi-tac', 'Tự Hào Là Đối Tác Tin Cậy', 'Đối tác chúng tôi', 'Mối quan hệ hợp tác xây dựng trên niềm tin, chất lượng và giá trị bền vững.', 'partners', 'cms_partners', 9),
+            $static('spa111_booking', 'Tư vấn và đặt lịch', 'lien-he', 'Liên Hệ Bean Spa Để Được Chăm Sóc Tận Tâm', 'Tư vấn & đặt lịch miễn phí', 'Chuyên viên sẵn sàng lắng nghe và đề xuất liệu trình phù hợp nhất.', 'booking'),
+            $static('spa111_footer', 'Chân trang Bean Spa', 'footer', 'Bean Spa', 'Thông tin, chính sách và dịch vụ', 'Thông tin liên hệ, chính sách, dịch vụ và đăng ký nhận tin.', 'footer'),
+        ];
+    }
+
     private function spa502DefaultBlocks(): array
     {
         $categorySources = [
