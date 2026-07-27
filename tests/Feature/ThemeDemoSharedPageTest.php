@@ -41,7 +41,7 @@ class ThemeDemoSharedPageTest extends TestCase
     {
         $existingPage = $this->createExistingContactPage();
 
-        $result = app(ThemeDemoContentGenerator::class)->generate('TEST-GENERIC', 'fashion-studio');
+        $result = app(ThemeDemoContentGenerator::class)->generate('TEST-GENERIC', 'electronics-superstore');
 
         $this->assertSame(1, data_get($result, 'counts.pages'));
         $this->assertSame(1, CmsPage::query()->where('slug', 'contact')->count());

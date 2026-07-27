@@ -129,7 +129,7 @@ File neo:
 - locale storefront
 - translation của theme
 - demo data cho theme
-- palette/theme-specific customization ở một số theme như `TH0002`
+- palette/theme-specific customization cho các theme cần cấu hình riêng
 
 Khi làm theme mới, nên nghĩ ngay từ đầu theme đó sẽ xuất hiện trong Theme Manager với các nhu cầu:
 
@@ -186,7 +186,6 @@ Theme Blade files should use route helpers instead of hard-coded legacy URLs. Av
   - input name: `login`
 - Các theme hiện đã đồng bộ flow này:
   - `TH0001`
-  - `TH0002`
   - `SER0100`
   - `SER0101`
 
@@ -202,12 +201,11 @@ File neo:
 - `app/Http/Controllers/Admin/AuthenticatedSessionController.php`
 - `bootstrap/app.php`
 
-## 11. TH0002 palette là pattern cho theme-specific configuration
+## 11. Theme-specific configuration
 
-- `TH0002` là case đã đi xa hơn theme thường vì có palette editor riêng.
-- Palette của TH0002 hiện được lưu trong `site_profiles.branding`.
-- Editor palette đã được tách khỏi Setup Wizard và đặt ở Theme Manager.
-- Đây là pattern đúng cho cấu hình mang tính theme-specific.
+- Cấu hình chuyên biệt của theme được lưu trong `site_profiles.branding`.
+- Editor tương ứng phải được đặt ở Theme Manager thay vì Setup Wizard.
+- Đây là pattern dùng chung cho cấu hình mang tính theme-specific.
 
 Rule cần giữ:
 
@@ -217,7 +215,6 @@ Rule cần giữ:
 
 File neo:
 
-- `themes/TH0002/views/partials/palette-tokens.blade.php`
 - `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`
 - `app/Http/Controllers/Admin/Api/SetupProfileController.php`
 
@@ -247,7 +244,6 @@ File neo:
 - `themes/TH0001/theme.json`
 - `themes/SER0100/theme.json`
 - `themes/TH0001/views/partials/engagement-modals.blade.php`
-- `themes/TH0002/views/partials/palette-tokens.blade.php`
 - `docs/architecture/ser0100-service-theme-spec.md`
 
 ## 14. Nguyên tắc thiết kế khi AI làm theme mới trong repo này
@@ -256,4 +252,4 @@ File neo:
 - Ưu tiên reuse flow CMS/Catalog/Banner/Menu/Translation hiện tại trước khi nghĩ tới schema mới.
 - Theme chỉ nên khác nhau ở render, block composition, copy, visual language, và một số config theme-specific thật cần thiết.
 - Nếu chưa rõ route/view nào bắt buộc, đọc `CmsSiteController` trước khi code.
-- Nếu chưa rõ translation/static copy nên đặt ở đâu, đọc `ThemeTranslationService` và xem `TH0001`, `TH0002`, `SER0100`, `SER0101` trước.
+- Nếu chưa rõ translation/static copy nên đặt ở đâu, đọc `ThemeTranslationService` và xem `TH0001`, `SER0100`, `SER0101` trước.

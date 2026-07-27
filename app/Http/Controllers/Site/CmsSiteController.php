@@ -2452,34 +2452,6 @@ class CmsSiteController
                 'section_tabs' => ['Tổng quan mở bán', 'Căn đẹp chủ lực', 'Gói ưu đãi tài chính'],
                 'featured_tones' => ['#0f3557', '#c7923e', '#7a8a97', '#114a6e', '#8f6a2d'],
             ],
-            'TH0002' => [
-                'hero_slide' => [
-                    'eyebrow' => 'Xưởng may theo yêu cầu',
-                    'badge' => 'MOQ từ 30 sản phẩm',
-                    'cta' => 'Xem bộ sưu tập',
-                ],
-                'footer_columns' => [
-                    ['title' => 'Hỗ trợ đặt may', 'links' => ['Quy trình báo giá', 'Hướng dẫn gửi techpack', 'MOQ và thời gian mẫu', 'Chính sách đổi trả']],
-                    ['title' => 'Về xưởng may', 'links' => ['Năng lực sản xuất', 'Dịch vụ OEM / ODM', 'Chất liệu và hoàn thiện', 'Liên hệ showroom']],
-                    ['title' => 'Hợp tác', 'links' => ['May đồng phục doanh nghiệp', 'Sản xuất cho local brand', 'Bán sỉ đại lý', 'Tuyển cộng tác viên']],
-                ],
-                'company_footer' => [
-                    'address_line_1' => 'Xưởng chính: Cụm công nghiệp may mặc, Tân Bình, TP.HCM',
-                    'address_line_2' => 'Showroom tư vấn: Thanh Xuân, Hà Nội - nhận mẫu, duyệt size và chốt đơn sỉ lẻ',
-                ],
-                'branding' => [
-                    'company_name' => 'TH0002 Garment Workshop',
-                    'slogan' => 'May sỉ lẻ, duyệt mẫu nhanh, sản xuất rõ tiến độ',
-                    'logo_url' => url('theme-demo/garment/brand-mark.svg'),
-                    'favicon_url' => url('theme-demo/garment/brand-mark.svg'),
-                    'primary_color' => '#a35035',
-                    'support_hotline' => '1900 6760 / 0354.466.968',
-                    'support_email' => 'cs@th0002.demo',
-                    'support_location' => 'Hà Nội - TP.HCM',
-                ],
-                'section_tabs' => ['May theo mẫu', 'Bán lẻ sẵn kho', 'Đơn sỉ nổi bật'],
-                'featured_tones' => ['#7f3a25', '#406b52', '#8b5e34', '#5d4a3a', '#9b6c43'],
-            ],
             'TH0003' => [
                 'hero_slide' => [
                     'eyebrow' => 'Fashion studio',
@@ -2650,7 +2622,7 @@ class CmsSiteController
 
     private function isCommerceThemeKey(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0201', 'SHOP601', 'SHOP602', 'NT502'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0003', 'TH0020', 'TH0201', 'SHOP601', 'SHOP602', 'NT502'], true);
     }
 
     private function isLandingHybridThemeKey(?string $themeKey): bool

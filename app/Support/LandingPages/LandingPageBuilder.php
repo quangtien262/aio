@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0002', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0003', 'TH0020', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -1415,7 +1415,7 @@ class LandingPageBuilder
             'EC904' => $this->ec904DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
-            'TH0002', 'TH0003', 'TH0020' => $this->legacyCommerceDefaultBlocks($themeKey),
+            'TH0003', 'TH0020' => $this->legacyCommerceDefaultBlocks($themeKey),
             'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
             'SER0100', 'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
@@ -2180,7 +2180,6 @@ class LandingPageBuilder
     private function legacyCommerceDefaultBlocks(string $themeKey): array
     {
         $labels = match (strtoupper($themeKey)) {
-            'TH0002' => ['hero' => 'Bộ sưu tập xưởng may', 'categories' => 'Dòng sản phẩm', 'products' => 'Sản phẩm may mặc', 'content' => 'Lookbook và câu chuyện xưởng'],
             'TH0003' => ['hero' => 'Lookbook thời trang', 'categories' => 'Bộ sưu tập', 'products' => 'Sản phẩm nổi bật', 'content' => 'Fashion journal'],
             default => ['hero' => 'Không gian sống nổi bật', 'categories' => 'Bộ sưu tập theo phòng', 'products' => 'Nội thất nổi bật', 'content' => 'Câu chuyện vật liệu'],
         };

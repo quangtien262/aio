@@ -34,18 +34,6 @@ function buildDefaultPalette(themeKey) {
         };
     }
 
-    if (themeKey === 'TH0002') {
-        return {
-            primary_color: '#d67a2c',
-            primary_color_deep: '#af5f1f',
-            accent_color: '#d98d4a',
-            accent_soft_color: '#efaa4c',
-            background_color: '#faf6f1',
-            surface_color: '#ffffff',
-            surface_tint_color: '#fff4e8',
-        };
-    }
-
     if (themeKey === 'SER0100') {
         return {
             primary_color: '#c2410c',

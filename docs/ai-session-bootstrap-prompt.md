@@ -308,8 +308,6 @@ Lưu ý khi tiếp tục phát triển:
 - `app/Models/AdminRoleAssignment.php`
 - `app/Support/AuditLogger.php`
 - `docs/architecture/admin-access-control.md`
-- `themes/TH0002/views/partials/palette-tokens.blade.php`
-- `themes/TH0002/views/partials/engagement-modals.blade.php`
 - `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`
 - `docs/theme-authoring-guide.md`
 - `docs/theme-starter-checklist.md`
@@ -323,10 +321,9 @@ Lưu ý khi tiếp tục phát triển:
 - Nếu có bug runtime ở UI admin, hãy kiểm tra cả import thiếu, prop sai, mismatch Ant Design/React, và những chỗ render component con trong drawer/modal.
 - Nếu người dùng hỏi “tiếp tục phần trước”, hãy giả định ngữ cảnh gần nhất xoay quanh CMS admin, media, posts, permissions, themes, setup, và UX quản trị.
 - Ở ngữ cảnh gần đây hơn của repo này, hãy đặc biệt nhớ thêm:
-  - palette TH0002 đã nằm trong Theme Manager, không còn ở Setup Wizard
   - admin login dùng `username` hoặc `email`, customer dùng `email`
   - modal storefront login là form dùng chung `admin username` + `customer email`
-  - các theme `TH0001`, `TH0002`, `SER0100`, `SER0101` đều đã đồng bộ flow shared login này
+  - các theme `TH0001`, `SER0100`, `SER0101` đều đã đồng bộ flow shared login này
   - không reintroduce lại `/admin/login` hoặc dedicated admin login page riêng
   - không reintroduce `tenant`, `owner`, `tenant_key`, `owner_key`, `admin_role` hoặc `admin_role_scopes`
   - không cho phép sửa/xóa role `super-admin` hay sửa/khóa/xóa admin ID `1`

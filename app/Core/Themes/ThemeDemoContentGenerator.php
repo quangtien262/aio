@@ -257,31 +257,7 @@ class ThemeDemoContentGenerator
     private function seedPages(array $preset, Carbon $timestamp, string $themeKey, array $pageSlugs): int
     {
         $isServicePreset = ($preset['catalog_style'] ?? 'commerce') === 'service';
-        $garmentProfile = $this->garmentPresetProfile($preset);
-        $pages = $this->isGarmentFamilyPreset($preset)
-            ? [
-                [
-                    'title' => $this->isFashionPreset($preset) ? 'Về studio thời trang' : 'Về xưởng may',
-                    'slug' => $pageSlugs['about'],
-                    'excerpt' => $this->isFashionPreset($preset)
-                        ? 'Câu chuyện thương hiệu, line bộ sưu tập và nhịp ra mắt seasonal drop của '.$preset['company_name']
-                        : 'Hồ sơ năng lực, line sản xuất và quy trình duyệt mẫu của '.$preset['company_name'],
-                    'body' => $this->isFashionPreset($preset)
-                        ? '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Trang demo này mô phỏng cách TH0002 trình bày câu chuyện thương hiệu, line bộ sưu tập, capsule theo mùa và cách trưng bày lookbook cho retail fashion.</p><p>Hiện line demo nổi bật gồm '.$garmentProfile['about_lines'].', giúp review nhanh cách theme hiển thị section collection, editorial card và điều hướng từ hero sang catalog.</p><p>Sếp có thể thay nội dung này bằng brand story thật, hình campaign, guideline phối đồ và kế hoạch ra mắt collection.</p>'
-                        : '<h2>'.$preset['company_name'].'</h2><p>'.$preset['description'].'</p><p>Trang demo này mô phỏng cách TH0002 trình bày năng lực xưởng, line may sỉ lẻ, dịch vụ OEM / ODM và quy trình làm việc với local brand, doanh nghiệp hoặc đại lý.</p><p>Line demo đang ưu tiên '.$garmentProfile['about_lines'].', để test rõ block giới thiệu năng lực, mô tả form dáng và nhịp CTA báo giá cho từng nhóm khách hàng.</p><p>Sếp có thể thay nội dung này bằng hồ sơ xưởng thật, ảnh chuyền may, năng lực in thêu và các mốc lead time sản xuất.</p>',
-                ],
-                [
-                    'title' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist & tư vấn' : 'Gửi yêu cầu may',
-                    'slug' => $pageSlugs['contact'],
-                    'excerpt' => $this->isFashionPreset($preset)
-                        ? 'Kênh nhận lịch hẹn showroom, tư vấn phối đồ, đặt trước capsule và chăm sóc khách hàng retail'
-                        : 'Kênh nhận techpack, bảng size, nhu cầu đồng phục và yêu cầu báo giá của khách sỉ lẻ',
-                    'body' => $this->isFashionPreset($preset)
-                        ? '<h2>Đặt lịch stylist & tư vấn</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Studio / showroom: '.$preset['address'].'</p><p>Hãy gửi trước nhu cầu về form dáng, tông màu, dịp sử dụng hoặc line sản phẩm quan tâm để đội ngũ tư vấn chuẩn bị set đồ phù hợp.</p><p>Preset hiện đang dựng sẵn '.$garmentProfile['contact_focus'].' để đội ngũ admin dễ đổi nhanh thành lịch hẹn showroom, capsule preview hoặc danh sách giữ size theo đợt mở bán.</p>'
-                        : '<h2>Gửi yêu cầu may</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Xưởng / showroom: '.$preset['address'].'</p><p>Hãy gửi rõ form dáng, chất liệu, kỹ thuật in thêu, bảng size và số lượng dự kiến để đội ngũ kỹ thuật báo giá nhanh hơn.</p><p>Preset hiện đang dựng sẵn '.$garmentProfile['contact_focus'].' để admin dễ đổi nhanh thành luồng nhận techpack, duyệt mẫu và chốt line sản xuất thật.</p>',
-                ],
-            ]
-            : ($this->isRealEstatePreset($preset)
+        $pages = $this->isRealEstatePreset($preset)
                 ? [
                     [
                         'title' => 'Giới thiệu dự án',
@@ -313,7 +289,7 @@ class ThemeDemoContentGenerator
                         ? '<h2>Liên hệ báo giá</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Địa chỉ điều phối: '.$preset['address'].'</p><p>Hãy gửi số khách, điểm đón, điểm đến và ngày đi để được tư vấn nhanh.</p>'
                         : '<h2>Liên hệ tư vấn</h2><p>Hotline: 1900 6760</p><p>Email: hello@'.$preset['domain'].'</p><p>Địa chỉ: '.$preset['address'].'</p>',
                 ],
-            ]);
+            ];
 
         $createdCount = 0;
 
@@ -351,55 +327,31 @@ class ThemeDemoContentGenerator
                 'Gợi ý tối ưu lịch trình để tiết kiệm chi phí vận hành',
                 'Cách xây dựng landing page dịch vụ chuyển đổi tốt hơn',
             ]
-            : ($this->isGarmentFamilyPreset($preset)
+            : ($this->isRealEstatePreset($preset)
                 ? [
-                    ...($this->isFashionPreset($preset)
-                        ? [
-                            'Lookbook season mới cho line '.$preset['short_label'],
-                            'Cách mix capsule retail để tăng giá trị giỏ hàng',
-                            'Checklist set up visual merchandising cho drop cuối tuần',
-                            'Gợi ý viết landing page collection để tăng tỉ lệ đặt lịch showroom',
-                        ]
-                        : [
-                            'Lookbook capsule mới cho line '.$preset['short_label'],
-                            'Checklist duyệt techpack và bảng size trước khi vào chuyền',
-                            'Cách chốt chất liệu, in thêu và màu vải cho đơn sỉ lẻ',
-                            'Gợi ý trưng bày landing page atelier để tăng lead báo giá',
-                        ]),
+                    'Checklist chọn căn đẹp trong đợt mở bán đầu tiên',
+                    '5 điểm cần hỏi đội sales trước khi giữ chỗ',
+                    'Cách đọc bảng giá, chính sách và tiến độ thanh toán nhanh hơn',
+                    'Gợi ý triển khai landing page dự án để gom lead hiệu quả',
                 ]
-                : ($this->isRealEstatePreset($preset)
-                    ? [
-                        'Checklist chọn căn đẹp trong đợt mở bán đầu tiên',
-                        '5 điểm cần hỏi đội sales trước khi giữ chỗ',
-                        'Cách đọc bảng giá, chính sách và tiến độ thanh toán nhanh hơn',
-                        'Gợi ý triển khai landing page dự án để gom lead hiệu quả',
-                    ]
-                    : [
+                : [
                 'Top deal mới tuần này cho '.$preset['short_label'],
                 '5 xu hướng mua sắm '.$preset['short_label'].' đang tăng mạnh',
                 'Gợi ý chọn sản phẩm nổi bật cho chiến dịch cuối tuần',
                 'Cách tối ưu landing page bán '.$preset['short_label'].' theo mùa',
-            ]));
+            ]);
 
         $excerpt = ($preset['catalog_style'] ?? 'commerce') === 'service'
             ? 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block cẩm nang, trust content và lead-gen của theme.'
-            : ($this->isGarmentFamilyPreset($preset)
-                ? ($this->isFashionPreset($preset)
-                    ? 'Nội dung demo cho mảng thời trang nhằm kiểm tra lookbook, editorial và block collection journal của theme.'
-                    : 'Nội dung demo cho xưởng may nhằm kiểm tra lookbook, cẩm nang sản xuất và block tin tức của theme.')
-                : ($this->isRealEstatePreset($preset)
+            : ($this->isRealEstatePreset($preset)
                     ? 'Nội dung demo cho dự án mở bán nhằm kiểm tra block cẩm nang, trust content và CTA nhận tư vấn của theme.'
-                    : 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block tin tức của theme.'));
+                    : 'Nội dung demo cho ngành '.$preset['label'].' nhằm kiểm tra block tin tức của theme.');
 
         $bodyTemplate = ($preset['catalog_style'] ?? 'commerce') === 'service'
             ? '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị cẩm nang, kinh nghiệm đặt dịch vụ và nội dung SEO của website.</p>'
-            : ($this->isGarmentFamilyPreset($preset)
-                ? ($this->isFashionPreset($preset)
-                    ? '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị lookbook theo mùa, editorial và nội dung retail fashion của website.</p>'
-                    : '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị lookbook, quy trình duyệt mẫu và nội dung bán sỉ lẻ cho xưởng may.</p>')
-                : ($this->isRealEstatePreset($preset)
+            : ($this->isRealEstatePreset($preset)
                     ? '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị cẩm nang mở bán, thông tin thị trường và nội dung tư vấn cho website dự án.</p>'
-                    : '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị tin mới trên website.</p>'));
+                    : '<p>'.$preset['description'].'</p><p>Bài viết demo số %d dùng để hiển thị tin mới trên website.</p>');
 
         foreach ($titles as $index => $title) {
             $record = CmsPost::query()->create([
@@ -409,11 +361,7 @@ class ThemeDemoContentGenerator
                 'excerpt' => $excerpt,
                 'body' => $this->buildDemoPostBody($preset, $title, $index + 1),
                 'meta_title' => $title,
-                'meta_description' => $this->isGarmentFamilyPreset($preset)
-                    ? ($this->isFashionPreset($preset)
-                        ? 'Lookbook, collection journal và visual merchandising demo cho '.$preset['company_name']
-                        : 'Lookbook, quy trình duyệt mẫu và nội dung vận hành demo cho '.$preset['company_name'])
-                    : 'Tin tức demo cho '.$preset['label'],
+                'meta_description' => 'Tin tức demo cho '.$preset['label'],
                 'category_id' => $categoryId,
                 'publish_at' => $timestamp->copy()->subDays($index + 1),
             ]);
@@ -436,11 +384,7 @@ class ThemeDemoContentGenerator
             $parent = CatalogCategory::query()->create([
                 'name' => $department['name'],
                 'slug' => Str::slug($preset['key'].'-'.$department['name']),
-                'description' => $this->isGarmentFamilyPreset($preset)
-                    ? ($this->isFashionPreset($preset)
-                        ? 'Line '.$department['name'].' dành cho website demo thời trang, phù hợp để test collection, filter retail và block lookbook.'
-                        : 'Line '.$department['name'].' dành cho website demo xưởng may, phù hợp để test nhóm sản phẩm, block lookbook và tư vấn sỉ lẻ.')
-                    : 'Danh mục '.$department['name'].' cho preset '.$preset['label'],
+                'description' => 'Danh mục '.$department['name'].' cho preset '.$preset['label'],
                 'image_url' => $this->imageUrl($preset['key'].'-cat-'.$parentIndex, 320, 320),
                 'sort_order' => $parentIndex,
                 'is_active' => true,
@@ -453,11 +397,7 @@ class ThemeDemoContentGenerator
                     'parent_id' => $parent->id,
                     'name' => $childName,
                     'slug' => Str::slug($preset['key'].'-'.$department['name'].'-'.$childName),
-                    'description' => $this->isGarmentFamilyPreset($preset)
-                        ? ($this->isFashionPreset($preset)
-                            ? 'Nhóm '.$childName.' thuộc line '.$department['name'].', dùng để test form dáng, phối đồ, chất liệu và nội dung retail của TH0002.'
-                            : 'Nhóm '.$childName.' thuộc line '.$department['name'].', dùng để test form dáng, chất liệu và nội dung báo giá của TH0002.')
-                        : 'Nhóm '.$childName.' thuộc '.$department['name'],
+                    'description' => 'Nhóm '.$childName.' thuộc '.$department['name'],
                     'image_url' => $this->imageUrl($preset['key'].'-child-'.$parentIndex.'-'.$childIndex, 320, 320),
                     'sort_order' => $childIndex,
                     'is_active' => true,
@@ -573,14 +513,6 @@ class ThemeDemoContentGenerator
         $isServicePreset = ($preset['catalog_style'] ?? 'commerce') === 'service';
 
         if (! $isServicePreset) {
-            if ($this->isGarmentFamilyPreset($preset)) {
-                return [
-                    ['label' => 'Lookbook', 'url' => '/c', 'target' => '_self'],
-                    ['label' => $this->isFashionPreset($preset) ? 'Về studio' : 'Về xưởng may', 'url' => FrontendRouteUrl::pagePath($pageSlugs['about']), 'target' => '_self'],
-                    ['label' => $this->isFashionPreset($preset) ? 'Đặt lịch stylist' : 'Gửi yêu cầu may', 'url' => FrontendRouteUrl::contactPath(), 'target' => '_self'],
-                ];
-            }
-
             if ($this->isRealEstatePreset($preset)) {
                 return [
                     ['label' => 'Tin thị trường', 'url' => '/c', 'target' => '_self'],
@@ -639,8 +571,7 @@ class ThemeDemoContentGenerator
                 'metadata' => [
                     'eyebrow' => $preset['hero_eyebrow'],
                     'summary' => $preset['description'],
-                    'button_label' => $isServicePreset ? 'Nhận báo giá' : ($this->isGarmentFamilyPreset($preset) ? 'Xem bộ sưu tập' : 'Mua ngay'),
-                    'button_label' => $isServicePreset ? 'Nhan bao gia' : ($this->isInteriorPreset($preset) ? 'Xem phong cach' : ($this->isGarmentFamilyPreset($preset) ? 'Xem bo suu tap' : 'Mua ngay')),
+                    'button_label' => $isServicePreset ? 'Nhan bao gia' : ($this->isInteriorPreset($preset) ? 'Xem phong cach' : 'Mua ngay'),
                 ],
                 'image_url' => $this->imageUrl($preset['key'].'-hero-main', 960, 520),
                 'link_url' => '#featured',
@@ -658,19 +589,10 @@ class ThemeDemoContentGenerator
                 'placement' => 'hero-side',
                 'title' => $department['name'],
                 'subtitle' => $isServicePreset
-                    ? 'Giải pháp nổi bật cho '.$department['children'][0]
-                    : ($this->isGarmentFamilyPreset($preset)
-                        ? ($this->isFashionPreset($preset)
-                            ? 'Khám phá '.$department['children'][0]
-                            : 'Nhận may cho '.$department['children'][0])
-                        : 'Ưu đãi mới cho '.$department['children'][0]),
-                'subtitle' => $isServicePreset
                     ? 'Giai phap noi bat cho '.$department['children'][0]
                     : ($this->isInteriorPreset($preset)
                         ? 'Goi y moi cho '.$department['children'][0]
-                        : ($this->isGarmentFamilyPreset($preset)
-                            ? ($this->isFashionPreset($preset) ? 'Kham pha '.$department['children'][0] : 'Nhan may cho '.$department['children'][0])
-                            : 'Uu dai moi cho '.$department['children'][0])),
+                        : 'Uu dai moi cho '.$department['children'][0]),
                 'badge' => null,
                 'metadata' => [],
                 'image_url' => $this->imageUrl($preset['key'].'-hero-side-'.$index, 360, 180),
@@ -794,14 +716,6 @@ class ThemeDemoContentGenerator
             return trim(sprintf('%s %s %s %02d', $childName, $preset['product_prefix'], $lines[$productIndex - 1] ?? 'Home', $productIndex));
         }
 
-        if ($this->isGarmentFamilyPreset($preset)) {
-            $lines = $this->isFashionPreset($preset)
-                ? ['Edit', 'Studio', 'Runway', 'Capsule']
-                : ['Core', 'Studio', 'Workshop', 'Capsule'];
-
-            return trim(sprintf('%s %s %s %02d', $departmentName, $childName, $lines[$productIndex - 1] ?? 'Line', $productIndex));
-        }
-
         $suffixes = ['Pro', 'Max', 'Plus', 'Edition'];
 
         return trim($childName.' '.$preset['product_prefix'].' '.$suffixes[$productIndex - 1].' '.(64 + ($productIndex * 64)).'GB');
@@ -875,10 +789,6 @@ class ThemeDemoContentGenerator
     private function productPhotoPool(array $preset, string $departmentName, string $childName, int $productIndex, int $width, int $height): array
     {
         $catalogStyle = (string) ($preset['catalog_style'] ?? 'commerce');
-
-        if ($this->isGarmentFamilyPreset($preset)) {
-            return $this->garmentPhotoPool();
-        }
 
         $normalizedDepartment = $this->normalizePhotoContext($departmentName);
         $normalizedChild = $this->normalizePhotoContext($childName);
@@ -1379,20 +1289,6 @@ class ThemeDemoContentGenerator
             ]);
         }
 
-        if ($this->isGarmentFamilyPreset($preset)) {
-            return implode(PHP_EOL, [
-                $this->isFashionPreset($preset)
-                    ? 'Dòng '.$childName.' thuộc nhóm '.$departmentName.', phù hợp để test retail collection, styling card và seasonal capsule.'
-                    : 'Dòng '.$childName.' thuộc nhóm '.$departmentName.', phù hợp cả đơn sỉ theo bộ size và đơn retail theo mẫu có sẵn.',
-                $this->isFashionPreset($preset)
-                    ? 'Dùng để test block gallery, form dáng, chất liệu, editorial note và visual merchandising của theme '.$preset['company_name'].'.'
-                    : 'Dùng để test block gallery, form dáng, chất liệu, thông số in thêu và luồng đặt may của theme '.$preset['company_name'].'.',
-                $this->isFashionPreset($preset)
-                    ? 'Có thể chỉnh trực tiếp để chuyển từ data demo sang line collection vận hành thật cho studio thời trang.'
-                    : 'Có thể chỉnh trực tiếp để chuyển từ data demo sang mẫu vận hành thật cho xưởng may.',
-            ]);
-        }
-
         if ($this->isRealEstatePreset($preset)) {
             return implode(PHP_EOL, [
                 'Sản phẩm '.$childName.' thuộc phân khu '.$departmentName.', dùng để test card mở bán, banner ưu đãi và trang chi tiết listing cho TH0201.',
@@ -1425,23 +1321,6 @@ class ThemeDemoContentGenerator
                 'Khuyến nghị liên hệ trước để xác nhận lịch xe, loại xe và chi phí phát sinh cho nhóm '.$departmentName.'.',
                 'Vui lòng cung cấp rõ ngày đi, số khách, điểm đón và điểm đến để được báo giá nhanh.',
                 'Một số gói dịch vụ cần đặt cọc hoặc xác nhận trước với điều phối viên của '.$preset['company_name'].'.',
-            ]);
-        }
-
-        if ($this->isGarmentFamilyPreset($preset)) {
-            return implode(PHP_EOL, [
-                $this->isFashionPreset($preset)
-                    ? 'Giá có thể thay đổi theo chất liệu, line bộ sưu tập, phụ kiện styling và chương trình bán theo mùa của nhóm '.$departmentName.'.'
-                    : 'Báo giá có thể thay đổi theo chất liệu, số lượng, kỹ thuật in thêu và yêu cầu hoàn thiện của nhóm '.$departmentName.'.',
-                $this->isFashionPreset($preset)
-                    ? 'Khuyến nghị chốt size run, màu chủ đạo và nhịp trưng bày trước khi mở bán collection.'
-                    : 'Khuyến nghị chốt bảng size, màu vải và số lượng theo từng màu trước khi xác nhận đơn.',
-                $this->isFashionPreset($preset)
-                    ? 'Vui lòng ghi rõ nhu cầu phối đồ, dịp sử dụng hoặc line collection quan tâm để showroom tư vấn nhanh hơn.'
-                    : 'Vui lòng gửi rõ techpack, mẫu tham chiếu hoặc form dáng mong muốn để xưởng báo giá nhanh hơn.',
-                $this->isFashionPreset($preset)
-                    ? 'Một số line capsule số lượng giới hạn cần đặt giữ size hoặc xác nhận lịch thử đồ trước.'
-                    : 'Một số đơn OEM / ODM cần làm mẫu và đặt cọc trước khi vào chuyền sản xuất.',
             ]);
         }
 
@@ -1487,136 +1366,7 @@ class ThemeDemoContentGenerator
             return '<p>'.$preset['description'].'</p><p>Bài viết demo số '.$index.' dùng để hiển thị cẩm nang, kinh nghiệm đặt dịch vụ và nội dung SEO của website.</p>';
         }
 
-        if ($this->isGarmentFamilyPreset($preset)) {
-            $profile = $this->garmentPresetProfile($preset);
-
-            return $this->isFashionPreset($preset)
-                ? '<p>'.$preset['description'].'</p><p>Bài viết này xoay quanh '.$profile['post_theme'].', giúp test block lookbook, editorial card và section bài viết theo mùa của TH0002.</p><p>Nội dung seed đang gợi ý '.$profile['post_focus'].' để admin đổi nhanh thành bài campaign, collection note hoặc lịch mở bán thật.</p>'
-                : '<p>'.$preset['description'].'</p><p>Bài viết này xoay quanh '.$profile['post_theme'].', giúp test block lookbook, cẩm nang sản xuất và section quy trình của TH0002.</p><p>Nội dung seed đang gợi ý '.$profile['post_focus'].' để admin đổi nhanh thành bài duyệt mẫu, báo giá line may hoặc checklist giao hàng thật.</p>';
-        }
-
         return '<p>'.$preset['description'].'</p><p>Bài viết demo số '.$index.' dùng để hiển thị tin mới trên website.</p>';
-    }
-
-    private function garmentPresetProfile(array $preset): array
-    {
-        if ($this->isFashionPreset($preset)) {
-            return [
-                'about_lines' => 'new season capsule, ready-to-wear nữ và lookbook set theo dịp sử dụng',
-                'contact_focus' => 'lịch stylist cho capsule mới, line ready-to-wear và lookbook set theo mùa',
-                'post_theme' => 'lookbook season, capsule retail và cách set visual merchandising cho showroom',
-                'post_focus' => 'editorial note cho từng drop, caption cho lookbook card và CTA đặt lịch thử đồ',
-            ];
-        }
-
-        return [
-            'about_lines' => 'đồng phục doanh nghiệp, local brand capsule và line OEM / ODM',
-            'contact_focus' => 'luồng nhận techpack cho đồng phục, capsule local brand và đơn OEM / ODM',
-            'post_theme' => 'duyệt techpack, chốt chất liệu và tối ưu luồng may sỉ lẻ theo từng line',
-            'post_focus' => 'checklist size run, brief in thêu và mốc duyệt mẫu trước khi vào chuyền',
-        ];
-    }
-
-    private function garmentLineProfile(array $preset, string $departmentName, string $childName): array
-    {
-        $department = $this->normalizePhotoContext($departmentName);
-        $child = $this->normalizePhotoContext($childName);
-
-        if ($this->isFashionPreset($preset)) {
-            return match (true) {
-                str_contains($department, 'new season capsule') => [
-                    'category_focus' => 'seasonal drop mở bán nhanh',
-                    'audience_phrase' => 'khách theo dõi drop mới và capsule giới hạn',
-                    'focus_phrase' => 'phom lên outfit theo capsule và màu chủ đạo theo mùa',
-                    'ops_phrase' => 'tag collection, visual trưng bày và lịch mở bán cuối tuần',
-                    'closing_phrase' => 'tag capsule cùng note styling cho từng outfit',
-                    'detail_intro' => 'seasonal drop, phối outfit theo capsule và cảm hứng lookbook',
-                ],
-                str_contains($department, 'ready to wear nu') => [
-                    'category_focus' => 'retail nữ theo phom everyday đến occasion wear',
-                    'audience_phrase' => 'khách nữ mua retail theo dịp đi làm và đi tiệc',
-                    'focus_phrase' => 'phom blazer, dress và wide-leg để lên set đồ hoàn chỉnh',
-                    'ops_phrase' => 'size run, bảng màu và gợi ý phối phụ kiện tại showroom',
-                    'closing_phrase' => 'size run rõ cùng ghi chú phối phụ kiện',
-                    'detail_intro' => 'ready-to-wear nữ, cân bằng giữa phom dáng ứng dụng và visual showroom',
-                ],
-                str_contains($department, 'ready to wear nam') => [
-                    'category_focus' => 'retail nam theo line casual và smart everyday',
-                    'audience_phrase' => 'khách nam cần set đồ gọn, dễ phối và dễ upsell',
-                    'focus_phrase' => 'boxy shirt, relaxed pants và light outerwear theo set',
-                    'ops_phrase' => 'gợi ý mix-match, trưng bày theo set và CTA đặt lịch thử đồ',
-                    'closing_phrase' => 'set phối sẵn cùng CTA thử đồ nhanh',
-                    'detail_intro' => 'ready-to-wear nam, tối ưu set phối và trải nghiệm thử tại showroom',
-                ],
-                str_contains($department, 'lookbook sets') => [
-                    'category_focus' => 'bộ set hoàn chỉnh để chốt đơn theo outfit',
-                    'audience_phrase' => 'khách mua theo outfit trọn bộ và concept sẵn',
-                    'focus_phrase' => 'cách ghép monotone set, weekend set và office set lên landing page',
-                    'ops_phrase' => 'ảnh campaign, card combo và nội dung visual merchandising',
-                    'closing_phrase' => 'combo lookbook và CTA giữ set theo dịp',
-                    'detail_intro' => 'lookbook set hoàn chỉnh, ưu tiên câu chuyện outfit và combo sản phẩm',
-                ],
-                str_contains($department, 'accessories') => [
-                    'category_focus' => 'styling item hỗ trợ upsell theo outfit',
-                    'audience_phrase' => 'khách cần phụ kiện chốt nhanh theo look hoàn chỉnh',
-                    'focus_phrase' => 'canvas tote, cap và belt để tăng giá trị outfit',
-                    'ops_phrase' => 'cross-sell theo set đồ và vị trí trưng bày cạnh main item',
-                    'closing_phrase' => 'cross-sell phụ kiện theo từng look',
-                    'detail_intro' => 'styling accessory, tăng giá trị giỏ hàng qua các điểm chạm trưng bày',
-                ],
-                default => [
-                    'category_focus' => 'retail fashion theo collection và chất liệu',
-                    'audience_phrase' => 'khách mua retail theo moodboard và dịp sử dụng',
-                    'focus_phrase' => 'chất liệu, phom dáng và story của từng line '.$child,
-                    'ops_phrase' => 'editorial note, tag collection và CTA đặt lịch showroom',
-                    'closing_phrase' => 'story collection cùng tag chất liệu',
-                    'detail_intro' => 'retail fashion theo line riêng, nhấn vào chất liệu và moodboard của collection',
-                ],
-            };
-        }
-
-        return match (true) {
-            str_contains($department, 'dong phuc doanh nghiep') => [
-                'category_focus' => 'đồng bộ nhận diện cho doanh nghiệp và đội ngũ vận hành',
-                'audience_phrase' => 'doanh nghiệp cần đồng bộ hình ảnh theo bộ size và màu thương hiệu',
-                'focus_phrase' => 'chất vải bền, bảng size tập thể và kỹ thuật in thêu logo',
-                'ops_phrase' => 'duyệt mẫu nhanh, chốt size run và timeline giao đồng phục theo đợt',
-                'closing_phrase' => 'bảng size tập thể cùng checklist duyệt logo',
-                'detail_intro' => 'đồng phục doanh nghiệp, bám sát nhận diện thương hiệu và tiến độ bàn giao theo đội nhóm',
-            ],
-            str_contains($department, 'local brand capsule') => [
-                'category_focus' => 'capsule cho local brand cần lên hàng nhanh và giữ chất riêng',
-                'audience_phrase' => 'local brand chạy drop nhỏ cần giữ phom và chất liệu ổn định',
-                'focus_phrase' => 'form dáng capsule, bảng màu giới hạn và nhịp lên mẫu theo drop',
-                'ops_phrase' => 'duyệt fit, chốt wash/in và quản lý số lượng theo từng đợt mở bán',
-                'closing_phrase' => 'fit sample cùng timeline lên drop',
-                'detail_intro' => 'capsule collection cho local brand, ưu tiên tốc độ ra mẫu và độ ổn định qua từng drop',
-            ],
-            str_contains($department, 'oem odm') => [
-                'category_focus' => 'phát triển mẫu riêng cho brand hoặc đại lý',
-                'audience_phrase' => 'brand cần đối tác OEM / ODM có thể nhận brief và hoàn thiện mẫu',
-                'focus_phrase' => 'techpack cơ bản, mẫu thử nhanh và private label theo tiêu chuẩn riêng',
-                'ops_phrase' => 'tiếp nhận brief, dựng BOM, duyệt mẫu và chốt line sản xuất',
-                'closing_phrase' => 'brief sản phẩm cùng mốc duyệt mẫu',
-                'detail_intro' => 'OEM / ODM theo brief riêng, tập trung vào quy trình nhận techpack và kiểm soát mẫu trước sản xuất',
-            ],
-            str_contains($department, 'phu lieu va hoan thien') => [
-                'category_focus' => 'điểm chạm hoàn thiện để tăng giá trị thành phẩm',
-                'audience_phrase' => 'xưởng hoặc brand cần hoàn thiện in thêu, tem nhãn đồng bộ',
-                'focus_phrase' => 'in lụa, thêu vi tính và tem nhãn để hoàn thiện trải nghiệm mặc',
-                'ops_phrase' => 'test thông số in, vị trí thêu và checklist đóng gói cuối chuyền',
-                'closing_phrase' => 'thông số hoàn thiện và checklist đóng gói',
-                'detail_intro' => 'khâu hoàn thiện sau may, bám vào chất lượng in thêu và độ nhất quán tem nhãn',
-            ],
-            default => [
-                'category_focus' => 'line may mặc theo form dáng và chất liệu',
-                'audience_phrase' => 'khách sỉ lẻ cần mẫu may rõ form và dễ chốt số lượng',
-                'focus_phrase' => 'form dáng, chất liệu và khả năng lặp lại chất lượng giữa các size',
-                'ops_phrase' => 'bảng size, duyệt mẫu và timeline vào chuyền',
-                'closing_phrase' => 'form dáng rõ cùng bảng size dễ chốt',
-                'detail_intro' => 'line may mặc vận hành thực tế, ưu tiên mô tả rõ form dáng, chất liệu và cách lên chuyền',
-            ],
-        };
     }
 
     private function buildProductShortDescription(array $preset, string $departmentName, string $childName): string
@@ -1637,27 +1387,7 @@ class ThemeDemoContentGenerator
             );
         }
 
-        if (! $this->isGarmentFamilyPreset($preset)) {
-            return 'Mẫu demo cho '.$childName.' trong preset '.$preset['label'].'.';
-        }
-
-        $lineProfile = $this->garmentLineProfile($preset, $departmentName, $childName);
-
-        return $this->isFashionPreset($preset)
-            ? sprintf(
-                'Line %s được dựng theo hướng %s, ưu tiên %s và %s để admin dễ chỉnh thành collection retail thật.',
-                $childName,
-                $lineProfile['category_focus'],
-                $lineProfile['focus_phrase'],
-                $lineProfile['closing_phrase'],
-            )
-            : sprintf(
-                'Line %s dành cho %s, nhấn vào %s và %s để admin dễ chuyển thành mẫu vận hành thật.',
-                $childName,
-                $lineProfile['audience_phrase'],
-                $lineProfile['focus_phrase'],
-                $lineProfile['closing_phrase'],
-            );
+        return 'Mẫu demo cho '.$childName.' trong preset '.$preset['label'].'.';
     }
 
     private function buildProductDetailContent(array $preset, string $departmentName, string $childName, string $productName): string
@@ -1676,23 +1406,6 @@ class ThemeDemoContentGenerator
                 $productName.' là gói dịch vụ demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage service, trang danh mục và trang chi tiết dịch vụ của bộ theme service.',
                 'Gói này thuộc nhóm '.$departmentName.' với cấu hình '.$childName.', nên nội dung được viết theo hướng báo giá tham khảo, năng lực vận hành và lưu ý khi đặt xe hoặc điều phối chuyến.',
                 'Sếp có thể chỉnh lại mô tả, bảng giá, gallery ảnh xe, nội dung sử dụng và CTA để biến gói demo thành nội dung thật cho doanh nghiệp vận tải.',
-            ]);
-        }
-
-        if ($this->isGarmentFamilyPreset($preset)) {
-            $lineProfile = $this->garmentLineProfile($preset, $departmentName, $childName);
-
-            return implode(PHP_EOL.PHP_EOL, [
-                $productName.' là dữ liệu demo được sinh cho preset '.$preset['label'].', giúp kiểm thử homepage may mặc, trang danh mục và trang chi tiết sản phẩm của TH0002.',
-                $this->isFashionPreset($preset)
-                    ? 'Mẫu này thuộc nhóm '.$departmentName.' với cấu hình '.$childName.', nên nội dung dài được viết theo hướng '.$lineProfile['detail_intro'].' cùng nhịp trưng bày, phối chất liệu và visual merchandising.'
-                    : 'Mẫu này thuộc nhóm '.$departmentName.' với cấu hình '.$childName.', nên nội dung dài được viết theo hướng '.$lineProfile['detail_intro'].' cùng mô tả form dáng, chất liệu, MOQ và quy cách hoàn thiện.',
-                $this->isFashionPreset($preset)
-                    ? 'Bản seed đang nhấn vào '.$lineProfile['focus_phrase'].' và '.$lineProfile['ops_phrase'].', để Sếp có thể đổi nhanh sang nội dung collection, editorial note hoặc chính sách đặt giữ size.'
-                    : 'Bản seed đang nhấn vào '.$lineProfile['focus_phrase'].' và '.$lineProfile['ops_phrase'].', để Sếp có thể đổi nhanh sang hồ sơ đồng phục, capsule bán sỉ hoặc line OEM / ODM thực tế.',
-                $this->isFashionPreset($preset)
-                    ? 'Sếp có thể sửa trực tiếp mô tả, gallery ảnh, bảng giá, tag bộ sưu tập và ghi chú chất liệu trong admin Catalog để biến trang từ demo thành nội dung vận hành thật.'
-                    : 'Sếp có thể sửa trực tiếp mô tả, gallery ảnh, bảng giá, số lượng và thông tin duyệt mẫu trong admin Catalog để biến trang từ demo thành nội dung vận hành thật.',
             ]);
         }
 
@@ -1722,10 +1435,6 @@ class ThemeDemoContentGenerator
             return $this->realEstateImageUrl($seed);
         }
 
-        if (Str::contains($seed, 'garment-workshop') || Str::contains($seed, 'fashion-studio')) {
-            return $this->garmentImageUrl($seed);
-        }
-
         return sprintf('https://picsum.photos/seed/%s/%d/%d', $seed, $width, $height);
     }
 
@@ -1744,23 +1453,6 @@ class ThemeDemoContentGenerator
         $index = (abs(crc32($seed)) % 4) + 1;
 
         return url('theme-demo/service/service-card-'.$index.'.svg');
-    }
-
-    private function garmentImageUrl(string $seed): string
-    {
-        if (Str::contains($seed, 'hero-main')) {
-            return url('theme-demo/garment/hero-main.svg');
-        }
-
-        if (Str::contains($seed, 'hero-side')) {
-            $index = (abs(crc32($seed)) % 2) + 1;
-
-            return url('theme-demo/garment/hero-side-'.$index.'.svg');
-        }
-
-        $index = (abs(crc32($seed)) % 5) + 1;
-
-        return url('theme-demo/garment/product-0'.$index.'.svg');
     }
 
     private function realEstateImageUrl(string $seed): string
@@ -1792,17 +1484,12 @@ class ThemeDemoContentGenerator
             'demo_preset_description' => $preset['description'],
             'slogan' => $isServicePreset
                 ? $preset['description']
-                : ($this->isGarmentFamilyPreset($preset)
-                    ? 'May sỉ lẻ, duyệt mẫu nhanh và chốt line sản xuất rõ tiến độ'
-                    : 'Demo commerce preset cho '.$preset['company_name']),
+                : 'Demo commerce preset cho '.$preset['company_name'],
         ];
 
         if ($isServicePreset) {
             $branding['logo_url'] = url('theme-demo/service/brand-mark.svg');
             $branding['favicon_url'] = url('theme-demo/service/brand-mark.svg');
-        } elseif ($this->isGarmentFamilyPreset($preset)) {
-            $branding['logo_url'] = url('theme-demo/garment/brand-mark.svg');
-            $branding['favicon_url'] = url('theme-demo/garment/brand-mark.svg');
         } elseif ($this->isRealEstatePreset($preset)) {
             $branding['logo_url'] = url('theme-demo/real-estate/brand-mark.svg');
             $branding['favicon_url'] = url('theme-demo/real-estate/brand-mark.svg');
@@ -1810,21 +1497,6 @@ class ThemeDemoContentGenerator
         }
 
         return $branding;
-    }
-
-    private function isGarmentPreset(array $preset): bool
-    {
-        return ($preset['industry_family'] ?? null) === 'garment' && ($preset['garment_profile'] ?? 'workshop') !== 'fashion';
-    }
-
-    private function isGarmentFamilyPreset(array $preset): bool
-    {
-        return ($preset['industry_family'] ?? null) === 'garment';
-    }
-
-    private function isFashionPreset(array $preset): bool
-    {
-        return ($preset['garment_profile'] ?? null) === 'fashion';
     }
 
     private function isRealEstatePreset(array $preset): bool
@@ -1839,22 +1511,6 @@ class ThemeDemoContentGenerator
 
     private function buildDemoNewsCategory(array $preset, string $themeKey): array
     {
-        if ($this->isGarmentFamilyPreset($preset)) {
-            return [
-                'name' => $this->isFashionPreset($preset) ? 'Lookbook & editorial' : 'Lookbook & nhat ky xuong',
-                'slug' => Str::slug('lookbook-'.$preset['key']),
-                'description' => $this->isFashionPreset($preset)
-                    ? 'Chuyen muc demo cho lookbook, bo suu tap theo mua va cap nhat visual merchandising cua TH0002.'
-                    : 'Chuyen muc demo cho lookbook, quy trinh duyet mau va cap nhat van hanh cua TH0002.',
-                'meta_title' => $this->isFashionPreset($preset)
-                    ? 'Lookbook thời trang '.$preset['company_name']
-                    : 'Lookbook xưởng may '.$preset['company_name'],
-                'meta_description' => $this->isFashionPreset($preset)
-                    ? 'Lookbook, bộ sưu tập theo mùa và nội dung visual merchandising demo cho '.$preset['company_name']
-                    : 'Lookbook, quy trình duyệt mẫu và tin vận hành demo cho '.$preset['company_name'],
-            ];
-        }
-
         if ($this->isRealEstatePreset($preset)) {
             return [
                 'name' => 'Tin mở bán & cẩm nang',
@@ -1908,60 +1564,6 @@ class ThemeDemoContentGenerator
                     ['name' => '2PN', 'children' => ['Căn góc 2 WC', 'View hồ bơi', 'Logia kép']],
                     ['name' => 'Shophouse', 'children' => ['Mặt tiền đại lộ', 'Gần quảng trường', 'Hai mặt thoáng']],
                     ['name' => 'Villa', 'children' => ['Đơn lập sân vườn', 'Song lập ven kênh', 'Hoàng hôn bên sông']],
-                ],
-            ],
-            [
-                'key' => 'garment-workshop',
-                'label' => 'Xưởng may quần áo sỉ lẻ',
-                'short_label' => 'xưởng may',
-                'description' => 'Preset cho xưởng may quần áo phục vụ cả bán sỉ và bán lẻ, nhận OEM / ODM, đồng phục và local brand capsule.',
-                'company_name' => 'TH0002 Atelier Works',
-                'domain' => 'th0002atelier.demo',
-                'address' => 'Cụm công nghiệp may mặc Tân Bình, TP.HCM',
-                'theme_flavor' => 'garment workshop commerce',
-                'hero_eyebrow' => 'Xưởng may theo yêu cầu',
-                'hero_title' => 'May sỉ lẻ theo form dáng riêng cho thương hiệu của bạn',
-                'hero_subtitle' => 'Dùng để test hero lookbook, sidebar ngành may mặc, sản phẩm catalog và luồng chốt đơn theo size, chất liệu, tiến độ sản xuất.',
-                'hero_badge' => 'MOQ từ 30 sản phẩm',
-                'product_prefix' => 'Atelier',
-                'industry_family' => 'garment',
-                'garment_profile' => 'workshop',
-                'departments' => [
-                    ['name' => 'Đồng phục doanh nghiệp', 'children' => ['Polo công ty', 'Sơ mi đồng phục', 'Áo khoác team']],
-                    ['name' => 'Local brand capsule', 'children' => ['Oversize tee', 'Hoodie', 'Pants basic']],
-                    ['name' => 'Retail may sẵn', 'children' => ['Áo thun', 'Sơ mi', 'Quần casual']],
-                    ['name' => 'Thời trang học đường', 'children' => ['Áo lớp', 'Đồng phục học sinh', 'Áo sự kiện']],
-                    ['name' => 'Workwear và cafe', 'children' => ['Tạp dề', 'Áo bếp', 'Đồng phục phục vụ']],
-                    ['name' => 'OEM / ODM', 'children' => ['Techpack cơ bản', 'Mẫu thử nhanh', 'Private label']],
-                    ['name' => 'Phụ liệu và hoàn thiện', 'children' => ['In lụa', 'Thêu vi tính', 'Tem nhãn']],
-                    ['name' => 'Đơn sỉ đại lý', 'children' => ['Pack size S-XL', 'Màu cơ bản', 'Hàng lên chuyền nhanh']],
-                ],
-            ],
-            [
-                'key' => 'fashion-studio',
-                'label' => 'Thời trang lookbook và retail',
-                'short_label' => 'thời trang',
-                'description' => 'Preset cho mảng thời trang retail, capsule collection và visual merchandising, vẫn dùng chung contract quản trị của TH0002.',
-                'company_name' => 'TH0002 Maison Edit',
-                'domain' => 'th0002maison.demo',
-                'address' => 'Studio retail concept, Quận 1, TP.HCM',
-                'theme_flavor' => 'fashion studio commerce',
-                'hero_eyebrow' => 'New season lookbook',
-                'hero_title' => 'Bộ sưu tập retail với nhịp lookbook, capsule và line theo mùa',
-                'hero_subtitle' => 'Dùng để test hero editorial, category line-up, sản phẩm retail và bố cục visual merchandising trên TH0002.',
-                'hero_badge' => 'Drop mới mỗi tuần',
-                'product_prefix' => 'Maison',
-                'industry_family' => 'garment',
-                'garment_profile' => 'fashion',
-                'departments' => [
-                    ['name' => 'New season capsule', 'children' => ['Oversize tee', 'Cropped shirt', 'Pleated skirt']],
-                    ['name' => 'Ready-to-wear nữ', 'children' => ['Blazer', 'Dress', 'Wide-leg pants']],
-                    ['name' => 'Ready-to-wear nam', 'children' => ['Boxy shirt', 'Relaxed pants', 'Light jacket']],
-                    ['name' => 'Essentials daily', 'children' => ['Tank top', 'Straight jeans', 'Basic knit']],
-                    ['name' => 'Party & statement', 'children' => ['Sequin top', 'Slip dress', 'Structured blazer']],
-                    ['name' => 'Streetwear edit', 'children' => ['Hoodie', 'Cargo pants', 'Varsity jacket']],
-                    ['name' => 'Accessories & styling', 'children' => ['Canvas tote', 'Cap', 'Belt']],
-                    ['name' => 'Lookbook sets', 'children' => ['Monotone set', 'Weekend set', 'Office set']],
                 ],
             ],
             [
@@ -2281,14 +1883,4 @@ class ThemeDemoContentGenerator
         ];
     }
 
-    private function garmentPhotoPool(): array
-    {
-        return [
-            url('theme-demo/garment/product-01.svg'),
-            url('theme-demo/garment/product-02.svg'),
-            url('theme-demo/garment/product-03.svg'),
-            url('theme-demo/garment/product-04.svg'),
-            url('theme-demo/garment/product-05.svg'),
-        ];
-    }
 }
