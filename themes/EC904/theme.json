@@ -1,0 +1,37 @@
+{
+  "name": "EC904 PocoMall Department Store",
+  "key": "EC904",
+  "version": "1.0.0",
+  "description": "Theme siêu thị đa ngành với mega-menu, hero sale, carousel danh mục và các cụm sản phẩm lớn.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "thumbnail-ec904.webp",
+    "cover": "preview-ec904.webp"
+  },
+  "blocks": [
+    "hero-slider",
+    "category-carousel",
+    "tabbed-sale",
+    "technology-products",
+    "fashion-products",
+    "daily-suggestions",
+    "latest-posts",
+    "newsletter"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "ec904-pocomall"
+  }
+}

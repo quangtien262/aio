@@ -1,0 +1,3 @@
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const root=document.querySelector('[data-ec94-slider]');if(root){const slides=[...root.querySelectorAll('[data-ec94-slide]')];let index=0;const show=n=>{index=(n+slides.length)%slides.length;slides.forEach((slide,i)=>slide.classList.toggle('is-active',i===index))};root.querySelector('[data-ec94-prev]')?.addEventListener('click',()=>show(index-1));root.querySelector('[data-ec94-next]')?.addEventListener('click',()=>show(index+1));if(slides.length>1)setInterval(()=>show(index+1),Number(root.dataset.autoplay||5200))}document.querySelector('[data-ec94-mega]')?.addEventListener('click',()=>document.querySelector('.ec94-nav')?.classList.toggle('is-mega-open'))});
+</script>

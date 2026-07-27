@@ -1,0 +1,5 @@
+@extends('theme-ec900::layout')
+@section('title', data_get($service ?? null, 'title', 'Dịch vụ'))
+@section('content')
+@include('theme-ec900::partials.content-shell', ['title' => data_get($service ?? null, 'title'), 'summary' => data_get($service ?? null, 'summary'), 'cover' => data_get($service ?? null, 'cover_image_url'), 'body' => data_get($service ?? null, 'body')])
+@endsection

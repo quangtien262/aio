@@ -1,0 +1,3 @@
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const root=document.querySelector('[data-ec93-slider]');if(root){const slides=[...root.querySelectorAll('[data-ec93-slide]')];let index=0;const show=n=>{index=(n+slides.length)%slides.length;slides.forEach((slide,i)=>slide.classList.toggle('is-active',i===index))};root.querySelector('[data-ec93-prev]')?.addEventListener('click',()=>show(index-1));root.querySelector('[data-ec93-next]')?.addEventListener('click',()=>show(index+1));if(slides.length>1)setInterval(()=>show(index+1),Number(root.dataset.autoplay||5600))}document.querySelector('[data-ec93-menu]')?.addEventListener('click',()=>document.querySelector('.ec93-category-rail')?.classList.toggle('is-open'))});
+</script>
