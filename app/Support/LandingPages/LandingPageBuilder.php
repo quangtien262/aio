@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -562,6 +562,8 @@ class LandingPageBuilder
             'ec914_basket_showcase', 'ec914_lamp_showcase', 'ec914_latest_posts' => 3,
             'ec915_best_sellers' => 8,
             'ec915_latest_posts' => 3,
+            'ec916_featured_deals' => 4,
+            'ec916_beauty_deals' => 8,
             'spa111_services', 'spa111_testimonials' => 3,
             'spa111_featured_products' => 8,
             'spa111_team', 'spa111_latest_posts' => 4,
@@ -614,6 +616,8 @@ class LandingPageBuilder
         }
 
         if (in_array($block->block_type, [
+            'ec916_featured_deals',
+            'ec916_beauty_deals',
             'ec915_best_sellers',
             'ec915_latest_posts',
             'ec914_category_rail',
@@ -1515,6 +1519,7 @@ class LandingPageBuilder
             'EC913' => $this->ec913DefaultBlocks(),
             'EC914' => $this->ec914DefaultBlocks(),
             'EC915' => $this->ec915DefaultBlocks(),
+            'EC916' => $this->ec916DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
             'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
@@ -2407,6 +2412,54 @@ class LandingPageBuilder
             ['block_type' => 'ec908_health_posts', 'label' => 'Góc sức khỏe', 'description' => 'Một bài nổi bật và ba bài viết luyện tập.', 'preview_image' => $preview, 'anchor_id' => 'goc-suc-khoe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema(4), 'data' => ['vi' => $withItems($heading('Góc sức khỏe'), $posts), 'en' => $heading('Health corner')]],
             ['block_type' => 'ec908_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết chính hãng, đổi trả, chất lượng và giao 2H.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
             ['block_type' => 'ec908_footer', 'label' => 'Chân trang', 'description' => 'Các nhóm hỗ trợ, chính sách, thông tin và liên hệ.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Ego Fitness'), 'en' => $heading('Ego Fitness information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec916DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC916/cover-ec916.webp';
+        $heading = static fn (?string $title = null, ?string $summary = null): array => ['title' => $title, 'summary' => $summary];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $categories = [
+            ['title' => 'Thực phẩm', 'summary' => 'Tươi ngon mỗi ngày', 'image' => '/theme-demo/ec916/product-grocery.webp', 'url' => '#noi-bat'],
+            ['title' => 'Mobile & Tablet', 'summary' => 'Công nghệ mới', 'image' => '/theme-demo/ec916/product-phone.webp', 'url' => '#noi-bat'],
+            ['title' => 'Thời trang', 'summary' => 'Phong cách nổi bật', 'image' => '/theme-demo/ec916/product-dress.webp', 'url' => '#noi-bat'],
+            ['title' => 'Sức khỏe & Làm đẹp', 'summary' => 'Chăm sóc toàn diện', 'image' => '/theme-demo/ec916/product-skincare.webp', 'url' => '#lam-dep'],
+            ['title' => 'Gia dụng', 'summary' => 'Tiện nghi trong nhà', 'image' => '/theme-demo/ec916/product-blender.webp', 'url' => '#chien-dich'],
+            ['title' => 'Nhà cửa', 'summary' => 'Không gian ấm cúng', 'image' => '/theme-demo/ec916/product-sofa.webp', 'url' => '#chien-dich'],
+            ['title' => 'Mẹ & Bé', 'summary' => 'An tâm chăm sóc', 'image' => '/theme-demo/ec916/product-baby.webp', 'url' => '#chien-dich'],
+            ['title' => 'Phụ kiện số', 'summary' => 'Âm thanh sống động', 'image' => '/theme-demo/ec916/product-headphones.webp', 'url' => '#noi-bat'],
+        ];
+        $promos = [
+            ['badge' => 'LÀN DA RẠNG RỠ', 'title' => 'Chăm sóc da mùa nắng', 'summary' => 'Ưu đãi đến 45%', 'image' => '/theme-demo/ec916/promo-beauty.webp', 'url' => '#lam-dep'],
+            ['badge' => 'MỪNG GIA ĐÌNH', 'title' => 'Yêu thương cho bé', 'summary' => 'Quà tặng cho đơn từ 399k', 'image' => '/theme-demo/ec916/promo-family.webp', 'url' => '#chien-dich'],
+        ];
+        $campaigns = [
+            ['badge' => 'TƯƠI NGON', 'title' => 'Thực phẩm chọn lọc mỗi ngày', 'summary' => 'Giao nhanh trong 2 giờ', 'image' => '/theme-demo/ec916/promo-grocery.webp', 'url' => '#noi-bat'],
+            ['badge' => 'ĐẸP HƠN MỖI NGÀY', 'title' => 'Thiên đường làm đẹp', 'summary' => 'Chính hãng, giá tốt', 'image' => '/theme-demo/ec916/promo-beauty.webp', 'url' => '#lam-dep'],
+            ['badge' => 'CẢ NHÀ VUI', 'title' => 'Ưu đãi gia đình', 'summary' => 'Combo tiết kiệm', 'image' => '/theme-demo/ec916/promo-family.webp', 'url' => '#noi-bat'],
+            ['badge' => 'CÔNG NGHỆ', 'title' => 'Nâng cấp tiện nghi', 'summary' => 'Trả góp linh hoạt', 'image' => '/theme-demo/ec916/promo-electronics.webp', 'url' => '#noi-bat'],
+        ];
+        $brands = collect(['FreshGo', 'NovaTech', 'Belle', 'HomePlus', 'Momy', 'PureCare', 'Viva', 'DailyMart'])->map(fn (string $title): array => ['title' => $title])->all();
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero đại tiệc mua sắm', 'description' => 'Banner toàn chiều rộng cho ưu đãi đa ngành.', 'preview_image' => $preview, 'anchor_id' => 'hero', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec916-hero-slider', 'limit' => 2, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Hàng ngàn ưu đãi – Giá tốt mỗi ngày', 'Hàng chính hãng, giao nhanh tận nơi và đổi trả dễ dàng.'), ['content' => ['slides' => [['badge' => 'ĐẠI TIỆC MUA SẮM', 'title' => 'Hàng ngàn ưu đãi – Giá tốt mỗi ngày', 'summary' => 'Mọi nhu cầu trong một điểm đến tiện lợi.', 'image' => '/theme-demo/ec916/hero-mega-sale.webp', 'link_url' => '#noi-bat']]]]), 'en' => $heading('Everyday deals for every need')]],
+            ['block_type' => 'ec916_categories', 'label' => 'Danh mục nổi bật', 'description' => 'Tám danh mục đa ngành dạng thẻ tròn.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'data' => ['vi' => $withItems($heading('Danh mục nổi bật'), $categories), 'en' => $withItems($heading('Featured categories'), $categories)]],
+            ['block_type' => 'ec916_featured_deals', 'label' => 'Sản phẩm nổi bật', 'description' => 'Bốn ưu đãi chính trên trang chủ.', 'preview_image' => $preview, 'anchor_id' => 'noi-bat', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'EC916-FEATURED', 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $heading('Sản phẩm nổi bật'), 'en' => $heading('Featured deals')]],
+            ['block_type' => 'ec916_promo_pair', 'label' => 'Banner ưu đãi đôi', 'description' => 'Hai banner làm đẹp và mẹ bé.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai', 'data' => ['vi' => $withItems($heading('Ưu đãi trong tuần'), $promos), 'en' => $withItems($heading('Weekly offers'), $promos)]],
+            ['block_type' => 'ec916_beauty_deals', 'label' => 'Sức khỏe & Làm đẹp', 'description' => 'Tám sản phẩm chăm sóc nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'lam-dep', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'search' => 'EC916-BEAUTY', 'featured_only' => false], 'settings_schema' => $productSchema(8), 'data' => ['vi' => $heading('Sức khỏe & Làm đẹp'), 'en' => $heading('Health & beauty')]],
+            ['block_type' => 'ec916_campaign_mosaic', 'label' => 'Chiến dịch mua sắm', 'description' => 'Mosaic bốn chiến dịch theo ngành.', 'preview_image' => $preview, 'anchor_id' => 'chien-dich', 'data' => ['vi' => $withItems($heading('Chiến dịch mua sắm trong tuần'), $campaigns), 'en' => $withItems($heading('Weekly shopping campaigns'), $campaigns)]],
+            ['block_type' => 'ec916_brands', 'label' => 'Thương hiệu', 'description' => 'Dải tám thương hiệu nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'data' => ['vi' => $withItems($heading('Thương hiệu được yêu thích'), $brands), 'en' => $withItems($heading('Loved brands'), $brands)]],
+            ['block_type' => 'ec916_newsletter', 'label' => 'Đăng ký khuyến mãi', 'description' => 'Biểu mẫu nhận ưu đãi qua email.', 'preview_image' => $preview, 'anchor_id' => 'newsletter', 'data' => ['vi' => $heading('Đăng ký nhận thông tin ưu đãi và khuyến mãi', 'Thông tin của bạn được bảo mật và có thể hủy đăng ký bất cứ lúc nào.'), 'en' => $heading('Get deals in your inbox')]],
+            ['block_type' => 'ec916_footer', 'label' => 'Chân trang', 'description' => 'Hỗ trợ, thông tin doanh nghiệp và hợp tác.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Bách Hóa Xanh Plus'), 'en' => $heading('Store information')]],
         ];
     }
 

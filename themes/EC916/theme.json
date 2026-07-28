@@ -1,0 +1,44 @@
+{
+  "name": "EC916 Bách Hóa Xanh Plus",
+  "key": "EC916",
+  "version": "1.0.0",
+  "description": "Theme bách hóa đa ngành với tìm kiếm nổi bật, mega menu, các cụm ưu đãi và chuyển động xuất hiện theo cuộn trang.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "avatar.webp",
+    "cover": "cover-ec916.webp"
+  },
+  "blocks": [
+    "hero-slider",
+    "categories",
+    "featured-deals",
+    "promo-pair",
+    "beauty-deals",
+    "campaign-mosaic",
+    "brands",
+    "newsletter",
+    "footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true,
+    "scroll_reveal": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "typography": {
+    "body": "EC916 Sans",
+    "display": "EC916 Sans",
+    "self_hosted": true
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "ec916-bach-hoa-xanh-plus"
+  }
+}
