@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -554,6 +554,14 @@ class LandingPageBuilder
             'ec909_headphone_showcase', 'ec909_headphone_products', 'ec909_earphone_products', 'ec909_latest_posts' => 3,
             'ec910_promotions', 'ec910_product_tabs', 'ec910_experience' => 5,
             'ec910_mens_watches' => 8,
+            'ec913_category_grid' => 10,
+            'ec913_best_sellers', 'ec913_laptop_showcase' => 5,
+            'ec913_technology_news' => 3,
+            'ec914_category_rail', 'ec914_featured_products' => 8,
+            'ec914_craft_sale' => 4,
+            'ec914_basket_showcase', 'ec914_lamp_showcase', 'ec914_latest_posts' => 3,
+            'ec915_best_sellers' => 8,
+            'ec915_latest_posts' => 3,
             'spa111_services', 'spa111_testimonials' => 3,
             'spa111_featured_products' => 8,
             'spa111_team', 'spa111_latest_posts' => 4,
@@ -606,14 +614,26 @@ class LandingPageBuilder
         }
 
         if (in_array($block->block_type, [
+            'ec915_best_sellers',
+            'ec915_latest_posts',
+            'ec914_category_rail',
+            'ec914_craft_sale',
+            'ec914_featured_products',
+            'ec914_basket_showcase',
+            'ec914_lamp_showcase',
+            'ec914_latest_posts',
+            'ec913_category_grid',
+            'ec913_best_sellers',
+            'ec913_laptop_showcase',
+            'ec913_technology_news',
             'ec912_hot_sale',
             'ec912_featured_categories',
             'ec912_iphone_products',
             'ec912_technology_news',
         ], true)) {
             $defaultSource = match ($block->block_type) {
-                'ec912_featured_categories' => 'catalog_categories',
-                'ec912_technology_news' => 'cms_posts',
+                'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories' => 'catalog_categories',
+                'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news' => 'cms_posts',
                 default => 'cms_products',
             };
 
@@ -1492,6 +1512,9 @@ class LandingPageBuilder
             'EC910' => $this->ec910DefaultBlocks(),
             'EC911' => $this->ec911DefaultBlocks(),
             'EC912' => $this->ec912DefaultBlocks(),
+            'EC913' => $this->ec913DefaultBlocks(),
+            'EC914' => $this->ec914DefaultBlocks(),
+            'EC915' => $this->ec915DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
             'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
@@ -2384,6 +2407,275 @@ class LandingPageBuilder
             ['block_type' => 'ec908_health_posts', 'label' => 'Góc sức khỏe', 'description' => 'Một bài nổi bật và ba bài viết luyện tập.', 'preview_image' => $preview, 'anchor_id' => 'goc-suc-khoe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema(4), 'data' => ['vi' => $withItems($heading('Góc sức khỏe'), $posts), 'en' => $heading('Health corner')]],
             ['block_type' => 'ec908_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết chính hãng, đổi trả, chất lượng và giao 2H.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
             ['block_type' => 'ec908_footer', 'label' => 'Chân trang', 'description' => 'Các nhóm hỗ trợ, chính sách, thông tin và liên hệ.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Ego Fitness'), 'en' => $heading('Ego Fitness information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec915DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC915/cover-ec915.webp';
+        $heading = static fn (?string $title = null, ?string $summary = null): array => ['title' => $title, 'summary' => $summary];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 3],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $rooms = [
+            ['title' => 'Sản phẩm mới', 'summary' => '20+ thiết kế mới', 'image' => '/theme-demo/ec915/product-lamp-black.webp', 'url' => '#ban-chay'],
+            ['title' => 'Văn phòng', 'summary' => 'Bàn, ghế và tủ', 'image' => '/theme-demo/ec915/room-office.webp', 'url' => '#ban-chay'],
+            ['title' => 'Phòng khách', 'summary' => 'Sofa và bàn trà', 'image' => '/theme-demo/ec915/room-living-room.webp', 'url' => '#ban-chay'],
+            ['title' => 'Phòng ngủ', 'summary' => 'Giường và tủ đầu giường', 'image' => '/theme-demo/ec915/room-bedroom.webp', 'url' => '#ban-chay'],
+            ['title' => 'Phòng bếp', 'summary' => 'Bàn ăn và ghế', 'image' => '/theme-demo/ec915/room-dining-room.webp', 'url' => '#ban-chay'],
+        ];
+        $stats = [
+            ['value' => '1600+', 'title' => 'Dự án hoàn thành'],
+            ['value' => '180+', 'title' => 'Nhân sự chuyên môn cao'],
+            ['value' => '38+', 'title' => 'Đối tác uy tín toàn quốc'],
+        ];
+        $process = [
+            ['title' => 'Khảo sát và lên kế hoạch', 'summary' => 'Đo đạc, đánh giá hiện trạng và lập kế hoạch thi công.', 'icon' => 'fa-clipboard-check'],
+            ['title' => 'Thiết kế và phê duyệt', 'summary' => 'Xây dựng và phê duyệt bản vẽ thiết kế nội thất.', 'icon' => 'fa-compass-drafting'],
+            ['title' => 'Thi công và lắp đặt', 'summary' => 'Sản xuất, thi công và lắp đặt từng hạng mục.', 'icon' => 'fa-screwdriver-wrench'],
+            ['title' => 'Kiểm tra và bàn giao', 'summary' => 'Kiểm tra hoàn thiện trước khi bàn giao công trình.', 'icon' => 'fa-house-circle-check'],
+        ];
+        $reasons = [
+            ['title' => 'Chất lượng và thẩm mỹ vượt trội', 'summary' => 'Vật liệu cao cấp, thiết kế tinh tế và quy trình kiểm soát chất lượng nghiêm ngặt.'],
+            ['title' => 'Dịch vụ chuyên nghiệp, tận tâm', 'summary' => 'Lắng nghe nhu cầu và đồng hành từ bản vẽ đầu tiên đến ngày bàn giao.'],
+        ];
+        $faqs = [
+            ['title' => 'ND Interior cung cấp những dịch vụ nào?', 'summary' => 'Thiết kế, thi công nội thất trọn gói và cung cấp sản phẩm nội thất cao cấp.'],
+            ['title' => 'Thời gian thi công nội thất mất bao lâu?', 'summary' => 'Thời gian phụ thuộc quy mô và vật liệu, thông thường từ 30 đến 90 ngày.'],
+            ['title' => 'Có hỗ trợ thiết kế theo yêu cầu không?', 'summary' => 'Có. Đội ngũ thiết kế phát triển phương án riêng theo công năng, ngân sách và phong cách của bạn.'],
+            ['title' => 'Chính sách bảo hành sản phẩm như thế nào?', 'summary' => 'Mỗi sản phẩm và hạng mục đều có thời hạn bảo hành rõ ràng trong hợp đồng.'],
+        ];
+        $testimonials = [
+            ['title' => 'Hồng Mến', 'role' => 'Kinh doanh', 'summary' => 'Đội ngũ tư vấn tận tình, thi công đúng tiến độ và không gian hoàn thiện rất tinh tế.'],
+            ['title' => 'Phương Ly', 'role' => 'Chủ căn hộ', 'summary' => 'Sản phẩm đẹp, chất liệu cao cấp và dịch vụ hậu mãi chu đáo.'],
+            ['title' => 'Hà Phương', 'role' => 'Kế toán', 'summary' => 'Ý tưởng của tôi đã trở thành một không gian sống sang trọng, tiện nghi và đáng tin cậy.'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero nội thất', 'description' => 'Banner toàn màn hình cho studio nội thất.', 'preview_image' => $preview, 'anchor_id' => 'hero', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec915-hero-slider', 'limit' => 2, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Chuyên thi công & cung cấp sản phẩm nội thất cao cấp', 'Kiến tạo không gian sống và làm việc hoàn hảo.'), ['content' => ['slides' => [['badge' => 'CHÀO MỪNG BẠN ĐẾN VỚI CHÚNG TÔI', 'title' => 'Chuyên thi công & cung cấp sản phẩm nội thất cao cấp', 'summary' => 'Thiết kế tinh tế, thi công bền vững và dịch vụ tận tâm.', 'image' => '/theme-demo/ec915/hero-interior.webp', 'link_url' => '#gioi-thieu']]]]), 'en' => $heading('Premium interior design and build')]],
+            ['block_type' => 'ec915_about', 'label' => 'Về chúng tôi', 'description' => 'Giới thiệu, hình ảnh và ba số liệu năng lực.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'media' => ['image' => '/theme-demo/ec915/room-living-room.webp'], 'data' => ['vi' => $withItems($heading('Giải pháp nội thất hoàn hảo cho không gian của bạn', 'ND Interior chuyên thiết kế, thi công nội thất trọn gói và cung cấp sản phẩm cao cấp cho nhà ở, căn hộ, văn phòng và showroom.'), $stats), 'en' => $withItems($heading('Complete interior solutions'), $stats)]],
+            ['block_type' => 'ec915_room_categories', 'label' => 'Không gian nội thất', 'description' => 'Lưới danh mục theo từng không gian.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'data' => ['vi' => $withItems($heading('Khám phá theo không gian'), $rooms), 'en' => $withItems($heading('Shop by room'), $rooms)]],
+            ['block_type' => 'ec915_best_sellers', 'label' => 'Sản phẩm bán chạy', 'description' => 'Tám sản phẩm nội thất nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'ban-chay', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'search' => 'EC915-PRODUCT', 'featured_only' => true], 'settings_schema' => $productSchema(8), 'data' => ['vi' => $heading('Sản phẩm bán chạy'), 'en' => $heading('Best sellers')]],
+            ['block_type' => 'ec915_contact_banner', 'label' => 'Banner tư vấn', 'description' => 'Ảnh panorama cùng hotline và nút liên hệ.', 'preview_image' => $preview, 'anchor_id' => 'tu-van', 'data' => ['vi' => $heading('Liên hệ với ND Interior để được tư vấn', 'Đội ngũ chuyên gia luôn sẵn sàng hỗ trợ bạn tận tình.'), 'en' => $heading('Contact our interior consultants')]],
+            ['block_type' => 'ec915_process', 'label' => 'Quy trình làm việc', 'description' => 'Bốn bước triển khai dự án nội thất.', 'preview_image' => $preview, 'anchor_id' => 'quy-trinh', 'data' => ['vi' => $withItems($heading('Cam kết chất lượng từ ND Interior'), $process), 'en' => $withItems($heading('Our working process'), $process)]],
+            ['block_type' => 'ec915_reasons', 'label' => 'Lý do lựa chọn', 'description' => 'Lợi thế dịch vụ và hình ảnh dự án.', 'preview_image' => $preview, 'anchor_id' => 'ly-do', 'data' => ['vi' => $withItems($heading('ND Interior luôn ưu tiên sự hài lòng khách hàng', 'Chúng tôi cam kết chất lượng, thẩm mỹ và trải nghiệm dịch vụ xuyên suốt.'), $reasons), 'en' => $withItems($heading('Why choose ND Interior?'), $reasons)]],
+            ['block_type' => 'ec915_faq', 'label' => 'Câu hỏi thường gặp', 'description' => 'Khối hỏi đáp dạng accordion.', 'preview_image' => $preview, 'anchor_id' => 'faq', 'data' => ['vi' => $withItems($heading('Câu hỏi thường gặp?', 'Những thông tin quan trọng về thiết kế, thi công và bảo hành.'), $faqs), 'en' => $withItems($heading('Frequently asked questions'), $faqs)]],
+            ['block_type' => 'ec915_testimonials', 'label' => 'Ý kiến khách hàng', 'description' => 'Ba đánh giá khách hàng.', 'preview_image' => $preview, 'anchor_id' => 'danh-gia', 'data' => ['vi' => $withItems($heading('Khách hàng nói gì về chúng tôi?'), $testimonials), 'en' => $withItems($heading('What clients say'), $testimonials)]],
+            ['block_type' => 'ec915_latest_posts', 'label' => 'Tin tức nội thất', 'description' => 'Ba bài viết và xu hướng mới.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'search' => ''], 'settings_schema' => $postSchema, 'data' => ['vi' => $heading('Tin tức và xu hướng nội thất!'), 'en' => $heading('Interior news and trends')]],
+            ['block_type' => 'ec915_footer', 'label' => 'Chân trang', 'description' => 'Thông tin liên hệ, dịch vụ và Instagram.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin ND Interior'), 'en' => $heading('ND Interior information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec914DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC914/cover-ec914.webp';
+        $heading = static fn (?string $title = null, ?string $summary = null): array => ['title' => $title, 'summary' => $summary];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $categorySchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số danh mục', 'default' => 8],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 3],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $collections = [
+            ['title' => 'BST Hơi Thở Mộc', 'summary' => 'Giá chỉ từ 499k', 'image' => '/theme-demo/ec914/collection-wide.webp', 'url' => '#noi-bat'],
+            ['title' => 'BST Nét Đan', 'summary' => 'Giá chỉ từ 299k', 'image' => '/theme-demo/ec914/product-basket-picnic.webp', 'url' => '#noi-bat'],
+            ['title' => 'BST Ánh Mây', 'summary' => 'Giá chỉ từ 399k', 'image' => '/theme-demo/ec914/collection-lamps.webp', 'url' => '#noi-bat'],
+            ['title' => 'BST Mộc Nhiên Quà Tặng', 'summary' => 'Giá chỉ từ 199k', 'image' => '/theme-demo/ec914/artisan-detail.webp', 'url' => '#noi-bat'],
+        ];
+        $testimonials = [
+            ['title' => 'Ngọc Vy', 'role' => 'Nhà thiết kế nội thất', 'summary' => 'Tôi ấn tượng với từng đường đan tỉ mỉ, chắc tay và mùi thơm tự nhiên của mây tre. Mỗi món đồ khiến căn nhà có thêm sự ấm áp và một câu chuyện riêng.'],
+        ];
+        $partners = [
+            ['title' => 'The Green House'], ['title' => 'An Nhiên Living'], ['title' => 'Làng Mộc'], ['title' => 'Maison Nature'], ['title' => 'Bamboo Home'], ['title' => 'Mây Studio'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero câu chuyện mộc', 'description' => 'Banner toàn chiều rộng cho sản phẩm mây tre thủ công.', 'preview_image' => $preview, 'anchor_id' => 'hero', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec914-hero-slider', 'limit' => 2, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Mỗi món đồ là một câu chuyện mộc mạc', 'Thủ công truyền thống gặp thiết kế hiện đại.'), ['content' => ['slides' => [['title' => 'Mỗi món đồ là một câu chuyện mộc mạc', 'summary' => 'Từng sợi mây đan lưu giữ hơi thở thiên nhiên và bàn tay người thợ Việt.', 'badge' => 'CHẠM VÀO VẺ ĐẸP MỘC', 'image' => '/theme-demo/ec914/hero-craft.webp', 'link_url' => '#noi-bat']]]]), 'en' => $heading('Every craft carries a story')]],
+            ['block_type' => 'ec914_category_rail', 'label' => 'Danh mục thủ công', 'description' => 'Tám danh mục hình tròn.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 8, 'search' => 'ec914-'], 'settings_schema' => $categorySchema, 'data' => ['vi' => $heading('Danh mục thủ công'), 'en' => $heading('Craft categories')]],
+            ['block_type' => 'ec914_craft_sale', 'label' => 'Craft Sale', 'description' => 'Bốn sản phẩm ưu đãi kèm đếm ngược.', 'preview_image' => $preview, 'anchor_id' => 'sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'EC914-SALE', 'featured_only' => false, 'end_at' => '2027-12-31T23:59:59+07:00'], 'settings_schema' => array_merge($productSchema(4), ['end_at' => ['type' => 'datetime-local', 'label' => 'Thời gian kết thúc']]), 'data' => ['vi' => $heading('Year End Craft Sale – Xả kho cuối mùa', 'Ưu đãi cho những món đồ thủ công được yêu thích nhất.'), 'en' => $heading('Year End Craft Sale')]],
+            ['block_type' => 'ec914_featured_products', 'label' => 'Sản phẩm nổi bật', 'description' => 'Tám sản phẩm thủ công nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'noi-bat', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'search' => 'EC914-', 'featured_only' => true], 'settings_schema' => $productSchema(8), 'data' => ['vi' => $heading('Các sản phẩm nổi bật', 'Sự kết hợp hài hòa giữa thủ công truyền thống và thiết kế hiện đại.'), 'en' => $heading('Featured crafts')]],
+            ['block_type' => 'ec914_collection_gallery', 'label' => 'Bộ sưu tập', 'description' => 'Gallery ảnh phong cách editorial.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap', 'data' => ['vi' => $withItems($heading('Bộ sưu tập mới nhất', 'Mộc mạc nhưng tinh tế, lưu giữ hơi thở thiên nhiên.'), $collections), 'en' => $withItems($heading('Latest collections'), $collections)]],
+            ['block_type' => 'ec914_basket_showcase', 'label' => 'Giỏ & khay đan tay', 'description' => 'Ảnh lifestyle và ba sản phẩm giỏ khay.', 'preview_image' => $preview, 'anchor_id' => 'gio-khay', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'search' => 'EC914-BASKET'], 'settings_schema' => $productSchema(3), 'data' => ['vi' => $heading('Giỏ & Khay Đan Tay', 'Từng sợi mây đan thủ công, lưu giữ vẻ tự nhiên cho không gian sống.'), 'en' => $heading('Handwoven baskets & trays')]],
+            ['block_type' => 'ec914_lamp_showcase', 'label' => 'Đèn mây tre', 'description' => 'Ảnh lifestyle và ba sản phẩm đèn.', 'preview_image' => $preview, 'anchor_id' => 'den-may-tre', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'search' => 'EC914-LAMP'], 'settings_schema' => $productSchema(3), 'data' => ['vi' => $heading('Đèn Mây Tre Trang Trí', 'Ánh sáng len qua sợi mây, mang hơi thở thiên nhiên và sự ấm áp.'), 'en' => $heading('Rattan pendant lights')]],
+            ['block_type' => 'ec914_artisan_story', 'label' => 'Câu chuyện nghệ nhân', 'description' => 'Giới thiệu nghề đan và chất liệu tự nhiên.', 'preview_image' => $preview, 'anchor_id' => 'cau-chuyen', 'media' => ['image' => '/theme-demo/ec914/artisan-story.webp'], 'data' => ['vi' => $heading('Câu chuyện từ những đôi tay', 'Chúng tôi tôn vinh chất liệu tự nhiên và kỹ nghệ của người thợ Việt. Mỗi thiết kế là sự gặp gỡ giữa ký ức truyền thống và thẩm mỹ đương đại.'), 'en' => $heading('Stories shaped by hand')]],
+            ['block_type' => 'ec914_testimonials', 'label' => 'Cảm nhận khách hàng', 'description' => 'Một câu chuyện khách hàng nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'cam-nhan', 'data' => ['vi' => $withItems($heading('Mang một góc làng nghề về nhà'), $testimonials), 'en' => $withItems($heading('Bring the craft village home'), $testimonials)]],
+            ['block_type' => 'ec914_partners', 'label' => 'Đối tác', 'description' => 'Dải tên đối tác và không gian nội thất.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'data' => ['vi' => $withItems($heading('Đối tác của Mộc Nhiên'), $partners), 'en' => $withItems($heading('Our partners'), $partners)]],
+            ['block_type' => 'ec914_latest_posts', 'label' => 'Tin tức & cảm hứng', 'description' => 'Ba bài viết mới nhất.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'search' => ''], 'settings_schema' => $postSchema, 'data' => ['vi' => $heading('Tin tức & cảm hứng mới nhất'), 'en' => $heading('Latest stories & inspiration')]],
+            ['block_type' => 'ec914_footer', 'label' => 'Chân trang', 'description' => 'Liên hệ, chính sách và newsletter.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Mộc Nhiên Craft'), 'en' => $heading('Moc Nhien Craft information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec913DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC913/cover-ec913.webp';
+        $heading = static fn (?string $title = null, ?string $summary = null): array => [
+            'title' => $title,
+            'summary' => $summary,
+        ];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, [
+            'content' => ['items' => $items],
+        ]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $categorySchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số danh mục', 'default' => 10],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 3],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $benefits = [
+            ['title' => 'Miễn phí giao hàng', 'summary' => 'Trong bán kính 20km', 'icon' => 'fa-truck-fast'],
+            ['title' => 'Thanh toán an toàn', 'summary' => 'Bảo mật và minh bạch', 'icon' => 'fa-credit-card'],
+            ['title' => 'Ưu đãi thành viên', 'summary' => 'Tích điểm đổi quà', 'icon' => 'fa-gift'],
+            ['title' => 'Hỗ trợ 24/7', 'summary' => 'Nhân viên tận tình', 'icon' => 'fa-headset'],
+        ];
+        $categories = [
+            ['title' => 'Điện thoại & Tablet', 'image' => '/theme-demo/ec913/phone-blue.webp', 'url' => '#ban-chay'],
+            ['title' => 'Laptop & Máy tính', 'image' => '/theme-demo/ec913/laptop-silver.webp', 'url' => '#laptop'],
+            ['title' => 'TV & Màn hình', 'image' => '/theme-demo/ec913/tv-lifestyle.webp', 'url' => '#ban-chay'],
+            ['title' => 'Điện lạnh', 'image' => '/theme-demo/ec913/refrigerator.webp', 'url' => '#ban-chay'],
+            ['title' => 'Gia dụng thông minh', 'image' => '/theme-demo/ec913/air-fryer.webp', 'url' => '#ban-chay'],
+            ['title' => 'Âm thanh', 'image' => '/theme-demo/ec913/earbuds-white.webp', 'url' => '#ban-chay'],
+            ['title' => 'Gaming & Console', 'image' => '/theme-demo/ec913/promo-gaming.webp', 'url' => '#ban-chay'],
+            ['title' => 'Camera & Kỹ thuật số', 'image' => '/theme-demo/ec913/phone-graphite.webp', 'url' => '#ban-chay'],
+            ['title' => 'Phụ kiện số', 'image' => '/theme-demo/ec913/charger-wireless.webp', 'url' => '#ban-chay'],
+            ['title' => 'Thiết bị nhà bếp', 'image' => '/theme-demo/ec913/washing-machine.webp', 'url' => '#ban-chay'],
+        ];
+        $promotions = [
+            ['title' => 'Điện máy cho tổ ấm', 'summary' => 'Giảm đến 35%', 'badge' => 'TUẦN LỄ GIA DỤNG', 'image' => '/theme-demo/ec913/promo-appliances.webp', 'url' => '#ban-chay'],
+            ['title' => 'Gaming bứt phá giới hạn', 'summary' => 'Quà tặng đến 2 triệu', 'badge' => 'BATTLE READY', 'image' => '/theme-demo/ec913/promo-gaming.webp', 'url' => '#ban-chay'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero công nghệ',
+                'description' => 'Banner chính cho chiến dịch điện tử và điện máy.',
+                'preview_image' => $preview,
+                'anchor_id' => 'hero',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'ec913-hero-slider', 'limit' => 2, 'autoplay_ms' => 5200],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Placement banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
+                    'autoplay_ms' => ['type' => 'number', 'label' => 'Thời gian tự chuyển'],
+                ],
+                'data' => [
+                    'vi' => array_merge($heading('Sắm công nghệ, sống tiện nghi', 'Ưu đãi đến 35% cho hàng ngàn sản phẩm chính hãng.'), ['content' => ['slides' => [[
+                        'title' => 'Sắm công nghệ, sống tiện nghi',
+                        'summary' => 'Ưu đãi đến 35% cho điện tử, điện máy và phụ kiện chính hãng.',
+                        'badge' => 'ĐẠI TIỆC CÔNG NGHỆ',
+                        'image' => '/theme-demo/ec913/hero-digital-mall.webp',
+                        'link_url' => '#ban-chay',
+                    ]]]]),
+                    'en' => $heading('Smarter tech, easier living', 'Save up to 35% on genuine technology products.'),
+                ],
+            ],
+            [
+                'block_type' => 'ec913_benefits',
+                'label' => 'Cam kết dịch vụ',
+                'description' => 'Bốn lợi ích mua sắm nổi bật.',
+                'preview_image' => $preview,
+                'anchor_id' => 'loi-ich',
+                'data' => ['vi' => $withItems($heading('Quyền lợi khách hàng'), $benefits), 'en' => $withItems($heading('Customer benefits'), $benefits)],
+            ],
+            [
+                'block_type' => 'ec913_category_grid',
+                'label' => 'Danh mục nổi bật',
+                'description' => 'Mười nhóm sản phẩm điện tử và điện máy.',
+                'preview_image' => $preview,
+                'anchor_id' => 'danh-muc',
+                'dynamic' => true,
+                'settings' => ['source' => 'catalog_categories', 'limit' => 10, 'search' => 'ec913-', 'featured_only' => false],
+                'settings_schema' => $categorySchema,
+                'data' => ['vi' => $withItems($heading('Danh mục nổi bật'), $categories), 'en' => $withItems($heading('Featured categories'), $categories)],
+            ],
+            [
+                'block_type' => 'ec913_promotion_banners',
+                'label' => 'Banner khuyến mãi',
+                'description' => 'Hai chiến dịch gia dụng và gaming.',
+                'preview_image' => $preview,
+                'anchor_id' => 'khuyen-mai',
+                'data' => ['vi' => $withItems($heading('Khuyến mãi nổi bật'), $promotions), 'en' => $withItems($heading('Featured promotions'), $promotions)],
+            ],
+            [
+                'block_type' => 'ec913_best_sellers',
+                'label' => 'Sản phẩm bán chạy',
+                'description' => 'Năm sản phẩm công nghệ được chọn mua nhiều.',
+                'preview_image' => $preview,
+                'anchor_id' => 'ban-chay',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 5, 'search' => 'EC913-BEST', 'featured_only' => true],
+                'settings_schema' => $productSchema(5),
+                'data' => ['vi' => $heading('Sản phẩm bán chạy'), 'en' => $heading('Best sellers')],
+            ],
+            [
+                'block_type' => 'ec913_laptop_showcase',
+                'label' => 'Laptop & thiết bị tin học',
+                'description' => 'Một sản phẩm chủ đạo và bốn laptop bổ trợ.',
+                'preview_image' => $preview,
+                'anchor_id' => 'laptop',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 5, 'search' => 'EC913-LAPTOP', 'featured_only' => false],
+                'settings_schema' => $productSchema(5),
+                'data' => ['vi' => $heading('Laptop & Thiết bị tin học'), 'en' => $heading('Laptops & computing')],
+            ],
+            [
+                'block_type' => 'ec913_technology_news',
+                'label' => 'Tin mới & tư vấn',
+                'description' => 'Ba bài viết công nghệ mới nhất.',
+                'preview_image' => $preview,
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 3, 'search' => '', 'featured_only' => false],
+                'settings_schema' => $postSchema,
+                'data' => ['vi' => $heading('Tin mới & tư vấn'), 'en' => $heading('News & advice')],
+            ],
+            [
+                'block_type' => 'ec913_footer',
+                'label' => 'Chân trang',
+                'description' => 'Thông tin doanh nghiệp, đăng ký tin và liên kết hỗ trợ.',
+                'preview_image' => $preview,
+                'anchor_id' => 'footer',
+                'data' => ['vi' => $heading('Thông tin NovaTech Mall'), 'en' => $heading('NovaTech Mall information')],
+            ],
         ];
     }
 

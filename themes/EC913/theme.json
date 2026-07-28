@@ -1,0 +1,37 @@
+{
+  "name": "EC913 NovaTech Mall",
+  "key": "EC913",
+  "version": "1.0.0",
+  "description": "Theme trung tâm điện máy và công nghệ đa ngành với mega menu, hero khuyến mãi, danh mục trực quan và các khu sản phẩm bán chạy.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "avatar.webp",
+    "cover": "cover-ec913.webp"
+  },
+  "blocks": [
+    "hero-slider",
+    "service-benefits",
+    "category-grid",
+    "promotion-banners",
+    "best-sellers",
+    "laptop-showcase",
+    "technology-news",
+    "footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "ec913-novatech-mall"
+  }
+}

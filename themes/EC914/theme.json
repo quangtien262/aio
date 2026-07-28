@@ -1,0 +1,46 @@
+{
+  "name": "EC914 Mộc Nhiên Craft",
+  "key": "EC914",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử dành cho sản phẩm thủ công mây tre, decor tự nhiên và quà tặng nghệ nhân, sử dụng bộ font tiếng Việt riêng.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "avatar.webp",
+    "cover": "cover-ec914.webp"
+  },
+  "blocks": [
+    "hero-slider",
+    "category-rail",
+    "craft-sale",
+    "featured-products",
+    "collection-gallery",
+    "basket-showcase",
+    "lamp-showcase",
+    "artisan-story",
+    "testimonials",
+    "partners",
+    "latest-posts",
+    "footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "typography": {
+    "body": "EC914 Sans",
+    "display": "EC914 Hand",
+    "self_hosted": true
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "ec914-moc-nhien-craft"
+  }
+}

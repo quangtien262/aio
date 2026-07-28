@@ -1,0 +1,46 @@
+{
+  "name": "EC915 ND Interior",
+  "key": "EC915",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử cao cấp dành cho studio thiết kế, thi công và bán sản phẩm nội thất, có chuyển động xuất hiện theo cuộn trang.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "avatar.webp",
+    "cover": "cover-ec915.webp"
+  },
+  "blocks": [
+    "hero-slider",
+    "about",
+    "room-categories",
+    "best-sellers",
+    "contact-banner",
+    "process",
+    "reasons",
+    "faq",
+    "testimonials",
+    "latest-posts",
+    "footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true,
+    "scroll_reveal": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "typography": {
+    "body": "EC915 Sans",
+    "display": "EC915 Sans",
+    "self_hosted": true
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "ec915-nd-interior"
+  }
+}

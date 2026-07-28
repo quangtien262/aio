@@ -1,16 +1,16 @@
 https://delta-platinum.mysapo.net/
 https://lofi-furniture.mysapo.net/
 https://template-alena.mysapo.net/
-https://ega-mini-mart.mysapo.net/
-https://ega-gear.mysapo.net/
-https://ego-fitness.mysapo.net/
+https://ega-mini-mart.mysapo.net/ -- EC906
+https://ega-gear.mysapo.net/      -- EC907
+https://ego-fitness.mysapo.net/   -- EC908
 https://bean-lingerie.mysapo.net/
 https://sudes-aqua.mysapo.net/
 https://oh-underwear.mysapo.net/
-SPA111 - https://bean-spa.mysapo.net/
-
-
-
+https://bean-spa.mysapo.net/        -- SPA111
+https://dola-watch.mysapo.net/      -- EC910
+https://sudes-phone.mysapo.net/     -- EC912
+https://ega-market.mysapo.net/     -- EC913
 
 
 
