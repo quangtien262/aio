@@ -13,6 +13,8 @@ class MainWebsiteTemplateSynchronizer
 
     private const TABLE = 'website_templates';
 
+    private const MEDIA_TABLE = 'website_template_media';
+
     public function supports(string $rootDomain): bool
     {
         return $this->normalizeDomain($rootDomain) === self::ROOT_DOMAIN;
@@ -34,7 +36,6 @@ class MainWebsiteTemplateSynchronizer
 
         $columns = collect(Schema::connection(self::CONNECTION)->getColumnListing(self::TABLE));
         $hasCodeColumn = $columns->contains('code');
-        $now = now();
         $result = [
             'inserted' => 0,
             'updated' => 0,
@@ -48,55 +49,69 @@ class MainWebsiteTemplateSynchronizer
                 continue;
             }
 
-            $existing = DB::connection(self::CONNECTION)
-                ->table(self::TABLE)
-                ->where(function ($query) use ($themeCode, $hasCodeColumn): void {
-                    $query
-                        ->where('theme_code', $themeCode)
-                        ->orWhere('slug', $themeCode);
+            $action = DB::connection(self::CONNECTION)->transaction(
+                function () use ($theme, $themeCode, $hasCodeColumn): string {
+                    $now = now();
+                    $existing = DB::connection(self::CONNECTION)
+                        ->table(self::TABLE)
+                        ->where(function ($query) use ($themeCode, $hasCodeColumn): void {
+                            $query
+                                ->where('theme_code', $themeCode)
+                                ->orWhere('slug', $themeCode);
+
+                            if ($hasCodeColumn) {
+                                $query->orWhere('code', $themeCode);
+                            }
+                        })
+                        ->first();
+                    $values = [
+                        'name' => $themeCode,
+                        'slug' => $themeCode,
+                        'theme_code' => $themeCode,
+                        'base_price' => 199000,
+                        'demo_url' => sprintf('https://%s.%s', strtolower($themeCode), self::ROOT_DOMAIN),
+                        'current_version_number' => $this->versionNumber($theme['version'] ?? null),
+                        'updated_at' => $now,
+                        'deleted_at' => null,
+                    ];
 
                     if ($hasCodeColumn) {
-                        $query->orWhere('code', $themeCode);
+                        $values['code'] = $themeCode;
                     }
-                })
-                ->first();
-            $values = [
-                'name' => $themeCode,
-                'slug' => $themeCode,
-                'theme_code' => $themeCode,
-                'base_price' => 199000,
-                'demo_url' => sprintf('https://%s.%s', strtolower($themeCode), self::ROOT_DOMAIN),
-                'current_version_number' => $this->versionNumber($theme['version'] ?? null),
-                'updated_at' => $now,
-                'deleted_at' => null,
-            ];
 
-            if ($hasCodeColumn) {
-                $values['code'] = $themeCode;
-            }
+                    $thumbnail = $this->thumbnailFileName($theme);
 
-            $thumbnail = $this->thumbnailFileName($theme);
+                    if ($thumbnail !== null) {
+                        $values['preview_theme'] = $thumbnail;
+                    }
 
-            if ($thumbnail !== null) {
-                $values['preview_theme'] = $thumbnail;
-            }
+                    if ($existing !== null) {
+                        DB::connection(self::CONNECTION)
+                            ->table(self::TABLE)
+                            ->where('id', $existing->id)
+                            ->update($values);
+                        $templateId = (int) $existing->id;
+                        $action = 'updated';
+                    } else {
+                        $templateId = (int) DB::connection(self::CONNECTION)
+                            ->table(self::TABLE)
+                            ->insertGetId([
+                                ...$values,
+                                'category_id' => null,
+                                'created_at' => $now,
+                            ]);
+                        $action = 'inserted';
+                    }
 
-            if ($existing !== null) {
-                DB::connection(self::CONNECTION)
-                    ->table(self::TABLE)
-                    ->where('id', $existing->id)
-                    ->update($values);
-                $action = 'updated';
-            } else {
-                DB::connection(self::CONNECTION)
-                    ->table(self::TABLE)
-                    ->insert([
-                        ...$values,
-                        'category_id' => null,
-                        'created_at' => $now,
-                    ]);
-                $action = 'inserted';
-            }
+                    $thumbnailPath = $this->thumbnailPath($theme, $themeCode);
+
+                    if ($thumbnailPath !== null) {
+                        $this->syncThumbnailMedia($templateId, $themeCode, $thumbnailPath, $now);
+                    }
+
+                    return $action;
+                },
+            );
 
             $result[$action]++;
             $result['items'][] = [
@@ -127,6 +142,66 @@ class MainWebsiteTemplateSynchronizer
         }
 
         return mb_substr(basename($thumbnail), 0, 40);
+    }
+
+    /**
+     * @param  array<string, mixed>  $theme
+     */
+    private function thumbnailPath(array $theme, string $themeCode): ?string
+    {
+        $thumbnailUrl = trim((string) data_get($theme, 'preview_urls.thumbnail', ''));
+
+        if ($thumbnailUrl !== '') {
+            return mb_substr($thumbnailUrl, 0, 255);
+        }
+
+        $thumbnail = $this->thumbnailFileName($theme);
+
+        if ($thumbnail === null) {
+            return null;
+        }
+
+        return sprintf('/theme-previews/%s/%s', rawurlencode($themeCode), rawurlencode($thumbnail));
+    }
+
+    private function syncThumbnailMedia(
+        int $templateId,
+        string $themeCode,
+        string $thumbnailPath,
+        mixed $now,
+    ): void {
+        $existingMedia = DB::connection(self::CONNECTION)
+            ->table(self::MEDIA_TABLE)
+            ->where('template_id', $templateId)
+            ->where('media_type', 'thumbnail')
+            ->orderByDesc('is_primary')
+            ->orderBy('id')
+            ->first();
+        $values = [
+            'template_id' => $templateId,
+            'media_type' => 'thumbnail',
+            'file_path' => $thumbnailPath,
+            'alt_text' => $themeCode.' thumbnail',
+            'sort_order' => 0,
+            'is_primary' => 1,
+            'updated_at' => $now,
+        ];
+
+        if ($existingMedia !== null) {
+            DB::connection(self::CONNECTION)
+                ->table(self::MEDIA_TABLE)
+                ->where('id', $existingMedia->id)
+                ->update($values);
+
+            return;
+        }
+
+        DB::connection(self::CONNECTION)
+            ->table(self::MEDIA_TABLE)
+            ->insert([
+                ...$values,
+                'created_at' => $now,
+            ]);
     }
 
     private function versionNumber(mixed $version): int
