@@ -91,5 +91,7 @@ class Ec909ThemeTest extends TestCase
 
         app(ThemeDemoContentProviderRegistry::class)->forTheme('EC909')?->generate('ec909-euro-sound');
         $this->assertSame('/storage/branding/custom-logo.svg', data_get(SiteProfile::query()->firstOrFail()->branding, 'logo_url'));
+        $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        $this->assertSame(2, substr_count($response->getContent(), '<img src="/storage/branding/custom-logo.svg"'));
     }
 }

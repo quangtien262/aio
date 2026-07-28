@@ -1,7 +1,10 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Drawer from 'antd/es/drawer';
+import Empty from 'antd/es/empty';
+import Input from 'antd/es/input';
+import Pagination from 'antd/es/pagination';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
@@ -16,6 +19,14 @@ const ThemeGrid = lazy(() => import('../components/ThemeGrid'));
 const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDetailsPanel'));
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
 const SiteDomainMappingPanel = lazy(() => import('../components/SiteDomainMappingPanel'));
+const THEME_PAGE_SIZES = [12, 24, 48];
+const DEFAULT_THEME_PAGE_SIZE = THEME_PAGE_SIZES[0];
+
+function positiveInteger(value, fallback) {
+    const parsed = Number.parseInt(value, 10);
+
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
 
 export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
@@ -51,6 +62,45 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
     const activateTheme = useMemo(() => themes.find((theme) => theme.key === activateThemeKey) ?? null, [activateThemeKey, themes]);
     const requestedAction = searchParams.get('action');
     const requestedThemeKey = searchParams.get('theme');
+    const themeKeyword = searchParams.get('q') ?? '';
+    const requestedThemePage = positiveInteger(searchParams.get('page'), 1);
+    const requestedThemePageSize = positiveInteger(searchParams.get('per_page'), DEFAULT_THEME_PAGE_SIZE);
+    const themePageSize = THEME_PAGE_SIZES.includes(requestedThemePageSize)
+        ? requestedThemePageSize
+        : DEFAULT_THEME_PAGE_SIZE;
+    const filteredThemes = useMemo(() => {
+        const normalizedKeyword = themeKeyword.trim().toLocaleLowerCase('vi');
+
+        if (!normalizedKeyword) {
+            return themes ?? [];
+        }
+
+        return (themes ?? []).filter((theme) => String(theme?.name ?? '')
+            .toLocaleLowerCase('vi')
+            .includes(normalizedKeyword));
+    }, [themeKeyword, themes]);
+    const themeLastPage = Math.max(1, Math.ceil(filteredThemes.length / themePageSize));
+    const themePage = Math.min(requestedThemePage, themeLastPage);
+    const paginatedThemes = useMemo(() => {
+        const offset = (themePage - 1) * themePageSize;
+
+        return filteredThemes.slice(offset, offset + themePageSize);
+    }, [filteredThemes, themePage, themePageSize]);
+
+    const updateThemeListParams = useCallback((updates, replace = true) => {
+        const nextParams = new URLSearchParams(searchParams);
+
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === null || value === undefined || value === '') {
+                nextParams.delete(key);
+                return;
+            }
+
+            nextParams.set(key, String(value));
+        });
+
+        setSearchParams(nextParams, { replace });
+    }, [searchParams, setSearchParams]);
 
     const clearRequestedAction = () => {
         const nextParams = new URLSearchParams(searchParams);
@@ -129,6 +179,14 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
         clearRequestedAction();
     }, [activeThemeFromList?.key, canGenerateDemoData, requestedAction, requestedThemeKey, searchParams, selectedThemeKey, setSearchParams, themeActionController, themes]);
 
+    useEffect(() => {
+        if (requestedThemePage <= themeLastPage) {
+            return;
+        }
+
+        updateThemeListParams({ page: themeLastPage === 1 ? null : themeLastPage });
+    }, [requestedThemePage, themeLastPage, updateThemeListParams]);
+
     return (
         <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
             <aside style={{ width: 280 }}>
@@ -201,13 +259,53 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
 
             <Suspense fallback={<Card loading title="Theme List" />}>
                 <div style={{ marginBottom: 16 }}>
-                    <ThemeGrid
-                        themes={themes}
-                        selectedThemeKey={selectedThemeKey}
-                        onSelectTheme={setSelectedThemeKey}
-                        onOpenPreview={handleOpenPreview}
-                    />
-                    </div>
+                    <Space wrap style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
+                        <Input.Search
+                            allowClear
+                            value={themeKeyword}
+                            placeholder="Tìm kiếm theo tên theme..."
+                            aria-label="Tìm kiếm theo tên theme"
+                            style={{ width: 360, maxWidth: '100%' }}
+                            onChange={(event) => updateThemeListParams({
+                                q: event.target.value || null,
+                                page: null,
+                            })}
+                        />
+                        <Text type="secondary">
+                            {themeKeyword.trim()
+                                ? `Tìm thấy ${filteredThemes.length} theme`
+                                : `Tổng cộng ${filteredThemes.length} theme`}
+                        </Text>
+                    </Space>
+
+                    {paginatedThemes.length ? (
+                        <ThemeGrid
+                            themes={paginatedThemes}
+                            selectedThemeKey={selectedThemeKey}
+                            onSelectTheme={setSelectedThemeKey}
+                            onOpenPreview={handleOpenPreview}
+                        />
+                    ) : (
+                        <Empty description="Không tìm thấy theme phù hợp" />
+                    )}
+
+                    {filteredThemes.length > DEFAULT_THEME_PAGE_SIZE ? (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+                            <Pagination
+                                current={themePage}
+                                pageSize={themePageSize}
+                                total={filteredThemes.length}
+                                showSizeChanger
+                                pageSizeOptions={THEME_PAGE_SIZES}
+                                showTotal={(total, range) => `${range[0]}-${range[1]} / ${total} theme`}
+                                onChange={(page, pageSize) => updateThemeListParams({
+                                    page: page > 1 ? page : null,
+                                    per_page: pageSize !== DEFAULT_THEME_PAGE_SIZE ? pageSize : null,
+                                })}
+                            />
+                        </div>
+                    ) : null}
+                </div>
             </Suspense>
 
             <Drawer

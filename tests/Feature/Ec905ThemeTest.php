@@ -64,7 +64,7 @@ class Ec905ThemeTest extends TestCase
             ->assertSee('data-block-type="ec905_paint_products"', false)
             ->assertSee('data-block-type="ec905_tile_products"', false)
             ->assertSee('data-block-type="ec905_projects"', false)
-            ->assertSee('EGO HOME');
+            ->assertSee('Công ty cổ phần Ego Home');
 
         $category = CatalogCategory::query()->firstOrFail();
         $product = CatalogProduct::query()->firstOrFail();
@@ -91,5 +91,7 @@ class Ec905ThemeTest extends TestCase
         ]);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('EC905')?->generate('ec905-egohome');
         $this->assertSame('/storage/branding/custom-logo.svg', data_get(SiteProfile::query()->firstOrFail()->branding, 'logo_url'));
+        $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        $this->assertSame(2, substr_count($response->getContent(), '<img src="/storage/branding/custom-logo.svg"'));
     }
 }

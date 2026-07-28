@@ -6,8 +6,8 @@
   "website_type": "ecommerce",
   "parent": null,
   "preview": {
-    "thumbnail": "thumbnail-ec903.webp",
-    "cover": "preview-ec903.webp"
+    "thumbnail": "ec903.png",
+    "cover": "ec903.png"
   },
   "blocks": [
     "hero-slider",

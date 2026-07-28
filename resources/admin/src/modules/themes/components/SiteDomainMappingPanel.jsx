@@ -144,7 +144,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                     method: 'POST',
                     body: JSON.stringify(values),
                 }),
-                'Đã tạo nhanh cấu hình domain.',
+                'Đã tạo nhanh cấu hình domain và đồng bộ theme lên website chính khi phù hợp.',
                 loadItems,
             );
 
@@ -662,7 +662,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                         type="info"
                         showIcon
                         style={{ marginBottom: 16 }}
-                        message="Hệ thống sẽ tạo cấu hình theo mã theme, ví dụ XD0301.demo.htvietnam.vn. Cấu hình đã tồn tại sẽ được bỏ qua."
+                        message="Hệ thống sẽ tạo cấu hình theo mã theme, ví dụ XD0301.demo.htvietnam.vn. Cấu hình đã tồn tại sẽ được bỏ qua. Riêng domain chính demo.htvietnam.vn, theme sẽ đồng thời được thêm mới hoặc cập nhật trên website chính."
                     />
                     <Form.Item
                         label="Domain chính"

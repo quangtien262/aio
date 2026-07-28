@@ -1,6 +1,7 @@
 @php
-    $profile=$siteProfile??[];$branding=(array)data_get($profile,'branding',[]);$siteName=data_get($profile,'site_name','Ego Fitness');
-    $logo=data_get($branding,'logo_url');$hotline=data_get($branding,'support_hotline','19006750');$nav=collect($primaryMenu??[])->filter()->values();
+    $profile=$siteProfile??[];$shell=$themeShellData??$themeHomeData??[];$branding=(array)data_get($shell,'branding',data_get($profile,'branding',[]));
+    $siteName=trim((string)data_get($branding,'company_name',data_get($profile,'site_name','Ego Fitness')))?:'Ego Fitness';
+    $logo=trim((string)data_get($branding,'logo_url',''));$hotline=data_get($branding,'support_hotline','19006750');$nav=collect($primaryMenu??[])->filter()->values();
 @endphp
 <header class="ec98-header" id="top">
     <div class="ec98-welcome"><div class="ec98-container"><span>Chào mừng bạn đến với Ego fitness</span><nav><a href="tel:{{ preg_replace('/\s+/','',$hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: {{ $hotline }}</a><a href="{{ route('site.contact') }}">Hệ thống cửa hàng</a><a href="{{ route('site.contact') }}">Tuyển dụng</a></nav></div></div>

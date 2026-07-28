@@ -22,10 +22,6 @@ class InjectLandingAdminEditor
     {
         $response = $next($request);
 
-        if (! $request->user('admin') || $request->query('mod') !== 'admin') {
-            return $response;
-        }
-
         if (! $request->routeIs('site.home', 'site.landing.show') || ! $response->isSuccessful()) {
             return $response;
         }
@@ -63,6 +59,18 @@ class InjectLandingAdminEditor
             ->values();
 
         if ($blocks->isEmpty()) {
+            return $response;
+        }
+
+        if (! str_contains($html, 'data-landing-block-order')) {
+            $orderScript = view('site.partials.landing-block-order', [
+                'landingBlocks' => $blocks,
+            ])->render();
+            $html = Str::replaceLast('</body>', $orderScript.'</body>', $html);
+            $response->setContent($html);
+        }
+
+        if (! $request->user('admin') || $request->query('mod') !== 'admin') {
             return $response;
         }
 

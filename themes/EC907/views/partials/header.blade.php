@@ -1,6 +1,7 @@
 @php
-    $profile=(array)($siteProfile??[]);$branding=(array)data_get($profile,'branding',[]);$logo=data_get($branding,'logo_url');
-    $siteName=data_get($profile,'site_name','EGA Gear');$hotline=data_get($branding,'support_hotline','0999 999 998');$nav=collect($primaryMenu??[])->filter()->values();
+    $profile=(array)($siteProfile??[]);$shell=$themeShellData??$themeHomeData??[];
+    $branding=(array)data_get($shell,'branding',data_get($profile,'branding',[]));$logo=trim((string)data_get($branding,'logo_url',''));
+    $siteName=trim((string)data_get($branding,'company_name',data_get($profile,'site_name','EGA Gear')))?:'EGA Gear';$hotline=data_get($branding,'support_hotline','0999 999 998');$nav=collect($primaryMenu??[])->filter()->values();
 @endphp
 <header class="ec97-header" id="top">
     <div class="ec97-container ec97-head-top">

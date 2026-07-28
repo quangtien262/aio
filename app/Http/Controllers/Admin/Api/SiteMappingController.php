@@ -6,6 +6,7 @@ use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Site;
 use App\Models\SiteProfile;
+use App\Support\MainWebsiteTemplateSynchronizer;
 use App\Support\SiteContentCopier;
 use App\Support\SiteContentInitializer;
 use App\Support\SiteDataPurger;
@@ -78,8 +79,12 @@ class SiteMappingController
         ], 201);
     }
 
-    public function bulkStore(Request $request, ThemeRegistry $themeRegistry, SiteContentInitializer $initializer): JsonResponse
-    {
+    public function bulkStore(
+        Request $request,
+        ThemeRegistry $themeRegistry,
+        SiteContentInitializer $initializer,
+        MainWebsiteTemplateSynchronizer $templateSynchronizer,
+    ): JsonResponse {
         $validated = $request->validate([
             'root_domain' => ['required', 'string', 'max:255'],
             'content_mode' => ['nullable', 'string', Rule::in([
@@ -102,7 +107,9 @@ class SiteMappingController
         $initializations = [];
         $contentMode = $validated['content_mode'] ?? SiteContentInitializer::MODE_BLANK;
 
-        foreach ($themeRegistry->all() as $theme) {
+        $themes = $themeRegistry->all();
+
+        foreach ($themes as $theme) {
             $themeKey = strtoupper((string) ($theme['key'] ?? ''));
 
             if ($themeKey === '') {
@@ -118,6 +125,7 @@ class SiteMappingController
 
             if ($existing !== null) {
                 $skipped[] = $this->sitePayload($existing);
+
                 continue;
             }
 
@@ -143,12 +151,17 @@ class SiteMappingController
             $created[] = $this->sitePayload($site->fresh());
         }
 
+        $templateSync = $templateSynchronizer->supports($rootDomain)
+            ? $templateSynchronizer->syncThemes($themes, $rootDomain)
+            : null;
+
         return response()->json([
             'message' => sprintf('Đã tạo %d cấu hình domain, bỏ qua %d cấu hình đã tồn tại.', count($created), count($skipped)),
             'data' => [
                 'created' => $created,
                 'skipped' => $skipped,
                 'initializations' => $initializations,
+                'website_templates' => $templateSync,
             ],
         ], 201);
     }

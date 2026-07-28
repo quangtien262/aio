@@ -1,8 +1,9 @@
 @php
     $profile = $siteProfile ?? [];
-    $branding = (array) data_get($profile, 'branding', []);
-    $siteName = data_get($profile, 'site_name', 'Euro Sound');
-    $logo = data_get($branding, 'logo_url');
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
+    $siteName = trim((string) data_get($branding, 'company_name', data_get($profile, 'site_name', 'Euro Sound'))) ?: 'Euro Sound';
+    $logo = trim((string) data_get($branding, 'logo_url', ''));
     $hotline = data_get($branding, 'support_hotline', '0773915520');
     $email = data_get($branding, 'support_email', 'support@sapo.vn');
     $nav = collect($primaryMenu ?? [])->filter()->values();

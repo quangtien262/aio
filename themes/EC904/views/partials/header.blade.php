@@ -1,6 +1,7 @@
 @php
-    $brand = (array) data_get($siteProfile ?? [], 'branding', []);
-    $logo = data_get($brand, 'logo_url');
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $brand = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
+    $logo = trim((string) data_get($brand, 'logo_url', ''));
     $hotline = data_get($brand, 'support_hotline', '1900 6750');
     $menuItems = collect($primaryMenu['items'] ?? [])->values();
 @endphp

@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -552,6 +552,8 @@ class LandingPageBuilder
             'ec908_accessory_products', 'ec908_health_posts' => 4,
             'ec909_category_cards', 'ec909_recommendations' => 4,
             'ec909_headphone_showcase', 'ec909_headphone_products', 'ec909_earphone_products', 'ec909_latest_posts' => 3,
+            'ec910_promotions', 'ec910_product_tabs', 'ec910_experience' => 5,
+            'ec910_mens_watches' => 8,
             'spa111_services', 'spa111_testimonials' => 3,
             'spa111_featured_products' => 8,
             'spa111_team', 'spa111_latest_posts' => 4,
@@ -603,7 +605,28 @@ class LandingPageBuilder
             return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
-        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ec900_featured_categories', 'ec900_best_sellers', 'ec900_exclusive_products', 'ec900_advice_posts', 'ec901_featured_categories', 'ec901_flash_deals', 'ec901_best_sellers', 'ec901_product_grid', 'ec901_luxury_collection', 'ec901_latest_posts', 'ec902_featured_categories', 'ec902_product_tabs', 'ec902_featured_deals', 'ec902_phone_collection', 'ec902_tablet_collection', 'ec902_accessory_products', 'ec902_latest_posts', 'ec903_category_rail', 'ec903_featured_deals', 'ec903_food_deals', 'ec903_vegetarian_deals', 'ec903_beauty_deals', 'ec903_travel_deals', 'ec904_category_carousel', 'ec904_tabbed_sale', 'ec904_technology_products', 'ec904_fashion_products', 'ec904_daily_suggestions', 'ec904_latest_posts', 'ec905_paint_products', 'ec905_tile_products', 'ec905_projects', 'ec905_news', 'ec906_flash_sale', 'ec906_family_care', 'ec906_kitchen_products', 'ec906_latest_posts', 'ec907_category_grid', 'ec907_best_sellers', 'ec907_audio_showcase', 'ec907_gaming_products', 'ec907_tech_news', 'ec908_category_rail', 'ec908_best_sellers', 'ec908_accessory_products', 'ec908_health_posts', 'ec909_category_cards', 'ec909_headphone_showcase', 'ec909_headphone_products', 'ec909_earphone_products', 'ec909_recommendations', 'ec909_latest_posts', 'spa111_services', 'spa111_featured_products', 'spa111_testimonials', 'spa111_team', 'spa111_latest_posts', 'spa111_partners', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news', 'nt503_categories', 'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection', 'nt503_advice'], true)) {
+        if (in_array($block->block_type, [
+            'ec912_hot_sale',
+            'ec912_featured_categories',
+            'ec912_iphone_products',
+            'ec912_technology_news',
+        ], true)) {
+            $defaultSource = match ($block->block_type) {
+                'ec912_featured_categories' => 'catalog_categories',
+                'ec912_technology_news' => 'cms_posts',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems(
+                $settings,
+                $defaultSource,
+                $limit,
+                $locale,
+                $block->landingPage?->website_key,
+            );
+        }
+
+        if (in_array($block->block_type, ['featured_services', 'featured_service_list', 'completed_projects_list', 'content_mosaic', 'content_showcase', 'project_gallery', 'service_category_slider', 'solutions_split_list', 'collection_gallery', 'business_service_grid', 'bizmax_latest_posts', 'shop601_collection_cards', 'shop601_flash_sale', 'shop601_product_grid', 'shop601_feature_collection', 'shop601_product_carousel', 'shop601_latest_content', 'shop603_hot_products', 'shop603_new_arrivals', 'shop603_sale_slider', 'shop604_flash_sale', 'shop604_new_arrivals', 'shop604_collection_tabs', 'shop605_sale', 'shop605_new', 'shop605_best', 'ec900_featured_categories', 'ec900_best_sellers', 'ec900_exclusive_products', 'ec900_advice_posts', 'ec901_featured_categories', 'ec901_flash_deals', 'ec901_best_sellers', 'ec901_product_grid', 'ec901_luxury_collection', 'ec901_latest_posts', 'ec902_featured_categories', 'ec902_product_tabs', 'ec902_featured_deals', 'ec902_phone_collection', 'ec902_tablet_collection', 'ec902_accessory_products', 'ec902_latest_posts', 'ec903_category_rail', 'ec903_featured_deals', 'ec903_food_deals', 'ec903_vegetarian_deals', 'ec903_beauty_deals', 'ec903_travel_deals', 'ec904_category_carousel', 'ec904_tabbed_sale', 'ec904_technology_products', 'ec904_fashion_products', 'ec904_daily_suggestions', 'ec904_latest_posts', 'ec905_paint_products', 'ec905_tile_products', 'ec905_projects', 'ec905_news', 'ec906_flash_sale', 'ec906_family_care', 'ec906_kitchen_products', 'ec906_latest_posts', 'ec907_category_grid', 'ec907_best_sellers', 'ec907_audio_showcase', 'ec907_gaming_products', 'ec907_tech_news', 'ec908_category_rail', 'ec908_best_sellers', 'ec908_accessory_products', 'ec908_health_posts', 'ec909_category_cards', 'ec909_headphone_showcase', 'ec909_headphone_products', 'ec909_earphone_products', 'ec909_recommendations', 'ec909_latest_posts', 'ec910_promotions', 'ec910_product_tabs', 'ec910_mens_watches', 'ec910_experience', 'spa111_services', 'spa111_featured_products', 'spa111_testimonials', 'spa111_team', 'spa111_latest_posts', 'spa111_partners', 'ca0050_fish_products', 'ca0050_accessories', 'nt502_categories', 'nt502_promotion', 'nt502_living_room', 'nt502_bedroom', 'nt502_latest_news', 'nt503_categories', 'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection', 'nt503_advice'], true)) {
             $defaultSource = match ($block->block_type) {
                 'content_mosaic' => 'cms_posts',
                 'content_showcase' => 'cms_projects',
@@ -639,6 +662,8 @@ class LandingPageBuilder
                 'ec909_category_cards' => 'catalog_categories',
                 'ec909_headphone_showcase', 'ec909_headphone_products', 'ec909_earphone_products', 'ec909_recommendations' => 'cms_products',
                 'ec909_latest_posts' => 'cms_posts',
+                'ec910_promotions', 'ec910_product_tabs', 'ec910_mens_watches' => 'cms_products',
+                'ec910_experience' => 'cms_posts',
                 'spa111_services' => 'cms_services',
                 'spa111_featured_products' => 'cms_products',
                 'spa111_testimonials' => 'cms_testimonials',
@@ -1464,6 +1489,9 @@ class LandingPageBuilder
             'EC907' => $this->ec907DefaultBlocks(),
             'EC908' => $this->ec908DefaultBlocks(),
             'EC909' => $this->ec909DefaultBlocks(),
+            'EC910' => $this->ec910DefaultBlocks(),
+            'EC911' => $this->ec911DefaultBlocks(),
+            'EC912' => $this->ec912DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
             'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
@@ -1859,6 +1887,59 @@ class LandingPageBuilder
             ['block_type' => 'ec901_featured_brands', 'label' => 'Thương hiệu nổi bật', 'description' => 'Dải tên thương hiệu đồng hồ do người dùng quản lý.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'data' => ['vi' => $withItems($heading('Thương hiệu nổi bật'), [['title' => 'AURELIUS'], ['title' => 'NORDEN'], ['title' => 'VELA'], ['title' => 'ASTER'], ['title' => 'MONARCH'], ['title' => 'TEMPO']]), 'en' => $heading('Featured brands')]],
             ['block_type' => 'ec901_latest_posts', 'label' => 'Tin mới cập nhật', 'description' => 'Bốn bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => 'đồng hồ', 'featured_only' => false], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số bài', 'default' => 4], 'search' => ['type' => 'text', 'label' => 'Từ khóa bài viết'], 'category_id' => ['type' => 'select', 'label' => 'Danh mục tin']], 'data' => ['vi' => $heading('Tin mới cập nhật'), 'en' => $heading('Latest stories')]],
             ['block_type' => 'ec901_benefits', 'label' => 'Cam kết mua hàng', 'description' => 'Bốn lợi ích dịch vụ ở cuối trang.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'data' => ['vi' => $withItems($heading(), [['title' => '5000+ mẫu đồng hồ', 'icon' => 'fa-regular fa-clock'], ['title' => 'Miễn phí vận chuyển', 'icon' => 'fa-solid fa-truck-fast'], ['title' => 'Thanh toán COD, Online', 'icon' => 'fa-regular fa-credit-card'], ['title' => 'Quà tặng thành viên', 'icon' => 'fa-solid fa-gift']]), 'en' => $heading()]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec910DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC910/preview-ec910.png';
+        $heading = static fn (?string $title = null, ?string $description = null): array => ['title' => $title, 'description' => $description];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm kiếm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật', 'default' => false],
+        ];
+        $products = [
+            ['title' => 'CASIO MTP-1370D - Nam Quartz', 'image' => '/theme-demo/ec910/classic-silver.webp', 'price' => 1607000, 'original_price' => 2000000, 'summary' => 'Miễn phí thay pin trọn đời', 'url' => '#'],
+            ['title' => 'CASIO Edifice Chronograph', 'image' => '/theme-demo/ec910/sport-black.webp', 'price' => 3529000, 'original_price' => 4100000, 'summary' => 'Tặng gói bảo hành 5 năm', 'url' => '#'],
+            ['title' => 'TISSOT Tradition Rose Gold', 'image' => '/theme-demo/ec910/automatic-rose.webp', 'price' => 14700000, 'original_price' => 18300000, 'summary' => 'Miễn phí thay pin trọn đời', 'url' => '#'],
+            ['title' => 'G-SHOCK GA-2000 Sport', 'image' => '/theme-demo/ec910/diver-blue.webp', 'price' => 4638000, 'original_price' => 5200000, 'summary' => 'Bảo hành chính hãng', 'url' => '#'],
+            ['title' => 'SEIKO 5 Field Sports', 'image' => '/theme-demo/ec910/smartwatch-black.webp', 'price' => 7090000, 'original_price' => 8200000, 'summary' => 'Ưu đãi thành viên', 'url' => '#'],
+            ['title' => 'ORIENT Open Heart', 'image' => '/theme-demo/ec910/automatic-rose.webp', 'price' => 11760000, 'original_price' => 13900000, 'summary' => 'Tặng gói bảo hành 5 năm', 'url' => '#'],
+            ['title' => 'DOXA Calex Sapphire', 'image' => '/theme-demo/ec910/classic-silver.webp', 'price' => 33010000, 'original_price' => 35900000, 'summary' => 'Kính sapphire chính hãng', 'url' => '#'],
+            ['title' => 'FOSSIL Heritage Automatic', 'image' => '/theme-demo/ec910/women-pink.webp', 'price' => 8590000, 'original_price' => 9323000, 'summary' => 'Áp dụng ưu đãi thành viên', 'url' => '#'],
+        ];
+        $posts = [
+            ['title' => 'Toàn bộ sự thật về mặt kính sapphire', 'summary' => 'Kính sapphire có độ cứng rất cao, chống trầy xước và giữ vẻ đẹp bền lâu.', 'image' => '/theme-demo/ec910/classic-silver.webp'],
+            ['title' => '“Lá chắn” thép không gỉ 904L có tốt như lời đồn?', 'summary' => 'Vật liệu và quy trình chế tạo thép không gỉ cao cấp.', 'image' => '/theme-demo/ec910/sport-black.webp'],
+            ['title' => 'Kính cứng đồng hồ là gì?', 'summary' => 'Khám phá cấu tạo, công dụng và cách bảo quản mặt kính.', 'image' => '/theme-demo/ec910/diver-blue.webp'],
+            ['title' => 'Kính khoáng đồng hồ và 4 lý do được dùng phổ biến', 'summary' => 'Giải thích ưu điểm của mineral crystal trong sử dụng hằng ngày.', 'image' => '/theme-demo/ec910/classic-silver.webp'],
+            ['title' => 'Cách khử mùi dây da đồng hồ tại nhà', 'summary' => 'Những bước đơn giản giúp dây da luôn sạch và bền.', 'image' => '/theme-demo/ec910/automatic-rose.webp'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Dola Watch', 'description' => 'Banner đồng hồ cao cấp toàn chiều rộng.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec910-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide']], 'data' => ['vi' => array_merge($heading('Tinh hoa thời gian', 'Đồng hồ chính hãng cho mọi phong cách.'), ['content' => ['slides' => [['title' => 'Tinh hoa thời gian', 'summary' => 'Đồng hồ chính hãng cho mọi phong cách.', 'image' => '/theme-demo/ec910/hero-watches.webp', 'link_url' => '#khuyen-mai']]]]), 'en' => $heading('Timeless distinction')]],
+            ['block_type' => 'ec910_benefits', 'label' => 'Quyền lợi mua hàng', 'description' => 'Bốn cam kết dịch vụ màu đen vàng.', 'preview_image' => $preview, 'anchor_id' => 'quyen-loi', 'data' => ['vi' => $withItems($heading(), [
+                ['title' => 'Miễn phí vận chuyển', 'summary' => 'Cho đơn hàng trong nội thành', 'icon' => 'fa-solid fa-truck-fast'],
+                ['title' => 'Miễn phí đổi - trả', 'summary' => 'Đổi sản phẩm lỗi sản xuất', 'icon' => 'fa-solid fa-rotate'],
+                ['title' => 'Hỗ trợ nhanh chóng', 'summary' => 'Hotline 1900 6750', 'icon' => 'fa-solid fa-headset'],
+                ['title' => 'Ưu đãi thành viên', 'summary' => 'Nhiều khuyến mãi độc quyền', 'icon' => 'fa-solid fa-percent'],
+            ]), 'en' => $heading()]],
+            ['block_type' => 'ec910_promotions', 'label' => 'Khuyến mãi hấp dẫn', 'description' => 'Hai banner chiến dịch và năm sản phẩm ưu đãi.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'search' => 'EC910-', 'featured_only' => false], 'settings_schema' => $productSchema(5), 'data' => ['vi' => array_merge($withItems($heading('Khuyến mãi hấp dẫn'), array_slice($products, 0, 5)), ['content' => ['items' => array_slice($products, 0, 5), 'banners' => [
+                ['title' => 'Đồng hồ lộ cơ giảm đến 49%', 'image' => '/theme-demo/ec910/promo-main.webp', 'url' => '#san-pham-moi'],
+                ['title' => 'Seiko 5 quân đội giảm đến 30%', 'image' => '/theme-demo/ec910/promo-gold.webp', 'url' => '#san-pham-moi'],
+            ]]]), 'en' => $heading('Promotions')]],
+            ['block_type' => 'ec910_product_tabs', 'label' => 'Sản phẩm theo tab', 'description' => 'Sản phẩm mới, nổi bật và bán chạy.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'search' => 'EC910-', 'featured_only' => false], 'settings_schema' => $productSchema(5), 'data' => ['vi' => $withItems($heading('Sản phẩm mới'), array_slice($products, 0, 5)), 'en' => $heading('New arrivals')]],
+            ['block_type' => 'ec910_about', 'label' => 'Giới thiệu Dola Watch', 'description' => 'Khối giới thiệu nền đen, ảnh phong cách.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'settings' => ['image' => '/theme-demo/ec910/lifestyle-source.png'], 'settings_schema' => ['image' => ['type' => 'text', 'label' => 'Ảnh giới thiệu']], 'data' => ['vi' => $heading('Dola Watch - Đồng hồ chính hãng', 'Được thành lập từ năm 2019, Dola Watch chuyên bán đồng hồ chính hãng với chính sách bảo hành minh bạch và dịch vụ tận tâm.'), 'en' => $heading('Dola Watch - Authentic timepieces')]],
+            ['block_type' => 'ec910_mens_watches', 'label' => 'Đồng hồ nam', 'description' => 'Banner dọc, bộ lọc và lưới tám sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'dong-ho-nam', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'search' => 'EC910-', 'featured_only' => false, 'feature_image' => '/theme-demo/ec910/watch-men.webp'], 'settings_schema' => array_merge($productSchema(8), ['feature_image' => ['type' => 'text', 'label' => 'Ảnh phong cách']]), 'data' => ['vi' => $withItems($heading('Đồng hồ nam'), $products), 'en' => $heading("Men's watches")]],
+            ['block_type' => 'ec910_orient_banner', 'label' => 'Banner Orient', 'description' => 'Banner chiến dịch đen vàng.', 'preview_image' => $preview, 'anchor_id' => 'orient', 'settings' => ['image' => '/theme-demo/ec910/promo-main.webp'], 'settings_schema' => ['image' => ['type' => 'text', 'label' => 'Ảnh banner']], 'data' => ['vi' => $heading('Mua đồng hồ Orient', 'Nhận quà độc quyền'), 'en' => $heading('Orient collection')]],
+            ['block_type' => 'ec910_experience', 'label' => 'Kinh nghiệm đồng hồ', 'description' => 'Một bài nổi bật và bốn bài kiến thức.', 'preview_image' => $preview, 'anchor_id' => 'kinh-nghiem', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 5, 'search' => 'đồng hồ', 'featured_only' => false, 'feature_image' => '/theme-demo/ec910/watch-women.webp'], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số bài'], 'search' => ['type' => 'text', 'label' => 'Từ khóa'], 'feature_image' => ['type' => 'text', 'label' => 'Ảnh trang trí']], 'data' => ['vi' => $withItems($heading('Kinh nghiệm'), $posts), 'en' => $heading('Watch journal')]],
+            ['block_type' => 'ec910_brands', 'label' => 'Thương hiệu nổi bật', 'description' => 'Lưới mười hai thương hiệu đồng hồ.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'data' => ['vi' => $withItems($heading('Thương hiệu nổi bật'), array_map(fn ($title) => ['title' => $title], ['CASIO', 'G-SHOCK', 'CITIZEN', 'OP', 'ORIENT', 'SEIKO', 'MICHAEL KORS', 'DANIEL WELLINGTON', 'CANDINO', 'SOKOLOV', 'DOXA', 'LONGINES'])), 'en' => $heading('Featured brands')]],
+            ['block_type' => 'ec910_footer', 'label' => 'Chân trang Dola Watch', 'description' => 'Thông tin, chính sách, danh mục và đăng ký nhận tin.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Dola Watch'), 'en' => $heading('Dola Watch')]],
         ];
     }
 
@@ -2303,6 +2384,230 @@ class LandingPageBuilder
             ['block_type' => 'ec908_health_posts', 'label' => 'Góc sức khỏe', 'description' => 'Một bài nổi bật và ba bài viết luyện tập.', 'preview_image' => $preview, 'anchor_id' => 'goc-suc-khoe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema(4), 'data' => ['vi' => $withItems($heading('Góc sức khỏe'), $posts), 'en' => $heading('Health corner')]],
             ['block_type' => 'ec908_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết chính hãng, đổi trả, chất lượng và giao 2H.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
             ['block_type' => 'ec908_footer', 'label' => 'Chân trang', 'description' => 'Các nhóm hỗ trợ, chính sách, thông tin và liên hệ.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Ego Fitness'), 'en' => $heading('Ego Fitness information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec912DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC912/cover-ec912.png';
+        $heading = static fn (?string $title = null, ?string $summary = null): array => [
+            'title' => $title,
+            'summary' => $summary,
+        ];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, [
+            'content' => ['items' => $items],
+        ]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 4],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $benefits = [
+            ['title' => 'Vận chuyển miễn phí', 'summary' => 'Hóa đơn trên 5 triệu', 'icon' => 'fa-truck-fast'],
+            ['title' => 'Quà tặng hấp dẫn', 'summary' => 'Hóa đơn trên 10 triệu', 'icon' => 'fa-bag-shopping'],
+            ['title' => 'Chứng nhận chất lượng', 'summary' => 'Sản phẩm chính hãng', 'icon' => 'fa-award'],
+            ['title' => 'Hotline: 1900 6750', 'summary' => 'Hỗ trợ 24/7', 'icon' => 'fa-headset'],
+        ];
+        $categories = [
+            ['title' => 'iPhone', 'image' => '/theme-demo/ec912/phone-graphite.webp', 'url' => '#iphone'],
+            ['title' => 'Mac', 'image' => '/theme-demo/ec912/laptop-silver.webp', 'url' => '#iphone'],
+            ['title' => 'iPad', 'image' => '/theme-demo/ec912/tablet-blue.webp', 'url' => '#iphone'],
+            ['title' => 'Watch', 'image' => '/theme-demo/ec912/watch-white.webp', 'url' => '#iphone'],
+            ['title' => 'Âm thanh', 'image' => '/theme-demo/ec912/earbuds-white.webp', 'url' => '#iphone'],
+            ['title' => 'Phụ kiện', 'image' => '/theme-demo/ec912/charger-wireless.webp', 'url' => '#iphone'],
+        ];
+        $promotions = [
+            ['title' => 'Apple Watch Series', 'summary' => 'Đặt hàng ngay', 'image' => '/theme-demo/ec912/promo-accessories.webp', 'url' => '#iphone'],
+            ['title' => 'AirPods Pro', 'summary' => 'Âm thanh sống động', 'image' => '/theme-demo/ec912/promo-computing.webp', 'url' => '#iphone'],
+            ['title' => 'iPhone chính hãng', 'summary' => 'Đặt gạch ngay', 'image' => '/theme-demo/ec912/promo-phone.webp', 'url' => '#iphone'],
+        ];
+        $gallery = [
+            ['title' => 'Khách hàng Sudes Phone', 'image' => '/theme-demo/ec912/story-review.webp'],
+            ['title' => 'Tư vấn tận tâm', 'image' => '/theme-demo/ec912/story-phone.webp'],
+            ['title' => 'Sản phẩm chính hãng', 'image' => '/theme-demo/ec912/story-tablet.webp'],
+            ['title' => 'Trải nghiệm tại cửa hàng', 'image' => '/theme-demo/ec912/story-charging.webp'],
+            ['title' => 'Đồng hành cùng khách hàng', 'image' => '/theme-demo/ec912/hero-tech.webp'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider',
+                'label' => 'Hero iPhone',
+                'description' => 'Banner chính giới thiệu sản phẩm và ưu đãi iPhone.',
+                'preview_image' => $preview,
+                'anchor_id' => 'hero',
+                'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'ec912-hero-slider', 'limit' => 3, 'autoplay_ms' => 5200],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Placement banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
+                    'autoplay_ms' => ['type' => 'number', 'label' => 'Thời gian tự chuyển'],
+                ],
+                'data' => [
+                    'vi' => array_merge($heading('iPhone 14 Pro Max', 'Giá cực sốc'), ['content' => ['slides' => [[
+                        'title' => 'GIÁ CỰC SỐC',
+                        'summary' => 'Giá chỉ từ 28.190.000đ',
+                        'badge' => 'iPhone 14 Pro Max',
+                        'image' => '/theme-demo/ec912/hero-tech.webp',
+                        'link_url' => '#hot-sale',
+                    ]]]]),
+                    'en' => $heading('iPhone 14 Pro Max', 'Amazing price'),
+                ],
+            ],
+            [
+                'block_type' => 'ec912_benefits',
+                'label' => 'Cam kết dịch vụ',
+                'description' => 'Bốn quyền lợi mua sắm với màu nền pastel.',
+                'preview_image' => $preview,
+                'anchor_id' => 'loi-ich',
+                'data' => [
+                    'vi' => $withItems($heading('Quyền lợi khách hàng'), $benefits),
+                    'en' => $withItems($heading('Customer benefits'), $benefits),
+                ],
+            ],
+            [
+                'block_type' => 'ec912_hot_sale',
+                'label' => 'Hot sale cuối tuần',
+                'description' => 'Sản phẩm giảm giá, đồng hồ đếm ngược và tiến độ đã bán.',
+                'preview_image' => $preview,
+                'anchor_id' => 'hot-sale',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 4, 'search' => 'EC912-IPHONE', 'featured_only' => true, 'end_at' => '2027-01-01T00:00:00+07:00'],
+                'settings_schema' => array_merge($productSchema(4), [
+                    'end_at' => ['type' => 'datetime-local', 'label' => 'Thời gian kết thúc'],
+                ]),
+                'data' => ['vi' => $heading('HOT SALE CUỐI TUẦN 🔥'), 'en' => $heading('WEEKEND HOT SALE 🔥')],
+            ],
+            [
+                'block_type' => 'ec912_featured_categories',
+                'label' => 'Danh mục nổi bật',
+                'description' => 'Sáu danh mục thiết bị Apple nổi bật.',
+                'preview_image' => $preview,
+                'anchor_id' => 'danh-muc',
+                'dynamic' => true,
+                'settings' => ['source' => 'catalog_categories', 'limit' => 6, 'search' => 'ec912-', 'featured_only' => false],
+                'settings_schema' => [
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số danh mục', 'default' => 6],
+                    'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+                ],
+                'data' => [
+                    'vi' => $withItems($heading('DANH MỤC NỔI BẬT'), $categories),
+                    'en' => $withItems($heading('FEATURED CATEGORIES'), $categories),
+                ],
+            ],
+            [
+                'block_type' => 'ec912_promotion_banners',
+                'label' => 'Banner khuyến mãi',
+                'description' => 'Ba banner Watch, AirPods và iPhone.',
+                'preview_image' => $preview,
+                'anchor_id' => 'khuyen-mai',
+                'data' => [
+                    'vi' => $withItems($heading('Khuyến mãi nổi bật'), $promotions),
+                    'en' => $withItems($heading('Featured promotions'), $promotions),
+                ],
+            ],
+            [
+                'block_type' => 'ec912_iphone_products',
+                'label' => 'Sản phẩm iPhone',
+                'description' => 'Lưới tám sản phẩm iPhone chính hãng.',
+                'preview_image' => $preview,
+                'anchor_id' => 'iphone',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_products', 'limit' => 8, 'search' => 'EC912-IPHONE', 'featured_only' => false],
+                'settings_schema' => $productSchema(8),
+                'data' => ['vi' => $heading('IPHONE'), 'en' => $heading('IPHONE')],
+            ],
+            [
+                'block_type' => 'ec912_technology_news',
+                'label' => 'Tin tức công nghệ',
+                'description' => 'Bốn bài viết công nghệ mới nhất.',
+                'preview_image' => $preview,
+                'anchor_id' => 'tin-tuc',
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false],
+                'settings_schema' => $postSchema,
+                'data' => ['vi' => $heading('TIN TỨC'), 'en' => $heading('TECH NEWS')],
+            ],
+            [
+                'block_type' => 'ec912_customer_gallery',
+                'label' => 'Khách hàng Sudes',
+                'description' => 'Bộ ảnh khách hàng và trải nghiệm tại cửa hàng.',
+                'preview_image' => $preview,
+                'anchor_id' => 'khach-hang',
+                'data' => [
+                    'vi' => $withItems($heading('KHÁCH HÀNG CỦA'), $gallery),
+                    'en' => $withItems($heading('OUR CUSTOMERS'), $gallery),
+                ],
+            ],
+            [
+                'block_type' => 'ec912_footer',
+                'label' => 'Chân trang',
+                'description' => 'Thông tin website, chính sách, hướng dẫn và thanh toán.',
+                'preview_image' => $preview,
+                'anchor_id' => 'footer',
+                'data' => ['vi' => $heading('Thông tin Sudes Phone'), 'en' => $heading('Sudes Phone information')],
+            ],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec911DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC911/preview-ec911.png';
+        $heading = static fn (?string $title = null, ?string $summary = null): array => ['title' => $title, 'summary' => $summary];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 4],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+        ];
+        $benefits = [
+            ['title' => 'ĐỔI TRẢ DỄ DÀNG', 'summary' => 'Đổi trả trong 30 ngày đầu tiên cho tất cả sản phẩm', 'icon' => 'fa-rotate'],
+            ['title' => 'GIAO HÀNG TOÀN QUỐC', 'summary' => 'Miễn phí giao hàng với đơn từ 5.000.000₫', 'icon' => 'fa-truck-fast'],
+            ['title' => 'QUÀ TẶNG HẤP DẪN', 'summary' => 'Chương trình khuyến mãi lớn hàng tháng', 'icon' => 'fa-gift'],
+            ['title' => 'HỖ TRỢ ONLINE 24/7', 'summary' => 'Luôn hỗ trợ khách hàng mọi ngày trong tuần', 'icon' => 'fa-headset'],
+        ];
+        $categories = [
+            ['title' => 'Máy ảnh', 'summary' => '12 sản phẩm', 'image' => '/theme-demo/ec911/camera-pro.png', 'url' => '#may-anh'],
+            ['title' => 'Ống kính', 'summary' => '8 sản phẩm', 'image' => '/theme-demo/ec911/lens-tele.png', 'url' => '#flash-sale'],
+            ['title' => 'Máy quay phim', 'summary' => '6 sản phẩm', 'image' => '/theme-demo/ec911/camera-pro.png', 'url' => '#may-anh'],
+            ['title' => 'Camera hành động', 'summary' => '6 sản phẩm', 'image' => '/theme-demo/ec911/action-camera.webp', 'url' => '#may-anh'],
+            ['title' => 'Phụ kiện', 'summary' => '10 sản phẩm', 'image' => '/theme-demo/ec911/lens-tele.png', 'url' => '#may-anh'],
+        ];
+        $brands = collect(['Creator Pro', 'Digi Vision', 'Focus Lab'])->map(fn (string $title, int $index): array => [
+            'title' => $title,
+            'image' => $index === 1 ? '/theme-demo/ec911/campaign-cameras.png' : ($index === 2 ? '/theme-demo/ec911/hero-vlog.png' : '/theme-demo/ec911/camera-pro.png'),
+            'url' => '#may-anh',
+        ])->all();
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero máy quay Vlog', 'description' => 'Banner chính và hai banner thiết bị nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'hero', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec911-hero-slider', 'limit' => 3, 'autoplay_ms' => 5200], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide']], 'data' => ['vi' => array_merge($heading('Máy quay Vlog Creator X1', 'Khơi nguồn sáng tạo'), ['content' => ['slides' => [['title' => 'DIGITECH CREATOR X1', 'summary' => 'Ghi trọn mọi khoảnh khắc', 'image' => '/theme-demo/ec911/hero-vlog.png', 'link_url' => '#flash-sale']]]]), 'en' => $heading('Creator camera')]],
+            ['block_type' => 'ec911_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết mua sắm.', 'preview_image' => $preview, 'anchor_id' => 'loi-ich', 'data' => ['vi' => $withItems($heading('Cam kết DIGITECH'), $benefits), 'en' => $withItems($heading('Our benefits'), $benefits)]],
+            ['block_type' => 'ec911_category_rail', 'label' => 'Danh mục thiết bị', 'description' => 'Thanh danh mục máy ảnh, ống kính và phụ kiện.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 5, 'search' => 'ec911-', 'featured_only' => false], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số danh mục']], 'data' => ['vi' => $withItems($heading('Danh mục'), $categories), 'en' => $withItems($heading('Categories'), $categories)]],
+            ['block_type' => 'ec911_flash_sale', 'label' => 'Flash sale', 'description' => 'Năm sản phẩm ống kính giảm giá.', 'preview_image' => $preview, 'anchor_id' => 'flash-sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'search' => 'EC911-LENS', 'featured_only' => false], 'settings_schema' => $productSchema(5), 'data' => ['vi' => $heading('Flash sale'), 'en' => $heading('Flash sale')]],
+            ['block_type' => 'ec911_camera_products', 'label' => 'Sản phẩm máy ảnh', 'description' => 'Năm máy ảnh chính hãng.', 'preview_image' => $preview, 'anchor_id' => 'may-anh', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'search' => 'EC911-CAMERA', 'featured_only' => false], 'settings_schema' => $productSchema(5), 'data' => ['vi' => $heading('MÁY ẢNH'), 'en' => $heading('CAMERAS')]],
+            ['block_type' => 'ec911_campaign_banner', 'label' => 'Banner camera thịnh hành', 'description' => 'Banner toàn chiều ngang.', 'preview_image' => $preview, 'anchor_id' => 'camera-thinh-hanh', 'settings' => ['image' => '/theme-demo/ec911/campaign-cameras.png', 'link_url' => '#may-anh'], 'settings_schema' => ['image' => ['type' => 'text', 'label' => 'Ảnh banner'], 'link_url' => ['type' => 'text', 'label' => 'Liên kết']], 'data' => ['vi' => $heading('Top camera thịnh hành'), 'en' => $heading('Trending cameras')]],
+            ['block_type' => 'ec911_brand_cards', 'label' => 'Thương hiệu máy ảnh', 'description' => 'Ba thẻ thương hiệu hình ảnh.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'data' => ['vi' => $withItems($heading('Thương hiệu nổi bật'), $brands), 'en' => $withItems($heading('Featured brands'), $brands)]],
+            ['block_type' => 'ec911_news', 'label' => 'Tin tức nhiếp ảnh', 'description' => 'Bốn bài viết công nghệ hình ảnh.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema, 'data' => ['vi' => $heading('TIN TỨC'), 'en' => $heading('NEWS')]],
+            ['block_type' => 'ec911_newsletter', 'label' => 'Đăng ký tin khuyến mãi', 'description' => 'Dải đăng ký email nền xanh.', 'preview_image' => $preview, 'anchor_id' => 'newsletter', 'data' => ['vi' => $heading('Đăng ký nhận tin'), 'en' => $heading('Newsletter')]],
+            ['block_type' => 'ec911_footer', 'label' => 'Chân trang DIGITECH', 'description' => 'Thông tin, chính sách và tư vấn khách hàng.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin DIGITECH'), 'en' => $heading('DIGITECH information')]],
         ];
     }
 

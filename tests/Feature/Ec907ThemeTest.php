@@ -76,5 +76,7 @@ class Ec907ThemeTest extends TestCase
         SiteProfile::query()->create(['site_name' => 'Website', 'website_type' => 'ecommerce', 'active_theme_key' => 'TH0001', 'branding' => ['logo_url' => '/storage/branding/custom-logo.svg']]);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('EC907')?->generate('ec907-ega-gear');
         $this->assertSame('/storage/branding/custom-logo.svg', data_get(SiteProfile::query()->firstOrFail()->branding, 'logo_url'));
+        $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        $this->assertSame(2, substr_count($response->getContent(), '<img src="/storage/branding/custom-logo.svg"'));
     }
 }

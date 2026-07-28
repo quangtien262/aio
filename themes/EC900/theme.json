@@ -1,7 +1,7 @@
 {
   "name": "EC900 Smart Home Commerce",
   "key": "EC900",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Theme thương mại điện tử điện máy và gia dụng với menu danh mục bên trái, trang chủ cấu hình bằng Landing Page Builder.",
   "website_type": "ecommerce",
   "parent": null,

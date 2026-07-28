@@ -272,6 +272,8 @@ export default function LandingBlockManagerDrawer({
                     blocks: normalizedBlocks.map((block) => ({ id: block.id, sort_order: block.sort_order })),
                 }),
             });
+            await loadBlocks();
+            await onChanged?.();
         } catch {
             setBlocks(previousBlocks);
         }

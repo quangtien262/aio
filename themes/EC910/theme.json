@@ -1,0 +1,39 @@
+{
+  "name": "EC910 Dola Watch",
+  "key": "EC910",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử đồng hồ cao cấp với phong cách đen, trắng và vàng kim.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "thumbnail-ec910.png",
+    "cover": "cover-ec910.png"
+  },
+  "blocks": [
+    "hero-slider",
+    "benefits",
+    "promotions",
+    "product-tabs",
+    "about",
+    "mens-watches",
+    "orient-banner",
+    "experience",
+    "brands",
+    "footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "ec910-dola-watch"
+  }
+}

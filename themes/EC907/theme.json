@@ -5,7 +5,7 @@
   "description": "Theme bán laptop, gaming gear và thiết bị công nghệ với hero khuyến mãi, lưới danh mục, cụm sản phẩm và bản tin công nghệ.",
   "website_type": "ecommerce",
   "parent": null,
-  "preview": {"thumbnail": "avatar.png", "cover": "cover-ec907.png"},
+  "preview": {"thumbnail": "ec907.png", "cover": "ec907.png"},
   "blocks": ["hero-grid", "benefits", "category-grid", "best-sellers", "campaign-cards", "audio-showcase", "gaming-products", "brand-strip", "tech-news", "newsletter"],
   "supports": {"dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},

@@ -80,5 +80,7 @@ class Ec908ThemeTest extends TestCase
         ]);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('EC908')?->generate('ec908-ego-fitness');
         $this->assertSame('/storage/branding/custom-logo.svg', data_get(SiteProfile::query()->firstOrFail()->branding, 'logo_url'));
+        $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        $this->assertSame(2, substr_count($response->getContent(), '<img src="/storage/branding/custom-logo.svg"'));
     }
 }
