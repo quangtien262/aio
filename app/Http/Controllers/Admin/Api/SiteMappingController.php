@@ -136,15 +136,15 @@ class SiteMappingController
                     'theme_key' => $themeKey,
                     'name' => 'Demo '.$themeKey,
                     'status' => 'active',
-                    'settings' => [],
+                    'settings' => [
+                        'checklist' => [
+                            'demo_data_created' => false,
+                        ],
+                    ],
                 ]);
 
                 $this->syncSiteProfile($site, $theme);
                 $initializations[$websiteKey] = $initializer->initialize($site, $contentMode);
-
-                if ($contentMode === SiteContentInitializer::MODE_SAMPLE) {
-                    $this->markDemoDataCreated($site);
-                }
 
                 return $site;
             });
