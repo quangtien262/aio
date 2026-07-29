@@ -1,0 +1,31 @@
+{
+  "DN350": {
+    "brand": {
+      "tagline": "Professional care for every space"
+    },
+    "header": {
+      "home": "Home",
+      "about": "About",
+      "services": "Services",
+      "news": "News",
+      "gallery": "Gallery",
+      "contact": "Contact",
+      "quote": "Get a quote",
+      "login": "Sign in",
+      "register": "Register"
+    },
+    "common": {
+      "view_more": "View more",
+      "read_more": "Read more",
+      "discover": "Discover more",
+      "contact_us": "Contact us"
+    },
+    "footer": {
+      "contact": "Contact information",
+      "categories": "Categories",
+      "gallery": "Photo gallery",
+      "description": "Complete, thoughtful and safe cleaning solutions for homes, offices and gardens.",
+      "rights": "All rights reserved."
+    }
+  }
+}

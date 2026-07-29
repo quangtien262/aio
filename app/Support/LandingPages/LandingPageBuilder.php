@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -564,6 +564,11 @@ class LandingPageBuilder
             'ec915_latest_posts' => 3,
             'ec916_featured_deals' => 4,
             'ec916_beauty_deals' => 8,
+            'ec917_summer_sale' => 8,
+            'ec917_inspiration' => 4,
+            'dn351_category_rail' => 4,
+            'dn351_featured_split' => 2,
+            'dn351_product_grid' => 8,
             'spa111_services', 'spa111_testimonials' => 3,
             'spa111_featured_products' => 8,
             'spa111_team', 'spa111_latest_posts' => 4,
@@ -616,6 +621,8 @@ class LandingPageBuilder
         }
 
         if (in_array($block->block_type, [
+            'ec917_summer_sale',
+            'ec917_inspiration',
             'ec916_featured_deals',
             'ec916_beauty_deals',
             'ec915_best_sellers',
@@ -634,10 +641,13 @@ class LandingPageBuilder
             'ec912_featured_categories',
             'ec912_iphone_products',
             'ec912_technology_news',
+            'dn351_category_rail',
+            'dn351_featured_split',
+            'dn351_product_grid',
         ], true)) {
             $defaultSource = match ($block->block_type) {
-                'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories' => 'catalog_categories',
-                'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news' => 'cms_posts',
+                'dn351_category_rail', 'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories' => 'catalog_categories',
+                'ec917_inspiration', 'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news' => 'cms_posts',
                 default => 'cms_products',
             };
 
@@ -1520,11 +1530,13 @@ class LandingPageBuilder
             'EC914' => $this->ec914DefaultBlocks(),
             'EC915' => $this->ec915DefaultBlocks(),
             'EC916' => $this->ec916DefaultBlocks(),
+            'EC917' => $this->ec917DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'TH0001' => $this->th0001DefaultBlocks(),
             'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
             'SER0100', 'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
+            'SER103' => $this->ser103DefaultBlocks(),
             'XD0318' => $this->xd0318DefaultBlocks(),
             'XD0315' => $this->xd0315DefaultBlocks(),
             'XD0314' => $this->xd0314DefaultBlocks(),
@@ -1542,6 +1554,8 @@ class LandingPageBuilder
             'XD0325' => $this->xd0325DefaultBlocks(),
             'DN202' => $this->dn202DefaultBlocks(),
             'DN302' => $this->dn302DefaultBlocks(),
+            'DN350' => $this->dn350DefaultBlocks(),
+            'DN351' => $this->dn351DefaultBlocks(),
             'BZ501' => $this->bz501DefaultBlocks(),
             'SPA502' => $this->spa502DefaultBlocks(),
             'SPA111' => $this->spa111DefaultBlocks(),
@@ -2412,6 +2426,63 @@ class LandingPageBuilder
             ['block_type' => 'ec908_health_posts', 'label' => 'Góc sức khỏe', 'description' => 'Một bài nổi bật và ba bài viết luyện tập.', 'preview_image' => $preview, 'anchor_id' => 'goc-suc-khoe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema(4), 'data' => ['vi' => $withItems($heading('Góc sức khỏe'), $posts), 'en' => $heading('Health corner')]],
             ['block_type' => 'ec908_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết chính hãng, đổi trả, chất lượng và giao 2H.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
             ['block_type' => 'ec908_footer', 'label' => 'Chân trang', 'description' => 'Các nhóm hỗ trợ, chính sách, thông tin và liên hệ.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Ego Fitness'), 'en' => $heading('Ego Fitness information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function ec917DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/EC917/cover-ec917.png';
+        $heading = static fn (?string $title = null, ?string $summary = null, ?string $subtitle = null): array => ['title' => $title, 'summary' => $summary, 'subtitle' => $subtitle];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 4],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $categories = [
+            ['title' => 'Phòng khách', 'summary' => '11 sản phẩm', 'image' => '/theme-demo/ec917/room-living-room.webp', 'url' => '#san-pham'],
+            ['title' => 'Phòng ngủ', 'summary' => '8 sản phẩm', 'image' => '/theme-demo/ec917/room-bedroom.webp', 'url' => '#san-pham'],
+            ['title' => 'Nhà bếp', 'summary' => '8 sản phẩm', 'image' => '/theme-demo/ec917/room-dining-room.webp', 'url' => '#san-pham'],
+            ['title' => 'Phòng làm việc', 'summary' => '9 sản phẩm', 'image' => '/theme-demo/ec917/room-office.webp', 'url' => '#san-pham'],
+            ['title' => 'Đèn trang trí', 'summary' => '2 sản phẩm', 'image' => '/theme-demo/ec917/product-lamp-black.webp', 'url' => '#san-pham'],
+            ['title' => 'Kệ lưu giữ', 'summary' => '11 sản phẩm', 'image' => '/theme-demo/ec917/product-sideboard-walnut.webp', 'url' => '#san-pham'],
+        ];
+        $collections = [
+            ['title' => 'BST Phòng Bếp', 'image' => '/theme-demo/ec917/room-dining-room.webp', 'url' => '#san-pham', 'x' => 47, 'y' => 36, 'x2' => 20, 'y2' => 59],
+            ['title' => 'BST Phòng Ngủ', 'image' => '/theme-demo/ec917/room-bedroom.webp', 'url' => '#san-pham', 'x' => 45, 'y' => 24, 'x2' => 34, 'y2' => 55],
+            ['title' => 'BST Phòng Khách', 'image' => '/theme-demo/ec917/room-living-room.webp', 'url' => '#san-pham', 'x' => 42, 'y' => 34, 'x2' => 73, 'y2' => 46],
+        ];
+        $posts = [
+            ['title' => 'Cách trang trí cầu thang gỗ', 'summary' => 'Trang trí cầu thang là một phần quan trọng trong nội thất của một ngôi nhà hiện đại.', 'date' => '27/07/2023', 'read_time' => '1 phút đọc', 'image' => '/theme-demo/ec917/room-office.webp', 'url' => '#'],
+            ['title' => 'Vợ chồng và cách chọn giường ngủ', 'summary' => 'Lựa chọn giường ngủ phù hợp giúp cân bằng công năng và cảm xúc trong phòng ngủ.', 'date' => '27/07/2023', 'read_time' => '2 phút đọc', 'image' => '/theme-demo/ec917/room-bedroom.webp', 'url' => '#'],
+            ['title' => 'Sofa gia đình - bài trí sao cho hợp phong thủy?', 'summary' => 'Bố trí sofa đúng cách giúp phòng khách đẹp hơn và tạo luồng di chuyển thuận tiện.', 'date' => '27/07/2023', 'read_time' => '2 phút đọc', 'image' => '/theme-demo/ec917/room-living-room.webp', 'url' => '#'],
+            ['title' => 'Sofa góc và bí quyết tăng tài lộc cho ngôi nhà', 'summary' => 'Một vài gợi ý chọn vị trí và màu sắc sofa để hoàn thiện không gian sống.', 'date' => '27/07/2023', 'read_time' => '3 phút đọc', 'image' => '/theme-demo/ec917/room-dining-room.webp', 'url' => '#'],
+        ];
+        $benefits = [
+            ['title' => 'Hotline: 19001993', 'summary' => 'Dịch vụ hỗ trợ bạn 24/7', 'icon' => 'fa-comments'],
+            ['title' => 'Quà tặng hấp dẫn', 'summary' => 'Nhiều ưu đãi khuyến mãi hot', 'icon' => 'fa-gift'],
+            ['title' => 'Đổi trả miễn phí', 'summary' => 'Trong vòng 7 ngày', 'icon' => 'fa-rotate-left'],
+            ['title' => 'Giá luôn tốt nhất', 'summary' => 'Hoàn tiền nếu nơi khác rẻ hơn', 'icon' => 'fa-dollar-sign'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Black Friday', 'description' => 'Banner nội thất toàn chiều rộng với CTA màu cam.', 'preview_image' => $preview, 'anchor_id' => 'hero', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'ec917-hero-slider', 'limit' => 2, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Săn ngay deal nội thất khủng', 'Giảm 50% tất cả sản phẩm'), ['content' => ['slides' => [['badge' => 'BLACK FRIDAY', 'title' => 'Săn ngay deal nội thất khủng', 'summary' => 'Giảm 50% tất cả sản phẩm', 'button_label' => 'MUA NGAY', 'image' => '/theme-demo/ec917/hero-interior.webp', 'link_url' => '#san-pham']]]]), 'en' => $heading('Black Friday furniture deals')]],
+            ['block_type' => 'ec917_categories', 'label' => 'Danh mục sản phẩm', 'description' => 'Sáu danh mục nội thất theo phòng dạng hình tròn.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'data' => ['vi' => $withItems($heading('DANH MỤC SẢN PHẨM'), $categories), 'en' => $withItems($heading('PRODUCT CATEGORIES'), $categories)]],
+            ['block_type' => 'ec917_summer_sale', 'label' => 'Happy Summer Sale', 'description' => 'Tám sản phẩm nội thất giảm đến 50%.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'search' => 'EC917-', 'featured_only' => false], 'settings_schema' => $productSchema(8), 'data' => ['vi' => $heading('HAPPY SUMMER - GIẢM ĐẾN 50% 🔥', null, 'Bán chạy'), 'en' => $heading('HAPPY SUMMER - UP TO 50% OFF')]],
+            ['block_type' => 'ec917_promo_banner', 'label' => 'Banner sofa mới về', 'description' => 'Banner khuyến mãi sofa toàn chiều ngang.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'settings_schema' => ['image' => ['type' => 'image', 'label' => 'Ảnh banner'], 'url' => ['type' => 'text', 'label' => 'Liên kết']], 'data' => ['vi' => array_merge($heading('Sofa hàng mới về'), ['url' => '#san-pham']), 'en' => $heading('New sofa promotion')], 'media' => ['image' => '/theme-demo/ec917/promo-sofa.png']],
+            ['block_type' => 'ec917_collections', 'label' => 'Bộ sưu tập theo phòng', 'description' => 'Ba bộ sưu tập phòng bếp, phòng ngủ và phòng khách.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap', 'data' => ['vi' => $withItems($heading('BST NỘI THẤT DÀNH CHO BẠN'), $collections), 'en' => $withItems($heading('COLLECTIONS FOR YOU'), $collections)]],
+            ['block_type' => 'ec917_inspiration', 'label' => 'Góc cảm hứng', 'description' => 'Bốn bài viết tư vấn và xu hướng nội thất.', 'preview_image' => $preview, 'anchor_id' => 'cam-hung', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema, 'data' => ['vi' => $withItems($heading('GÓC CẢM HỨNG'), $posts), 'en' => $withItems($heading('INSPIRATION'), $posts)]],
+            ['block_type' => 'ec917_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Hotline, quà tặng, đổi trả và cam kết giá.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
+            ['block_type' => 'ec917_footer', 'label' => 'Chân trang', 'description' => 'Thông tin doanh nghiệp, hỗ trợ, chính sách và đăng ký nhận tin.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin EGA Furniture'), 'en' => $heading('EGA Furniture information')]],
         ];
     }
 
@@ -3410,6 +3481,121 @@ class LandingPageBuilder
     }
 
     /** @return array<int, array<string, mixed>> */
+    private function ser103DefaultBlocks(): array
+    {
+        $preview = fn (string $name): string => '/theme-previews/SER103/'.$name;
+        $heading = fn (string $title, string $subtitle = '', string $description = '', string $button = ''): array => [
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $button,
+        ];
+        $withItems = fn (array $data, array $items): array => array_merge($data, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
+                ['value' => $source, 'label' => $source === 'cms_posts' ? 'Tin tức CMS' : 'Dịch vụ CMS'],
+                ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ]],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
+        ];
+        $services = [
+            ['title' => 'Trang điểm cô dâu', 'summary' => 'Phong cách trang điểm trong trẻo, tôn nét riêng và bền đẹp suốt ngày cưới.', 'image' => $preview('service-makeup.webp'), 'url' => route('site.services.index')],
+            ['title' => 'Chụp ảnh cưới', 'summary' => 'Kể câu chuyện tình yêu bằng những khung hình tự nhiên, tinh tế và giàu cảm xúc.', 'image' => $preview('service-photo.webp'), 'url' => route('site.services.index')],
+            ['title' => 'Quay phóng sự cưới', 'summary' => 'Lưu giữ những khoảnh khắc chân thật nhất bằng ngôn ngữ điện ảnh hiện đại.', 'image' => $preview('service-video.webp'), 'url' => route('site.services.index')],
+            ['title' => 'Thuê xe cưới', 'summary' => 'Bộ sưu tập xe cưới thanh lịch, trang trí đồng điệu với phong cách buổi lễ.', 'image' => $preview('service-car.webp'), 'url' => route('site.services.index')],
+            ['title' => 'Trang trí & bàn ghế', 'summary' => 'Không gian tiệc cưới chỉn chu từ hoa, ánh sáng đến từng chi tiết bàn tiệc.', 'image' => $preview('service-banquet.webp'), 'url' => route('site.services.index')],
+        ];
+        $posts = [
+            ['title' => 'Xu hướng các mẫu váy cưới đẹp nhất 2026', 'summary' => 'Những phom dáng hiện đại giúp cô dâu tỏa sáng theo cách riêng trong ngày trọng đại.', 'image' => $preview('news-minimal.webp'), 'date' => '18/11/2025', 'views' => 94, 'url' => route('site.blog.index')],
+            ['title' => 'Các mẫu váy cưới dẫn đầu xu hướng 2026', 'summary' => 'Từ chất liệu ánh ngọc đến đường cắt couture, đây là những lựa chọn đáng mong chờ.', 'image' => $preview('news-couture.webp'), 'date' => '18/11/2025', 'views' => 65, 'url' => route('site.blog.index')],
+            ['title' => 'Những kiểu váy cưới hot năm 2026', 'summary' => 'Vẻ đẹp tối giản và phom dáng thanh lịch tiếp tục chinh phục các cô dâu hiện đại.', 'image' => $preview('news-garden.webp'), 'date' => '18/11/2025', 'views' => 38, 'url' => route('site.blog.index')],
+        ];
+        $gallery = [
+            ['title' => 'Lễ cưới truyền thống', 'image' => $preview('gallery-aodai.webp'), 'url' => '#'],
+            ['title' => 'Khoảnh khắc bên nhau', 'image' => $preview('service-photo.webp'), 'url' => '#'],
+            ['title' => 'Tình yêu giữa thiên nhiên', 'image' => $preview('gallery-mountain.webp'), 'url' => '#'],
+            ['title' => 'Ngày cưới thanh lịch', 'image' => $preview('about-fashion.webp'), 'url' => '#'],
+            ['title' => 'Hoàng hôn hạnh phúc', 'image' => $preview('gallery-lake.webp'), 'url' => '#'],
+        ];
+
+        return [
+            [
+                'block_type' => 'hero_slider', 'label' => 'Hero Bøhu Wedding',
+                'description' => 'Hero chia đôi với nội dung tư vấn và ảnh cưới tự chuyển.',
+                'preview_image' => $preview('cover-ser103.png'), 'anchor_id' => 'trang-chu', 'dynamic' => true,
+                'settings' => ['source' => 'site_banners', 'placement' => 'ser103-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000],
+                'settings_schema' => [
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
+                    'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)'],
+                ],
+                'data' => [
+                    'vi' => array_merge($heading('Lập kế hoạch cho đám cưới của bạn', 'Bøhu Wedding', 'Chúng tôi giúp bạn tổ chức một ngày cưới tinh tế, trọn vẹn và mang dấu ấn riêng.', 'Đặt lịch hẹn'), ['content' => ['slides' => [[
+                        'kicker' => 'Bøhu Wedding', 'title' => 'Lập kế hoạch cho đám cưới của bạn', 'summary' => 'Chúng tôi giúp bạn tổ chức một ngày cưới tinh tế, trọn vẹn và mang dấu ấn riêng.', 'button_label' => 'Đặt lịch hẹn', 'link_url' => '#lien-he', 'image' => $preview('hero-wedding.webp'),
+                    ]]]]),
+                    'en' => $heading('Plan the wedding of your dreams', 'Bøhu Wedding', 'A refined celebration shaped around your story.', 'Book a consultation'),
+                ],
+            ],
+            [
+                'block_type' => 'ser103_about', 'label' => 'Câu chuyện Bøhu',
+                'description' => 'Bố cục collage hình cưới và lời giới thiệu thương hiệu.',
+                'preview_image' => $preview('about-couple.webp'), 'anchor_id' => 'gioi-thieu',
+                'settings' => ['source' => 'custom'],
+                'data' => [
+                    'vi' => $withItems($heading('Người lên kế hoạch cho đám cưới hoàn hảo của bạn', 'Bøhu Wedding', 'Chúng tôi dành trọn sự tinh tế cho từng chi tiết, thay bạn gửi lời yêu thương và mang tình yêu của đôi bạn đến chung vui trong ngày trọng đại.'), [
+                        ['title' => 'Khoảnh khắc của hai người', 'image' => $preview('about-couple.webp')],
+                        ['title' => 'Cô dâu Bøhu', 'image' => $preview('about-bride.webp')],
+                        ['title' => 'Lời hẹn ước', 'image' => $preview('about-rings.webp')],
+                        ['title' => 'Vẻ đẹp thanh lịch', 'image' => $preview('about-fashion.webp')],
+                    ]),
+                    'en' => $heading('The planner behind your perfect wedding', 'Bøhu Wedding', 'Thoughtful details, heartfelt moments and a celebration that feels entirely yours.'),
+                ],
+            ],
+            [
+                'block_type' => 'business_service_grid', 'label' => 'Dịch vụ cưới',
+                'description' => 'Năm dịch vụ cưới dạng lưới, có thể lấy từ CMS Services.',
+                'preview_image' => $preview('service-photo.webp'), 'anchor_id' => 'dich-vu', 'dynamic' => true,
+                'settings' => ['source' => 'custom', 'limit' => 5], 'settings_schema' => $sourceSchema('cms_services', 5),
+                'data' => [
+                    'vi' => $withItems($heading('Chúng tôi có thể làm gì', 'Dịch vụ của chúng tôi', 'Một hệ sinh thái dịch vụ được kết nối để ngày cưới của bạn diễn ra thật nhẹ nhàng.'), $services),
+                    'en' => $heading('What we can do for you', 'Our services', 'A connected wedding service ecosystem for an effortless celebration.'),
+                ],
+            ],
+            [
+                'block_type' => 'latest_posts', 'label' => 'Tin tức cưới',
+                'description' => 'Ba bài viết mới nhất, có thể lấy từ CMS Posts.',
+                'preview_image' => $preview('news-couture.webp'), 'anchor_id' => 'tin-tuc', 'dynamic' => true,
+                'settings' => ['source' => 'custom', 'limit' => 3], 'settings_schema' => $sourceSchema('cms_posts', 3),
+                'data' => [
+                    'vi' => $withItems($heading('Tin tức - Sự kiện mới nhất', 'Tin tức mới', 'Cảm hứng váy cưới, trang trí và những câu chuyện phía sau ngày trọng đại.'), $posts),
+                    'en' => $heading('Latest news and events', 'New stories', 'Wedding fashion, decor and inspiration for your celebration.'),
+                ],
+            ],
+            [
+                'block_type' => 'landing_contact', 'label' => 'Liên hệ sự kiện',
+                'description' => 'Ảnh cưới và form gửi yêu cầu trực tiếp.',
+                'preview_image' => $preview('contact-couple.webp'), 'anchor_id' => 'lien-he',
+                'settings' => ['source' => 'custom'], 'media' => ['image' => $preview('contact-couple.webp')],
+                'data' => [
+                    'vi' => $heading('Liên hệ chúng tôi cho sự kiện của bạn', 'Liên lạc', 'Hãy kể Bøhu nghe về ngày cưới bạn đang mong đợi.', 'Gửi đi'),
+                    'en' => $heading('Contact us for your celebration', 'Get in touch', 'Tell Bøhu about the wedding you are dreaming of.', 'Send'),
+                ],
+            ],
+            [
+                'block_type' => 'collection_gallery', 'label' => 'Thư viện ảnh cưới',
+                'description' => 'Dải năm ảnh cưới toàn chiều rộng.',
+                'preview_image' => $preview('gallery-mountain.webp'), 'anchor_id' => 'thu-vien',
+                'settings' => ['source' => 'custom', 'limit' => 5],
+                'data' => [
+                    'vi' => $withItems($heading('Thư viện ảnh cưới'), $gallery),
+                    'en' => $heading('Wedding gallery'),
+                ],
+            ],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
     private function ser102DefaultBlocks(): array
     {
         $categorySources = [
@@ -4170,6 +4356,130 @@ class LandingPageBuilder
     }
 
     /** @return array<int, array<string, mixed>> */
+    private function dn351DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/DN351/preview-dn351.png';
+        $asset = fn (string $name): string => '/theme-demo/dn351/'.$name.'.jpg';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => [
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $button,
+        ];
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
+                ['value' => $source, 'label' => $label],
+                ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ]],
+            'limit' => ['type' => 'number', 'label' => 'Số lượng', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm kiếm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ nội dung nổi bật', 'default' => false],
+        ];
+
+        $categories = [
+            ['title' => 'Hải sản', 'summary' => 'Hải sản tươi sống tuyển chọn', 'image' => $asset('category-seafood'), 'url' => '#san-pham'],
+            ['title' => 'Rau sạch', 'summary' => 'Rau củ theo mùa', 'image' => $asset('category-vegetables'), 'url' => '#san-pham'],
+            ['title' => 'Các loại thịt', 'summary' => 'Thịt tươi chuẩn nhà hàng', 'image' => $asset('category-meat'), 'url' => '#san-pham'],
+            ['title' => 'Sản phẩm mới', 'summary' => 'Lựa chọn mới mỗi tuần', 'image' => $asset('product-chicken'), 'url' => '#san-pham'],
+        ];
+        $products = [
+            ['title' => 'Ức gà phi lê', 'price' => 60000, 'original_price' => 70000, 'image' => $asset('product-chicken'), 'url' => '#'],
+            ['title' => 'Cồi sò điệp Nhật Bản', 'price' => 1090000, 'image' => $asset('product-scallops'), 'url' => '#'],
+            ['title' => 'Ghẹ xanh loại 2', 'price' => 550000, 'original_price' => 650000, 'image' => $asset('product-crab'), 'url' => '#'],
+            ['title' => 'Cua lông Hong Kong', 'price' => 846000, 'original_price' => 950000, 'image' => $asset('product-crab'), 'url' => '#'],
+            ['title' => 'Cua King Crab đỏ sống', 'price' => 1650000, 'original_price' => 2150000, 'image' => $asset('category-seafood'), 'url' => '#'],
+            ['title' => 'Bạch tuộc Nhật', 'price' => 500000, 'original_price' => 750000, 'image' => $asset('blog-squid-grilled'), 'url' => '#'],
+            ['title' => 'Bò Wagyu cắt lát', 'price' => 1290000, 'image' => $asset('category-meat'), 'url' => '#'],
+            ['title' => 'Rau củ hữu cơ', 'price' => 99000, 'image' => $asset('category-vegetables'), 'url' => '#'],
+        ];
+        $posts = [
+            ['title' => 'Đậm vị với mực nướng chanh tỏi ớt', 'summary' => 'Công thức nhanh gọn giúp mực giữ được độ ngọt và hương thơm đặc trưng.', 'date' => '09/05/2026', 'views' => 102, 'image' => $asset('blog-squid-grilled'), 'url' => '#'],
+            ['title' => 'Canh cá saba chua ngọt', 'summary' => 'Món canh thanh mát, giàu dinh dưỡng cho bữa cơm gia đình.', 'date' => '09/05/2026', 'views' => 105, 'image' => $asset('blog-fish-soup'), 'url' => '#'],
+            ['title' => 'Mực lá tốt cho sức khỏe tim mạch', 'summary' => 'Gợi ý cách lựa chọn và chế biến mực tươi ngon, an toàn.', 'date' => '09/05/2026', 'views' => 91, 'image' => $asset('blog-stuffed-calamari'), 'url' => '#'],
+        ];
+        $partners = collect(['CAFE', 'BARBECUE', 'BRANDSON', 'BAKERY', 'GUARANTEED', 'COFFEE SHOP', 'RESTAURANT'])
+            ->map(fn (string $name): array => ['title' => $name, 'summary' => 'PREMIUM PARTNER', 'icon' => 'fa-solid fa-award', 'url' => '#'])
+            ->all();
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Banner Meatlers', 'description' => 'Slider mở đầu toàn màn hình.', 'preview_image' => $preview, 'anchor_id' => 'trang-chu', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'dn351-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500, 'primary_url' => '#danh-muc'], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Vị trí banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Nhà cung cấp trái cây tươi tốt nhất thị trường', 'Meatlers', 'Nguồn thực phẩm minh bạch, tuyển chọn mỗi ngày và giao tươi tận nơi.', 'Khám phá ngay'), ['content' => ['slides' => [['title' => 'Thực phẩm tươi tuyển chọn', 'image' => $asset('hero-market')]]]]), 'en' => $heading('The freshest food on the market', 'Meatlers', 'Transparent sourcing, selected daily and delivered fresh.', 'Explore now')]],
+            ['block_type' => 'about_experience', 'label' => 'Giới thiệu Meatlers', 'description' => 'Câu chuyện thương hiệu với hai ảnh dọc.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'settings' => [], 'media' => ['images' => [$asset('about-butcher'), $asset('about-washing')]], 'data' => ['vi' => $heading('Chúng tôi cung cấp các loại sản phẩm tốt nhất', 'Giới thiệu về công ty', 'Meatlers kết nối nguồn nguyên liệu sạch với người tiêu dùng bằng tiêu chuẩn tuyển chọn minh bạch, tươi ngon và được kiểm định.', 'Tìm hiểu ngay'), 'en' => $heading('We provide the finest products', 'About our company', 'Meatlers connects trusted producers with discerning customers.', 'Learn more')]],
+            ['block_type' => 'dn351_promo_mosaic', 'label' => 'Khuyến mại ba mảng', 'description' => 'Thịt, trái cây nhập khẩu và lời mời ghé cửa hàng.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'settings' => [], 'media' => ['meat' => $asset('category-meat'), 'fruit' => $asset('hero-market'), 'store' => $asset('testimonial-butcher')], 'data' => ['vi' => $heading('Thịt chất lượng nhà hàng', null, 'Giao hàng tươi ngon tận nhà.'), 'en' => $heading('Restaurant-quality meat', null, 'Fresh delivery to your door.')]],
+            ['block_type' => 'dn351_category_rail', 'label' => 'Mua theo danh mục', 'description' => 'Bốn danh mục ảnh oval.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 4], 'settings_schema' => $sourceSchema('catalog_categories', 'Danh mục sản phẩm', 4), 'data' => ['vi' => $withItems($heading('Mua sắm theo danh mục', 'Khám phá ngay'), $categories), 'en' => $withItems($heading('Shop by category', 'Explore now'), $categories)]],
+            ['block_type' => 'dn351_featured_split', 'label' => 'Ưu đãi & bán chạy', 'description' => 'Một nửa ưu đãi, một nửa sản phẩm nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'ban-chay', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 2, 'search' => 'DN351'], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm', 2), 'media' => ['image' => $asset('category-meat')], 'data' => ['vi' => $withItems($heading('Giảm giá lên đến 15% cho toàn bộ sản phẩm của chúng tôi', 'Lựa chọn của chúng tôi', 'Đặt mua thực phẩm tươi trực tuyến'), array_slice($products, 0, 2)), 'en' => $withItems($heading('Save up to 15% on our products', 'Our selection', 'Order fresh food online'), array_slice($products, 0, 2))]],
+            ['block_type' => 'dn351_product_grid', 'label' => 'Lưới sản phẩm', 'description' => 'Tám sản phẩm với bộ lọc danh mục.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'search' => 'DN351'], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm', 8), 'data' => ['vi' => $withItems($heading('Sản phẩm của chúng tôi', 'Các loại thực phẩm'), $products), 'en' => $withItems($heading('Our products', 'Fresh food'), $products)]],
+            ['block_type' => 'testimonials', 'label' => 'Khách hàng chia sẻ', 'description' => 'Đánh giá khách hàng ở giữa hai ảnh.', 'preview_image' => $preview, 'anchor_id' => 'khach-hang', 'settings' => ['source' => 'custom', 'limit' => 1], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_testimonials', 'label' => 'Đánh giá CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số đánh giá']], 'media' => ['left' => $asset('testimonial-butcher'), 'right' => $asset('testimonial-customer')], 'data' => ['vi' => $withItems($heading('Hãy nghe những gì khách hàng của chúng tôi nói', 'Lời chứng thực'), [['name' => 'Nguyễn Văn An', 'role' => 'Doanh nhân', 'quote' => 'Thực phẩm luôn tươi mới, nguồn gốc rõ ràng và đội ngũ giao hàng rất tận tâm.', 'image' => $asset('testimonial-customer')]]), 'en' => $heading('What our customers say', 'Testimonials')]],
+            ['block_type' => 'latest_posts', 'label' => 'Tin tức Meatlers', 'description' => 'Ba bài viết mới nhất.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'search' => '', 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_posts', 'Tin tức CMS', 3), 'data' => ['vi' => $withItems($heading('Tin tức mới nhất của chúng tôi', 'Blog của chúng tôi'), $posts), 'en' => $withItems($heading('Our latest news', 'Our blog'), $posts)]],
+            ['block_type' => 'partner_logos', 'label' => 'Đối tác thực phẩm', 'description' => 'Hàng logo đối tác.', 'preview_image' => $preview, 'anchor_id' => 'thu-vien', 'settings' => ['source' => 'custom', 'limit' => 7], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_partners', 'label' => 'Đối tác CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => $withItems($heading('Đối tác của chúng tôi'), $partners), 'en' => $withItems($heading('Our partners'), $partners)]],
+            ['block_type' => 'newsletter_signup', 'label' => 'Đăng ký nhận tin', 'description' => 'Biểu mẫu email trên nền thực phẩm tối.', 'preview_image' => $preview, 'anchor_id' => 'dang-ky', 'settings' => [], 'media' => ['image' => $asset('hero-market')], 'data' => ['vi' => $heading('Đăng ký để nhận cập nhật hàng tuần', null, 'Nhận ưu đãi độc quyền, mẹo nấu ăn và thông tin thực phẩm mới nhất.'), 'en' => $heading('Subscribe for weekly updates', null, 'Receive exclusive offers, recipes and fresh market news.')]],
+            ['block_type' => 'footer_contact', 'label' => 'Chân trang liên hệ', 'description' => 'Mốc quản trị cho chân trang dùng chung.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'settings' => [], 'data' => ['vi' => $heading('Thông tin liên hệ'), 'en' => $heading('Contact information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function dn350DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/DN350/preview-dn350.png';
+        $asset = fn (string $name): string => '/theme-demo/dn350/'.$name.'.webp';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => [
+            'title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button,
+        ];
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số lượng', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa tìm kiếm'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ nội dung nổi bật', 'default' => false],
+        ];
+
+        $services = [
+            ['title' => 'Giúp việc theo giờ', 'summary' => 'Chăm sóc nhà cửa linh hoạt theo khung giờ, quy trình rõ ràng và nhân sự tận tâm.', 'image' => $asset('service-hourly'), 'url' => '#lien-he'],
+            ['title' => 'Tổng vệ sinh', 'summary' => 'Làm sạch chuyên sâu cho nhà ở và văn phòng trước bàn giao hoặc sau xây dựng.', 'image' => $asset('service-deep-clean'), 'url' => '#lien-he'],
+            ['title' => 'Vệ sinh sofa, rèm, nệm', 'summary' => 'Giặt hút chuyên dụng giúp loại bỏ bụi mịn, mùi khó chịu và vết bẩn bám sâu.', 'image' => $asset('service-upholstery'), 'url' => '#lien-he'],
+            ['title' => 'Vệ sinh máy lạnh', 'summary' => 'Bảo dưỡng và vệ sinh điều hòa an toàn, cải thiện chất lượng không khí trong phòng.', 'image' => $asset('service-air-conditioner'), 'url' => '#lien-he'],
+            ['title' => 'Môi giới giúp việc', 'summary' => 'Kết nối nhân sự đáng tin cậy, phù hợp nhu cầu chăm sóc nhà cửa dài hạn.', 'image' => $asset('service-housekeeper'), 'url' => '#lien-he'],
+            ['title' => 'Chăm sóc dọn vườn', 'summary' => 'Cắt tỉa, vệ sinh và chăm sóc khuôn viên luôn xanh sạch, gọn gàng.', 'image' => $asset('service-garden'), 'url' => '#lien-he'],
+        ];
+        $reasons = [
+            ['title' => 'Tận tâm trong từng góc nhỏ', 'icon' => 'fa-solid fa-wand-magic-sparkles'],
+            ['title' => 'An toàn tuyệt đối cho sức khỏe', 'icon' => 'fa-solid fa-seedling'],
+            ['title' => 'Đội ngũ chuyên nghiệp, trung thực', 'icon' => 'fa-solid fa-briefcase'],
+            ['title' => 'Linh hoạt và đúng giờ', 'icon' => 'fa-solid fa-bolt'],
+        ];
+        $testimonials = [
+            ['name' => 'Tô Trung Nhân', 'role' => 'CEO & Đồng sáng lập', 'quote' => 'Prinash đã giúp gia đình tôi giải phóng sức lao động. Mọi không gian đều được chăm sóc kỹ lưỡng và đúng hẹn.', 'image' => $asset('gallery-cleaner')],
+            ['name' => 'Nguyễn Hoàng Anh', 'role' => 'Giám đốc', 'quote' => 'Trải nghiệm dịch vụ tuyệt hảo. Đội ngũ chuyên nghiệp, quy trình minh bạch và kết quả vượt mong đợi.', 'image' => $asset('reasons-team')],
+            ['name' => 'Tăng Hữu Dũng', 'role' => 'Người sáng lập', 'quote' => 'Giải pháp vệ sinh doanh nghiệp rất linh hoạt, tiết kiệm thời gian và giúp văn phòng luôn sạch chuẩn.', 'image' => $asset('service-deep-clean')],
+        ];
+        $gallery = [
+            ['title' => 'Đội ngũ tận tâm', 'image' => $asset('gallery-cleaner'), 'url' => '#dich-vu'],
+            ['title' => 'Bếp sạch tinh tươm', 'image' => $asset('gallery-kitchen-work'), 'url' => '#dich-vu'],
+            ['title' => 'Không gian sau vệ sinh', 'image' => $asset('gallery-kitchen'), 'url' => '#dich-vu'],
+            ['title' => 'Làm sạch theo nhóm', 'image' => $asset('gallery-team'), 'url' => '#dich-vu'],
+            ['title' => 'Sân vườn xanh sạch', 'image' => $asset('gallery-garden'), 'url' => '#dich-vu'],
+        ];
+        $posts = [
+            ['title' => 'Những điểm thường thấy của người nghiện dọn nhà', 'summary' => 'Liệu bạn có những đặc điểm đáng tiền, ẩn tiện này không?', 'date' => '29/06/2026', 'views' => 93, 'image' => $asset('gallery-team'), 'url' => '#'],
+            ['title' => 'Khi nào nên thuê người dọn nhà một lần?', 'summary' => 'Gợi ý giúp bạn chọn đúng thời điểm và phạm vi làm sạch chuyên sâu.', 'date' => '29/06/2026', 'views' => 61, 'image' => $asset('gallery-kitchen-work'), 'url' => '#'],
+            ['title' => 'Đừng giữ lại những thứ hết hạn này khi chuyển nhà', 'summary' => 'Một checklist nhỏ giúp việc dọn nhà và sắp xếp không gian dễ dàng hơn.', 'date' => '29/06/2026', 'views' => 53, 'image' => $asset('gallery-moving'), 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero Prinash', 'description' => 'Hero toàn chiều rộng với ảnh vệ sinh áp lực cao.', 'preview_image' => $preview, 'anchor_id' => 'trang-chu', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'dn350-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500, 'primary_url' => '#dich-vu'], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Vị trí banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'media' => ['image' => $asset('hero-pressure-washing')], 'data' => ['vi' => array_merge($heading('Chúng tôi là lựa chọn tốt nhất cho bạn', 'Giải pháp vệ sinh chuyên nghiệp', 'Chi phí phải chăng, cam kết mức giá cạnh tranh và chất lượng làm sạch không đổi.', 'Khám phá thêm'), ['content' => ['slides' => [['title' => 'Chúng tôi là lựa chọn tốt nhất cho bạn', 'image' => $asset('hero-pressure-washing')]]]]), 'en' => array_merge($heading('The better choice for a cleaner space', 'Professional cleaning solutions', 'Fair prices and dependable quality for homes and businesses.', 'Discover more'), ['content' => ['slides' => [['title' => 'Professional cleaning', 'image' => $asset('hero-pressure-washing')]]]])]],
+            ['block_type' => 'about_experience', 'label' => 'Sứ mệnh Prinash', 'description' => 'Ảnh ghép vệ sinh áp lực cao và cam kết thương hiệu.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'settings' => [], 'media' => ['images' => [$asset('mission-deck'), $asset('mission-railing')]], 'data' => ['vi' => $withItems($heading('Mục tiêu chính của chúng tôi là vệ sinh bằng máy phun áp lực cao', 'Sứ mệnh của chúng tôi', 'Công nghệ phun áp lực cao phù hợp cho sân vườn, tường nhà, bãi xe và các vết bẩn cứng đầu lâu năm.', 'Tìm hiểu ngay'), [['summary' => 'Ứng dụng công nghệ hiện đại để tối ưu hiệu quả làm sạch sâu, nhanh chóng và an toàn.'], ['summary' => 'Cung cấp giải pháp vệ sinh chuẩn mực, tận tâm với mức chi phí minh bạch và phải chăng.']]), 'en' => $heading('Our mission is effective pressure cleaning', 'Our mission')]],
+            ['block_type' => 'featured_services', 'label' => 'Dịch vụ vệ sinh', 'description' => 'Sáu dịch vụ lấy từ CMS hoặc nhập thủ công.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_services', 'Dịch vụ CMS', 6), 'data' => ['vi' => $withItems($heading('Dịch vụ tốt nhất mà chúng tôi cung cấp', 'Dịch vụ của chúng tôi'), $services), 'en' => $withItems($heading('Our best cleaning services', 'Our services'), $services)]],
+            ['block_type' => 'featured_categories', 'label' => 'Lý do chọn Prinash', 'description' => 'Bốn giá trị khác biệt và ảnh đội ngũ.', 'preview_image' => $preview, 'anchor_id' => 'ly-do', 'settings' => ['source' => 'custom', 'limit' => 4], 'media' => ['image' => $asset('reasons-team')], 'data' => ['vi' => $withItems($heading('Tại sao bạn nên chọn dịch vụ của chúng tôi?', 'Tại sao nên chọn chúng tôi?', 'Giữa rất nhiều đơn vị trên thị trường, chúng tôi là người bạn đồng hành đáng tin cậy cho không gian sống và làm việc chuẩn sạch, trong lành.'), $reasons), 'en' => $withItems($heading('Why choose our service?', 'Why choose us?'), $reasons)]],
+            ['block_type' => 'testimonials', 'label' => 'Lời chứng thực', 'description' => 'Ba nhận xét khách hàng.', 'preview_image' => $preview, 'anchor_id' => 'khach-hang', 'settings' => ['source' => 'custom', 'limit' => 3], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_testimonials', 'label' => 'Đánh giá CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số đánh giá']], 'data' => ['vi' => $withItems($heading('Mọi người đang nói gì', 'Lời chứng thực'), $testimonials), 'en' => $withItems($heading('What people are saying', 'Testimonials'), $testimonials)]],
+            ['block_type' => 'project_gallery', 'label' => 'Thư viện ảnh', 'description' => 'Năm ảnh dịch vụ dạng hàng ngang.', 'preview_image' => $preview, 'anchor_id' => 'thu-vien', 'settings' => ['source' => 'custom', 'limit' => 5], 'settings_schema' => $sourceSchema('cms_projects', 'Dự án CMS', 5), 'data' => ['vi' => $withItems($heading('Bộ sưu tập ảnh mới nhất', 'Phòng trưng bày của chúng tôi'), $gallery), 'en' => $withItems($heading('Latest photo collection', 'Our gallery'), $gallery)]],
+            ['block_type' => 'latest_posts', 'label' => 'Tin tức & Blog', 'description' => 'Ba bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_posts', 'Tin tức CMS', 3), 'data' => ['vi' => $withItems($heading('Tin tức & Blog mới nhất', 'Blog của chúng tôi'), $posts), 'en' => $withItems($heading('Latest news & blog', 'Our blog'), $posts)]],
+            ['block_type' => 'newsletter_signup', 'label' => 'Đăng ký nhận tin', 'description' => 'Dải đăng ký email màu cam.', 'preview_image' => $preview, 'anchor_id' => 'dang-ky', 'settings' => [], 'data' => ['vi' => $heading('Đừng bỏ lỡ các cập nhật của chúng tôi – hãy đăng ký ngay!'), 'en' => $heading('Do not miss our latest updates — subscribe today!')]],
+            ['block_type' => 'footer_contact', 'label' => 'Chân trang liên hệ', 'description' => 'Mốc quản trị cho chân trang dùng chung.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'settings' => [], 'data' => ['vi' => $heading('Thông tin liên hệ'), 'en' => $heading('Contact information')]],
+        ];
+    }
+
     private function dn302DefaultBlocks(): array
     {
         $preview = '/theme-previews/DN302/preview-dn302.png';

@@ -1,0 +1,31 @@
+{
+  "DN350": {
+    "brand": {
+      "tagline": "Sạch chuẩn từng không gian"
+    },
+    "header": {
+      "home": "Trang chủ",
+      "about": "Giới thiệu",
+      "services": "Dịch vụ",
+      "news": "Tin tức",
+      "gallery": "Thư viện",
+      "contact": "Liên hệ",
+      "quote": "Nhận báo giá",
+      "login": "Đăng nhập",
+      "register": "Đăng ký"
+    },
+    "common": {
+      "view_more": "Xem thêm",
+      "read_more": "Xem thêm",
+      "discover": "Khám phá thêm",
+      "contact_us": "Liên hệ với chúng tôi"
+    },
+    "footer": {
+      "contact": "Thông tin liên hệ",
+      "categories": "Danh mục",
+      "gallery": "Thư viện ảnh",
+      "description": "Giải pháp vệ sinh toàn diện, tận tâm và an toàn cho nhà ở, văn phòng và khuôn viên.",
+      "rights": "Bảo lưu mọi quyền."
+    }
+  }
+}

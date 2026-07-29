@@ -1,0 +1,35 @@
+{
+  "DN351": {
+    "brand": {
+      "tagline": "Thực phẩm tuyển chọn mỗi ngày"
+    },
+    "header": {
+      "home": "Trang chủ",
+      "about": "Giới thiệu",
+      "products": "Sản phẩm",
+      "services": "Dịch vụ",
+      "news": "Tin tức",
+      "library": "Thư viện",
+      "contact": "Liên hệ",
+      "search": "Tìm kiếm",
+      "login": "Đăng nhập",
+      "register": "Đăng ký",
+      "cart": "Giỏ hàng"
+    },
+    "common": {
+      "discover": "Khám phá ngay",
+      "view_more": "Xem thêm",
+      "buy_now": "Mua ngay",
+      "add_to_cart": "Thêm vào giỏ",
+      "contact_now": "Liên hệ ngay"
+    },
+    "footer": {
+      "about": "Meatlers kết nối nguồn thực phẩm minh bạch với những bữa ăn tươi ngon, an toàn và giàu dinh dưỡng.",
+      "contact": "Thông tin liên hệ",
+      "products": "Danh mục sản phẩm",
+      "services": "Danh mục dịch vụ",
+      "hours": "Giờ mở cửa",
+      "rights": "Bản quyền nội dung thuộc về Meatlers."
+    }
+  }
+}

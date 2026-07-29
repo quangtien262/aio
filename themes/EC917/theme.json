@@ -1,0 +1,36 @@
+{
+  "name": "EC917 EGA Furniture",
+  "key": "EC917",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử nội thất hiện đại với danh mục theo phòng, sản phẩm ưu đãi, bộ sưu tập không gian và góc cảm hứng.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "avatar.png",
+    "cover": "cover-ec917.png"
+  },
+  "blocks": [
+    "hero-slider",
+    "product-categories",
+    "summer-sale",
+    "promo-banner",
+    "room-collections",
+    "inspiration",
+    "benefits",
+    "footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true,
+    "scroll_reveal": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "default_preset": "ec917-ega-furniture"
+  }
+}

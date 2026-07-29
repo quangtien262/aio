@@ -1,0 +1,35 @@
+{
+  "DN351": {
+    "brand": {
+      "tagline": "Curated fresh food every day"
+    },
+    "header": {
+      "home": "Home",
+      "about": "About",
+      "products": "Products",
+      "services": "Services",
+      "news": "News",
+      "library": "Gallery",
+      "contact": "Contact",
+      "search": "Search",
+      "login": "Sign in",
+      "register": "Register",
+      "cart": "Cart"
+    },
+    "common": {
+      "discover": "Discover now",
+      "view_more": "View more",
+      "buy_now": "Shop now",
+      "add_to_cart": "Add to cart",
+      "contact_now": "Contact now"
+    },
+    "footer": {
+      "about": "Meatlers connects transparent food sources with fresh, safe and nutritious meals.",
+      "contact": "Contact information",
+      "products": "Product categories",
+      "services": "Services",
+      "hours": "Opening hours",
+      "rights": "Content copyright belongs to Meatlers."
+    }
+  }
+}

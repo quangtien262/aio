@@ -1,0 +1,20 @@
+{
+  "SER103.brand.tagline": "Wedding Studio",
+  "SER103.nav.home": "Home",
+  "SER103.nav.services": "Services",
+  "SER103.nav.pricing": "Pricing",
+  "SER103.nav.products": "Products",
+  "SER103.nav.news": "News",
+  "SER103.nav.contact": "Contact",
+  "SER103.header.open_menu": "Open menu",
+  "SER103.header.search": "Search",
+  "SER103.header.account": "Account",
+  "SER103.header.cart": "Cart",
+  "SER103.header.booking": "Book an appointment",
+  "SER103.footer.intro": "A refined wedding studio for your most meaningful day.",
+  "SER103.footer.services": "Wedding services",
+  "SER103.footer.support": "Support",
+  "SER103.footer.copyright": "All rights reserved.",
+  "SER103.booking.success": "Your request has been sent successfully.",
+  "SER103.booking.error": "Unable to send your request. Please try again."
+}

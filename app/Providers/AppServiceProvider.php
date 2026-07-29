@@ -28,11 +28,15 @@ use App\Core\Themes\Demo\Ec913DemoContentProvider;
 use App\Core\Themes\Demo\Ec914DemoContentProvider;
 use App\Core\Themes\Demo\Ec915DemoContentProvider;
 use App\Core\Themes\Demo\Ec916DemoContentProvider;
+use App\Core\Themes\Demo\Ec917DemoContentProvider;
 use App\Core\Themes\Demo\Spa111DemoContentProvider;
 use App\Core\Themes\Demo\Nt502DemoContentProvider;
 use App\Core\Themes\Demo\Nt503DemoContentProvider;
 use App\Core\Themes\Demo\Th0050DemoContentProvider;
 use App\Core\Themes\Demo\Dn202DemoContentProvider;
+use App\Core\Themes\Demo\Dn350DemoContentProvider;
+use App\Core\Themes\Demo\Dn351DemoContentProvider;
+use App\Core\Themes\Demo\Ser103DemoContentProvider;
 use App\Core\Themes\Demo\Bds701DemoContentProvider;
 use App\Core\Themes\Demo\Xd0302DemoContentProvider;
 use App\Core\Themes\Demo\Xd0303DemoContentProvider;
@@ -96,10 +100,14 @@ class AppServiceProvider extends ServiceProvider
             $this->app->make(Ec914DemoContentProvider::class),
             $this->app->make(Ec915DemoContentProvider::class),
             $this->app->make(Ec916DemoContentProvider::class),
+            $this->app->make(Ec917DemoContentProvider::class),
             $this->app->make(Spa111DemoContentProvider::class),
             $this->app->make(Shop601DemoContentProvider::class),
             $this->app->make(Th0050DemoContentProvider::class),
             $this->app->make(Dn202DemoContentProvider::class),
+            $this->app->make(Dn350DemoContentProvider::class),
+            $this->app->make(Dn351DemoContentProvider::class),
+            $this->app->make(Ser103DemoContentProvider::class),
             $this->app->make(Bds701DemoContentProvider::class),
             $this->app->make(Ser102DemoContentProvider::class),
             $this->app->make(Xd0302DemoContentProvider::class),
