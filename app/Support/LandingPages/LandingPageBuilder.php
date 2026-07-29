@@ -33,7 +33,7 @@ class LandingPageBuilder
 {
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -654,6 +654,16 @@ class LandingPageBuilder
             return $this->contentSourceItems(
                 $settings,
                 $defaultSource,
+                $limit,
+                $locale,
+                $block->landingPage?->website_key,
+            );
+        }
+
+        if (in_array($block->block_type, ['book920_featured', 'book920_sale', 'book920_hot'], true)) {
+            return $this->contentSourceItems(
+                $settings,
+                'cms_products',
                 $limit,
                 $locale,
                 $block->landingPage?->website_key,
@@ -1529,6 +1539,7 @@ class LandingPageBuilder
             'EC913' => $this->ec913DefaultBlocks(),
             'EC914' => $this->ec914DefaultBlocks(),
             'EC915' => $this->ec915DefaultBlocks(),
+            'BOOK920' => $this->book920DefaultBlocks(),
             'EC916' => $this->ec916DefaultBlocks(),
             'EC917' => $this->ec917DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
@@ -2483,6 +2494,49 @@ class LandingPageBuilder
             ['block_type' => 'ec917_inspiration', 'label' => 'Góc cảm hứng', 'description' => 'Bốn bài viết tư vấn và xu hướng nội thất.', 'preview_image' => $preview, 'anchor_id' => 'cam-hung', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'search' => '', 'featured_only' => false], 'settings_schema' => $postSchema, 'data' => ['vi' => $withItems($heading('GÓC CẢM HỨNG'), $posts), 'en' => $withItems($heading('INSPIRATION'), $posts)]],
             ['block_type' => 'ec917_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Hotline, quà tặng, đổi trả và cam kết giá.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
             ['block_type' => 'ec917_footer', 'label' => 'Chân trang', 'description' => 'Thông tin doanh nghiệp, hỗ trợ, chính sách và đăng ký nhận tin.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin EGA Furniture'), 'en' => $heading('EGA Furniture information')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function book920DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/BOOK920/cover-book920.webp';
+        $heading = static fn (?string $title = null, ?string $summary = null): array => ['title' => $title, 'summary' => $summary];
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 4],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+        ];
+        $benefits = [
+            ['title' => 'Chất lượng hàng đầu', 'summary' => 'Cam kết sách chính hãng 100%', 'icon' => 'fa-solid fa-award'],
+            ['title' => 'Giao hàng toàn quốc', 'summary' => 'Giao hàng nhanh trong 24h', 'icon' => 'fa-solid fa-truck-fast'],
+            ['title' => 'Mua hàng tiết kiệm', 'summary' => 'Khuyến mãi với ưu đãi cực lớn', 'icon' => 'fa-solid fa-hand-holding-dollar'],
+            ['title' => 'Hỗ trợ online', 'summary' => 'Gọi 1900 9477 để được tư vấn', 'icon' => 'fa-solid fa-headset'],
+        ];
+        $testimonials = [
+            ['title' => 'Dianne Russell', 'role' => 'Quản lý dự án', 'summary' => 'Bookle có không gian ấm cúng, sách tuyển chọn kỹ và đội ngũ tư vấn rất tận tâm.'],
+            ['title' => 'Nguyễn Minh Anh', 'role' => 'Biên tập viên', 'summary' => 'Không chỉ là nơi mua sách, Bookle còn là điểm đến văn hóa đầy cảm hứng.'],
+            ['title' => 'Ronald Richards', 'role' => 'Điều phối tiếp thị', 'summary' => 'Dịch vụ nhanh chóng, nhiều đầu sách hay và trải nghiệm mua sắm thật dễ chịu.'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero nhà sách', 'description' => 'Không gian nhà sách toàn chiều rộng.', 'preview_image' => $preview, 'anchor_id' => 'hero', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'book920-hero-slider', 'limit' => 2], 'data' => ['vi' => array_merge($heading('Không gian đọc đầy cảm hứng'), ['content' => ['slides' => [['title' => null, 'image' => '/theme-demo/book920/hero-bookstore.png']]]]), 'en' => $heading('An inspiring reading space')]],
+            ['block_type' => 'book920_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết mua sắm.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $withItems($heading('Cam kết Bookle'), $benefits), 'en' => $withItems($heading('Bookle benefits'), $benefits)]],
+            ['block_type' => 'book920_featured', 'label' => 'Sách nổi bật', 'description' => 'Mười sách nổi bật từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'sach-noi-bat', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 10, 'featured_only' => true], 'settings_schema' => $productSchema(10), 'data' => ['vi' => $heading('Sách nổi bật'), 'en' => $heading('Featured books')]],
+            ['block_type' => 'book920_sale', 'label' => 'Sách khuyến mãi', 'description' => 'Bốn sách đang ưu đãi.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $heading('Sách khuyến mãi'), 'en' => $heading('Books on sale')]],
+            ['block_type' => 'book920_promo', 'label' => 'Banner ưu đãi', 'description' => 'Banner sách bán chạy giảm 25%.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai', 'data' => ['vi' => $heading('Giảm giá 25% cho tất cả các loại sách bán chạy'), 'en' => $heading('25% off bestselling books')]],
+            ['block_type' => 'book920_hot', 'label' => 'Sản phẩm HOT', 'description' => 'Sáu sách hot dạng danh sách.', 'preview_image' => $preview, 'anchor_id' => 'sach-hot', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 6, 'featured_only' => false], 'settings_schema' => $productSchema(6), 'data' => ['vi' => $heading('Sản phẩm HOT'), 'en' => $heading('Hot products')]],
+            ['block_type' => 'book920_testimonials', 'label' => 'Ý kiến khách hàng', 'description' => 'Ba đánh giá của độc giả.', 'preview_image' => $preview, 'anchor_id' => 'cam-nhan', 'data' => ['vi' => $withItems($heading('Khách hàng của chúng tôi nói gì'), $testimonials), 'en' => $withItems($heading('What our readers say'), $testimonials)]],
+            ['block_type' => 'latest_posts', 'label' => 'Tin tức mới nhất', 'description' => 'Bốn bài viết từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $postSchema, 'data' => ['vi' => $heading('Tin tức mới nhất', 'Cảm hứng đọc sách và những câu chuyện mới từ Bookle.'), 'en' => $heading('Latest news')]],
+            ['block_type' => 'book920_footer', 'label' => 'Chân trang', 'description' => 'Liên hệ, danh mục và đăng ký nhận tin.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Thông tin Bookle'), 'en' => $heading('Bookle information')]],
         ];
     }
 

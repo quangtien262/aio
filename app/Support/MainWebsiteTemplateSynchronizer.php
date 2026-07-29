@@ -15,6 +15,10 @@ class MainWebsiteTemplateSynchronizer
 
     private const MEDIA_TABLE = 'website_template_media';
 
+    private const TRANSLATION_TABLE = 'website_template_translations';
+
+    private const TRANSLATION_LANGUAGE_IDS = [1, 2];
+
     public function supports(string $rootDomain): bool
     {
         return $this->normalizeDomain($rootDomain) === self::ROOT_DOMAIN;
@@ -102,6 +106,8 @@ class MainWebsiteTemplateSynchronizer
                             ]);
                         $action = 'inserted';
                     }
+
+                    $this->syncTranslations($templateId, $themeCode, $now);
 
                     $thumbnailPath = $this->thumbnailPath($theme, $themeCode);
 
@@ -202,6 +208,42 @@ class MainWebsiteTemplateSynchronizer
                 ...$values,
                 'created_at' => $now,
             ]);
+    }
+
+    private function syncTranslations(
+        int $templateId,
+        string $themeCode,
+        mixed $now,
+    ): void {
+        foreach (self::TRANSLATION_LANGUAGE_IDS as $languageId) {
+            $existingTranslation = DB::connection(self::CONNECTION)
+                ->table(self::TRANSLATION_TABLE)
+                ->where('template_id', $templateId)
+                ->where('language_id', $languageId)
+                ->first();
+            $values = [
+                'template_id' => $templateId,
+                'language_id' => $languageId,
+                'title' => $themeCode,
+                'updated_at' => $now,
+            ];
+
+            if ($existingTranslation !== null) {
+                DB::connection(self::CONNECTION)
+                    ->table(self::TRANSLATION_TABLE)
+                    ->where('id', $existingTranslation->id)
+                    ->update($values);
+
+                continue;
+            }
+
+            DB::connection(self::CONNECTION)
+                ->table(self::TRANSLATION_TABLE)
+                ->insert([
+                    ...$values,
+                    'created_at' => $now,
+                ]);
+        }
     }
 
     private function versionNumber(mixed $version): int

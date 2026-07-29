@@ -1,0 +1,39 @@
+{
+  "name": "BOOK920 Bookle",
+  "key": "BOOK920",
+  "version": "1.0.0",
+  "description": "Theme nhà sách hiện đại với danh mục sách động, ưu đãi, sản phẩm hot, đánh giá khách hàng và tin tức.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-book920.png",
+    "cover": "cover-book920.webp"
+  },
+  "blocks": [
+    "hero-slider",
+    "service-benefits",
+    "featured-books",
+    "sale-books",
+    "promo-banner",
+    "hot-products",
+    "testimonials",
+    "latest-posts",
+    "footer"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true,
+    "scroll_reveal": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "book920-bookle"
+  }
+}

@@ -48,6 +48,27 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
             $table->longText('metadata')->nullable();
             $table->timestamps();
         });
+
+        Schema::connection('ht')->create('website_template_translations', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('template_id');
+            $table->unsignedBigInteger('language_id')->nullable();
+            $table->string('title');
+            $table->text('summary')->nullable();
+            $table->text('tagline')->nullable();
+            $table->string('industry')->nullable();
+            $table->string('timeline')->nullable();
+            $table->string('support')->nullable();
+            $table->longText('audience')->nullable();
+            $table->longText('highlights')->nullable();
+            $table->longText('structure')->nullable();
+            $table->longText('modules')->nullable();
+            $table->longText('deliverables')->nullable();
+            $table->string('seo_title')->nullable();
+            $table->text('seo_description')->nullable();
+            $table->longText('metadata')->nullable();
+            $table->timestamps();
+        });
     }
 
     public function test_it_only_supports_the_ht_vietnam_demo_root_domain(): void
@@ -101,6 +122,23 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
             'sort_order' => 0,
             'is_primary' => 1,
         ], 'ht');
+        $this->assertSame(
+            2,
+            DB::connection('ht')
+                ->table('website_template_translations')
+                ->where('template_id', $templateId)
+                ->count(),
+        );
+
+        foreach ([1, 2] as $languageId) {
+            $this->assertDatabaseHas('website_template_translations', [
+                'template_id' => $templateId,
+                'language_id' => $languageId,
+                'title' => 'EC910',
+                'summary' => null,
+                'metadata' => null,
+            ], 'ht');
+        }
 
         DB::connection('ht')->table('website_templates')
             ->where('theme_code', 'EC910')
@@ -109,6 +147,17 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
                 'name' => 'Tên cũ',
                 'deleted_at' => now(),
             ]);
+        DB::connection('ht')->table('website_template_translations')
+            ->where('template_id', $templateId)
+            ->where('language_id', 1)
+            ->update([
+                'title' => 'Mã cũ',
+                'summary' => 'Nội dung sẽ được cập nhật sau',
+            ]);
+        DB::connection('ht')->table('website_template_translations')
+            ->where('template_id', $templateId)
+            ->where('language_id', 2)
+            ->delete();
 
         $updateResult = $synchronizer->syncThemes([[
             ...$theme,
@@ -139,6 +188,25 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
             'alt_text' => 'EC910 thumbnail',
             'sort_order' => 0,
             'is_primary' => 1,
+        ], 'ht');
+        $this->assertSame(
+            2,
+            DB::connection('ht')
+                ->table('website_template_translations')
+                ->where('template_id', $templateId)
+                ->count(),
+        );
+        $this->assertDatabaseHas('website_template_translations', [
+            'template_id' => $templateId,
+            'language_id' => 1,
+            'title' => 'EC910',
+            'summary' => 'Nội dung sẽ được cập nhật sau',
+        ], 'ht');
+        $this->assertDatabaseHas('website_template_translations', [
+            'template_id' => $templateId,
+            'language_id' => 2,
+            'title' => 'EC910',
+            'summary' => null,
         ], 'ht');
     }
 }
