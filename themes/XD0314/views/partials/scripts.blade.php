@@ -193,7 +193,7 @@
             const field = (name) => form?.querySelector(`[data-xd-field="${name}"]`);
             const pretty = (value) => JSON.stringify(value || {}, null, 2);
             const parseJson = (value, fallback) => {
-                try { return value.trim() ? JSON.parse(value) : fallback; } catch (error) { throw new Error('JSON khÃ´ng há»£p lá»‡: ' + error.message); }
+                try { return value.trim() ? JSON.parse(value) : fallback; } catch (error) { throw new Error('JSON không hợp lệ: ' + error.message); }
             };
             const itemsEditor = document.querySelector('[data-xd-items-editor]');
             const itemList = document.querySelector('[data-xd-item-list]');
@@ -217,19 +217,19 @@
             let sourcePreviewController = null;
             let sourcePreviewTimer = null;
             const sourceLabels = {
-                custom: 'Ná»™i dung tÃ¹y chá»‰nh',
-                catalog_categories: 'Danh má»¥c sáº£n pháº©m',
-                cms_service_categories: 'Danh má»¥c dá»‹ch vá»¥',
-                cms_categories: 'Danh má»¥c tin tá»©c',
-                cms_services: 'Dá»‹ch vá»¥',
-                cms_products: 'Sáº£n pháº©m',
-                catalog_products: 'Sáº£n pháº©m',
-                featured_products: 'Sáº£n pháº©m ná»•i báº­t',
-                cms_posts: 'Tin tá»©c',
-                latest_posts: 'Tin má»›i nháº¥t',
-                cms_projects: 'Dá»± Ã¡n',
-                cms_team_members: 'Äá»™i ngÅ©',
-                cms_testimonials: 'ÄÃ¡nh giÃ¡',
+                custom: 'Nội dung tùy chỉnh',
+                catalog_categories: 'Danh mục sản phẩm',
+                cms_service_categories: 'Danh mục dịch vụ',
+                cms_categories: 'Danh mục tin tức',
+                cms_services: 'Dịch vụ',
+                cms_products: 'Sản phẩm',
+                catalog_products: 'Sản phẩm',
+                featured_products: 'Sản phẩm nổi bật',
+                cms_posts: 'Tin tức',
+                latest_posts: 'Tin mới nhất',
+                cms_projects: 'Dự án',
+                cms_team_members: 'Đội ngũ',
+                cms_testimonials: 'Đánh giá',
             };
             const sourceManageUrls = {
                 cms_services: @json(route('admin.index', ['any' => 'cms/services'])),
@@ -272,7 +272,7 @@
                 payload.append('title', file.name.replace(/\.[^.]+$/, ''));
                 payload.append('alt_text', targetInput.closest('form')?.querySelector('[data-xd-item-modal-field="title"], [data-xd-item-modal-field="name"]')?.value || file.name);
 
-                if (statusNode) statusNode.textContent = 'Äang upload...';
+                if (statusNode) statusNode.textContent = 'Đang upload...';
                 if (triggerButton) triggerButton.disabled = true;
 
                 try {
@@ -288,15 +288,15 @@
 
                     if (!response.ok) {
                         const errorPayload = await response.json().catch(() => ({}));
-                        throw new Error(errorPayload.message || 'Upload áº£nh khÃ´ng thÃ nh cÃ´ng.');
+                        throw new Error(errorPayload.message || 'Upload ảnh không thành công.');
                     }
 
                     const result = await response.json();
                     targetInput.value = result?.data?.file_url || '';
                     targetInput.dispatchEvent(new Event('input', {bubbles: true}));
-                    if (statusNode) statusNode.textContent = 'ÄÃ£ upload áº£nh.';
+                    if (statusNode) statusNode.textContent = 'Đã upload ảnh.';
                 } catch (error) {
-                    if (statusNode) statusNode.textContent = error.message || 'KhÃ´ng upload Ä‘Æ°á»£c áº£nh.';
+                    if (statusNode) statusNode.textContent = error.message || 'Không upload được ảnh.';
                 } finally {
                     if (triggerButton) triggerButton.disabled = false;
                 }
@@ -344,7 +344,7 @@
                     const url = sourceManageUrls[source] || '';
                     manageSourceLink.hidden = customMode || url === '';
                     manageSourceLink.href = url || '#';
-                    manageSourceLink.textContent = `Quáº£n lÃ½ ${sourceLabels[source] || 'ná»™i dung'}`;
+                    manageSourceLink.textContent = `Quản lý ${sourceLabels[source] || 'nội dung'}`;
                 }
             };
             const normalizeSourceOptions = (options = []) => options
@@ -359,7 +359,7 @@
 
                 const options = categoryOptionsBySource[source] || [];
                 categorySelect.innerHTML = [
-                    '<option value="">Táº¥t cáº£ danh má»¥c</option>',
+                    '<option value="">Tất cả danh mục</option>',
                     ...options.map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`),
                 ].join('');
                 categorySelect.value = selectedValue ? String(selectedValue) : '';
@@ -441,69 +441,69 @@
             const editorItemFields = (blockType) => {
                 if (blockType === 'hero_slider') {
                     return [
-                        ['kicker', 'NhÃ£n nhá»'],
-                        ['title', 'TiÃªu Ä‘á»'],
-                        ['summary', 'MÃ´ táº£', 'textarea'],
-                        ['image', 'áº¢nh'],
+                        ['kicker', 'Nhãn nhỏ'],
+                        ['title', 'Tiêu đề'],
+                        ['summary', 'Mô tả', 'textarea'],
+                        ['image', 'Ảnh'],
                         ['link_url', 'Link'],
-                        ['button_label', 'NÃºt báº¥m'],
+                        ['button_label', 'Nút bấm'],
                     ];
                 }
 
                 if (blockType === 'featured_categories') {
                     return [
-                        ['title', 'TiÃªu Ä‘á»'],
-                        ['summary', 'MÃ´ táº£ / nhÃ£n phá»¥', 'textarea'],
-                        ['image', 'áº¢nh'],
-                        ['icon', 'Icon / kÃ½ tá»±'],
+                        ['title', 'Tiêu đề'],
+                        ['summary', 'Mô tả / nhãn phụ', 'textarea'],
+                        ['image', 'Ảnh'],
+                        ['icon', 'Icon / ký tự'],
                         ['url', 'Link'],
-                        ['count_label', 'NhÃ£n sá»‘ lÆ°á»£ng'],
+                        ['count_label', 'Nhãn số lượng'],
                     ];
                 }
 
                 if (blockType === 'content_mosaic') {
                     return [
-                        ['title', 'TiÃƒÂªu Ã„â€˜Ã¡Â»Â'],
-                        ['summary', 'MÃƒÂ´ tÃ¡ÂºÂ£', 'textarea'],
-                        ['image', 'Ã¡ÂºÂ¢nh'],
+                        ['title', 'Tiêu đề'],
+                        ['summary', 'Mô tả', 'textarea'],
+                        ['image', 'Ảnh'],
                         ['url', 'Link'],
                     ];
                 }
 
                 if (blockType === 'testimonials') {
                     return [
-                        ['name', 'TÃªn khÃ¡ch hÃ ng'],
-                        ['company', 'CÃ´ng ty / vai trÃ²'],
-                        ['quote', 'Nháº­n xÃ©t', 'textarea'],
-                        ['image', 'áº¢nh Ä‘áº¡i diá»‡n'],
+                        ['name', 'Tên khách hàng'],
+                        ['company', 'Công ty / vai trò'],
+                        ['quote', 'Nhận xét', 'textarea'],
+                        ['image', 'Ảnh đại diện'],
                         ['url', 'Link'],
                     ];
                 }
 
                 if (blockType === 'team_members') {
                     return [
-                        ['name', 'TÃªn nhÃ¢n sá»±'],
-                        ['role', 'Chá»©c vá»¥'],
-                        ['image', 'áº¢nh'],
+                        ['name', 'Tên nhân sự'],
+                        ['role', 'Chức vụ'],
+                        ['image', 'Ảnh'],
                         ['url', 'Link'],
                     ];
                 }
 
                 if (blockType === 'partner_logos') {
                     return [
-                        ['name', 'TÃªn Ä‘á»‘i tÃ¡c'],
-                        ['image', 'Logo / áº£nh'],
+                        ['name', 'Tên đối tác'],
+                        ['image', 'Logo / ảnh'],
                         ['url', 'Link'],
-                        ['alt', 'Alt áº£nh'],
+                        ['alt', 'Alt ảnh'],
                     ];
                 }
 
                 return [
-                    ['title', 'TiÃªu Ä‘á»'],
-                    ['summary', 'MÃ´ táº£', 'textarea'],
-                    ['image', 'áº¢nh'],
+                    ['title', 'Tiêu đề'],
+                    ['summary', 'Mô tả', 'textarea'],
+                    ['image', 'Ảnh'],
                     ['url', 'Link'],
-                    ['button_label', 'NÃºt báº¥m'],
+                    ['button_label', 'Nút bấm'],
                 ];
             };
             const renderEditorItem = (item = {}, index = 0, blockType = '', canEditItem = true) => {
@@ -511,8 +511,8 @@
                 row.className = 'xd-editor-item';
                 row.dataset.xdItemRow = '1';
                 row.dataset.xdItem = JSON.stringify(item || {});
-                const title = item.title || item.name || item.kicker || `Má»¥c ${index + 1}`;
-                const summary = item.summary || item.description || item.quote || item.role || item.company || item.url || item.link_url || 'ChÆ°a cÃ³ mÃ´ táº£.';
+                const title = item.title || item.name || item.kicker || `Mục ${index + 1}`;
+                const summary = item.summary || item.description || item.quote || item.role || item.company || item.url || item.link_url || 'Chưa có mô tả.';
                 const image = item.image || item.image_url || item.thumbnail || item.logo || item.avatar || '';
                 const imageAlt = item.alt || title;
                 const thumb = image
@@ -522,14 +522,14 @@
                     <div class="xd-editor-item-main">
                         ${thumb}
                         <div class="xd-editor-item-summary">
-                            <small>Má»¥c ${index + 1}</small>
+                            <small>Mục ${index + 1}</small>
                             <strong>${escapeHtml(title)}</strong>
                             <span>${escapeHtml(summary)}</span>
                         </div>
                     </div>
                     ${canEditItem ? `<div class="xd-editor-item-actions">
-                        <button type="button" class="xd-editor-edit" data-xd-edit-item>Sá»­a</button>
-                        <button type="button" class="xd-editor-remove" data-xd-remove-item>XÃ³a</button>
+                        <button type="button" class="xd-editor-edit" data-xd-edit-item>Sửa</button>
+                        <button type="button" class="xd-editor-remove" data-xd-remove-item>Xóa</button>
                     </div>` : ''}
                 `;
                 if (canEditItem) {
@@ -547,7 +547,7 @@
             const syncItemNumbers = () => {
                 itemList?.querySelectorAll('[data-xd-item-row]').forEach((row, index) => {
                     const badge = row.querySelector('.xd-editor-item-summary small');
-                    if (badge) badge.textContent = `Má»¥c ${index + 1}`;
+                    if (badge) badge.textContent = `Mục ${index + 1}`;
                 });
             };
             const closeItemModal = () => {
@@ -559,7 +559,7 @@
             const openItemModal = (index = null, item = {}) => {
                 if (!itemModal || !itemFormFields || !activeBlock) return;
                 const blockType = activeBlock.block_type || addItemButton?.dataset.xdBlockType || '';
-                itemModalTitle.textContent = index === null ? 'ThÃªm má»¥c' : `Sá»­a má»¥c ${index + 1}`;
+                itemModalTitle.textContent = index === null ? 'Thêm mục' : `Sửa mục ${index + 1}`;
                 itemIndexInput.value = index === null ? '' : String(index);
                 itemFormFields.innerHTML = '';
                 editorItemFields(blockType).forEach(([key, label, type]) => {
@@ -575,13 +575,13 @@
                         const modeWrap = document.createElement('div');
                         modeWrap.className = 'xd-image-mode';
                         modeWrap.innerHTML = `
-                            <label><input type="radio" name="xd_item_image_mode" value="url" checked> Nháº­p liÃªn káº¿t hÃ¬nh áº£nh</label>
-                            <label><input type="radio" name="xd_item_image_mode" value="upload"> Upload áº£nh</label>
+                            <label><input type="radio" name="xd_item_image_mode" value="url" checked> Nhập liên kết hình ảnh</label>
+                            <label><input type="radio" name="xd_item_image_mode" value="upload"> Upload ảnh</label>
                         `;
                         const uploadWrap = document.createElement('div');
                         uploadWrap.className = 'xd-item-upload';
                         uploadWrap.hidden = true;
-                        uploadWrap.innerHTML = '<input type="file" accept="image/*" data-xd-item-upload hidden><button type="button" data-xd-item-upload-trigger>Upload áº£nh</button><small data-xd-item-upload-status></small>';
+                        uploadWrap.innerHTML = '<input type="file" accept="image/*" data-xd-item-upload hidden><button type="button" data-xd-item-upload-trigger>Upload ảnh</button><small data-xd-item-upload-status></small>';
                         const fileInput = uploadWrap.querySelector('[data-xd-item-upload]');
                         const triggerButton = uploadWrap.querySelector('[data-xd-item-upload-trigger]');
                         const statusNode = uploadWrap.querySelector('[data-xd-item-upload-status]');
@@ -627,8 +627,8 @@
                 const customMode = isCustomSource();
                 syncSourceModeUi();
                 itemHelp.textContent = customMode
-                    ? 'Ná»™i dung tÃ¹y chá»‰nh: cÃ³ thá»ƒ thÃªm, sá»­a hoáº·c xÃ³a tá»«ng má»¥c ngay táº¡i Ä‘Ã¢y.'
-                    : `Danh sÃ¡ch Ä‘ang láº¥y tá»± Ä‘á»™ng tá»« ${sourceLabels[currentSourceValue()] || 'CMS'}. Muá»‘n sá»­a tá»«ng item, má»Ÿ trang quáº£n lÃ½ tÆ°Æ¡ng á»©ng.`;
+                    ? 'Nội dung tùy chỉnh: có thể thêm, sửa hoặc xóa từng mục ngay tại đây.'
+                    : `Danh sách đang lấy tự động từ ${sourceLabels[currentSourceValue()] || 'CMS'}. Muốn sửa từng item, mở trang quản lý tương ứng.`;
 
                 items.forEach((item, index) => itemList.appendChild(renderEditorItem(item, index, blockType, customMode)));
                 if (!items.length && customMode) itemList.appendChild(renderEditorItem({}, 0, blockType, true));
@@ -648,7 +648,7 @@
 
                 const settingsPayload = collectSourceSettings(parseJson(field('settings').value, {}));
                 field('settings').value = pretty(settingsPayload);
-                if (itemHelp) itemHelp.textContent = 'Äang táº£i láº¡i danh sÃ¡ch theo nguá»“n ná»™i dung...';
+                if (itemHelp) itemHelp.textContent = 'Đang tải lại danh sách theo nguồn nội dung...';
 
                 sourcePreviewController?.abort();
                 sourcePreviewController = new AbortController();
@@ -665,7 +665,7 @@
                         headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
                         signal: sourcePreviewController.signal,
                     });
-                    if (!response.ok) throw new Error('KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch ná»™i dung.');
+                    if (!response.ok) throw new Error('Không tải được danh sách nội dung.');
 
                     const payload = await response.json();
                     const items = payload.data?.items || [];
@@ -677,7 +677,7 @@
                     renderItemsEditor(activeBlock, previewContent);
                 } catch (error) {
                     if (error.name === 'AbortError') return;
-                    if (itemHelp) itemHelp.textContent = error.message || 'KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch ná»™i dung.';
+                    if (itemHelp) itemHelp.textContent = error.message || 'Không tải được danh sách nội dung.';
                 }
             };
             const scheduleSourcePreview = () => {
@@ -828,7 +828,7 @@
                             headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf},
                             body: JSON.stringify(payload),
                         });
-                        if (!response.ok) throw new Error('KhÃ´ng lÆ°u Ä‘Æ°á»£c khá»‘i landing.');
+                        if (!response.ok) throw new Error('Không lưu được khối landing.');
                     }
                     window.location.reload();
                 } catch (error) {

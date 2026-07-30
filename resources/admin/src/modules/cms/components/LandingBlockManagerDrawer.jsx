@@ -43,6 +43,7 @@ function normalizeFormLocales(block) {
                 description: data?.description ?? '',
                 button_label: data?.button_label ?? '',
                 content: data?.content ?? {},
+                publish: data?.translation_status === 'published',
             },
         ]),
     );
@@ -110,9 +111,9 @@ function editorItemFields(blockType, themeKey) {
 
     if (blockType === 'content_mosaic') {
         return [
-            ['title', 'TiÃªu Ä‘á»'],
-            ['summary', 'MÃ´ táº£', 'textarea'],
-            ['image', 'áº¢nh'],
+            ['title', 'Tiêu đề'],
+            ['summary', 'Mô tả', 'textarea'],
+            ['image', 'Ảnh'],
             ['url', 'Link'],
         ];
     }
@@ -422,6 +423,7 @@ export default function LandingBlockManagerDrawer({
                             button_label: localeData.button_label ?? '',
                             content: localeData.content ?? existingLocaleData.content ?? {},
                         },
+                        publish: Boolean(localeData.publish),
                     }),
                 });
             }
@@ -775,6 +777,14 @@ export default function LandingBlockManagerDrawer({
                                     </Form.Item>
                                     <Form.Item name={['data_by_locale', localeCode, 'button_label']} label="Nút CTA">
                                         <Input />
+                                    </Form.Item>
+                                    <Form.Item
+                                        name={['data_by_locale', localeCode, 'publish']}
+                                        label="Xuất bản sau khi lưu"
+                                        valuePropName="checked"
+                                        extra="Tắt để giữ bản nháp. Bản dịch chỉ xuất hiện ngoài website sau khi được xuất bản."
+                                    >
+                                        <Switch />
                                     </Form.Item>
                                     <Form.Item name={['data_by_locale', localeCode, 'content']} hidden>
                                         <FormValueBridge />

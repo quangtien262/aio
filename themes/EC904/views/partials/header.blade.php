@@ -8,7 +8,7 @@
 <header class="ec94-header">
     <div class="ec94-head-main"><div class="ec94-container">
         <a class="ec94-logo" href="{{ route('site.home') }}">@if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name') }}">@else<span>POCO</span><b>Mall</b><small>THIÊN ĐƯỜNG MUA SẮM</small>@endif</a>
-        <form action="{{ route('site.catalog.search') }}" method="get"><input name="q" placeholder="Tìm kiếm sản phẩm..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
+        <form action="{{ route('site.catalog.search') }}" method="get"><input name="q" placeholder="@themeT('search.placeholder', 'Tìm kiếm sản phẩm...')"><button aria-label="@themeT('search.label', 'Tìm kiếm')"><i class="fa-solid fa-magnifying-glass"></i></button></form>
         <a class="ec94-support" href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone-volume"></i><span>Tư vấn hỗ trợ<b>{{ $hotline }}</b></span></a>
         <button class="ec94-login" type="button" data-auth-open="login"><i class="fa-regular fa-circle-user"></i><span>Xin chào!<b>Đăng nhập</b></span></button>
         <div class="ec94-actions"><a href="#"><i class="fa-regular fa-heart"></i><b>0</b></a><a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><b>0</b></a><a href="#"><i class="fa-solid fa-shuffle"></i><b>0</b></a></div>
@@ -16,7 +16,7 @@
     <nav class="ec94-nav"><div class="ec94-container">
         <button class="ec94-category-button" type="button" data-ec94-mega><i class="fa-solid fa-bars"></i> Danh mục sản phẩm</button>
         @forelse($menuItems as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>@empty
-            <a class="is-active" href="{{ route('site.home') }}">Trang chủ</a><a href="#gioi-thieu">Giới thiệu</a><a href="{{ route('site.catalog.search') }}">Sản phẩm</a><a href="{{ route('site.blog.index') }}">Tin mới nhất</a><a href="{{ route('site.contact') }}">Liên hệ</a>
+            <a class="is-active" href="{{ route('site.home') }}">@themeT('nav.home', 'Trang chủ')</a><a href="#gioi-thieu">@themeT('nav.about', 'Giới thiệu')</a><a href="{{ route('site.catalog.search') }}">@themeT('nav.products', 'Sản phẩm')</a><a href="{{ route('site.blog.index') }}">@themeT('nav.latest_news', 'Tin mới nhất')</a><a href="{{ route('site.contact') }}">@themeT('nav.contact', 'Liên hệ')</a>
         @endforelse
         <section class="ec94-mega"><aside>
             @foreach(['Điện thoại - Máy tính bảng','Phụ kiện - Thiết bị số','Máy ảnh - Quay phim','Điện gia dụng - Nhà bếp','Laptop - Thiết bị IT','Máy chơi game - Trò chơi','Trang sức - Sành điệu','Thời trang - Làm đẹp','Nhà cửa đời sống'] as $index => $label)

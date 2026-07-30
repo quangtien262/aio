@@ -16,14 +16,14 @@
             </div>
             <div class="bds-topbar-account">
                 @guest('customer')
-                    <button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i>Đăng nhập</button>
+                    <button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i>@themeT('auth.login', 'Đăng nhập')</button>
                     <span>/</span>
-                    <button type="button" data-xd-auth-open="register">Đăng ký</button>
+                    <button type="button" data-xd-auth-open="register">@themeT('auth.register', 'Đăng ký')</button>
                 @else
-                    <a href="{{ route('customer.account', ['locale' => app()->getLocale()]) }}"><i class="fa-regular fa-user"></i>Tài khoản</a>
+                    <a href="{{ route('customer.account', ['locale' => app()->getLocale()]) }}"><i class="fa-regular fa-user"></i>@themeT('auth.account', 'Tài khoản')</a>
                     <form method="POST" action="{{ route('customer.auth.logout', ['locale' => app()->getLocale()]) }}">
                         @csrf
-                        <button type="submit">Đăng xuất</button>
+                        <button type="submit">@themeT('auth.logout', 'Đăng xuất')</button>
                     </form>
                 @endguest
             </div>
@@ -40,11 +40,11 @@
         </a>
         <button class="bds-menu-toggle" type="button" data-bds-menu><i class="fa-solid fa-bars"></i></button>
         <nav data-bds-nav>
-            <a href="{{ $homeUrl }}">Trang chủ</a>
-            <a href="{{ route('site.real-estate.index', ['locale' => app()->getLocale()]) }}">Tất cả tin rao</a>
-            <a href="{{ route('site.blog.index', ['locale' => app()->getLocale()]) }}">Tin tức</a>
-            <a href="{{ route('site.pages.show', ['locale' => app()->getLocale(), 'slug' => 'gioi-thieu']) }}">Giới thiệu</a>
-            <a href="{{ route('site.contact', ['locale' => app()->getLocale()]) }}">Liên hệ</a>
+            <a href="{{ $homeUrl }}">@themeT('home', 'Trang chủ')</a>
+            <a href="{{ route('site.real-estate.index', ['locale' => app()->getLocale()]) }}">@themeT('listings', 'Tất cả tin rao')</a>
+            <a href="{{ route('site.blog.index', ['locale' => app()->getLocale()]) }}">@themeT('news', 'Tin tức')</a>
+            <a href="{{ route('site.pages.show', ['locale' => app()->getLocale(), 'slug' => 'gioi-thieu']) }}">@themeT('about', 'Giới thiệu')</a>
+            <a href="{{ route('site.contact', ['locale' => app()->getLocale()]) }}">@themeT('contact', 'Liên hệ')</a>
         </nav>
     </div>
 </header>

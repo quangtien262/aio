@@ -48,22 +48,22 @@
             <form class="bb14-newsletter" method="post" action="{{ route('site.newsletter.subscribe') }}">
                 @csrf
                 <input type="email" name="email" placeholder="Dia chi email....." required>
-                <button type="submit" aria-label="Dang ky">âœˆ</button>
+                <button type="submit" aria-label="Dang ky">✈</button>
             </form>
             <h3 class="bb14-share-title">Chia se mang xa hoi</h3>
             <div class="bb14-socials">
-                <a href="#footer">f</a><a href="#footer">z</a><a href="#footer">t</a><a href="#footer">â–¶</a><a href="#footer">p</a>
+                <a href="#footer">f</a><a href="#footer">z</a><a href="#footer">t</a><a href="#footer">▶</a><a href="#footer">p</a>
             </div>
         </section>
     </div>
 
     <div class="bb14-container bb14-contact-cards">
-        <article><span>â–°</span><strong>Dia chi</strong><p>{{ $supportAddress }}</p></article>
-        <article><span>â˜Ž</span><strong>Phone</strong><p>{{ $hotline }}</p></article>
-        <article><span>â–£</span><strong>Fax</strong><p>{{ $hotline }}</p></article>
-        <article><span>âœ‰</span><strong>Email</strong><p>{{ $supportEmail }}</p></article>
+        <article><span>▰</span><strong>Dia chi</strong><p>{{ $supportAddress }}</p></article>
+        <article><span>☎</span><strong>Phone</strong><p>{{ $hotline }}</p></article>
+        <article><span>▣</span><strong>Fax</strong><p>{{ $hotline }}</p></article>
+        <article><span>✉</span><strong>Email</strong><p>{{ $supportEmail }}</p></article>
     </div>
 
-    <div class="bb14-copyright">Â© Ban quyen noi dung thuoc ve {{ $companyName }}</div>
+    <div class="bb14-copyright">© Ban quyen noi dung thuoc ve {{ $companyName }}</div>
 </footer>
 

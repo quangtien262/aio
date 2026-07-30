@@ -85,7 +85,7 @@
     },
     {
       "key": "cms-testimonials",
-      "label": "Testimonials",
+      "label": "Cảm nhận khách hàng",
       "description": "Quan ly nhan xet khach hang dung chung cho cac theme va landing block.",
       "badge": "Reviews",
       "color": "magenta",

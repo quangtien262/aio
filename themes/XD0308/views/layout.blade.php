@@ -8,6 +8,7 @@
     @include('theme-xd0308::partials.styles')
     @include('theme-xd0308::partials.comgo-overrides')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
     <div id="top" class="xd4-page">

@@ -7,6 +7,7 @@ import FileTextOutlined from '@ant-design/icons/FileTextOutlined';
 import PictureOutlined from '@ant-design/icons/PictureOutlined';
 import SearchOutlined from '@ant-design/icons/SearchOutlined';
 import StarOutlined from '@ant-design/icons/StarOutlined';
+import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Checkbox from 'antd/es/checkbox';
@@ -23,10 +24,13 @@ import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
+import Tabs from 'antd/es/tabs';
+import Tag from 'antd/es/tag';
 import dayjs from 'dayjs';
 import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
 import RichContentEditor from '../../../shared/components/RichContentEditor';
 import { CollapsibleCardTitle } from '../../../shared/components/CollapsibleFormCard';
+import { toSlug } from '../../../shared/utils/slug';
 import {
     BlockQuote,
     Bold,
@@ -51,6 +55,27 @@ import {
 import 'ckeditor5/ckeditor5.css';
 
 const { TextArea } = Input;
+
+const translationStatusLabels = {
+    missing: 'Chưa có',
+    needs_translation: 'Cần dịch',
+    draft: 'Bản nháp',
+    machine_draft: 'Bản dịch máy',
+    in_review: 'Đang duyệt',
+    ready: 'Sẵn sàng',
+    published: 'Đã xuất bản',
+    outdated: 'Cần cập nhật',
+};
+
+const translationStatusColors = {
+    needs_translation: 'orange',
+    draft: 'default',
+    machine_draft: 'cyan',
+    in_review: 'gold',
+    ready: 'blue',
+    published: 'green',
+    outdated: 'orange',
+};
 
 function normalizeGalleryImages(value) {
     if (Array.isArray(value)) {
@@ -104,19 +129,36 @@ export const emptyCatalogProductForm = {
     is_active: true,
 };
 
-export default function CatalogProductFormModal({ open, canManage, editingProduct, categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
+export default function CatalogProductFormModal({
+    open,
+    canManage,
+    translationMode = false,
+    editingProduct,
+    categoryOptions = [],
+    localeOptions = [],
+    contentLocale = 'vi',
+    sourceLocale = 'vi',
+    allowLocaleSwitchOnCreate = false,
+    callAdminApi,
+    onCancel,
+    onSubmit,
+    onLocaleChange,
+}) {
     const [form] = Form.useForm();
     const [messageApi, messageContextHolder] = message.useMessage();
+    const [modalApi, modalContextHolder] = Modal.useModal();
     const [uploadingAsset, setUploadingAsset] = useState(null);
     const [youtubeEmbedOpen, setYoutubeEmbedOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [contentMode, setContentMode] = useState('editor');
     const [collapsedSections, setCollapsedSections] = useState({});
     const [editorContentVersion, setEditorContentVersion] = useState(0);
+    const [switchingLocale, setSwitchingLocale] = useState(false);
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
+    const lastProductNameRef = useRef('');
     const editorInitialData = useMemo(
         () => form.getFieldValue('detail_content') ?? editingProduct?.detail_content ?? '',
         [editingProduct?.id, editingProduct?.slug, editingProduct?.detail_content, editorContentVersion, form]
@@ -133,6 +175,19 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         coverImageUrl,
         ...normalizeGalleryImages(galleryImages),
     ].filter(Boolean))), [coverImageUrl, galleryImages]);
+    const editableLocales = useMemo(() => (
+        localeOptions.map((locale) => ({
+            code: locale.code ?? locale.value,
+            name: locale.native_name || locale.name || locale.label || locale.code || locale.value,
+            is_source: locale.is_source ?? (locale.code ?? locale.value) === sourceLocale,
+        })).filter((locale) => Boolean(locale.code))
+    ), [localeOptions, sourceLocale]);
+    const translationStatuses = editingProduct?._translation_statuses ?? {};
+    const activeTranslationStatus = editingProduct?._translation_status
+        ?? translationStatuses[contentLocale]
+        ?? (contentLocale === sourceLocale
+            ? (editingProduct?.id ? 'published' : 'draft')
+            : 'missing');
 
     const syncProductImages = (nextValue, nextCover = null) => {
         const normalizedImages = Array.from(new Set(normalizeGalleryImages(nextValue)));
@@ -188,11 +243,21 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         });
         form.setFieldValue('detail_content', editingProduct?.detail_content ?? '');
         form.setFieldValue('gallery_images', normalizeGalleryImages(editingProduct?.gallery_images ?? []));
+        lastProductNameRef.current = String(editingProduct?.name ?? '');
         setContentMode('editor');
         setEditorContentVersion((current) => current + 1);
         editorInstanceRef.current = null;
         editorSelectionRef.current = null;
     }, [editingProduct, form]);
+
+    useEffect(() => {
+        if (productName === lastProductNameRef.current) {
+            return;
+        }
+
+        form.setFieldValue('slug', toSlug(productName));
+        lastProductNameRef.current = productName;
+    }, [form, productName]);
 
     const editorConfig = useMemo(() => ({
         licenseKey: 'GPL',
@@ -457,12 +522,12 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         await onSubmit?.({
             ...values,
             catalog_category_id: values.catalog_category_id || null,
-            slug: null,
+            slug: toSlug(values.slug || values.name),
             sku: values.sku || null,
             original_price: values.original_price ?? null,
             short_description: values.short_description || null,
             detail_content: values.detail_content || null,
-            meta_title: values.name || null,
+            meta_title: values.meta_title || values.name || null,
             meta_description: values.meta_description || values.short_description || null,
             meta_keywords: values.meta_keywords || null,
             highlights: values.highlights || null,
@@ -485,6 +550,49 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
         onCancel?.();
     };
 
+    const switchLocale = async (nextLocale) => {
+        if (
+            nextLocale === contentLocale
+            || switchingLocale
+            || (!editingProduct?.id && !allowLocaleSwitchOnCreate)
+            || !onLocaleChange
+        ) {
+            return;
+        }
+
+        setSwitchingLocale(true);
+
+        try {
+            const didSwitch = await onLocaleChange(nextLocale, form.getFieldsValue(true));
+
+            if (didSwitch === false) {
+                messageApi.error('Không thể tải nội dung của ngôn ngữ đã chọn.');
+            }
+        } finally {
+            setSwitchingLocale(false);
+        }
+    };
+
+    const handleLocaleChange = (nextLocale) => {
+        if (!editingProduct?.id && allowLocaleSwitchOnCreate) {
+            void switchLocale(nextLocale);
+            return;
+        }
+
+        if (!form.isFieldsTouched()) {
+            void switchLocale(nextLocale);
+            return;
+        }
+
+        modalApi.confirm({
+            title: 'Chuyển ngôn ngữ nhập liệu?',
+            content: 'Các thay đổi chưa lưu trong ngôn ngữ hiện tại sẽ bị bỏ.',
+            okText: 'Chuyển ngôn ngữ',
+            cancelText: 'Ở lại',
+            onOk: () => switchLocale(nextLocale),
+        });
+    };
+
     return (
         <Drawer
             title={editingProduct?.id ? 'Cập nhật sản phẩm' : 'Tạo sản phẩm'}
@@ -497,11 +605,51 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
             extra={(
                 <Space>
                     <Button onClick={handleCancel}>Hủy</Button>
-                    <Button type="primary" disabled={!canManage} onClick={handleSubmit}>Lưu sản phẩm</Button>
+                    <Button type="primary" disabled={!canManage || switchingLocale || (!editingProduct?.id && translationMode)} onClick={handleSubmit}>
+                        {!editingProduct?.id && translationMode ? 'Lưu tại ngôn ngữ gốc' : (translationMode ? 'Lưu bản dịch' : 'Lưu sản phẩm')}
+                    </Button>
                 </Space>
             )}
         >
             {messageContextHolder}
+            {modalContextHolder}
+            {editableLocales.length ? (
+                <>
+                    <Tabs
+                        activeKey={contentLocale}
+                        onChange={handleLocaleChange}
+                        items={editableLocales.map((locale) => {
+                            const status = translationStatuses[locale.code]
+                                ?? (locale.code === contentLocale ? activeTranslationStatus : 'missing');
+
+                            return {
+                                key: locale.code,
+                                disabled: switchingLocale || (!editingProduct?.id && !allowLocaleSwitchOnCreate && locale.code !== sourceLocale),
+                                label: (
+                                    <Space size={6}>
+                                        <span>{locale.name}</span>
+                                        {locale.is_source ? <Tag>Gốc</Tag> : null}
+                                        <Tag color={translationStatusColors[status]}>
+                                            {translationStatusLabels[status] ?? status}
+                                        </Tag>
+                                    </Space>
+                                ),
+                            };
+                        })}
+                    />
+                    <Alert
+                        type={translationMode ? 'info' : 'success'}
+                        showIcon
+                        message={`Đang nhập ${editableLocales.find((locale) => locale.code === contentLocale)?.name || contentLocale.toUpperCase()}`}
+                        description={translationMode
+                            ? `Tên, slug, mô tả, SEO, nội dung chi tiết và trạng thái xuất bản được lưu riêng cho ngôn ngữ này. Giá, kho, danh mục, SKU và ảnh tiếp tục dùng từ bản gốc.${!editingProduct?.id
+                                ? ' Nội dung đang được giữ tạm; quay lại ngôn ngữ gốc và bấm Lưu để tạo sản phẩm cùng các bản dịch nháp.'
+                                : ''}`
+                            : 'Đây là ngôn ngữ gốc. Giá, kho, danh mục, SKU và ảnh được quản lý tại đây.'}
+                        style={{ marginBottom: 16 }}
+                    />
+                </>
+            ) : null}
             <Form form={form} layout="vertical" initialValues={editingProduct}>
                 <div className="cms-post-form-shell">
                     <Card size="small" className="cms-post-form-card" title={renderSectionTitle('basic', 'Thông tin cơ bản', AppstoreOutlined)}>
@@ -515,16 +663,39 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                             </Col>
                             <Col xs={24} md={10}>
                                 <Form.Item name="sku" label="Mã sản phẩm" extra="Để trống để hệ thống tự sinh theo format PRO&lt;ID&gt;.">
-                                    <Input placeholder="PRO101" />
+                                    <Input disabled={translationMode} placeholder="PRO101" />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={12}>
+                            <Col xs={24} md={8}>
+                                <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug theo ngôn ngữ' }]}>
+                                    <Input
+                                        placeholder="ten-san-pham"
+                                        onChange={(event) => form.setFieldValue(
+                                            'slug',
+                                            toSlug(event.target.value, { trimEdges: false }),
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={8}>
                                 <Form.Item
                                     name="catalog_category_id"
                                     label="Danh mục"
                                     rules={[{ required: true, message: 'Vui lòng chọn danh mục sản phẩm' }]}
                                 >
-                                    <Select showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
+                                    <Select disabled={translationMode} showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={8}>
+                                <Form.Item name="is_active" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
+                                    <Radio.Group
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                        options={[
+                                            { label: 'Bản nháp', value: false },
+                                            { label: 'Đã xuất bản', value: true },
+                                        ]}
+                                    />
                                 </Form.Item>
                             </Col>
                             <Col xs={24}>
@@ -542,28 +713,29 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                         <Row gutter={16}>
                             <Col xs={24} md={8}>
                                 <Form.Item name="price" label="Giá" rules={[{ required: true, message: 'Nhập giá' }]}>
-                                    <InputNumber min={0} style={{ width: '100%' }} />
+                                    <InputNumber disabled={translationMode} min={0} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="original_price" label="Giá gốc">
-                                    <InputNumber min={0} style={{ width: '100%' }} />
+                                    <InputNumber disabled={translationMode} min={0} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="stock" label="Tồn kho" rules={[{ required: true, message: 'Nhập tồn kho' }]}>
-                                    <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+                                    <InputNumber disabled={translationMode} min={0} precision={0} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="sold_count" label="Đã mua">
-                                    <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+                                    <InputNumber disabled={translationMode} min={0} precision={0} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="deal_end_at" label="Hết hạn deal">
                                     <DatePicker
                                         showTime
+                                        disabled={translationMode}
                                         format="DD/MM/YYYY HH:mm"
                                         placeholder="Chọn thời gian hết hạn"
                                         style={{ width: '100%' }}
@@ -572,12 +744,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="is_highlight" valuePropName="checked" label=" " colon={false}>
-                                    <Checkbox>Đánh dấu nổi bật</Checkbox>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={8}>
-                                <Form.Item name="is_active" valuePropName="checked" label="Active sản phẩm" colon={false}>
-                                    <Switch checkedChildren="active" unCheckedChildren="unactive" />
+                                    <Checkbox disabled={translationMode}>Đánh dấu nổi bật</Checkbox>
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -600,7 +767,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                                 onChange={(nextValue) => syncProductImages(nextValue)}
                                 coverValue={coverImageUrl}
                                 onSetCover={setProductCoverImage}
-                                canManage={canManage}
+                                canManage={canManage && !translationMode}
                                 callAdminApi={callAdminApi}
                                 recordTitle={productName || 'Product images'}
                                 previewTitle="Ảnh sản phẩm"
@@ -623,6 +790,11 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                         {!isSectionCollapsed('seo') ? (
 
                         <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_title" label="SEO Title">
+                                    <Input placeholder="SEO title sản phẩm" />
+                                </Form.Item>
+                            </Col>
                             <Col xs={24} md={12}>
                                 <Form.Item
                                     name="meta_keywords"
@@ -676,7 +848,7 @@ export default function CatalogProductFormModal({ open, canManage, editingProduc
                             onChange={(nextContent) => form.setFieldValue('detail_content', nextContent)}
                             disabled={!canManage}
                             callAdminApi={callAdminApi}
-                            recordKey={editingProduct?.id ?? 'new'}
+                            recordKey={`${editingProduct?.id ?? 'new'}:${contentLocale}`}
                             open={open}
                             htmlPlaceholder="<section>Nhập mã HTML chi tiết sản phẩm...</section>"
                         />

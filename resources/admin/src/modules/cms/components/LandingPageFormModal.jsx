@@ -19,6 +19,7 @@ export default function LandingPageFormModal({
     editingPage,
     locales = [],
     defaultLocale = 'vi',
+    sourceLocale = 'vi',
     onCancel,
     onSubmit,
 }) {
@@ -36,6 +37,8 @@ export default function LandingPageFormModal({
         const dataByLocale = activeLocales.reduce((carry, locale) => ({
             ...carry,
             [locale]: {
+                slug: editingPage?.data_by_locale?.[locale]?.slug
+                    ?? (locale === sourceLocale ? editingPage?.slug : ''),
                 title: editingPage?.data_by_locale?.[locale]?.title ?? (locale === defaultLocale ? editingPage?.title : ''),
                 excerpt: editingPage?.data_by_locale?.[locale]?.excerpt ?? '',
                 meta_title: editingPage?.data_by_locale?.[locale]?.meta_title ?? '',
@@ -44,7 +47,6 @@ export default function LandingPageFormModal({
         }), {});
 
         form.setFieldsValue({
-            slug: editingPage?.is_home ? 'home' : (editingPage?.slug ?? ''),
             status: editingPage?.status ?? 'draft',
             sort_order: editingPage?.sort_order ?? 0,
             data_by_locale: dataByLocale,
@@ -55,7 +57,9 @@ export default function LandingPageFormModal({
         const values = await form.validateFields();
         await onSubmit({
             ...values,
-            slug: editingPage?.is_home ? undefined : values.slug,
+            slug: editingPage?.is_home
+                ? undefined
+                : values.data_by_locale?.[sourceLocale]?.slug,
         });
     };
 
@@ -75,10 +79,7 @@ export default function LandingPageFormModal({
                 {editingPage?.is_home ? (
                     <Text type="secondary">Trang chủ là landingpage đặc biệt, đường dẫn luôn cố định là / và không thể đổi slug.</Text>
                 ) : null}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px 140px', gap: 12, marginTop: 12 }}>
-                    <Form.Item name="slug" label="Slug public" tooltip="Landingpage thường sẽ có đường dẫn /land/{slug}. Trang chủ luôn là /." rules={editingPage?.is_home ? [] : [{ required: true, message: 'Nhập slug landingpage' }]}>
-                        <Input disabled={editingPage?.is_home} placeholder="bao-gia-xay-dung" />
-                    </Form.Item>
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 140px', gap: 12, marginTop: 12 }}>
                     <Form.Item name="status" label="Trạng thái">
                         <Select
                             disabled={editingPage?.is_home}
@@ -98,7 +99,15 @@ export default function LandingPageFormModal({
                         label: localeLabel(locale, locales),
                         children: (
                             <>
-                                <Form.Item name={['data_by_locale', locale, 'title']} label="Tiêu đề" rules={[{ required: locale === defaultLocale, message: 'Nhập tiêu đề' }]}>
+                                <Form.Item
+                                    name={['data_by_locale', locale, 'slug']}
+                                    label={`Slug public (${locale.toUpperCase()})`}
+                                    tooltip="Mỗi ngôn ngữ có URL riêng. Trang chủ luôn dùng /."
+                                    rules={editingPage?.is_home ? [] : [{ required: locale === sourceLocale, message: 'Nhập slug landingpage' }]}
+                                >
+                                    <Input disabled={editingPage?.is_home} placeholder="construction-quotation" />
+                                </Form.Item>
+                                <Form.Item name={['data_by_locale', locale, 'title']} label="Tiêu đề" rules={[{ required: locale === sourceLocale, message: 'Nhập tiêu đề' }]}>
                                     <Input placeholder="Landingpage báo giá xây dựng" />
                                 </Form.Item>
                                 <Form.Item name={['data_by_locale', locale, 'excerpt']} label="Mô tả ngắn">

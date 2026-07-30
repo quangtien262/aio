@@ -20,6 +20,7 @@ import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
 import RichContentEditor from '../../../shared/components/RichContentEditor';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import { toSlug } from '../../../shared/utils/slug';
 import {
@@ -100,7 +101,21 @@ function getYoutubeEmbedUrl(value) {
     }
 }
 
-export default function CmsPostFormModal({ open, canManage, editingPost, mediaOptions = [], categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
+export default function CmsPostFormModal({
+    open,
+    canManage,
+    translationMode = false,
+    editingPost,
+    mediaOptions = [],
+    categoryOptions = [],
+    localeOptions = [],
+    contentLocale = 'vi',
+    sourceLocale = 'vi',
+    callAdminApi,
+    onCancel,
+    onSubmit,
+    onLocaleChange,
+}) {
     const [form] = Form.useForm();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [uploadingAsset, setUploadingAsset] = useState(null);
@@ -119,6 +134,8 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
     const featuredMediaInputRef = useRef(null);
+    const lastTitleRef = useRef('');
+    const titleValue = Form.useWatch('title', form) ?? '';
     const featuredMediaId = Form.useWatch('featured_media_id', form) ?? null;
     const bodyValue = Form.useWatch('body', form) ?? '';
     const editorInitialData = useMemo(
@@ -145,7 +162,17 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
         setFeaturedMediaKeyword('');
         setFeaturedMediaLibraryPage(1);
         setFeaturedMediaLibraryOpen(false);
+        lastTitleRef.current = String(editingPost?.title ?? '');
     }, [editingPost, form]);
+
+    useEffect(() => {
+        if (titleValue === lastTitleRef.current) {
+            return;
+        }
+
+        form.setFieldValue('slug', toSlug(titleValue));
+        lastTitleRef.current = titleValue;
+    }, [form, titleValue]);
 
     useEffect(() => {
         setFeaturedMediaOptions((currentOptions) => {
@@ -462,8 +489,8 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             ...values,
             excerpt: values.excerpt || null,
             body: values.body || null,
-            slug: null,
-            meta_title: values.title || null,
+            slug: toSlug(values.slug || values.title),
+            meta_title: values.meta_title || values.title || null,
             meta_description: values.meta_description || values.excerpt || null,
             meta_keywords: values.meta_keywords || null,
             featured_media_id: values.featured_media_id || null,
@@ -478,6 +505,10 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
     const handleCancel = () => {
         form.resetFields();
         onCancel?.();
+    };
+
+    const handleSlugChange = (event) => {
+        form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
     };
 
     const handleUploadFeaturedMedia = async (event) => {
@@ -560,18 +591,48 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
             extra={(
                 <Space>
                     <Button onClick={handleCancel}>Hủy</Button>
-                    <Button type="primary" disabled={!canManage} onClick={handleSubmit}>Lưu bài viết</Button>
+                    <Button type="primary" disabled={!canManage || (!editingPost?.id && translationMode)} onClick={handleSubmit}>
+                        {!editingPost?.id && translationMode ? 'Lưu tại ngôn ngữ gốc' : (translationMode ? 'Lưu bản dịch' : 'Lưu bài viết')}
+                    </Button>
                 </Space>
             )}
         >
             {messageContextHolder}
+            <LocalizedContentTabs
+                localeOptions={localeOptions}
+                contentLocale={contentLocale}
+                sourceLocale={sourceLocale}
+                editingRecord={editingPost}
+                entityLabel="bài viết"
+                translationDescription="Tiêu đề, slug, mô tả, SEO, nội dung chi tiết và trạng thái xuất bản được lưu riêng cho ngôn ngữ này. Danh mục, ảnh đại diện và thiết lập nổi bật tiếp tục dùng từ bản gốc."
+                sourceDescription="Đây là ngôn ngữ gốc. Danh mục, ảnh đại diện và thiết lập nổi bật được quản lý tại đây."
+                isDirty={() => form.isFieldsTouched()}
+                getCurrentValues={() => form.getFieldsValue(true)}
+                onLocaleChange={onLocaleChange}
+            />
             <Form form={form} layout="vertical" initialValues={editingPost}>
                 <div className="cms-post-form-shell">
                     <Card size="small" className="cms-post-form-card" title="Thông tin bài viết">
                         <Row gutter={[16, 14]} align="top">
-                            <Col xs={24}>
+                            <Col xs={24} md={14}>
                                 <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề bài viết' }]}>
                                     <Input placeholder="Bài viết nổi bật" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={10}>
+                                <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug bài viết' }]}>
+                                    <Input placeholder="bai-viet-noi-bat" onChange={handleSlugChange} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={[16, 14]} align="top">
+                            <Col xs={24} md={8}>
+                                <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
+                                    <Radio.Group
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                        options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]}
+                                    />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -589,26 +650,17 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                         </Form.Item>
                     </Card>
 
-                    <Card size="small" className="cms-post-form-card" title="Xuất bản và hiển thị">
+                    <Card size="small" className="cms-post-form-card" title="Phân loại và hiển thị">
                         <Row gutter={[16, 14]} align="top">
-                            <Col xs={24} lg={13}>
-                                <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-                                    <Radio.Group
-                                        optionType="button"
-                                        buttonStyle="solid"
-                                        options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} lg={11}>
+                            <Col xs={24}>
                                 <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 0 }}>
-                                    <Select allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
+                                    <Select disabled={translationMode} allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24}>
                                 <div className="cms-post-highlight-row">
                                     <Form.Item name="is_highlight" label="Tin nổi bật" valuePropName="checked" style={{ marginBottom: 0 }}>
-                                        <Switch />
+                                        <Switch disabled={translationMode} />
                                     </Form.Item>
                                     <Text type="secondary">Dùng để ưu tiên bài viết trong các block nổi bật ngoài website.</Text>
                                 </div>
@@ -629,7 +681,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                                 setFeaturedMediaOptions((current) => [media, ...current.filter((item) => item.id !== media.id)]);
                                 form.setFieldValue('featured_media_id', media.id);
                             }}
-                            canManage={canManage}
+                            canManage={canManage && !translationMode}
                             callAdminApi={callAdminApi}
                             mediaOptions={mediaOptions}
                             recordTitle={form.getFieldValue('title') || 'Ảnh đại diện bài viết'}
@@ -718,7 +770,12 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
 
                     <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
                         <Row gutter={16}>
-                            <Col xs={24}>
+                            <Col xs={24} md={12}>
+                                <Form.Item name="meta_title" label="SEO Title">
+                                    <Input.TextArea rows={3} placeholder="SEO title bài viết" />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
                                 <Form.Item name="meta_description" label="SEO Description" style={{ marginBottom: 0 }}>
                                     <Input.TextArea rows={3} placeholder="Meta description bài viết" />
                                 </Form.Item>
@@ -743,7 +800,7 @@ export default function CmsPostFormModal({ open, canManage, editingPost, mediaOp
                             onChange={(nextContent) => form.setFieldValue('body', nextContent)}
                             disabled={!canManage}
                             callAdminApi={callAdminApi}
-                            recordKey={editingPost?.id ?? 'new'}
+                            recordKey={`${editingPost?.id ?? 'new'}:${contentLocale}`}
                             open={open}
                             htmlPlaceholder="<section>Nhập mã HTML tùy chỉnh...</section>"
                         />

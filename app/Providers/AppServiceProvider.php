@@ -54,6 +54,9 @@ use App\Core\Themes\Demo\Xd0322DemoContentProvider;
 use App\Core\Themes\Demo\Xd0323DemoContentProvider;
 use App\Core\Themes\Demo\Xd321DemoContentProvider;
 use App\Support\FrontendLocalization;
+use App\Support\Localization\LocaleContext;
+use App\Support\Localization\WebsiteLocaleManager;
+use App\Support\Localization\LocalizedContentRepository;
 use App\Support\SiteContext;
 use App\Models\Admin;
 use App\Models\Permission;
@@ -75,6 +78,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SiteContext::class);
+        $this->app->singleton(LocaleContext::class);
+        $this->app->singleton(WebsiteLocaleManager::class);
 
         $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
             $this->app->make(Nt502DemoContentProvider::class),
@@ -134,6 +139,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        foreach ((array) config('localized-content.resources', []) as $definition) {
+            $modelClass = $definition['model'] ?? null;
+
+            if (! is_string($modelClass) || ! class_exists($modelClass)) {
+                continue;
+            }
+
+            $modelClass::saved(function ($model): void {
+                app(LocalizedContentRepository::class)->syncLegacyModel($model);
+            });
+            $modelClass::deleted(function ($model): void {
+                app(LocalizedContentRepository::class)->deleteTranslationsForModel($model);
+            });
+        }
+
         RateLimiter::for('login', function (Request $request): Limit {
             $identity = strtolower(trim((string) ($request->input('login') ?: $request->input('email'))));
 

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Alert from 'antd/es/alert';
 import Col from 'antd/es/col';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
@@ -17,7 +18,7 @@ export const emptyCmsCategoryForm = {
     website_key: '',
 };
 
-export default function CmsCategoryFormModal({ open, canManage, editingCategory, parentOptions = [], submitLoading = false, onCancel, onSubmit }) {
+export default function CmsCategoryFormModal({ open, canManage, translationMode = false, editingCategory, parentOptions = [], submitLoading = false, onCancel, onSubmit }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -57,6 +58,14 @@ export default function CmsCategoryFormModal({ open, canManage, editingCategory,
             destroyOnHidden
         >
             <Form form={form} layout="vertical" initialValues={editingCategory}>
+                {translationMode ? (
+                    <Alert
+                        type="info"
+                        showIcon
+                        message="Chế độ dịch chỉ lưu nội dung và SEO. Quan hệ danh mục cha dùng chung từ bản gốc."
+                        style={{ marginBottom: 16 }}
+                    />
+                ) : null}
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item name="name" label="Tên category" rules={[{ required: true, message: 'Nhập tên category' }]}>
@@ -82,7 +91,7 @@ export default function CmsCategoryFormModal({ open, canManage, editingCategory,
                     </Col>
                     <Col span={12}>
                         <Form.Item name="parent_id" label="Parent Category">
-                            <Select allowClear showSearch optionFilterProp="label" options={parentOptions} />
+                            <Select disabled={translationMode} allowClear showSearch optionFilterProp="label" options={parentOptions} />
                         </Form.Item>
                     </Col>
                 </Row>

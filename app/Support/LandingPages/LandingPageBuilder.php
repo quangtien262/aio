@@ -2,6 +2,7 @@
 
 namespace App\Support\LandingPages;
 
+use App\Enums\TranslationStatus;
 use App\Models\CatalogProduct;
 use App\Models\CatalogCategory;
 use App\Models\CmsCategory;
@@ -24,6 +25,8 @@ use App\Models\SiteBanner;
 use App\Models\ThemeTranslation;
 use App\Support\FrontendLocalization;
 use App\Support\FrontendRouteUrl;
+use App\Support\Localization\LocalizedContentRepository;
+use App\Support\Localization\TranslationRevision;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
@@ -31,6 +34,10 @@ use Illuminate\Support\Str;
 
 class LandingPageBuilder
 {
+    public function __construct(
+        private readonly LocalizedContentRepository $localizedContent,
+    ) {}
+
     public function supportsTheme(?string $themeKey): bool
     {
         return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
@@ -48,6 +55,7 @@ class LandingPageBuilder
         return collect($this->defaultBlocksForTheme($themeKey))
             ->map(fn (array $block): array => [
                 'block_type' => $block['block_type'],
+                'schema_version' => (int) ($block['schema_version'] ?? 1),
                 'label' => $block['label'],
                 'description' => $block['description'],
                 'default_anchor_id' => $block['anchor_id'],
@@ -118,7 +126,7 @@ class LandingPageBuilder
      */
     public function viewData(LandingPage $page, string $locale, string $fallbackLocale = 'vi'): array
     {
-        $pageData = $this->localizedPageData($page, $locale, $fallbackLocale);
+        $pageData = $this->localizedPageData($page, $locale, $fallbackLocale, true);
 
         $blocks = $page->blocks
             ->filter(fn (LandingPageBlock $block): bool => $block->is_visible && $block->block_type !== 'footer_contact')
@@ -256,7 +264,7 @@ class LandingPageBuilder
             'website_key' => $page->website_key,
             'theme_key' => $page->theme_key,
             'page_type' => $page->page_type,
-            'slug' => $page->slug,
+            'slug' => $data?->slug ?? $page->slug,
             'status' => $page->status,
             'template' => $page->template,
             'is_home' => $page->is_home,
@@ -266,16 +274,31 @@ class LandingPageBuilder
             'excerpt' => $data?->excerpt,
             'meta_title' => $data?->meta_title,
             'meta_description' => $data?->meta_description,
+            'translation_status' => $data?->translation_status?->value
+                ?? TranslationStatus::Missing->value,
         ];
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function serializeBlock(LandingPageBlock $block, string $locale, string $fallbackLocale = 'vi', bool $includeDynamic = false): array
-    {
-        $data = $this->localizedBlockData($block, $locale, $fallbackLocale);
-        $fallbackData = $block->data->firstWhere('locale', $fallbackLocale) ?? $block->data->first();
+    public function serializeBlock(
+        LandingPageBlock $block,
+        string $locale,
+        string $fallbackLocale = 'vi',
+        bool $includeDynamic = false,
+        bool $includeEditableLocales = false,
+    ): array {
+        $availableData = $includeEditableLocales
+            ? $block->data
+            : $block->data->filter(
+                fn (LandingPageBlockData $item): bool => $item->isPublishedTranslation(),
+            );
+        $data = $availableData->firstWhere('locale', $locale)
+            ?? $availableData->firstWhere('locale', $fallbackLocale)
+            ?? $availableData->first();
+        $fallbackData = $availableData->firstWhere('locale', $fallbackLocale)
+            ?? $availableData->first();
         $content = $this->decodeContent($data?->content);
         $fallbackContent = $this->decodeContent($fallbackData?->content);
 
@@ -288,6 +311,7 @@ class LandingPageBuilder
             'landing_page_id' => $block->landing_page_id,
             'theme_key' => $block->theme_key,
             'block_type' => $block->block_type,
+            'schema_version' => (int) ($block->schema_version ?? 1),
             'sort_order' => $block->sort_order,
             'is_visible' => $block->is_visible,
             'anchor_id' => $block->anchor_id,
@@ -296,28 +320,46 @@ class LandingPageBuilder
             'media' => $block->media ?? [],
             'data' => [
                 'locale' => $data?->locale ?? $locale,
+                'schema_version' => (int) ($data?->schema_version ?? $block->schema_version ?? 1),
+                'translation_status' => $data?->translation_status?->value
+                    ?? TranslationStatus::Missing->value,
                 'title' => $data?->title ?? $fallbackData?->title,
                 'subtitle' => $data?->subtitle ?? $fallbackData?->subtitle,
                 'description' => $data?->description ?? $fallbackData?->description,
                 'button_label' => $data?->button_label ?? $fallbackData?->button_label,
                 'content' => $content,
             ],
-            'data_by_locale' => collect(FrontendLocalization::supportedLocales())
-                ->mapWithKeys(function (string $supportedLocale) use ($block, $fallbackData, $fallbackContent): array {
-                    $localeData = $block->data->firstWhere('locale', $supportedLocale);
+            'data_by_locale' => collect(
+                $includeEditableLocales
+                    ? FrontendLocalization::editableLocales()
+                    : FrontendLocalization::publicLocales(),
+            )
+                ->mapWithKeys(function (string $supportedLocale) use ($availableData, $fallbackData, $fallbackContent, $includeEditableLocales, $block): array {
+                    $localeData = $availableData->firstWhere('locale', $supportedLocale);
                     $localeContent = $this->decodeContent($localeData?->content);
 
-                    if ($localeContent === [] || (array_key_exists('items', $localeContent) && ($localeContent['items'] ?? []) === [])) {
+                    if (
+                        ! $includeEditableLocales
+                        && ($localeContent === [] || (array_key_exists('items', $localeContent) && ($localeContent['items'] ?? []) === []))
+                    ) {
                         $localeContent = $fallbackContent;
                     }
 
                     return [
                         $supportedLocale => [
                             'locale' => $supportedLocale,
-                            'title' => $localeData?->title ?? $fallbackData?->title,
-                            'subtitle' => $localeData?->subtitle ?? $fallbackData?->subtitle,
-                            'description' => $localeData?->description ?? $fallbackData?->description,
-                            'button_label' => $localeData?->button_label ?? $fallbackData?->button_label,
+                            'schema_version' => (int) ($localeData?->schema_version ?? $block->schema_version ?? 1),
+                            'translation_status' => $localeData?->translation_status?->value
+                                ?? TranslationStatus::Missing->value,
+                            'allowed_transitions' => $localeData?->translation_status
+                                ? collect($localeData->translation_status->allowedTransitions())
+                                    ->map(fn (TranslationStatus $status): string => $status->value)
+                                    ->all()
+                                : [],
+                            'title' => $localeData?->title ?? ($includeEditableLocales ? null : $fallbackData?->title),
+                            'subtitle' => $localeData?->subtitle ?? ($includeEditableLocales ? null : $fallbackData?->subtitle),
+                            'description' => $localeData?->description ?? ($includeEditableLocales ? null : $fallbackData?->description),
+                            'button_label' => $localeData?->button_label ?? ($includeEditableLocales ? null : $fallbackData?->button_label),
                             'content' => $localeContent,
                         ],
                     ];
@@ -343,13 +385,27 @@ class LandingPageBuilder
         ]);
 
         foreach ($this->supportedLocales() as $locale) {
-            LandingPageData::query()->create([
-                'landing_page_id' => $page->id,
-                'locale' => $locale,
+            $pagePayload = [
+                'slug' => 'home',
                 'title' => strtoupper($themeKey).' Landing',
                 'excerpt' => 'Trang chủ landingpage.',
                 'meta_title' => strtoupper($themeKey).' Landing',
                 'meta_description' => 'Landing page được quản lý theo từng block.',
+            ];
+            $status = $locale === FrontendLocalization::sourceLocale()
+                ? TranslationStatus::Published
+                : TranslationStatus::NeedsTranslation;
+            $revision = TranslationRevision::fingerprint($pagePayload);
+            LandingPageData::query()->create([
+                'landing_page_id' => $page->id,
+                'locale' => $locale,
+                ...$pagePayload,
+                'translation_status' => $status,
+                'source_revision' => $revision,
+                'translation_revision' => $revision,
+                'translated_at' => now(),
+                'reviewed_at' => $status === TranslationStatus::Published ? now() : null,
+                'translation_published_at' => $status === TranslationStatus::Published ? now() : null,
             ]);
         }
 
@@ -358,6 +414,7 @@ class LandingPageBuilder
                 'landing_page_id' => $page->id,
                 'theme_key' => strtoupper($themeKey),
                 'block_type' => $definition['block_type'],
+                'schema_version' => (int) ($definition['schema_version'] ?? 1),
                 'sort_order' => ($index + 1) * 10,
                 'is_visible' => true,
                 'anchor_id' => $definition['anchor_id'],
@@ -365,16 +422,33 @@ class LandingPageBuilder
                 'media' => $definition['media'] ?? [],
             ]);
 
+            $sourceData = $this->defaultBlockLocaleData(
+                $definition,
+                FrontendLocalization::sourceLocale(),
+            );
+
             foreach ($this->supportedLocales() as $locale) {
-                $data = $definition['data'][$locale] ?? $definition['data']['vi'];
+                $data = $this->defaultBlockLocaleData($definition, $locale);
+                $status = $locale === FrontendLocalization::sourceLocale()
+                    ? TranslationStatus::Published
+                    : ($data === $sourceData
+                        ? TranslationStatus::NeedsTranslation
+                        : TranslationStatus::Draft);
                 LandingPageBlockData::query()->create([
                     'landing_page_block_id' => $block->id,
                     'locale' => $locale,
+                    'schema_version' => (int) ($definition['schema_version'] ?? 1),
                     'title' => $data['title'] ?? null,
                     'subtitle' => $data['subtitle'] ?? null,
                     'description' => $data['description'] ?? null,
                     'button_label' => $data['button_label'] ?? null,
                     'content' => json_encode($data['content'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    'translation_status' => $status,
+                    'source_revision' => TranslationRevision::fingerprint($sourceData),
+                    'translation_revision' => TranslationRevision::fingerprint($data),
+                    'translated_at' => now(),
+                    'reviewed_at' => $status === TranslationStatus::Published ? now() : null,
+                    'translation_published_at' => $status === TranslationStatus::Published ? now() : null,
                 ]);
             }
         }
@@ -392,6 +466,7 @@ class LandingPageBuilder
             'landing_page_id' => $page->id,
             'theme_key' => $page->theme_key,
             'block_type' => $blockType,
+            'schema_version' => (int) ($definition['schema_version'] ?? 1),
             'sort_order' => $maxSort + 10,
             'is_visible' => true,
             'anchor_id' => $definition['anchor_id'].'-'.Str::lower(Str::random(4)),
@@ -399,16 +474,33 @@ class LandingPageBuilder
             'media' => $definition['media'] ?? [],
         ]);
 
+        $sourceData = $this->defaultBlockLocaleData(
+            $definition,
+            FrontendLocalization::sourceLocale(),
+        );
+
         foreach ($this->supportedLocales() as $locale) {
-            $data = $definition['data'][$locale] ?? $definition['data']['vi'];
+            $data = $this->defaultBlockLocaleData($definition, $locale);
+            $status = $locale === FrontendLocalization::sourceLocale()
+                ? TranslationStatus::Published
+                : ($data === $sourceData
+                    ? TranslationStatus::NeedsTranslation
+                    : TranslationStatus::Draft);
             LandingPageBlockData::query()->create([
                 'landing_page_block_id' => $block->id,
                 'locale' => $locale,
+                'schema_version' => (int) ($definition['schema_version'] ?? 1),
                 'title' => $data['title'] ?? null,
                 'subtitle' => $data['subtitle'] ?? null,
                 'description' => $data['description'] ?? null,
                 'button_label' => $data['button_label'] ?? null,
                 'content' => json_encode($data['content'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'translation_status' => $status,
+                'source_revision' => TranslationRevision::fingerprint($sourceData),
+                'translation_revision' => TranslationRevision::fingerprint($data),
+                'translated_at' => now(),
+                'reviewed_at' => $status === TranslationStatus::Published ? now() : null,
+                'translation_published_at' => $status === TranslationStatus::Published ? now() : null,
             ]);
         }
 
@@ -428,21 +520,42 @@ class LandingPageBuilder
      */
     private function supportedLocales(): array
     {
-        return array_values(array_unique(FrontendLocalization::supportedLocales() ?: ['vi']));
+        return array_values(array_unique(FrontendLocalization::editableLocales() ?: ['vi']));
     }
 
-    private function localizedPageData(LandingPage $page, string $locale, string $fallbackLocale): ?LandingPageData
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>
+     */
+    private function defaultBlockLocaleData(array $definition, string $locale): array
     {
-        return $page->data->firstWhere('locale', $locale)
-            ?? $page->data->firstWhere('locale', $fallbackLocale)
-            ?? $page->data->first();
+        $dataByLocale = (array) ($definition['data'] ?? []);
+
+        return (array) (
+            $dataByLocale[$locale]
+            ?? $dataByLocale[FrontendLocalization::sourceLocale()]
+            ?? $dataByLocale[FrontendLocalization::fallbackLocale()]
+            ?? collect($dataByLocale)->first()
+            ?? []
+        );
     }
 
-    private function localizedBlockData(LandingPageBlock $block, string $locale, string $fallbackLocale): ?LandingPageBlockData
+    private function localizedPageData(
+        LandingPage $page,
+        string $locale,
+        string $fallbackLocale,
+        bool $publishedOnly = false,
+    ): ?LandingPageData
     {
-        return $block->data->firstWhere('locale', $locale)
-            ?? $block->data->firstWhere('locale', $fallbackLocale)
-            ?? $block->data->first();
+        $availableData = $publishedOnly
+            ? $page->data->filter(
+                fn (LandingPageData $item): bool => $item->isPublishedTranslation(),
+            )
+            : $page->data;
+
+        return $availableData->firstWhere('locale', $locale)
+            ?? $availableData->firstWhere('locale', $fallbackLocale)
+            ?? $availableData->first();
     }
 
     /**
@@ -1497,18 +1610,29 @@ class LandingPageBuilder
 
     private function contentText(string $websiteKey, string $locale, string $key, ?string $fallback): ?string
     {
+        $value = $this->localizedContent->textByKey(
+            $websiteKey,
+            FrontendLocalization::resolveLocale($locale),
+            $key,
+        );
+
+        if ($value !== null) {
+            return $value;
+        }
+
         if (! Schema::hasTable('theme_translations')) {
             return $fallback;
         }
 
-        $value = ThemeTranslation::query()
+        $legacyValue = ThemeTranslation::query()
             ->where('theme_key', 'site-content:'.strtolower(trim($websiteKey) !== '' ? $websiteKey : 'default'))
             ->where('locale', FrontendLocalization::resolveLocale($locale))
             ->where('group', 'content')
             ->where('translation_key', $key)
+            ->publishedTranslation()
             ->value('value');
 
-        return filled($value) ? (string) $value : $fallback;
+        return filled($legacyValue) ? (string) $legacyValue : $fallback;
     }
 
     /**

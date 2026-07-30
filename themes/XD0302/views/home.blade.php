@@ -119,7 +119,7 @@
                 ->values();
         } else {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0302', app()->getLocale(), 'legacy_inline.571ef44479d97bfd', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),

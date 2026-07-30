@@ -89,7 +89,8 @@
                 .site-auth-actions { align-items: stretch; }
             }
         </style>
-    </head>
+        @include('partials.localized-seo')
+</head>
     <body>
         <div class="site-shell">
             <header class="site-header">

@@ -6,12 +6,18 @@ use App\Models\CmsCategory;
 use App\Models\CmsMedia;
 use App\Models\CmsPost;
 use App\Support\FrontendLocalization;
+use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PostIndexController
 {
-    public function __invoke(): JsonResponse
+    public function __construct(
+        private readonly AdminLocalizedContentList $localizedList,
+    ) {}
+
+    public function __invoke(Request $request): JsonResponse
     {
         /** @var EloquentBuilder<CmsPost> $query */
         $query = (new CmsPost())->newQuery();
@@ -36,6 +42,11 @@ class PostIndexController
             'public_url' => route('site.blog.show', array_merge(FrontendLocalization::routeParameterDefaults(null), ['slug' => $post->slug])),
             'preview_url' => route('site.preview.posts', array_merge(FrontendLocalization::routeParameterDefaults(null), ['post' => $post->id])),
         ])->values()->all();
+        $items = $this->localizedList->overlay(
+            $items,
+            'cms_post',
+            $request->query('locale'),
+        );
 
         /** @var EloquentBuilder<CmsCategory> $categoryQuery */
         $categoryQuery = (new CmsCategory())->newQuery();

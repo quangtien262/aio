@@ -71,7 +71,7 @@ const cmsContentMenuOrder = [
     { key: 'cms-projects', label: 'Dự án' },
     { key: 'cms-team-members', label: 'Đội ngũ nhân sự' },
     { key: 'cms-partners', label: 'Đối tác' },
-    { key: 'cms-testimonials', label: 'Testimonials' },
+    { key: 'cms-testimonials', label: 'Cảm nhận khách hàng' },
 ];
 
 const cmsContentMenuKeySet = new Set(cmsContentMenuOrder.map((item) => item.key));
@@ -168,7 +168,9 @@ export default function AdminLayout() {
     const navigate = useNavigate();
     const isMobile = !screens.lg;
     const frontendLocaleRecords = currentAdmin?.frontend_localization?.locales ?? [];
-    const frontendLocaleOptions = frontendLocaleRecords.filter((localeItem) => localeItem.is_active).map((localeItem) => localeItem.code);
+    const frontendLocaleOptions = frontendLocaleRecords
+        .filter((localeItem) => localeItem.is_enabled_for_editing && localeItem.is_published)
+        .map((localeItem) => localeItem.code);
     const defaultFrontendLocale = currentAdmin?.frontend_localization?.default_locale ?? 'vi';
 
     useEffect(() => {
@@ -283,7 +285,9 @@ export default function AdminLayout() {
         const handleLocalizationChanged = (event) => {
             const detail = event.detail ?? {};
             const nextLocales = detail.locales ?? [];
-            const nextActiveLocales = nextLocales.filter((localeItem) => localeItem.is_active).map((localeItem) => localeItem.code);
+            const nextActiveLocales = nextLocales
+                .filter((localeItem) => localeItem.is_enabled_for_editing && localeItem.is_published)
+                .map((localeItem) => localeItem.code);
             const nextDefaultLocale = detail.default_locale ?? defaultFrontendLocale;
 
             setCurrentAdmin((current) => {

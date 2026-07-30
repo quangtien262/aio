@@ -7,6 +7,7 @@
     <title>@yield('title', 'XD0304 Logistics')</title>
     @include('theme-xd0304::partials.styles')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
     <div id="top" class="xd4-page">

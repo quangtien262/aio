@@ -308,7 +308,8 @@
                 .th-secondary-promo-head { align-items: flex-start; flex-direction: column; }
             }
         </style>
-    </head>
+        @include('partials.localized-seo')
+</head>
     <body>
         <div class="th-page">
             <div class="th-topbar">

@@ -14,16 +14,16 @@
         $label = trim($label);
 
         return strtr($label, [
-            'Trang chá»§' => 'Trang chủ',
+            'Trang chủ' => 'Trang chủ',
             'TRANG CHÁ»§' => 'TRANG CHỦ',
-            'trang chá»§' => 'trang chủ',
-            'Sáº£n pháº©m' => 'Sản phẩm',
+            'trang chủ' => 'trang chủ',
+            'Sản phẩm' => 'Sản phẩm',
             'Sáº£N PHÁº©M' => 'SẢN PHẨM',
             'SÁº£N PHÁº©M' => 'SẢN PHẨM',
-            'sáº£n pháº©m' => 'sản phẩm',
-            'sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'sản phẩm',
-            'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'Sản phẩm',
-            'TÃ i khoáº£n' => 'Tài khoản',
+            'sản phẩm' => 'sản phẩm',
+            'sản phẩm' => 'sản phẩm',
+            'Sản phẩm' => 'Sản phẩm',
+            'Tài khoản' => 'Tài khoản',
             'TÃ I KHOáº£N' => 'TÀI KHOẢN',
         ]);
     };
@@ -52,7 +52,7 @@
     $homeUrl = route('site.home');
     if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ',
+            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.4c23dc9bef7f79b4', 'Trang chủ'),
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -83,7 +83,7 @@
 
         if ($productCategories->isNotEmpty()) {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.571ef44479d97bfd', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -137,7 +137,7 @@
                 ->values();
         } else {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.571ef44479d97bfd', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -258,13 +258,13 @@
             <div class="xd-container">
                     <section class="xd-cms-hero">
                         <div>
-                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'News' : 'Tin tức' }}</span>
-                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'News' : 'Tin tức') }}</h1>
-                            <p>{{ $pageDescription ?? (app()->getLocale() === 'en' ? 'Latest company updates and construction insights.' : 'Danh sÃ¡ch bÃ i viáº¿t, tin tá»©c vÃ  kinh nghiá»‡m xÃ¢y dá»±ng má»›i nháº¥t.') }}</p>
+                            <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.6b36109704ab6b5c', 'Tin tức') }}</span>
+                            <h1>{{ $pageTitle ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.6b36109704ab6b5c', 'Tin tức')) }}</h1>
+                            <p>{{ $pageDescription ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.e9823473fc1a10fa', 'Danh sách bài viết, tin tức và kinh nghiệm xây dựng mới nhất.')) }}</p>
                         </div>
                         <div class="xd-cms-stats">
                             <strong>{{ method_exists($listingItems, 'total') ? $listingItems->total() : collect($listingItems ?? [])->count() }}</strong>
-                            <span>{{ app()->getLocale() === 'en' ? 'Published posts' : 'Bài viết đã xuất bản' }}</span>
+                            <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.c95b49cab7687600', 'Bài viết đã xuất bản') }}</span>
                         </div>
                     </section>
 
@@ -282,11 +282,11 @@
                                 <div class="xd-service-body">
                                     <h2><a href="{{ $postUrl }}">{{ $post->title }}</a></h2>
                                     <p>{{ $summary }}</p>
-                                    <a class="xd-text-link" href="{{ $postUrl }}">{{ app()->getLocale() === 'en' ? 'Read more' : 'Đọc tiếp' }}</a>
+                                    <a class="xd-text-link" href="{{ $postUrl }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.670799778692b0ce', 'Đọc tiếp') }}</a>
                                 </div>
                             </article>
                         @empty
-                            <p>{{ app()->getLocale() === 'en' ? 'No posts are available yet.' : 'Chưa có bài viết nào được xuất bản.' }}</p>
+                            <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.63ca33d5dc39d4d6', 'Chưa có bài viết nào được xuất bản.') }}</p>
                         @endforelse
                     </section>
 

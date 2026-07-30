@@ -1,6 +1,6 @@
 @php
-    $isEnglish = app()->getLocale() === 'en';
-    $projectLabel = $isEnglish ? 'Project' : html_entity_decode('D&#7921; &aacute;n', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $projectLabel = app(\App\Core\Themes\ThemeTranslationService::class)
+        ->bladeText('TH0050', app()->getLocale(), 'legacy_inline.6980f6dccf6e96cb', 'Dự án');
     $title = $pageTitle ?? ($entry->title ?? $projectLabel);
     $description = $pageDescription ?? ($entry->summary ?? '');
     $projectImages = $entry->relationLoaded('images')

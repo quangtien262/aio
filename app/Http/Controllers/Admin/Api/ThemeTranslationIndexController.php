@@ -8,9 +8,9 @@ use App\Models\SiteProfile;
 use App\Support\BusinessContentTranslationService;
 use App\Support\FrontendLocalization;
 use App\Support\SiteContext;
-use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 
 class ThemeTranslationIndexController
@@ -55,7 +55,7 @@ class ThemeTranslationIndexController
                 'keyword' => $keyword,
                 'entity' => $entity,
                 'available_groups' => ['static', 'content'],
-                'supported_locales' => FrontendLocalization::supportedLocales(),
+                'supported_locales' => FrontendLocalization::editableLocales(),
                 'locale_options' => FrontendLocalization::localeOptions(),
                 'available_entities' => $group === 'content'
                     ? $this->contentEntities()

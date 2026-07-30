@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Alert from 'antd/es/alert';
 import Checkbox from 'antd/es/checkbox';
 import Col from 'antd/es/col';
 import Form from 'antd/es/form';
@@ -10,7 +11,7 @@ import Select from 'antd/es/select';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import { toSlug } from '../../../shared/utils/slug';
 
-export default function CatalogCategoryFormModal({ open, canManage, editingCategory, categoryOptions = [], callAdminApi, submitLoading = false, onCancel, onSubmit }) {
+export default function CatalogCategoryFormModal({ open, canManage, translationMode = false, editingCategory, categoryOptions = [], callAdminApi, submitLoading = false, onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const imageUrl = Form.useWatch('image_url', form) ?? '';
     const categoryName = Form.useWatch('name', form) ?? '';
@@ -56,6 +57,14 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
             destroyOnHidden
         >
             <Form form={form} layout="vertical" initialValues={editingCategory} onValuesChange={handleValuesChange}>
+                {translationMode ? (
+                    <Alert
+                        type="info"
+                        showIcon
+                        message="Chế độ dịch chỉ lưu tên, slug và mô tả. Danh mục cha, ảnh, thứ tự và trạng thái dùng chung từ bản gốc."
+                        style={{ marginBottom: 16 }}
+                    />
+                ) : null}
                 <Row gutter={16}>
                     <Col xs={24} md={8}>
                         <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, message: 'Nhập tên danh mục' }]}>
@@ -76,7 +85,7 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
                     </Col>
                     <Col xs={24} md={8}>
                         <Form.Item name="parent_id" label="Danh mục cha">
-                            <Select allowClear options={categoryOptions} placeholder="Danh mục gốc" />
+                            <Select disabled={translationMode} allowClear options={categoryOptions} placeholder="Danh mục gốc" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -90,7 +99,7 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
                                 open={open}
                                 value={imageUrl}
                                 onChange={(nextValue) => form.setFieldValue('image_url', nextValue)}
-                                canManage={canManage}
+                                canManage={canManage && !translationMode}
                                 callAdminApi={callAdminApi}
                                 recordTitle={categoryName || 'Category image'}
                                 previewTitle="Ảnh danh mục"
@@ -112,12 +121,12 @@ export default function CatalogCategoryFormModal({ open, canManage, editingCateg
                 <Row gutter={16}>
                     <Col span={8}>
                         <Form.Item name="sort_order" label="Thứ tự">
-                            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+                            <InputNumber disabled={translationMode} min={0} precision={0} style={{ width: '100%' }} />
                         </Form.Item>
                     </Col>
                     <Col span={8}>
                         <Form.Item name="is_active" valuePropName="checked" label=" " colon={false}>
-                            <Checkbox>Kích hoạt danh mục</Checkbox>
+                            <Checkbox disabled={translationMode}>Kích hoạt danh mục</Checkbox>
                         </Form.Item>
                     </Col>
                 </Row>

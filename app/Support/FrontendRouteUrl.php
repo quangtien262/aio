@@ -180,52 +180,78 @@ final class FrontendRouteUrl
 
     public static function pagePath(string $slug): string
     {
-        return self::withoutLocale(self::page($slug, FrontendLocalization::defaultLocale(), false));
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::page($slug, $locale, false), $locale);
     }
 
-    public static function productPath(string $slug): string
+    public static function productPath(string $slug, ?string $locale = null): string
     {
-        return self::withoutLocale(self::product($slug, FrontendLocalization::defaultLocale(), false));
+        $resolvedLocale = self::locale($locale);
+
+        return self::withoutLocale(
+            self::product($slug, $resolvedLocale, false),
+            $resolvedLocale,
+        );
     }
 
-    public static function categoryPath(string $slug): string
+    public static function categoryPath(string $slug, ?string $locale = null): string
     {
-        return self::withoutLocale(self::category($slug, FrontendLocalization::defaultLocale(), false));
+        $resolvedLocale = self::locale($locale);
+
+        return self::withoutLocale(
+            self::category($slug, $resolvedLocale, false),
+            $resolvedLocale,
+        );
     }
 
     public static function blogCategoryPath(string $slug): string
     {
-        return self::withoutLocale(self::blogCategory($slug, FrontendLocalization::defaultLocale(), false));
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::blogCategory($slug, $locale, false), $locale);
     }
 
     public static function postPath(string $slug): string
     {
-        return self::withoutLocale(self::post($slug, FrontendLocalization::defaultLocale(), false));
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::post($slug, $locale, false), $locale);
     }
 
     public static function serviceCategoryPath(string $slug): string
     {
-        return self::withoutLocale(self::serviceCategory($slug, FrontendLocalization::defaultLocale(), false));
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::serviceCategory($slug, $locale, false), $locale);
     }
 
     public static function servicePath(string $slug): string
     {
-        return self::withoutLocale(self::service($slug, FrontendLocalization::defaultLocale(), false));
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::service($slug, $locale, false), $locale);
     }
 
     public static function projectCategoryPath(string $slug): string
     {
-        return self::withoutLocale(self::projectCategory($slug, FrontendLocalization::defaultLocale(), false));
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::projectCategory($slug, $locale, false), $locale);
     }
 
     public static function projectPath(string $slug): string
     {
-        return self::withoutLocale(self::project($slug, FrontendLocalization::defaultLocale(), false));
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::project($slug, $locale, false), $locale);
     }
 
     public static function contactPath(): string
     {
-        return self::withoutLocale(self::contact(FrontendLocalization::defaultLocale(), false));
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::contact($locale, false), $locale);
     }
 
     private static function locale(?string $locale): string
@@ -240,9 +266,12 @@ final class FrontendRouteUrl
         return trim($slug, '/');
     }
 
-    private static function withoutLocale(string $localizedPath): string
+    private static function withoutLocale(
+        string $localizedPath,
+        ?string $locale = null,
+    ): string
     {
-        $localePrefix = '/'.FrontendLocalization::defaultLocale();
+        $localePrefix = '/'.self::locale($locale);
 
         return str_starts_with($localizedPath, $localePrefix.'/')
             ? substr($localizedPath, strlen($localePrefix))

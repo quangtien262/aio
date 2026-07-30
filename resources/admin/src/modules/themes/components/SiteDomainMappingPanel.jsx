@@ -553,7 +553,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                         />
                     </Form.Item>
                     <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                        Hệ thống sẽ sao chép landing page, page tĩnh, menu, banner, media, sản phẩm, tin tức, dự án, dịch vụ, team, testimonial và các danh mục tương ứng; dữ liệu trùng khóa ở domain đích sẽ được cập nhật.
+                        Hệ thống sẽ sao chép landing page, page tĩnh, menu, banner, media, sản phẩm, tin tức, dự án, dịch vụ, đội ngũ, cảm nhận khách hàng và các danh mục tương ứng; dữ liệu trùng khóa ở domain đích sẽ được cập nhật.
                     </Paragraph>
                 </Form>
             </Modal>

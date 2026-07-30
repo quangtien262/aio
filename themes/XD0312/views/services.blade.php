@@ -6,7 +6,7 @@
     $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342'));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $email = trim((string) ($branding['support_email'] ?? 'admin@htvietnam.vn'));
-    $address = trim((string) ($branding['support_location'] ?? '196 NguyÃ¡Â»â€¦n Ã„ÂÃƒÂ¬nh ChiÃ¡Â»Æ’u, QuÃ¡ÂºÂ­n 3, TP.HCM'));
+    $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'));
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
 
@@ -14,17 +14,17 @@
         $label = trim($label);
 
         return strtr($label, [
-            'Trang chÃƒÂ¡Ã‚Â»Ã‚Â§' => 'Trang chÃ¡Â»Â§',
-            'TRANG CHÃƒÂÃ‚Â»Ã‚Â§' => 'TRANG CHÃ¡Â»Â¦',
-            'trang chÃƒÂ¡Ã‚Â»Ã‚Â§' => 'trang chÃ¡Â»Â§',
-            'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' => 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m',
-            'SÃƒÂ¡Ã‚ÂºÃ‚Â£N PHÃƒÂÃ‚ÂºÃ‚Â©M' => 'SÃ¡ÂºÂ¢N PHÃ¡ÂºÂ¨M',
-            'SÃƒÂÃ‚ÂºÃ‚Â£N PHÃƒÂÃ‚ÂºÃ‚Â©M' => 'SÃ¡ÂºÂ¢N PHÃ¡ÂºÂ¨M',
-            'sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' => 'sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m',
-            'sÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â£n phÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â©m' => 'sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m',
-            'SÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â£n phÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â©m' => 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m',
-            'TÃƒÆ’Ã‚Â i khoÃƒÂ¡Ã‚ÂºÃ‚Â£n' => 'TÃƒÂ i khoÃ¡ÂºÂ£n',
-            'TÃƒÆ’ I KHOÃƒÂ¡Ã‚ÂºÃ‚Â£N' => 'TÃƒâ‚¬I KHOÃ¡ÂºÂ¢N',
+            'Trang chủ' => 'Trang chủ',
+            'TRANG CHÁ»§' => 'TRANG CHỦ',
+            'trang chủ' => 'trang chủ',
+            'Sản phẩm' => 'Sản phẩm',
+            'Sáº£N PHÁº©M' => 'SẢN PHẨM',
+            'SÁº£N PHÁº©M' => 'SẢN PHẨM',
+            'sản phẩm' => 'sản phẩm',
+            'sản phẩm' => 'sản phẩm',
+            'Sản phẩm' => 'Sản phẩm',
+            'Tài khoản' => 'Tài khoản',
+            'TÃ I KHOáº£N' => 'TÀI KHOẢN',
         ]);
     };
 
@@ -50,9 +50,9 @@
         ->values();
 
     $homeUrl = route('site.home');
-    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chÃ¡Â»Â§', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
+    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chÃ¡Â»Â§',
+            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.95a078fb35ea9444', 'Trang chủ'),
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -61,7 +61,7 @@
     }
 
     $hasProductItem = $navItems->contains(function (array $item): bool {
-        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m', 'san pham', 'products', 'product'], true);
+        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
     });
 
     if (false && ! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
@@ -83,7 +83,7 @@
 
         if ($productCategories->isNotEmpty()) {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.76ffae1228bd585e', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -110,7 +110,7 @@
                     ->all(),
             ];
 
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chÃ¡Â»Â§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);
@@ -128,7 +128,7 @@
                 ->map(function (array $item) use ($productNavigationItems): array {
                     $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
 
-                    if (in_array($label, ['sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                    if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
                         $item['children'] = $productNavigationItems->all();
                     }
 
@@ -137,14 +137,14 @@
                 ->values();
         } else {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.76ffae1228bd585e', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
                 'children' => $productNavigationItems->all(),
             ];
 
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chÃ¡Â»Â§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);
@@ -258,13 +258,13 @@
             <div class="xd-container">
                     <section class="xd-cms-hero">
                         <div>
-                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Services' : 'DÃ¡Â»â€¹ch vÃ¡Â»Â¥' }}</span>
-                            <h1>{{ $pageTitle ?? (app()->getLocale() === 'en' ? 'Services' : 'DÃ¡Â»â€¹ch vÃ¡Â»Â¥') }}</h1>
-                            <p>{{ $pageDescription ?? (app()->getLocale() === 'en' ? 'Explore our construction and design services.' : 'Danh sÃƒÆ’Ã‚Â¡ch dÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¹ch vÃƒÂ¡Ã‚Â»Ã‚Â¥ thiÃƒÂ¡Ã‚ÂºÃ‚Â¿t kÃƒÂ¡Ã‚ÂºÃ‚Â¿ vÃƒÆ’Ã‚Â  thi cÃƒÆ’Ã‚Â´ng nÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¢i bÃƒÂ¡Ã‚ÂºÃ‚Â­t.') }}</p>
+                            <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.fd23932f6b5c3ca3', 'Dịch vụ') }}</span>
+                            <h1>{{ $pageTitle ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.fd23932f6b5c3ca3', 'Dịch vụ')) }}</h1>
+                            <p>{{ $pageDescription ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.9d21accc9c7ed220', 'Danh sách dịch vụ thiết kế và thi công nổi bật.')) }}</p>
                         </div>
                         <div class="xd-cms-stats">
                             <strong>{{ collect($listingItems ?? [])->count() }}</strong>
-                            <span>{{ app()->getLocale() === 'en' ? 'Available services' : 'DÃ¡Â»â€¹ch vÃ¡Â»Â¥ Ã„â€˜ang hiÃ¡Â»Æ’n thÃ¡Â»â€¹' }}</span>
+                            <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.fcb6000d2218c980', 'Dịch vụ đang hiển thị') }}</span>
                         </div>
                     </section>
 
@@ -284,11 +284,11 @@
                                 <div class="xd-service-body">
                                     <h2><a href="{{ $serviceUrl }}">{{ $service->title }}</a></h2>
                                     <p>{{ $service->summary ?: \Illuminate\Support\Str::limit(strip_tags($service->content ?? ''), 150) }}</p>
-                                    <a class="xd-text-link" href="{{ $serviceUrl }}">{{ app()->getLocale() === 'en' ? 'Learn more' : 'TÃƒÂ¬m hiÃ¡Â»Æ’u ngay' }}</a>
+                                    <a class="xd-text-link" href="{{ $serviceUrl }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.13a531395b8188fb', 'Tìm hiểu ngay') }}</a>
                                 </div>
                             </article>
                         @empty
-                            <p>{{ app()->getLocale() === 'en' ? 'No services are available yet.' : 'ChÃ†Â°a cÃƒÂ³ dÃ¡Â»â€¹ch vÃ¡Â»Â¥ nÃƒÂ o Ã„â€˜Ã†Â°Ã¡Â»Â£c xuÃ¡ÂºÂ¥t bÃ¡ÂºÂ£n.' }}</p>
+                            <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0312', app()->getLocale(), 'legacy_inline.7403c4b4cfe4212f', 'Chưa có dịch vụ nào được xuất bản.') }}</p>
                         @endforelse
                     </section>
             </div>

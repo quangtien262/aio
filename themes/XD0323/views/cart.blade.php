@@ -13,10 +13,10 @@
     ]);
     $formatCurrency = function ($value): string {
         if ($value === null || (float) $value <= 0) {
-            return 'LiÃƒÆ’Ã‚Âªn hÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡';
+            return 'Liên hệ';
         }
 
-        return number_format((float) $value, 0, ',', '.').'Ãƒâ€žÃ¢â‚¬Ëœ';
+        return number_format((float) $value, 0, ',', '.').'đ';
     };
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
@@ -43,9 +43,9 @@
         ->values();
 
     $homeUrl = route('site.home');
-    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chÃƒÂ¡Ã‚Â»Ã‚Â§', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
+    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chÃƒÂ¡Ã‚Â»Ã‚Â§',
+            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.d3408b155a0f7fa3', 'Trang chủ'),
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -59,14 +59,14 @@
         ->values();
 
     $hasProductItem = $navItems->contains(function (array $item): bool {
-        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m', 'san pham', 'products', 'product'], true);
+        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
     });
 
     if ($productNavigationItems->isNotEmpty()) {
         if ($hasProductItem) {
             $navItems = $navItems->map(function (array $item) use ($productNavigationItems): array {
                 $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
-                if (in_array($label, ['sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
                     $item['children'] = $productNavigationItems->all();
                 }
 
@@ -74,9 +74,9 @@
             })->values();
         } else {
             $navArray = $navItems->values()->all();
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chÃƒÂ¡Ã‚Â»Ã‚Â§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [[
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.1abb28f7d59c7849', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -100,7 +100,7 @@
 
 @extends('theme-xd0323::layout')
 
-@section('title')GiÃƒÂ¡Ã‚Â»Ã‚Â hÃƒÆ’Ã‚Â ng | {{ $logoAlt }}@endsection
+@section('title')Giỏ hàng | {{ $logoAlt }}@endsection
 
 @push('head')
     <style>
@@ -157,18 +157,18 @@
         <main class="xd-page-main">
             <div class="xd-container">
                 <nav class="xd-breadcrumb" aria-label="Breadcrumb">
-                    <a href="{{ route('site.home') }}">Trang chÃƒÂ¡Ã‚Â»Ã‚Â§</a>
+                    <a href="{{ route('site.home') }}">Trang chủ</a>
                     <span>/</span>
-                    <strong>GiÃƒÂ¡Ã‚Â»Ã‚Â hÃƒÆ’Ã‚Â ng</strong>
+                    <strong>Giỏ hàng</strong>
                 </nav>
 
                 <div class="xd-cart-heading">
                     <div>
                         <span class="xd-kicker">Checkout</span>
-                        <h1>GiÃƒÂ¡Ã‚Â»Ã‚Â hÃƒÆ’Ã‚Â ng cÃƒÂ¡Ã‚Â»Ã‚Â§a bÃƒÂ¡Ã‚ÂºÃ‚Â¡n</h1>
-                        <p>KiÃƒÂ¡Ã‚Â»Ã†â€™m tra sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m, sÃƒÂ¡Ã‚Â»Ã¢â‚¬Ëœ lÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã‚Â£ng vÃƒÆ’Ã‚Â  chuyÃƒÂ¡Ã‚Â»Ã†â€™n sang bÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã¢â‚¬Âºc Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚ÂºÃ‚Â·t hÃƒÆ’Ã‚Â ng khi thÃƒÆ’Ã‚Â´ng tin Ãƒâ€žÃ¢â‚¬ËœÃƒÆ’Ã‚Â£ Ãƒâ€žÃ¢â‚¬ËœÃƒÆ’Ã‚Âºng.</p>
+                        <h1>Giỏ hàng của bạn</h1>
+                        <p>Kiểm tra sản phẩm, số lượng và chuyển sang bước đặt hàng khi thông tin đã đúng.</p>
                     </div>
-                    <span class="xd-cart-badge">{{ (int) ($cartSummary['count'] ?? 0) }} sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m</span>
+                    <span class="xd-cart-badge">{{ (int) ($cartSummary['count'] ?? 0) }} sản phẩm</span>
                 </div>
 
                 @if (session('cart_success'))
@@ -193,16 +193,16 @@
                                 <article class="xd-cart-item">
                                     <a class="xd-cart-thumb" href="{{ $itemUrl }}">
                                         @if ($itemImage !== '')
-                                            <img src="{{ $itemImage }}" alt="{{ $item['title'] ?? 'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' }}">
+                                            <img src="{{ $itemImage }}" alt="{{ $item['title'] ?? 'Sản phẩm' }}">
                                         @endif
                                     </a>
                                     <div class="xd-cart-copy">
-                                        <h2><a href="{{ $itemUrl }}">{{ $item['title'] ?? 'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' }}</a></h2>
+                                        <h2><a href="{{ $itemUrl }}">{{ $item['title'] ?? 'Sản phẩm' }}</a></h2>
                                         <div class="xd-cart-meta">
                                             @if ($itemCategory !== '')
                                                 <span class="xd-chip">{{ $itemCategory }}</span>
                                             @endif
-                                            <span class="xd-chip">TÃƒÂ¡Ã‚Â»Ã¢â‚¬Å“n kho {{ $item['stock'] ?? 'khÃƒÆ’Ã‚Â´ng giÃƒÂ¡Ã‚Â»Ã¢â‚¬Âºi hÃƒÂ¡Ã‚ÂºÃ‚Â¡n' }}</span>
+                                            <span class="xd-chip">Tồn kho {{ $item['stock'] ?? 'không giới hạn' }}</span>
                                             @if (! empty($item['sku']))
                                                 <span class="xd-chip">SKU {{ $item['sku'] }}</span>
                                             @endif
@@ -211,18 +211,18 @@
                                     <div class="xd-cart-actions">
                                         <div>
                                             <div class="xd-price">{{ $formatCurrency($item['price'] ?? null) }}</div>
-                                            <div class="xd-item-total">TÃƒÂ¡Ã‚ÂºÃ‚Â¡m tÃƒÆ’Ã‚Â­nh: {{ $formatCurrency($itemSubtotal) }}</div>
+                                            <div class="xd-item-total">Tạm tính: {{ $formatCurrency($itemSubtotal) }}</div>
                                         </div>
                                         <form method="POST" action="{{ route('site.cart.update', ['productId' => $item['product_id']]) }}" class="xd-quantity-form">
                                             @csrf
                                             @method('PATCH')
-                                            <input type="number" name="quantity" min="1" max="{{ $item['stock'] ?? 999 }}" value="{{ $quantity }}" aria-label="SÃƒÂ¡Ã‚Â»Ã¢â‚¬Ëœ lÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã‚Â£ng">
-                                            <button type="submit" class="xd-small-button">CÃƒÂ¡Ã‚ÂºÃ‚Â­p nhÃƒÂ¡Ã‚ÂºÃ‚Â­t</button>
+                                            <input type="number" name="quantity" min="1" max="{{ $item['stock'] ?? 999 }}" value="{{ $quantity }}" aria-label="Số lượng">
+                                            <button type="submit" class="xd-small-button">Cập nhật</button>
                                         </form>
                                         <form method="POST" action="{{ route('site.cart.remove', ['productId' => $item['product_id']]) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="xd-remove-button">XÃƒÆ’Ã‚Â³a khÃƒÂ¡Ã‚Â»Ã‚Âi giÃƒÂ¡Ã‚Â»Ã‚Â</button>
+                                            <button type="submit" class="xd-remove-button">Xóa khỏi giỏ</button>
                                         </form>
                                     </div>
                                 </article>
@@ -230,36 +230,36 @@
                         </div>
 
                         <aside class="xd-panel xd-summary">
-                            <h2>TÃƒÆ’Ã‚Â³m tÃƒÂ¡Ã‚ÂºÃ‚Â¯t Ãƒâ€žÃ¢â‚¬ËœÃƒâ€ Ã‚Â¡n hÃƒÆ’Ã‚Â ng</h2>
-                            <p>Ãƒâ€žÃ‚ÂÃƒâ€ Ã‚Â¡n hÃƒÆ’Ã‚Â ng sÃƒÂ¡Ã‚ÂºÃ‚Â½ Ãƒâ€žÃ¢â‚¬ËœÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã‚Â£c xÃƒÆ’Ã‚Â¡c nhÃƒÂ¡Ã‚ÂºÃ‚Â­n lÃƒÂ¡Ã‚ÂºÃ‚Â¡i trÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã¢â‚¬Âºc khi thi cÃƒÆ’Ã‚Â´ng hoÃƒÂ¡Ã‚ÂºÃ‚Â·c giao sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m.</p>
+                            <h2>Tóm tắt đơn hàng</h2>
+                            <p>Đơn hàng sẽ được xác nhận lại trước khi thi công hoặc giao sản phẩm.</p>
                             <div class="xd-summary-row">
-                                <span>SÃƒÂ¡Ã‚Â»Ã¢â‚¬Ëœ sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m</span>
+                                <span>Số sản phẩm</span>
                                 <strong>{{ (int) ($cartSummary['count'] ?? 0) }}</strong>
                             </div>
                             <div class="xd-summary-row">
-                                <span>MÃƒÂ¡Ã‚ÂºÃ‚Â·t hÃƒÆ’Ã‚Â ng khÃƒÆ’Ã‚Â¡c nhau</span>
+                                <span>Mặt hàng khác nhau</span>
                                 <strong>{{ (int) ($cartSummary['unique_count'] ?? count($cartItems)) }}</strong>
                             </div>
                             <div class="xd-summary-row xd-summary-total">
-                                <span>TÃƒÂ¡Ã‚ÂºÃ‚Â¡m tÃƒÆ’Ã‚Â­nh</span>
+                                <span>Tạm tính</span>
                                 <strong>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
                             </div>
 
                             @if ($customerAuth['is_authenticated'] ?? false)
-                                <a class="xd-button" href="{{ route('site.checkout.index') }}">TiÃƒÂ¡Ã‚ÂºÃ‚Â¿n hÃƒÆ’Ã‚Â nh thanh toÃƒÆ’Ã‚Â¡n</a>
+                                <a class="xd-button" href="{{ route('site.checkout.index') }}">Tiến hành thanh toán</a>
                             @else
-                                <button type="button" class="xd-button" data-xd-auth-open="login">Ãƒâ€žÃ‚ÂÃƒâ€žÃ†â€™ng nhÃƒÂ¡Ã‚ÂºÃ‚Â­p Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚Â»Ã†â€™ thanh toÃƒÆ’Ã‚Â¡n</button>
+                                <button type="button" class="xd-button" data-xd-auth-open="login">Đăng nhập để thanh toán</button>
                             @endif
-                            <a class="xd-button is-ghost" href="{{ route('site.catalog.search') }}">TiÃƒÂ¡Ã‚ÂºÃ‚Â¿p tÃƒÂ¡Ã‚Â»Ã‚Â¥c mua sÃƒÂ¡Ã‚ÂºÃ‚Â¯m</a>
+                            <a class="xd-button is-ghost" href="{{ route('site.catalog.search') }}">Tiếp tục mua sắm</a>
                         </aside>
                     </section>
                 @else
                     <section class="xd-empty">
                         <div>
                             <span class="xd-kicker">Empty cart</span>
-                            <h2>GiÃƒÂ¡Ã‚Â»Ã‚Â hÃƒÆ’Ã‚Â ng Ãƒâ€žÃ¢â‚¬Ëœang trÃƒÂ¡Ã‚Â»Ã¢â‚¬Ëœng</h2>
-                            <p>HÃƒÆ’Ã‚Â£y quay lÃƒÂ¡Ã‚ÂºÃ‚Â¡i danh mÃƒÂ¡Ã‚Â»Ã‚Â¥c sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚Â»Ã†â€™ chÃƒÂ¡Ã‚Â»Ã‚Ân vÃƒÂ¡Ã‚ÂºÃ‚Â­t tÃƒâ€ Ã‚Â°, dÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¹ch vÃƒÂ¡Ã‚Â»Ã‚Â¥ hoÃƒÂ¡Ã‚ÂºÃ‚Â·c giÃƒÂ¡Ã‚ÂºÃ‚Â£i phÃƒÆ’Ã‚Â¡p phÃƒÆ’Ã‚Â¹ hÃƒÂ¡Ã‚Â»Ã‚Â£p trÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã¢â‚¬Âºc khi gÃƒÂ¡Ã‚Â»Ã‚Â­i yÃƒÆ’Ã‚Âªu cÃƒÂ¡Ã‚ÂºÃ‚Â§u Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚ÂºÃ‚Â·t hÃƒÆ’Ã‚Â ng.</p>
-                            <a class="xd-button is-dark" href="{{ route('site.catalog.search') }}">Xem sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m</a>
+                            <h2>Giỏ hàng đang trống</h2>
+                            <p>Hãy quay lại danh mục sản phẩm để chọn vật tư, dịch vụ hoặc giải pháp phù hợp trước khi gửi yêu cầu đặt hàng.</p>
+                            <a class="xd-button is-dark" href="{{ route('site.catalog.search') }}">Xem sản phẩm</a>
                         </div>
                     </section>
                 @endif

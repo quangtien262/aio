@@ -416,7 +416,9 @@ class ThemeDemoContentGenerator
                     $product = CatalogProduct::query()->create([
                         'catalog_category_id' => $child->id,
                         'name' => $productName,
-                        'slug' => Str::slug($productName),
+                        'slug' => Str::slug(
+                            $preset['key'].'-'.$department['name'].'-'.$childName.'-'.$productName,
+                        ),
                         'sku' => $this->buildProductSku($preset, $department['name'], $parentIndex, $childIndex, $productIndex),
                         'price' => $price,
                         'original_price' => $isRealEstatePreset

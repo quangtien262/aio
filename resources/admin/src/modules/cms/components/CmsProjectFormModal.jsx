@@ -14,6 +14,7 @@ import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
 import dayjs from 'dayjs';
 import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import {
     BlockQuote,
     Bold,
@@ -73,9 +74,23 @@ function FormValueBridge() {
     return null;
 }
 
-export default function CmsProjectFormModal({ open, canManage, editingProject, mediaOptions = [], categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
+export default function CmsProjectFormModal({
+    open,
+    canManage,
+    translationMode = false,
+    editingProject,
+    mediaOptions = [],
+    categoryOptions = [],
+    localeOptions = [],
+    contentLocale = 'vi',
+    sourceLocale = 'vi',
+    callAdminApi,
+    onCancel,
+    onSubmit,
+    onLocaleChange,
+}) {
     const [form] = Form.useForm();
-    const slugEditedRef = useRef(Boolean(editingProject?.id));
+    const lastTitleRef = useRef('');
     const editorInstanceRef = useRef(null);
     const [contentMode, setContentMode] = useState('editor');
     const [editorContentVersion, setEditorContentVersion] = useState(0);
@@ -87,8 +102,8 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
         [editingProject?.id, editingProject?.slug, editingProject?.content, editorContentVersion, form]
     );
     const editorInstanceKey = useMemo(
-        () => `${editingProject?.id ?? 'new'}:${editingProject?.slug ?? 'blank'}:${open ? 'open' : 'closed'}:${contentMode}:${editorContentVersion}`,
-        [editingProject?.id, editingProject?.slug, open, contentMode, editorContentVersion]
+        () => `${editingProject?.id ?? 'new'}:${contentLocale}:${editingProject?.slug ?? 'blank'}:${open ? 'open' : 'closed'}:${contentMode}:${editorContentVersion}`,
+        [editingProject?.id, editingProject?.slug, contentLocale, open, contentMode, editorContentVersion]
     );
 
     useEffect(() => {
@@ -97,18 +112,19 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
             content: editingProject?.content ?? '',
             images: editingProject?.images?.length ? editingProject.images : [],
         });
-        slugEditedRef.current = Boolean(editingProject?.id || editingProject?.slug);
+        lastTitleRef.current = String(editingProject?.title ?? '');
         setContentMode('editor');
         setEditorContentVersion((current) => current + 1);
         editorInstanceRef.current = null;
     }, [editingProject, form]);
 
     useEffect(() => {
-        if (slugEditedRef.current) {
+        if (titleValue === lastTitleRef.current) {
             return;
         }
 
         form.setFieldValue('slug', toSlug(titleValue));
+        lastTitleRef.current = titleValue;
     }, [form, titleValue]);
 
     const editorConfig = useMemo(() => ({
@@ -224,7 +240,6 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
     };
 
     const handleSlugChange = (event) => {
-        slugEditedRef.current = true;
         form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
     };
 
@@ -291,10 +306,24 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
             extra={(
                 <Space>
                     <Button onClick={handleCancel}>Hủy</Button>
-                    <Button type="primary" disabled={!canManage} onClick={handleSubmit}>Lưu dự án</Button>
+                    <Button type="primary" disabled={!canManage || (!editingProject?.id && translationMode)} onClick={handleSubmit}>
+                        {!editingProject?.id && translationMode ? 'Lưu tại ngôn ngữ gốc' : (translationMode ? 'Lưu bản dịch' : 'Lưu dự án')}
+                    </Button>
                 </Space>
             )}
         >
+            <LocalizedContentTabs
+                localeOptions={localeOptions}
+                contentLocale={contentLocale}
+                sourceLocale={sourceLocale}
+                editingRecord={editingProject}
+                entityLabel="dự án"
+                translationDescription="Tiêu đề, slug, mô tả, nhãn nút, SEO, nội dung chi tiết và trạng thái xuất bản được lưu riêng cho ngôn ngữ này. Danh mục, hình ảnh, liên kết và thiết lập nổi bật tiếp tục dùng từ bản gốc."
+                sourceDescription="Đây là ngôn ngữ gốc. Danh mục, hình ảnh, liên kết và thiết lập nổi bật được quản lý tại đây."
+                isDirty={() => form.isFieldsTouched()}
+                getCurrentValues={() => form.getFieldsValue(true)}
+                onLocaleChange={onLocaleChange}
+            />
             <Form form={form} layout="vertical" initialValues={editingProject}>
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Card size="small" title="Thông tin dự án">
@@ -313,27 +342,34 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                         <Row gutter={16}>
                             <Col xs={24} md={8}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-                                    <Select options={[{ label: 'Bản nháp', value: 'draft' }, { label: 'Đã xuất bản', value: 'published' }]} />
+                                    <Radio.Group
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                        options={[
+                                            { label: 'Bản nháp', value: 'draft' },
+                                            { label: 'Đã xuất bản', value: 'published' },
+                                        ]}
+                                    />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="cms_project_category_id" label="Danh mục dự án">
-                                    <Select allowClear showSearch optionFilterProp="label" placeholder="Chọn danh mục" options={categoryOptions} />
+                                    <Select disabled={translationMode} allowClear showSearch optionFilterProp="label" placeholder="Chọn danh mục" options={categoryOptions} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="sort_order" label="Thứ tự">
-                                    <InputNumber min={0} style={{ width: '100%' }} />
+                                    <InputNumber disabled={translationMode} min={0} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="is_featured" label="Dự án nổi bật" valuePropName="checked">
-                                    <Switch />
+                                    <Switch disabled={translationMode} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="is_highlight" label="Đánh dấu highlight" valuePropName="checked">
-                                    <Switch />
+                                    <Switch disabled={translationMode} />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -345,7 +381,7 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                             </Col>
                             <Col xs={24} md={12}>
                                 <Form.Item name="link_url" label="Link click">
-                                    <Input placeholder="/vi/contact hoặc https://..." />
+                                    <Input disabled={translationMode} placeholder="/vi/contact hoặc https://..." />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -365,7 +401,7 @@ export default function CmsProjectFormModal({ open, canManage, editingProject, m
                                 onChange={(nextValue) => syncProjectImages(nextValue)}
                                 coverValue={featuredProjectImageUrl}
                                 onSetCover={setProjectCoverImage}
-                                canManage={canManage}
+                                canManage={canManage && !translationMode}
                                 callAdminApi={callAdminApi}
                                 mediaOptions={mediaOptions}
                                 recordTitle={titleValue || 'Project images'}

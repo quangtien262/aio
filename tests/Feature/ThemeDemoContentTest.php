@@ -305,7 +305,7 @@ class ThemeDemoContentTest extends TestCase
             ],
         );
 
-        $this->get($this->storefrontPath('test'))
+        $this->get($this->storefrontRoute('site.pages.show', ['slug' => 'test']))
             ->assertOk()
             ->assertSee('test')
             ->assertSee('test thôi nhé')

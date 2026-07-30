@@ -4,6 +4,7 @@ import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Popconfirm from 'antd/es/popconfirm';
+import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tabs from 'antd/es/tabs';
@@ -76,6 +77,9 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
     const [editingProduct, setEditingProduct] = useState(emptyProductForm);
     const [editingCategory, setEditingCategory] = useState(emptyCategoryForm);
     const [editingBanner, setEditingBanner] = useState(emptyBannerForm);
+    const [contentLocale, setContentLocale] = useState(
+        window.localStorage.getItem('aio.frontendLocale') || 'vi',
+    );
 
     const permissions = useMemo(() => ({
         catalogCreate: (currentPermissions ?? []).includes('catalog.create'),
@@ -86,11 +90,12 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: true,
         loader: async () => {
-            const [productsPayload, categoriesPayload, mediaPayload, bannersPayload] = await Promise.all([
+            const [productsPayload, categoriesPayload, mediaPayload, bannersPayload, localesPayload] = await Promise.all([
                 callAdminApi(adminApi('catalog/products')),
                 callAdminApi(adminApi('catalog/categories')),
                 callAdminApi(adminApi('cms/media')),
                 callAdminApi(adminApi('site-banners')),
+                callAdminApi(adminApi('themes/locales')),
             ]);
 
             return {
@@ -98,6 +103,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                 categories: categoriesPayload.data ?? { items: [], total: 0 },
                 media: mediaPayload.data ?? { items: [], total: 0 },
                 banners: bannersPayload.data ?? { items: [], total: 0 },
+                localization: localesPayload.data ?? { locales: [], source_locale: 'vi' },
             };
         },
     });
@@ -109,69 +115,147 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
 
     const bannerItems = data?.banners?.items ?? [];
     const activeThemeKey = data?.banners?.active_theme_key ?? '';
+    const sourceLocale = data?.localization?.source_locale ?? 'vi';
+    const localeOptions = (data?.localization?.locales ?? [])
+        .filter((locale) => locale.is_enabled_for_editing !== false)
+        .map((locale) => ({
+            value: locale.code,
+            label: `${locale.native_name || locale.name || locale.code}${locale.is_source ? ' · Gốc' : ''}`,
+        }));
     const sliderBanners = useMemo(() => bannerItems.filter((banner) => banner.placement === 'hero-slider'), [bannerItems]);
     const otherBanners = useMemo(() => bannerItems.filter((banner) => banner.placement !== 'hero-slider'), [bannerItems]);
 
-    const openProductModal = (product = null) => {
-        setEditingProduct(product ? {
-            id: product.id,
-            catalog_category_id: product.catalog_category_id ?? null,
-            name: product.name,
-            slug: product.slug ?? '',
-            sku: product.sku,
-            price: product.price,
-            original_price: product.original_price,
-            stock: product.stock,
-            short_description: product.short_description ?? '',
-            detail_content: product.detail_content ?? '',
-            highlights: product.highlights ?? '',
-            usage_terms: product.usage_terms ?? '',
-            usage_location: product.usage_location ?? '',
-            image_url: product.image_url ?? '',
-            gallery_images: product.gallery_images ?? [],
-            sold_count: product.sold_count ?? 0,
-            deal_end_at: product.deal_end_at ? product.deal_end_at.slice(0, 16) : '',
-            is_featured: Boolean(product.is_featured),
-            is_highlight: Boolean(product.is_highlight),
-            sort_order: product.sort_order ?? 0,
-            is_active: product.is_active ?? true,
-        } : emptyProductForm);
+    const localizedRecord = async (resourceType, record, targetLocale = contentLocale) => {
+        if (!record?.id) return record;
+
+        const response = await callAdminApi(
+            adminApi(`localization/content/${resourceType}/${record.id}`),
+        );
+        const translations = response.data?.translations ?? {};
+        const translation = translations[targetLocale] ?? null;
+        const translationFields = response.data?.fields ?? [];
+        const emptyTranslationPayload = targetLocale !== sourceLocale && !translation
+            ? Object.fromEntries(translationFields.map((field) => {
+                const sourceValue = record?.[field];
+
+                if (Array.isArray(sourceValue)) {
+                    return [field, []];
+                }
+
+                if (sourceValue && typeof sourceValue === 'object') {
+                    return [field, {}];
+                }
+
+                return [field, ''];
+            }))
+            : {};
+
+        return {
+            ...record,
+            ...emptyTranslationPayload,
+            ...(translation?.payload ?? {}),
+            _translation_status: translation?.translation_status ?? 'missing',
+            _translation_statuses: Object.fromEntries(
+                Object.entries(translations).map(([locale, item]) => [
+                    locale,
+                    item?.translation_status ?? 'missing',
+                ]),
+            ),
+        };
+    };
+
+    const productFormRecord = (record) => record ? {
+            id: record.id,
+            catalog_category_id: record.catalog_category_id ?? null,
+            name: record.name,
+            slug: record.slug ?? '',
+            sku: record.sku,
+            price: record.price,
+            original_price: record.original_price,
+            stock: record.stock,
+            short_description: record.short_description ?? '',
+            detail_content: record.detail_content ?? '',
+            meta_title: record.meta_title ?? '',
+            meta_description: record.meta_description ?? '',
+            meta_keywords: record.meta_keywords ?? '',
+            highlights: record.highlights ?? '',
+            usage_terms: record.usage_terms ?? '',
+            usage_location: record.usage_location ?? '',
+            image_url: record.image_url ?? '',
+            gallery_images: record.gallery_images ?? [],
+            sold_count: record.sold_count ?? 0,
+            deal_end_at: record.deal_end_at ? record.deal_end_at.slice(0, 16) : '',
+            is_featured: Boolean(record.is_featured),
+            is_highlight: Boolean(record.is_highlight),
+            sort_order: record.sort_order ?? 0,
+            is_active: record.is_active ?? true,
+            _translation_status: record._translation_status ?? 'missing',
+            _translation_statuses: record._translation_statuses ?? {},
+        } : emptyProductForm;
+
+    const openProductModal = async (product = null) => {
+        const record = product ? await localizedRecord('catalog_product', product) : null;
+
+        setEditingProduct(productFormRecord(record));
         setProductModalOpen(true);
     };
 
-    const openCategoryModal = (category = null) => {
-        setEditingCategory(category ? {
-            id: category.id,
-            parent_id: category.parent_id ?? null,
-            name: category.name,
-            slug: category.slug ?? '',
-            description: category.description ?? '',
-            image_url: category.image_url ?? '',
-            sort_order: category.sort_order ?? 0,
-            is_active: category.is_active ?? true,
+    const handleProductLocaleChange = async (nextLocale) => {
+        if (!editingProduct?.id || nextLocale === contentLocale) {
+            return true;
+        }
+
+        const sourceRecord = (data?.products?.items ?? []).find((product) => product.id === editingProduct.id)
+            ?? editingProduct;
+
+        try {
+            const record = await localizedRecord('catalog_product', sourceRecord, nextLocale);
+
+            setContentLocale(nextLocale);
+            setEditingProduct(productFormRecord(record));
+
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const openCategoryModal = async (category = null) => {
+        const record = category ? await localizedRecord('catalog_category', category) : null;
+        setEditingCategory(record ? {
+            id: record.id,
+            parent_id: record.parent_id ?? null,
+            name: record.name,
+            slug: record.slug ?? '',
+            description: record.description ?? '',
+            image_url: record.image_url ?? '',
+            sort_order: record.sort_order ?? 0,
+            is_active: record.is_active ?? true,
         } : emptyCategoryForm);
         setCategoryModalOpen(true);
     };
 
-    const openBannerModal = (banner = null, defaultPlacement = null) => {
-        const placement = defaultPlacement ?? banner?.placement ?? 'hero-side';
+    const openBannerModal = async (banner = null, defaultPlacement = null) => {
+        const record = banner ? await localizedRecord('site_banner', banner) : null;
+        const placement = defaultPlacement ?? record?.placement ?? 'hero-side';
+        const metadata = record?.metadata ?? {};
 
-        setEditingBanner(banner ? {
-            id: banner.id,
-            theme_key: banner.theme_key ?? '',
+        setEditingBanner(record ? {
+            id: record.id,
+            theme_key: record.theme_key ?? '',
             placement,
-            title: banner.title ?? '',
-            subtitle: banner.subtitle ?? '',
-            image_url: banner.image_url ?? '',
-            link_url: banner.link_url ?? '',
-            badge: banner.badge ?? '',
-            eyebrow: banner.eyebrow ?? '',
-            summary: banner.summary ?? '',
-            button_label: banner.button_label ?? '',
-            image_position: banner.image_position ?? 'center',
-            show_caption: banner.show_caption ?? true,
-            sort_order: banner.sort_order ?? 0,
-            is_active: banner.is_active ?? true,
+            title: record.title ?? '',
+            subtitle: record.subtitle ?? '',
+            image_url: record.image_url ?? '',
+            link_url: record.link_url ?? '',
+            badge: record.badge ?? '',
+            eyebrow: metadata.eyebrow ?? record.eyebrow ?? '',
+            summary: metadata.summary ?? record.summary ?? '',
+            button_label: metadata.button_label ?? record.button_label ?? '',
+            image_position: metadata.image_position ?? record.image_position ?? 'center',
+            show_caption: metadata.show_caption ?? record.show_caption ?? true,
+            sort_order: record.sort_order ?? 0,
+            is_active: record.is_active ?? true,
         } : {
             ...emptyBannerForm,
             placement,
@@ -185,6 +269,15 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
         successMessage,
         reload,
     );
+
+    const saveLocalizedRecord = async ({ resourceType, resourceId, payload, publish, label }) => runCrud({
+        endpoint: adminApi(`localization/content/${resourceType}/${resourceId}/${contentLocale}`),
+        method: 'PUT',
+        payload: { payload, publish },
+        successMessage: publish
+            ? `Đã lưu và xuất bản ${label} ${contentLocale.toUpperCase()}.`
+            : `Đã lưu bản nháp ${label} ${contentLocale.toUpperCase()}.`,
+    });
 
     const productColumns = [
         { title: 'Tên', dataIndex: 'name', key: 'name' },
@@ -200,8 +293,8 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             render: (_, product) => (
                 <Space wrap>
                     <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openProductModal(product)}>Sửa</Button>
-                    <Popconfirm title="Xóa sản phẩm này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: adminApi(`catalog/products/${product.id}`), method: 'DELETE', successMessage: 'Đã xóa sản phẩm catalog.' })}>
-                        <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
+                    <Popconfirm title="Xóa sản phẩm này?" disabled={!permissions.catalogDelete || contentLocale !== sourceLocale} onConfirm={() => runCrud({ endpoint: adminApi(`catalog/products/${product.id}`), method: 'DELETE', successMessage: 'Đã xóa sản phẩm catalog.' })}>
+                        <Button danger size="small" disabled={!permissions.catalogDelete || contentLocale !== sourceLocale}>Xóa</Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -221,8 +314,8 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             render: (_, category) => (
                 <Space wrap>
                     <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openCategoryModal(category)}>Sửa</Button>
-                    <Popconfirm title="Xóa danh mục này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: adminApi(`catalog/categories/${category.id}`), method: 'DELETE', successMessage: 'Đã xóa danh mục catalog.' })}>
-                        <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
+                    <Popconfirm title="Xóa danh mục này?" disabled={!permissions.catalogDelete || contentLocale !== sourceLocale} onConfirm={() => runCrud({ endpoint: adminApi(`catalog/categories/${category.id}`), method: 'DELETE', successMessage: 'Đã xóa danh mục catalog.' })}>
+                        <Button danger size="small" disabled={!permissions.catalogDelete || contentLocale !== sourceLocale}>Xóa</Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -241,8 +334,8 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             render: (_, banner) => (
                 <Space wrap>
                     <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openBannerModal(banner)}>Sửa</Button>
-                    <Popconfirm title="Xóa banner này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: adminApi(`site-banners/${banner.id}`), method: 'DELETE', successMessage: 'Đã xóa banner.' })}>
-                        <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
+                    <Popconfirm title="Xóa banner này?" disabled={!permissions.catalogDelete || contentLocale !== sourceLocale} onConfirm={() => runCrud({ endpoint: adminApi(`site-banners/${banner.id}`), method: 'DELETE', successMessage: 'Đã xóa banner.' })}>
+                        <Button danger size="small" disabled={!permissions.catalogDelete || contentLocale !== sourceLocale}>Xóa</Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -279,8 +372,8 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             render: (_, banner) => (
                 <Space wrap>
                     <Button size="small" disabled={!permissions.catalogUpdate} onClick={() => openBannerModal(banner, 'hero-slider')}>Sửa</Button>
-                    <Popconfirm title="Xóa slide banner này?" disabled={!permissions.catalogDelete} onConfirm={() => runCrud({ endpoint: adminApi(`site-banners/${banner.id}`), method: 'DELETE', successMessage: 'Đã xóa slide banner.' })}>
-                        <Button danger size="small" disabled={!permissions.catalogDelete}>Xóa</Button>
+                    <Popconfirm title="Xóa slide banner này?" disabled={!permissions.catalogDelete || contentLocale !== sourceLocale} onConfirm={() => runCrud({ endpoint: adminApi(`site-banners/${banner.id}`), method: 'DELETE', successMessage: 'Đã xóa slide banner.' })}>
+                        <Button danger size="small" disabled={!permissions.catalogDelete || contentLocale !== sourceLocale}>Xóa</Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -298,9 +391,28 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Card>
-                <Text className="card-label">Catalog</Text>
-                <Title level={3}>Catalog, Category, Banner và Slide Hero</Title>
-                <Paragraph style={{ marginBottom: 0 }}>Dùng chung một nguồn dữ liệu banner cho nhiều theme, đồng thời có khu riêng để quản lý slide banner hình ảnh cho hero storefront.</Paragraph>
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    <div>
+                        <Text className="card-label">Catalog</Text>
+                        <Title level={3}>Catalog, Category, Banner và Slide Hero</Title>
+                        <Paragraph style={{ marginBottom: 0 }}>Dùng chung một nguồn dữ liệu banner cho nhiều theme, đồng thời có khu riêng để quản lý slide banner hình ảnh cho hero storefront.</Paragraph>
+                    </div>
+                    <Space wrap>
+                        <Text type="secondary">Ngôn ngữ nội dung</Text>
+                        <Select
+                            value={contentLocale}
+                            onChange={(locale) => {
+                                setContentLocale(locale);
+                                window.localStorage.setItem('aio.frontendLocale', locale);
+                            }}
+                            style={{ minWidth: 180 }}
+                            options={localeOptions}
+                        />
+                        {contentLocale !== sourceLocale ? (
+                            <Tag color="blue">Chỉ chỉnh nội dung dịch; dữ liệu vận hành giữ nguyên từ bản gốc</Tag>
+                        ) : null}
+                    </Space>
+                </Space>
             </Card>
 
             <Card>
@@ -332,7 +444,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Button type="primary" disabled={!permissions.catalogCreate} onClick={() => openProductModal()}>
+                                        <Button type="primary" disabled={!permissions.catalogCreate || contentLocale !== sourceLocale} onClick={() => openProductModal()}>
                                             Tạo sản phẩm
                                         </Button>
                                     </div>
@@ -346,7 +458,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Button type="primary" disabled={!permissions.catalogCreate} onClick={() => openCategoryModal()}>
+                                        <Button type="primary" disabled={!permissions.catalogCreate || contentLocale !== sourceLocale} onClick={() => openCategoryModal()}>
                                             Tạo danh mục
                                         </Button>
                                     </div>
@@ -363,7 +475,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                                         Khu này quản lý banner ảnh cho hero slider của theme đang active{activeThemeKey ? ` (${activeThemeKey})` : ''}. Để trống `theme_key` nếu muốn dùng như dữ liệu global, hoặc giữ đúng theme hiện hành để ràng riêng cho storefront này.
                                     </Paragraph>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Button type="primary" disabled={!permissions.catalogCreate} onClick={() => openBannerModal(null, 'hero-slider')}>
+                                        <Button type="primary" disabled={!permissions.catalogCreate || contentLocale !== sourceLocale} onClick={() => openBannerModal(null, 'hero-slider')}>
                                             Tạo slide banner
                                         </Button>
                                     </div>
@@ -377,7 +489,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                             children: (
                                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Button type="primary" disabled={!permissions.catalogCreate} onClick={() => openBannerModal(null, 'hero-side')}>
+                                        <Button type="primary" disabled={!permissions.catalogCreate || contentLocale !== sourceLocale} onClick={() => openBannerModal(null, 'hero-side')}>
                                             Tạo banner
                                         </Button>
                                     </div>
@@ -394,20 +506,32 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                     <CatalogProductFormModal
                         open={productModalOpen}
                         canManage={editingProduct.id ? permissions.catalogUpdate : permissions.catalogCreate}
+                        translationMode={contentLocale !== sourceLocale}
                         editingProduct={editingProduct}
                         categoryOptions={categoryOptions}
+                        localeOptions={data?.localization?.locales ?? []}
+                        contentLocale={contentLocale}
+                        sourceLocale={sourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => {
                             setProductModalOpen(false);
                             setEditingProduct(emptyProductForm);
                         }}
                         onSubmit={async (payload) => {
-                            const didSave = await runCrud({
-                                endpoint: editingProduct.id ? adminApi(`catalog/products/${editingProduct.id}`) : adminApi('catalog/products'),
-                                method: editingProduct.id ? 'PUT' : 'POST',
-                                payload,
-                                successMessage: editingProduct.id ? 'Đã cập nhật sản phẩm catalog.' : 'Đã tạo sản phẩm catalog.',
-                            });
+                            const didSave = contentLocale !== sourceLocale
+                                ? await saveLocalizedRecord({
+                                    resourceType: 'catalog_product',
+                                    resourceId: editingProduct.id,
+                                    payload,
+                                    publish: payload.is_active !== false,
+                                    label: 'sản phẩm',
+                                })
+                                : await runCrud({
+                                    endpoint: editingProduct.id ? adminApi(`catalog/products/${editingProduct.id}`) : adminApi('catalog/products'),
+                                    method: editingProduct.id ? 'PUT' : 'POST',
+                                    payload,
+                                    successMessage: editingProduct.id ? 'Đã cập nhật sản phẩm catalog.' : 'Đã tạo sản phẩm catalog.',
+                                });
 
                             if (didSave) {
                                 setProductModalOpen(false);
@@ -416,6 +540,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
 
                             return didSave;
                         }}
+                        onLocaleChange={handleProductLocaleChange}
                     />
                 </Suspense>
             ) : null}
@@ -425,6 +550,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                     <CatalogCategoryFormModal
                         open={categoryModalOpen}
                         canManage={editingCategory.id ? permissions.catalogUpdate : permissions.catalogCreate}
+                        translationMode={contentLocale !== sourceLocale}
                         editingCategory={editingCategory}
                         categoryOptions={categoryOptions.filter((option) => option.value !== editingCategory.id)}
                         callAdminApi={callAdminApi}
@@ -433,12 +559,20 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                             setEditingCategory(emptyCategoryForm);
                         }}
                         onSubmit={async (payload) => {
-                            const didSave = await runCrud({
-                                endpoint: editingCategory.id ? adminApi(`catalog/categories/${editingCategory.id}`) : adminApi('catalog/categories'),
-                                method: editingCategory.id ? 'PUT' : 'POST',
-                                payload,
-                                successMessage: editingCategory.id ? 'Đã cập nhật danh mục catalog.' : 'Đã tạo danh mục catalog.',
-                            });
+                            const didSave = contentLocale !== sourceLocale
+                                ? await saveLocalizedRecord({
+                                    resourceType: 'catalog_category',
+                                    resourceId: editingCategory.id,
+                                    payload,
+                                    publish: payload.is_active !== false,
+                                    label: 'danh mục',
+                                })
+                                : await runCrud({
+                                    endpoint: editingCategory.id ? adminApi(`catalog/categories/${editingCategory.id}`) : adminApi('catalog/categories'),
+                                    method: editingCategory.id ? 'PUT' : 'POST',
+                                    payload,
+                                    successMessage: editingCategory.id ? 'Đã cập nhật danh mục catalog.' : 'Đã tạo danh mục catalog.',
+                                });
 
                             if (didSave) {
                                 setCategoryModalOpen(false);
@@ -456,6 +590,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                     <SiteBannerFormModal
                         open={bannerModalOpen}
                         canManage={editingBanner.id ? permissions.catalogUpdate : permissions.catalogCreate}
+                        translationMode={contentLocale !== sourceLocale}
                         mediaOptions={data?.media?.items ?? []}
                         callAdminApi={callAdminApi}
                         editingBanner={editingBanner}
@@ -464,12 +599,31 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                             setEditingBanner(emptyBannerForm);
                         }}
                         onSubmit={async (payload) => {
-                            const didSave = await runCrud({
-                                endpoint: editingBanner.id ? adminApi(`site-banners/${editingBanner.id}`) : adminApi('site-banners'),
-                                method: editingBanner.id ? 'PUT' : 'POST',
-                                payload,
-                                successMessage: editingBanner.id ? 'Đã cập nhật banner.' : 'Đã tạo banner.',
-                            });
+                            const didSave = contentLocale !== sourceLocale
+                                ? await saveLocalizedRecord({
+                                    resourceType: 'site_banner',
+                                    resourceId: editingBanner.id,
+                                    payload: {
+                                        title: payload.title,
+                                        subtitle: payload.subtitle,
+                                        badge: payload.badge,
+                                        metadata: {
+                                            eyebrow: payload.eyebrow,
+                                            summary: payload.summary,
+                                            button_label: payload.button_label,
+                                            image_position: payload.image_position,
+                                            show_caption: payload.show_caption,
+                                        },
+                                    },
+                                    publish: payload.is_active !== false,
+                                    label: 'banner',
+                                })
+                                : await runCrud({
+                                    endpoint: editingBanner.id ? adminApi(`site-banners/${editingBanner.id}`) : adminApi('site-banners'),
+                                    method: editingBanner.id ? 'PUT' : 'POST',
+                                    payload,
+                                    successMessage: editingBanner.id ? 'Đã cập nhật banner.' : 'Đã tạo banner.',
+                                });
 
                             if (didSave) {
                                 setBannerModalOpen(false);

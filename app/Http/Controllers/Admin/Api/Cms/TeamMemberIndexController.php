@@ -4,18 +4,29 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsMedia;
 use App\Models\CmsTeamMember;
+use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TeamMemberIndexController
 {
-    public function __invoke(): JsonResponse
+    public function __construct(
+        private readonly AdminLocalizedContentList $localizedList,
+    ) {}
+
+    public function __invoke(Request $request): JsonResponse
     {
         /** @var EloquentBuilder<CmsTeamMember> $query */
         $query = CmsTeamMember::query();
         $query->with(['images'])->orderBy('sort_order')->orderByDesc('updated_at');
 
         $items = $query->get()->map(fn (CmsTeamMember $member): array => $this->serialize($member))->values()->all();
+        $items = $this->localizedList->overlay(
+            $items,
+            'cms_team_member',
+            $request->query('locale'),
+        );
 
         return response()->json([
             'data' => [

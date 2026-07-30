@@ -219,8 +219,8 @@ const sectionConfigMap = {
         permissionPublish: 'cms.publish',
     },
     'cms-testimonials': {
-        title: 'Testimonials',
-        description: 'Quan ly nhan xet khach hang dung chung cho cac theme.',
+        title: 'Cảm nhận khách hàng',
+        description: 'Quản lý cảm nhận khách hàng dùng chung cho các theme.',
         endpoint: adminApi('cms/testimonials'),
         permissionView: 'cms.view',
         permissionCreate: 'cms.create',
@@ -319,6 +319,40 @@ const sectionConfigMap = {
         permissionPublish: null,
     },
 };
+
+const localizedContentResourceMap = {
+    'cms-posts': 'cms_post',
+    'cms-services': 'cms_service',
+    'cms-projects': 'cms_project',
+    'cms-testimonials': 'cms_testimonial',
+    'cms-team-members': 'cms_team_member',
+    'cms-partners': 'cms_partner',
+    'cms-products': 'catalog_product',
+    'cms-categories': 'cms_category',
+    'cms-menus': 'cms_menu',
+    'cms-media': 'cms_media',
+};
+
+const localizedContentFieldsMap = {
+    'cms-posts': ['title', 'slug', 'excerpt', 'body', 'meta_title', 'meta_description', 'meta_keywords'],
+    'cms-services': ['title', 'slug', 'summary', 'content', 'button_label', 'meta_title', 'meta_description', 'meta_keywords'],
+    'cms-projects': ['title', 'slug', 'summary', 'content', 'button_label', 'meta_title', 'meta_description'],
+    'cms-team-members': ['name', 'slug', 'role', 'department', 'summary', 'bio'],
+    'cms-partners': ['title', 'slug', 'description', 'image_alt'],
+    'cms-testimonials': ['name', 'role', 'company', 'quote', 'image_alt'],
+    'cms-products': ['name', 'slug', 'short_description', 'detail_content', 'meta_title', 'meta_description', 'meta_keywords', 'highlights', 'usage_terms', 'usage_location'],
+};
+
+const localizedListSectionKeys = new Set([
+    'cms-pages',
+    'cms-posts',
+    'cms-products',
+    'cms-services',
+    'cms-projects',
+    'cms-team-members',
+    'cms-partners',
+    'cms-testimonials',
+]);
 
 const emptyPage = {
     id: null,
@@ -552,8 +586,24 @@ function countMenuItems(items = []) {
 }
 
 function renderStatusTag(status) {
-    const colorMap = { published: 'green', draft: 'default' };
-    const labelMap = { published: 'Đã xuất bản', draft: 'Bản nháp' };
+    const colorMap = {
+        published: 'green',
+        ready: 'blue',
+        in_review: 'gold',
+        machine_draft: 'cyan',
+        outdated: 'orange',
+        draft: 'default',
+        missing: 'default',
+    };
+    const labelMap = {
+        published: 'Đã xuất bản',
+        ready: 'Sẵn sàng',
+        in_review: 'Đang duyệt',
+        machine_draft: 'Bản dịch máy',
+        outdated: 'Cần cập nhật',
+        draft: 'Bản nháp',
+        missing: 'Chưa có',
+    };
     return <Tag color={colorMap[status] ?? 'default'}>{labelMap[status] ?? status}</Tag>;
 }
 
@@ -597,6 +647,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const frontendLocale = window.localStorage.getItem('aio.frontendLocale') || 'vi';
     const homeAdminUrl = `/${encodeURIComponent(frontendLocale)}?mod=admin`;
     const [messageApi, messageContextHolder] = message.useMessage();
+    const [contentLocale, setContentLocale] = useState(frontendLocale);
+    const [contentLocaleOptions, setContentLocaleOptions] = useState([]);
+    const [contentSourceLocale, setContentSourceLocale] = useState('vi');
     const [bulkProductEditForm] = Form.useForm();
     const [bulkProductStockForm] = Form.useForm();
     const [bulkProductActiveForm] = Form.useForm();
@@ -606,6 +659,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [mediaEditForm] = Form.useForm();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState(emptyPage);
+    const [localizedCreateDrafts, setLocalizedCreateDrafts] = useState({});
     const [blockManagerOpen, setBlockManagerOpen] = useState(false);
     const [selectedLandingPage, setSelectedLandingPage] = useState(null);
     const [selectedPage, setSelectedPage] = useState(null);
@@ -691,13 +745,22 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         canPublish: sectionConfig.permissionPublish ? (currentPermissions ?? []).includes(sectionConfig.permissionPublish) : false,
     }), [currentPermissions, sectionConfig]);
     const canManageCategories = (currentPermissions ?? []).includes('cms.category.manage');
+    const supportsLocalizedList = localizedListSectionKeys.has(sectionKey);
+    const withContentLocale = (endpoint, locale = contentLocale) => {
+        if (!supportsLocalizedList || !locale) {
+            return endpoint;
+        }
+
+        const separator = endpoint.includes('?') ? '&' : '?';
+        return `${endpoint}${separator}locale=${encodeURIComponent(locale)}`;
+    };
 
     const { data, loading, error, reload, mutateData } = useAdminRouteResource({
         enabled: sectionPermissions.canView,
         loader: async () => {
             if (sectionKey === 'cms-products') {
                 const [productsPayload, categoriesPayload] = await Promise.all([
-                    callAdminApi(adminApi('cms/products')),
+                    callAdminApi(withContentLocale(adminApi('cms/products'))),
                     callAdminApi(adminApi('cms/product-categories')),
                 ]);
 
@@ -709,7 +772,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             if (sectionKey === 'cms-services') {
                 const [servicesPayload, categoriesPayload] = await Promise.all([
-                    callAdminApi(adminApi('cms/services')),
+                    callAdminApi(withContentLocale(adminApi('cms/services'))),
                     callAdminApi(adminApi('cms/service-categories')),
                 ]);
 
@@ -721,7 +784,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             if (sectionKey === 'cms-projects') {
                 const [projectsPayload, categoriesPayload] = await Promise.all([
-                    callAdminApi(adminApi('cms/projects')),
+                    callAdminApi(withContentLocale(adminApi('cms/projects'))),
                     callAdminApi(adminApi('cms/project-categories')),
                 ]);
 
@@ -748,11 +811,50 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 return payload.data ?? null;
             }
 
-            const payload = await callAdminApi(sectionConfig.endpoint);
+            const payload = await callAdminApi(withContentLocale(sectionConfig.endpoint));
             return payload.data ?? null;
         },
-        deps: [sectionConfig.endpoint, sectionPermissions.canView, mediaShowAll],
+        deps: [sectionConfig.endpoint, sectionPermissions.canView, mediaShowAll, contentLocale],
     });
+
+    useEffect(() => {
+        if (!supportsLocalizedList || !sectionPermissions.canView) {
+            return;
+        }
+
+        let active = true;
+
+        callAdminApi(adminApi('themes/locales'))
+            .then((payload) => {
+                if (!active) return;
+
+                const localePayload = payload.data ?? {};
+                const editableLocales = (localePayload.locales ?? [])
+                    .filter((locale) => locale.is_enabled_for_editing !== false);
+                const sourceLocale = localePayload.source_locale || 'vi';
+
+                setContentLocaleOptions(editableLocales);
+                setContentSourceLocale(sourceLocale);
+                setContentLocale((current) => (
+                    editableLocales.some((locale) => locale.code === current)
+                        ? current
+                        : sourceLocale
+                ));
+            })
+            .catch(() => {
+                if (!active) return;
+
+                setContentLocaleOptions([
+                    { code: 'vi', name: 'Tiếng Việt', native_name: 'Tiếng Việt', is_source: true },
+                ]);
+                setContentSourceLocale('vi');
+                setContentLocale('vi');
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [callAdminApi, sectionKey, sectionPermissions.canView, supportsLocalizedList]);
 
     const mediaItems = data?.items ?? [];
     const mediaFolders = data?.folders ?? [];
@@ -1240,6 +1342,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     }, [filteredItems.length, mediaPagination.current, mediaPagination.pageSize, sectionKey]);
 
     const openCreateModal = () => {
+        if (supportsLocalizedList && contentLocale !== contentSourceLocale) {
+            setContentLocale(contentSourceLocale);
+        }
+
+        setLocalizedCreateDrafts({});
+
         if (sectionKey === 'cms-landing-pages') {
             setEditingRecord(emptyLandingPage);
         } else if (sectionKey === 'cms-posts') {
@@ -1276,19 +1384,183 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         setBlockManagerOpen(true);
     };
 
-    const openEditModal = (record) => {
-        setEditingRecord(sectionKey === 'cms-posts'
-            ? {
+    const loadLocalizedRecord = async (record, targetLocale = contentLocale) => {
+        const resourceType = localizedContentResourceMap[sectionKey];
+
+        if (!resourceType || !record?.id) {
+            return record;
+        }
+
+        try {
+            const response = await callAdminApi(
+                adminApi(`localization/content/${resourceType}/${record.id}`),
+            );
+            const localization = response.data ?? {};
+            const translations = localization.translations ?? {};
+            const translation = translations[targetLocale] ?? null;
+            const sourceLocale = localization.source_locale ?? contentSourceLocale;
+            const translationStatus = translation?.translation_status
+                ?? (targetLocale === sourceLocale
+                    ? (record?.status ?? (record?.is_active ? 'published' : 'draft'))
+                    : 'missing');
+            const emptyTranslationPayload = targetLocale !== sourceLocale && !translation
+                ? Object.fromEntries((localization.fields ?? []).map((field) => {
+                    const sourceValue = record?.[field];
+
+                    if (Array.isArray(sourceValue)) {
+                        return [field, []];
+                    }
+
+                    if (sourceValue && typeof sourceValue === 'object') {
+                        return [field, {}];
+                    }
+
+                    return [field, ''];
+                }))
+                : {};
+
+            return {
                 ...record,
-                publish_at: normalizeDatetimeLocal(record.publish_at),
+                ...emptyTranslationPayload,
+                ...(translation?.payload ?? {}),
+                ...(targetLocale !== sourceLocale && Object.hasOwn(record ?? {}, 'status')
+                    ? { status: translationStatus === 'published' ? 'published' : 'draft' }
+                    : {}),
+                ...(targetLocale !== sourceLocale && Object.hasOwn(record ?? {}, 'is_active')
+                    ? { is_active: translationStatus === 'published' }
+                    : {}),
+                _content_locale: targetLocale,
+                _content_source_locale: sourceLocale,
+                _translation_status: translationStatus,
+                _translation_statuses: Object.fromEntries(
+                    Object.entries(translations).map(([locale, item]) => [
+                        locale,
+                        item?.translation_status ?? 'missing',
+                    ]),
+                ),
+                _allowed_transitions: translation?.allowed_transitions ?? [],
+            };
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể tải bản dịch.');
+            return null;
+        }
+    };
+
+    const prepareEditingRecord = (localizedRecord) => (
+        sectionKey === 'cms-posts'
+            ? {
+                ...localizedRecord,
+                publish_at: normalizeDatetimeLocal(localizedRecord.publish_at),
             }
             : false && sectionKey === 'cms-products'
                 ? {
-                    ...record,
-                    deal_end_at: normalizeDatetimeLocal(record.deal_end_at),
+                    ...localizedRecord,
+                    deal_end_at: normalizeDatetimeLocal(localizedRecord.deal_end_at),
                 }
-            : record);
+                : localizedRecord
+    );
+
+    const openEditModal = async (record) => {
+        setLocalizedCreateDrafts({});
+        const localizedRecord = await loadLocalizedRecord(record);
+
+        if (!localizedRecord) {
+            return;
+        }
+
+        setEditingRecord(prepareEditingRecord(localizedRecord));
         setModalOpen(true);
+    };
+
+    const handleFormLocaleChange = async (nextLocale, currentFormValues = null) => {
+        if (nextLocale === contentLocale) {
+            return true;
+        }
+
+        if (!editingRecord?.id) {
+            const localizedFields = localizedContentFieldsMap[sectionKey] ?? [];
+            const nextDrafts = {
+                ...localizedCreateDrafts,
+                [contentLocale]: currentFormValues ?? editingRecord,
+            };
+            const sourceDraft = nextDrafts[contentSourceLocale] ?? editingRecord;
+            const targetDraft = nextDrafts[nextLocale] ?? null;
+            const localizedValues = Object.fromEntries(localizedFields.map((field) => {
+                const targetValue = targetDraft?.[field];
+
+                if (targetValue !== undefined && targetValue !== null) {
+                    return [field, targetValue];
+                }
+
+                const sourceValue = sourceDraft?.[field];
+
+                if (Array.isArray(sourceValue)) {
+                    return [field, []];
+                }
+
+                if (sourceValue && typeof sourceValue === 'object') {
+                    return [field, {}];
+                }
+
+                return [field, ''];
+            }));
+            const translationStatuses = {
+                ...(editingRecord?._translation_statuses ?? {}),
+                [contentSourceLocale]: 'draft',
+            };
+
+            Object.entries(nextDrafts).forEach(([locale, draft]) => {
+                if (locale === contentSourceLocale) {
+                    return;
+                }
+
+                translationStatuses[locale] = localizedFields.some((field) => {
+                    const value = draft?.[field];
+
+                    return Array.isArray(value)
+                        ? value.length > 0
+                        : String(value ?? '').trim() !== '';
+                })
+                    ? (draft?.status === 'published' || draft?.is_active === true
+                        ? 'published'
+                        : 'draft')
+                    : 'missing';
+            });
+
+            setLocalizedCreateDrafts(nextDrafts);
+            setContentLocale(nextLocale);
+            setEditingRecord({
+                ...sourceDraft,
+                ...(nextLocale === contentSourceLocale ? sourceDraft : localizedValues),
+                ...(nextLocale !== contentSourceLocale && Object.hasOwn(sourceDraft ?? {}, 'status')
+                    ? { status: targetDraft?.status ?? 'draft' }
+                    : {}),
+                ...(nextLocale !== contentSourceLocale && Object.hasOwn(sourceDraft ?? {}, 'is_active')
+                    ? { is_active: targetDraft?.is_active ?? false }
+                    : {}),
+                id: null,
+                _content_locale: nextLocale,
+                _content_source_locale: contentSourceLocale,
+                _translation_status: translationStatuses[nextLocale]
+                    ?? (nextLocale === contentSourceLocale ? 'draft' : 'missing'),
+                _translation_statuses: translationStatuses,
+            });
+
+            return true;
+        }
+
+        const sourceRecord = (data?.items ?? []).find((item) => item.id === editingRecord.id)
+            ?? editingRecord;
+        const localizedRecord = await loadLocalizedRecord(sourceRecord, nextLocale);
+
+        if (!localizedRecord) {
+            return false;
+        }
+
+        setContentLocale(nextLocale);
+        setEditingRecord(prepareEditingRecord(localizedRecord));
+
+        return true;
     };
 
     const openPostDetailsDrawer = (record) => {
@@ -1308,10 +1580,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         openEditModal(selectedPost);
     };
 
-    const refreshCurrentSectionDataSilently = async () => {
+    const refreshCurrentSectionDataSilently = async (locale = contentLocale) => {
         if (sectionKey === 'cms-products') {
             const [itemsPayload, categoriesPayload] = await Promise.all([
-                callAdminApi(adminApi('cms/products')),
+                callAdminApi(withContentLocale(adminApi('cms/products'), locale)),
                 callAdminApi(adminApi('cms/product-categories')),
             ]);
 
@@ -1324,7 +1596,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
         if (sectionKey === 'cms-projects') {
             const [itemsPayload, categoriesPayload] = await Promise.all([
-                callAdminApi(adminApi('cms/projects')),
+                callAdminApi(withContentLocale(adminApi('cms/projects'), locale)),
                 callAdminApi(adminApi('cms/project-categories')),
             ]);
 
@@ -1335,11 +1607,207 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             return;
         }
 
-        const payload = await callAdminApi(sectionConfig.endpoint);
+        if (sectionKey === 'cms-services') {
+            const [itemsPayload, categoriesPayload] = await Promise.all([
+                callAdminApi(withContentLocale(adminApi('cms/services'), locale)),
+                callAdminApi(adminApi('cms/service-categories')),
+            ]);
+
+            mutateData({
+                ...(itemsPayload.data ?? { items: [], total: 0, metrics: {}, media: [] }),
+                categories: categoriesPayload.data?.items ?? [],
+            });
+            return;
+        }
+
+        const payload = await callAdminApi(withContentLocale(sectionConfig.endpoint, locale));
         mutateData(payload.data ?? null);
     };
 
-    const handleSaveRecord = async (payload) => {
+    const handleSaveRecord = async (payload, submitOptions = {}) => {
+        const resourceType = localizedContentResourceMap[sectionKey];
+        const pageCreateDrafts = submitOptions.pageCreateDrafts ?? {};
+        const isLocalizedPageCreate = sectionKey === 'cms-pages'
+            && !editingRecord?.id
+            && Object.keys(pageCreateDrafts).length > 0;
+
+        if (isLocalizedPageCreate) {
+            const sourceLocale = submitOptions.pageSourceLocale ?? contentSourceLocale;
+
+            try {
+                const createdResponse = await callAdminApi(sectionConfig.endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        ...payload,
+                        locale: sourceLocale,
+                    }),
+                });
+                const createdPage = createdResponse.data ?? null;
+                const createdPageId = createdPage?.id ?? null;
+                let savedTranslationCount = 0;
+                const failedTranslationLocales = [];
+
+                if (createdPageId) {
+                    for (const [locale, draft] of Object.entries(pageCreateDrafts)) {
+                        if (
+                            locale === sourceLocale
+                            || !String(draft?.title ?? '').trim()
+                            || !String(draft?.slug ?? '').trim()
+                        ) {
+                            continue;
+                        }
+
+                        try {
+                            await callAdminApi(`${sectionConfig.endpoint}/${createdPageId}`, {
+                                method: 'PUT',
+                                body: JSON.stringify({
+                                    ...draft,
+                                    locale,
+                                    status: draft.status === 'published' ? 'published' : 'draft',
+                                    translation_status: draft.status === 'published' ? 'published' : 'draft',
+                                }),
+                            });
+                            savedTranslationCount += 1;
+                        } catch {
+                            failedTranslationLocales.push(locale);
+                        }
+                    }
+                }
+
+                await refreshCurrentSectionDataSilently(sourceLocale);
+                setModalOpen(false);
+
+                if (failedTranslationLocales.length) {
+                    messageApi.warning(
+                        `Đã tạo Page gốc nhưng chưa lưu được: ${failedTranslationLocales.join(', ')}. Có thể mở lại Page để nhập tiếp.`,
+                    );
+                } else {
+                    messageApi.success(savedTranslationCount
+                        ? `Đã tạo Page và lưu ${savedTranslationCount} bản dịch.`
+                        : 'Đã tạo Page.');
+                }
+
+                return true;
+            } catch (error) {
+                messageApi.error(error instanceof Error ? error.message : 'Không thể tạo Page đa ngôn ngữ.');
+                return false;
+            }
+        }
+
+        const isLocalizedUpdate = Boolean(
+            resourceType
+            && editingRecord?.id
+            && contentLocale !== contentSourceLocale,
+        );
+
+        if (isLocalizedUpdate) {
+            const shouldPublish = payload.status === 'published'
+                || (payload.status === undefined && payload.is_active !== false);
+
+            try {
+                await callAdminApi(
+                    adminApi(`localization/content/${resourceType}/${editingRecord.id}/${contentLocale}`),
+                    {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            payload,
+                            publish: shouldPublish,
+                        }),
+                    },
+                );
+                await refreshCurrentSectionDataSilently();
+                messageApi.success(
+                    shouldPublish
+                        ? `Đã lưu và xuất bản nội dung ${contentLocale.toUpperCase()}.`
+                        : `Đã lưu bản nháp nội dung ${contentLocale.toUpperCase()}.`,
+                );
+                setModalOpen(false);
+                return true;
+            } catch (error) {
+                messageApi.error(error instanceof Error ? error.message : 'Không thể lưu bản dịch.');
+                return false;
+            }
+        }
+
+        const localizedFields = localizedContentFieldsMap[sectionKey] ?? [];
+        const isLocalizedCreate = Boolean(resourceType && !editingRecord?.id && localizedFields.length);
+
+        if (isLocalizedCreate) {
+            if (contentLocale !== contentSourceLocale) {
+                messageApi.warning('Hãy quay lại ngôn ngữ gốc để tạo nội dung và lưu các bản dịch đã nhập.');
+                return false;
+            }
+
+            try {
+                const createdResponse = await callAdminApi(sectionConfig.endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                });
+                const createdRecord = createdResponse.data?.item ?? createdResponse.data ?? null;
+                const createdRecordId = createdRecord?.id ?? null;
+                let savedTranslationCount = 0;
+                const failedTranslationLocales = [];
+
+                if (createdRecordId) {
+                    for (const [locale, draft] of Object.entries(localizedCreateDrafts)) {
+                        if (locale === contentSourceLocale) {
+                            continue;
+                        }
+
+                        const localizedPayload = Object.fromEntries(
+                            localizedFields.map((field) => [field, draft?.[field] ?? null]),
+                        );
+                        const hasLocalizedContent = Object.values(localizedPayload).some((value) => (
+                            Array.isArray(value)
+                                ? value.length > 0
+                                : String(value ?? '').trim() !== ''
+                        ));
+
+                        if (!hasLocalizedContent) {
+                            continue;
+                        }
+
+                        try {
+                            await callAdminApi(
+                                adminApi(`localization/content/${resourceType}/${createdRecordId}/${locale}`),
+                                {
+                                    method: 'PUT',
+                                    body: JSON.stringify({
+                                        payload: localizedPayload,
+                                        publish: draft?.status === 'published'
+                                            || draft?.is_active === true,
+                                    }),
+                                },
+                            );
+                            savedTranslationCount += 1;
+                        } catch {
+                            failedTranslationLocales.push(locale);
+                        }
+                    }
+                }
+
+                await refreshCurrentSectionDataSilently();
+                setLocalizedCreateDrafts({});
+                setContentLocale(contentSourceLocale);
+                setModalOpen(false);
+
+                if (failedTranslationLocales.length) {
+                    messageApi.warning(
+                        `Đã tạo bản gốc nhưng chưa lưu được bản nháp: ${failedTranslationLocales.join(', ')}. Có thể mở lại nội dung để nhập tiếp.`,
+                    );
+                } else {
+                    messageApi.success(savedTranslationCount
+                        ? `Đã tạo ${sectionConfig.title} và lưu ${savedTranslationCount} bản dịch nháp.`
+                        : `Đã tạo ${sectionConfig.title}.`);
+                }
+
+                return true;
+            } catch (error) {
+                messageApi.error(error instanceof Error ? error.message : 'Không thể tạo dữ liệu.');
+                return false;
+            }
+        }
+
         if (['cms-pages', 'cms-posts', 'cms-products', 'cms-projects'].includes(sectionKey)) {
             const isUpdate = Boolean(editingRecord?.id);
 
@@ -1370,6 +1838,39 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return didSave;
+    };
+
+    const handlePageTranslationTransition = async (locale, translationStatus) => {
+        if (!editingRecord?.id) return false;
+
+        try {
+            const payload = await callAdminApi(
+                ADMIN_API_ROUTES.cms.pages.transition(editingRecord.id, locale),
+                {
+                    method: 'POST',
+                    body: JSON.stringify({ translation_status: translationStatus }),
+                },
+            );
+            const updatedPage = payload.data?.page;
+
+            if (updatedPage) {
+                setEditingRecord(updatedPage);
+                mutateData((currentData) => currentData ? ({
+                    ...currentData,
+                    items: (currentData.items ?? []).map((item) => (
+                        item.id === updatedPage.id ? updatedPage : item
+                    )),
+                }) : currentData);
+            } else {
+                await refreshCurrentSectionDataSilently();
+            }
+
+            messageApi.success('Đã chuyển trạng thái bản dịch Page.');
+            return true;
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể chuyển trạng thái bản dịch.');
+            return false;
+        }
     };
 
     const handleDeleteRecord = async (recordId) => {
@@ -1407,12 +1908,42 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openCreateCategory = () => {
+        if (contentLocale !== contentSourceLocale) {
+            messageApi.warning('Hãy tạo danh mục ở ngôn ngữ gốc trước.');
+            return;
+        }
+
         setEditingCategoryRecord(emptyCategory);
         setCategoryFormOpen(true);
     };
 
-    const openEditCategory = (record) => {
-        setEditingCategoryRecord(record);
+    const localizedCategoryRecord = async (resourceType, record) => {
+        if (contentLocale === contentSourceLocale || !record?.id) {
+            return record;
+        }
+
+        try {
+            const response = await callAdminApi(
+                adminApi(`localization/content/${resourceType}/${record.id}`),
+            );
+            const translation = response.data?.translations?.[contentLocale] ?? null;
+
+            return {
+                ...record,
+                ...(translation?.payload ?? {}),
+                _translation_status: translation?.translation_status ?? 'missing',
+            };
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể tải bản dịch danh mục.');
+
+            return record;
+        }
+    };
+
+    const openEditCategory = async (record) => {
+        setEditingCategoryRecord(
+            await localizedCategoryRecord('cms_category', record),
+        );
         setCategoryFormOpen(true);
     };
 
@@ -1427,15 +1958,27 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         let didSaveWithoutPageReload = false;
 
         try {
-            await callAdminApi(
-                isUpdate ? adminApi(`cms/categories/${editingCategoryRecord.id}`) : adminApi('cms/categories'),
-                {
-                    method: isUpdate ? 'PUT' : 'POST',
-                    body: JSON.stringify(payload),
-                },
-            );
+            if (isUpdate && contentLocale !== contentSourceLocale) {
+                await callAdminApi(
+                    adminApi(`localization/content/cms_category/${editingCategoryRecord.id}/${contentLocale}`),
+                    {
+                        method: 'PUT',
+                        body: JSON.stringify({ payload, publish: true }),
+                    },
+                );
+            } else {
+                await callAdminApi(
+                    isUpdate ? adminApi(`cms/categories/${editingCategoryRecord.id}`) : adminApi('cms/categories'),
+                    {
+                        method: isUpdate ? 'PUT' : 'POST',
+                        body: JSON.stringify(payload),
+                    },
+                );
+            }
             await loadCategoryItems({ showLoading: false });
-            messageApi.success(isUpdate ? 'Đã cập nhật danh mục tin tức.' : 'Đã tạo danh mục tin tức.');
+            messageApi.success(contentLocale !== contentSourceLocale
+                ? `Đã cập nhật danh mục tin tức ${contentLocale.toUpperCase()}.`
+                : (isUpdate ? 'Đã cập nhật danh mục tin tức.' : 'Đã tạo danh mục tin tức.'));
             didSaveWithoutPageReload = true;
         } catch (error) {
             messageApi.error(error instanceof Error ? error.message : 'Không thể lưu danh mục tin tức.');
@@ -1449,29 +1992,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return didSaveWithoutPageReload;
-
-        const didSave = editingCategoryRecord?.id
-            ? await runAdminAction(
-                () => callAdminApi(adminApi(`cms/categories/${editingCategoryRecord.id}`), { method: 'PUT', body: JSON.stringify(payload) }),
-                'Đã cập nhật danh mục tin tức.',
-                async () => {
-                    await loadCategoryItems();
-                    await reload();
-                },
-            )
-            : await runAdminAction(
-                () => callAdminApi(adminApi('cms/categories'), { method: 'POST', body: JSON.stringify(payload) }),
-                'Đã tạo danh mục tin tức.',
-                async () => {
-                    await loadCategoryItems();
-                    await reload();
-                },
-            );
-
-        if (didSave) {
-            setCategoryFormOpen(false);
-            setEditingCategoryRecord(emptyCategory);
-        }
     };
 
     const handleDeleteCategory = (record) => {
@@ -1525,14 +2045,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openCreateServiceCategory = () => {
+        if (contentLocale !== contentSourceLocale) {
+            messageApi.warning('Hãy tạo danh mục dịch vụ ở ngôn ngữ gốc trước.');
+            return;
+        }
+
         setEditingServiceCategoryRecord(emptyServiceCategory);
         setServiceCategoryFormOpen(true);
     };
 
-    const openEditServiceCategory = (record) => {
+    const openEditServiceCategory = async (record) => {
         setEditingServiceCategoryRecord({
             ...emptyServiceCategory,
-            ...record,
+            ...await localizedCategoryRecord('cms_service_category', record),
         });
         setServiceCategoryFormOpen(true);
     };
@@ -1548,15 +2073,30 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         let didSaveWithoutPageReload = false;
 
         try {
-            await callAdminApi(
-                isUpdate ? adminApi(`cms/service-categories/${editingServiceCategoryRecord.id}`) : adminApi('cms/service-categories'),
-                {
-                    method: isUpdate ? 'PUT' : 'POST',
-                    body: JSON.stringify(payload),
-                },
-            );
+            if (isUpdate && contentLocale !== contentSourceLocale) {
+                await callAdminApi(
+                    adminApi(`localization/content/cms_service_category/${editingServiceCategoryRecord.id}/${contentLocale}`),
+                    {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            payload,
+                            publish: payload.is_active !== false,
+                        }),
+                    },
+                );
+            } else {
+                await callAdminApi(
+                    isUpdate ? adminApi(`cms/service-categories/${editingServiceCategoryRecord.id}`) : adminApi('cms/service-categories'),
+                    {
+                        method: isUpdate ? 'PUT' : 'POST',
+                        body: JSON.stringify(payload),
+                    },
+                );
+            }
             await loadServiceCategoryItems({ showLoading: false });
-            messageApi.success(isUpdate ? 'Đã cập nhật danh mục dịch vụ.' : 'Đã tạo danh mục dịch vụ.');
+            messageApi.success(contentLocale !== contentSourceLocale
+                ? `Đã cập nhật danh mục dịch vụ ${contentLocale.toUpperCase()}.`
+                : (isUpdate ? 'Đã cập nhật danh mục dịch vụ.' : 'Đã tạo danh mục dịch vụ.'));
             didSaveWithoutPageReload = true;
         } catch (error) {
             messageApi.error(error instanceof Error ? error.message : 'Không thể lưu danh mục dịch vụ.');
@@ -1570,29 +2110,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return didSaveWithoutPageReload;
-
-        const didSave = editingServiceCategoryRecord?.id
-            ? await runAdminAction(
-                () => callAdminApi(adminApi(`cms/service-categories/${editingServiceCategoryRecord.id}`), { method: 'PUT', body: JSON.stringify(payload) }),
-                'Đã cập nhật danh mục dịch vụ.',
-                async () => {
-                    await loadServiceCategoryItems();
-                    await reload();
-                },
-            )
-            : await runAdminAction(
-                () => callAdminApi(adminApi('cms/service-categories'), { method: 'POST', body: JSON.stringify(payload) }),
-                'Đã tạo danh mục dịch vụ.',
-                async () => {
-                    await loadServiceCategoryItems();
-                    await reload();
-                },
-            );
-
-        if (didSave) {
-            setServiceCategoryFormOpen(false);
-            setEditingServiceCategoryRecord(emptyServiceCategory);
-        }
     };
 
     const handleDeleteServiceCategory = (record) => {
@@ -1646,14 +2163,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openCreateProjectCategory = () => {
+        if (contentLocale !== contentSourceLocale) {
+            messageApi.warning('Hãy tạo danh mục dự án ở ngôn ngữ gốc trước.');
+            return;
+        }
+
         setEditingProjectCategoryRecord(emptyProjectCategory);
         setProjectCategoryFormOpen(true);
     };
 
-    const openEditProjectCategory = (record) => {
+    const openEditProjectCategory = async (record) => {
         setEditingProjectCategoryRecord({
             ...emptyProjectCategory,
-            ...record,
+            ...await localizedCategoryRecord('cms_project_category', record),
         });
         setProjectCategoryFormOpen(true);
     };
@@ -1669,15 +2191,30 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         let didSaveWithoutPageReload = false;
 
         try {
-            await callAdminApi(
-                isUpdate ? adminApi(`cms/project-categories/${editingProjectCategoryRecord.id}`) : adminApi('cms/project-categories'),
-                {
-                    method: isUpdate ? 'PUT' : 'POST',
-                    body: JSON.stringify(payload),
-                },
-            );
+            if (isUpdate && contentLocale !== contentSourceLocale) {
+                await callAdminApi(
+                    adminApi(`localization/content/cms_project_category/${editingProjectCategoryRecord.id}/${contentLocale}`),
+                    {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            payload,
+                            publish: payload.is_active !== false,
+                        }),
+                    },
+                );
+            } else {
+                await callAdminApi(
+                    isUpdate ? adminApi(`cms/project-categories/${editingProjectCategoryRecord.id}`) : adminApi('cms/project-categories'),
+                    {
+                        method: isUpdate ? 'PUT' : 'POST',
+                        body: JSON.stringify(payload),
+                    },
+                );
+            }
             await loadProjectCategoryItems({ showLoading: false });
-            messageApi.success(isUpdate ? 'Đã cập nhật danh mục dự án.' : 'Đã tạo danh mục dự án.');
+            messageApi.success(contentLocale !== contentSourceLocale
+                ? `Đã cập nhật danh mục dự án ${contentLocale.toUpperCase()}.`
+                : (isUpdate ? 'Đã cập nhật danh mục dự án.' : 'Đã tạo danh mục dự án.'));
             didSaveWithoutPageReload = true;
         } catch (error) {
             messageApi.error(error instanceof Error ? error.message : 'Không thể lưu danh mục dự án.');
@@ -1691,29 +2228,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return didSaveWithoutPageReload;
-
-        const didSave = editingProjectCategoryRecord?.id
-            ? await runAdminAction(
-                () => callAdminApi(adminApi(`cms/project-categories/${editingProjectCategoryRecord.id}`), { method: 'PUT', body: JSON.stringify(payload) }),
-                'Đã cập nhật danh mục dự án.',
-                async () => {
-                    await loadProjectCategoryItems();
-                    await reload();
-                },
-            )
-            : await runAdminAction(
-                () => callAdminApi(adminApi('cms/project-categories'), { method: 'POST', body: JSON.stringify(payload) }),
-                'Đã tạo danh mục dự án.',
-                async () => {
-                    await loadProjectCategoryItems();
-                    await reload();
-                },
-            );
-
-        if (didSave) {
-            setProjectCategoryFormOpen(false);
-            setEditingProjectCategoryRecord(emptyProjectCategory);
-        }
     };
 
     const handleDeleteProjectCategory = (record) => {
@@ -1767,14 +2281,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openCreateProductCategory = () => {
+        if (contentLocale !== contentSourceLocale) {
+            messageApi.warning('Hãy tạo danh mục sản phẩm ở ngôn ngữ gốc trước.');
+            return;
+        }
+
         setEditingProductCategoryRecord(emptyProductCategory);
         setProductCategoryFormOpen(true);
     };
 
-    const openEditProductCategory = (record) => {
+    const openEditProductCategory = async (record) => {
         setEditingProductCategoryRecord({
             ...emptyProductCategory,
-            ...record,
+            ...await localizedCategoryRecord('catalog_category', record),
         });
         setProductCategoryFormOpen(true);
     };
@@ -1790,15 +2309,30 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         let didSaveWithoutPageReload = false;
 
         try {
-            await callAdminApi(
-                isUpdate ? adminApi(`cms/product-categories/${editingProductCategoryRecord.id}`) : adminApi('cms/product-categories'),
-                {
-                    method: isUpdate ? 'PUT' : 'POST',
-                    body: JSON.stringify(payload),
-                },
-            );
+            if (isUpdate && contentLocale !== contentSourceLocale) {
+                await callAdminApi(
+                    adminApi(`localization/content/catalog_category/${editingProductCategoryRecord.id}/${contentLocale}`),
+                    {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            payload,
+                            publish: payload.is_active !== false,
+                        }),
+                    },
+                );
+            } else {
+                await callAdminApi(
+                    isUpdate ? adminApi(`cms/product-categories/${editingProductCategoryRecord.id}`) : adminApi('cms/product-categories'),
+                    {
+                        method: isUpdate ? 'PUT' : 'POST',
+                        body: JSON.stringify(payload),
+                    },
+                );
+            }
             await loadProductCategoryItems({ silent: true });
-            messageApi.success(isUpdate ? 'Đã cập nhật danh mục sản phẩm.' : 'Đã tạo danh mục sản phẩm.');
+            messageApi.success(contentLocale !== contentSourceLocale
+                ? `Đã cập nhật danh mục sản phẩm ${contentLocale.toUpperCase()}.`
+                : (isUpdate ? 'Đã cập nhật danh mục sản phẩm.' : 'Đã tạo danh mục sản phẩm.'));
             didSaveWithoutPageReload = true;
         } catch (error) {
             messageApi.error(error instanceof Error ? error.message : 'Không thể lưu danh mục sản phẩm.');
@@ -1812,27 +2346,6 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return didSaveWithoutPageReload;
-
-        const didSave = editingProductCategoryRecord?.id
-            ? await runAdminAction(
-                () => callAdminApi(adminApi(`cms/product-categories/${editingProductCategoryRecord.id}`), { method: 'PUT', body: JSON.stringify(payload) }),
-                'Đã cập nhật danh mục sản phẩm.',
-                async () => {
-                    await loadProductCategoryItems({ silent: true });
-                },
-            )
-            : await runAdminAction(
-                () => callAdminApi(adminApi('cms/product-categories'), { method: 'POST', body: JSON.stringify(payload) }),
-                'Đã tạo danh mục sản phẩm.',
-                async () => {
-                    await loadProductCategoryItems({ silent: true });
-                },
-            );
-
-        if (didSave) {
-            setProductCategoryFormOpen(false);
-            setEditingProductCategoryRecord(emptyProductCategory);
-        }
     };
 
     const buildProductCategoryPayload = (category, sortOrder = category.sort_order) => ({
@@ -2930,13 +3443,27 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
     };
 
-    const openEditMediaTitle = (record) => {
-        setEditingMediaRecord(record);
-        mediaEditForm.setFieldsValue({
-            title: record.title ?? '',
-            alt_text: record.alt_text ?? '',
-            folder_path: record.folder_path ?? null,
-        });
+    const openEditMediaTitle = async (record) => {
+        try {
+            const response = await callAdminApi(
+                adminApi(`localization/content/cms_media/${record.id}`),
+            );
+            const translation = response.data?.translations?.[contentLocale] ?? null;
+            const localizedRecord = {
+                ...record,
+                ...(translation?.payload ?? {}),
+                _translation_status: translation?.translation_status ?? 'missing',
+            };
+
+            setEditingMediaRecord(localizedRecord);
+            mediaEditForm.setFieldsValue({
+                title: localizedRecord.title ?? '',
+                alt_text: localizedRecord.alt_text ?? '',
+                folder_path: record.folder_path ?? null,
+            });
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể tải bản dịch media.');
+        }
     };
 
     const handleSaveMediaTitle = async () => {
@@ -2945,15 +3472,29 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         const values = await mediaEditForm.validateFields();
+        const isSourceLocale = contentLocale === contentSourceLocale;
         const didSave = await runAdminAction(
-            () => callAdminApi(adminApi(`cms/media/${editingMediaRecord.id}`), {
-                method: 'PUT',
-                body: JSON.stringify({
-                    title: values.title,
-                    alt_text: values.alt_text || null,
-                    folder_path: values.folder_path || null,
-                }),
-            }),
+            () => callAdminApi(
+                isSourceLocale
+                    ? adminApi(`cms/media/${editingMediaRecord.id}`)
+                    : adminApi(`localization/content/cms_media/${editingMediaRecord.id}/${contentLocale}`),
+                {
+                    method: 'PUT',
+                    body: JSON.stringify(isSourceLocale
+                        ? {
+                            title: values.title,
+                            alt_text: values.alt_text || null,
+                            folder_path: values.folder_path || null,
+                        }
+                        : {
+                            payload: {
+                                title: values.title,
+                                alt_text: values.alt_text || null,
+                            },
+                            publish: true,
+                        }),
+                },
+            ),
             'Da cap nhat ten hien thi media.',
             reload,
         );
@@ -3681,6 +4222,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 },
                 { title: 'Slug', dataIndex: 'slug', key: 'slug' },
                 { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
+                {
+                    title: 'Ngôn ngữ',
+                    key: 'translations',
+                    render: (_, record) => (
+                        <Space wrap size={[4, 4]}>
+                            {Object.values(record.translations ?? {}).map((translation) => (
+                                <Tag key={translation.locale}>
+                                    {translation.locale}: {translation.translation_status}
+                                </Tag>
+                            ))}
+                        </Space>
+                    ),
+                },
                 { title: 'SEO', key: 'seo', render: (_, record) => record.meta_title || record.meta_description ? <Text type="secondary">{record.meta_title || record.meta_description}</Text> : 'Chưa có' },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
@@ -3868,6 +4422,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 <Space direction="vertical" size={4} align="start">
                                 <Space size={8} wrap>
                                     <Text strong style={{ color: '#1677ff' }}>{value}</Text>
+                                    {renderStatusTag(record._translation_status)}
                                     {record.is_highlight ? <Tag color="gold">Nổi bật</Tag> : null}
                                 </Space>
                                 <Text type="secondary">{record.category_name || 'Chưa gắn danh mục'}</Text>
@@ -4023,7 +4578,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         editingPage={editingRecord}
                         locales={data?.locales ?? []}
-                        defaultLocale={frontendLocale}
+                        defaultLocale={data?.default_locale ?? frontendLocale}
+                        sourceLocale={data?.source_locale ?? 'vi'}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                     />
@@ -4037,12 +4593,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CmsPostFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingPost={editingRecord}
                         mediaOptions={data?.media ?? []}
                         categoryOptions={data?.categories ?? []}
+                        localeOptions={contentLocaleOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={contentSourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
+                        onLocaleChange={handleFormLocaleChange}
                     />
                 </Suspense>
             );
@@ -4054,12 +4615,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CmsServiceFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingService={editingRecord}
                         mediaOptions={data?.media ?? []}
                         categoryOptions={serviceCategoryOptions}
+                        localeOptions={contentLocaleOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={contentSourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
+                        onLocaleChange={handleFormLocaleChange}
                     />
                 </Suspense>
             );
@@ -4071,12 +4637,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CmsProjectFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingProject={editingRecord}
                         mediaOptions={data?.media ?? []}
                         categoryOptions={projectCategoryOptions}
+                        localeOptions={contentLocaleOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={contentSourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
+                        onLocaleChange={handleFormLocaleChange}
                     />
                 </Suspense>
             );
@@ -4088,11 +4659,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CmsTestimonialFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingTestimonial={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        localeOptions={contentLocaleOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={contentSourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
+                        onLocaleChange={handleFormLocaleChange}
                     />
                 </Suspense>
             );
@@ -4104,11 +4680,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CmsTeamMemberFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingMember={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        localeOptions={contentLocaleOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={contentSourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
+                        onLocaleChange={handleFormLocaleChange}
                     />
                 </Suspense>
             );
@@ -4120,11 +4701,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CmsPartnerFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingPartner={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        localeOptions={contentLocaleOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={contentSourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
+                        onLocaleChange={handleFormLocaleChange}
                     />
                 </Suspense>
             );
@@ -4136,11 +4722,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CatalogProductFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingProduct={editingRecord}
                         categoryOptions={productCategoryOptions}
+                        localeOptions={contentLocaleOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={contentSourceLocale}
+                        allowLocaleSwitchOnCreate
                         callAdminApi={callAdminApi}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
+                        onLocaleChange={handleFormLocaleChange}
                     />
                 </Suspense>
             );
@@ -4152,6 +4744,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CmsCategoryFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingCategory={editingRecord}
                         parentOptions={(data?.items ?? []).filter((item) => item.id !== editingRecord?.id).map((item) => ({ label: item.name, value: item.id }))}
                         onCancel={() => setModalOpen(false)}
@@ -4219,11 +4812,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <CmsPageFormModal
                     open={modalOpen}
                     canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    canPublish={sectionPermissions.canPublish}
                     editingPage={editingRecord}
+                    localeOptions={data?.locales ?? []}
+                    contentLocale={contentLocale}
+                    sourceLocale={contentSourceLocale}
                     mediaOptions={data?.media ?? []}
                     callAdminApi={callAdminApi}
                     onCancel={() => setModalOpen(false)}
                     onSubmit={handleSaveRecord}
+                    onTransition={handlePageTranslationTransition}
                 />
             </Suspense>
         );
@@ -4268,6 +4866,21 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             />
         </Space>
     );
+
+    const localeEditor = supportsLocalizedList ? (
+        <Space wrap>
+            <Text type="secondary">Ngôn ngữ nội dung</Text>
+            <Select
+                value={contentLocale}
+                onChange={setContentLocale}
+                style={{ minWidth: 170 }}
+                options={contentLocaleOptions.map((locale) => ({
+                    value: locale.code,
+                    label: `${locale.native_name || locale.name || locale.code}${locale.is_source ? ' · Gốc' : ''}`,
+                }))}
+            />
+        </Space>
+    ) : null;
 
     const tableExtra = sectionKey === 'cms-orders'
         ? orderTableFilters
@@ -4617,7 +5230,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             <Card
                 className="admin-table-card"
                 title={`${sectionConfig.title} (${sectionKey === 'cms-orders' || sectionKey === 'cms-media' || sectionKey === 'cms-services' ? filteredItems.length : (data?.total ?? 0)})`}
-                extra={tableExtra}
+                extra={localeEditor || tableExtra ? <Space wrap>{localeEditor}{tableExtra}</Space> : null}
             >
                 {sectionKey === 'cms-products' ? (
                     <Row gutter={[16, 16]} align="top">
@@ -5028,7 +5641,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             </Modal>
 
             <Modal
-                title="Sửa tên hiển thị media"
+                title={`Sửa thông tin media · ${contentLocale.toUpperCase()}`}
                 open={sectionKey === 'cms-media' && Boolean(editingMediaRecord)}
                 onCancel={() => {
                     setEditingMediaRecord(null);
@@ -5050,7 +5663,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <Form.Item name="alt_text" label="Alt text" style={{ marginBottom: 0 }}>
                         <Input placeholder="Mô tả ngắn cho ảnh/file" />
                     </Form.Item>
-                    <Form.Item name="folder_path" label="Thư mục" style={{ marginTop: 16, marginBottom: 0 }}>
+                    <Form.Item
+                        name="folder_path"
+                        label="Thư mục"
+                        style={{ marginTop: 16, marginBottom: 0 }}
+                        hidden={contentLocale !== contentSourceLocale}
+                    >
                         <Select allowClear placeholder="Thư mục gốc" options={mediaFolderOptions} />
                     </Form.Item>
                 </Form>
@@ -5515,7 +6133,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <Text type="secondary">Quản lý nhanh danh mục để gắn cho bài viết mà không cần rời màn Tin tức.</Text>
-                        <Button type="primary" icon={<PlusOutlined />} disabled={!canManageCategories} onClick={openCreateCategory}>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!canManageCategories || contentLocale !== contentSourceLocale} onClick={openCreateCategory}>
                             Thêm danh mục
                         </Button>
                     </Space>
@@ -5557,7 +6175,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         <Button size="small" icon={<EditOutlined />} disabled={!canManageCategories} onClick={() => openEditCategory(record)}>
                                             Sửa
                                         </Button>
-                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!canManageCategories} onClick={() => handleDeleteCategory(record)}>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!canManageCategories || contentLocale !== contentSourceLocale} onClick={() => handleDeleteCategory(record)}>
                                             Xóa
                                         </Button>
                                     </Space>
@@ -5572,6 +6190,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <CmsCategoryFormModal
                     open={categoryFormOpen}
                     canManage={canManageCategories}
+                    translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingCategoryRecord}
                     parentOptions={categoryParentOptions}
                     submitLoading={categorySaving}
@@ -5594,7 +6213,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <Text type="secondary">Quản lý danh mục dịch vụ ngay trong màn Services để tiện tạo, sửa và gắn danh mục.</Text>
-                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateServiceCategory}>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateServiceCategory}>
                             Thêm danh mục dịch vụ
                         </Button>
                     </Space>
@@ -5638,7 +6257,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         <Button size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditServiceCategory(record)}>
                                             Sửa
                                         </Button>
-                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete} onClick={() => handleDeleteServiceCategory(record)}>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteServiceCategory(record)}>
                                             Xóa
                                         </Button>
                                     </Space>
@@ -5653,6 +6272,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <CatalogCategoryFormModal
                     open={serviceCategoryFormOpen}
                     canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingServiceCategoryRecord}
                     categoryOptions={serviceCategoryParentOptions}
                     callAdminApi={callAdminApi}
@@ -5676,7 +6296,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <Text type="secondary">Quản lý danh mục sản phẩm ngay trong màn Products để tiện tạo, sửa và gắn danh mục.</Text>
-                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateProductCategory}>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateProductCategory}>
                             Thêm danh mục SP
                         </Button>
                     </Space>
@@ -5694,7 +6314,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         row: (rowProps) => (
                                             <SortableProductCategoryTableRow
                                                 {...rowProps}
-                                                disabled={!sectionPermissions.canUpdate || productCategoryLoading}
+                                                disabled={!sectionPermissions.canUpdate || productCategoryLoading || contentLocale !== contentSourceLocale}
                                             />
                                         ),
                                     },
@@ -5709,7 +6329,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         type="text"
                                         size="small"
                                         icon={<HolderOutlined />}
-                                        disabled={!sectionPermissions.canUpdate || productCategoryLoading}
+                                        disabled={!sectionPermissions.canUpdate || productCategoryLoading || contentLocale !== contentSourceLocale}
                                         aria-label="Kéo thả để sắp xếp danh mục"
                                     />
                                 ),
@@ -5745,7 +6365,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         <Button size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditProductCategory(record)}>
                                             Sửa
                                         </Button>
-                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete} onClick={() => handleDeleteProductCategory(record)}>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteProductCategory(record)}>
                                             Xóa
                                         </Button>
                                     </Space>
@@ -5762,6 +6382,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <CatalogCategoryFormModal
                     open={productCategoryFormOpen}
                     canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingProductCategoryRecord}
                     categoryOptions={productCategoryParentOptions}
                     callAdminApi={callAdminApi}
@@ -5785,7 +6406,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <Text type="secondary">Quản lý danh mục dự án ngay trong màn Projects để tiện tạo, sửa và gắn danh mục.</Text>
-                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateProjectCategory}>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateProjectCategory}>
                             Thêm danh mục dự án
                         </Button>
                     </Space>
@@ -5829,7 +6450,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         <Button size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditProjectCategory(record)}>
                                             Sửa
                                         </Button>
-                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete} onClick={() => handleDeleteProjectCategory(record)}>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteProjectCategory(record)}>
                                             Xóa
                                         </Button>
                                     </Space>
@@ -5844,6 +6465,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <CatalogCategoryFormModal
                     open={projectCategoryFormOpen}
                     canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingProjectCategoryRecord}
                     categoryOptions={projectCategoryParentOptions}
                     callAdminApi={callAdminApi}

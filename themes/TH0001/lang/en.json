@@ -59,6 +59,7 @@
   "theme.fallback.featured_products": "Featured products",
   "theme.fallback.latest_products": "Latest products",
   "theme.fallback.new_product": "New product",
+  "modal.login_identity": "Email",
   "modal.close": "Close",
   "modal.login_title": "Sign in to continue shopping",
   "modal.login_summary": "Sign in quickly to checkout, track orders, and save favorites.",

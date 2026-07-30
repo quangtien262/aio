@@ -102,6 +102,7 @@ use App\Http\Controllers\Admin\Api\ThemeActivationController;
 use App\Http\Controllers\Admin\Api\ThemeAvatarController;
 use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
 use App\Http\Controllers\Admin\Api\ThemeLocaleController;
+use App\Http\Controllers\Admin\Api\LocalizedContentController;
 use App\Http\Controllers\Admin\Api\ThemePaletteController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
@@ -405,9 +406,15 @@ Route::prefix('admin')
                 Route::put('/landing/pages/{landingPage}/blocks/reorder', [LandingPageBlockController::class, 'reorder'])
                     ->middleware('admin.permission:cms.update')
                     ->name('landing.pages.blocks.reorder');
+                Route::post('/landing/pages/{landingPage}/translations/{locale}/transition', [LandingPageController::class, 'transition'])
+                    ->middleware('admin.permission:cms.publish')
+                    ->name('landing.pages.translations.transition');
                 Route::put('/landing/blocks/{block}', [LandingPageBlockController::class, 'update'])
                     ->middleware('admin.permission:cms.update')
                     ->name('landing.blocks.update');
+                Route::post('/landing/blocks/{block}/translations/{locale}/transition', [LandingPageBlockController::class, 'transition'])
+                    ->middleware('admin.permission:cms.publish')
+                    ->name('landing.blocks.translations.transition');
                 Route::get('/landing/blocks/{block}/source-preview', [LandingPageBlockController::class, 'sourcePreview'])
                     ->middleware('admin.permission:cms.update')
                     ->name('landing.blocks.source-preview');
@@ -423,9 +430,18 @@ Route::prefix('admin')
                 Route::put('/cms/pages/{page}', [PageManagementController::class, 'update'])
                     ->middleware('admin.permission:cms.update')
                     ->name('cms.pages.update');
+                Route::post('/cms/pages/{page}/translations/{locale}/transition', [PageManagementController::class, 'transition'])
+                    ->middleware('admin.permission:cms.publish')
+                    ->name('cms.pages.translations.transition');
                 Route::delete('/cms/pages/{page}', [PageManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.delete')
                     ->name('cms.pages.destroy');
+                Route::get('/localization/content/{resourceType}/{resourceId}', [LocalizedContentController::class, 'show'])
+                    ->name('localization.content.show');
+                Route::put('/localization/content/{resourceType}/{resourceId}/{locale}', [LocalizedContentController::class, 'update'])
+                    ->name('localization.content.update');
+                Route::post('/localization/content/{resourceType}/{resourceId}/{locale}/transition', [LocalizedContentController::class, 'transition'])
+                    ->name('localization.content.transition');
                 Route::get('/cms/posts', PostIndexController::class)
                     ->middleware('admin.permission:cms.post.view')
                     ->name('cms.posts.index');

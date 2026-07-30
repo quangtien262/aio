@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
     @include('theme-shop601::partials.styles')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
     <div id="top" class="s601-page">

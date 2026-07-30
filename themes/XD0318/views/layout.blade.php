@@ -7,6 +7,7 @@
     <title>@yield('title', 'XD0318 Fast Gear')</title>
     @include('theme-xd0318::partials.styles')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
     <div id="top" class="fg18-page">

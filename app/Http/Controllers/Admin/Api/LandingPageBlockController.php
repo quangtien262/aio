@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
+use App\Enums\TranslationStatus;
 use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
 use App\Support\FrontendLocalization;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\Localization\LandingPageLocalization;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,15 +17,27 @@ use Illuminate\Validation\Rule;
 
 class LandingPageBlockController
 {
+    public function __construct(
+        private readonly LandingPageLocalization $localization,
+        private readonly SiteContext $siteContext,
+    ) {}
+
     public function index(LandingPage $landingPage, Request $request, LandingPageBuilder $builder): JsonResponse
     {
+        $this->assertAccessible($landingPage);
         $locale = $this->locale($request);
         $landingPage->load(['blocks.data']);
 
         return response()->json([
             'data' => $landingPage->blocks
                 ->reject(fn (LandingPageBlock $block): bool => $block->block_type === 'footer_contact')
-                ->map(fn (LandingPageBlock $block): array => $builder->serializeBlock($block, $locale))
+                ->map(fn (LandingPageBlock $block): array => $builder->serializeBlock(
+                    $block,
+                    $locale,
+                    FrontendLocalization::fallbackLocale(),
+                    false,
+                    true,
+                ))
                 ->values(),
             'available_blocks' => $builder->availableBlocks($landingPage->theme_key),
         ]);
@@ -30,6 +45,7 @@ class LandingPageBlockController
 
     public function store(LandingPage $landingPage, Request $request, LandingPageBuilder $builder): JsonResponse
     {
+        $this->assertAccessible($landingPage);
         $validated = $request->validate([
             'block_type' => ['required', 'string', 'max:100'],
         ]);
@@ -38,12 +54,19 @@ class LandingPageBlockController
 
         return response()->json([
             'message' => 'Đã thêm khối landing page.',
-            'data' => $builder->serializeBlock($block, $this->locale($request)),
+            'data' => $builder->serializeBlock(
+                $block,
+                $this->locale($request),
+                FrontendLocalization::fallbackLocale(),
+                false,
+                true,
+            ),
         ], 201);
     }
 
     public function update(LandingPageBlock $block, Request $request, LandingPageBuilder $builder): JsonResponse
     {
+        $this->assertAccessible($block->landingPage()->firstOrFail());
         abort_if($block->block_type === 'footer_contact', 404);
 
         $locale = $this->locale($request);
@@ -58,6 +81,8 @@ class LandingPageBlockController
             'data.description' => ['nullable', 'string'],
             'data.button_label' => ['nullable', 'string', 'max:255'],
             'data.content' => ['nullable', 'array'],
+            'publish' => ['nullable', 'boolean'],
+            'is_machine_translated' => ['nullable', 'boolean'],
         ]);
 
         DB::transaction(function () use ($block, $validated, $locale): void {
@@ -68,27 +93,43 @@ class LandingPageBlockController
             }
 
             if (array_key_exists('data', $validated)) {
-                LandingPageBlockData::query()->updateOrCreate(
-                    ['landing_page_block_id' => $block->id, 'locale' => $locale],
-                    [
-                        'title' => $validated['data']['title'] ?? null,
-                        'subtitle' => $validated['data']['subtitle'] ?? null,
-                        'description' => $validated['data']['description'] ?? null,
-                        'button_label' => $validated['data']['button_label'] ?? null,
-                        'content' => json_encode($validated['data']['content'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                    ],
+                $translation = $this->localization->saveBlockDraft(
+                    $block,
+                    $locale,
+                    $validated['data'],
+                    (bool) ($validated['is_machine_translated'] ?? false),
                 );
+
+                if ((bool) ($validated['publish'] ?? false)) {
+                    $translation = $this->localization->transitionBlock(
+                        $block,
+                        $locale,
+                        TranslationStatus::Ready,
+                    );
+                    $this->localization->transitionBlock(
+                        $block,
+                        $locale,
+                        TranslationStatus::Published,
+                    );
+                }
             }
         });
 
         return response()->json([
             'message' => 'Đã cập nhật khối landing page.',
-            'data' => $builder->serializeBlock($block->fresh(['data']), $locale),
+            'data' => $builder->serializeBlock(
+                $block->fresh(['data']),
+                $locale,
+                FrontendLocalization::fallbackLocale(),
+                false,
+                true,
+            ),
         ]);
     }
 
     public function sourcePreview(LandingPageBlock $block, Request $request, LandingPageBuilder $builder): JsonResponse
     {
+        $this->assertAccessible($block->landingPage()->firstOrFail());
         if ($request->has('featured_only')) {
             $request->merge(['featured_only' => $request->boolean('featured_only')]);
         }
@@ -114,8 +155,42 @@ class LandingPageBlockController
         ]);
     }
 
+    public function transition(
+        LandingPageBlock $block,
+        string $locale,
+        Request $request,
+        LandingPageBuilder $builder,
+    ): JsonResponse {
+        $this->assertAccessible($block->landingPage()->firstOrFail());
+        $validated = $request->validate([
+            'translation_status' => [
+                'required',
+                'string',
+                Rule::enum(TranslationStatus::class),
+            ],
+        ]);
+        $translation = $this->localization->transitionBlock(
+            $block,
+            $locale,
+            TranslationStatus::from($validated['translation_status']),
+        );
+
+        return response()->json([
+            'message' => 'Đã chuyển trạng thái bản dịch block.',
+            'data' => $builder->serializeBlock(
+                $block->fresh(['data']),
+                $locale,
+                FrontendLocalization::fallbackLocale(),
+                false,
+                true,
+            ),
+            'translation_status' => $translation->translation_status->value,
+        ]);
+    }
+
     public function destroy(LandingPageBlock $block): JsonResponse
     {
+        $this->assertAccessible($block->landingPage()->firstOrFail());
         abort_if($block->block_type === 'footer_contact', 404);
 
         $block->delete();
@@ -127,6 +202,7 @@ class LandingPageBlockController
 
     public function reorder(LandingPage $landingPage, Request $request): JsonResponse
     {
+        $this->assertAccessible($landingPage);
         $validated = $request->validate([
             'blocks' => ['required', 'array', 'min:1'],
             'blocks.*.id' => ['required', 'integer', Rule::exists('landing_page_blocks', 'id')],
@@ -156,10 +232,17 @@ class LandingPageBlockController
 
     private function locale(Request $request): string
     {
-        $locale = (string) $request->input('locale', app()->getLocale());
+        return FrontendLocalization::resolveEditableLocale(
+            (string) $request->input('locale', app()->getLocale()),
+        );
+    }
 
-        return in_array($locale, FrontendLocalization::supportedLocales(), true)
-            ? $locale
-            : FrontendLocalization::defaultLocale();
+    private function assertAccessible(LandingPage $landingPage): void
+    {
+        abort_unless(
+            $landingPage->website_key === $this->siteContext->websiteKey()
+            && strtoupper((string) $landingPage->theme_key) === strtoupper((string) $this->siteContext->themeKey()),
+            404,
+        );
     }
 }

@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
     @include('theme-nt502::partials.styles')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
     <div class="n502-page">

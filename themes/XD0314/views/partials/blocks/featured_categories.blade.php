@@ -17,7 +17,7 @@
                     @if (filled($category['image'] ?? null))
                         <img src="{{ $category['image'] }}" alt="{{ $category['alt'] ?? $category['title'] ?? $category['name'] ?? '' }}">
                     @else
-                        <span>{{ $category['icon'] ?? 'â–£' }}</span>
+                        <span>{{ $category['icon'] ?? '▣' }}</span>
                     @endif
                     <strong>{{ $category['title'] ?? $category['name'] ?? '' }}</strong>
                     @if (filled($category['summary'] ?? $category['count_label'] ?? null))

@@ -2,8 +2,11 @@
 
 namespace App\Core\Themes;
 
+use App\Enums\TranslationStatus;
 use App\Models\ThemeTranslation;
 use App\Support\FrontendLocalization;
+use App\Support\Localization\TranslationRevision;
+use App\Support\SiteContext;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -11,25 +14,34 @@ use Illuminate\Support\Facades\File;
 class ThemeTranslationService
 {
     private const CACHE_TTL_SECONDS = 3600;
+
     private const STATIC_GROUP = 'static';
+
+    public function __construct(private readonly SiteContext $siteContext) {}
 
     public function translations(?string $themeKey, string $locale): array
     {
         $resolvedThemeKey = $this->resolveThemeKey($themeKey);
-        $resolvedLocale = FrontendLocalization::resolveEditableLocale($locale);
+        $resolvedLocale = FrontendLocalization::resolveLocale($locale);
         $fallbackLocale = FrontendLocalization::fallbackLocale();
 
         return Cache::remember(
             $this->cacheKey($resolvedThemeKey, $resolvedLocale),
             now()->addSeconds(self::CACHE_TTL_SECONDS),
             function () use ($fallbackLocale, $resolvedLocale, $resolvedThemeKey): array {
-                $fallbackTranslations = $this->loadFileTranslations($resolvedThemeKey, $fallbackLocale);
-                $localeTranslations = $resolvedLocale === $fallbackLocale
-                    ? []
-                    : $this->loadFileTranslations($resolvedThemeKey, $resolvedLocale);
-                $overrides = $this->overrides($resolvedThemeKey, $resolvedLocale, self::STATIC_GROUP);
+                $fileTranslations = $this->loadInheritedFileTranslations(
+                    $resolvedThemeKey,
+                    $resolvedLocale,
+                    $fallbackLocale,
+                );
+                $overrides = $this->overrides(
+                    $resolvedThemeKey,
+                    $resolvedLocale,
+                    self::STATIC_GROUP,
+                    true,
+                );
 
-                return array_replace($fallbackTranslations, $localeTranslations, $overrides);
+                return array_replace($fileTranslations, $overrides);
             },
         );
     }
@@ -44,7 +56,11 @@ class ThemeTranslationService
         $resolvedLocale = FrontendLocalization::resolveEditableLocale($locale);
         $fallbackLocale = FrontendLocalization::fallbackLocale();
         $fallbackTranslations = $this->loadFileTranslations($themeKey, $fallbackLocale);
-        $localeTranslations = $resolvedLocale === $fallbackLocale ? [] : $this->loadFileTranslations($themeKey, $resolvedLocale);
+        $localeTranslations = $this->loadInheritedFileTranslations(
+            $themeKey,
+            $resolvedLocale,
+            $fallbackLocale,
+        );
         $overrides = $this->overrides($themeKey, $resolvedLocale, self::STATIC_GROUP);
 
         $keys = collect(array_keys($fallbackTranslations))
@@ -105,6 +121,11 @@ class ThemeTranslationService
                 ],
                 [
                     'value' => $value,
+                    'translation_status' => TranslationStatus::Published,
+                    'translation_revision' => TranslationRevision::fingerprint(['value' => $value]),
+                    'is_machine_translated' => false,
+                    'translated_at' => now(),
+                    'translation_published_at' => now(),
                 ],
             );
         }
@@ -112,12 +133,17 @@ class ThemeTranslationService
         Cache::forget($this->cacheKey($themeKey, $resolvedLocale));
     }
 
-    private function overrides(string $themeKey, string $locale, string $group): array
-    {
+    private function overrides(
+        string $themeKey,
+        string $locale,
+        string $group,
+        bool $publishedOnly = false,
+    ): array {
         return ThemeTranslation::query()
             ->where('theme_key', $themeKey)
             ->where('locale', $locale)
             ->where('group', $group)
+            ->when($publishedOnly, fn ($query) => $query->publishedTranslation())
             ->pluck('value', 'translation_key')
             ->all();
     }
@@ -136,6 +162,21 @@ class ThemeTranslationService
         return is_array($decoded) ? $decoded : [];
     }
 
+    private function loadInheritedFileTranslations(
+        string $themeKey,
+        string $locale,
+        string $fallbackLocale,
+    ): array {
+        return collect($this->localeFileChain($locale, $fallbackLocale))
+            ->reduce(
+                fn (array $translations, string $candidate): array => array_replace(
+                    $translations,
+                    $this->loadFileTranslations($themeKey, $candidate),
+                ),
+                [],
+            );
+    }
+
     private function resolveThemeKey(?string $themeKey): string
     {
         return trim((string) $themeKey) !== '' ? (string) $themeKey : 'TH0001';
@@ -144,7 +185,8 @@ class ThemeTranslationService
     private function cacheKey(string $themeKey, string $locale): string
     {
         return sprintf(
-            'theme-translations:%s:%s:%s',
+            'theme-translations:%s:%s:%s:%s',
+            strtolower($this->siteContext->websiteKey()),
             strtolower($themeKey),
             strtolower($locale),
             $this->translationSignature($themeKey, $locale),
@@ -154,15 +196,38 @@ class ThemeTranslationService
     private function translationSignature(string $themeKey, string $locale): string
     {
         $fallbackLocale = FrontendLocalization::fallbackLocale();
-        $paths = array_unique([
-            base_path(sprintf('themes/%s/lang/%s.json', $themeKey, $fallbackLocale)),
-            base_path(sprintf('themes/%s/lang/%s.json', $themeKey, $locale)),
-        ]);
+        $paths = collect($this->localeFileChain($locale, $fallbackLocale))
+            ->map(fn (string $candidate): string => base_path(
+                sprintf('themes/%s/lang/%s.json', $themeKey, $candidate),
+            ))
+            ->all();
 
         $signature = collect($paths)
-            ->map(fn (string $path): string => File::exists($path) ? (string) File::lastModified($path) : 'missing')
+            ->map(fn (string $path): string => File::exists($path)
+                ? File::lastModified($path).':'.File::size($path)
+                : 'missing')
             ->implode('|');
 
         return substr(sha1($signature), 0, 12);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function localeFileChain(string $locale, string $fallbackLocale): array
+    {
+        $parts = explode('-', $locale);
+        $progressive = [];
+
+        for ($length = 1; $length <= count($parts); $length++) {
+            $progressive[] = implode('-', array_slice($parts, 0, $length));
+        }
+
+        return collect([$fallbackLocale])
+            ->merge($progressive)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Alert from 'antd/es/alert';
 import Checkbox from 'antd/es/checkbox';
 import Col from 'antd/es/col';
 import Form from 'antd/es/form';
@@ -23,7 +24,7 @@ const imagePositionOptions = [
     { label: 'Dưới', value: 'center bottom' },
 ];
 
-export default function SiteBannerFormModal({ open, canManage, editingBanner, mediaOptions = [], callAdminApi, onCancel, onSubmit }) {
+export default function SiteBannerFormModal({ open, canManage, translationMode = false, editingBanner, mediaOptions = [], callAdminApi, onCancel, onSubmit }) {
     const [form] = Form.useForm();
     const placement = Form.useWatch('placement', form);
     const imageUrl = Form.useWatch('image_url', form) ?? '';
@@ -63,15 +64,23 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, me
             destroyOnHidden
         >
             <Form form={form} layout="vertical" initialValues={editingBanner}>
+                {translationMode ? (
+                    <Alert
+                        type="info"
+                        showIcon
+                        message="Chế độ dịch chỉ lưu nội dung chữ. Theme, vị trí, ảnh, liên kết, thứ tự và trạng thái dùng chung từ bản gốc."
+                        style={{ marginBottom: 16 }}
+                    />
+                ) : null}
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item name="theme_key" label="Theme key">
-                            <Input placeholder="SER0100 hoặc để trống cho global" />
+                            <Input disabled={translationMode} placeholder="SER0100 hoặc để trống cho global" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item name="placement" label="Vị trí" rules={[{ required: true, message: 'Chọn vị trí banner' }]}>
-                            <Select options={placementOptions} />
+                            <Select disabled={translationMode} options={placementOptions} />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -97,7 +106,7 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, me
                                 open={open}
                                 value={imageUrl}
                                 onChange={(nextValue) => form.setFieldValue('image_url', nextValue)}
-                                canManage={canManage}
+                                canManage={canManage && !translationMode}
                                 callAdminApi={callAdminApi}
                                 mediaOptions={mediaOptions}
                                 recordTitle={bannerTitle || 'Banner image'}
@@ -115,7 +124,7 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, me
                     </Col>
                     <Col span={12}>
                         <Form.Item name="link_url" label="Link click">
-                            <Input placeholder="/danh-muc/dien-thoai" />
+                            <Input disabled={translationMode} placeholder="/danh-muc/dien-thoai" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -142,20 +151,20 @@ export default function SiteBannerFormModal({ open, canManage, editingBanner, me
                 <Row gutter={16}>
                     <Col span={8}>
                         <Form.Item name="image_position" label="Focal point ảnh">
-                            <Select options={imagePositionOptions} />
+                            <Select disabled={translationMode} options={imagePositionOptions} />
                         </Form.Item>
                     </Col>
                     <Col span={6}>
                         <Form.Item name="sort_order" label="Thứ tự">
-                            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+                            <InputNumber disabled={translationMode} min={0} precision={0} style={{ width: '100%' }} />
                         </Form.Item>
                     </Col>
                 </Row>
                 <Form.Item name="show_caption" valuePropName="checked" label=" " colon={false}>
-                    <Checkbox>Hiện caption trên ảnh</Checkbox>
+                    <Checkbox disabled={translationMode}>Hiện caption trên ảnh</Checkbox>
                 </Form.Item>
                 <Form.Item name="is_active" valuePropName="checked" label=" " colon={false}>
-                    <Checkbox>Kích hoạt banner</Checkbox>
+                    <Checkbox disabled={translationMode}>Kích hoạt banner</Checkbox>
                 </Form.Item>
             </Form>
         </Modal>

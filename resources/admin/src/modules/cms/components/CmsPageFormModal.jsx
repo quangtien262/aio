@@ -15,6 +15,8 @@ import Pagination from 'antd/es/pagination';
 import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Space from 'antd/es/space';
+import Tabs from 'antd/es/tabs';
+import Tag from 'antd/es/tag';
 import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
 import {
@@ -95,7 +97,39 @@ function getYoutubeEmbedUrl(value) {
     }
 }
 
-export default function CmsPageFormModal({ open, canManage, editingPage, mediaOptions = [], callAdminApi, onCancel, onSubmit }) {
+const workflowLabels = {
+    missing: 'Chưa có',
+    draft: 'Bản nháp',
+    machine_draft: 'Bản dịch máy',
+    in_review: 'Đang duyệt',
+    ready: 'Sẵn sàng',
+    published: 'Đã xuất bản',
+    outdated: 'Cần cập nhật',
+};
+
+const workflowColors = {
+    draft: 'default',
+    machine_draft: 'cyan',
+    in_review: 'gold',
+    ready: 'blue',
+    published: 'green',
+    outdated: 'orange',
+};
+
+export default function CmsPageFormModal({
+    open,
+    canManage,
+    canPublish = false,
+    editingPage,
+    localeOptions = [],
+    contentLocale = 'vi',
+    sourceLocale = 'vi',
+    mediaOptions = [],
+    callAdminApi,
+    onCancel,
+    onSubmit,
+    onTransition,
+}) {
     const [form] = Form.useForm();
     const [messageApi, messageContextHolder] = message.useMessage();
     const [uploadingAsset, setUploadingAsset] = useState(null);
@@ -110,17 +144,36 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     const [sampleModalOpen, setSampleModalOpen] = useState(false);
     const [contentMode, setContentMode] = useState('editor');
     const [editorContentVersion, setEditorContentVersion] = useState(0);
+    const [activeLocale, setActiveLocale] = useState(sourceLocale);
+    const [createLocaleDrafts, setCreateLocaleDrafts] = useState({});
+    const createLocaleDraftsRef = useRef({});
     const editorInstanceRef = useRef(null);
     const editorSelectionRef = useRef(null);
     const imageInputRef = useRef(null);
     const videoInputRef = useRef(null);
     const sampleImageInputRef = useRef(null);
     const featuredMediaInputRef = useRef(null);
-    const slugEditedRef = useRef(Boolean(editingPage?.id));
+    const lastTitleRef = useRef('');
     const titleValue = Form.useWatch('title', form) ?? '';
+    const statusValue = Form.useWatch('status', form) ?? 'draft';
     const featuredMediaId = Form.useWatch('featured_media_id', form) ?? null;
     const bodyValue = Form.useWatch('body', form) ?? '';
     const websiteKey = Form.useWatch('website_key', form);
+    const locales = useMemo(() => {
+        if (localeOptions.length) return localeOptions;
+
+        return [{
+            code: sourceLocale,
+            name: 'Tiếng Việt',
+            is_default: true,
+        }];
+    }, [localeOptions, sourceLocale]);
+    const activeTranslation = editingPage?.translations?.[activeLocale] ?? null;
+    const activeStatus = editingPage?.id
+        ? (activeTranslation?.translation_status ?? 'missing')
+        : (activeLocale === sourceLocale || String(titleValue).trim()
+            ? (statusValue === 'published' ? 'published' : 'draft')
+            : 'missing');
     const editorInitialData = useMemo(
         () => form.getFieldValue('body') ?? editingPage?.body ?? '',
         [editingPage?.id, editingPage?.slug, editingPage?.body, editorContentVersion, form]
@@ -131,19 +184,69 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     );
 
     useEffect(() => {
-        form.setFieldsValue(editingPage);
-        form.setFieldValue('body', editingPage?.body ?? '');
-        slugEditedRef.current = Boolean(editingPage?.id || editingPage?.slug);
+        if (!open) return;
+
+        const preferredLocale = editingPage?.id
+            ? (editingPage?.active_locale || contentLocale || editingPage?.default_locale)
+            : sourceLocale;
+
+        if (!editingPage?.id) {
+            createLocaleDraftsRef.current = {};
+            setCreateLocaleDrafts({});
+        }
+        setActiveLocale(preferredLocale);
+    }, [contentLocale, editingPage?.active_locale, editingPage?.default_locale, editingPage?.id, open, sourceLocale]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const translation = editingPage?.translations?.[activeLocale];
+        const sourceDraft = createLocaleDraftsRef.current[sourceLocale] ?? {
+            ...emptyCmsPageForm,
+            ...editingPage,
+        };
+        const activeDraft = createLocaleDraftsRef.current[activeLocale] ?? null;
+        const values = editingPage?.id
+            ? {
+                ...emptyCmsPageForm,
+                ...editingPage,
+                ...(translation ?? {
+                    title: '',
+                    slug: '',
+                    excerpt: '',
+                    body: '',
+                    meta_title: '',
+                    meta_description: '',
+                    meta_keywords: '',
+                    status: 'draft',
+                }),
+                status: translation?.translation_status === 'published' ? 'published' : 'draft',
+                locale: activeLocale,
+                featured_media_id: editingPage?.featured_media_id ?? null,
+            }
+            : {
+                ...emptyCmsPageForm,
+                template: sourceDraft.template ?? null,
+                featured_media_id: sourceDraft.featured_media_id ?? null,
+                website_key: sourceDraft.website_key ?? '',
+                ...(activeLocale === sourceLocale ? sourceDraft : (activeDraft ?? {})),
+                status: (activeLocale === sourceLocale ? sourceDraft.status : activeDraft?.status) ?? 'draft',
+                locale: activeLocale,
+            };
+
+        form.setFieldsValue(values);
+        form.setFieldValue('body', values.body ?? '');
+        lastTitleRef.current = String(values.title ?? '');
         setContentMode('editor');
         setEditorContentVersion((current) => current + 1);
         editorInstanceRef.current = null;
         editorSelectionRef.current = null;
-        setFeaturedMediaMode(editingPage?.featured_media_id ? 'library' : 'upload');
+        setFeaturedMediaMode(values.featured_media_id ? 'library' : 'upload');
         setFeaturedMediaUrl('');
         setFeaturedMediaKeyword('');
         setFeaturedMediaLibraryPage(1);
         setFeaturedMediaLibraryOpen(false);
-    }, [editingPage, form]);
+    }, [activeLocale, editingPage, form, open]);
 
     useEffect(() => {
         setFeaturedMediaOptions((currentOptions) => {
@@ -156,11 +259,12 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
     }, [mediaOptions]);
 
     useEffect(() => {
-        if (slugEditedRef.current) {
+        if (titleValue === lastTitleRef.current) {
             return;
         }
 
         form.setFieldValue('slug', toSlug(titleValue));
+        lastTitleRef.current = titleValue;
     }, [form, titleValue]);
 
     const editorConfig = useMemo(() => ({
@@ -590,29 +694,70 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
 
         const values = await form.validateFields();
 
+        if (!editingPage?.id && activeLocale !== sourceLocale) {
+            messageApi.warning('Hãy quay lại ngôn ngữ gốc để tạo Page cùng các bản dịch đã nhập.');
+            return;
+        }
+
+        const nextDrafts = !editingPage?.id
+            ? {
+                ...createLocaleDraftsRef.current,
+                [activeLocale]: values,
+            }
+            : createLocaleDraftsRef.current;
+        createLocaleDraftsRef.current = nextDrafts;
+        setCreateLocaleDrafts(nextDrafts);
         const didSave = await onSubmit?.({
             ...values,
+            locale: activeLocale,
+            translation_status: values.status,
             excerpt: values.excerpt || null,
             body: values.body || null,
             meta_title: values.meta_title || null,
             meta_description: values.meta_description || null,
             meta_keywords: values.meta_keywords || null,
             featured_media_id: values.featured_media_id || null,
+        }, {
+            pageCreateDrafts: nextDrafts,
+            pageSourceLocale: sourceLocale,
         });
 
         if (didSave !== false) {
             form.resetFields();
+            createLocaleDraftsRef.current = {};
+            setCreateLocaleDrafts({});
         }
     };
 
     const handleCancel = () => {
         form.resetFields();
+        createLocaleDraftsRef.current = {};
+        setCreateLocaleDrafts({});
         onCancel?.();
     };
 
     const handleSlugChange = (event) => {
-        slugEditedRef.current = true;
         form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
+    };
+
+    const handleLocaleChange = (locale) => {
+        syncCurrentEditorBodyToForm();
+        if (!editingPage?.id) {
+            const nextDrafts = {
+                ...createLocaleDraftsRef.current,
+                [activeLocale]: form.getFieldsValue(true),
+            };
+
+            createLocaleDraftsRef.current = nextDrafts;
+            setCreateLocaleDrafts(nextDrafts);
+        }
+        setActiveLocale(locale);
+    };
+
+    const handleWorkflowTransition = async (target) => {
+        if (!editingPage?.id || !onTransition) return;
+
+        await onTransition(activeLocale, target);
     };
 
     return (
@@ -625,26 +770,70 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
             className="cms-page-drawer cms-page-form-drawer"
             extra={(
                 <Space>
+                    {(activeTranslation?.allowed_transitions ?? []).map((target) => (
+                        <Button
+                            key={target}
+                            disabled={!canPublish}
+                            onClick={() => handleWorkflowTransition(target)}
+                        >
+                            {workflowLabels[target] ?? target}
+                        </Button>
+                    ))}
                     <Button onClick={handleCancel}>Hủy</Button>
-                    <Button type="primary" disabled={!canManage} onClick={handleSubmit}>Lưu trang</Button>
+                    <Button
+                        type="primary"
+                        disabled={!canManage || (!editingPage?.id && activeLocale !== sourceLocale)}
+                        onClick={handleSubmit}
+                    >
+                        {!editingPage?.id && activeLocale !== sourceLocale ? 'Lưu tại ngôn ngữ gốc' : 'Lưu Page'}
+                    </Button>
                 </Space>
             )}
         >
             {messageContextHolder}
+            <Tabs
+                activeKey={activeLocale}
+                onChange={handleLocaleChange}
+                items={locales.map((locale) => {
+                    const translation = editingPage?.translations?.[locale.code];
+                    const draft = createLocaleDrafts[locale.code];
+                    const hasDraftContent = String(draft?.title ?? '').trim() !== '';
+                    const status = editingPage?.id
+                        ? (translation?.translation_status ?? 'missing')
+                        : (locale.code === activeLocale
+                            ? activeStatus
+                            : (locale.code === sourceLocale || hasDraftContent
+                                ? (draft?.status === 'published' ? 'published' : 'draft')
+                                : 'missing'));
+
+                    return {
+                        key: locale.code,
+                        label: (
+                            <Space size={6}>
+                                <span>{locale.native_name || locale.name || locale.code}</span>
+                                <Tag color={workflowColors[status]}>{workflowLabels[status] ?? status}</Tag>
+                            </Space>
+                        ),
+                    };
+                })}
+            />
+            <Space style={{ marginBottom: 16 }} wrap>
+                <Text type="secondary">
+                    Ngôn ngữ: <Text code>{activeLocale}</Text>
+                </Text>
+                <Tag color={workflowColors[activeStatus]}>{workflowLabels[activeStatus] ?? activeStatus}</Tag>
+                {activeTranslation?.public_url ? (
+                    <a href={activeTranslation.public_url} target="_blank" rel="noreferrer">Mở trang công khai</a>
+                ) : null}
+            </Space>
             <Form form={form} layout="vertical" initialValues={editingPage}>
+                <Form.Item name="locale" hidden><Input /></Form.Item>
                 <div className="cms-post-form-shell">
                     <Card size="small" className="cms-post-form-card" title="Thông tin cơ bản">
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
                                 <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề trang' }]}>
-                                    <Input
-                                        placeholder="VD: Trang giới thiệu"
-                                        onChange={(event) => {
-                                            if (!editingPage?.id && !slugEditedRef.current) {
-                                                form.setFieldValue('slug', toSlug(event.target.value));
-                                            }
-                                        }}
-                                    />
+                                    <Input placeholder="VD: Trang giới thiệu" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>
@@ -652,7 +841,7 @@ export default function CmsPageFormModal({ open, canManage, editingPage, mediaOp
                                     <Input placeholder="trang-gioi-thieu" onChange={handleSlugChange} />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={12}>
+                            <Col xs={24} md={8}>
                                 <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
                                     <Radio.Group
                                         optionType="button"

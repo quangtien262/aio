@@ -16,6 +16,7 @@
         @include('theme-foot403::partials.inline-editor-styles')
     @endif
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
 <div id="top" class="bds-page">

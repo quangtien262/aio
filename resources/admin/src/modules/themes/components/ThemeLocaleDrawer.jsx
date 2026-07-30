@@ -127,7 +127,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                     body: JSON.stringify({ theme_key: theme?.key, code }),
                 });
             },
-            'Đã thêm ngôn ngữ built-in vào hệ thống.',
+            'Đã thêm ngôn ngữ built-in vào website hiện tại.',
             async () => {
                 applyPayload(responsePayload?.data ?? {});
             },
@@ -144,7 +144,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                     body: JSON.stringify({ theme_key: theme?.key, ...formState }),
                 });
             },
-            'Đã thêm ngôn ngữ custom vào hệ thống.',
+            'Đã thêm ngôn ngữ custom vào website hiện tại.',
             async () => {
                 applyPayload(responsePayload?.data ?? {});
                 setCreateModalOpen(false);
@@ -169,7 +169,8 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
             >
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Paragraph style={{ marginBottom: 0 }}>
-                        Danh sách này quản lý các locale storefront đang hoạt động, locale mặc định đang redirect từ trang chủ, và đánh dấu locale nào đã được theme hỗ trợ sẵn.
+                        Mỗi website có danh sách ngôn ngữ độc lập. “Cho phép biên tập” dùng trong CMS;
+                        “Published” mới cho phép khách truy cập ngôn ngữ đó trên storefront.
                     </Paragraph>
 
                     <Space size={8} wrap>
@@ -219,9 +220,15 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                                             key="active"
                                             type="link"
                                             disabled={!canManageLocales}
-                                            onClick={() => handleUpdateLocale(localeItem.code, { is_active: !localeItem.is_active }, localeItem.is_active ? 'Đã tắt locale khỏi storefront.' : 'Đã bật locale cho storefront.')}
+                                            onClick={() => handleUpdateLocale(
+                                                localeItem.code,
+                                                { is_enabled_for_editing: !localeItem.is_enabled_for_editing },
+                                                localeItem.is_enabled_for_editing
+                                                    ? 'Đã tắt biên tập ngôn ngữ.'
+                                                    : 'Đã bật biên tập ngôn ngữ.',
+                                            )}
                                         >
-                                            {localeItem.is_active ? 'Tắt' : 'Bật'}
+                                            {localeItem.is_enabled_for_editing ? 'Tắt biên tập' : 'Bật biên tập'}
                                         </Button>,
                                     ].filter(Boolean)}
                                 >
@@ -235,7 +242,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                                             {localeItem.is_default ? <Tag color="blue">Default</Tag> : null}
                                             {localeItem.is_source ? <Tag color="gold">Source</Tag> : null}
                                             {localeItem.is_published ? <Tag color="green">Published</Tag> : <Tag>Draft</Tag>}
-                                            {localeItem.is_active ? <Tag color="cyan">Active</Tag> : <Tag>Inactive</Tag>}
+                                            {localeItem.is_enabled_for_editing ? <Tag color="cyan">Editable</Tag> : <Tag>Editing disabled</Tag>}
                                             {localeItem.is_theme_supported ? <Tag color="purple">Built-in theme support</Tag> : <Tag>Custom locale</Tag>}
                                         </Space>
                                     </Space>
@@ -243,7 +250,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                             )}
                         />
                     ) : (
-                        <Empty description="Chưa có locale storefront nào." />
+                        <Empty description="Website này chưa có ngôn ngữ nào." />
                     )}
                 </Space>
             </Drawer>
@@ -259,7 +266,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
                     <Select
                         showSearch
-                        placeholder="Chọn ngôn ngữ..."
+                        placeholder="Chọn nhanh một ngôn ngữ..."
                         options={builtinLanguageOptions.map((opt) => ({ label: `${opt.name} — ${opt.native}`, value: opt.code }))}
                         optionFilterProp="label"
                         onChange={(value) => {
@@ -274,8 +281,24 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                         filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                         style={{ width: '100%' }}
                     />
+                    <Input
+                        value={formState.code}
+                        placeholder="Mã BCP 47, ví dụ en-US hoặc zh-Hant-HK"
+                        onChange={(event) => setFormState((current) => ({ ...current, code: event.target.value }))}
+                    />
+                    <Input
+                        value={formState.name}
+                        placeholder="Tên ngôn ngữ"
+                        onChange={(event) => setFormState((current) => ({ ...current, name: event.target.value }))}
+                    />
+                    <Input
+                        value={formState.native_name}
+                        placeholder="Tên bản địa"
+                        onChange={(event) => setFormState((current) => ({ ...current, native_name: event.target.value }))}
+                    />
                     <div style={{ color: 'rgba(0,0,0,0.56)', fontSize: 13 }}>
-                        Sau khi chọn, hệ thống sẽ tự điền mã locale và tên. Các trường hiển thị sẽ được lưu ngầm.
+                        Có thể nhập mã BCP 47 tùy chỉnh. Ngôn ngữ mới chỉ được bật để biên tập;
+                        hãy kiểm tra nội dung trước khi publish ra storefront.
                     </div>
                 </Space>
             </Modal>

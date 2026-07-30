@@ -7,6 +7,7 @@
     <title>@yield('title', 'TH0050 Premium Wellness')</title>
     @include('theme-th0050::partials.styles')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
     <div id="top" class="xd-page">

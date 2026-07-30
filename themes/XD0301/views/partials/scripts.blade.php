@@ -453,9 +453,9 @@
 
                 if (blockType === 'content_mosaic') {
                     return [
-                        ['title', 'TiÃªu Ä‘á»'],
-                        ['summary', 'MÃ´ táº£', 'textarea'],
-                        ['image', 'áº¢nh'],
+                        ['title', 'Tiêu đề'],
+                        ['summary', 'Mô tả', 'textarea'],
+                        ['image', 'Ảnh'],
                         ['url', 'Link'],
                     ];
                 }

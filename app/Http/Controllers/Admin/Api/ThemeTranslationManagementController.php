@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Api;
 use App\Core\Themes\ThemeRegistry;
 use App\Core\Themes\ThemeTranslationService;
 use App\Models\SiteProfile;
+use App\Rules\ValidLocaleCode;
 use App\Support\BusinessContentTranslationService;
 use App\Support\FrontendLocalization;
 use App\Support\SiteContext;
@@ -22,7 +23,7 @@ class ThemeTranslationManagementController
             'entries' => ['required', 'array'],
             'entries.*.key' => ['required', 'string', 'max:190'],
             'entries.*.value' => ['nullable', 'string'],
-            'locale' => ['nullable', 'string', 'regex:/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/'],
+            'locale' => ['nullable', 'string', 'max:35', new ValidLocaleCode],
             'group' => ['nullable', 'string', Rule::in(['static', 'content'])],
         ]);
 
@@ -43,7 +44,7 @@ class ThemeTranslationManagementController
                 'theme_key' => $key,
                 'locale' => $resolvedLocale,
                 'group' => $group,
-                'supported_locales' => FrontendLocalization::supportedLocales(),
+                'supported_locales' => FrontendLocalization::editableLocales(),
             ],
         ]);
     }

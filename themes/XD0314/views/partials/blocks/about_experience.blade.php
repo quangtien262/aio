@@ -18,7 +18,7 @@
                 <div class="bb14-about__cards">
                     @foreach ($aboutItems as $item)
                         <article>
-                            <span>{{ $item['icon'] ?? 'â–£' }}</span>
+                            <span>{{ $item['icon'] ?? '▣' }}</span>
                             <div>
                                 <h3>{{ $item['title'] ?? '' }}</h3>
                                 <p>{{ $item['summary'] ?? $item['description'] ?? '' }}</p>
@@ -29,7 +29,7 @@
                 <div class="bb14-about__stats">
                     @foreach ($stats as $stat)
                         <article>
-                            <span>{{ $stat['icon'] ?? 'â–¥' }}</span>
+                            <span>{{ $stat['icon'] ?? '▥' }}</span>
                             <strong>{{ $stat['value'] ?? '' }}</strong>
                             <p>{{ $stat['label'] ?? '' }}</p>
                         </article>

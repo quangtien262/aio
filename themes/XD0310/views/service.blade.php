@@ -52,7 +52,7 @@
     $homeUrl = route('site.home');
     if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ',
+            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0310', app()->getLocale(), 'legacy_inline.4c23dc9bef7f79b4', 'Trang chủ'),
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -83,7 +83,7 @@
 
         if ($productCategories->isNotEmpty()) {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0310', app()->getLocale(), 'legacy_inline.571ef44479d97bfd', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -137,7 +137,7 @@
                 ->values();
         } else {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0310', app()->getLocale(), 'legacy_inline.571ef44479d97bfd', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -266,7 +266,7 @@
                                 <img class="xd-detail-image" src="{{ $featuredImage }}" alt="{{ $featuredAlt }}">
                             @endif
                             <div class="xd-detail-body">
-                                <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Service' : 'Dịch vụ' }}</span>
+                                <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0310', app()->getLocale(), 'legacy_inline.c88c165a29889115', 'Dịch vụ') }}</span>
                                 <h1>{{ $entry->title }}</h1>
                                 @if (!empty($entry->excerpt))
                                     <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
@@ -290,8 +290,8 @@
                             </div>
                         </article>
                         <aside class="xd-side-card">
-                            <h3>{{ app()->getLocale() === 'en' ? 'Quick links' : 'Liên kết nhanh' }}</h3>
-                            <a href="{{ route('site.services.index') }}">{{ app()->getLocale() === 'en' ? 'All services' : 'Tất cả dịch vụ' }}</a>
+                            <h3>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0310', app()->getLocale(), 'legacy_inline.f83250cd1d652333', 'Liên kết nhanh') }}</h3>
+                            <a href="{{ route('site.services.index') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0310', app()->getLocale(), 'legacy_inline.44cd126d3a55a78b', 'Tất cả dịch vụ') }}</a>
                             @foreach ($navItems->take(5) as $item)
                                 <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
                             @endforeach

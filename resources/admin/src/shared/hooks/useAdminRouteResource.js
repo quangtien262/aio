@@ -32,6 +32,7 @@ export default function useAdminRouteResource({ enabled = true, loader, deps = [
     const [data, setData] = useState(initialDataRef.current);
     const [loading, setLoading] = useState(enabled && initialDataRef.current === null);
     const [error, setError] = useState(null);
+    const dataRef = useRef(initialDataRef.current);
     const loaderRef = useRef(loader);
 
     useEffect(() => {
@@ -41,16 +42,20 @@ export default function useAdminRouteResource({ enabled = true, loader, deps = [
     const reload = useCallback(async () => {
         if (!enabled || !loaderRef.current) {
             setLoading(false);
+            dataRef.current = null;
             setData(null);
             setError(null);
             return null;
         }
 
-        setLoading(true);
+        // Chỉ dùng skeleton toàn màn hình cho lần tải đầu tiên. Khi đổi locale
+        // hoặc làm mới dữ liệu, giữ nguyên giao diện hiện tại trong lúc tải nền.
+        setLoading(dataRef.current === null || dataRef.current === undefined);
         setError(null);
 
         try {
             const nextData = await loaderRef.current();
+            dataRef.current = nextData;
             setData(nextData);
 
             return nextData;
@@ -64,7 +69,13 @@ export default function useAdminRouteResource({ enabled = true, loader, deps = [
     }, [enabled]);
 
     const mutateData = (updater) => {
-        setData((currentData) => (typeof updater === 'function' ? updater(currentData) : updater));
+        setData((currentData) => {
+            const nextData = typeof updater === 'function' ? updater(currentData) : updater;
+
+            dataRef.current = nextData;
+
+            return nextData;
+        });
     };
 
     useEffect(() => {

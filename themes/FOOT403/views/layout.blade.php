@@ -8,6 +8,7 @@
         @include('theme-foot403::partials.inline-editor-styles')
     @endif
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body><div class="dr-page" id="top">@include('theme-foot403::partials.header')<main>@yield('content')</main>@include('theme-foot403::partials.footer')</div>@include('theme-foot403::partials.order-modal')@include('theme-foot403::partials.auth-modal')@if($canEditLanding ?? false)@include('theme-xd0302::partials.inline-editor')@endif@include('theme-foot403::partials.scripts')@stack('scripts')</body>
 </html>

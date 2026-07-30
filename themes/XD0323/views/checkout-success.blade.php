@@ -10,15 +10,14 @@
         'is_authenticated' => auth('customer')->check(),
         'customer' => auth('customer')->user(),
     ]);
-    $isEnglish = app()->getLocale() === 'en';
     $confirmedOrder = $order;
     $orderItems = collect($confirmedOrder->items ?? []);
     $formatCurrency = function ($value): string {
         if ($value === null || (float) $value <= 0) {
-            return 'LiÃƒÆ’Ã‚Âªn hÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡';
+            return 'Liên hệ';
         }
 
-        return number_format((float) $value, 0, ',', '.').'Ãƒâ€žÃ¢â‚¬Ëœ';
+        return number_format((float) $value, 0, ',', '.').'đ';
     };
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
@@ -51,7 +50,7 @@
     $homeUrl = route('site.home');
     if (! $navItems->contains(fn (array $item): bool => $isHomeLabel($item['label'] ?? '') || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => $isEnglish ? 'Home' : 'Trang chÃƒÂ¡Ã‚Â»Ã‚Â§',
+            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.d3408b155a0f7fa3', 'Trang chủ'),
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -77,7 +76,7 @@
             $navArray = $navItems->values()->all();
             $homeIndex = $navItems->search(fn (array $item): bool => $isHomeLabel($item['label'] ?? ''));
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [[
-                'label' => $isEnglish ? 'Products' : 'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.1abb28f7d59c7849', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -101,7 +100,7 @@
 
 @extends('theme-xd0323::layout')
 
-@section('title'){{ $isEnglish ? 'Order confirmed' : 'Ãƒâ€žÃ‚ÂÃƒÂ¡Ã‚ÂºÃ‚Â·t hÃƒÆ’Ã‚Â ng thÃƒÆ’Ã‚Â nh cÃƒÆ’Ã‚Â´ng' }} | {{ $logoAlt }}@endsection
+@section('title'){{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.14a0d20dcd580647', 'Đặt hàng thành công') }} | {{ $logoAlt }}@endsection
 
 @push('head')
     <style>
@@ -146,35 +145,35 @@
         <main class="xd-page-main">
             <div class="xd-container">
                 <nav class="xd-breadcrumb" aria-label="Breadcrumb">
-                    <a href="{{ route('site.home') }}">{{ $isEnglish ? 'Home' : 'Trang chÃƒÂ¡Ã‚Â»Ã‚Â§' }}</a>
+                    <a href="{{ route('site.home') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.d3408b155a0f7fa3', 'Trang chủ') }}</a>
                     <span>/</span>
-                    <strong>{{ $isEnglish ? 'Order confirmed' : 'Ãƒâ€žÃ‚ÂÃƒÂ¡Ã‚ÂºÃ‚Â·t hÃƒÆ’Ã‚Â ng thÃƒÆ’Ã‚Â nh cÃƒÆ’Ã‚Â´ng' }}</strong>
+                    <strong>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.14a0d20dcd580647', 'Đặt hàng thành công') }}</strong>
                 </nav>
 
                 <section class="xd-success-hero">
-                    <span class="xd-kicker">{{ $isEnglish ? 'Success' : 'ThÃƒÆ’Ã‚Â nh cÃƒÆ’Ã‚Â´ng' }}</span>
-                    <h1>{{ $isEnglish ? 'Your order has been received' : 'Ãƒâ€žÃ‚ÂÃƒâ€ Ã‚Â¡n hÃƒÆ’Ã‚Â ng Ãƒâ€žÃ¢â‚¬ËœÃƒÆ’Ã‚Â£ Ãƒâ€žÃ¢â‚¬ËœÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã‚Â£c ghi nhÃƒÂ¡Ã‚ÂºÃ‚Â­n' }}</h1>
-                    <p>{{ $isEnglish ? 'Our team will contact you shortly to confirm product information, delivery and payment.' : 'Ãƒâ€žÃ‚ÂÃƒÂ¡Ã‚Â»Ã¢â€žÂ¢i ngÃƒâ€¦Ã‚Â© tÃƒâ€ Ã‚Â° vÃƒÂ¡Ã‚ÂºÃ‚Â¥n sÃƒÂ¡Ã‚ÂºÃ‚Â½ liÃƒÆ’Ã‚Âªn hÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡ lÃƒÂ¡Ã‚ÂºÃ‚Â¡i Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚Â»Ã†â€™ xÃƒÆ’Ã‚Â¡c nhÃƒÂ¡Ã‚ÂºÃ‚Â­n thÃƒÆ’Ã‚Â´ng tin sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m, giao nhÃƒÂ¡Ã‚ÂºÃ‚Â­n vÃƒÆ’Ã‚Â  phÃƒâ€ Ã‚Â°Ãƒâ€ Ã‚Â¡ng thÃƒÂ¡Ã‚Â»Ã‚Â©c thanh toÃƒÆ’Ã‚Â¡n.' }}</p>
+                    <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.ce3aa37cd5f77495', 'Thành công') }}</span>
+                    <h1>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.8cf815e5ea1ce460', 'Đơn hàng đã được ghi nhận') }}</h1>
+                    <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.27ca6d797d605432', 'Đội ngũ tư vấn sẽ liên hệ lại để xác nhận thông tin sản phẩm, giao nhận và phương thức thanh toán.') }}</p>
                 </section>
 
                 <section class="xd-success-grid">
                     <article class="xd-panel xd-order-panel">
-                        <h2>{{ $isEnglish ? 'Order information' : 'ThÃƒÆ’Ã‚Â´ng tin Ãƒâ€žÃ¢â‚¬ËœÃƒâ€ Ã‚Â¡n hÃƒÆ’Ã‚Â ng' }}</h2>
+                        <h2>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.59e443bc7fab7a8b', 'Thông tin đơn hàng') }}</h2>
                         <div class="xd-order-lines">
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Order code' : 'MÃƒÆ’Ã‚Â£ Ãƒâ€žÃ¢â‚¬ËœÃƒâ€ Ã‚Â¡n hÃƒÆ’Ã‚Â ng' }}</span>
+                                <span class="xd-order-label">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.431db8d83b2fe18f', 'Mã đơn hàng') }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->order_code }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Created at' : 'ThÃƒÂ¡Ã‚Â»Ã‚Âi gian tÃƒÂ¡Ã‚ÂºÃ‚Â¡o' }}</span>
+                                <span class="xd-order-label">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.e10df355c10f453f', 'Thời gian tạo') }}</span>
                                 <span class="xd-order-value">{{ optional($confirmedOrder->placed_at ?? $confirmedOrder->created_at)->format('H:i d/m/Y') }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Customer' : 'KhÃƒÆ’Ã‚Â¡ch hÃƒÆ’Ã‚Â ng' }}</span>
+                                <span class="xd-order-label">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.85fbbc3d0b601370', 'Khách hàng') }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->customer_name }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Phone' : 'SÃƒÂ¡Ã‚Â»Ã¢â‚¬Ëœ Ãƒâ€žÃ¢â‚¬ËœiÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡n thoÃƒÂ¡Ã‚ÂºÃ‚Â¡i' }}</span>
+                                <span class="xd-order-label">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.73051b7a536757f0', 'Số điện thoại') }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->customer_phone }}</span>
                             </div>
                             <div class="xd-order-line">
@@ -182,27 +181,27 @@
                                 <span class="xd-order-value">{{ $confirmedOrder->customer_email ?: '...' }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Delivery address' : 'Ãƒâ€žÃ‚ÂÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¹a chÃƒÂ¡Ã‚Â»Ã¢â‚¬Â° nhÃƒÂ¡Ã‚ÂºÃ‚Â­n hÃƒÆ’Ã‚Â ng' }}</span>
+                                <span class="xd-order-label">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.8c5563076b3bb86b', 'Địa chỉ nhận hàng') }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->delivery_address }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Payment method' : 'PhÃƒâ€ Ã‚Â°Ãƒâ€ Ã‚Â¡ng thÃƒÂ¡Ã‚Â»Ã‚Â©c thanh toÃƒÆ’Ã‚Â¡n' }}</span>
+                                <span class="xd-order-label">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.64c140a8c8439800', 'Phương thức thanh toán') }}</span>
                                 <span class="xd-order-value">{{ $confirmedOrder->payment_label }}</span>
                             </div>
                             <div class="xd-order-line">
-                                <span class="xd-order-label">{{ $isEnglish ? 'Estimated total' : 'TÃƒÂ¡Ã‚ÂºÃ‚Â¡m tÃƒÆ’Ã‚Â­nh' }}</span>
+                                <span class="xd-order-label">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.705f8d594a37c6f1', 'Tạm tính') }}</span>
                                 <span class="xd-order-value">{{ $formatCurrency($confirmedOrder->subtotal) }}</span>
                             </div>
                         </div>
 
                         <div class="xd-button-row">
-                            <a class="xd-button" href="{{ route('site.home') }}">{{ $isEnglish ? 'Back home' : 'VÃƒÂ¡Ã‚Â»Ã‚Â trang chÃƒÂ¡Ã‚Â»Ã‚Â§' }}</a>
-                            <a class="xd-button is-ghost" href="{{ route('customer.account') }}">{{ $isEnglish ? 'My account' : 'TÃƒÆ’Ã‚Â i khoÃƒÂ¡Ã‚ÂºÃ‚Â£n cÃƒÂ¡Ã‚Â»Ã‚Â§a tÃƒÆ’Ã‚Â´i' }}</a>
+                            <a class="xd-button" href="{{ route('site.home') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.3283953959eb0a1c', 'Về trang chủ') }}</a>
+                            <a class="xd-button is-ghost" href="{{ route('customer.account') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.83cf93189882ae50', 'Tài khoản của tôi') }}</a>
                         </div>
                     </article>
 
                     <aside class="xd-panel xd-order-panel">
-                        <h2>{{ $isEnglish ? 'Products' : 'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' }}</h2>
+                        <h2>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.1abb28f7d59c7849', 'Sản phẩm') }}</h2>
                         <div class="xd-items">
                             @foreach ($orderItems as $item)
                                 <div class="xd-item">

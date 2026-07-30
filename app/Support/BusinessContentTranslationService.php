@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Enums\TranslationStatus;
 use App\Support\ThemeBlockRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -19,6 +20,10 @@ use App\Models\CmsTestimonial;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Models\ThemeTranslation;
+use App\Support\Localization\TranslationRevision;
+use App\Support\Localization\CmsPageLocalization;
+use App\Support\Localization\LocalizedContentRepository;
+use App\Support\Localization\LocalizationRollout;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -27,9 +32,12 @@ class BusinessContentTranslationService
 {
     private const CACHE_TTL_SECONDS = 3600;
 
-    public function __construct(private readonly ThemeBlockRegistry $themeBlockRegistry)
-    {
-    }
+    public function __construct(
+        private readonly ThemeBlockRegistry $themeBlockRegistry,
+        private readonly LocalizedContentRepository $localizedContent,
+        private readonly LocalizationRollout $localizationRollout,
+        private readonly CmsPageLocalization $cmsPageLocalization,
+    ) {}
 
     public function editableEntries(string $websiteKey, string $locale, ?string $themeKey = null): array
     {
@@ -67,12 +75,22 @@ class BusinessContentTranslationService
         }
 
         $locale = FrontendLocalization::resolveLocale(app()->getLocale());
+        $canonicalKey = $this->canonicalContentKey($websiteKey, $key);
+        $localizedValue = $this->localizedContent->textByKey(
+            $websiteKey,
+            $locale,
+            $canonicalKey,
+        );
+
+        if ($localizedValue !== null) {
+            return $localizedValue;
+        }
 
         if ($locale === FrontendLocalization::fallbackLocale()) {
             return $value;
         }
 
-        $overrides = $this->overrides($websiteKey, $locale);
+        $overrides = $this->overrides($websiteKey, $locale, true);
 
         if (array_key_exists($key, $overrides) && trim((string) $overrides[$key]) !== '') {
             return (string) $overrides[$key];
@@ -97,9 +115,30 @@ class BusinessContentTranslationService
 
             $value = trim((string) ($entry['value'] ?? ''));
             $defaultValue = trim((string) ($baseline[$key] ?? ''));
+            $canonicalKey = $this->canonicalContentKey($websiteKey, $key);
+
+            if ($value !== '' && $value !== $defaultValue) {
+                if (! $this->saveCmsPageField($websiteKey, $resolvedLocale, $key, $value)) {
+                    $this->localizedContent->savePublishedFieldByKey(
+                        $websiteKey,
+                        $resolvedLocale,
+                        $canonicalKey,
+                        $value,
+                    );
+                }
+            }
 
             if ($value === '' || $value === $defaultValue) {
+                if (! $this->saveCmsPageField($websiteKey, $resolvedLocale, $key, null)) {
+                    $this->localizedContent->clearFieldByKey(
+                        $websiteKey,
+                        $resolvedLocale,
+                        $canonicalKey,
+                    );
+                }
+
                 ThemeTranslation::query()
+                    ->withoutGlobalScope('current_website')
                     ->where('theme_key', $this->contentThemeKey($websiteKey))
                     ->where('locale', $resolvedLocale)
                     ->where('group', 'content')
@@ -109,7 +148,13 @@ class BusinessContentTranslationService
                 continue;
             }
 
-            ThemeTranslation::query()->updateOrCreate(
+            if (! $this->localizationRollout->legacyFallbackEnabled()) {
+                continue;
+            }
+
+            ThemeTranslation::query()
+                ->withoutGlobalScope('current_website')
+                ->updateOrCreate(
                 [
                     'theme_key' => $this->contentThemeKey($websiteKey),
                     'locale' => $resolvedLocale,
@@ -117,24 +162,117 @@ class BusinessContentTranslationService
                     'translation_key' => $key,
                 ],
                 [
+                    'website_key' => $websiteKey,
                     'value' => $value,
+                    'translation_status' => TranslationStatus::Published,
+                    'translation_revision' => TranslationRevision::fingerprint(['value' => $value]),
+                    'is_machine_translated' => false,
+                    'translated_at' => now(),
+                    'translation_published_at' => now(),
                 ],
             );
         }
 
-        Cache::forget($this->cacheKey($websiteKey, $resolvedLocale));
+        Cache::forget($this->cacheKey($websiteKey, $resolvedLocale, false));
+        Cache::forget($this->cacheKey($websiteKey, $resolvedLocale, true));
     }
 
-    private function overrides(string $websiteKey, string $locale): array
+    private function canonicalContentKey(string $websiteKey, string $key): string
+    {
+        $profile = SiteProfile::query()->forWebsite($websiteKey)->first();
+
+        if ($profile !== null && preg_match('/^site_profile\.(.+)$/', $key, $matches)) {
+            return sprintf('site_profile.%s.%s', $profile->id, $matches[1]);
+        }
+
+        if ($profile !== null && preg_match('/^branding\.(.+)$/', $key, $matches)) {
+            return sprintf('site_profile.%s.branding.%s', $profile->id, $matches[1]);
+        }
+
+        if (preg_match('/^cms_menu\.([^.]+)\.(.+)$/', $key, $matches)) {
+            $menu = CmsMenu::query()
+                ->forWebsite($websiteKey)
+                ->where('location', $matches[1])
+                ->first();
+
+            if ($menu !== null) {
+                return sprintf('cms_menu.%s.items.%s', $menu->id, $matches[2]);
+            }
+        }
+
+        return $key;
+    }
+
+    private function saveCmsPageField(
+        string $websiteKey,
+        string $locale,
+        string $key,
+        ?string $value,
+    ): bool {
+        if (! preg_match('/^cms_page\.(\d+)\.([a-z_]+)$/', $key, $matches)) {
+            return false;
+        }
+
+        $field = $matches[2];
+
+        if (! in_array($field, CmsPageLocalization::TRANSLATABLE_FIELDS, true)) {
+            return false;
+        }
+
+        $page = CmsPage::query()
+            ->forWebsite($websiteKey)
+            ->with('translations')
+            ->find($matches[1]);
+
+        if ($page === null) {
+            return false;
+        }
+
+        $sourceLocale = FrontendLocalization::sourceLocale();
+        $source = $page->translations->firstWhere('locale', $sourceLocale);
+        $existing = $page->translations->firstWhere('locale', $locale);
+        $payload = collect(CmsPageLocalization::TRANSLATABLE_FIELDS)
+            ->mapWithKeys(fn (string $item): array => [
+                $item => $existing?->getAttribute($item)
+                    ?? $source?->getAttribute($item)
+                    ?? $page->getAttribute($item),
+            ])
+            ->all();
+        $payload[$field] = $value
+            ?? $source?->getAttribute($field)
+            ?? $page->getAttribute($field);
+
+        $translation = $this->cmsPageLocalization->saveDraft(
+            $page,
+            $locale,
+            $payload,
+        );
+        $translation = $this->cmsPageLocalization->transition(
+            $page,
+            $locale,
+            TranslationStatus::Ready,
+        );
+        $this->cmsPageLocalization->transition(
+            $page,
+            $locale,
+            TranslationStatus::Published,
+        );
+
+        return true;
+    }
+
+    private function overrides(string $websiteKey, string $locale, bool $publishedOnly = false): array
     {
         return Cache::remember(
-            $this->cacheKey($websiteKey, $locale),
+            $this->cacheKey($websiteKey, $locale, $publishedOnly),
             now()->addSeconds(self::CACHE_TTL_SECONDS),
-            function () use ($websiteKey, $locale): array {
+            function () use ($websiteKey, $locale, $publishedOnly): array {
                 return ThemeTranslation::query()
+                    ->withoutGlobalScope('current_website')
                     ->where('theme_key', $this->contentThemeKey($websiteKey))
                     ->where('locale', $locale)
                     ->where('group', 'content')
+                    ->when($publishedOnly, fn ($query) => $query->publishedTranslation())
                     ->pluck('value', 'translation_key')
                     ->all();
             },
@@ -478,9 +616,14 @@ class BusinessContentTranslationService
         return 'site-content:'.strtolower(trim($websiteKey) !== '' ? $websiteKey : 'default');
     }
 
-    private function cacheKey(string $websiteKey, string $locale): string
+    private function cacheKey(string $websiteKey, string $locale, bool $publishedOnly = false): string
     {
-        return sprintf('business-content-translations:%s:%s', strtolower($websiteKey), strtolower($locale));
+        return sprintf(
+            'business-content-translations:%s:%s:%s',
+            strtolower($websiteKey),
+            strtolower($locale),
+            $publishedOnly ? 'public' : 'editor',
+        );
     }
 
     private function defaultEntriesCacheKey(string $websiteKey, ?string $themeKey = null): string

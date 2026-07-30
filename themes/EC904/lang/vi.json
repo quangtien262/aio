@@ -1,7 +1,9 @@
 {
-  "Home": "Trang chủ",
-  "Products": "Sản phẩm",
-  "Latest news": "Tin mới nhất",
-  "Contact": "Liên hệ",
-  "Search": "Tìm kiếm"
+  "nav.home": "Trang chủ",
+  "nav.about": "Giới thiệu",
+  "nav.products": "Sản phẩm",
+  "nav.latest_news": "Tin mới nhất",
+  "nav.contact": "Liên hệ",
+  "search.label": "Tìm kiếm",
+  "search.placeholder": "Tìm kiếm sản phẩm..."
 }

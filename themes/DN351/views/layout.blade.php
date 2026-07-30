@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     @include('theme-dn351::partials.styles')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body class="{{ request()->routeIs('site.home') ? 'dn351-is-home' : 'dn351-is-inner' }}">
 <div id="top" class="dn351-page">

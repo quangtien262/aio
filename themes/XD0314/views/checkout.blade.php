@@ -13,13 +13,12 @@
     ]);
     $form = $checkoutForm ?? [];
     $paymentMethods = $paymentMethods ?? [];
-    $isEnglish = app()->getLocale() === 'en';
     $formatCurrency = function ($value): string {
         if ($value === null || (float) $value <= 0) {
-            return 'LiÃªn há»‡';
+            return 'Liên hệ';
         }
 
-        return number_format((float) $value, 0, ',', '.').'Ä‘';
+        return number_format((float) $value, 0, ',', '.').'đ';
     };
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
@@ -52,7 +51,7 @@
     $homeUrl = route('site.home');
     if (! $navItems->contains(fn (array $item): bool => $isHomeLabel($item['label'] ?? '') || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => $isEnglish ? 'Home' : 'Trang chá»§',
+            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.c7ca2e1f76eac4d1', 'Trang chủ'),
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -78,7 +77,7 @@
             $navArray = $navItems->values()->all();
             $homeIndex = $navItems->search(fn (array $item): bool => $isHomeLabel($item['label'] ?? ''));
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [[
-                'label' => $isEnglish ? 'Products' : 'Sáº£n pháº©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.7299a1cac171ec30', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -102,7 +101,7 @@
 
 @extends('theme-xd0314::layout')
 
-@section('title'){{ $isEnglish ? 'Checkout' : 'Thanh toÃ¡n' }} | {{ $logoAlt }}@endsection
+@section('title'){{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.e4d10558a6946e7d', 'Thanh toán') }} | {{ $logoAlt }}@endsection
 
 @push('head')
     <style>
@@ -160,18 +159,18 @@
         <main class="xd-page-main">
             <div class="xd-container">
                 <nav class="xd-breadcrumb" aria-label="Breadcrumb">
-                    <a href="{{ route('site.home') }}">{{ $isEnglish ? 'Home' : 'Trang chá»§' }}</a>
+                    <a href="{{ route('site.home') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.c7ca2e1f76eac4d1', 'Trang chủ') }}</a>
                     <span>/</span>
-                    <a href="{{ route('site.cart.index') }}">{{ $isEnglish ? 'Cart' : 'Giá» hÃ ng' }}</a>
+                    <a href="{{ route('site.cart.index') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.be92f1b271cbf9e7', 'Giỏ hàng') }}</a>
                     <span>/</span>
-                    <strong>{{ $isEnglish ? 'Checkout' : 'Thanh toÃ¡n' }}</strong>
+                    <strong>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.e4d10558a6946e7d', 'Thanh toán') }}</strong>
                 </nav>
 
                 <section class="xd-heading">
                     <div>
-                        <span class="xd-kicker">{{ $isEnglish ? 'Checkout' : 'Thanh toÃ¡n' }}</span>
-                        <h1>{{ $isEnglish ? 'Complete your order' : 'HoÃ n táº¥t Ä‘Æ¡n hÃ ng' }}</h1>
-                        <p>{{ $isEnglish ? 'Confirm delivery information and payment method before placing the order.' : 'XÃ¡c nháº­n thÃ´ng tin nháº­n hÃ ng vÃ  phÆ°Æ¡ng thá»©c thanh toÃ¡n trÆ°á»›c khi gá»­i Ä‘Æ¡n.' }}</p>
+                        <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.e4d10558a6946e7d', 'Thanh toán') }}</span>
+                        <h1>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.884062d9595eb222', 'Hoàn tất đơn hàng') }}</h1>
+                        <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.555ac8abe9ea1db0', 'Xác nhận thông tin nhận hàng và phương thức thanh toán trước khi gửi đơn.') }}</p>
                     </div>
                 </section>
 
@@ -181,22 +180,22 @@
 
                 @if (empty($cartItems))
                     <section class="xd-empty">
-                        <h2>{{ $isEnglish ? 'Your cart is empty' : 'Giá» hÃ ng Ä‘ang trá»‘ng' }}</h2>
-                        <p>{{ $isEnglish ? 'Please add products before checkout.' : 'Vui lÃ²ng thÃªm sáº£n pháº©m trÆ°á»›c khi thanh toÃ¡n.' }}</p>
-                        <a class="xd-button" href="{{ route('site.catalog.search') }}">{{ $isEnglish ? 'Browse products' : 'Xem sáº£n pháº©m' }}</a>
+                        <h2>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.c1dac840193b88c6', 'Giỏ hàng đang trống') }}</h2>
+                        <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.a4a47b2511c36b6c', 'Vui lòng thêm sản phẩm trước khi thanh toán.') }}</p>
+                        <a class="xd-button" href="{{ route('site.catalog.search') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.f39fcbfc4b28b226', 'Xem sản phẩm') }}</a>
                     </section>
                 @else
                     <section class="xd-checkout-grid">
                         <form class="xd-panel xd-form-panel" method="POST" action="{{ route('site.checkout.store') }}">
                             @csrf
-                            <h2 class="xd-section-title">{{ $isEnglish ? 'Delivery information' : 'ThÃ´ng tin nháº­n hÃ ng' }}</h2>
+                            <h2 class="xd-section-title">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.2787c8f1d8efe572', 'Thông tin nhận hàng') }}</h2>
                             <div class="xd-form-grid">
                                 <label class="xd-field">
-                                    <span>{{ $isEnglish ? 'Full name' : 'Há» tÃªn' }}</span>
+                                    <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.0aa2131688fe9560', 'Họ tên') }}</span>
                                     <input name="customer_name" value="{{ old('customer_name', $form['customer_name'] ?? '') }}" required>
                                 </label>
                                 <label class="xd-field">
-                                    <span>{{ $isEnglish ? 'Phone' : 'Sá»‘ Ä‘iá»‡n thoáº¡i' }}</span>
+                                    <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.fe4637d9642f9400', 'Số điện thoại') }}</span>
                                     <input name="customer_phone" value="{{ old('customer_phone', $form['customer_phone'] ?? '') }}" required>
                                 </label>
                                 <label class="xd-field is-wide">
@@ -204,17 +203,17 @@
                                     <input type="email" name="customer_email" value="{{ old('customer_email', $form['customer_email'] ?? '') }}">
                                 </label>
                                 <label class="xd-field is-wide">
-                                    <span>{{ $isEnglish ? 'Delivery address' : 'Äá»‹a chá»‰ nháº­n hÃ ng' }}</span>
+                                    <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.56eabcd63ef1db88', 'Địa chỉ nhận hàng') }}</span>
                                     <textarea name="delivery_address" required>{{ old('delivery_address', $form['delivery_address'] ?? '') }}</textarea>
                                 </label>
                                 <label class="xd-field is-wide">
-                                    <span>{{ $isEnglish ? 'Order note' : 'Ghi chÃº' }}</span>
+                                    <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.1e6a87fc00217087', 'Ghi chú') }}</span>
                                     <textarea name="note">{{ old('note', $form['note'] ?? '') }}</textarea>
                                 </label>
                             </div>
 
                             <div class="xd-payment-list">
-                                <h2 class="xd-section-title">{{ $isEnglish ? 'Payment method' : 'PhÆ°Æ¡ng thá»©c thanh toÃ¡n' }}</h2>
+                                <h2 class="xd-section-title">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.2c9b97df9eb07c2c', 'Phương thức thanh toán') }}</h2>
                                 @foreach ($paymentMethods as $value => $method)
                                     @php
                                         $methodValue = is_array($method) ? (string) ($method['value'] ?? $value) : (string) $value;
@@ -233,11 +232,11 @@
                                 @endforeach
                             </div>
 
-                            <button class="xd-button" type="submit">{{ $isEnglish ? 'Place order' : 'Äáº·t hÃ ng' }}</button>
+                            <button class="xd-button" type="submit">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.064cafd7b1a19604', 'Đặt hàng') }}</button>
                         </form>
 
                         <aside class="xd-panel xd-summary">
-                            <h2>{{ $isEnglish ? 'Order summary' : 'TÃ³m táº¯t Ä‘Æ¡n hÃ ng' }}</h2>
+                            <h2>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.52cb65f9e638b3bd', 'Tóm tắt đơn hàng') }}</h2>
                             <div class="xd-summary-items">
                                 @foreach ($cartItems as $item)
                                     <div class="xd-summary-item">
@@ -247,7 +246,7 @@
                                             @endif
                                         </span>
                                         <span>
-                                            <strong class="xd-summary-name">{{ $item['name'] ?? 'Sáº£n pháº©m' }}</strong>
+                                            <strong class="xd-summary-name">{{ $item['name'] ?? 'Sản phẩm' }}</strong>
                                             <span class="xd-summary-meta">x{{ (int) ($item['quantity'] ?? 1) }}</span>
                                             <span class="xd-summary-price">{{ $formatCurrency($item['line_total'] ?? $item['price'] ?? null) }}</span>
                                         </span>
@@ -255,14 +254,14 @@
                                 @endforeach
                             </div>
                             <div class="xd-summary-row">
-                                <span>{{ $isEnglish ? 'Products' : 'Sá»‘ sáº£n pháº©m' }}</span>
+                                <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.dd68d4ac64b245b7', 'Số sản phẩm') }}</span>
                                 <b>{{ (int) ($cartSummary['count'] ?? 0) }}</b>
                             </div>
                             <div class="xd-summary-row">
-                                <span>{{ $isEnglish ? 'Estimated total' : 'Táº¡m tÃ­nh' }}</span>
+                                <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.a04d9edb9bde8e97', 'Tạm tính') }}</span>
                                 <strong>{{ $formatCurrency($cartSummary['subtotal'] ?? 0) }}</strong>
                             </div>
-                            <a class="xd-button is-ghost" href="{{ route('site.cart.index') }}">{{ $isEnglish ? 'Back to cart' : 'Quay láº¡i giá» hÃ ng' }}</a>
+                            <a class="xd-button is-ghost" href="{{ route('site.cart.index') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.4536be0a49c9a62c', 'Quay lại giỏ hàng') }}</a>
                         </aside>
                     </section>
                 @endif

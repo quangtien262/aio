@@ -16,6 +16,7 @@ import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
 import Typography from 'antd/es/typography';
 import dayjs from 'dayjs';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 
 const { Text } = Typography;
 const imageLibraryPageSize = 8;
@@ -28,11 +29,16 @@ const defaultTestimonialValues = {
 export default function CmsTestimonialFormModal({
     open,
     canManage,
+    translationMode = false,
     editingTestimonial,
     mediaOptions = [],
+    localeOptions = [],
+    contentLocale = 'vi',
+    sourceLocale = 'vi',
     callAdminApi,
     onCancel,
     onSubmit,
+    onLocaleChange,
 }) {
     const [form] = Form.useForm();
     const [messageApi, messageContextHolder] = message.useMessage();
@@ -178,7 +184,7 @@ export default function CmsTestimonialFormModal({
         try {
             const media = await createImageMediaRecord({
                 fileUrl: trimmedUrl,
-                title: form.getFieldValue('name') || 'Testimonial image',
+                title: form.getFieldValue('name') || 'Ảnh khách hàng',
             });
 
             setImageMediaOptions((currentOptions) => [media, ...currentOptions.filter((item) => item.id !== media.id)]);
@@ -200,7 +206,7 @@ export default function CmsTestimonialFormModal({
 
         return (
             <div className="cms-featured-media-preview">
-                <img src={previewUrl} alt={form.getFieldValue('image_alt') || selectedImageMedia?.title || 'Testimonial media'} />
+                <img src={previewUrl} alt={form.getFieldValue('image_alt') || selectedImageMedia?.title || 'Ảnh cảm nhận khách hàng'} />
                 <div className="cms-featured-media-preview-copy">
                     <strong>{selectedImageMedia?.title || form.getFieldValue('image_alt') || 'Ảnh đại diện nhận xét'}</strong>
                     <span>{previewUrl}</span>
@@ -246,10 +252,24 @@ export default function CmsTestimonialFormModal({
                 extra={(
                     <Space>
                         <Button onClick={handleCancel}>Hủy</Button>
-                        <Button type="primary" disabled={!canManage} onClick={handleSubmit}>Lưu nhận xét</Button>
+                        <Button type="primary" disabled={!canManage || (!editingTestimonial?.id && translationMode)} onClick={handleSubmit}>
+                            {!editingTestimonial?.id && translationMode ? 'Lưu tại ngôn ngữ gốc' : (translationMode ? 'Lưu bản dịch' : 'Lưu nhận xét')}
+                        </Button>
                     </Space>
                 )}
             >
+                <LocalizedContentTabs
+                    localeOptions={localeOptions}
+                    contentLocale={contentLocale}
+                    sourceLocale={sourceLocale}
+                    editingRecord={editingTestimonial}
+                    entityLabel="nhận xét"
+                    translationDescription="Tên, chức danh, công ty, nội dung nhận xét, alt text của ảnh và trạng thái xuất bản được lưu riêng cho ngôn ngữ này. Ảnh đại diện, liên kết, thứ tự và thiết lập nổi bật tiếp tục dùng từ bản gốc."
+                    sourceDescription="Đây là ngôn ngữ gốc. Ảnh đại diện, liên kết, thứ tự và thiết lập nổi bật được quản lý tại đây."
+                    isDirty={() => form.isFieldsTouched()}
+                    getCurrentValues={() => form.getFieldsValue(true)}
+                    onLocaleChange={onLocaleChange}
+                />
                 <Form form={form} layout="vertical" initialValues={{ ...defaultTestimonialValues, ...(editingTestimonial ?? {}) }}>
                     <Space direction="vertical" size={16} style={{ width: '100%' }}>
                         <Card size="small" title="Thông tin khách hàng">
@@ -285,7 +305,7 @@ export default function CmsTestimonialFormModal({
                                 </Col>
                                 <Col xs={24} md={8}>
                                     <Form.Item name="sort_order" label="Thứ tự">
-                                        <InputNumber min={0} style={{ width: '100%' }} />
+                                        <InputNumber disabled={translationMode} min={0} style={{ width: '100%' }} />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -298,6 +318,7 @@ export default function CmsTestimonialFormModal({
                             <Form.Item name="cms_media_id" style={{ marginBottom: 0 }}>
                                 <div className="cms-featured-media-shell">
                                     <Radio.Group
+                                        disabled={translationMode}
                                         value={imageMode}
                                         onChange={(event) => setImageMode(event.target.value)}
                                         optionType="button"
@@ -317,7 +338,7 @@ export default function CmsTestimonialFormModal({
                                                 <Space wrap>
                                                     <Button
                                                         type="primary"
-                                                        disabled={!canManage}
+                                                        disabled={!canManage || translationMode}
                                                         loading={imageUploading === 'upload'}
                                                         onClick={() => imageInputRef.current?.click()}
                                                     >
@@ -334,7 +355,7 @@ export default function CmsTestimonialFormModal({
                                         <div className="cms-featured-media-action-card">
                                             <Space direction="vertical" size={10} style={{ width: '100%' }}>
                                                 <Space wrap>
-                                                    <Button type="primary" onClick={() => setImageLibraryOpen(true)}>
+                                                    <Button type="primary" disabled={translationMode} onClick={() => setImageLibraryOpen(true)}>
                                                         Mở thư viện media
                                                     </Button>
                                                     <Text type="secondary">Chọn lại từ media CMS đã có sẵn.</Text>
@@ -349,13 +370,14 @@ export default function CmsTestimonialFormModal({
                                             <Space direction="vertical" size={10} style={{ width: '100%' }}>
                                                 <Input
                                                     value={imageUrlDraft}
+                                                    disabled={translationMode}
                                                     onChange={(event) => setImageUrlDraft(event.target.value)}
                                                     placeholder="https://example.com/avatar.jpg"
                                                 />
                                                 <Space wrap>
                                                     <Button
                                                         type="primary"
-                                                        disabled={!canManage}
+                                                        disabled={!canManage || translationMode}
                                                         loading={imageUploading === 'url'}
                                                         onClick={handleCreateImageFromUrl}
                                                     >
@@ -381,12 +403,12 @@ export default function CmsTestimonialFormModal({
                             <Row gutter={16}>
                                 <Col xs={24} md={8}>
                                     <Form.Item name="is_featured" label="Nhận xét nổi bật" valuePropName="checked">
-                                        <Switch />
+                                        <Switch disabled={translationMode} />
                                     </Form.Item>
                                 </Col>
                                 <Col xs={24} md={16}>
                                     <Form.Item name="link_url" label="Link click">
-                                        <Input placeholder="/vi/du-an hoặc https://..." />
+                                        <Input disabled={translationMode} placeholder="/vi/du-an hoặc https://..." />
                                     </Form.Item>
                                 </Col>
                             </Row>

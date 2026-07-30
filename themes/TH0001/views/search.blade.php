@@ -126,7 +126,8 @@
                 .product-grid, .th-footer-grid { grid-template-columns: 1fr; }
             }
         </style>
-    </head>
+        @include('partials.localized-seo')
+</head>
     <body>
         <div class="th-page">
             <div class="th-topbar">

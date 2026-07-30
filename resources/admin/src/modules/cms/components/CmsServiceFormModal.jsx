@@ -12,6 +12,7 @@ import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
 import dayjs from 'dayjs';
 import MultiMediaPicker from '../../../shared/components/MultiMediaPicker';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import RichContentEditor from '../../../shared/components/RichContentEditor';
 import { toSlug } from '../../../shared/utils/slug';
 
@@ -53,7 +54,21 @@ const SERVICE_ICON_OPTIONS = [
     { label: 'Nông nghiệp', value: 'fa-solid fa-seedling' },
 ];
 
-export default function CmsServiceFormModal({ open, canManage, editingService, mediaOptions = [], categoryOptions = [], callAdminApi, onCancel, onSubmit }) {
+export default function CmsServiceFormModal({
+    open,
+    canManage,
+    translationMode = false,
+    editingService,
+    mediaOptions = [],
+    categoryOptions = [],
+    localeOptions = [],
+    contentLocale = 'vi',
+    sourceLocale = 'vi',
+    callAdminApi,
+    onCancel,
+    onSubmit,
+    onLocaleChange,
+}) {
     const [form] = Form.useForm();
     const lastTitleRef = useRef('');
     const titleValue = Form.useWatch('title', form) ?? '';
@@ -269,10 +284,24 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
             extra={(
                 <Space>
                     <Button onClick={handleCancel}>Hủy</Button>
-                    <Button type="primary" disabled={!canManage} onClick={handleSubmit}>Lưu dịch vụ</Button>
+                    <Button type="primary" disabled={!canManage || (!editingService?.id && translationMode)} onClick={handleSubmit}>
+                        {!editingService?.id && translationMode ? 'Lưu tại ngôn ngữ gốc' : (translationMode ? 'Lưu bản dịch' : 'Lưu dịch vụ')}
+                    </Button>
                 </Space>
             )}
         >
+            <LocalizedContentTabs
+                localeOptions={localeOptions}
+                contentLocale={contentLocale}
+                sourceLocale={sourceLocale}
+                editingRecord={editingService}
+                entityLabel="dịch vụ"
+                translationDescription="Tiêu đề, slug, mô tả, nhãn nút, SEO, nội dung chi tiết và trạng thái xuất bản được lưu riêng cho ngôn ngữ này. Danh mục, icon, hình ảnh và thiết lập nổi bật tiếp tục dùng từ bản gốc."
+                sourceDescription="Đây là ngôn ngữ gốc. Danh mục, icon, hình ảnh và thiết lập nổi bật được quản lý tại đây."
+                isDirty={() => form.isFieldsTouched()}
+                getCurrentValues={() => form.getFieldsValue(true)}
+                onLocaleChange={onLocaleChange}
+            />
             <Form form={form} layout="vertical" initialValues={editingService}>
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Card size="small" title="Thông tin dịch vụ">
@@ -304,6 +333,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                             <Col xs={24} md={8}>
                                 <Form.Item name="cms_service_category_id" label="Danh mục dịch vụ">
                                     <Select
+                                        disabled={translationMode}
                                         allowClear
                                         showSearch
                                         optionFilterProp="label"
@@ -315,6 +345,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                             <Col xs={24} md={12}>
                                 <Form.Item name="icon" label="Icon ngắn">
                                     <Select
+                                        disabled={translationMode}
                                         allowClear
                                         showSearch
                                         optionFilterProp="searchLabel"
@@ -341,7 +372,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                     extra="Dùng cho các block chỉ lấy dịch vụ nổi bật."
                                     valuePropName="checked"
                                 >
-                                    <Switch />
+                                    <Switch disabled={translationMode} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
@@ -351,7 +382,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                     extra="Dùng khi block tổng hợp bật lọc nội dung ưu tiên."
                                     valuePropName="checked"
                                 >
-                                    <Switch />
+                                    <Switch disabled={translationMode} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
@@ -379,7 +410,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                                 onChange={(nextValue) => syncServiceImages(nextValue)}
                                 coverValue={featuredImageUrl}
                                 onSetCover={(nextCover) => syncServiceImages(serviceImages, nextCover)}
-                                canManage={canManage}
+                                canManage={canManage && !translationMode}
                                 callAdminApi={callAdminApi}
                                 mediaOptions={mediaOptions}
                                 recordTitle={titleValue || 'Service images'}
@@ -396,7 +427,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                             <Input />
                         </Form.Item>
                         <Form.Item name="featured_image_alt" label="Alt text" style={{ marginTop: 12, marginBottom: 0 }}>
-                            <Input placeholder="Mô tả ảnh dịch vụ" />
+                            <Input disabled={translationMode} placeholder="Mô tả ảnh dịch vụ" />
                         </Form.Item>
                     </Card>
 
@@ -429,7 +460,7 @@ export default function CmsServiceFormModal({ open, canManage, editingService, m
                             onChange={(nextContent) => form.setFieldValue('content', nextContent)}
                             disabled={!canManage}
                             callAdminApi={callAdminApi}
-                            recordKey={editingService?.id ?? 'new'}
+                            recordKey={`${editingService?.id ?? 'new'}:${contentLocale}`}
                             open={open}
                             htmlPlaceholder="<section>Nhập mã HTML chi tiết dịch vụ...</section>"
                         />

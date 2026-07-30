@@ -1,6 +1,6 @@
 @php
-    $title = $pageTitle ?? (app()->getLocale() === 'en' ? 'Projects' : 'Dự án');
-    $description = $pageDescription ?? (app()->getLocale() === 'en' ? 'Explore our completed projects.' : 'Danh sách dự án đã xuất bản.');
+    $title = $pageTitle ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.6980f6dccf6e96cb', 'Dự án'));
+    $description = $pageDescription ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.01f5fc41dc67335e', 'Danh sách dự án đã xuất bản.'));
     $footerNewsletterSource = 'theme-footer-xd0301-projects';
     $canEditLanding = false;
 @endphp
@@ -39,13 +39,13 @@
     <div class="xd-container">
         <section class="xd-cms-hero">
             <div>
-                <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Projects' : 'Dự án' }}</span>
+                <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.6980f6dccf6e96cb', 'Dự án') }}</span>
                 <h1>{{ $title }}</h1>
                 <p>{{ $description }}</p>
             </div>
             <div class="xd-cms-stats">
                 <strong>{{ collect($listingItems ?? [])->count() }}</strong>
-                <span>{{ app()->getLocale() === 'en' ? 'Visible projects' : 'Dự án đang hiển thị' }}</span>
+                <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.d9f11545f501258d', 'Dự án đang hiển thị') }}</span>
             </div>
         </section>
 
@@ -96,7 +96,7 @@
                     </span>
                 </article>
             @empty
-                <p>{{ app()->getLocale() === 'en' ? 'No projects are available yet.' : 'Chưa có dự án nào được xuất bản.' }}</p>
+                <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.cb746a768450cd69', 'Chưa có dự án nào được xuất bản.') }}</p>
             @endforelse
         </section>
     </div>

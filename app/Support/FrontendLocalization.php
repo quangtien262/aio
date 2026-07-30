@@ -2,92 +2,103 @@
 
 namespace App\Support;
 
-use App\Models\SystemLocale;
-use Illuminate\Support\Facades\Schema;
-use Throwable;
+use App\Support\Localization\LocaleCode;
+use App\Support\Localization\LocaleContext;
 
+/**
+ * Backward-compatible facade for storefront and admin localization.
+ *
+ * Public storefront code should use supportedLocales(); administrative editors
+ * should use editableLocales(). New domain services may inject LocaleContext
+ * directly when an explicit website key is required.
+ */
 class FrontendLocalization
 {
     /**
-     * @var array<int, array{code:string,name:string,native_name:?string,is_default:bool,is_active:bool,is_published:bool,sort_order:int}>|null
+     * @return list<string>
      */
-    private static ?array $localeCache = null;
-
     public static function supportedLocales(): array
     {
-        return collect(self::localeOptions())
-            ->filter(fn (array $locale): bool => $locale['is_active'])
-            ->pluck('code')
-            ->values()
-            ->all();
+        return self::context()->publicLocales();
     }
 
     /**
-     * @return array<int, array{code:string,name:string,native_name:?string,is_default:bool,is_active:bool,is_published:bool,sort_order:int}>
+     * @return list<string>
+     */
+    public static function publicLocales(): array
+    {
+        return self::context()->publicLocales();
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function editableLocales(): array
+    {
+        return self::context()->editableLocales();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
      */
     public static function localeOptions(): array
     {
-        if (self::$localeCache !== null) {
-            return self::$localeCache;
-        }
-
-        self::$localeCache = self::loadLocaleOptions();
-
-        return self::$localeCache;
+        return self::context()->options();
     }
 
     public static function defaultLocale(): string
     {
-        $default = collect(self::localeOptions())->firstWhere('is_default', true);
-
-        return (string) ($default['code'] ?? config('localization.default_locale', config('app.locale', 'vi')));
+        return self::context()->defaultLocale();
     }
 
     public static function fallbackLocale(): string
     {
-        return (string) config('localization.fallback_locale', config('localization.source_locale', self::defaultLocale()));
+        return self::context()->fallbackLocale();
     }
 
     public static function sourceLocale(): string
     {
-        return (string) config('localization.source_locale', self::fallbackLocale());
+        return self::context()->sourceLocale();
     }
 
     public static function isSupported(?string $locale): bool
     {
-        return $locale !== null && in_array(self::normalizeLocaleCode($locale), self::supportedLocales(), true);
+        return self::context()->isPublic($locale);
     }
 
     public static function resolveLocale(?string $locale): string
     {
-        return self::isSupported($locale) ? $locale : self::defaultLocale();
+        return self::context()->resolvePublic($locale);
     }
 
     public static function isEditableLocale(?string $locale): bool
     {
-        if ($locale === null || trim($locale) === '') {
-            return false;
-        }
-
-        return in_array(self::normalizeLocaleCode($locale), self::knownLocaleCodes(), true);
+        return self::context()->isEditable($locale);
     }
 
     public static function resolveEditableLocale(?string $locale): string
     {
-        return self::isEditableLocale($locale) ? self::normalizeLocaleCode((string) $locale) : self::defaultLocale();
+        return self::context()->resolveEditable($locale);
     }
 
     public static function segment(string $key, ?string $locale = null): string
     {
-        $resolvedLocale = self::resolveLocale($locale);
+        $resolvedLocale = LocaleCode::tryNormalize($locale)
+            ?? self::defaultLocale();
+        $baseLocale = explode('-', $resolvedLocale)[0];
 
-        return (string) data_get(
-            self::routeSegments($resolvedLocale),
-            $key,
-            data_get(self::routeSegments('en'), $key, data_get(self::routeSegments(self::fallbackLocale()), $key, $key))
+        return (string) (
+            data_get(self::routeSegments($resolvedLocale), $key)
+            ?? data_get(self::routeSegments($baseLocale), $key)
+            ?? data_get(self::routeSegments('en'), $key)
+            ?? data_get(self::routeSegments(self::fallbackLocale()), $key)
+            ?? $key
         );
     }
 
+    /**
+     * @return array<string, string>
+     */
     public static function routeParameterDefaults(?string $locale = null): array
     {
         $resolvedLocale = self::resolveLocale($locale);
@@ -120,26 +131,35 @@ class FrontendLocalization
         ];
     }
 
+    /**
+     * Return all configured route words, not only the locales that happened to
+     * be public while the route collection was booted.
+     *
+     * @return list<string>
+     */
     public static function segmentValues(string $key): array
     {
-        return collect(self::supportedLocales())
-            ->push(self::fallbackLocale())
-            ->push('en')
-            ->unique()
-            ->map(fn (string $locale): string => self::segment($key, $locale))
+        return collect((array) config('localization.route_segments', []))
+            ->map(fn (mixed $segments): mixed => data_get($segments, $key))
             ->push($key)
-            ->filter(fn (mixed $value): bool => is_string($value) && $value !== '')
+            ->filter(fn (mixed $value): bool => is_string($value) && trim($value) !== '')
             ->unique()
             ->values()
             ->all();
     }
 
     /**
-     * @return array{name:string,native_name:?string}|array<string, mixed>
+     * @return array{name:string,native_name:?string}
      */
     public static function presetLocale(string $code): array
     {
-        $preset = (array) config('localization.preset_locales.'.trim($code), []);
+        $code = LocaleCode::tryNormalize($code) ?? trim($code);
+        $baseCode = explode('-', $code)[0];
+        $preset = (array) (
+            config('localization.preset_locales.'.$code)
+            ?? config('localization.preset_locales.'.$baseCode)
+            ?? []
+        );
 
         return [
             'name' => (string) ($preset['name'] ?? strtoupper($code)),
@@ -149,7 +169,7 @@ class FrontendLocalization
 
     public static function flushCache(): void
     {
-        self::$localeCache = null;
+        self::context()->flush();
     }
 
     /**
@@ -157,15 +177,12 @@ class FrontendLocalization
      */
     public static function knownLocaleCodes(): array
     {
-        return collect(self::localeOptions())
-            ->pluck('code')
-            ->merge(array_keys((array) config('localization.preset_locales', [])))
-            ->merge((array) config('localization.supported_locales', []))
-            ->push(self::defaultLocale())
-            ->push(self::fallbackLocale())
-            ->unique()
-            ->values()
-            ->all();
+        return self::context()->knownLocaleCodes();
+    }
+
+    public static function routeLocalePattern(): string
+    {
+        return LocaleCode::routePattern();
     }
 
     /**
@@ -173,92 +190,11 @@ class FrontendLocalization
      */
     private static function routeSegments(string $locale): array
     {
-        return (array) config('localization.route_segments.'.trim($locale), []);
+        return (array) config('localization.route_segments.'.$locale, []);
     }
 
-    /**
-     * @return array<int, array{code:string,name:string,native_name:?string,is_default:bool,is_active:bool,is_published:bool,sort_order:int}>
-     */
-    private static function loadLocaleOptions(): array
+    private static function context(): LocaleContext
     {
-        $databaseLocales = self::databaseLocaleOptions();
-
-        if ($databaseLocales !== null && $databaseLocales !== []) {
-            return $databaseLocales;
-        }
-
-        return collect((array) config('localization.supported_locales', ['vi']))
-            ->map(function (string $code, int $index): array {
-                $preset = self::presetLocale($code);
-
-                return [
-                    'code' => $code,
-                    'name' => (string) $preset['name'],
-                    'native_name' => $preset['native_name'],
-                    'is_default' => $code === config('localization.default_locale', 'vi'),
-                    'is_active' => true,
-                    'is_published' => true,
-                    'sort_order' => $index,
-                ];
-            })
-            ->values()
-            ->all();
-    }
-
-    /**
-     * @return array<int, array{code:string,name:string,native_name:?string,is_default:bool,is_active:bool,is_published:bool,sort_order:int}>|null
-     */
-    private static function databaseLocaleOptions(): ?array
-    {
-        if (! self::canReadDatabaseLocales()) {
-            return null;
-        }
-
-        try {
-            return SystemLocale::query()
-                ->orderByDesc('is_default')
-                ->orderBy('sort_order')
-                ->orderBy('code')
-                ->get(['code', 'name', 'native_name', 'is_default', 'is_active', 'is_published', 'sort_order'])
-                ->map(function (SystemLocale $locale): array {
-                    return [
-                        'code' => (string) $locale->code,
-                        'name' => (string) $locale->name,
-                        'native_name' => $locale->native_name !== null ? (string) $locale->native_name : null,
-                        'is_default' => (bool) $locale->is_default,
-                        'is_active' => (bool) $locale->is_active,
-                        'is_published' => (bool) $locale->is_published,
-                        'sort_order' => (int) $locale->sort_order,
-                    ];
-                })
-                ->values()
-                ->all();
-        } catch (Throwable) {
-            return null;
-        }
-    }
-
-    private static function canReadDatabaseLocales(): bool
-    {
-        try {
-            return Schema::hasTable('system_locales');
-        } catch (Throwable) {
-            return false;
-        }
-    }
-
-    private static function normalizeLocaleCode(string $locale): string
-    {
-        $parts = collect(explode('-', str_replace('_', '-', trim($locale))))
-            ->filter(fn (?string $part): bool => $part !== null && $part !== '')
-            ->values();
-
-        if ($parts->isEmpty()) {
-            return self::defaultLocale();
-        }
-
-        return $parts
-            ->map(fn (string $part, int $index): string => $index === 0 ? strtolower($part) : strtoupper($part))
-            ->implode('-');
+        return app(LocaleContext::class);
     }
 }

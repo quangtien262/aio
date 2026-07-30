@@ -14,6 +14,7 @@ use App\Http\Controllers\Customer\RegisteredUserController;
 use App\Http\Controllers\Site\CmsSiteController;
 use App\Http\Controllers\Site\LandingController;
 use App\Http\Controllers\Site\RealEstateController;
+use App\Http\Controllers\Site\SitemapController;
 use App\Support\FrontendLocalization;
 use Illuminate\Support\Facades\Route;
 
@@ -23,11 +24,13 @@ Route::get('/', function () {
 	return redirect()->route('site.home', ['locale' => $locale]);
 })->name('site.entry');
 
+Route::get('/sitemap.xml', SitemapController::class)->name('site.sitemap');
+
 require __DIR__.'/admin.php';
 
 Route::prefix('{locale}')
 	->middleware('frontend.locale')
-	->whereIn('locale', FrontendLocalization::supportedLocales())
+	->where(['locale' => FrontendLocalization::routeLocalePattern()])
 	->group(function (): void {
 		Route::get('/', LandingController::class)->name('site.home');
 

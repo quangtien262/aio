@@ -14,12 +14,12 @@
         ->values();
     if ($th5Menu->isEmpty()) {
         $th5Menu = collect([
-            ['label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ', 'url' => route('site.home')],
-            ['label' => app()->getLocale() === 'en' ? 'Collections' : 'Bộ sưu tập', 'url' => '#bo-suu-tap'],
-            ['label' => app()->getLocale() === 'en' ? 'Products' : 'Sản phẩm', 'url' => '#san-pham'],
-            ['label' => app()->getLocale() === 'en' ? 'About' : 'Giới thiệu', 'url' => '#gioi-thieu'],
-            ['label' => app()->getLocale() === 'en' ? 'Insights' : 'Tin tức', 'url' => '#tin-tuc'],
-            ['label' => app()->getLocale() === 'en' ? 'Contact' : 'Liên hệ', 'url' => '#lien-he'],
+            ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TH0050', app()->getLocale(), 'legacy_inline.4c23dc9bef7f79b4', 'Trang chủ'), 'url' => route('site.home')],
+            ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TH0050', app()->getLocale(), 'legacy_inline.9e28585ff16ae5cb', 'Bộ sưu tập'), 'url' => '#bo-suu-tap'],
+            ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TH0050', app()->getLocale(), 'legacy_inline.571ef44479d97bfd', 'Sản phẩm'), 'url' => '#san-pham'],
+            ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TH0050', app()->getLocale(), 'legacy_inline.1e1ad907f72be113', 'Giới thiệu'), 'url' => '#gioi-thieu'],
+            ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TH0050', app()->getLocale(), 'legacy_inline.e6475c2dd31c260b', 'Tin tức'), 'url' => '#tin-tuc'],
+            ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TH0050', app()->getLocale(), 'legacy_inline.416dc399394e8648', 'Liên hệ'), 'url' => '#lien-he'],
         ]);
     }
 @endphp

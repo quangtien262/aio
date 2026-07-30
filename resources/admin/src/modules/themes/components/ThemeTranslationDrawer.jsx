@@ -33,7 +33,7 @@ const ENTITY_LABELS = {
     'cms-post': 'CMS post',
     'cms-service': 'CMS service',
     'cms-project': 'CMS project',
-    'cms-testimonial': 'CMS testimonial',
+    'cms-testimonial': 'CMS cảm nhận khách hàng',
     'cms-team-member': 'CMS team member',
     'cms-partner': 'CMS partner',
 };

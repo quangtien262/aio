@@ -13,6 +13,7 @@ use Database\Seeders\FeaturedCategorySeeder;
 use Database\Seeders\HeroSideBannerSeeder;
 use Database\Seeders\SidePromoSeeder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -58,6 +59,7 @@ class DatabaseSeeder extends Seeder
     private function seedDefaultAdmin(): void
     {
         $configuredPassword = env('AIO_SYSTEM_OWNER_PASSWORD');
+        $isTesting = app()->environment('testing');
 
         if (blank($configuredPassword) && ! app()->environment(['local', 'testing'])) {
             throw new RuntimeException('AIO_SYSTEM_OWNER_PASSWORD must be configured before seeding a non-local environment.');
@@ -68,8 +70,10 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'System Admin',
                 'username' => 'admin',
-                'email' => 'info@htvietnam.vn',
-                'password' => '$2y$10$AgayGUGyViJqcEB4eaDGVOWKbjHPNdW4SPuHLAv.GsFzuLLuTwKve', // abcd@1234
+                'email' => $isTesting ? 'admin@aio.local' : 'info@htvietnam.vn',
+                'password' => Hash::make(
+                    $configuredPassword ?: ($isTesting ? 'password' : 'abcd@1234'),
+                ),
                 'is_active' => true,
                 'status' => 'active',
                 'is_system_owner' => true,

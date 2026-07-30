@@ -5,11 +5,17 @@ namespace App\Http\Controllers\Admin\Api\Catalog;
 use App\Models\CatalogProduct;
 use App\Support\FrontendLocalization;
 use App\Support\FrontendRouteUrl;
+use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProductIndexController
 {
-    public function __invoke(): JsonResponse
+    public function __construct(
+        private readonly AdminLocalizedContentList $localizedList,
+    ) {}
+
+    public function __invoke(Request $request): JsonResponse
     {
         $query = CatalogProduct::query()->with(['category', 'images'])->orderBy('name');
 
@@ -47,6 +53,11 @@ class ProductIndexController
             ])
             ->values()
             ->all();
+        $products = $this->localizedList->overlay(
+            $products,
+            'catalog_product',
+            $request->query('locale'),
+        );
 
         return response()->json([
             'data' => [

@@ -69,6 +69,10 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [typeModalOpen, setTypeModalOpen] = useState(false);
     const [editing, setEditing] = useState(null);
+    const [editingType, setEditingType] = useState(null);
+    const [contentLocale, setContentLocale] = useState(
+        window.localStorage.getItem('aio.frontendLocale') || 'vi',
+    );
     const [collapsedSections, setCollapsedSections] = useState({ specifications: true });
     const galleryImages = Form.useWatch('gallery_images', form) ?? [];
     const title = Form.useWatch('title', form) ?? '';
@@ -80,9 +84,27 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
 
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: true,
-        loader: async () => (await callAdminApi(adminApi('real-estate/listings'))).data,
+        loader: async () => {
+            const [listingsPayload, localesPayload] = await Promise.all([
+                callAdminApi(adminApi('real-estate/listings')),
+                callAdminApi(adminApi('themes/locales')),
+            ]);
+
+            return {
+                ...(listingsPayload.data ?? {}),
+                localization: localesPayload.data ?? { locales: [], source_locale: 'vi' },
+            };
+        },
         deps: [],
     });
+    const sourceLocale = data?.localization?.source_locale ?? 'vi';
+    const translationMode = contentLocale !== sourceLocale;
+    const localeOptions = (data?.localization?.locales ?? [])
+        .filter((locale) => locale.is_enabled_for_editing !== false)
+        .map((locale) => ({
+            value: locale.code,
+            label: `${locale.native_name || locale.name || locale.code}${locale.is_source ? ' · Gốc' : ''}`,
+        }));
 
     const typeOptions = useMemo(() => (data?.types ?? []).map((type) => ({
         value: type.id,
@@ -90,10 +112,26 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
     })), [data?.types]);
     const syncSlugSource = useAutoSlug({ form, sourceValue: title });
 
-    const openListing = (record = null) => {
-        setEditing(record);
-        form.setFieldsValue(record ? { ...EMPTY_LISTING, ...record } : EMPTY_LISTING);
-        syncSlugSource(record?.title ?? '');
+    const openListing = async (record = null) => {
+        if (!record && translationMode) {
+            return;
+        }
+
+        let localizedRecord = record;
+
+        if (record?.id && translationMode) {
+            const response = await callAdminApi(
+                adminApi(`localization/content/real_estate_listing/${record.id}`),
+            );
+            localizedRecord = {
+                ...record,
+                ...(response.data?.translations?.[contentLocale]?.payload ?? {}),
+            };
+        }
+
+        setEditing(localizedRecord);
+        form.setFieldsValue(localizedRecord ? { ...EMPTY_LISTING, ...localizedRecord } : EMPTY_LISTING);
+        syncSlugSource(localizedRecord?.title ?? '');
         setCollapsedSections({ specifications: true });
         setDrawerOpen(true);
     };
@@ -107,15 +145,24 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
 
     const submitListing = async () => {
         const values = await form.validateFields();
-        const endpoint = editing
-            ? adminApi(`real-estate/listings/${editing.id}`)
-            : adminApi('real-estate/listings');
+        const endpoint = translationMode
+            ? adminApi(`localization/content/real_estate_listing/${editing.id}/${contentLocale}`)
+            : (editing
+                ? adminApi(`real-estate/listings/${editing.id}`)
+                : adminApi('real-estate/listings'));
         await runAdminAction(
             () => callAdminApi(endpoint, {
-                method: editing ? 'PUT' : 'POST',
-                body: JSON.stringify(values),
+                method: translationMode || editing ? 'PUT' : 'POST',
+                body: JSON.stringify(translationMode
+                    ? {
+                        payload: values,
+                        publish: values.publication_status === 'published',
+                    }
+                    : values),
             }),
-            editing ? 'Đã cập nhật tin bất động sản.' : 'Đã tạo tin bất động sản.',
+            translationMode
+                ? `Đã cập nhật bản dịch ${contentLocale.toUpperCase()} của tin bất động sản.`
+                : (editing ? 'Đã cập nhật tin bất động sản.' : 'Đã tạo tin bất động sản.'),
             reload,
         );
         setDrawerOpen(false);
@@ -123,16 +170,48 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
 
     const submitType = async () => {
         const values = await typeForm.validateFields();
+        const endpoint = translationMode
+            ? adminApi(`localization/content/real_estate_property_type/${editingType.id}/${contentLocale}`)
+            : (editingType
+                ? adminApi(`real-estate/property-types/${editingType.id}`)
+                : adminApi('real-estate/property-types'));
         await runAdminAction(
-            () => callAdminApi(adminApi('real-estate/property-types'), {
-                method: 'POST',
-                body: JSON.stringify(values),
+            () => callAdminApi(endpoint, {
+                method: translationMode || editingType ? 'PUT' : 'POST',
+                body: JSON.stringify(translationMode
+                    ? { payload: values, publish: editingType.is_active !== false }
+                    : values),
             }),
-            'Đã tạo loại hình bất động sản.',
+            translationMode
+                ? `Đã cập nhật bản dịch ${contentLocale.toUpperCase()} của loại hình.`
+                : (editingType ? 'Đã cập nhật loại hình bất động sản.' : 'Đã tạo loại hình bất động sản.'),
             reload,
         );
         setTypeModalOpen(false);
+        setEditingType(null);
         typeForm.resetFields();
+    };
+
+    const openType = async (record = null) => {
+        if (!record && translationMode) {
+            return;
+        }
+
+        let localizedRecord = record;
+
+        if (record?.id && translationMode) {
+            const response = await callAdminApi(
+                adminApi(`localization/content/real_estate_property_type/${record.id}`),
+            );
+            localizedRecord = {
+                ...record,
+                ...(response.data?.translations?.[contentLocale]?.payload ?? {}),
+            };
+        }
+
+        setEditingType(localizedRecord);
+        typeForm.setFieldsValue(localizedRecord ?? { is_active: true, sort_order: 0 });
+        setTypeModalOpen(true);
     };
 
     const columns = [
@@ -179,7 +258,7 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
                         'Đã xóa tin bất động sản.',
                         reload,
                     )}>
-                        <Button size="small" danger disabled={!canDelete}>Xóa</Button>
+                        <Button size="small" danger disabled={!canDelete || translationMode}>Xóa</Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -197,9 +276,18 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
                         <Paragraph style={{ margin: '4px 0 0' }}>Quản lý tin bán, cho thuê, thông số và gallery nhiều ảnh theo từng website.</Paragraph>
                     </Col>
                     <Col>
-                        <Space>
-                            <Button disabled={!canManageTypes} onClick={() => setTypeModalOpen(true)}>Thêm loại hình</Button>
-                            <Button type="primary" disabled={!canCreate} onClick={() => openListing()}>Thêm tin đăng</Button>
+                        <Space wrap>
+                            <Select
+                                value={contentLocale}
+                                options={localeOptions}
+                                style={{ minWidth: 180 }}
+                                onChange={(locale) => {
+                                    setContentLocale(locale);
+                                    window.localStorage.setItem('aio.frontendLocale', locale);
+                                }}
+                            />
+                            <Button disabled={!canManageTypes || translationMode} onClick={() => openType()}>Thêm loại hình</Button>
+                            <Button type="primary" disabled={!canCreate || translationMode} onClick={() => openListing()}>Thêm tin đăng</Button>
                         </Space>
                     </Col>
                 </Row>
@@ -212,6 +300,39 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
             <Card>
                 <Table rowKey="id" loading={loading} columns={columns} dataSource={data?.items ?? []} scroll={{ x: 980 }} pagination={{ pageSize: 10 }} />
             </Card>
+            <Card title="Loại hình bất động sản">
+                <Table
+                    rowKey="id"
+                    size="small"
+                    pagination={false}
+                    dataSource={data?.types ?? []}
+                    columns={[
+                        { title: 'Tên', dataIndex: 'name' },
+                        { title: 'Slug', dataIndex: 'slug' },
+                        { title: 'Tin đăng', dataIndex: 'listings_count' },
+                        { title: 'Trạng thái', dataIndex: 'is_active', render: (value) => value ? <Tag color="green">Đang bật</Tag> : <Tag>Tạm ẩn</Tag> },
+                        {
+                            title: 'Tác vụ',
+                            render: (_, record) => (
+                                <Space>
+                                    <Button size="small" disabled={!canManageTypes} onClick={() => openType(record)}>Sửa</Button>
+                                    <Popconfirm
+                                        title="Xóa loại hình này?"
+                                        disabled={!canManageTypes || translationMode || record.listings_count > 0}
+                                        onConfirm={() => runAdminAction(
+                                            () => callAdminApi(adminApi(`real-estate/property-types/${record.id}`), { method: 'DELETE' }),
+                                            'Đã xóa loại hình bất động sản.',
+                                            reload,
+                                        )}
+                                    >
+                                        <Button size="small" danger disabled={!canManageTypes || translationMode || record.listings_count > 0}>Xóa</Button>
+                                    </Popconfirm>
+                                </Space>
+                            ),
+                        },
+                    ]}
+                />
+            </Card>
 
             <Drawer
                 open={drawerOpen}
@@ -223,6 +344,14 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
                 title={editing ? `Sửa tin: ${editing.title}` : 'Tạo tin bất động sản'}
                 extra={<Space><Button onClick={() => setDrawerOpen(false)}>Hủy</Button><Button type="primary" onClick={submitListing}>Lưu tin</Button></Space>}
             >
+                {translationMode ? (
+                    <Alert
+                        type="info"
+                        showIcon
+                        message="Chế độ dịch chỉ lưu tiêu đề, slug, mô tả, nội dung và SEO. Giá, vị trí, thông số, media và trạng thái vận hành dùng chung từ bản gốc."
+                        style={{ marginBottom: 16 }}
+                    />
+                ) : null}
                 <Form form={form} layout="vertical" className="real-estate-listing-form">
                     <div className="cms-post-form-shell">
                         <CollapsibleFormCard
@@ -387,14 +516,32 @@ export default function RealEstateManagerPage({ callAdminApi, runAdminAction, cu
                 </Form>
             </Drawer>
 
-            <Modal open={typeModalOpen} title="Thêm loại hình bất động sản" onCancel={() => setTypeModalOpen(false)} onOk={submitType} okText="Tạo loại hình">
+            <Modal
+                open={typeModalOpen}
+                title={editingType ? 'Cập nhật loại hình bất động sản' : 'Thêm loại hình bất động sản'}
+                onCancel={() => {
+                    setTypeModalOpen(false);
+                    setEditingType(null);
+                    typeForm.resetFields();
+                }}
+                onOk={submitType}
+                okText="Lưu loại hình"
+            >
                 <Form form={typeForm} layout="vertical" initialValues={{ is_active: true, sort_order: 0 }}>
+                    {translationMode ? (
+                        <Alert
+                            type="info"
+                            showIcon
+                            message="Chế độ dịch chỉ lưu tên, slug và mô tả. Ảnh, thứ tự và trạng thái dùng chung từ bản gốc."
+                            style={{ marginBottom: 16 }}
+                        />
+                    ) : null}
                     <Form.Item name="name" label="Tên loại hình" rules={[{ required: true }]}><Input placeholder="Biệt thự, Căn hộ..." /></Form.Item>
                     <Form.Item name="slug" label="Slug"><Input placeholder="Tự sinh từ tên" /></Form.Item>
-                    <Form.Item name="image_url" label="Ảnh đại diện"><Input /></Form.Item>
+                    <Form.Item name="image_url" label="Ảnh đại diện"><Input disabled={translationMode} /></Form.Item>
                     <Form.Item name="description" label="Mô tả"><TextArea rows={3} /></Form.Item>
-                    <Form.Item name="sort_order" label="Thứ tự"><InputNumber min={0} /></Form.Item>
-                    <Form.Item name="is_active" valuePropName="checked"><Switch checkedChildren="Kích hoạt" unCheckedChildren="Tạm ẩn" /></Form.Item>
+                    <Form.Item name="sort_order" label="Thứ tự"><InputNumber disabled={translationMode} min={0} /></Form.Item>
+                    <Form.Item name="is_active" valuePropName="checked"><Switch disabled={translationMode} checkedChildren="Kích hoạt" unCheckedChildren="Tạm ẩn" /></Form.Item>
                 </Form>
             </Modal>
         </Space>

@@ -242,7 +242,8 @@
                 .catalog-heading { padding: 0; }
             }
         </style>
-    </head>
+        @include('partials.localized-seo')
+</head>
     <body>
         <div class="th-page">
             <div class="th-topbar">

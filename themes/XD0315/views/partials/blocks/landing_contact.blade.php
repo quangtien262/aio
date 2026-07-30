@@ -6,18 +6,16 @@
 
     $contactFormTitle = $contactFormTitle !== ''
         ? $contactFormTitle
-        : (app()->getLocale() === 'en' ? 'Send a request' : 'Gá»­i yÃªu cáº§u liÃªn há»‡');
+        : (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.87c2af088eba47e9', 'Gửi yêu cầu liên hệ'));
     $contactNoteTitle = $contactNoteTitle !== ''
         ? $contactNoteTitle
-        : (app()->getLocale() === 'en' ? 'Share the essentials, we will shape the right solution.' : 'Chia sáº» nhu cáº§u, chÃºng tÃ´i tÆ° váº¥n Ä‘Ãºng giáº£i phÃ¡p.');
+        : (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.e8d82960e1ea853a', 'Chia sẻ nhu cầu, chúng tôi tư vấn đúng giải pháp.'));
     $contactNoteText = $contactNoteText !== ''
         ? $contactNoteText
-        : (app()->getLocale() === 'en'
-            ? 'Add your site location, surface area, expected timeline or technical requirements so our team can prepare a practical recommendation.'
-            : 'HÃ£y gá»­i thÃªm Ä‘á»‹a Ä‘iá»ƒm, diá»‡n tÃ­ch, tiáº¿n Ä‘á»™ mong muá»‘n hoáº·c yÃªu cáº§u ká»¹ thuáº­t Ä‘á»ƒ Ä‘á»™i ngÅ© chuáº©n bá»‹ phÆ°Æ¡ng Ã¡n phÃ¹ há»£p ngay tá»« láº§n pháº£n há»“i Ä‘áº§u tiÃªn.');
+        : (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.90c7204030ac6333', 'Hãy gửi thêm địa điểm, diện tích, tiến độ mong muốn hoặc yêu cầu kỹ thuật để đội ngũ chuẩn bị phương án phù hợp ngay từ lần phản hồi đầu tiên.'));
     $contactSubmitLabel = $contactSubmitLabel !== ''
         ? $contactSubmitLabel
-        : (app()->getLocale() === 'en' ? 'Send request' : 'Gá»­i liÃªn há»‡');
+        : (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.fc4ed14bcef77494', 'Gửi liên hệ'));
 @endphp
 
 <section id="{{ $anchor }}" class="xd-section xd-contact-band xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
@@ -64,7 +62,7 @@
                             </svg>
                         </span>
                         <div>
-                            <small>{{ app()->getLocale() === 'en' ? 'Address' : 'Äá»‹a chá»‰' }}</small>
+                            <small>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.1347baf91daa2f61', 'Địa chỉ') }}</small>
                             <span>{{ $supportAddress }}</span>
                         </div>
                     </li>
@@ -82,7 +80,7 @@
                 @endif
                 @if ($errors->any())
                     <div class="xd-contact-errors">
-                        {{ app()->getLocale() === 'en' ? 'Please check the form information.' : 'Vui lÃ²ng kiá»ƒm tra láº¡i thÃ´ng tin.' }}
+                        {{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.296a08c028483e0d', 'Vui lòng kiểm tra lại thông tin.') }}
                         <ul>
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -93,13 +91,13 @@
                 <form class="xd-contact-form" method="POST" action="{{ route('site.contact.submit') }}">
                     @csrf
                     <input type="hidden" name="source" value="landing_contact">
-                    <input type="hidden" name="subject" value="{{ app()->getLocale() === 'en' ? 'Contact request from landing page' : 'YÃªu cáº§u liÃªn há»‡ tá»« landing page' }}">
+                    <input type="hidden" name="subject" value="{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.86f0eaa8c37c43a7', 'Yêu cầu liên hệ từ landing page') }}">
                     <label class="xd-contact-field">
-                        <span>{{ app()->getLocale() === 'en' ? 'Full name' : 'Há» tÃªn' }}</span>
+                        <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.0aa2131688fe9560', 'Họ tên') }}</span>
                         <input name="name" value="{{ old('name') }}" required autocomplete="name">
                     </label>
                     <label class="xd-contact-field">
-                        <span>{{ app()->getLocale() === 'en' ? 'Phone number' : 'Sá»‘ Ä‘iá»‡n thoáº¡i' }}</span>
+                        <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.051dc5b8bfcbebd3', 'Số điện thoại') }}</span>
                         <input name="phone" value="{{ old('phone') }}" autocomplete="tel">
                     </label>
                     <label class="xd-contact-field">
@@ -107,7 +105,7 @@
                         <input type="email" name="email" value="{{ old('email') }}" required autocomplete="email">
                     </label>
                     <label class="xd-contact-field">
-                        <span>{{ app()->getLocale() === 'en' ? 'Message' : 'Ná»™i dung' }}</span>
+                        <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.4da784274f11f7e5', 'Nội dung') }}</span>
                         <textarea name="message" required>{{ old('message') }}</textarea>
                     </label>
                     <button class="xd-contact-submit" type="submit">{{ $contactSubmitLabel }}</button>

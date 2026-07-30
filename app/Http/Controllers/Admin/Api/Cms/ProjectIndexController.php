@@ -4,18 +4,29 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsMedia;
 use App\Models\CmsProject;
+use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProjectIndexController
 {
-    public function __invoke(): JsonResponse
+    public function __construct(
+        private readonly AdminLocalizedContentList $localizedList,
+    ) {}
+
+    public function __invoke(Request $request): JsonResponse
     {
         /** @var EloquentBuilder<CmsProject> $query */
         $query = CmsProject::query();
         $query->with(['category', 'images'])->orderBy('sort_order')->orderByDesc('updated_at');
 
         $items = $query->get()->map(fn (CmsProject $project): array => $this->serialize($project))->values()->all();
+        $items = $this->localizedList->overlay(
+            $items,
+            'cms_project',
+            $request->query('locale'),
+        );
 
         /** @var EloquentBuilder<CmsMedia> $mediaQuery */
         $mediaQuery = CmsMedia::query();

@@ -5,18 +5,29 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 use App\Models\CmsMedia;
 use App\Models\CmsService;
 use App\Support\FrontendLocalization;
+use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ServiceIndexController
 {
-    public function __invoke(): JsonResponse
+    public function __construct(
+        private readonly AdminLocalizedContentList $localizedList,
+    ) {}
+
+    public function __invoke(Request $request): JsonResponse
     {
         /** @var EloquentBuilder<CmsService> $query */
         $query = CmsService::query();
         $query->with(['category:id,name', 'images.media'])->orderBy('sort_order')->orderByDesc('updated_at');
 
         $items = $query->get()->map(fn (CmsService $service): array => $this->serialize($service))->values()->all();
+        $items = $this->localizedList->overlay(
+            $items,
+            'cms_service',
+            $request->query('locale'),
+        );
 
         /** @var EloquentBuilder<CmsMedia> $mediaQuery */
         $mediaQuery = CmsMedia::query();

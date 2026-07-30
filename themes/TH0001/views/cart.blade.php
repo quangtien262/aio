@@ -93,7 +93,8 @@
                 .quantity-form { justify-content: start; }
             }
         </style>
-    </head>
+        @include('partials.localized-seo')
+</head>
     <body>
         <div class="utility">
             <div class="wrap utility-inner">

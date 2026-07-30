@@ -7,6 +7,7 @@
     <title>@yield('title', 'XD0313 RouteX Visa')</title>
     @include('theme-xd0313::partials.styles')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
     <div id="top" class="rx13-page">

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasWebsiteScope;
+use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,5 +23,12 @@ class SiteProfile extends Model
             'theme_palettes' => 'array',
             'setup_completed_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (SiteProfile $profile): void {
+            app(WebsiteLocaleManager::class)->provisionWebsite($profile->website_key);
+        });
     }
 }

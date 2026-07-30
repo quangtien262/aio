@@ -6,7 +6,7 @@
     $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342'));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $email = trim((string) ($branding['support_email'] ?? 'admin@htvietnam.vn'));
-    $address = trim((string) ($branding['support_location'] ?? '196 Nguyá»…n ÄÃ¬nh Chiá»ƒu, Quáº­n 3, TP.HCM'));
+    $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'));
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
 
@@ -14,17 +14,17 @@
         $label = trim($label);
 
         return strtr($label, [
-            'Trang chÃ¡Â»Â§' => 'Trang chá»§',
-            'TRANG CHÃÂ»Â§' => 'TRANG CHá»¦',
-            'trang chÃ¡Â»Â§' => 'trang chá»§',
-            'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'Sáº£n pháº©m',
-            'SÃ¡ÂºÂ£N PHÃÂºÂ©M' => 'Sáº¢N PHáº¨M',
-            'SÃÂºÂ£N PHÃÂºÂ©M' => 'Sáº¢N PHáº¨M',
-            'sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'sáº£n pháº©m',
-            'sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' => 'sáº£n pháº©m',
-            'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' => 'Sáº£n pháº©m',
-            'TÃƒÂ i khoÃ¡ÂºÂ£n' => 'TÃ i khoáº£n',
-            'TÃƒ I KHOÃ¡ÂºÂ£N' => 'TÃ€I KHOáº¢N',
+            'Trang chủ' => 'Trang chủ',
+            'TRANG CHÁ»§' => 'TRANG CHỦ',
+            'trang chủ' => 'trang chủ',
+            'Sản phẩm' => 'Sản phẩm',
+            'Sáº£N PHÁº©M' => 'SẢN PHẨM',
+            'SÁº£N PHÁº©M' => 'SẢN PHẨM',
+            'sản phẩm' => 'sản phẩm',
+            'sản phẩm' => 'sản phẩm',
+            'Sản phẩm' => 'Sản phẩm',
+            'Tài khoản' => 'Tài khoản',
+            'TÃ I KHOáº£N' => 'TÀI KHOẢN',
         ]);
     };
 
@@ -50,9 +50,9 @@
         ->values();
 
     $homeUrl = route('site.home');
-    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chá»§', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
+    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chá»§',
+            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.c7ca2e1f76eac4d1', 'Trang chủ'),
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -61,7 +61,7 @@
     }
 
     $hasProductItem = $navItems->contains(function (array $item): bool {
-        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sáº£n pháº©m', 'san pham', 'products', 'product'], true);
+        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
     });
 
     if (false && ! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
@@ -83,7 +83,7 @@
 
         if ($productCategories->isNotEmpty()) {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sáº£n pháº©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.7299a1cac171ec30', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -110,7 +110,7 @@
                     ->all(),
             ];
 
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chá»§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);
@@ -128,7 +128,7 @@
                 ->map(function (array $item) use ($productNavigationItems): array {
                     $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
 
-                    if (in_array($label, ['sáº£n pháº©m', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                    if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
                         $item['children'] = $productNavigationItems->all();
                     }
 
@@ -137,14 +137,14 @@
                 ->values();
         } else {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'Sáº£n pháº©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.7299a1cac171ec30', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
                 'children' => $productNavigationItems->all(),
             ];
 
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chá»§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);
@@ -259,25 +259,25 @@
             <div class="xd-container">
                     <section class="xd-cms-hero">
                         <div>
-                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Contact' : 'LiÃªn há»‡' }}</span>
+                            <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.f93f87e466663225', 'Liên hệ') }}</span>
                             <h1>{{ $entry->title }}</h1>
                             @if (!empty($entry->excerpt))
                                 <p>{{ $entry->excerpt }}</p>
                             @else
-                                <p>{{ app()->getLocale() === 'en' ? 'Send your project request and our team will contact you shortly.' : 'Gá»­i nhu cáº§u tÆ° váº¥n, thiáº¿t káº¿ hoáº·c thi cÃ´ng. Äá»™i ngÅ© XD0314 sáº½ pháº£n há»“i trong thá»i gian sá»›m nháº¥t.' }}</p>
+                                <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.9135d68daa37c5a7', 'Gửi nhu cầu tư vấn, thiết kế hoặc thi công. Đội ngũ XD0314 sẽ phản hồi trong thời gian sớm nhất.') }}</p>
                             @endif
                         </div>
                         <div class="xd-cms-stats">
                             <strong>24h</strong>
-                            <span>{{ app()->getLocale() === 'en' ? 'Response target' : 'Thá»i gian pháº£n há»“i' }}</span>
+                            <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.30872d8d3de06ab7', 'Thời gian phản hồi') }}</span>
                         </div>
                     </section>
 
                     <section class="xd-contact-page">
                         <aside class="xd-contact-panel">
-                            <span class="xd-kicker">{{ app()->getLocale() === 'en' ? 'Contact info' : 'ThÃ´ng tin liÃªn há»‡' }}</span>
+                            <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.c8a359bb813c3598', 'Thông tin liên hệ') }}</span>
                             <h2>{{ $branding['company_name'] ?? $logoAlt }}</h2>
-                            <p>{{ app()->getLocale() === 'en' ? 'Tell us about your project, timeline and expected scope. We will review and advise the next practical step.' : 'HÃ£y cho chÃºng tÃ´i biáº¿t nhu cáº§u, quy mÃ´ vÃ  thá»i gian dá»± kiáº¿n. Äá»™i ngÅ© tÆ° váº¥n sáº½ kiá»ƒm tra vÃ  Ä‘á» xuáº¥t hÆ°á»›ng triá»ƒn khai phÃ¹ há»£p.' }}</p>
+                            <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.be0d75a780703e93', 'Hãy cho chúng tôi biết nhu cầu, quy mô và thời gian dự kiến. Đội ngũ tư vấn sẽ kiểm tra và đề xuất hướng triển khai phù hợp.') }}</p>
                             <ul class="xd-contact-methods">
                                 <li class="xd-contact-method">
                                     <span class="xd-contact-icon" aria-hidden="true">
@@ -310,25 +310,25 @@
                                         </svg>
                                     </span>
                                     <div>
-                                        <small>{{ app()->getLocale() === 'en' ? 'Address' : 'Äá»‹a chá»‰' }}</small>
+                                        <small>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.1347baf91daa2f61', 'Địa chỉ') }}</small>
                                         <span>{{ $address }}</span>
                                     </div>
                                 </li>
                             </ul>
                             <div class="xd-contact-note">
-                                <strong>{{ app()->getLocale() === 'en' ? 'Share the essentials, we will shape the right solution.' : 'Chia sáº» nhu cáº§u, chÃºng tÃ´i tÆ° váº¥n Ä‘Ãºng giáº£i phÃ¡p.' }}</strong>
-                                <span>{{ app()->getLocale() === 'en' ? 'Add your site location, surface area, expected timeline or technical requirements so our team can prepare a practical recommendation.' : 'HÃ£y gá»­i thÃªm Ä‘á»‹a Ä‘iá»ƒm, diá»‡n tÃ­ch, tiáº¿n Ä‘á»™ mong muá»‘n hoáº·c yÃªu cáº§u ká»¹ thuáº­t Ä‘á»ƒ Ä‘á»™i ngÅ© chuáº©n bá»‹ phÆ°Æ¡ng Ã¡n phÃ¹ há»£p ngay tá»« láº§n pháº£n há»“i Ä‘áº§u tiÃªn.' }}</span>
+                                <strong>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.e8d82960e1ea853a', 'Chia sẻ nhu cầu, chúng tôi tư vấn đúng giải pháp.') }}</strong>
+                                <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.90c7204030ac6333', 'Hãy gửi thêm địa điểm, diện tích, tiến độ mong muốn hoặc yêu cầu kỹ thuật để đội ngũ chuẩn bị phương án phù hợp ngay từ lần phản hồi đầu tiên.') }}</span>
                             </div>
                         </aside>
 
                         <article class="xd-contact-form-card">
-                            <h2>{{ app()->getLocale() === 'en' ? 'Send a request' : 'Gá»­i yÃªu cáº§u liÃªn há»‡' }}</h2>
+                            <h2>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.87c2af088eba47e9', 'Gửi yêu cầu liên hệ') }}</h2>
                             @if (session('contact_status'))
                                 <div class="xd-contact-alert">{{ session('contact_status') }}</div>
                             @endif
                             @if ($errors->any())
                                 <div class="xd-contact-errors">
-                                    {{ app()->getLocale() === 'en' ? 'Please check the form information.' : 'Vui lÃ²ng kiá»ƒm tra láº¡i thÃ´ng tin.' }}
+                                    {{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.296a08c028483e0d', 'Vui lòng kiểm tra lại thông tin.') }}
                                     <ul>
                                         @foreach ($errors->all() as $error)
                                             <li>{{ $error }}</li>
@@ -339,13 +339,13 @@
                             <form class="xd-contact-form" method="POST" action="{{ route('site.contact.submit') }}">
                                 @csrf
                                 <input type="hidden" name="source" value="contact">
-                                <input type="hidden" name="subject" value="{{ app()->getLocale() === 'en' ? 'Contact request from website' : 'YÃªu cáº§u liÃªn há»‡ tá»« website' }}">
+                                <input type="hidden" name="subject" value="{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.efade19d1cec2b6d', 'Yêu cầu liên hệ từ website') }}">
                                 <label class="xd-contact-field">
-                                    <span>{{ app()->getLocale() === 'en' ? 'Full name' : 'Há» tÃªn' }}</span>
+                                    <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.0aa2131688fe9560', 'Họ tên') }}</span>
                                     <input name="name" value="{{ old('name') }}" required autocomplete="name">
                                 </label>
                                 <label class="xd-contact-field">
-                                    <span>{{ app()->getLocale() === 'en' ? 'Phone number' : 'Sá»‘ Ä‘iá»‡n thoáº¡i' }}</span>
+                                    <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.051dc5b8bfcbebd3', 'Số điện thoại') }}</span>
                                     <input name="phone" value="{{ old('phone') }}" autocomplete="tel">
                                 </label>
                                 <label class="xd-contact-field">
@@ -353,10 +353,10 @@
                                     <input type="email" name="email" value="{{ old('email') }}" required autocomplete="email">
                                 </label>
                                 <label class="xd-contact-field">
-                                    <span>{{ app()->getLocale() === 'en' ? 'Message' : 'Ná»™i dung' }}</span>
+                                    <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.4da784274f11f7e5', 'Nội dung') }}</span>
                                     <textarea name="message" required>{{ old('message') }}</textarea>
                                 </label>
-                                <button class="xd-contact-submit" type="submit">{{ app()->getLocale() === 'en' ? 'Send request' : 'Gá»­i liÃªn há»‡' }}</button>
+                                <button class="xd-contact-submit" type="submit">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0314', app()->getLocale(), 'legacy_inline.fc4ed14bcef77494', 'Gửi liên hệ') }}</button>
                             </form>
                         </article>
                     </section>

@@ -15,7 +15,7 @@
         <div class="af15-why__grid">
             @foreach ($whyItems as $item)
                 <article>
-                    <span>{{ $item['icon'] ?? 'âœ¦' }}</span>
+                    <span>{{ $item['icon'] ?? '✦' }}</span>
                     <div>
                         <h3>{{ $item['title'] ?? $item['question'] ?? '' }}</h3>
                         <p>{{ $item['summary'] ?? $item['description'] ?? $item['answer'] ?? '' }}</p>

@@ -12,15 +12,15 @@
             $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
             $repairXdLabel = static function (string $label): string {
                 return strtr(trim($label), [
-                    'Trang chá»§' => 'Trang chủ',
+                    'Trang chủ' => 'Trang chủ',
                     'TRANG CHÁ»§' => 'TRANG CHỦ',
-                    'trang chá»§' => 'trang chủ',
-                    'Sáº£n pháº©m' => 'Sản phẩm',
+                    'trang chủ' => 'trang chủ',
+                    'Sản phẩm' => 'Sản phẩm',
                     'SÁº£N PHÁº©M' => 'SẢN PHẨM',
-                    'sáº£n pháº©m' => 'sản phẩm',
-                    'sÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'sản phẩm',
-                    'SÃ¡ÂºÂ£n phÃ¡ÂºÂ©m' => 'Sản phẩm',
-                    'TÃ i khoáº£n' => 'Tài khoản',
+                    'sản phẩm' => 'sản phẩm',
+                    'sản phẩm' => 'sản phẩm',
+                    'Sản phẩm' => 'Sản phẩm',
+                    'Tài khoản' => 'Tài khoản',
                 ]);
             };
             $normalizeNavItem = function (array $item) use (&$normalizeNavItem, $localizeMenuUrl, $repairXdLabel): array {
@@ -71,7 +71,7 @@
 
             if (! $hasHomeItem) {
                 $navItems->prepend([
-                    'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chủ',
+                    'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.4c23dc9bef7f79b4', 'Trang chủ'),
                     'href' => $homeUrl,
                     'target' => '_self',
                     'active' => request()->routeIs('site.home'),

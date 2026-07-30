@@ -4,11 +4,17 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsMedia;
 use App\Models\CmsPartner;
+use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PartnerIndexController
 {
-    public function __invoke(): JsonResponse
+    public function __construct(
+        private readonly AdminLocalizedContentList $localizedList,
+    ) {}
+
+    public function __invoke(Request $request): JsonResponse
     {
         $items = CmsPartner::query()
             ->orderBy('sort_order')
@@ -17,6 +23,11 @@ class PartnerIndexController
             ->map(fn (CmsPartner $partner): array => $this->serialize($partner))
             ->values()
             ->all();
+        $items = $this->localizedList->overlay(
+            $items,
+            'cms_partner',
+            $request->query('locale'),
+        );
 
         return response()->json([
             'data' => [

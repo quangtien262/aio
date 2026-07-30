@@ -10,6 +10,7 @@ use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
 use App\Models\CmsFeaturedCategory;
+use App\Models\CmsMedia;
 use App\Models\CmsSidePromo;
 use App\Models\Customer;
 use App\Models\CustomerFavorite;
@@ -29,6 +30,10 @@ use App\Support\FrontendLocalization;
 use App\Support\FrontendRouteUrl;
 use App\Support\BusinessContentTranslationService;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\Localization\CmsPageLocalization;
+use App\Support\Localization\LandingPageLocalization;
+use App\Support\Localization\LocaleContext;
+use App\Support\Localization\LocalizedContentRepository;
 use App\Support\OrderConfirmationSender;
 use App\Support\SiteContext;
 use App\Support\StorefrontCart;
@@ -56,12 +61,16 @@ class CmsSiteController
         private readonly StorefrontCart $storefrontCart,
         private readonly OrderConfirmationSender $orderConfirmationSender,
         private readonly LandingPageBuilder $landingPageBuilder,
+        private readonly CmsPageLocalization $cmsPageLocalization,
+        private readonly LocalizedContentRepository $localizedContent,
+        private readonly LocaleContext $localeContext,
+        private readonly LandingPageLocalization $landingLocalization,
     ) {
     }
 
     public function home(): View
     {
-        $siteProfile = $this->currentSiteProfile();
+        $siteProfile = $this->localizeSiteProfile($this->currentSiteProfile());
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $themeKey = (string) ($activeTheme['key'] ?? '');
@@ -72,6 +81,15 @@ class CmsSiteController
             $landingViewData = $landingPage
                 ? $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())
                 : [];
+            $landingTranslation = $landingPage?->data
+                ->filter(fn ($data): bool => $data->isPublishedTranslation())
+                ->firstWhere('locale', $this->currentLocale())
+                ?? $landingPage?->data
+                    ->filter(fn ($data): bool => $data->isPublishedTranslation())
+                    ->firstWhere('locale', FrontendLocalization::fallbackLocale());
+            $localizedSeo = $landingPage && $landingTranslation
+                ? $this->landingLocalization->seo($landingPage, $landingTranslation)
+                : [];
 
             return view($themeHomeView, array_merge([
                 'siteProfile' => $siteProfile,
@@ -79,6 +97,9 @@ class CmsSiteController
                 'menus' => $menus,
                 'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
                 'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
+                'canonicalUrl' => data_get($localizedSeo, 'canonical_url'),
+                'hreflangUrls' => data_get($localizedSeo, 'alternates', []),
+                'resolvedContentLocale' => data_get($localizedSeo, 'resolved_locale'),
             ], $landingViewData));
         }
 
@@ -106,15 +127,36 @@ class CmsSiteController
         $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
-        $page = CmsPage::query()->with('featuredMedia')->where('slug', $slug)->where('status', 'published')->firstOrFail();
+        $resolution = $this->cmsPageLocalization->resolvePublic(
+            $websiteKey,
+            $this->currentLocale(),
+            $slug,
+        );
 
-        return $this->renderContent('page', $page);
+        abort_if($resolution === null, 404);
+
+        if ($resolution->usedFallback || $resolution->redirectPath !== null) {
+            return redirect()->to(
+                FrontendRouteUrl::page(
+                    $resolution->translation->slug,
+                    $resolution->translation->locale,
+                ),
+                $resolution->usedFallback ? 302 : 301,
+            );
+        }
+
+        return $this->renderContent('page', $resolution->page, [
+            'localizedSeo' => $this->cmsPageLocalization->seo(
+                $resolution->page,
+                $resolution->translation,
+            ),
+        ]);
     }
 
-    public function landing(Request $request): View
+    public function landing(Request $request): View|RedirectResponse
     {
         $slug = (string) $request->route('slug');
-        $siteProfile = $this->currentSiteProfile();
+        $siteProfile = $this->localizeSiteProfile($this->currentSiteProfile());
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $themeKey = (string) ($activeTheme['key'] ?? '');
@@ -123,11 +165,37 @@ class CmsSiteController
         abort_if($themeHomeView === null, 404);
 
         $canPreviewDraft = auth('admin')->check() && $request->query('mod') === 'admin';
-        $landingPage = $this->landingPageBuilder->resolveBySlug($websiteKey, $slug, $themeKey, ! $canPreviewDraft);
+        $resolution = $canPreviewDraft
+            ? null
+            : $this->landingLocalization->resolvePublic(
+                $websiteKey,
+                $themeKey,
+                $this->currentLocale(),
+                $slug,
+            );
+        $landingPage = $canPreviewDraft
+            ? $this->landingPageBuilder->resolveBySlug($websiteKey, $slug, $themeKey, false)
+            : ($resolution['page'] ?? null);
 
         abort_if($landingPage === null || $landingPage->is_home, 404);
 
+        if (
+            ! $canPreviewDraft
+            && ($resolution['used_fallback'] || $resolution['redirect_to'] !== null)
+        ) {
+            return redirect()->route('site.landing.show', [
+                'locale' => $resolution['resolved_locale'],
+                'slug' => $resolution['translation']->slug,
+            ], $resolution['redirect_to'] !== null ? 301 : 302);
+        }
+
         $menus = $this->resolveMenus($websiteKey);
+        $localizedSeo = ! $canPreviewDraft
+            ? $this->landingLocalization->seo(
+                $landingPage,
+                $resolution['translation'],
+            )
+            : [];
 
         return view($themeHomeView, array_merge([
             'siteProfile' => $siteProfile,
@@ -135,6 +203,9 @@ class CmsSiteController
             'menus' => $menus,
             'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
+            'canonicalUrl' => data_get($localizedSeo, 'canonical_url'),
+            'hreflangUrls' => data_get($localizedSeo, 'alternates', []),
+            'resolvedContentLocale' => data_get($localizedSeo, 'resolved_locale'),
         ], $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())));
     }
 
@@ -169,7 +240,7 @@ class CmsSiteController
             ->with('cart_success', 'Đã chuyển preset demo storefront.');
     }
 
-    public function postsIndex(Request $request): View
+    public function postsIndex(Request $request): View|RedirectResponse
     {
         $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
@@ -177,6 +248,28 @@ class CmsSiteController
         $menus = $this->resolveMenus($websiteKey);
         $search = trim((string) $request->query('q', ''));
         $categorySlug = trim((string) ($request->route('slug') ?? $request->query('category', '')));
+        $categoryResolution = $categorySlug !== ''
+            ? $this->localizedContent->resolvePublishedBySlug(
+                'cms_category',
+                $websiteKey,
+                $this->currentLocale(),
+                $categorySlug,
+            )
+            : null;
+
+        if ($categorySlug !== '') {
+            abort_if($categoryResolution === null, 404);
+
+            if ($categoryResolution['used_fallback'] || $categoryResolution['redirect_to'] !== null) {
+                return redirect()->to(
+                    FrontendRouteUrl::blogCategory(
+                        $categoryResolution['model']->slug,
+                        $categoryResolution['resolved_locale'],
+                    ),
+                    $categoryResolution['redirect_to'] !== null ? 301 : 302,
+                );
+            }
+        }
 
         $postsQuery = CmsPost::query()->with(['category', 'featuredMedia'])->where('status', 'published');
         $this->applyWebsiteScope($postsQuery, $websiteKey);
@@ -189,10 +282,10 @@ class CmsSiteController
             });
         }
 
-        if ($categorySlug !== '') {
-            $postsQuery->whereHas('category', function (EloquentBuilder $query) use ($categorySlug, $websiteKey): void {
+        if ($categoryResolution !== null) {
+            $postsQuery->whereHas('category', function (EloquentBuilder $query) use ($categoryResolution, $websiteKey): void {
                 $this->applyWebsiteScope($query, $websiteKey);
-                $query->where('slug', $categorySlug);
+                $query->whereKey($categoryResolution['model']->getKey());
             });
         }
 
@@ -207,13 +300,17 @@ class CmsSiteController
         $this->applyWebsiteScope($postCategories, $websiteKey);
 
         $postCategories = $postCategories->get();
-        $postCategories = $postCategories->map(function (CmsCategory $category) use ($websiteKey): CmsCategory {
-            $localized = clone $category;
-            $localized->name = $this->contentText($websiteKey, sprintf('cms_category.%d.name', $category->id), $category->name);
-
-            return $localized;
-        });
-        $currentPostCategory = $categorySlug !== '' ? $postCategories->firstWhere('slug', $categorySlug) : null;
+        $postCategories = $postCategories->map(
+            fn (CmsCategory $category): CmsCategory => $this->localizedContent->localize(
+                $category,
+                'cms_category',
+                $this->currentLocale(),
+                $websiteKey,
+            ),
+        );
+        $currentPostCategory = $categoryResolution !== null
+            ? $postCategories->firstWhere('id', $categoryResolution['model']->getKey())
+            : null;
 
 
         return $this->renderListing('posts', $currentPostCategory?->name ?? 'Tin tức', $currentPostCategory?->description ?? 'Danh sách bài viết đã xuất bản.', $posts, [
@@ -228,16 +325,42 @@ class CmsSiteController
         ]);
     }
 
-    public function post(Request $request): View
+    public function post(Request $request): View|RedirectResponse
     {
         $slug = (string) $request->route('slug');
+        $siteProfile = $this->currentSiteProfile();
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $resolution = $this->localizedContent->resolvePublishedBySlug(
+            'cms_post',
+            $websiteKey,
+            $this->currentLocale(),
+            $slug,
+        );
 
-        $post = CmsPost::query()->with(['category', 'featuredMedia'])->where('slug', $slug)->where('status', 'published')->firstOrFail();
+        abort_if($resolution === null, 404);
 
-        return $this->renderContent('post', $post);
+        /** @var CmsPost $post */
+        $post = $resolution['model'];
+        $post->loadMissing(['category', 'featuredMedia']);
+
+        if ($resolution['used_fallback'] || $resolution['redirect_to'] !== null) {
+            return redirect()->to(
+                FrontendRouteUrl::post($post->slug, $resolution['resolved_locale']),
+                $resolution['redirect_to'] !== null ? 301 : 302,
+            );
+        }
+
+        return $this->renderContent('post', $post, [
+            'siteProfile' => $siteProfile,
+            'localizedSeo' => $this->localizedContentSeo(
+                'cms_post',
+                $post,
+                $resolution['resolved_locale'],
+            ),
+        ]);
     }
 
-    public function servicesIndex(Request $request): View
+    public function servicesIndex(Request $request): View|RedirectResponse
     {
         $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
@@ -245,6 +368,28 @@ class CmsSiteController
         $menus = $this->resolveMenus($websiteKey);
         $search = trim((string) $request->query('q', ''));
         $categorySlug = trim((string) ($request->route('slug') ?? $request->query('category', '')));
+        $categoryResolution = $categorySlug !== ''
+            ? $this->localizedContent->resolvePublishedBySlug(
+                'cms_service_category',
+                $websiteKey,
+                $this->currentLocale(),
+                $categorySlug,
+            )
+            : null;
+
+        if ($categorySlug !== '') {
+            abort_if($categoryResolution === null, 404);
+
+            if ($categoryResolution['used_fallback'] || $categoryResolution['redirect_to'] !== null) {
+                return redirect()->to(
+                    FrontendRouteUrl::serviceCategory(
+                        $categoryResolution['model']->slug,
+                        $categoryResolution['resolved_locale'],
+                    ),
+                    $categoryResolution['redirect_to'] !== null ? 301 : 302,
+                );
+            }
+        }
 
         $servicesQuery = CmsService::query()
             ->with(['category', 'featuredImage'])
@@ -262,9 +407,9 @@ class CmsSiteController
             });
         }
 
-        if ($categorySlug !== '') {
-            $servicesQuery->whereHas('category', function (EloquentBuilder $query) use ($categorySlug): void {
-                $query->where('slug', $categorySlug);
+        if ($categoryResolution !== null) {
+            $servicesQuery->whereHas('category', function (EloquentBuilder $query) use ($categoryResolution): void {
+                $query->whereKey($categoryResolution['model']->getKey());
             });
         }
 
@@ -290,15 +435,19 @@ class CmsSiteController
         $services = $servicesQuery->paginate(12)->withQueryString();
         $currentServiceCategory = null;
 
-        if ($categorySlug !== '') {
-            $categoryQuery = CmsServiceCategory::query()->where('slug', $categorySlug);
+        if ($categoryResolution !== null) {
+            $categoryQuery = CmsServiceCategory::query()->whereKey($categoryResolution['model']->getKey());
             $this->applyWebsiteScope($categoryQuery, $websiteKey);
             $currentServiceCategory = $categoryQuery->first();
 
             if ($currentServiceCategory !== null) {
-                $currentServiceCategory = clone $currentServiceCategory;
-                $currentServiceCategory->name = $this->contentText($websiteKey, sprintf('cms_service_category.%d.name', $currentServiceCategory->id), $currentServiceCategory->name);
-                $currentServiceCategory->description = $this->contentText($websiteKey, sprintf('cms_service_category.%d.description', $currentServiceCategory->id), $currentServiceCategory->description);
+                /** @var CmsServiceCategory $currentServiceCategory */
+                $currentServiceCategory = $this->localizedContent->localize(
+                    $currentServiceCategory,
+                    'cms_service_category',
+                    $this->currentLocale(),
+                    $websiteKey,
+                );
             }
         }
 
@@ -313,26 +462,43 @@ class CmsSiteController
         ]);
     }
 
-    public function service(Request $request): View
+    public function service(Request $request): View|RedirectResponse
     {
         $slug = (string) $request->route('slug');
         $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
 
-        $query = CmsService::query()
-            ->with(['category', 'images', 'featuredImage'])
-            ->where('slug', $slug)
-            ->where('status', 'published');
-        $this->applyWebsiteScope($query, $websiteKey);
+        $resolution = $this->localizedContent->resolvePublishedBySlug(
+            'cms_service',
+            $websiteKey,
+            $this->currentLocale(),
+            $slug,
+        );
 
-        $service = $query->firstOrFail();
+        abort_if($resolution === null, 404);
+
+        /** @var CmsService $service */
+        $service = $resolution['model'];
+        $service->loadMissing(['category', 'images', 'featuredImage']);
+
+        if ($resolution['used_fallback'] || $resolution['redirect_to'] !== null) {
+            return redirect()->to(
+                FrontendRouteUrl::service($service->slug, $resolution['resolved_locale']),
+                $resolution['redirect_to'] !== null ? 301 : 302,
+            );
+        }
 
         return $this->renderContent('service', $service, [
             'siteProfile' => $siteProfile,
+            'localizedSeo' => $this->localizedContentSeo(
+                'cms_service',
+                $service,
+                $resolution['resolved_locale'],
+            ),
         ]);
     }
 
-    public function projectsIndex(Request $request): View
+    public function projectsIndex(Request $request): View|RedirectResponse
     {
         $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
@@ -340,6 +506,28 @@ class CmsSiteController
         $menus = $this->resolveMenus($websiteKey);
         $search = trim((string) $request->query('q', ''));
         $categorySlug = trim((string) ($request->route('slug') ?? $request->query('category', '')));
+        $categoryResolution = $categorySlug !== ''
+            ? $this->localizedContent->resolvePublishedBySlug(
+                'cms_project_category',
+                $websiteKey,
+                $this->currentLocale(),
+                $categorySlug,
+            )
+            : null;
+
+        if ($categorySlug !== '') {
+            abort_if($categoryResolution === null, 404);
+
+            if ($categoryResolution['used_fallback'] || $categoryResolution['redirect_to'] !== null) {
+                return redirect()->to(
+                    FrontendRouteUrl::projectCategory(
+                        $categoryResolution['model']->slug,
+                        $categoryResolution['resolved_locale'],
+                    ),
+                    $categoryResolution['redirect_to'] !== null ? 301 : 302,
+                );
+            }
+        }
 
         $projectsQuery = CmsProject::query()
             ->with(['category', 'images', 'featuredImage'])
@@ -357,24 +545,28 @@ class CmsSiteController
             });
         }
 
-        if ($categorySlug !== '') {
-            $projectsQuery->whereHas('category', function (EloquentBuilder $query) use ($categorySlug): void {
-                $query->where('slug', $categorySlug);
+        if ($categoryResolution !== null) {
+            $projectsQuery->whereHas('category', function (EloquentBuilder $query) use ($categoryResolution): void {
+                $query->whereKey($categoryResolution['model']->getKey());
             });
         }
 
         $projects = $projectsQuery->paginate(12)->withQueryString();
         $currentProjectCategory = null;
 
-        if ($categorySlug !== '') {
-            $categoryQuery = CmsProjectCategory::query()->where('slug', $categorySlug);
+        if ($categoryResolution !== null) {
+            $categoryQuery = CmsProjectCategory::query()->whereKey($categoryResolution['model']->getKey());
             $this->applyWebsiteScope($categoryQuery, $websiteKey);
             $currentProjectCategory = $categoryQuery->first();
 
             if ($currentProjectCategory !== null) {
-                $currentProjectCategory = clone $currentProjectCategory;
-                $currentProjectCategory->name = $this->contentText($websiteKey, sprintf('cms_project_category.%d.name', $currentProjectCategory->id), $currentProjectCategory->name);
-                $currentProjectCategory->description = $this->contentText($websiteKey, sprintf('cms_project_category.%d.description', $currentProjectCategory->id), $currentProjectCategory->description);
+                /** @var CmsProjectCategory $currentProjectCategory */
+                $currentProjectCategory = $this->localizedContent->localize(
+                    $currentProjectCategory,
+                    'cms_project_category',
+                    $this->currentLocale(),
+                    $websiteKey,
+                );
             }
         }
 
@@ -389,19 +581,31 @@ class CmsSiteController
         ]);
     }
 
-    public function project(Request $request): View
+    public function project(Request $request): View|RedirectResponse
     {
         $slug = (string) $request->route('slug');
         $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
 
-        $query = CmsProject::query()
-            ->with(['category', 'images', 'featuredImage'])
-            ->where('slug', $slug)
-            ->where('status', 'published');
-        $this->applyWebsiteScope($query, $websiteKey);
+        $resolution = $this->localizedContent->resolvePublishedBySlug(
+            'cms_project',
+            $websiteKey,
+            $this->currentLocale(),
+            $slug,
+        );
 
-        $project = $query->firstOrFail();
+        abort_if($resolution === null, 404);
+
+        /** @var CmsProject $project */
+        $project = $resolution['model'];
+        $project->loadMissing(['category', 'images', 'featuredImage']);
+
+        if ($resolution['used_fallback'] || $resolution['redirect_to'] !== null) {
+            return redirect()->to(
+                FrontendRouteUrl::project($project->slug, $resolution['resolved_locale']),
+                $resolution['redirect_to'] !== null ? 301 : 302,
+            );
+        }
 
         $recentProjectsQuery = CmsProject::query()
             ->with(['category', 'featuredImage'])
@@ -418,6 +622,11 @@ class CmsSiteController
         return $this->renderContent('project', $project, [
             'siteProfile' => $siteProfile,
             'recentProjects' => $recentProjects,
+            'localizedSeo' => $this->localizedContentSeo(
+                'cms_project',
+                $project,
+                $resolution['resolved_locale'],
+            ),
         ]);
     }
 
@@ -548,7 +757,7 @@ class CmsSiteController
             ->with('contact_status', 'Đã gửi yêu cầu liên hệ. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.');
     }
 
-    public function category(Request $request): View
+    public function category(Request $request): View|RedirectResponse
     {
         $slug = (string) $request->route('slug');
 
@@ -557,13 +766,32 @@ class CmsSiteController
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $menus = $this->resolveMenus($websiteKey);
 
+        $resolution = $this->localizedContent->resolvePublishedBySlug(
+            'catalog_category',
+            $websiteKey,
+            $this->currentLocale(),
+            $slug,
+        );
+
+        abort_if($resolution === null, 404);
+
+        /** @var CatalogCategory $resolvedCategory */
+        $resolvedCategory = $resolution['model'];
+
+        if ($resolution['used_fallback'] || $resolution['redirect_to'] !== null) {
+            return redirect()->to(
+                FrontendRouteUrl::category($resolvedCategory->slug, $resolution['resolved_locale']),
+                $resolution['redirect_to'] !== null ? 301 : 302,
+            );
+        }
+
         $categoryQuery = CatalogCategory::query()->with(['parent', 'children' => function ($query) use ($websiteKey): void {
             $this->applyWebsiteScope($query, $websiteKey);
             $query->where('is_active', true)->orderBy('sort_order')->orderBy('name');
         }]);
         $this->applyWebsiteScope($categoryQuery, $websiteKey);
 
-        $category = $categoryQuery->where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $category = $categoryQuery->whereKey($resolvedCategory->getKey())->where('is_active', true)->firstOrFail();
         $sidebarRootCategory = $this->resolveTopAncestorCategory($category, $websiteKey);
         $sidebarCategories = $this->resolveCategorySidebarItems($sidebarRootCategory, $category, $websiteKey);
         $category = $this->localizeCategoryModel($category, $websiteKey);
@@ -718,13 +946,41 @@ class CmsSiteController
         return $buildTree(null);
     }
 
-    public function product(Request $request): View
+    public function product(Request $request): View|RedirectResponse
     {
         $slug = (string) $request->route('slug');
 
-        $product = $this->resolveProductPreviewModel($slug, false);
+        $siteProfile = $this->currentSiteProfile();
+        $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $resolution = $this->localizedContent->resolvePublishedBySlug(
+            'catalog_product',
+            $websiteKey,
+            $this->currentLocale(),
+            $slug,
+        );
 
-        return $this->renderProductDetailView($product, false);
+        abort_if($resolution === null, 404);
+
+        /** @var CatalogProduct $product */
+        $product = $resolution['model'];
+        $product->loadMissing(['category.parent', 'images']);
+
+        if ($resolution['used_fallback'] || $resolution['redirect_to'] !== null) {
+            return redirect()->to(
+                FrontendRouteUrl::product($product->slug, $resolution['resolved_locale']),
+                $resolution['redirect_to'] !== null ? 301 : 302,
+            );
+        }
+
+        return $this->renderProductDetailView(
+            $product,
+            false,
+            $this->localizedContentSeo(
+                'catalog_product',
+                $product,
+                $resolution['resolved_locale'],
+            ),
+        );
     }
 
     public function previewProduct(Request $request): View
@@ -738,7 +994,11 @@ class CmsSiteController
         return $this->renderProductDetailView($product, true);
     }
 
-    private function renderProductDetailView(CatalogProduct $product, bool $isPreview): View
+    private function renderProductDetailView(
+        CatalogProduct $product,
+        bool $isPreview,
+        array $localizedSeo = [],
+    ): View
     {
         $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
@@ -773,6 +1033,9 @@ class CmsSiteController
             'usageLocationLines' => $this->splitTextLines($product->usage_location),
             'detailParagraphs' => $this->splitTextParagraphs($product->detail_content),
             'relatedProducts' => $relatedProducts->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, (string) ($activeTheme['key'] ?? 'TH0001')))->all(),
+            'canonicalUrl' => data_get($localizedSeo, 'canonical_url'),
+            'hreflangUrls' => data_get($localizedSeo, 'alternates', []),
+            'resolvedContentLocale' => data_get($localizedSeo, 'resolved_locale'),
             'isFavorite' => in_array($product->id, $favoriteProductIds, true),
             'isPreview' => $isPreview,
         ]);
@@ -1175,9 +1438,21 @@ class CmsSiteController
     {
         abort_unless(in_array('cms.publish', $request->user('admin')?->permissions() ?? [], true), 403);
 
-        $page = CmsPage::query()->findOrFail((string) $request->route('page'));
+        $page = CmsPage::query()
+            ->with(['featuredMedia', 'translations'])
+            ->findOrFail((string) $request->route('page'));
+        $resolution = $this->cmsPageLocalization->resolvePreview(
+            $page,
+            (string) $request->route('locale'),
+        );
 
-        return $this->renderContent('page', $page->load('featuredMedia'), ['isPreview' => true]);
+        return $this->renderContent('page', $resolution->page, [
+            'isPreview' => true,
+            'localizedSeo' => $this->cmsPageLocalization->seo(
+                $resolution->page,
+                $resolution->translation,
+            ),
+        ]);
     }
 
     public function previewPost(Request $request): View
@@ -1197,8 +1472,22 @@ class CmsSiteController
         $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
         $viewName = $this->resolveThemeCmsView($activeTheme, $contentType) ?? 'site-cms';
 
-        if ($entry instanceof CmsPage) {
+        if (
+            $entry instanceof CmsPage
+            && ! $entry->relationLoaded('currentTranslation')
+        ) {
             $entry = $this->localizePageModel($entry, $websiteKey);
+        }
+
+        if (
+            $entry instanceof CmsPage
+            && $entry->relationLoaded('featuredMedia')
+            && $entry->featuredMedia
+        ) {
+            $entry->setRelation(
+                'featuredMedia',
+                $this->localizeMediaModel($entry->featuredMedia, $websiteKey),
+            );
         }
 
         if ($entry instanceof CmsPost) {
@@ -1238,6 +1527,9 @@ class CmsSiteController
             'pageTitle' => $entry->meta_title ?: $entry->title,
             'pageDescription' => $entry->meta_description ?: ($entry->excerpt ?? null),
             'pageKeywords' => $entry->meta_keywords ?? null,
+            'canonicalUrl' => data_get($extra, 'localizedSeo.canonical_url'),
+            'hreflangUrls' => data_get($extra, 'localizedSeo.alternates', []),
+            'resolvedContentLocale' => data_get($extra, 'localizedSeo.resolved_locale'),
         ], $extra));
     }
 
@@ -1301,7 +1593,23 @@ class CmsSiteController
 
         return $query->get()
             ->groupBy('location')
-            ->map(fn (Collection $items): array => $items->first()?->items ?? [])
+            ->map(function (Collection $items) use ($websiteKey): array {
+                $menu = $items->first();
+
+                if (! $menu instanceof CmsMenu) {
+                    return [];
+                }
+
+                /** @var CmsMenu $localized */
+                $localized = $this->localizedContent->localize(
+                    $menu,
+                    'cms_menu',
+                    $this->currentLocale(),
+                    $websiteKey,
+                );
+
+                return $localized->items ?? [];
+            })
             ->all();
     }
 
@@ -2829,6 +3137,63 @@ class CmsSiteController
         return app()->getLocale();
     }
 
+    /**
+     * @return array{canonical_url: string, alternates: array<string, string>, resolved_locale: string}
+     */
+    private function localizedContentSeo(
+        string $resourceType,
+        object $model,
+        string $resolvedLocale,
+    ): array {
+        $websiteKey = (string) ($model->website_key ?? self::DEFAULT_WEBSITE_KEY);
+        $alternates = $this->localizedContent
+            ->publicTranslations($resourceType, (string) $model->getKey(), $websiteKey)
+            ->filter(fn ($translation): bool => filled($translation->slug))
+            ->mapWithKeys(fn ($translation): array => [
+                $translation->locale => $this->localizedContentUrl(
+                    $resourceType,
+                    (string) $translation->slug,
+                    (string) $translation->locale,
+                ),
+            ])
+            ->all();
+        $currentSlug = (string) ($model->slug ?? '');
+        $canonical = $this->localizedContentUrl(
+            $resourceType,
+            $currentSlug,
+            $resolvedLocale,
+        );
+        $defaultLocale = $this->localeContext->defaultLocale($websiteKey);
+
+        if (isset($alternates[$defaultLocale])) {
+            $alternates['x-default'] = $alternates[$defaultLocale];
+        }
+
+        return [
+            'canonical_url' => $canonical,
+            'alternates' => $alternates,
+            'resolved_locale' => $resolvedLocale,
+        ];
+    }
+
+    private function localizedContentUrl(
+        string $resourceType,
+        string $slug,
+        string $locale,
+    ): string {
+        return match ($resourceType) {
+            'cms_post' => FrontendRouteUrl::post($slug, $locale),
+            'cms_service' => FrontendRouteUrl::service($slug, $locale),
+            'cms_project' => FrontendRouteUrl::project($slug, $locale),
+            'catalog_product' => FrontendRouteUrl::product($slug, $locale),
+            'catalog_category' => FrontendRouteUrl::category($slug, $locale),
+            'cms_category' => FrontendRouteUrl::blogCategory($slug, $locale),
+            'cms_service_category' => FrontendRouteUrl::serviceCategory($slug, $locale),
+            'cms_project_category' => FrontendRouteUrl::projectCategory($slug, $locale),
+            default => FrontendRouteUrl::home($locale),
+        };
+    }
+
     private function themeText(string $key, string $default, ?string $themeKey = null): string
     {
         return $this->themeTranslationService->bladeText($themeKey ?: 'TH0001', $this->currentLocale(), $key, $default);
@@ -2846,10 +3211,16 @@ class CmsSiteController
         }
 
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
-        $localized = clone $siteProfile;
-        $localized->site_name = $this->contentText($websiteKey, 'site_profile.site_name', $siteProfile->site_name);
+        /** @var SiteProfile $localized */
+        $localized = $this->localizedContent->localize(
+            $siteProfile,
+            'site_profile',
+            $this->currentLocale(),
+            $websiteKey,
+        );
+        $localized->site_name = $this->contentText($websiteKey, 'site_profile.site_name', $localized->site_name);
 
-        $branding = $siteProfile->branding ?? [];
+        $branding = $localized->branding ?? [];
         if (! $this->isDemoPresetBranding($branding)) {
             foreach (['company_name', 'slogan', 'support_location'] as $field) {
                 if (filled($branding[$field] ?? null)) {
@@ -2865,9 +3236,13 @@ class CmsSiteController
 
     private function localizeCategoryModel(CatalogCategory $category, string $websiteKey): CatalogCategory
     {
-        $localized = clone $category;
-        $localized->name = $this->contentText($websiteKey, sprintf('catalog_category.%d.name', $category->id), $category->name);
-        $localized->description = $this->contentText($websiteKey, sprintf('catalog_category.%d.description', $category->id), $category->description);
+        /** @var CatalogCategory $localized */
+        $localized = $this->localizedContent->localize(
+            $category,
+            'catalog_category',
+            $this->currentLocale(),
+            $websiteKey,
+        );
 
         if ($category->relationLoaded('parent') && $category->parent) {
             $localized->setRelation('parent', $this->localizeCategoryModel($category->parent, $websiteKey));
@@ -2887,13 +3262,13 @@ class CmsSiteController
 
     private function localizeProductModel(CatalogProduct $product, string $websiteKey): CatalogProduct
     {
-        $localized = clone $product;
-        $localized->name = $this->contentText($websiteKey, sprintf('catalog_product.%d.name', $product->id), $product->name);
-        $localized->short_description = $this->contentText($websiteKey, sprintf('catalog_product.%d.short_description', $product->id), $product->short_description);
-        $localized->detail_content = $this->contentText($websiteKey, sprintf('catalog_product.%d.detail_content', $product->id), $product->detail_content);
-        $localized->highlights = $this->contentText($websiteKey, sprintf('catalog_product.%d.highlights', $product->id), $product->highlights);
-        $localized->usage_terms = $this->contentText($websiteKey, sprintf('catalog_product.%d.usage_terms', $product->id), $product->usage_terms);
-        $localized->usage_location = $this->contentText($websiteKey, sprintf('catalog_product.%d.usage_location', $product->id), $product->usage_location);
+        /** @var CatalogProduct $localized */
+        $localized = $this->localizedContent->localize(
+            $product,
+            'catalog_product',
+            $this->currentLocale(),
+            $websiteKey,
+        );
 
         if ($product->relationLoaded('category') && $product->category) {
             $localized->setRelation('category', $this->localizeCategoryModel($product->category, $websiteKey));
@@ -2916,35 +3291,59 @@ class CmsSiteController
 
     private function localizePostModel(CmsPost $post, string $websiteKey): CmsPost
     {
-        $localized = clone $post;
-        $localized->title = $this->contentText($websiteKey, sprintf('cms_post.%d.title', $post->id), $post->title);
-        $localized->excerpt = $this->contentText($websiteKey, sprintf('cms_post.%d.excerpt', $post->id), $post->excerpt);
-        $localized->body = $this->contentText($websiteKey, sprintf('cms_post.%d.body', $post->id), $post->body);
-        $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_post.%d.meta_title', $post->id), $post->meta_title);
-        $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_post.%d.meta_description', $post->id), $post->meta_description);
-        $localized->meta_keywords = $this->contentText($websiteKey, sprintf('cms_post.%d.meta_keywords', $post->id), $post->meta_keywords);
+        /** @var CmsPost $localized */
+        $localized = $this->localizedContent->localize(
+            $post,
+            'cms_post',
+            $this->currentLocale(),
+            $websiteKey,
+        );
 
         if ($post->relationLoaded('category') && $post->category) {
-            $localizedCategory = clone $post->category;
-            $localizedCategory->name = $this->contentText($websiteKey, sprintf('cms_category.%d.name', $post->category->id), $post->category->name);
-            $localizedCategory->description = $this->contentText($websiteKey, sprintf('cms_category.%d.description', $post->category->id), $post->category->description);
-            $localizedCategory->meta_title = $this->contentText($websiteKey, sprintf('cms_category.%d.meta_title', $post->category->id), $post->category->meta_title);
-            $localizedCategory->meta_description = $this->contentText($websiteKey, sprintf('cms_category.%d.meta_description', $post->category->id), $post->category->meta_description);
+            /** @var CmsCategory $localizedCategory */
+            $localizedCategory = $this->localizedContent->localize(
+                $post->category,
+                'cms_category',
+                $this->currentLocale(),
+                $websiteKey,
+            );
             $localized->setRelation('category', $localizedCategory);
         }
+
+        if ($post->relationLoaded('featuredMedia') && $post->featuredMedia) {
+            $localized->setRelation(
+                'featuredMedia',
+                $this->localizeMediaModel($post->featuredMedia, $websiteKey),
+            );
+        }
+
+        return $localized;
+    }
+
+    private function localizeMediaModel(
+        CmsMedia $media,
+        string $websiteKey,
+    ): CmsMedia {
+        /** @var CmsMedia $localized */
+        $localized = $this->localizedContent->localize(
+            $media,
+            'cms_media',
+            $this->currentLocale(),
+            $websiteKey,
+        );
 
         return $localized;
     }
 
     private function localizeServiceModel(CmsService $service, string $websiteKey): CmsService
     {
-        $localized = clone $service;
-        $localized->title = $this->contentText($websiteKey, sprintf('cms_service.%d.title', $service->id), $service->title);
-        $localized->summary = $this->contentText($websiteKey, sprintf('cms_service.%d.summary', $service->id), $service->summary);
-        $localized->content = $this->contentText($websiteKey, sprintf('cms_service.%d.content', $service->id), $service->content);
-        $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_title', $service->id), $service->meta_title);
-        $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_description', $service->id), $service->meta_description);
-        $localized->meta_keywords = $this->contentText($websiteKey, sprintf('cms_service.%d.meta_keywords', $service->id), $service->meta_keywords);
+        /** @var CmsService $localized */
+        $localized = $this->localizedContent->localize(
+            $service,
+            'cms_service',
+            $this->currentLocale(),
+            $websiteKey,
+        );
         $localized->excerpt = $localized->summary;
         $localized->body = $localized->content;
 
@@ -2953,19 +3352,24 @@ class CmsSiteController
 
     private function localizeProjectModel(CmsProject $project, string $websiteKey): CmsProject
     {
-        $localized = clone $project;
-        $localized->title = $this->contentText($websiteKey, sprintf('cms_project.%d.title', $project->id), $project->title);
-        $localized->summary = $this->contentText($websiteKey, sprintf('cms_project.%d.summary', $project->id), $project->summary);
-        $localized->content = $this->contentText($websiteKey, sprintf('cms_project.%d.content', $project->id), $project->content);
-        $localized->meta_title = $this->contentText($websiteKey, sprintf('cms_project.%d.meta_title', $project->id), $project->meta_title);
-        $localized->meta_description = $this->contentText($websiteKey, sprintf('cms_project.%d.meta_description', $project->id), $project->meta_description);
+        /** @var CmsProject $localized */
+        $localized = $this->localizedContent->localize(
+            $project,
+            'cms_project',
+            $this->currentLocale(),
+            $websiteKey,
+        );
         $localized->excerpt = $localized->summary;
         $localized->body = $localized->content;
 
         if ($project->relationLoaded('category') && $project->category) {
-            $localizedCategory = clone $project->category;
-            $localizedCategory->name = $this->contentText($websiteKey, sprintf('cms_project_category.%d.name', $project->category->id), $project->category->name);
-            $localizedCategory->description = $this->contentText($websiteKey, sprintf('cms_project_category.%d.description', $project->category->id), $project->category->description);
+            /** @var CmsProjectCategory $localizedCategory */
+            $localizedCategory = $this->localizedContent->localize(
+                $project->category,
+                'cms_project_category',
+                $this->currentLocale(),
+                $websiteKey,
+            );
             $localized->setRelation('category', $localizedCategory);
         }
 
@@ -3015,10 +3419,19 @@ class CmsSiteController
     {
         $siteProfile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
-        $query = CatalogProduct::query()->where('slug', $slug)->where('is_active', true);
-        $this->applyWebsiteScope($query, $websiteKey);
+        $resolution = $this->localizedContent->resolvePublishedBySlug(
+            'catalog_product',
+            $websiteKey,
+            $this->currentLocale(),
+            $slug,
+        );
 
-        return $query->firstOrFail();
+        abort_if($resolution === null, 404);
+
+        /** @var CatalogProduct $product */
+        $product = $resolution['model'];
+
+        return $product;
     }
 
     private function resolveProductPreviewModel(string $identifier, bool $allowInactive): CatalogProduct

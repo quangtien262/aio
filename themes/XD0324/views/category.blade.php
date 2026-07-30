@@ -6,19 +6,19 @@
     $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342'));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $email = trim((string) ($branding['support_email'] ?? 'admin@htvietnam.vn'));
-    $address = trim((string) ($branding['support_location'] ?? '196 NguyÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¦n Ãƒâ€žÃ‚ÂÃƒÆ’Ã‚Â¬nh ChiÃƒÂ¡Ã‚Â»Ã†â€™u, QuÃƒÂ¡Ã‚ÂºÃ‚Â­n 3, TP.HCM'));
+    $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM'));
     $categoryDescription = trim((string) ($category->description ?? ''));
     $productItems = collect($products ?? []);
     $childCategoryItems = collect($childCategories ?? []);
     $sidebarItems = collect($catalogTreeCategories ?? $sidebarCategories ?? []);
-    $formatCurrency = fn ($value) => $value === null || (float) $value <= 0 ? 'LiÃƒÆ’Ã‚Âªn hÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¡' : number_format((float) $value, 0, ',', '.').'Ãƒâ€žÃ¢â‚¬Ëœ';
+    $formatCurrency = fn ($value) => $value === null || (float) $value <= 0 ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
     $renderCategoryTree = function ($items, int $level = 0) use (&$renderCategoryTree): string {
         return collect($items)->map(function (array $item) use (&$renderCategoryTree, $level): string {
             $children = collect($item['children'] ?? []);
             $classes = trim('xd-side-link level-'.$level.' '.(($item['active'] ?? false) ? 'is-active' : '').' '.(($item['current'] ?? false) ? 'is-current' : ''));
             $html = '<div class="xd-side-node level-'.$level.'">';
             $html .= '<a class="'.e($classes).'" href="'.e((string) ($item['url'] ?? '#')).'">';
-            $html .= '<span>'.e((string) ($item['label'] ?? $item['name'] ?? 'Danh mÃƒÂ¡Ã‚Â»Ã‚Â¥c')).'</span>';
+            $html .= '<span>'.e((string) ($item['label'] ?? $item['name'] ?? 'Danh mục')).'</span>';
             $html .= '<small>'.(int) ($item['count'] ?? 0).'</small>';
             $html .= '</a>';
 
@@ -56,9 +56,9 @@
     $homeUrl = route('site.home');
     $aboutUrl = route('site.pages.show', ['slug' => 'gioi-thieu']);
     $contactUrl = route('site.contact');
-    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chÃƒÂ¡Ã‚Â»Ã‚Â§', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
+    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
         $navItems->prepend([
-            'label' => app()->getLocale() === 'en' ? 'Home' : 'Trang chÃƒÂ¡Ã‚Â»Ã‚Â§',
+            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0324', app()->getLocale(), 'legacy_inline.d3408b155a0f7fa3', 'Trang chủ'),
             'href' => $homeUrl,
             'target' => '_self',
             'active' => request()->routeIs('site.home'),
@@ -67,7 +67,7 @@
     }
 
     $hasProductItem = $navItems->contains(function (array $item): bool {
-        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m', 'san pham', 'products', 'product'], true);
+        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
     });
 
     if (false && ! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
@@ -89,7 +89,7 @@
 
         if ($productCategories->isNotEmpty()) {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0324', app()->getLocale(), 'legacy_inline.1abb28f7d59c7849', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
@@ -116,7 +116,7 @@
                     ->all(),
             ];
 
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chÃƒÂ¡Ã‚Â»Ã‚Â§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);
@@ -134,7 +134,7 @@
                 ->map(function (array $item) use ($productNavigationItems): array {
                     $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
 
-                    if (in_array($label, ['sÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â£n phÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â©m', 'sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
+                    if (in_array($label, ['sản phẩm', 'sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
                         $item['children'] = $productNavigationItems->all();
                     }
 
@@ -143,14 +143,14 @@
                 ->values();
         } else {
             $productMenuItem = [
-                'label' => app()->getLocale() === 'en' ? 'Products' : 'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m',
+                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0324', app()->getLocale(), 'legacy_inline.1abb28f7d59c7849', 'Sản phẩm'),
                 'href' => route('site.catalog.search'),
                 'target' => '_self',
                 'active' => request()->routeIs('site.catalog.*'),
                 'children' => $productNavigationItems->all(),
             ];
 
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚Â»Ãƒâ€šÃ‚Â§', 'trang chÃƒÂ¡Ã‚Â»Ã‚Â§', 'home'], true));
+            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'trang chủ', 'home'], true));
             $navArray = $navItems->values()->all();
             array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
             $navItems = collect($navArray);
@@ -238,7 +238,7 @@
             <section class="xd-hero">
                 <div class="xd-container xd-hero-inner">
                     <div class="xd-breadcrumb">
-                        <a href="{{ route('site.home') }}">Trang chÃƒÂ¡Ã‚Â»Ã‚Â§</a>
+                        <a href="{{ route('site.home') }}">Trang chủ</a>
                         <span>/</span>
                         @if ($category->parent)
                             <a href="{{ route('site.catalog.category', ['slug' => $category->parent->slug]) }}">{{ $category->parent->name }}</a>
@@ -246,16 +246,16 @@
                         @endif
                         <strong>{{ $category->name }}</strong>
                     </div>
-                    <span class="xd-kicker">Danh mÃƒÂ¡Ã‚Â»Ã‚Â¥c sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m</span>
+                    <span class="xd-kicker">Danh mục sản phẩm</span>
                     <h1>{{ $category->name }}</h1>
-                    <p>{{ $categoryDescription !== '' ? $categoryDescription : 'Danh sÃƒÆ’Ã‚Â¡ch sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m Ãƒâ€žÃ¢â‚¬ËœÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã‚Â£c sÃƒÂ¡Ã‚ÂºÃ‚Â¯p theo nhÃƒÆ’Ã‚Â³m nhu cÃƒÂ¡Ã‚ÂºÃ‚Â§u Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚Â»Ã†â€™ khÃƒÆ’Ã‚Â¡ch hÃƒÆ’Ã‚Â ng chÃƒÂ¡Ã‚Â»Ã‚Ân nhanh vÃƒÂ¡Ã‚ÂºÃ‚Â­t tÃƒâ€ Ã‚Â°, nÃƒÂ¡Ã‚Â»Ã¢â€žÂ¢i thÃƒÂ¡Ã‚ÂºÃ‚Â¥t vÃƒÆ’Ã‚Â  giÃƒÂ¡Ã‚ÂºÃ‚Â£i phÃƒÆ’Ã‚Â¡p phÃƒÆ’Ã‚Â¹ hÃƒÂ¡Ã‚Â»Ã‚Â£p cho cÃƒÆ’Ã‚Â´ng trÃƒÆ’Ã‚Â¬nh.' }}</p>
+                    <p>{{ $categoryDescription !== '' ? $categoryDescription : 'Danh sách sản phẩm được sắp theo nhóm nhu cầu để khách hàng chọn nhanh vật tư, nội thất và giải pháp phù hợp cho công trình.' }}</p>
                 </div>
             </section>
 
             <section class="xd-container xd-catalog">
                 <aside class="xd-sidebar">
                     <div class="xd-panel">
-                        <h2>Danh mÃƒÂ¡Ã‚Â»Ã‚Â¥c sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m</h2>
+                        <h2>Danh mục sản phẩm</h2>
                         <div class="xd-side-list">
                             @if ($sidebarItems->isNotEmpty())
                                 {!! $renderCategoryTree($sidebarItems->all()) !!}
@@ -268,8 +268,8 @@
                         </div>
                     </div>
                     <div class="xd-panel xd-promo">
-                        <h3>TÃƒâ€ Ã‚Â° vÃƒÂ¡Ã‚ÂºÃ‚Â¥n chÃƒÂ¡Ã‚Â»Ã‚Ân Ãƒâ€žÃ¢â‚¬ËœÃƒÆ’Ã‚Âºng vÃƒÂ¡Ã‚ÂºÃ‚Â­t tÃƒâ€ Ã‚Â°</h3>
-                        <p>GÃƒÂ¡Ã‚Â»Ã‚Â­i nhu cÃƒÂ¡Ã‚ÂºÃ‚Â§u cÃƒÆ’Ã‚Â´ng trÃƒÆ’Ã‚Â¬nh Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚Â»Ã†â€™ Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚Â»Ã¢â€žÂ¢i ngÃƒâ€¦Ã‚Â© XD0324 gÃƒÂ¡Ã‚Â»Ã‚Â£i ÃƒÆ’Ã‚Â½ nhÃƒÆ’Ã‚Â³m sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m vÃƒÆ’Ã‚Â  phÃƒâ€ Ã‚Â°Ãƒâ€ Ã‚Â¡ng ÃƒÆ’Ã‚Â¡n triÃƒÂ¡Ã‚Â»Ã†â€™n khai phÃƒÆ’Ã‚Â¹ hÃƒÂ¡Ã‚Â»Ã‚Â£p.</p>
+                        <h3>Tư vấn chọn đúng vật tư</h3>
+                        <p>Gửi nhu cầu công trình để đội ngũ XD0324 gợi ý nhóm sản phẩm và phương án triển khai phù hợp.</p>
                     </div>
                 </aside>
 
@@ -277,8 +277,8 @@
                     <div class="xd-toolbar">
                         <div>
                             <span class="xd-kicker">Catalog</span>
-                            <h2>{{ $productItems->count() }} sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m Ãƒâ€žÃ¢â‚¬Ëœang hiÃƒÂ¡Ã‚Â»Ã†â€™n thÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¹</h2>
-                            <p>LÃƒÂ¡Ã‚Â»Ã‚Âc nhanh theo danh mÃƒÂ¡Ã‚Â»Ã‚Â¥c con hoÃƒÂ¡Ã‚ÂºÃ‚Â·c xem chi tiÃƒÂ¡Ã‚ÂºÃ‚Â¿t tÃƒÂ¡Ã‚Â»Ã‚Â«ng sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m.</p>
+                            <h2>{{ $productItems->count() }} sản phẩm đang hiển thị</h2>
+                            <p>Lọc nhanh theo danh mục con hoặc xem chi tiết từng sản phẩm.</p>
                         </div>
                         <form method="GET">
                             <select class="xd-sort" name="sort" onchange="this.form.submit()">
@@ -292,7 +292,7 @@
                     @if ($childCategoryItems->isNotEmpty())
                         <div class="xd-child-cats">
                             @foreach ($childCategoryItems as $child)
-                                <a href="{{ $child['url'] ?? '#' }}">{{ $child['name'] ?? 'Danh mÃƒÂ¡Ã‚Â»Ã‚Â¥c' }}</a>
+                                <a href="{{ $child['url'] ?? '#' }}">{{ $child['name'] ?? 'Danh mục' }}</a>
                             @endforeach
                         </div>
                     @endif
@@ -306,7 +306,7 @@
                                         <span class="xd-product-tag">{{ $product['tag'] ?? $category->name }}</span>
                                     </span>
                                     <span class="xd-product-body">
-                                        <h3>{{ $product['title'] ?? 'SÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m' }}</h3>
+                                        <h3>{{ $product['title'] ?? 'Sản phẩm' }}</h3>
                                         <span class="xd-price-row">
                                             <strong class="xd-price">{{ $formatCurrency($product['price'] ?? null) }}</strong>
                                             @if (!empty($product['old_price']))
@@ -321,7 +321,7 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="xd-empty">ChÃƒâ€ Ã‚Â°a cÃƒÆ’Ã‚Â³ sÃƒÂ¡Ã‚ÂºÃ‚Â£n phÃƒÂ¡Ã‚ÂºÃ‚Â©m nÃƒÆ’Ã‚Â o trong danh mÃƒÂ¡Ã‚Â»Ã‚Â¥c nÃƒÆ’Ã‚Â y.</div>
+                        <div class="xd-empty">Chưa có sản phẩm nào trong danh mục này.</div>
                     @endif
                 </div>
             </section>

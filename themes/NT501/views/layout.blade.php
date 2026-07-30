@@ -8,6 +8,7 @@
     @include('themes.common.fonts.chakra-manrope')
     @include('theme-nt501::partials.styles')
     @stack('head')
+    @include('partials.localized-seo')
 </head>
 <body>
     <div id="top" class="nt-page">

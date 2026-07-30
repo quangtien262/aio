@@ -8,7 +8,10 @@ use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
+use App\Models\ContentTranslation;
 use App\Models\SiteBanner;
+use App\Models\SiteProfile;
+use App\Support\BusinessContentTranslationService;
 use App\Support\FrontendLocalization;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,21 +29,30 @@ class ThemeContentTranslationTest extends TestCase
         $post = CmsPost::query()->where('status', 'published')->whereNotNull('category_id')->firstOrFail();
         $category = CmsCategory::query()->findOrFail($post->category_id);
 
-        $response = $this->getJson('/admin/api/themes/TH0001/translations?locale=en&group=content&keyword=cms_&per_page=100')
-            ->assertOk()
-            ->assertJsonPath('data.theme_key', 'TH0001')
-            ->assertJsonPath('data.locale', 'en')
-            ->assertJsonPath('data.group', 'content')
-            ->assertJsonPath('data.available_groups.0', 'static')
-            ->assertJsonPath('data.available_groups.1', 'content')
-            ->assertJsonPath('data.supported_locales.0', 'vi')
-            ->assertJsonPath('data.supported_locales.1', 'en');
+        $expectedKeys = [
+            'cms-page' => sprintf('cms_page.%d.title', $page->id),
+            'cms-post' => sprintf('cms_post.%d.title', $post->id),
+            'cms-category' => sprintf('cms_category.%d.name', $category->id),
+        ];
 
-        $translationKeys = collect($response->json('data.entries'))->pluck('key');
+        foreach ($expectedKeys as $entity => $expectedKey) {
+            $response = $this->getJson(sprintf(
+                '/admin/api/themes/TH0001/translations?locale=en&group=content&entity=%s&per_page=100',
+                $entity,
+            ))
+                ->assertOk()
+                ->assertJsonPath('data.theme_key', 'TH0001')
+                ->assertJsonPath('data.locale', 'en')
+                ->assertJsonPath('data.group', 'content')
+                ->assertJsonPath('data.available_groups.0', 'static')
+                ->assertJsonPath('data.available_groups.1', 'content')
+                ->assertJsonPath('data.supported_locales.0', 'vi')
+                ->assertJsonPath('data.supported_locales.1', 'en');
 
-        $this->assertTrue($translationKeys->contains(sprintf('cms_page.%d.title', $page->id)));
-        $this->assertTrue($translationKeys->contains(sprintf('cms_post.%d.title', $post->id)));
-        $this->assertTrue($translationKeys->contains(sprintf('cms_category.%d.name', $category->id)));
+            $translationKeys = collect($response->json('data.entries'))->pluck('key');
+
+            $this->assertTrue($translationKeys->contains($expectedKey));
+        }
     }
 
     public function test_admin_can_save_cms_business_content_overrides_and_storefront_renders_them(): void
@@ -93,16 +105,32 @@ class ThemeContentTranslationTest extends TestCase
             'value' => $categoryName,
         ]);
 
+        $this->assertDatabaseHas('content_translations', [
+            'website_key' => 'website-main',
+            'resource_type' => 'cms_post',
+            'resource_id' => (string) $post->id,
+            'locale' => 'en',
+            'slug' => $post->slug,
+            'translation_status' => 'published',
+        ]);
+        $this->assertDatabaseHas('localized_routes', [
+            'website_key' => 'website-main',
+            'resource_type' => 'cms_post',
+            'resource_id' => (string) $post->id,
+            'locale' => 'en',
+            'is_published' => true,
+        ]);
+
         $this->get(route('site.pages.show', ['locale' => 'en', 'slug' => $page->slug]))
             ->assertOk()
             ->assertSee($pageTitle);
 
-        $this->get('/en/blog/'.$post->slug)
+        $this->get(route('site.blog.show', ['locale' => 'en', 'slug' => $post->slug]))
             ->assertOk()
             ->assertSee($postTitle)
             ->assertSee($categoryName);
 
-        $this->get('/en/blog')
+        $this->get(route('site.blog.index', ['locale' => 'en']))
             ->assertOk()
             ->assertSee($categoryName);
     }
@@ -123,14 +151,16 @@ class ThemeContentTranslationTest extends TestCase
             ->assertJsonPath('data.entity', 'menu')
             ->assertJsonPath('data.entries.0.key', 'cms_menu.primary-navigation.0.label');
 
-        $this->getJson('/admin/api/themes/TH0001/translations?locale=en&group=content&entity=catalog-product&per_page=5')
+        $catalogProductResponse = $this->getJson('/admin/api/themes/TH0001/translations?locale=en&group=content&entity=catalog-product&per_page=5')
             ->assertOk()
             ->assertJsonPath('data.entity', 'catalog-product')
-            ->assertJsonPath('data.available_entities.5', 'catalog-category')
-            ->assertJsonPath('data.available_entities.6', 'catalog-product')
             ->assertJson(fn ($json) => $json->whereAllType([
                 'data.entries.0.key' => 'string',
             ]));
+
+        $availableEntities = collect($catalogProductResponse->json('data.available_entities'));
+        $this->assertTrue($availableEntities->contains('catalog-category'));
+        $this->assertTrue($availableEntities->contains('catalog-product'));
 
         $catalogResponse = $this->getJson('/admin/api/themes/TH0001/translations?locale=en&group=content&entity=catalog&per_page=5')
             ->assertOk();
@@ -178,7 +208,7 @@ class ThemeContentTranslationTest extends TestCase
         $product = CatalogProduct::query()->with('category')->where('catalog_category_id', $productCategoryId)->where('is_active', true)->orderBy('id')->firstOrFail();
         $category = $product->category ?? $category;
 
-        $siteName = 'AIO Storefront QA';
+        $companyName = 'AIO Storefront QA';
         $menuLabel = 'Stories QA';
         $bannerTitle = 'Hero Campaign QA';
         $categoryName = 'Phones Category QA';
@@ -188,7 +218,7 @@ class ThemeContentTranslationTest extends TestCase
             'locale' => 'en',
             'group' => 'content',
             'entries' => [
-                ['key' => 'site_profile.site_name', 'value' => $siteName],
+                ['key' => 'branding.company_name', 'value' => $companyName],
                 ['key' => 'cms_menu.primary-navigation.0.label', 'value' => $menuLabel],
                 ['key' => sprintf('site_banner.%d.title', $heroBanner->id), 'value' => $bannerTitle],
                 ['key' => sprintf('catalog_category.%d.name', $category->id), 'value' => $categoryName],
@@ -200,9 +230,28 @@ class ThemeContentTranslationTest extends TestCase
             'theme_key' => 'site-content:website-main',
             'locale' => 'en',
             'group' => 'content',
-            'translation_key' => 'site_profile.site_name',
-            'value' => $siteName,
+            'translation_key' => 'branding.company_name',
+            'value' => $companyName,
         ]);
+        $siteProfile = SiteProfile::query()->forWebsite('website-main')->firstOrFail();
+        $profileTranslation = ContentTranslation::query()
+            ->withoutGlobalScope('current_website')
+            ->where('website_key', 'website-main')
+            ->where('resource_type', 'site_profile')
+            ->where('resource_id', (string) $siteProfile->id)
+            ->where('locale', 'en')
+            ->firstOrFail();
+        $this->assertSame($companyName, data_get($profileTranslation->payload, 'branding.company_name'));
+        $this->assertSame('published', $profileTranslation->translation_status->value);
+        app()->setLocale('en');
+        $this->assertSame(
+            $companyName,
+            app(BusinessContentTranslationService::class)->text(
+                'website-main',
+                'branding.company_name',
+                'AIO Tech Market',
+            ),
+        );
 
         $this->assertDatabaseHas('theme_translations', [
             'theme_key' => 'site-content:website-main',
@@ -236,9 +285,10 @@ class ThemeContentTranslationTest extends TestCase
             'value' => $productName,
         ]);
 
-        $this->get(route('site.home', FrontendLocalization::routeParameterDefaults('en')))
-            ->assertOk()
-            ->assertSee($siteName)
+        $homeResponse = $this->get(route('site.home', FrontendLocalization::routeParameterDefaults('en')))
+            ->assertOk();
+        $homeResponse
+            ->assertSee($companyName)
             ->assertSee($menuLabel)
             ->assertSee($bannerTitle);
 

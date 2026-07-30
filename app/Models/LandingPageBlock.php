@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['landing_page_id', 'theme_key', 'block_type', 'sort_order', 'is_visible', 'anchor_id', 'settings', 'media'])]
+#[Fillable(['landing_page_id', 'theme_key', 'block_type', 'schema_version', 'sort_order', 'is_visible', 'anchor_id', 'settings', 'media'])]
 class LandingPageBlock extends Model
 {
     use HasFactory;
@@ -18,6 +18,7 @@ class LandingPageBlock extends Model
     {
         return [
             'is_visible' => 'boolean',
+            'schema_version' => 'integer',
             'settings' => 'array',
             'media' => 'array',
         ];

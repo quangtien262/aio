@@ -6,11 +6,13 @@ import Drawer from 'antd/es/drawer';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
+import Radio from 'antd/es/radio';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Switch from 'antd/es/switch';
 import dayjs from 'dayjs';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 
 function toSlug(value, { trimEdges = true } = {}) {
@@ -26,9 +28,22 @@ function toSlug(value, { trimEdges = true } = {}) {
     return trimEdges ? slug.replace(/^-+|-+$/g, '') : slug.replace(/^-+/g, '');
 }
 
-export default function CmsTeamMemberFormModal({ open, canManage, editingMember, mediaOptions = [], callAdminApi, onCancel, onSubmit }) {
+export default function CmsTeamMemberFormModal({
+    open,
+    canManage,
+    translationMode = false,
+    editingMember,
+    mediaOptions = [],
+    localeOptions = [],
+    contentLocale = 'vi',
+    sourceLocale = 'vi',
+    callAdminApi,
+    onCancel,
+    onSubmit,
+    onLocaleChange,
+}) {
     const [form] = Form.useForm();
-    const slugEditedRef = useRef(Boolean(editingMember?.id));
+    const lastNameRef = useRef('');
     const nameValue = Form.useWatch('name', form) ?? '';
 
     useEffect(() => {
@@ -42,19 +57,19 @@ export default function CmsTeamMemberFormModal({ open, canManage, editingMember,
             featured_image_url: editingMember?.featured_image_url || featuredImage?.image_url || '',
             featured_image_alt: editingMember?.featured_image_alt || featuredImage?.alt_text || '',
         });
-        slugEditedRef.current = Boolean(editingMember?.id || editingMember?.slug);
+        lastNameRef.current = String(editingMember?.name ?? '');
     }, [editingMember, form]);
 
     useEffect(() => {
-        if (slugEditedRef.current) {
+        if (nameValue === lastNameRef.current) {
             return;
         }
 
         form.setFieldValue('slug', toSlug(nameValue));
+        lastNameRef.current = nameValue;
     }, [form, nameValue]);
 
     const handleSlugChange = (event) => {
-        slugEditedRef.current = true;
         form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
     };
 
@@ -120,10 +135,24 @@ export default function CmsTeamMemberFormModal({ open, canManage, editingMember,
             extra={(
                 <Space>
                     <Button onClick={handleCancel}>Huy</Button>
-                    <Button type="primary" disabled={!canManage} onClick={handleSubmit}>Luu nhan su</Button>
+                    <Button type="primary" disabled={!canManage || (!editingMember?.id && translationMode)} onClick={handleSubmit}>
+                        {!editingMember?.id && translationMode ? 'Lưu tại ngôn ngữ gốc' : (translationMode ? 'Lưu bản dịch' : 'Lưu nhân sự')}
+                    </Button>
                 </Space>
             )}
         >
+            <LocalizedContentTabs
+                localeOptions={localeOptions}
+                contentLocale={contentLocale}
+                sourceLocale={sourceLocale}
+                editingRecord={editingMember}
+                entityLabel="nhân sự"
+                translationDescription="Họ tên, slug, chức danh, phòng ban, mô tả, tiểu sử và trạng thái xuất bản được lưu riêng cho ngôn ngữ này. Thông tin liên hệ, ảnh đại diện, liên kết và thứ tự tiếp tục dùng từ bản gốc."
+                sourceDescription="Đây là ngôn ngữ gốc. Thông tin liên hệ, ảnh đại diện, liên kết và thứ tự được quản lý tại đây."
+                isDirty={() => form.isFieldsTouched()}
+                getCurrentValues={() => form.getFieldsValue(true)}
+                onLocaleChange={onLocaleChange}
+            />
             <Form form={form} layout="vertical" initialValues={editingMember}>
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Card size="small" title="Thong tin nhan su">
@@ -141,8 +170,15 @@ export default function CmsTeamMemberFormModal({ open, canManage, editingMember,
                         </Row>
                         <Row gutter={16}>
                             <Col xs={24} md={8}>
-                                <Form.Item name="status" label="Trang thai" rules={[{ required: true, message: 'Chon trang thai' }]}>
-                                    <Select options={[{ label: 'Ban nhap', value: 'draft' }, { label: 'Da xuat ban', value: 'published' }]} />
+                                <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
+                                    <Radio.Group
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                        options={[
+                                            { label: 'Bản nháp', value: 'draft' },
+                                            { label: 'Đã xuất bản', value: 'published' },
+                                        ]}
+                                    />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
@@ -159,29 +195,29 @@ export default function CmsTeamMemberFormModal({ open, canManage, editingMember,
                         <Row gutter={16}>
                             <Col xs={24} md={8}>
                                 <Form.Item name="sort_order" label="Thu tu">
-                                    <InputNumber min={0} style={{ width: '100%' }} />
+                                    <InputNumber disabled={translationMode} min={0} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="is_featured" label="Nhan su noi bat" valuePropName="checked">
-                                    <Switch />
+                                    <Switch disabled={translationMode} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
                                 <Form.Item name="link_url" label="Link click">
-                                    <Input placeholder="/vi/contact hoặc https://..." />
+                                    <Input disabled={translationMode} placeholder="/vi/contact hoặc https://..." />
                                 </Form.Item>
                             </Col>
                         </Row>
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
                                 <Form.Item name="email" label="Email">
-                                    <Input placeholder="name@example.com" />
+                                    <Input disabled={translationMode} placeholder="name@example.com" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={12}>
                                 <Form.Item name="phone" label="Dien thoai">
-                                    <Input placeholder="090..." />
+                                    <Input disabled={translationMode} placeholder="090..." />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -200,7 +236,7 @@ export default function CmsTeamMemberFormModal({ open, canManage, editingMember,
                         <Form.Item name="featured_image_url" style={{ marginBottom: 0 }}>
                             <SingleMediaPicker
                                 open={open}
-                                canManage={canManage}
+                                canManage={canManage && !translationMode}
                                 callAdminApi={callAdminApi}
                                 mediaOptions={mediaOptions}
                                 recordTitle={nameValue || 'Team member image'}
@@ -214,7 +250,7 @@ export default function CmsTeamMemberFormModal({ open, canManage, editingMember,
                             />
                         </Form.Item>
                         <Form.Item name="featured_image_alt" label="Alt text" style={{ marginTop: 12, marginBottom: 0 }}>
-                            <Input placeholder="Mo ta anh chan dung nhan su" />
+                            <Input disabled={translationMode} placeholder="Mo ta anh chan dung nhan su" />
                         </Form.Item>
                     </Card>
                 </Space>

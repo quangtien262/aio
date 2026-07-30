@@ -31,6 +31,7 @@ export const ADMIN_API_ROUTES = Object.freeze({
         pages: Object.freeze({
             ...cmsPages,
             bulk: `${cmsPages.collection}/bulk`,
+            transition: (id, locale) => `${cmsPages.item(id)}/translations/${encodeURIComponent(locale)}/transition`,
         }),
     }),
 });

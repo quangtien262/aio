@@ -85,7 +85,8 @@
                 .form-grid { grid-template-columns: 1fr; }
             }
         </style>
-    </head>
+        @include('partials.localized-seo')
+</head>
     <body>
         <div class="utility">
             <div class="wrap utility-inner">
