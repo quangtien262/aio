@@ -1,11 +1,12 @@
 @php
     $profile = $siteProfile ?? [];
-    $branding = (array) data_get($profile, 'branding', []);
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'Sudes Phone'))) ?: 'Sudes Phone';
     $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '1900 6750';
     $location = trim((string) data_get($branding, 'support_location', '')) ?: '7 cửa hàng';
-    $nav = collect($primaryMenu ?? [])->filter()->values();
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec12-header" id="top">
     <div class="ec12-container ec12-head-main">
@@ -31,20 +32,8 @@
         <button class="ec12-menu-toggle" type="button" data-ec12-menu aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
     </div>
     <nav class="ec12-nav"><div class="ec12-container" data-ec12-nav>
-        @forelse($nav as $item)
-            <a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>
-        @empty
-            <a class="active" href="{{ route('site.home') }}">@themeT('EC912.home', 'Trang chủ')</a>
-            <a href="{{ route('site.home') }}#gioi-thieu">@themeT('EC912.about', 'Giới thiệu')</a>
-            <a href="{{ route('site.catalog.search') }}">iPhone <i class="fa-solid fa-chevron-down"></i></a>
-            <a href="{{ route('site.catalog.search') }}">iPad <i class="fa-solid fa-chevron-down"></i></a>
-            <a href="{{ route('site.catalog.search') }}">Macbook - iMac <i class="fa-solid fa-chevron-down"></i></a>
-            <a href="{{ route('site.catalog.search') }}">Apple Watch <i class="fa-solid fa-chevron-down"></i></a>
-            <a href="{{ route('site.catalog.search') }}">AirPods</a>
-            <a href="{{ route('site.catalog.search') }}">Phụ kiện <i class="fa-solid fa-chevron-down"></i></a>
-            <a href="{{ route('site.contact') }}">@themeT('EC912.policies', 'Chính sách')</a>
-            <a href="{{ route('site.blog.index') }}">@themeT('EC912.news', 'Tin tức')</a>
-            <a href="{{ route('site.contact') }}">@themeT('EC912.contact', 'Liên hệ')</a>
-        @endforelse
+        @foreach($nav as $item)
+            <a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>
+        @endforeach
     </div></nav>
 </header>

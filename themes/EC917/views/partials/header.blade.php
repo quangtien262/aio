@@ -1,7 +1,9 @@
 @php
-    $branding = (array) data_get($siteProfile ?? [], 'branding', []);
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url'));
     $cartCount = (int) data_get($cartSummary ?? [], 'count', 0);
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec17-header">
     <div class="ec17-container ec17-header-inner">
@@ -14,11 +16,7 @@
             @endif
         </a>
         <nav class="ec17-nav" data-ec17-nav>
-            <a href="#san-pham">@themeT('EC917.products', 'Sản phẩm') <i class="fa-solid fa-chevron-down"></i></a>
-            <a href="#danh-muc">@themeT('EC917.rooms', 'Phòng') <i class="fa-solid fa-chevron-down"></i></a>
-            <a href="#khuyen-mai">@themeT('EC917.promotions', 'Khuyến mãi')</a>
-            <a href="#cam-hung">@themeT('EC917.inspiration', 'Góc cảm hứng')</a>
-            <a href="{{ route('site.contact') }}">@themeT('EC917.setup_guide', 'Hướng dẫn thiết lập')</a>
+            @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
         </nav>
         <div class="ec17-tools">
             <span class="ec17-locale">🇻🇳 <i class="fa-solid fa-chevron-down"></i></span>

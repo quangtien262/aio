@@ -1,9 +1,10 @@
 @php
     $profile = $siteProfile ?? [];
-    $branding = (array) data_get($profile, 'branding', []);
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'ND Interior'))) ?: 'ND Interior';
-    $nav = collect($primaryMenu ?? [])->filter()->values();
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec15-header" data-ec15-header>
     <div class="ec15-container ec15-header-inner">
@@ -11,10 +12,7 @@
             @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span>ND</span><b>Interior</b>@endif
         </a>
         <nav data-ec15-nav>
-            @forelse($nav as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>
-            @empty
-                <a class="active" href="{{ route('site.home') }}">Trang chủ</a><a href="{{ route('site.catalog.search') }}">Sản phẩm</a><a href="#danh-muc">Không gian</a><a href="#quy-trinh">Quy trình</a><a href="{{ route('site.blog.index') }}">Tin tức</a><a href="{{ route('site.contact') }}">Liên hệ</a>
-            @endforelse
+            @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
         </nav>
         <div class="ec15-header-actions">
             <a href="{{ route('site.catalog.search') }}"><i class="fa-solid fa-magnifying-glass"></i></a>

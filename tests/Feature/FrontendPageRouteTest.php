@@ -33,6 +33,14 @@ class FrontendPageRouteTest extends TestCase
             FrontendRouteUrl::localized('/contact?source=menu#form', 'vi', false)
         );
         $this->assertSame(
+            '/en/search',
+            FrontendRouteUrl::localized('/tim-kiem', 'en', false)
+        );
+        $this->assertSame(
+            '/en/product/sofa',
+            FrontendRouteUrl::localized('/vi/san-pham/sofa', 'en', false)
+        );
+        $this->assertSame(
             'https://example.com/path',
             FrontendRouteUrl::localized('https://example.com/path', 'vi', false)
         );

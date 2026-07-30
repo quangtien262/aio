@@ -3,7 +3,7 @@
     $brand = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logo = trim((string) data_get($brand, 'logo_url', ''));
     $hotline = data_get($brand, 'support_hotline', '1900 6750');
-    $menuItems = collect($primaryMenu['items'] ?? [])->values();
+    $menuItems = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec94-header">
     <div class="ec94-head-main"><div class="ec94-container">
@@ -15,9 +15,7 @@
     </div></div>
     <nav class="ec94-nav"><div class="ec94-container">
         <button class="ec94-category-button" type="button" data-ec94-mega><i class="fa-solid fa-bars"></i> Danh mục sản phẩm</button>
-        @forelse($menuItems as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>@empty
-            <a class="is-active" href="{{ route('site.home') }}">@themeT('nav.home', 'Trang chủ')</a><a href="#gioi-thieu">@themeT('nav.about', 'Giới thiệu')</a><a href="{{ route('site.catalog.search') }}">@themeT('nav.products', 'Sản phẩm')</a><a href="{{ route('site.blog.index') }}">@themeT('nav.latest_news', 'Tin mới nhất')</a><a href="{{ route('site.contact') }}">@themeT('nav.contact', 'Liên hệ')</a>
-        @endforelse
+        @foreach($menuItems as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
         <section class="ec94-mega"><aside>
             @foreach(['Điện thoại - Máy tính bảng','Phụ kiện - Thiết bị số','Máy ảnh - Quay phim','Điện gia dụng - Nhà bếp','Laptop - Thiết bị IT','Máy chơi game - Trò chơi','Trang sức - Sành điệu','Thời trang - Làm đẹp','Nhà cửa đời sống'] as $index => $label)
                 <a href="#danh-muc"><i class="{{ ['fa-solid fa-mobile-screen','fa-solid fa-headphones','fa-solid fa-camera','fa-solid fa-blender','fa-solid fa-laptop','fa-solid fa-gamepad','fa-regular fa-gem','fa-solid fa-shirt','fa-solid fa-couch'][$index] }}"></i>{{ $label }}<i class="fa-solid fa-angle-right"></i></a>

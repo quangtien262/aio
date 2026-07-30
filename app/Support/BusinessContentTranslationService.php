@@ -193,6 +193,8 @@ class BusinessContentTranslationService
             $menu = CmsMenu::query()
                 ->forWebsite($websiteKey)
                 ->where('location', $matches[1])
+                ->orderByDesc('updated_at')
+                ->orderByDesc('id')
                 ->first();
 
             if ($menu !== null) {
@@ -316,23 +318,29 @@ class BusinessContentTranslationService
             }
         }
 
-        CmsMenu::query()->orderBy('location')->orderBy('id')->get()->each(function (CmsMenu $menu) use ($entries): void {
-            collect($menu->items ?? [])->values()->each(function (array $item, int $index) use ($entries, $menu): void {
-                $entries->push([
-                    'key' => sprintf('cms_menu.%s.%d.label', $menu->location, $index),
-                    'label' => sprintf('Menu / %s / Item %d', $menu->location, $index + 1),
-                    'source_value' => (string) ($item['label'] ?? ''),
-                ]);
-
-                collect($item['children'] ?? [])->values()->each(function (array $child, int $childIndex) use ($entries, $menu, $index): void {
+        CmsMenu::query()
+            ->orderBy('location')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get()
+            ->unique('location')
+            ->each(function (CmsMenu $menu) use ($entries): void {
+                collect($menu->items ?? [])->values()->each(function (array $item, int $index) use ($entries, $menu): void {
                     $entries->push([
-                        'key' => sprintf('cms_menu.%s.%d.children.%d.label', $menu->location, $index, $childIndex),
-                        'label' => sprintf('Menu / %s / Item %d / Child %d', $menu->location, $index + 1, $childIndex + 1),
-                        'source_value' => (string) ($child['label'] ?? ''),
+                        'key' => sprintf('cms_menu.%s.%d.label', $menu->location, $index),
+                        'label' => sprintf('Menu / %s / Item %d', $menu->location, $index + 1),
+                        'source_value' => (string) ($item['label'] ?? ''),
                     ]);
+
+                    collect($item['children'] ?? [])->values()->each(function (array $child, int $childIndex) use ($entries, $menu, $index): void {
+                        $entries->push([
+                            'key' => sprintf('cms_menu.%s.%d.children.%d.label', $menu->location, $index, $childIndex),
+                            'label' => sprintf('Menu / %s / Item %d / Child %d', $menu->location, $index + 1, $childIndex + 1),
+                            'source_value' => (string) ($child['label'] ?? ''),
+                        ]);
+                    });
                 });
             });
-        });
 
         CmsFeaturedCategory::query()->orderBy('location')->orderBy('id')->get()->each(function (CmsFeaturedCategory $group) use ($entries): void {
             collect($group->items ?? [])->values()->each(function (array $item, int $index) use ($entries, $group): void {

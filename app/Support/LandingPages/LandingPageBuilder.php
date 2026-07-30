@@ -22,6 +22,7 @@ use App\Models\LandingPageData;
 use App\Models\RealEstateListing;
 use App\Models\RealEstatePropertyType;
 use App\Models\SiteBanner;
+use App\Models\ThemeDemoRecord;
 use App\Models\ThemeTranslation;
 use App\Support\FrontendLocalization;
 use App\Support\FrontendRouteUrl;
@@ -60,8 +61,10 @@ class LandingPageBuilder
                 'description' => $block['description'],
                 'default_anchor_id' => $block['anchor_id'],
                 'preview_image' => $block['preview_image'] ?? null,
-                'dynamic' => $block['dynamic'] ?? false,
-                'settings_schema' => $block['settings_schema'] ?? [],
+                'dynamic' => ($block['dynamic'] ?? false)
+                    || $this->isCmsTestimonialBlock((string) $block['block_type'])
+                    || $this->isCmsPartnerBlock((string) $block['block_type']),
+                'settings_schema' => $this->cmsSectionSettingsSchema($block),
             ])
             ->values()
             ->all();
@@ -78,7 +81,7 @@ class LandingPageBuilder
 
         $definition = collect($this->defaultBlocksForTheme($themeKey))->firstWhere('block_type', $blockType);
 
-        return is_array($definition) ? (array) ($definition['settings_schema'] ?? []) : [];
+        return is_array($definition) ? $this->cmsSectionSettingsSchema($definition) : [];
     }
 
     public function resolveHome(string $websiteKey, string $themeKey, bool $createIfMissing = true): ?LandingPage
@@ -733,6 +736,34 @@ class LandingPageBuilder
             return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
+        if ($this->isCmsTestimonialBlock($block->block_type)) {
+            if (($settings['source'] ?? 'cms_testimonials') === 'custom') {
+                return [];
+            }
+
+            return $this->cmsTestimonialItems(
+                $settings,
+                $limit,
+                $locale,
+                $block->landingPage?->website_key,
+                $block->landingPage?->theme_key,
+            );
+        }
+
+        if ($this->isCmsPartnerBlock($block->block_type)) {
+            if (($settings['source'] ?? 'cms_partners') === 'custom') {
+                return [];
+            }
+
+            return $this->cmsPartnerItems(
+                $settings,
+                $limit,
+                $locale,
+                $block->landingPage?->website_key,
+                $block->landingPage?->theme_key,
+            );
+        }
+
         if (in_array($block->block_type, [
             'ec917_summer_sale',
             'ec917_inspiration',
@@ -948,6 +979,59 @@ class LandingPageBuilder
         }
 
         return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>
+     */
+    private function cmsSectionSettingsSchema(array $definition): array
+    {
+        $blockType = (string) ($definition['block_type'] ?? '');
+        $schema = (array) ($definition['settings_schema'] ?? []);
+
+        if ($this->isCmsTestimonialBlock($blockType)) {
+            return [
+                'source' => [
+                    'type' => 'select',
+                    'label' => 'Nguồn dữ liệu',
+                    'options' => [
+                        ['value' => 'cms_testimonials', 'label' => 'Cảm nhận khách hàng CMS'],
+                        ['value' => 'custom', 'label' => 'Nội dung tùy chỉnh'],
+                    ],
+                ],
+                ...$schema,
+            ];
+        }
+
+        if ($this->isCmsPartnerBlock($blockType)) {
+            return [
+                'source' => [
+                    'type' => 'select',
+                    'label' => 'Nguồn dữ liệu',
+                    'options' => [
+                        ['value' => 'cms_partners', 'label' => 'Đối tác CMS'],
+                        ['value' => 'custom', 'label' => 'Nội dung tùy chỉnh'],
+                    ],
+                ],
+                ...$schema,
+            ];
+        }
+
+        return $schema;
+    }
+
+    private function isCmsTestimonialBlock(string $blockType): bool
+    {
+        $blockType = strtolower($blockType);
+
+        return Str::contains($blockType, 'testimonial')
+            || $blockType === 'ec902_video_reviews';
+    }
+
+    private function isCmsPartnerBlock(string $blockType): bool
+    {
+        return Str::contains(strtolower($blockType), 'partner');
     }
 
     /**
@@ -1505,7 +1589,13 @@ class LandingPageBuilder
      * @param  array<string, mixed>  $settings
      * @return array<int, array<string, mixed>>
      */
-    private function cmsTestimonialItems(array $settings, int $limit, string $locale, ?string $websiteKey): array
+    private function cmsTestimonialItems(
+        array $settings,
+        int $limit,
+        string $locale,
+        ?string $websiteKey,
+        ?string $themeKey = null,
+    ): array
     {
         if (! Schema::hasTable('cms_testimonials')) {
             return [];
@@ -1513,7 +1603,9 @@ class LandingPageBuilder
 
         /** @var Builder $query */
         $query = CmsTestimonial::query()
-            ->where('status', 'published')
+            ->where('status', 'published');
+        $this->scopeThemeDemoRecords($query, CmsTestimonial::class, $themeKey);
+        $query
             ->orderByDesc('is_featured')
             ->orderBy('sort_order')
             ->latest('updated_at');
@@ -1524,15 +1616,24 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(fn (CmsTestimonial $testimonial): array => [
-            'name' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.name', $testimonial->id), $testimonial->name),
-            'role' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.role', $testimonial->id), $testimonial->role),
-            'company' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.company', $testimonial->id), $testimonial->company),
-            'quote' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.quote', $testimonial->id), $testimonial->quote),
-            'image' => $testimonial->image_url,
-            'alt' => $testimonial->image_alt ?: $testimonial->name,
-            'url' => $testimonial->link_url ?: '#lien-he',
-        ])->all();
+        return $query->take($limit)->get()->map(function (CmsTestimonial $testimonial) use ($resolvedWebsiteKey, $locale): array {
+            $name = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.name', $testimonial->id), $testimonial->name);
+            $quote = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.quote', $testimonial->id), $testimonial->quote);
+
+            return [
+                'name' => $name,
+                'title' => $name,
+                'role' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.role', $testimonial->id), $testimonial->role),
+                'company' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.company', $testimonial->id), $testimonial->company),
+                'quote' => $quote,
+                'summary' => $quote,
+                'description' => $quote,
+                'image' => $testimonial->image_url,
+                'avatar' => $testimonial->image_url,
+                'alt' => $testimonial->image_alt ?: $testimonial->name,
+                'url' => $testimonial->link_url ?: '#lien-he',
+            ];
+        })->all();
     }
 
     /**
@@ -1578,7 +1679,13 @@ class LandingPageBuilder
      * @param  array<string, mixed>  $settings
      * @return array<int, array<string, mixed>>
      */
-    private function cmsPartnerItems(array $settings, int $limit, string $locale, ?string $websiteKey): array
+    private function cmsPartnerItems(
+        array $settings,
+        int $limit,
+        string $locale,
+        ?string $websiteKey,
+        ?string $themeKey = null,
+    ): array
     {
         if (! Schema::hasTable('cms_partners')) {
             return [];
@@ -1586,7 +1693,9 @@ class LandingPageBuilder
 
         /** @var Builder $query */
         $query = CmsPartner::query()
-            ->where('status', 'published')
+            ->where('status', 'published');
+        $this->scopeThemeDemoRecords($query, CmsPartner::class, $themeKey);
+        $query
             ->orderByDesc('is_featured')
             ->orderBy('sort_order')
             ->latest('updated_at');
@@ -1602,10 +1711,57 @@ class LandingPageBuilder
             'title' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_partner.%d.title', $partner->id), $partner->title),
             'description' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_partner.%d.description', $partner->id), $partner->description),
             'image' => $partner->image_url,
+            'logo' => $partner->image_url,
             'alt' => $partner->image_alt ?: $partner->title,
             'href' => $partner->link_url ?: '#top',
             'url' => $partner->link_url ?: '#top',
         ])->all();
+    }
+
+    /**
+     * Keep reusable user content and demo rows of the current theme, while
+     * preventing demo data from another installed theme leaking into a block.
+     *
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
+     */
+    private function scopeThemeDemoRecords(
+        Builder $query,
+        string $modelClass,
+        ?string $themeKey,
+    ): void {
+        $themeKey = strtoupper(trim((string) $themeKey));
+
+        if ($themeKey === '') {
+            return;
+        }
+
+        $records = ThemeDemoRecord::query()
+            ->where('model_type', $modelClass);
+        $currentIds = (clone $records)
+            ->where('theme_key', $themeKey)
+            ->pluck('model_id')
+            ->filter()
+            ->values()
+            ->all();
+
+        $query->whereNotIn(
+            $query->getModel()->getQualifiedKeyName(),
+            (clone $records)
+                ->where('theme_key', '!=', $themeKey)
+                ->select('model_id'),
+        );
+
+        if ($currentIds !== []) {
+            $placeholders = implode(', ', array_fill(0, count($currentIds), '?'));
+            $query->orderByRaw(
+                sprintf(
+                    'CASE WHEN %s IN (%s) THEN 0 ELSE 1 END',
+                    $query->getModel()->getQualifiedKeyName(),
+                    $placeholders,
+                ),
+                $currentIds,
+            );
+        }
     }
 
     private function contentText(string $websiteKey, string $locale, string $key, ?string $fallback): ?string

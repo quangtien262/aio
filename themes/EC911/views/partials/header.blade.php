@@ -1,10 +1,11 @@
 @php
     $profile = (array) ($siteProfile ?? []);
-    $branding = (array) data_get($profile, 'branding', []);
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = data_get($branding, 'logo_url');
     $siteName = data_get($profile, 'site_name', 'DIGITECH');
     $hotline = data_get($branding, 'support_hotline', '1900 6750');
-    $nav = collect($primaryMenu ?? [])->filter()->values();
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec11-header" id="top">
     <div class="ec11-container ec11-head-main">
@@ -27,14 +28,7 @@
     <nav class="ec11-nav"><div class="ec11-container">
         <button type="button" data-ec11-menu><i class="fa-solid fa-bars"></i> DANH MỤC SẢN PHẨM</button>
         <div data-ec11-nav>
-            @forelse($nav as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>
-            @empty
-                <a class="active" href="{{ route('site.home') }}">Trang chủ</a>
-                <a href="#gioi-thieu">Giới thiệu</a>
-                <a href="{{ route('site.catalog.search') }}">Sản phẩm <i class="fa-solid fa-caret-down"></i></a>
-                <a href="{{ route('site.blog.index') }}">Tin tức</a>
-                <a href="{{ route('site.contact') }}">Liên hệ</a>
-            @endforelse
+            @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
         </div>
     </div></nav>
 </header>

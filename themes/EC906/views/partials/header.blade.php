@@ -1,9 +1,10 @@
 @php
     $profile = (array) ($siteProfile ?? []);
-    $branding = (array) data_get($profile, 'branding', []);
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = data_get($branding, 'logo_url');
     $siteName = data_get($profile, 'site_name', 'EGA Mini Mart');
-    $nav = collect($primaryMenu ?? [])->filter()->values();
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec96-header" id="top">
     <div class="ec96-container ec96-head-main">
@@ -18,8 +19,6 @@
         </div>
     </div>
     <nav class="ec96-nav" data-ec96-nav><div class="ec96-container">
-        @forelse($nav as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>@empty
-            <a href="#gioi-thieu">Giới thiệu</a><a href="#flash-sale">Khuyến mãi <i class="fa-solid fa-angle-down"></i></a><a href="#tin-tuc">Tin tức</a><a href="{{ route('site.catalog.search') }}">Kiểm tra đơn hàng</a><a href="{{ route('site.contact') }}">Liên hệ</a><a href="{{ route('site.contact') }}">Hướng dẫn thiết lập</a>
-        @endforelse
+        @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
     </div></nav>
 </header>

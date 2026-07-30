@@ -6,6 +6,7 @@
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $supportHotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '1900 6750';
     $supportEmail = trim((string) ($branding['support_email'] ?? '')) ?: 'contact@example.com';
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="bds-header">
     <div class="bds-topbar">
@@ -40,11 +41,7 @@
         </a>
         <button class="bds-menu-toggle" type="button" data-bds-menu><i class="fa-solid fa-bars"></i></button>
         <nav data-bds-nav>
-            <a href="{{ $homeUrl }}">@themeT('home', 'Trang chủ')</a>
-            <a href="{{ route('site.real-estate.index', ['locale' => app()->getLocale()]) }}">@themeT('listings', 'Tất cả tin rao')</a>
-            <a href="{{ route('site.blog.index', ['locale' => app()->getLocale()]) }}">@themeT('news', 'Tin tức')</a>
-            <a href="{{ route('site.pages.show', ['locale' => app()->getLocale(), 'slug' => 'gioi-thieu']) }}">@themeT('about', 'Giới thiệu')</a>
-            <a href="{{ route('site.contact', ['locale' => app()->getLocale()]) }}">@themeT('contact', 'Liên hệ')</a>
+            @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
         </nav>
     </div>
 </header>

@@ -147,9 +147,23 @@ final class FrontendRouteUrl
         }
 
         $segments = explode('/', $path);
+        $resolvedLocale = self::locale($locale);
 
-        if (! in_array($segments[0] ?? '', FrontendLocalization::knownLocaleCodes(), true)) {
-            array_unshift($segments, self::locale($locale));
+        if (in_array($segments[0] ?? '', FrontendLocalization::knownLocaleCodes(), true)) {
+            $segments[0] = $resolvedLocale;
+        } else {
+            array_unshift($segments, $resolvedLocale);
+        }
+
+        if (isset($segments[1])) {
+            foreach (self::localizedRouteSegmentKeys() as $segmentKey) {
+                if (! in_array($segments[1], FrontendLocalization::segmentValues($segmentKey), true)) {
+                    continue;
+                }
+
+                $segments[1] = FrontendLocalization::segment($segmentKey, $resolvedLocale);
+                break;
+            }
         }
 
         $localizedPath = '/'.implode('/', array_map(
@@ -254,6 +268,50 @@ final class FrontendRouteUrl
         return self::withoutLocale(self::contact($locale, false), $locale);
     }
 
+    public static function homePath(): string
+    {
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::home($locale, false), $locale);
+    }
+
+    public static function catalogSearchPath(): string
+    {
+        return self::namedRoutePath('site.catalog.search');
+    }
+
+    public static function blogPath(): string
+    {
+        return self::namedRoutePath('site.blog.index');
+    }
+
+    public static function servicesPath(): string
+    {
+        return self::namedRoutePath('site.services.index');
+    }
+
+    public static function projectsPath(): string
+    {
+        return self::namedRoutePath('site.projects.index');
+    }
+
+    public static function realEstatePath(): string
+    {
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::realEstate($locale, false), $locale);
+    }
+
+    private static function namedRoutePath(string $routeName): string
+    {
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(
+            route($routeName, ['locale' => $locale], false),
+            $locale,
+        );
+    }
+
     private static function locale(?string $locale): string
     {
         return FrontendLocalization::resolveLocale(
@@ -266,12 +324,38 @@ final class FrontendRouteUrl
         return trim($slug, '/');
     }
 
+    /**
+     * Route parameters that are localized in routes/web.php.
+     *
+     * @return list<string>
+     */
+    private static function localizedRouteSegmentKeys(): array
+    {
+        return [
+            'login',
+            'register',
+            'account',
+            'favorite',
+            'newsletter',
+            'preview',
+            'cart',
+            'checkout',
+            'search',
+            'category',
+            'product',
+        ];
+    }
+
     private static function withoutLocale(
         string $localizedPath,
         ?string $locale = null,
     ): string
     {
         $localePrefix = '/'.self::locale($locale);
+
+        if ($localizedPath === $localePrefix) {
+            return '/';
+        }
 
         return str_starts_with($localizedPath, $localePrefix.'/')
             ? substr($localizedPath, strlen($localePrefix))

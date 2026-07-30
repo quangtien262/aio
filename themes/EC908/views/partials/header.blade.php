@@ -1,7 +1,7 @@
 @php
     $profile=$siteProfile??[];$shell=$themeShellData??$themeHomeData??[];$branding=(array)data_get($shell,'branding',data_get($profile,'branding',[]));
     $siteName=trim((string)data_get($branding,'company_name',data_get($profile,'site_name','Ego Fitness')))?:'Ego Fitness';
-    $logo=trim((string)data_get($branding,'logo_url',''));$hotline=data_get($branding,'support_hotline','19006750');$nav=collect($primaryMenu??[])->filter()->values();
+    $logo=trim((string)data_get($branding,'logo_url',''));$hotline=data_get($branding,'support_hotline','19006750');$nav=collect(data_get($shell,'top_menu',[]))->filter(fn($item)=>is_array($item)&&filled(data_get($item,'label')))->values();
 @endphp
 <header class="ec98-header" id="top">
     <div class="ec98-welcome"><div class="ec98-container"><span>Chào mừng bạn đến với Ego fitness</span><nav><a href="tel:{{ preg_replace('/\s+/','',$hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: {{ $hotline }}</a><a href="{{ route('site.contact') }}">Hệ thống cửa hàng</a><a href="{{ route('site.contact') }}">Tuyển dụng</a></nav></div></div>
@@ -13,8 +13,6 @@
         <a class="ec98-head-icon" href="{{ route('site.catalog.search') }}"><i class="fa-regular fa-heart"></i><em>0</em><span>Yêu thích</span></a>
     </div>
     <nav class="ec98-nav"><div class="ec98-container"><button type="button" data-ec98-menu><i class="fa-solid fa-bars"></i> DANH MỤC SẢN PHẨM</button><div data-ec98-nav>
-        @forelse($nav as $index=>$item)<a class="{{ $index===0?'is-active':'' }}" href="{{ data_get($item,'url','#') }}">{{ data_get($item,'label') }}</a>@empty
-        <a class="is-active" href="{{ route('site.home') }}">Trang chủ</a><a href="{{ route('site.catalog.search') }}">Sản phẩm <b>+</b></a><a href="{{ route('site.catalog.search') }}">Sản phẩm yêu thích</a><a href="{{ route('site.blog.index') }}">Tin tức</a><a href="{{ route('site.contact') }}">Liên hệ</a><a href="{{ route('site.contact') }}">Hệ thống cửa hàng</a>
-        @endforelse
+        @foreach($nav as $index=>$item)<a class="{{ $index===0?'is-active':'' }}" href="{{ data_get($item,'url') }}" target="{{ data_get($item,'target','_self') }}">{{ data_get($item,'label') }}</a>@endforeach
     </div></div></nav>
 </header>

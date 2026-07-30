@@ -1,10 +1,11 @@
 @php
     $profile = $siteProfile ?? [];
-    $branding = (array) data_get($profile, 'branding', []);
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'NovaTech Mall'))) ?: 'NovaTech Mall';
     $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '1900 6750';
-    $nav = collect($primaryMenu ?? [])->filter()->values();
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 
 <header class="ec13-header" id="top">
@@ -37,16 +38,9 @@
     <nav class="ec13-nav">
         <div class="ec13-container" data-ec13-nav>
             <button class="ec13-nav-category" type="button" data-ec13-mega-toggle><i class="fa-solid fa-bars-staggered"></i> Danh mục <i class="fa-solid fa-chevron-down"></i></button>
-            @forelse($nav as $item)
-                <a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>
-            @empty
-                <a class="active" href="{{ route('site.home') }}">Trang chủ</a>
-                <a href="{{ route('site.catalog.search') }}">Sản phẩm <i class="fa-solid fa-chevron-down"></i></a>
-                <a href="{{ route('site.home') }}#ban-chay">Khuyến mãi</a>
-                <a href="{{ route('site.home') }}#laptop">Laptop</a>
-                <a href="{{ route('site.blog.index') }}">Tin tức</a>
-                <a href="{{ route('site.contact') }}">Liên hệ</a>
-            @endforelse
+            @foreach($nav as $item)
+                <a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>
+            @endforeach
             @auth('admin')<a class="ec13-admin-link" href="{{ route('admin.index') }}" target="_blank"><i class="fa-solid fa-gear"></i> Admin</a>@endauth
         </div>
     </nav>

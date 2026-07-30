@@ -9,7 +9,10 @@ use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
+use App\Models\CmsPartner;
 use App\Models\CmsPost;
+use App\Models\CmsTestimonial;
+use App\Models\LandingPage;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Models\ThemeDemoRecord;
@@ -26,6 +29,7 @@ class ThemeDemoContentGenerator
     public function __construct(
         private readonly CmsMenuLocationRegistry $menuLocationRegistry,
         private readonly ThemeDemoContentProviderRegistry $providerRegistry,
+        private readonly ThemeDemoWebsiteFinalizer $websiteFinalizer,
     ) {
     }
 
@@ -73,7 +77,15 @@ class ThemeDemoContentGenerator
         }
 
         if ($provider = $this->providerRegistry->forTheme($themeKey)) {
-            return $provider->generate($presetKey);
+            return DB::transaction(function () use ($provider, $themeKey, $presetKey): array {
+                $this->websiteFinalizer->purge($themeKey);
+
+                return $this->websiteFinalizer->finalize(
+                    $themeKey,
+                    $presetKey,
+                    $provider->generate($presetKey),
+                );
+            });
         }
 
         $preset = collect($this->presetDefinitions())->firstWhere('key', $presetKey);
@@ -100,7 +112,8 @@ class ThemeDemoContentGenerator
 
         $timestamp = Carbon::now();
 
-        return DB::transaction(function () use ($preset, $siteProfile, $themeKey, $timestamp, $isServicePreset): array {
+        return DB::transaction(function () use ($preset, $siteProfile, $themeKey, $timestamp, $isServicePreset, $presetKey): array {
+            $this->websiteFinalizer->purge();
             $this->replaceMenuLocations();
             $purged = $this->purgeDemoContent();
 
@@ -141,7 +154,7 @@ class ThemeDemoContentGenerator
                 'branding' => $branding,
             ]);
 
-            return [
+            return $this->websiteFinalizer->finalize($themeKey, $presetKey, [
                 'preset' => Arr::only($preset, ['key', 'label', 'description']),
                 'counts' => [
                     'pages' => $pageCount,
@@ -152,19 +165,24 @@ class ThemeDemoContentGenerator
                     'banners' => $bannerCount,
                 ],
                 'purged' => $purged,
-            ];
+            ]);
         });
     }
 
     public function delete(string $themeKey): array
     {
-        if ($provider = $this->providerRegistry->forTheme($themeKey)) {
-            return $provider->delete();
-        }
+        return DB::transaction(function () use ($themeKey): array {
+            $supplemental = $this->websiteFinalizer->purge($themeKey);
+            $result = $this->providerRegistry->forTheme($themeKey)?->delete()
+                ?? ['counts' => $this->purgeDemoContent($themeKey)];
+            $counts = (array) data_get($result, 'counts', $result);
 
-        return DB::transaction(fn (): array => [
-            'counts' => $this->purgeDemoContent($themeKey),
-        ]);
+            foreach ($supplemental as $key => $count) {
+                $counts[$key] = (int) ($counts[$key] ?? 0) + $count;
+            }
+
+            return ['counts' => $counts];
+        });
     }
 
     public function defaultPresetForTheme(string $themeKey): ?string
@@ -178,15 +196,7 @@ class ThemeDemoContentGenerator
             ->select('theme_key')
             ->distinct()
             ->pluck('theme_key')
-            ->each(function (string $themeKey): void {
-                if ($provider = $this->providerRegistry->forTheme($themeKey)) {
-                    $provider->delete();
-
-                    return;
-                }
-
-                $this->purgeDemoContent($themeKey);
-            });
+            ->each(fn (string $themeKey) => $this->delete($themeKey));
     }
 
     private function replaceMenuLocations(): void
@@ -220,6 +230,9 @@ class ThemeDemoContentGenerator
                 'menus' => 0,
                 'posts' => 0,
                 'pages' => 0,
+                'testimonials' => 0,
+                'partners' => 0,
+                'landing_pages' => 0,
                 'catalog_products' => 0,
                 'catalog_categories' => 0,
                 'cms_categories' => 0,
@@ -231,6 +244,9 @@ class ThemeDemoContentGenerator
             CmsMenu::class => ['model' => CmsMenu::class, 'key' => 'menus'],
             CmsPost::class => ['model' => CmsPost::class, 'key' => 'posts'],
             CmsPage::class => ['model' => CmsPage::class, 'key' => 'pages'],
+            CmsTestimonial::class => ['model' => CmsTestimonial::class, 'key' => 'testimonials'],
+            CmsPartner::class => ['model' => CmsPartner::class, 'key' => 'partners'],
+            LandingPage::class => ['model' => LandingPage::class, 'key' => 'landing_pages'],
             CatalogProduct::class => ['model' => CatalogProduct::class, 'key' => 'catalog_products'],
             CatalogCategory::class => ['model' => CatalogCategory::class, 'key' => 'catalog_categories'],
             CmsCategory::class => ['model' => CmsCategory::class, 'key' => 'cms_categories'],

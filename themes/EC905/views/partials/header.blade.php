@@ -3,7 +3,7 @@
     $brand = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logo = trim((string) data_get($brand, 'logo_url', ''));
     $hotline = data_get($brand, 'support_hotline', '1900 6750');
-    $menuItems = collect($primaryMenu['items'] ?? [])->values();
+    $menuItems = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec95-header">
     <div class="ec95-topbar"><div class="ec95-container"><span>Thỏa mãn nhu cầu người dùng · Giao hàng toàn quốc</span><nav><a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: {{ $hotline }}</a><a href="#du-an">Hệ thống cửa hàng</a><a href="{{ route('site.contact') }}">Tuyển dụng</a></nav></div></div>
@@ -16,8 +16,6 @@
     </div></div>
     <nav class="ec95-nav"><div class="ec95-container">
         <button type="button" data-ec95-categories><i class="fa-solid fa-bars"></i> Danh mục sản phẩm</button>
-        @forelse($menuItems as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>@empty
-            <a class="is-active" href="{{ route('site.home') }}">Trang chủ</a><a href="{{ route('site.catalog.search') }}">Sản phẩm</a><a href="#">Yêu thích</a><a href="#du-an">Dự án</a><a href="{{ route('site.blog.index') }}">Tin tức</a><a href="{{ route('site.contact') }}">Liên hệ</a>
-        @endforelse
+        @foreach($menuItems as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
     </div></nav>
 </header>

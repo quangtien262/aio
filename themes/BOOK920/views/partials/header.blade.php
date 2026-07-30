@@ -1,7 +1,9 @@
 @php
-    $branding = (array) data_get($siteProfile ?? [], 'branding', []);
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url'));
     $cartCount = (int) data_get($cartSummary ?? [], 'count', 0);
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="book20-header">
     <div class="book20-topbar">
@@ -13,7 +15,7 @@
         </a>
         <button class="book20-menu-toggle" data-book20-menu aria-label="Mở menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
         <nav data-book20-nav>
-            <a href="{{ route('site.home') }}">Trang chủ</a><a href="#gioi-thieu">Giới thiệu</a><a href="#sach-hot">Sản phẩm</a><a href="#dich-vu">Dịch vụ</a><a href="#tin-tuc">Tin tức</a><a href="#thu-vien">Thư viện</a><a href="{{ route('site.contact') }}">Liên hệ</a>
+            @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
         </nav>
         <div class="book20-actions"><button data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-basket-shopping"></i><em>{{ $cartCount }}</em></a></div>
     </div>
