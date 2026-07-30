@@ -27,10 +27,7 @@
     <div class="xd324-container xd324-header__inner">
         <a class="xd324-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if ($logoUrl !== '')
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span>WolfArch</span>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
         <button type="button" class="xd324-menu-toggle" data-foot-menu-toggle aria-expanded="false" aria-label="{{ $themeText('XD0324.header.open_menu') }}"><i class="fa-solid fa-bars"></i></button>
         <nav class="xd324-nav" data-foot-menu aria-label="{{ $themeText('XD0324.header.primary_nav') }}">

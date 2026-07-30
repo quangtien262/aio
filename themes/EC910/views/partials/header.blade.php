@@ -4,7 +4,7 @@
     $t = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('EC910', app()->getLocale(), $key);
     $name = trim((string) ($branding['company_name'] ?? '')) ?: $t('EC910.brand.default');
     $logo = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $nav = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', [])))->filter(fn ($item) => is_array($item) && filled($item['label'] ?? null))->values();
     if ($nav->isEmpty()) {
         $nav = collect([
@@ -26,8 +26,7 @@
             <a href="{{ route('site.contact') }}"><i class="fa-solid fa-location-dot"></i>Hệ thống cửa hàng</a>
         </div>
         <a class="ec10-logo" href="{{ route('site.home') }}">
-            @if($logo)<img src="{{ $logo }}" alt="{{ $name }}">
-            @else<span><i class="fa-regular fa-clock"></i><b>DOLA</b><strong>WATCH</strong></span>@endif
+            @if($logo)<img src="{{ $logo }}" alt="{{ $name }}">@endif
         </a>
         <div class="ec10-head-actions">
             <form action="{{ route('site.catalog.search') }}"><input name="q" placeholder="{{ $t('EC910.search.placeholder') }}"><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>

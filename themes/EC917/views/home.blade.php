@@ -19,7 +19,7 @@
     $slides = collect($hero['dynamic_items'] ?? [])->filter()->values();
     if ($slides->isEmpty()) $slides = collect(data_get($hero, 'data.content.slides', []))->filter()->values();
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
-    $hotline = trim((string) data_get($branding, 'support_hotline')) ?: '1900 1993';
+    $hotline = trim((string) data_get($branding, 'support_hotline'));
 @endphp
 <main class="ec17-main">
     <section class="ec17-hero xd-landing-block" data-landing-block-id="{{ data_get($hero, 'id') }}" data-block-type="hero_slider">

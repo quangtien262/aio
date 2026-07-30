@@ -1,7 +1,7 @@
 @php
     $consultBranding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
     $consultCompany = trim((string) ($consultBranding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Chúng tôi')));
-    $consultHotline = trim((string) ($consultBranding['support_hotline'] ?? '1900 9477'));
+    $consultHotline = trim((string) ($consultBranding['support_hotline'] ?? ''));
     $consultEmail = trim((string) ($consultBranding['support_email'] ?? ''));
 @endphp
 

@@ -2,9 +2,9 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'XD0320 Industrial'))) ?: 'XD0320 Industrial';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '028 7307 3737')) ?: '028 7307 3737';
-    $email = trim((string) ($branding['support_email'] ?? 'hello@xd0320.vn')) ?: 'hello@xd0320.vn';
-    $address = trim((string) ($branding['support_location'] ?? '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM')) ?: '196 Nguyễn Đình Chiểu, Quận 3, TP.HCM';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $address = trim((string) ($branding['support_location'] ?? ''));
 @endphp
 <footer id="footer" class="foot-footer">
     <div class="foot-container foot-footer__top">

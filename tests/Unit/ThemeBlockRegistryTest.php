@@ -14,27 +14,27 @@ class ThemeBlockRegistryTest extends TestCase
     {
         $registry = app(ThemeBlockRegistry::class);
 
-        $this->assertSame('theme_block.ser0100.quote_panel.badge', $registry->contentKey('SER0100', 'quote_panel.badge'));
+        $this->assertSame('theme_block.ser0101.quote_panel.badge', $registry->contentKey('SER0101', 'quote_panel.badge'));
 
-        $entries = collect($registry->editableEntries('SER0100', 'website-main'));
+        $entries = collect($registry->editableEntries('SER0101', 'website-main'));
 
-        $this->assertTrue($entries->contains(fn (array $entry): bool => $entry['key'] === 'theme_block.ser0100.quote_panel.badge'));
-        $this->assertTrue($entries->contains(fn (array $entry): bool => $entry['key'] === 'theme_block.ser0100.service_metrics.0.value'));
-        $this->assertTrue($entries->contains(fn (array $entry): bool => $entry['key'] === 'theme_block.ser0100.latest_posts.summary'));
+        $this->assertTrue($entries->contains(fn (array $entry): bool => $entry['key'] === 'theme_block.ser0101.quote_panel.badge'));
+        $this->assertTrue($entries->contains(fn (array $entry): bool => $entry['key'] === 'theme_block.ser0101.service_metrics.0.value'));
+        $this->assertTrue($entries->contains(fn (array $entry): bool => $entry['key'] === 'theme_block.ser0101.latest_posts.summary'));
     }
 
-    public function test_registry_exposes_legacy_map_for_ser0100_only(): void
+    public function test_registry_exposes_legacy_map_for_ser0101_only(): void
     {
         $registry = app(ThemeBlockRegistry::class);
 
-        $legacyMap = $registry->legacyKeyMap('SER0100');
+        $legacyMap = $registry->legacyKeyMap('SER0101');
 
         $this->assertSame(
-            'theme_block.ser0100.latest_posts.summary',
+            'theme_block.ser0101.latest_posts.summary',
             $legacyMap['theme_section.latest_posts.summary'] ?? null,
         );
         $this->assertSame(
-            'theme_block.ser0100.service_metrics.2.label',
+            'theme_block.ser0101.service_metrics.2.label',
             $legacyMap['theme_metric.service_metrics.2.label'] ?? null,
         );
         $this->assertSame([], $registry->legacyKeyMap('UNKNOWN'));

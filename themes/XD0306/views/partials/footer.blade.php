@@ -1,7 +1,7 @@
 <footer id="footer" class="xd5-footer">
     <div class="xd5-container">
         <div class="xd5-footer-top">
-            <a class="xd5-brand" href="#top">@if(filled($logoUrl ?? null))<img src="{{ $logoUrl }}" alt="{{ $companyName }}">@else<span>◢</span><strong>{{ $companyName }}</strong>@endif</a>
+            <a class="xd5-brand" href="#top">@if(filled($logoUrl ?? null))<img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif</a>
             <div><small>Đặt câu hỏi</small><b>{{ $hotline }}</b></div>
             <div><small>Gửi email</small><b>{{ $supportEmail }}</b></div>
         </div>

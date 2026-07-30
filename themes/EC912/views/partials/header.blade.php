@@ -4,18 +4,15 @@
     $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'Sudes Phone'))) ?: 'Sudes Phone';
-    $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
-    $location = trim((string) data_get($branding, 'support_location', '')) ?: '7 cửa hàng';
+    $hotline = trim((string) data_get($branding, 'support_hotline', ''));
+    $location = trim((string) data_get($branding, 'support_location', ''));
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec12-header" id="top">
     <div class="ec12-container ec12-head-main">
         <a class="ec12-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">
             @if($logo)
-                <img src="{{ $logo }}" alt="{{ $siteName }}">
-            @else
-                <span>{{ $siteName }}</span>
-            @endif
+                <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
         </a>
         <form class="ec12-search" action="{{ route('site.catalog.search') }}">
             <input name="q" placeholder="{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('EC912', app()->getLocale(), 'EC912.search_placeholder', 'Tìm sản phẩm...') }}" aria-label="Tìm sản phẩm">

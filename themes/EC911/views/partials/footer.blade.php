@@ -1,8 +1,8 @@
 @php
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
-    $phone = data_get($branding, 'support_hotline', '0399162342');
-    $email = data_get($branding, 'support_email', 'support@htvietnam.vn');
-    $address = data_get($branding, 'support_location', 'Tầng 6, Tòa nhà Ladeco, 266 Đội Cấn, Hà Nội');
+    $phone = data_get($branding, 'support_hotline', '');
+    $email = data_get($branding, 'support_email', '');
+    $address = data_get($branding, 'support_location', '');
 @endphp
 <footer class="ec11-footer">
     <div class="ec11-container ec11-footer-grid">

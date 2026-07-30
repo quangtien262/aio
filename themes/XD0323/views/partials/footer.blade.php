@@ -2,9 +2,9 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Euro Farm'))) ?: 'Euro Farm';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
-    $email = trim((string) ($branding['support_email'] ?? 'support@htvietnam.vn')) ?: 'support@htvietnam.vn';
-    $address = trim((string) ($branding['support_location'] ?? '70 Lữ Gia, Phường 15, Quận 11, TP.HCM')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $address = trim((string) ($branding['support_location'] ?? ''));
     $description = trim((string) ($branding['company_description'] ?? 'Euro Farm là doanh nghiệp nông nghiệp tiên phong chuyên sản xuất và cung cấp thực phẩm hữu cơ, an toàn và tốt cho sức khỏe.')) ?: 'Euro Farm là doanh nghiệp nông nghiệp tiên phong chuyên sản xuất và cung cấp thực phẩm hữu cơ, an toàn và tốt cho sức khỏe.';
     $themeText = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), $key);
     $newsletterUrl = route('site.newsletter.subscribe', \App\Support\FrontendLocalization::routeParameterDefaults());

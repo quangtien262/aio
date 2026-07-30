@@ -10,7 +10,7 @@
     <div class="ec96-container ec96-head-main">
         <button class="ec96-category-toggle" type="button" data-ec96-menu><i class="fa-solid fa-bars"></i><span>Danh mục sản phẩm</span></button>
         <a class="ec96-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">
-            @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span><b>E</b><b>G</b><b>A</b><small>mini mart</small></span>@endif
+            @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@endif
         </a>
         <div class="ec96-head-actions">
             <a href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></a>

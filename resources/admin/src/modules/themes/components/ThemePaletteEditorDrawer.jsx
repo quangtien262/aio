@@ -10,18 +10,6 @@ import Typography from 'antd/es/typography';
 const { Paragraph, Text, Title } = Typography;
 
 function buildDefaultPalette(themeKey) {
-    if (themeKey === 'SER0100') {
-        return {
-            primary_color: '#c2410c',
-            primary_color_deep: '#ea580c',
-            accent_color: '#1f6f78',
-            accent_soft_color: '#f59e0b',
-            background_color: '#f7fbfd',
-            surface_color: '#ffffff',
-            surface_tint_color: '#eef5f7',
-        };
-    }
-
     if (themeKey === 'SER0101') {
         return {
             primary_color: '#0f766e',

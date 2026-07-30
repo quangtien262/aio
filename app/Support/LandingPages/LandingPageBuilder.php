@@ -41,7 +41,7 @@ class LandingPageBuilder
 
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0100', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -1823,7 +1823,7 @@ class LandingPageBuilder
             'EC916' => $this->ec916DefaultBlocks(),
             'EC917' => $this->ec917DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
-            'SER0100', 'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
+            'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
             'SER103' => $this->ser103DefaultBlocks(),
             'XD0318' => $this->xd0318DefaultBlocks(),

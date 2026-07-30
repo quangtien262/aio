@@ -4,10 +4,10 @@
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Athletic Fitness Center'))) ?: 'Athletic Fitness Center';
     $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Athletic la trung tam the duc hien dai, dong hanh cung hoi vien tren hanh trinh ren luyen suc khoe va vung chac than hinh.'))) ?: 'Athletic la trung tam the duc hien dai, dong hanh cung hoi vien tren hanh trinh ren luyen suc khoe va vung chac than hinh.';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 9477')) ?: '1900 9477';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
-    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? 'admin@demo031030.web30s.vn')) ?: 'admin@demo031030.web30s.vn';
-    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? '196 Nguyen Dinh Chieu, P.Vo Thi Sau, Q.3, TP.HCM')) ?: '196 Nguyen Dinh Chieu, P.Vo Thi Sau, Q.3, TP.HCM';
+    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? ''));
+    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? ''));
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
 

@@ -12,11 +12,7 @@
         <section>
             <a class="fg18-footer-brand" href="#top" aria-label="{{ $companyName }}">
                 @if (filled($logoUrl ?? null))
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span class="fg18-brand__mark"></span>
-                    <span><strong>FAST GEAR</strong><small>messenger service</small></span>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
             <p>{{ $companyDescription }}</p>
             <div class="fg18-socials">

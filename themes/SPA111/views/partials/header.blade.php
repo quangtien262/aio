@@ -5,7 +5,7 @@
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $companyName = trim((string) data_get($branding, 'company_name', 'Bean Spa')) ?: 'Bean Spa';
-    $hotline = data_get($branding, 'support_hotline', '0399162342');
+    $hotline = data_get($branding, 'support_hotline', '');
 @endphp
 <div class="sp11-topbar">
     <div class="sp11-container">
@@ -17,11 +17,7 @@
     <div class="sp11-container sp11-header-row">
         <a class="sp11-logo" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if($logo)
-                <img src="{{ $logo }}" alt="{{ $companyName }}">
-            @else
-                <span class="sp11-logo-mark"><i class="fa-solid fa-leaf"></i><b>B</b></span>
-                <span><strong>Bean <em>Spa</em></strong><small>ĐẸP TRÊN CẢ ƯỚC MƠ</small></span>
-            @endif
+                <img src="{{ $logo }}" alt="{{ $companyName }}">@endif
         </a>
         <button class="sp11-menu-toggle" type="button" data-spa111-menu-toggle aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
         <nav class="sp11-nav" data-spa111-menu>

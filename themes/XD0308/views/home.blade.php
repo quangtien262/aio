@@ -3,10 +3,10 @@
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Dịch vụ vận hành'))) ?: 'Dịch vụ vận hành';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 9477')) ?: '1900 9477';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
-    $supportEmail = trim((string) ($branding['support_email'] ?? 'admin@example.vn')) ?: 'admin@example.vn';
-    $supportAddress = trim((string) ($branding['support_location'] ?? '344 Huỳnh Tấn Phát, Quận 7, TP.HCM')) ?: '344 Huỳnh Tấn Phát, Quận 7, TP.HCM';
+    $supportEmail = trim((string) ($branding['support_email'] ?? ''));
+    $supportAddress = trim((string) ($branding['support_location'] ?? ''));
     $navItems = collect(data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', [])))
         ->filter(fn ($item) => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
         ->map(fn ($item) => ['label' => (string) ($item['label'] ?? $item['title']), 'href' => (string) ($item['url'] ?? $item['href'] ?? '#'), 'children' => $item['children'] ?? []])

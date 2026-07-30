@@ -75,7 +75,7 @@ export default function SiteBannerFormModal({ open, canManage, translationMode =
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item name="theme_key" label="Theme key">
-                            <Input disabled={translationMode} placeholder="SER0100 hoặc để trống cho global" />
+                            <Input disabled={translationMode} placeholder="SER0101 hoặc để trống cho global" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>

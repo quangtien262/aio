@@ -21,11 +21,7 @@
     <div class="ser102-container ser102-header__inner">
         <a class="ser102-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if(filled($logoUrl))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span class="ser102-brand__mark"><i class="fa-solid fa-car-side"></i></span>
-                <span><strong>{{ $companyName }}</strong><small>@themeT('SER102.brand.tagline')</small></span>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
         <button class="ser102-menu-toggle" type="button" data-ser102-menu-toggle aria-label="@themeT('SER102.header.open_menu')">
             <i class="fa-solid fa-bars"></i>

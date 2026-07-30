@@ -9,7 +9,7 @@
 <header class="ec15-header" data-ec15-header>
     <div class="ec15-container ec15-header-inner">
         <a class="ec15-logo" href="{{ route('site.home') }}">
-            @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span>ND</span><b>Interior</b>@endif
+            @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@endif
         </a>
         <nav data-ec15-nav>
             @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach

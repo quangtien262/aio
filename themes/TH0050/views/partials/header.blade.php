@@ -27,7 +27,7 @@
     <div class="th5-topbar"><div class="th5-container"><span><i class="fa-solid fa-bell"></i> @themeT('TH0050.header.promotion')</span>@if($th5Hotline !== '')<a href="tel:{{ $th5Phone }}"><i class="fa-regular fa-comments"></i><small>@themeT('TH0050.header.hotline')</small><strong>{{ $th5Hotline }}</strong></a>@endif</div></div>
     <div class="th5-head-main"><div class="th5-container th5-head-main__inner">
         <a class="th5-logo" href="{{ route('site.home') }}" aria-label="{{ $th5Company }}">
-            @if($th5Logo !== '')<img src="{{ $th5Logo }}" alt="{{ $th5Company }}">@else<span class="th5-logo__mark"><i class="fa-solid fa-feather-pointed"></i></span><span><strong>{{ $th5Company }}</strong><small>@themeT('TH0050.brand.tagline')</small></span>@endif
+            @if($th5Logo !== '')<img src="{{ $th5Logo }}" alt="{{ $th5Company }}">@endif
         </a>
         <form class="th5-search" action="{{ route('site.catalog.search') }}"><input name="q" value="{{ request('q') }}" placeholder="@themeT('TH0050.header.search')"><button aria-label="@themeT('TH0050.header.search')"><i class="fa-solid fa-magnifying-glass"></i></button></form>
         <div class="th5-head-actions"><a href="tel:{{ $th5Phone }}"><i class="fa-solid fa-location-dot"></i><span>Cửa hàng</span></a>@auth('customer')<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>@themeT('TH0050.header.account')</span></a>@else<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>@themeT('TH0050.header.account')</span></button>@endauth<a class="th5-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><b>{{ $th5CartCount }}</b><span>@themeT('TH0050.header.cart')</span></a></div>

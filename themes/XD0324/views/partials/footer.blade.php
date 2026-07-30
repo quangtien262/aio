@@ -2,9 +2,9 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'WolfArch'))) ?: 'WolfArch';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
-    $email = trim((string) ($branding['support_email'] ?? 'support@htvietnam.vn')) ?: 'support@htvietnam.vn';
-    $address = trim((string) ($branding['support_location'] ?? '70 Lữ Gia, Phường 15, Quận 11, Thành phố Hồ Chí Minh')) ?: '70 Lữ Gia, Phường 15, Quận 11, Thành phố Hồ Chí Minh';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $address = trim((string) ($branding['support_location'] ?? ''));
     $themeText = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0324', app()->getLocale(), $key);
 @endphp
 <footer id="footer" class="xd324-footer">

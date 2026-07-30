@@ -3,7 +3,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $logoAlt = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Arkit'))) ?: 'Arkit';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $cartSummary = (array) data_get($shell, 'cart_summary', ['count' => 0, 'unique_count' => 0, 'subtotal' => 0, 'items' => []]);
     $cartItems = array_values((array) ($cartSummary['items'] ?? []));

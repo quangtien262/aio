@@ -9,8 +9,8 @@
     $latest = collect($latestPosts ?? [])->take(3)->values();
     $branding = (array) data_get($themeShellData ?? [], 'branding', []);
     $companyName = trim((string) data_get($branding, 'company_name', data_get($siteProfile ?? [], 'site_name', 'DN350')));
-    $hotline = trim((string) data_get($branding, 'support_hotline', '1900 6760'));
-    $email = trim((string) data_get($branding, 'support_email', 'hello@example.com'));
+    $hotline = trim((string) data_get($branding, 'support_hotline', ''));
+    $email = trim((string) data_get($branding, 'support_email', ''));
 
     if ($body === '') {
         $body = '<p>'.e($summary !== '' ? $summary : 'Nội dung trang đang được cập nhật.').'</p>';

@@ -2,9 +2,9 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Halufin'))) ?: 'Halufin';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '19006750')) ?: '19006750';
-    $address = trim((string) ($branding['support_location'] ?? 'Tòa Ladeco, 266 Đội Cấn - Ba Đình - Hà Nội')) ?: 'Tòa Ladeco, 266 Đội Cấn - Ba Đình - Hà Nội';
-    $email = trim((string) ($branding['support_email'] ?? 'support@example.com')) ?: 'support@example.com';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $address = trim((string) ($branding['support_location'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
 @endphp
 
 <section id="dang-ky-nhan-tin" class="bz501-newsletter">
@@ -27,12 +27,12 @@
         <section>
             <h3>@themeT('BZ501.footer.locations')</h3>
             <div class="bz501-footer__rule"></div>
-            <p><i class="fa-solid fa-location-dot"></i><strong>{{ $companyName }} Đội Cấn</strong></p>
+            <p><i class="fa-solid fa-location-dot"></i><strong>{{ $companyName }}</strong></p>
             <p>Địa chỉ: {{ $address }}</p>
             <p>Hotline: {{ $hotline }}</p>
             <p>Email: <a href="mailto:{{ $email }}">{{ $email }}</a></p>
-            <p><i class="fa-solid fa-location-dot"></i><strong>{{ $companyName }} Lữ Gia</strong></p>
-            <p>Địa chỉ: 70 Lữ Gia - Quận 11 - TP.Hồ Chí Minh</p>
+            <p><i class="fa-solid fa-location-dot"></i><strong>{{ $companyName }}</strong></p>
+            <p>Địa chỉ: {{ $address }}</p>
             <p>Hotline: {{ $hotline }}</p>
         </section>
 

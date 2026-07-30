@@ -3,9 +3,9 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Halufin'))) ?: 'Halufin';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $location = trim((string) ($branding['support_location'] ?? '')) ?: app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('BZ501', app()->getLocale(), 'BZ501.header.location');
-    $email = trim((string) ($branding['support_email'] ?? '')) ?: app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('BZ501', app()->getLocale(), 'BZ501.header.email');
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('BZ501', app()->getLocale(), 'BZ501.header.hotline');
+    $location = trim((string) ($branding['support_location'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $navItems = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
         ->filter(fn ($item) => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
         ->map(fn ($item) => [
@@ -45,11 +45,7 @@
     <div class="bz501-container bz501-navrow">
         <a class="bz501-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if ($logoUrl !== '')
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span class="bz501-brand__mark"><i class="fa-solid fa-chart-line"></i></span>
-                <strong>{{ $companyName }}</strong>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
 
         <button type="button" class="bz501-menu-toggle" data-bz501-menu-toggle aria-expanded="false" aria-label="@themeT('BZ501.header.open_menu')">

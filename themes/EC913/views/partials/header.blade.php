@@ -4,7 +4,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'NovaTech Mall'))) ?: 'NovaTech Mall';
-    $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
+    $hotline = trim((string) data_get($branding, 'support_hotline', ''));
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 
@@ -16,10 +16,7 @@
         <div class="ec13-container ec13-head-main">
             <a class="ec13-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">
                 @if($logo)
-                    <img src="{{ $logo }}" alt="{{ $siteName }}">
-                @else
-                    <span class="ec13-logo-mark"><i class="fa-solid fa-bolt"></i></span><span><b>NOVA</b>TECH<small>Digital mall</small></span>
-                @endif
+                    <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
             </a>
             <form class="ec13-search" action="{{ route('site.catalog.search') }}">
                 <input name="q" placeholder="@themeT('EC913.search_placeholder', 'Bạn muốn tìm sản phẩm nào?')" aria-label="Tìm sản phẩm">

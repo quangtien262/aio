@@ -248,6 +248,7 @@ class SiteMappingController
         Request $request,
         ThemeDemoContentGenerator $demoContentGenerator,
         SiteContentInitializer $initializer,
+        SiteDataPurger $purger,
     ): JsonResponse {
         $themeKey = $this->siteThemeKey($site);
         abort_if($themeKey === null, 422, 'Domain chưa được gán theme để tạo data test.');
@@ -256,27 +257,44 @@ class SiteMappingController
         $availablePresets = collect($demoContentGenerator->presetsForTheme($themeKey));
         $validated = $request->validate([
             'preset' => ['required', 'string', Rule::in($availablePresets->pluck('key')->all())],
+            'reset_all' => ['sometimes', 'boolean'],
         ]);
 
         try {
-            $result = $initializer->initialize(
-                $site,
-                SiteContentInitializer::MODE_SAMPLE,
-                $validated['preset'],
-            );
-            $this->markDemoDataCreated($site);
+            $purged = [];
+            $result = DB::transaction(function () use ($site, $validated, $initializer, $purger, &$purged): array {
+                if ((bool) ($validated['reset_all'] ?? false)) {
+                    $purged = $purger->purge(
+                        $site->website_key,
+                        includeProfile: false,
+                        allowDefaultWebsite: true,
+                    );
+                }
+
+                $result = $initializer->initialize(
+                    $site,
+                    SiteContentInitializer::MODE_SAMPLE,
+                    $validated['preset'],
+                );
+                $this->markDemoDataCreated($site);
+
+                return $result;
+            });
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
 
         return response()->json([
             'message' => sprintf(
-                'Đã tạo data test cho %s.',
+                (bool) ($validated['reset_all'] ?? false)
+                    ? 'Đã xóa data cũ và tạo data test mới cho %s.'
+                    : 'Đã tạo data test cho %s.',
                 $site->domain ?: $site->website_key,
             ),
             'data' => [
                 'site' => $this->sitePayload($site),
                 'initialization' => $result,
+                'purged' => $purged,
             ],
         ]);
     }

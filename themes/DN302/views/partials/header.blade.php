@@ -1,8 +1,8 @@
 @php
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
     $siteName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Website')));
-    $hotline = $branding['support_hotline'] ?? '1900 9477';
-    $email = $branding['support_email'] ?? data_get($siteProfile ?? [], 'email', 'admin@demo.web30s.vn');
+    $hotline = $branding['support_hotline'] ?? '';
+    $email = $branding['support_email'] ?? '';
     $logo = trim((string) ($branding['logo_url'] ?? ''));
     $menuItems = collect(data_get(
         $themeShellData ?? [],
@@ -32,11 +32,7 @@
     <div class="dn-header-inner dn-container">
         <a class="dn-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
             @if($logo !== '')
-                <img src="{{ $logo }}" alt="{{ $siteName }}">
-            @else
-                <i class="fa-regular fa-window-maximize"></i>
-                <span>{{ $siteName }}<small>{{ data_get($siteProfile ?? [], 'description', 'Windows &amp; Doors') }}</small></span>
-            @endif
+                <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
         </a>
         <div class="dn-head-main">
             <div class="dn-topbar">

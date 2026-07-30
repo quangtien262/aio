@@ -4,7 +4,7 @@
     $t = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('EC900', app()->getLocale(), $key);
     $name = trim((string) ($branding['company_name'] ?? '')) ?: $t('EC900.brand.default');
     $logo = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $nav = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', [])))->filter(fn ($item) => is_array($item) && filled($item['label'] ?? null))->values();
     if ($nav->isEmpty()) {
         $nav = collect([
@@ -22,11 +22,7 @@
     <div class="ec9-container ec9-header-main">
         <a class="ec9-logo" href="{{ route('site.home') }}">
             @if($logo)
-                <img src="{{ $logo }}" alt="{{ $name }}">
-            @else
-                <span class="ec9-logo-mark"><i class="fa-solid fa-bolt"></i></span>
-                <span><b>{{ $name }}</b><small>{{ $t('EC900.brand.tagline') }}</small></span>
-            @endif
+                <img src="{{ $logo }}" alt="{{ $name }}">@endif
         </a>
         <form class="ec9-search" method="GET" action="{{ route('site.catalog.search') }}">
             <input name="q" value="{{ request('q') }}" placeholder="{{ $t('EC900.search.placeholder') }}">

@@ -3,8 +3,8 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'XD0322 Construction'))) ?: 'XD0322 Construction';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
-    $email = trim((string) ($branding['support_email'] ?? 'support@xd0322.vn')) ?: 'support@xd0322.vn';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
     $themeText = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0322', app()->getLocale(), $key);
     $navItems = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
         ->filter(fn ($item) => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
@@ -27,11 +27,7 @@
             <div class="c322-header-contact"><a href="tel:{{ preg_replace('/[^0-9]+/', '', $hotline) }}"><i class="fa-solid fa-phone"></i> {{ $hotline }}</a><a href="mailto:{{ $email }}"><i class="fa-regular fa-envelope"></i> {{ $email }}</a></div>
             <a class="foot-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
                 @if ($logoUrl !== '')
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span class="foot-brand__monogram">N</span>
-                    <span><strong>{{ $companyName }}</strong><small>@themeT('xd0322.brand.tagline')</small></span>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
             <div class="foot-header__account">
                 @guest('customer')

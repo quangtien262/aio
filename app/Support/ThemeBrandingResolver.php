@@ -47,7 +47,7 @@ class ThemeBrandingResolver
      */
     public function resolve(string $websiteKey, ?string $themeKey, array $legacyBranding = []): array
     {
-        $resolved = array_merge(self::COMPANY_DEFAULTS, $legacyBranding);
+        $resolved = $legacyBranding;
         $themeKey = $this->normalizeThemeKey($themeKey);
 
         if ($themeKey === null || ! $this->tableExists()) {

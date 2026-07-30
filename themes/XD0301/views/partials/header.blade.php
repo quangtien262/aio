@@ -1,9 +1,9 @@
         @php
             $logoUrl = $logoUrl ?? '';
             $logoAlt = $logoAlt ?? 'Arkit';
-            $hotline = $hotline ?? '0399162342';
+            $hotline = $hotline ?? '';
             $phoneHref = $phoneHref ?? (preg_replace('/\D+/', '', (string) $hotline) ?: $hotline);
-            $supportEmail = $supportEmail ?? ($email ?? 'admin@htvietnam.vn');
+            $supportEmail = $supportEmail ?? ($email ?? '');
             $topbarLocales = collect(\App\Support\FrontendLocalization::localeOptions())
                 ->filter(fn (array $locale): bool => (bool) ($locale['is_active'] ?? false) && (bool) ($locale['is_published'] ?? true))
                 ->values();
@@ -219,10 +219,7 @@
             <div class="xd-container xd-header-inner">
                 <a class="xd-logo" href="{{ route('site.home') }}" aria-label="{{ $logoAlt }} trang chủ">
                     @if ($logoUrl !== '')
-                        <img class="xd-logo-image" src="{{ $logoUrl }}" alt="{{ $logoAlt }}">
-                    @else
-                        <i class="xd-logo-mark" aria-hidden="true"></i><b>ar<span>kit</span>.</b>
-                    @endif
+                        <img class="xd-logo-image" src="{{ $logoUrl }}" alt="{{ $logoAlt }}">@endif
                 </a>
                 <button type="button" class="xd-mobile-menu-toggle" data-xd-mobile-menu-toggle aria-expanded="false" aria-controls="xd-mobile-menu">Menu</button>
                 <nav class="xd-nav" aria-label="Menu chính">

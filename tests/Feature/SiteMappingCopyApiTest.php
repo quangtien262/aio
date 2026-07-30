@@ -121,6 +121,80 @@ class SiteMappingCopyApiTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('preset');
     }
 
+    public function test_admin_can_delete_old_domain_content_before_generating_fresh_demo_data(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+
+        $site = Site::query()->create([
+            'domain' => 'fresh-shop.demo.test',
+            'website_key' => 'fresh-shop-demo',
+            'theme_key' => 'SHOP601',
+            'name' => 'Fresh Shop Demo',
+            'status' => 'active',
+        ]);
+        DB::table('cms_pages')->insert([
+            'website_key' => $site->website_key,
+            'title' => 'Nội dung cũ phải xóa',
+            'slug' => 'noi-dung-cu-phai-xoa',
+            'status' => 'published',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->postJson("/admin/api/site-mappings/{$site->id}/demo-data", [
+            'preset' => 'shop601-bean-style',
+            'reset_all' => true,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.site.website_key', $site->website_key)
+            ->assertJsonPath('data.site.checklist.demo_data_created', true)
+            ->assertJsonPath('data.purged.cms_pages', 1);
+
+        $this->assertDatabaseMissing('cms_pages', [
+            'website_key' => $site->website_key,
+            'slug' => 'noi-dung-cu-phai-xoa',
+        ]);
+        $this->assertDatabaseHas('catalog_products', [
+            'website_key' => $site->website_key,
+        ]);
+        $this->assertDatabaseHas('site_profiles', [
+            'website_key' => $site->website_key,
+            'active_theme_key' => 'SHOP601',
+        ]);
+    }
+
+    public function test_generating_demo_data_without_reset_keeps_manual_domain_content(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+
+        $site = Site::query()->create([
+            'domain' => 'keep-content.demo.test',
+            'website_key' => 'keep-content-demo',
+            'theme_key' => 'SHOP601',
+            'status' => 'active',
+        ]);
+        DB::table('cms_pages')->insert([
+            'website_key' => $site->website_key,
+            'title' => 'Nội dung thủ công',
+            'slug' => 'noi-dung-thu-cong',
+            'status' => 'published',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->postJson("/admin/api/site-mappings/{$site->id}/demo-data", [
+            'preset' => 'shop601-bean-style',
+            'reset_all' => false,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.purged', []);
+
+        $this->assertDatabaseHas('cms_pages', [
+            'website_key' => $site->website_key,
+            'slug' => 'noi-dung-thu-cong',
+        ]);
+    }
+
     public function test_default_domain_uses_active_theme_from_site_profile_for_demo_data(): void
     {
         $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
@@ -131,6 +205,14 @@ class SiteMappingCopyApiTest extends TestCase
             ['website_key' => 'website-main'],
             ['site_name' => 'Default website', 'active_theme_key' => 'NT502'],
         );
+        DB::table('cms_pages')->insert([
+            'website_key' => 'website-main',
+            'title' => 'Trang cũ website chính',
+            'slug' => 'trang-cu-website-chinh',
+            'status' => 'published',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         $this->getJson('/admin/api/site-mappings')
             ->assertOk()
@@ -139,9 +221,19 @@ class SiteMappingCopyApiTest extends TestCase
 
         $this->postJson("/admin/api/site-mappings/{$site->id}/demo-data", [
             'preset' => 'nt502-dola-furniture',
+            'reset_all' => true,
         ])
             ->assertOk()
             ->assertJsonPath('data.site.theme_key', 'NT502');
+
+        $this->assertDatabaseMissing('cms_pages', [
+            'website_key' => 'website-main',
+            'slug' => 'trang-cu-website-chinh',
+        ]);
+        $this->assertDatabaseHas('site_profiles', [
+            'website_key' => 'website-main',
+            'active_theme_key' => 'NT502',
+        ]);
     }
 
     public function test_creating_a_domain_with_sample_content_reuses_existing_fallback_slugs(): void

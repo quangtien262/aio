@@ -1,9 +1,9 @@
 @php
     $branding = data_get($siteProfile ?? [], 'branding', []);
     $companyName = data_get($siteProfile ?? [], 'site_name', 'SER102 Auto Detailing');
-    $hotline = data_get($branding, 'support_hotline', data_get($siteProfile ?? [], 'hotline', '0399162342'));
-    $email = data_get($branding, 'support_email', data_get($siteProfile ?? [], 'support_email', 'hello@ser102.vn'));
-    $address = data_get($branding, 'support_location', data_get($siteProfile ?? [], 'address', 'TP. Hồ Chí Minh'));
+    $hotline = data_get($branding, 'support_hotline', '');
+    $email = data_get($branding, 'support_email', data_get($siteProfile ?? [], 'support_email', ''));
+    $address = data_get($branding, 'support_location', '');
 @endphp
 <footer class="ser102-footer">
     <div class="ser102-container">

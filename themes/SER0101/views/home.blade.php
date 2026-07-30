@@ -59,9 +59,9 @@
         ['key' => 'menu.default.blog', 'label' => 'Nhãn Cẩm nang', 'group' => 'static'],
         ['key' => 'common.search_button', 'label' => 'Nhãn Tìm', 'group' => 'static'],
     ];
-    $contactHotline = data_get($branding, 'support_hotline', '1900 6760');
-    $contactEmail = data_get($branding, 'support_email', 'hello@ser0101.demo');
-    $contactLocation = data_get($branding, 'support_location', 'Hồ Chí Minh');
+    $contactHotline = data_get($branding, 'support_hotline', '');
+    $contactEmail = data_get($branding, 'support_email', '');
+    $contactLocation = data_get($branding, 'support_location', '');
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
     $heroVisualSlides = $homeData['hero_slides'] ?? [];

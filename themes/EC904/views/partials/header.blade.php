@@ -2,12 +2,12 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $brand = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logo = trim((string) data_get($brand, 'logo_url', ''));
-    $hotline = data_get($brand, 'support_hotline', '0399162342');
+    $hotline = data_get($brand, 'support_hotline', '');
     $menuItems = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec94-header">
     <div class="ec94-head-main"><div class="ec94-container">
-        <a class="ec94-logo" href="{{ route('site.home') }}">@if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name') }}">@else<span>POCO</span><b>Mall</b><small>THIÊN ĐƯỜNG MUA SẮM</small>@endif</a>
+        <a class="ec94-logo" href="{{ route('site.home') }}">@if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name') }}">@endif</a>
         <form action="{{ route('site.catalog.search') }}" method="get"><input name="q" placeholder="@themeT('search.placeholder', 'Tìm kiếm sản phẩm...')"><button aria-label="@themeT('search.label', 'Tìm kiếm')"><i class="fa-solid fa-magnifying-glass"></i></button></form>
         <a class="ec94-support" href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone-volume"></i><span>Tư vấn hỗ trợ<b>{{ $hotline }}</b></span></a>
         <button class="ec94-login" type="button" data-auth-open="login"><i class="fa-regular fa-circle-user"></i><span>Xin chào!<b>Đăng nhập</b></span></button>

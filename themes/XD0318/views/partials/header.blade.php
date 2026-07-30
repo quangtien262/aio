@@ -2,11 +2,7 @@
     <div class="fg18-container fg18-header__inner">
         <a class="fg18-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if (filled($logoUrl ?? null))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span class="fg18-brand__mark"></span>
-                <span><strong>FAST GEAR</strong><small>messenger service</small></span>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
 
         <nav class="fg18-nav" data-fg18-nav aria-label="Dieu huong chinh">

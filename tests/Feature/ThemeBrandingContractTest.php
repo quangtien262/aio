@@ -64,6 +64,58 @@ class ThemeBrandingContractTest extends TestCase
         $this->assertSame([], $failures, "Theme branding contract failures:\n".implode("\n", $failures));
     }
 
+    public function test_every_registered_theme_leaves_missing_database_branding_blank(): void
+    {
+        $profile = SiteProfile::query()->create([
+            'website_key' => 'website-main',
+            'site_name' => 'Empty branding contract',
+            'website_type' => 'ecommerce',
+            'active_theme_key' => 'DN202',
+            'branding' => [],
+        ]);
+        $failures = [];
+
+        foreach (app(ThemeRegistry::class)->all() as $theme) {
+            $themeKey = (string) $theme['key'];
+
+            SiteThemeProfile::query()->updateOrCreate(
+                ['website_key' => 'website-main', 'theme_key' => strtoupper($themeKey)],
+                ['branding' => []],
+            );
+            $profile->forceFill(['active_theme_key' => $themeKey])->save();
+
+            $response = $this->get('/vi');
+
+            if ($response->getStatusCode() !== 200) {
+                $failures[] = "{$themeKey}: HTTP {$response->getStatusCode()}";
+
+                continue;
+            }
+
+            [$header, $footer] = $this->headerAndFooter($response->getContent());
+            $shell = $header.$footer;
+            $visibleText = html_entity_decode(strip_tags($shell), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            if ($this->containsBrandImage($shell)) {
+                $failures[] = "{$themeKey}: fallback logo";
+            }
+
+            if (preg_match('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', $visibleText, $emailMatch) === 1) {
+                $failures[] = "{$themeKey}: fallback email {$emailMatch[0]}";
+            }
+
+            if (preg_match('/(?:0\d|1800|1900)[\d .-]{6,}\d/', $visibleText, $hotlineMatch) === 1) {
+                $failures[] = "{$themeKey}: fallback hotline {$hotlineMatch[0]}";
+            }
+
+            if (preg_match('/Đội Cấn|Lữ Gia|Nguyễn (?:Khuyến|Đình Chiểu)|An Thượng|Xuân Thủy|TP\.?\s*(?:HCM|Hồ Chí Minh)/iu', $visibleText, $addressMatch) === 1) {
+                $failures[] = "{$themeKey}: fallback address {$addressMatch[0]}";
+            }
+        }
+
+        $this->assertSame([], $failures, "Empty branding contract failures:\n".implode("\n", $failures));
+    }
+
     /**
      * @return array{string, string}
      */
@@ -86,5 +138,27 @@ class ThemeBrandingContractTest extends TestCase
         };
 
         return [$collect('header'), $collect('footer')];
+    }
+
+    private function containsBrandImage(string $html): bool
+    {
+        $document = new DOMDocument();
+        $previous = libxml_use_internal_errors(true);
+        $document->loadHTML('<?xml encoding="utf-8" ?>'.$html);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        foreach ($document->getElementsByTagName('a') as $link) {
+            $class = strtolower($link->getAttribute('class'));
+
+            if (
+                (str_contains($class, 'logo') || str_contains($class, 'brand'))
+                && $link->getElementsByTagName('img')->length > 0
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -10,10 +10,7 @@
         <section>
             <a class="af15-footer-brand" href="#top">
                 @if (filled($logoUrl ?? null))
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span class="af15-logo-mark"><strong>ATHLETIC</strong><i>✊</i><em>FITNESS CENTER</em></span>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
             <p>{{ $companyDescription }}</p>
             <div class="af15-socials"><a>f</a><a>z</a><a>t</a><a>▶</a></div>

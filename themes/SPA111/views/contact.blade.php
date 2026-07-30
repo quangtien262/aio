@@ -14,9 +14,9 @@
         <div class="spa111-container spa111-detail">
             <div class="spa111-detail-body">
                 <h2>Thông tin liên hệ</h2>
-                <p><strong>Địa chỉ:</strong> {{ data_get($siteProfile ?? [], 'support_location', 'Tòa Ladeco, 266 Đội Cấn - Ba Đình - Hà Nội') }}</p>
+                <p><strong>Địa chỉ:</strong> {{ data_get($siteProfile ?? [], 'support_location', '') }}</p>
                 <p><strong>Hotline:</strong> {{ data_get($siteProfile ?? [], 'hotline', '19006750') }}</p>
-                <p><strong>Email:</strong> {{ data_get($siteProfile ?? [], 'support_email', 'support@htvietnam.vn') }}</p>
+                <p><strong>Email:</strong> {{ data_get($siteProfile ?? [], 'support_email', '') }}</p>
             </div>
             <form class="spa111-form" method="POST" action="{{ route('site.contact.submit') }}">
                 @csrf

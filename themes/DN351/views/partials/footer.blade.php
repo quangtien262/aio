@@ -2,15 +2,15 @@
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
     $siteName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Meatlers')));
     $logo = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 9477'));
-    $email = trim((string) ($branding['support_email'] ?? data_get($siteProfile ?? [], 'email', 'hello@meatlers.vn')));
-    $address = trim((string) ($branding['support_location'] ?? data_get($siteProfile ?? [], 'address', '344 Huỳnh Tấn Phát, Quận 7, TP. Hồ Chí Minh')));
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $address = trim((string) ($branding['support_location'] ?? ''));
 @endphp
 <footer class="dn351-footer">
     <div class="dn351-container dn351-footer__grid">
         <section>
             <a class="dn351-footer__logo" href="{{ route('site.home') }}">
-                @if($logo !== '')<img src="{{ $logo }}" alt="{{ $siteName }}">@else<i class="fa-solid fa-cow"></i><strong>{{ $siteName }}</strong>@endif
+                @if($logo !== '')<img src="{{ $logo }}" alt="{{ $siteName }}">@endif
             </a>
             <p>@themeT('DN351.footer.about', 'Meatlers kết nối nguồn thực phẩm minh bạch với những bữa ăn tươi ngon, an toàn và giàu dinh dưỡng.')</p>
             <h4>@themeT('DN351.footer.hours', 'Giờ mở cửa')</h4>

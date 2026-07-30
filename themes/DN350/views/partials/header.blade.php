@@ -2,8 +2,8 @@
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
     $siteName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Prinash')));
     $logo = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 9477'));
-    $email = trim((string) ($branding['support_email'] ?? data_get($siteProfile ?? [], 'email', 'hello@prinash.vn')));
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
     $menuItems = collect(data_get($themeShellData ?? [], 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
         ->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label', data_get($item, 'title'))))->values();
     if ($menuItems->isEmpty()) {
@@ -31,10 +31,7 @@
         <div class="dn350-container dn350-nav__inner">
             <a class="dn350-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
                 @if($logo !== '')
-                    <img src="{{ $logo }}" alt="{{ $siteName }}">
-                @else
-                    <span class="dn350-logo__mark"><i class="fa-solid fa-spray-can-sparkles"></i></span><strong>{{ $siteName }}</strong>
-                @endif
+                    <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
             </a>
             <button class="dn350-menu-toggle" type="button" data-dn350-menu aria-expanded="false" aria-controls="dn350-menu"><i class="fa-solid fa-bars"></i></button>
             <nav id="dn350-menu" class="dn350-menu" data-dn350-nav>

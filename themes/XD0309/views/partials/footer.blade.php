@@ -3,10 +3,7 @@
         <div class="xd5-footer-top">
             <a class="xd5-brand" href="#top">
                 @if(filled($logoUrl ?? null))
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span aria-hidden="true">◆</span><strong>{{ $companyName }}</strong>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
             <div><small>Đặt câu hỏi</small><b>{{ $hotline }}</b></div>
             <div><small>Gửi email</small><b>{{ $supportEmail }}</b></div>

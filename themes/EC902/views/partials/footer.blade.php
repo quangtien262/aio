@@ -2,9 +2,9 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $name = trim((string) ($branding['company_name'] ?? '')) ?: 'NovaPhone';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
-    $email = trim((string) ($branding['support_email'] ?? '')) ?: 'support@novaphone.vn';
-    $location = trim((string) ($branding['support_location'] ?? '')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $location = trim((string) ($branding['support_location'] ?? ''));
 @endphp
 <footer class="ec92-footer"><div class="ec92-container ec92-footer-grid">
     <section><h2>{{ $name }}</h2><p>Hệ thống bán lẻ smartphone, máy tính bảng, laptop và thiết bị công nghệ chính hãng với giá tốt, trả góp linh hoạt, giao hàng nhanh.</p><p><b>Địa chỉ:</b> {{ $location }}</p><p><b>Điện thoại:</b> {{ $hotline }}</p><p><b>Email:</b> {{ $email }}</p></section>

@@ -3,9 +3,9 @@
     $branding = (array) data_get($profile, 'branding', []);
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'NovaTech Mall'))) ?: 'NovaTech Mall';
-    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
-    $email = trim((string) data_get($branding, 'support_email', '')) ?: 'hello@novatech.test';
-    $location = trim((string) data_get($branding, 'support_location', '')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
+    $phone = trim((string) data_get($branding, 'support_hotline', ''));
+    $email = trim((string) data_get($branding, 'support_email', ''));
+    $location = trim((string) data_get($branding, 'support_location', ''));
     $description = trim((string) data_get($branding, 'company_description', '')) ?: 'Trung tâm điện máy và công nghệ chính hãng cho mọi gia đình Việt.';
 @endphp
 
@@ -16,7 +16,7 @@
     <div class="ec13-container ec13-footer-grid">
         <section class="ec13-footer-brand">
             <a class="ec13-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">
-                @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span class="ec13-logo-mark"><i class="fa-solid fa-bolt"></i></span><span><b>NOVA</b>TECH<small>Digital mall</small></span>@endif
+                @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@endif
             </a>
             <p>{{ $description }}</p>
             <div class="ec13-social"><a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a><a href="#" aria-label="Youtube"><i class="fa-brands fa-youtube"></i></a><a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a><a href="#" aria-label="Tiktok"><i class="fa-brands fa-tiktok"></i></a></div>

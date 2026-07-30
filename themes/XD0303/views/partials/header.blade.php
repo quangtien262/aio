@@ -2,10 +2,7 @@
     <div class="xd3-container xd3-contact-row">
         <a class="xd3-logo" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if (filled($logoUrl ?? null))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span class="xd3-logo__mark">SYS</span><strong>{{ $companyName }}</strong>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
         <div class="xd3-contact-item"><b>Giờ mở cửa</b><span>Thứ Hai - Thứ Sáu: 9 AM - 6 PM</span></div>
         <a class="xd3-contact-item" href="tel:{{ $phoneHref }}"><b>Gọi chúng tôi</b><span>{{ $hotline }}</span></a>

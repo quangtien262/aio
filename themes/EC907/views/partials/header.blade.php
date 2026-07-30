@@ -1,11 +1,11 @@
 @php
     $profile=(array)($siteProfile??[]);$shell=$themeShellData??$themeHomeData??[];
     $branding=(array)data_get($shell,'branding',data_get($profile,'branding',[]));$logo=trim((string)data_get($branding,'logo_url',''));
-    $siteName=trim((string)data_get($branding,'company_name',data_get($profile,'site_name','EGA Gear')))?:'EGA Gear';$hotline=data_get($branding,'support_hotline','0999 999 998');$nav=collect(data_get($shell,'top_menu',[]))->filter(fn($item)=>is_array($item)&&filled(data_get($item,'label')))->values();
+    $siteName=trim((string)data_get($branding,'company_name',data_get($profile,'site_name','EGA Gear')))?:'EGA Gear';$hotline=data_get($branding,'support_hotline','');$nav=collect(data_get($shell,'top_menu',[]))->filter(fn($item)=>is_array($item)&&filled(data_get($item,'label')))->values();
 @endphp
 <header class="ec97-header" id="top">
     <div class="ec97-container ec97-head-top">
-        <a class="ec97-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span><i>E</i><b>EGA</b><strong>GEAR</strong></span>@endif</a>
+        <a class="ec97-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@endif</a>
         <form class="ec97-search" action="{{ route('site.catalog.search') }}"><label>Danh mục sản phẩm <i class="fa-solid fa-angle-down"></i></label><input name="q" placeholder="Tìm theo tên sản phẩm..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
         <div class="ec97-account">@guest('customer')<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>Tài khoản<b>Đăng nhập</b></span></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>Tài khoản<b>{{ auth('customer')->user()?->name }}</b></span></a>@endguest<a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i><em>{{ (int)data_get($cart??[],'count',0) }}</em><span>Giỏ hàng</span></a></div>
     </div>

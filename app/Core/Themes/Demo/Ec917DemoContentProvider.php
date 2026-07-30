@@ -208,7 +208,7 @@ class Ec917DemoContentProvider implements ThemeDemoContentProvider
                 'company_description' => 'Thương hiệu nội thất uy tín và chất lượng, mang đến trải nghiệm mua sắm tiện lợi, hiện đại và phong phú.',
                 'support_hotline' => '0399162342',
                 'support_email' => 'support@htvietnam.vn',
-                'support_location' => '70 Lữ Gia, Quận 11, Thành phố Hồ Chí Minh',
+                'support_location' => 'Số 7 ngõ 68 đường Nguyễn Khuyến, Đại Mỗ, Hà Nội  ',
                 'tax_code' => '12345678999',
             ];
             $profile->forceFill([

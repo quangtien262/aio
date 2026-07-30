@@ -22,7 +22,7 @@
         $slides = collect(data_get($hero, 'data.content.slides', []))->filter()->values();
     }
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
-    $dbHotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
+    $dbHotline = trim((string) data_get($branding, 'support_hotline', ''));
 @endphp
 <main class="ec12-main">
     <section class="ec12-hero xd-landing-block" data-landing-block-id="{{ data_get($hero, 'id') }}" data-block-type="hero_slider" data-ec12-slider>

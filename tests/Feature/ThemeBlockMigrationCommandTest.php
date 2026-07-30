@@ -20,7 +20,7 @@ class ThemeBlockMigrationCommandTest extends TestCase
             'value' => 'Legacy summary',
         ]);
 
-        $this->artisan('theme-blocks:migrate-legacy', ['--theme' => 'SER0100', '--dry-run' => true])
+        $this->artisan('theme-blocks:migrate-legacy', ['--theme' => 'SER0101', '--dry-run' => true])
             ->assertExitCode(0);
 
         $this->assertDatabaseHas('theme_translations', [
@@ -42,7 +42,7 @@ class ThemeBlockMigrationCommandTest extends TestCase
             'value' => 'Legacy metric label',
         ]);
 
-        $this->artisan('theme-blocks:migrate-legacy', ['--theme' => 'SER0100'])
+        $this->artisan('theme-blocks:migrate-legacy', ['--theme' => 'SER0101'])
             ->assertExitCode(0);
 
         $this->assertDatabaseMissing('theme_translations', [
@@ -56,7 +56,7 @@ class ThemeBlockMigrationCommandTest extends TestCase
             'theme_key' => 'site-content:website-main',
             'locale' => 'en',
             'group' => 'content',
-            'translation_key' => 'theme_block.ser0100.service_metrics.0.label',
+            'translation_key' => 'theme_block.ser0101.service_metrics.0.label',
             'value' => 'Legacy metric label',
         ]);
     }

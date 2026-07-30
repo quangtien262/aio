@@ -1,9 +1,9 @@
 @php
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
-    $email = trim((string) ($branding['support_email'] ?? '')) ?: 'support@htvietnam.vn';
-    $location = trim((string) ($branding['support_location'] ?? '')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $location = trim((string) ($branding['support_location'] ?? ''));
 @endphp
 <footer class="ec10-footer">
     <div class="ec10-container ec10-footer-brand"><span class="ec10-brand-mark"><i class="fa-regular fa-clock"></i>DOLA <b>WATCH</b></span><p>Đồng hồ chính hãng, dịch vụ tận tâm và bảo hành minh bạch.</p><div><a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i class="fa-brands fa-youtube"></i></a><a href="#"><i class="fa-brands fa-google"></i></a><a href="#"><i class="fa-solid fa-comment"></i></a></div></div>

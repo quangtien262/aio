@@ -7,11 +7,11 @@
 @endphp
 <header class="book20-header">
     <div class="book20-topbar">
-        <div class="book20-container"><span><i class="fa-solid fa-phone"></i> {{ data_get($branding, 'support_hotline', '1900 9477') }}</span><span><i class="fa-regular fa-envelope"></i> {{ data_get($branding, 'support_email', 'hello@bookle.vn') }}</span><form action="{{ route('site.catalog.search') }}"><input name="q" placeholder="Nhập từ khóa..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form></div>
+        <div class="book20-container"><span><i class="fa-solid fa-phone"></i> {{ data_get($branding, 'support_hotline', '') }}</span><span><i class="fa-regular fa-envelope"></i> {{ data_get($branding, 'support_email', '') }}</span><form action="{{ route('site.catalog.search') }}"><input name="q" placeholder="Nhập từ khóa..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form></div>
     </div>
     <div class="book20-container book20-header-main">
         <a class="book20-logo" href="{{ route('site.home') }}">
-            @if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'Bookle') }}">@else<span><i class="fa-solid fa-book-open"></i> Bookle</span>@endif
+            @if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'Bookle') }}">@endif
         </a>
         <button class="book20-menu-toggle" data-book20-menu aria-label="Mở menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
         <nav data-book20-nav>

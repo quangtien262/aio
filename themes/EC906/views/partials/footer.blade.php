@@ -1,8 +1,8 @@
 @php
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
-    $phone = data_get($branding, 'support_hotline', '0399162342');
-    $email = data_get($branding, 'support_email', 'support@egamart.vn');
-    $address = data_get($branding, 'support_location', '70 Lữ Gia, Quận 11, TP. Hồ Chí Minh');
+    $phone = data_get($branding, 'support_hotline', '');
+    $email = data_get($branding, 'support_email', '');
+    $address = data_get($branding, 'support_location', '');
 @endphp
 <footer class="ec96-footer" id="footer"><div class="ec96-container ec96-footer-grid">
     <section class="ec96-footer-brand"><a class="ec96-logo" href="#top"><span><b>E</b><b>G</b><b>A</b><small>mini mart</small></span></a><h3>Siêu thị Mini EGA</h3><p>Thương hiệu siêu thị uy tín và chất lượng, mang đến trải nghiệm mua sắm tiện lợi, hiện đại và phong phú.</p><p>Mã số thuế: 12345678999</p><p><i class="fa-solid fa-location-dot"></i> {{ $address }}</p><div><a href="tel:{{ preg_replace('/\s+/', '', $phone) }}"><i class="fa-solid fa-phone"></i> Hotline<br><b>{{ $phone }}</b></a><a href="mailto:{{ $email }}"><i class="fa-regular fa-envelope"></i> Email<br><b>{{ $email }}</b></a></div><h4>Mạng xã hội</h4><p class="ec96-social"><a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i class="fa-brands fa-youtube"></i></a><a href="#"><i class="fa-brands fa-tiktok"></i></a><a href="#"><i class="fa-brands fa-instagram"></i></a></p></section>

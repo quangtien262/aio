@@ -8,7 +8,7 @@ Checklist này dùng khi tạo theme mới trong AIO. Mục tiêu là để AI/d
 - [ ] Đọc `docs/theme-authoring-guide.md` để hiểu theme registry, namespace Blade, route và translation.
 - [ ] Đọc `docs/landing-page-builder.md` nếu theme có homepage/landing dạng block.
 - [ ] Đọc `docs/theme-demo-data.md` nếu theme cần nút tạo data test.
-- [ ] Xem theme gần nhất cùng loại website để copy pattern, ví dụ `XD0323`, `XD0322`, `XD0301`, `SER0100`.
+- [ ] Xem theme gần nhất cùng loại website để copy pattern, ví dụ `XD0323`, `XD0322`, `XD0301`, `SER0101`.
 - [ ] Nếu làm theme bất động sản, đọc `docs/architecture/real-estate-module-and-bds701-theme.md` và tái sử dụng module `real-estate`; không tạo bảng listing riêng theo theme.
 
 ## 1. Metadata cần chốt

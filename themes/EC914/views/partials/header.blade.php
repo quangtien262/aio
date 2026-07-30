@@ -4,7 +4,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'Mộc Nhiên Craft'))) ?: 'Mộc Nhiên Craft';
-    $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
+    $hotline = trim((string) data_get($branding, 'support_hotline', ''));
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 
@@ -19,11 +19,7 @@
         <div class="ec14-container ec14-head-main">
             <a class="ec14-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">
                 @if($logo)
-                    <img src="{{ $logo }}" alt="{{ $siteName }}">
-                @else
-                    <span class="ec14-logo-mark"><i class="fa-solid fa-seedling"></i></span>
-                    <span><b>Mộc Nhiên</b><em>Craft</em><small>Từng sợi đan, gửi gắm yêu thương</small></span>
-                @endif
+                    <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
             </a>
             <form class="ec14-search" action="{{ route('site.catalog.search') }}">
                 <input name="q" placeholder="@themeT('EC914.search_placeholder', 'Tìm sản phẩm thủ công...')" aria-label="Tìm sản phẩm">

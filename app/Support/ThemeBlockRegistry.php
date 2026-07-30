@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Support\ThemeBlocks\Definitions\Ser0100ThemeBlockDefinition;
 use App\Support\ThemeBlocks\Definitions\Ser0101ThemeBlockDefinition;
 use App\Support\ThemeBlocks\ThemeBlockDefinition;
 
@@ -14,7 +13,6 @@ class ThemeBlockRegistry
     public function __construct()
     {
         $this->definitions = [
-            'ser0100' => new Ser0100ThemeBlockDefinition(),
             'ser0101' => new Ser0101ThemeBlockDefinition(),
         ];
     }

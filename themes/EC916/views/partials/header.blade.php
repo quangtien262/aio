@@ -8,8 +8,7 @@
 <header class="ec16-header">
     <div class="ec16-container ec16-header-main">
         <a class="ec16-logo" href="{{ route('site.home') }}">
-            @if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'Bách Hóa Xanh Plus') }}">
-            @else<i class="fa-solid fa-cart-shopping"></i><span>Bách Hóa <b>XANH+</b></span>@endif
+            @if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'Bách Hóa Xanh Plus') }}">@endif
         </a>
         <form class="ec16-search" action="{{ route('site.catalog.search') }}" method="get">
             <select aria-label="Danh mục"><option>Tất cả</option><option>Thực phẩm</option><option>Công nghệ</option><option>Làm đẹp</option></select>

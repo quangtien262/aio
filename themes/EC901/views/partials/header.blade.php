@@ -19,8 +19,7 @@
 <header class="ec91-header">
     <div class="ec91-container ec91-nav">
         <a class="ec91-logo" href="{{ route('site.home') }}">
-            @if($logo)<img src="{{ $logo }}" alt="{{ $name }}">
-            @else<span><b>{{ $name }}</b><small>{{ $t('EC901.brand.tagline') }}</small></span>@endif
+            @if($logo)<img src="{{ $logo }}" alt="{{ $name }}">@endif
         </a>
         <button class="ec91-menu-button" type="button" data-ec91-menu><i class="fa-solid fa-bars"></i><span>Menu</span></button>
         <nav data-ec91-nav>@foreach($nav as $item)<a href="{{ $item['url'] ?? '#' }}">{{ $item['label'] }}</a>@endforeach</nav>

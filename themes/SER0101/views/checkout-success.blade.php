@@ -7,9 +7,9 @@
     $customerAuth = $shell['customer_auth'] ?? ['is_authenticated' => false, 'customer' => null];
     $newsletterState = $shell['newsletter'] ?? ['is_subscribed' => false];
     $presetSwitcher = $shell['preset_switcher'] ?? ['enabled' => false, 'current_label' => null, 'options' => []];
-    $contactHotline = data_get($branding, 'support_hotline', '1900 6760');
-    $contactEmail = data_get($branding, 'support_email', 'hello@ser0101.demo');
-    $contactLocation = data_get($branding, 'support_location', 'Hồ Chí Minh');
+    $contactHotline = data_get($branding, 'support_hotline', '');
+    $contactEmail = data_get($branding, 'support_email', '');
+    $contactLocation = data_get($branding, 'support_location', '');
     $postLoginRedirect = session('post_login_redirect', request()->fullUrl());
     $confirmedOrder = $order;
     $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);

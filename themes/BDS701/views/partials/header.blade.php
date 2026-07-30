@@ -4,8 +4,8 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Delta Platinum'))) ?: 'Delta Platinum';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $supportHotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
-    $supportEmail = trim((string) ($branding['support_email'] ?? '')) ?: 'contact@example.com';
+    $supportHotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $supportEmail = trim((string) ($branding['support_email'] ?? ''));
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="bds-header">
@@ -33,11 +33,7 @@
     <div class="bds-container bds-nav">
         <a class="bds-logo" href="{{ $homeUrl }}" aria-label="{{ $companyName }}">
             @if ($logoUrl !== '')
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span class="bds-logo-mark"><i class="fa-solid fa-house-chimney-window"></i></span>
-                <span><strong>{{ $companyName }}</strong></span>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
         <button class="bds-menu-toggle" type="button" data-bds-menu><i class="fa-solid fa-bars"></i></button>
         <nav data-bds-nav>

@@ -460,7 +460,7 @@ Working tree tại thời điểm handoff đang có phạm vi thay đổi locali
 - Ở ngữ cảnh gần đây hơn của repo này, hãy đặc biệt nhớ thêm:
   - admin login dùng `username` hoặc `email`, customer dùng `email`
   - modal storefront login là form dùng chung `admin username` + `customer email`
-  - các theme có engagement modal như `SER0100`, `SER0101` đều phải dùng flow shared login này
+  - các theme có engagement modal như `SER0101` đều phải dùng flow shared login này
   - không reintroduce lại `/admin/login` hoặc dedicated admin login page riêng
   - không reintroduce `tenant`, `owner`, `tenant_key`, `owner_key`, `admin_role` hoặc `admin_role_scopes`
   - không cho phép sửa/xóa role `super-admin` hay sửa/khóa/xóa admin ID `1`

@@ -19,7 +19,7 @@ Nếu cần bắt tay làm ngay theo kiểu copy-paste từng bước, đọc th
 - `AppServiceProvider` tự quét toàn bộ thư mục `themes/*` khi boot app.
 - Nếu một theme có `views/`, app đăng ký Blade namespace theo format:
   - `theme-{lowercase_key}::...`
-  - ví dụ `themes/SER0100/views/home.blade.php` sẽ được gọi là `theme-ser0100::home`
+  - ví dụ `themes/SER0101/views/home.blade.php` sẽ được gọi là `theme-ser0101::home`
 - Nếu một theme có `lang/`, app nạp JSON translation của theme từ thư mục đó.
 - Mốc code chính:
   - `app/Providers/AppServiceProvider.php`
@@ -32,7 +32,7 @@ Nếu cần bắt tay làm ngay theo kiểu copy-paste từng bước, đọc th
 Các field đang được dùng thực tế:
 
 - `name`: tên hiển thị trong admin
-- `key`: mã theme, ví dụ `XD0301`, `SER0100`
+- `key`: mã theme, ví dụ `XD0301`, `SER0101`
 - `version`: version nội bộ
 - `description`: mô tả ngắn
 - `website_type`: loại website, ví dụ `ecommerce`, `service`
@@ -49,7 +49,7 @@ File neo:
 
 - `app/Core/Themes/ThemeRegistry.php`
 - `app/Core/Themes/ThemeManifest.php`
-- ví dụ manifest thật: `themes/XD0301/theme.json`, `themes/SER0100/theme.json`
+- ví dụ manifest thật: `themes/XD0301/theme.json`, `themes/SER0101/theme.json`
 
 ## 4. Theme được kích hoạt và lưu ở đâu
 
@@ -189,7 +189,6 @@ Theme Blade files should use route helpers instead of hard-coded legacy URLs. Av
   - input name: `login`
 - Các theme hiện đã đồng bộ flow này:
   - `SHOP601`
-  - `SER0100`
   - `SER0101`
 
 Khi tạo theme mới có auth modal, không reintroduce lại:
@@ -245,10 +244,8 @@ File neo:
 - `app/Http/Controllers/Admin/Api/ThemeActivationController.php`
 - `app/Http/Controllers/Admin/Api/ThemeDemoDataController.php`
 - `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`
-- `themes/SER0100/theme.json`
-- `themes/SER0100/theme.json`
-- `themes/SER0100/views/partials/engagement-modals.blade.php`
-- `docs/architecture/ser0100-service-theme-spec.md`
+- `themes/SER0101/theme.json`
+- `themes/SER0101/views/partials/engagement-modals.blade.php`
 
 ## 14. Nguyên tắc thiết kế khi AI làm theme mới trong repo này
 
@@ -256,4 +253,4 @@ File neo:
 - Ưu tiên reuse flow CMS/Catalog/Banner/Menu/Translation hiện tại trước khi nghĩ tới schema mới.
 - Theme chỉ nên khác nhau ở render, block composition, copy, visual language, và một số config theme-specific thật cần thiết.
 - Nếu chưa rõ route/view nào bắt buộc, đọc `CmsSiteController` trước khi code.
-- Nếu chưa rõ translation/static copy nên đặt ở đâu, đọc `ThemeTranslationService` và xem `XD0301`, `SER0100`, `SER0101` trước.
+- Nếu chưa rõ translation/static copy nên đặt ở đâu, đọc `ThemeTranslationService` và xem `XD0301`, `SER0101` trước.

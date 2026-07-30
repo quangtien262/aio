@@ -17,11 +17,7 @@
         <section>
             <a class="rx13-footer-brand" href="#top" aria-label="{{ $companyName }}">
                 @if (filled($logoUrl ?? null))
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span class="rx13-brand__mark"></span>
-                    <strong>RouteX</strong>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
             <p>{{ $companyDescription }}</p>
             <p>{{ $supportAddress }} · <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}">{{ $hotline }}</a> · <a href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a></p>

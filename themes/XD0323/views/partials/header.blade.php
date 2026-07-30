@@ -3,9 +3,9 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Euro Farm'))) ?: 'Euro Farm';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
-    $email = trim((string) ($branding['support_email'] ?? 'support@htvietnam.vn')) ?: 'support@htvietnam.vn';
-    $address = trim((string) ($branding['support_location'] ?? '70 Lữ Gia, Phường 15, Quận 11, TP.HCM')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $address = trim((string) ($branding['support_location'] ?? ''));
     $locale = app()->getLocale();
     $themeText = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', $locale, $key);
     $navItems = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
@@ -45,11 +45,7 @@
         <div class="xd323-container xd323-masthead__inner">
             <a class="xd323-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
                 @if ($logoUrl !== '')
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span class="xd323-brand__leaf"><i class="fa-brands fa-pagelines"></i></span>
-                    <strong>{{ $companyName }}</strong>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
             <form class="xd323-search" action="{{ route('site.catalog.search') }}" method="GET">
                 <i class="fa-solid fa-magnifying-glass"></i>

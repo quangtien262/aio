@@ -10,11 +10,14 @@ class SiteDataPurger
     /**
      * @return array<string, int>
      */
-    public function purge(string $websiteKey, bool $includeProfile = true): array
+    public function purge(string $websiteKey, bool $includeProfile = true, bool $allowDefaultWebsite = false): array
     {
         $websiteKey = trim($websiteKey);
 
-        if ($websiteKey === '' || $websiteKey === SiteContext::DEFAULT_WEBSITE_KEY) {
+        if (
+            $websiteKey === ''
+            || (! $allowDefaultWebsite && $websiteKey === SiteContext::DEFAULT_WEBSITE_KEY)
+        ) {
             return [];
         }
 
@@ -26,6 +29,13 @@ class SiteDataPurger
             foreach ([
                 'theme_translations',
                 'theme_demo_records',
+                'content_translations',
+                'localized_routes',
+                'cms_page_translations',
+                'contact_inquiries',
+                'orders',
+                'real_estate_listings',
+                'real_estate_property_types',
                 'site_banners',
                 'cms_side_promos',
                 'cms_featured_categories',

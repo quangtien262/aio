@@ -2,11 +2,7 @@
     <div class="rx13-header__inner">
         <a class="rx13-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if (filled($logoUrl ?? null))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span class="rx13-brand__mark"></span>
-                <strong>RouteX</strong>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
 
         <nav class="rx13-nav" data-rx13-nav aria-label="Dieu huong chinh">

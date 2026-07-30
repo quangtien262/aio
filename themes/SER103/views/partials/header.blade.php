@@ -32,10 +32,7 @@
     <div class="ser103-container ser103-header__inner">
         <a class="ser103-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if(filled($logoUrl))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span>{{ $companyName }}</span>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
         <button class="ser103-menu-toggle" type="button" data-ser103-menu-toggle aria-label="Mở menu">
             <i class="fa-solid fa-bars"></i>

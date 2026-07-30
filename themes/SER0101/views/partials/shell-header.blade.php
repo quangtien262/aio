@@ -7,9 +7,9 @@
     $newsletterState = $newsletterState ?? ['is_subscribed' => false];
     $presetSwitcher = $presetSwitcher ?? ['enabled' => false, 'current_label' => null, 'options' => []];
     $cartSummary = array_merge(['count' => 0, 'subtotal' => 0, 'items' => [], 'unique_count' => 0], $cartSummary ?? []);
-    $contactHotline = $contactHotline ?? data_get($branding, 'support_hotline', '1900 6760');
-    $contactEmail = $contactEmail ?? data_get($branding, 'support_email', 'hello@ser0101.demo');
-    $contactLocation = $contactLocation ?? data_get($branding, 'support_location', 'Hồ Chí Minh');
+    $contactHotline = $contactHotline ?? data_get($branding, 'support_hotline', '');
+    $contactEmail = $contactEmail ?? data_get($branding, 'support_email', '');
+    $contactLocation = $contactLocation ?? data_get($branding, 'support_location', '');
     $activePreset = collect($presetSwitcher['options'] ?? [])->firstWhere('is_active', true);
     $brandSlogan = is_array($activePreset)
         ? (string) ($activePreset['description'] ?? '')
@@ -87,7 +87,9 @@
 <header class="ser-shell-header">
     <div class="wrap ser-shell-header-inner">
         <a class="ser-shell-brand" href="{{ route('site.home') }}">
-            <img src="{{ data_get($branding, 'logo_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}" alt="{{ data_get($branding, 'company_name', 'SER0101') }}">
+                    @if (filled(data_get($branding, 'logo_url')))
+                        <img src="{{ data_get($branding, 'logo_url') }}" alt="{{ data_get($branding, 'company_name', 'SER0101') }}">
+                    @endif
             <span class="ser-shell-brand-copy">
                 <strong>{{ data_get($branding, 'company_name', 'SER0101') }}</strong>
             </span>

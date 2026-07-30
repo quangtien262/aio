@@ -8,21 +8,21 @@
             <i class="fa-solid fa-headphones"></i>
             <span>
                 Điện thoại
-                <strong>{{ data_get($branding, 'support_hotline', '1900 9477') }}</strong>
+                <strong>{{ data_get($branding, 'support_hotline', '') }}</strong>
             </span>
         </div>
         <div>
             <i class="fa-regular fa-envelope"></i>
             <span>
                 Email
-                <strong>{{ data_get($branding, 'support_email', 'hello@bookle.vn') }}</strong>
+                <strong>{{ data_get($branding, 'support_email', '') }}</strong>
             </span>
         </div>
         <div>
             <i class="fa-solid fa-location-dot"></i>
             <span>
                 Địa chỉ
-                <strong>{{ data_get($branding, 'support_location', '344 Huỳnh Tấn Phát, Quận 7, HCM') }}</strong>
+                <strong>{{ data_get($branding, 'support_location', '') }}</strong>
             </span>
         </div>
     </div>
@@ -35,11 +35,7 @@
                         class="book20-footer-logo"
                         src="{{ data_get($branding, 'logo_url') }}"
                         alt="{{ data_get($siteProfile ?? [], 'site_name', 'Bookle') }}"
-                    >
-                @else
-                    <i class="fa-solid fa-book-open"></i>
-                    Bookle
-                @endif
+                    >@endif
             </h2>
             <p>Không gian sách ấm cúng, gần gũi như một thư viện cá nhân dành cho mọi độc giả.</p>
             <div class="book20-social">

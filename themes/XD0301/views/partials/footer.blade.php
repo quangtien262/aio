@@ -8,10 +8,10 @@
     $footerDescription = trim((string) ($footerBranding['company_description'] ?? data_get($siteProfile ?? [], 'description', '')));
     $footerLogoUrl = trim((string) ($footerBranding['logo_url'] ?? ($logoUrl ?? '')));
     $footerLogoAlt = trim((string) ($footerBranding['logo_alt'] ?? $footerBranding['company_name'] ?? ($logoAlt ?? $footerCompanyName))) ?: $footerCompanyName;
-    $footerHotline = trim((string) ($footerBranding['support_hotline'] ?? ($hotline ?? '0399162342'))) ?: '0399162342';
+    $footerHotline = trim((string) ($footerBranding['support_hotline'] ?? ($hotline ?? '')));
     $footerPhoneHref = preg_replace('/\D+/', '', $footerHotline) ?: $footerHotline;
-    $footerEmail = trim((string) ($footerBranding['support_email'] ?? $footerBranding['email'] ?? ($email ?? 'admin@htvietnam.vn'))) ?: 'admin@htvietnam.vn';
-    $footerAddress = trim((string) ($footerBranding['support_location'] ?? $footerBranding['address'] ?? ($address ?? ''))) ?: '';
+    $footerEmail = trim((string) ($footerBranding['support_email'] ?? $footerBranding['email'] ?? ($email ?? '')));
+    $footerAddress = trim((string) ($footerBranding['support_location'] ?? $footerBranding['address'] ?? ($address ?? '')));
     $footerSource = $footerNewsletterSource ?? 'theme-footer-xd0301';
     $footerBocStatus = trim((string) ($footerBranding['boc_status'] ?? 'not_notified'));
     $footerBocConfirmationUrl = trim((string) ($footerBranding['boc_confirmation_url'] ?? ''));
@@ -44,10 +44,7 @@
         <div>
             <a class="xd-logo" href="{{ route('site.home') }}" aria-label="{{ $footerCompanyName }}">
                 @if ($footerLogoUrl !== '')
-                    <img class="xd-logo-image" src="{{ $footerLogoUrl }}" alt="{{ $footerLogoAlt }}">
-                @else
-                    <i class="xd-logo-mark" aria-hidden="true"></i><b>{{ $footerCompanyName }}</b>
-                @endif
+                    <img class="xd-logo-image" src="{{ $footerLogoUrl }}" alt="{{ $footerLogoAlt }}">@endif
             </a>
             <h3 class="xd-footer-company">{{ $footerCompanyName }}</h3>
             @if ($footerDescription !== '')

@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 class MigrateLegacyThemeBlockKeysCommand extends Command
 {
     protected $signature = 'theme-blocks:migrate-legacy
-        {--theme=SER0100 : Theme key whose legacy keys should be migrated}
+        {--theme=SER0101 : Theme key whose legacy keys should be migrated}
         {--dry-run : Show the rows that would be migrated without writing changes}';
 
     protected $description = 'Migrate legacy theme_metric/theme_section content overrides to theme_block.<theme>.* keys';

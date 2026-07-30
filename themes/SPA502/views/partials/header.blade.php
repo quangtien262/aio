@@ -1,9 +1,9 @@
 @php
     $branding = $siteProfile['branding'] ?? [];
     $companyName = $siteProfile['site_name'] ?? 'HALU';
-    $logoUrl = $branding['logo_url'] ?? $siteProfile['logo_url'] ?? null;
-    $supportEmail = $siteProfile['support_email'] ?? app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('SPA502', app()->getLocale(), 'SPA502.header.email');
-    $hotline = $siteProfile['hotline'] ?? app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('SPA502', app()->getLocale(), 'SPA502.header.hotline');
+    $logoUrl = $branding['logo_url'] ?? '';
+    $supportEmail = $branding['support_email'] ?? '';
+    $hotline = $branding['support_hotline'] ?? '';
     $cartCount = (int) ($cartCount ?? session('cart_count', 0));
     $wishlistCount = (int) ($wishlistCount ?? 0);
     $compareCount = (int) ($compareCount ?? 0);
@@ -35,11 +35,7 @@
         <div class="spa502-container spa502-navrow__inner">
             <a class="spa502-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
                 @if(filled($logoUrl))
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span class="spa502-brand__mark"><i class="fa-solid fa-flask"></i></span>
-                    <span><strong>HALU</strong><small>@themeT('SPA502.brand.tagline')</small></span>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
 
             <button class="spa502-menu-toggle" type="button" data-spa502-menu-toggle aria-label="@themeT('SPA502.header.open_menu')">

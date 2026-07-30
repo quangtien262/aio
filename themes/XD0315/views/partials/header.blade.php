@@ -2,13 +2,7 @@
     <div class="af15-site-header__inner">
         <a class="af15-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if (filled($logoUrl ?? null))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span class="af15-brand__fallback">
-                    <strong>ATHLETIC</strong>
-                    <span>FITNESS CENTER</span>
-                </span>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
 
         <div class="af15-nav-shell">

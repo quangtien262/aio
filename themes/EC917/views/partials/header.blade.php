@@ -9,11 +9,7 @@
     <div class="ec17-container ec17-header-inner">
         <a class="ec17-logo" href="{{ route('site.home') }}">
             @if($logo)
-                <img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'EGA Furniture') }}">
-            @else
-                <span class="ec17-logo-mark"><i class="fa-solid fa-house-chimney"></i></span>
-                <span><b>E G A</b><small>FURNITURE</small></span>
-            @endif
+                <img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'EGA Furniture') }}">@endif
         </a>
         <nav class="ec17-nav" data-ec17-nav>
             @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach

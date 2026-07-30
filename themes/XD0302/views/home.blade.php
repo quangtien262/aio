@@ -147,10 +147,10 @@
     $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Arkit là công ty chuyên về thiết kế và thi công.'))) ?: 'Arkit là công ty chuyên về thiết kế và thi công.';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $logoAlt = $companyName;
-    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
-    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? 'admin@htvietnam.vn')) ?: 'admin@htvietnam.vn';
-    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? '')) ?: '';
+    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? ''));
+    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? ''));
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
     $blockSourcePreviewUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.source-preview', ['block' => '__BLOCK_ID__']) : '';

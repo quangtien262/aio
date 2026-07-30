@@ -2,8 +2,8 @@
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
     $siteName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Meatlers')));
     $logo = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 9477'));
-    $email = trim((string) ($branding['support_email'] ?? data_get($siteProfile ?? [], 'email', 'hello@meatlers.vn')));
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
     $menuItems = collect(data_get($themeShellData ?? [], 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
         ->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label', data_get($item, 'title'))))->values();
     if ($menuItems->isEmpty()) {
@@ -29,10 +29,7 @@
         <div class="dn351-container dn351-navbar__inner">
             <a class="dn351-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
                 @if($logo !== '')
-                    <img src="{{ $logo }}" alt="{{ $siteName }}">
-                @else
-                    <span class="dn351-logo__mark"><i class="fa-solid fa-cow"></i></span><strong>{{ $siteName }}</strong>
-                @endif
+                    <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
             </a>
             <button class="dn351-menu-toggle" type="button" data-dn351-menu aria-expanded="false" aria-controls="dn351-menu"><i class="fa-solid fa-bars"></i></button>
             <nav id="dn351-menu" class="dn351-menu" data-dn351-nav>

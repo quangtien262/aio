@@ -18,7 +18,7 @@ class ConfigurableLegacyThemesTest extends TestCase
     /** @return array<string, array{0:string}> */
     public static function configurableThemes(): array
     {
-        return collect(['SER0100', 'SER0101', 'SER102'])
+        return collect(['SER0101', 'SER102'])
             ->mapWithKeys(fn (string $theme): array => [$theme => [$theme]])
             ->all();
     }

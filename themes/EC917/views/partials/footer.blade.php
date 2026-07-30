@@ -1,16 +1,15 @@
 @php
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
     $logo = trim((string) data_get($branding, 'logo_url'));
-    $hotline = trim((string) data_get($branding, 'support_hotline')) ?: '0399162342';
-    $email = trim((string) data_get($branding, 'support_email')) ?: 'support@htvietnam.vn';
-    $location = trim((string) data_get($branding, 'support_location')) ?: '70 Lữ Gia, Quận 11, Thành phố Hồ Chí Minh';
+    $hotline = trim((string) data_get($branding, 'support_hotline'));
+    $email = trim((string) data_get($branding, 'support_email'));
+    $location = trim((string) data_get($branding, 'support_location'));
 @endphp
 <footer class="ec17-footer">
     <div class="ec17-container ec17-footer-grid">
         <section class="ec17-footer-brand">
             <a class="ec17-logo ec17-logo-light" href="{{ route('site.home') }}">
-                @if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'EGA Furniture') }}">
-                @else<span class="ec17-logo-mark"><i class="fa-solid fa-house-chimney"></i></span><span><b>E G A</b><small>FURNITURE</small></span>@endif
+                @if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'EGA Furniture') }}">@endif
             </a>
             <h2>{{ data_get($branding, 'company_name', 'Siêu thị nội thất EGA') }}</h2>
             <p>{{ data_get($branding, 'company_description', 'Thương hiệu nội thất uy tín và chất lượng, mang đến trải nghiệm mua sắm tiện lợi, hiện đại và phong phú.') }}</p>

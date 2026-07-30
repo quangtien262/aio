@@ -1828,7 +1828,7 @@ class CmsSiteController
     {
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $shellData = $this->resolveThemeShellData($siteProfile, $activeTheme, $menus);
-        $themeKey = (string) ($activeTheme['key'] ?? 'SER0100');
+        $themeKey = (string) ($activeTheme['key'] ?? 'SER0101');
 
         $parentCategories = CatalogCategory::query()
             ->with(['children' => function ($query) use ($websiteKey): void {
@@ -2014,12 +2014,12 @@ class CmsSiteController
         $themePalette = $this->resolveThemePalette($siteProfile, $themeKey);
         $branding = array_merge([
             'company_name' => $siteProfile?->site_name ?? 'AIO Website',
-            'logo_url' => self::DEFAULT_BRAND_ASSET,
-            'favicon_url' => self::DEFAULT_BRAND_ASSET,
+            'logo_url' => '',
+            'favicon_url' => '',
             'primary_color' => '#ef2b2d',
-            'support_hotline' => '1900 6760',
-            'support_email' => config('mail.from.address', 'cs@aio.local'),
-            'support_location' => 'Hà Nội',
+            'support_hotline' => '',
+            'support_email' => '',
+            'support_location' => '',
         ], $siteProfile?->branding ?? []);
 
         if ($this->isCommerceThemeKey($themeKey)) {
@@ -2806,7 +2806,7 @@ class CmsSiteController
 
     private function isServiceThemeKey(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['SER0100', 'SER0101'], true);
+        return strtoupper((string) $themeKey) === 'SER0101';
     }
 
     private function isCommerceThemeKey(?string $themeKey): bool

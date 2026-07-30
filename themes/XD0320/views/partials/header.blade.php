@@ -24,11 +24,7 @@
         <div class="foot-container foot-header__masthead-inner">
             <a class="foot-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
                 @if ($logoUrl !== '')
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span class="foot-brand__monogram">F</span>
-                    <span><strong>{{ $companyName }}</strong><small>@themeT('xd0320.brand.tagline')</small></span>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
             <div class="foot-header__account">
                 @guest('customer')

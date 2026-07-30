@@ -40,10 +40,7 @@
         <section class="dn-footer-brand">
             <a class="dn-footer-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
                 @if($logo !== '')
-                    <img src="{{ $logo }}" alt="{{ $siteName }}">
-                @else
-                    <i class="fa-regular fa-window-maximize"></i>
-                @endif
+                    <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
                 <span>{{ $siteName }}</span>
             </a>
             <p>

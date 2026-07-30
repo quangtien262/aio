@@ -1,11 +1,11 @@
 @php
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $supportEmail = data_get($branding, 'support_email', 'support@htvietnam.vn');
-    $hotline = data_get($branding, 'support_hotline', '19006750');
-    $supportAddress = data_get($branding, 'support_location', 'Hà Nội');
+    $supportEmail = data_get($branding, 'support_email', '');
+    $hotline = data_get($branding, 'support_hotline', '');
+    $supportAddress = data_get($branding, 'support_location', '');
     $locations = data_get($siteProfile ?? [], 'branding.locations', [
-        ['name' => 'HALU Đội Cấn', 'address' => 'Tòa Ladeco, 266 Đội Cấn - Ba Đình - Hà Nội', 'hotline' => $hotline],
-        ['name' => 'HALU Lữ Gia', 'address' => '70 Lữ Gia - Quận11 - TP.Hồ Chí Minh', 'hotline' => $hotline],
+        ['name' => 'HALU', 'address' => $supportAddress, 'hotline' => $hotline],
+        ['name' => 'HALU', 'address' => $supportAddress, 'hotline' => $hotline],
     ]);
 @endphp
 

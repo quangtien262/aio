@@ -9,10 +9,7 @@
     <div class="xd5-container xd5-nav-wrap">
         <a class="xd5-brand" href="{{ route('site.home') }}">
             @if(filled($logoUrl ?? null))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span>i</span><strong>{{ $companyName }}</strong>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
         <button data-xd5-menu aria-expanded="false">Menu</button>
         <nav data-xd5-nav>

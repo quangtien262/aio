@@ -176,7 +176,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const openDemoData = (item) => {
         const presets = demoPresetsByTheme[item.theme_key] ?? [];
         setDemoSite(item);
-        demoForm.setFieldsValue({ preset: presets[0]?.key });
+        demoForm.setFieldsValue({ preset: presets[0]?.key, reset_all: false });
     };
 
     const createDemoData = async () => {
@@ -186,7 +186,9 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                 method: 'POST',
                 body: JSON.stringify(values),
             }),
-            `Đã tạo data test cho ${demoSite.domain || demoSite.website_key}.`,
+            values.reset_all
+                ? `Đã xóa data cũ và tạo data test mới cho ${demoSite.domain || demoSite.website_key}.`
+                : `Đã tạo data test cho ${demoSite.domain || demoSite.website_key}.`,
             loadItems,
         );
 
@@ -507,6 +509,16 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                             }))}
                         />
                     </Form.Item>
+                    <Form.Item name="reset_all" valuePropName="checked" initialValue={false}>
+                        <Checkbox>
+                            Tạo mới &amp; xóa data cũ
+                        </Checkbox>
+                    </Form.Item>
+                    <Alert
+                        type="error"
+                        showIcon
+                        message="Khi chọn, toàn bộ dữ liệu nội dung hiện có của domain này sẽ bị xóa trước khi tạo data test mới. Cấu hình domain, theme và branding vẫn được giữ lại."
+                    />
                 </Form>
             </Modal>
 

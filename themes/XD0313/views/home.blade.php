@@ -4,10 +4,10 @@
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'RouteX'))) ?: 'RouteX';
     $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'RouteX la cong ty tu van visa, du hoc va du lich chuyen nghiep, dong hanh cung khach hang tren moi hanh trinh quoc te.'))) ?: 'RouteX la cong ty tu van visa, du hoc va du lich chuyen nghiep, dong hanh cung khach hang tren moi hanh trinh quoc te.';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 9477')) ?: '1900 9477';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
-    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? 'admin@routex.vn')) ?: 'admin@routex.vn';
-    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? '196 Nguyen Dinh Chieu, Phuong Vo Thi Sau, Quan 3, TP.HCM')) ?: '196 Nguyen Dinh Chieu, Phuong Vo Thi Sau, Quan 3, TP.HCM';
+    $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? ''));
+    $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? ''));
 
     $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
 

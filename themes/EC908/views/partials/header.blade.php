@@ -1,12 +1,12 @@
 @php
     $profile=$siteProfile??[];$shell=$themeShellData??$themeHomeData??[];$branding=(array)data_get($shell,'branding',data_get($profile,'branding',[]));
     $siteName=trim((string)data_get($branding,'company_name',data_get($profile,'site_name','Ego Fitness')))?:'Ego Fitness';
-    $logo=trim((string)data_get($branding,'logo_url',''));$hotline=data_get($branding,'support_hotline','19006750');$nav=collect(data_get($shell,'top_menu',[]))->filter(fn($item)=>is_array($item)&&filled(data_get($item,'label')))->values();
+    $logo=trim((string)data_get($branding,'logo_url',''));$hotline=data_get($branding,'support_hotline','');$nav=collect(data_get($shell,'top_menu',[]))->filter(fn($item)=>is_array($item)&&filled(data_get($item,'label')))->values();
 @endphp
 <header class="ec98-header" id="top">
     <div class="ec98-welcome"><div class="ec98-container"><span>Chào mừng bạn đến với Ego fitness</span><nav><a href="tel:{{ preg_replace('/\s+/','',$hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: {{ $hotline }}</a><a href="{{ route('site.contact') }}">Hệ thống cửa hàng</a><a href="{{ route('site.contact') }}">Tuyển dụng</a></nav></div></div>
     <div class="ec98-container ec98-head-main">
-        <a class="ec98-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span class="ec98-logo-mark">e</span><span><b>ego</b> <strong>fitness</strong><small>STUDIOS</small></span>@endif</a>
+        <a class="ec98-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@endif</a>
         <form class="ec98-search" action="{{ route('site.catalog.search') }}"><input name="q" placeholder="Tìm kiếm sản phẩm" aria-label="Tìm kiếm sản phẩm"><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
         <button class="ec98-login" type="button" data-xd-auth-open="login"><span>Đăng nhập / Đăng ký</span><b>Xin chào! Khách</b></button>
         <a class="ec98-head-icon" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><em>{{ data_get($cartSummary??[],'count',0) }}</em><span>Giỏ hàng<br>của bạn</span></a>

@@ -11,9 +11,9 @@
     $postLoginRedirect = session('post_login_redirect', route('site.checkout.index'));
     $themeTranslator = app(\App\Core\Themes\ThemeTranslationService::class);
     $t = fn (string $key, string $default) => $themeTranslator->bladeText('SER0101', app()->getLocale(), $key, $default);
-    $contactHotline = data_get($branding, 'support_hotline', '1900 6760');
-    $contactEmail = data_get($branding, 'support_email', 'hello@ser0101.demo');
-    $contactLocation = data_get($branding, 'support_location', 'Hồ Chí Minh');
+    $contactHotline = data_get($branding, 'support_hotline', '');
+    $contactEmail = data_get($branding, 'support_email', '');
+    $contactLocation = data_get($branding, 'support_location', '');
     $formatCurrency = fn ($value) => $value === null ? 'Liên hệ' : number_format((float) $value, 0, ',', '.').'đ';
 @endphp
 <!DOCTYPE html>
@@ -209,7 +209,7 @@
                 <div class="hero-meta">
                     <span data-cart-hero-count>{{ str_replace(':count', (string) ($cartSummary['count'] ?? 0), $t('cart.saved_count', ':count mục đang lưu')) }}</span>
                     <span data-cart-hero-unique>{{ str_replace(':count', (string) ($cartSummary['unique_count'] ?? 0), $t('cart.unique_count_chip', ':count gói khác nhau')) }}</span>
-                    <span>{{ data_get($branding, 'support_hotline', '1900 6760') }}</span>
+                    <span>{{ data_get($branding, 'support_hotline', '') }}</span>
                 </div>
             </section>
 

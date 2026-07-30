@@ -2,16 +2,16 @@
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
     $siteName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Prinash')));
     $logo = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 9477'));
-    $email = trim((string) ($branding['support_email'] ?? data_get($siteProfile ?? [], 'email', 'hello@prinash.vn')));
-    $address = trim((string) ($branding['support_location'] ?? data_get($siteProfile ?? [], 'address', '344 Huỳnh Tấn Phát, Quận 7, TP. Hồ Chí Minh')));
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $address = trim((string) ($branding['support_location'] ?? ''));
     $gallery = ['/theme-demo/dn350/gallery-cleaner.webp','/theme-demo/dn350/gallery-kitchen-work.webp','/theme-demo/dn350/gallery-team.webp','/theme-demo/dn350/service-housekeeper.webp','/theme-demo/dn350/gallery-kitchen.webp','/theme-demo/dn350/service-garden.webp'];
 @endphp
 <footer class="dn350-footer">
     <div class="dn350-container dn350-footer__grid">
         <section>
             <a class="dn350-footer__logo" href="{{ route('site.home') }}">
-                @if($logo !== '')<img src="{{ $logo }}" alt="{{ $siteName }}">@else<i class="fa-solid fa-spray-can-sparkles"></i><strong>{{ $siteName }}</strong>@endif
+                @if($logo !== '')<img src="{{ $logo }}" alt="{{ $siteName }}">@endif
             </a>
             <h3>@themeT('DN350.footer.contact', 'Thông tin liên hệ')</h3>
             <p>@themeT('DN350.footer.description', 'Giải pháp vệ sinh toàn diện, tận tâm và an toàn cho mọi không gian.')</p>

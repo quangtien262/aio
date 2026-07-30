@@ -3,9 +3,9 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $t = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('EC900', app()->getLocale(), $key);
     $name = trim((string) ($branding['company_name'] ?? '')) ?: 'ECOMAX';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
-    $email = trim((string) ($branding['support_email'] ?? '')) ?: 'support@ecomax.vn';
-    $location = trim((string) ($branding['support_location'] ?? '')) ?: '70 Lữ Gia, Phường 15, Quận 11, Thành phố Hồ Chí Minh';
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
+    $email = trim((string) ($branding['support_email'] ?? ''));
+    $location = trim((string) ($branding['support_location'] ?? ''));
 @endphp
 <footer class="ec9-footer">
     <div class="ec9-container ec9-footer-grid">

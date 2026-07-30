@@ -19,8 +19,7 @@ if($nav->isEmpty())$nav=collect([
 <header class="s604-header" id="top">
     <div class="s604-header-inner">
         <a class="s604-logo" href="{{ route('site.home') }}">
-            @if($logo)<img src="{{ $logo }}" alt="{{ $name }}">
-            @else<span>B</span><strong>ean</strong><small>LINGERIE</small>@endif
+            @if($logo)<img src="{{ $logo }}" alt="{{ $name }}">@endif
         </a>
         <button class="s604-menu-toggle" type="button" data-s604-menu aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
         <nav class="s604-nav" data-s604-nav>

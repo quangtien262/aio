@@ -2,7 +2,7 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $name = $branding['company_name'] ?? 'WolfBed';
-    $phone = $branding['support_hotline'] ?? '0399162342';
+    $phone = $branding['support_hotline'] ?? '';
     $logo = $branding['logo_url'] ?? '';
     $nav = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', [])))
         ->filter(fn ($item) => is_array($item) && filled($item['label'] ?? null))->values();
@@ -22,7 +22,7 @@
 <header class="n503-header">
     <div class="n503-container n503-head-main">
         <a class="n503-logo" href="{{ route('site.home') }}">
-            @if($logo)<img src="{{ $logo }}" alt="{{ $name }}">@else<strong>WOLF<span>BED</span></strong>@endif
+            @if($logo)<img src="{{ $logo }}" alt="{{ $name }}">@endif
         </a>
         <form class="n503-search" action="{{ route('site.catalog.search') }}"><input name="q" placeholder="Tìm kiếm trong Wolf Bed"><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
         <div class="n503-head-meta"><span><i class="fa-solid fa-headset"></i><small>Bán hàng<b>{{ $phone }}</b></small></span><a href="#footer"><i class="fa-solid fa-store"></i><small>Hệ thống<b>Showroom</b></small></a></div>

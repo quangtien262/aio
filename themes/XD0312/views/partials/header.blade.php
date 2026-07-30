@@ -16,10 +16,7 @@
     <div class="xd5-container xd12-navigation">
         <a class="xd5-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if (filled($logoUrl ?? null))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-            @else
-                <span class="xd12-brand-mark">B</span><strong>{{ $companyName }}</strong>
-            @endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
         </a>
         <button data-xd5-menu type="button" aria-expanded="false">Menu</button>
         <nav data-xd5-nav aria-label="Điều hướng chính">

@@ -15,11 +15,7 @@
             <h3>Gioi thieu cong ty</h3>
             <a class="bb14-footer-brand" href="#top">
                 @if (filled($logoUrl ?? null))
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
-                @else
-                    <span class="bb14-brand__icon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
-                    <span><strong>BUILD</strong><em>BENCH</em></span>
-                @endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
             </a>
             <p>{{ $companyDescription }}</p>
         </section>
