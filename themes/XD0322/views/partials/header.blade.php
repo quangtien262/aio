@@ -3,7 +3,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'XD0322 Construction'))) ?: 'XD0322 Construction';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 6750')) ?: '1900 6750';
+    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
     $email = trim((string) ($branding['support_email'] ?? 'support@xd0322.vn')) ?: 'support@xd0322.vn';
     $themeText = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0322', app()->getLocale(), $key);
     $navItems = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
@@ -53,3 +53,4 @@
         </nav>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

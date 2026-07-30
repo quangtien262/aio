@@ -722,7 +722,7 @@ class BusinessContentTranslationService
             ', giúp kiểm thử đầy đủ luồng hiển thị trang chi tiết sản phẩm theo phong cách deal page.' => ' preset, built to validate the full product detail flow in a deal-page layout.',
             'Sản phẩm thuộc nhóm ' => 'This product belongs to the ',
             ' trong ngành ' => ' line in the ',
-            ', vì vậy phần nội dung dài được thiết kế để hiển thị đẹp ở các block mô tả, điều kiện sử dụng và vị trí áp dụng trên theme TH0001.' => ' category, so the long-form content is written to display cleanly across the description, usage terms, and usage location blocks in theme TH0001.',
+            ', vì vậy phần nội dung dài được thiết kế để hiển thị đẹp ở các block mô tả, điều kiện sử dụng và vị trí áp dụng trên theme AIO Commerce.' => ' category, so the long-form content is written to display cleanly across the description, usage terms, and usage location blocks in theme AIO Commerce.',
             'Sếp có thể sửa trực tiếp phần mô tả này, gallery ảnh, số lượng đã mua và thời gian kết thúc deal trong admin Catalog để biến trang từ demo thành nội dung vận hành thật.' => 'You can edit this description, the gallery, sold count, and deal end time in Catalog admin to turn the demo page into live storefront content.',
             'Ưu đãi nổi bật cho nhóm ' => 'Featured deals for the ',
             ' thuộc ngành ' => ' line in the ',

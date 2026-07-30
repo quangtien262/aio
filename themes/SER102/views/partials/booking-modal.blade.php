@@ -1,6 +1,6 @@
 @php
     $branding = data_get($siteProfile ?? [], 'branding', []);
-    $hotline = data_get($branding, 'support_hotline', data_get($siteProfile ?? [], 'hotline', '1900 6750'));
+    $hotline = data_get($branding, 'support_hotline', data_get($siteProfile ?? [], 'hotline', '0399162342'));
     $customer = auth('customer')->user();
 @endphp
 <div class="ser102-booking" data-ser102-booking hidden>

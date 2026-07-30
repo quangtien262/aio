@@ -2,7 +2,7 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $brand = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logo = trim((string) data_get($brand, 'logo_url', ''));
-    $hotline = data_get($brand, 'support_hotline', '1900 6750');
+    $hotline = data_get($brand, 'support_hotline', '0399162342');
     $menuItems = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec94-header">
@@ -23,3 +23,4 @@
         </aside><div><h3>Giảm giá cực hot 🔥</h3><p>Hàng loạt sản phẩm công nghệ, thời trang và gia dụng đang có giá tốt.</p><div><section><b>ĐIỆN THOẠI</b><a href="#dien-thoai">NovaPhone X</a><a href="#dien-thoai">NovaPhone Mini</a><a href="#dien-thoai">Điện thoại phổ thông</a></section><section><b>THIẾT BỊ SỐ</b><a href="#do-cong-nghe">Tai nghe</a><a href="#do-cong-nghe">Máy ảnh</a><a href="#do-cong-nghe">Laptop</a></section><section><b>ĐỜI SỐNG</b><a href="#thoi-trang">Thời trang</a><a href="#goi-y">Nhà cửa</a><a href="#goi-y">Phụ kiện</a></section></div></div></section>
     </div></nav>
 </header>
+@include('partials.storefront-language-switcher')

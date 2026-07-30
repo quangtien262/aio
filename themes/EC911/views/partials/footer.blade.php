@@ -1,13 +1,14 @@
 @php
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
-    $phone = data_get($branding, 'support_hotline', '1900 6750');
-    $email = data_get($branding, 'support_email', 'support@sapo.vn');
+    $phone = data_get($branding, 'support_hotline', '0399162342');
+    $email = data_get($branding, 'support_email', 'support@htvietnam.vn');
+    $address = data_get($branding, 'support_location', 'Tầng 6, Tòa nhà Ladeco, 266 Đội Cấn, Hà Nội');
 @endphp
 <footer class="ec11-footer">
     <div class="ec11-container ec11-footer-grid">
         <section>
             <a class="ec11-logo ec11-logo-footer" href="#top"><span class="ec11-logo-mark"><i class="fa-solid fa-microchip"></i><b>DIGI</b><strong>TECH</strong></span></a>
-            <p><i class="fa-regular fa-paper-plane"></i> Tầng 6, Tòa nhà Ladeco, 266 Đội Cấn, Quận Ba Đình, TP Hà Nội</p>
+            <p><i class="fa-regular fa-paper-plane"></i> {{ $address }}</p>
             <p><i class="fa-solid fa-phone"></i> {{ $phone }}</p>
             <p><i class="fa-regular fa-envelope"></i> {{ $email }}</p>
         </section>

@@ -52,7 +52,7 @@ class Ec916ThemeTest extends TestCase
         SiteProfile::query()->create([
             'site_name' => 'Siêu thị của tôi',
             'website_type' => 'ecommerce',
-            'active_theme_key' => 'TH0001',
+            'active_theme_key' => 'SHOP601',
             'branding' => [
                 'logo_url' => '/storage/branding/custom-mart.svg',
                 'support_hotline' => '0901 234 567',

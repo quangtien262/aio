@@ -13,6 +13,7 @@
         </div>
         <div class="xd5-footer-grid">
             <div>
+                <p>{{ $supportAddress }}</p>
                 <p>{{ $companyDescription ?: 'Giải pháp tư vấn chuyên nghiệp, đồng hành cùng doanh nghiệp phát triển bền vững.' }}</p>
             </div>
             <div>

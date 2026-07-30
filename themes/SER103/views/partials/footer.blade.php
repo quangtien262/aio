@@ -1,6 +1,9 @@
 @php
     $branding = data_get($siteProfile ?? [], 'branding', []);
     $companyName = data_get($siteProfile ?? [], 'site_name', 'Bøhu.');
+    $hotline = data_get($branding, 'support_hotline', '1900 9477');
+    $email = data_get($branding, 'support_email', 'support@example.com');
+    $address = data_get($branding, 'support_location', 'Hà Nội');
 @endphp
 <footer class="ser103-footer">
     <div class="ser103-container">
@@ -8,6 +11,7 @@
             <section class="ser103-footer__brand">
                 <a class="ser103-brand" href="{{ route('site.home') }}">{{ $companyName }}</a>
                 <p>{{ data_get($branding, 'company_description', 'Studio cưới đồng hành cùng các cặp đôi viết nên câu chuyện tình yêu của riêng mình bằng trải nghiệm tinh tế và đáng nhớ.') }}</p>
+                <p>{{ $address }} · <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}">{{ $hotline }}</a> · <a href="mailto:{{ $email }}">{{ $email }}</a></p>
                 <div class="ser103-socials"><a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a><a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a><a href="#" aria-label="Youtube"><i class="fa-brands fa-youtube"></i></a><a href="#" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a></div>
             </section>
             <section><h3>Danh mục dịch vụ</h3><a href="{{ route('site.services.index') }}">Trang điểm cô dâu</a><a href="{{ route('site.services.index') }}">Quay phim - chụp ảnh</a><a href="{{ route('site.services.index') }}">Thuê xe cưới</a><a href="{{ route('site.services.index') }}">Trang trí tiệc cưới</a></section>

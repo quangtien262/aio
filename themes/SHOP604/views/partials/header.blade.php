@@ -39,3 +39,4 @@ if($nav->isEmpty())$nav=collect([
         <button aria-label="Tìm"><i class="fa-solid fa-arrow-right"></i></button>
     </form>
 </header>
+@include('partials.storefront-language-switcher')

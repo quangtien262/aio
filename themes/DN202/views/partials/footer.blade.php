@@ -1,7 +1,7 @@
 @php
     $t = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('DN202', app()->getLocale(), $key);
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $hotline = $branding['support_hotline'] ?? '1900 6750';
+    $hotline = $branding['support_hotline'] ?? '0399162342';
     $email = $branding['support_email'] ?? 'hello@dn202.vn';
     $address = $branding['support_location'] ?? 'An Thượng, Hà Nội';
     $footerLinks = [['label' => $t('nav.home'), 'url' => route('site.home')], ['label' => $t('nav.products'), 'url' => route('site.catalog.search')], ['label' => $t('nav.projects'), 'url' => route('site.projects.index')], ['label' => $t('nav.villas'), 'url' => route('site.home').'#thiet-ke-biet-thu'], ['label' => $t('nav.news'), 'url' => route('site.blog.index')], ['label' => $t('nav.contact'), 'url' => route('site.contact')]];

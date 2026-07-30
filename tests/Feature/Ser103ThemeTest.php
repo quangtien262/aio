@@ -49,7 +49,7 @@ class Ser103ThemeTest extends TestCase
             'website_key' => 'website-main',
             'site_name' => 'Studio của tôi',
             'website_type' => 'service',
-            'active_theme_key' => 'TH0001',
+            'active_theme_key' => 'SHOP601',
             'branding' => [
                 'logo_url' => '/storage/branding/custom-bohu.svg',
                 'support_hotline' => '0909 103 103',

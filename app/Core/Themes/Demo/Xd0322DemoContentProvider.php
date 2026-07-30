@@ -140,7 +140,7 @@ class Xd0322DemoContentProvider implements ThemeDemoContentProvider
             $this->record($menu);
 
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'ND Construction', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'ND Construction', 'company_description' => 'Thiet ke va thi cong tron goi cho nha o, van phong va khong gian thuong mai.', 'support_hotline' => '1900 6750', 'support_email' => 'support@ndconstruction.local', 'support_location' => '266 Doi Can, Ba Dinh, Ha Noi'])])->save();
+            $profile->forceFill(['site_name' => 'ND Construction', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'ND Construction', 'company_description' => 'Thiet ke va thi cong tron goi cho nha o, van phong va khong gian thuong mai.', 'support_hotline' => '0399162342', 'support_email' => 'support@ndconstruction.local', 'support_location' => '266 Doi Can, Ba Dinh, Ha Noi'])])->save();
 
             $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);

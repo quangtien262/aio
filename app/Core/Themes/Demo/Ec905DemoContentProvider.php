@@ -236,7 +236,7 @@ class Ec905DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'Công ty cổ phần Ego Home',
                     'company_description' => 'Vật liệu hoàn thiện và thiết bị nhà ở được tuyển chọn cho không gian sống bền đẹp.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'support@egohome.vn',
                     'support_location' => '266 Đội Cấn, Ba Đình, Hà Nội',
                 ]),

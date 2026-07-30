@@ -73,6 +73,19 @@ class ThemeLocalizationContractTest extends TestCase
         }
     }
 
+    public function test_shared_storefront_language_switcher_uses_public_locales_and_localized_routes(): void
+    {
+        $contents = (string) File::get(
+            resource_path('views/partials/storefront-language-switcher.blade.php'),
+        );
+
+        $this->assertStringContainsString('FrontendLocalization::localeOptions()', $contents);
+        $this->assertStringContainsString("'is_published'", $contents);
+        $this->assertStringContainsString('FrontendRouteUrl::localeSwitchUrls(', $contents);
+        $this->assertStringContainsString('data-storefront-language-switcher', $contents);
+        $this->assertStringContainsString('data-locale-code', $contents);
+    }
+
     public function test_theme_catalogs_and_views_have_no_repairable_legacy_encoding(): void
     {
         foreach ([
@@ -124,10 +137,20 @@ class ThemeLocalizationContractTest extends TestCase
         $viewDirectory = $directory.DIRECTORY_SEPARATOR.'views';
 
         if (! File::isDirectory($viewDirectory)) {
+            foreach (['site.blade.php', 'site-cms.blade.php'] as $fallbackDocument) {
+                $this->assertStringContainsString(
+                    'partials.storefront-language-switcher',
+                    (string) File::get(resource_path('views/'.$fallbackDocument)),
+                    "{$group}/{$key}: fallback storefront document must expose the language switcher.",
+                );
+            }
+
             return;
         }
 
-        foreach (File::allFiles($viewDirectory) as $view) {
+        $views = collect(File::allFiles($viewDirectory));
+
+        foreach ($views as $view) {
             if ($view->getExtension() !== 'php') {
                 continue;
             }
@@ -149,5 +172,35 @@ class ThemeLocalizationContractTest extends TestCase
                 "{$group}/{$key}: every HTML document must expose canonical/hreflang metadata.",
             );
         }
+
+        $headerViews = $views
+            ->filter(fn ($view): bool => (
+                $view->getExtension() === 'php'
+                && str_contains(strtolower($view->getFilename()), 'header')
+            ))
+            ->values();
+
+        if ($headerViews->isNotEmpty()) {
+            foreach ($headerViews as $headerView) {
+                $contents = (string) File::get($headerView->getPathname());
+                $usesSharedSwitcher = str_contains(
+                    $contents,
+                    'partials.storefront-language-switcher',
+                );
+                $usesContractCompliantCustomSwitcher = (
+                    str_contains($contents, 'data-storefront-language-switcher')
+                    && str_contains($contents, 'FrontendRouteUrl::switchLocale')
+                );
+
+                $this->assertTrue(
+                    $usesSharedSwitcher || $usesContractCompliantCustomSwitcher,
+                    "{$group}/{$key}: {$headerView->getFilename()} must expose the shared or contract-compliant language switcher.",
+                );
+            }
+
+            return;
+        }
+
+        $this->fail("{$group}/{$key}: no header or storefront language-switcher integration was found.");
     }
 }

@@ -56,7 +56,7 @@ class Ec915ThemeTest extends TestCase
         SiteProfile::query()->create([
             'site_name' => 'Nội thất của tôi',
             'website_type' => 'ecommerce',
-            'active_theme_key' => 'TH0001',
+            'active_theme_key' => 'SHOP601',
             'branding' => [
                 'logo_url' => '/storage/branding/custom-interior.svg',
                 'support_hotline' => '0909 888 777',

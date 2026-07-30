@@ -53,7 +53,7 @@ class LandingAdminEditorCoverageTest extends TestCase
                 $failures[] = "{$themeKey}: HTTP {$response->getStatusCode()}";
                 continue;
             }
-            if (! str_contains($content, 'data-xd-edit-block')) {
+            if (preg_match('/<(?:button|a)\b[^>]*\bdata-xd-edit-block\b[^>]*>/i', $content) !== 1) {
                 $failures[] = "{$themeKey}: thiếu nút Sửa khối";
             }
             if (! str_contains($content, 'data-xd-editor')) {

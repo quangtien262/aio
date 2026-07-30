@@ -68,7 +68,7 @@ class Th0050DemoContentProvider implements ThemeDemoContentProvider
 
             $profile = SiteProfile::query()->firstOrNew();
             $currentBranding = (array) $profile->branding;
-            $profile->forceFill(['site_name' => $profile->site_name ?: 'An Nhiên Nest', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'An Nhiên Nest', 'company_description' => 'Tinh hoa wellness và quà tặng sức khỏe cao cấp.', 'logo_url' => '', 'support_hotline' => '1900 6750', 'support_email' => 'hello@annhien.vn', 'support_location' => 'TP. Hồ Chí Minh'])])->save();
+            $profile->forceFill(['site_name' => $profile->site_name ?: 'An Nhiên Nest', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'An Nhiên Nest', 'company_description' => 'Tinh hoa wellness và quà tặng sức khỏe cao cấp.', 'logo_url' => '', 'support_hotline' => '0399162342', 'support_email' => 'hello@annhien.vn', 'support_location' => 'TP. Hồ Chí Minh'])])->save();
 
             $generatedBranding = (array) $profile->branding;
             foreach (['logo_url', 'support_hotline', 'support_email'] as $field) {

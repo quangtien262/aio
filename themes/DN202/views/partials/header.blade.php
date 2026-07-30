@@ -3,8 +3,9 @@
     $shell = $themeShellData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $company = $branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'DN202 Arc');
+    $logo = trim((string) ($branding['logo_url'] ?? ''));
     $address = $branding['support_location'] ?? 'An Thượng, Hà Nội';
-    $hotline = $branding['support_hotline'] ?? '1900 6750';
+    $hotline = $branding['support_hotline'] ?? '0399162342';
     $hours = $branding['working_hours'] ?? '08:00 - 17:00';
     $menu = collect(data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', [])))->filter(fn ($item) => is_array($item) && filled($item['label'] ?? null))->values();
     if ($menu->isEmpty()) {
@@ -31,7 +32,13 @@
         </div>
     </div>
     <div class="d202-brandbar d202-container">
-        <a class="d202-logo" href="{{ route('site.home') }}" aria-label="{{ $company }}"><b>D</b><span><strong>arc</strong><small>INTERIOR &amp; ARCHITECTURE</small></span></a>
+        <a class="d202-logo" href="{{ route('site.home') }}" aria-label="{{ $company }}">
+            @if($logo !== '')
+                <img src="{{ $logo }}" alt="{{ $company }}">
+            @else
+                <b>D</b><span><strong>arc</strong><small>INTERIOR &amp; ARCHITECTURE</small></span>
+            @endif
+        </a>
         <div class="d202-contact-points">
             <div><i class="fa-solid fa-location-dot"></i><span><strong>{{ $t('header.office') }}</strong><small>{{ $address }}</small></span></div>
             <div><i class="fa-regular fa-clock"></i><span><strong>{{ $t('header.schedule') }}</strong><small>{{ $hours }}</small></span></div>
@@ -46,3 +53,4 @@
         </div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

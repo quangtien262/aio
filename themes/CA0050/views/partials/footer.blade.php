@@ -1,6 +1,6 @@
 @php
 $shell=$themeShellData??$themeHomeData??[];$branding=(array)data_get($shell,'branding',data_get($siteProfile??[],'branding',[]));
-$phone=$branding['support_hotline']??'1900 6750';$email=$branding['support_email']??'support@sudes.vn';$address=$branding['support_location']??'70 Lữ Gia, Phường Phú Thọ, TP.HCM';$name=trim((string)($branding['company_name']??''))?:'Sudes Aquarium';$logo=trim((string)($branding['logo_url']??''));
+$phone=$branding['support_hotline']??'0399162342';$email=$branding['support_email']??'support@sudes.vn';$address=$branding['support_location']??'70 Lữ Gia, Phường Phú Thọ, TP.HCM';$name=trim((string)($branding['company_name']??''))?:'Sudes Aquarium';$logo=trim((string)($branding['logo_url']??''));
 @endphp
 <footer id="lien-he" class="ca50-footer xd-landing-block" data-landing-block-id="{{ data_get($footerCta??[],'id') }}" data-block-type="ca0050_footer">
  @include('theme-ca0050::partials.edit-button',['block'=>$footerCta??[]])

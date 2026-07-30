@@ -44,7 +44,7 @@ class Ec914ThemeTest extends TestCase
     public function test_ec914_demo_preserves_branding_and_storefront_renders(): void
     {
         SiteProfile::query()->create([
-            'site_name' => 'Góc thủ công của tôi', 'website_type' => 'ecommerce', 'active_theme_key' => 'TH0001',
+            'site_name' => 'Góc thủ công của tôi', 'website_type' => 'ecommerce', 'active_theme_key' => 'SHOP601',
             'branding' => ['logo_url' => '/storage/branding/custom-craft.svg', 'support_hotline' => '0908 456 789', 'support_email' => 'craft@example.test', 'support_location' => '12 Làng nghề'],
         ]);
 

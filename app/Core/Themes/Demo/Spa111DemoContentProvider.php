@@ -175,7 +175,7 @@ class Spa111DemoContentProvider implements ThemeDemoContentProvider
             $profile = SiteProfile::query()->firstOrNew();
             $profile->forceFill(['site_name' => 'Bean Spa', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, [
                 'company_name' => 'Bean Spa', 'company_description' => 'Chăm sóc sức khỏe và sắc đẹp chuyên sâu.',
-                'support_hotline' => '1900 6750', 'support_email' => 'support@sapo.vn',
+                'support_hotline' => '0399162342', 'support_email' => 'support@htvietnam.vn',
                 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP. Hồ Chí Minh',
             ])])->save();
 

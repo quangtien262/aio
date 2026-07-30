@@ -206,6 +206,10 @@ Nếu theme dùng homepage/landing dạng block:
 ## 7. Header/footer dùng chung
 
 - [ ] Header và footer nằm trong layout, không chỉ nằm trong homepage.
+- [ ] Header phải có bộ chọn ngôn ngữ storefront. Mặc định include `partials.storefront-language-switcher` trong partial header; chỉ dùng UI riêng khi vẫn giữ đủ marker `data-storefront-language-switcher` và helper URL chuẩn.
+- [ ] Không hardcode `VI/EN`, icon cờ hoặc dùng `?locale=en`. Danh sách phải lấy từ `FrontendLocalization::localeOptions()` và chỉ hiển thị locale đang active + published.
+- [ ] URL đổi ngôn ngữ phải đi qua `FrontendRouteUrl::localeSwitchUrls()`/`switchLocale()`. Với Page, Landing Page, sản phẩm, danh mục, bài viết, dịch vụ hoặc dự án có slug dịch riêng, phải đi tới đúng canonical slug của locale đích; nếu resource chưa có bản dịch public thì về homepage của locale đích, không tạo link 404.
+- [ ] Bộ chọn phải hoạt động trên homepage và mọi trang phụ, có `hreflang`, `data-locale-code`, `aria-current` và không làm vỡ header desktop/mobile.
 - [ ] Logo header/footer phải đọc từ `site_profiles.branding.logo_url` (dữ liệu lưu tại **Cài đặt website**); chỉ hiển thị logo chữ/icon mặc định khi `logo_url` rỗng.
 - [ ] Không hardcode logo thương hiệu bằng text, SVG hoặc ảnh demo nếu `branding.logo_url` đã có giá trị.
 - [ ] CSS cho logo upload phải giới hạn `max-width`, `max-height` và dùng `object-fit: contain` để không làm vỡ header/footer.
@@ -313,6 +317,7 @@ Checklist UI:
 - [ ] Category/Product/Search render được.
 - [ ] Cart/Checkout render được.
 - [ ] Header/footer xuất hiện trên các trang phụ.
+- [ ] Bộ chọn ngôn ngữ chỉ hiện các locale public, đổi đúng locale trên homepage và ít nhất một trang có slug dịch riêng.
 - [ ] Click **Đăng nhập** trên header mở auth modal ở tab đăng nhập; không reload hoặc đổi trang.
 - [ ] Click **Đăng ký** trên header mở auth modal ở tab đăng ký; không reload hoặc đổi trang.
 - [ ] Đóng modal rồi mở lại từng flow vẫn đúng tab; kiểm tra cả header desktop và mobile menu/icon tài khoản nếu có.
@@ -325,6 +330,12 @@ Checklist UI:
 - [ ] Không còn text mojibake như `Ä`, `áº`, `Ã`.
 - [ ] Không còn namespace/theme key copy nhầm.
 - [ ] Không đụng schema nếu chưa thật sự cần.
+
+Contract bắt buộc:
+
+```bash
+php artisan test --filter=ThemeLocalizationContractTest
+```
 
 ## 11. Bài học từ XD0323
 

@@ -194,7 +194,7 @@ class Ec909DemoContentProvider implements ThemeDemoContentProvider
                     'company_name' => 'Euro Sound',
                     'company_description' => 'Thiết bị âm thanh chính hãng, thiết kế tinh tế và công nghệ hiện đại.',
                     'support_hotline' => '0773915520',
-                    'support_email' => 'support@sapo.vn',
+                    'support_email' => 'support@htvietnam.vn',
                     'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM',
                 ]),
             ])->save();

@@ -3,7 +3,7 @@
         <div class="xd2-container xd2-utility__inner">
             <div><a href="tel:{{ $phoneHref ?? '' }}">{{ $hotline ?? '1900 9477' }}</a><a href="mailto:{{ $supportEmail ?? '' }}">{{ $supportEmail ?? 'admin@solerpanel.vn' }}</a></div>
             <div class="xd2-utility__right">
-                <span>Ngôn ngữ &nbsp; · &nbsp; Facebook &nbsp; YouTube</span>
+                <span>Facebook &nbsp; · &nbsp; YouTube</span>
                 @auth('customer')
                     <form class="xd2-utility__logout" method="POST" action="{{ route('customer.auth.logout') }}">
                         @csrf
@@ -48,3 +48,4 @@
         </div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

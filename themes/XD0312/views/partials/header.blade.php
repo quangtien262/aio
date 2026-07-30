@@ -30,3 +30,4 @@
         <a class="xd12-quote" href="#lien-he">Nhận báo giá</a>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

@@ -149,7 +149,7 @@ class Ec914DemoContentProvider implements ThemeDemoContentProvider
 
             $profile = SiteProfile::query()->firstOrNew();
             $branding = (array) $profile->branding;
-            $branding += ['company_name' => 'Mộc Nhiên Craft', 'company_description' => 'Đồ thủ công từ tre, mây và vật liệu tự nhiên, được hoàn thiện bằng đôi tay của người thợ Việt.', 'support_hotline' => '1900 6750', 'support_email' => 'hello@mocnhien.example', 'support_location' => '70 Lữ Gia, Phường Phú Thọ, TP.HCM'];
+            $branding += ['company_name' => 'Mộc Nhiên Craft', 'company_description' => 'Đồ thủ công từ tre, mây và vật liệu tự nhiên, được hoàn thiện bằng đôi tay của người thợ Việt.', 'support_hotline' => '0399162342', 'support_email' => 'hello@mocnhien.example', 'support_location' => '70 Lữ Gia, Phường Phú Thọ, TP.HCM'];
             $profile->forceFill(['site_name' => 'Mộc Nhiên Craft', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => $branding])->save();
 
             $existing = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();

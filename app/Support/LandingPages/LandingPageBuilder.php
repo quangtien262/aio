@@ -41,7 +41,7 @@ class LandingPageBuilder
 
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0001', 'TH0050', 'TH0201', 'SER0100', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0100', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
     }
 
     /**
@@ -1823,8 +1823,6 @@ class LandingPageBuilder
             'EC916' => $this->ec916DefaultBlocks(),
             'EC917' => $this->ec917DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
-            'TH0001' => $this->th0001DefaultBlocks(),
-            'TH0201' => $this->projectLandingDefaultBlocks($themeKey),
             'SER0100', 'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
             'SER103' => $this->ser103DefaultBlocks(),
@@ -2259,7 +2257,7 @@ class LandingPageBuilder
             ['block_type' => 'ec910_benefits', 'label' => 'Quyền lợi mua hàng', 'description' => 'Bốn cam kết dịch vụ màu đen vàng.', 'preview_image' => $preview, 'anchor_id' => 'quyen-loi', 'data' => ['vi' => $withItems($heading(), [
                 ['title' => 'Miễn phí vận chuyển', 'summary' => 'Cho đơn hàng trong nội thành', 'icon' => 'fa-solid fa-truck-fast'],
                 ['title' => 'Miễn phí đổi - trả', 'summary' => 'Đổi sản phẩm lỗi sản xuất', 'icon' => 'fa-solid fa-rotate'],
-                ['title' => 'Hỗ trợ nhanh chóng', 'summary' => 'Hotline 1900 6750', 'icon' => 'fa-solid fa-headset'],
+                ['title' => 'Hỗ trợ nhanh chóng', 'summary' => 'Hotline 0399162342', 'icon' => 'fa-solid fa-headset'],
                 ['title' => 'Ưu đãi thành viên', 'summary' => 'Nhiều khuyến mãi độc quyền', 'icon' => 'fa-solid fa-percent'],
             ]), 'en' => $heading()]],
             ['block_type' => 'ec910_promotions', 'label' => 'Khuyến mãi hấp dẫn', 'description' => 'Hai banner chiến dịch và năm sản phẩm ưu đãi.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'search' => 'EC910-', 'featured_only' => false], 'settings_schema' => $productSchema(5), 'data' => ['vi' => array_merge($withItems($heading('Khuyến mãi hấp dẫn'), array_slice($products, 0, 5)), ['content' => ['items' => array_slice($products, 0, 5), 'banners' => [
@@ -2337,7 +2335,7 @@ class LandingPageBuilder
             ['block_type' => 'ec902_latest_posts', 'label' => 'Tin tức mới nhất', 'description' => 'Một tin lớn và bốn tin công nghệ mới.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 5, 'search' => 'Nova', 'featured_only' => false], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số bài', 'default' => 5], 'search' => ['type' => 'text', 'label' => 'Từ khóa'], 'category_id' => ['type' => 'select', 'label' => 'Danh mục tin']], 'data' => ['vi' => $heading('Tin tức mới nhất'), 'en' => $heading('Latest news')]],
             ['block_type' => 'ec902_video_reviews', 'label' => 'Video xem nhiều nhất', 'description' => 'Bốn video review sản phẩm công nghệ.', 'preview_image' => $preview, 'anchor_id' => 'video-review', 'data' => ['vi' => $withItems($heading('Xem nhiều nhất'), [['title' => 'Mở hộp Nova X Pro: chi tiết đáng giá', 'image' => '/theme-demo/ec902/story-phone.webp', 'url' => '#'], ['title' => 'Trải nghiệm camera Nova X', 'image' => '/theme-demo/ec902/story-review.webp', 'url' => '#'], ['title' => 'NovaTab Pro thay đổi cách sáng tạo', 'image' => '/theme-demo/ec902/story-tablet.webp', 'url' => '#'], ['title' => 'Sạc nhanh thế hệ mới có gì khác?', 'image' => '/theme-demo/ec902/story-charging.webp', 'url' => '#']]), 'en' => $heading('Most watched')]],
             ['block_type' => 'ec902_testimonials', 'label' => 'Feedback khách hàng', 'description' => 'Đánh giá thực tế từ hai khách hàng.', 'preview_image' => $preview, 'anchor_id' => 'feedback', 'data' => ['vi' => $withItems($heading('Feedback từ khách hàng'), [['title' => 'Hoàng Dung', 'role' => 'Nhân viên văn phòng', 'summary' => 'Sản phẩm hoàn thiện tốt, nhân viên tư vấn rõ ràng và giao hàng nhanh hơn mong đợi.', 'image' => '/theme-demo/ec902/story-phone.webp'], ['title' => 'Sơn Bình', 'role' => 'Nhà sáng tạo nội dung', 'summary' => 'Thiết bị chính hãng, chính sách đổi trả minh bạch nên mình rất yên tâm khi lựa chọn.', 'image' => '/theme-demo/ec902/story-review.webp']]), 'en' => $heading('Customer feedback')]],
-            ['block_type' => 'ec902_support_strip', 'label' => 'Dải hỗ trợ cuối trang', 'description' => 'Cam kết, hotline và liên kết hệ thống cửa hàng.', 'preview_image' => $preview, 'anchor_id' => 'ho-tro', 'data' => ['vi' => $withItems($heading(), [['title' => 'Thanh toán khi nhận hàng', 'summary' => 'COD toàn quốc', 'icon' => 'fa-solid fa-hand-holding-dollar'], ['title' => 'Cam kết chính hãng', 'summary' => '100% nguồn gốc rõ ràng', 'icon' => 'fa-solid fa-certificate'], ['title' => 'Giao hàng miễn phí', 'summary' => 'Nội thành trong 2 giờ', 'icon' => 'fa-solid fa-truck-fast'], ['title' => '14 ngày đổi trả', 'summary' => 'Miễn phí nếu lỗi', 'icon' => 'fa-solid fa-rotate'], ['title' => 'Khiếu nại, góp ý', 'summary' => '1900 6750', 'icon' => 'fa-solid fa-circle-question'], ['title' => 'Tư vấn', 'summary' => '1900 6750', 'icon' => 'fa-solid fa-phone'], ['title' => 'Tìm chi nhánh', 'summary' => 'Hệ thống Nova', 'icon' => 'fa-solid fa-location-dot']]), 'en' => $heading()]],
+            ['block_type' => 'ec902_support_strip', 'label' => 'Dải hỗ trợ cuối trang', 'description' => 'Cam kết, hotline và liên kết hệ thống cửa hàng.', 'preview_image' => $preview, 'anchor_id' => 'ho-tro', 'data' => ['vi' => $withItems($heading(), [['title' => 'Thanh toán khi nhận hàng', 'summary' => 'COD toàn quốc', 'icon' => 'fa-solid fa-hand-holding-dollar'], ['title' => 'Cam kết chính hãng', 'summary' => '100% nguồn gốc rõ ràng', 'icon' => 'fa-solid fa-certificate'], ['title' => 'Giao hàng miễn phí', 'summary' => 'Nội thành trong 2 giờ', 'icon' => 'fa-solid fa-truck-fast'], ['title' => '14 ngày đổi trả', 'summary' => 'Miễn phí nếu lỗi', 'icon' => 'fa-solid fa-rotate'], ['title' => 'Khiếu nại, góp ý', 'summary' => '0399162342', 'icon' => 'fa-solid fa-circle-question'], ['title' => 'Tư vấn', 'summary' => '0399162342', 'icon' => 'fa-solid fa-phone'], ['title' => 'Tìm chi nhánh', 'summary' => 'Hệ thống Nova', 'icon' => 'fa-solid fa-location-dot']]), 'en' => $heading()]],
         ];
     }
 
@@ -3165,7 +3163,7 @@ class LandingPageBuilder
             ['title' => 'Vận chuyển miễn phí', 'summary' => 'Hóa đơn trên 5 triệu', 'icon' => 'fa-truck-fast'],
             ['title' => 'Quà tặng hấp dẫn', 'summary' => 'Hóa đơn trên 10 triệu', 'icon' => 'fa-bag-shopping'],
             ['title' => 'Chứng nhận chất lượng', 'summary' => 'Sản phẩm chính hãng', 'icon' => 'fa-award'],
-            ['title' => 'Hotline: 1900 6750', 'summary' => 'Hỗ trợ 24/7', 'icon' => 'fa-headset'],
+            ['title' => 'Hotline: 0399162342', 'summary' => 'Hỗ trợ 24/7', 'icon' => 'fa-headset'],
         ];
         $categories = [
             ['title' => 'iPhone', 'image' => '/theme-demo/ec912/phone-graphite.webp', 'url' => '#iphone'],
@@ -3506,7 +3504,7 @@ class LandingPageBuilder
             ['title' => 'Miễn phí giao hàng', 'summary' => 'Áp dụng toàn quốc', 'icon' => 'fa-truck-fast'],
             ['title' => 'Đảm bảo chất lượng', 'summary' => 'Sản phẩm đã kiểm định', 'icon' => 'fa-award'],
             ['title' => 'Hỗ trợ 24/7', 'summary' => 'Chăm sóc khách hàng uy tín', 'icon' => 'fa-headset'],
-            ['title' => 'Tư vấn bán hàng', 'summary' => 'Hotline 1900 6750', 'icon' => 'fa-user-check'],
+            ['title' => 'Tư vấn bán hàng', 'summary' => 'Hotline 0399162342', 'icon' => 'fa-user-check'],
         ];
 
         return [
@@ -3680,138 +3678,6 @@ class LandingPageBuilder
         unset($block);
 
         return $blocks;
-    }
-
-    /** @return array<int, array<string, mixed>> */
-    private function projectLandingDefaultBlocks(string $themeKey): array
-    {
-        $blocks = $this->th0001DefaultBlocks();
-
-        foreach ($blocks as &$block) {
-            $block['preview_image'] = '/theme-previews/'.strtoupper($themeKey).'/preview-'.strtolower($themeKey).'.svg';
-
-            if ($block['block_type'] === 'hero_slider') {
-                $block['label'] = 'Hero dự án mở bán';
-                $block['description'] = 'Banner dự án, thông điệp mở bán và CTA nhận bảng giá.';
-                $block['settings']['placement'] = 'hero-slider';
-                $block['settings_schema'][0]['default'] = 'hero-slider';
-            } elseif ($block['block_type'] === 'featured_categories') {
-                $block['label'] = 'Phân khu nổi bật';
-            } elseif ($block['block_type'] === 'featured_products') {
-                $block['label'] = 'Bảng hàng mở bán';
-            } elseif ($block['block_type'] === 'content_mosaic') {
-                $block['label'] = 'Thông tin dự án';
-                $block['settings']['source'] = 'cms_posts';
-            }
-        }
-        unset($block);
-
-        return $blocks;
-    }
-
-    /** @return array<int, array<string, mixed>> */
-    private function th0001DefaultBlocks(): array
-    {
-        $productSourceOptions = [
-            ['value' => 'custom', 'label' => 'Nhập thủ công'],
-            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
-            ['value' => 'cms_posts', 'label' => 'Tin tức'],
-            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
-            ['value' => 'cms_projects', 'label' => 'Dự án'],
-        ];
-
-        return [
-            [
-                'block_type' => 'hero_slider',
-                'label' => 'Hero thương mại',
-                'description' => 'Danh mục sản phẩm, banner chính và banner khuyến mãi của TH0001.',
-                'preview_image' => '/theme-previews/TH0001/preview-th0001.png',
-                'anchor_id' => 'top',
-                'dynamic' => true,
-                'settings' => ['source' => 'site_banners', 'placement' => 'hero-main', 'limit' => 4, 'autoplay_ms' => 5200],
-                'settings_schema' => [
-                    ['key' => 'placement', 'label' => 'Vị trí banner', 'type' => 'text', 'default' => 'hero-main'],
-                    ['key' => 'limit', 'label' => 'Số slide', 'type' => 'number', 'default' => 4],
-                    ['key' => 'autoplay_ms', 'label' => 'Thời gian tự chuyển (ms)', 'type' => 'number', 'default' => 5200],
-                ],
-                'data' => [
-                    'vi' => [
-                        'title' => 'Ưu đãi nổi bật',
-                        'subtitle' => 'Khám phá ngay',
-                        'description' => 'Khám phá sản phẩm và chương trình ưu đãi mới nhất.',
-                        'button_label' => 'Xem ngay',
-                        'content' => ['slides' => []],
-                    ],
-                    'en' => [
-                        'title' => 'Featured deals',
-                        'subtitle' => 'Discover now',
-                        'description' => 'Explore the latest products and promotions.',
-                        'button_label' => 'Shop now',
-                        'content' => ['slides' => []],
-                    ],
-                ],
-            ],
-            [
-                'block_type' => 'featured_categories',
-                'label' => 'Danh mục nổi bật',
-                'description' => 'Các nhóm sản phẩm nổi bật dạng nhãn tròn của TH0001.',
-                'preview_image' => '/theme-previews/TH0001/preview-th0001.png',
-                'anchor_id' => 'danh-muc-noi-bat',
-                'dynamic' => true,
-                'settings' => ['source' => 'catalog_categories', 'limit' => 5, 'featured_only' => false],
-                'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
-                        ['value' => 'custom', 'label' => 'Nhập thủ công'],
-                        ['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm'],
-                        ['value' => 'cms_categories', 'label' => 'Danh mục bài viết'],
-                        ['value' => 'cms_service_categories', 'label' => 'Danh mục dịch vụ'],
-                    ]],
-                    'limit' => ['type' => 'number', 'label' => 'Số danh mục hiển thị', 'default' => 5],
-                ],
-                'data' => [
-                    'vi' => ['title' => 'Danh mục nổi bật', 'subtitle' => 'Khám phá nhanh', 'description' => '', 'button_label' => 'Xem danh mục', 'content' => ['items' => []]],
-                    'en' => ['title' => 'Featured categories', 'subtitle' => 'Quick access', 'description' => '', 'button_label' => 'View category', 'content' => ['items' => []]],
-                ],
-            ],
-            [
-                'block_type' => 'featured_products',
-                'label' => 'Sản phẩm nổi bật',
-                'description' => 'Lưới sản phẩm ưu tiên của storefront.',
-                'preview_image' => '/theme-previews/TH0001/preview-th0001.png',
-                'anchor_id' => 'featured',
-                'dynamic' => true,
-                'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => true],
-                'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $productSourceOptions],
-                    'limit' => ['type' => 'number', 'label' => 'Số sản phẩm hiển thị', 'default' => 8],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
-                ],
-                'data' => [
-                    'vi' => ['title' => 'Sản phẩm nổi bật', 'subtitle' => 'Đề xuất hôm nay', 'description' => '', 'button_label' => 'Xem tất cả', 'content' => ['items' => []]],
-                    'en' => ['title' => 'Featured products', 'subtitle' => 'Today picks', 'description' => '', 'button_label' => 'View all', 'content' => ['items' => []]],
-                ],
-            ],
-            [
-                'block_type' => 'content_mosaic',
-                'label' => 'Khối sản phẩm theo chủ đề',
-                'description' => 'Khối card có thể đổi nguồn sang sản phẩm, tin tức, dịch vụ hoặc dự án.',
-                'preview_image' => '/theme-previews/TH0001/preview-th0001.png',
-                'anchor_id' => 'chu-de-noi-bat',
-                'dynamic' => true,
-                'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => false],
-                'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $productSourceOptions],
-                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => 8],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
-                ],
-                'data' => [
-                    'vi' => ['title' => 'Khám phá thêm', 'subtitle' => 'Chủ đề nổi bật', 'description' => 'Các lựa chọn mới dành cho bạn.', 'button_label' => 'Xem thêm', 'content' => ['items' => []]],
-                    'en' => ['title' => 'Explore more', 'subtitle' => 'Featured topic', 'description' => 'More picks curated for you.', 'button_label' => 'View more', 'content' => ['items' => []]],
-                ],
-            ],
-        ];
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -5210,7 +5076,7 @@ class LandingPageBuilder
                         'subtitle' => 'Về Euro Farm',
                         'description' => 'Euro Farm là doanh nghiệp nông nghiệp tiên phong chuyên sản xuất và cung cấp thực phẩm hữu cơ, an toàn và tốt cho sức khỏe. Chúng tôi áp dụng quy trình canh tác hiện đại theo tiêu chuẩn châu Âu, nói không với hóa chất và chất bảo quản.',
                         'button_label' => 'Xem thêm',
-                        'content' => ['phone' => '1900 6750', 'items' => [
+                        'content' => ['phone' => '0399162342', 'items' => [
                             ['title' => 'Nông nghiệp và Thực phẩm', 'summary' => '', 'icon' => 'fa-solid fa-seedling'],
                             ['title' => 'Rau củ và trái cây', 'summary' => '', 'icon' => 'fa-solid fa-carrot'],
                         ]],
@@ -6644,7 +6510,7 @@ class LandingPageBuilder
                 ['title' => 'Chìa khóa vàng giúp thiết lập công thức nấu ăn ngon', 'summary' => 'Nguyên liệu tươi ngon và cách cân bằng gia vị.', 'author' => 'Admin Dola', 'published_at' => '24/10/2026', 'image' => 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1000&q=86'],
             ]]]]],
             ['block_type' => 'testimonials', 'label' => 'Khách hàng nói gì', 'description' => 'Cảm nhận của thực khách trên nền ảnh bếp.', 'preview_image' => $preview, 'anchor_id' => 'cam-nhan', 'settings' => ['source' => 'custom'], 'data' => ['vi' => ['title' => 'Khách hàng nói gì', 'subtitle' => 'Cảm nhận thực khách', 'content' => ['background' => 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=2200&q=88', 'items' => [['name' => 'Hoàng Dung', 'role' => 'Nhân viên văn phòng', 'quote' => 'Món ăn ở đây rất ngon, khẩu vị phù hợp với tôi. Không gian ấm cúng và nhân viên phục vụ chu đáo.', 'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=85'], ['name' => 'Minh Anh', 'role' => 'Khách hàng thân thiết', 'quote' => 'Một địa chỉ lý tưởng cho những bữa tối cùng gia đình và bạn bè.', 'image' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=85']]]]]],
-            ['block_type' => 'landing_contact', 'label' => 'Đặt bàn nhanh', 'description' => 'Khối liên hệ và đặt bàn do FOOT403 thiết kế.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => ['source' => 'custom'], 'data' => ['vi' => ['title' => 'Đặt bàn cho một bữa ăn đáng nhớ', 'subtitle' => 'Liên hệ với Dola', 'description' => 'Để lại thông tin, đội ngũ nhà hàng sẽ liên hệ xác nhận trong thời gian sớm nhất.', 'button_label' => 'Gửi yêu cầu đặt bàn', 'content' => ['address' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM', 'phone' => '1900 6750', 'email' => 'support@htvietnam.vn', 'hours' => '10:00 – 22:30, tất cả các ngày']]]],
+            ['block_type' => 'landing_contact', 'label' => 'Đặt bàn nhanh', 'description' => 'Khối liên hệ và đặt bàn do FOOT403 thiết kế.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => ['source' => 'custom'], 'data' => ['vi' => ['title' => 'Đặt bàn cho một bữa ăn đáng nhớ', 'subtitle' => 'Liên hệ với Dola', 'description' => 'Để lại thông tin, đội ngũ nhà hàng sẽ liên hệ xác nhận trong thời gian sớm nhất.', 'button_label' => 'Gửi yêu cầu đặt bàn', 'content' => ['address' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM', 'phone' => '0399162342', 'email' => 'support@htvietnam.vn', 'hours' => '10:00 – 22:30, tất cả các ngày']]]],
         ];
     }
 

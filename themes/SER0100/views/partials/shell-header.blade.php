@@ -224,3 +224,4 @@
         });
     });
 </script>
+@include('partials.storefront-language-switcher')

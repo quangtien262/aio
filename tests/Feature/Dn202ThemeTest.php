@@ -9,6 +9,7 @@ use App\Models\CmsPartner;
 use App\Models\CmsProject;
 use App\Models\CmsService;
 use App\Models\LandingPage;
+use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -34,6 +35,15 @@ class Dn202ThemeTest extends TestCase
 
     public function test_dn202_demo_content_and_storefront_render(): void
     {
+        SiteProfile::query()->updateOrCreate(
+            ['website_key' => 'website-main'],
+            ['branding' => [
+                'logo_url' => 'https://cdn.example.test/brand/logo.svg',
+                'support_hotline' => '0909 123 456',
+                'support_email' => 'hello@example.test',
+            ]],
+        );
+
         $result = app(ThemeDemoContentGenerator::class)->generate('DN202', 'dn202-delta-arc-interior');
 
         $this->assertSame(6, data_get($result, 'counts.services'));
@@ -51,11 +61,22 @@ class Dn202ThemeTest extends TestCase
         $this->get(route('site.home', ['locale' => 'vi']))
             ->assertOk()
             ->assertSee('DN202 Arc')
+            ->assertSee('https://cdn.example.test/brand/logo.svg', false)
+            ->assertSee('0909 123 456')
+            ->assertSee('hello@example.test')
             ->assertSee('data-block-type="featured_services"', false)
             ->assertSee('data-block-type="featured_products"', false)
             ->assertSee('data-block-type="partner_logos"', false)
             ->assertSee('name="login"', false)
             ->assertSee('Email khách hàng / Username admin');
+
+        $branding = (array) SiteProfile::query()
+            ->where('website_key', 'website-main')
+            ->firstOrFail()
+            ->branding;
+        $this->assertSame('https://cdn.example.test/brand/logo.svg', $branding['logo_url']);
+        $this->assertSame('0909 123 456', $branding['support_hotline']);
+        $this->assertSame('hello@example.test', $branding['support_email']);
 
         $product = CatalogProduct::query()->firstOrFail();
         $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))->assertOk();

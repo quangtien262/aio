@@ -114,7 +114,7 @@
     </section>
 
     <section class="n503-footer-intro xd-landing-block" data-landing-block-id="{{ data_get($footerBlock, 'id') }}" data-block-type="nt503_footer">
-        <div class="n503-container"><h2>{{ data_get($footerBlock, 'data.title', 'Wolf Bed') }}</h2><p>{{ data_get($footerBlock, 'data.description', 'Mua nệm, chăn ga gối và phụ kiện chính hãng. Tư vấn cá nhân hoá, nằm thử 120 đêm, đổi trả dễ và giao tận nơi.') }}</p><h3>Hotline hỗ trợ</h3><div><b>Tư vấn mua hàng<br>1900 6750 (Nhánh 1)</b><b>Hỗ trợ kỹ thuật<br>1900 6750 (Nhánh 2)</b><b>Góp ý, khiếu nại<br>1900 6750</b></div></div>
+        <div class="n503-container"><h2>{{ data_get($footerBlock, 'data.title', 'Wolf Bed') }}</h2><p>{{ data_get($footerBlock, 'data.description', 'Mua nệm, chăn ga gối và phụ kiện chính hãng. Tư vấn cá nhân hoá, nằm thử 120 đêm, đổi trả dễ và giao tận nơi.') }}</p><h3>Hotline hỗ trợ</h3><div><b>Tư vấn mua hàng<br>0399162342 (Nhánh 1)</b><b>Hỗ trợ kỹ thuật<br>0399162342 (Nhánh 2)</b><b>Góp ý, khiếu nại<br>0399162342</b></div></div>
     </section>
 </main>
 @endsection

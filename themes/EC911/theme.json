@@ -5,7 +5,7 @@
   "description": "Theme thương mại điện tử máy ảnh, ống kính và thiết bị quay phim với sắc xanh công nghệ hiện đại.",
   "website_type": "ecommerce",
   "parent": null,
-  "preview": {"thumbnail": "avatar.png", "cover": "cover-ec911.png"},
+  "preview": {"thumbnail": "ec911.png", "cover": "ec911.png"},
   "blocks": ["hero-grid", "benefits", "category-rail", "flash-sale", "camera-products", "campaign-banner", "brand-cards", "news", "newsletter", "footer"],
   "supports": {"dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},

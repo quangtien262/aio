@@ -3,7 +3,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $t = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('EC900', app()->getLocale(), $key);
     $name = trim((string) ($branding['company_name'] ?? '')) ?: 'ECOMAX';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '1900 6750';
+    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
     $email = trim((string) ($branding['support_email'] ?? '')) ?: 'support@ecomax.vn';
     $location = trim((string) ($branding['support_location'] ?? '')) ?: '70 Lữ Gia, Phường 15, Quận 11, Thành phố Hồ Chí Minh';
 @endphp

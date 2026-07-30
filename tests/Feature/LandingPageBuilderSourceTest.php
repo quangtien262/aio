@@ -33,21 +33,6 @@ class LandingPageBuilderSourceTest extends TestCase
         $this->assertSame('landing_contact', $blocks->firstWhere('anchor_id', 'lien-he')->block_type);
     }
 
-    public function test_th0001_supports_configurable_commerce_landing_blocks(): void
-    {
-        $builder = app(LandingPageBuilder::class);
-        $page = $builder->seedHome('th0001-builder-test', 'TH0001');
-        $blocks = $page->blocks()->orderBy('sort_order')->get();
-
-        $this->assertTrue($builder->supportsTheme('TH0001'));
-        $this->assertSame(
-            ['hero_slider', 'featured_categories', 'featured_products', 'content_mosaic'],
-            $blocks->pluck('block_type')->all(),
-        );
-        $this->assertSame('cms_products', $blocks->firstWhere('block_type', 'featured_products')->settings['source']);
-        $this->assertContains('featured_products', collect($builder->availableBlocks('TH0001'))->pluck('block_type')->all());
-    }
-
     public function test_foot401_homepage_can_render_shortened_service_and_product_summaries(): void
     {
         $html = view('theme-foot401::home', [
@@ -84,7 +69,7 @@ class LandingPageBuilderSourceTest extends TestCase
     {
         $page = LandingPage::query()->create([
             'website_key' => 'landing-route-test',
-            'theme_key' => 'TH0001',
+            'theme_key' => 'XD0302',
             'page_type' => 'landing',
             'slug' => 'summer-sale',
             'status' => 'published',
@@ -100,7 +85,7 @@ class LandingPageBuilderSourceTest extends TestCase
         ]);
         $block = LandingPageBlock::query()->create([
             'landing_page_id' => $page->id,
-            'theme_key' => 'TH0001',
+            'theme_key' => 'XD0302',
             'block_type' => 'featured_products',
             'sort_order' => 10,
             'is_visible' => true,

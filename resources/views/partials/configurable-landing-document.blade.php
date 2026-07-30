@@ -2,7 +2,7 @@
     $documentHomeData = $themeHomeData ?? [];
     $documentShellData = $themeShellData ?? $documentHomeData;
     $documentBranding = $documentShellData['branding'] ?? $documentHomeData['branding'] ?? data_get($siteProfile ?? [], 'branding', []);
-    $documentThemeKey = strtoupper((string) data_get($activeTheme ?? [], 'key', data_get($landingPage ?? [], 'theme_key', 'TH0201')));
+    $documentThemeKey = strtoupper((string) data_get($activeTheme ?? [], 'key', data_get($landingPage ?? [], 'theme_key', 'corporate-starter')));
     $documentViewNamespace = 'theme-'.strtolower($documentThemeKey);
     $documentMenu = collect(data_get($documentHomeData, 'top_menu', data_get($menus ?? [], 'primary-navigation', [])))
         ->whenEmpty(fn () => collect($landingMenuItems ?? []))
@@ -27,6 +27,7 @@
     </style>
 </head>
 <body>
+        @include('partials.storefront-language-switcher')
 <header class="aio-doc-header"><div class="aio-doc-container aio-doc-header-inner">
     <a class="aio-doc-logo" href="{{ route('site.home') }}">@if(filled(data_get($documentBranding,'logo_url')))<img src="{{ data_get($documentBranding,'logo_url') }}" alt="{{ data_get($documentBranding,'company_name',$documentThemeKey) }}">@else<span>{{ data_get($documentBranding,'company_name',$documentThemeKey) }}</span>@endif</a>
     <nav class="aio-doc-nav">@foreach($documentMenu as $item)<a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] }}</a>@endforeach</nav>

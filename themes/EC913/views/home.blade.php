@@ -30,7 +30,7 @@
 
     $promotionItems = $items($promotions);
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
-    $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '1900 6750';
+    $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
 @endphp
 
 <main class="ec13-main">

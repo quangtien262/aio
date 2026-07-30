@@ -106,7 +106,7 @@ class Ec907DemoContentProvider implements ThemeDemoContentProvider
             $contact = CmsPage::query()->firstOrCreate(['slug' => 'contact'], ['title' => 'Liên hệ EGA Gear', 'status' => 'published', 'excerpt' => 'Tư vấn thiết bị và hỗ trợ đơn hàng.', 'body' => '<p>Đội ngũ EGA Gear luôn sẵn sàng hỗ trợ bạn.</p>', 'publish_at' => now()]);
             if ($contact->wasRecentlyCreated) $this->record($contact);
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'EGA Gear', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array)$profile->branding, ['company_name' => 'EGA Gear', 'company_description' => 'Laptop, gaming gear và thiết bị công nghệ chính hãng.', 'support_hotline' => '1900 6750', 'support_email' => 'support@egagear.vn', 'support_location' => '70 Lữ Gia, Quận 11, TP. Hồ Chí Minh'])])->save();
+            $profile->forceFill(['site_name' => 'EGA Gear', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array)$profile->branding, ['company_name' => 'EGA Gear', 'company_description' => 'Laptop, gaming gear và thiết bị công nghệ chính hãng.', 'support_hotline' => '0399162342', 'support_email' => 'support@egagear.vn', 'support_location' => '70 Lữ Gia, Quận 11, TP. Hồ Chí Minh'])])->save();
             $existing = LandingPage::query()->where('website_key',$websiteKey)->where('theme_key',self::THEME_KEY)->where('is_home',true)->first();
             $landing = $this->landingPageBuilder->resolveHome($websiteKey,self::THEME_KEY,true);
             if ($landing && !$existing) $this->record($landing);

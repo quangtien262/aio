@@ -4,7 +4,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Delta Platinum'))) ?: 'Delta Platinum';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $supportHotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '1900 6750';
+    $supportHotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
     $supportEmail = trim((string) ($branding['support_email'] ?? '')) ?: 'contact@example.com';
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
@@ -45,3 +45,4 @@
         </nav>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

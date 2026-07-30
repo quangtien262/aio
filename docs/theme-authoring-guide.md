@@ -19,7 +19,7 @@ Nếu cần bắt tay làm ngay theo kiểu copy-paste từng bước, đọc th
 - `AppServiceProvider` tự quét toàn bộ thư mục `themes/*` khi boot app.
 - Nếu một theme có `views/`, app đăng ký Blade namespace theo format:
   - `theme-{lowercase_key}::...`
-  - ví dụ `themes/TH0001/views/home.blade.php` sẽ được gọi là `theme-th0001::home`
+  - ví dụ `themes/SER0100/views/home.blade.php` sẽ được gọi là `theme-ser0100::home`
 - Nếu một theme có `lang/`, app nạp JSON translation của theme từ thư mục đó.
 - Mốc code chính:
   - `app/Providers/AppServiceProvider.php`
@@ -32,7 +32,7 @@ Nếu cần bắt tay làm ngay theo kiểu copy-paste từng bước, đọc th
 Các field đang được dùng thực tế:
 
 - `name`: tên hiển thị trong admin
-- `key`: mã theme, ví dụ `TH0001`, `SER0100`
+- `key`: mã theme, ví dụ `XD0301`, `SER0100`
 - `version`: version nội bộ
 - `description`: mô tả ngắn
 - `website_type`: loại website, ví dụ `ecommerce`, `service`
@@ -49,7 +49,7 @@ File neo:
 
 - `app/Core/Themes/ThemeRegistry.php`
 - `app/Core/Themes/ThemeManifest.php`
-- ví dụ manifest thật: `themes/TH0001/theme.json`, `themes/SER0100/theme.json`
+- ví dụ manifest thật: `themes/XD0301/theme.json`, `themes/SER0100/theme.json`
 
 ## 4. Theme được kích hoạt và lưu ở đâu
 
@@ -112,6 +112,9 @@ Rule khi làm theme mới:
 
 - text tĩnh của giao diện phải đi vào `lang/*.json`, không hardcode tràn lan trong Blade
 - business content không được hardcode translation trực tiếp trong Blade; phải đi theo key chuẩn của flow translation manager hiện có
+- header phải include `partials.storefront-language-switcher`, trừ khi theme có UI riêng nhưng vẫn tuân thủ contract `data-storefront-language-switcher`
+- không hardcode `VI/EN`, icon cờ hoặc query `?locale=`; locale public lấy từ `FrontendLocalization::localeOptions()`
+- URL đổi locale dùng `FrontendRouteUrl::localeSwitchUrls()`/`switchLocale()` để giữ đúng canonical slug của từng bản dịch và về homepage locale đích nếu resource chưa được dịch
 
 File neo:
 
@@ -185,7 +188,7 @@ Theme Blade files should use route helpers instead of hard-coded legacy URLs. Av
   - label: `Email khách hàng / Username admin`
   - input name: `login`
 - Các theme hiện đã đồng bộ flow này:
-  - `TH0001`
+  - `SHOP601`
   - `SER0100`
   - `SER0101`
 
@@ -225,11 +228,12 @@ File neo:
 3. Tạo đầy đủ các view storefront chính để `CmsSiteController` render được.
 4. Đưa static copy vào `lang/vi.json`, `lang/en.json` hoặc locale built-in tương ứng.
 5. Dùng `ThemeTranslationService` / `@themeT` cho copy tĩnh thay vì hardcode tràn lan.
-6. Nếu theme có auth modal, dùng shared login admin/customer convention.
-7. Nếu theme cần demo data, map preset trong `ThemeDemoContentGenerator`.
-8. Nếu theme cần config riêng như palette, đặt editor ở Theme Manager.
-9. Thêm preview/avatar tương ứng trong `public/theme-previews/{KEY}`.
-10. Kiểm tra theme có xuất hiện đúng trong Theme Manager, activate được, render được các route storefront chính, translation hoạt động, và nếu có thì demo data chạy được.
+6. Include bộ chọn ngôn ngữ storefront dùng chung trong header và kiểm tra desktop/mobile.
+7. Nếu theme có auth modal, dùng shared login admin/customer convention.
+8. Nếu theme cần demo data, map preset trong `ThemeDemoContentGenerator`.
+9. Nếu theme cần config riêng như palette, đặt editor ở Theme Manager.
+10. Thêm preview/avatar tương ứng trong `public/theme-previews/{KEY}`.
+11. Kiểm tra theme có xuất hiện đúng trong Theme Manager, activate được, render được các route storefront chính, translation hoạt động, và nếu có thì demo data chạy được.
 
 ## 13. Các file nên đọc trước khi bắt tay làm theme mới
 
@@ -241,9 +245,9 @@ File neo:
 - `app/Http/Controllers/Admin/Api/ThemeActivationController.php`
 - `app/Http/Controllers/Admin/Api/ThemeDemoDataController.php`
 - `resources/admin/src/modules/themes/pages/ThemeManagerPage.jsx`
-- `themes/TH0001/theme.json`
 - `themes/SER0100/theme.json`
-- `themes/TH0001/views/partials/engagement-modals.blade.php`
+- `themes/SER0100/theme.json`
+- `themes/SER0100/views/partials/engagement-modals.blade.php`
 - `docs/architecture/ser0100-service-theme-spec.md`
 
 ## 14. Nguyên tắc thiết kế khi AI làm theme mới trong repo này
@@ -252,4 +256,4 @@ File neo:
 - Ưu tiên reuse flow CMS/Catalog/Banner/Menu/Translation hiện tại trước khi nghĩ tới schema mới.
 - Theme chỉ nên khác nhau ở render, block composition, copy, visual language, và một số config theme-specific thật cần thiết.
 - Nếu chưa rõ route/view nào bắt buộc, đọc `CmsSiteController` trước khi code.
-- Nếu chưa rõ translation/static copy nên đặt ở đâu, đọc `ThemeTranslationService` và xem `TH0001`, `SER0100`, `SER0101` trước.
+- Nếu chưa rõ translation/static copy nên đặt ở đâu, đọc `ThemeTranslationService` và xem `XD0301`, `SER0100`, `SER0101` trước.

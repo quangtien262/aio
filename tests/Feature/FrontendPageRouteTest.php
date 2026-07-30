@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Support\FrontendRouteUrl;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class FrontendPageRouteTest extends TestCase
@@ -45,5 +46,18 @@ class FrontendPageRouteTest extends TestCase
             FrontendRouteUrl::localized('https://example.com/path', 'vi', false)
         );
         $this->assertSame('mailto:hello@example.com', FrontendRouteUrl::localized('mailto:hello@example.com'));
+    }
+
+    public function test_language_switch_keeps_the_current_page_and_localizes_its_route_segment(): void
+    {
+        $this->app->instance(
+            'request',
+            Request::create('/vi/san-pham/sofa?source=language-switcher')
+        );
+
+        $this->assertSame(
+            '/en/product/sofa?source=language-switcher',
+            FrontendRouteUrl::switchLocale('en', false)
+        );
     }
 }

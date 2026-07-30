@@ -12,6 +12,7 @@ use App\Models\LandingPage;
 use App\Models\LandingPageData;
 use App\Models\ThemeTranslation;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\FrontendRouteUrl;
 use App\Support\Localization\LocaleContext;
 use App\Support\Localization\LocalizedRouteRegistry;
 use App\Support\Localization\TranslationRevision;
@@ -19,6 +20,8 @@ use App\Support\Localization\TranslationWorkflowManager;
 use App\Support\Localization\WebsiteLocaleManager;
 use App\Support\SiteContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -125,12 +128,42 @@ class LocalizationFoundationTest extends TestCase
         );
     }
 
+    public function test_language_switcher_uses_the_exact_published_slug_for_each_locale(): void
+    {
+        $registry = app(LocalizedRouteRegistry::class);
+        $registry->register('vi', 'cms_page', 501, '/p/gioi-thieu', ['is_published' => true]);
+        $registry->register('en', 'cms_page', 501, '/p/about-us', ['is_published' => true]);
+
+        $request = Request::create('/vi/p/gioi-thieu?source=header');
+        $route = (new Route('GET', '/{locale}/p/{slug}', fn () => null))->bind($request);
+        $request->setRouteResolver(fn (): Route => $route);
+        $this->app->instance('request', $request);
+
+        $this->assertSame(
+            '/en/p/about-us?source=header',
+            FrontendRouteUrl::switchLocale('en', false),
+        );
+    }
+
+    public function test_language_switcher_falls_back_to_locale_home_when_the_page_is_not_translated(): void
+    {
+        $registry = app(LocalizedRouteRegistry::class);
+        $registry->register('vi', 'cms_page', 502, '/p/chinh-sach', ['is_published' => true]);
+
+        $request = Request::create('/vi/p/chinh-sach');
+        $route = (new Route('GET', '/{locale}/p/{slug}', fn () => null))->bind($request);
+        $request->setRouteResolver(fn (): Route => $route);
+        $this->app->instance('request', $request);
+
+        $this->assertSame('/en', FrontendRouteUrl::switchLocale('en', false));
+    }
+
     public function test_translation_workflow_tracks_revisions_and_only_publishes_after_review(): void
     {
         Event::fake([TranslationPublished::class]);
         $page = LandingPage::query()->create([
             'website_key' => 'website-main',
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'page_type' => 'landing',
             'slug' => 'workflow-test',
             'status' => 'draft',
@@ -214,10 +247,10 @@ class LocalizationFoundationTest extends TestCase
         $siteContext->set(null, 'website-a');
         $this->assertSame(
             'Account',
-            $service->bladeText('TH0001', 'en-US', 'common.account'),
+            $service->bladeText('SHOP601', 'en-US', 'SHOP601.header.account'),
         );
         ThemeTranslation::query()->create([
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'locale' => 'en',
             'group' => 'static',
             'translation_key' => 'qa.website_isolation',
@@ -225,7 +258,7 @@ class LocalizationFoundationTest extends TestCase
             'translation_status' => TranslationStatus::Published,
         ]);
         ThemeTranslation::query()->create([
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'locale' => 'en',
             'group' => 'static',
             'translation_key' => 'qa.draft_is_hidden',
@@ -234,12 +267,12 @@ class LocalizationFoundationTest extends TestCase
         ]);
         $this->assertSame(
             'Website A',
-            $service->bladeText('TH0001', 'en', 'qa.website_isolation'),
+            $service->bladeText('SHOP601', 'en', 'qa.website_isolation'),
         );
         $this->assertSame(
             'Published fallback',
             $service->bladeText(
-                'TH0001',
+                'SHOP601',
                 'en',
                 'qa.draft_is_hidden',
                 'Published fallback',
@@ -248,7 +281,7 @@ class LocalizationFoundationTest extends TestCase
 
         $siteContext->set(null, 'website-b');
         ThemeTranslation::query()->create([
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'locale' => 'en',
             'group' => 'static',
             'translation_key' => 'qa.website_isolation',
@@ -257,7 +290,7 @@ class LocalizationFoundationTest extends TestCase
         ]);
         $this->assertSame(
             'Website B',
-            $service->bladeText('TH0001', 'en', 'qa.website_isolation'),
+            $service->bladeText('SHOP601', 'en', 'qa.website_isolation'),
         );
     }
 

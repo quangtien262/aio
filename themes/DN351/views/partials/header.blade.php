@@ -23,7 +23,6 @@
         <div class="dn351-container">
             <a href="mailto:{{ $email }}"><i class="fa-regular fa-envelope"></i>{{ $email }}</a>
             <a href="tel:{{ preg_replace('/[^0-9+]/', '', $hotline) }}"><i class="fa-solid fa-phone"></i>{{ $hotline }}</a>
-            <span class="dn351-languages"><i class="fa-solid fa-globe"></i> VI · EN</span>
         </div>
     </div>
     <div class="dn351-navbar">
@@ -51,3 +50,4 @@
         </div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

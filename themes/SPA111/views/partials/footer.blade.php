@@ -5,8 +5,8 @@
             <a class="sp11-logo" href="#top"><span class="sp11-logo-mark"><i class="fa-solid fa-leaf"></i><b>B</b></span><span><strong>Bean <em>Spa</em></strong><small>ĐẸP TRÊN CẢ ƯỚC MƠ</small></span></a>
             <p>Mang đến các liệu trình chăm sóc tinh tế <b>an toàn và chuyên sâu</b> giúp bạn thư giãn trọn vẹn và <b>tái tạo năng lượng</b> từ bên trong.</p>
             <p><i class="fa-solid fa-location-dot"></i> {{ data_get($branding, 'support_location', '70 Lữ Gia, Phường 15, Quận 11, TP. Hồ Chí Minh') }}</p>
-            <p><i class="fa-solid fa-phone-volume"></i> {{ data_get($branding, 'support_hotline', '1900 6750') }}</p>
-            <p><i class="fa-regular fa-envelope"></i> {{ data_get($branding, 'support_email', 'support@sapo.vn') }}</p>
+            <p><i class="fa-solid fa-phone-volume"></i> {{ data_get($branding, 'support_hotline', '0399162342') }}</p>
+            <p><i class="fa-regular fa-envelope"></i> {{ data_get($branding, 'support_email', 'support@htvietnam.vn') }}</p>
             <div class="sp11-social"><a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i class="fa-brands fa-instagram"></i></a><a href="#"><i class="fa-brands fa-shopify"></i></a><a href="#"><i class="fa-brands fa-tiktok"></i></a></div>
         </div>
         <div><h3>Chính Sách</h3><a href="#">Chính sách thành viên</a><a href="#">Chính sách thanh toán</a><a href="#">Chính sách đổi sản phẩm</a><a href="#">Chính sách bảo mật</a><a href="#">Chính sách cộng tác viên</a><a href="#">Chính sách bảo hành</a></div>

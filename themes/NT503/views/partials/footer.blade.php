@@ -1,7 +1,7 @@
 @php
     $branding = (array) data_get($themeShellData ?? $themeHomeData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $phone = $branding['support_hotline'] ?? '1900 6750';
-    $email = $branding['support_email'] ?? 'support@sapo.vn';
+    $phone = $branding['support_hotline'] ?? '0399162342';
+    $email = $branding['support_email'] ?? 'support@htvietnam.vn';
     $address = $branding['support_location'] ?? '70 Lữ Gia, Phường 15, Quận 11, Thành phố Hồ Chí Minh';
 @endphp
 <footer id="footer" class="n503-footer">

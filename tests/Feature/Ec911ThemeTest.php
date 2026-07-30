@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\ThemeRegistry;
+use App\Models\Admin;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CmsPost;
@@ -64,8 +65,24 @@ class Ec911ThemeTest extends TestCase
 
     public function test_ec911_demo_preserves_an_existing_custom_logo(): void
     {
-        SiteProfile::query()->create(['site_name' => 'Website', 'website_type' => 'ecommerce', 'active_theme_key' => 'TH0001', 'branding' => ['logo_url' => '/storage/branding/custom-logo.svg']]);
+        SiteProfile::query()->create(['site_name' => 'Website', 'website_type' => 'ecommerce', 'active_theme_key' => 'SHOP601', 'branding' => ['logo_url' => '/storage/branding/custom-logo.svg']]);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('EC911')?->generate('ec911-digitech');
         $this->assertSame('/storage/branding/custom-logo.svg', data_get(SiteProfile::query()->firstOrFail()->branding, 'logo_url'));
+    }
+
+    public function test_ec911_admin_mode_renders_real_block_edit_buttons(): void
+    {
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('EC911')?->generate('ec911-digitech');
+        $this->actingAs(Admin::factory()->create(), 'admin');
+
+        $content = $this->get(route('site.home', ['locale' => 'vi', 'mod' => 'admin']))
+            ->assertOk()
+            ->assertSee('Sửa khối')
+            ->getContent();
+
+        $this->assertSame(
+            10,
+            preg_match_all('/<button\b[^>]*\bdata-xd-edit-block\b[^>]*>/i', $content),
+        );
     }
 }

@@ -25,3 +25,4 @@
         <form class="xd3-search" method="GET" action="{{ route('site.catalog.search') }}"><input type="search" name="q" placeholder="Nhập từ khóa..." aria-label="Tìm kiếm"><button type="submit" aria-label="Tìm kiếm">⌕</button></form>
     </div></div>
 </header>
+@include('partials.storefront-language-switcher')

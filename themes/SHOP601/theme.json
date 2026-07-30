@@ -5,7 +5,7 @@
   "description": "Theme thời trang thương mại điện tử với slider, bộ sưu tập, flash sale, khối sản phẩm linh hoạt, TikTok, đánh giá và tin tức.",
   "website_type": "ecommerce",
   "parent": null,
-  "preview": { "thumbnail": "601.png", "cover": "601-avatar.png" },
+  "preview": { "thumbnail": "601.png", "cover": "601.png" },
   "blocks": ["hero-slider", "shopping-benefits", "collection-cards", "flash-sale", "advertising-banners", "product-grid", "feature-collection", "product-carousel", "testimonials", "tiktok-embed", "latest-content"],
   "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
   "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },

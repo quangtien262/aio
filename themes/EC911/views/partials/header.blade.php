@@ -4,7 +4,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = data_get($branding, 'logo_url');
     $siteName = data_get($profile, 'site_name', 'DIGITECH');
-    $hotline = data_get($branding, 'support_hotline', '1900 6750');
+    $hotline = data_get($branding, 'support_hotline', '0399162342');
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec11-header" id="top">
@@ -32,3 +32,4 @@
         </div>
     </div></nav>
 </header>
+@include('partials.storefront-language-switcher')

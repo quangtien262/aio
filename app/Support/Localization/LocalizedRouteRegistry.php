@@ -160,6 +160,59 @@ class LocalizedRouteRegistry
         return null;
     }
 
+    /**
+     * Resolve canonical paths only for the requested public locales.
+     *
+     * Unlike canonicalPath(), this method never falls back to another locale.
+     * It is intended for language switchers and hreflang navigation, where
+     * linking a locale label to content from a different language is unsafe.
+     *
+     * @param  iterable<int, string>  $locales
+     * @return array<string, string>
+     */
+    public function canonicalPaths(
+        Model|string $resource,
+        string|int|null $resourceId,
+        iterable $locales,
+        ?string $websiteKey = null,
+    ): array {
+        $resourceType = $resource instanceof Model ? $resource->getMorphClass() : $resource;
+        $resourceId ??= $resource instanceof Model ? $resource->getKey() : null;
+
+        if ($resourceId === null) {
+            return [];
+        }
+
+        $websiteKey = $this->siteContext->normalizeWebsiteKey(
+            $websiteKey ?? $this->siteContext->websiteKey(),
+        );
+        $publicLocales = collect($locales)
+            ->map(fn (string $locale): ?string => LocaleCode::tryNormalize($locale))
+            ->filter(fn (?string $locale): bool => (
+                $locale !== null && $this->localeContext->isPublic($locale, $websiteKey)
+            ))
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($publicLocales === []) {
+            return [];
+        }
+
+        return LocalizedRoute::query()
+            ->forWebsite($websiteKey)
+            ->whereIn('locale', $publicLocales)
+            ->where('resource_type', $resourceType)
+            ->where('resource_id', (string) $resourceId)
+            ->where('is_canonical', true)
+            ->where('is_published', true)
+            ->get(['locale', 'path'])
+            ->mapWithKeys(fn (LocalizedRoute $route): array => [
+                $route->locale => $route->path,
+            ])
+            ->all();
+    }
+
     private function normalizePath(string $path): string
     {
         $path = '/'.ltrim(trim($path), '/');

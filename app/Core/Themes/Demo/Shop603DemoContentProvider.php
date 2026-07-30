@@ -114,7 +114,7 @@ class Shop603DemoContentProvider implements ThemeDemoContentProvider
             if ($page->wasRecentlyCreated) $this->record($page);
 
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'Alena Fashion', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Alena', 'company_description' => 'Shop thời trang và phụ kiện Alena.', 'support_hotline' => '1900 6750', 'support_email' => 'hello@alena.vn', 'support_location' => 'Tầng 6, Tòa nhà Ladeco, 266 Đội Cấn, Phường Liễu Giai, Quận Ba Đình, TP Hà Nội'])])->save();
+            $profile->forceFill(['site_name' => 'Alena Fashion', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Alena', 'company_description' => 'Shop thời trang và phụ kiện Alena.', 'support_hotline' => '0399162342', 'support_email' => 'hello@alena.vn', 'support_location' => 'Tầng 6, Tòa nhà Ladeco, 266 Đội Cấn, Phường Liễu Giai, Quận Ba Đình, TP Hà Nội'])])->save();
             $existing = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $landing = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);
             if ($landing && ! $existing) $this->record($landing);

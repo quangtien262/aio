@@ -205,7 +205,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
         );
         $page = LandingPage::query()->create([
             'website_key' => 'website-main',
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'page_type' => 'landing',
             'slug' => 'chien-dich',
             'status' => 'draft',
@@ -222,7 +222,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
         $localization->transitionPage($page, 'vi', TranslationStatus::Published);
         $block = LandingPageBlock::query()->create([
             'landing_page_id' => $page->id,
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'block_type' => 'hero',
             'schema_version' => 1,
             'sort_order' => 10,
@@ -253,7 +253,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
         );
         $page = LandingPage::query()->create([
             'website_key' => 'website-main',
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'page_type' => 'landing',
             'slug' => 'chien-dich',
             'status' => 'draft',
@@ -270,7 +270,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
         $localization->transitionPage($page, 'vi', TranslationStatus::Published);
         $block = LandingPageBlock::query()->create([
             'landing_page_id' => $page->id,
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'block_type' => 'hero',
             'schema_version' => 1,
             'sort_order' => 10,
@@ -295,7 +295,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
 
         $resolution = $localization->resolvePublic(
             'website-main',
-            'TH0001',
+            'SHOP601',
             'en',
             'campaign',
         );
@@ -313,7 +313,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
                 ->translation_status,
         );
 
-        $available = app(LandingPageBuilder::class)->availableBlocks('TH0001');
+        $available = app(LandingPageBuilder::class)->availableBlocks('SHOP601');
         $this->assertNotEmpty($available);
         $this->assertSame(1, $available[0]['schema_version']);
     }

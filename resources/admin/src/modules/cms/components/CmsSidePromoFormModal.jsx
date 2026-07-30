@@ -348,7 +348,7 @@ export default function CmsSidePromoFormModal({ open, canManage, editingGroup, l
                     <Row gutter={16}>
                         <Col xs={24} md={14}>
                             <Form.Item name="name" label="Tên block" rules={[{ required: true, message: 'Nhập tên block.' }]}>
-                                <Input placeholder="TH0001 Hero side promos" />
+                                <Input placeholder="Storefront hero side promos" />
                             </Form.Item>
                         </Col>
                         <Col xs={24} md={10}>

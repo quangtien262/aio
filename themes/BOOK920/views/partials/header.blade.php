@@ -7,7 +7,7 @@
 @endphp
 <header class="book20-header">
     <div class="book20-topbar">
-        <div class="book20-container"><span><i class="fa-solid fa-phone"></i> {{ data_get($branding, 'support_hotline', '1900 9477') }}</span><span><i class="fa-regular fa-envelope"></i> {{ data_get($branding, 'support_email', 'hello@bookle.vn') }}</span><form action="{{ route('site.catalog.search') }}"><input name="q" placeholder="Nhập từ khóa..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form><span>🇺🇸 🇻🇳</span></div>
+        <div class="book20-container"><span><i class="fa-solid fa-phone"></i> {{ data_get($branding, 'support_hotline', '1900 9477') }}</span><span><i class="fa-regular fa-envelope"></i> {{ data_get($branding, 'support_email', 'hello@bookle.vn') }}</span><form action="{{ route('site.catalog.search') }}"><input name="q" placeholder="Nhập từ khóa..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form></div>
     </div>
     <div class="book20-container book20-header-main">
         <a class="book20-logo" href="{{ route('site.home') }}">
@@ -20,3 +20,4 @@
         <div class="book20-actions"><button data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-basket-shopping"></i><em>{{ $cartCount }}</em></a></div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

@@ -211,7 +211,7 @@ class Ec900DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'ECOMAX',
                     'company_description' => 'Điện máy và gia dụng thông minh chính hãng cho mọi tổ ấm.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'support@ecomax.vn',
                     'support_location' => '70 Lữ Gia, Phường 15, Quận 11, Thành phố Hồ Chí Minh',
                 ]),

@@ -89,7 +89,7 @@
     <section class="ec17-benefits xd-landing-block" data-landing-block-id="{{ data_get($benefits, 'id') }}" data-block-type="ec917_benefits" data-ec17-reveal>
         <div class="ec17-container">
             @foreach($items($benefits) as $index => $item)
-                <article data-ec17-stagger><i class="fa-solid {{ data_get($item, 'icon', 'fa-gift') }}"></i><div><h3>{{ $index === 0 ? str_replace(['19001993', '1900 1993', '19006750', '1900 6750'], $hotline, data_get($item, 'title')) : data_get($item, 'title') }}</h3><p>{{ data_get($item, 'summary') }}</p></div></article>
+                <article data-ec17-stagger><i class="fa-solid {{ data_get($item, 'icon', 'fa-gift') }}"></i><div><h3>{{ $index === 0 ? str_replace(['19001993', '1900 1993', '19006750', '0399162342'], $hotline, data_get($item, 'title')) : data_get($item, 'title') }}</h3><p>{{ data_get($item, 'summary') }}</p></div></article>
             @endforeach
         </div>
     </section>

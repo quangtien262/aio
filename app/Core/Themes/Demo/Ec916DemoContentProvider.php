@@ -210,8 +210,8 @@ class Ec916DemoContentProvider implements ThemeDemoContentProvider
             $branding += [
                 'company_name' => 'Bách Hóa Xanh Plus',
                 'company_description' => 'Mua sắm thực phẩm, công nghệ, thời trang, làm đẹp và gia dụng tiện lợi mỗi ngày.',
-                'support_hotline' => '1900 6750',
-                'support_email' => 'support@sapo.vn',
+                'support_hotline' => '0399162342',
+                'support_email' => 'support@htvietnam.vn',
                 'support_location' => '266 Đội Cấn, Ba Đình, Hà Nội',
             ];
             $profile->forceFill([

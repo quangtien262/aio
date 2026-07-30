@@ -75,7 +75,7 @@ class Ec908ThemeTest extends TestCase
     public function test_ec908_demo_preserves_an_existing_custom_logo(): void
     {
         SiteProfile::query()->create([
-            'site_name' => 'Website', 'website_type' => 'ecommerce', 'active_theme_key' => 'TH0001',
+            'site_name' => 'Website', 'website_type' => 'ecommerce', 'active_theme_key' => 'SHOP601',
             'branding' => ['logo_url' => '/storage/branding/custom-logo.svg'],
         ]);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('EC908')?->generate('ec908-ego-fitness');

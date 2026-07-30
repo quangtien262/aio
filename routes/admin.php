@@ -104,6 +104,7 @@ use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
 use App\Http\Controllers\Admin\Api\ThemeLocaleController;
 use App\Http\Controllers\Admin\Api\LocalizedContentController;
 use App\Http\Controllers\Admin\Api\ThemePaletteController;
+use App\Http\Controllers\Admin\Api\ThemeBrandingController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationManagementController;
@@ -250,6 +251,12 @@ Route::prefix('admin')
                 Route::put('/themes/{key}/palette', ThemePaletteController::class)
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.palette.update');
+                Route::get('/themes/{key}/settings', [ThemeBrandingController::class, 'show'])
+                    ->middleware('admin.permission:theme.view')
+                    ->name('themes.settings.show');
+                Route::put('/themes/{key}/settings', [ThemeBrandingController::class, 'update'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.settings.update');
                 Route::put('/themes/{key}/translations/{locale}', [ThemeTranslationManagementController::class, 'update'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.translations.update');

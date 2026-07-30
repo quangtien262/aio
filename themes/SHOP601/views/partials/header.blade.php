@@ -27,3 +27,4 @@
         <div class="s601-promos"><span>• {{ $t('SHOP601.header.live') }}</span><b>🎁 {{ $t('SHOP601.header.promotion') }}</b></div>
     </div></div>
 </header>
+@include('partials.storefront-language-switcher')

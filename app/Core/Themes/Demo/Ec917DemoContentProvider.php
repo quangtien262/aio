@@ -206,8 +206,8 @@ class Ec917DemoContentProvider implements ThemeDemoContentProvider
             $branding += [
                 'company_name' => 'Siêu thị nội thất EGA',
                 'company_description' => 'Thương hiệu nội thất uy tín và chất lượng, mang đến trải nghiệm mua sắm tiện lợi, hiện đại và phong phú.',
-                'support_hotline' => '1900 6750',
-                'support_email' => 'support@sapo.vn',
+                'support_hotline' => '0399162342',
+                'support_email' => 'support@htvietnam.vn',
                 'support_location' => '70 Lữ Gia, Quận 11, Thành phố Hồ Chí Minh',
                 'tax_code' => '12345678999',
             ];

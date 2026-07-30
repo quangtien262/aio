@@ -1,8 +1,8 @@
 @php
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
     $logo = trim((string) data_get($branding, 'logo_url'));
-    $hotline = trim((string) data_get($branding, 'support_hotline')) ?: '1900 6750';
-    $email = trim((string) data_get($branding, 'support_email')) ?: 'support@sapo.vn';
+    $hotline = trim((string) data_get($branding, 'support_hotline')) ?: '0399162342';
+    $email = trim((string) data_get($branding, 'support_email')) ?: 'support@htvietnam.vn';
     $location = trim((string) data_get($branding, 'support_location')) ?: '70 Lữ Gia, Quận 11, Thành phố Hồ Chí Minh';
 @endphp
 <footer class="ec17-footer">

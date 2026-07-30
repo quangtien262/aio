@@ -16,3 +16,4 @@
         @foreach($nav as $index=>$item)<a class="{{ $index===0?'is-active':'' }}" href="{{ data_get($item,'url') }}" target="{{ data_get($item,'target','_self') }}">{{ data_get($item,'label') }}</a>@endforeach
     </div></div></nav>
 </header>
+@include('partials.storefront-language-switcher')

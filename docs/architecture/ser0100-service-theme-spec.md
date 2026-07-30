@@ -2,14 +2,14 @@
 
 ## 1. Mục tiêu
 
-- Tạo theme `SER0100` theo cùng pattern đóng gói của `TH0001` để có thể cài đặt, preview, kích hoạt, dịch nội dung và seed data test từ theme manager hiện tại.
+- Tạo theme `SER0100` theo pattern đóng gói chuẩn để có thể cài đặt, preview, kích hoạt, dịch nội dung và seed data test từ theme manager hiện tại.
 - Định vị `SER0100` là theme `service-first` cho nhóm doanh nghiệp vận tải hành khách, thuê xe du lịch, shuttle doanh nghiệp và chở hàng nhẹ.
 - Tận dụng database hiện có: CMS, Catalog, Banner, Menu, Translation, Orders. Không thay đổi schema trong phase này.
 
 ## 2. Website Type Và Switching Policy
 
 - `SER0100` có `website_type = service`.
-- Theme được phép đổi chéo với `TH0001` hoặc các theme khác loại website, nhưng khi đổi khác `website_type` phải có cảnh báo đỏ và xác nhận rõ ràng từ user.
+- Theme được phép đổi chéo với theme khác loại website, nhưng khi đổi khác `website_type` phải có cảnh báo đỏ và xác nhận rõ ràng từ user.
 - Dữ liệu cũ không bị xóa khi đổi theme, nhưng một phần nội dung có thể không còn tương thích hoàn toàn với block và mục đích sử dụng của theme mới.
 
 ## 3. Định vị sản phẩm

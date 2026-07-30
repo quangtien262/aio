@@ -51,7 +51,7 @@ class ThemeTranslationManagementController
 
     private function resolveWebsiteKey(): string
     {
-        $branding = SiteProfile::query()->value('branding');
+        $branding = SiteProfile::query()->first()?->branding;
         $decoded = is_array($branding) ? $branding : json_decode((string) $branding, true);
 
         return (string) data_get($decoded, 'website_key', app(SiteContext::class)->websiteKey());

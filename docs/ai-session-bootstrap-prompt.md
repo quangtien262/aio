@@ -63,7 +63,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Fallback về tiếng Việt được giữ để tương thích trong thời gian rollout, nhưng fallback không có nghĩa locale đích đã sẵn sàng kinh doanh.
 - `/admin/themes` quản lý locale storefront và static translation. Các form Pages/Nội dung/Landing Page quản lý business translation theo locale đang biên tập.
 - Admin UI nội bộ vẫn ưu tiên tiếng Việt; phạm vi hiện tại là nội dung public/storefront, không phải dịch toàn bộ admin shell.
-- Feature flags và rollback nằm ở `config/localized-content.php`; không xóa reader/bảng cũ khi chưa hoàn tất ít nhất một chu kỳ vận hành ổn định.
+- Feature flags và rollback nằm ở `config/localized-content.php`, dưới namespace `localized-content.rollout.*`; không đọc nhầm các key gốc như `localized-content.reader`. Không xóa reader/bảng cũ khi chưa hoàn tất ít nhất một chu kỳ vận hành ổn định.
 
 ## 3. Mô hình tài khoản và phân quyền
 
@@ -148,9 +148,11 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 
 ### Themes
 - `/admin/themes` hiện quản lý cả preview theme, locale storefront và translation. Preview mở bằng drawer khi click tiêu đề theme; nút `Kích hoạt theme` nằm ở đầu drawer.
-- Theme `XD0301` là theme chuẩn nhất, nếu có chỗ nào khó hiểu thì hãy tham khảo code của theme này nhé, đặc biệt là cách cài đặt trang chủ và landingpage, xem chi tiết hơn ở file `docs/landing-page-builder.md` và `theme-starter-checklist.md`
+- Theme `XD0301` là theme chuẩn nhất, nếu có chỗ nào khó hiểu thì hãy tham khảo code của theme này, đặc biệt là cách cài đặt trang chủ và Landing Page. Xem chi tiết ở `docs/landing-page-builder.md` và `docs/theme-starter-checklist.md`.
 - Locale manager cho phép xem `default/source/fallback`, bật/tắt `active/published`, đổi `default locale`, thêm locale custom và phân biệt locale built-in của theme.
 - Translation drawer đã hỗ trợ locale động, tách `static` / `business content`, search, pagination, entity filter và edit từng entry.
+- Cả 66 theme trong registry đã có bộ chọn ngôn ngữ trên storefront. Trong 65 header partial, 63 file dùng `resources/views/partials/storefront-language-switcher.blade.php`; `DN302` và `XD0301` giữ UI riêng nhưng phải có marker `data-storefront-language-switcher`. Theme không có header partial là `corporate-starter`, được phủ qua `resources/views/site.blade.php`/`site-cms.blade.php`.
+- Bộ chọn chỉ đọc locale active + published từ `FrontendLocalization::localeOptions()`, không hardcode VI/EN và không dùng query `?locale=`. URL được tạo bằng `FrontendRouteUrl::localeSwitchUrls()`/`switchLocale()`; resource có slug dịch riêng phải đi theo canonical path trong `localized_routes`, còn locale chưa có bản dịch public phải về homepage locale đích.
 - Business content translation đã phủ các nhóm chính như `site_profile`, `site_banner`, `cms_menu`, `cms_page`, `cms_post`, `cms_category`, `catalog_category`, `catalog_product`.
 - Auth modal storefront hiện đã được đồng bộ shared login admin/customer trên tất cả các theme đang có engagement modal chính: `XD0301`, `XD0302`.....
 - Rule cần giữ: login panel của các theme này phải dùng field identity chung `Email khách hàng / Username admin`, post về `customer.auth.store`, để backend thử admin trước rồi mới fallback customer.
@@ -281,7 +283,7 @@ Phần này là trạng thái thực tế sau các giai đoạn chuyển đổi 
 
 - Nền tảng locale theo website: `system_locales`, `website_locales`, `LocaleContext`, cache invalidation và validation BCP 47.
 - Workflow dịch có revision, review/publish timestamp, trạng thái máy dịch và tự đánh dấu `outdated` khi nguồn thay đổi.
-- Canonical/localized slug và SEO qua `localized_routes`, `localized-seo.blade.php` và sitemap theo locale.
+- Canonical/localized slug và SEO qua `localized_routes`, `localized-seo.blade.php` và sitemap theo locale. Bộ chọn ngôn ngữ phải dùng `FrontendRouteUrl::localeSwitchUrls()`/`switchLocale()`: nếu resource có bản dịch public thì đi đúng canonical slug của locale đích; nếu chưa có bản dịch public thì về homepage locale đích để không tạo liên kết 404.
 - CMS Pages có model/table/service riêng: `CmsPageTranslation`, `CmsPageLocalization`, `CmsPageResolution`.
 - `content_translations` và `LocalizedContentRepository` đang phục vụ 17 resource type:
   - `cms_category`, `cms_post`;
@@ -293,14 +295,16 @@ Phần này là trạng thái thực tế sau các giai đoạn chuyển đổi 
   - `real_estate_listing`, `real_estate_property_type`.
 - Landing Page đã tách identity/layout khỏi dữ liệu theo locale. Slug, status, SEO nằm trong `landing_page_data`; nội dung block nằm trong `landing_page_block_data`.
 - Admin Pages, Nội dung, Catalog, Bất động sản và Landing Page đã có locale context/editor tương ứng.
-- UX chuẩn cho form dịch là tab locale nằm ngay trong Drawer như `CmsPageFormModal`; không chỉ đặt locale selector ở bảng phía sau Drawer. Pattern này đã áp dụng cho CMS Pages, Products/Catalog, Tin tức, Dịch vụ, Dự án, Đội ngũ nhân sự, Đối tác và Cảm nhận khách hàng qua component dùng chung `LocalizedContentTabs`. Locale chưa có bản dịch phải để trống các field dịch; field dùng chung phải kế thừa từ bản gốc và bị khóa trong chế độ dịch. Slug phải hiện ở mọi tab có detail route và tự cập nhật mỗi khi tiêu đề/tên của chính locale đó thay đổi. Trạng thái `draft/published` là trạng thái riêng của từng locale, không phải dữ liệu dùng chung. Khi tạo mới, cả generic content/Product và CMS Pages đều cho nhập trước các locale đích, giữ draft phía client, rồi yêu cầu quay lại locale nguồn để tạo master và lần lượt lưu từng bản dịch; lựa chọn trạng thái của từng tab được giữ nguyên.
-- Bộ lọc `Ngôn ngữ nội dung` tại list Pages, Sản phẩm, Tin tức, Dịch vụ, Dự án, Đội ngũ nhân sự, Đối tác và Cảm nhận khách hàng phải gửi `?locale=<code>` xuống API. Generic list dùng `AdminLocalizedContentList` để bulk-overlay từ `content_translations` (không N+1); bản dịch thiếu vẫn giữ nhãn nguồn làm fallback nhận diện nhưng phải trả `_translation_status=missing` để Admin hiển thị `Chưa có`. Page list resolve trực tiếp từ `cms_page_translations` theo locale được chọn.
+- UX chuẩn cho form dịch là tab locale nằm ngay trong Drawer như `CmsPageFormModal`; không chỉ đặt locale selector ở bảng phía sau Drawer. Pattern này đã áp dụng cho CMS Pages, Products/Catalog, Tin tức, Dịch vụ, Dự án, Đội ngũ nhân sự, Đối tác và Cảm nhận khách hàng qua component dùng chung `resources/admin/src/shared/components/LocalizedContentTabs.jsx`. Locale chưa có bản dịch phải để trống các field dịch; field dùng chung phải kế thừa từ bản gốc và bị khóa trong chế độ dịch. Slug phải hiện ở mọi tab có detail route và tự cập nhật mỗi khi tiêu đề/tên của chính locale đó thay đổi. Trạng thái `draft/published` là trạng thái riêng của từng locale, không phải dữ liệu dùng chung. Khi tạo mới, cả generic content/Product và CMS Pages đều cho nhập trước các locale đích, giữ draft phía client, rồi yêu cầu quay lại locale nguồn để tạo master và lần lượt lưu từng bản dịch; lựa chọn trạng thái của từng tab được giữ nguyên.
+- Bộ lọc `Ngôn ngữ nội dung` tại list Pages, Sản phẩm, Tin tức, Dịch vụ, Dự án, Đội ngũ nhân sự, Đối tác và Cảm nhận khách hàng phải gửi `?locale=<code>` xuống API. Generic list dùng `app/Support/Localization/AdminLocalizedContentList.php` để bulk-overlay từ `content_translations` (không N+1); bản dịch thiếu vẫn giữ nhãn nguồn làm fallback nhận diện nhưng phải trả `_translation_status=missing` để Admin hiển thị `Chưa có`. Page list resolve trực tiếp từ `cms_page_translations` theo locale được chọn.
 - Controller/builder localize dữ liệu trước khi đưa vào theme. Theme không được tự query translation table.
 - Theme static dictionary, SEO head và locale route contract đã được refactor trên các theme hiện có. Canary rollout là `BOOK920`, `DN302`, `BDS701`.
+- Theme localization contract bắt buộc mọi header/full-document storefront render bộ chọn ngôn ngữ. Contract hiện phủ đủ 68 theme, bao gồm cả fallback document của theme không có header; regression nằm trong `tests/Feature/ThemeLocalizationContractTest.php`.
 - Reader mới, dual-write và legacy fallback được điều khiển bằng:
   - `LOCALIZATION_CONTENT_READER=new`;
   - `LOCALIZATION_CONTENT_DUAL_WRITE=true`;
   - `LOCALIZATION_CONTENT_LEGACY_FALLBACK=true`.
+  - Các giá trị runtime tương ứng đọc tại `config('localized-content.rollout.reader')`, `config('localized-content.rollout.dual_write')` và `config('localized-content.rollout.legacy_fallback')`.
 
 ### Sáu migration localization đã tạo và đã chạy trên database local
 
@@ -313,17 +317,17 @@ Phần này là trạng thái thực tế sau các giai đoạn chuyển đổi 
 
 Migration số 6 không xóa nội dung. Nó hạ các block EN còn chứa dấu hiệu tiếng Việt từ `published` về `needs_translation`, xóa mốc review/publish và giữ nguyên payload để biên tập tiếp.
 
-### Trạng thái dữ liệu website-main tại thời điểm chốt
+### Trạng thái dữ liệu website-main tại audit gần nhất
 
 | Nhóm | Bản nguồn cần có bản dịch | EN đạt release gate | EN còn thiếu/chưa đạt |
 | --- | ---: | ---: | ---: |
-| 17 nhóm Nội dung | 374 | 0 | 374 |
-| CMS Pages | 2 | 0 | 2 |
+| 17 nhóm Nội dung | 394 | 1 | 393 |
+| CMS Pages | 2 | 1 | 1 |
 | Landing Page metadata/SEO | 12 | 0 | 12 |
-| Landing Page blocks | 114 | 81 | 33 |
-| **Tổng** | **502** | **81** | **421** |
+| Landing Page blocks | 114 | 74 | 40 |
+| **Tổng** | **522** | **76** | **446** |
 
-Coverage tự động là 16,1%. Kiến trúc/dữ liệu nguồn đang nhất quán nhưng EN chưa sẵn sàng phát hành. 81 block EN vượt kiểm tra revision/trạng thái vẫn cần người thật kiểm tra nội dung và giao diện trước khi mở toàn cầu.
+Audit ngày 2026-07-30 ghi nhận coverage EN là 14,6%. Kiến trúc/dữ liệu nguồn đang nhất quán nhưng EN chưa sẵn sàng phát hành. 76 mục vượt kiểm tra revision/trạng thái vẫn cần người thật kiểm tra nội dung và giao diện trước khi mở toàn cầu. Đây là snapshot dữ liệu, không phải hằng số; session sau phải chạy lại audit thay vì mặc định các con số này còn nguyên.
 
 `website-main` hiện dùng `vi` làm source/default/fallback. `en` có thể vẫn mang cờ public từ dữ liệu tương thích cũ; cờ này không đồng nghĩa EN đã sẵn sàng kinh doanh. Session sau không được dựa riêng vào `website_locales.is_published` để kết luận release-ready.
 
@@ -340,7 +344,7 @@ Coverage tự động là 16,1%. Kiến trúc/dữ liệu nguồn đang nhất q
 
 `--strict` chỉ chứng minh schema, nguồn, route và đối chiếu dữ liệu không mâu thuẫn. Nó không chứng minh một locale đã dịch xong. Chỉ `--require-ready` mới chặn release khi translation đích chưa `published` hoặc `source_revision` không khớp nguồn hiện tại.
 
-Validation gần nhất: 314 tests/5.705 assertions pass; Blade compile pass; Admin build pass; localization strict audit có 0 issue. `--require-ready` trả exit code lỗi đúng thiết kế vì còn 421 mục EN.
+Validation cập nhật ngày 2026-07-30 sau rollout bộ chọn ngôn ngữ: 326 tests/5.921 assertions pass; Blade compile pass; Admin build pass. Build còn warning không chặn về 2 chunk lớn hơn 950 kB. Localization strict audit có `issue_count=0`; `--require-ready` trả exit code lỗi đúng thiết kế vì còn 446 mục EN.
 
 ### Invariant không được phá
 
@@ -363,7 +367,10 @@ Validation gần nhất: 314 tests/5.705 assertions pass; Blade compile pass; Ad
   - `app/Support/Localization/LandingPageLocalization.php`
   - `app/Support/Localization/LocalizedRouteRegistry.php`
   - `app/Support/Localization/TranslationWorkflowManager.php`
+  - `app/Support/FrontendLocalization.php`
+  - `app/Support/FrontendRouteUrl.php`
   - `app/Support/BusinessContentTranslationService.php`
+  - `resources/views/partials/storefront-language-switcher.blade.php`
   - `config/localized-content.php`
 - Audit/vận hành:
   - `app/Console/Commands/LocalizationAuditCommand.php`
@@ -375,6 +382,7 @@ Validation gần nhất: 314 tests/5.705 assertions pass; Blade compile pass; Ad
   - `tests/Feature/LocalizedContentAndLandingWorkflowTest.php`
   - `tests/Feature/ThemeContentTranslationTest.php`
   - `tests/Feature/ThemeLocalizationContractTest.php`
+  - `tests/Feature/FrontendPageRouteTest.php`
 
 Working tree tại thời điểm handoff đang có phạm vi thay đổi localization/theme rất lớn và chưa commit. Session mới bắt buộc chạy `git status --short`, giữ nguyên thay đổi hiện có và không tự ý revert file chỉ vì thấy diff rộng.
 
@@ -433,7 +441,11 @@ Working tree tại thời điểm handoff đang có phạm vi thay đổi locali
 - `app/Support/Localization/LocalizedContentRepository.php`
 - `app/Support/Localization/CmsPageLocalization.php`
 - `app/Support/Localization/LandingPageLocalization.php`
+- `app/Support/Localization/LocalizedRouteRegistry.php`
+- `app/Support/FrontendLocalization.php`
+- `app/Support/FrontendRouteUrl.php`
 - `app/Support/BusinessContentTranslationService.php`
+- `resources/views/partials/storefront-language-switcher.blade.php`
 - `docs/architecture/localization-foundation.md`
 - `docs/architecture/localization-rollout-runbook.md`
 
@@ -448,7 +460,7 @@ Working tree tại thời điểm handoff đang có phạm vi thay đổi locali
 - Ở ngữ cảnh gần đây hơn của repo này, hãy đặc biệt nhớ thêm:
   - admin login dùng `username` hoặc `email`, customer dùng `email`
   - modal storefront login là form dùng chung `admin username` + `customer email`
-  - các theme `TH0001`, `SER0100`, `SER0101` đều đã đồng bộ flow shared login này
+  - các theme có engagement modal như `SER0100`, `SER0101` đều phải dùng flow shared login này
   - không reintroduce lại `/admin/login` hoặc dedicated admin login page riêng
   - không reintroduce `tenant`, `owner`, `tenant_key`, `owner_key`, `admin_role` hoặc `admin_role_scopes`
   - không cho phép sửa/xóa role `super-admin` hay sửa/khóa/xóa admin ID `1`

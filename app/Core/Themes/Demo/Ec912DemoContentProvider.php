@@ -206,8 +206,8 @@ class Ec912DemoContentProvider implements ThemeDemoContentProvider
             $branding += [
                 'company_name' => 'Sudes Phone',
                 'company_description' => 'Hệ thống bán lẻ điện thoại, máy tính, smartwatch và phụ kiện chính hãng.',
-                'support_hotline' => '1900 6750',
-                'support_email' => 'support@sapo.vn',
+                'support_hotline' => '0399162342',
+                'support_email' => 'support@htvietnam.vn',
                 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM',
             ];
             $profile->forceFill([

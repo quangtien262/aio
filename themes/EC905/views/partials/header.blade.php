@@ -2,7 +2,7 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $brand = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logo = trim((string) data_get($brand, 'logo_url', ''));
-    $hotline = data_get($brand, 'support_hotline', '1900 6750');
+    $hotline = data_get($brand, 'support_hotline', '0399162342');
     $menuItems = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec95-header">
@@ -19,3 +19,4 @@
         @foreach($menuItems as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
     </div></nav>
 </header>
+@include('partials.storefront-language-switcher')

@@ -44,7 +44,7 @@ class Ec912ThemeTest extends TestCase
         SiteProfile::query()->create([
             'site_name' => 'Cửa hàng của tôi',
             'website_type' => 'ecommerce',
-            'active_theme_key' => 'TH0001',
+            'active_theme_key' => 'SHOP601',
             'branding' => [
                 'logo_url' => '/storage/branding/custom-sudes.svg',
                 'support_hotline' => '0909 123 456',
@@ -66,7 +66,7 @@ class Ec912ThemeTest extends TestCase
         $this->assertSame('0909 123 456', data_get($branding, 'support_hotline'));
         $this->assertSame('hello@example.test', data_get($branding, 'support_email'));
 
-        $this->get(route('site.home', ['locale' => 'vi']))
+        $content = $this->get(route('site.home', ['locale' => 'vi']))
             ->assertOk()
             ->assertSee('/storage/branding/custom-sudes.svg', false)
             ->assertSee('0909 123 456')
@@ -78,7 +78,18 @@ class Ec912ThemeTest extends TestCase
             ->assertSee('data-block-type="ec912_hot_sale"', false)
             ->assertSee('data-block-type="ec912_iphone_products"', false)
             ->assertSee('data-block-type="ec912_customer_gallery"', false)
-            ->assertSee('data-xd-auth-open="login"', false);
+            ->assertSee('data-xd-auth-open="login"', false)
+            ->getContent();
+
+        $this->assertGreaterThanOrEqual(
+            2,
+            substr_count($content, '0909 123 456'),
+            'Hotline từ database phải xuất hiện ở cả header và footer EC912.',
+        );
+        $this->assertStringContainsString(
+            'href="mailto:hello@example.test"',
+            $content,
+        );
 
         $page = LandingPage::query()
             ->where('theme_key', 'EC912')

@@ -3,7 +3,7 @@
     $branding = (array) data_get($profile, 'branding', []);
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'Mộc Nhiên Craft'))) ?: 'Mộc Nhiên Craft';
-    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '1900 6750';
+    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
     $email = trim((string) data_get($branding, 'support_email', '')) ?: 'hello@mocnhien.example';
     $location = trim((string) data_get($branding, 'support_location', '')) ?: '70 Lữ Gia, Phường Phú Thọ, TP.HCM';
     $description = trim((string) data_get($branding, 'company_description', '')) ?: 'Đồ thủ công từ tre, mây và vật liệu tự nhiên, được hoàn thiện bằng đôi tay của người thợ Việt.';

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin\Api;
 
 use App\Models\SiteProfile;
+use App\Support\SiteContext;
+use App\Support\ThemeBrandingResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -11,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class SetupProfileController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, SiteContext $siteContext, ThemeBrandingResolver $brandingResolver): JsonResponse
     {
         $validated = $request->validate([
             'site_name' => ['required', 'string', 'max:255'],
@@ -35,6 +37,7 @@ class SetupProfileController
             'boc_status' => ['nullable', 'string', Rule::in(['notified', 'not_notified', 'pending'])],
             'boc_confirmation_url' => ['nullable', 'url', 'max:2048'],
             'boc_footer_note' => ['nullable', 'string', 'max:500'],
+            'theme_key' => ['sometimes', 'nullable', 'string', 'max:120'],
         ]);
 
         $siteProfile = SiteProfile::query()->firstOrNew();
@@ -97,13 +100,28 @@ class SetupProfileController
             $branding['favicon_url'] = asset('favicon.ico');
         }
 
+        $globalBranding = $siteProfile->globalBranding();
+        $themeKey = strtoupper(trim((string) ($validated['theme_key'] ?? $siteContext->themeKey() ?? $siteProfile->active_theme_key)));
+
         $siteProfile->forceFill([
             'site_name' => $validated['site_name'],
             'description' => $request->exists('description') ? ($validated['description'] ?? null) : $siteProfile->description,
             'website_type' => $validated['website_type'],
-            'branding' => array_merge($siteProfile->branding ?? [], $branding),
+            'branding' => $globalBranding,
             'completed_steps' => $completedSteps->unique()->values()->all(),
         ])->save();
+
+        if ($themeKey !== '') {
+            $brandingResolver->update(
+                $siteContext->websiteKey(),
+                $themeKey,
+                $branding,
+                $globalBranding,
+            );
+        } elseif ($branding !== []) {
+            // Compatibility for the setup stage before a theme has been selected.
+            $siteProfile->forceFill(['branding' => array_merge($globalBranding, $branding)])->save();
+        }
 
         return response()->json([
             'message' => 'Đã lưu cấu hình website.',

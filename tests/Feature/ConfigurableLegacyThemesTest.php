@@ -18,19 +18,12 @@ class ConfigurableLegacyThemesTest extends TestCase
     /** @return array<string, array{0:string}> */
     public static function configurableThemes(): array
     {
-        return collect(['SER0100', 'SER0101', 'SER102', 'TH0201'])
+        return collect(['SER0100', 'SER0101', 'SER102'])
             ->mapWithKeys(fn (string $theme): array => [$theme => [$theme]])
             ->all();
     }
 
-    public function test_th0201_has_a_unique_theme_registry_key(): void
-    {
-        $keys = app(ThemeRegistry::class)->all()->pluck('key');
-
-        $this->assertSame(1, $keys->filter(fn (string $key): bool => $key === 'TH0201')->count());
-    }
-
-    public function test_legacy_theme_avatar_uses_the_first_landing_block_preview_and_skips_th_themes(): void
+    public function test_legacy_theme_avatar_uses_the_first_landing_block_preview(): void
     {
         $themes = app(ThemeRegistry::class)->all()->keyBy('key');
 
@@ -38,7 +31,6 @@ class ConfigurableLegacyThemesTest extends TestCase
             '/theme-previews/XD0303/hero-slider.png',
             $themes->get('XD0303')['avatar_url'],
         );
-        $this->assertNull($themes->get('TH0201')['avatar_url']);
     }
 
     #[DataProvider('configurableThemes')]

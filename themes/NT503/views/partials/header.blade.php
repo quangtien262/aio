@@ -2,7 +2,7 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $name = $branding['company_name'] ?? 'WolfBed';
-    $phone = $branding['support_hotline'] ?? '1900 6750';
+    $phone = $branding['support_hotline'] ?? '0399162342';
     $logo = $branding['logo_url'] ?? '';
     $nav = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', [])))
         ->filter(fn ($item) => is_array($item) && filled($item['label'] ?? null))->values();
@@ -47,3 +47,4 @@
         </div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

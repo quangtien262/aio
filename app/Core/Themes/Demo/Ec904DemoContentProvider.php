@@ -219,7 +219,7 @@ class Ec904DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'POCOMALL',
                     'company_description' => 'Thiên đường mua sắm đa ngành với sản phẩm chọn lọc, giá tốt và giao hàng nhanh.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'support@pocomall.vn',
                     'support_location' => '266 Đội Cấn, Ba Đình, Hà Nội',
                 ]),

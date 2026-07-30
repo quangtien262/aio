@@ -1,7 +1,7 @@
 @php
     $branding = data_get($siteProfile ?? [], 'branding', []);
     $companyName = data_get($siteProfile ?? [], 'site_name', 'SER102 Auto Detailing');
-    $hotline = data_get($branding, 'support_hotline', data_get($siteProfile ?? [], 'hotline', '1900 6750'));
+    $hotline = data_get($branding, 'support_hotline', data_get($siteProfile ?? [], 'hotline', '0399162342'));
     $email = data_get($branding, 'support_email', data_get($siteProfile ?? [], 'support_email', 'hello@ser102.vn'));
     $address = data_get($branding, 'support_location', data_get($siteProfile ?? [], 'address', 'TP. Hồ Chí Minh'));
 @endphp

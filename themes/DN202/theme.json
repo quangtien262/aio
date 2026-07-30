@@ -6,9 +6,9 @@
   "website_type": "service",
   "parent": null,
   "preview": {
-    "thumbnail": "preview-dn202.png",
-    "cover": "cover-dn302.png",
-    "avatar": "cover-dn302.png"
+    "thumbnail": "DN202.png",
+    "cover": "DN202.webp",
+    "avatar": "DN202.webp"
   },
   "blocks": [
     "hero-slider",

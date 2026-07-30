@@ -203,8 +203,8 @@ class Ec915DemoContentProvider implements ThemeDemoContentProvider
             $branding += [
                 'company_name' => 'ND Interior',
                 'company_description' => 'Thiết kế, thi công và cung cấp sản phẩm nội thất cao cấp cho không gian sống hiện đại.',
-                'support_hotline' => '1900 6750',
-                'support_email' => 'support@sapo.vn',
+                'support_hotline' => '0399162342',
+                'support_email' => 'support@htvietnam.vn',
                 'support_location' => '266 Đội Cấn, Ba Đình, Hà Nội',
             ];
             $profile->forceFill([

@@ -473,6 +473,12 @@ class SiteMappingController
             'active_theme_key' => $site->theme_key,
             'branding' => $branding,
         ])->save();
+
+        app(\App\Support\ThemeBrandingResolver::class)->ensure(
+            $site->website_key,
+            $site->theme_key,
+            $siteProfile->globalBranding(),
+        );
     }
 
     /**

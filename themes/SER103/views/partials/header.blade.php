@@ -47,13 +47,10 @@
         </nav>
         <div class="ser103-header__actions">
             <a href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></a>
-            <div class="ser103-languages">
-                <a href="{{ request()->fullUrlWithQuery(['locale' => 'en']) }}" aria-label="English">🇺🇸</a>
-                <a href="{{ request()->fullUrlWithQuery(['locale' => 'vi']) }}" aria-label="Tiếng Việt">🇻🇳</a>
-            </div>
             <button class="ser103-booking-button" type="button" data-ser103-booking-open>
                 <span>Đặt lịch hẹn</span><i class="fa-solid fa-arrow-right-long"></i>
             </button>
         </div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

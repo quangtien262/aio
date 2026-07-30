@@ -1,8 +1,8 @@
 @php
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '1900 6750';
-    $email = trim((string) ($branding['support_email'] ?? '')) ?: 'support@sapo.vn';
+    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
+    $email = trim((string) ($branding['support_email'] ?? '')) ?: 'support@htvietnam.vn';
     $location = trim((string) ($branding['support_location'] ?? '')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
 @endphp
 <footer class="ec10-footer">

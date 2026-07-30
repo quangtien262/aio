@@ -10,10 +10,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Support\AuditLogger;
+use App\Support\SiteContext;
+use App\Support\ThemeBrandingResolver;
 
 class ThemeActivationController
 {
-    public function __invoke(Request $request, string $key, ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $demoGenerator, AuditLogger $auditLogger): JsonResponse
+    public function __invoke(Request $request, string $key, ThemeRegistry $themeRegistry, ThemeDemoContentGenerator $demoGenerator, AuditLogger $auditLogger, SiteContext $siteContext, ThemeBrandingResolver $brandingResolver): JsonResponse
     {
         $validated = $request->validate([
             'create_demo_data' => ['sometimes', 'boolean'],
@@ -45,6 +47,12 @@ class ThemeActivationController
             'completed_steps' => $completedSteps,
         ])->save();
 
+        $brandingResolver->ensure(
+            $siteContext->websiteKey(),
+            $theme->key,
+            $siteProfile->globalBranding(),
+        );
+
         $demo = null;
         if (($validated['create_demo_data'] ?? false) === true && ($preset = $demoGenerator->defaultPresetForTheme($theme->key))) {
             $demo = $demoGenerator->generate($theme->key, $preset);
@@ -60,12 +68,14 @@ class ThemeActivationController
 
     private function resolveTheme(string $key, ThemeRegistry $themeRegistry): ThemeInstallation
     {
-        $manifest = $themeRegistry->all()->firstWhere('key', $key);
+        $manifest = $themeRegistry->all()->first(
+            fn (array $theme): bool => strcasecmp((string) ($theme['key'] ?? ''), trim($key)) === 0,
+        );
 
         abort_if($manifest === null, 404, 'Theme not found.');
 
         return ThemeInstallation::query()->firstOrCreate(
-            ['key' => $key],
+            ['key' => $manifest['key']],
             [
                 'name' => $manifest['name'],
                 'version' => $manifest['version'],

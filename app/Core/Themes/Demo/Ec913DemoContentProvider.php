@@ -211,7 +211,7 @@ class Ec913DemoContentProvider implements ThemeDemoContentProvider
             $branding += [
                 'company_name' => 'NovaTech Mall',
                 'company_description' => 'Hệ thống bán lẻ điện tử, điện máy và gia dụng thông minh chính hãng.',
-                'support_hotline' => '1900 6750',
+                'support_hotline' => '0399162342',
                 'support_email' => 'hello@novatech.example',
                 'support_location' => '266 Đội Cấn, Ba Đình, Hà Nội',
             ];

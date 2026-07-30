@@ -74,7 +74,10 @@ class InjectLandingAdminEditor
             return $response;
         }
 
-        $hasButtons = str_contains($html, 'data-xd-edit-block');
+        $hasButtons = preg_match(
+            '/<(?:button|a)\b[^>]*\bdata-xd-edit-block\b[^>]*>/i',
+            $html,
+        ) === 1;
         $hasEditor = str_contains($html, 'data-xd-editor');
         $hasEditorScript = str_contains($html, 'updateUrlTemplate');
 

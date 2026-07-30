@@ -17,7 +17,7 @@
     $primaryImage = data_get($images->first(), 'image_url', data_get($featured, 'image_url'));
     $relatedServices = collect($latestServices ?? [])->take(6);
     $branding = (array) data_get($themeShellData ?? [], 'branding', []);
-    $hotline = trim((string) data_get($branding, 'support_hotline', '1900 6750'));
+    $hotline = trim((string) data_get($branding, 'support_hotline', '0399162342'));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $serviceLink = trim((string) data_get($contentEntry, 'link_url', ''));
     $serviceButton = trim((string) data_get($contentEntry, 'button_label', ''));

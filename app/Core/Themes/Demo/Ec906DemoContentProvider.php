@@ -204,7 +204,7 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'EGA Mini Mart',
                     'company_description' => 'Siêu thị gia đình hiện đại với sản phẩm chọn lọc, giá tốt và giao hàng nhanh.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'support@egamart.vn',
                     'support_location' => '70 Lữ Gia, Quận 11, TP. Hồ Chí Minh',
                 ]),

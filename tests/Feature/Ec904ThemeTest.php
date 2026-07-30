@@ -87,7 +87,7 @@ class Ec904ThemeTest extends TestCase
         SiteProfile::query()->create([
             'site_name' => 'Website',
             'website_type' => 'ecommerce',
-            'active_theme_key' => 'TH0001',
+            'active_theme_key' => 'SHOP601',
             'branding' => ['logo_url' => '/storage/branding/custom-logo.svg'],
         ]);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('EC904')?->generate('ec904-pocomall');

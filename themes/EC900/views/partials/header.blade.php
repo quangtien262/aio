@@ -4,7 +4,7 @@
     $t = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('EC900', app()->getLocale(), $key);
     $name = trim((string) ($branding['company_name'] ?? '')) ?: $t('EC900.brand.default');
     $logo = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '1900 6750';
+    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
     $nav = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', [])))->filter(fn ($item) => is_array($item) && filled($item['label'] ?? null))->values();
     if ($nav->isEmpty()) {
         $nav = collect([
@@ -54,3 +54,4 @@
         </div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

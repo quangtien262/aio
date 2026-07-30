@@ -19,7 +19,6 @@
             @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
         </nav>
         <div class="ec17-tools">
-            <span class="ec17-locale">🇻🇳 <i class="fa-solid fa-chevron-down"></i></span>
             <a href="{{ route('site.catalog.search') }}" aria-label="@themeT('EC917.search', 'Tìm kiếm')"><i class="fa-solid fa-magnifying-glass"></i></a>
             <button data-xd-auth-open="login" aria-label="@themeT('EC917.account', 'Tài khoản')"><i class="fa-regular fa-user"></i></button>
             <a class="ec17-cart" href="{{ route('site.cart.index') }}" aria-label="@themeT('EC917.cart', 'Giỏ hàng')"><i class="fa-solid fa-cart-shopping"></i><em>{{ $cartCount }}</em></a>
@@ -27,3 +26,4 @@
         </div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

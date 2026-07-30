@@ -71,67 +71,6 @@ class HeroSliderBannerSeeder extends Seeder
                 ],
             ],
 
-            // TH0001
-            [
-                'theme_key' => 'TH0001',
-                'placement' => 'hero-slider',
-                'sort_order' => 0,
-                'title' => 'Buffet cuối tuần cho nhóm 4-6 người',
-                'image_url' => 'https://picsum.photos/seed/th0001-hero-buffet/1280/720',
-                'link_url' => '/vi',
-                'metadata' => [
-                    'eyebrow' => 'Flash sale',
-                    'summary' => 'Deal mở màn thiên về ăn uống, dễ chuyển đổi và hợp bố cục hero kiểu marketplace.',
-                    'button_label' => 'Xem deal ngay',
-                    'image_position' => 'center',
-                    'show_caption' => true,
-                ],
-            ],
-            [
-                'theme_key' => 'TH0001',
-                'placement' => 'hero-slider',
-                'sort_order' => 1,
-                'title' => 'Voucher spa đôi khung giờ linh hoạt',
-                'image_url' => 'https://picsum.photos/seed/th0001-hero-spa/1280/720',
-                'link_url' => '/vi',
-                'metadata' => [
-                    'eyebrow' => 'Hot trend',
-                    'summary' => 'Giữ nhịp lifestyle cho hero, caption rõ và gọn để storefront nhìn sạch hơn.',
-                    'button_label' => 'Giữ chỗ hôm nay',
-                    'image_position' => 'left center',
-                    'show_caption' => true,
-                ],
-            ],
-            [
-                'theme_key' => 'TH0001',
-                'placement' => 'hero-slider',
-                'sort_order' => 2,
-                'title' => 'Combo nghỉ dưỡng ngắn ngày',
-                'image_url' => 'https://picsum.photos/seed/th0001-hero-resort/1280/720',
-                'link_url' => '/vi',
-                'metadata' => [
-                    'eyebrow' => 'Combo mới',
-                    'summary' => 'Thêm một nhóm deal nghỉ dưỡng để hero đa ngành hơn mà vẫn giữ nhịp thương mại điện tử.',
-                    'button_label' => 'Mở ưu đãi',
-                    'image_position' => 'right center',
-                    'show_caption' => true,
-                ],
-            ],
-            [
-                'theme_key' => 'TH0001',
-                'placement' => 'hero-slider',
-                'sort_order' => 3,
-                'title' => 'Gói gym tháng cho dân văn phòng',
-                'image_url' => 'https://picsum.photos/seed/th0001-hero-gym/1280/720',
-                'link_url' => '/vi',
-                'metadata' => [
-                    'eyebrow' => 'Ưu đãi mới',
-                    'summary' => 'Giữ CTA đồng bộ nhưng rút gọn caption để slide cuối không bị vỡ nhịp khi xuống dòng.',
-                    'button_label' => 'Săn deal ngay',
-                    'image_position' => 'center top',
-                    'show_caption' => true,
-                ],
-            ],
         ];
 
         foreach ($slides as $slide) {

@@ -24,6 +24,7 @@
                 @endif
             </a>
             <p>{{ $companyDescription }}</p>
+            <p>{{ $supportAddress }} · <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}">{{ $hotline }}</a> · <a href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a></p>
             <div class="rx13-socials">
                 <a href="#" aria-label="Facebook">f</a>
                 <a href="#" aria-label="Twitter">t</a>

@@ -184,8 +184,8 @@ class Ec910DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge($existingBranding, [
                     'company_name' => 'DOLA WATCH',
                     'company_description' => 'Đồng hồ chính hãng, dịch vụ tận tâm và bảo hành minh bạch.',
-                    'support_hotline' => '1900 6750',
-                    'support_email' => 'support@sapo.vn',
+                    'support_hotline' => '0399162342',
+                    'support_email' => 'support@htvietnam.vn',
                     'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM',
                 ], $customLogo !== '' ? ['logo_url' => $customLogo] : []),
             ])->save();

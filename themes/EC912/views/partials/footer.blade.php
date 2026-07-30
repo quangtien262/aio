@@ -1,10 +1,11 @@
 @php
     $profile = $siteProfile ?? [];
-    $branding = (array) data_get($profile, 'branding', []);
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'Sudes Phone'))) ?: 'Sudes Phone';
-    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '1900 6750';
-    $email = trim((string) data_get($branding, 'support_email', '')) ?: 'support@sapo.vn';
+    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
+    $email = trim((string) data_get($branding, 'support_email', '')) ?: 'support@htvietnam.vn';
     $location = trim((string) data_get($branding, 'support_location', '')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
     $description = trim((string) data_get($branding, 'company_description', '')) ?: 'Hệ thống bán lẻ điện thoại, máy tính, đồng hồ thông minh và phụ kiện chính hãng.';
 @endphp
@@ -16,7 +17,7 @@
             </a>
             <p>{{ $description }}</p>
             <p><b>Địa chỉ:</b> {{ $location }}</p>
-            <p><b>Điện thoại:</b> <a href="tel:{{ preg_replace('/\s+/', '', $phone) }}">{{ $phone }}</a></p>
+            <p><b>Điện thoại:</b> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone) }}">{{ $phone }}</a></p>
             <p><b>Email:</b> <a href="mailto:{{ $email }}">{{ $email }}</a></p>
         </section>
         <section>

@@ -92,6 +92,7 @@
         @include('partials.localized-seo')
 </head>
     <body>
+        @include('partials.storefront-language-switcher')
         <div class="site-shell">
             <header class="site-header">
                 <div class="site-brand">

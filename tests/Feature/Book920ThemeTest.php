@@ -52,7 +52,7 @@ class Book920ThemeTest extends TestCase
             'website_key' => 'website-main',
             'site_name' => 'Nhà sách của tôi',
             'website_type' => 'ecommerce',
-            'active_theme_key' => 'TH0001',
+            'active_theme_key' => 'SHOP601',
             'branding' => [
                 'logo_url' => '/storage/branding/custom-bookle.svg',
                 'support_hotline' => '0909 920 920',

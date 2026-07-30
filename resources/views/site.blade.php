@@ -100,6 +100,24 @@
         </style>
     </head>
     <body>
+        @php
+            $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
+            $companyName = data_get($branding, 'company_name', data_get($siteProfile ?? [], 'site_name', config('app.name', 'AIO Platform')));
+            $logo = data_get($branding, 'logo_url');
+            $hotline = data_get($branding, 'support_hotline');
+            $email = data_get($branding, 'support_email');
+            $address = data_get($branding, 'support_location');
+        @endphp
+        <header style="padding:18px 32px;background:#fff;border-bottom:1px solid #dbe7e4">
+            <a href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
+                @if(filled($logo))
+                    <img src="{{ $logo }}" alt="{{ $companyName }}" style="max-height:56px;max-width:240px">
+                @else
+                    <strong>{{ $companyName }}</strong>
+                @endif
+            </a>
+        </header>
+        @include('partials.storefront-language-switcher')
         <main class="shell">
             <section class="panel">
                 <div class="kicker">AIO Website Platform</div>
@@ -132,5 +150,13 @@
                 </div>
             </section>
         </main>
+        <footer style="padding:24px 32px;background:#16302b;color:#fff">
+            <strong>{{ $companyName }}</strong>
+            <p style="color:#fff">{{ $address }}</p>
+            <p style="color:#fff">
+                <a style="color:#fff" href="tel:{{ preg_replace('/\D+/', '', (string) $hotline) }}">{{ $hotline }}</a>
+                · <a style="color:#fff" href="mailto:{{ $email }}">{{ $email }}</a>
+            </p>
+        </footer>
     </body>
 </html>

@@ -177,7 +177,7 @@ class AppServiceProvider extends ServiceProvider
         app()->setLocale(FrontendLocalization::defaultLocale());
         URL::defaults(FrontendLocalization::routeParameterDefaults(FrontendLocalization::defaultLocale()));
         Blade::directive('themeT', function (string $expression): string {
-            return "<?php echo e(app(".ThemeTranslationService::class."::class)->bladeText((string) data_get(\$activeTheme ?? [], 'key', 'TH0001'), app()->getLocale(), {$expression})); ?>";
+            return "<?php echo e(app(".ThemeTranslationService::class."::class)->bladeText((string) data_get(\$activeTheme ?? [], 'key', 'corporate-starter'), app()->getLocale(), {$expression})); ?>";
         });
 
         $migrationPaths = collect(File::directories(base_path('modules')))

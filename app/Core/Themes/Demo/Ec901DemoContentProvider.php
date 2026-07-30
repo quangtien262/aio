@@ -206,7 +206,7 @@ class Ec901DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'TEMPO',
                     'company_description' => 'Đồng hồ tuyển chọn cho phong cách hiện đại và những dấu ấn khác biệt.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'support@tempo.vn',
                     'support_location' => 'Xuân Thủy, Cầu Giấy, Hà Nội',
                 ]),

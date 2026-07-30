@@ -55,7 +55,7 @@ class Dn351ThemeTest extends TestCase
             'website_key' => 'website-main',
             'site_name' => 'Cửa hàng của tôi',
             'website_type' => 'ecommerce',
-            'active_theme_key' => 'TH0001',
+            'active_theme_key' => 'SHOP601',
             'branding' => [
                 'logo_url' => '/storage/branding/custom-meatlers.svg',
                 'support_hotline' => '0909 351 351',

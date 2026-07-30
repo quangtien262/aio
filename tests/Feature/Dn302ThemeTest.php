@@ -85,6 +85,10 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('data-dn-auth-panel="login"', false)
             ->assertSee('data-dn-auth-panel="register"', false)
             ->assertSee('name="two_factor_code"', false)
+            ->assertSee('data-dn-language-switcher', false)
+            ->assertSee('data-locale-code="vi"', false)
+            ->assertSee('data-locale-code="en"', false)
+            ->assertSee('href="'.route('site.home', ['locale' => 'en']).'"', false)
             ->assertSee('data-dn-consult-open', false)
             ->assertSee('data-dn-consult-modal', false)
             ->assertSee('data-dn-consult-form', false)
@@ -166,6 +170,7 @@ class Dn302ThemeTest extends TestCase
 
         $response
             ->assertSee('data-dn-product-gallery', false)
+            ->assertSee('href="'.\App\Support\FrontendRouteUrl::home('en').'"', false)
             ->assertSee('https://cdn.example.com/dn302-product-main.jpg', false)
             ->assertSee('https://cdn.example.com/dn302-product-angle-1.jpg', false)
             ->assertSee('https://cdn.example.com/dn302-product-angle-2.jpg', false)

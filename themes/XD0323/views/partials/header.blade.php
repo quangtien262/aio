@@ -3,7 +3,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Euro Farm'))) ?: 'Euro Farm';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $hotline = trim((string) ($branding['support_hotline'] ?? '1900 6750')) ?: '1900 6750';
+    $hotline = trim((string) ($branding['support_hotline'] ?? '0399162342')) ?: '0399162342';
     $email = trim((string) ($branding['support_email'] ?? 'support@htvietnam.vn')) ?: 'support@htvietnam.vn';
     $address = trim((string) ($branding['support_location'] ?? '70 Lữ Gia, Phường 15, Quận 11, TP.HCM')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
     $locale = app()->getLocale();
@@ -86,3 +86,4 @@
         </div>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

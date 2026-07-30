@@ -35,3 +35,4 @@
     </div></div>
     <div class="th5-nav-wrap"><div class="th5-container"><a class="th5-category-link" href="{{ route('site.catalog.search') }}"><i class="fa-solid fa-border-all"></i> Danh mục sản phẩm</a><nav class="th5-nav" data-th5-menu>@foreach($th5Menu as $item)<a href="{{ $item['url'] ?? $item['href'] ?? '#' }}">{{ $item['label'] ?? $item['title'] }}</a>@endforeach</nav><a class="th5-hot-deal" href="#uu-dai"><i class="fa-solid fa-gift"></i> Hot deal</a></div></div>
 </header>
+@include('partials.storefront-language-switcher')

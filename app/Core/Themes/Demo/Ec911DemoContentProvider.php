@@ -122,7 +122,7 @@ class Ec911DemoContentProvider implements ThemeDemoContentProvider
                 'site_name' => 'DIGITECH', 'website_type' => 'ecommerce', 'active_theme_key' => self::THEME_KEY,
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'DIGITECH', 'company_description' => 'Máy ảnh, ống kính và thiết bị quay phim chính hãng.',
-                    'support_hotline' => '1900 6750', 'support_email' => 'support@sapo.vn',
+                    'support_hotline' => '0399162342', 'support_email' => 'support@htvietnam.vn',
                     'support_location' => 'Tầng 6, Tòa nhà Ladeco, 266 Đội Cấn, Hà Nội',
                 ]),
             ])->save();

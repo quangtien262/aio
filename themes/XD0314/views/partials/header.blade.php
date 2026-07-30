@@ -1,4 +1,4 @@
-﻿<header class="bb14-header">
+<header class="bb14-header">
     <div class="bb14-topbar">
         <div class="bb14-container bb14-topbar__inner">
             <div class="bb14-topbar__contact">
@@ -57,4 +57,4 @@
         </div>
     </div>
 </header>
-
+@include('partials.storefront-language-switcher')

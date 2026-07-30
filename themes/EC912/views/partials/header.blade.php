@@ -4,7 +4,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($profile, 'branding', []));
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'Sudes Phone'))) ?: 'Sudes Phone';
-    $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '1900 6750';
+    $hotline = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
     $location = trim((string) data_get($branding, 'support_location', '')) ?: '7 cửa hàng';
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
@@ -37,3 +37,4 @@
         @endforeach
     </div></nav>
 </header>
+@include('partials.storefront-language-switcher')

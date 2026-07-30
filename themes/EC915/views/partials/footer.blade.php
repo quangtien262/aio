@@ -3,7 +3,7 @@
     $branding = (array) data_get($profile, 'branding', []);
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'ND Interior'))) ?: 'ND Interior';
-    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '1900 6750';
+    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
     $email = trim((string) data_get($branding, 'support_email', '')) ?: 'hello@ndinterior.example';
     $location = trim((string) data_get($branding, 'support_location', '')) ?: '266 Đội Cấn, Ba Đình, Hà Nội';
 @endphp

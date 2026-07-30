@@ -3,7 +3,7 @@
     $branding = (array) data_get($profile, 'branding', []);
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'NovaTech Mall'))) ?: 'NovaTech Mall';
-    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '1900 6750';
+    $phone = trim((string) data_get($branding, 'support_hotline', '')) ?: '0399162342';
     $email = trim((string) data_get($branding, 'support_email', '')) ?: 'hello@novatech.test';
     $location = trim((string) data_get($branding, 'support_location', '')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
     $description = trim((string) data_get($branding, 'company_description', '')) ?: 'Trung tâm điện máy và công nghệ chính hãng cho mọi gia đình Việt.';

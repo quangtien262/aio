@@ -2,7 +2,7 @@
     <button class="dr-order-modal__backdrop" type="button" data-dr-order-close aria-label="Đóng form đặt bàn"></button>
     <section class="dr-order-dialog" role="dialog" aria-modal="true" aria-labelledby="dr-order-title">
         <button class="dr-order-dialog__close" type="button" data-dr-order-close aria-label="Đóng">×</button>
-        <div class="dr-order-dialog__intro"><span>Đặt bàn tại Dola</span><h2 id="dr-order-title">Chuẩn bị cho một bữa ăn đáng nhớ</h2><p>Chọn thời gian phù hợp và để lại yêu cầu. Nhà hàng sẽ liên hệ xác nhận trong thời gian sớm nhất.</p><ul><li>Không gian ấm cúng và riêng tư</li><li>Thực đơn linh hoạt theo khẩu vị</li><li>Phục vụ tận tâm mỗi ngày</li></ul><small>Hotline hỗ trợ</small><strong>1900 6750</strong></div>
+        <div class="dr-order-dialog__intro"><span>Đặt bàn tại Dola</span><h2 id="dr-order-title">Chuẩn bị cho một bữa ăn đáng nhớ</h2><p>Chọn thời gian phù hợp và để lại yêu cầu. Nhà hàng sẽ liên hệ xác nhận trong thời gian sớm nhất.</p><ul><li>Không gian ấm cúng và riêng tư</li><li>Thực đơn linh hoạt theo khẩu vị</li><li>Phục vụ tận tâm mỗi ngày</li></ul><small>Hotline hỗ trợ</small><strong>0399162342</strong></div>
         <form class="dr-order-form" method="POST" action="{{ route('site.contact.submit') }}" data-dr-order-form>
             @csrf<input type="hidden" name="source" value="quote_modal"><input type="hidden" name="subject" value="Nội dung Yêu cầu đặt bàn"><input type="hidden" name="route_summary" data-dr-order-summary><input type="hidden" name="message" data-dr-order-message>
             <div class="dr-order-form__head"><span>Thông tin đặt bàn</span><h3>Chúng tôi giữ chỗ cho bạn</h3></div>

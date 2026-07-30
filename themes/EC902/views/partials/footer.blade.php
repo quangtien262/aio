@@ -2,7 +2,7 @@
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $name = trim((string) ($branding['company_name'] ?? '')) ?: 'NovaPhone';
-    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '1900 6750';
+    $hotline = trim((string) ($branding['support_hotline'] ?? '')) ?: '0399162342';
     $email = trim((string) ($branding['support_email'] ?? '')) ?: 'support@novaphone.vn';
     $location = trim((string) ($branding['support_location'] ?? '')) ?: '70 Lữ Gia, Phường 15, Quận 11, TP.HCM';
 @endphp

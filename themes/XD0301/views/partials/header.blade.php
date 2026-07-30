@@ -195,14 +195,20 @@
                         @endif
                         <a class="xd-top-link" href="{{ route('site.cart.index') }}">Giỏ hàng</a>
                         @if ($topbarLocales->count() > 1)
-                            <div class="xd-language-switcher" aria-label="Ngôn ngữ">
+                            <div class="xd-language-switcher" data-storefront-language-switcher aria-label="Ngôn ngữ">
                                 @foreach ($topbarLocales as $locale)
                                     @php
                                         $localeCode = (string) ($locale['code'] ?? '');
                                         $localeLabel = strtoupper($localeCode);
                                     @endphp
                                     @if ($localeCode !== '')
-                                        <a class="{{ $localeCode === $currentLocale ? 'is-active' : '' }}" href="{{ $languageUrl($localeCode) }}">{{ $localeLabel }}</a>
+                                        <a
+                                            class="{{ $localeCode === $currentLocale ? 'is-active' : '' }}"
+                                            href="{{ $languageUrl($localeCode) }}"
+                                            hreflang="{{ $localeCode }}"
+                                            data-locale-code="{{ $localeCode }}"
+                                            @if($localeCode === $currentLocale) aria-current="true" @endif
+                                        >{{ $localeLabel }}</a>
                                     @endif
                                 @endforeach
                             </div>

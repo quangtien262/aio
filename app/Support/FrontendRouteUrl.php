@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Support\Localization\LocalizedRouteRegistry;
+
 final class FrontendRouteUrl
 {
     public static function home(?string $locale = null, bool $absolute = true): string
@@ -176,20 +178,74 @@ final class FrontendRouteUrl
 
     public static function switchLocale(string $locale, bool $absolute = true): string
     {
-        $segments = request()->segments();
         $resolvedLocale = FrontendLocalization::resolveLocale($locale);
 
-        if (isset($segments[0]) && in_array($segments[0], FrontendLocalization::knownLocaleCodes(), true)) {
-            $segments[0] = $resolvedLocale;
-        } else {
-            array_unshift($segments, $resolvedLocale);
+        return self::localeSwitchUrls([$resolvedLocale], $absolute)[$resolvedLocale]
+            ?? self::home($resolvedLocale, $absolute);
+    }
+
+    /**
+     * Build locale-switch URLs in one pass so a header with many locales does
+     * not query the localized route registry once per link.
+     *
+     * @param  iterable<int, string>  $locales
+     * @return array<string, string>
+     */
+    public static function localeSwitchUrls(
+        iterable $locales,
+        bool $absolute = true,
+    ): array {
+        $resolvedLocales = collect($locales)
+            ->map(fn (string $locale): string => FrontendLocalization::resolveLocale($locale))
+            ->unique()
+            ->values();
+
+        if ($resolvedLocales->isEmpty()) {
+            return [];
         }
 
-        $path = '/'.implode('/', $segments);
-        $url = $absolute ? url($path) : $path;
+        $path = '/'.ltrim(request()->path(), '/');
         $query = request()->getQueryString();
+        $canonicalPaths = [];
+        $hasLocalizedResource = false;
 
-        return $query ? $url.'?'.$query : $url;
+        if (filled(request()->route('locale'))) {
+            $segments = request()->segments();
+            $currentLocale = FrontendLocalization::resolveLocale((string) array_shift($segments));
+            $resourcePath = '/'.implode('/', $segments);
+            $resourcePath = $resourcePath === '/' ? $resourcePath : rtrim($resourcePath, '/');
+            $registry = app(LocalizedRouteRegistry::class);
+            $currentRoute = $registry->resolvePublic($currentLocale, $resourcePath);
+
+            if ($currentRoute !== null) {
+                $hasLocalizedResource = true;
+                $canonicalPaths = $registry->canonicalPaths(
+                    (string) $currentRoute->resource_type,
+                    (string) $currentRoute->resource_id,
+                    $resolvedLocales->all(),
+                );
+            }
+        }
+
+        return $resolvedLocales
+            ->mapWithKeys(function (string $locale) use (
+                $absolute,
+                $canonicalPaths,
+                $hasLocalizedResource,
+                $path,
+                $query,
+            ): array {
+                if ($hasLocalizedResource) {
+                    $url = isset($canonicalPaths[$locale])
+                        ? self::localized($canonicalPaths[$locale], $locale, $absolute)
+                        : self::home($locale, $absolute);
+                } else {
+                    $url = self::localized($path, $locale, $absolute);
+                }
+
+                return [$locale => $query ? $url.'?'.$query : $url];
+            })
+            ->all();
     }
 
     public static function pagePath(string $slug): string

@@ -90,7 +90,7 @@
                 </div>
                 <div class="xd323-about__cta">
                     <a class="xd323-btn" href="{{ data_get($about, 'settings.cta_url', '#san-pham') }}">{{ data_get($about, 'data.button_label', 'Xem thêm') }} <i class="fa-solid fa-arrow-right"></i></a>
-                    <div><i class="fa-solid fa-phone-volume"></i><span>Liên hệ ngay cho chúng tôi</span><b>{{ data_get($about, 'data.content.phone', '1900 6750') }}</b></div>
+                    <div><i class="fa-solid fa-phone-volume"></i><span>Liên hệ ngay cho chúng tôi</span><b>{{ data_get($about, 'data.content.phone', '0399162342') }}</b></div>
                 </div>
             </div>
         </div>

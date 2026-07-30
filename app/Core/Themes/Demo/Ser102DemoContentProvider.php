@@ -103,7 +103,7 @@ class Ser102DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'SER102 Auto Detailing',
                     'company_description' => 'Trung tâm chăm sóc xe chuyên nghiệp và tận tâm.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'hello@ser102.vn',
                     'support_location' => 'TP. Hồ Chí Minh',
                 ]),

@@ -27,3 +27,4 @@
         </div>
     </nav>
 </header>
+@include('partials.storefront-language-switcher')

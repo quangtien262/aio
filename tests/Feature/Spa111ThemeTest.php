@@ -90,7 +90,7 @@ class Spa111ThemeTest extends TestCase
 
     public function test_spa111_demo_preserves_an_existing_custom_logo(): void
     {
-        SiteProfile::query()->create(['site_name' => 'Website', 'website_type' => 'ecommerce', 'active_theme_key' => 'TH0001', 'branding' => ['logo_url' => '/storage/branding/custom-logo.svg']]);
+        SiteProfile::query()->create(['site_name' => 'Website', 'website_type' => 'ecommerce', 'active_theme_key' => 'SHOP601', 'branding' => ['logo_url' => '/storage/branding/custom-logo.svg']]);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('SPA111')?->generate('spa111-bean-spa');
         $this->assertSame('/storage/branding/custom-logo.svg', data_get(SiteProfile::query()->firstOrFail()->branding, 'logo_url'));
     }

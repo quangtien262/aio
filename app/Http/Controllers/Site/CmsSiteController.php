@@ -113,7 +113,11 @@ class CmsSiteController
             ]);
         }
 
-        return view('site');
+        return view('site', [
+            'siteProfile' => $siteProfile,
+            'activeTheme' => $activeTheme,
+            'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
+        ]);
     }
 
     public function page(Request $request): View|RedirectResponse
@@ -845,7 +849,7 @@ class CmsSiteController
             'category' => $category,
             'sidebarCategories' => $sidebarCategories,
             'catalogTreeCategories' => $this->resolveCatalogCategoryTreeItems($category, $websiteKey),
-            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'TH0001')))->all(),
+            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'SHOP601')))->all(),
             'childCategories' => $category->children->map(fn (CatalogCategory $child): array => [
                 'name' => $child->name,
                 'slug' => $child->slug,
@@ -1025,14 +1029,14 @@ class CmsSiteController
             'activeTheme' => $activeTheme,
             'menus' => $menus,
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
-            'product' => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'TH0001')),
+            'product' => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'SHOP601')),
             'productModel' => $product,
             'productGallery' => $this->resolveProductGallery($product),
             'productHighlights' => $this->splitTextLines($product->highlights),
             'usageTerms' => $this->splitTextLines($product->usage_terms),
             'usageLocationLines' => $this->splitTextLines($product->usage_location),
             'detailParagraphs' => $this->splitTextParagraphs($product->detail_content),
-            'relatedProducts' => $relatedProducts->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, (string) ($activeTheme['key'] ?? 'TH0001')))->all(),
+            'relatedProducts' => $relatedProducts->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, (string) ($activeTheme['key'] ?? 'SHOP601')))->all(),
             'canonicalUrl' => data_get($localizedSeo, 'canonical_url'),
             'hreflangUrls' => data_get($localizedSeo, 'alternates', []),
             'resolvedContentLocale' => data_get($localizedSeo, 'resolved_locale'),
@@ -1133,7 +1137,7 @@ class CmsSiteController
             'menus' => $menus,
             'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
             'searchQuery' => $search,
-            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'TH0001')))->all(),
+            'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'SHOP601')))->all(),
             'pagination' => $products,
             'resultCount' => $products->total(),
             'searchCategories' => $searchCategories,
@@ -1538,7 +1542,7 @@ class CmsSiteController
         $siteProfile = $this->localizeSiteProfile($extra['siteProfile'] ?? $this->currentSiteProfile());
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $activeTheme = $extra['activeTheme'] ?? $this->resolveActiveTheme($siteProfile);
-        $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
+        $themeKey = (string) ($activeTheme['key'] ?? 'SHOP601');
         $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
         $viewName = $this->resolveThemeCmsView($activeTheme, $contentType) ?? 'site-cms';
 
@@ -1764,7 +1768,7 @@ class CmsSiteController
 
     private function resolveCommerceThemeHomeData(?SiteProfile $siteProfile, ?array $activeTheme, array $menus): array
     {
-        $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
+        $themeKey = (string) ($activeTheme['key'] ?? 'SHOP601');
 
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $shellData = $this->resolveThemeShellData($siteProfile, $activeTheme, $menus);
@@ -2006,7 +2010,7 @@ class CmsSiteController
     {
         $siteProfile = $this->localizeSiteProfile($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
-        $themeKey = (string) ($activeTheme['key'] ?? 'TH0001');
+        $themeKey = (string) ($activeTheme['key'] ?? 'SHOP601');
         $themePalette = $this->resolveThemePalette($siteProfile, $themeKey);
         $branding = array_merge([
             'company_name' => $siteProfile?->site_name ?? 'AIO Website',
@@ -2200,7 +2204,7 @@ class CmsSiteController
         }
 
         if ($items->isEmpty() || ($this->isCommerceThemeKey($themeKey) && $this->shouldUseCommerceTopMenuFallback($items->all()))) {
-            $resolvedThemeKey = $this->isCommerceThemeKey($themeKey) ? (string) $themeKey : 'TH0001';
+            $resolvedThemeKey = $this->isCommerceThemeKey($themeKey) ? (string) $themeKey : 'SHOP601';
 
             return [
                 ['label' => $this->themeText('menu.default.blog', 'Tin tức', $resolvedThemeKey), 'url' => route('site.blog.index'), 'target' => '_self'],
@@ -2343,10 +2347,10 @@ class CmsSiteController
             return [
                 'eyebrow' => $this->themeText('theme.fallback.hero_eyebrow', 'Flash sale', $themeKey),
                 'title' => $this->themeText('theme.fallback.hero_title', 'Deal sốc cho sản phẩm mới', $themeKey),
-                'summary' => $this->themeText('theme.fallback.hero_summary', 'Tạo data test từ trang quản lý theme để đổ nội dung thật cho TH0001.', $themeKey),
+                'summary' => $this->themeText('theme.fallback.hero_summary', 'Tạo data test từ trang quản lý theme để đổ nội dung thật cho SHOP601.', $themeKey),
                 'badge' => $this->themeText('theme.fallback.hero_badge', 'Chỉ từ 199K', $themeKey),
                 'cta' => $this->themeText('theme.fallback.hero_cta', 'Mua ngay', $themeKey),
-                'image' => 'https://picsum.photos/seed/th0001-default-hero/960/520',
+                'image' => 'https://picsum.photos/seed/shop601-default-hero/960/520',
                 'link_url' => route('site.catalog.search'),
                 'edit_fields' => [
                     ['slot' => 'eyebrow', 'key' => 'theme.fallback.hero_eyebrow', 'label' => 'Hero eyebrow', 'group' => 'static'],
@@ -2400,10 +2404,10 @@ class CmsSiteController
         }
 
         return [
-            ['title' => $this->themeText('theme.fallback.side_banner_voucher', 'Voucher cuối tuần', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_voucher_subtitle', 'Ưu đãi theo preset', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-1/360/180', 'link_url' => route('site.catalog.search')],
-            ['title' => $this->themeText('theme.fallback.side_banner_hot', 'Hot trend', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_hot_subtitle', 'Block phụ 2', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-2/360/180', 'link_url' => route('site.catalog.search')],
-            ['title' => $this->themeText('theme.fallback.side_banner_top', 'Top sản phẩm', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_top_subtitle', 'Block phụ 3', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-3/360/180', 'link_url' => route('site.catalog.search')],
-            ['title' => $this->themeText('theme.fallback.side_banner_combo', 'Combo mới', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_combo_subtitle', 'Block phụ 4', $themeKey), 'image' => 'https://picsum.photos/seed/th0001-default-side-4/360/180', 'link_url' => route('site.catalog.search')],
+            ['title' => $this->themeText('theme.fallback.side_banner_voucher', 'Voucher cuối tuần', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_voucher_subtitle', 'Ưu đãi theo preset', $themeKey), 'image' => 'https://picsum.photos/seed/shop601-default-side-1/360/180', 'link_url' => route('site.catalog.search')],
+            ['title' => $this->themeText('theme.fallback.side_banner_hot', 'Hot trend', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_hot_subtitle', 'Block phụ 2', $themeKey), 'image' => 'https://picsum.photos/seed/shop601-default-side-2/360/180', 'link_url' => route('site.catalog.search')],
+            ['title' => $this->themeText('theme.fallback.side_banner_top', 'Top sản phẩm', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_top_subtitle', 'Block phụ 3', $themeKey), 'image' => 'https://picsum.photos/seed/shop601-default-side-3/360/180', 'link_url' => route('site.catalog.search')],
+            ['title' => $this->themeText('theme.fallback.side_banner_combo', 'Combo mới', $themeKey), 'subtitle' => $this->themeText('theme.fallback.side_banner_combo_subtitle', 'Block phụ 4', $themeKey), 'image' => 'https://picsum.photos/seed/shop601-default-side-4/360/180', 'link_url' => route('site.catalog.search')],
         ];
     }
 
@@ -2463,7 +2467,7 @@ class CmsSiteController
         return $items->map(fn (CatalogProduct $product): array => $this->mapProductCard($product))->all();
     }
 
-    private function resolveSections(Collection $parentCategories, string $websiteKey, string $themeKey = 'TH0001'): array
+    private function resolveSections(Collection $parentCategories, string $websiteKey, string $themeKey = 'SHOP601'): array
     {
         $tabs = $this->commerceThemeDefaults($themeKey)['section_tabs'];
 
@@ -2490,7 +2494,7 @@ class CmsSiteController
         })->filter(fn (array $section): bool => $section['items'] !== [])->values()->all();
     }
 
-    private function resolveFeaturedCategories(string $websiteKey, Collection $parentCategories, string $location = 'home-featured-categories', bool $fallbackToBrandHighlights = true, string $themeKey = 'TH0001'): array
+    private function resolveFeaturedCategories(string $websiteKey, Collection $parentCategories, string $location = 'home-featured-categories', bool $fallbackToBrandHighlights = true, string $themeKey = 'SHOP601'): array
     {
         $query = CmsFeaturedCategory::query()
             ->where('location', $location)
@@ -2515,7 +2519,7 @@ class CmsSiteController
         return $fallbackToBrandHighlights ? $this->resolveBrandHighlights($parentCategories, $themeKey) : [];
     }
 
-    private function resolveBrandHighlights(Collection $parentCategories, string $themeKey = 'TH0001'): array
+    private function resolveBrandHighlights(Collection $parentCategories, string $themeKey = 'SHOP601'): array
     {
         $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
 
@@ -2527,7 +2531,7 @@ class CmsSiteController
         ])->all();
     }
 
-    private function resolveFeaturedCategoryTone(int $index, string $themeKey = 'TH0001'): string
+    private function resolveFeaturedCategoryTone(int $index, string $themeKey = 'SHOP601'): string
     {
         $tones = $this->commerceThemeDefaults($themeKey)['featured_tones'];
 
@@ -2699,40 +2703,6 @@ class CmsSiteController
     private function commerceThemeDefaults(string $themeKey): array
     {
         return match (strtoupper($themeKey)) {
-            'TH0201' => [
-                'hero_slide' => [
-                    'eyebrow' => 'Landing dự án mở bán',
-                    'badge' => 'Nhận brochure, bảng giá và timeline',
-                    'cta' => 'Khám phá bảng hàng',
-                ],
-                'footer_columns' => [
-                    ['title' => 'Tổng quan dự án', 'links' => ['Vị trí kết nối vùng', 'Masterplan & phân khu', 'Timeline mở bán', 'Tiến độ xây dựng']],
-                    ['title' => 'Bảng hàng & chính sách', 'links' => ['Giỏ hàng căn đẹp', 'Ưu đãi theo giai đoạn', 'Phương án thanh toán', 'FAQ dành cho nhà đầu tư']],
-                    ['title' => 'Kết nối sales gallery', 'links' => ['Đặt lịch xem nhà mẫu', 'Nhận brochure PDF', 'Liên hệ phòng kinh doanh', 'Chính sách bảo mật lead']],
-                ],
-                'company_footer' => [
-                    'address_line_1' => 'Sales gallery: Đại lộ trung tâm dự án TH0201, khu đông thành phố',
-                    'address_line_2' => 'Private appointment lounge: Hotline nhận lịch hẹn, tư vấn tài chính và bảng hàng mở bán',
-                ],
-                'branding' => [
-                    'company_name' => 'TH0201 Project Landing',
-                    'slogan' => 'Landing page mở bán bất động sản, tối ưu lead và kể chuyện bảng hàng theo từng phân khu',
-                    'logo_url' => url('theme-previews/TH0201/preview-th0201.svg'),
-                    'favicon_url' => url('theme-previews/TH0201/preview-th0201.svg'),
-                    'primary_color' => '#0f3557',
-                    'primary_color_deep' => '#0a2741',
-                    'accent_color' => '#c7923e',
-                    'accent_soft_color' => '#e6c98e',
-                    'background_color' => '#f5f1ea',
-                    'surface_color' => '#ffffff',
-                    'surface_tint_color' => '#f8f4ee',
-                    'support_hotline' => '1900 6760 / 0909 020 201',
-                    'support_email' => 'sales@th0201.demo',
-                    'support_location' => 'TP.HCM - hành lang mở bán khu Đông',
-                ],
-                'section_tabs' => ['Tổng quan mở bán', 'Căn đẹp chủ lực', 'Gói ưu đãi tài chính'],
-                'featured_tones' => ['#0f3557', '#c7923e', '#7a8a97', '#114a6e', '#8f6a2d'],
-            ],
             default => [
                 'hero_slide' => [
                     'eyebrow' => 'Ưu đãi nổi bật',
@@ -2749,13 +2719,13 @@ class CmsSiteController
                     'address_line_2' => 'Chi nhánh Hà Nội: Tầng 3, CT2 Ban Cơ Yếu Chính Phủ, Thanh Xuân',
                 ],
                 'branding' => [
-                    'company_name' => 'TH0001 Deal Commerce',
+                    'company_name' => 'AIO Commerce',
                     'slogan' => 'Deal ngon mỗi ngày, mua nhanh giá tốt',
                     'logo_url' => self::DEFAULT_BRAND_ASSET,
                     'favicon_url' => self::DEFAULT_BRAND_ASSET,
                     'primary_color' => '#ef2b2d',
                     'support_hotline' => '1900 6760 / 0354.466.968',
-                    'support_email' => 'cs@th0001.demo',
+                    'support_email' => 'support@htvietnam.vn',
                     'support_location' => 'TP.HCM & Hà Nội',
                 ],
                 'section_tabs' => ['Mới nhất', 'Bán chạy', 'Giá tốt'],
@@ -2841,7 +2811,7 @@ class CmsSiteController
 
     private function isCommerceThemeKey(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['TH0001', 'TH0201', 'SHOP601', 'SHOP602', 'NT502'], true);
+        return in_array(strtoupper((string) $themeKey), ['SHOP601', 'SHOP602', 'NT502'], true);
     }
 
     private function isLandingHybridThemeKey(?string $themeKey): bool
@@ -2899,7 +2869,7 @@ class CmsSiteController
     private function mapProductCard(CatalogProduct $product, ?string $themeKey = null): array
     {
         $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
-        $resolvedThemeKey = $themeKey ?: 'TH0001';
+        $resolvedThemeKey = $themeKey ?: 'SHOP601';
         $product = $this->localizeProductModel($product, $websiteKey);
         $originalPrice = $product->original_price !== null ? (float) $product->original_price : null;
         $price = (float) $product->price;
@@ -2942,7 +2912,7 @@ class CmsSiteController
 
         $galleryImage = $product->relationLoaded('images') ? $product->images->first()?->image_url : $product->images()->orderBy('sort_order')->value('image_url');
 
-        return $galleryImage ?: 'https://picsum.photos/seed/th0001-product-fallback/640/420';
+        return $galleryImage ?: 'https://picsum.photos/seed/shop601-product-fallback/640/420';
     }
 
     private function resolveProductGallery(CatalogProduct $product): array
@@ -2955,7 +2925,7 @@ class CmsSiteController
             ->values();
 
         if ($images->isEmpty()) {
-            $images = collect(['https://picsum.photos/seed/th0001-product-fallback/960/720']);
+            $images = collect(['https://picsum.photos/seed/shop601-product-fallback/960/720']);
         }
 
         return $images->map(fn (string $image, int $index): array => [
@@ -3047,7 +3017,7 @@ class CmsSiteController
             }
         }
 
-        foreach (['theme-th0001'] as $fallbackNamespace) {
+        foreach (['theme-shop601'] as $fallbackNamespace) {
             $fallbackView = "{$fallbackNamespace}::{$viewKey}";
 
             if ($viewFactory->exists($fallbackView)) {
@@ -3196,7 +3166,7 @@ class CmsSiteController
 
     private function themeText(string $key, string $default, ?string $themeKey = null): string
     {
-        return $this->themeTranslationService->bladeText($themeKey ?: 'TH0001', $this->currentLocale(), $key, $default);
+        return $this->themeTranslationService->bladeText($themeKey ?: 'SHOP601', $this->currentLocale(), $key, $default);
     }
 
     private function contentText(string $websiteKey, string $key, ?string $default): string

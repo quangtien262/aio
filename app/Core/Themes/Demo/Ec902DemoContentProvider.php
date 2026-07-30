@@ -209,7 +209,7 @@ class Ec902DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'NOVAPHONE',
                     'company_description' => 'Thiết bị công nghệ chính hãng, giá tốt, trả góp linh hoạt và giao nhanh toàn quốc.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'support@novaphone.vn',
                     'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM',
                 ]),

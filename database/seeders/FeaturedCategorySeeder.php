@@ -11,53 +11,6 @@ class FeaturedCategorySeeder extends Seeder
     {
         $groups = [
             [
-                'name' => 'TH0001 Home featured categories',
-                'location' => 'home-featured-categories',
-                'website_key' => 'website-main',
-                'items' => [
-                    [
-                        'label' => 'Ăn uống cuối tuần',
-                        'link_type' => 'custom',
-                        'link_value' => null,
-                        'custom_url' => '/danh-muc/an-uong',
-                        'url' => '/danh-muc/an-uong',
-                        'target' => '_self',
-                    ],
-                    [
-                        'label' => 'Spa & làm đẹp',
-                        'link_type' => 'custom',
-                        'link_value' => null,
-                        'custom_url' => '/danh-muc/spa-lam-dep',
-                        'url' => '/danh-muc/spa-lam-dep',
-                        'target' => '_self',
-                    ],
-                    [
-                        'label' => 'Combo nghỉ dưỡng',
-                        'link_type' => 'custom',
-                        'link_value' => null,
-                        'custom_url' => '/danh-muc/nghi-duong',
-                        'url' => '/danh-muc/nghi-duong',
-                        'target' => '_self',
-                    ],
-                    [
-                        'label' => 'Vui chơi gia đình',
-                        'link_type' => 'custom',
-                        'link_value' => null,
-                        'custom_url' => '/danh-muc/vui-choi',
-                        'url' => '/danh-muc/vui-choi',
-                        'target' => '_self',
-                    ],
-                    [
-                        'label' => 'Voucher tập luyện',
-                        'link_type' => 'custom',
-                        'link_value' => null,
-                        'custom_url' => '/danh-muc/the-thao',
-                        'url' => '/danh-muc/the-thao',
-                        'target' => '_self',
-                    ],
-                ],
-            ],
-            [
                 'name' => 'Reusable footer featured categories',
                 'location' => 'footer-featured-categories',
                 'website_key' => 'website-main',

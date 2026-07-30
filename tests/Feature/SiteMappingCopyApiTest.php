@@ -77,30 +77,30 @@ class SiteMappingCopyApiTest extends TestCase
         $site = Site::query()->create([
             'domain' => 'electronics.demo.test',
             'website_key' => 'electronics-demo',
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'name' => 'Electronics Demo',
             'status' => 'active',
         ]);
 
         $this->postJson("/admin/api/site-mappings/{$site->id}/demo-data", [
-            'preset' => 'electronics-superstore',
+            'preset' => 'shop601-bean-style',
         ])
             ->assertOk()
             ->assertJsonPath('data.site.website_key', 'electronics-demo')
             ->assertJsonPath('data.site.checklist.demo_data_created', true)
             ->assertJsonPath('data.initialization.mode', 'sample')
-            ->assertJsonPath('data.initialization.preset', 'electronics-superstore');
+            ->assertJsonPath('data.initialization.preset', 'shop601-bean-style');
 
         $this->assertDatabaseHas('site_profiles', [
             'website_key' => 'electronics-demo',
-            'active_theme_key' => 'TH0001',
+            'active_theme_key' => 'SHOP601',
         ]);
         $this->assertDatabaseHas('catalog_products', [
             'website_key' => 'electronics-demo',
         ]);
         $this->assertDatabaseHas('landing_pages', [
             'website_key' => 'electronics-demo',
-            'theme_key' => 'TH0001',
+            'theme_key' => 'SHOP601',
             'is_home' => true,
         ]);
     }

@@ -14,7 +14,7 @@
     $news = $get('ec915_latest_posts'); $footer = $get('ec915_footer');
     $slides = collect($hero['dynamic_items'] ?? [])->filter()->values();
     if ($slides->isEmpty()) $slides = collect(data_get($hero, 'data.content.slides', []))->filter()->values();
-    $hotline = trim((string) data_get($siteProfile ?? [], 'branding.support_hotline', '')) ?: '1900 6750';
+    $hotline = trim((string) data_get($siteProfile ?? [], 'branding.support_hotline', '')) ?: '0399162342';
 @endphp
 <main class="ec15-main">
     <section class="ec15-hero xd-landing-block" data-landing-block-id="{{ data_get($hero, 'id') }}" data-block-type="hero_slider">

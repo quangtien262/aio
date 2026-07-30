@@ -11,3 +11,4 @@
         <a class="xd4-quote" href="#footer">Tư vấn và báo giá <span>→</span></a>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

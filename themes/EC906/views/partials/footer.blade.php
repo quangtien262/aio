@@ -1,6 +1,6 @@
 @php
     $branding = (array) data_get($siteProfile ?? [], 'branding', []);
-    $phone = data_get($branding, 'support_hotline', '1900 6750');
+    $phone = data_get($branding, 'support_hotline', '0399162342');
     $email = data_get($branding, 'support_email', 'support@egamart.vn');
     $address = data_get($branding, 'support_location', '70 Lữ Gia, Quận 11, TP. Hồ Chí Minh');
 @endphp

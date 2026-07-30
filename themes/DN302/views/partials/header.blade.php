@@ -9,6 +9,13 @@
         'top_menu',
         data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))
     ))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label', data_get($item, 'title'))))->values();
+    $headerLocales = collect(\App\Support\FrontendLocalization::localeOptions())
+        ->filter(fn (array $locale): bool => (bool) ($locale['is_active'] ?? false)
+            && (bool) ($locale['is_published'] ?? true)
+            && filled($locale['code'] ?? null))
+        ->values();
+    $currentLocale = \App\Support\FrontendLocalization::resolveLocale(app()->getLocale());
+    $languageUrl = static fn (string $locale): string => \App\Support\FrontendRouteUrl::switchLocale($locale);
     if ($menuItems->isEmpty()) {
         $menuItems = collect([
             ['label' => 'Trang chủ', 'url' => route('site.home')],
@@ -35,6 +42,21 @@
             <div class="dn-topbar">
                 <a href="mailto:{{ $email }}"><i class="fa-solid fa-envelope"></i> {{ $email }}</a>
                 <span class="dn-socials"><i class="fa-brands fa-facebook-f"></i><i class="fa-brands fa-youtube"></i><i class="fa-brands fa-pinterest-p"></i></span>
+                @if($headerLocales->count() > 1)
+                    <div class="dn-language-switcher" data-dn-language-switcher data-storefront-language-switcher aria-label="Chọn ngôn ngữ">
+                        <i class="fa-solid fa-globe" aria-hidden="true"></i>
+                        @foreach($headerLocales as $locale)
+                            @php($localeCode = (string) $locale['code'])
+                            <a
+                                class="{{ $localeCode === $currentLocale ? 'is-active' : '' }}"
+                                href="{{ $languageUrl($localeCode) }}"
+                                hreflang="{{ $localeCode }}"
+                                data-locale-code="{{ $localeCode }}"
+                                @if($localeCode === $currentLocale) aria-current="true" @endif
+                            >{{ strtoupper(explode('-', $localeCode)[0]) }}</a>
+                        @endforeach
+                    </div>
+                @endif
                 <div class="dn-auth-actions">
                     @auth('admin')
                         <a href="{{ route('admin.index') }}">Quản trị</a>
@@ -61,6 +83,20 @@
                             </span>
                         @endguest
                     @endguest
+                    @if($headerLocales->count() > 1)
+                        <span class="dn-language-mobile" data-dn-language-switcher data-storefront-language-switcher aria-label="Chọn ngôn ngữ">
+                            @foreach($headerLocales as $locale)
+                                @php($localeCode = (string) $locale['code'])
+                                <a
+                                    class="{{ $localeCode === $currentLocale ? 'is-active' : '' }}"
+                                    href="{{ $languageUrl($localeCode) }}"
+                                    hreflang="{{ $localeCode }}"
+                                    data-locale-code="{{ $localeCode }}"
+                                    @if($localeCode === $currentLocale) aria-current="true" @endif
+                                >{{ strtoupper(explode('-', $localeCode)[0]) }}</a>
+                            @endforeach
+                        </span>
+                    @endif
                 </nav>
                 <a class="dn-consult" href="{{ route('site.contact') }}" data-dn-consult-open>@themeT('DN302.header.consultation', 'Đăng ký tư vấn')</a>
             </div>

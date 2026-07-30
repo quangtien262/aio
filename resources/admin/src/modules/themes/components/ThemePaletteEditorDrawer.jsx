@@ -10,30 +10,6 @@ import Typography from 'antd/es/typography';
 const { Paragraph, Text, Title } = Typography;
 
 function buildDefaultPalette(themeKey) {
-    if (themeKey === 'TH0201') {
-        return {
-            primary_color: '#0f3557',
-            primary_color_deep: '#0a2741',
-            accent_color: '#c7923e',
-            accent_soft_color: '#e6c98e',
-            background_color: '#f5f1ea',
-            surface_color: '#ffffff',
-            surface_tint_color: '#f8f4ee',
-        };
-    }
-
-    if (themeKey === 'TH0001') {
-        return {
-            primary_color: '#ef2b2d',
-            primary_color_deep: '#d91c20',
-            accent_color: '#79c400',
-            accent_soft_color: '#86c440',
-            background_color: '#f6f6f8',
-            surface_color: '#ffffff',
-            surface_tint_color: '#fff7f5',
-        };
-    }
-
     if (themeKey === 'SER0100') {
         return {
             primary_color: '#c2410c',

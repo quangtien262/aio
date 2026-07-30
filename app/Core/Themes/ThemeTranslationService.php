@@ -179,7 +179,7 @@ class ThemeTranslationService
 
     private function resolveThemeKey(?string $themeKey): string
     {
-        return trim((string) $themeKey) !== '' ? (string) $themeKey : 'TH0001';
+        return trim((string) $themeKey) !== '' ? (string) $themeKey : 'corporate-starter';
     }
 
     private function cacheKey(string $themeKey, string $locale): string

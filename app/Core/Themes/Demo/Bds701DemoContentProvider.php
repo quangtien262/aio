@@ -241,7 +241,7 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'Delta Platinum',
                     'company_description' => 'Nền tảng tư vấn và giao dịch bất động sản chọn lọc.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'hello@deltaplatinum.vn',
                     'support_location' => 'An Thượng, Hà Nội',
                 ]),

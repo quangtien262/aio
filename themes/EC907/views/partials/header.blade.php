@@ -13,3 +13,4 @@
         @foreach($nav as $item)<a href="{{ data_get($item,'url') }}" target="{{ data_get($item,'target','_self') }}">{{ data_get($item,'label') }}</a>@endforeach
     </div><a href="{{ route('site.contact') }}"><i class="fa-solid fa-store"></i> Hệ thống cửa hàng</a><a href="tel:{{ preg_replace('/\s+/','',$hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: <b>{{ $hotline }}</b></a></div></nav>
 </header>
+@include('partials.storefront-language-switcher')

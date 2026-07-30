@@ -221,18 +221,19 @@ class Dn202DemoContentProvider implements ThemeDemoContentProvider
             $this->record($menu);
 
             $profile = SiteProfile::query()->firstOrNew(['website_key' => $websiteKey]);
+            $existingBranding = (array) $profile->branding;
             $profile->forceFill([
                 'site_name' => 'DN202 Arc',
                 'website_type' => 'service',
                 'active_theme_key' => self::THEME_KEY,
-                'branding' => array_merge((array) $profile->branding, [
+                'branding' => array_merge([
                     'company_name' => 'DN202 Arc',
                     'company_description' => 'Thiết kế và thi công nội thất trọn gói cho nhà ở, khách sạn, showroom và văn phòng.',
-                    'support_hotline' => '1900 6750',
+                    'support_hotline' => '0399162342',
                     'support_email' => 'hello@dn202.vn',
                     'support_location' => 'An Thượng, Hà Nội',
                     'working_hours' => '08:00 - 17:00',
-                ]),
+                ], $existingBranding),
             ])->save();
 
             $existingPage = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();

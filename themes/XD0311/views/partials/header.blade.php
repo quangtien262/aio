@@ -31,3 +31,4 @@
         <a class="xd5-hotline" href="tel:{{ $phoneHref }}">{{ $hotline }}</a>
     </div>
 </header>
+@include('partials.storefront-language-switcher')

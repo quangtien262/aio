@@ -234,7 +234,7 @@ class AdminFoundationApiTest extends TestCase
 
         $this->actingAs($admin, 'admin');
 
-        $this->putJson('/admin/api/themes/TH0001/palette', [
+        $this->putJson('/admin/api/themes/SHOP601/palette', [
             'primary_color' => '#123456',
             'primary_color_deep' => '#0f1e2d',
             'accent_color' => '#74b816',
@@ -246,16 +246,16 @@ class AdminFoundationApiTest extends TestCase
 
         $siteProfile = SiteProfile::query()->firstOrFail();
 
-        $this->assertSame('#123456', data_get($siteProfile->theme_palettes, 'TH0001.primary_color'));
-        $this->assertSame('#0f1e2d', data_get($siteProfile->theme_palettes, 'TH0001.primary_color_deep'));
-        $this->assertSame('#74b816', data_get($siteProfile->theme_palettes, 'TH0001.accent_color'));
+        $this->assertSame('#123456', data_get($siteProfile->theme_palettes, 'SHOP601.primary_color'));
+        $this->assertSame('#0f1e2d', data_get($siteProfile->theme_palettes, 'SHOP601.primary_color_deep'));
+        $this->assertSame('#74b816', data_get($siteProfile->theme_palettes, 'SHOP601.accent_color'));
         $this->assertNull(data_get($siteProfile->branding, 'primary_color'));
         $this->assertContains('branding', $siteProfile->completed_steps ?? []);
 
         $this->getJson('/admin/api/setup')
             ->assertOk()
-            ->assertJsonPath('data.theme_palettes.TH0001.primary_color', '#123456')
-            ->assertJsonPath('data.theme_palettes.TH0001.accent_soft_color', '#a9e34b');
+            ->assertJsonPath('data.theme_palettes.SHOP601.primary_color', '#123456')
+            ->assertJsonPath('data.theme_palettes.SHOP601.accent_soft_color', '#a9e34b');
     }
 
     public function test_admin_can_manage_roles_permissions_and_admin_assignments(): void
