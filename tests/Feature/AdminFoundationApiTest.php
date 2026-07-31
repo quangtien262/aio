@@ -2,16 +2,16 @@
 
 namespace Tests\Feature;
 
-use App\Models\CatalogProduct;
-use App\Models\CatalogCategory;
 use App\Models\Admin;
 use App\Models\AdminRoleAssignment;
+use App\Models\CatalogCategory;
+use App\Models\CatalogProduct;
 use App\Models\CmsPage;
 use App\Models\ModuleInstallation;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\SiteProfile;
 use App\Models\ThemeInstallation;
-use App\Models\Role;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -31,7 +31,7 @@ class AdminFoundationApiTest extends TestCase
 
         $this->actingAs($admin, 'admin');
 
-        $this->getJson('/admin/api/dashboard')
+        $dashboard = $this->getJson('/admin/api/dashboard')
             ->assertOk()
             ->assertJsonStructure([
                 'metrics' => ['admins', 'customers', 'roles', 'permissions', 'modules', 'themes'],
@@ -40,6 +40,10 @@ class AdminFoundationApiTest extends TestCase
                     ['key', 'name', 'description', 'status', 'icon', 'color', 'route', 'website_types', 'installed_version', 'latest_version', 'menus'],
                 ],
             ]);
+        $this->assertSame(
+            'CMS - Quản trị website',
+            collect($dashboard->json('active_modules'))->firstWhere('key', 'cms')['name'] ?? null,
+        );
 
         $this->getJson('/admin/api/modules')
             ->assertOk()

@@ -1,5 +1,5 @@
 {
-  "name": "CMS",
+  "name": "CMS - Quản trị website",
   "key": "cms",
   "version": "0.2.5",
   "description": "Module quản lý nội dung, trang, bài viết, menu và media cho AIO Platform.",
