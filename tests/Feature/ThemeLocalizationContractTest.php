@@ -189,7 +189,10 @@ class ThemeLocalizationContractTest extends TestCase
                 );
                 $usesContractCompliantCustomSwitcher = (
                     str_contains($contents, 'data-storefront-language-switcher')
-                    && str_contains($contents, 'FrontendRouteUrl::switchLocale')
+                    && (
+                        str_contains($contents, 'FrontendRouteUrl::switchLocale')
+                        || str_contains($contents, 'FrontendRouteUrl::localeSwitchUrls')
+                    )
                 );
 
                 $this->assertTrue(

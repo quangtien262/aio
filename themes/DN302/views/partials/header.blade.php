@@ -15,7 +15,11 @@
             && filled($locale['code'] ?? null))
         ->values();
     $currentLocale = \App\Support\FrontendLocalization::resolveLocale(app()->getLocale());
-    $languageUrl = static fn (string $locale): string => \App\Support\FrontendRouteUrl::switchLocale($locale);
+    $languageUrls = \App\Support\FrontendRouteUrl::localeSwitchUrls(
+        $headerLocales->pluck('code')->map(fn ($locale): string => (string) $locale)->all()
+    );
+    $languageUrl = static fn (string $locale): string => $languageUrls[$locale]
+        ?? \App\Support\FrontendRouteUrl::home($locale);
     if ($menuItems->isEmpty()) {
         $menuItems = collect([
             ['label' => 'Trang chủ', 'url' => route('site.home')],

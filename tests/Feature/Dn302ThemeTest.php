@@ -96,6 +96,16 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('name="source" value="contact"', false)
             ->assertDontSee('name="source" value="dn302-landing"', false);
 
+        $this->get(route('site.home', ['locale' => 'en']))
+            ->assertOk()
+            ->assertSee('<html lang="en">', false)
+            ->assertSee(
+                '<link rel="canonical" href="'.route('site.home', ['locale' => 'en']).'">',
+                false,
+            )
+            ->assertSee('href="'.route('site.home', ['locale' => 'en']).'"', false)
+            ->assertSee('data-locale-code="en"', false);
+
         $this->assertDatabaseHas('landing_pages', ['theme_key' => 'DN302', 'slug' => 'home', 'is_home' => true]);
         $landing = LandingPage::query()->where('theme_key', 'DN302')->where('is_home', true)->first()
             ?? app(LandingPageBuilder::class)->seedHome('website-main', 'DN302');

@@ -90,6 +90,16 @@ class CmsSiteController
             $localizedSeo = $landingPage && $landingTranslation
                 ? $this->landingLocalization->seo($landingPage, $landingTranslation)
                 : [];
+            $currentLocale = $this->currentLocale();
+
+            if (
+                $landingPage?->is_home
+                && FrontendLocalization::isSupported($currentLocale)
+            ) {
+                $currentLocaleHome = route('site.home', ['locale' => $currentLocale]);
+                $localizedSeo['canonical_url'] = $currentLocaleHome;
+                $localizedSeo['alternates'][$currentLocale] = $currentLocaleHome;
+            }
 
             return view($themeHomeView, array_merge([
                 'siteProfile' => $siteProfile,
