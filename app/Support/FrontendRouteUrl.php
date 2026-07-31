@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Support\Localization\CmsPageLocalization;
 use App\Support\Localization\LocalizedRouteRegistry;
 
 final class FrontendRouteUrl
@@ -225,6 +226,19 @@ final class FrontendRouteUrl
                     $resolvedLocales->all(),
                 );
             }
+
+            if (request()->routeIs('site.pages.show')) {
+                $cmsPagePaths = self::cmsPageLocalePaths(
+                    $currentLocale,
+                    (string) request()->route('slug'),
+                    $resolvedLocales->all(),
+                );
+
+                if ($cmsPagePaths !== null) {
+                    $hasLocalizedResource = true;
+                    $canonicalPaths = array_replace($cmsPagePaths, $canonicalPaths);
+                }
+            }
         }
 
         return $resolvedLocales
@@ -245,6 +259,43 @@ final class FrontendRouteUrl
 
                 return [$locale => $query ? $url.'?'.$query : $url];
             })
+            ->all();
+    }
+
+    /**
+     * Resolve published CMS Page translations directly as a compatibility
+     * bridge for legacy data that may be missing a localized_routes row.
+     *
+     * @param  list<string>  $locales
+     * @return array<string, string>|null
+     */
+    private static function cmsPageLocalePaths(
+        string $currentLocale,
+        string $slug,
+        array $locales,
+    ): ?array {
+        if ($slug === '') {
+            return null;
+        }
+
+        $resolution = app(CmsPageLocalization::class)->resolvePublic(
+            app(SiteContext::class)->websiteKey(),
+            $currentLocale,
+            $slug,
+        );
+
+        if ($resolution === null || $resolution->usedFallback) {
+            return null;
+        }
+
+        return $resolution->page->translations
+            ->filter(fn ($translation): bool => (
+                in_array($translation->locale, $locales, true)
+                && $translation->isPublishedTranslation()
+            ))
+            ->mapWithKeys(fn ($translation): array => [
+                $translation->locale => '/p/'.rawurlencode($translation->slug),
+            ])
             ->all();
     }
 
@@ -405,8 +456,7 @@ final class FrontendRouteUrl
     private static function withoutLocale(
         string $localizedPath,
         ?string $locale = null,
-    ): string
-    {
+    ): string {
         $localePrefix = '/'.self::locale($locale);
 
         if ($localizedPath === $localePrefix) {

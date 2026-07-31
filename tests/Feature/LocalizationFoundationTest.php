@@ -8,11 +8,13 @@ use App\Events\TranslationPublished;
 use App\Events\WebsiteLocalesChanged;
 use App\Models\Admin;
 use App\Models\CmsPage;
+use App\Models\CmsPageTranslation;
 use App\Models\LandingPage;
 use App\Models\LandingPageData;
+use App\Models\LocalizedRoute;
 use App\Models\ThemeTranslation;
-use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\FrontendRouteUrl;
+use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\Localization\LocaleContext;
 use App\Support\Localization\LocalizedRouteRegistry;
 use App\Support\Localization\TranslationRevision;
@@ -156,6 +158,52 @@ class LocalizationFoundationTest extends TestCase
         $this->app->instance('request', $request);
 
         $this->assertSame('/en', FrontendRouteUrl::switchLocale('en', false));
+    }
+
+    public function test_cms_page_language_switcher_recovers_when_current_locale_route_is_missing(): void
+    {
+        $page = CmsPage::query()->create([
+            'website_key' => 'website-main',
+            'title' => 'Giới thiệu',
+            'slug' => 'gioi-thieu',
+            'status' => 'published',
+            'body' => 'Nội dung tiếng Việt',
+        ]);
+        CmsPageTranslation::query()->create([
+            'cms_page_id' => $page->id,
+            'website_key' => 'website-main',
+            'locale' => 'en',
+            'title' => 'About us',
+            'slug' => 'about',
+            'body' => 'English content',
+            'translation_status' => TranslationStatus::Published,
+            'translation_published_at' => now(),
+        ]);
+
+        app(LocalizedRouteRegistry::class)->register(
+            'en',
+            'cms_page',
+            $page->id,
+            '/p/about',
+            ['is_published' => true],
+        );
+        LocalizedRoute::query()
+            ->where('locale', 'vi')
+            ->where('resource_type', 'cms_page')
+            ->where('resource_id', (string) $page->id)
+            ->delete();
+
+        $request = Request::create('/vi/p/gioi-thieu?source=header');
+        $route = (new Route('GET', '/{locale}/p/{slug}', fn () => null))
+            ->name('site.pages.show')
+            ->bind($request);
+        $request->setRouteResolver(fn (): Route => $route);
+        $this->app->instance('request', $request);
+
+        $this->assertSame(
+            '/en/p/about?source=header',
+            FrontendRouteUrl::switchLocale('en', false),
+        );
     }
 
     public function test_translation_workflow_tracks_revisions_and_only_publishes_after_review(): void
