@@ -51,6 +51,6 @@ class Th0050ThemeBrandingTest extends TestCase
         $this->assertSame(2, substr_count($response->getContent(), 'src="'.$logoUrl.'"'));
         $response
             ->assertDontSee('0399162342')
-            ->assertDontSee('hello@annhien.vn');
+            ->assertDontSee('support@htrvietnam.vn');
     }
 }
