@@ -140,9 +140,9 @@ class AdminFoundationApiTest extends TestCase
             'key' => 'catalog.view',
             'is_active' => false,
         ]);
-        $this->assertFalse(Schema::hasTable('catalog_products'));
-        $this->assertFalse(File::exists(config_path('catalog.php')));
-        $this->assertFalse(File::exists(public_path('modules/catalog/catalog-module.json')));
+        $this->assertTrue(Schema::hasTable('catalog_products'));
+        $this->assertTrue(File::exists(config_path('catalog.php')));
+        $this->assertTrue(File::exists(public_path('modules/catalog/catalog-module.json')));
         $this->assertNull(data_get(SiteProfile::query()->first(), 'branding.catalog'));
 
         $this->postJson('/admin/api/modules/cms/disable')
@@ -622,6 +622,11 @@ class AdminFoundationApiTest extends TestCase
 
         $scopedAdmin = Admin::query()->where('email', 'scoped-data-admin@aio.local')->firstOrFail();
         $this->actingAs($scopedAdmin, 'admin');
+        $this->putJson('/admin/api/me/password', [
+            'current_password' => 'Password123!',
+            'password' => 'ChangedPassword123!',
+            'password_confirmation' => 'ChangedPassword123!',
+        ])->assertOk();
 
         $this->getJson('/admin/api/cms/pages')
             ->assertOk()
@@ -721,5 +726,78 @@ class AdminFoundationApiTest extends TestCase
         $this->assertDatabaseMissing('catalog_products', [
             'id' => $createdProductId,
         ]);
+    }
+
+    public function test_disabled_module_api_is_not_available_to_system_owner(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        ModuleInstallation::query()->create([
+            'key' => 'inventory',
+            'name' => 'Inventory',
+            'version' => '0.1.0',
+            'status' => 'disabled',
+        ]);
+
+        $admin = Admin::query()->whereKey(Admin::SYSTEM_OWNER_ID)->firstOrFail();
+
+        $this->actingAs($admin, 'admin')
+            ->getJson('/admin/api/inventory/dashboard')
+            ->assertNotFound();
+    }
+
+    public function test_website_scoped_role_cannot_mutate_global_module_state(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $permission = Permission::query()->where('key', 'store.module.disable')->firstOrFail();
+        $role = Role::query()->create([
+            'key' => 'website-module-operator',
+            'name' => 'Website module operator',
+            'status' => 'active',
+            'is_system' => false,
+        ]);
+        $role->permissions()->attach($permission->id);
+
+        $admin = Admin::factory()->create([
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        AdminRoleAssignment::query()->create([
+            'admin_id' => $admin->id,
+            'role_id' => $role->id,
+            'scope_type' => 'website',
+            'scope_value' => 'website-main',
+            'assigned_by' => Admin::SYSTEM_OWNER_ID,
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->withHeader('X-Website-Key', 'website-main')
+            ->postJson('/admin/api/modules/cms/disable')
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('module_installations', [
+            'key' => 'cms',
+            'status' => 'enabled',
+        ]);
+    }
+
+    public function test_outdated_module_must_be_upgraded_before_it_can_be_enabled(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = Admin::query()->whereKey(Admin::SYSTEM_OWNER_ID)->firstOrFail();
+        $this->actingAs($admin, 'admin');
+
+        $this->postJson('/admin/api/modules/catalog/install')->assertOk();
+        ModuleInstallation::query()->where('key', 'catalog')->update(['version' => '0.1.0']);
+
+        $this->postJson('/admin/api/modules/catalog/enable')->assertUnprocessable();
+        $this->assertDatabaseHas('module_installations', [
+            'key' => 'catalog',
+            'version' => '0.1.0',
+            'status' => 'installed',
+        ]);
+
+        $this->postJson('/admin/api/modules/catalog/upgrade')->assertOk();
+        $this->postJson('/admin/api/modules/catalog/enable')->assertOk();
     }
 }

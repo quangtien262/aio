@@ -13,11 +13,11 @@
         <div>
             <div class="rx13-promo-card">
                 <div>
-                    <h3>{{ $data['title'] ?? 'Nhan uu dai tot nhat cua chung toi mot cach nhanh chong' }}</h3>
+                    <h3>{{ $data['title'] ?? 'Nhận ưu đãi tốt nhất của chúng tôi một cách nhanh chóng' }}</h3>
                     @if (filled($data['description'] ?? null))
                         <p>{{ $data['description'] }}</p>
                     @endif
-                    <a class="rx13-button" href="{{ $settings['cta_url'] ?? '#footer' }}">{{ $data['button_label'] ?? 'Lien He Ngay' }} <span>-></span></a>
+                    <a class="rx13-button" href="{{ $settings['cta_url'] ?? '#footer' }}">{{ $data['button_label'] ?? 'Liên hệ ngay' }} <span>→</span></a>
                 </div>
                 <img src="{{ $cardImage }}" alt="Visa offer">
             </div>

@@ -18,7 +18,7 @@
     </div>
     @include('theme-xd0320::partials.auth-modal')
     @include('theme-xd0320::partials.inline-editor')
-    @include('theme-xd0320::partials.shell-scripts')
+    @include('theme-xd0320::partials.scripts')
     @stack('scripts')
 </body>
 </html>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Site;
 use App\Support\SiteContext;
 use Closure;
 use Illuminate\Http\Request;
@@ -9,9 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureAdminWebsiteAccess
 {
-    public function __construct(private readonly SiteContext $siteContext)
-    {
-    }
+    public function __construct(private readonly SiteContext $siteContext) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -20,10 +19,38 @@ class EnsureAdminWebsiteAccess
         }
 
         $admin = $request->user('admin');
-        $websiteKey = $this->siteContext->websiteKey();
+        abort_unless($admin, 403);
 
-        abort_unless($admin && $admin->canAccessWebsite($websiteKey), 403, 'Bạn không được phân quyền quản lý website này.');
+        $requestedWebsiteKey = trim((string) $request->header(
+            'X-Website-Key',
+            $this->siteContext->websiteKey(),
+        ));
+        $site = Site::query()
+            ->where('status', 'active')
+            ->where('website_key', $requestedWebsiteKey)
+            ->first();
 
-        return $next($request);
+        if ($site && $admin->canAccessWebsite($site->website_key)) {
+            $this->siteContext->set($site, $site->website_key);
+
+            return $next($request);
+        }
+
+        if ($request->routeIs('admin.api.me')) {
+            $fallbackSite = Site::query()
+                ->where('status', 'active')
+                ->orderByRaw('website_key = ? desc', [SiteContext::DEFAULT_WEBSITE_KEY])
+                ->orderBy('website_key')
+                ->get()
+                ->first(fn (Site $candidate): bool => $admin->canAccessWebsite($candidate->website_key));
+
+            abort_unless($fallbackSite, 403, 'Tài khoản chưa được phân quyền quản lý website đang hoạt động.');
+            $this->siteContext->set($fallbackSite, $fallbackSite->website_key);
+
+            return $next($request);
+        }
+
+        abort_if(! $site, 404, 'Website không tồn tại hoặc đã ngừng hoạt động.');
+        abort(403, 'Bạn không được phân quyền quản lý website này.');
     }
 }

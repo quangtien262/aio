@@ -10,7 +10,7 @@
 <section id="{{ $anchor }}" class="af15-stories xd-landing-block" style="--af15-story-bg: url('{{ $storyBg }}')" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     {!! $editButton !!}
     <div class="af15-title-row af15-title-row--dark">
-        <h2>{{ $data['title'] ?? 'Cau chuyen thanh cong' }}</h2>
+        <h2>{{ $data['title'] ?? 'Câu chuyện thành công' }}</h2>
         @if (filled($data['description'] ?? null))
             <p>{{ $data['description'] }}</p>
         @endif

@@ -2,8 +2,15 @@
 
 namespace App\Support\Localization;
 
+use App\Enums\TranslationStatus;
 use App\Events\WebsiteLocalesChanged;
+use App\Models\CmsPageTranslation;
+use App\Models\ContentTranslation;
+use App\Models\LandingPageBlockData;
+use App\Models\LandingPageData;
+use App\Models\LocalizedRoute;
 use App\Models\SystemLocale;
+use App\Models\ThemeTranslation;
 use App\Models\WebsiteLocale;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +18,10 @@ use Illuminate\Validation\ValidationException;
 
 class WebsiteLocaleManager
 {
-    public function __construct(private readonly LocaleContext $localeContext) {}
+    public function __construct(
+        private readonly LocaleContext $localeContext,
+        private readonly LocalizationReleaseReadiness $releaseReadiness,
+    ) {}
 
     public function ensureSystemLocale(
         string $code,
@@ -104,10 +114,9 @@ class WebsiteLocaleManager
                         [
                             'is_default' => $isDefault,
                             'is_enabled_for_editing' => $isDefault || $isSource || (bool) $systemLocale->is_active,
-                            'is_published' => $isDefault || (
-                                (bool) $systemLocale->is_active
-                                && (bool) $systemLocale->is_published
-                            ),
+                            // A target locale must pass website-specific
+                            // readiness before it becomes publicly routable.
+                            'is_published' => $isDefault,
                             'fallback_locale' => $isDefault ? null : $fallbackLocale,
                             'sort_order' => (int) $systemLocale->sort_order,
                         ],
@@ -150,6 +159,10 @@ class WebsiteLocaleManager
             || (bool) ($attributes['is_enabled_for_editing'] ?? true);
         $locale->is_published = $locale->is_default
             || (bool) ($attributes['is_published'] ?? false);
+
+        if ($locale->is_published && ! $locale->is_default && $code !== $this->localeContext->sourceLocale()) {
+            $this->assertReleaseReady($websiteKey, $code);
+        }
         $fallbackLocale = LocaleCode::tryNormalize(
             (string) ($attributes['fallback_locale'] ?? $this->localeContext->fallbackLocale($websiteKey)),
         );
@@ -222,6 +235,15 @@ class WebsiteLocaleManager
             ]);
         }
 
+        if (
+            ($attributes['is_published'] ?? false) === true
+            && ! $locale->is_published
+            && ! $locale->is_default
+            && $code !== $sourceLocale
+        ) {
+            $this->assertReleaseReady($websiteKey, $code);
+        }
+
         if (array_key_exists('fallback_locale', $attributes) && $attributes['fallback_locale'] !== null) {
             $fallbackLocale = LocaleCode::normalize((string) $attributes['fallback_locale']);
 
@@ -274,11 +296,80 @@ class WebsiteLocaleManager
             }
 
             $locale->save();
+
+            if (($attributes['is_published'] ?? null) === false) {
+                $this->demotePublishedTranslations($websiteKey, $locale->locale);
+            }
         });
 
         $this->localeContext->flush($websiteKey);
         WebsiteLocalesChanged::dispatch($websiteKey);
 
         return $locale->fresh('systemLocale');
+    }
+
+    private function assertReleaseReady(string $websiteKey, string $locale): void
+    {
+        $readiness = $this->releaseReadiness->report($websiteKey, [$locale])[$locale] ?? null;
+
+        if (($readiness['ready'] ?? false) === true) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'is_published' => sprintf(
+                'Chưa thể publish %s: còn %d/%d nội dung chưa sẵn sàng.',
+                $locale,
+                (int) ($readiness['pending'] ?? 0),
+                (int) ($readiness['required'] ?? 0),
+            ),
+        ]);
+    }
+
+    private function demotePublishedTranslations(string $websiteKey, string $locale): void
+    {
+        $attributes = [
+            'translation_status' => TranslationStatus::Ready->value,
+            'translation_published_at' => null,
+        ];
+
+        ContentTranslation::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', $websiteKey)
+            ->where('locale', $locale)
+            ->where('translation_status', TranslationStatus::Published->value)
+            ->update($attributes);
+        CmsPageTranslation::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', $websiteKey)
+            ->where('locale', $locale)
+            ->where('translation_status', TranslationStatus::Published->value)
+            ->update($attributes);
+        LandingPageData::query()
+            ->withoutGlobalScopes()
+            ->where('locale', $locale)
+            ->where('translation_status', TranslationStatus::Published->value)
+            ->whereHas('landingPage', fn ($query) => $query->where('website_key', $websiteKey))
+            ->update($attributes);
+        LandingPageBlockData::query()
+            ->withoutGlobalScopes()
+            ->where('locale', $locale)
+            ->where('translation_status', TranslationStatus::Published->value)
+            ->whereHas('landingPageBlock.landingPage', fn ($query) => $query->where('website_key', $websiteKey))
+            ->update($attributes);
+        ThemeTranslation::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', $websiteKey)
+            ->where('locale', $locale)
+            ->where('translation_status', TranslationStatus::Published->value)
+            ->update($attributes);
+        LocalizedRoute::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', $websiteKey)
+            ->where('locale', $locale)
+            ->update([
+                'is_published' => false,
+                'published_at' => null,
+            ]);
     }
 }

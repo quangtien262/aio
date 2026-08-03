@@ -16,7 +16,7 @@
 <section id="{{ $anchor }}" class="bb14-projects xd-landing-block" style="--bb14-project-bg: url('{{ $bgImage }}')" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     {!! $editButton !!}
     <div class="bb14-projects__head">
-        <h2>{{ $data['title'] ?? 'Du an moi nhat' }}</h2>
+        <h2>{{ $data['title'] ?? 'Dự án mới nhất' }}</h2>
         <div class="bb14-project-tabs">
             @foreach ($tabs as $tab)
                 <span class="{{ $loop->first ? 'is-active' : '' }}">{{ $tab['label'] ?? $tab['title'] ?? '' }}</span>
@@ -38,4 +38,3 @@
         @endforeach
     </div>
 </section>
-

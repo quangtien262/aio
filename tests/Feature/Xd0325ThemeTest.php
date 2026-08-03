@@ -7,6 +7,7 @@ use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogProduct;
 use App\Models\CmsPost;
 use App\Models\LandingPage;
+use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -55,5 +56,36 @@ class Xd0325ThemeTest extends TestCase
         $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))->assertOk();
         $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))->assertOk();
         $this->get(route('site.contact', ['locale' => 'vi']))->assertOk()->assertSee('Liên hệ Bean Construction');
+    }
+
+    public function test_xd0325_renders_accented_vietnamese_scroll_reveal_and_database_logo_in_footer(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('XD0325', 'construction-materials');
+
+        $profile = SiteProfile::query()->where('website_key', 'website-main')->firstOrFail();
+        $profile->forceFill([
+            'branding' => array_merge((array) $profile->branding, [
+                'company_name' => 'Bean Construction Việt Nam',
+                'logo_url' => '/storage/branding/xd0325-custom-logo.svg',
+            ]),
+        ])->save();
+
+        $response = $this->get(route('site.home', ['locale' => 'vi']));
+
+        $response->assertOk()
+            ->assertSee('Kiến Tạo Tương Lai', false)
+            ->assertSee('Chúng tôi là ai?', false)
+            ->assertSee('Đối Tác Lâu Năm Của Chúng Tôi', false)
+            ->assertSee('data-x325-reveal', false)
+            ->assertSee('IntersectionObserver', false)
+            ->assertSee('src="/storage/branding/xd0325-custom-logo.svg"', false)
+            ->assertDontSee('Kien Tao Tuong Lai', false)
+            ->assertDontSee('Chung toi la ai?', false);
+
+        $this->assertSame(
+            2,
+            substr_count($response->getContent(), 'src="/storage/branding/xd0325-custom-logo.svg"'),
+            'Logo từ database phải xuất hiện ở cả header và footer XD0325.',
+        );
     }
 }

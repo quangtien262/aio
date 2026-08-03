@@ -2,15 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Core\Cms\CmsMenuLocalization;
+use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Models\CmsMenu;
 use App\Models\CmsService;
 use App\Models\CmsTestimonial;
+use App\Models\ContentTranslation;
 use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
 use App\Models\LandingPageData;
-use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -110,16 +113,37 @@ class LandingPageBuilderSourceTest extends TestCase
 
     public function test_xd0302_featured_service_list_can_use_menu_items_as_its_source(): void
     {
-        CmsMenu::query()->create([
+        app(WebsiteLocaleManager::class)->updateLocale(
+            'landing-source-test',
+            'en',
+            ['is_published' => true],
+        );
+        $menu = CmsMenu::query()->create([
+            'website_key' => 'landing-source-test',
             'name' => 'Landing menu',
             'location' => 'landing-source-test',
             'items' => [[
-                'label' => 'Installation service',
+                'label' => 'Dịch vụ lắp đặt',
                 'url' => '/vi/ser/lap-dat',
                 'children' => [
-                    ['label' => 'Site survey'],
+                    ['label' => 'Khảo sát công trình'],
                 ],
             ]],
+        ]);
+        $translatedItems = $menu->items;
+        $translatedItems[0]['label'] = 'Installation service';
+        $translatedItems[0]['children'][0]['label'] = 'Site survey';
+        ContentTranslation::query()->create([
+            'website_key' => 'landing-source-test',
+            'resource_type' => 'cms_menu',
+            'resource_id' => (string) $menu->id,
+            'locale' => 'en',
+            'payload' => app(CmsMenuLocalization::class)->storagePayload(
+                $menu->items,
+                ['items' => $translatedItems],
+            ),
+            'translation_status' => 'published',
+            'translation_published_at' => now(),
         ]);
 
         $builder = app(LandingPageBuilder::class);
@@ -134,12 +158,14 @@ class LandingPageBuilderSourceTest extends TestCase
             ],
         ]);
 
-        $landingBlocks = $builder->viewData($page->fresh(['data', 'blocks.data']), 'vi')['landingBlocks'];
+        $landingBlocks = $builder->viewData($page->fresh(['data', 'blocks.data']), 'en')['landingBlocks'];
         $items = collect($landingBlocks)->firstWhere('block_type', 'featured_service_list')['dynamic_items'];
 
         $this->assertSame('Installation service', $items[0]['title']);
         $this->assertSame('Site survey', $items[0]['summary']);
-        $this->assertSame('/vi/ser/lap-dat', $items[0]['url']);
+        // There is no published EN service canonical route in this fixture.
+        // Keep the visitor in EN instead of creating an EN URL with a VI slug.
+        $this->assertSame('/en', $items[0]['url']);
     }
 
     public function test_xd0302_completed_projects_list_defaults_to_services(): void
@@ -279,7 +305,10 @@ class LandingPageBuilderSourceTest extends TestCase
         $this->assertSame('xd0306-digital-agency', $provider->defaultPreset());
         $provider->generate($provider->defaultPreset());
 
-        $this->get('/vi')->assertOk()->assertSee('Dịch vụ vận tải hàng không đường biển');
+        $this->get('/vi')
+            ->assertOk()
+            ->assertSee('Biến ý tưởng thành thương hiệu có sức ảnh hưởng')
+            ->assertSee('Chiến lược thương hiệu');
     }
 
     public function test_xd0308_study_abroad_homepage_and_demo_preset_render(): void
@@ -368,6 +397,12 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->assertTrue($page->blocks()->where('block_type', 'process_steps')->exists());
         $this->assertTrue($page->blocks()->where('block_type', 'team_members')->exists());
+        $processBlock = $page->blocks()->where('block_type', 'process_steps')->firstOrFail();
+        $this->assertDatabaseHas('landing_page_block_data', [
+            'landing_page_block_id' => $processBlock->id,
+            'locale' => 'vi',
+            'title' => 'Quy trình làm việc',
+        ]);
 
         $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0312');
         $this->assertSame('xd0312-logistics-bizgrow', $provider->defaultPreset());
@@ -375,7 +410,134 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->assertSame(4, $result['counts']['services']);
         $this->assertSame(3, $result['counts']['team_members']);
-        $this->get('/vi')->assertOk();
+        $this->get('/vi')
+            ->assertOk()
+            ->assertSee('Logistics thông minh cho chuỗi cung ứng hiện đại')
+            ->assertSee('Quy trình làm việc')
+            ->assertSee('Kho bãi và lưu trữ');
+    }
+
+    public function test_xd0313_visa_homepage_uses_accented_content_and_safe_about_layout(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0313-visa-test', 'XD0313');
+        $aboutBlock = $page->blocks()->where('block_type', 'about_experience')->firstOrFail();
+
+        $this->assertDatabaseHas('landing_page_block_data', [
+            'landing_page_block_id' => $aboutBlock->id,
+            'locale' => 'vi',
+            'title' => 'Nơi niềm đam mê chạm đến những điểm đến trong mơ',
+        ]);
+
+        $html = view('theme-xd0313::home', [
+            ...$builder->viewData($page->load(['data', 'blocks.data']), 'vi'),
+            'themeShellData' => [],
+            'siteProfile' => [],
+            'themeHomeData' => [],
+            'menus' => [],
+        ])->render();
+
+        $this->assertStringContainsString('Visa dễ dàng, giấc mơ thành hiện thực', $html);
+        $this->assertStringContainsString('Nơi niềm đam mê chạm đến những điểm đến trong mơ', $html);
+        $this->assertStringContainsString('rx13-motion-ready', $html);
+        $this->assertStringNotContainsString('Noi Niem Dam Me Nhung Diem Den Trong Mo', $html);
+    }
+
+    public function test_xd0318_logistics_homepage_uses_accented_content_and_scroll_motion(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0318-logistics-test', 'XD0318');
+
+        $this->assertDatabaseHas('landing_page_block_data', [
+            'landing_page_block_id' => $page->blocks()->where('block_type', 'hero_slider')->firstOrFail()->id,
+            'locale' => 'vi',
+            'title' => 'Vận chuyển mọi lúc mọi nơi',
+        ]);
+
+        $html = view('theme-xd0318::home', [
+            ...$builder->viewData($page->load(['data', 'blocks.data']), 'vi'),
+            'themeShellData' => [],
+            'siteProfile' => [],
+            'themeHomeData' => [],
+            'menus' => [],
+        ])->render();
+
+        $this->assertStringContainsString('Giải pháp logistics toàn cầu tốt nhất', $html);
+        $this->assertStringContainsString('Dịch vụ của chúng tôi', $html);
+        $this->assertStringContainsString('fg18-motion-ready', $html);
+        $this->assertStringNotContainsString('Giai phap logistics toan cau tot nhat', $html);
+    }
+
+    public function test_xd0320_industrial_homepage_uses_custom_content_complete_layout_and_scroll_motion(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0320-industrial-test', 'XD0320');
+
+        $this->assertCount(7, $page->blocks);
+        $this->assertSame('custom', $page->blocks->firstWhere('block_type', 'featured_categories')->settings['source']);
+        $this->assertSame('custom', $page->blocks->firstWhere('block_type', 'content_mosaic')->settings['source']);
+        $this->assertSame('custom', $page->blocks->firstWhere('block_type', 'team_members')->settings['source']);
+
+        $html = view('theme-xd0320::home', [
+            ...$builder->viewData($page->load(['data', 'blocks.data']), 'vi'),
+            'themeShellData' => [],
+            'siteProfile' => [],
+            'themeHomeData' => [],
+            'menus' => [],
+        ])->render();
+
+        $this->assertStringContainsString('Giải pháp công nghiệp cho vận hành bền vững', $html);
+        $this->assertStringContainsString('Nhà máy sản xuất tự động', $html);
+        $this->assertStringContainsString('Hài lòng 100%', $html);
+        $this->assertStringContainsString('foot-header__masthead', $html);
+        $this->assertStringContainsString('xd20-motion-ready', $html);
+        $this->assertStringNotContainsString('Giai phap cong nghiep', $html);
+    }
+
+    public function test_xd0322_construction_homepage_uses_accented_custom_content_and_scroll_motion(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0322-construction-test', 'XD0322');
+
+        $this->assertCount(11, $page->blocks);
+        $this->assertSame('custom', $page->blocks->firstWhere('block_type', 'content_mosaic')->settings['source']);
+        $this->assertSame('custom', $page->blocks->firstWhere('block_type', 'project_gallery')->settings['source']);
+        $this->assertSame('custom', $page->blocks->firstWhere('block_type', 'team_members')->settings['source']);
+
+        $html = view('theme-xd0322::home', [
+            ...$builder->viewData($page->load(['data', 'blocks.data']), 'vi'),
+            'themeShellData' => [],
+            'siteProfile' => [],
+            'themeHomeData' => [],
+            'menus' => [],
+        ])->render();
+
+        $this->assertStringContainsString('Cung cấp giải pháp xây dựng tốt nhất', $html);
+        $this->assertStringContainsString('Chúng tôi dẫn đầu trong lĩnh vực xây dựng', $html);
+        $this->assertStringContainsString('Biệt thự hiện đại ven đô', $html);
+        $this->assertStringContainsString('c322-motion-ready', $html);
+        $this->assertStringContainsString('width:100px', $html);
+        $this->assertStringNotContainsString('Cung cap giai phap xay dung tot nhat', $html);
+    }
+
+    public function test_xd0323_uses_vietnamese_typography_and_scroll_motion(): void
+    {
+        $builder = app(LandingPageBuilder::class);
+        $page = $builder->seedHome('xd0323-typography-test', 'XD0323');
+
+        $html = view('theme-xd0323::home', [
+            ...$builder->viewData($page->load(['data', 'blocks.data']), 'vi'),
+            'themeShellData' => [],
+            'siteProfile' => [],
+            'themeHomeData' => [],
+            'menus' => [],
+        ])->render();
+
+        $this->assertStringContainsString('Thực phẩm hữu cơ tươi chất lượng cao', $html);
+        $this->assertStringContainsString('Be Vietnam Pro', $html);
+        $this->assertStringContainsString('Lora', $html);
+        $this->assertStringContainsString('xd323-motion-ready', $html);
+        $this->assertStringContainsString('IntersectionObserver', $html);
     }
 
     public function test_xd0311_accounting_homepage_and_demo_preset_render(): void
@@ -385,12 +547,22 @@ class LandingPageBuilderSourceTest extends TestCase
 
         $this->assertTrue($page->blocks()->where('block_type', 'business_service_grid')->exists());
         $this->assertTrue($page->blocks()->where('block_type', 'process_steps')->exists());
+        $processBlock = $page->blocks()->where('block_type', 'process_steps')->firstOrFail();
+        $this->assertDatabaseHas('landing_page_block_data', [
+            'landing_page_block_id' => $processBlock->id,
+            'locale' => 'vi',
+            'title' => 'Cách chúng tôi hoạt động',
+        ]);
 
         $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0311');
         $this->assertSame('xd0311-accounting-advisory', $provider->defaultPreset());
         $provider->generate($provider->defaultPreset());
 
-        $this->get('/vi')->assertOk()->assertSee('Đăng nhập');
+        $this->get('/vi')
+            ->assertOk()
+            ->assertSee('Đăng nhập')
+            ->assertSee('Kế toán và thuế vững vàng cho doanh nghiệp')
+            ->assertSee('Cách chúng tôi hoạt động');
     }
 
     public function test_th0050_wellness_homepage_and_demo_preset_render(): void

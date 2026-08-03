@@ -7,7 +7,7 @@
     {!! $editButton !!}
     <div class="bb14-container">
         <div class="bb14-section-title">
-            <h2>{{ $data['title'] ?? 'Tai sao chon chung toi' }}</h2>
+            <h2>{{ $data['title'] ?? 'Tại sao chọn chúng tôi' }}</h2>
             @if (filled($data['description'] ?? null))
                 <p>{{ $data['description'] }}</p>
             @endif
@@ -25,4 +25,3 @@
         </div>
     </div>
 </section>
-

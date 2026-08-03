@@ -2,6 +2,7 @@
 
 namespace App\Support\Localization;
 
+use App\Core\Cms\CmsMenuLocalization;
 use App\Enums\TranslationStatus;
 use App\Models\ContentTranslation;
 use App\Support\SiteContext;
@@ -11,6 +12,7 @@ class AdminLocalizedContentList
     public function __construct(
         private readonly LocaleContext $localeContext,
         private readonly SiteContext $siteContext,
+        private readonly CmsMenuLocalization $menuLocalization,
     ) {}
 
     /**
@@ -35,13 +37,27 @@ class AdminLocalizedContentList
 
         if ($locale === $sourceLocale || $items === []) {
             return array_map(
-                fn (array $item): array => $this->withLocaleMetadata(
-                    $item,
+                function (array $item) use (
                     $locale,
                     $sourceLocale,
-                    $this->sourceStatus($item),
-                    true,
-                ),
+                    $resourceType,
+                ): array {
+                    $localized = $this->withLocaleMetadata(
+                        $item,
+                        $locale,
+                        $sourceLocale,
+                        $this->sourceStatus($item),
+                        true,
+                    );
+
+                    if ($resourceType === 'cms_menu') {
+                        $localized['_translation_progress'] = $this->sourceMenuProgress(
+                            is_array($item['items'] ?? null) ? $item['items'] : [],
+                        );
+                    }
+
+                    return $localized;
+                },
                 $items,
             );
         }
@@ -66,32 +82,59 @@ class AdminLocalizedContentList
             $locale,
             $sourceLocale,
             $translations,
+            $resourceType,
         ): array {
             /** @var ContentTranslation|null $translation */
             $translation = $translations->get((string) ($item['id'] ?? ''));
 
             if ($translation === null) {
-                return $this->withLocaleMetadata(
+                $localized = $this->withLocaleMetadata(
                     $item,
                     $locale,
                     $sourceLocale,
                     TranslationStatus::Missing->value,
                     false,
                 );
+
+                if ($resourceType === 'cms_menu') {
+                    $localized['_translation_progress'] = $this->menuLocalization->progress(
+                        is_array($item['items'] ?? null) ? $item['items'] : [],
+                        [],
+                    );
+                }
+
+                return $localized;
             }
 
             $status = $translation->translation_status instanceof TranslationStatus
                 ? $translation->translation_status->value
                 : (string) $translation->translation_status;
-            $localized = array_replace($item, (array) ($translation->payload ?? []));
+            $payload = (array) ($translation->payload ?? []);
+            $localized = $resourceType === 'cms_menu'
+                ? array_replace($item, [
+                    'items' => $this->menuLocalization->localizedItems(
+                        is_array($item['items'] ?? null) ? $item['items'] : [],
+                        $payload,
+                    ),
+                ])
+                : array_replace($item, $payload);
 
-            return $this->withLocaleMetadata(
+            $localized = $this->withLocaleMetadata(
                 $localized,
                 $locale,
                 $sourceLocale,
                 $status,
                 false,
             );
+
+            if ($resourceType === 'cms_menu') {
+                $localized['_translation_progress'] = $this->menuLocalization->progress(
+                    is_array($item['items'] ?? null) ? $item['items'] : [],
+                    $payload,
+                );
+            }
+
+            return $localized;
         }, $items);
     }
 
@@ -137,5 +180,24 @@ class AdminLocalizedContentList
         }
 
         return TranslationStatus::Published->value;
+    }
+
+    /**
+     * @param  array<int, mixed>  $items
+     * @return array{translated: int, total: int, percentage: int, complete: bool}
+     */
+    private function sourceMenuProgress(array $items): array
+    {
+        $total = $this->menuLocalization->progress(
+            $items,
+            ['items' => $items],
+        )['total'];
+
+        return [
+            'translated' => $total,
+            'total' => $total,
+            'percentage' => 100,
+            'complete' => true,
+        ];
     }
 }

@@ -17,8 +17,8 @@
                         <p>{{ $slide['summary'] ?? $data['description'] }}</p>
                     @endif
                     <div class="fg18-hero__actions">
-                        <a class="fg18-button fg18-button--ghost" href="{{ $slide['quote_url'] ?? '#lien-he' }}">Nhan bao gia</a>
-                        <a class="fg18-button" href="{{ $slide['link_url'] ?? '#gioi-thieu' }}">{{ $slide['button_label'] ?? $data['button_label'] ?? 'Xem them' }}</a>
+                        <a class="fg18-button fg18-button--ghost" href="{{ $slide['quote_url'] ?? '#lien-he' }}">Nhận báo giá</a>
+                        <a class="fg18-button" href="{{ $slide['link_url'] ?? '#gioi-thieu' }}">{{ $slide['button_label'] ?? $data['button_label'] ?? 'Xem thêm' }}</a>
                     </div>
                 </div>
             </article>

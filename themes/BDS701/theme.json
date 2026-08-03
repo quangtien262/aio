@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Theme bất động sản hiện đại với tìm kiếm nâng cao, tin bán/cho thuê, loại hình dự án, tin thị trường và landing page builder.",
   "website_type": "real_estate",
+  "requires_modules": ["real-estate"],
   "parent": null,
   "preview": {
     "thumbnail": "701.png",

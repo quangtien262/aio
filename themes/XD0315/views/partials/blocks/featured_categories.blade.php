@@ -6,7 +6,7 @@
     {!! $editButton !!}
     <div class="af15-container">
         <div class="af15-section-title">
-            <h2>{{ $data['title'] ?? 'Danh muc dich vu' }}</h2>
+            <h2>{{ $data['title'] ?? 'Danh mục dịch vụ' }}</h2>
             @if (filled($data['description'] ?? null))
                 <p>{{ $data['description'] }}</p>
             @endif
@@ -28,5 +28,4 @@
         </div>
     </div>
 </section>
-
 

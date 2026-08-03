@@ -11,8 +11,8 @@
     {!! $editButton !!}
     <div class="rx13-container">
         <header class="rx13-center">
-            <p class="rx13-kicker">{{ $data['subtitle'] ?? 'Dich vu cua chung toi' }}</p>
-            <h2 class="rx13-title">{{ $data['title'] ?? 'Giai phap thuc te, nhanh chong thuc su' }}</h2>
+            <p class="rx13-kicker">{{ $data['subtitle'] ?? 'Dịch vụ của chúng tôi' }}</p>
+            <h2 class="rx13-title">{{ $data['title'] ?? 'Giải pháp thực tế, nhanh chóng và minh bạch' }}</h2>
         </header>
         <div class="rx13-services__grid">
             @foreach ($items as $item)
@@ -29,16 +29,16 @@
                     @if (filled($summary))
                         <p>{{ \Illuminate\Support\Str::limit(strip_tags($summary), 135) }}</p>
                     @endif
-                    <a class="rx13-more" href="{{ $item['url'] ?? $item['href'] ?? '#dich-vu' }}">+ Xem them</a>
+                    <a class="rx13-more" href="{{ $item['url'] ?? $item['href'] ?? '#dich-vu' }}">+ Xem thêm</a>
                 </article>
             @endforeach
             <aside class="rx13-quote-card" style="--rx13-bg: url('{{ $quoteBg }}')">
-                <h3>Nhan bao gia bat ky loai dich vu nao tu day.</h3>
+                <h3>Nhận báo giá cho bất kỳ dịch vụ nào ngay từ đây.</h3>
                 <form method="POST" action="{{ route('site.contact.submit') }}">
                     @csrf
                     <input type="hidden" name="source" value="XD0313-service-quote">
-                    <input type="email" name="email" placeholder="Dia chi email....." required>
-                    <button class="rx13-button" type="submit">Nhan bao gia</button>
+                    <input type="email" name="email" placeholder="Địa chỉ email" required>
+                    <button class="rx13-button" type="submit">Nhận báo giá</button>
                 </form>
             </aside>
         </div>

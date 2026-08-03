@@ -13,7 +13,7 @@
             @endif
         </div>
         <div class="af15-about__copy">
-            <h2>{{ $data['title'] ?? 'Chung toi tao ra su khac biet' }}</h2>
+            <h2>{{ $data['title'] ?? 'Chúng tôi tạo ra sự khác biệt' }}</h2>
             @if (filled($data['subtitle'] ?? null))
                 <em>{{ $data['subtitle'] }}</em>
             @endif

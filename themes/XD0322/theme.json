@@ -5,7 +5,7 @@
   "description": "Construction and interior design theme with projects, services, products, pricing, testimonials and news.",
   "website_type": "service",
   "parent": null,
-  "preview": { "thumbnail": "preview-xd0322.png", "cover": "cover-xd0322.png" },
+  "preview": { "thumbnail": "xd0322.png", "cover": "xd0322.png" },
   "blocks": ["hero-slider", "featured-categories", "about-experience", "content-mosaic", "featured-products", "team-members", "project-gallery", "process-steps", "testimonials", "bizmax-latest-posts", "partner-logos"],
   "supports": { "dark_mode": false, "multi_homepage": false, "custom_css": true, "block_mapping": true },
   "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },

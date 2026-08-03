@@ -2,7 +2,7 @@
     :root { color-scheme: light; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin: 0; background: #fff; color: #142233; font-family: Arial, Helvetica, sans-serif; }
+    body { margin: 0; background: #fff; color: #142233; font-family: "Segoe UI", "Noto Sans", Arial, sans-serif; }
     a { color: inherit; text-decoration: none; }
     button, input, textarea, select { font: inherit; }
 
@@ -27,15 +27,20 @@
     .fg18-nav { display: flex; align-items: center; gap: clamp(24px, 3vw, 46px); color: #00152d; font-size: 18px; font-weight: 650; white-space: nowrap; }
     .fg18-nav a { display: inline-flex; align-items: center; gap: 6px; }
     .fg18-nav a:hover { color: var(--fg18-orange); }
-    .fg18-actions { display: flex; align-items: center; gap: 12px; }
+    .fg18-actions { display: flex; align-items: center; gap: 12px; padding-right: 92px; }
     .fg18-actions button, .fg18-actions > a:not(.fg18-search) { border: 1px solid var(--fg18-line); background: #fff; color: #102232; padding: 9px 12px; font-size: 13px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
     .fg18-actions button:hover, .fg18-actions > a:not(.fg18-search):hover { border-color: var(--fg18-orange); color: var(--fg18-orange); }
     .fg18-search { position: relative; width: 30px; height: 30px; display: inline-block; }
     .fg18-search::before { position: absolute; left: 4px; top: 4px; width: 14px; height: 14px; border: 2px solid #00152d; border-radius: 50%; content: ""; }
     .fg18-search::after { position: absolute; left: 19px; top: 19px; width: 10px; height: 2px; background: #00152d; content: ""; transform: rotate(45deg); transform-origin: left center; }
-    .fg18-flag { display: grid; width: 30px; height: 20px; place-items: center; background: #e60012; color: #fff; font-size: 10px; font-weight: 900; }
+    .fg18-flag { display: none; width: 30px; height: 20px; place-items: center; background: #e60012; color: #fff; font-size: 10px; font-weight: 900; }
     .fg18-flag--en { background: #305493; }
     .fg18-menu { display: none; }
+    .sf-language-switcher {
+        position: absolute !important;
+        top: 31px !important;
+        right: 24px !important;
+    }
 
     .fg18-hero { position: relative; background: #111; }
     .fg18-hero__viewport { position: relative; min-height: 570px; overflow: hidden; }
@@ -122,6 +127,20 @@
     .fg18-socials { display: flex; gap: 14px; margin-top: 28px; }
     .fg18-socials a { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; font-weight: 900; }
 
+    .fg18-motion-ready .fg18-reveal {
+        opacity: 0;
+        transform: translateY(36px);
+        transition:
+            opacity .72s cubic-bezier(.22, 1, .36, 1),
+            transform .72s cubic-bezier(.22, 1, .36, 1);
+        transition-delay: var(--fg18-reveal-delay, 0ms);
+        will-change: opacity, transform;
+    }
+    .fg18-motion-ready .fg18-reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
     @media (max-width: 1180px) {
         .fg18-header__inner { min-height: 86px; }
         .fg18-nav { display: none; position: absolute; left: 24px; right: 24px; top: 86px; flex-direction: column; align-items: flex-start; padding: 22px; background: #fff; box-shadow: 0 18px 34px rgba(20,34,51,.16); }
@@ -135,7 +154,8 @@
         .fg18-container { width: min(100% - 32px, 1440px); }
         .fg18-section { padding: 58px 0; }
         .fg18-brand strong { font-size: 23px; }
-        .fg18-actions { gap: 8px; }
+        .fg18-actions { gap: 8px; padding-right: 82px; }
+        .sf-language-switcher { top: 25px !important; right: 16px !important; }
         .fg18-flag { display: none; }
         .fg18-hero__viewport { min-height: 540px; }
         .fg18-hero__content h1 { font-size: 34px; }
@@ -145,5 +165,14 @@
         .fg18-faq-images { min-height: 420px; }
         .fg18-faq-images img:first-child, .fg18-faq-images img:last-child { width: 86%; height: 240px; }
         .fg18-contact h2 { font-size: 42px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .fg18-motion-ready .fg18-reveal {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
     }
 </style>

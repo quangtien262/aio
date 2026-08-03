@@ -9,7 +9,7 @@
 <section id="{{ $anchor }}" class="af15-news af15-section xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     {!! $editButton !!}
     <div class="af15-container">
-        <h2 class="af15-center-title">{{ $data['title'] ?? 'Tin tuc su kien' }}</h2>
+        <h2 class="af15-center-title">{{ $data['title'] ?? 'Tin tức sự kiện' }}</h2>
         <div class="af15-news-grid">
             @foreach ($newsItems as $item)
                 @php
@@ -25,7 +25,7 @@
                     @if (filled($summary))
                         <p>{{ \Illuminate\Support\Str::limit(strip_tags($summary), 150) }}</p>
                     @endif
-                    <a href="{{ $item['url'] ?? $item['href'] ?? '#tin-tuc' }}">Xem them ↪</a>
+                    <a href="{{ $item['url'] ?? $item['href'] ?? '#tin-tuc' }}">Xem thêm ↪</a>
                 </article>
             @endforeach
         </div>

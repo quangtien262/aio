@@ -53,74 +53,74 @@ class Xd321DemoContentProvider implements ThemeDemoContentProvider
             $image = fn (string $id, int $width = 1200): string => "https://images.unsplash.com/{$id}?auto=format&fit=crop&w={$width}&q=85";
 
             foreach ([
-                ['Van tai duong bien', 'Lich trinh linh hoat, ket noi cang bien va toi uu chi phi cho hang FCL, LCL.', 'photo-1494412651409-8963ce7935a7'],
-                ['Van tai hang khong', 'Rut ngan thoi gian giao nhan voi dich vu hang khong quoc te va theo doi don hang.', 'photo-1436491865332-7a61a109cc05'],
-                ['Van tai duong bo', 'Dieu phoi xe tai va giao nhan noi dia theo lich hen, an toan va dung tien do.', 'photo-1566576912321-d58ddd7a6088'],
+                ['Vận tải đường biển', 'Lịch trình linh hoạt, kết nối cảng biển và tối ưu chi phí cho hàng FCL, LCL.', 'photo-1494412651409-8963ce7935a7'],
+                ['Vận tải hàng không', 'Rút ngắn thời gian giao nhận với dịch vụ hàng không quốc tế và theo dõi đơn hàng.', 'photo-1436491865332-7a61a109cc05'],
+                ['Vận tải đường bộ', 'Điều phối xe tải và giao nhận nội địa theo lịch hẹn, an toàn và đúng tiến độ.', 'photo-1566576912321-d58ddd7a6088'],
             ] as $index => [$title, $summary, $photo]) {
-                $service = CmsService::query()->create(['title' => $title, 'slug' => Str::slug('xd321-'.$title), 'status' => 'published', 'summary' => $summary, 'content' => '<p>'.$summary.'</p>', 'button_label' => 'Xem chi tiet', 'link_url' => '#lien-he', 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $index, 'publish_at' => $now]);
+                $service = CmsService::query()->create(['title' => $title, 'slug' => Str::slug('xd321-'.$title), 'status' => 'published', 'summary' => $summary, 'content' => '<p>'.$summary.'</p>', 'button_label' => 'Xem chi tiết', 'link_url' => '#lien-he', 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $index, 'publish_at' => $now]);
                 CmsServiceImage::query()->create(['cms_service_id' => $service->id, 'image_url' => $image($photo, 1000), 'alt_text' => $title, 'is_featured' => true, 'sort_order' => 0]);
                 $this->record($service);
             }
 
             foreach ([
-                ['Giai phap kho my pham cho doanh nghiep', 'He thong luu kho chuyen biet, kiem soat dieu kien bao quan, nhap xuat va ton kho theo thoi gian thuc.', 'photo-1586528116493-da8b8d5a6c44'],
-                ['4PL va dieu phoi chuoi cung ung', 'Ket noi nha cung cap, kho bai va don vi van chuyen de toi uu toan bo hanh trinh don hang.', 'photo-1586528116311-ad8dd3c8310d'],
-                ['Hang du an va giao nhan chuyen dung', 'Phuong an van chuyen linh hoat cho may moc, thiet bi va cac lo hang co yeu cau dac thu.', 'photo-1494412651409-8963ce7935a7'],
+                ['Giải pháp kho mỹ phẩm cho doanh nghiệp', 'Hệ thống lưu kho chuyên biệt, kiểm soát điều kiện bảo quản, nhập xuất và tồn kho theo thời gian thực.', 'photo-1586528116493-da8b8d5a6c44'],
+                ['4PL và điều phối chuỗi cung ứng', 'Kết nối nhà cung cấp, kho bãi và đơn vị vận chuyển để tối ưu toàn bộ hành trình đơn hàng.', 'photo-1586528116311-ad8dd3c8310d'],
+                ['Hàng dự án và giao nhận chuyên dụng', 'Phương án vận chuyển linh hoạt cho máy móc, thiết bị và các lô hàng có yêu cầu đặc thù.', 'photo-1494412651409-8963ce7935a7'],
             ] as $index => [$title, $summary, $photo]) {
-                $project = CmsProject::query()->create(['title' => $title, 'slug' => Str::slug('xd321-'.$title), 'status' => 'published', 'summary' => $summary, 'content' => '<p>'.$summary.'</p>', 'button_label' => 'Xem chi tiet', 'link_url' => '#lien-he', 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $index, 'publish_at' => $now]);
+                $project = CmsProject::query()->create(['title' => $title, 'slug' => Str::slug('xd321-'.$title), 'status' => 'published', 'summary' => $summary, 'content' => '<p>'.$summary.'</p>', 'button_label' => 'Xem chi tiết', 'link_url' => '#lien-he', 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $index, 'publish_at' => $now]);
                 CmsProjectImage::query()->create(['cms_project_id' => $project->id, 'image_url' => $image($photo, 1000), 'alt_text' => $title, 'is_featured' => true, 'sort_order' => 0]);
                 $this->record($project);
             }
 
-            $category = CatalogCategory::query()->create(['name' => 'Vat tu dong goi XD321', 'slug' => 'xd321-vat-tu-dong-goi', 'description' => 'Thung carton, seal niem phong va vat tu ho tro giao nhan.', 'image_url' => $image('photo-1601584115197-04ecc0da31d7', 700), 'sort_order' => 0, 'is_active' => true]);
+            $category = CatalogCategory::query()->create(['name' => 'Vật tư đóng gói XD321', 'slug' => 'xd321-vat-tu-dong-goi', 'description' => 'Thùng carton, seal niêm phong và vật tư hỗ trợ giao nhận.', 'image_url' => $image('photo-1601584115197-04ecc0da31d7', 700), 'sort_order' => 0, 'is_active' => true]);
             $this->record($category);
             foreach ([
-                ['Thung carton 5 lop 25x20x13cm', 13000, 'photo-1601584115197-04ecc0da31d7'],
-                ['Thung carton 5 lop 28x22x31cm', 18000, 'photo-1504274066651-8d31a536b11a'],
-                ['Thung carton dong hang 70x60x52cm', 26000, 'photo-1586864387967-d02ef85d93e8'],
-                ['Thung carton vach ngan chai 64x54x46cm', 21000, 'photo-1586864387789-628af9feed72'],
+                ['Thùng carton 5 lớp 25x20x13cm', 13000, 'photo-1601584115197-04ecc0da31d7'],
+                ['Thùng carton 5 lớp 28x22x31cm', 18000, 'photo-1504274066651-8d31a536b11a'],
+                ['Thùng carton đóng hàng 70x60x52cm', 26000, 'photo-1586864387967-d02ef85d93e8'],
+                ['Thùng carton vách ngăn chai 64x54x46cm', 21000, 'photo-1586864387789-628af9feed72'],
             ] as $index => [$name, $price, $photo]) {
-                $product = CatalogProduct::query()->create(['catalog_category_id' => $category->id, 'name' => $name, 'slug' => Str::slug('xd321-'.$name), 'sku' => 'X321-'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT), 'price' => $price, 'original_price' => $index === 2 ? 28000 : null, 'stock' => 100, 'short_description' => 'Vat tu dong goi demo cho XD321 Cargo.', 'detail_content' => '<p>San pham dong goi phu hop cho luu kho va van chuyen.</p>', 'image_url' => $image($photo, 800), 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $index, 'is_active' => true]);
+                $product = CatalogProduct::query()->create(['catalog_category_id' => $category->id, 'name' => $name, 'slug' => Str::slug('xd321-'.$name), 'sku' => 'X321-'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT), 'price' => $price, 'original_price' => $index === 2 ? 28000 : null, 'stock' => 100, 'short_description' => 'Vật tư đóng gói demo cho XD321 Cargo.', 'detail_content' => '<p>Sản phẩm đóng gói phù hợp cho lưu kho và vận chuyển.</p>', 'image_url' => $image($photo, 800), 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $index, 'is_active' => true]);
                 $this->record($product);
             }
 
             foreach ([
-                ['Nhung truong hop nen chon van chuyen hang hoa quoc te bang duong bo', 'Nhung luu y ve tuyen duong, chung tu va cach toi uu chi phi khi van chuyen xuyen bien gioi.', 'photo-1566576912321-d58ddd7a6088'],
-                ['Cac loai kho trong logistics va cach toi uu chuoi cung ung', 'Kho hang, kho phan phoi va kho bao quan can duoc to chuc theo nhu cau van hanh thuc te.', 'photo-1586528116493-da8b8d5a6c44'],
-                ['Cross docking giup doanh nghiep rut ngan thoi gian xu ly don', 'Mo hinh trung chuyen phu hop cho cac doanh nghiep can tang toc do giao nhan va giam ton kho.', 'photo-1586528116311-ad8dd3c8310d'],
-                ['Tam quan trong cua bao hiem hang hoa trong van chuyen quoc te', 'Chuan bi dung giup doanh nghiep chu dong hon truoc cac rui ro tren tung chang duong.', 'photo-1436491865332-7a61a109cc05'],
+                ['Những trường hợp nên chọn vận chuyển hàng hóa quốc tế bằng đường bộ', 'Những lưu ý về tuyến đường, chứng từ và cách tối ưu chi phí khi vận chuyển xuyên biên giới.', 'photo-1566576912321-d58ddd7a6088'],
+                ['Các loại kho trong logistics và cách tối ưu chuỗi cung ứng', 'Kho hàng, kho phân phối và kho bảo quản cần được tổ chức theo nhu cầu vận hành thực tế.', 'photo-1586528116493-da8b8d5a6c44'],
+                ['Cross docking giúp doanh nghiệp rút ngắn thời gian xử lý đơn', 'Mô hình trung chuyển phù hợp cho các doanh nghiệp cần tăng tốc độ giao nhận và giảm tồn kho.', 'photo-1586528116311-ad8dd3c8310d'],
+                ['Tầm quan trọng của bảo hiểm hàng hóa trong vận chuyển quốc tế', 'Chuẩn bị đúng giúp doanh nghiệp chủ động hơn trước các rủi ro trên từng chặng đường.', 'photo-1436491865332-7a61a109cc05'],
             ] as $index => [$title, $excerpt, $photo]) {
                 $post = CmsPost::query()->create(['title' => $title, 'slug' => Str::slug('xd321-'.$title), 'status' => 'published', 'excerpt' => $excerpt, 'body' => '<p>'.$excerpt.'</p>', 'meta_title' => $title, 'meta_description' => $excerpt, 'publish_at' => $now->copy()->subDays($index + 1), 'is_highlight' => true]);
                 $this->record($post);
             }
 
             foreach ([
-                ['ABC Manufacturing', 'Logistics Manager', 'XD321 Cargo la doi tac logistics dang tin cay trong van hanh hang ngay. Doi ngu phan hoi nhanh va luon dam bao lo hang duoc xu ly dung tien do.', 'photo-1494790108377-be9c29b29330'],
-                ['Minh Phat Trading', 'Supply Chain Director', 'Bao gia ro rang, quy trinh minh bach va kha nang dieu phoi linh hoat giup chung toi chu dong hon trong tung dot giao hang.', 'photo-1500648767791-00dcc994a43e'],
-                ['Northstar Retail', 'Operations Lead', 'He thong theo doi don hang va cham soc khach hang cua XD321 giup doi ngu van hanh tiet kiem rat nhieu thoi gian.', 'photo-1534528741775-53994a69daeb'],
+                ['ABC Manufacturing', 'Logistics Manager', 'XD321 Cargo là đối tác logistics đáng tin cậy trong vận hành hằng ngày. Đội ngũ phản hồi nhanh và luôn đảm bảo lô hàng được xử lý đúng tiến độ.', 'photo-1494790108377-be9c29b29330'],
+                ['Minh Phát Trading', 'Supply Chain Director', 'Báo giá rõ ràng, quy trình minh bạch và khả năng điều phối linh hoạt giúp chúng tôi chủ động hơn trong từng đợt giao hàng.', 'photo-1500648767791-00dcc994a43e'],
+                ['Northstar Retail', 'Operations Lead', 'Hệ thống theo dõi đơn hàng và chăm sóc khách hàng của XD321 giúp đội ngũ vận hành tiết kiệm rất nhiều thời gian.', 'photo-1534528741775-53994a69daeb'],
             ] as $index => [$name, $role, $quote, $photo]) {
                 $testimonial = CmsTestimonial::query()->create(['name' => $name, 'role' => $role, 'quote' => $quote, 'image_url' => $image($photo, 500), 'image_alt' => $name, 'status' => 'published', 'publish_at' => $now, 'is_featured' => true, 'sort_order' => $index]);
                 $this->record($testimonial);
             }
 
             foreach (['CATHAY', 'LUFTHANSA', 'CMA CGM', 'IATA', 'GLOBAL CARGO'] as $index => $title) {
-                $partner = CmsPartner::query()->create(['title' => $title, 'slug' => Str::slug('xd321-'.$title), 'description' => 'Doi tac logistics quoc te.', 'image_url' => "https://placehold.co/260x120/ffffff/153d78?text=".urlencode($title), 'image_alt' => $title, 'link_url' => '#top', 'status' => 'published', 'publish_at' => $now, 'is_featured' => true, 'sort_order' => $index]);
+                $partner = CmsPartner::query()->create(['title' => $title, 'slug' => Str::slug('xd321-'.$title), 'description' => 'Đối tác logistics quốc tế.', 'image_url' => "https://placehold.co/260x120/ffffff/153d78?text=".urlencode($title), 'image_alt' => $title, 'link_url' => '#top', 'status' => 'published', 'publish_at' => $now, 'is_featured' => true, 'sort_order' => $index]);
                 $this->record($partner);
             }
 
             foreach ([
-                ['Nhanh chong - An toan cung XD321 Cargo', 'Toi uu moi hanh trinh van chuyen tu noi dia den quoc te. An toan va tiet kiem.', 'photo-1436491865332-7a61a109cc05'],
-                ['Ket noi chuoi cung ung khong gioi han', 'Dich vu van tai linh hoat, minh bach va dung tien do cho doanh nghiep.', 'photo-1494412651409-8963ce7935a7'],
+                ['Nhanh chóng - An toàn cùng XD321 Cargo', 'Tối ưu mọi hành trình vận chuyển từ nội địa đến quốc tế. An toàn và tiết kiệm.', 'photo-1436491865332-7a61a109cc05'],
+                ['Kết nối chuỗi cung ứng không giới hạn', 'Dịch vụ vận tải linh hoạt, minh bạch và đúng tiến độ cho doanh nghiệp.', 'photo-1494412651409-8963ce7935a7'],
             ] as $index => [$title, $summary, $photo]) {
-                $banner = SiteBanner::query()->create(['theme_key' => self::THEME_KEY, 'placement' => 'xd321-hero-slider', 'title' => $title, 'subtitle' => $summary, 'image_url' => $image($photo, 1920), 'link_url' => '#dich-vu', 'badge' => 'XD321 Cargo', 'metadata' => ['summary' => $summary, 'button_label' => 'Xem them'], 'sort_order' => $index, 'is_active' => true]);
+                $banner = SiteBanner::query()->create(['theme_key' => self::THEME_KEY, 'placement' => 'xd321-hero-slider', 'title' => $title, 'subtitle' => $summary, 'image_url' => $image($photo, 1920), 'link_url' => '#dich-vu', 'badge' => 'XD321 Cargo', 'metadata' => ['summary' => $summary, 'button_label' => 'Xem thêm'], 'sort_order' => $index, 'is_active' => true]);
                 $this->record($banner);
             }
 
-            $menu = CmsMenu::query()->create(['name' => 'XD321 Cargo Main Menu', 'location' => 'primary-navigation', 'items' => [['label' => 'Trang chu', 'url' => '#top'], ['label' => 'Gioi thieu', 'url' => '#gioi-thieu'], ['label' => 'Dich vu', 'url' => '#dich-vu'], ['label' => 'Giai phap', 'url' => '#giai-phap'], ['label' => 'San pham', 'url' => '#san-pham'], ['label' => 'Tin tuc', 'url' => '#tin-tuc'], ['label' => 'Lien he', 'url' => '#lien-he']]]);
+            $menu = CmsMenu::query()->create(['name' => 'XD321 Cargo Main Menu', 'location' => 'primary-navigation', 'items' => [['label' => 'Trang chủ', 'url' => '#top'], ['label' => 'Giới thiệu', 'url' => '#gioi-thieu'], ['label' => 'Dịch vụ', 'url' => '#dich-vu'], ['label' => 'Giải pháp', 'url' => '#giai-phap'], ['label' => 'Sản phẩm', 'url' => '#san-pham'], ['label' => 'Tin tức', 'url' => '#tin-tuc'], ['label' => 'Liên hệ', 'url' => '#lien-he']]]);
             $this->record($menu);
 
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'XD321 Cargo', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'XD321 Cargo', 'company_description' => 'Doi tac logistics tin cay, ket noi hang hoa toan cau.', 'support_hotline' => '0399162342', 'support_email' => 'support@xd321cargo.local', 'support_location' => '70 Lu Gia, Phuong 15, Quan 11, TP.HCM'])])->save();
+            $profile->forceFill(['site_name' => 'XD321 Cargo', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'XD321 Cargo', 'company_description' => 'Đối tác logistics tin cậy, kết nối hàng hóa toàn cầu.', 'support_hotline' => '0399162342', 'support_email' => 'support@xd321cargo.local', 'support_location' => '70 Lữ Gia, Phường 15, Quận 11, TP.HCM'])])->save();
 
             $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);

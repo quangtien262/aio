@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Core\Modules\ModuleManager;
 use App\Core\Themes\ThemeTranslationService;
 use App\Enums\TranslationStatus;
 use App\Events\TranslationPublished;
@@ -9,9 +10,11 @@ use App\Events\WebsiteLocalesChanged;
 use App\Models\Admin;
 use App\Models\CmsPage;
 use App\Models\CmsPageTranslation;
+use App\Models\ContentTranslation;
 use App\Models\LandingPage;
 use App\Models\LandingPageData;
 use App\Models\LocalizedRoute;
+use App\Models\Site;
 use App\Models\ThemeTranslation;
 use App\Support\FrontendRouteUrl;
 use App\Support\LandingPages\LandingPageBuilder;
@@ -56,6 +59,21 @@ class LocalizationFoundationTest extends TestCase
 
     public function test_admin_locale_api_changes_only_the_selected_website(): void
     {
+        $this->enableCmsModule();
+        Site::query()->create([
+            'name' => 'Website A',
+            'website_key' => 'website-a',
+            'domain' => 'website-a.test',
+            'theme_key' => 'SHOP601',
+            'status' => 'active',
+        ]);
+        Site::query()->create([
+            'name' => 'Website B',
+            'website_key' => 'website-b',
+            'domain' => 'website-b.test',
+            'theme_key' => 'SHOP601',
+            'status' => 'active',
+        ]);
         $admin = Admin::factory()->create(['id' => Admin::SYSTEM_OWNER_ID]);
         $this->actingAs($admin, 'admin');
 
@@ -84,6 +102,11 @@ class LocalizationFoundationTest extends TestCase
 
     public function test_unpublished_locale_is_editable_but_not_routable_until_published(): void
     {
+        $this->enableCmsModule();
+        ContentTranslation::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', 'website-main')
+            ->delete();
         $manager = app(WebsiteLocaleManager::class);
         $manager->ensureSystemLocale('fr', 'French', 'Français');
         $manager->addLocale('website-main', 'fr', ['is_published' => false]);
@@ -297,14 +320,10 @@ class LocalizationFoundationTest extends TestCase
             'Account',
             $service->bladeText('SHOP601', 'en-US', 'SHOP601.header.account'),
         );
-        ThemeTranslation::query()->create([
-            'theme_key' => 'SHOP601',
-            'locale' => 'en',
-            'group' => 'static',
-            'translation_key' => 'qa.website_isolation',
+        $service->saveOverrides('SHOP601', 'en-US', [[
+            'key' => 'qa.website_isolation',
             'value' => 'Website A',
-            'translation_status' => TranslationStatus::Published,
-        ]);
+        ]]);
         ThemeTranslation::query()->create([
             'theme_key' => 'SHOP601',
             'locale' => 'en',
@@ -315,30 +334,26 @@ class LocalizationFoundationTest extends TestCase
         ]);
         $this->assertSame(
             'Website A',
-            $service->bladeText('SHOP601', 'en', 'qa.website_isolation'),
+            $service->bladeText('SHOP601', 'en-US', 'qa.website_isolation'),
         );
         $this->assertSame(
             'Published fallback',
             $service->bladeText(
                 'SHOP601',
-                'en',
+                'en-US',
                 'qa.draft_is_hidden',
                 'Published fallback',
             ),
         );
 
         $siteContext->set(null, 'website-b');
-        ThemeTranslation::query()->create([
-            'theme_key' => 'SHOP601',
-            'locale' => 'en',
-            'group' => 'static',
-            'translation_key' => 'qa.website_isolation',
+        $service->saveOverrides('SHOP601', 'en-US', [[
+            'key' => 'qa.website_isolation',
             'value' => 'Website B',
-            'translation_status' => TranslationStatus::Published,
-        ]);
+        ]]);
         $this->assertSame(
             'Website B',
-            $service->bladeText('SHOP601', 'en', 'qa.website_isolation'),
+            $service->bladeText('SHOP601', 'en-US', 'qa.website_isolation'),
         );
     }
 
@@ -355,6 +370,13 @@ class LocalizationFoundationTest extends TestCase
                 'translation_published_at',
             ]));
         }
+    }
+
+    private function enableCmsModule(): void
+    {
+        $manager = app(ModuleManager::class);
+        $manager->install('cms');
+        $manager->enable('cms');
     }
 
     public function test_release_readiness_gate_fails_for_a_public_locale_with_missing_content(): void

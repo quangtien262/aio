@@ -2,7 +2,9 @@
 
 namespace App\Support\Localization;
 
+use App\Core\Cms\CmsMenuLocalization;
 use App\Enums\TranslationStatus;
+use App\Models\CmsMenu;
 use App\Models\ContentTranslation;
 use App\Models\LocalizedRoute;
 use App\Support\FrontendRouteUrl;
@@ -23,6 +25,7 @@ class LocalizedContentRepository
         private readonly LocalizationRollout $rollout,
         private readonly TranslationWorkflowManager $workflow,
         private readonly LocalizedRouteRegistry $routeRegistry,
+        private readonly CmsMenuLocalization $menuLocalization,
     ) {}
 
     public function textByKey(
@@ -66,10 +69,15 @@ class LocalizedContentRepository
         string $locale,
         ?string $websiteKey = null,
         bool $publishedOnly = true,
+        ?string $themeKey = null,
     ): Model {
         $websiteKey = trim((string) ($websiteKey ?: $model->getAttribute('website_key') ?: 'website-main'));
 
-        if (! $this->rollout->usesNewReader($resourceType, $websiteKey)) {
+        if (! $this->rollout->usesNewReader(
+            $resourceType,
+            $websiteKey,
+            $themeKey,
+        )) {
             return clone $model;
         }
 
@@ -95,8 +103,18 @@ class LocalizedContentRepository
             return $localized;
         }
 
-        foreach ((array) $translation->payload as $field => $value) {
-            $localized->setAttribute((string) $field, $value);
+        if ($resourceType === 'cms_menu' && $model instanceof CmsMenu) {
+            $localized->setAttribute(
+                'items',
+                $this->menuLocalization->localizedItems(
+                    is_array($model->items) ? $model->items : [],
+                    (array) ($translation->payload ?? []),
+                ),
+            );
+        } else {
+            foreach ((array) $translation->payload as $field => $value) {
+                $localized->setAttribute((string) $field, $value);
+            }
         }
 
         $localized->setAttribute('resolved_locale', $translation->locale);
@@ -284,7 +302,7 @@ class LocalizedContentRepository
         string $websiteKey,
     ): Collection {
         if (! Schema::hasTable('content_translations')) {
-            return new Collection();
+            return new Collection;
         }
 
         return ContentTranslation::query()
@@ -554,6 +572,18 @@ class LocalizedContentRepository
                 throw ValidationException::withMessages([
                     $labelField => 'Nội dung chính là bắt buộc trước khi xuất bản.',
                 ]);
+            }
+
+            if ($translation->resource_type === 'cms_menu') {
+                $menu = CmsMenu::query()
+                    ->withoutGlobalScopes()
+                    ->where('website_key', $translation->website_key)
+                    ->findOrFail($translation->resource_id);
+
+                $this->menuLocalization->assertPublishable(
+                    is_array($menu->items) ? $menu->items : [],
+                    (array) ($translation->payload ?? []),
+                );
             }
 
             if (! $this->localeContext->isPublic($translation->locale, $translation->website_key)) {
@@ -875,8 +905,7 @@ class LocalizedContentRepository
         string $resourceType,
         string $slug,
         ?string $locale = null,
-    ): ?string
-    {
+    ): ?string {
         return match ($resourceType) {
             'cms_post' => FrontendRouteUrl::postPath($slug),
             'cms_service' => FrontendRouteUrl::servicePath($slug),
@@ -886,6 +915,7 @@ class LocalizedContentRepository
             'cms_category' => FrontendRouteUrl::blogCategoryPath($slug),
             'cms_service_category' => FrontendRouteUrl::serviceCategoryPath($slug),
             'cms_project_category' => FrontendRouteUrl::projectCategoryPath($slug),
+            'real_estate_listing' => FrontendRouteUrl::realEstatePath().'/'.rawurlencode($slug),
             default => null,
         };
     }
@@ -901,6 +931,7 @@ class LocalizedContentRepository
             'cms_category' => 'site.blog.category',
             'cms_service_category' => 'site.services.category',
             'cms_project_category' => 'site.projects.category',
+            'real_estate_listing' => 'site.real-estate.show',
             default => null,
         };
     }

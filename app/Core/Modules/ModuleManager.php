@@ -18,8 +18,7 @@ class ModuleManager
         private readonly ModuleRegistry $moduleRegistry,
         private readonly ModuleLifecycleRunner $lifecycleRunner,
         private readonly ModuleLifecycleHooks $lifecycleHooks,
-    ) {
-    }
+    ) {}
 
     public function install(string $key): void
     {
@@ -62,7 +61,8 @@ class ModuleManager
 
             $installation->forceFill([
                 'name' => $module['name'],
-                'version' => $module['latest_version'],
+                // Enabling is a state transition, not an implicit upgrade.
+                'version' => $installation->version,
                 'status' => 'enabled',
                 'website_types' => $module['website_types'] ?? [],
                 'dependencies' => $module['dependencies'] ?? [],

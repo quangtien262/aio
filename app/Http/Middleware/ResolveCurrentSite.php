@@ -11,33 +11,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ResolveCurrentSite
 {
-    public function __construct(private readonly SiteContext $siteContext)
-    {
-    }
+    public function __construct(private readonly SiteContext $siteContext) {}
 
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->is('admin/*') && Schema::hasTable('sites')) {
-            $websiteKey = trim((string) $request->header('X-Website-Key', ''));
-
-            if ($websiteKey !== '') {
-                $admin = $request->user('admin');
-
-                if ($admin && ! $admin->canAccessWebsite($websiteKey)) {
-                    abort(403, 'Bạn không được phân quyền quản lý website này.');
-                }
-
-                $site = Site::query()
-                    ->where('status', 'active')
-                    ->where('website_key', $websiteKey)
-                    ->first();
-
-                $this->siteContext->set($site, $site?->website_key ?? $websiteKey);
-
-                return $next($request);
-            }
-        }
-
         $host = $this->normalizeHost($request->getHost());
         $site = null;
 

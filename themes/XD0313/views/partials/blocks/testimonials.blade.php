@@ -12,15 +12,15 @@
     {!! $editButton !!}
     <div class="rx13-container rx13-testimonials__grid">
         <div class="rx13-testimonials__image">
-            <img src="{{ $image }}" alt="Khach hang RouteX">
+            <img src="{{ $image }}" alt="Khách hàng RouteX">
         </div>
         <article class="rx13-quote">
             <p>{{ $item['quote'] ?? $item['summary'] ?? $data['description'] ?? '' }}</p>
             <div class="rx13-person">
-                <img src="{{ $avatar }}" alt="{{ $item['name'] ?? 'Khach hang' }}">
+                <img src="{{ $avatar }}" alt="{{ $item['name'] ?? 'Khách hàng' }}">
                 <div>
-                    <strong>{{ $item['name'] ?? 'Tran Minh Hoang' }}</strong>
-                    <span>{{ $item['role'] ?? $item['company'] ?? 'CEO cong ty ABC' }}</span>
+                    <strong>{{ $item['name'] ?? 'Trần Minh Hoàng' }}</strong>
+                    <span>{{ $item['role'] ?? $item['company'] ?? 'Giám đốc công ty ABC' }}</span>
                 </div>
             </div>
         </article>

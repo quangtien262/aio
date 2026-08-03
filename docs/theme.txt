@@ -21,11 +21,37 @@ https://ega-furniture.mysapo.net/	  --- EC917
 https://wolf-arch.mysapo.net/
 https://zomart.mysapo.net/  		 --- EC918	
 
+
+https://sudes-logistics.mysapo.net/
+https://lofi-furniture.mysapo.net/
+https://cool-my-home.mysapo.net/
+https://lofi-company.mysapo.net/
+
 SER103 — Bøhu Wedding: theme dịch vụ cưới với 6 khối Landing Page Builder, dữ liệu demo và form đặt lịch.
 
 BOOK920 — Bookle: theme nhà sách trực tuyến với 9 khối Landing Page Builder, dữ liệu demo Catalog/CMS và giao diện thương mại điện tử responsive.
 
+XD0306,XD0307, X0308 đang bị giống nhau quá, và ko đúng với design. hãy xem lại các khối design và làm lại toàn bộ cho đúng nhé. 
+ngoài ra XD0307, X0308 còn đang bị lỗi font chữ. thêm hiệu ứng chuyển động khi kéo từ trên xuống
 
+xd0310 bị lỗi font chữ và css. thêm hiệu ứng chuyển động khi kéo từ trên xuống
+
+xd0311 bị lỗi font chữ và css,  tiếng việt ko dấu.  khối "Cach chung toi hoat dong" bị lỗi css nặng. thêm hiệu ứng chuyển động khi kéo từ trên xuống
+
+xd0312 bị lỗi font chữ và css, tiếng việt ko dấu. khối "Quy trinh lam viec" bị lỗi css nặng. thêm hiệu ứng chuyển động khi kéo từ trên xuống
+
+xd0313 bị lỗi tiếng việt ko dấu, khối "Niem Dam Me Nhung Diem Den Trong Mo" bị ảnh đè lên chữ. thêm hiệu ứng chuyển động khi kéo từ trên xuống
+
+xd0318  bị lỗi tiếng việt ko dấu,thêm hiệu ứng chuyển động khi kéo từ trên xuống
+
+xd0320 bị lỗi tiếng việt ko dấu, nhiều khối bị lỗi css, cần check lại toàn bộ ,thêm hiệu ứng chuyển động khi kéo từ trên xuống
+
+xd0322 bị lỗi tiếng việt ko dấu, logo đang bị to quá, hãy sửa để width=100px. cần check lại toàn bộ ,thêm hiệu ứng chuyển động khi kéo từ trên xuống
+
+xd0323 hãy thiết kế 1 font chữ tiếng việt đặc biết cho theme, thêm hiệu ứng chuyển động khi kéo từ trên xuống
+xd0324 sử dụng font chữ của DN302 cho xd0324
+
+xd0325 bị lỗi tiếng việt ko dấu, thêm hiệu ứng chuyển động khi kéo từ trên xuống, logo ở footer đang chưa lấy từ db
 
 
 

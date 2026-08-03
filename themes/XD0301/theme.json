@@ -2,12 +2,12 @@
   "name": "XD0301 Construction Landing",
   "key": "XD0301",
   "version": "0.1.0",
-  "description": "Theme xay dung ket hop landingpage va website truyen thong, tap trung vao hero slider, gioi thieu nang luc, dich vu, du an, nhan su, danh gia, doi tac va footer.",
+  "description": "Theme xây dựng kết hợp landing page và website truyền thống, tập trung vào hero slider, giới thiệu năng lực, dịch vụ, dự án, nhân sự, đánh giá, đối tác và footer.",
   "website_type": "service",
   "parent": null,
   "preview": {
-    "thumbnail": "hero-slider.png",
-    "cover": "preview-xd0301.png"
+    "thumbnail": "xd0301.png",
+    "cover": "xd0301.png"
   },
   "blocks": [
     "construction-header-slider",

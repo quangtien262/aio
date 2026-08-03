@@ -174,8 +174,16 @@ Checklist bắt buộc:
 - [ ] Kiểm tra cả homepage thường và homepage `?mod=admin`, vì modal chỉnh block/toolbar cũng có thể mang copy tiếng Việt bị lỗi.
 - [ ] Sau khi tạo demo data, kiểm tra cả dữ liệu trong provider, landing block đã lưu và HTML trả về; sửa file nguồn thôi là chưa đủ nếu database vẫn chứa nội dung lỗi cũ.
 - [ ] `data.vi`, nội dung mẫu trong provider và fallback Blade phải dùng tiếng Việt có dấu đầy đủ; chuỗi không dấu như `Dang ky`, `San pham`, `Tin tuc` cũng được xem là lỗi nội dung dù vẫn là UTF-8 hợp lệ.
+- [ ] Quy tắc trên áp dụng cho **mọi nguồn sinh nội dung**: `theme.json`, `lang/vi.json`, fallback trong Blade, `LandingPageBuilder::data.vi`, demo provider, menu, banner và branding. Slug, key kỹ thuật và token so khớp đã chuẩn hóa là ngoại lệ vì không hiển thị cho người dùng.
 - [ ] Audit encoding trên **toàn bộ storefront của theme** (homepage, trang sản phẩm/danh mục, tin tức, liên hệ, giỏ hàng, thanh toán, header/footer và inline editor), không chỉ kiểm tra file homepage.
 - [ ] Thêm regression test `assertDontSee` cho các marker mojibake và `assertSee` ít nhất ba chuỗi tiếng Việt đúng trên homepage của theme.
+- [ ] Chạy kiểm tra tiếng Việt có dấu trên toàn bộ theme và nguồn dữ liệu mẫu:
+
+```bash
+php artisan test tests/Feature/ThemeVietnameseDiacriticsContractTest.php
+```
+
+- [ ] Test trên phải pass trước khi bàn giao theme; không thêm whitelist cho nội dung hiển thị chỉ để test đi qua.
 - [ ] Không báo hoàn tất nếu console còn lỗi tải font, HTML còn marker mojibake hoặc font fallback làm vỡ layout ở desktop/mobile.
 
 ## 6. Landing Page Builder

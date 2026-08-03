@@ -492,8 +492,11 @@ class LandingPageLocalization
         $page->data()
             ->where('locale', '!=', $this->localeContext->sourceLocale())
             ->get()
-            ->each(fn (LandingPageData $translation) => $this->workflow
-                ->markOutdatedWhenSourceChanges($translation, $sourcePayload));
+            ->each(function (LandingPageData $translation) use ($page, $sourcePayload): void {
+                if ($this->workflow->markOutdatedWhenSourceChanges($translation, $sourcePayload)) {
+                    $this->syncRoute($page, $translation->refresh());
+                }
+            });
     }
 
     private function markOtherBlockTranslationsOutdated(

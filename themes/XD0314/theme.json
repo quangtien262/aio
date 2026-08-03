@@ -2,7 +2,7 @@
   "name": "XD0314 Build Bench",
   "key": "XD0314",
   "version": "0.1.0",
-  "description": "Theme xay dung Build Bench voi topbar, header, hero slider, danh muc dich vu ngang, gioi thieu cong ty, du an, ly do chon, dich vu carousel, doi ngu va footer.",
+  "description": "Theme xây dựng Build Bench với topbar, header, hero slider, danh mục dịch vụ ngang, giới thiệu công ty, dự án, lý do chọn, dịch vụ carousel, đội ngũ và footer.",
   "website_type": "service",
   "parent": null,
   "preview": {
@@ -34,4 +34,3 @@
     "default_preset": "xd0314-build-bench"
   }
 }
-

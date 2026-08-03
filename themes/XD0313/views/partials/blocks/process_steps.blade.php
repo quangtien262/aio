@@ -7,8 +7,8 @@
     {!! $editButton !!}
     <div class="rx13-container rx13-process__grid">
         <div>
-            <p class="rx13-eyebrow">{{ $data['subtitle'] ?? 'Quy trinh tu van' }}</p>
-            <h2 class="rx13-title">{{ $data['title'] ?? 'Cac Buoc Lam Visa Tai RouteX' }}</h2>
+            <p class="rx13-eyebrow">{{ $data['subtitle'] ?? 'Quy trình tư vấn' }}</p>
+            <h2 class="rx13-title">{{ $data['title'] ?? 'Các bước làm Visa tại RouteX' }}</h2>
             <div class="rx13-step-list">
                 @foreach ($items as $item)
                     <article class="rx13-step">
@@ -24,7 +24,7 @@
             </div>
         </div>
         <div class="rx13-process__image">
-            <img src="{{ $image }}" alt="{{ $data['title'] ?? 'Quy trinh visa' }}">
+            <img src="{{ $image }}" alt="{{ $data['title'] ?? 'Quy trình visa' }}">
         </div>
     </div>
 </section>

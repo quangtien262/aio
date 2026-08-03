@@ -1,7 +1,8 @@
 @php
     $blocks = collect($landingBlocks ?? [])->values();
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Dịch vụ vận hành'))) ?: 'Dịch vụ vận hành';
+    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Bizgrow Logistics'))) ?: 'Bizgrow Logistics';
+    $companyDescription = trim((string) ($branding['company_description'] ?? 'Giải pháp kho bãi, vận chuyển và hậu cần cho doanh nghiệp hiện đại.'));
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;

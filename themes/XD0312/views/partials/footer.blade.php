@@ -4,7 +4,10 @@
             <section>
                 <a class="xd5-brand" href="#top">
                     @if(filled($logoUrl ?? null))
-                        <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
+                        <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
+                    @else
+                        <span>{{ $companyName }}</span>
+                    @endif
                 </a>
                 <p>{{ $companyDescription ?? 'Giải pháp logistics, kho bãi và vận chuyển linh hoạt cho doanh nghiệp.' }}</p>
             </section>

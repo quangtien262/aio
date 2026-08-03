@@ -5,7 +5,7 @@
   "description": "Landingpage logistics với banner, dịch vụ, bộ sưu tập, đối tác và footer cố định.",
   "website_type": "service",
   "parent": null,
-  "preview": { "thumbnail": "preview-xd0304.svg", "cover": "cover-xd0304.svg" },
+  "preview": { "thumbnail": "xd0304.png", "cover": "xd0304.png" },
   "blocks": ["hero-slider", "service-category-slider", "solutions-split-list", "logistics-feature-panel", "collection-gallery", "partner-logos"],
   "supports": { "dark_mode": false, "multi_homepage": false, "custom_css": true, "block_mapping": false },
   "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },

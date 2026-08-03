@@ -2,20 +2,24 @@
 
 namespace Tests\Feature;
 
+use App\Core\Cms\CmsMenuLocalization;
 use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
 use App\Models\CatalogProduct;
 use App\Models\CatalogProductImage;
-use App\Models\CmsPost;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
+use App\Models\CmsPost;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
 use App\Models\CmsServiceImage;
+use App\Models\ContentTranslation;
 use App\Models\LandingPage;
 use App\Models\SiteProfile;
+use App\Support\FrontendRouteUrl;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -180,7 +184,7 @@ class Dn302ThemeTest extends TestCase
 
         $response
             ->assertSee('data-dn-product-gallery', false)
-            ->assertSee('href="'.\App\Support\FrontendRouteUrl::home('en').'"', false)
+            ->assertSee('href="'.FrontendRouteUrl::home('en').'"', false)
             ->assertSee('https://cdn.example.com/dn302-product-main.jpg', false)
             ->assertSee('https://cdn.example.com/dn302-product-angle-1.jpg', false)
             ->assertSee('https://cdn.example.com/dn302-product-angle-2.jpg', false)
@@ -352,6 +356,36 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Cùng chúng tôi hiện thực hóa không gian của bạn')
             ->assertSee('data-dn-consult-open', false)
             ->assertDontSee('href="#"><i class="fa-brands', false);
+    }
+
+    public function test_dn302_header_uses_the_published_menu_translation_for_english(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        app(WebsiteLocaleManager::class)->updateLocale(
+            'website-main',
+            'en',
+            ['is_published' => true],
+        );
+        $menu = CmsMenu::query()->where('location', 'primary')->firstOrFail();
+        $translatedItems = $menu->items;
+        $translatedItems[0]['label'] = 'English home menu';
+        ContentTranslation::query()->create([
+            'website_key' => 'website-main',
+            'resource_type' => 'cms_menu',
+            'resource_id' => (string) $menu->id,
+            'locale' => 'en',
+            'payload' => app(CmsMenuLocalization::class)->storagePayload(
+                $menu->items,
+                ['items' => $translatedItems],
+            ),
+            'translation_status' => 'published',
+            'translation_published_at' => now(),
+        ]);
+
+        $this->get(route('site.home', ['locale' => 'en']))
+            ->assertOk()
+            ->assertSee('English home menu')
+            ->assertSee('/en', false);
     }
 
     public function test_dn302_contact_page_does_not_require_a_published_cms_page(): void

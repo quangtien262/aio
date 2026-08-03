@@ -286,7 +286,7 @@ const sectionConfigMap = {
         permissionCreate: 'cms.menu.manage',
         permissionUpdate: 'cms.menu.manage',
         permissionDelete: 'cms.menu.manage',
-        permissionPublish: null,
+        permissionPublish: 'cms.menu.manage',
     },
     'cms-featured-categories': {
         title: 'Danh mục nổi bật',
@@ -341,6 +341,7 @@ const localizedContentFieldsMap = {
     'cms-partners': ['title', 'slug', 'description', 'image_alt'],
     'cms-testimonials': ['name', 'role', 'company', 'quote', 'image_alt'],
     'cms-products': ['name', 'slug', 'short_description', 'detail_content', 'meta_title', 'meta_description', 'meta_keywords', 'highlights', 'usage_terms', 'usage_location'],
+    'cms-menus': ['items'],
 };
 
 const localizedListSectionKeys = new Set([
@@ -352,6 +353,7 @@ const localizedListSectionKeys = new Set([
     'cms-team-members',
     'cms-partners',
     'cms-testimonials',
+    'cms-menus',
 ]);
 
 const emptyPage = {
@@ -583,6 +585,22 @@ const BULK_CLEAR_VALUE = '__CLEAR__';
 
 function countMenuItems(items = []) {
     return (items ?? []).reduce((total, item) => total + 1 + countMenuItems(item?.children ?? []), 0);
+}
+
+function blankMenuTranslationTree(items = []) {
+    return (items ?? []).map((item) => ({
+        ...item,
+        _source_label: item?._source_label ?? item?.label ?? '',
+        label: '',
+        children: blankMenuTranslationTree(item?.children ?? []),
+    }));
+}
+
+function hasMenuTranslationContent(items = []) {
+    return (items ?? []).some((item) => (
+        String(item?.label ?? '').trim() !== ''
+        || hasMenuTranslationContent(item?.children ?? [])
+    ));
 }
 
 function renderStatusTag(status) {
@@ -1408,7 +1426,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     const sourceValue = record?.[field];
 
                     if (Array.isArray(sourceValue)) {
-                        return [field, []];
+                        return [
+                            field,
+                            sectionKey === 'cms-menus' && field === 'items'
+                                ? (localization.translation_template?.items
+                                    ?? blankMenuTranslationTree(sourceValue))
+                                : [],
+                        ];
                     }
 
                     if (sourceValue && typeof sourceValue === 'object') {
@@ -1439,6 +1463,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     ]),
                 ),
                 _allowed_transitions: translation?.allowed_transitions ?? [],
+                _translation_progress: translation?.translation_progress
+                    ?? record?._translation_progress
+                    ?? null,
             };
         } catch (error) {
             messageApi.error(error instanceof Error ? error.message : 'Không thể tải bản dịch.');
@@ -1462,7 +1489,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
     const openEditModal = async (record) => {
         setLocalizedCreateDrafts({});
-        const localizedRecord = await loadLocalizedRecord(record);
+        const localizedRecord = await loadLocalizedRecord(
+            record,
+            record?._content_locale ?? contentLocale,
+        );
 
         if (!localizedRecord) {
             return;
@@ -1495,7 +1525,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 const sourceValue = sourceDraft?.[field];
 
                 if (Array.isArray(sourceValue)) {
-                    return [field, []];
+                    return [
+                        field,
+                        sectionKey === 'cms-menus' && field === 'items'
+                            ? blankMenuTranslationTree(sourceValue)
+                            : [],
+                    ];
                 }
 
                 if (sourceValue && typeof sourceValue === 'object') {
@@ -1516,6 +1551,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                 translationStatuses[locale] = localizedFields.some((field) => {
                     const value = draft?.[field];
+
+                    if (sectionKey === 'cms-menus' && field === 'items') {
+                        return hasMenuTranslationContent(value);
+                    }
 
                     return Array.isArray(value)
                         ? value.length > 0
@@ -1758,9 +1797,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             localizedFields.map((field) => [field, draft?.[field] ?? null]),
                         );
                         const hasLocalizedContent = Object.values(localizedPayload).some((value) => (
-                            Array.isArray(value)
-                                ? value.length > 0
-                                : String(value ?? '').trim() !== ''
+                            sectionKey === 'cms-menus' && Array.isArray(value)
+                                ? hasMenuTranslationContent(value)
+                                : (Array.isArray(value)
+                                    ? value.length > 0
+                                    : String(value ?? '').trim() !== '')
                         ));
 
                         if (!hasLocalizedContent) {
@@ -4502,6 +4543,22 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 },
                 { title: 'Location', dataIndex: 'location', key: 'location', render: (value) => <Tag>{value}</Tag> },
                 { title: 'Items', key: 'items', render: (_, record) => countMenuItems(record.items ?? []) },
+                {
+                    title: 'Trạng thái',
+                    key: 'translation_status',
+                    render: (_, record) => renderStatusTag(record._translation_status),
+                },
+                {
+                    title: 'Tiến độ dịch',
+                    key: 'translation_progress',
+                    render: (_, record) => {
+                        const progress = record._translation_progress;
+
+                        return progress
+                            ? `${progress.translated}/${progress.total}`
+                            : '-';
+                    },
+                },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
         }
@@ -4563,7 +4620,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 render: (_, record) => renderActions(record),
             },
         ];
-    }, [sectionKey, sectionPermissions.canDelete, sectionPermissions.canPublish, sectionPermissions.canUpdate]);
+    }, [contentLocale, sectionKey, sectionPermissions.canDelete, sectionPermissions.canPublish, sectionPermissions.canUpdate]);
 
     const renderModal = () => {
         if (!modalOpen) {
@@ -4794,7 +4851,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     <CmsMenuFormModal
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                        canPublish={sectionPermissions.canPublish}
+                        translationMode={contentLocale !== contentSourceLocale}
                         editingMenu={editingRecord}
+                        localeOptions={contentLocaleOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={contentSourceLocale}
                         locationOptions={data?.locations ?? []}
                         linkOptions={data?.linkOptions ?? {}}
                         callAdminApi={callAdminApi}
@@ -4802,6 +4864,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         onLocationsChanged={reload}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
+                        onLocaleChange={handleFormLocaleChange}
                     />
                 </Suspense>
             );

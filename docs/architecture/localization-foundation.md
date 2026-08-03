@@ -119,6 +119,38 @@ thẳng thành `published`.
 
 ## Runtime và cache
 
+### Hợp đồng đa ngôn ngữ của Menu
+
+- `cms_menus.items` là cây chuẩn duy nhất. Mỗi node có `item_key` ổn định; không dùng vị trí mảng làm identity.
+- Bản dịch Menu chỉ chứa `label`, lưu trong `content_translations` theo schema v2:
+  `payload.items.schema_version=2` và `payload.items.by_key.<item_key>.label`.
+- URL, target, icon, thứ tự và quan hệ cha/con không được sao chép sang bản dịch.
+- Link nội bộ lưu `resource_type + resource_id` làm identity chuẩn. Cặp
+  `link_type + link_value` được giữ cho editor và `url` được giữ làm fallback
+  tương thích; slug nguồn không phải identity.
+- Admin quản trị bản dịch tại `/admin/cms/menus`. Entity `menu` đã được gỡ khỏi drawer “Bản dịch frontend” để không có hai writer cho cùng dữ liệu.
+- `CmsMenuResolver` là public reader duy nhất cho controller, Landing Page và theme. Reader chỉ lấy bản `published`; draft/outdated không được public.
+- Bản dịch v2 đã publish luôn thắng. `theme_translations` với key theo vị trí chỉ là fallback tương thích khi chưa có v2 và `LOCALIZATION_CONTENT_LEGACY_FALLBACK=true`.
+- Rollout Menu có ba stage `legacy | canary | all` qua
+  `LOCALIZATION_MENU_ROLLOUT_STAGE`. `LocalizationRollout` quyết định theo
+  module, website và theme; website override thắng theme override để có thể
+  rollback khẩn cấp cả website. `BOOK920`, `DN302`, `BDS701` là canary.
+- Cache của `CmsMenuResolver` phải tách theo website, locale, theme, reader và
+  fallback. Khi reader là `legacy`, dữ liệu Menu cũ là nguồn chính chứ không phụ
+  thuộc cờ fallback của reader mới.
+- `CmsMenuTranslationBackfill` là writer chuyển đổi duy nhất cho dữ liệu Menu cũ. Nó chạy lặp an toàn, không ghi đè payload v2 đã biên tập, không xóa `theme_translations`, không tạo row rỗng cho locale chưa dịch và không tự publish bản sao nguyên nguồn.
+- `localization:audit --strict` kiểm tra riêng Menu: source snapshot/revision, schema v2 của locale đích, `item_key` mồ côi, resource identity lệch/thiếu, published payload thiếu nhãn, published payload trùng hoàn toàn nguồn và legacy override chưa được chuyển.
+- Link nội bộ được đổi locale lúc render. Nếu resource có canonical path public
+  của locale đích thì bắt buộc dùng path đó. Nếu locale đích chưa có bản dịch
+  public thì về homepage locale đích; không ghép locale đích với slug nguồn và
+  không redirect người dùng về fallback locale. Anchor, email, điện thoại và
+  link ngoài giữ nguyên.
+- `CmsMenuLinkIdentityBackfill` và `CmsPageRouteRepair` là các writer sửa dữ
+  liệu chạy lặp an toàn. Có thể kiểm tra/sửa bằng
+  `localization:repair-navigation`; cả hai được chạy tự động trong migration
+  `2026_07_31_000003_repair_localized_navigation_contract.php`.
+- Theme không query `CmsMenu`, `ContentTranslation` hoặc `ThemeTranslation` trực tiếp.
+
 `LocaleContext` là API lõi, nhận website hiện tại từ `SiteContext` và cung cấp:
 
 - `options()`;
@@ -187,20 +219,23 @@ và file dịch của `en`.
 9. Viết tối thiểu các test: cách ly website, draft không public, fallback,
    route trùng, stale revision và locale BCP 47 có region/script.
 
-## Trạng thái triển khai chốt ngày 2026-07-30
+## Trạng thái triển khai chốt ngày 2026-07-31
 
-- Sáu migration `2026_07_30_000001` đến `2026_07_30_000006` đã chạy trên
-  database local.
+- Sáu migration `2026_07_30_000001` đến `2026_07_30_000006` và ba migration Menu/navigation
+  `2026_07_31_000001_add_stable_item_keys_to_cms_menus.php`,
+  `2026_07_31_000002_backfill_cms_menu_translations.php`,
+  `2026_07_31_000003_repair_localized_navigation_contract.php` đã chạy trên database local.
 - CMS Pages, 17 resource generic, Landing Page và theme contract đã chuyển sang
   kiến trúc này.
 - Structural audit của `website-main` có 0 issue.
-- Release-readiness EN hiện là 81/502 mục (16,1%); 421 mục còn thiếu hoặc chưa
+- Release-readiness EN hiện là 7/112 mục (6,3%); 105 mục còn thiếu hoặc chưa
   đạt trạng thái/revision yêu cầu.
-- 33 Landing Page block EN còn dấu hiệu tiếng Việt đã được hạ từ `published`
-  về `needs_translation` mà không xóa payload.
-- 81 block EN còn lại vượt gate tự động nhưng vẫn cần human/visual QA.
-- Validation gần nhất: 314 tests, 5.705 assertions, Blade compile và Admin build
-  đều pass.
+- 7 mục EN vượt gate tự động vẫn cần human/visual QA.
+- Validation Menu Bước 5 gần nhất: 69 test liên quan, 3.333 assertions pass;
+  contract theo nhóm theme và smoke test Menu của ba canary đều pass; các stage
+  `all`, `canary`, `legacy`, override và cache isolation có regression test;
+  backfill dry-run sau migration không tạo thêm thay đổi; strict audit có
+  `issue_count=0`; Blade compile và Admin build đều pass.
 
 Kiến trúc đã sẵn sàng mở rộng, nhưng dữ liệu EN chưa sẵn sàng kinh doanh. Đọc
 `docs/architecture/localization-rollout-runbook.md` và bắt buộc chạy

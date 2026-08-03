@@ -8,7 +8,6 @@ use App\Models\CmsPageTranslation;
 use App\Models\LocalizedRoute;
 use App\Support\FrontendRouteUrl;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -96,6 +95,9 @@ class CmsPageLocalization
         $sourcePayload = $source
             ? $this->payloadFromTranslation($source)
             : $this->payloadFromPage($page);
+        $isSourceLocale = $locale === $this->localeContext->sourceLocale();
+        $previousSourceRevision = TranslationRevision::fingerprint($sourcePayload);
+        $currentSourcePayload = $isSourceLocale ? $payload : $sourcePayload;
 
         $translation = CmsPageTranslation::query()
             ->withoutGlobalScope('current_website')
@@ -108,13 +110,25 @@ class CmsPageLocalization
         $translation = $this->workflow->saveDraft(
             $translation,
             $payload,
-            TranslationRevision::fingerprint($sourcePayload),
+            TranslationRevision::fingerprint($currentSourcePayload),
             $machineTranslated,
             ['editor' => 'cms.pages'],
         );
 
-        if ($locale === $this->localeContext->sourceLocale()) {
+        if ($isSourceLocale) {
             $this->writeLegacySource($page, $translation);
+
+            if ($previousSourceRevision !== TranslationRevision::fingerprint($payload)) {
+                $page->translations()
+                    ->withoutGlobalScope('current_website')
+                    ->where('locale', '!=', $locale)
+                    ->get()
+                    ->each(function (CmsPageTranslation $localized) use ($payload): void {
+                        if ($this->workflow->markOutdatedWhenSourceChanges($localized, $payload)) {
+                            $this->syncRoutes($localized->refresh());
+                        }
+                    });
+            }
         }
 
         $this->syncRoutes($translation);
@@ -415,7 +429,13 @@ class CmsPageLocalization
         }
     }
 
-    private function syncRoutes(CmsPageTranslation $translation): void
+    /**
+     * Rebuild the canonical route contract for one Page translation.
+     *
+     * Public so operational repair jobs and additive data migrations can reuse
+     * exactly the same rules as the Admin publish workflow.
+     */
+    public function syncRoutes(CmsPageTranslation $translation): void
     {
         $status = $translation->translation_status instanceof TranslationStatus
             ? $translation->translation_status

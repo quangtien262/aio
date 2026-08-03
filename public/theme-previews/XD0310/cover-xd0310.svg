@@ -1,31 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="XD0301 construction landing cover">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="XD0310 Garden Haven cover">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#101d28"/>
-      <stop offset=".55" stop-color="#26384a"/>
-      <stop offset="1" stop-color="#bdd400"/>
+      <stop offset="0" stop-color="#102c1b"/>
+      <stop offset=".55" stop-color="#2f6b3b"/>
+      <stop offset="1" stop-color="#a8c66c"/>
     </linearGradient>
-    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="2" fill="#ffffff" opacity=".16"/>
+    <pattern id="leaves" width="90" height="90" patternUnits="userSpaceOnUse">
+      <ellipse cx="24" cy="29" rx="13" ry="25" fill="#ffffff" opacity=".09" transform="rotate(-38 24 29)"/>
+      <ellipse cx="66" cy="61" rx="11" ry="22" fill="#dfead8" opacity=".12" transform="rotate(42 66 61)"/>
     </pattern>
   </defs>
-  <rect width="1280" height="720" fill="#f7f8f4"/>
-  <rect width="1280" height="460" fill="url(#bg)"/>
-  <rect width="1280" height="460" fill="url(#dots)"/>
-  <rect x="112" y="118" width="336" height="240" fill="none" stroke="#bdd400" stroke-width="10"/>
-  <text x="156" y="204" fill="#ffffff" font-family="Arial, sans-serif" font-size="26" font-weight="700">XD0301</text>
-  <text x="156" y="276" fill="#ffffff" font-family="Arial, sans-serif" font-size="62" font-weight="800">Construction</text>
-  <text x="156" y="340" fill="#ffffff" font-family="Arial, sans-serif" font-size="62" font-weight="800">Landing</text>
-  <rect x="156" y="386" width="170" height="58" rx="4" fill="#bdd400"/>
-  <text x="196" y="423" fill="#ffffff" font-family="Arial, sans-serif" font-size="18" font-weight="800">XEM DỰ ÁN</text>
-  <rect x="740" y="92" width="360" height="300" rx="28" fill="#ffffff" opacity=".16"/>
-  <rect x="804" y="146" width="232" height="230" fill="#ffffff" opacity=".22"/>
-  <path d="M802 376 L920 216 L1038 376 Z" fill="#bdd400" opacity=".9"/>
-  <rect x="0" y="500" width="1280" height="220" fill="#ffffff"/>
-  <rect x="112" y="548" width="260" height="92" fill="#fff" stroke="#dde2dc"/>
-  <rect x="410" y="548" width="260" height="92" fill="#fff" stroke="#dde2dc"/>
-  <rect x="708" y="548" width="260" height="92" fill="#fff" stroke="#dde2dc"/>
-  <rect x="144" y="584" width="150" height="16" rx="8" fill="#26384a"/>
-  <rect x="442" y="584" width="150" height="16" rx="8" fill="#26384a"/>
-  <rect x="740" y="584" width="150" height="16" rx="8" fill="#26384a"/>
+  <rect width="1280" height="720" fill="#f6f4ea"/>
+  <rect width="1280" height="500" fill="url(#bg)"/>
+  <rect width="1280" height="500" fill="url(#leaves)"/>
+  <path d="M910 500c-38-164 13-337 238-442-90 124-49 233 132 305v137z" fill="#dfead8" opacity=".25"/>
+  <path d="M1045 500c-10-111 36-210 168-267-52 86-30 152 67 194v73z" fill="#ffffff" opacity=".12"/>
+  <rect x="104" y="118" width="4" height="280" fill="#a8c66c"/>
+  <text x="146" y="150" fill="#a8c66c" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="800" letter-spacing="5">GARDEN HAVEN</text>
+  <text x="146" y="235" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="66" font-weight="750">Kiến tạo khoảng xanh</text>
+  <text x="146" y="310" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="66" font-weight="750">đáng sống mỗi ngày</text>
+  <text x="146" y="355" fill="#dfead8" font-family="Segoe UI, Arial, sans-serif" font-size="22">Thiết kế · Thi công · Chăm sóc cảnh quan</text>
+  <rect x="146" y="388" width="220" height="58" rx="29" fill="#a8c66c"/>
+  <text x="183" y="425" fill="#173d25" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="800">NHẬN TƯ VẤN</text>
+  <g transform="translate(104 540)">
+    <rect width="244" height="124" rx="28 28 8 28" fill="#ffffff"/>
+    <rect x="270" width="244" height="124" rx="28 28 8 28" fill="#ffffff"/>
+    <rect x="540" width="244" height="124" rx="28 28 8 28" fill="#ffffff"/>
+    <rect x="810" width="244" height="124" rx="28 28 8 28" fill="#ffffff"/>
+    <g fill="#2f6b3b">
+      <circle cx="40" cy="38" r="17"/><circle cx="310" cy="38" r="17"/><circle cx="580" cy="38" r="17"/><circle cx="850" cy="38" r="17"/>
+      <rect x="72" y="27" width="126" height="14" rx="7"/><rect x="342" y="27" width="126" height="14" rx="7"/>
+      <rect x="612" y="27" width="126" height="14" rx="7"/><rect x="882" y="27" width="126" height="14" rx="7"/>
+    </g>
+    <g fill="#9ba99d">
+      <rect x="40" y="78" width="158" height="9" rx="4"/><rect x="310" y="78" width="158" height="9" rx="4"/>
+      <rect x="580" y="78" width="158" height="9" rx="4"/><rect x="850" y="78" width="158" height="9" rx="4"/>
+    </g>
+  </g>
 </svg>

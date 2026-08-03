@@ -2,7 +2,7 @@
     $blocks = collect($landingBlocks ?? [])->values();
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($themeHomeData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', [])));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Athletic Fitness Center'))) ?: 'Athletic Fitness Center';
-    $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Athletic la trung tam the duc hien dai, dong hanh cung hoi vien tren hanh trinh ren luyen suc khoe va vung chac than hinh.'))) ?: 'Athletic la trung tam the duc hien dai, dong hanh cung hoi vien tren hanh trinh ren luyen suc khoe va vung chac than hinh.';
+    $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Athletic là trung tâm thể dục hiện đại, đồng hành cùng hội viên trên hành trình rèn luyện sức khỏe và xây dựng thân hình vững chắc.'))) ?: 'Athletic là trung tâm thể dục hiện đại, đồng hành cùng hội viên trên hành trình rèn luyện sức khỏe và xây dựng thân hình vững chắc.';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
@@ -32,15 +32,15 @@
 
     if ($navItems->isEmpty()) {
         $navItems = collect([
-            ['label' => 'Trang chu', 'href' => route('site.home'), 'children' => []],
-            ['label' => 'Gioi thieu', 'href' => '#gioi-thieu', 'children' => []],
-            ['label' => 'San pham', 'href' => '#san-pham', 'children' => []],
-            ['label' => 'Dich vu', 'href' => '#dich-vu', 'children' => []],
-            ['label' => 'Diem tin', 'href' => '#tin-tuc', 'children' => []],
-            ['label' => 'Cau lac bo', 'href' => '#cau-lac-bo', 'children' => []],
-            ['label' => 'Thu vien anh', 'href' => '#hinh-anh', 'children' => []],
+            ['label' => 'Trang chủ', 'href' => route('site.home'), 'children' => []],
+            ['label' => 'Giới thiệu', 'href' => '#gioi-thieu', 'children' => []],
+            ['label' => 'Sản phẩm', 'href' => '#san-pham', 'children' => []],
+            ['label' => 'Dịch vụ', 'href' => '#dich-vu', 'children' => []],
+            ['label' => 'Điểm tin', 'href' => '#tin-tuc', 'children' => []],
+            ['label' => 'Câu lạc bộ', 'href' => '#cau-lac-bo', 'children' => []],
+            ['label' => 'Thư viện ảnh', 'href' => '#hinh-anh', 'children' => []],
             ['label' => 'Video', 'href' => '#video', 'children' => []],
-            ['label' => 'Lien he', 'href' => '#footer', 'children' => []],
+            ['label' => 'Liên hệ', 'href' => '#footer', 'children' => []],
         ]);
     }
 
@@ -88,5 +88,4 @@
 @push('scripts')
     @include('theme-xd0315::partials.scripts')
 @endpush
-
 

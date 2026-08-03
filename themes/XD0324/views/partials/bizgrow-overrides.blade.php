@@ -1,6 +1,6 @@
 <style>
 :root { --gold:#ffb51b; --ink:#121c28; --muted:#667281; }
-body { font-family:Arial,Helvetica,sans-serif; }
+body { font-family:var(--xd324-body); }
 .xd5-page { background:#fff; }
 .xd12-header { position:absolute; z-index:10; width:100%; color:#fff; }
 .xd12-utility { background:#111b28; font-size:13px; }

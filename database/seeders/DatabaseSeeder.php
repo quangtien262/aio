@@ -9,11 +9,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\SiteProfile;
 use App\Support\PermissionLabel;
-use Database\Seeders\FeaturedCategorySeeder;
-use Database\Seeders\SidePromoSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 class DatabaseSeeder extends Seeder
@@ -75,7 +72,7 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
                 'status' => 'active',
                 'is_system_owner' => true,
-                'must_change_password' => true,
+                'must_change_password' => ! $isTesting,
                 'locked_at' => null,
                 'locked_reason' => null,
             ],

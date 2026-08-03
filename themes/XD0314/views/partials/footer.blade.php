@@ -12,7 +12,7 @@
 <footer id="footer" class="bb14-footer">
     <div class="bb14-container bb14-footer__top">
         <section>
-            <h3>Gioi thieu cong ty</h3>
+            <h3>Giới thiệu công ty</h3>
             <a class="bb14-footer-brand" href="#top">
                 @if (filled($logoUrl ?? null))
                     <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
@@ -21,7 +21,7 @@
         </section>
 
         <section>
-            <h3>Thu vien hinh anh</h3>
+            <h3>Thư viện hình ảnh</h3>
             <div class="bb14-footer-gallery">
                 @foreach ($footerGallery as $item)
                     @php $image = $item['image'] ?? $item['image_url'] ?? ''; @endphp
@@ -31,22 +31,22 @@
         </section>
 
         <section>
-            <h3>Dich vu hot</h3>
+            <h3>Dịch vụ nổi bật</h3>
             <ul class="bb14-footer-list">
                 @foreach ($hotItems as $item)
-                    <li><a href="{{ $item['url'] ?? $item['href'] ?? '#dich-vu' }}">{{ \Illuminate\Support\Str::limit($item['title'] ?? $item['name'] ?? 'Dich vu', 42) }}</a></li>
+                    <li><a href="{{ $item['url'] ?? $item['href'] ?? '#dich-vu' }}">{{ \Illuminate\Support\Str::limit($item['title'] ?? $item['name'] ?? 'Dịch vụ', 42) }}</a></li>
                 @endforeach
             </ul>
         </section>
 
         <section>
-            <h3>Nhan tin khuyen mai</h3>
+            <h3>Nhận tin khuyến mãi</h3>
             <form class="bb14-newsletter" method="post" action="{{ route('site.newsletter.subscribe') }}">
                 @csrf
-                <input type="email" name="email" placeholder="Dia chi email....." required>
-                <button type="submit" aria-label="Dang ky">✈</button>
+                <input type="email" name="email" placeholder="Địa chỉ email..." required>
+                <button type="submit" aria-label="Đăng ký">✈</button>
             </form>
-            <h3 class="bb14-share-title">Chia se mang xa hoi</h3>
+            <h3 class="bb14-share-title">Chia sẻ mạng xã hội</h3>
             <div class="bb14-socials">
                 <a href="#footer">f</a><a href="#footer">z</a><a href="#footer">t</a><a href="#footer">▶</a><a href="#footer">p</a>
             </div>
@@ -54,12 +54,11 @@
     </div>
 
     <div class="bb14-container bb14-contact-cards">
-        <article><span>▰</span><strong>Dia chi</strong><p>{{ $supportAddress }}</p></article>
+        <article><span>▰</span><strong>Địa chỉ</strong><p>{{ $supportAddress }}</p></article>
         <article><span>☎</span><strong>Phone</strong><p>{{ $hotline }}</p></article>
         <article><span>▣</span><strong>Fax</strong><p>{{ $hotline }}</p></article>
         <article><span>✉</span><strong>Email</strong><p>{{ $supportEmail }}</p></article>
     </div>
 
-    <div class="bb14-copyright">© Ban quyen noi dung thuoc ve {{ $companyName }}</div>
+    <div class="bb14-copyright">© Bản quyền nội dung thuộc về {{ $companyName }}</div>
 </footer>
-

@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
-use App\Core\Themes\ThemeRegistry;
 use App\Core\Themes\ThemeDemoContentGenerator;
+use App\Core\Themes\ThemeRegistry;
+use App\Models\ModuleInstallation;
+use App\Models\Site;
 use App\Models\SiteProfile;
 use App\Models\ThemeInstallation;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use App\Support\AuditLogger;
 use App\Support\SiteContext;
 use App\Support\ThemeBrandingResolver;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ThemeActivationController
 {
@@ -20,32 +24,67 @@ class ThemeActivationController
         $validated = $request->validate([
             'create_demo_data' => ['sometimes', 'boolean'],
         ]);
-        ThemeInstallation::query()->update([
-            'is_active' => false,
-        ]);
+        [$theme, $manifest] = $this->resolveTheme($key, $themeRegistry);
+        $this->assertRequiredModulesEnabled($manifest);
+        $websiteKey = $siteContext->websiteKey();
 
-        $theme = $this->resolveTheme($key, $themeRegistry);
+        $siteProfile = DB::transaction(function () use ($manifest, $theme, $websiteKey): SiteProfile {
+            $siteProfile = SiteProfile::query()
+                ->withoutGlobalScopes()
+                ->firstOrNew(['website_key' => $websiteKey]);
+            $existingWebsiteType = trim((string) $siteProfile->website_type);
 
-        $theme->forceFill([
-            'status' => 'active',
-            'is_active' => true,
-            'installed_at' => $theme->installed_at ?? Carbon::now(),
-            'activated_at' => Carbon::now(),
-        ])->save();
+            if (
+                $siteProfile->exists
+                && $siteProfile->is_setup_completed
+                && $existingWebsiteType !== ''
+                && $existingWebsiteType !== $theme->website_type
+            ) {
+                throw ValidationException::withMessages([
+                    'theme' => "Theme {$theme->key} chỉ hỗ trợ website loại {$theme->website_type}.",
+                ]);
+            }
 
-        $siteProfile = SiteProfile::query()->firstOrNew();
-        $completedSteps = collect($siteProfile->completed_steps ?? [])
-            ->push('theme')
-            ->unique()
-            ->values()
-            ->all();
+            $theme->forceFill([
+                'name' => $manifest['name'],
+                'version' => $manifest['version'],
+                'website_type' => $manifest['website_type'],
+                'blocks' => $manifest['blocks'] ?? [],
+                'status' => 'active',
+                'installed_at' => $theme->installed_at ?? Carbon::now(),
+                'activated_at' => Carbon::now(),
+            ])->save();
 
-        $siteProfile->forceFill([
-            'site_name' => $siteProfile->site_name ?? 'AIO Website',
-            'website_type' => $siteProfile->website_type ?? $theme->website_type,
-            'active_theme_key' => $theme->key,
-            'completed_steps' => $completedSteps,
-        ])->save();
+            $completedSteps = collect($siteProfile->completed_steps ?? [])
+                ->push('theme')
+                ->unique()
+                ->values()
+                ->all();
+
+            $siteProfile->forceFill([
+                'site_name' => $siteProfile->site_name ?? 'AIO Website',
+                'website_type' => $theme->website_type,
+                'active_theme_key' => $theme->key,
+                'completed_steps' => $completedSteps,
+            ])->save();
+
+            Site::query()
+                ->where('website_key', $websiteKey)
+                ->update(['theme_key' => $theme->key]);
+
+            $activeThemeKeys = SiteProfile::query()
+                ->withoutGlobalScopes()
+                ->whereNotNull('active_theme_key')
+                ->pluck('active_theme_key')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+            ThemeInstallation::query()->whereIn('key', $activeThemeKeys)->update(['is_active' => true]);
+            ThemeInstallation::query()->whereNotIn('key', $activeThemeKeys)->update(['is_active' => false]);
+
+            return $siteProfile->fresh();
+        });
 
         $brandingResolver->ensure(
             $siteContext->websiteKey(),
@@ -66,7 +105,8 @@ class ThemeActivationController
         ]);
     }
 
-    private function resolveTheme(string $key, ThemeRegistry $themeRegistry): ThemeInstallation
+    /** @return array{0:ThemeInstallation,1:array<string,mixed>} */
+    private function resolveTheme(string $key, ThemeRegistry $themeRegistry): array
     {
         $manifest = $themeRegistry->all()->first(
             fn (array $theme): bool => strcasecmp((string) ($theme['key'] ?? ''), trim($key)) === 0,
@@ -74,7 +114,7 @@ class ThemeActivationController
 
         abort_if($manifest === null, 404, 'Theme not found.');
 
-        return ThemeInstallation::query()->firstOrCreate(
+        $theme = ThemeInstallation::query()->firstOrCreate(
             ['key' => $manifest['key']],
             [
                 'name' => $manifest['name'],
@@ -85,5 +125,28 @@ class ThemeActivationController
                 'blocks' => $manifest['blocks'] ?? [],
             ],
         );
+
+        return [$theme, $manifest];
+    }
+
+    /** @param array<string, mixed> $manifest */
+    private function assertRequiredModulesEnabled(array $manifest): void
+    {
+        $requiredModules = collect($manifest['requires_modules'] ?? [])
+            ->filter(fn (mixed $key): bool => is_string($key) && trim($key) !== '')
+            ->values();
+        $enabledModules = ModuleInstallation::query()
+            ->whereIn('key', $requiredModules)
+            ->where('status', 'enabled')
+            ->pluck('key');
+        $missingModules = $requiredModules->diff($enabledModules)->values();
+
+        if ($missingModules->isEmpty()) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'theme' => 'Cần bật module trước khi kích hoạt theme: '.$missingModules->implode(', ').'.',
+        ]);
     }
 }

@@ -6,22 +6,22 @@
     {!! $editButton !!}
     <div class="fg18-container fg18-contact__grid">
         <div>
-            <h2>{{ $data['title'] ?? 'Yeu cau mot cuoc goi lai' }}</h2>
+            <h2>{{ $data['title'] ?? 'Yêu cầu một cuộc gọi lại' }}</h2>
             @if (filled($data['description'] ?? null))
                 <p>{{ $data['description'] }}</p>
             @endif
-            <p>Hoac lien he voi chung toi</p>
+            <p>Hoặc liên hệ trực tiếp với chúng tôi</p>
         </div>
         <form class="fg18-form" method="POST" action="{{ route('site.contact.submit') }}">
             @csrf
             <input type="hidden" name="source" value="XD0318-callback">
-            <input name="name" required placeholder="*Ho va ten" value="{{ old('name') }}">
+            <input name="name" required placeholder="*Họ và tên" value="{{ old('name') }}">
             <input type="email" name="email" required placeholder="*Email" value="{{ old('email') }}">
-            <input name="phone" required placeholder="*So dien thoai" value="{{ old('phone') }}">
-            <input name="address" placeholder="Dia chi" value="{{ old('address') }}">
-            <textarea name="message" class="is-wide" required placeholder="*Noi dung">{{ old('message') }}</textarea>
-            <input name="captcha" class="is-wide" placeholder="*Ma bao mat">
-            <button type="submit">{{ $data['button_label'] ?? 'Gui tin nhan' }}</button>
+            <input name="phone" required placeholder="*Số điện thoại" value="{{ old('phone') }}">
+            <input name="address" placeholder="Địa chỉ" value="{{ old('address') }}">
+            <textarea name="message" class="is-wide" required placeholder="*Nội dung">{{ old('message') }}</textarea>
+            <input name="captcha" class="is-wide" placeholder="*Mã bảo mật">
+            <button type="submit">{{ $data['button_label'] ?? 'Gửi tin nhắn' }}</button>
         </form>
     </div>
 </section>

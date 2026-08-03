@@ -229,9 +229,15 @@ export default function AdminLayout() {
 
             const mePayload = await callAdminApi(adminApi('me'));
             const nextCurrentAdmin = mePayload.data ?? null;
+            const resolvedWebsiteKey = nextCurrentAdmin?.current_website?.website_key;
 
             setCurrentAdmin(nextCurrentAdmin);
             setShellReady(true);
+
+            if (resolvedWebsiteKey && resolvedWebsiteKey !== selectedAdminWebsiteKey) {
+                window.localStorage.setItem('aio.admin.websiteKey', resolvedWebsiteKey);
+                setSelectedAdminWebsiteKey(resolvedWebsiteKey);
+            }
 
             if ((nextCurrentAdmin?.permissions ?? []).includes('store.module.view')) {
                 try {

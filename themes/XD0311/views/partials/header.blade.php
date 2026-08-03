@@ -9,9 +9,12 @@
     <div class="xd5-container xd5-nav-wrap">
         <a class="xd5-brand" href="{{ route('site.home') }}">
             @if(filled($logoUrl ?? null))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
+            @else
+                <span>{{ $companyName }}</span>
+            @endif
         </a>
-        <button data-xd5-menu aria-expanded="false">Menu</button>
+        <button data-xd5-menu aria-expanded="false" aria-label="Mở menu">Menu</button>
         <nav data-xd5-nav>
             @foreach($navItems ?? [] as $item)
                 <a href="{{ $item['href'] ?? '#' }}">{{ $item['label'] ?? 'Menu' }}</a>

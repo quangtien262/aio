@@ -2,7 +2,6 @@
 
 namespace App\Core\Modules\Support;
 
-use App\Core\Modules\Support\ModulePackage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -37,11 +36,11 @@ class ModuleLifecycleRunner
 
     public function uninstall(array $module): void
     {
-        $package = ModulePackage::fromModule($module);
-
-        $this->rollbackMigrations($package);
-        $this->removePublishedAssets($package);
-        $this->removePublishedConfig($package);
+        // Source packages are local, versioned code and module data may be
+        // required again after a reinstall. Uninstall therefore only changes
+        // registry/permission/hook state in ModuleManager; it never rolls back
+        // schema or deletes published files. A future purge operation must be
+        // explicit, separately authorized and migration-aware.
     }
 
     private function runMigrations(ModulePackage $package): void
@@ -83,7 +82,7 @@ class ModuleLifecycleRunner
                 throw new RuntimeException("Seeder class [{$seederClass}] does not exist.");
             }
 
-            $seeder = new $seederClass();
+            $seeder = new $seederClass;
 
             if (! $seeder instanceof Seeder) {
                 throw new RuntimeException("Seeder class [{$seederClass}] is invalid.");
@@ -134,6 +133,7 @@ class ModuleLifecycleRunner
 
             if (File::isDirectory($destinationPath)) {
                 File::deleteDirectory($destinationPath);
+
                 continue;
             }
 

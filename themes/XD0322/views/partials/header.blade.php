@@ -27,16 +27,25 @@
             <div class="c322-header-contact"><a href="tel:{{ preg_replace('/[^0-9]+/', '', $hotline) }}"><i class="fa-solid fa-phone"></i> {{ $hotline }}</a><a href="mailto:{{ $email }}"><i class="fa-regular fa-envelope"></i> {{ $email }}</a></div>
             <a class="foot-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
                 @if ($logoUrl !== '')
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
-            </a>
-            <div class="foot-header__account">
-                @guest('customer')
-                    <button type="button" data-xd-auth-open="login">@themeT('xd0322.header.login')</button>
-                    <span aria-hidden="true">/</span>
-                    <button type="button" data-xd-auth-open="register">@themeT('xd0322.header.register')</button>
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
                 @else
-                    <a href="{{ route('customer.account') }}">@themeT('xd0322.header.account')</a>
-                @endguest
+                    <span class="foot-brand__monogram">X</span>
+                    <span><strong>{{ $companyName }}</strong><small>@themeT('xd0322.brand.tagline')</small></span>
+                @endif
+            </a>
+            <div class="c322-header-actions">
+                <div class="foot-header__account">
+                    @guest('customer')
+                        <button type="button" data-xd-auth-open="login">@themeT('xd0322.header.login')</button>
+                        <span aria-hidden="true">/</span>
+                        <button type="button" data-xd-auth-open="register">@themeT('xd0322.header.register')</button>
+                    @else
+                        <a href="{{ route('customer.account') }}">@themeT('xd0322.header.account')</a>
+                    @endguest
+                </div>
+                <div class="c322-header-language">
+                    @include('partials.storefront-language-switcher')
+                </div>
             </div>
         </div>
     </div>
@@ -49,4 +58,3 @@
         </nav>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

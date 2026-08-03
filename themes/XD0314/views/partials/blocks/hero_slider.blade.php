@@ -17,7 +17,7 @@
                     <p>{{ $slide['summary'] ?? $data['description'] ?? '' }}</p>
                     <div class="bb14-hero__actions">
                         <a class="bb14-button bb14-button--ghost" href="{{ $slide['quote_url'] ?? '#footer' }}">Nhan bao gia</a>
-                        <a class="bb14-button" href="{{ $slide['link_url'] ?? '#dich-vu' }}">{{ $slide['button_label'] ?? $data['button_label'] ?? 'Xem them' }} <span>►</span></a>
+                        <a class="bb14-button" href="{{ $slide['link_url'] ?? '#dich-vu' }}">{{ $slide['button_label'] ?? $data['button_label'] ?? 'Xem thêm' }} <span>►</span></a>
                     </div>
                 </div>
             </article>
@@ -26,4 +26,3 @@
         <button class="bb14-hero__nav next" type="button" data-bb14-hero-next aria-label="Slide sau">›</button>
     </div>
 </section>
-

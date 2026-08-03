@@ -12,7 +12,11 @@
         <section>
             <a class="fg18-footer-brand" href="#top" aria-label="{{ $companyName }}">
                 @if (filled($logoUrl ?? null))
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
+                @else
+                    <span class="fg18-brand__mark" aria-hidden="true"></span>
+                    <span><strong>{{ $companyName }}</strong><small>LOGISTICS &amp; TRANSPORT</small></span>
+                @endif
             </a>
             <p>{{ $companyDescription }}</p>
             <div class="fg18-socials">
@@ -24,20 +28,20 @@
         </section>
 
         <section>
-            <h3>Dich vu cua chung toi</h3>
+            <h3>Dịch vụ của chúng tôi</h3>
             <ul class="fg18-footer-list">
                 @foreach ($footerServiceItems as $item)
-                    <li><a href="{{ $item['url'] ?? $item['href'] ?? '#dich-vu' }}">{{ $item['title'] ?? $item['name'] ?? 'Dich vu' }}</a></li>
+                    <li><a href="{{ $item['url'] ?? $item['href'] ?? '#dich-vu' }}">{{ $item['title'] ?? $item['name'] ?? 'Dịch vụ' }}</a></li>
                 @endforeach
             </ul>
         </section>
 
         <section>
-            <h3>Thong tin lien he</h3>
-            <p>Trong hon 30 nam qua, Fast Gear la doi tac tin cay trong linh vuc logistics.</p>
+            <h3>Thông tin liên hệ</h3>
+            <p>Trong hơn 30 năm qua, Fast Gear là đối tác tin cậy trong lĩnh vực logistics.</p>
             <ul class="fg18-contact-list">
                 <li><span>+</span>{{ $supportAddress }}</li>
-                <li><span>c</span><a href="tel:{{ $phoneHref }}">{{ $hotline }}</a></li>
+                <li><span>☎</span><a href="tel:{{ $phoneHref }}">{{ $hotline }}</a></li>
                 <li><span>@</span><a href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a></li>
             </ul>
         </section>

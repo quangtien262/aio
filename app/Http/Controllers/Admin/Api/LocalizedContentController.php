@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
+use App\Core\Cms\CmsMenuLocalization;
 use App\Enums\TranslationStatus;
 use App\Models\ContentTranslation;
-use App\Support\Localization\LocalizedContentRepository;
 use App\Support\Localization\LocaleContext;
+use App\Support\Localization\LocalizedContentRepository;
 use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class LocalizedContentController
 {
@@ -18,6 +19,7 @@ class LocalizedContentController
         private readonly LocalizedContentRepository $repository,
         private readonly LocaleContext $localeContext,
         private readonly SiteContext $siteContext,
+        private readonly CmsMenuLocalization $menuLocalization,
     ) {}
 
     public function show(
@@ -27,7 +29,7 @@ class LocalizedContentController
     ): JsonResponse {
         $definition = $this->definition($resourceType);
         $this->authorize($request, $definition, 'view');
-        $this->resource($definition, $resourceId);
+        $resource = $this->resource($definition, $resourceId);
         $websiteKey = $this->siteContext->websiteKey();
         $translations = ContentTranslation::query()
             ->forWebsite($websiteKey)
@@ -39,6 +41,42 @@ class LocalizedContentController
                 $this->repository->serialize($translation)
             ))
             ->keyBy('locale');
+        $translationTemplate = [];
+
+        if ($resourceType === 'cms_menu') {
+            $sourceItems = is_array($resource->items) ? $resource->items : [];
+            $sourceLocale = $this->localeContext->sourceLocale();
+            $translations = $translations->map(function (
+                array $translation,
+                string $locale,
+            ) use ($sourceItems, $sourceLocale): array {
+                $payload = (array) ($translation['payload'] ?? []);
+                $items = $locale === $sourceLocale
+                    ? $sourceItems
+                    : $this->menuLocalization->editableItems(
+                        $sourceItems,
+                        $payload,
+                    );
+
+                $translation['payload'] = ['items' => $items];
+                $translation['translation_progress'] = $locale === $sourceLocale
+                    ? [
+                        'translated' => $this->countMenuItems($sourceItems),
+                        'total' => $this->countMenuItems($sourceItems),
+                        'percentage' => 100,
+                        'complete' => true,
+                    ]
+                    : $this->menuLocalization->progress($sourceItems, $payload);
+
+                return $translation;
+            });
+            $translationTemplate = [
+                'items' => $this->menuLocalization->editableItems(
+                    $sourceItems,
+                    [],
+                ),
+            ];
+        }
 
         return response()->json([
             'data' => [
@@ -51,6 +89,7 @@ class LocalizedContentController
                     ->values(),
                 'source_locale' => $this->localeContext->sourceLocale(),
                 'default_locale' => $this->localeContext->defaultLocale($websiteKey),
+                'translation_template' => $translationTemplate,
             ],
         ]);
     }
@@ -63,7 +102,7 @@ class LocalizedContentController
     ): JsonResponse {
         $definition = $this->definition($resourceType);
         $this->authorize($request, $definition, 'update');
-        $this->resource($definition, $resourceId);
+        $resource = $this->resource($definition, $resourceId);
         $resolvedLocale = $this->localeContext->resolveEditable(
             $locale,
             $this->siteContext->websiteKey(),
@@ -84,6 +123,14 @@ class LocalizedContentController
         $rules['publish'] = ['nullable', 'boolean'];
         $rules['is_machine_translated'] = ['nullable', 'boolean'];
         $validated = $request->validate($rules);
+        $payload = (array) $validated['payload'];
+
+        if ($resourceType === 'cms_menu') {
+            $payload = $this->menuLocalization->storagePayload(
+                is_array($resource->items) ? $resource->items : [],
+                $payload,
+            );
+        }
 
         if ((bool) ($validated['publish'] ?? false)) {
             $this->authorize($request, $definition, 'publish');
@@ -94,7 +141,7 @@ class LocalizedContentController
             $resourceType,
             $resourceId,
             $resolvedLocale,
-            (array) $validated['payload'],
+            $payload,
             (bool) ($validated['is_machine_translated'] ?? false),
         );
 
@@ -207,5 +254,23 @@ class LocalizedContentController
             ->where('website_key', $this->siteContext->websiteKey())
             ->whereKey($resourceId)
             ->firstOrFail();
+    }
+
+    /**
+     * @param  array<int, mixed>  $items
+     */
+    private function countMenuItems(array $items): int
+    {
+        return collect($items)->sum(function (mixed $item): int {
+            if (! is_array($item)) {
+                return 0;
+            }
+
+            return 1 + $this->countMenuItems(
+                is_array($item['children'] ?? null)
+                    ? $item['children']
+                    : [],
+            );
+        });
     }
 }

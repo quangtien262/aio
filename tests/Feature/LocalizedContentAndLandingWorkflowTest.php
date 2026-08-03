@@ -9,15 +9,32 @@ use App\Models\ContentTranslation;
 use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
+use App\Models\ModuleInstallation;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\Localization\LandingPageLocalization;
+use App\Support\Localization\LocalizedContentRepository;
 use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class LocalizedContentAndLandingWorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        ModuleInstallation::query()->updateOrCreate(
+            ['key' => 'cms'],
+            [
+                'name' => 'CMS',
+                'version' => '1.0.0',
+                'status' => 'enabled',
+            ],
+        );
+    }
 
     public function test_admin_content_list_uses_the_requested_editable_locale(): void
     {
@@ -31,7 +48,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
             'body' => '<p>Nội dung nguồn</p>',
             'publish_at' => now(),
         ]);
-        app(\App\Support\Localization\LocalizedContentRepository::class)
+        app(LocalizedContentRepository::class)
             ->saveDraftPayload(
                 'website-main',
                 'cms_post',
@@ -143,7 +160,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
             'body' => '<p>Nội dung nguồn</p>',
             'publish_at' => now(),
         ]);
-        $translation = app(\App\Support\Localization\LocalizedContentRepository::class)
+        $translation = app(LocalizedContentRepository::class)
             ->saveDraftPayload(
                 'website-main',
                 'cms_post',
@@ -155,7 +172,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
                     'body' => '<p>English content</p>',
                 ],
             );
-        $repository = app(\App\Support\Localization\LocalizedContentRepository::class);
+        $repository = app(LocalizedContentRepository::class);
         $repository->transition($translation, TranslationStatus::Ready);
         $repository->transition($translation->fresh(), TranslationStatus::Published);
 
@@ -240,7 +257,7 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
         ]);
         $localization->transitionPage($page, 'en', TranslationStatus::Ready);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $localization->transitionPage($page, 'en', TranslationStatus::Published);
     }
 

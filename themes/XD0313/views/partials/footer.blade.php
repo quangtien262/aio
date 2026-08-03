@@ -17,7 +17,11 @@
         <section>
             <a class="rx13-footer-brand" href="#top" aria-label="{{ $companyName }}">
                 @if (filled($logoUrl ?? null))
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
+                @else
+                    <span class="rx13-brand__mark" aria-hidden="true"></span>
+                    <strong>{{ $companyName }}</strong>
+                @endif
             </a>
             <p>{{ $companyDescription }}</p>
             <p>{{ $supportAddress }} · <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}">{{ $hotline }}</a> · <a href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a></p>
@@ -29,7 +33,7 @@
             </div>
         </section>
         <section>
-            <h3>Danh Muc Visa</h3>
+            <h3>Danh mục Visa</h3>
             <ul class="rx13-footer-list">
                 @foreach ($visaItems as $item)
                     <li><a href="{{ $item['url'] ?? $item['href'] ?? '#dich-vu' }}">{{ $item['title'] ?? $item['name'] ?? 'Visa' }}</a></li>
@@ -37,7 +41,7 @@
             </ul>
         </section>
         <section>
-            <h3>Video Noi Bat</h3>
+            <h3>Video nổi bật</h3>
             <div class="rx13-footer-videos">
                 @foreach ($videoItems as $item)
                     @php $image = $item['image'] ?? $item['image_url'] ?? $item['thumbnail'] ?? ''; @endphp
@@ -51,13 +55,13 @@
             </div>
         </section>
         <section>
-            <h3>Dang Ky Nhan Tin</h3>
-            <p>Dang ky nhan ban tin hang tuan de nhan thong tin cap nhat moi nhat.</p>
+            <h3>Đăng ký nhận tin</h3>
+            <p>Đăng ký nhận bản tin hằng tuần để cập nhật các thông tin visa mới nhất.</p>
             <form class="rx13-newsletter" method="POST" action="{{ route('site.contact.submit') }}">
                 @csrf
                 <input type="hidden" name="source" value="XD0313-newsletter">
-                <input type="email" name="email" placeholder="Dia chi email....." required>
-                <button type="submit">Dang ky</button>
+                <input type="email" name="email" placeholder="Địa chỉ email" required>
+                <button type="submit">Đăng ký</button>
             </form>
         </section>
     </div>

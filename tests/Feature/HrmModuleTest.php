@@ -246,6 +246,54 @@ class HrmModuleTest extends TestCase
         ])->assertOk()->assertJsonPath('data.code', 'LUONG001');
     }
 
+    public function test_generic_employee_update_terminates_and_revokes_linked_admin(): void
+    {
+        [$owner, $employeeAdmin, $employee] = $this->prepareHrmEmployees();
+        $previousAuthVersion = $employeeAdmin->auth_version;
+        $this->actingAs($owner, 'admin');
+
+        $this->putJson("/admin/api/hrm/employees/{$employee->id}", [
+            'employee_code' => $employee->employee_code,
+            'full_name' => $employee->full_name,
+            'employment_status' => 'terminated',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('admins', [
+            'id' => $employeeAdmin->id,
+            'status' => 'archived',
+            'is_active' => false,
+        ]);
+        $this->assertGreaterThan($previousAuthVersion, $employeeAdmin->fresh()->auth_version);
+    }
+
+    public function test_employee_sensitive_fields_require_sensitive_permission_to_write(): void
+    {
+        [$owner, $employeeAdmin, $employee] = $this->prepareHrmEmployees();
+        $staffRole = Role::query()->where('key', 'hrm.staff')->firstOrFail();
+        AdminRoleAssignment::query()->create([
+            'admin_id' => $employeeAdmin->id,
+            'role_id' => $staffRole->id,
+            'scope_type' => 'global',
+            'scope_value' => null,
+            'assigned_by' => $owner->id,
+        ]);
+        $employeeAdmin->refresh();
+        $this->actingAs($employeeAdmin, 'admin')
+            ->withSession(['admin_auth_version' => $employeeAdmin->auth_version]);
+
+        $this->putJson("/admin/api/hrm/employees/{$employee->id}", [
+            'employee_code' => $employee->employee_code,
+            'full_name' => $employee->full_name,
+            'employment_status' => 'active',
+            'identity_number' => '012345678901',
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('hrm_employees', [
+            'id' => $employee->id,
+            'identity_number' => '012345678901',
+        ]);
+    }
+
     private function prepareHrmEmployees(): array
     {
         $this->seed(DatabaseSeeder::class);

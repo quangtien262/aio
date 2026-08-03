@@ -14,6 +14,7 @@ use App\Models\ThemeDemoRecord;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\Localization\LocalizedContentRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ThemeDemoWebsiteFinalizerTest extends TestCase
@@ -143,10 +144,9 @@ class ThemeDemoWebsiteFinalizerTest extends TestCase
         $this->assertContains('/bds', $demoItems->pluck('url')->all());
         $this->assertSame('/p/gioi-thieu', $demoItems->firstWhere('label', 'Giới thiệu')['url']);
         $this->assertSame('Giới thiệu do người dùng tạo', $userAbout->fresh()->title);
-        $this->assertSame(
-            [['label' => 'Menu riêng', 'url' => '/menu-rieng']],
-            $userMenu->fresh()->items,
-        );
+        $this->assertSame('Menu riêng', $userMenu->fresh()->items[0]['label']);
+        $this->assertSame('/menu-rieng', $userMenu->fresh()->items[0]['url']);
+        $this->assertTrue(Str::isUuid($userMenu->fresh()->items[0]['item_key']));
         $this->assertDatabaseMissing('theme_demo_records', [
             'theme_key' => 'BDS701',
             'model_type' => CmsPage::class,

@@ -9,7 +9,7 @@
 <section id="{{ $anchor }}" class="af15-clubs xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     {!! $editButton !!}
     <div class="af15-title-row af15-title-row--dark">
-        <h2>{{ $data['title'] ?? 'Cau lac bo' }}</h2>
+        <h2>{{ $data['title'] ?? 'Câu lạc bộ' }}</h2>
         @if (filled($data['description'] ?? null))
             <p>{{ $data['description'] }}</p>
         @endif

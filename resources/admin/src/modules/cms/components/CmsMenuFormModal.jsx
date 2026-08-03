@@ -5,7 +5,7 @@ import {
     PlusOutlined,
     SettingOutlined,
 } from '@ant-design/icons';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
@@ -26,6 +26,7 @@ import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Tree from 'antd/es/tree';
 import Typography from 'antd/es/typography';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import { STOREFRONT_ROUTES, adminApi } from '../../../shared/config/routes';
 
 export const emptyCmsMenuForm = {
@@ -41,7 +42,13 @@ const { Paragraph, Text, Title } = Typography;
 const LINK_TYPE_OPTIONS = [
     { label: 'Trang chủ', value: 'home' },
     { label: 'Liên hệ', value: 'contact' },
+    { label: 'Danh sách sản phẩm', value: 'catalog-index' },
+    { label: 'Danh sách tin tức', value: 'post-index' },
+    { label: 'Danh sách dịch vụ', value: 'service-index' },
+    { label: 'Danh sách dự án', value: 'project-index' },
+    { label: 'Danh sách bất động sản', value: 'real-estate-index' },
     { label: 'Theo page', value: 'page' },
+    { label: 'Theo landing page', value: 'landing-page' },
     { label: 'Theo danh mục sản phẩm', value: 'product-category' },
     { label: 'Theo sản phẩm', value: 'product' },
     { label: 'Theo danh mục tin tức', value: 'post-category' },
@@ -56,6 +63,24 @@ const LINK_TYPE_OPTIONS = [
 const SPECIAL_LINK_URLS = {
     home: STOREFRONT_ROUTES.home,
     contact: STOREFRONT_ROUTES.contact,
+    'catalog-index': STOREFRONT_ROUTES.search,
+    'post-index': STOREFRONT_ROUTES.blog,
+    'service-index': STOREFRONT_ROUTES.services,
+    'project-index': STOREFRONT_ROUTES.projects,
+    'real-estate-index': STOREFRONT_ROUTES.realEstate,
+};
+
+const LINK_RESOURCE_TYPES = {
+    page: 'cms_page',
+    'landing-page': 'landing_page',
+    'product-category': 'catalog_category',
+    product: 'catalog_product',
+    'post-category': 'cms_category',
+    post: 'cms_post',
+    'service-category': 'cms_service_category',
+    service: 'cms_service',
+    'project-category': 'cms_project_category',
+    project: 'cms_project',
 };
 
 let menuItemKeySeed = 0;
@@ -90,6 +115,7 @@ function hasMeaningfulMenuItem(item) {
 function buildLinkLookups(linkOptions = {}) {
     return {
         page: new Map((linkOptions.pages ?? []).map((item) => [String(item.value), item])),
+        'landing-page': new Map((linkOptions.landingPages ?? []).map((item) => [String(item.value), item])),
         'product-category': new Map((linkOptions.productCategories ?? []).map((item) => [String(item.value), item])),
         product: new Map((linkOptions.products ?? []).map((item) => [String(item.value), item])),
         'post-category': new Map((linkOptions.postCategories ?? []).map((item) => [String(item.value), item])),
@@ -105,6 +131,20 @@ function inferLinkMeta(item, linkLookups) {
     const normalized = { ...createEmptyMenuItem(), ...(item ?? {}) };
     const url = typeof normalized.url === 'string' ? normalized.url : '';
     const legacyPostCategorySlug = url.match(/^\/tin-tuc\?category=([^&]+)/)?.[1] ?? '';
+    const explicitResourceType = String(normalized.resource_type ?? '');
+    const explicitResourceId = String(normalized.resource_id ?? '');
+    const explicitLinkType = Object.entries(LINK_RESOURCE_TYPES)
+        .find(([, resourceType]) => resourceType === explicitResourceType)?.[0];
+
+    if (explicitLinkType && explicitResourceId) {
+        return {
+            ...normalized,
+            link_type: explicitLinkType,
+            link_value: explicitResourceId,
+            custom_url: '',
+            children: Array.isArray(normalized.children) ? normalized.children : [],
+        };
+    }
 
     for (const [linkType, linkUrl] of Object.entries(SPECIAL_LINK_URLS)) {
         if (url === linkUrl) {
@@ -202,11 +242,44 @@ function normalizeMenuItemsForSubmit(items, linkLookups) {
             return {
                 ...rest,
                 link_value: item?.link_value ? String(item.link_value) : null,
+                resource_type: LINK_RESOURCE_TYPES[item?.link_type] ?? null,
+                resource_id: LINK_RESOURCE_TYPES[item?.link_type] && item?.link_value
+                    ? String(item.link_value)
+                    : null,
                 custom_url: item?.link_type === 'custom' ? (item?.custom_url ?? '').trim() : '',
                 url: resolveItemUrl(item, linkLookups),
                 children: normalizeMenuItemsForSubmit(item?.children ?? [], linkLookups),
             };
         });
+}
+
+function normalizeMenuItemsForTranslation(items) {
+    return (items ?? []).map((item) => {
+        const { __menuKey, _source_label, ...rest } = item;
+
+        return {
+            ...rest,
+            label: String(item?.label ?? ''),
+            children: normalizeMenuItemsForTranslation(item?.children ?? []),
+        };
+    });
+}
+
+function menuTranslationSignature(items = []) {
+    return JSON.stringify((items ?? []).map((item) => ({
+        item_key: item?.item_key ?? item?.__menuKey ?? null,
+        label: String(item?.label ?? ''),
+        children: JSON.parse(menuTranslationSignature(item?.children ?? [])),
+    })));
+}
+
+function countTranslatedMenuItems(items = []) {
+    return (items ?? []).reduce(
+        (total, item) => total
+            + (String(item?.label ?? '').trim() ? 1 : 0)
+            + countTranslatedMenuItems(item?.children ?? []),
+        0,
+    );
 }
 
 function linkTypeLabel(linkType) {
@@ -400,7 +473,24 @@ function buildEditorTitle(mode, level) {
     return level > 1 ? `Sửa menu cấp ${level}` : 'Sửa menu';
 }
 
-export default function CmsMenuFormModal({ open, canManage, editingMenu, locationOptions = [], linkOptions = {}, callAdminApi, runAdminAction, onLocationsChanged, onCancel, onSubmit }) {
+export default function CmsMenuFormModal({
+    open,
+    canManage,
+    canPublish = false,
+    translationMode = false,
+    editingMenu,
+    localeOptions = [],
+    contentLocale = 'vi',
+    sourceLocale = 'vi',
+    locationOptions = [],
+    linkOptions = {},
+    callAdminApi,
+    runAdminAction,
+    onLocationsChanged,
+    onCancel,
+    onSubmit,
+    onLocaleChange,
+}) {
     const [form] = Form.useForm();
     const [itemForm] = Form.useForm();
     const [locationModalOpen, setLocationModalOpen] = useState(false);
@@ -416,24 +506,30 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
     const [selectedItemKeys, setSelectedItemKeys] = useState([]);
     const [draggingKey, setDraggingKey] = useState(null);
     const [dragOverState, setDragOverState] = useState({ key: null, mode: null });
+    const initialItemsSignatureRef = useRef('[]');
     const linkLookups = useMemo(() => buildLinkLookups(linkOptions), [linkOptions]);
     const menuTreeData = useMemo(() => buildMenuTreeData(menuItems), [menuItems]);
     const expandableKeys = useMemo(() => collectExpandableKeys(menuItems), [menuItems]);
     const expandedKeys = useMemo(() => manualExpandedKeys.filter((key) => expandableKeys.includes(key)), [expandableKeys, manualExpandedKeys]);
 
     useEffect(() => {
+        form.resetFields();
         form.setFieldsValue({
             ...editingMenu,
             location: editingMenu?.location ?? 'primary',
+            status: translationMode
+                ? (editingMenu?._translation_status === 'published' ? 'published' : 'draft')
+                : undefined,
         });
         const normalizedItems = normalizeMenuItemsForForm(editingMenu?.items, linkLookups);
 
         setMenuItems(normalizedItems);
+        initialItemsSignatureRef.current = menuTranslationSignature(normalizedItems);
         setManualExpandedKeys(collectExpandableKeys(normalizedItems));
         setSelectedItemKeys([]);
         setDragOverState({ key: null, mode: null });
         setSelectedLocation(editingMenu?.location ?? 'primary');
-    }, [editingMenu, form, linkLookups]);
+    }, [editingMenu, form, linkLookups, translationMode]);
 
     useEffect(() => {
         setManualExpandedKeys((current) => current.filter((key) => expandableKeys.includes(key)));
@@ -444,7 +540,9 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
 
         const didSave = await onSubmit?.({
             ...values,
-            items: normalizeMenuItemsForSubmit(menuItems, linkLookups),
+            items: translationMode
+                ? normalizeMenuItemsForTranslation(menuItems)
+                : normalizeMenuItemsForSubmit(menuItems, linkLookups),
         });
 
         if (didSave === false) {
@@ -456,6 +554,13 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         setManualExpandedKeys([]);
         setSelectedItemKeys([]);
     };
+
+    const getCurrentValues = () => ({
+        ...form.getFieldsValue(true),
+        items: translationMode
+            ? normalizeMenuItemsForTranslation(menuItems)
+            : normalizeMenuItemsForSubmit(menuItems, linkLookups),
+    });
 
     const handleCancel = () => {
         form.resetFields();
@@ -509,9 +614,13 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
         );
     };
 
-    const showChildrenEditor = true;
+    const showChildrenEditor = !translationMode;
 
     const openItemEditor = ({ mode, path = null, parentPath = null }) => {
+        if (translationMode && mode !== 'edit') {
+            return;
+        }
+
         const targetItem = path ? getItemAtPath(menuItems, path) : createEmptyMenuItem();
         const level = path ? path.length : (parentPath ? parentPath.length + 1 : 1);
 
@@ -530,6 +639,21 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
 
     const handleSaveItem = async () => {
         const values = await itemForm.validateFields();
+
+        if (translationMode && itemEditorState.path) {
+            setMenuItems((current) => updateItemAtPath(
+                current,
+                itemEditorState.path,
+                (item) => ({
+                    ...item,
+                    label: values.label,
+                }),
+            ));
+            closeItemEditor();
+
+            return;
+        }
+
         const nextItem = {
             ...createEmptyMenuItem(),
             ...values,
@@ -684,7 +808,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
     };
 
     const allowTreeDrop = ({ dragNode, dropNode, dropPosition }) => {
-        if (!canManage) {
+        if (!canManage || translationMode) {
             return false;
         }
 
@@ -742,11 +866,16 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
     };
 
     const itemPreviewUrl = resolveItemUrl(itemForm.getFieldsValue(true), linkLookups);
+    const sourceLabelForEditor = itemEditorState.path
+        ? getItemAtPath(menuItems, itemEditorState.path)?._source_label
+        : '';
 
     return (
         <>
             <Drawer
-                title={editingMenu?.id ? 'Chi tiết menu' : 'Tạo menu'}
+                title={editingMenu?.id
+                    ? (translationMode ? 'Dịch menu' : 'Chi tiết menu')
+                    : 'Tạo menu'}
                 open={open}
                 onClose={handleCancel}
                 maskClosable={false}
@@ -755,17 +884,41 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                 extra={(
                     <Space>
                         <Button onClick={handleCancel}>Đóng</Button>
-                        <Button type="primary" disabled={!canManage} onClick={handleSubmit}>Lưu menu</Button>
+                        <Button
+                            type="primary"
+                            disabled={!canManage || (translationMode && !editingMenu?.id)}
+                            onClick={handleSubmit}
+                        >
+                            {translationMode
+                                ? (editingMenu?.id ? 'Lưu bản dịch' : 'Lưu tại ngôn ngữ gốc')
+                                : 'Lưu menu'}
+                        </Button>
                     </Space>
                 )}
             >
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <LocalizedContentTabs
+                        localeOptions={localeOptions}
+                        contentLocale={contentLocale}
+                        sourceLocale={sourceLocale}
+                        editingRecord={editingMenu}
+                        entityLabel="menu"
+                        sourceDescription="Đây là ngôn ngữ gốc. Tên nội bộ, vị trí, cấu trúc, thứ tự và đường dẫn menu được quản lý tại đây."
+                        translationDescription="Chỉ dịch nhãn hiển thị. Vị trí, cấu trúc, thứ tự và đường dẫn luôn dùng chung từ bản gốc."
+                        isDirty={() => (
+                            form.isFieldsTouched()
+                            || menuTranslationSignature(menuItems) !== initialItemsSignatureRef.current
+                        )}
+                        getCurrentValues={getCurrentValues}
+                        onLocaleChange={onLocaleChange}
+                    />
+
                     <Form form={form} layout="vertical" initialValues={editingMenu}>
                         <Card>
                             <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item name="name" label="Tên menu" rules={[{ required: true, message: 'Nhập tên menu' }]}>
-                                        <Input placeholder="Main Navigation" />
+                                        <Input disabled={translationMode} placeholder="Main Navigation" />
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
@@ -774,19 +927,41 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                         label={(
                                             <Space size={8}>
                                                 <span>Vị trí</span>
-                                                <Button type="text" size="small" icon={<SettingOutlined />} onClick={openLocationModal} />
+                                                {!translationMode ? (
+                                                    <Button type="text" size="small" icon={<SettingOutlined />} onClick={openLocationModal} />
+                                                ) : null}
                                             </Space>
                                         )}
                                         rules={[{ required: true, message: 'Chọn vị trí menu' }]}
                                     >
-                                        <Select options={locationOptions} onChange={setSelectedLocation} />
+                                        <Select disabled={translationMode} options={locationOptions} onChange={setSelectedLocation} />
                                     </Form.Item>
                                 </Col>
+                                {translationMode ? (
+                                    <Col span={24}>
+                                        <Form.Item
+                                            name="status"
+                                            label="Trạng thái"
+                                            rules={[{ required: true, message: 'Chọn trạng thái bản dịch' }]}
+                                        >
+                                            <Radio.Group>
+                                                <Radio.Button value="draft">Bản nháp</Radio.Button>
+                                                <Radio.Button value="published" disabled={!canPublish}>Đã xuất bản</Radio.Button>
+                                            </Radio.Group>
+                                        </Form.Item>
+                                    </Col>
+                                ) : null}
                             </Row>
                         </Card>
                     </Form>
 
-                    {showChildrenEditor ? (
+                    {translationMode ? (
+                        <Alert
+                            type="info"
+                            showIcon
+                            message="Chế độ dịch chỉ cho phép sửa nhãn menu. Mọi thay đổi cấu trúc và đường dẫn phải thực hiện tại ngôn ngữ gốc."
+                        />
+                    ) : showChildrenEditor ? (
                         <Alert
                             type="info"
                             showIcon
@@ -796,7 +971,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
 
                     <Card
                         title="Danh sách menu"
-                        extra={(
+                        extra={!translationMode ? (
                             <Space wrap>
                                 <Popconfirm
                                     title={`Xóa ${selectedMenuItemKeys.length} item đã chọn?`}
@@ -809,7 +984,7 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                 </Popconfirm>
                                 <Button type="primary" icon={<PlusOutlined />} onClick={() => openItemEditor({ mode: 'create', isChild: false })}>Thêm mới</Button>
                             </Space>
-                        )}
+                        ) : null}
                     >
                         <Space direction="vertical" size={16} style={{ width: '100%' }}>
                             <Row gutter={[12, 12]}>
@@ -827,15 +1002,22 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                 </Col>
                                 <Col xs={24} md={8}>
                                     <Card size="small">
-                                        <Text type="secondary">Loại hiển thị</Text>
-                                        <Title level={4} style={{ margin: '6px 0 0' }}>Đa cấp</Title>
+                                        <Text type="secondary">
+                                            {translationMode ? 'Nhãn đã dịch' : 'Loại hiển thị'}
+                                        </Text>
+                                        <Title level={4} style={{ margin: '6px 0 0' }}>
+                                            {translationMode
+                                                ? `${countTranslatedMenuItems(menuItems)}/${countMenuItems(menuItems)}`
+                                                : 'Đa cấp'}
+                                        </Title>
                                     </Card>
                                 </Col>
                             </Row>
 
                             {menuItems.length ? (
                                 <>
-                                <Space wrap align="center">
+                                {!translationMode ? (
+                                    <Space wrap align="center">
                                     <Checkbox
                                         checked={isAllSelected}
                                         indeterminate={isPartiallySelected}
@@ -845,12 +1027,13 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                         Chọn tất cả
                                     </Checkbox>
                                     <Text type="secondary">Đã chọn {selectedMenuItemKeys.length}/{allMenuItemKeys.length} item</Text>
-                                </Space>
+                                    </Space>
+                                ) : null}
                                 <Tree
                                     className="cms-menu-tree"
                                     blockNode
                                     expandedKeys={expandedKeys}
-                                    draggable={canManage}
+                                    draggable={canManage && !translationMode}
                                     allowDrop={allowTreeDrop}
                                     onExpand={setManualExpandedKeys}
                                     onDragStart={handleTreeDragStart}
@@ -874,16 +1057,21 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                                                     <Space direction="vertical" size={4} style={{ minWidth: 0, flex: 1 }}>
                                                         <Space wrap>
-                                                            <Checkbox
-                                                                checked={selectedMenuItemKeys.includes(node.key)}
-                                                                disabled={!canManage}
-                                                                onChange={(event) => toggleSelectItem(node.key, event.target.checked)}
-                                                                onClick={(event) => event.stopPropagation()}
-                                                            />
+                                                            {!translationMode ? (
+                                                                <Checkbox
+                                                                    checked={selectedMenuItemKeys.includes(node.key)}
+                                                                    disabled={!canManage}
+                                                                    onChange={(event) => toggleSelectItem(node.key, event.target.checked)}
+                                                                    onClick={(event) => event.stopPropagation()}
+                                                                />
+                                                            ) : null}
                                                             <Space size={6}>
-                                                                <HolderOutlined style={{ color: '#7c948d' }} />
-                                                                <Text strong>{item.label || 'Chưa có label'}</Text>
+                                                                {!translationMode ? <HolderOutlined style={{ color: '#7c948d' }} /> : null}
+                                                                <Text strong>{item.label || (translationMode ? 'Chưa dịch' : 'Chưa có label')}</Text>
                                                             </Space>
+                                                            {translationMode && item._source_label ? (
+                                                                <Tag>{`Gốc: ${item._source_label}`}</Tag>
+                                                            ) : null}
                                                             <Tag color={level > 1 ? 'blue' : 'green'}>{`Cấp ${level}`}</Tag>
                                                             <Text type="secondary" style={{ fontSize: 12 }}>
                                                                 {linkTypeLabel(item.link_type)}
@@ -895,18 +1083,26 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
                                                     </Space>
 
                                                     <Space size={4} wrap>
-                                                        <Button
-                                                            type="text"
-                                                            icon={<PlusOutlined />}
-                                                            style={{ color: '#0f766e' }}
-                                                            onClick={() => openItemEditor({ mode: 'create', parentPath: path })}
-                                                        >
-                                                            Thêm con
-                                                        </Button>
-                                                        <Button type="text" icon={<EditOutlined />} style={{ color: '#2563eb' }} onClick={() => openItemEditor({ mode: 'edit', path })}>Sửa</Button>
-                                                        <Popconfirm title="Xóa item menu này?" onConfirm={() => handleDeleteItem(path)}>
-                                                            <Button type="text" icon={<DeleteOutlined />} style={{ color: '#3f3f46' }}>Xóa</Button>
-                                                        </Popconfirm>
+                                                        {!translationMode ? (
+                                                            <>
+                                                                <Button
+                                                                    type="text"
+                                                                    icon={<PlusOutlined />}
+                                                                    style={{ color: '#0f766e' }}
+                                                                    onClick={() => openItemEditor({ mode: 'create', parentPath: path })}
+                                                                >
+                                                                    Thêm con
+                                                                </Button>
+                                                                <Button type="text" icon={<EditOutlined />} style={{ color: '#2563eb' }} onClick={() => openItemEditor({ mode: 'edit', path })}>Sửa</Button>
+                                                                <Popconfirm title="Xóa item menu này?" onConfirm={() => handleDeleteItem(path)}>
+                                                                    <Button type="text" icon={<DeleteOutlined />} style={{ color: '#3f3f46' }}>Xóa</Button>
+                                                                </Popconfirm>
+                                                            </>
+                                                        ) : (
+                                                            <Button type="text" icon={<EditOutlined />} style={{ color: '#2563eb' }} onClick={() => openItemEditor({ mode: 'edit', path })}>
+                                                                Dịch nhãn
+                                                            </Button>
+                                                        )}
                                                     </Space>
                                                 </div>
                                             </div>
@@ -921,80 +1117,96 @@ export default function CmsMenuFormModal({ open, canManage, editingMenu, locatio
             </Drawer>
 
             <Modal
-                title={buildEditorTitle(itemEditorState.mode, itemEditorState.level)}
+                title={translationMode
+                    ? 'Dịch nhãn menu'
+                    : buildEditorTitle(itemEditorState.mode, itemEditorState.level)}
                 open={itemEditorOpen}
                 onCancel={closeItemEditor}
                 onOk={handleSaveItem}
                 width={760}
                 destroyOnHidden
             >
+                {translationMode && sourceLabelForEditor ? (
+                    <Alert
+                        type="info"
+                        showIcon
+                        message={`Nhãn gốc: ${sourceLabelForEditor}`}
+                        style={{ marginBottom: 16 }}
+                    />
+                ) : null}
                 <Form form={itemForm} layout="vertical" initialValues={createEmptyMenuItem()}>
                     <Row gutter={16}>
-                        <Col span={16}>
-                            <Form.Item name="label" label="Label" rules={[{ required: true, message: 'Nhập label' }]}>
+                        <Col span={translationMode ? 24 : 16}>
+                            <Form.Item name="label" label={translationMode ? 'Nhãn dịch' : 'Label'} rules={[{ required: true, message: 'Nhập label' }]}>
                                 <Input placeholder="Giới thiệu" />
                             </Form.Item>
                         </Col>
-                        <Col span={8}>
-                            <Form.Item name="target" label="Target">
-                                <Select options={[{ label: 'Self', value: '_self' }, { label: 'Blank', value: '_blank' }]} />
-                            </Form.Item>
-                        </Col>
+                        {!translationMode ? (
+                            <Col span={8}>
+                                <Form.Item name="target" label="Target">
+                                    <Select options={[{ label: 'Self', value: '_self' }, { label: 'Blank', value: '_blank' }]} />
+                                </Form.Item>
+                            </Col>
+                        ) : null}
                     </Row>
 
-                    <Form.Item name="link_type" label="Loại link" rules={[{ required: true, message: 'Chọn loại link' }]}>
-                        <Radio.Group
-                            style={{ width: '100%' }}
-                            onChange={(event) => {
-                                const value = event.target.value;
-                                setItemLinkType(value);
-                                itemForm.setFieldValue('link_value', null);
-                                itemForm.setFieldValue('custom_url', '');
-                            }}
-                        >
-                            <Row gutter={[8, 8]}>
-                                {LINK_TYPE_OPTIONS.map((option) => (
-                                    <Col key={option.value} xs={24} sm={12} md={8}>
-                                        <Radio value={option.value}>{option.label}</Radio>
-                                    </Col>
-                                ))}
-                            </Row>
-                        </Radio.Group>
-                    </Form.Item>
+                    {!translationMode ? (
+                        <>
+                            <Form.Item name="link_type" label="Loại link" rules={[{ required: true, message: 'Chọn loại link' }]}>
+                                <Radio.Group
+                                    style={{ width: '100%' }}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+                                        setItemLinkType(value);
+                                        itemForm.setFieldValue('link_value', null);
+                                        itemForm.setFieldValue('custom_url', '');
+                                    }}
+                                >
+                                    <Row gutter={[8, 8]}>
+                                        {LINK_TYPE_OPTIONS.map((option) => (
+                                            <Col key={option.value} xs={24} sm={12} md={8}>
+                                                <Radio value={option.value}>{option.label}</Radio>
+                                            </Col>
+                                        ))}
+                                    </Row>
+                                </Radio.Group>
+                            </Form.Item>
 
-                    {itemLinkType === 'custom' ? (
-                        <Form.Item name="custom_url" label="URL" rules={[{ required: true, message: 'Nhập URL' }]}>
-                            <Input placeholder={`${STOREFRONT_ROUTES.page('gioi-thieu')} hoặc https://domain.com`} />
-                        </Form.Item>
-                    ) : isSpecialLinkType ? null : (
-                        <Form.Item name="link_value" label="URL" rules={[{ required: true, message: 'Chọn URL' }]}>
-                            <Select
-                                showSearch
-                                options={itemUrlOptions}
-                                onChange={handleItemUrlChange}
-                                optionRender={(option) => (
-                                    <Space direction="vertical" size={0} style={{ width: '100%', lineHeight: 1.35 }}>
-                                        <Text strong>{option.data.title}</Text>
-                                        <Text type="secondary">{option.data.url}</Text>
-                                    </Space>
-                                )}
-                                filterOption={(input, option) => {
-                                    const normalizedInput = normalizeSearchKeyword(input);
+                            {itemLinkType === 'custom' ? (
+                                <Form.Item name="custom_url" label="URL" rules={[{ required: true, message: 'Nhập URL' }]}>
+                                    <Input placeholder={`${STOREFRONT_ROUTES.page('gioi-thieu')} hoặc https://domain.com`} />
+                                </Form.Item>
+                            ) : isSpecialLinkType ? null : (
+                                <Form.Item name="link_value" label="URL" rules={[{ required: true, message: 'Chọn URL' }]}>
+                                    <Select
+                                        showSearch
+                                        options={itemUrlOptions}
+                                        onChange={handleItemUrlChange}
+                                        optionRender={(option) => (
+                                            <Space direction="vertical" size={0} style={{ width: '100%', lineHeight: 1.35 }}>
+                                                <Text strong>{option.data.title}</Text>
+                                                <Text type="secondary">{option.data.url}</Text>
+                                            </Space>
+                                        )}
+                                        filterOption={(input, option) => {
+                                            const normalizedInput = normalizeSearchKeyword(input);
 
-                                    if (!normalizedInput) {
-                                        return true;
-                                    }
+                                            if (!normalizedInput) {
+                                                return true;
+                                            }
 
-                                    return String(option?.searchText ?? '').includes(normalizedInput);
-                                }}
-                                placeholder={`Chọn URL ${linkTypeLabel(itemLinkType).toLowerCase()}`}
-                            />
-                        </Form.Item>
-                    )}
+                                            return String(option?.searchText ?? '').includes(normalizedInput);
+                                        }}
+                                        placeholder={`Chọn URL ${linkTypeLabel(itemLinkType).toLowerCase()}`}
+                                    />
+                                </Form.Item>
+                            )}
 
-                    <Form.Item label="URL thực tế">
-                        <Paragraph style={{ marginBottom: 0 }}>{itemPreviewUrl}</Paragraph>
-                    </Form.Item>
+                            <Form.Item label="URL thực tế">
+                                <Paragraph style={{ marginBottom: 0 }}>{itemPreviewUrl}</Paragraph>
+                            </Form.Item>
+                        </>
+                    ) : null}
                 </Form>
             </Modal>
 

@@ -10,8 +10,8 @@
     {!! $editButton !!}
     <div class="fg18-container">
         <header class="fg18-center">
-            <p class="fg18-kicker">{{ $data['subtitle'] ?? 'Tin tuc moi' }}</p>
-            <h2 class="fg18-title">{{ $data['title'] ?? 'Doc tin tuc moi nhat cua chung toi' }}</h2>
+            <p class="fg18-kicker">{{ $data['subtitle'] ?? 'Tin tức mới' }}</p>
+            <h2 class="fg18-title">{{ $data['title'] ?? 'Đọc tin tức mới nhất của chúng tôi' }}</h2>
         </header>
         <div class="fg18-posts__grid">
             @foreach ($items as $item)
@@ -31,7 +31,7 @@
                     @if (filled($summary))
                         <p>{{ \Illuminate\Support\Str::limit(strip_tags($summary), 165) }}</p>
                     @endif
-                    <a class="fg18-more" href="{{ $item['url'] ?? $item['href'] ?? '#tin-tuc' }}">+ Xem them</a>
+                    <a class="fg18-more" href="{{ $item['url'] ?? $item['href'] ?? '#tin-tuc' }}">+ Xem thêm</a>
                 </article>
             @endforeach
         </div>

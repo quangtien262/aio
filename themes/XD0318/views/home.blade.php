@@ -2,7 +2,7 @@
     $blocks = collect($landingBlocks ?? [])->values();
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Fast Gear'))) ?: 'Fast Gear';
-    $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Fast Gear cung cap giai phap logistics, van chuyen va giao nhan hang hoa nhanh chong, linh hoat cho doanh nghiep.'))) ?: 'Fast Gear cung cap giai phap logistics, van chuyen va giao nhan hang hoa nhanh chong, linh hoat cho doanh nghiep.';
+    $companyDescription = trim((string) ($branding['company_description'] ?? data_get($siteProfile ?? [], 'description', 'Fast Gear cung cấp giải pháp logistics, vận chuyển và giao nhận hàng hóa nhanh chóng, linh hoạt cho doanh nghiệp.'))) ?: 'Fast Gear cung cấp giải pháp logistics, vận chuyển và giao nhận hàng hóa nhanh chóng, linh hoạt cho doanh nghiệp.';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
@@ -32,12 +32,12 @@
 
     if ($navItems->isEmpty()) {
         $navItems = collect([
-            ['label' => 'Trang chu', 'href' => route('site.home'), 'children' => []],
-            ['label' => 'Gioi thieu', 'href' => '#gioi-thieu', 'children' => []],
-            ['label' => 'Dich vu', 'href' => '#dich-vu', 'children' => []],
-            ['label' => 'Tin tuc', 'href' => '#tin-tuc', 'children' => []],
-            ['label' => 'Thu vien', 'href' => '#thu-vien', 'children' => []],
-            ['label' => 'Lien he', 'href' => '#lien-he', 'children' => []],
+            ['label' => 'Trang chủ', 'href' => route('site.home'), 'children' => []],
+            ['label' => 'Giới thiệu', 'href' => '#gioi-thieu', 'children' => []],
+            ['label' => 'Dịch vụ', 'href' => '#dich-vu', 'children' => []],
+            ['label' => 'Tin tức', 'href' => '#tin-tuc', 'children' => []],
+            ['label' => 'Thư viện', 'href' => '#thu-vien', 'children' => []],
+            ['label' => 'Liên hệ', 'href' => '#lien-he', 'children' => []],
         ]);
     }
 
@@ -73,7 +73,7 @@
             $media = $block['media'] ?? [];
             $anchor = $block['anchor_id'] ?: $block['block_type'];
             $editButton = $canEditLanding && filled($block['id'] ?? null)
-                ? '<button type="button" class="xd-edit-block fg18-edit-block" data-xd-edit-block="'.e((string) $block['id']).'">Sua khoi</button>'
+                ? '<button type="button" class="xd-edit-block fg18-edit-block" data-xd-edit-block="'.e((string) $block['id']).'">Sửa khối</button>'
                 : '';
         @endphp
 

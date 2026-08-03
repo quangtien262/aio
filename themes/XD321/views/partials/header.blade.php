@@ -3,6 +3,7 @@
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'XD321 Cargo'))) ?: 'XD321 Cargo';
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
+    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $themeText = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), $key);
     $navItems = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
         ->filter(fn ($item) => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
@@ -24,9 +25,16 @@
         <div class="foot-container foot-header__masthead-inner">
             <a class="foot-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
                 @if ($logoUrl !== '')
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
+                @else
+                    <span class="foot-brand__monogram" aria-hidden="true">X</span>
+                @endif
+                <span class="foot-brand__copy"><strong>{{ $companyName }}</strong><small>@themeT('xd321.brand.tagline')</small></span>
             </a>
             <div class="foot-header__account">
+                @if ($hotline !== '')
+                    <a class="foot-header__hotline" href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone" aria-hidden="true"></i>{{ $hotline }}</a>
+                @endif
                 @guest('customer')
                     <button type="button" data-xd-auth-open="login">@themeT('xd321.header.login')</button>
                     <span aria-hidden="true">/</span>
@@ -38,7 +46,7 @@
         </div>
     </div>
     <div class="foot-container foot-navigation-wrap">
-        <button type="button" class="foot-mobile-toggle" data-foot-menu-toggle aria-expanded="false" aria-label="@themeT('xd321.header.open_menu')">Menu</button>
+        <button type="button" class="foot-mobile-toggle" data-foot-menu-toggle aria-expanded="false" aria-label="@themeT('xd321.header.open_menu')"><span>Menu</span><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
         <nav class="foot-navigation" data-foot-menu aria-label="@themeT('xd321.header.primary_nav')">
             @foreach ($navItems as $item)
                 <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>

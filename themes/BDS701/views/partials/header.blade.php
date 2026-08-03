@@ -6,7 +6,11 @@
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $supportHotline = trim((string) ($branding['support_hotline'] ?? ''));
     $supportEmail = trim((string) ($branding['support_email'] ?? ''));
-    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
+    $nav = collect(data_get(
+        $shell,
+        'top_menu',
+        data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', [])),
+    ))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="bds-header">
     <div class="bds-topbar">

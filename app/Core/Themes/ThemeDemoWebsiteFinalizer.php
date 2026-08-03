@@ -306,14 +306,49 @@ class ThemeDemoWebsiteFinalizer
     ): array {
         $capabilities = $this->contentCapabilities($themeKey, $landingPage);
         $links = [
-            'home' => ['label' => 'Trang chủ', 'url' => FrontendRouteUrl::homePath()],
-            'about' => ['label' => 'Giới thiệu', 'url' => FrontendRouteUrl::pagePath($aboutPage->slug)],
-            'products' => ['label' => 'Sản phẩm', 'url' => FrontendRouteUrl::catalogSearchPath()],
-            'services' => ['label' => 'Dịch vụ', 'url' => FrontendRouteUrl::servicesPath()],
-            'projects' => ['label' => 'Dự án', 'url' => FrontendRouteUrl::projectsPath()],
-            'listings' => ['label' => 'Tin rao', 'url' => FrontendRouteUrl::realEstatePath()],
-            'news' => ['label' => 'Tin tức', 'url' => FrontendRouteUrl::blogPath()],
-            'contact' => ['label' => 'Liên hệ', 'url' => FrontendRouteUrl::contactPath()],
+            'home' => [
+                'label' => 'Trang chủ',
+                'url' => FrontendRouteUrl::homePath(),
+                'link_type' => 'home',
+            ],
+            'about' => [
+                'label' => 'Giới thiệu',
+                'url' => FrontendRouteUrl::pagePath($aboutPage->slug),
+                'link_type' => 'page',
+                'link_value' => (string) $aboutPage->id,
+                'resource_type' => 'cms_page',
+                'resource_id' => (string) $aboutPage->id,
+            ],
+            'products' => [
+                'label' => 'Sản phẩm',
+                'url' => FrontendRouteUrl::catalogSearchPath(),
+                'link_type' => 'catalog-index',
+            ],
+            'services' => [
+                'label' => 'Dịch vụ',
+                'url' => FrontendRouteUrl::servicesPath(),
+                'link_type' => 'service-index',
+            ],
+            'projects' => [
+                'label' => 'Dự án',
+                'url' => FrontendRouteUrl::projectsPath(),
+                'link_type' => 'project-index',
+            ],
+            'listings' => [
+                'label' => 'Tin rao',
+                'url' => FrontendRouteUrl::realEstatePath(),
+                'link_type' => 'real-estate-index',
+            ],
+            'news' => [
+                'label' => 'Tin tức',
+                'url' => FrontendRouteUrl::blogPath(),
+                'link_type' => 'post-index',
+            ],
+            'contact' => [
+                'label' => 'Liên hệ',
+                'url' => FrontendRouteUrl::contactPath(),
+                'link_type' => 'contact',
+            ],
         ];
         $order = match ($websiteType) {
             'real_estate' => ['home', 'listings', 'projects', 'news', 'about', 'contact'],

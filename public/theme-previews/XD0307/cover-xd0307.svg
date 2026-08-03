@@ -1,31 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="XD0301 construction landing cover">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#101d28"/>
-      <stop offset=".55" stop-color="#26384a"/>
-      <stop offset="1" stop-color="#bdd400"/>
-    </linearGradient>
-    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="2" fill="#ffffff" opacity=".16"/>
-    </pattern>
-  </defs>
-  <rect width="1280" height="720" fill="#f7f8f4"/>
-  <rect width="1280" height="460" fill="url(#bg)"/>
-  <rect width="1280" height="460" fill="url(#dots)"/>
-  <rect x="112" y="118" width="336" height="240" fill="none" stroke="#bdd400" stroke-width="10"/>
-  <text x="156" y="204" fill="#ffffff" font-family="Arial, sans-serif" font-size="26" font-weight="700">XD0301</text>
-  <text x="156" y="276" fill="#ffffff" font-family="Arial, sans-serif" font-size="62" font-weight="800">Construction</text>
-  <text x="156" y="340" fill="#ffffff" font-family="Arial, sans-serif" font-size="62" font-weight="800">Landing</text>
-  <rect x="156" y="386" width="170" height="58" rx="4" fill="#bdd400"/>
-  <text x="196" y="423" fill="#ffffff" font-family="Arial, sans-serif" font-size="18" font-weight="800">XEM DỰ ÁN</text>
-  <rect x="740" y="92" width="360" height="300" rx="28" fill="#ffffff" opacity=".16"/>
-  <rect x="804" y="146" width="232" height="230" fill="#ffffff" opacity=".22"/>
-  <path d="M802 376 L920 216 L1038 376 Z" fill="#bdd400" opacity=".9"/>
-  <rect x="0" y="500" width="1280" height="220" fill="#ffffff"/>
-  <rect x="112" y="548" width="260" height="92" fill="#fff" stroke="#dde2dc"/>
-  <rect x="410" y="548" width="260" height="92" fill="#fff" stroke="#dde2dc"/>
-  <rect x="708" y="548" width="260" height="92" fill="#fff" stroke="#dde2dc"/>
-  <rect x="144" y="584" width="150" height="16" rx="8" fill="#26384a"/>
-  <rect x="442" y="584" width="150" height="16" rx="8" fill="#26384a"/>
-  <rect x="740" y="584" width="150" height="16" rx="8" fill="#26384a"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="XD0307 Klean Services cover">
+  <rect width="1200" height="675" fill="#edf8ff"/><rect width="1200" height="96" fill="#fff"/>
+  <circle cx="78" cy="48" r="25" fill="#21c58b"/><text x="118" y="59" fill="#071b3b" font-family="Arial" font-size="34" font-weight="900">KLEAN</text>
+  <g fill="#6b7c91"><rect x="670" y="45" width="65" height="7" rx="4"/><rect x="765" y="45" width="65" height="7" rx="4"/><rect x="860" y="45" width="65" height="7" rx="4"/></g><rect x="990" y="28" width="140" height="40" rx="20" fill="#d8f36a"/>
+  <ellipse cx="990" cy="330" rx="330" ry="260" fill="#d6edf9"/><circle cx="1000" cy="335" r="192" fill="#c2e4f3"/>
+  <text x="75" y="190" fill="#21c58b" font-family="Arial" font-size="18" font-weight="800" letter-spacing="4">DỊCH VỤ LÀM SẠCH TẬN TÂM</text>
+  <text x="75" y="278" fill="#071b3b" font-family="Arial" font-size="70" font-weight="900">KHÔNG GIAN SẠCH.</text><text x="75" y="352" fill="#071b3b" font-family="Arial" font-size="70" font-weight="900">NGÀY MỚI NHẸ NHÀNG.</text>
+  <rect x="75" y="405" width="190" height="56" rx="28" fill="#1d79f2"/>
+  <g transform="translate(75 520)"><rect width="240" height="118" rx="24" fill="#fff"/><rect x="258" width="240" height="118" rx="24" fill="#fff"/><rect x="516" width="240" height="118" rx="24" fill="#fff"/><rect x="774" width="240" height="118" rx="24" fill="#fff"/></g>
 </svg>

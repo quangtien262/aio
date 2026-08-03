@@ -270,22 +270,22 @@ Route::prefix('admin')
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.locales.update');
                 Route::post('/modules/{key}/install', [ModuleLifecycleController::class, 'install'])
-                    ->middleware('admin.permission:store.module.install')
+                    ->middleware('admin.permission:store.module.install,global')
                     ->name('modules.install');
                 Route::post('/modules/{key}/enable', [ModuleLifecycleController::class, 'enable'])
-                    ->middleware('admin.permission:store.module.enable')
+                    ->middleware('admin.permission:store.module.enable,global')
                     ->name('modules.enable');
                 Route::post('/modules/{key}/disable', [ModuleLifecycleController::class, 'disable'])
-                    ->middleware('admin.permission:store.module.disable')
+                    ->middleware('admin.permission:store.module.disable,global')
                     ->name('modules.disable');
                 Route::post('/modules/{key}/upgrade', [ModuleLifecycleController::class, 'upgrade'])
-                    ->middleware('admin.permission:store.module.upgrade')
+                    ->middleware('admin.permission:store.module.upgrade,global')
                     ->name('modules.upgrade');
                 Route::post('/modules/{key}/demo-data', [ModuleLifecycleController::class, 'demoData'])
-                    ->middleware('admin.permission:store.module.upgrade')
+                    ->middleware('admin.permission:store.module.upgrade,global')
                     ->name('modules.demo-data');
                 Route::delete('/modules/{key}', [ModuleLifecycleController::class, 'uninstall'])
-                    ->middleware('admin.permission:store.module.uninstall')
+                    ->middleware('admin.permission:store.module.uninstall,global')
                     ->name('modules.uninstall');
                 Route::get('/project/projects', ProjectIndexController::class)
                     ->middleware('admin.permission:project.view')

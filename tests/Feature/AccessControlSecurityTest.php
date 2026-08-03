@@ -180,4 +180,67 @@ class AccessControlSecurityTest extends TestCase
         $this->assertAuthenticatedAs($admin, 'admin');
         $this->assertDatabaseHas('audit_logs', ['action' => 'auth.admin.two_factor_failed', 'target_id' => (string) $admin->id]);
     }
+
+    public function test_unknown_website_header_cannot_create_a_ghost_context(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $owner = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
+
+        $this->actingAs($owner, 'admin')
+            ->withHeader('X-Website-Key', 'ghost-website')
+            ->getJson('/admin/api/cms/pages')
+            ->assertNotFound();
+    }
+
+    public function test_me_endpoint_recovers_to_first_accessible_active_website(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        Site::query()->create([
+            'name' => 'Website A',
+            'website_key' => 'website-a',
+            'domain' => 'website-a.test',
+            'status' => 'active',
+        ]);
+
+        $permission = Permission::query()->where('key', 'cms.view')->firstOrFail();
+        $role = Role::query()->create(['name' => 'Website A Editor', 'key' => 'website-a-bootstrap-editor']);
+        $role->permissions()->sync([$permission->id]);
+        $admin = Admin::factory()->create(['status' => 'active', 'is_active' => true]);
+        AdminRoleAssignment::query()->create([
+            'admin_id' => $admin->id,
+            'role_id' => $role->id,
+            'scope_type' => 'website',
+            'scope_value' => 'website-a',
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->withHeader('X-Website-Key', 'website-main')
+            ->getJson('/admin/api/me')
+            ->assertOk()
+            ->assertJsonPath('data.current_website.website_key', 'website-a')
+            ->assertJsonPath('data.site_options.0.website_key', 'website-a');
+    }
+
+    public function test_password_change_is_enforced_by_backend_before_other_admin_apis(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
+        $admin->update(['must_change_password' => true]);
+        $this->actingAs($admin, 'admin');
+
+        $this->getJson('/admin/api/me')
+            ->assertOk()
+            ->assertJsonPath('data.must_change_password', true);
+        $this->getJson('/admin/api/dashboard')
+            ->assertForbidden()
+            ->assertJsonPath('code', 'password_change_required');
+
+        $this->putJson('/admin/api/me/password', [
+            'current_password' => 'password',
+            'password' => 'NewSecurePassword123!',
+            'password_confirmation' => 'NewSecurePassword123!',
+        ])->assertOk();
+
+        $this->getJson('/admin/api/dashboard')->assertOk();
+    }
 }

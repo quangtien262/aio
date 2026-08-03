@@ -2,11 +2,11 @@
 
 namespace App\Support\LandingPages;
 
+use App\Core\Cms\CmsMenuResolver;
 use App\Enums\TranslationStatus;
-use App\Models\CatalogProduct;
 use App\Models\CatalogCategory;
+use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
-use App\Models\CmsMenu;
 use App\Models\CmsPartner;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
@@ -29,7 +29,7 @@ use App\Support\FrontendRouteUrl;
 use App\Support\Localization\LocalizedContentRepository;
 use App\Support\Localization\TranslationRevision;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -37,6 +37,7 @@ class LandingPageBuilder
 {
     public function __construct(
         private readonly LocalizedContentRepository $localizedContent,
+        private readonly CmsMenuResolver $menuResolver,
     ) {}
 
     public function supportsTheme(?string $themeKey): bool
@@ -548,8 +549,7 @@ class LandingPageBuilder
         string $locale,
         string $fallbackLocale,
         bool $publishedOnly = false,
-    ): ?LandingPageData
-    {
+    ): ?LandingPageData {
         $availableData = $publishedOnly
             ? $page->data->filter(
                 fn (LandingPageData $item): bool => $item->isPublishedTranslation(),
@@ -605,6 +605,10 @@ class LandingPageBuilder
     {
         $block->loadMissing('landingPage');
         $settings = array_merge($block->settings ?? [], $settings);
+        $settings['theme_key'] ??= (
+            $block->landingPage?->theme_key
+            ?: $block->theme_key
+        );
         $defaultLimit = match ($block->block_type) {
             'hero_slider' => 3,
             'featured_categories' => 6,
@@ -721,7 +725,11 @@ class LandingPageBuilder
         }
 
         if (in_array($block->block_type, ['bds701_hero_search', 'bds701_property_types'], true)) {
-            return $this->realEstatePropertyTypeItems($limit, $locale);
+            return $this->realEstatePropertyTypeItems(
+                $limit,
+                $locale,
+                $block->landingPage?->website_key,
+            );
         }
 
         if (in_array($block->block_type, ['bds701_latest_listings', 'bds701_rental_listings'], true)) {
@@ -729,7 +737,12 @@ class LandingPageBuilder
                 $settings['transaction_type'] = 'rent';
             }
 
-            return $this->realEstateListingItems($settings, $limit, $locale);
+            return $this->realEstateListingItems(
+                $settings,
+                $limit,
+                $locale,
+                $block->landingPage?->website_key,
+            );
         }
 
         if (in_array($block->block_type, ['bds701_market_news', 'bds701_latest_news'], true)) {
@@ -973,9 +986,12 @@ class LandingPageBuilder
         }
 
         if ($block->block_type === 'menu_links') {
-            $menu = CmsMenu::query()->where('location', (string) ($settings['location'] ?? 'primary'))->first();
-
-            return $menu?->items ?? [];
+            return $this->menuResolver->items(
+                (string) ($settings['location'] ?? 'primary'),
+                $block->landingPage?->website_key,
+                $locale,
+                (string) ($block->landingPage?->theme_key ?: $block->theme_key),
+            );
         }
 
         return [];
@@ -1106,18 +1122,18 @@ class LandingPageBuilder
             'cms_testimonials' => $this->cmsTestimonialItems($settings, $limit, $locale, $websiteKey),
             'cms_partners' => $this->cmsPartnerItems($settings, $limit, $locale, $websiteKey),
             'catalog_categories', 'cms_categories', 'cms_service_categories', 'cms_project_categories' => $this->featuredCategoryItems($settings, $limit, $locale, $websiteKey),
-            'cms_menus' => $this->cmsMenuItems($settings, $limit),
-            'real_estate_listings' => $this->realEstateListingItems($settings, $limit, $locale),
-            'real_estate_property_types' => $this->realEstatePropertyTypeItems($limit, $locale),
+            'cms_menus' => $this->cmsMenuItems($settings, $limit, $locale, $websiteKey),
+            'real_estate_listings' => $this->realEstateListingItems($settings, $limit, $locale, $websiteKey),
+            'real_estate_property_types' => $this->realEstatePropertyTypeItems($limit, $locale, $websiteKey),
             default => $this->contentSourceItems([...$settings, 'source' => $defaultSource], $defaultSource, $limit, $locale, $websiteKey),
         };
     }
 
     /**
-     * @param array<string, mixed> $settings
+     * @param  array<string, mixed>  $settings
      * @return array<int, array<string, mixed>>
      */
-    private function realEstateListingItems(array $settings, int $limit, string $locale): array
+    private function realEstateListingItems(array $settings, int $limit, string $locale, ?string $websiteKey): array
     {
         if (! Schema::hasTable('real_estate_listings') || ! Schema::hasTable('real_estate_listing_media')) {
             return [];
@@ -1135,7 +1151,21 @@ class LandingPageBuilder
             ->orderBy('sort_order')
             ->latest('published_at');
 
-        return $query->take($limit)->get()->map(function (RealEstateListing $listing) use ($locale): array {
+        return $query->take($limit)->get()->map(function (RealEstateListing $listing) use ($locale, $websiteKey): array {
+            $listing = $this->localizedContent->localize(
+                $listing,
+                'real_estate_listing',
+                $locale,
+                $websiteKey,
+            );
+            if ($listing->propertyType !== null) {
+                $listing->setRelation('propertyType', $this->localizedContent->localize(
+                    $listing->propertyType,
+                    'real_estate_property_type',
+                    $locale,
+                    $websiteKey,
+                ));
+            }
             $image = $listing->media->firstWhere('is_featured', true) ?? $listing->media->first();
             $location = collect([$listing->ward, $listing->district, $listing->province])->filter()->implode(', ');
             $area = $listing->floor_area ?: $listing->land_area;
@@ -1167,7 +1197,7 @@ class LandingPageBuilder
     /**
      * @return array<int, array<string, mixed>>
      */
-    private function realEstatePropertyTypeItems(int $limit, string $locale): array
+    private function realEstatePropertyTypeItems(int $limit, string $locale, ?string $websiteKey): array
     {
         if (! Schema::hasTable('real_estate_property_types')) {
             return [];
@@ -1180,7 +1210,15 @@ class LandingPageBuilder
             ->orderBy('name')
             ->take($limit)
             ->get()
-            ->map(fn (RealEstatePropertyType $type, int $index): array => [
+            ->map(function (RealEstatePropertyType $type, int $index) use ($locale, $websiteKey): array {
+                $type = $this->localizedContent->localize(
+                    $type,
+                    'real_estate_property_type',
+                    $locale,
+                    $websiteKey,
+                );
+
+                return [
                 'id' => $type->id,
                 'title' => $type->name,
                 'summary' => $type->description,
@@ -1188,7 +1226,8 @@ class LandingPageBuilder
                 'icon' => $type->icon ?: 'fa-solid fa-building',
                 'count_label' => $type->listings_count.' dự án',
                 'url' => FrontendRouteUrl::realEstate($locale).'?property_type='.rawurlencode($type->slug),
-            ])
+                ];
+            })
             ->all();
     }
 
@@ -1196,16 +1235,26 @@ class LandingPageBuilder
      * @param  array<string, mixed>  $settings
      * @return array<int, array<string, mixed>>
      */
-    private function cmsMenuItems(array $settings, int $limit): array
-    {
+    private function cmsMenuItems(
+        array $settings,
+        int $limit,
+        string $locale,
+        ?string $websiteKey,
+    ): array {
         if (! Schema::hasTable('cms_menus')) {
             return [];
         }
 
         $location = trim((string) ($settings['menu_location'] ?? 'primary-navigation')) ?: 'primary-navigation';
-        $menu = CmsMenu::query()->where('location', $location)->first();
 
-        return collect($menu?->items ?? [])
+        return collect($this->menuResolver->items(
+            $location,
+            $websiteKey,
+            $locale,
+            is_string($settings['theme_key'] ?? null)
+                ? $settings['theme_key']
+                : null,
+        ))
             ->filter(fn (mixed $item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
             ->take($limit)
             ->values()
@@ -1580,9 +1629,9 @@ class LandingPageBuilder
                 'image' => $featuredImage?->image_url ?: $this->fallbackContentImage(),
                 'alt' => $featuredImage?->alt_text ?: $service->title,
                 'url' => $service->slug !== '' ? route('site.services.show', ['slug' => $service->slug]) : ($service->link_url ?: '#lien-he'),
-            'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service.%d.button_label', $service->id), $service->button_label),
-        ];
-    })->all();
+                'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service.%d.button_label', $service->id), $service->button_label),
+            ];
+        })->all();
     }
 
     /**
@@ -1595,8 +1644,7 @@ class LandingPageBuilder
         string $locale,
         ?string $websiteKey,
         ?string $themeKey = null,
-    ): array
-    {
+    ): array {
         if (! Schema::hasTable('cms_testimonials')) {
             return [];
         }
@@ -1685,8 +1733,7 @@ class LandingPageBuilder
         string $locale,
         ?string $websiteKey,
         ?string $themeKey = null,
-    ): array
-    {
+    ): array {
         if (! Schema::hasTable('cms_partners')) {
             return [];
         }
@@ -1722,7 +1769,7 @@ class LandingPageBuilder
      * Keep reusable user content and demo rows of the current theme, while
      * preventing demo data from another installed theme leaking into a block.
      *
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
+     * @param  class-string<Model>  $modelClass
      */
     private function scopeThemeDemoRecords(
         Builder $query,
@@ -1908,24 +1955,30 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function shop605DefaultBlocks(): array
     {
-        $preview='/theme-previews/SHOP605/preview-shop605.svg';$hero='/theme-demo/shop605/hero-fashion.png';$a='/theme-demo/shop605/product-women-knit.png';$b='/theme-demo/shop605/product-women-rose.png';$c='/theme-demo/shop605/product-men-green.png';$d='/theme-demo/shop605/ad-lac-quan.png';
-        $heading=fn(?string $title=null,?string $subtitle=null,?string $description=null):array=>['title'=>$title,'subtitle'=>$subtitle,'description'=>$description];
-        $with=fn(array $base,array $items):array=>array_merge($base,['content'=>['items'=>$items]]);
-        $schema=fn(int $limit):array=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>[['value'=>'cms_products','label'=>'Sản phẩm Catalog']]],'limit'=>['type'=>'number','label'=>'Số sản phẩm','default'=>$limit],'search'=>['type'=>'text','label'=>'Từ khóa'],'category_id'=>['type'=>'select','label'=>'Danh mục'],'featured_only'=>['type'=>'boolean','label'=>'Chỉ sản phẩm nổi bật','default'=>false]];
-        $products=[['title'=>'Áo ngực su không gọng FA05072292','price'=>359000,'original_price'=>429000,'image'=>$a,'url'=>'#'],['title'=>'Đồ mặc nhà cotton DMN02083646','price'=>399000,'original_price'=>429000,'image'=>$b,'url'=>'#'],['title'=>'Bộ mặc nhà lụa DH04013279','price'=>559000,'image'=>$c,'url'=>'#'],['title'=>'Áo ngực ren không gọng','price'=>329000,'image'=>$d,'url'=>'#']];
-        $benefits=[['title'=>'Freeship toàn quốc đơn > 499k','icon'=>'fa-solid fa-truck'],['title'=>'Kiểm hàng trước khi thanh toán','icon'=>'fa-solid fa-list-check'],['title'=>'Hỗ trợ đóng gói miễn phí','icon'=>'fa-regular fa-bookmark']];
-        $collections=[['title'=>'BST Đến bên em','image'=>$a],['title'=>'BST Mùa yêu dấu','image'=>$b],['title'=>'Giải thưởng Top 100','image'=>$d],['title'=>'BST Em Xinh','image'=>$c],['title'=>'BST Thiết yếu','image'=>$a],['title'=>'BST Tơ vương','image'=>$b]];
+        $preview = '/theme-previews/SHOP605/preview-shop605.svg';
+        $hero = '/theme-demo/shop605/hero-fashion.png';
+        $a = '/theme-demo/shop605/product-women-knit.png';
+        $b = '/theme-demo/shop605/product-women-rose.png';
+        $c = '/theme-demo/shop605/product-men-green.png';
+        $d = '/theme-demo/shop605/ad-lac-quan.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description];
+        $with = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $schema = fn (int $limit): array => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit], 'search' => ['type' => 'text', 'label' => 'Từ khóa'], 'category_id' => ['type' => 'select', 'label' => 'Danh mục'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật', 'default' => false]];
+        $products = [['title' => 'Áo ngực su không gọng FA05072292', 'price' => 359000, 'original_price' => 429000, 'image' => $a, 'url' => '#'], ['title' => 'Đồ mặc nhà cotton DMN02083646', 'price' => 399000, 'original_price' => 429000, 'image' => $b, 'url' => '#'], ['title' => 'Bộ mặc nhà lụa DH04013279', 'price' => 559000, 'image' => $c, 'url' => '#'], ['title' => 'Áo ngực ren không gọng', 'price' => 329000, 'image' => $d, 'url' => '#']];
+        $benefits = [['title' => 'Freeship toàn quốc đơn > 499k', 'icon' => 'fa-solid fa-truck'], ['title' => 'Kiểm hàng trước khi thanh toán', 'icon' => 'fa-solid fa-list-check'], ['title' => 'Hỗ trợ đóng gói miễn phí', 'icon' => 'fa-regular fa-bookmark']];
+        $collections = [['title' => 'BST Đến bên em', 'image' => $a], ['title' => 'BST Mùa yêu dấu', 'image' => $b], ['title' => 'Giải thưởng Top 100', 'image' => $d], ['title' => 'BST Em Xinh', 'image' => $c], ['title' => 'BST Thiết yếu', 'image' => $a], ['title' => 'BST Tơ vương', 'image' => $b]];
+
         return [
-            ['block_type'=>'hero_slider','label'=>'Hero gallery OH!Under','description'=>'Ba ảnh lifestyle trên nền hồng.','preview_image'=>$preview,'anchor_id'=>'top','dynamic'=>true,'settings'=>['source'=>'site_banners','placement'=>'shop605-hero-slider','limit'=>3],'settings_schema'=>['placement'=>['type'=>'text','label'=>'Placement'],'limit'=>['type'=>'number','label'=>'Số ảnh']],'media'=>['image'=>$hero],'data'=>['vi'=>array_merge($heading('OH!Under'),['content'=>['slides'=>$products]]),'en'=>$heading('OH!Under')]],
-            ['block_type'=>'shop605_benefits','label'=>'Quyền lợi mua hàng','description'=>'Ba quyền lợi ngay dưới hero.','preview_image'=>$preview,'anchor_id'=>'quyen-loi','settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$with($heading(),$benefits),'en'=>$with($heading(),$benefits)]],
-            ['block_type'=>'shop605_sale','label'=>'End of season sale','description'=>'Bốn sản phẩm sale và bộ đếm.','preview_image'=>$preview,'anchor_id'=>'sale','dynamic'=>true,'settings'=>['source'=>'cms_products','limit'=>4,'featured_only'=>false],'settings_schema'=>$schema(4),'data'=>['vi'=>$with($heading('END OF SEASON SALE - MUA 1 TẶNG 1'),$products),'en'=>$with($heading('END OF SEASON SALE'),$products)]],
-            ['block_type'=>'shop605_new','label'=>'Sản phẩm mới','description'=>'Danh mục bên trái và ba sản phẩm dọc.','preview_image'=>$preview,'anchor_id'=>'san-pham','dynamic'=>true,'settings'=>['source'=>'cms_products','limit'=>3,'featured_only'=>false],'settings_schema'=>$schema(3),'data'=>['vi'=>$with($heading('Sản phẩm mới'),$products),'en'=>$with($heading('New products'),$products)]],
-            ['block_type'=>'shop605_best','label'=>'Sản phẩm bán chạy','description'=>'Lưới mười sản phẩm.','preview_image'=>$preview,'anchor_id'=>'ban-chay','dynamic'=>true,'settings'=>['source'=>'cms_products','limit'=>10,'featured_only'=>false],'settings_schema'=>$schema(10),'data'=>['vi'=>$with($heading('Sản phẩm bán chạy'),$products),'en'=>$with($heading('Best sellers'),$products)]],
-            ['block_type'=>'shop605_editorial','label'=>'BST Mùa yêu dấu','description'=>'Banner editorial toàn chiều rộng.','preview_image'=>$preview,'anchor_id'=>'gioi-thieu','media'=>['image'=>$hero],'settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$heading('Mùa yêu dấu',null,'Hãy thả mình vào tiết trời xuân hè với những mẫu sản phẩm không thể xinh yêu hơn tại OH!Under.'),'en'=>$heading('Beloved season')]],
-            ['block_type'=>'shop605_collections','label'=>'OH!Under Collection','description'=>'Mosaic sáu bộ sưu tập.','preview_image'=>$preview,'anchor_id'=>'bo-suu-tap','settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$with($heading('OH!Under Collection'),$collections),'en'=>$with($heading('OH!Under Collection'),$collections)]],
-            ['block_type'=>'shop605_story','label'=>'Khách hàng cảm nhận','description'=>'Câu chuyện thương hiệu và khách hàng.','preview_image'=>$preview,'anchor_id'=>'cam-nhan','settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$heading('Khách hàng cảm nhận gì về OH! Under',null,'Với OH!Under, sự thành công đến từ đam mê, sáng tạo và nỗ lực thấu hiểu, trân trọng phái đẹp.'),'en'=>$heading('Customer stories')]],
-            ['block_type'=>'latest_posts','label'=>'Blog & Chia sẻ','description'=>'Ba bài viết mới nhất.','preview_image'=>$preview,'anchor_id'=>'blog','dynamic'=>true,'settings'=>['source'=>'cms_posts','limit'=>3],'settings_schema'=>['limit'=>['type'=>'number','label'=>'Số bài']],'data'=>['vi'=>$heading('Blog & Chia sẻ'),'en'=>$heading('Blog & Stories')]],
-            ['block_type'=>'shop605_footer','label'=>'Footer và nhận tin','description'=>'Liên hệ, hướng dẫn và newsletter.','preview_image'=>$preview,'anchor_id'=>'lien-he','settings'=>[],'settings_schema'=>[],'data'=>['vi'=>$heading('NHẬN TIN KHUYẾN MÃI'),'en'=>$heading('NEWSLETTER')]],
+            ['block_type' => 'hero_slider', 'label' => 'Hero gallery OH!Under', 'description' => 'Ba ảnh lifestyle trên nền hồng.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'shop605-hero-slider', 'limit' => 3], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement'], 'limit' => ['type' => 'number', 'label' => 'Số ảnh']], 'media' => ['image' => $hero], 'data' => ['vi' => array_merge($heading('OH!Under'), ['content' => ['slides' => $products]]), 'en' => $heading('OH!Under')]],
+            ['block_type' => 'shop605_benefits', 'label' => 'Quyền lợi mua hàng', 'description' => 'Ba quyền lợi ngay dưới hero.', 'preview_image' => $preview, 'anchor_id' => 'quyen-loi', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $with($heading(), $benefits), 'en' => $with($heading(), $benefits)]],
+            ['block_type' => 'shop605_sale', 'label' => 'End of season sale', 'description' => 'Bốn sản phẩm sale và bộ đếm.', 'preview_image' => $preview, 'anchor_id' => 'sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $schema(4), 'data' => ['vi' => $with($heading('END OF SEASON SALE - MUA 1 TẶNG 1'), $products), 'en' => $with($heading('END OF SEASON SALE'), $products)]],
+            ['block_type' => 'shop605_new', 'label' => 'Sản phẩm mới', 'description' => 'Danh mục bên trái và ba sản phẩm dọc.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $schema(3), 'data' => ['vi' => $with($heading('Sản phẩm mới'), $products), 'en' => $with($heading('New products'), $products)]],
+            ['block_type' => 'shop605_best', 'label' => 'Sản phẩm bán chạy', 'description' => 'Lưới mười sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'ban-chay', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 10, 'featured_only' => false], 'settings_schema' => $schema(10), 'data' => ['vi' => $with($heading('Sản phẩm bán chạy'), $products), 'en' => $with($heading('Best sellers'), $products)]],
+            ['block_type' => 'shop605_editorial', 'label' => 'BST Mùa yêu dấu', 'description' => 'Banner editorial toàn chiều rộng.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'media' => ['image' => $hero], 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $heading('Mùa yêu dấu', null, 'Hãy thả mình vào tiết trời xuân hè với những mẫu sản phẩm không thể xinh yêu hơn tại OH!Under.'), 'en' => $heading('Beloved season')]],
+            ['block_type' => 'shop605_collections', 'label' => 'OH!Under Collection', 'description' => 'Mosaic sáu bộ sưu tập.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $with($heading('OH!Under Collection'), $collections), 'en' => $with($heading('OH!Under Collection'), $collections)]],
+            ['block_type' => 'shop605_story', 'label' => 'Khách hàng cảm nhận', 'description' => 'Câu chuyện thương hiệu và khách hàng.', 'preview_image' => $preview, 'anchor_id' => 'cam-nhan', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $heading('Khách hàng cảm nhận gì về OH! Under', null, 'Với OH!Under, sự thành công đến từ đam mê, sáng tạo và nỗ lực thấu hiểu, trân trọng phái đẹp.'), 'en' => $heading('Customer stories')]],
+            ['block_type' => 'latest_posts', 'label' => 'Blog & Chia sẻ', 'description' => 'Ba bài viết mới nhất.', 'preview_image' => $preview, 'anchor_id' => 'blog', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số bài']], 'data' => ['vi' => $heading('Blog & Chia sẻ'), 'en' => $heading('Blog & Stories')]],
+            ['block_type' => 'shop605_footer', 'label' => 'Footer và nhận tin', 'description' => 'Liên hệ, hướng dẫn và newsletter.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $heading('NHẬN TIN KHUYẾN MÃI'), 'en' => $heading('NEWSLETTER')]],
         ];
     }
 
@@ -2616,10 +2669,10 @@ class LandingPageBuilder
             $product('Tay cầm chơi game không dây', '/theme-demo/ec907/game-console.webp', 2690000, 3800000),
         ];
         $categories = collect([
-            ['Laptop','laptop.webp'],['Máy tính bảng','laptop.webp'],['Điện thoại','phone-front.webp'],['Tai nghe','headset-black.png'],
-            ['Bàn phím','keyboard-white.png'],['Sạc dự phòng','smartwatch.webp'],['Chuột + Lót chuột','keyboard-white.png'],['Củ sạc','earbuds.webp'],
-            ['Máy tính bàn (PC)','television.webp'],['Màn hình','television.webp'],['Thiết bị âm thanh','speaker.webp'],['Máy chơi game','game-console.webp'],
-            ['Ghế gaming','headset.webp'],['Balo laptop','laptop.webp'],['Cáp sạc','earbuds.webp'],['Phụ kiện','smartwatch.webp'],
+            ['Laptop', 'laptop.webp'], ['Máy tính bảng', 'laptop.webp'], ['Điện thoại', 'phone-front.webp'], ['Tai nghe', 'headset-black.png'],
+            ['Bàn phím', 'keyboard-white.png'], ['Sạc dự phòng', 'smartwatch.webp'], ['Chuột + Lót chuột', 'keyboard-white.png'], ['Củ sạc', 'earbuds.webp'],
+            ['Máy tính bàn (PC)', 'television.webp'], ['Màn hình', 'television.webp'], ['Thiết bị âm thanh', 'speaker.webp'], ['Máy chơi game', 'game-console.webp'],
+            ['Ghế gaming', 'headset.webp'], ['Balo laptop', 'laptop.webp'], ['Cáp sạc', 'earbuds.webp'], ['Phụ kiện', 'smartwatch.webp'],
         ])->map(fn (array $item): array => ['title' => $item[0], 'image' => '/theme-demo/ec907/'.$item[1], 'url' => '#'])->all();
         $benefits = [
             ['title' => 'Giao hỏa tốc', 'summary' => 'Nội thành TP.HCM trong 4h', 'icon' => 'fa-truck-fast'],
@@ -2639,7 +2692,7 @@ class LandingPageBuilder
             ['title' => 'Cách xuất màn hình laptop ra màn hình ngoài cực đơn giản', 'summary' => 'Hướng dẫn kết nối và tối ưu không gian làm việc đa màn hình.', 'image' => '/theme-demo/ec907/news-tv.webp', 'url' => '#'],
             ['title' => 'Laptop AI mới: hiệu năng mạnh và siêu mỏng nhẹ', 'summary' => 'Những thay đổi đáng chú ý của thế hệ máy tính cá nhân mới.', 'image' => '/theme-demo/ec907/news-wearables.webp', 'url' => '#'],
         ];
-        $brands = collect(['SONY','XIAOMI','ASUS','OPPO','SAMSUNG','LG','realme','HUAWEI','NOKIA','MSI','DELL','Apple','GEFORCE RTX','Lenovo','acer','ThinkPad'])->map(fn (string $title): array => ['title' => $title, 'url' => '#'])->all();
+        $brands = collect(['SONY', 'XIAOMI', 'ASUS', 'OPPO', 'SAMSUNG', 'LG', 'realme', 'HUAWEI', 'NOKIA', 'MSI', 'DELL', 'Apple', 'GEFORCE RTX', 'Lenovo', 'acer', 'ThinkPad'])->map(fn (string $title): array => ['title' => $title, 'url' => '#'])->all();
         $promos = [
             ['title' => 'LAPTOP VĂN PHÒNG', 'summary' => 'Giảm 30% cho sinh viên', 'price' => '8.450.000₫', 'image' => '/theme-demo/ec907/laptop.webp', 'url' => '#'],
             ['title' => 'MÀN HÌNH 4K', 'summary' => 'Giảm lên đến 20%', 'price' => '7.690.000₫', 'image' => '/theme-demo/ec907/television.webp', 'url' => '#'],
@@ -3893,10 +3946,10 @@ class LandingPageBuilder
                 'anchor_id' => 'bang-gia', 'dynamic' => false, 'settings' => ['source' => 'custom'],
                 'data' => [
                     'vi' => ['title' => 'Dịch vụ chăm sóc xe', 'subtitle' => 'Bảng giá', 'description' => 'Chăm sóc toàn diện – Bảo vệ tối ưu – Nâng tầm đẳng cấp xế yêu', 'content' => ['items' => [
-                        ['title' => 'Rửa xe tiêu chuẩn', 'price' => '200.000đ', 'features' => "Rửa xe ngoại thất|Hút bụi nội thất|Lau chùi cơ bản|Dưỡng lốp", 'icon' => 'fa-solid fa-car-side'],
-                        ['title' => 'Rửa xe cao cấp', 'price' => '400.000đ', 'features' => "Rửa xe chi tiết|Vệ sinh nội thất|Dưỡng lốp, phủ bóng|Khử mùi", 'icon' => 'fa-solid fa-spray-can-sparkles'],
-                        ['title' => 'Phủ ceramic', 'price' => '4.500.000đ', 'features' => "Phủ ceramic cao cấp|Bảo vệ sơn xe|Kéo dài độ bóng|Hiệu chỉnh bề mặt", 'icon' => 'fa-solid fa-shield-halved', 'featured' => true],
-                        ['title' => 'Vệ sinh nội thất', 'price' => '800.000đ', 'features' => "Vệ sinh chi tiết|Khử mùi, diệt khuẩn|Dưỡng da và nhựa|Vệ sinh trần xe", 'icon' => 'fa-solid fa-couch'],
+                        ['title' => 'Rửa xe tiêu chuẩn', 'price' => '200.000đ', 'features' => 'Rửa xe ngoại thất|Hút bụi nội thất|Lau chùi cơ bản|Dưỡng lốp', 'icon' => 'fa-solid fa-car-side'],
+                        ['title' => 'Rửa xe cao cấp', 'price' => '400.000đ', 'features' => 'Rửa xe chi tiết|Vệ sinh nội thất|Dưỡng lốp, phủ bóng|Khử mùi', 'icon' => 'fa-solid fa-spray-can-sparkles'],
+                        ['title' => 'Phủ ceramic', 'price' => '4.500.000đ', 'features' => 'Phủ ceramic cao cấp|Bảo vệ sơn xe|Kéo dài độ bóng|Hiệu chỉnh bề mặt', 'icon' => 'fa-solid fa-shield-halved', 'featured' => true],
+                        ['title' => 'Vệ sinh nội thất', 'price' => '800.000đ', 'features' => 'Vệ sinh chi tiết|Khử mùi, diệt khuẩn|Dưỡng da và nhựa|Vệ sinh trần xe', 'icon' => 'fa-solid fa-couch'],
                     ]]],
                     'en' => ['title' => 'Vehicle care services', 'subtitle' => 'Pricing', 'description' => 'Complete care and lasting protection.', 'content' => ['items' => []]],
                 ],
@@ -5468,24 +5521,24 @@ class LandingPageBuilder
             [
                 'block_type' => 'hero_slider',
                 'label' => 'Hero RouteX',
-                'description' => 'Banner bo tron nen xanh, CTA va video.',
+                'description' => 'Banner bo tròn nền xanh, CTA và video.',
                 'preview_image' => '/theme-previews/XD0313/hero-slider.png',
                 'anchor_id' => 'top',
                 'dynamic' => true,
                 'settings' => ['source' => 'site_banners', 'placement' => 'xd0313-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500],
                 'settings_schema' => [
-                    'placement' => ['type' => 'text', 'label' => 'Vi tri banner'],
-                    'limit' => ['type' => 'number', 'label' => 'So slide'],
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Visa De Dang, Giac Mo Thanh Hien Thuc',
+                        'title' => 'Visa dễ dàng, giấc mơ thành hiện thực',
                         'subtitle' => '',
-                        'description' => 'Visa chi la phuong tien, con giac mo du hoc, du lich, dinh cu moi la muc tieu cuoi cung.',
-                        'button_label' => 'Doc Them',
+                        'description' => 'Visa chỉ là phương tiện, còn giấc mơ du học, du lịch và định cư mới là mục tiêu cuối cùng.',
+                        'button_label' => 'Đọc thêm',
                         'content' => ['slides' => [
-                            ['title' => 'Visa De Dang, Giac Mo Thanh Hien Thuc', 'summary' => 'Visa chi la phuong tien, con giac mo du hoc, du lich, dinh cu moi la muc tieu cuoi cung. Su de dang trong viec co visa se giup ban tap trung hon vao viec thuc hien giac mo cua minh.', 'button_label' => 'Doc Them', 'image' => 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=900&q=85', 'link_url' => '#gioi-thieu', 'video_url' => '#video'],
-                            ['title' => 'Dong Hanh Tren Moi Hanh Trinh Quoc Te', 'summary' => 'Tu van ho so, dat lich hen va ho tro visa nhanh chong cho tung muc tieu cua ban.', 'button_label' => 'Dich Vu Visa', 'image' => 'https://images.unsplash.com/photo-1521791055366-0d553872125f?auto=format&fit=crop&w=900&q=85', 'link_url' => '#dich-vu', 'video_url' => '#video'],
+                            ['title' => 'Visa dễ dàng, giấc mơ thành hiện thực', 'summary' => 'Visa chỉ là phương tiện, còn giấc mơ du học, du lịch và định cư mới là mục tiêu cuối cùng. Quy trình thuận lợi giúp bạn tập trung hơn vào hành trình của mình.', 'button_label' => 'Đọc thêm', 'image' => 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=900&q=85', 'link_url' => '#gioi-thieu', 'video_url' => '#video'],
+                            ['title' => 'Đồng hành trên mọi hành trình quốc tế', 'summary' => 'Tư vấn hồ sơ, đặt lịch hẹn và hỗ trợ visa nhanh chóng cho từng mục tiêu của bạn.', 'button_label' => 'Dịch vụ Visa', 'image' => 'https://images.unsplash.com/photo-1521791055366-0d553872125f?auto=format&fit=crop&w=900&q=85', 'link_url' => '#dich-vu', 'video_url' => '#video'],
                         ]],
                     ],
                     'en' => ['title' => 'Easy visa, real dreams', 'subtitle' => '', 'description' => 'RouteX helps make your travel, study and work dreams easier.', 'button_label' => 'Read more', 'content' => ['slides' => []]],
@@ -5493,22 +5546,22 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'featured_categories',
-                'label' => 'Uu diem RouteX',
-                'description' => 'Bon card loi ich dau trang.',
+                'label' => 'Ưu điểm RouteX',
+                'description' => 'Bốn thẻ lợi ích đầu trang.',
                 'preview_image' => '/theme-previews/XD0313/benefits.png',
                 'anchor_id' => 'uu-diem',
                 'settings' => ['limit' => 4],
                 'data' => [
                     'vi' => [
-                        'title' => 'Uu diem',
+                        'title' => 'Ưu điểm',
                         'subtitle' => '',
                         'description' => '',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['title' => 'Ho So Don Gian', 'summary' => 'Co cong viec chinh thuc voi thu nhap tot, co the chung minh qua hop dong lao dong va bang luong.', 'icon' => '01'],
-                            ['title' => 'Nhanh Chong Tuc Thi', 'summary' => 'Hay lien he voi chung toi de nhan duoc su tu van mien phi va chuyen sau nhat.', 'icon' => '02'],
-                            ['title' => 'Tu Van Tan Tam', 'summary' => 'RouteX tu hao la doi tac tin cay, chuyen cung cap dich vu tu van va ho tro visa chuyen nghiep.', 'icon' => '03'],
-                            ['title' => 'Bao Mat Tuyet Doi', 'summary' => 'Moi du lieu khach hang deu duoc bao mat tuyet doi, dam bao su an tam va tin tuong.', 'icon' => '04'],
+                            ['title' => 'Hồ sơ đơn giản', 'summary' => 'Hồ sơ được rà soát rõ ràng, hướng dẫn đầy đủ và phù hợp với từng mục tiêu xin visa.', 'icon' => '01'],
+                            ['title' => 'Xử lý nhanh chóng', 'summary' => 'Liên hệ RouteX để nhận tư vấn miễn phí, chuyên sâu và lộ trình xử lý phù hợp.', 'icon' => '02'],
+                            ['title' => 'Tư vấn tận tâm', 'summary' => 'RouteX là đối tác tin cậy, cung cấp dịch vụ tư vấn và hỗ trợ visa chuyên nghiệp.', 'icon' => '03'],
+                            ['title' => 'Bảo mật tuyệt đối', 'summary' => 'Mọi dữ liệu khách hàng đều được bảo mật, đảm bảo sự an tâm và tin tưởng.', 'icon' => '04'],
                         ]],
                     ],
                     'en' => ['title' => 'Benefits', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
@@ -5516,8 +5569,8 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'about_experience',
-                'label' => 'Ve RouteX',
-                'description' => 'Gioi thieu cong ty voi hinh anh va goi dich vu.',
+                'label' => 'Về RouteX',
+                'description' => 'Giới thiệu công ty với hình ảnh và gói dịch vụ.',
                 'preview_image' => '/theme-previews/XD0313/about.png',
                 'anchor_id' => 'gioi-thieu',
                 'settings' => ['cta_url' => '#dich-vu'],
@@ -5527,15 +5580,15 @@ class LandingPageBuilder
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Noi Niem Dam Me Nhung Diem Den Trong Mo',
-                        'subtitle' => 'Ve chung toi',
-                        'description' => 'RouteX Visa tu hao la doi tac tin cay cua ban tren moi hanh trinh kham pha the gioi. Chung toi cung cap cac giai phap visa toan dien va hieu qua nhat.',
-                        'button_label' => 'Doc Them',
+                        'title' => 'Nơi niềm đam mê chạm đến những điểm đến trong mơ',
+                        'subtitle' => 'Về chúng tôi',
+                        'description' => 'RouteX Visa tự hào là đối tác tin cậy của bạn trên mọi hành trình khám phá thế giới. Chúng tôi cung cấp các giải pháp visa toàn diện, minh bạch và hiệu quả.',
+                        'button_label' => 'Đọc thêm',
                         'content' => [
                             'years' => '25',
                             'items' => [
-                                ['title' => 'Ho Chieu Plus', 'icon' => 'P', 'bullets' => ['Di tru vuot bien gioi', 'Ho tro thi thuc toan cau']],
-                                ['title' => 'Nhap Canh Toan Cau', 'icon' => 'G', 'bullets' => ['Dich vu Visa GlobeTrot', 'Giai phap Visa Infinity']],
+                                ['title' => 'Hộ chiếu Plus', 'icon' => 'P', 'bullets' => ['Di trú xuyên biên giới', 'Hỗ trợ thị thực toàn cầu']],
+                                ['title' => 'Nhập cảnh toàn cầu', 'icon' => 'G', 'bullets' => ['Dịch vụ Visa GlobeTrot', 'Giải pháp Visa Infinity']],
                             ],
                         ],
                     ],
@@ -5544,27 +5597,27 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'content_mosaic',
-                'label' => 'Danh muc visa noi bat',
-                'description' => 'Slider anh danh muc visa tren nen xanh dam.',
+                'label' => 'Danh mục visa nổi bật',
+                'description' => 'Slider ảnh danh mục visa trên nền xanh đậm.',
                 'preview_image' => '/theme-previews/XD0313/featured-visa.png',
                 'anchor_id' => 'visa-noi-bat',
                 'dynamic' => true,
                 'settings' => ['source' => 'custom', 'limit' => 6],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Danh Muc Visa Noi Bat',
-                        'subtitle' => 'Visa noi bat',
+                        'title' => 'Danh mục Visa nổi bật',
+                        'subtitle' => 'Visa nổi bật',
                         'description' => '',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['title' => 'Visa Chau My', 'image' => 'https://images.unsplash.com/photo-1508433957232-3107f5fd5995?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Visa Chau Au', 'image' => 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Visa Du Hoc', 'image' => 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa châu Mỹ', 'image' => 'https://images.unsplash.com/photo-1508433957232-3107f5fd5995?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa châu Âu', 'image' => 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa du học', 'image' => 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'Featured visa categories', 'subtitle' => 'Featured visas', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
@@ -5572,31 +5625,31 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'featured_services',
-                'label' => 'Cac loai visa pho bien',
-                'description' => 'Grid dich vu visa lay tu service/post/product/project hoac custom.',
+                'label' => 'Các loại visa phổ biến',
+                'description' => 'Lưới dịch vụ visa lấy từ dịch vụ, bài viết, sản phẩm, dự án hoặc dữ liệu tùy chỉnh.',
                 'preview_image' => '/theme-previews/XD0313/services.png',
                 'anchor_id' => 'dich-vu',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Cac Loai Visa Pho Bien',
-                        'subtitle' => 'Visa noi bat',
+                        'title' => 'Các loại Visa phổ biến',
+                        'subtitle' => 'Visa nổi bật',
                         'description' => '',
-                        'button_label' => 'Xem Chi Tiet',
+                        'button_label' => 'Xem chi tiết',
                         'content' => ['items' => [
-                            ['title' => 'Dich Vu Xin Visa Brunei Nhanh Chong - Chuyen Nghiep Tai', 'summary' => 'Doi voi cong dan Viet Nam, viec xin visa di Brunei can duoc thuc hien neu muon luu tru qua 14 ngay.', 'image' => 'https://images.unsplash.com/photo-1560264280-88b68371db39?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Visa Du Hoc Chau Au', 'summary' => 'Thu tuc xin visa du hoc Chau Au co the phuc tap vi moi quoc gia co nhung quy dinh rieng.', 'image' => 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Dich Vu Gia Han Visa My', 'summary' => 'Ho tro gia han thi thuc My cho ca nhan da co visa du dieu kien.', 'image' => 'https://images.unsplash.com/photo-1527853787696-f7be74f2e39a?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Visa Tham Nguoi Than', 'summary' => 'Loai visa danh cho muc dich tham than, du lich ngan han hoac bao lanh dac biet.', 'image' => 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Visa Du Lich', 'summary' => 'Thi thuc cho phep nhap canh voi muc dich tham quan, nghi duong va kham pha.', 'image' => 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Visa Cong Tac', 'summary' => 'Ho tro ho so cong tac, thuong mai, ky ket hop dong va tham du su kien.', 'image' => 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Dịch vụ xin Visa Brunei nhanh chóng', 'summary' => 'Công dân Việt Nam cần xin visa Brunei nếu dự kiến lưu trú trên 14 ngày.', 'image' => 'https://images.unsplash.com/photo-1560264280-88b68371db39?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa du học châu Âu', 'summary' => 'Thủ tục xin visa du học châu Âu được tư vấn theo quy định riêng của từng quốc gia.', 'image' => 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Dịch vụ gia hạn Visa Mỹ', 'summary' => 'Hỗ trợ gia hạn thị thực Mỹ cho khách hàng đang có visa đủ điều kiện.', 'image' => 'https://images.unsplash.com/photo-1527853787696-f7be74f2e39a?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa thăm người thân', 'summary' => 'Loại visa dành cho mục đích thăm thân, du lịch ngắn hạn hoặc bảo lãnh đặc biệt.', 'image' => 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa du lịch', 'summary' => 'Thị thực cho phép nhập cảnh với mục đích tham quan, nghỉ dưỡng và khám phá.', 'image' => 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Visa công tác', 'summary' => 'Hỗ trợ hồ sơ công tác, thương mại, ký kết hợp đồng và tham dự sự kiện.', 'image' => 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=900&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'Popular visa services', 'subtitle' => 'Featured visas', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]],
@@ -5604,8 +5657,8 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'logistics_feature_panel',
-                'label' => 'Uu dai va thong ke',
-                'description' => 'Khoi CTA kem thong ke RouteX.',
+                'label' => 'Ưu đãi và thống kê',
+                'description' => 'Khối CTA kèm thống kê RouteX.',
                 'preview_image' => '/theme-previews/XD0313/promo.png',
                 'anchor_id' => 'uu-dai',
                 'settings' => ['cta_url' => '#footer'],
@@ -5615,15 +5668,15 @@ class LandingPageBuilder
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Nhan uu dai tot nhat cua chung toi mot cach nhanh chong',
+                        'title' => 'Nhận ưu đãi tốt nhất của chúng tôi một cách nhanh chóng',
                         'subtitle' => '',
-                        'description' => 'Dung ngan ngai lien he truc tiep voi cac cong ty visa qua hotline hoac email. Ban co the hoi thang ve cac chuong trinh khuyen mai hien tai.',
-                        'button_label' => 'Lien He Ngay',
+                        'description' => 'Đừng ngần ngại liên hệ RouteX qua hotline hoặc email để được tư vấn về các chương trình ưu đãi hiện tại.',
+                        'button_label' => 'Liên hệ ngay',
                         'content' => ['stats' => [
-                            ['value' => '17+', 'label' => 'Nam kinh nghiem'],
-                            ['value' => '99,8%', 'label' => 'Khach hang hai long'],
-                            ['value' => '24/7', 'label' => 'Tu van mien phi'],
-                            ['value' => '98,6%', 'label' => 'Ti le dau visa'],
+                            ['value' => '17+', 'label' => 'Năm kinh nghiệm'],
+                            ['value' => '99,8%', 'label' => 'Khách hàng hài lòng'],
+                            ['value' => '24/7', 'label' => 'Tư vấn miễn phí'],
+                            ['value' => '98,6%', 'label' => 'Tỷ lệ đậu visa'],
                         ]],
                     ],
                     'en' => ['title' => 'Get our best offer quickly', 'subtitle' => '', 'description' => 'Contact RouteX for the latest visa consulting offers.', 'button_label' => 'Contact now', 'content' => []],
@@ -5631,23 +5684,23 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'process_steps',
-                'label' => 'Quy trinh visa',
-                'description' => 'Cac buoc lam visa tai RouteX.',
+                'label' => 'Quy trình visa',
+                'description' => 'Các bước làm visa tại RouteX.',
                 'preview_image' => '/theme-previews/XD0313/process.png',
                 'anchor_id' => 'quy-trinh',
                 'settings' => [],
                 'media' => ['image' => 'https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=900&q=85'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Cac Buoc Lam Visa Tai RouteX',
-                        'subtitle' => 'Quy trinh tu van',
+                        'title' => 'Các bước làm Visa tại RouteX',
+                        'subtitle' => 'Quy trình tư vấn',
                         'description' => '',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['title' => 'Dang Ky (1 Phut)', 'summary' => 'Form dien thong tin don gian, nhanh chong. Thong tin duoc bao mat an toan.'],
-                            ['title' => 'Tu Van', 'summary' => 'Nhan vien se lien he lai voi ban trong vong 4h. Hoac lien he qua Hotline 1900 9477.'],
-                            ['title' => 'Hoan Thien Ho So (2 - 3 Ngay)', 'summary' => 'Mot nhan vien giau kinh nghiem se dong hanh ho tro ban suot qua trinh.'],
-                            ['title' => 'Nhan Visa', 'summary' => 'Khach hang nhan Visa se den lay truc tiep hoac chuyen phat tan tay.'],
+                            ['title' => 'Đăng ký (1 phút)', 'summary' => 'Điền biểu mẫu thông tin đơn giản, nhanh chóng. Mọi dữ liệu đều được bảo mật an toàn.'],
+                            ['title' => 'Tư vấn', 'summary' => 'Chuyên viên liên hệ lại trong vòng 4 giờ và tư vấn lộ trình phù hợp với hồ sơ.'],
+                            ['title' => 'Hoàn thiện hồ sơ (2–3 ngày)', 'summary' => 'Chuyên viên giàu kinh nghiệm đồng hành và hỗ trợ bạn trong suốt quá trình.'],
+                            ['title' => 'Nhận Visa', 'summary' => 'Khách hàng nhận Visa trực tiếp hoặc qua dịch vụ chuyển phát tận tay.'],
                         ]],
                     ],
                     'en' => ['title' => 'RouteX visa process', 'subtitle' => 'Consulting process', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
@@ -5655,20 +5708,20 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'testimonials',
-                'label' => 'Danh gia khach hang',
-                'description' => 'Khoi testimonial xanh.',
+                'label' => 'Đánh giá khách hàng',
+                'description' => 'Khối cảm nhận khách hàng nền xanh.',
                 'preview_image' => '/theme-previews/XD0313/testimonials.png',
                 'anchor_id' => 'danh-gia',
                 'settings' => ['source' => 'custom', 'limit' => 3],
                 'media' => ['image' => 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=900&q=85'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Danh gia',
+                        'title' => 'Đánh giá',
                         'subtitle' => '',
-                        'description' => 'Toi la chu doanh nghiep, khong co thoi gian tim hieu thu tuc phuc tap. Cong ty dich vu da lam moi thu tu A den Z, toi chi can den va nop ho so.',
+                        'description' => 'Tôi là chủ doanh nghiệp, không có thời gian tìm hiểu thủ tục phức tạp. RouteX đã hỗ trợ mọi công đoạn, tôi chỉ cần đến và nộp hồ sơ.',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['name' => 'Tran Minh Hoang', 'role' => 'SEO cong ty ABC', 'quote' => 'Toi la chu doanh nghiep, khong co thoi gian tim hieu thu tuc phuc tap. Cong ty dich vu da lam moi thu tu A den Z, tu dich thuat cong chung den dat lich hen, toi chi can den va nop ho so. Rat tien loi va chuyen nghiep.', 'avatar' => 'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=300&q=85'],
+                            ['name' => 'Trần Minh Hoàng', 'role' => 'Giám đốc công ty ABC', 'quote' => 'Tôi không có thời gian tìm hiểu thủ tục phức tạp. RouteX đã hỗ trợ từ dịch thuật, công chứng đến đặt lịch hẹn. Dịch vụ rất tiện lợi và chuyên nghiệp.', 'avatar' => 'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=300&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'Testimonials', 'subtitle' => '', 'description' => 'RouteX made the process simple and professional.', 'button_label' => '', 'content' => ['items' => []]],
@@ -5676,29 +5729,29 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'bizmax_latest_posts',
-                'label' => 'Blog gan day',
-                'description' => 'Bai viet RouteX dang card.',
+                'label' => 'Blog gần đây',
+                'description' => 'Bài viết RouteX dạng thẻ.',
                 'preview_image' => '/theme-previews/XD0313/blog.png',
                 'anchor_id' => 'blog',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $contentSources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $contentSources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Mot So Bai Viet Cua Chung Toi',
-                        'subtitle' => 'Blog gan day',
+                        'title' => 'Một số bài viết của chúng tôi',
+                        'subtitle' => 'Blog gần đây',
                         'description' => '',
-                        'button_label' => 'Xem Chi Tiet',
+                        'button_label' => 'Xem chi tiết',
                         'content' => ['items' => [
-                            ['title' => 'Hoc Bong Du Hoc Duc 2021 Len Toi 100% Hoc Phi - Co Hoi', 'summary' => 'Dai hoc Jacobs xep hang 1 trong bang xep hang cac truong dai hoc tu cua Duc.', 'image' => 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 238],
-                            ['title' => 'Vuong Quoc Anh: Cac Truong Dai Hoc Giu Cho Cho Sinh', 'summary' => 'Theo cac ben lien quan trong nganh, cac du hoc sinh Anh se khong mat di co hoi ghi danh.', 'image' => 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 138],
-                            ['title' => 'Thong Tin Cap Nhat Ve Cac Chinh Sach Lien Quan Den Tinh', 'summary' => 'Thong tin cap nhat ve cac chinh sach lien quan den tinh hinh moi.', 'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 192],
-                            ['title' => 'Soi Dong Hoi Thao Du Hoc: Cuoc Song Noi Xu Nguoi', 'summary' => 'Buoi hoi thao ve chu de du hoc va cuoc song noi xu nguoi thu hut nhieu ban tre.', 'image' => 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 920],
+                            ['title' => 'Học bổng du học Đức lên tới 100% học phí', 'summary' => 'Thông tin học bổng và cơ hội học tập tại các trường đại học uy tín của Đức.', 'image' => 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 238],
+                            ['title' => 'Vương quốc Anh: Các trường đại học giữ chỗ cho sinh viên', 'summary' => 'Du học sinh vẫn có thể bảo toàn cơ hội ghi danh khi chuẩn bị hồ sơ đúng lộ trình.', 'image' => 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 138],
+                            ['title' => 'Cập nhật các chính sách visa mới nhất', 'summary' => 'Thông tin cập nhật về những thay đổi chính sách và lưu ý quan trọng cho hồ sơ visa.', 'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 192],
+                            ['title' => 'Sôi động hội thảo du học và cuộc sống quốc tế', 'summary' => 'Buổi hội thảo về du học và cuộc sống ở nước ngoài thu hút nhiều bạn trẻ tham dự.', 'image' => 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=900&q=85', 'date' => '06/08/2025', 'views' => 920],
                         ]],
                     ],
                     'en' => ['title' => 'Some of our articles', 'subtitle' => 'Recent blog', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]],
@@ -5711,11 +5764,11 @@ class LandingPageBuilder
     private function xd0318DefaultBlocks(): array
     {
         $contentSources = [
-            ['value' => 'custom', 'label' => 'Nhap thu cong'],
-            ['value' => 'cms_posts', 'label' => 'Tin tuc'],
-            ['value' => 'cms_products', 'label' => 'San pham'],
-            ['value' => 'cms_services', 'label' => 'Dich vu'],
-            ['value' => 'cms_projects', 'label' => 'Du an'],
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
         ];
 
         return [
@@ -5890,35 +5943,35 @@ class LandingPageBuilder
     private function xd0315DefaultBlocks(): array
     {
         $multiSources = [
-            ['value' => 'custom', 'label' => 'Nhap thu cong'],
-            ['value' => 'cms_posts', 'label' => 'Tin tuc'],
-            ['value' => 'cms_products', 'label' => 'San pham'],
-            ['value' => 'cms_services', 'label' => 'Dich vu'],
-            ['value' => 'cms_projects', 'label' => 'Du an'],
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
         ];
 
         return [
             [
                 'block_type' => 'hero_slider',
-                'label' => 'Header va hero Athletic',
-                'description' => 'Header den, dang nhap/dang ky va hero slider full man hinh.',
+                'label' => 'Header và hero Athletic',
+                'description' => 'Header đen, đăng nhập/đăng ký và hero slider toàn màn hình.',
                 'preview_image' => '/theme-previews/XD0315/hero-slider.png',
                 'anchor_id' => 'top',
                 'dynamic' => true,
                 'settings' => ['source' => 'site_banners', 'placement' => 'xd0315-hero-slider', 'limit' => 3, 'autoplay_ms' => 6200],
                 'settings_schema' => [
-                    'placement' => ['type' => 'text', 'label' => 'Vi tri banner'],
-                    'limit' => ['type' => 'number', 'label' => 'So slide'],
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Hang dau Viet Nam',
-                        'subtitle' => 'Tap luyen cung cac chuyen gia the hinh',
-                        'description' => 'Khong gian tap luyen hien dai danh cho nguoi yeu the thao.',
-                        'button_label' => 'Dang ky tap thu',
+                        'title' => 'Hàng đầu Việt Nam',
+                        'subtitle' => 'Tập luyện cùng các chuyên gia thể hình',
+                        'description' => 'Không gian tập luyện hiện đại dành cho người yêu thể thao.',
+                        'button_label' => 'Đăng ký tập thử',
                         'content' => ['slides' => [
-                            ['kicker' => 'Tap luyen cung cac chuyen gia the hinh', 'title' => 'Hang dau Viet Nam', 'button_label' => 'Dang ky tap thu', 'image' => 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#lop-tap'],
-                            ['kicker' => 'Suc manh, ky luat va nang luong moi ngay', 'title' => 'Athletic Fitness', 'button_label' => 'Kham pha lop tap', 'image' => 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#lop-tap'],
+                            ['kicker' => 'Tập luyện cùng các chuyên gia thể hình', 'title' => 'Hàng đầu Việt Nam', 'button_label' => 'Đăng ký tập thử', 'image' => 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#lop-tap'],
+                            ['kicker' => 'Sức mạnh, kỷ luật và năng lượng mỗi ngày', 'title' => 'Athletic Fitness', 'button_label' => 'Khám phá lớp tập', 'image' => 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#lop-tap'],
                         ]],
                     ],
                     'en' => ['title' => 'Vietnam leading fitness center', 'subtitle' => 'Train with professional coaches', 'description' => 'Modern fitness experiences for active members.', 'button_label' => 'Start trial', 'content' => ['slides' => []]],
@@ -5926,31 +5979,31 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'content_mosaic',
-                'label' => 'Lop tap va dich vu',
-                'description' => 'Mosaic lop tap, co the lay tu news/product/services/project hoac custom.',
+                'label' => 'Lớp tập và dịch vụ',
+                'description' => 'Mosaic lớp tập, có thể lấy từ tin tức/sản phẩm/dịch vụ/dự án hoặc nhập tay.',
                 'preview_image' => '/theme-previews/XD0315/classes.png',
                 'anchor_id' => 'lop-tap',
                 'dynamic' => true,
                 'settings' => ['source' => 'custom', 'limit' => 6, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $multiSources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $multiSources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Trung tam the duc Athletic !',
+                        'title' => 'Trung tâm thể dục Athletic!',
                         'subtitle' => '',
-                        'description' => 'Cac dich vu luyen tap va nhung cach giam can hieu qua. Chung toi se giup ban.',
-                        'button_label' => 'Xem them',
+                        'description' => 'Các dịch vụ luyện tập và những cách giảm cân hiệu quả. Chúng tôi sẽ giúp bạn.',
+                        'button_label' => 'Xem thêm',
                         'content' => ['items' => [
-                            ['title' => 'Huan luyen ca nhan', 'summary' => 'Huan luyen vien ca nhan danh gia chi so co the va xay dung dinh huong tap luyen rieng.', 'image' => 'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
-                            ['title' => 'Yoga', 'summary' => 'Hon 50 lop yoga tu co ban den nang cao cho nhieu muc tieu tap luyen.', 'image' => 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
-                            ['title' => 'Giam can', 'summary' => 'He thong bai tap chuyen sau giup giam mo va cai thien suc ben.', 'image' => 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=1200&q=85', 'url' => '#dich-vu'],
-                            ['title' => 'Dance', 'summary' => 'Giai phong nang luong, tang su linh hoat va giup lop tap luon day hung khoi.', 'image' => 'https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?auto=format&fit=crop&w=1200&q=85', 'url' => '#dich-vu'],
-                            ['title' => 'Giam cang co', 'summary' => 'Lieu phap gian co thu gian sau khi tap luyen cuong do cao.', 'image' => 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
-                            ['title' => 'Kickfit', 'summary' => 'Ket hop vo thuat va cardio voi cac dong tac manh me.', 'image' => 'https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Huấn luyện cá nhân', 'summary' => 'Huấn luyện viên cá nhân đánh giá chỉ số cơ thể và xây dựng định hướng tập luyện riêng.', 'image' => 'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Yoga', 'summary' => 'Hơn 50 lớp yoga từ cơ bản đến nâng cao cho nhiều mục tiêu tập luyện.', 'image' => 'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Giảm cân', 'summary' => 'Hệ thống bài tập chuyên sâu giúp giảm mỡ và cải thiện sức bền.', 'image' => 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=1200&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Dance', 'summary' => 'Giải phóng năng lượng, tăng sự linh hoạt và giúp lớp tập luôn đầy hứng khởi.', 'image' => 'https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?auto=format&fit=crop&w=1200&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Giảm căng cơ', 'summary' => 'Liệu pháp giãn cơ thư giãn sau khi tập luyện cường độ cao.', 'image' => 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
+                            ['title' => 'Kickfit', 'summary' => 'Kết hợp võ thuật và cardio với các động tác mạnh mẽ.', 'image' => 'https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=900&q=85', 'url' => '#dich-vu'],
                         ]],
                     ],
                     'en' => ['title' => 'Athletic fitness center', 'subtitle' => '', 'description' => 'Training services and effective weight control programs.', 'button_label' => 'More', 'content' => ['items' => []]],
@@ -5958,8 +6011,8 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'about_experience',
-                'label' => 'Gioi thieu va video',
-                'description' => 'Khoi gioi thieu nen den voi hinh anh lon va video.',
+                'label' => 'Giới thiệu và video',
+                'description' => 'Khối giới thiệu nền đen với hình ảnh lớn và video.',
                 'preview_image' => '/theme-previews/XD0315/about-video.png',
                 'anchor_id' => 'gioi-thieu',
                 'settings' => ['cta_url' => '#lop-tap', 'video_url' => '#video'],
@@ -5969,10 +6022,10 @@ class LandingPageBuilder
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Chung toi tao ra su khac biet',
+                        'title' => 'Chúng tôi tạo ra sự khác biệt',
                         'subtitle' => 'But I must explain to you how all this mistaken idea denouncing pleasure and praising pain was born.',
-                        'description' => 'Chung toi muon chung minh rang de co duoc cuoc song tot va lanh manh hon, ban khong nhat thiet phai hy sinh qua nhieu. Chi can dua vao loi song cua minh nhung thoi quen giup nang cao chat luong song.',
-                        'button_label' => 'Xem them',
+                        'description' => 'Chúng tôi muốn chứng minh rằng để có được cuộc sống tốt và lành mạnh hơn, bạn không nhất thiết phải hy sinh quá nhiều. Chỉ cần đưa vào lối sống của mình những thói quen giúp nâng cao chất lượng sống.',
+                        'button_label' => 'Xem thêm',
                         'content' => [],
                     ],
                     'en' => ['title' => 'We make the difference', 'subtitle' => 'Train smarter every day.', 'description' => 'Healthy habits and practical coaching for a stronger lifestyle.', 'button_label' => 'More', 'content' => []],
@@ -5980,28 +6033,28 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'team_members',
-                'label' => 'Gap go chuyen gia',
-                'description' => 'Danh sach huan luyen vien voi ten va chuc danh.',
+                'label' => 'Gặp gỡ chuyên gia',
+                'description' => 'Danh sách huấn luyện viên với tên và chức danh.',
                 'preview_image' => '/theme-previews/XD0315/trainers.png',
                 'anchor_id' => 'chuyen-gia',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_team_members', 'limit' => 4, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => [['value' => 'custom', 'label' => 'Nhap thu cong'], ['value' => 'cms_team_members', 'label' => 'Doi ngu']]],
-                    'limit' => ['type' => 'number', 'label' => 'So nhan su'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_team_members', 'label' => 'Đội ngũ']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số nhân sự'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Gap go chuyen gia',
+                        'title' => 'Gặp gỡ chuyên gia',
                         'subtitle' => '',
-                        'description' => 'Cac chuyen gia hang dau cua Athletic da san sang de cung ban tap luyen, vuon toi than hinh san chac va loi song khoe manh.',
+                        'description' => 'Các chuyên gia hàng đầu của Athletic đã sẵn sàng để cùng bạn tập luyện, vươn tới thân hình săn chắc và lối sống khỏe mạnh.',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['name' => 'Brad Tran', 'role' => 'Huan luyen vien ta', 'image' => 'https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?auto=format&fit=crop&w=800&q=85'],
-                            ['name' => 'Raymond L. Brown', 'role' => 'Huan luyen vien quyen anh', 'image' => 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=85'],
-                            ['name' => 'Tieu Phuong', 'role' => 'Chuyen gia the hinh', 'image' => 'https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?auto=format&fit=crop&w=800&q=85'],
-                            ['name' => 'Solomon K. Sawyers', 'role' => 'Huan luyen vien lam dep', 'image' => 'https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=800&q=85'],
+                            ['name' => 'Brad Trần', 'role' => 'Huấn luyện viên tạ', 'image' => 'https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?auto=format&fit=crop&w=800&q=85'],
+                            ['name' => 'Raymond L. Brown', 'role' => 'Huấn luyện viên quyền anh', 'image' => 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=85'],
+                            ['name' => 'Tiểu Phương', 'role' => 'Chuyên gia thể hình', 'image' => 'https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?auto=format&fit=crop&w=800&q=85'],
+                            ['name' => 'Solomon K. Sawyers', 'role' => 'Huấn luyện viên làm đẹp', 'image' => 'https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=800&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'Meet the experts', 'subtitle' => '', 'description' => 'Professional coaches ready to guide your fitness journey.', 'button_label' => '', 'content' => ['items' => []]],
@@ -6009,30 +6062,30 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'project_gallery',
-                'label' => 'Cau lac bo',
-                'description' => 'Thu vien co so/cau lac bo voi nhan cam tren anh.',
+                'label' => 'Câu lạc bộ',
+                'description' => 'Thư viện cơ sở/câu lạc bộ với nhãn cam trên ảnh.',
                 'preview_image' => '/theme-previews/XD0315/clubs.png',
                 'anchor_id' => 'cau-lac-bo',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_projects', 'limit' => 5, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $multiSources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $multiSources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Cau lac bo',
+                        'title' => 'Câu lạc bộ',
                         'subtitle' => '',
-                        'description' => 'He thong phong tap tieu chuan 5 Sao voi trang thiet bi, may moc tap luyen nhap khau tu cac thuong hieu hang dau the gioi.',
+                        'description' => 'Hệ thống phòng tập tiêu chuẩn 5 sao với trang thiết bị, máy móc tập luyện nhập khẩu từ các thương hiệu hàng đầu thế giới.',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['title' => 'Athletic Fitness Center 3 Thang 2 Quan 10', 'image' => 'https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1200&q=85'],
-                            ['title' => 'Athletic Fitness Center Thien Son Plaza Quan 7', 'image' => 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=85'],
-                            ['title' => 'Athletic Fitness Center Ho Xuan Huong Quan 3', 'image' => 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Athletic Fitness Center Hoang Sa Quan 3', 'image' => 'https://images.unsplash.com/photo-1576678927484-cc907957088c?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Athletic Fitness Center Pham Van Hai Quan Tan', 'image' => 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Athletic Fitness Center 3 Tháng 2, Quận 10', 'image' => 'https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1200&q=85'],
+                            ['title' => 'Athletic Fitness Center Thiên Sơn Plaza, Quận 7', 'image' => 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=85'],
+                            ['title' => 'Athletic Fitness Center Hồ Xuân Hương, Quận 3', 'image' => 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Athletic Fitness Center Hoàng Sa, Quận 3', 'image' => 'https://images.unsplash.com/photo-1576678927484-cc907957088c?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Athletic Fitness Center Phạm Văn Hai, Quận Tân Bình', 'image' => 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=900&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'Clubs', 'subtitle' => '', 'description' => 'Premium fitness clubs with modern imported equipment.', 'button_label' => '', 'content' => ['items' => []]],
@@ -6040,28 +6093,28 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'featured_services',
-                'label' => 'Tin tuc su kien',
-                'description' => 'Danh sach tin tuc/su kien 3 cot.',
+                'label' => 'Tin tức sự kiện',
+                'description' => 'Danh sách tin tức/sự kiện 3 cột.',
                 'preview_image' => '/theme-previews/XD0315/news.png',
                 'anchor_id' => 'tin-tuc',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $multiSources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $multiSources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Tin tuc su kien',
+                        'title' => 'Tin tức sự kiện',
                         'subtitle' => '',
                         'description' => '',
-                        'button_label' => 'Xem them',
+                        'button_label' => 'Xem thêm',
                         'content' => ['items' => [
-                            ['title' => 'So huu body chuan khong kho neu nam duoc bi quyet dinh duong khi tap gym nay', 'summary' => 'Neu chi tap gym ma khong an uong hop ly thi co the se khong co nhung thay doi dang ke.', 'image' => 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Khong an kieng van co body san chac nho che do an tang co giam mo nay!', 'summary' => 'An uong theo che do tang co giam mo giup nam gioi co than hinh quyen ru hon.', 'image' => 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Thuc don cho nguoi moi tap gym co nen su dung nhieu trung?', 'summary' => 'Thuc don cho nguoi moi tap gym nen bat dau voi khau phan an hop ly va da dang.', 'image' => 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Sở hữu body chuẩn không khó nếu nắm được bí quyết dinh dưỡng khi tập gym này', 'summary' => 'Nếu chỉ tập gym mà không ăn uống hợp lý thì cơ thể sẽ không có những thay đổi đáng kể.', 'image' => 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Không ăn kiêng vẫn có body săn chắc nhờ chế độ ăn tăng cơ giảm mỡ này!', 'summary' => 'Ăn uống theo chế độ tăng cơ giảm mỡ giúp nam giới có thân hình quyến rũ hơn.', 'image' => 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Thực đơn cho người mới tập gym có nên sử dụng nhiều trứng?', 'summary' => 'Thực đơn cho người mới tập gym nên bắt đầu với khẩu phần ăn hợp lý và đa dạng.', 'image' => 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'News and events', 'subtitle' => '', 'description' => '', 'button_label' => 'More', 'content' => ['items' => []]],
@@ -6069,21 +6122,21 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'testimonials',
-                'label' => 'Cau chuyen thanh cong',
-                'description' => 'Success stories dang truoc/sau voi chi so co the.',
+                'label' => 'Câu chuyện thành công',
+                'description' => 'Câu chuyện trước/sau với chỉ số cơ thể.',
                 'preview_image' => '/theme-previews/XD0315/success-stories.png',
                 'anchor_id' => 'cau-chuyen',
                 'settings' => ['source' => 'custom', 'limit' => 4],
                 'media' => ['background' => 'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?auto=format&fit=crop&w=1800&q=80'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Cau chuyen thanh cong',
+                        'title' => 'Câu chuyện thành công',
                         'subtitle' => '',
-                        'description' => 'Kham pha phuong phap da giup thay doi cuoc song cua hang tram ngan nguoi tai Viet Nam.',
+                        'description' => 'Khám phá phương pháp đã giúp thay đổi cuộc sống của hàng trăm nghìn người tại Việt Nam.',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['name' => 'Bui Quoc Thai', 'image' => 'https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=700&q=85', 'before_weight' => '100kg', 'after_weight' => '77kg', 'before_muscle' => '40.5kg', 'after_muscle' => '47.2kg', 'before_fat' => '25%', 'after_fat' => '14.3%'],
-                            ['name' => 'Nguyen Huu Trong', 'image' => 'https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?auto=format&fit=crop&w=700&q=85', 'before_weight' => '62kg', 'after_weight' => '61.5kg', 'before_muscle' => '29.3kg', 'after_muscle' => '31.2kg', 'before_fat' => '25%', 'after_fat' => '20.3%'],
+                            ['name' => 'Bùi Quốc Thái', 'image' => 'https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=700&q=85', 'before_weight' => '100kg', 'after_weight' => '77kg', 'before_muscle' => '40.5kg', 'after_muscle' => '47.2kg', 'before_fat' => '25%', 'after_fat' => '14.3%'],
+                            ['name' => 'Nguyễn Hữu Trọng', 'image' => 'https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?auto=format&fit=crop&w=700&q=85', 'before_weight' => '62kg', 'after_weight' => '61.5kg', 'before_muscle' => '29.3kg', 'after_muscle' => '31.2kg', 'before_fat' => '25%', 'after_fat' => '20.3%'],
                         ]],
                     ],
                     'en' => ['title' => 'Success stories', 'subtitle' => '', 'description' => 'Real transformations from Athletic members.', 'button_label' => '', 'content' => ['items' => []]],
@@ -6109,6 +6162,8 @@ class LandingPageBuilder
         $quality['label'] = 'Cam kết chất lượng';
         $quality['description'] = 'Các tiêu chí chất lượng, dùng icon Font Awesome.';
         $quality['anchor_id'] = 'dich-vu';
+        $quality['dynamic'] = false;
+        $quality['settings'] = ['source' => 'custom', 'limit' => 5];
         $quality['data']['vi'] = ['title' => 'Cam kết chất lượng', 'subtitle' => 'Năng lực dịch vụ', 'description' => '', 'button_label' => '', 'content' => ['items' => [
             ['title' => 'Hài lòng 100%', 'summary' => 'Lấy khách hàng làm trung tâm.', 'icon' => 'fa-regular fa-face-smile'],
             ['title' => 'Kiểm tra chính xác', 'summary' => 'Quy trình kiểm định rõ ràng.', 'icon' => 'fa-solid fa-ruler-combined'],
@@ -6134,12 +6189,20 @@ class LandingPageBuilder
         $projects['label'] = 'Dự án đa nguồn';
         $projects['description'] = 'Carousel ngang lấy từ tin tức, sản phẩm, dịch vụ, dự án hoặc nhập tay.';
         $projects['anchor_id'] = 'du-an';
-        $projects['settings'] = ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => true];
-        $projects['data']['vi'] = ['title' => 'Một số dự án đã thực hiện cho khách hàng', 'subtitle' => 'Dự án tiêu biểu', 'description' => 'Các dự án chuyên ngành tiêu biểu đã giúp XD0320 khẳng định vị thế và năng lực triển khai.', 'button_label' => 'Tất cả dự án', 'content' => ['items' => []]];
+        $projects['dynamic'] = false;
+        $projects['settings'] = ['source' => 'custom', 'limit' => 8, 'featured_only' => true];
+        $projects['data']['vi'] = ['title' => 'Một số dự án đã thực hiện cho khách hàng', 'subtitle' => 'Dự án tiêu biểu', 'description' => 'Các dự án chuyên ngành tiêu biểu đã giúp XD0320 khẳng định vị thế và năng lực triển khai.', 'button_label' => 'Tất cả dự án', 'content' => ['items' => [
+            ['title' => 'Nhà máy sản xuất tự động', 'summary' => 'Tích hợp dây chuyền và hệ thống điều khiển vận hành.', 'image' => 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?auto=format&fit=crop&w=1100&q=85'],
+            ['title' => 'Trung tâm gia công cơ khí', 'summary' => 'Nâng cấp thiết bị và tối ưu quy trình kiểm soát chất lượng.', 'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1100&q=85'],
+            ['title' => 'Hệ thống năng lượng nhà xưởng', 'summary' => 'Giải pháp cấp năng lượng an toàn và tiết kiệm.', 'image' => 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=1100&q=85'],
+            ['title' => 'Kho vận công nghiệp thông minh', 'summary' => 'Số hóa vận hành kho và luồng hàng trong nhà máy.', 'image' => 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1100&q=85'],
+        ]]];
 
         $team = $industrial->get('team_members');
         $team['label'] = 'Đội ngũ kỹ sư';
         $team['description'] = 'Đội ngũ đồng nhất layout, gồm hình, tên và chức danh.';
+        $team['dynamic'] = false;
+        $team['settings'] = ['source' => 'custom', 'limit' => 4];
         $team['data']['vi'] = ['title' => 'Đội ngũ kỹ sư có năng lực', 'subtitle' => 'Thành viên chuyên gia', 'description' => 'Những con người tâm huyết, kinh nghiệm và cùng hướng về kết quả cho khách hàng.', 'button_label' => '', 'content' => ['items' => [
             ['name' => 'Anwar Ramadan', 'role' => 'Giám đốc nhân sự', 'image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=700&q=85'],
             ['name' => 'Osama Bakri', 'role' => 'Giám đốc điều hành', 'image' => 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=700&q=85'],
@@ -6150,7 +6213,15 @@ class LandingPageBuilder
         $partners = $logistics->get('partner_logos');
         $partners['label'] = 'Đối tác';
         $partners['description'] = 'Danh sách logo đối tác từ CMS Partners.';
-        $partners['data']['vi'] = ['title' => 'Đối tác của chúng tôi', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $partners['dynamic'] = false;
+        $partners['settings'] = ['source' => 'custom', 'limit' => 5];
+        $partners['data']['vi'] = ['title' => 'Đối tác của chúng tôi', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+            ['name' => 'Apex Industry'],
+            ['name' => 'NovaTech'],
+            ['name' => 'Core Manufacturing'],
+            ['name' => 'Prime Engineering'],
+            ['name' => 'VietWorks'],
+        ]]];
 
         return [$hero, $quality, $about, $feature, $projects, $team, $partners];
     }
@@ -6161,40 +6232,89 @@ class LandingPageBuilder
         $industrial = collect($this->xd0320DefaultBlocks())->keyBy('block_type');
 
         $hero = $base->get('hero_slider');
-        $hero['label'] = 'Header va hero XD0322';
+        $hero['label'] = 'Header và hero XD0322';
         $hero['settings'] = ['source' => 'site_banners', 'placement' => 'xd0322-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500];
-        $hero['data']['vi'] = ['title' => 'Cung cap giai phap xay dung tot nhat', 'subtitle' => 'Chat luong - An toan - Hieu qua - Chuyen nghiep', 'description' => 'Thiet ke va thi cong tron goi cho cac cong trinh dan dung va thuong mai.', 'button_label' => 'Lien he bao gia', 'content' => ['slides' => [['title' => 'Cung cap giai phap xay dung tot nhat', 'summary' => 'Dich vu thi cong tron goi voi chien luoc linh hoat trong qua trinh van hanh va phat trien.', 'button_label' => 'Lien he bao gia', 'image' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#lien-he']]]];
+        $hero['data']['vi'] = ['title' => 'Cung cấp giải pháp xây dựng tốt nhất', 'subtitle' => 'Chất lượng - An toàn - Hiệu quả - Chuyên nghiệp', 'description' => 'Thiết kế và thi công trọn gói cho các công trình dân dụng và thương mại.', 'button_label' => 'Liên hệ báo giá', 'content' => ['slides' => [['title' => 'Cung cấp giải pháp xây dựng tốt nhất', 'summary' => 'Dịch vụ thi công trọn gói với chiến lược linh hoạt trong quá trình vận hành và phát triển.', 'button_label' => 'Liên hệ báo giá', 'image' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#lien-he']]]];
 
         $quality = $base->get('featured_categories');
-        $quality['label'] = 'Cam ket XD0322';
-        $quality['data']['vi'] = ['title' => 'Cam ket chat luong', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => 'Cam ket chat luong', 'summary' => 'Kiem soat ky tung hang muc.', 'icon' => 'fa-regular fa-lightbulb'], ['title' => 'Dung tien do', 'summary' => 'Bao dam ke hoach thi cong.', 'icon' => 'fa-solid fa-hand-holding-heart'], ['title' => 'Tan tam voi khach hang', 'summary' => 'Dong hanh trong tung giai doan.', 'icon' => 'fa-solid fa-trowel-bricks'], ['title' => 'Bao hanh dai han', 'summary' => 'Chinh sach sau ban giao ro rang.', 'icon' => 'fa-solid fa-helmet-safety']]]];
+        $quality['label'] = 'Cam kết XD0322';
+        $quality['dynamic'] = false;
+        $quality['settings'] = ['source' => 'custom', 'limit' => 4];
+        $quality['data']['vi'] = ['title' => 'Cam kết chất lượng', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => 'Cam kết chất lượng', 'summary' => 'Kiểm soát kỹ từng hạng mục.', 'icon' => 'fa-regular fa-lightbulb'], ['title' => 'Đúng tiến độ', 'summary' => 'Bảo đảm kế hoạch thi công.', 'icon' => 'fa-solid fa-hand-holding-heart'], ['title' => 'Tận tâm với khách hàng', 'summary' => 'Đồng hành trong từng giai đoạn.', 'icon' => 'fa-solid fa-trowel-bricks'], ['title' => 'Bảo hành dài hạn', 'summary' => 'Chính sách sau bàn giao rõ ràng.', 'icon' => 'fa-solid fa-helmet-safety']]]];
 
         $about = $base->get('about_experience');
-        $about['data']['vi'] = ['title' => 'Chung toi dan dau trong linh vuc xay dung', 'subtitle' => 'Ve chung toi', 'description' => 'XD0322 la don vi thiet ke va thi cong tron goi. Chung toi giu vung cam ket ve chat luong, an toan, hieu qua va tinh chuyen nghiep trong moi cong trinh.', 'button_label' => 'Xem them', 'content' => ['years' => '18+', 'years_label' => 'Nam trong nghe', 'items' => []]];
+        $about['data']['vi'] = ['title' => 'Chúng tôi dẫn đầu trong lĩnh vực xây dựng', 'subtitle' => 'Về chúng tôi', 'description' => 'XD0322 là đơn vị thiết kế và thi công trọn gói. Chúng tôi giữ vững cam kết về chất lượng, an toàn, hiệu quả và tính chuyên nghiệp trong mỗi công trình.', 'button_label' => 'Xem thêm', 'content' => ['years' => '18+', 'years_label' => 'Năm trong nghề', 'items' => []]];
 
         $services = $base->get('content_mosaic');
-        $services['data']['vi'] = ['title' => 'Dich vu tot nhat cho ban', 'subtitle' => 'Dich vu cua chung toi', 'description' => 'Giai phap thiet ke, thi cong va hoan thien phu hop voi moi nhu cau.', 'button_label' => '', 'content' => ['items' => []]];
+        $services['dynamic'] = false;
+        $services['settings'] = ['source' => 'custom', 'limit' => 6];
+        $services['data']['vi'] = ['title' => 'Dịch vụ tốt nhất cho bạn', 'subtitle' => 'Dịch vụ của chúng tôi', 'description' => 'Giải pháp thiết kế, thi công và hoàn thiện phù hợp với mọi nhu cầu.', 'button_label' => '', 'content' => ['items' => [
+            ['title' => 'Thiết kế kiến trúc', 'summary' => 'Tối ưu công năng, thẩm mỹ và ngân sách ngay từ bản vẽ.'],
+            ['title' => 'Thi công nhà phố', 'summary' => 'Quản lý đồng bộ chất lượng, vật tư và tiến độ công trình.'],
+            ['title' => 'Xây dựng biệt thự', 'summary' => 'Kiến tạo không gian sống cao cấp theo phong cách riêng.'],
+            ['title' => 'Nội thất trọn gói', 'summary' => 'Thiết kế và hoàn thiện nội thất thống nhất với kiến trúc.'],
+            ['title' => 'Cải tạo công trình', 'summary' => 'Nâng cấp không gian cũ an toàn, hiệu quả và tiết kiệm.'],
+            ['title' => 'Tư vấn giám sát', 'summary' => 'Kiểm soát kỹ thuật và chất lượng trong suốt quá trình thi công.'],
+        ]]];
 
         $projects = $base->get('project_gallery');
-        $projects['data']['vi'] = ['title' => 'Du an cua chung toi', 'subtitle' => 'Cong trinh tieu bieu', 'description' => 'Nhung cong trinh chung cu, biet thu, nha pho va van phong da hoan thien.', 'button_label' => '', 'content' => ['items' => []]];
+        $projects['dynamic'] = false;
+        $projects['settings'] = ['source' => 'custom', 'limit' => 6];
+        $projects['data']['vi'] = ['title' => 'Dự án của chúng tôi', 'subtitle' => 'Công trình tiêu biểu', 'description' => 'Những công trình chung cư, biệt thự, nhà phố và văn phòng đã hoàn thiện.', 'button_label' => '', 'content' => ['items' => [
+            ['title' => 'Biệt thự hiện đại ven đô', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=85'],
+            ['title' => 'Nhà phố tối ưu không gian', 'image' => 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1000&q=85'],
+            ['title' => 'Văn phòng sáng tạo', 'image' => 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=85'],
+            ['title' => 'Khu căn hộ cao cấp', 'image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=85'],
+            ['title' => 'Không gian nghỉ dưỡng', 'image' => 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1000&q=85'],
+            ['title' => 'Showroom thương mại', 'image' => 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1000&q=85'],
+        ]]];
 
         $products = $base->get('featured_products');
-        $products['data']['vi']['title'] = 'San pham cua chung toi';
-        $products['data']['vi']['subtitle'] = 'Noi that va vat lieu hoan thien';
+        $products['dynamic'] = false;
+        $products['settings'] = ['source' => 'custom', 'limit' => 4];
+        $products['data']['vi'] = ['title' => 'Sản phẩm của chúng tôi', 'subtitle' => 'Nội thất và vật liệu hoàn thiện', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+            ['title' => 'Bộ sofa phòng khách', 'price' => 'Liên hệ', 'image' => 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Bàn ăn gỗ tự nhiên', 'price' => 'Liên hệ', 'image' => 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Tủ bếp hiện đại', 'price' => 'Liên hệ', 'image' => 'https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Đèn trang trí cao cấp', 'price' => 'Liên hệ', 'image' => 'https://images.unsplash.com/photo-1524484485831-a92ffc0de03f?auto=format&fit=crop&w=900&q=85'],
+        ]]];
 
         $team = $industrial->get('team_members');
-        $team['data']['vi'] = ['title' => 'Doi ngu cua chung toi', 'subtitle' => 'Tan tam, chuyen nghiep', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $team['dynamic'] = false;
+        $team['settings'] = ['source' => 'custom', 'limit' => 4];
+        $team['data']['vi'] = ['title' => 'Đội ngũ của chúng tôi', 'subtitle' => 'Tận tâm, chuyên nghiệp', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+            ['name' => 'Nguyễn Minh Hoàng', 'role' => 'Kiến trúc sư trưởng', 'image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'Trần Quốc Huy', 'role' => 'Kỹ sư xây dựng', 'image' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'Lê Thu Hà', 'role' => 'Kiến trúc sư nội thất', 'image' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=700&q=85'],
+            ['name' => 'Phạm Anh Tuấn', 'role' => 'Quản lý dự án', 'image' => 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?auto=format&fit=crop&w=700&q=85'],
+        ]]];
 
         $testimonials = $base->get('testimonials');
-        $testimonials['data']['vi'] = ['title' => 'Nhan xet cua khach hang', 'subtitle' => 'Phan hoi sau thi cong', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $testimonials['dynamic'] = false;
+        $testimonials['settings'] = ['source' => 'custom', 'limit' => 2];
+        $testimonials['data']['vi'] = ['title' => 'Nhận xét của khách hàng', 'subtitle' => 'Phản hồi sau thi công', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+            ['name' => 'Anh Minh', 'role' => 'Chủ nhà tại Hà Nội', 'quote' => 'Đội ngũ làm việc chuyên nghiệp, bám sát thiết kế và bàn giao đúng tiến độ.'],
+            ['name' => 'Chị Lan', 'role' => 'Chủ doanh nghiệp', 'quote' => 'Quy trình rõ ràng, vật liệu minh bạch và chất lượng hoàn thiện rất tốt.'],
+        ]]];
 
         $pricing = $base->get('process_steps');
-        $pricing['label'] = 'Bao gia thi cong';
-        $pricing['data']['vi'] = ['title' => 'Bao gia thi cong', 'subtitle' => 'Goi dich vu', 'description' => 'Cac goi thi cong linh hoat phu hop voi quy mo va ngan sach cong trinh.', 'button_label' => 'Dang ky ngay', 'content' => ['items' => [['title' => 'Goi co ban', 'summary' => '280.000d/m2'], ['title' => 'Goi nang cao', 'summary' => '350.000d/m2'], ['title' => 'Goi cao cap', 'summary' => '500.000d/m2']]]];
+        $pricing['label'] = 'Báo giá thi công';
+        $pricing['data']['vi'] = ['title' => 'Báo giá thi công', 'subtitle' => 'Gói dịch vụ', 'description' => 'Các gói thi công linh hoạt phù hợp với quy mô và ngân sách công trình.', 'button_label' => 'Đăng ký ngay', 'content' => ['items' => [['title' => 'Gói cơ bản', 'summary' => '280.000đ/m²'], ['title' => 'Gói nâng cao', 'summary' => '350.000đ/m²'], ['title' => 'Gói cao cấp', 'summary' => '500.000đ/m²']]]];
 
         $partners = $base->get('partner_logos');
+        $partners['dynamic'] = false;
+        $partners['settings'] = ['source' => 'custom', 'limit' => 5];
+        $partners['data']['vi'] = ['title' => 'Đối tác của chúng tôi', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+            ['name' => 'VietBuild'], ['name' => 'An Cường'], ['name' => 'Hòa Phát'], ['name' => 'Dulux'], ['name' => 'Viglacera'],
+        ]]];
         $news = $base->get('bizmax_latest_posts');
-        $news['data']['vi'] = ['title' => 'Bai viet moi nhat', 'subtitle' => 'Tin tuc va cap nhat', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $news['dynamic'] = false;
+        $news['settings'] = ['source' => 'custom', 'limit' => 3];
+        $news['data']['vi'] = ['title' => 'Bài viết mới nhất', 'subtitle' => 'Tin tức và cập nhật', 'description' => '', 'button_label' => '', 'content' => ['items' => [
+            ['title' => '5 lưu ý khi lập ngân sách xây nhà', 'summary' => 'Những khoản chi quan trọng cần chuẩn bị trước khi khởi công.', 'published_at' => '24/07/2026', 'image' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Xu hướng kiến trúc bền vững', 'summary' => 'Tối ưu ánh sáng, thông gió và vật liệu thân thiện với môi trường.', 'published_at' => '18/07/2026', 'image' => 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=900&q=85'],
+            ['title' => 'Quy trình giám sát công trình hiệu quả', 'summary' => 'Các mốc kiểm tra giúp bảo đảm chất lượng và tiến độ thi công.', 'published_at' => '10/07/2026', 'image' => 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=85'],
+        ]]];
 
         return [$hero, $quality, $about, $services, $products, $team, $projects, $pricing, $testimonials, $news, $partners];
     }
@@ -6207,47 +6327,58 @@ class LandingPageBuilder
         $logistics = collect($this->xd0312DefaultBlocks())->keyBy('block_type');
 
         $hero = $industrial->get('hero_slider');
-        $hero['label'] = 'Header va hero logistics XD321';
-        $hero['description'] = 'Hero slider cho dich vu van chuyen va logistics.';
+        $hero['label'] = 'Header và hero logistics XD321';
+        $hero['description'] = 'Hero slider cho dịch vụ vận chuyển và logistics.';
         $hero['settings'] = ['source' => 'site_banners', 'placement' => 'xd321-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500];
-        $hero['data']['vi'] = ['title' => 'Nhanh chong, an toan cung XD321 Cargo', 'subtitle' => 'XD321 Cargo', 'description' => 'Toi uu moi hanh trinh van chuyen tu noi dia den quoc te.', 'button_label' => 'Xem them', 'content' => ['slides' => [['title' => 'Nhanh chong, an toan cung XD321 Cargo', 'summary' => 'Toi uu moi hanh trinh van chuyen tu noi dia den quoc te. An toan va tiet kiem.', 'button_label' => 'Xem them', 'image' => 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#dich-vu']]]];
+        $hero['data']['vi'] = ['title' => 'Nhanh chóng, an toàn cùng XD321 Cargo', 'subtitle' => 'XD321 Cargo', 'description' => 'Tối ưu mọi hành trình vận chuyển từ nội địa đến quốc tế.', 'button_label' => 'Xem thêm', 'content' => ['slides' => [['title' => 'Nhanh chóng, an toàn cùng XD321 Cargo', 'summary' => 'Tối ưu mọi hành trình vận chuyển từ nội địa đến quốc tế. An toàn và tiết kiệm.', 'button_label' => 'Xem thêm', 'image' => 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#dich-vu']]]];
 
         $quality = $industrial->get('featured_categories');
-        $quality['label'] = 'Cam ket dich vu';
-        $quality['data']['vi'] = ['title' => 'Cam ket XD321 Cargo', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => 'Dung tien do', 'summary' => 'Theo doi don hang lien tuc.', 'icon' => 'fa-solid fa-clock'], ['title' => 'An toan hang hoa', 'summary' => 'Quy trinh minh bach.', 'icon' => 'fa-solid fa-shield-halved'], ['title' => 'Ket noi toan cau', 'summary' => 'Mang luoi quoc te.', 'icon' => 'fa-solid fa-globe'], ['title' => 'Chi phi toi uu', 'summary' => 'Bao gia ro rang.', 'icon' => 'fa-solid fa-tags']]]];
+        $quality['label'] = 'Cam kết dịch vụ';
+        $quality['data']['vi'] = ['title' => 'Cam kết XD321 Cargo', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => 'Đúng tiến độ', 'summary' => 'Theo dõi đơn hàng liên tục.', 'icon' => 'fa-solid fa-clock'], ['title' => 'An toàn hàng hóa', 'summary' => 'Quy trình minh bạch.', 'icon' => 'fa-solid fa-shield-halved'], ['title' => 'Kết nối toàn cầu', 'summary' => 'Mạng lưới quốc tế.', 'icon' => 'fa-solid fa-globe'], ['title' => 'Chi phí tối ưu', 'summary' => 'Báo giá rõ ràng.', 'icon' => 'fa-solid fa-tags']]]];
 
         $about = $industrial->get('about_experience');
-        $about['label'] = 'Gioi thieu XD321 Cargo';
+        $about['label'] = 'Giới thiệu XD321 Cargo';
         $about['media'] = ['image' => 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1100&q=85'];
-        $about['data']['vi'] = ['title' => 'Doi tac logistics tin cay cho doanh nghiep', 'subtitle' => 'Gioi thieu ve XD321 Cargo', 'description' => 'Chung toi ket noi thuong mai toan cau bang giai phap van chuyen dang tin cay, minh bach va linh hoat. Doi ngu chuyen nghiep ho tro tu kho bai den giao nhan cuoi cung.', 'button_label' => 'Tu van ngay', 'content' => ['years' => '15+', 'years_label' => 'Nam kinh nghiem', 'items' => [['title' => 'Van tai da phuong thuc'], ['title' => 'Quy trinh kiem soat chat che'], ['title' => 'Dich vu linh hoat cho tung lo hang'], ['title' => 'Mang luoi doi tac toan cau']]]];
+        $about['data']['vi'] = ['title' => 'Đối tác logistics tin cậy cho doanh nghiệp', 'subtitle' => 'Giới thiệu về XD321 Cargo', 'description' => 'Chúng tôi kết nối thương mại toàn cầu bằng giải pháp vận chuyển đáng tin cậy, minh bạch và linh hoạt. Đội ngũ chuyên nghiệp hỗ trợ từ kho bãi đến giao nhận cuối cùng.', 'button_label' => 'Tư vấn ngay', 'content' => ['years' => '15+', 'years_label' => 'Năm kinh nghiệm', 'items' => [['title' => 'Vận tải đa phương thức'], ['title' => 'Quy trình kiểm soát chặt chẽ'], ['title' => 'Dịch vụ linh hoạt cho từng lô hàng'], ['title' => 'Mạng lưới đối tác toàn cầu']]]];
 
         $services = $interior->get('content_mosaic');
-        $services['label'] = 'Dich vu van chuyen'; $services['anchor_id'] = 'dich-vu';
-        $services['description'] = 'Lay tu tin tuc, san pham, dich vu, du an hoac nhap tay.';
+        $services['label'] = 'Dịch vụ vận chuyển';
+        $services['anchor_id'] = 'dich-vu';
+        $services['description'] = 'Lấy từ tin tức, sản phẩm, dịch vụ, dự án hoặc nhập tay.';
         $services['settings'] = ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true];
-        $services['data']['vi'] = ['title' => 'Dich vu van chuyen', 'subtitle' => 'Ket noi van tai toan cau', 'description' => 'Giai phap linh hoat cho hang hoa duong bien, hang khong va duong bo.', 'button_label' => '', 'content' => ['items' => []]];
+        $services['data']['vi'] = ['title' => 'Dịch vụ vận chuyển', 'subtitle' => 'Kết nối vận tải toàn cầu', 'description' => 'Giải pháp linh hoạt cho hàng hóa đường biển, hàng không và đường bộ.', 'button_label' => '', 'content' => ['items' => []]];
 
         $solutions = $interior->get('content_mosaic');
-        $solutions['block_type'] = 'project_gallery'; $solutions['label'] = 'Giai phap logistics'; $solutions['anchor_id'] = 'giai-phap';
+        $solutions['block_type'] = 'project_gallery';
+        $solutions['label'] = 'Giải pháp logistics';
+        $solutions['anchor_id'] = 'giai-phap';
         $solutions['settings'] = ['source' => 'cms_projects', 'limit' => 3, 'featured_only' => true];
-        $solutions['data']['vi'] = ['title' => 'Giai phap logistics hien dai', 'subtitle' => 'Giai phap', 'description' => 'Tu luu kho, xu ly don hang den dieu phoi chuoi cung ung.', 'button_label' => '', 'content' => ['items' => []]];
+        $solutions['data']['vi'] = ['title' => 'Giải pháp logistics hiện đại', 'subtitle' => 'Giải pháp', 'description' => 'Từ lưu kho, xử lý đơn hàng đến điều phối chuỗi cung ứng.', 'button_label' => '', 'content' => ['items' => []]];
 
         $process = $logistics->get('process_steps');
-        $process['label'] = 'Quy trinh van hanh'; $process['anchor_id'] = 'quy-trinh';
-        $process['data']['vi'] = ['title' => 'Quy trinh dam bao van hanh logistics xuyen suot', 'subtitle' => 'Quy trinh lam viec', 'description' => 'Moi buoc deu duoc kiem soat chat che de dam bao tien do va tinh minh bach.', 'button_label' => 'Lien he ngay', 'content' => ['items' => [['title' => 'Tiep nhan va len ke hoach', 'summary' => 'Phan tich chi tiet lo hang va xay dung phuong an toi uu.'], ['title' => 'Dieu phoi va trien khai', 'summary' => 'To chuc van chuyen, xu ly chung tu va toi uu lo trinh.'], ['title' => 'Theo doi va cap nhat', 'summary' => 'Cap nhat trang thai lien tuc trong thoi gian thuc.'], ['title' => 'Giao hang va toi uu', 'summary' => 'Danh gia ket qua de nang cao chat luong dich vu.']]]];
+        $process['label'] = 'Quy trình vận hành';
+        $process['anchor_id'] = 'quy-trinh';
+        $process['data']['vi'] = ['title' => 'Quy trình đảm bảo vận hành logistics xuyên suốt', 'subtitle' => 'Quy trình làm việc', 'description' => 'Mỗi bước đều được kiểm soát chặt chẽ để đảm bảo tiến độ và tính minh bạch.', 'button_label' => 'Liên hệ ngay', 'content' => ['items' => [['title' => 'Tiếp nhận và lên kế hoạch', 'summary' => 'Phân tích chi tiết lô hàng và xây dựng phương án tối ưu.'], ['title' => 'Điều phối và triển khai', 'summary' => 'Tổ chức vận chuyển, xử lý chứng từ và tối ưu lộ trình.'], ['title' => 'Theo dõi và cập nhật', 'summary' => 'Cập nhật trạng thái liên tục trong thời gian thực.'], ['title' => 'Giao hàng và tối ưu', 'summary' => 'Đánh giá kết quả để nâng cao chất lượng dịch vụ.']]]];
 
         $products = $foot->get('featured_products');
-        $products['label'] = 'San pham logistics'; $products['anchor_id'] = 'san-pham';
-        $products['data']['vi']['title'] = 'San pham ho tro logistics'; $products['data']['vi']['subtitle'] = 'Vat tu dong goi';
+        $products['label'] = 'Sản phẩm logistics';
+        $products['anchor_id'] = 'san-pham';
+        $products['data']['vi']['title'] = 'Sản phẩm hỗ trợ logistics';
+        $products['data']['vi']['subtitle'] = 'Vật tư đóng gói';
 
         $testimonials = $industrial->get('team_members');
-        $testimonials['block_type'] = 'testimonials'; $testimonials['label'] = 'Phan hoi khach hang';
-        $testimonials['data']['vi'] = ['title' => 'Khach hang noi gi ve XD321 Cargo', 'subtitle' => 'Phan hoi tu doi tac', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $testimonials['block_type'] = 'testimonials';
+        $testimonials['label'] = 'Phản hồi khách hàng';
+        $testimonials['data']['vi'] = ['title' => 'Khách hàng nói gì về XD321 Cargo', 'subtitle' => 'Phản hồi từ đối tác', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
-        $partners = $industrial->get('partner_logos'); $partners['label'] = 'Mang luoi doi tac';
-        $news = $foot->get('bizmax_latest_posts'); $news['label'] = 'Tin tuc logistics'; $news['anchor_id'] = 'tin-tuc';
+        $partners = $industrial->get('partner_logos');
+        $partners['label'] = 'Mạng lưới đối tác';
+        $news = $foot->get('bizmax_latest_posts');
+        $news['label'] = 'Tin tức logistics';
+        $news['anchor_id'] = 'tin-tuc';
         $news['settings'] = ['source' => 'cms_posts', 'limit' => 6, 'featured_only' => true];
-        $news['data']['vi'] = ['title' => 'Cap nhat tin tuc logistics', 'subtitle' => 'Kien thuc va thi truong', 'description' => '', 'button_label' => 'Xem them', 'content' => ['items' => []]];
+        $news['data']['vi'] = ['title' => 'Cập nhật tin tức logistics', 'subtitle' => 'Kiến thức và thị trường', 'description' => '', 'button_label' => 'Xem thêm', 'content' => ['items' => []]];
+
         return [$hero, $quality, $about, $services, $solutions, $process, $products, $testimonials, $partners, $news];
     }
 
@@ -6308,6 +6439,7 @@ class LandingPageBuilder
             ['title' => 'Giường ngủ gỗ hiện đại', 'image' => 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=85', 'price' => 4990000, 'original_price' => 5500000, 'url' => '#'],
             ['title' => 'Tủ quần áo gỗ', 'image' => 'https://images.unsplash.com/photo-1558997519-83ea9252edf8?auto=format&fit=crop&w=900&q=85', 'price' => 4490000, 'original_price' => 5000000, 'url' => '#'],
         ];
+
         return [
             ['block_type' => 'hero_slider', 'label' => 'Hero nội thất', 'description' => 'Slider banner lớn đầu trang.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'nt502-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy (ms)']], 'data' => ['vi' => array_merge($heading('Nội thất phòng khách', 'DOLA FURNITURE', 'Giảm đến 50% khi đặt hàng qua web', 'Xem ngay'), ['content' => ['slides' => [['title' => 'Nội thất phòng khách', 'summary' => 'Giảm đến 50% khi đặt hàng qua web', 'button_label' => 'Xem ngay', 'image' => 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#phong-khach']]]]), 'en' => $heading('Living room furniture', 'DOLA FURNITURE', 'Save up to 50% when ordering online.', 'Shop now')]],
             ['block_type' => 'nt502_categories', 'label' => 'Danh mục nổi bật', 'description' => 'Carousel danh mục sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 9], 'settings_schema' => $sourceSchema([['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm']], 9), 'data' => ['vi' => array_merge($heading('Danh mục nổi bật'), $items([])), 'en' => $heading('Featured categories')]],
@@ -6328,57 +6460,57 @@ class LandingPageBuilder
         $partners = collect($this->xd0312DefaultBlocks())->keyBy('block_type');
 
         $hero = $interior->get('hero_slider');
-        $hero['label'] = 'Header va hero NT501';
-        $hero['description'] = 'Hero slider cho studio thiet ke noi that.';
+        $hero['label'] = 'Header và hero NT501';
+        $hero['description'] = 'Hero slider cho studio thiết kế nội thất.';
         $hero['settings'] = ['source' => 'site_banners', 'placement' => 'nt501-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500];
-        $hero['data']['vi'] = ['title' => 'Khong gian dep, chat luong ben vung', 'subtitle' => 'NT501 Interior Studio', 'description' => 'Thiet ke va thi cong noi that cho nhung ngoi nha mang dau an rieng.', 'button_label' => 'Kham pha du an', 'content' => ['slides' => [['title' => 'Khong gian dep, chat luong ben vung', 'summary' => 'Dong hanh cung ban kien tao mot khong gian song tinh te va ben vung.', 'button_label' => 'Kham pha du an', 'image' => 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#du-an']]]];
+        $hero['data']['vi'] = ['title' => 'Không gian đẹp, chất lượng bền vững', 'subtitle' => 'NT501 Interior Studio', 'description' => 'Thiết kế và thi công nội thất cho những ngôi nhà mang dấu ấn riêng.', 'button_label' => 'Khám phá dự án', 'content' => ['slides' => [['title' => 'Không gian đẹp, chất lượng bền vững', 'summary' => 'Đồng hành cùng bạn kiến tạo một không gian sống tinh tế và bền vững.', 'button_label' => 'Khám phá dự án', 'image' => 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2200&q=90', 'link_url' => '#du-an']]]];
 
         $about = $interior->get('about_experience');
-        $about['label'] = 'Gioi thieu studio';
-        $about['description'] = 'Khoi gioi thieu nhanh dung du lieu tuy chinh.';
+        $about['label'] = 'Giới thiệu studio';
+        $about['description'] = 'Khối giới thiệu nhanh dùng dữ liệu tùy chỉnh.';
         $about['media'] = ['image' => 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=90'];
-        $about['data']['vi'] = ['title' => 'Kien tao khong gian song day cam hung', 'subtitle' => 'Gioi thieu ve NT501', 'description' => 'NT501 ket hop tu duy thiet ke tinh te, vat lieu chat luong va quy trinh thi cong ky luong de bien moi y tuong thanh mot khong gian dang song.', 'button_label' => 'Xem dich vu', 'content' => ['items' => []]];
+        $about['data']['vi'] = ['title' => 'Kiến tạo không gian sống đầy cảm hứng', 'subtitle' => 'Giới thiệu về NT501', 'description' => 'NT501 kết hợp tư duy thiết kế tinh tế, vật liệu chất lượng và quy trình thi công kỹ lưỡng để biến mỗi ý tưởng thành một không gian đáng sống.', 'button_label' => 'Xem dịch vụ', 'content' => ['items' => []]];
 
         $showcase = $interior->get('content_mosaic');
-        $showcase['label'] = 'Khong gian tieu bieu';
-        $showcase['description'] = 'Lay tu tin tuc, san pham, dich vu, du an hoac nhap tay.';
+        $showcase['label'] = 'Không gian tiêu biểu';
+        $showcase['description'] = 'Lấy từ tin tức, sản phẩm, dịch vụ, dự án hoặc nhập tay.';
         $showcase['anchor_id'] = 'khong-gian';
         $showcase['settings'] = ['source' => 'cms_projects', 'limit' => 2, 'featured_only' => true];
-        $showcase['data']['vi'] = ['title' => 'Giai phap cho moi phong cach song', 'subtitle' => 'Khong gian tieu bieu', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $showcase['data']['vi'] = ['title' => 'Giải pháp cho mọi phong cách sống', 'subtitle' => 'Không gian tiêu biểu', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
         $projects = $interior->get('content_mosaic');
         $projects['block_type'] = 'project_gallery';
-        $projects['label'] = 'Du an noi bat';
-        $projects['description'] = 'Du an hien thi thanh thanh truot ngang.';
+        $projects['label'] = 'Dự án nổi bật';
+        $projects['description'] = 'Dự án hiển thị thành thanh trượt ngang.';
         $projects['anchor_id'] = 'du-an';
         $projects['settings'] = ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => true];
-        $projects['data']['vi'] = ['title' => 'Nhung cong trinh noi bat', 'subtitle' => 'Du an da thuc hien', 'description' => '', 'button_label' => 'Xem tat ca', 'content' => ['items' => []]];
+        $projects['data']['vi'] = ['title' => 'Những công trình nổi bật', 'subtitle' => 'Dự án đã thực hiện', 'description' => '', 'button_label' => 'Xem tất cả', 'content' => ['items' => []]];
 
         $services = $interior->get('featured_services');
-        $services['label'] = 'Dich vu noi that';
-        $services['description'] = 'Lay tu nhieu nguon du lieu hoac nhap tay.';
+        $services['label'] = 'Dịch vụ nội thất';
+        $services['description'] = 'Lấy từ nhiều nguồn dữ liệu hoặc nhập tay.';
         $services['anchor_id'] = 'dich-vu';
         $services['settings'] = ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true];
-        $services['data']['vi'] = ['title' => 'Dong hanh tu y tuong den hoan thien', 'subtitle' => 'Dich vu cua chung toi', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $services['data']['vi'] = ['title' => 'Đồng hành từ ý tưởng đến hoàn thiện', 'subtitle' => 'Dịch vụ của chúng tôi', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
         $testimonials = $legacy->get('testimonials');
-        $testimonials['label'] = 'Cam nhan khach hang';
-        $testimonials['description'] = 'Phan hoi khach hang va hinh anh dai dien.';
-        $testimonials['data']['vi'] = ['title' => 'Dieu khach hang noi ve chung toi', 'subtitle' => 'Cam nhan khach hang', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $testimonials['label'] = 'Cảm nhận khách hàng';
+        $testimonials['description'] = 'Phản hồi khách hàng và hình ảnh đại diện.';
+        $testimonials['data']['vi'] = ['title' => 'Điều khách hàng nói về chúng tôi', 'subtitle' => 'Cảm nhận khách hàng', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
         $posts = $foot->get('bizmax_latest_posts');
-        $posts['label'] = 'Bai viet noi that';
-        $posts['description'] = 'Lay tu tin tuc, san pham, dich vu, du an hoac nhap tay.';
+        $posts['label'] = 'Bài viết nội thất';
+        $posts['description'] = 'Lấy từ tin tức, sản phẩm, dịch vụ, dự án hoặc nhập tay.';
         $posts['settings'] = ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => true];
-        $posts['data']['vi'] = ['title' => 'Bai viet gan day', 'subtitle' => 'Tin tuc va cap nhat', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
+        $posts['data']['vi'] = ['title' => 'Bài viết gần đây', 'subtitle' => 'Tin tức và cập nhật', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
         $partnerLogos = $partners->get('partner_logos');
-        $partnerLogos['label'] = 'Doi tac NT501';
+        $partnerLogos['label'] = 'Đối tác NT501';
 
         $stats = $interior->get('featured_categories');
-        $stats['label'] = 'Chi so nang luc';
-        $stats['description'] = 'Ba chi so nang luc dung du lieu tuy chinh.';
-        $stats['data']['vi'] = ['title' => 'Nang luc NT501', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => '10+', 'summary' => 'Nam lam viec'], ['title' => '20', 'summary' => 'Chuyen gia noi that'], ['title' => '1000', 'summary' => 'Du an tiem nang']]]];
+        $stats['label'] = 'Chỉ số năng lực';
+        $stats['description'] = 'Ba chỉ số năng lực dùng dữ liệu tùy chỉnh.';
+        $stats['data']['vi'] = ['title' => 'Năng lực NT501', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['title' => '10+', 'summary' => 'Năm làm việc'], ['title' => '20', 'summary' => 'Chuyên gia nội thất'], ['title' => '1000', 'summary' => 'Dự án tiềm năng']]]];
 
         return [$hero, $about, $showcase, $projects, $services, $testimonials, $posts, $partnerLogos, $stats];
     }
@@ -6514,40 +6646,39 @@ class LandingPageBuilder
         ];
     }
 
-
     /** @return array<int, array<string, mixed>> */
     private function xd0314DefaultBlocks(): array
     {
         $sources = [
-            ['value' => 'custom', 'label' => 'Nhap thu cong'],
-            ['value' => 'cms_posts', 'label' => 'Tin tuc'],
-            ['value' => 'cms_products', 'label' => 'San pham'],
-            ['value' => 'cms_services', 'label' => 'Dich vu'],
-            ['value' => 'cms_projects', 'label' => 'Du an'],
+            ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ['value' => 'cms_posts', 'label' => 'Tin tức'],
+            ['value' => 'cms_products', 'label' => 'Sản phẩm'],
+            ['value' => 'cms_services', 'label' => 'Dịch vụ'],
+            ['value' => 'cms_projects', 'label' => 'Dự án'],
         ];
 
         return [
             [
                 'block_type' => 'hero_slider',
-                'label' => 'Header va banner',
-                'description' => 'Topbar, header, login/register va hero slider hinh anh.',
+                'label' => 'Header và banner',
+                'description' => 'Topbar, header, đăng nhập/đăng ký và hero slider hình ảnh.',
                 'preview_image' => '/theme-previews/XD0314/hero-slider.png',
                 'anchor_id' => 'top',
                 'dynamic' => true,
                 'settings' => ['source' => 'site_banners', 'placement' => 'xd0314-hero-slider', 'limit' => 3, 'autoplay_ms' => 6200],
                 'settings_schema' => [
-                    'placement' => ['type' => 'text', 'label' => 'Vi tri banner'],
-                    'limit' => ['type' => 'number', 'label' => 'So slide'],
+                    'placement' => ['type' => 'text', 'label' => 'Vị trí banner'],
+                    'limit' => ['type' => 'number', 'label' => 'Số slide'],
                 ],
                 'data' => [
                     'vi' => [
                         'title' => 'Think different - do different',
                         'subtitle' => 'Build Bench',
-                        'description' => 'Hien thuc hoa uoc mo so huu ngoi nha hoan hao cua khach hang bang kinh nghiem va su chuyen nghiep.',
-                        'button_label' => 'Xem them',
+                        'description' => 'Hiện thực hóa ước mơ sở hữu ngôi nhà hoàn hảo của khách hàng bằng kinh nghiệm và sự chuyên nghiệp.',
+                        'button_label' => 'Xem thêm',
                         'content' => ['slides' => [
-                            ['title' => 'Think different - do different', 'summary' => 'Hien thuc hoa uoc mo so huu ngoi nha hoan hao cua khach hang, thoi hon vao tung cong trinh bang kinh nghiem, su chuyen nghiep cua chung toi.', 'button_label' => 'Xem them', 'image' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#gioi-thieu'],
-                            ['title' => 'Thiet ke va thi cong tron goi', 'summary' => 'Tu ban ve, vat lieu den thi cong hoan thien, moi buoc deu duoc quan ly ro rang.', 'button_label' => 'Dich vu', 'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#dich-vu'],
+                            ['title' => 'Think different - do different', 'summary' => 'Hiện thực hóa ước mơ sở hữu ngôi nhà hoàn hảo của khách hàng, thổi hồn vào từng công trình bằng kinh nghiệm và sự chuyên nghiệp của chúng tôi.', 'button_label' => 'Xem thêm', 'image' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#gioi-thieu'],
+                            ['title' => 'Thiết kế và thi công trọn gói', 'summary' => 'Từ bản vẽ, vật liệu đến thi công hoàn thiện, mỗi bước đều được quản lý rõ ràng.', 'button_label' => 'Dịch vụ', 'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1920&q=85', 'link_url' => '#dich-vu'],
                         ]],
                     ],
                     'en' => ['title' => 'Think different - do different', 'subtitle' => 'Build Bench', 'description' => 'Professional construction solutions for homes and commercial spaces.', 'button_label' => 'Learn more', 'content' => ['slides' => []]],
@@ -6555,22 +6686,22 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'featured_categories',
-                'label' => 'Slide danh muc dich vu',
-                'description' => 'Danh muc dich vu chay ngang.',
+                'label' => 'Slide danh mục dịch vụ',
+                'description' => 'Danh mục dịch vụ chạy ngang.',
                 'preview_image' => '/theme-previews/XD0314/service-category-slider.png',
                 'anchor_id' => 'danh-muc-dich-vu',
                 'settings' => [],
                 'data' => [
                     'vi' => [
-                        'title' => 'Danh muc dich vu',
-                        'subtitle' => 'Dich vu',
+                        'title' => 'Danh mục dịch vụ',
+                        'subtitle' => 'Dịch vụ',
                         'description' => '',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['title' => 'Thi cong ong nuoc', 'summary' => 'Sua chua va thi cong ong nuoc ngam cho cong trinh.', 'icon' => '🚰', 'url' => '#dich-vu'],
-                            ['title' => 'Son sua cong trinh', 'summary' => 'Son sua cong trinh lon nho dung tien do.', 'icon' => '🎨', 'url' => '#dich-vu'],
-                            ['title' => 'Thi cong noi that', 'summary' => 'Thiet ke noi that da dang phong cach.', 'icon' => '🪑', 'url' => '#dich-vu'],
-                            ['title' => 'Thi cong xay dung', 'summary' => 'Kien truc su va tho lanh nghe giau kinh nghiem.', 'icon' => '🏠', 'url' => '#dich-vu'],
+                            ['title' => 'Thi công ống nước', 'summary' => 'Sửa chữa và thi công ống nước ngầm cho công trình.', 'icon' => '🚰', 'url' => '#dich-vu'],
+                            ['title' => 'Sơn sửa công trình', 'summary' => 'Sơn sửa công trình lớn nhỏ đúng tiến độ.', 'icon' => '🎨', 'url' => '#dich-vu'],
+                            ['title' => 'Thi công nội thất', 'summary' => 'Thiết kế nội thất đa dạng phong cách.', 'icon' => '🪑', 'url' => '#dich-vu'],
+                            ['title' => 'Thi công xây dựng', 'summary' => 'Kiến trúc sư và thợ lành nghề giàu kinh nghiệm.', 'icon' => '🏠', 'url' => '#dich-vu'],
                         ]],
                     ],
                     'en' => ['title' => 'Service categories', 'subtitle' => 'Services', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
@@ -6578,29 +6709,29 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'about_experience',
-                'label' => 'Gioi thieu cong ty',
-                'description' => 'Khoi gioi thieu nhanh, card nang luc va thong ke nhap tuy chinh.',
+                'label' => 'Giới thiệu công ty',
+                'description' => 'Khối giới thiệu nhanh, card năng lực và thống kê nhập tùy chỉnh.',
                 'preview_image' => '/theme-previews/XD0314/about-experience.png',
                 'anchor_id' => 'gioi-thieu',
                 'settings' => [],
                 'media' => ['image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1400&q=85'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Ve cong ty',
-                        'subtitle' => 'Gioi thieu',
-                        'description' => 'Voi kinh nghiem cung doi ngu cong nhan hang dau, chung toi da dat duoc nhieu thanh cong voi cac cong trinh tren khap dat nuoc.',
+                        'title' => 'Về công ty',
+                        'subtitle' => 'Giới thiệu',
+                        'description' => 'Với kinh nghiệm cùng đội ngũ công nhân hàng đầu, chúng tôi đã đạt được nhiều thành công với các công trình trên khắp đất nước.',
                         'button_label' => '',
                         'content' => [
                             'items' => [
-                                ['title' => 'Thi cong ong nuoc', 'summary' => 'Thuc hien sua chua va thi cong ong nuoc ngam cho cong trinh va nha o.', 'icon' => '🚰'],
-                                ['title' => 'Son sua cong trinh', 'summary' => 'Nhan va thuc hien cac yeu cau son sua cong trinh lon nho dung tien do.', 'icon' => '🎨'],
-                                ['title' => 'Thi cong noi that', 'summary' => 'Nhan luc thiet ke noi that da dang voi nhieu phong cach.', 'icon' => '🪑'],
-                                ['title' => 'Thi cong xay dung', 'summary' => 'Doi ngu kien truc su, tho lanh nghe se giup uoc mo cua ban thanh hien thuc.', 'icon' => '🏡'],
+                                ['title' => 'Thi công ống nước', 'summary' => 'Thực hiện sửa chữa và thi công ống nước ngầm cho công trình và nhà ở.', 'icon' => '🚰'],
+                                ['title' => 'Sơn sửa công trình', 'summary' => 'Nhận và thực hiện các yêu cầu sơn sửa công trình lớn nhỏ đúng tiến độ.', 'icon' => '🎨'],
+                                ['title' => 'Thi công nội thất', 'summary' => 'Nhân lực thiết kế nội thất đa dạng với nhiều phong cách.', 'icon' => '🪑'],
+                                ['title' => 'Thi công xây dựng', 'summary' => 'Đội ngũ kiến trúc sư, thợ lành nghề sẽ giúp ước mơ của bạn thành hiện thực.', 'icon' => '🏡'],
                             ],
                             'stats' => [
-                                ['value' => '316', 'label' => 'Du an da hoan thanh', 'icon' => '▥'],
-                                ['value' => '761', 'label' => 'Khach hang hai long', 'icon' => '●'],
-                                ['value' => '1245', 'label' => 'Cong nhan lam viec', 'icon' => '☏'],
+                                ['value' => '316', 'label' => 'Dự án đã hoàn thành', 'icon' => '▥'],
+                                ['value' => '761', 'label' => 'Khách hàng hài lòng', 'icon' => '●'],
+                                ['value' => '1245', 'label' => 'Công nhân làm việc', 'icon' => '☏'],
                             ],
                         ],
                     ],
@@ -6609,32 +6740,32 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'content_mosaic',
-                'label' => 'Du an moi nhat',
-                'description' => 'Gallery anh co tieu de trong anh, lay du lieu tu tin tuc/san pham/dich vu/du an hoac custom.',
+                'label' => 'Dự án mới nhất',
+                'description' => 'Gallery ảnh có tiêu đề trong ảnh, lấy dữ liệu từ tin tức/sản phẩm/dịch vụ/dự án hoặc nhập tay.',
                 'preview_image' => '/theme-previews/XD0314/project-gallery.png',
                 'anchor_id' => 'du-an',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $sources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $sources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'media' => ['background' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=85'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Du an moi nhat',
+                        'title' => 'Dự án mới nhất',
                         'subtitle' => '',
                         'description' => '',
-                        'button_label' => 'Xem chi tiet',
+                        'button_label' => 'Xem chi tiết',
                         'content' => ['tabs' => [
-                            ['label' => 'Mau nha dang hot'], ['label' => 'Mau nha don gian dep 2019'], ['label' => 'Mau nha cao cap dep 2019'], ['label' => 'Mau nha cap 4 dep 2019'],
+                            ['label' => 'Mẫu nhà đang hot'], ['label' => 'Mẫu nhà đơn giản đẹp 2019'], ['label' => 'Mẫu nhà cao cấp đẹp 2019'], ['label' => 'Mẫu nhà cấp 4 đẹp 2019'],
                         ], 'items' => [
-                            ['title' => 'Mau nha pho hien dai', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Toa nha van phong', 'image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'San vuon tren cao', 'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Chung cu cao tang', 'image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Mẫu nhà phố hiện đại', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Tòa nhà văn phòng', 'image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Sân vườn trên cao', 'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Chung cư cao tầng', 'image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'Latest projects', 'subtitle' => '', 'description' => '', 'button_label' => 'View more', 'content' => ['items' => []]],
@@ -6642,25 +6773,25 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'faq_showcase',
-                'label' => 'Tai sao chon chung toi',
-                'description' => 'Khoi ly do chon nhap lieu tuy chinh.',
+                'label' => 'Tại sao chọn chúng tôi',
+                'description' => 'Khối lý do chọn nhập liệu tùy chỉnh.',
                 'preview_image' => '/theme-previews/XD0314/why-choose.png',
                 'anchor_id' => 'tai-sao-chon',
                 'settings' => [],
                 'media' => ['background' => 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=85'],
                 'data' => [
                     'vi' => [
-                        'title' => 'Tai sao chon chung toi !',
+                        'title' => 'Tại sao chọn chúng tôi!',
                         'subtitle' => '',
-                        'description' => 'Tieu chi kinh doanh hang dau cua chung toi la tao ra san pham doc dao, toi uu cho khach hang va dam bao hoan thanh du an dung y tuong, chat luong va tien do.',
+                        'description' => 'Tiêu chí kinh doanh hàng đầu của chúng tôi là tạo ra sản phẩm độc đáo, tối ưu cho khách hàng và đảm bảo hoàn thành dự án đúng ý tưởng, chất lượng và tiến độ.',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['title' => 'Chat luong tot nhat', 'summary' => 'Chat luong cong trinh luon dam bao tot nhat va phu hop cac tieu chuan chung.', 'icon' => '◎'],
-                            ['title' => 'Chinh truc', 'summary' => 'Dam bao tinh trung thuc va chinh truc trong qua trinh thiet ke va xay dung.', 'icon' => '🏆'],
-                            ['title' => 'Chien luoc', 'summary' => 'Cung cap phuong an va chien luoc xay dung day du cho khach hang.', 'icon' => '☝'],
-                            ['title' => 'Su an toan', 'summary' => 'Dat tinh an toan len hang dau trong qua trinh xay dung.', 'icon' => '●'],
-                            ['title' => 'Cong dong', 'summary' => 'Cong trinh phu hop tieu chuan cong dong va boi canh xung quanh.', 'icon' => '▰'],
-                            ['title' => 'Su ben vung', 'summary' => 'Cong trinh duoc xay dung chat luong va ben vung theo thoi gian.', 'icon' => '⚙'],
+                            ['title' => 'Chất lượng tốt nhất', 'summary' => 'Chất lượng công trình luôn đảm bảo tốt nhất và phù hợp các tiêu chuẩn chung.', 'icon' => '◎'],
+                            ['title' => 'Chính trực', 'summary' => 'Đảm bảo tính trung thực và chính trực trong quá trình thiết kế và xây dựng.', 'icon' => '🏆'],
+                            ['title' => 'Chiến lược', 'summary' => 'Cung cấp phương án và chiến lược xây dựng đầy đủ cho khách hàng.', 'icon' => '☝'],
+                            ['title' => 'Sự an toàn', 'summary' => 'Đặt tính an toàn lên hàng đầu trong quá trình xây dựng.', 'icon' => '●'],
+                            ['title' => 'Cộng đồng', 'summary' => 'Công trình phù hợp tiêu chuẩn cộng đồng và bối cảnh xung quanh.', 'icon' => '▰'],
+                            ['title' => 'Sự bền vững', 'summary' => 'Công trình được xây dựng chất lượng và bền vững theo thời gian.', 'icon' => '⚙'],
                         ]],
                     ],
                     'en' => ['title' => 'Why choose us', 'subtitle' => '', 'description' => 'Practical construction values for quality, safety and progress.', 'button_label' => '', 'content' => ['items' => []]],
@@ -6668,28 +6799,28 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'featured_services',
-                'label' => 'Dich vu cua chung toi',
-                'description' => 'Carousel dich vu lay tu nhieu nguon hoac custom.',
+                'label' => 'Dịch vụ của chúng tôi',
+                'description' => 'Carousel dịch vụ lấy từ nhiều nguồn hoặc nhập tay.',
                 'preview_image' => '/theme-previews/XD0314/featured-services.png',
                 'anchor_id' => 'dich-vu',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => $sources],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'Danh muc'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $sources],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'Danh mục'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Dich vu cua chung toi',
-                        'subtitle' => 'Dich vu',
+                        'title' => 'Dịch vụ của chúng tôi',
+                        'subtitle' => 'Dịch vụ',
                         'description' => '',
-                        'button_label' => 'Xem them',
+                        'button_label' => 'Xem thêm',
                         'content' => ['items' => [
-                            ['title' => 'Xay dung nha pho theo nhu cau su dung', 'summary' => 'Thiet ke va xay dung nha thanh pho hien dai.', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Xay dung nha pho 2 tang mai Thai', 'summary' => 'Kien truc tinh te, toi uu cong nang su dung.', 'image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=85'],
-                            ['title' => 'Xay dung biet thu vuon', 'summary' => 'Khong gian song xanh, tien nghi va thoai mai.', 'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Xây dựng nhà phố theo nhu cầu sử dụng', 'summary' => 'Thiết kế và xây dựng nhà thành phố hiện đại.', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Xây dựng nhà phố 2 tầng mái Thái', 'summary' => 'Kiến trúc tinh tế, tối ưu công năng sử dụng.', 'image' => 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=85'],
+                            ['title' => 'Xây dựng biệt thự vườn', 'summary' => 'Không gian sống xanh, tiện nghi và thoải mái.', 'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85'],
                         ]],
                     ],
                     'en' => ['title' => 'Our services', 'subtitle' => 'Services', 'description' => '', 'button_label' => 'Read more', 'content' => ['items' => []]],
@@ -6697,22 +6828,22 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'team_members',
-                'label' => 'Doi ngu',
-                'description' => 'Gioi thieu doi ngu nhan su, moi item cung layout voi chuc danh va ten.',
+                'label' => 'Đội ngũ',
+                'description' => 'Giới thiệu đội ngũ nhân sự, mỗi mục cùng layout với chức danh và tên.',
                 'preview_image' => '/theme-previews/XD0314/team-members.png',
                 'anchor_id' => 'doi-ngu',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_team_members', 'limit' => 5, 'featured_only' => true],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => [['value' => 'custom', 'label' => 'Nhap thu cong'], ['value' => 'cms_team_members', 'label' => 'Doi ngu']]],
-                    'limit' => ['type' => 'number', 'label' => 'So nhan su'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'custom', 'label' => 'Nhập thủ công'], ['value' => 'cms_team_members', 'label' => 'Đội ngũ']]],
+                    'limit' => ['type' => 'number', 'label' => 'Số nhân sự'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
-                        'title' => 'Doi cua chung toi',
-                        'subtitle' => 'Doi ngu',
-                        'description' => 'Voi doi ngu cong nhan lau nam va kinh nghiem, chung toi dam bao mang den cac cong trinh dat tieu chuan trong ca thiet ke va xay dung.',
+                        'title' => 'Đội ngũ của chúng tôi',
+                        'subtitle' => 'Đội ngũ',
+                        'description' => 'Với đội ngũ công nhân lâu năm và kinh nghiệm, chúng tôi đảm bảo mang đến các công trình đạt tiêu chuẩn trong cả thiết kế và xây dựng.',
                         'button_label' => '',
                         'content' => ['items' => [
                             ['name' => 'Danny Johnny', 'role' => 'Building Worker', 'image' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=700&q=85'],
@@ -6737,39 +6868,79 @@ class LandingPageBuilder
         $hero = $blocks->get('hero_slider');
         $hero['settings']['placement'] = 'xd0312-hero-slider';
         $hero['settings_schema'][0]['default'] = 'xd0312-hero-slider';
-        $hero['data']['vi'] = ['title' => 'Dich vu kho bai va luu tru', 'subtitle' => 'Bizgrow logistics', 'description' => 'Giai phap kho bai, van chuyen va chuoi cung ung toi uu cho doanh nghiep.', 'button_label' => 'Xem dich vu cua chung toi', 'content' => ['slides' => []]];
+        $hero['data']['vi'] = [
+            'title' => 'Logistics thông minh cho chuỗi cung ứng hiện đại',
+            'subtitle' => 'Bizgrow Logistics',
+            'description' => 'Kết nối kho bãi, vận chuyển và giao nhận bằng một quy trình minh bạch, linh hoạt và tối ưu chi phí.',
+            'button_label' => 'Khám phá dịch vụ',
+            'content' => ['slides' => []],
+        ];
 
         $about = $blocks->get('bizmax_about');
-        $about['data']['vi'] = ['title' => 'Logistics tren toan the gioi', 'subtitle' => 'Ve chung toi', 'description' => 'Bizgrow ket noi kho bai, van chuyen va giao nhan bang quy trinh ro rang, linh hoat va tiet kiem chi phi.', 'button_label' => 'Kham pha chung toi', 'content' => ['image_primary' => '', 'image_secondary' => '', 'years' => '15+', 'years_label' => 'Nam kinh nghiem', 'progress_label' => 'Khach hang hai long', 'progress_value' => 98]];
+        $about['data']['vi'] = [
+            'title' => 'Kết nối hàng hóa với thị trường trên toàn thế giới',
+            'subtitle' => 'Về Bizgrow',
+            'description' => 'Bizgrow vận hành mạng lưới kho bãi, vận tải và giao nhận đồng bộ để doanh nghiệp chủ động từ điểm xuất phát đến điểm giao cuối.',
+            'button_label' => 'Khám phá Bizgrow',
+            'content' => [
+                'image_primary' => '',
+                'image_secondary' => '',
+                'years' => '15+',
+                'years_label' => 'Năm kinh nghiệm',
+                'progress_label' => 'Khách hàng hài lòng',
+                'progress_value' => 98,
+            ],
+        ];
 
         $services = $blocks->get('business_service_grid');
-        $services['data']['vi'] = ['title' => 'Giai phap kinh doanh sang tao', 'subtitle' => 'Dich vu pho bien', 'description' => 'Dich vu hau can dong bo tu kho bai den giao nhan quoc te.', 'button_label' => 'Xem chi tiet', 'content' => ['items' => []]];
+        $services['data']['vi'] = [
+            'title' => 'Giải pháp vận chuyển cho mọi quy mô doanh nghiệp',
+            'subtitle' => 'Dịch vụ logistics',
+            'description' => 'Dịch vụ hậu cần đồng bộ từ lưu kho, xử lý đơn hàng đến vận chuyển quốc tế.',
+            'button_label' => 'Xem chi tiết',
+            'content' => ['items' => []],
+        ];
 
-        $process['data']['vi'] = ['title' => 'Quy trinh lam viec', 'subtitle' => 'Quy trinh lam viec', 'description' => 'Minh bach trong tung buoc de don hang duoc xu ly chinh xac va dung tien do.', 'button_label' => '', 'content' => ['items' => [
-            ['title' => 'Yeu cau bao gia', 'description' => 'Tiep nhan nhu cau va phan hoi phuong an phu hop.'],
-            ['title' => 'Tiep nhan don hang', 'description' => 'Xac nhan thong tin, lich trinh va chung tu can thiet.'],
-            ['title' => 'Dat kho bai va luu tru', 'description' => 'Sap xep hang hoa khoa hoc va theo doi bang du lieu so.'],
-            ['title' => 'Van chuyen san pham', 'description' => 'Giao hang an toan, dung thoi gian va cap nhat lien tuc.'],
-        ]]];
+        $process['data']['vi'] = [
+            'title' => 'Quy trình làm việc',
+            'subtitle' => 'Hành trình đơn hàng',
+            'description' => 'Mỗi bước đều được kiểm soát bằng dữ liệu để hàng hóa được xử lý chính xác, an toàn và đúng tiến độ.',
+            'button_label' => '',
+            'content' => ['items' => [
+                ['title' => 'Yêu cầu báo giá', 'description' => 'Tiếp nhận loại hàng, tuyến vận chuyển, khối lượng và thời gian dự kiến.'],
+                ['title' => 'Xác nhận phương án', 'description' => 'Thống nhất lịch trình, chi phí, chứng từ và đầu mối theo dõi đơn hàng.'],
+                ['title' => 'Lưu kho và xử lý', 'description' => 'Sắp xếp hàng hóa khoa học, kiểm đếm và cập nhật trạng thái bằng dữ liệu số.'],
+                ['title' => 'Vận chuyển và bàn giao', 'description' => 'Điều phối giao hàng an toàn, đúng thời gian và cập nhật liên tục đến khi hoàn tất.'],
+            ]],
+        ];
 
         $benefits = $blocks->get('bizmax_benefit_panel');
-        $benefits['data']['vi'] = ['title' => 'Nang luc logistics san sang dong hanh', 'subtitle' => 'Quy mo Bizgrow', 'description' => 'He thong van hanh duoc xay dung de mo rong cung doanh nghiep.', 'button_label' => '', 'content' => ['image' => '', 'items' => [
-            ['title' => '50 cum kho tren toan quoc'], ['title' => '500 can bo nhan vien'], ['title' => '1000 xe tai chuyen dung'], ['title' => '5000 khach hang tin tuong'],
-        ]]];
+        $benefits['data']['vi'] = [
+            'title' => 'Năng lực logistics sẵn sàng đồng hành',
+            'subtitle' => 'Quy mô Bizgrow',
+            'description' => 'Hệ thống vận hành được xây dựng để mở rộng linh hoạt cùng doanh nghiệp.',
+            'button_label' => '',
+            'content' => ['image' => '', 'items' => [
+                ['title' => '50 cụm kho trên toàn quốc'],
+                ['title' => '500 nhân sự vận hành'],
+                ['title' => '1.000 xe tải chuyên dụng'],
+                ['title' => '5.000 khách hàng tin tưởng'],
+            ]],
+        ];
 
         $team = $blocks->get('team_members');
-        $team['data']['vi']['title'] = 'Doi ngu chuyen gia cua chung toi';
-        $team['data']['vi']['subtitle'] = 'Thanh vien chuyen gia';
-        $team['data']['vi']['description'] = 'Nhung con nguoi mang den su toi uu va hieu qua cho chuoi cung ung cua ban.';
+        $team['data']['vi']['title'] = 'Đội ngũ logistics giàu kinh nghiệm';
+        $team['data']['vi']['subtitle'] = 'Con người Bizgrow';
+        $team['data']['vi']['description'] = 'Những chuyên gia điều phối mang đến sự chủ động và hiệu quả cho chuỗi cung ứng của bạn.';
 
         $partners = $blocks->get('partner_logos');
-        $partners['data']['vi']['title'] = 'Doi tac tin cay';
-        $partners['data']['vi']['subtitle'] = 'Ket noi toan cau';
+        $partners['data']['vi']['title'] = 'Đối tác vận hành tin cậy';
+        $partners['data']['vi']['subtitle'] = 'Kết nối toàn cầu';
 
         $posts = $blocks->get('bizmax_latest_posts');
-        $posts['data']['vi']['title'] = 'Tin tuc cua chung toi';
-        $posts['data']['vi']['subtitle'] = 'Tu tap chi';
-        $posts['data']['vi']['button_label'] = 'Xem them';
+        $posts['data']['vi']['title'] = 'Góc nhìn mới về logistics và chuỗi cung ứng';
+        $posts['data']['vi']['subtitle'] = 'Từ chuyên gia Bizgrow';
+        $posts['data']['vi']['button_label'] = 'Đọc thêm';
 
         return [$hero, $about, $services, $process, $benefits, $team, $partners, $posts];
     }
@@ -6784,38 +6955,104 @@ class LandingPageBuilder
         $blocks[0]['settings']['placement'] = 'xd0311-hero-slider';
         $blocks[0]['settings_schema'][0]['default'] = 'xd0311-hero-slider';
         $blocks[0]['data']['vi'] = [
-            'title' => 'Dich vu ke toan - thue cho doanh nghiep',
-            'subtitle' => 'Tu van tai chinh chuyen nghiep',
-            'description' => 'Dong hanh cung doanh nghiep tu ke toan, ke khai thue den quan tri tai chinh minh bach.',
-            'button_label' => 'Tim hieu them',
+            'title' => 'Kế toán và thuế vững vàng cho doanh nghiệp',
+            'subtitle' => 'Tư vấn tài chính chuyên nghiệp',
+            'description' => 'Đồng hành từ tổ chức kế toán, kê khai thuế đến quản trị tài chính minh bạch và hiệu quả.',
+            'button_label' => 'Nhận tư vấn',
             'content' => ['slides' => []],
         ];
-        $blocks[1]['data']['vi']['title'] = 'Dich vu noi bat cua chung toi';
-        $blocks[1]['data']['vi']['subtitle'] = 'Dich vu ke toan va tu van';
-        $blocks[2]['data']['vi']['title'] = 'Tin tuong voi cac ke toan vien gioi nhat cua chung toi';
-        $blocks[2]['data']['vi']['subtitle'] = 'Ve chung toi';
-        $blocks[2]['data']['vi']['description'] = 'Doi ngu InVess cung cap giai phap ke toan, thue va tai chinh thuc te, ro rang cho doanh nghiep.';
-        $blocks[2]['data']['vi']['content']['years'] = '25+';
-        $blocks[2]['data']['vi']['content']['years_label'] = 'Nam kinh nghiem';
-        $blocks[3]['data']['vi']['title'] = 'Noi giac mo chap canh';
-        $blocks[3]['data']['vi']['subtitle'] = 'Chung toi lam gi';
-        $blocks[4]['data']['vi'] = [
-            'title' => 'Cach chung toi hoat dong',
-            'subtitle' => 'Quy trinh lam viec',
-            'description' => 'Quy trinh tu van ro rang giup doanh nghiep chu dong trong tung quyet dinh tai chinh.',
+        $blocks[1]['data']['vi'] = [
+            'title' => 'Giải pháp tài chính dành cho từng giai đoạn phát triển',
+            'subtitle' => 'Dịch vụ kế toán và tư vấn',
+            'description' => 'Dữ liệu rõ ràng, tuân thủ đúng và báo cáo dễ hiểu để lãnh đạo chủ động ra quyết định.',
+            'button_label' => 'Tìm hiểu thêm',
+            'content' => ['items' => []],
+        ];
+        $blocks[2]['data']['vi'] = [
+            'title' => 'Một đội ngũ đáng tin cho những con số quan trọng',
+            'subtitle' => 'Về InVess',
+            'description' => 'Đội ngũ InVess cung cấp giải pháp kế toán, thuế và tài chính thực tế, rõ ràng, phù hợp với quy mô và mục tiêu của doanh nghiệp.',
+            'button_label' => 'Khám phá InVess',
+            'content' => [
+                'image_primary' => '',
+                'image_secondary' => '',
+                'years' => '25+',
+                'years_label' => 'Năm kinh nghiệm',
+                'progress_label' => 'Khách hàng hài lòng',
+                'progress_value' => 97,
+            ],
+        ];
+        $blocks[3]['data']['vi'] = [
+            'title' => 'Biến dữ liệu tài chính thành lợi thế kinh doanh',
+            'subtitle' => 'Giá trị chúng tôi mang lại',
+            'description' => 'Mỗi báo cáo không chỉ đúng chuẩn mà còn giúp doanh nghiệp nhìn rõ dòng tiền, rủi ro và cơ hội tăng trưởng.',
             'button_label' => '',
-            'content' => ['items' => [
-                ['title' => 'Tiep nhan nhu cau', 'description' => 'Lang nghe muc tieu va thu thap thong tin can thiet.'],
-                ['title' => 'Danh gia ho so', 'description' => 'Phan tich du lieu va xac dinh phuong an phu hop.'],
-                ['title' => 'Tu van giai phap', 'description' => 'Trinh bay ke hoach minh bach ve chi phi va tien do.'],
-                ['title' => 'Dong hanh trien khai', 'description' => 'Theo doi ket qua va ho tro doanh nghiep kip thoi.'],
+            'content' => ['image' => '', 'items' => [
+                ['title' => 'Tuân thủ đúng quy định'],
+                ['title' => 'Báo cáo rõ ràng, đúng hạn'],
+                ['title' => 'Kiểm soát rủi ro chủ động'],
+                ['title' => 'Tư vấn sát hoạt động'],
             ]],
         ];
-        $blocks[5]['data']['vi']['title'] = 'Cam nhan tu khach hang';
-        $blocks[5]['data']['vi']['subtitle'] = 'Loi chung thuc';
-        $blocks[6]['data']['vi']['title'] = 'Tin moi nhat';
-        $blocks[6]['data']['vi']['subtitle'] = 'Kien thuc cho doanh nghiep';
-        $blocks[7]['data']['vi']['title'] = 'Doi tac dong hanh';
+        $blocks[4]['data']['vi'] = [
+            'title' => 'Cách chúng tôi hoạt động',
+            'subtitle' => 'Quy trình làm việc',
+            'description' => 'Một quy trình tư vấn rõ ràng giúp doanh nghiệp chủ động ở từng quyết định tài chính.',
+            'button_label' => '',
+            'content' => ['items' => [
+                ['title' => 'Tiếp nhận nhu cầu', 'description' => 'Lắng nghe mục tiêu, quy mô vận hành và thu thập thông tin cần thiết.'],
+                ['title' => 'Đánh giá hồ sơ', 'description' => 'Phân tích dữ liệu, nhận diện rủi ro và xác định phạm vi công việc.'],
+                ['title' => 'Tư vấn giải pháp', 'description' => 'Trình bày kế hoạch minh bạch về đầu việc, chi phí và thời gian triển khai.'],
+                ['title' => 'Đồng hành thực hiện', 'description' => 'Theo dõi kết quả, cập nhật định kỳ và hỗ trợ doanh nghiệp kịp thời.'],
+            ]],
+        ];
+        $blocks[5]['data']['vi'] = [
+            'title' => 'Sự an tâm được xây dựng từ kết quả thực tế',
+            'subtitle' => 'Khách hàng chia sẻ',
+            'description' => 'Phản hồi từ những doanh nghiệp đang đồng hành cùng InVess.',
+            'button_label' => '',
+            'content' => ['items' => [
+                ['name' => 'Nguyễn Hoàng Nam', 'role' => 'Giám đốc An Phát', 'quote' => 'Báo cáo được chuẩn hóa rõ ràng, giúp chúng tôi kiểm soát dòng tiền và ra quyết định nhanh hơn.'],
+                ['name' => 'Trần Minh Anh', 'role' => 'Nhà sáng lập Nori Studio', 'quote' => 'Đội ngũ tư vấn dễ hiểu, phản hồi nhanh và luôn chủ động nhắc các mốc thuế quan trọng.'],
+                ['name' => 'Lê Quốc Huy', 'role' => 'CFO GreenLink', 'quote' => 'InVess không chỉ xử lý số liệu mà còn chỉ ra các điểm cần cải thiện trong vận hành tài chính.'],
+            ]],
+        ];
+        $blocks[6]['data']['vi'] = [
+            'title' => 'Chuyên gia đồng hành cùng doanh nghiệp',
+            'subtitle' => 'Đội ngũ InVess',
+            'description' => 'Kinh nghiệm chuyên môn kết hợp sự thấu hiểu hoạt động kinh doanh thực tế.',
+            'button_label' => '',
+            'content' => ['items' => [
+                ['name' => 'Phạm Thanh Hà', 'role' => 'Chuyên gia tư vấn thuế', 'image' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=85'],
+                ['name' => 'Đỗ Minh Quân', 'role' => 'Giám đốc dịch vụ kế toán', 'image' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=85'],
+                ['name' => 'Nguyễn Thu Trang', 'role' => 'Chuyên gia tài chính doanh nghiệp', 'image' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&q=85'],
+            ]],
+        ];
+        $blocks[7]['data']['vi'] = [
+            'title' => 'Trao đổi cùng chuyên gia InVess',
+            'subtitle' => 'Bắt đầu từ nhu cầu của bạn',
+            'description' => 'Chia sẻ vấn đề doanh nghiệp đang gặp phải. Chúng tôi sẽ đề xuất phạm vi và cách triển khai phù hợp.',
+            'button_label' => 'Gửi yêu cầu',
+            'content' => [],
+        ];
+        $blocks[8]['data']['vi'] = [
+            'title' => 'Kiến thức tài chính dành cho doanh nghiệp',
+            'subtitle' => 'Góc nhìn từ chuyên gia',
+            'description' => '',
+            'button_label' => 'Đọc thêm',
+            'content' => ['items' => [
+                ['title' => 'Những mốc thuế doanh nghiệp cần lưu ý', 'summary' => 'Lịch kê khai và các đầu việc quan trọng giúp doanh nghiệp chủ động tuân thủ.', 'image' => 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=85'],
+                ['title' => 'Đọc báo cáo dòng tiền theo cách đơn giản', 'summary' => 'Các chỉ số cốt lõi giúp nhà quản lý hiểu sức khỏe tài chính doanh nghiệp.', 'image' => 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=85'],
+                ['title' => 'Kiểm soát chi phí trong giai đoạn tăng trưởng', 'summary' => 'Cách xây dựng ngân sách và theo dõi chênh lệch mà không làm chậm vận hành.', 'image' => 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=900&q=85'],
+            ]],
+        ];
+        $blocks[9]['data']['vi'] = [
+            'title' => 'Đối tác đồng hành',
+            'subtitle' => 'Kết nối tin cậy',
+            'description' => '',
+            'button_label' => '',
+            'content' => ['items' => []],
+        ];
 
         return $blocks;
     }
@@ -6829,19 +7066,124 @@ class LandingPageBuilder
 
         $blocks[0]['settings']['placement'] = 'xd0310-hero-slider';
         $blocks[0]['settings_schema'][0]['default'] = 'xd0310-hero-slider';
-        $blocks[0]['data']['vi'] = ['title' => 'Chúng tôi am hiểu các loại thực vật', 'subtitle' => 'Một khu vườn xanh hơn bao giờ hết', 'description' => 'Thiết kế, thi công và chăm sóc cảnh quan xanh cho không gian sống của bạn.', 'button_label' => '1900 9477', 'content' => ['slides' => []]];
-        $blocks[1]['data']['vi']['title'] = 'Dịch vụ chính của chúng tôi';
-        $blocks[1]['data']['vi']['subtitle'] = 'Dịch vụ';
-        $blocks[2]['data']['vi']['title'] = 'Giới thiệu công ty';
-        $blocks[2]['data']['vi']['subtitle'] = 'Về chúng tôi';
-        $blocks[3]['data']['vi']['title'] = 'Hoàn thành công việc đúng quy trình';
-        $blocks[4]['data']['vi']['title'] = 'Một số dự án tiêu biểu';
-        $blocks[4]['data']['vi']['subtitle'] = 'Dự án cảnh quan';
-        $blocks[5]['data']['vi']['title'] = 'Cảm nhận từ khách hàng';
-        $blocks[6]['data']['vi']['title'] = 'Đội ngũ kiến trúc sư và kỹ sư';
-        $blocks[7]['data']['vi']['title'] = 'Yêu cầu tư vấn và báo giá';
-        $blocks[8]['data']['vi']['title'] = 'Tin tức mới';
-        $blocks[9]['data']['vi']['title'] = 'Đối tác đồng hành';
+        $blocks[0]['label'] = 'Banner cảnh quan';
+        $blocks[0]['description'] = 'Banner giới thiệu dịch vụ thiết kế, thi công và chăm sóc cảnh quan.';
+        $blocks[0]['data']['vi'] = [
+            'title' => 'Kiến tạo khu vườn xanh cho mọi không gian sống',
+            'subtitle' => 'Cảnh quan bền vững',
+            'description' => 'Từ ý tưởng đến thi công và chăm sóc định kỳ, Garden Haven đồng hành để mỗi khoảng xanh luôn đẹp, khỏe và giàu sức sống.',
+            'button_label' => 'Nhận tư vấn miễn phí',
+            'content' => ['slides' => []],
+        ];
+
+        $blocks[1]['label'] = 'Dịch vụ cảnh quan';
+        $blocks[1]['data']['vi'] = [
+            'title' => 'Dịch vụ dành cho khu vườn của bạn',
+            'subtitle' => 'Chuyên môn của chúng tôi',
+            'description' => 'Giải pháp trọn gói cho nhà ở, biệt thự, văn phòng và không gian thương mại.',
+            'button_label' => 'Xem chi tiết',
+            'content' => ['items' => []],
+        ];
+
+        $blocks[2]['label'] = 'Giới thiệu Garden Haven';
+        $blocks[2]['data']['vi'] = [
+            'title' => 'Đưa thiên nhiên trở lại gần hơn với cuộc sống',
+            'subtitle' => 'Về Garden Haven',
+            'description' => 'Chúng tôi kết hợp thẩm mỹ, đặc tính cây trồng và điều kiện khí hậu để tạo nên cảnh quan hài hòa, dễ chăm sóc và bền vững theo thời gian.',
+            'button_label' => 'Khám phá câu chuyện',
+            'content' => [
+                'image_primary' => '',
+                'image_secondary' => '',
+                'years' => '15+',
+                'years_label' => 'Năm kinh nghiệm',
+                'progress_label' => 'Khách hàng hài lòng',
+                'progress_value' => 96,
+            ],
+        ];
+
+        $blocks[3]['label'] = 'Lý do chọn Garden Haven';
+        $blocks[3]['data']['vi'] = [
+            'title' => 'Mỗi công trình là một hệ sinh thái được chăm chút',
+            'subtitle' => 'Khác biệt của chúng tôi',
+            'description' => 'Quy trình rõ ràng, vật liệu phù hợp và đội ngũ am hiểu cây xanh giúp khu vườn phát triển khỏe mạnh sau bàn giao.',
+            'button_label' => '',
+            'content' => [
+                'image' => '',
+                'items' => [
+                    ['title' => 'Thiết kế theo hiện trạng'],
+                    ['title' => 'Cây giống tuyển chọn'],
+                    ['title' => 'Thi công đúng tiến độ'],
+                    ['title' => 'Bảo dưỡng tận tâm'],
+                ],
+            ],
+        ];
+
+        $blocks[4]['label'] = 'Dự án cảnh quan';
+        $blocks[4]['description'] = 'Thư viện các dự án sân vườn và cảnh quan tiêu biểu.';
+        $blocks[4]['data']['vi'] = [
+            'title' => 'Những khoảng xanh chúng tôi đã kiến tạo',
+            'subtitle' => 'Dự án nổi bật',
+            'description' => 'Mỗi dự án được thiết kế theo nhịp sống, kiến trúc và điều kiện tự nhiên riêng.',
+            'button_label' => 'Xem dự án',
+            'content' => ['items' => []],
+        ];
+
+        $blocks[5]['label'] = 'Cảm nhận khách hàng';
+        $blocks[5]['data']['vi'] = [
+            'title' => 'Niềm vui bắt đầu từ một khu vườn đáng sống',
+            'subtitle' => 'Khách hàng chia sẻ',
+            'description' => 'Những phản hồi chân thành sau khi không gian xanh được hoàn thiện và đưa vào sử dụng.',
+            'button_label' => '',
+            'content' => ['items' => [
+                ['name' => 'Chị Minh Anh', 'role' => 'Biệt thự Thảo Điền', 'quote' => 'Khu vườn thoáng, nhiều lớp xanh nhưng vẫn rất dễ chăm sóc. Đội ngũ bàn giao đúng những gì đã tư vấn.'],
+                ['name' => 'Anh Quốc Huy', 'role' => 'Nhà phố Quận 7', 'quote' => 'Khoảng sân nhỏ được xử lý khéo léo, sáng hơn và trở thành nơi cả gia đình sử dụng mỗi ngày.'],
+                ['name' => 'Công ty An Phú', 'role' => 'Cảnh quan văn phòng', 'quote' => 'Quy trình chuyên nghiệp, thi công gọn và kế hoạch bảo dưỡng sau bàn giao rất rõ ràng.'],
+            ]],
+        ];
+
+        $blocks[6]['label'] = 'Đội ngũ cảnh quan';
+        $blocks[6]['data']['vi'] = [
+            'title' => 'Đội ngũ hiểu cây, hiểu đất và hiểu không gian',
+            'subtitle' => 'Những người làm vườn',
+            'description' => 'Kiến trúc sư cảnh quan, kỹ sư cây xanh và đội thi công cùng phối hợp xuyên suốt mỗi dự án.',
+            'button_label' => '',
+            'content' => ['items' => [
+                ['name' => 'Nguyễn Minh Khang', 'role' => 'Kiến trúc sư cảnh quan', 'image' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=85'],
+                ['name' => 'Trần Thanh Hà', 'role' => 'Kỹ sư cây xanh', 'image' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=85'],
+                ['name' => 'Lê Hoàng Nam', 'role' => 'Quản lý thi công', 'image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=85'],
+            ]],
+        ];
+
+        $blocks[7]['label'] = 'Đăng ký tư vấn';
+        $blocks[7]['data']['vi'] = [
+            'title' => 'Bắt đầu khu vườn trong mơ của bạn',
+            'subtitle' => 'Tư vấn cùng chuyên gia',
+            'description' => 'Chia sẻ diện tích, phong cách và nhu cầu sử dụng. Chúng tôi sẽ liên hệ để đề xuất hướng triển khai phù hợp.',
+            'button_label' => 'Gửi yêu cầu',
+            'content' => [],
+        ];
+
+        $blocks[8]['label'] = 'Cẩm nang sân vườn';
+        $blocks[8]['data']['vi'] = [
+            'title' => 'Cảm hứng và kinh nghiệm chăm sóc không gian xanh',
+            'subtitle' => 'Cẩm nang Garden Haven',
+            'description' => '',
+            'button_label' => 'Đọc thêm',
+            'content' => ['items' => [
+                ['title' => 'Chọn cây phù hợp cho khu vườn nhiều nắng', 'summary' => 'Những nhóm cây bền nắng, dễ phối và phù hợp với khí hậu đô thị.', 'image' => 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=85'],
+                ['title' => 'Năm nguyên tắc để sân vườn luôn xanh khỏe', 'summary' => 'Từ đất trồng, tưới nước đến cắt tỉa đúng thời điểm trong năm.', 'image' => 'https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=900&q=85'],
+                ['title' => 'Thiết kế góc thư giãn giữa thiên nhiên', 'summary' => 'Cách kết hợp cây xanh, vật liệu và ánh sáng cho một góc nghỉ ngơi riêng tư.', 'image' => 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=900&q=85'],
+            ]],
+        ];
+
+        $blocks[9]['label'] = 'Đối tác đồng hành';
+        $blocks[9]['data']['vi'] = [
+            'title' => 'Đối tác đồng hành',
+            'subtitle' => 'Kết nối bền vững',
+            'description' => '',
+            'button_label' => '',
+            'content' => ['items' => []],
+        ];
 
         return $blocks;
     }
@@ -7017,14 +7359,15 @@ class LandingPageBuilder
 
     private function xd0306DefaultBlocks(): array
     {
-        $sources = [['value'=>'cms_services','label'=>'Dịch vụ'],['value'=>'cms_posts','label'=>'Tin tức'],['value'=>'cms_products','label'=>'Sản phẩm'],['value'=>'cms_projects','label'=>'Dự án'],['value'=>'custom','label'=>'Nhập thủ công']];
+        $sources = [['value' => 'cms_services', 'label' => 'Dịch vụ'], ['value' => 'cms_posts', 'label' => 'Tin tức'], ['value' => 'cms_products', 'label' => 'Sản phẩm'], ['value' => 'cms_projects', 'label' => 'Dự án'], ['value' => 'custom', 'label' => 'Nhập thủ công']];
+
         return [
-            ['block_type'=>'hero_slider','label'=>'Header và banner','description'=>'Header hai tầng và banner slider.','preview_image'=>'/theme-previews/XD0306/hero-slider.png','anchor_id'=>'top','dynamic'=>true,'settings'=>['source'=>'site_banners','placement'=>'xd0306-hero-slider','limit'=>3,'autoplay_ms'=>6000],'settings_schema'=>[['key'=>'placement','label'=>'Vị trí banner','type'=>'text','default'=>'xd0306-hero-slider'],['key'=>'limit','label'=>'Số slide','type'=>'number','default'=>3]],'data'=>['vi'=>['title'=>'Thiết kế website chuyên nghiệp','subtitle'=>'Digital agency','description'=>'Chúng tôi xây dựng website, thương hiệu và chiến dịch số có hiệu quả.','button_label'=>'Liên hệ ngay','content'=>['slides'=>[]]],'en'=>['title'=>'Professional website design','subtitle'=>'Digital agency','description'=>'Website, branding and digital campaigns.','button_label'=>'Contact us','content'=>['slides'=>[]]]]],
-            ['block_type'=>'business_service_grid','label'=>'Dịch vụ nổi bật','description'=>'Nguồn Dịch vụ, Tin tức, Sản phẩm, Dự án hoặc nhập thủ công.','preview_image'=>'/theme-previews/XD0306/business-service-grid.png','anchor_id'=>'dich-vu','dynamic'=>true,'settings'=>['source'=>'cms_services','limit'=>3,'featured_only'=>true],'settings_schema'=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$sources],'limit'=>['type'=>'number','label'=>'Số mục hiển thị']],'data'=>['vi'=>['title'=>'Công ty cổ phần Black','subtitle'=>'Về chúng tôi','description'=>'Dịch vụ marketing tổng thể giúp doanh nghiệp phát triển trong môi trường số.','button_label'=>'Xem thêm','content'=>['items'=>[]]],'en'=>['title'=>'Black agency','subtitle'=>'About us','description'=>'Integrated digital marketing services.','button_label'=>'Learn more','content'=>['items'=>[]]]]],
-            ['block_type'=>'bizmax_about','label'=>'Giới thiệu sáng tạo','description'=>'Nội dung giới thiệu và hotline tùy chỉnh.','preview_image'=>'/theme-previews/XD0306/bizmax-about.png','anchor_id'=>'gioi-thieu','settings'=>[],'data'=>['vi'=>['title'=>'Chúng tôi sáng tạo studio xây dựng thương hiệu','subtitle'=>'Chúng tôi là ai','description'=>'Đồng hành và phát triển cùng doanh nghiệp bằng giải pháp marketing online, truyền thông và quảng cáo.','button_label'=>'1900 9477','content'=>['years'=>'20+','years_label'=>'Năm kinh nghiệm','progress_label'=>'Khách hàng hài lòng','progress_value'=>90]],'en'=>['title'=>'We build creative brands','subtitle'=>'Who we are','description'=>'We help businesses grow through digital marketing.','button_label'=>'1900 9477','content'=>[]]]],
-            ['block_type'=>'collection_gallery','label'=>'Album hình ảnh','description'=>'Nguồn Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.','preview_image'=>'/theme-previews/XD0306/collection-gallery.png','anchor_id'=>'thu-vien','dynamic'=>true,'settings'=>['source'=>'cms_projects','limit'=>6],'settings_schema'=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$sources],'limit'=>['type'=>'number','label'=>'Số ảnh']],'data'=>['vi'=>['title'=>'Một số album của chúng tôi','subtitle'=>'Hình ảnh','description'=>'','button_label'=>'Xem thêm','content'=>['items'=>[]]],'en'=>['title'=>'Selected albums','subtitle'=>'Gallery','description'=>'','button_label'=>'View more','content'=>['items'=>[]]]]],
-            ['block_type'=>'faq_showcase','label'=>'Câu hỏi thường gặp','description'=>'FAQ tùy chỉnh.','preview_image'=>'/theme-previews/XD0306/faq-showcase.png','anchor_id'=>'faq','settings'=>[],'data'=>['vi'=>['title'=>'Faq\'s','subtitle'=>'','description'=>'','button_label'=>'','content'=>['items'=>[['question'=>'Tôi cần chuẩn bị gì? Tiến hành mất bao lâu?','answer'=>'Đội ngũ sẽ khảo sát và đề xuất lộ trình phù hợp.'],['question'=>'Dịch vụ marketing trọn gói bao gồm những gì?','answer'=>'Bao gồm chiến lược, nội dung, quảng cáo và đo lường hiệu quả.'],['question'=>'Tại sao nên chọn dịch vụ marketing trọn gói?','answer'=>'Giúp các kênh truyền thông vận hành thống nhất.']]]],'en'=>['title'=>'FAQ','subtitle'=>'','description'=>'','button_label'=>'','content'=>['items'=>[]]]]],
-            ['block_type'=>'bizmax_latest_posts','label'=>'Blog của chúng tôi','description'=>'Nguồn Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.','preview_image'=>'/theme-previews/XD0306/bizmax-latest-posts.png','anchor_id'=>'tin-tuc','dynamic'=>true,'settings'=>['source'=>'cms_posts','limit'=>5],'settings_schema'=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$sources],'limit'=>['type'=>'number','label'=>'Số bài hiển thị']],'data'=>['vi'=>['title'=>'Blog của chúng tôi','subtitle'=>'','description'=>'','button_label'=>'Đọc thêm','content'=>['items'=>[]]],'en'=>['title'=>'Our blog','subtitle'=>'','description'=>'','button_label'=>'Read more','content'=>['items'=>[]]]]],
+            ['block_type' => 'hero_slider', 'label' => 'Header và banner', 'description' => 'Header hai tầng và banner slider.', 'preview_image' => '/theme-previews/XD0306/hero-slider.png', 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'xd0306-hero-slider', 'limit' => 3, 'autoplay_ms' => 6000], 'settings_schema' => [['key' => 'placement', 'label' => 'Vị trí banner', 'type' => 'text', 'default' => 'xd0306-hero-slider'], ['key' => 'limit', 'label' => 'Số slide', 'type' => 'number', 'default' => 3]], 'data' => ['vi' => ['title' => 'Thiết kế website chuyên nghiệp', 'subtitle' => 'Digital agency', 'description' => 'Chúng tôi xây dựng website, thương hiệu và chiến dịch số có hiệu quả.', 'button_label' => 'Liên hệ ngay', 'content' => ['slides' => []]], 'en' => ['title' => 'Professional website design', 'subtitle' => 'Digital agency', 'description' => 'Website, branding and digital campaigns.', 'button_label' => 'Contact us', 'content' => ['slides' => []]]]],
+            ['block_type' => 'business_service_grid', 'label' => 'Dịch vụ nổi bật', 'description' => 'Nguồn Dịch vụ, Tin tức, Sản phẩm, Dự án hoặc nhập thủ công.', 'preview_image' => '/theme-previews/XD0306/business-service-grid.png', 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 3, 'featured_only' => true], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $sources], 'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị']], 'data' => ['vi' => ['title' => 'Công ty cổ phần Black', 'subtitle' => 'Về chúng tôi', 'description' => 'Dịch vụ marketing tổng thể giúp doanh nghiệp phát triển trong môi trường số.', 'button_label' => 'Xem thêm', 'content' => ['items' => []]], 'en' => ['title' => 'Black agency', 'subtitle' => 'About us', 'description' => 'Integrated digital marketing services.', 'button_label' => 'Learn more', 'content' => ['items' => []]]]],
+            ['block_type' => 'bizmax_about', 'label' => 'Giới thiệu sáng tạo', 'description' => 'Nội dung giới thiệu và hotline tùy chỉnh.', 'preview_image' => '/theme-previews/XD0306/bizmax-about.png', 'anchor_id' => 'gioi-thieu', 'settings' => [], 'data' => ['vi' => ['title' => 'Chúng tôi sáng tạo studio xây dựng thương hiệu', 'subtitle' => 'Chúng tôi là ai', 'description' => 'Đồng hành và phát triển cùng doanh nghiệp bằng giải pháp marketing online, truyền thông và quảng cáo.', 'button_label' => '1900 9477', 'content' => ['years' => '20+', 'years_label' => 'Năm kinh nghiệm', 'progress_label' => 'Khách hàng hài lòng', 'progress_value' => 90]], 'en' => ['title' => 'We build creative brands', 'subtitle' => 'Who we are', 'description' => 'We help businesses grow through digital marketing.', 'button_label' => '1900 9477', 'content' => []]]],
+            ['block_type' => 'collection_gallery', 'label' => 'Album hình ảnh', 'description' => 'Nguồn Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.', 'preview_image' => '/theme-previews/XD0306/collection-gallery.png', 'anchor_id' => 'thu-vien', 'dynamic' => true, 'settings' => ['source' => 'cms_projects', 'limit' => 6], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $sources], 'limit' => ['type' => 'number', 'label' => 'Số ảnh']], 'data' => ['vi' => ['title' => 'Một số album của chúng tôi', 'subtitle' => 'Hình ảnh', 'description' => '', 'button_label' => 'Xem thêm', 'content' => ['items' => []]], 'en' => ['title' => 'Selected albums', 'subtitle' => 'Gallery', 'description' => '', 'button_label' => 'View more', 'content' => ['items' => []]]]],
+            ['block_type' => 'faq_showcase', 'label' => 'Câu hỏi thường gặp', 'description' => 'FAQ tùy chỉnh.', 'preview_image' => '/theme-previews/XD0306/faq-showcase.png', 'anchor_id' => 'faq', 'settings' => [], 'data' => ['vi' => ['title' => 'Faq\'s', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => [['question' => 'Tôi cần chuẩn bị gì? Tiến hành mất bao lâu?', 'answer' => 'Đội ngũ sẽ khảo sát và đề xuất lộ trình phù hợp.'], ['question' => 'Dịch vụ marketing trọn gói bao gồm những gì?', 'answer' => 'Bao gồm chiến lược, nội dung, quảng cáo và đo lường hiệu quả.'], ['question' => 'Tại sao nên chọn dịch vụ marketing trọn gói?', 'answer' => 'Giúp các kênh truyền thông vận hành thống nhất.']]]], 'en' => ['title' => 'FAQ', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]]]],
+            ['block_type' => 'bizmax_latest_posts', 'label' => 'Blog của chúng tôi', 'description' => 'Nguồn Tin tức, Sản phẩm, Dịch vụ, Dự án hoặc nhập thủ công.', 'preview_image' => '/theme-previews/XD0306/bizmax-latest-posts.png', 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 5], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $sources], 'limit' => ['type' => 'number', 'label' => 'Số bài hiển thị']], 'data' => ['vi' => ['title' => 'Blog của chúng tôi', 'subtitle' => '', 'description' => '', 'button_label' => 'Đọc thêm', 'content' => ['items' => []]], 'en' => ['title' => 'Our blog', 'subtitle' => '', 'description' => '', 'button_label' => 'Read more', 'content' => ['items' => []]]]],
         ];
     }
 
@@ -7517,10 +7860,10 @@ class LandingPageBuilder
                     'featured_only' => true,
                 ],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => ['custom', 'cms_projects', 'cms_services', 'cms_products', 'cms_posts']],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'category_id' => ['type' => 'number', 'label' => 'ID danh muc khi dung tin tuc/san pham'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay highlight'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => ['custom', 'cms_projects', 'cms_services', 'cms_products', 'cms_posts']],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'category_id' => ['type' => 'number', 'label' => 'ID danh mục khi dùng tin tức/sản phẩm'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
@@ -7549,9 +7892,9 @@ class LandingPageBuilder
                     'featured_only' => true,
                 ],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => ['custom', 'cms_team_members']],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => ['custom', 'cms_team_members']],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
@@ -7580,9 +7923,9 @@ class LandingPageBuilder
                     'featured_only' => true,
                 ],
                 'settings_schema' => [
-                    'source' => ['type' => 'select', 'label' => 'Nguon du lieu', 'options' => ['custom', 'cms_testimonials']],
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => ['custom', 'cms_testimonials']],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [
@@ -7609,8 +7952,8 @@ class LandingPageBuilder
                     'featured_only' => true,
                 ],
                 'settings_schema' => [
-                    'limit' => ['type' => 'number', 'label' => 'So item hien thi'],
-                    'featured_only' => ['type' => 'boolean', 'label' => 'Chi lay noi bat'],
+                    'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị'],
+                    'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nổi bật'],
                 ],
                 'data' => [
                     'vi' => [

@@ -8,8 +8,8 @@
     {!! $editButton !!}
     <div class="rx13-container rx13-faq__grid">
         <div>
-            <p class="rx13-kicker">{{ $data['subtitle'] ?? 'Cau hoi thuong gap' }}</p>
-            <h2 class="rx13-title">{{ $data['title'] ?? 'Giai dap cac thac mac ve dich vu cua ban' }}</h2>
+            <p class="rx13-kicker">{{ $data['subtitle'] ?? 'Câu hỏi thường gặp' }}</p>
+            <h2 class="rx13-title">{{ $data['title'] ?? 'Giải đáp các thắc mắc về dịch vụ visa' }}</h2>
             @if (filled($data['description'] ?? null))
                 <p class="rx13-faq__lead">{{ $data['description'] }}</p>
             @endif
@@ -26,7 +26,7 @@
         </div>
         <aside class="rx13-faq-images">
             <img src="{{ $imageOne }}" alt="Kho van">
-            <img src="{{ $imageTwo }}" alt="Nhan vien logistics">
+            <img src="{{ $imageTwo }}" alt="Nhân viên tư vấn">
         </aside>
     </div>
 </section>

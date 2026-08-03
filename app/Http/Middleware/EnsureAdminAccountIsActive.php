@@ -27,6 +27,17 @@ class EnsureAdminAccountIsActive
             return $this->invalidateSession($request, 'Phiên đăng nhập đã được thu hồi. Vui lòng đăng nhập lại.');
         }
 
+        if (
+            $admin->must_change_password
+            && $request->is('admin/api/*')
+            && ! $request->routeIs('admin.api.me', 'admin.api.me.password.update')
+        ) {
+            return response()->json([
+                'message' => 'Bạn phải đổi mật khẩu trước khi tiếp tục.',
+                'code' => 'password_change_required',
+            ], 403);
+        }
+
         return $next($request);
     }
 

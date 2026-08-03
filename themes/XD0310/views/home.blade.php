@@ -1,7 +1,8 @@
 @php
     $blocks = collect($landingBlocks ?? [])->values();
     $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Dịch vụ vận hành'))) ?: 'Dịch vụ vận hành';
+    $companyName = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Garden Haven'))) ?: 'Garden Haven';
+    $companyDescription = trim((string) ($branding['company_description'] ?? 'Thiết kế, thi công và chăm sóc cảnh quan xanh bền vững.'));
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
     $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;

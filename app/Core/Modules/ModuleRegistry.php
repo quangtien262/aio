@@ -69,6 +69,14 @@ class ModuleRegistry
             ->all();
     }
 
+    public function moduleKeyForPermission(string $permission): ?string
+    {
+        $module = $this->all()
+            ->first(fn (array $candidate): bool => in_array($permission, $candidate['permissions'] ?? [], true));
+
+        return $module['key'] ?? null;
+    }
+
     public function navigationForPermissions(array $permissions): array
     {
         return $this->all()
@@ -186,6 +194,8 @@ class ModuleRegistry
 
         if (($module['upgrade_available'] ?? false) !== true) {
             $upgradeBlockers[] = 'Module đang ở phiên bản mới nhất.';
+        } else {
+            $enableBlockers[] = 'Cần nâng cấp module lên phiên bản mới nhất trước khi bật.';
         }
 
         foreach ($dependencies as $dependency) {
@@ -193,6 +203,7 @@ class ModuleRegistry
                 $installBlockers[] = "Không tìm thấy module phụ thuộc {$dependency['key']} trong source.";
                 $enableBlockers[] = "Không tìm thấy module phụ thuộc {$dependency['key']} trong source.";
                 $upgradeBlockers[] = "Không tìm thấy module phụ thuộc {$dependency['key']} trong source.";
+
                 continue;
             }
 

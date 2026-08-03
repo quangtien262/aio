@@ -18,8 +18,8 @@
                         <p>{{ $slide['summary'] ?? $data['description'] }}</p>
                     @endif
                     <div class="rx13-hero__actions">
-                        <a class="rx13-button" href="{{ $slide['link_url'] ?? '#gioi-thieu' }}">{{ $slide['button_label'] ?? $data['button_label'] ?? 'Doc Them' }} <span>-></span></a>
-                        <a class="rx13-hero__watch" href="{{ $slide['video_url'] ?? '#video' }}"><span class="rx13-play">></span> Xem video cua chung toi</a>
+                        <a class="rx13-button" href="{{ $slide['link_url'] ?? '#gioi-thieu' }}">{{ $slide['button_label'] ?? $data['button_label'] ?? 'Đọc thêm' }} <span>→</span></a>
+                        <a class="rx13-hero__watch" href="{{ $slide['video_url'] ?? '#video' }}"><span class="rx13-play">▶</span> Xem video của chúng tôi</a>
                     </div>
                 </div>
             </article>

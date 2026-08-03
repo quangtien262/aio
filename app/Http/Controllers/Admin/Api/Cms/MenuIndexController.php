@@ -8,18 +8,28 @@ use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
 use App\Models\CmsMenu;
 use App\Models\CmsPage;
-use App\Support\FrontendRouteUrl;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
 use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
+use App\Models\LandingPage;
+use App\Support\FrontendRouteUrl;
+use App\Support\Localization\AdminLocalizedContentList;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class MenuIndexController
 {
-    public function __invoke(CmsMenuLocationRegistry $locationRegistry): JsonResponse
-    {
+    public function __construct(
+        private readonly AdminLocalizedContentList $localizedList,
+    ) {}
+
+    public function __invoke(
+        Request $request,
+        CmsMenuLocationRegistry $locationRegistry,
+    ): JsonResponse {
         $query = CmsMenu::query()->orderBy('location')->orderBy('name');
 
         $items = $query->get()->map(fn (CmsMenu $menu): array => [
@@ -28,6 +38,11 @@ class MenuIndexController
             'location' => $menu->location,
             'items' => $menu->items ?? [],
         ])->values()->all();
+        $items = $this->localizedList->overlay(
+            $items,
+            'cms_menu',
+            $request->query('locale'),
+        );
 
         return response()->json([
             'data' => [
@@ -43,6 +58,29 @@ class MenuIndexController
                             'value' => (string) $page->id,
                             'url' => $page->slug === 'home' ? '/' : FrontendRouteUrl::pagePath($page->slug),
                         ])
+                        ->values()
+                        ->all(),
+                    'landingPages' => LandingPage::query()
+                        ->where(
+                            'website_key',
+                            app(SiteContext::class)->websiteKey(),
+                        )
+                        ->where('is_home', false)
+                        ->with(['data' => fn ($query) => $query
+                            ->where('locale', config('localization.source_locale', 'vi'))])
+                        ->orderBy('sort_order')
+                        ->orderBy('slug')
+                        ->get()
+                        ->map(function (LandingPage $page): array {
+                            $translation = $page->data->first();
+                            $slug = (string) ($translation?->slug ?: $page->slug);
+
+                            return [
+                                'label' => $translation?->title ?: $slug,
+                                'value' => (string) $page->id,
+                                'url' => FrontendRouteUrl::landingPath($slug),
+                            ];
+                        })
                         ->values()
                         ->all(),
                     'productCategories' => CatalogCategory::query()

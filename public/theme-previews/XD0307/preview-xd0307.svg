@@ -1,28 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-label="XD0301 Construction Landing preview">
-  <defs>
-    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#142331"/>
-      <stop offset="1" stop-color="#6f7f16"/>
-    </linearGradient>
-  </defs>
-  <rect width="640" height="420" fill="#f7f8f4"/>
-  <rect y="0" width="640" height="72" fill="#fff"/>
-  <rect x="74" y="24" width="92" height="24" rx="4" fill="#26384a"/>
-  <rect x="104" y="16" width="18" height="34" fill="#bdd400"/>
-  <rect x="294" y="26" width="210" height="12" rx="6" fill="#d8dfdf"/>
-  <rect x="530" y="18" width="72" height="32" rx="4" fill="#bdd400"/>
-  <rect y="72" width="640" height="180" fill="url(#hero)"/>
-  <rect x="118" y="112" width="168" height="104" fill="none" stroke="#bdd400" stroke-width="5"/>
-  <rect x="146" y="140" width="120" height="12" rx="6" fill="#fff"/>
-  <rect x="146" y="164" width="94" height="10" rx="5" fill="#fff" opacity=".75"/>
-  <rect x="146" y="190" width="70" height="28" rx="2" fill="#bdd400"/>
-  <rect x="74" y="286" width="126" height="84" fill="#fff" stroke="#e5e8e2"/>
-  <rect x="224" y="286" width="126" height="84" fill="#fff" stroke="#e5e8e2"/>
-  <rect x="374" y="286" width="126" height="84" fill="#fff" stroke="#e5e8e2"/>
-  <rect x="90" y="306" width="82" height="10" rx="5" fill="#26384a"/>
-  <rect x="240" y="306" width="82" height="10" rx="5" fill="#26384a"/>
-  <rect x="390" y="306" width="82" height="10" rx="5" fill="#26384a"/>
-  <rect x="90" y="332" width="72" height="8" rx="4" fill="#a5adb2"/>
-  <rect x="240" y="332" width="72" height="8" rx="4" fill="#a5adb2"/>
-  <rect x="390" y="332" width="72" height="8" rx="4" fill="#a5adb2"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-label="XD0307 Klean Services preview">
+  <rect width="640" height="420" fill="#edf8ff"/><rect width="640" height="70" fill="#fff"/>
+  <circle cx="43" cy="35" r="18" fill="#21c58b"/><text x="70" y="43" fill="#071b3b" font-family="Arial" font-size="24" font-weight="900">KLEAN</text>
+  <g fill="#6b7c91"><rect x="350" y="32" width="38" height="6" rx="3"/><rect x="408" y="32" width="38" height="6" rx="3"/><rect x="466" y="32" width="38" height="6" rx="3"/></g><rect x="530" y="20" width="78" height="30" rx="15" fill="#d8f36a"/>
+  <ellipse cx="525" cy="195" rx="172" ry="142" fill="#dceefa"/><circle cx="540" cy="200" r="104" fill="#c9e5f6"/>
+  <text x="38" y="126" fill="#21c58b" font-family="Arial" font-size="11" font-weight="800" letter-spacing="2">DỊCH VỤ DỌN DẸP</text>
+  <text x="38" y="171" fill="#071b3b" font-family="Arial" font-size="38" font-weight="900">SẠCH TINH TƯƠM,</text><text x="38" y="211" fill="#071b3b" font-family="Arial" font-size="38" font-weight="900">SỐNG NHẸ NHÀNG.</text>
+  <rect x="38" y="242" width="114" height="34" rx="17" fill="#1d79f2"/>
+  <g transform="translate(38 310)"><rect width="132" height="88" rx="18" fill="#fff"/><rect x="144" width="132" height="88" rx="18" fill="#fff"/><rect x="288" width="132" height="88" rx="18" fill="#fff"/><rect x="432" width="132" height="88" rx="18" fill="#fff"/><g fill="#21c58b"><circle cx="26" cy="26" r="11"/><circle cx="170" cy="26" r="11"/><circle cx="314" cy="26" r="11"/><circle cx="458" cy="26" r="11"/></g></g>
 </svg>

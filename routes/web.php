@@ -32,7 +32,9 @@ Route::prefix('{locale}')
 	->middleware('frontend.locale')
 	->where(['locale' => FrontendLocalization::routeLocalePattern()])
 	->group(function (): void {
-		Route::get('/', LandingController::class)->name('site.home');
+		Route::get('/', LandingController::class)
+			->middleware('module.enabled:cms')
+			->name('site.home');
 
 		Route::middleware('guest:customer')->group(function (): void {
 			Route::get('/{loginSegment}', [CustomerAuthenticatedSessionController::class, 'create'])
@@ -68,6 +70,7 @@ Route::prefix('{locale}')
 				});
 
 			Route::post('/{favoriteSegment}/{product:slug}', CustomerFavoriteController::class)
+				->middleware('module.enabled:catalog')
 				->whereIn('favoriteSegment', FrontendLocalization::segmentValues('favorite'))
 				->name('site.favorite.toggle');
 			Route::get('/{accountSegment}/{any?}', CustomerAccountController::class)
@@ -77,6 +80,7 @@ Route::prefix('{locale}')
 			Route::post('/logout', [CustomerAuthenticatedSessionController::class, 'destroy'])->name('customer.auth.logout');
 		});
 
+		Route::middleware('module.enabled:cms')->group(function (): void {
 		Route::post('/{newsletterSegment}/{subscribeSegment}', NewsletterSubscriptionController::class)
 			->whereIn('newsletterSegment', FrontendLocalization::segmentValues('newsletter'))
 			->whereIn('subscribeSegment', FrontendLocalization::segmentValues('subscribe'))
@@ -123,6 +127,7 @@ Route::prefix('{locale}')
 			->name('site.projects.category');
 		Route::get('/prj/{slug}', [CmsSiteController::class, 'project'])
 			->name('site.projects.show');
+		});
 		Route::get('/bds', [RealEstateController::class, 'index'])
 			->middleware('module.enabled:real-estate')
 			->name('site.real-estate.index');
@@ -130,9 +135,12 @@ Route::prefix('{locale}')
 			->middleware('module.enabled:real-estate')
 			->name('site.real-estate.show');
 		Route::get('/contact', [CmsSiteController::class, 'contact'])
+			->middleware('module.enabled:cms')
 			->name('site.contact');
 		Route::post('/contact', [CmsSiteController::class, 'submitContact'])
+			->middleware('module.enabled:cms')
 			->name('site.contact.submit');
+		Route::middleware('module.enabled:catalog')->group(function (): void {
 		Route::get('/{cartSegment}', [CmsSiteController::class, 'cart'])
 			->whereIn('cartSegment', FrontendLocalization::segmentValues('cart'))
 			->name('site.cart.index');
@@ -174,4 +182,5 @@ Route::prefix('{locale}')
 		Route::get('/{productSegment}/{slug}', [CmsSiteController::class, 'product'])
 			->whereIn('productSegment', FrontendLocalization::segmentValues('product'))
 			->name('site.catalog.product');
+		});
 	});

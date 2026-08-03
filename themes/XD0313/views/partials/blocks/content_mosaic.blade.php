@@ -9,8 +9,8 @@
 <section id="{{ $anchor }}" class="rx13-section rx13-featured xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     {!! $editButton !!}
     <div class="rx13-container">
-        <p class="rx13-eyebrow">{{ $data['subtitle'] ?? 'Visa noi bat' }}</p>
-        <h2 class="rx13-title">{{ $data['title'] ?? 'Danh Muc Visa Noi Bat' }}</h2>
+        <p class="rx13-eyebrow">{{ $data['subtitle'] ?? 'Visa nổi bật' }}</p>
+        <h2 class="rx13-title">{{ $data['title'] ?? 'Danh mục Visa nổi bật' }}</h2>
         <div class="rx13-featured-track" data-rx13-row>
             @foreach ($items as $item)
                 @php

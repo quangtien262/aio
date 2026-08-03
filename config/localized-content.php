@@ -130,8 +130,7 @@ return [
         ],
         'cms_menu' => [
             'model' => CmsMenu::class,
-            'fields' => ['name', 'items'],
-            'label_field' => 'name',
+            'fields' => ['items'],
             'view_permissions' => ['cms.view'],
             'update_permissions' => ['cms.menu.manage'],
             'publish_permissions' => ['cms.menu.manage'],
@@ -186,6 +185,26 @@ return [
         'reader' => env('LOCALIZATION_CONTENT_READER', 'new'),
         'dual_write' => env('LOCALIZATION_CONTENT_DUAL_WRITE', true),
         'legacy_fallback' => env('LOCALIZATION_CONTENT_LEGACY_FALLBACK', true),
+        'stages' => [
+            // Supported values: legacy, canary, all. The local/default
+            // installation has completed the Menu rollout; production
+            // deployments may start with canary without changing code.
+            'cms_menu' => env('LOCALIZATION_MENU_ROLLOUT_STAGE', 'all'),
+        ],
+        'canaries' => [
+            'cms_menu' => [
+                'websites' => [],
+                'themes' => ['BOOK920', 'DN302', 'BDS701'],
+            ],
+        ],
+        'overrides' => [
+            'cms_menu' => [
+                // Website false is the emergency rollback switch and wins over
+                // every theme setting for that website.
+                'websites' => [],
+                'themes' => [],
+            ],
+        ],
         'modules' => [
             'cms_category' => true,
             'cms_post' => true,
@@ -206,10 +225,6 @@ return [
             'real_estate_property_type' => true,
         ],
         'websites' => [],
-        'themes' => [
-            'BOOK920' => true,
-            'DN302' => true,
-            'BDS701' => true,
-        ],
+        'themes' => [],
     ],
 ];

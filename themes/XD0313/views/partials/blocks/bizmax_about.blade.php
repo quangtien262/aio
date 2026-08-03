@@ -9,12 +9,12 @@
             <img src="{{ $image }}" alt="{{ $data['title'] ?? 'RouteX' }}">
         </div>
         <div class="rx13-about__copy">
-            <p class="rx13-kicker">{{ $data['subtitle'] ?? 'Ve chung toi' }}</p>
-            <h2 class="rx13-title">{{ $data['title'] ?? 'Giai phap logistics toan cau tot nhat' }}</h2>
+            <p class="rx13-kicker">{{ $data['subtitle'] ?? 'Về chúng tôi' }}</p>
+            <h2 class="rx13-title">{{ $data['title'] ?? 'Giải pháp tư vấn visa toàn diện' }}</h2>
             @if (filled($data['description'] ?? null))
                 {!! collect(explode("\n", (string) $data['description']))->filter()->map(fn ($line) => '<p>'.e($line).'</p>')->implode('') !!}
             @endif
-            <a class="rx13-button" href="{{ $settings['cta_url'] ?? '#dich-vu' }}">{{ $data['button_label'] ?? 'Xem them' }}</a>
+            <a class="rx13-button" href="{{ $settings['cta_url'] ?? '#dich-vu' }}">{{ $data['button_label'] ?? 'Xem thêm' }}</a>
         </div>
     </div>
 </section>

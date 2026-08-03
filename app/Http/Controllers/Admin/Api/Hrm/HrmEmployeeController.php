@@ -38,7 +38,7 @@ class HrmEmployeeController
                 unset($data['identity_number'],$data['personal_email'],$data['address']);
             }
 
-return $data;
+            return $data;
         });
 
         return response()->json(['data' => ['items' => $items, 'references' => ['departments' => HrmDepartment::query()->where('is_active', true)->orderBy('name')->get(), 'positions' => HrmPosition::query()->where('is_active', true)->orderBy('name')->get(), 'managers' => HrmEmployee::query()->where('employment_status', 'active')->orderBy('full_name')->get(['id', 'employee_code', 'full_name']), 'available_admins' => Admin::query()->whereKeyNot(Admin::SYSTEM_OWNER_ID)->whereDoesntHave('employeeProfile')->where('status', 'active')->orderBy('name')->get(['id', 'name', 'username', 'email'])]]]);
@@ -47,6 +47,7 @@ return $data;
     public function store(Request $request): JsonResponse
     {
         $data = $this->validated($request);
+        $this->authorizeSensitiveWrite($request, $data);
         $employee = HrmEmployee::query()->create($data);
         $this->auditLogger->record('hrm.employee.created', $employee, null, $employee->toArray(), moduleKey: 'hrm');
 
@@ -56,7 +57,16 @@ return $data;
     public function update(Request $request, HrmEmployee $employee): JsonResponse
     {
         $before = $employee->toArray();
-        $employee->update($this->validated($request, $employee));
+        $data = $this->validated($request, $employee);
+        $this->authorizeSensitiveWrite($request, $data);
+
+        DB::transaction(function () use ($employee, $data): void {
+            $employee->update($data);
+
+            if (($data['employment_status'] ?? null) === 'terminated') {
+                $this->lockLinkedAdmin($employee);
+            }
+        });
         $this->auditLogger->record('hrm.employee.updated', $employee, $before, $employee->fresh()->toArray(), moduleKey: 'hrm');
 
         return response()->json(['message' => 'Đã cập nhật hồ sơ nhân sự.', 'data' => $employee->fresh(['department', 'position', 'admin'])]);
@@ -67,9 +77,7 @@ return $data;
         $before = $employee->toArray();
         DB::transaction(function () use ($employee) {
             $employee->update(['employment_status' => 'terminated', 'termination_date' => $employee->termination_date ?: today()]);
-            if ($employee->admin) {
-                $employee->admin->update(['status' => 'archived', 'is_active' => false, 'locked_at' => now(), 'locked_reason' => 'Nhân sự đã nghỉ việc.', 'auth_version' => $employee->admin->auth_version + 1]);
-            }
+            $this->lockLinkedAdmin($employee);
         });
         $this->auditLogger->record('hrm.employee.archived', $employee, $before, $employee->fresh()->toArray(), moduleKey: 'hrm');
 
@@ -101,5 +109,36 @@ return $data;
     private function validated(Request $request, ?HrmEmployee $employee = null): array
     {
         return $request->validate(['employee_code' => ['required', 'string', 'max:50', Rule::unique('hrm_employees', 'employee_code')->ignore($employee?->id)], 'department_id' => ['nullable', 'integer', 'exists:hrm_departments,id'], 'position_id' => ['nullable', 'integer', 'exists:hrm_positions,id'], 'manager_employee_id' => ['nullable', 'integer', 'exists:hrm_employees,id', Rule::notIn(array_filter([$employee?->id]))], 'full_name' => ['required', 'string', 'max:255'], 'work_email' => ['nullable', 'email', 'max:255'], 'personal_email' => ['nullable', 'email', 'max:255'], 'phone' => ['nullable', 'string', 'max:30'], 'date_of_birth' => ['nullable', 'date', 'before:today'], 'gender' => ['nullable', Rule::in(['male', 'female', 'other'])], 'identity_number' => ['nullable', 'string', 'max:100'], 'address' => ['nullable', 'string'], 'work_location' => ['nullable', 'string', 'max:255'], 'join_date' => ['nullable', 'date'], 'termination_date' => ['nullable', 'date', 'after_or_equal:join_date'], 'employment_status' => ['required', Rule::in(['onboarding', 'active', 'probation', 'leave', 'suspended', 'terminated'])], 'note' => ['nullable', 'string']]);
+    }
+
+    private function authorizeSensitiveWrite(Request $request, array $data): void
+    {
+        $sensitiveFields = ['personal_email', 'date_of_birth', 'identity_number', 'address'];
+        $writesSensitiveData = collect($sensitiveFields)->contains(
+            fn (string $field): bool => array_key_exists($field, $data),
+        );
+
+        abort_if(
+            $writesSensitiveData && ! $request->user('admin')->hasPermission('hrm.employee.sensitive.view'),
+            403,
+            'Bạn không có quyền cập nhật dữ liệu nhân sự nhạy cảm.',
+        );
+    }
+
+    private function lockLinkedAdmin(HrmEmployee $employee): void
+    {
+        $admin = $employee->admin;
+
+        if (! $admin || ($admin->status === 'archived' && ! $admin->is_active)) {
+            return;
+        }
+
+        $admin->update([
+            'status' => 'archived',
+            'is_active' => false,
+            'locked_at' => now(),
+            'locked_reason' => 'Nhân sự đã nghỉ việc.',
+            'auth_version' => $admin->auth_version + 1,
+        ]);
     }
 }

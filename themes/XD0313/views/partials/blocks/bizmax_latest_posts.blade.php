@@ -9,8 +9,8 @@
 <section id="{{ $anchor }}" class="rx13-section rx13-posts xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     {!! $editButton !!}
     <div class="rx13-container">
-        <p class="rx13-eyebrow">{{ $data['subtitle'] ?? 'Blog gan day' }}</p>
-        <h2 class="rx13-title">{{ $data['title'] ?? 'Mot So Bai Viet Cua Chung Toi' }}</h2>
+        <p class="rx13-eyebrow">{{ $data['subtitle'] ?? 'Blog gần đây' }}</p>
+        <h2 class="rx13-title">{{ $data['title'] ?? 'Một số bài viết của chúng tôi' }}</h2>
         <div class="rx13-posts__grid">
             @foreach ($items as $item)
                 @php
@@ -30,7 +30,7 @@
                         @if (filled($summary))
                             <p>{{ \Illuminate\Support\Str::limit(strip_tags($summary), 120) }}</p>
                         @endif
-                        <a class="rx13-button" href="{{ $item['url'] ?? $item['href'] ?? '#blog' }}">Xem Chi Tiet <span>-></span></a>
+                        <a class="rx13-button" href="{{ $item['url'] ?? $item['href'] ?? '#blog' }}">Xem chi tiết <span>→</span></a>
                     </div>
                 </article>
             @endforeach

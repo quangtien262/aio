@@ -5,7 +5,7 @@
   "description": "Theme doanh nghiệp xây dựng tông đen cam với dự án, dịch vụ, thiết bị an toàn, đội ngũ, FAQ và tư vấn.",
   "website_type": "service",
   "parent": null,
-  "preview": {"thumbnail": "preview-xd0325.png", "cover": "cover-xd0325.png"},
+  "preview": {"thumbnail": "xd0325.png", "cover": "xd0325.png"},
   "blocks": ["hero-slider", "about-experience", "project-gallery", "featured-services", "featured-products", "featured-categories", "testimonials", "team-members", "faq-showcase", "process-steps", "latest-posts", "landing-contact", "partner-logos"],
   "supports": {"dark_mode": false, "multi_homepage": false, "custom_css": true, "block_mapping": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},

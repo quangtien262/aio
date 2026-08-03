@@ -14,6 +14,7 @@ use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Models\ThemeDemoRecord;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\SiteContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -22,14 +23,21 @@ use InvalidArgumentException;
 class Xd0311DemoContentProvider implements ThemeDemoContentProvider
 {
     private const THEME_KEY = 'XD0311';
+
     private const PRESET_KEY = 'xd0311-accounting-advisory';
 
-    public function __construct(private readonly LandingPageBuilder $landingPageBuilder)
+    public function __construct(private readonly LandingPageBuilder $landingPageBuilder) {}
+
+    public function themeKey(): string
     {
+        return self::THEME_KEY;
     }
 
-    public function themeKey(): string { return self::THEME_KEY; }
-    public function defaultPreset(): string { return self::PRESET_KEY; }
+    public function defaultPreset(): string
+    {
+        return self::PRESET_KEY;
+    }
+
     public function preset(): array
     {
         return [
@@ -42,7 +50,7 @@ class Xd0311DemoContentProvider implements ThemeDemoContentProvider
     public function generate(string $presetKey): array
     {
         if ($presetKey !== self::PRESET_KEY) {
-            throw new InvalidArgumentException('Preset demo is not valid for XD0311.');
+            throw new InvalidArgumentException('Preset demo không hợp lệ cho XD0311.');
         }
 
         return DB::transaction(function (): array {
@@ -51,10 +59,10 @@ class Xd0311DemoContentProvider implements ThemeDemoContentProvider
             $image = fn (string $id, int $width = 1200): string => "https://images.unsplash.com/{$id}?auto=format&fit=crop&w={$width}&q=85";
 
             foreach ([
-                ['Ke toan doanh nghiep', 'To chuc so sach, bao cao tai chinh va quy trinh ke toan phu hop voi quy mo doanh nghiep.', 'photo-1454165804606-c3d57bc86b40'],
-                ['Tu van thue', 'Cap nhat quy dinh va xay dung phuong an ke khai thue minh bach, dung han.', 'photo-1554224155-6726b3ff858f'],
-                ['Tu van tai chinh', 'Phan tich dong tien, chi phi va chi so tai chinh de ho tro quyet dinh kinh doanh.', 'photo-1556761175-b413da4baf72'],
-                ['Kiem toan noi bo', 'Ra soat quy trinh, kiem soat rui ro va nang cao do tin cay cua du lieu tai chinh.', 'photo-1551836022-d5d88e9218df'],
+                ['Kế toán doanh nghiệp', 'Tổ chức sổ sách, báo cáo tài chính và quy trình kế toán phù hợp với quy mô doanh nghiệp.', 'photo-1454165804606-c3d57bc86b40'],
+                ['Tư vấn thuế', 'Cập nhật quy định và xây dựng phương án kê khai thuế minh bạch, đúng hạn.', 'photo-1554224155-6726b3ff858f'],
+                ['Tư vấn tài chính', 'Phân tích dòng tiền, chi phí và chỉ số tài chính để hỗ trợ quyết định kinh doanh.', 'photo-1556761175-b413da4baf72'],
+                ['Kiểm toán nội bộ', 'Rà soát quy trình, kiểm soát rủi ro và nâng cao độ tin cậy của dữ liệu tài chính.', 'photo-1551836022-d5d88e9218df'],
             ] as $index => [$title, $summary, $photo]) {
                 $service = CmsService::query()->create([
                     'title' => $title,
@@ -62,7 +70,7 @@ class Xd0311DemoContentProvider implements ThemeDemoContentProvider
                     'status' => 'published',
                     'summary' => $summary,
                     'content' => '<p>'.$summary.'</p>',
-                    'button_label' => 'Tim hieu them',
+                    'button_label' => 'Tìm hiểu thêm',
                     'link_url' => '#lien-he',
                     'is_featured' => true,
                     'is_highlight' => true,
@@ -102,8 +110,8 @@ class Xd0311DemoContentProvider implements ThemeDemoContentProvider
             }
 
             foreach ([
-                ['Dich vu ke toan - thue cho doanh nghiep', 'Dong hanh cung doanh nghiep tu ke toan, ke khai thue den quan tri tai chinh minh bach.', 'photo-1454165804606-c3d57bc86b40'],
-                ['Quan tri tai chinh tu goc nhin chuyen gia', 'Giai phap tu van thuc te de doanh nghiep chu dong truoc moi quyet dinh.', 'photo-1554224155-6726b3ff858f'],
+                ['Kế toán và thuế vững vàng cho doanh nghiệp', 'Đồng hành từ tổ chức kế toán, kê khai thuế đến quản trị tài chính minh bạch.', 'photo-1454165804606-c3d57bc86b40'],
+                ['Quản trị tài chính từ góc nhìn chuyên gia', 'Giải pháp tư vấn thực tế để doanh nghiệp chủ động trước mỗi quyết định.', 'photo-1554224155-6726b3ff858f'],
             ] as $index => [$title, $summary, $photo]) {
                 $banner = SiteBanner::query()->create([
                     'theme_key' => self::THEME_KEY,
@@ -113,7 +121,7 @@ class Xd0311DemoContentProvider implements ThemeDemoContentProvider
                     'image_url' => $image($photo, 1920),
                     'link_url' => '#lien-he',
                     'badge' => 'InVess advisory',
-                    'metadata' => ['kicker' => 'InVess advisory', 'summary' => $summary, 'button_label' => 'Tim hieu them'],
+                    'metadata' => ['kicker' => 'Tư vấn tài chính chuyên nghiệp', 'summary' => $summary, 'button_label' => 'Nhận tư vấn'],
                     'sort_order' => $index,
                     'is_active' => true,
                 ]);
@@ -124,12 +132,12 @@ class Xd0311DemoContentProvider implements ThemeDemoContentProvider
                 'name' => 'XD0311 Main Menu',
                 'location' => 'primary-navigation',
                 'items' => [
-                    ['label' => 'Trang chu', 'url' => '#top'],
-                    ['label' => 'Gioi thieu', 'url' => '#gioi-thieu'],
-                    ['label' => 'Dich vu', 'url' => '#dich-vu'],
-                    ['label' => 'Quy trinh', 'url' => '#quy-trinh'],
-                    ['label' => 'Tin tuc', 'url' => '#tin-tuc'],
-                    ['label' => 'Lien he', 'url' => '#lien-he'],
+                    ['label' => 'Trang chủ', 'url' => '#top'],
+                    ['label' => 'Giới thiệu', 'url' => '#gioi-thieu'],
+                    ['label' => 'Dịch vụ', 'url' => '#dich-vu'],
+                    ['label' => 'Quy trình', 'url' => '#quy-trinh'],
+                    ['label' => 'Tin tức', 'url' => '#tin-tuc'],
+                    ['label' => 'Liên hệ', 'url' => '#lien-he'],
                 ],
             ]);
             $this->record($menu);
@@ -141,15 +149,15 @@ class Xd0311DemoContentProvider implements ThemeDemoContentProvider
                 'active_theme_key' => self::THEME_KEY,
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'InVess',
-                    'company_description' => 'Dich vu ke toan, thue va tu van tai chinh minh bach cho doanh nghiep.',
+                    'company_description' => 'Dịch vụ kế toán, thuế và tư vấn tài chính minh bạch cho doanh nghiệp.',
                     'support_hotline' => '1900 9477',
-                    'support_email' => 'hello@invess.local',
-                    'support_location' => '196 Nguyen Dinh Chieu, Quan 3, TP.HCM',
+                    'support_email' => 'hello@invess.vn',
+                    'support_location' => '196 Nguyễn Đình Chiểu, Quận 3, TP. Hồ Chí Minh',
                 ]),
             ])->save();
 
-            $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
-            $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);
+            $existingPage = LandingPage::query()->where('website_key', app(SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
+            $page = $this->landingPageBuilder->resolveHome(app(SiteContext::class)->websiteKey(), self::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
             }

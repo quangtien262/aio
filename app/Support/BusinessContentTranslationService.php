@@ -3,27 +3,25 @@
 namespace App\Support;
 
 use App\Enums\TranslationStatus;
-use App\Support\ThemeBlockRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
 use App\Models\CmsFeaturedCategory;
-use App\Models\CmsSidePromo;
-use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPartner;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
 use App\Models\CmsService;
+use App\Models\CmsSidePromo;
 use App\Models\CmsTeamMember;
 use App\Models\CmsTestimonial;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Models\ThemeTranslation;
-use App\Support\Localization\TranslationRevision;
 use App\Support\Localization\CmsPageLocalization;
-use App\Support\Localization\LocalizedContentRepository;
 use App\Support\Localization\LocalizationRollout;
+use App\Support\Localization\LocalizedContentRepository;
+use App\Support\Localization\TranslationRevision;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -109,7 +107,10 @@ class BusinessContentTranslationService
         foreach ($entries as $entry) {
             $key = trim((string) ($entry['key'] ?? ''));
 
-            if ($key === '') {
+            // Menu labels have a dedicated item_key-based lifecycle in
+            // /admin/cms/menus. Never let the generic positional editor write
+            // into that payload.
+            if ($key === '' || str_starts_with($key, 'cms_menu.')) {
                 continue;
             }
 
@@ -155,22 +156,22 @@ class BusinessContentTranslationService
             ThemeTranslation::query()
                 ->withoutGlobalScope('current_website')
                 ->updateOrCreate(
-                [
-                    'theme_key' => $this->contentThemeKey($websiteKey),
-                    'locale' => $resolvedLocale,
-                    'group' => 'content',
-                    'translation_key' => $key,
-                ],
-                [
-                    'website_key' => $websiteKey,
-                    'value' => $value,
-                    'translation_status' => TranslationStatus::Published,
-                    'translation_revision' => TranslationRevision::fingerprint(['value' => $value]),
-                    'is_machine_translated' => false,
-                    'translated_at' => now(),
-                    'translation_published_at' => now(),
-                ],
-            );
+                    [
+                        'theme_key' => $this->contentThemeKey($websiteKey),
+                        'locale' => $resolvedLocale,
+                        'group' => 'content',
+                        'translation_key' => $key,
+                    ],
+                    [
+                        'website_key' => $websiteKey,
+                        'value' => $value,
+                        'translation_status' => TranslationStatus::Published,
+                        'translation_revision' => TranslationRevision::fingerprint(['value' => $value]),
+                        'is_machine_translated' => false,
+                        'translated_at' => now(),
+                        'translation_published_at' => now(),
+                    ],
+                );
         }
 
         Cache::forget($this->cacheKey($websiteKey, $resolvedLocale, false));
@@ -187,19 +188,6 @@ class BusinessContentTranslationService
 
         if ($profile !== null && preg_match('/^branding\.(.+)$/', $key, $matches)) {
             return sprintf('site_profile.%s.branding.%s', $profile->id, $matches[1]);
-        }
-
-        if (preg_match('/^cms_menu\.([^.]+)\.(.+)$/', $key, $matches)) {
-            $menu = CmsMenu::query()
-                ->forWebsite($websiteKey)
-                ->where('location', $matches[1])
-                ->orderByDesc('updated_at')
-                ->orderByDesc('id')
-                ->first();
-
-            if ($menu !== null) {
-                return sprintf('cms_menu.%s.items.%s', $menu->id, $matches[2]);
-            }
         }
 
         return $key;
@@ -317,30 +305,6 @@ class BusinessContentTranslationService
                 ]);
             }
         }
-
-        CmsMenu::query()
-            ->orderBy('location')
-            ->orderByDesc('updated_at')
-            ->orderByDesc('id')
-            ->get()
-            ->unique('location')
-            ->each(function (CmsMenu $menu) use ($entries): void {
-                collect($menu->items ?? [])->values()->each(function (array $item, int $index) use ($entries, $menu): void {
-                    $entries->push([
-                        'key' => sprintf('cms_menu.%s.%d.label', $menu->location, $index),
-                        'label' => sprintf('Menu / %s / Item %d', $menu->location, $index + 1),
-                        'source_value' => (string) ($item['label'] ?? ''),
-                    ]);
-
-                    collect($item['children'] ?? [])->values()->each(function (array $child, int $childIndex) use ($entries, $menu, $index): void {
-                        $entries->push([
-                            'key' => sprintf('cms_menu.%s.%d.children.%d.label', $menu->location, $index, $childIndex),
-                            'label' => sprintf('Menu / %s / Item %d / Child %d', $menu->location, $index + 1, $childIndex + 1),
-                            'source_value' => (string) ($child['label'] ?? ''),
-                        ]);
-                    });
-                });
-            });
 
         CmsFeaturedCategory::query()->orderBy('location')->orderBy('id')->get()->each(function (CmsFeaturedCategory $group) use ($entries): void {
             collect($group->items ?? [])->values()->each(function (array $item, int $index) use ($entries, $group): void {
@@ -648,7 +612,6 @@ class BusinessContentTranslationService
     {
         $models = [
             SiteProfile::class,
-            CmsMenu::class,
             SiteBanner::class,
             CatalogCategory::class,
             CatalogProduct::class,
@@ -672,7 +635,7 @@ class BusinessContentTranslationService
     private function modelSignature(string $modelClass): string
     {
         /** @var Model $model */
-        $model = new $modelClass();
+        $model = new $modelClass;
         $table = $model->getTable();
 
         if (! Schema::hasTable($table)) {

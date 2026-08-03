@@ -2,16 +2,44 @@
 
 namespace Tests\Feature;
 
+use App\Core\Modules\ModuleManager;
 use App\Enums\TranslationStatus;
 use App\Models\Admin;
 use App\Models\CmsPage;
 use App\Models\CmsPageTranslation;
+use App\Models\LocalizedRoute;
+use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class CmsPageLocalizationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $moduleManager = app(ModuleManager::class);
+        $moduleManager->install('cms');
+        $moduleManager->enable('cms');
+        CmsPage::query()->withoutGlobalScopes()->delete();
+        CmsPageTranslation::query()->withoutGlobalScopes()->delete();
+        LocalizedRoute::query()
+            ->withoutGlobalScopes()
+            ->where('resource_type', 'cms_page')
+            ->delete();
+        Site::query()->firstOrCreate(
+            ['website_key' => 'website-main'],
+            [
+                'name' => 'Main Website',
+                'domain' => 'localhost',
+                'theme_key' => 'SHOP601',
+                'status' => 'active',
+            ],
+        );
+    }
 
     public function test_admin_manages_page_content_and_publish_workflow_per_locale(): void
     {
@@ -129,5 +157,57 @@ class CmsPageLocalizationTest extends TestCase
                 ->where('locale', 'vi')
                 ->count(),
         );
+    }
+
+    public function test_navigation_repair_restores_missing_page_route_and_strict_audit_detects_regression(): void
+    {
+        $page = CmsPage::query()->create([
+            'website_key' => 'website-main',
+            'title' => 'Giá»›i thiá»‡u',
+            'slug' => 'gioi-thieu',
+            'status' => 'published',
+            'body' => 'Ná»™i dung',
+        ]);
+        LocalizedRoute::query()
+            ->where('resource_type', 'cms_page')
+            ->where('resource_id', (string) $page->id)
+            ->where('locale', 'vi')
+            ->delete();
+
+        $this->assertSame(1, Artisan::call('localization:audit', [
+            '--website' => 'website-main',
+            '--strict' => true,
+            '--json' => true,
+        ]));
+        $this->assertStringContainsString(
+            'missing_canonical_route',
+            Artisan::output(),
+        );
+
+        $this->assertSame(0, Artisan::call(
+            'localization:repair-navigation',
+            [
+                '--website' => 'website-main',
+                '--json' => true,
+            ],
+        ));
+
+        $this->assertDatabaseHas('localized_routes', [
+            'website_key' => 'website-main',
+            'locale' => 'vi',
+            'resource_type' => 'cms_page',
+            'resource_id' => (string) $page->id,
+            'path' => '/p/gioi-thieu',
+            'is_canonical' => true,
+            'is_published' => true,
+        ]);
+        $exitCode = Artisan::call('localization:audit', [
+            '--website' => 'website-main',
+            '--strict' => true,
+            '--json' => true,
+        ]);
+        $this->assertSame(1, $exitCode);
+        $issues = collect(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR)['issues']);
+        $this->assertFalse($issues->contains('type', 'missing_canonical_route'));
     }
 }

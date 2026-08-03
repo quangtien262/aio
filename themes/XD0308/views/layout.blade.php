@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'XD0308 Logistics')</title>
+    <title>@yield('title', 'XD0308 Comgo Education')</title>
     @include('theme-xd0308::partials.styles')
     @include('theme-xd0308::partials.comgo-overrides')
     @stack('head')

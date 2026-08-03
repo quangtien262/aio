@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Database\Factories\AdminFactory;
 use App\Support\SiteContext;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Database\Factories\AdminFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -139,11 +139,15 @@ class Admin extends Authenticatable
 
     public function canAccess(string $permission, ?string $scopeType = null, ?string $scopeValue = null): bool
     {
+        if ($scopeType === 'global') {
+            return $this->hasGlobalPermission($permission);
+        }
+
         if (! $this->hasPermission($permission, $scopeType === 'website' ? $scopeValue : null)) {
             return false;
         }
 
-        if ($scopeType === null || $scopeType === 'global') {
+        if ($scopeType === null) {
             return true;
         }
 
@@ -184,6 +188,7 @@ class Admin extends Authenticatable
         $websiteKey = $websiteKey ?: (app()->bound(SiteContext::class) ? app(SiteContext::class)->websiteKey() : null);
 
         return $this->roleAssignments()
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
             ->where(fn ($query) => $query
                 ->where('scope_type', 'global')
                 ->when($websiteKey, fn ($scopeQuery) => $scopeQuery->orWhere(fn ($websiteQuery) => $websiteQuery
@@ -194,5 +199,24 @@ class Admin extends Authenticatable
             ->unique()
             ->values()
             ->all();
+    }
+
+    private function hasGlobalPermission(string $permission): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        $roleIds = $this->roleAssignments()
+            ->where('scope_type', 'global')
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->pluck('role_id');
+
+        return Permission::query()
+            ->where('key', $permission)
+            ->where('is_active', true)
+            ->whereHas('roles', fn ($query) => $query->whereIn('roles.id', $roleIds))
+            ->exists();
     }
 }

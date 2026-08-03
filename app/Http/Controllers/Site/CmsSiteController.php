@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Site;
 
+use App\Core\Cms\CmsMenuResolver;
 use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Core\Themes\ThemeTranslationService;
@@ -11,24 +12,23 @@ use App\Models\CatalogProduct;
 use App\Models\CmsCategory;
 use App\Models\CmsFeaturedCategory;
 use App\Models\CmsMedia;
-use App\Models\CmsSidePromo;
-use App\Models\Customer;
-use App\Models\CustomerFavorite;
-use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
 use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
+use App\Models\CmsSidePromo;
 use App\Models\ContactInquiry;
+use App\Models\Customer;
+use App\Models\CustomerFavorite;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
+use App\Support\BusinessContentTranslationService;
 use App\Support\FrontendLocalization;
 use App\Support\FrontendRouteUrl;
-use App\Support\BusinessContentTranslationService;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\Localization\CmsPageLocalization;
 use App\Support\Localization\LandingPageLocalization;
@@ -37,20 +37,24 @@ use App\Support\Localization\LocalizedContentRepository;
 use App\Support\OrderConfirmationSender;
 use App\Support\SiteContext;
 use App\Support\StorefrontCart;
+use App\Support\ThemeBlockRegistry;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use InvalidArgumentException;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 class CmsSiteController
 {
     private const DEFAULT_BRAND_ASSET = 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png';
+
     private const DEFAULT_WEBSITE_KEY = 'website-main';
 
     public function __construct(
@@ -63,10 +67,10 @@ class CmsSiteController
         private readonly LandingPageBuilder $landingPageBuilder,
         private readonly CmsPageLocalization $cmsPageLocalization,
         private readonly LocalizedContentRepository $localizedContent,
+        private readonly CmsMenuResolver $menuResolver,
         private readonly LocaleContext $localeContext,
         private readonly LandingPageLocalization $landingLocalization,
-    ) {
-    }
+    ) {}
 
     public function home(): View
     {
@@ -325,7 +329,6 @@ class CmsSiteController
         $currentPostCategory = $categoryResolution !== null
             ? $postCategories->firstWhere('id', $categoryResolution['model']->getKey())
             : null;
-
 
         return $this->renderListing('posts', $currentPostCategory?->name ?? 'Tin tức', $currentPostCategory?->description ?? 'Danh sách bài viết đã xuất bản.', $posts, [
             'siteProfile' => $siteProfile,
@@ -722,7 +725,7 @@ class CmsSiteController
                 'customer_phone' => $payload['phone'] ?? null,
                 'customer_email' => $payload['email'],
                 'delivery_address' => trim((string) ($payload['route_summary'] ?? $payload['page_url'] ?? 'Bao gia tu website')),
-                'note' => trim("Yeu cau bao gia tu menu\nLộ trình: ".($payload['route_summary'] ?? '-') ."\n\n".($payload['message'] ?? '') ."\n\nTrang gui: ".($payload['page_url'] ?? '-')),
+                'note' => trim("Yeu cau bao gia tu menu\nLộ trình: ".($payload['route_summary'] ?? '-')."\n\n".($payload['message'] ?? '')."\n\nTrang gui: ".($payload['page_url'] ?? '-')),
                 'payment_method' => 'quote_request',
                 'payment_label' => 'Yêu cầu báo giá',
                 'subtotal' => 0,
@@ -767,7 +770,7 @@ class CmsSiteController
             ]);
         }
 
-        return app(\Illuminate\Routing\Redirector::class)->to($request->headers->get('referer', route('site.home')))
+        return app(Redirector::class)->to($request->headers->get('referer', route('site.home')))
             ->with('contact_status', 'Đã gửi yêu cầu liên hệ. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.');
     }
 
@@ -1012,8 +1015,7 @@ class CmsSiteController
         CatalogProduct $product,
         bool $isPreview,
         array $localizedSeo = [],
-    ): View
-    {
+    ): View {
         $siteProfile = $this->currentSiteProfile();
         $activeTheme = $this->resolveActiveTheme($siteProfile);
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
@@ -1599,32 +1601,7 @@ class CmsSiteController
 
     private function resolveMenus(?string $websiteKey = null): array
     {
-        $query = CmsMenu::query()->orderByDesc('updated_at')->orderByDesc('id');
-
-        if ($websiteKey !== null) {
-            $this->applyWebsiteScope($query, $websiteKey);
-        }
-
-        return $query->get()
-            ->groupBy('location')
-            ->map(function (Collection $items) use ($websiteKey): array {
-                $menu = $items->first();
-
-                if (! $menu instanceof CmsMenu) {
-                    return [];
-                }
-
-                /** @var CmsMenu $localized */
-                $localized = $this->localizedContent->localize(
-                    $menu,
-                    'cms_menu',
-                    $this->currentLocale(),
-                    $websiteKey,
-                );
-
-                return $localized->items ?? [];
-            })
-            ->all();
+        return $this->menuResolver->all($websiteKey, $this->currentLocale());
     }
 
     private function resolveActiveTheme(?SiteProfile $siteProfile): ?array
@@ -1657,7 +1634,7 @@ class CmsSiteController
 
         $viewName = "theme-{$themeKey}::home";
 
-        return app(\Illuminate\Contracts\View\Factory::class)->exists($viewName) ? $viewName : null;
+        return app(Factory::class)->exists($viewName) ? $viewName : null;
     }
 
     private function resolveThemeCmsView(?array $activeTheme, string $contentType = 'page'): ?string
@@ -1679,7 +1656,7 @@ class CmsSiteController
             default => 'cms',
         };
 
-        $viewFactory = app(\Illuminate\Contracts\View\Factory::class);
+        $viewFactory = app(Factory::class);
         $viewName = "theme-{$themeKey}::{$viewKey}";
 
         if ($viewFactory->exists($viewName)) {
@@ -2193,7 +2170,6 @@ class CmsSiteController
 
     private function resolveTopMenuItems(array $menus, ?string $themeKey = null): array
     {
-        $websiteKey = $this->resolveWebsiteKey($this->currentSiteProfile());
         $locationCandidates = strtoupper((string) $themeKey) === 'DN302'
             ? ['primary', 'primary-navigation']
             : ['primary-navigation', 'primary'];
@@ -2224,24 +2200,22 @@ class CmsSiteController
         }
 
         $fallbackUrl = $this->isCommerceThemeKey($themeKey) ? route('site.home') : null;
-        $normalizeItems = function (array $menuItems, string $baseKey) use (&$normalizeItems, $websiteKey, $fallbackUrl): array {
+        $normalizeItems = function (array $menuItems) use (&$normalizeItems, $fallbackUrl): array {
             return collect($menuItems)
                 ->filter(fn (mixed $item): bool => is_array($item))
                 ->values()
-                ->map(function (array $item, int $index) use (&$normalizeItems, $websiteKey, $fallbackUrl, $baseKey): array {
-                    $itemKey = "{$baseKey}.{$index}";
-
+                ->map(function (array $item) use (&$normalizeItems, $fallbackUrl): array {
                     return [
-                        'label' => $this->contentText($websiteKey, "{$itemKey}.label", (string) ($item['label'] ?? '')),
+                        'label' => (string) ($item['label'] ?? ''),
                         'url' => $this->localizedUrl((string) ($item['url'] ?? '#'), $fallbackUrl),
                         'target' => $item['target'] ?? '_self',
-                        'children' => $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : [], "{$itemKey}.children"),
+                        'children' => $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : []),
                     ];
                 })
                 ->all();
         };
 
-        return $normalizeItems($items->all(), 'cms_menu.'.$resolvedLocation);
+        return $normalizeItems($items->all());
     }
 
     private function resolveProductMenuItems(array $menus, Collection $parentCategories): array
@@ -2255,26 +2229,24 @@ class CmsSiteController
             ->all();
 
         if ($configured->isNotEmpty()) {
-            $normalizeItems = function (array $menuItems, string $baseKey = 'cms_menu.product-navigation') use (&$normalizeItems, $websiteKey): array {
+            $normalizeItems = function (array $menuItems) use (&$normalizeItems): array {
                 return collect($menuItems)
                     ->filter(fn (mixed $item): bool => is_array($item))
                     ->values()
-                    ->map(function (array $item, int $index) use (&$normalizeItems, $websiteKey, $baseKey): array {
-                        $itemKey = "{$baseKey}.{$index}";
-
+                    ->map(function (array $item) use (&$normalizeItems): array {
                         return [
-                            'label' => $this->contentText($websiteKey, "{$itemKey}.label", (string) ($item['label'] ?? '')),
+                            'label' => (string) ($item['label'] ?? ''),
                             'url' => $this->localizedUrl((string) ($item['url'] ?? '#'), route('site.catalog.search')),
                             'target' => $item['target'] ?? '_self',
-                            'children' => $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : [], "{$itemKey}.children"),
+                            'children' => $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : []),
                         ];
                     })
                     ->values()
                     ->all();
             };
 
-            return $configured->map(function (array $item, int $index) use ($validCategorySlugs, $websiteKey, $normalizeItems): array {
-                $children = $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : [], sprintf('cms_menu.product-navigation.%d.children', $index));
+            return $configured->map(function (array $item, int $index) use ($validCategorySlugs, $normalizeItems): array {
+                $children = $normalizeItems(is_array($item['children'] ?? null) ? $item['children'] : []);
                 $resolvedUrl = $this->localizedUrl((string) ($item['url'] ?? '#'), route('site.catalog.search'));
 
                 if ($this->hasMissingCategorySlug($resolvedUrl, $validCategorySlugs) && ($children[0]['url'] ?? null)) {
@@ -2282,7 +2254,7 @@ class CmsSiteController
                 }
 
                 return [
-                    'label' => $this->contentText($websiteKey, sprintf('cms_menu.product-navigation.%d.label', $index), (string) ($item['label'] ?? 'Danh mục')),
+                    'label' => (string) ($item['label'] ?? 'Danh mục'),
                     'url' => $resolvedUrl,
                     'target' => $item['target'] ?? '_self',
                     'icon' => $item['icon'] ?? ($index === 0 ? '🔥' : '▣'),
@@ -2833,7 +2805,7 @@ class CmsSiteController
     {
         return $this->contentText(
             $websiteKey,
-            app(\App\Support\ThemeBlockRegistry::class)->contentKey($themeKey, $blockKey),
+            app(ThemeBlockRegistry::class)->contentKey($themeKey, $blockKey),
             $default,
         );
     }
@@ -3017,7 +2989,7 @@ class CmsSiteController
     private function renderThemeCatalogView(string $viewKey, ?array $activeTheme, array $data): View
     {
         $themeKey = strtolower((string) ($activeTheme['key'] ?? ''));
-        $viewFactory = app(\Illuminate\Contracts\View\Factory::class);
+        $viewFactory = app(Factory::class);
 
         if ($themeKey !== '') {
             $viewName = "theme-{$themeKey}::{$viewKey}";

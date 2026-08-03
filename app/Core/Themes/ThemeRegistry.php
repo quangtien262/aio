@@ -38,6 +38,7 @@ class ThemeRegistry
                     'preview_urls' => $this->resolvePreviewUrls($manifest->key, $manifest->preview),
                     'supports' => $manifest->supports,
                     'demo' => $manifest->demo,
+                    'requires_modules' => $manifest->requiresModules,
                     'localization' => [
                         'default_locale' => $manifest->localization['default_locale'] ?? config('localization.default_locale', 'vi'),
                         'supported_locales' => array_values($manifest->localization['supported_locales'] ?? [config('localization.default_locale', 'vi')]),

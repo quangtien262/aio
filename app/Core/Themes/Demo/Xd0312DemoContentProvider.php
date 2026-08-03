@@ -17,6 +17,7 @@ use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Models\ThemeDemoRecord;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\SiteContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -25,14 +26,21 @@ use InvalidArgumentException;
 class Xd0312DemoContentProvider implements ThemeDemoContentProvider
 {
     private const THEME_KEY = 'XD0312';
+
     private const PRESET_KEY = 'xd0312-logistics-bizgrow';
 
-    public function __construct(private readonly LandingPageBuilder $landingPageBuilder)
+    public function __construct(private readonly LandingPageBuilder $landingPageBuilder) {}
+
+    public function themeKey(): string
     {
+        return self::THEME_KEY;
     }
 
-    public function themeKey(): string { return self::THEME_KEY; }
-    public function defaultPreset(): string { return self::PRESET_KEY; }
+    public function defaultPreset(): string
+    {
+        return self::PRESET_KEY;
+    }
+
     public function preset(): array
     {
         return [
@@ -45,7 +53,7 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
     public function generate(string $presetKey): array
     {
         if ($presetKey !== self::PRESET_KEY) {
-            throw new InvalidArgumentException('Preset demo is not valid for XD0312.');
+            throw new InvalidArgumentException('Preset demo không hợp lệ cho XD0312.');
         }
 
         return DB::transaction(function (): array {
@@ -54,10 +62,10 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
             $image = fn (string $id, int $width = 1200): string => "https://images.unsplash.com/{$id}?auto=format&fit=crop&w={$width}&q=85";
 
             foreach ([
-                ['Kho bai va luu tru', 'He thong kho bai linh hoat, quan ly ton kho ro rang va bao quan hang hoa an toan.', 'photo-1586528116493-da8c7e6d8e14'],
-                ['Van chuyen hang khong quoc te', 'Ket noi hang khong quoc te voi lich trinh chu dong, theo doi don hang minh bach.', 'photo-1436491865332-7a61a109cc05'],
-                ['Dich vu Amazon FBA', 'Ho tro giao nhan, dan nhan va xu ly hang hoa cho kenh thuong mai dien tu.', 'photo-1586528116311-ad8dd3c8310d'],
-                ['Van chuyen hang le LCL', 'Giai phap gom hang le toi uu chi phi cho tung lo hang cua doanh nghiep.', 'photo-1494412651409-8963ce7935a7'],
+                ['Kho bãi và lưu trữ', 'Hệ thống kho linh hoạt, quản lý tồn kho rõ ràng và bảo quản hàng hóa an toàn.', 'photo-1586528116493-da8c7e6d8e14'],
+                ['Vận chuyển hàng không quốc tế', 'Kết nối các tuyến hàng không với lịch trình chủ động và trạng thái đơn hàng minh bạch.', 'photo-1436491865332-7a61a109cc05'],
+                ['Dịch vụ Amazon FBA', 'Hỗ trợ giao nhận, dán nhãn và xử lý hàng hóa cho kênh thương mại điện tử.', 'photo-1586528116311-ad8dd3c8310d'],
+                ['Vận chuyển hàng lẻ LCL', 'Giải pháp gom hàng lẻ tối ưu chi phí cho từng lô hàng của doanh nghiệp.', 'photo-1494412651409-8963ce7935a7'],
             ] as $index => [$title, $summary, $photo]) {
                 $service = CmsService::query()->create([
                     'title' => $title,
@@ -65,7 +73,7 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
                     'status' => 'published',
                     'summary' => $summary,
                     'content' => '<p>'.$summary.'</p>',
-                    'button_label' => 'Tim hieu them',
+                    'button_label' => 'Tìm hiểu thêm',
                     'link_url' => '#lien-he',
                     'is_featured' => true,
                     'is_highlight' => true,
@@ -83,11 +91,11 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
             }
 
             foreach ([
-                ['TrustLedger', 'Nền tảng báo cáo minh bạch', 'photo-1450101499163-c8848c66ca85'],
-                ['Finwise', 'Giải pháp quản trị tài chính', 'photo-1554224154-26032ffc0d07'],
-                ['Audit Pro', 'Đồng hành cùng doanh nghiệp', 'photo-1454165804606-c3d57bc86b40'],
-                ['Taxlink', 'Tư vấn thuế chuyên sâu', 'photo-1551836022-d5d88e9218df'],
-                ['Smart Ledger', 'Sổ sách thông minh', 'photo-1556761175-b413da4baf72'],
+                ['GlobalPort', 'Kết nối cảng quốc tế', 'photo-1494412651409-8963ce7935a7'],
+                ['AirBridge', 'Mạng lưới vận tải hàng không', 'photo-1436491865332-7a61a109cc05'],
+                ['NorthStar Cargo', 'Điều phối vận tải đa phương thức', 'photo-1586191582151-f73872dfd183'],
+                ['Smart Warehouse', 'Kho bãi và xử lý đơn hàng', 'photo-1586528116493-da8c7e6d8e14'],
+                ['RouteOne', 'Giao nhận nội địa', 'photo-1586528116311-ad8dd3c8310d'],
             ] as $index => [$title, $description, $photo]) {
                 $partner = CmsPartner::query()->create([
                     'title' => $title,
@@ -105,8 +113,8 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
             }
 
             foreach ([
-                ['Dich vu kho bai va luu tru', 'He thong kho bai an toan, quan ly hang hoa chinh xac va linh hoat theo nhu cau.', 'photo-1586528116493-da8c7e6d8e14'],
-                ['Van chuyen ket noi thi truong toan cau', 'Tu van tuyen van chuyen, chung tu va phuong an toi uu chi phi cho tung lo hang.', 'photo-1494412651409-8963ce7935a7'],
+                ['Logistics thông minh cho chuỗi cung ứng hiện đại', 'Kết nối kho bãi, vận chuyển và giao nhận bằng một quy trình minh bạch, linh hoạt.', 'photo-1586528116493-da8c7e6d8e14'],
+                ['Vận chuyển kết nối thị trường toàn cầu', 'Tư vấn tuyến vận chuyển, chứng từ và phương án tối ưu chi phí cho từng lô hàng.', 'photo-1494412651409-8963ce7935a7'],
             ] as $index => [$title, $summary, $photo]) {
                 $banner = SiteBanner::query()->create([
                     'theme_key' => self::THEME_KEY,
@@ -116,7 +124,7 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
                     'image_url' => $image($photo, 1920),
                     'link_url' => '#lien-he',
                     'badge' => 'Bizgrow logistics',
-                    'metadata' => ['kicker' => 'Bizgrow logistics', 'summary' => $summary, 'button_label' => 'Kham pha ngay'],
+                    'metadata' => ['kicker' => 'Bizgrow Logistics', 'summary' => $summary, 'button_label' => 'Khám phá dịch vụ'],
                     'sort_order' => $index,
                     'is_active' => true,
                 ]);
@@ -124,9 +132,9 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
             }
 
             foreach ([
-                ['Giai phap kho bai giup doanh nghiep toi uu chi phi', 'Cach to chuc kho bai khoa hoc giup doanh nghiep kiem soat hang hoa va rut ngan thoi gian xu ly don.', 'logistics-cost'],
-                ['Xuat sieu can thi truong dich vu logistics', 'Xu huong chuoi cung ung va cac yeu to can chuan bi cho doanh nghiep xuat khau.', 'logistics-export'],
-                ['Quan ly don hang minh bach tu kho den diem giao', 'Du lieu van hanh dong bo giup theo doi tien do don hang de dang hon.', 'logistics-order'],
+                ['Giải pháp kho bãi giúp doanh nghiệp tối ưu chi phí', 'Cách tổ chức kho khoa học giúp doanh nghiệp kiểm soát hàng hóa và rút ngắn thời gian xử lý đơn.', 'logistics-cost'],
+                ['Xu hướng mới của thị trường dịch vụ logistics', 'Những thay đổi trong chuỗi cung ứng và các yếu tố doanh nghiệp xuất khẩu cần chuẩn bị.', 'logistics-export'],
+                ['Quản lý đơn hàng minh bạch từ kho đến điểm giao', 'Dữ liệu vận hành đồng bộ giúp theo dõi tiến độ đơn hàng dễ dàng hơn.', 'logistics-order'],
             ] as $index => [$title, $excerpt, $slug]) {
                 $post = CmsPost::query()->create([
                     'title' => $title, 'slug' => 'xd0312-'.$slug, 'status' => 'published',
@@ -136,13 +144,13 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
             }
 
             foreach ([
-                ['James Cooper', 'Dieu phoi kho van', 'photo-1560250097-0b93528c311a'],
-                ['Minh Tran', 'Quan ly van hanh', 'photo-1560250097-0b93528c311a'],
-                ['Linh Nguyen', 'Chuyen vien dich vu khach hang', 'photo-1573496359142-b8d87734a5a2'],
+                ['James Cooper', 'Điều phối kho vận', 'photo-1560250097-0b93528c311a'],
+                ['Trần Hoàng Minh', 'Quản lý vận hành', 'photo-1500648767791-00dcc994a43e'],
+                ['Nguyễn Khánh Linh', 'Chuyên viên dịch vụ khách hàng', 'photo-1573496359142-b8d87734a5a2'],
             ] as $index => [$name, $role, $photo]) {
                 $member = CmsTeamMember::query()->create([
                     'name' => $name, 'slug' => Str::slug('xd0312-'.$name.'-'.$index), 'role' => $role,
-                    'summary' => 'Dong hanh cung khach hang trong tung chang duong logistics.', 'status' => 'published',
+                    'summary' => 'Đồng hành cùng khách hàng trong từng chặng đường logistics.', 'status' => 'published',
                     'publish_at' => $now, 'is_featured' => true, 'sort_order' => $index,
                 ]);
                 CmsTeamMemberImage::query()->create([
@@ -156,12 +164,12 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
                 'name' => 'XD0312 Main Menu',
                 'location' => 'primary-navigation',
                 'items' => [
-                    ['label' => 'Trang chu', 'url' => '#top'],
-                    ['label' => 'Gioi thieu', 'url' => '#gioi-thieu'],
-                    ['label' => 'Dich vu', 'url' => '#dich-vu'],
-                    ['label' => 'Quy trinh', 'url' => '#quy-trinh'],
-                    ['label' => 'Tin tuc', 'url' => '#tin-tuc'],
-                    ['label' => 'Lien he', 'url' => '#lien-he'],
+                    ['label' => 'Trang chủ', 'url' => '#top'],
+                    ['label' => 'Giới thiệu', 'url' => '#gioi-thieu'],
+                    ['label' => 'Dịch vụ', 'url' => '#dich-vu'],
+                    ['label' => 'Quy trình', 'url' => '#quy-trinh'],
+                    ['label' => 'Tin tức', 'url' => '#tin-tuc'],
+                    ['label' => 'Liên hệ', 'url' => '#footer'],
                 ],
             ]);
             $this->record($menu);
@@ -173,15 +181,15 @@ class Xd0312DemoContentProvider implements ThemeDemoContentProvider
                 'active_theme_key' => self::THEME_KEY,
                 'branding' => array_merge((array) $profile->branding, [
                     'company_name' => 'Bizgrow',
-                    'company_description' => 'Giai phap kho bai, van chuyen va hau can cho doanh nghiep hien dai.',
+                    'company_description' => 'Giải pháp kho bãi, vận chuyển và hậu cần cho doanh nghiệp hiện đại.',
                     'support_hotline' => '1900 9477',
-                    'support_email' => 'hello@bizgrow.local',
-                    'support_location' => '344 Huynh Tan Phat, Quan 7, TP.HCM',
+                    'support_email' => 'hello@bizgrow.vn',
+                    'support_location' => '344 Huỳnh Tấn Phát, Quận 7, TP. Hồ Chí Minh',
                 ]),
             ])->save();
 
-            $existingPage = LandingPage::query()->where('website_key', app(\App\Support\SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
-            $page = $this->landingPageBuilder->resolveHome(app(\App\Support\SiteContext::class)->websiteKey(), self::THEME_KEY, true);
+            $existingPage = LandingPage::query()->where('website_key', app(SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
+            $page = $this->landingPageBuilder->resolveHome(app(SiteContext::class)->websiteKey(), self::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
             }

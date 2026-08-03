@@ -142,9 +142,8 @@ class ThemeContentTranslationTest extends TestCase
             ->assertJsonPath('data.entries.0.key', 'site_profile.site_name');
 
         $this->getJson('/admin/api/themes/corporate-starter/translations?locale=en&group=content&entity=menu&per_page=5')
-            ->assertOk()
-            ->assertJsonPath('data.entity', 'menu')
-            ->assertJsonPath('data.entries.0.key', 'cms_menu.primary-navigation.0.label');
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('entity');
 
         $catalogProductResponse = $this->getJson('/admin/api/themes/corporate-starter/translations?locale=en&group=content&entity=catalog-product&per_page=5')
             ->assertOk()
@@ -154,6 +153,7 @@ class ThemeContentTranslationTest extends TestCase
             ]));
 
         $availableEntities = collect($catalogProductResponse->json('data.available_entities'));
+        $this->assertFalse($availableEntities->contains('menu'));
         $this->assertTrue($availableEntities->contains('catalog-category'));
         $this->assertTrue($availableEntities->contains('catalog-product'));
 
@@ -248,7 +248,7 @@ class ThemeContentTranslationTest extends TestCase
             ),
         );
 
-        $this->assertDatabaseHas('theme_translations', [
+        $this->assertDatabaseMissing('theme_translations', [
             'theme_key' => 'site-content:website-main',
             'locale' => 'en',
             'group' => 'content',

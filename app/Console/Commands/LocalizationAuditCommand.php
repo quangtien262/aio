@@ -2,7 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Core\Cms\CmsMenuLinkRegistry;
+use App\Core\Cms\CmsMenuLocalization;
 use App\Enums\TranslationStatus;
+use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPageTranslation;
 use App\Models\ContentTranslation;
@@ -12,6 +15,8 @@ use App\Models\LandingPageData;
 use App\Models\LocalizedRoute;
 use App\Models\ThemeTranslation;
 use App\Support\Localization\LocaleContext;
+use App\Support\Localization\LocalizationReleaseReadiness;
+use App\Support\Localization\TranslationRevision;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -27,8 +32,12 @@ class LocalizationAuditCommand extends Command
 
     protected $description = 'Đối chiếu dữ liệu đa ngôn ngữ mới, dữ liệu cũ, URL và điều kiện xuất bản.';
 
-    public function handle(LocaleContext $localeContext): int
-    {
+    public function handle(
+        LocaleContext $localeContext,
+        CmsMenuLocalization $menuLocalization,
+        CmsMenuLinkRegistry $menuLinkRegistry,
+        LocalizationReleaseReadiness $releaseReadiness,
+    ): int {
         $website = trim((string) $this->option('website'));
         $website = $website !== '' ? $website : null;
         $issues = [];
@@ -42,7 +51,7 @@ class LocalizationAuditCommand extends Command
             }
 
             /** @var Model $model */
-            $model = new $modelClass();
+            $model = new $modelClass;
 
             if (! Schema::hasTable($model->getTable())) {
                 continue;
@@ -64,11 +73,17 @@ class LocalizationAuditCommand extends Command
                 $translationQuery->where('website_key', $website);
             }
 
-            $translatedIds = $translationQuery->pluck('resource_id')->map(fn ($id): string => (string) $id);
-            $missingIds = $sourceIds->diff($translatedIds)->values();
+            $translatedIds = $translationQuery->pluck('resource_id')
+                ->map(fn ($id): string => (string) $id)
+                ->unique()
+                ->values();
+            $validTranslatedIds = $translatedIds->intersect($sourceIds)->values();
+            $orphanIds = $translatedIds->diff($sourceIds)->values();
+            $missingIds = $sourceIds->diff($validTranslatedIds)->values();
             $modules[$resourceType] = [
                 'source_records' => $sourceIds->count(),
-                'source_translations' => $translatedIds->count(),
+                'source_translations' => $validTranslatedIds->count(),
+                'orphan_source_translations' => $orphanIds->count(),
                 'missing_source_translations' => $missingIds->count(),
             ];
 
@@ -79,15 +94,30 @@ class LocalizationAuditCommand extends Command
                     'resource_ids' => $missingIds->take(25)->all(),
                 ];
             }
+
+            if ($orphanIds->isNotEmpty()) {
+                $issues[] = [
+                    'type' => 'orphan_source_translation',
+                    'resource_type' => $resourceType,
+                    'resource_ids' => $orphanIds->take(25)->all(),
+                ];
+            }
         }
 
         $this->auditPageTranslations($website, $localeContext, $issues);
+        $this->auditMenus(
+            $website,
+            $localeContext,
+            $menuLocalization,
+            $menuLinkRegistry,
+            $issues,
+        );
         $this->auditPublishedLocales($website, $localeContext, $issues);
         $this->auditDuplicateSlugs($website, $issues);
         $this->auditLegacyOverrides($website, $issues);
         $this->auditLandingPages($website, $localeContext, $issues);
         $this->auditCanonicalRoutes($website, $issues);
-        $readiness = $this->releaseReadiness($website, $localeContext);
+        $readiness = $releaseReadiness->report($website ?: 'website-main');
 
         if ($this->option('require-ready')) {
             foreach ($readiness as $locale => $item) {
@@ -264,8 +294,7 @@ class LocalizationAuditCommand extends Command
                 ->where('locale', $locale)
                 ->get(['resource_type', 'resource_id', 'source_revision'])
                 ->mapWithKeys(fn (ContentTranslation $translation): array => [
-                    $translation->resource_type.'|'.$translation->resource_id
-                        => (string) $translation->source_revision,
+                    $translation->resource_type.'|'.$translation->resource_id => (string) $translation->source_revision,
                 ]);
             $targetPages = CmsPageTranslation::query()
                 ->withoutGlobalScopes()
@@ -294,8 +323,7 @@ class LocalizationAuditCommand extends Command
                     ->where('website_key', $websiteKey))
                 ->get(['landing_page_block_id', 'source_revision'])
                 ->mapWithKeys(fn (LandingPageBlockData $translation): array => [
-                    (string) $translation->landing_page_block_id
-                        => (string) $translation->source_revision,
+                    (string) $translation->landing_page_block_id => (string) $translation->source_revision,
                 ]);
 
             $scopes = [
@@ -389,6 +417,333 @@ class LocalizationAuditCommand extends Command
                 'type' => 'missing_page_source_translation',
                 'resource_ids' => $missing->take(25)->all(),
             ];
+        }
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $issues
+     */
+    private function auditMenus(
+        ?string $website,
+        LocaleContext $localeContext,
+        CmsMenuLocalization $menuLocalization,
+        CmsMenuLinkRegistry $menuLinkRegistry,
+        array &$issues,
+    ): void {
+        if (! Schema::hasTable('cms_menus')) {
+            return;
+        }
+
+        $sourceLocale = $localeContext->sourceLocale();
+        $menus = CmsMenu::query()
+            ->withoutGlobalScopes()
+            ->when($website, fn ($query) => $query->where('website_key', $website))
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
+        $currentMenuIds = $menus
+            ->unique(fn (CmsMenu $menu): string => (
+                strtolower((string) $menu->website_key)
+                .'|'.(string) $menu->location
+            ))
+            ->pluck('id')
+            ->map(fn (mixed $id): string => (string) $id)
+            ->all();
+
+        foreach ($menus as $menu) {
+            $websiteKey = strtolower((string) (
+                $menu->website_key
+                ?: 'website-main'
+            ));
+            $sourceItems = is_array($menu->items) ? $menu->items : [];
+            $sourcePayload = ['items' => $sourceItems];
+            $sourceRevision = TranslationRevision::fingerprint($sourcePayload);
+            $this->auditMenuLinkIdentities(
+                $sourceItems,
+                $menu,
+                $menuLinkRegistry,
+                $issues,
+            );
+            $source = ContentTranslation::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', $websiteKey)
+                ->where('resource_type', 'cms_menu')
+                ->where('resource_id', (string) $menu->id)
+                ->where('locale', $sourceLocale)
+                ->first();
+
+            if ($source !== null) {
+                if (
+                    $source->translation_status !== TranslationStatus::Published
+                    || (array) $source->payload !== $sourcePayload
+                    || (string) $source->source_revision !== $sourceRevision
+                    || (string) $source->translation_revision !== $sourceRevision
+                ) {
+                    $issues[] = [
+                        'type' => 'stale_menu_source_translation',
+                        'website_key' => $websiteKey,
+                        'menu_id' => $menu->id,
+                        'locale' => $sourceLocale,
+                    ];
+                }
+            }
+
+            $validKeys = array_keys($this->menuLabelsByKey($sourceItems));
+            $targets = ContentTranslation::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', $websiteKey)
+                ->where('resource_type', 'cms_menu')
+                ->where('resource_id', (string) $menu->id)
+                ->where('locale', '!=', $sourceLocale)
+                ->get();
+
+            foreach ($targets as $target) {
+                $payload = (array) $target->payload;
+                $isV2 = (int) data_get(
+                    $payload,
+                    'items.schema_version',
+                ) === CmsMenuLocalization::SCHEMA_VERSION
+                    && is_array(data_get($payload, 'items.by_key'));
+
+                if (! $isV2) {
+                    $issues[] = [
+                        'type' => 'legacy_menu_translation_payload',
+                        'website_key' => $websiteKey,
+                        'menu_id' => $menu->id,
+                        'translation_id' => $target->id,
+                        'locale' => $target->locale,
+                    ];
+
+                    continue;
+                }
+
+                $translatedKeys = array_keys((array) data_get(
+                    $payload,
+                    'items.by_key',
+                    [],
+                ));
+                $unknownKeys = array_values(array_diff(
+                    $translatedKeys,
+                    $validKeys,
+                ));
+
+                if ($unknownKeys !== []) {
+                    $issues[] = [
+                        'type' => 'orphaned_menu_translation_keys',
+                        'website_key' => $websiteKey,
+                        'menu_id' => $menu->id,
+                        'translation_id' => $target->id,
+                        'locale' => $target->locale,
+                        'item_keys' => array_slice($unknownKeys, 0, 25),
+                    ];
+                }
+
+                if (
+                    $target->translation_status === TranslationStatus::Published
+                    && (string) $target->source_revision !== $sourceRevision
+                ) {
+                    $issues[] = [
+                        'type' => 'menu_translation_source_revision_mismatch',
+                        'website_key' => $websiteKey,
+                        'menu_id' => $menu->id,
+                        'translation_id' => $target->id,
+                        'locale' => $target->locale,
+                    ];
+                }
+
+                if ($target->translation_status !== TranslationStatus::Published) {
+                    continue;
+                }
+
+                $progress = $menuLocalization->progress(
+                    $sourceItems,
+                    $payload,
+                );
+
+                if (! $progress['complete']) {
+                    $issues[] = [
+                        'type' => 'published_menu_translation_incomplete',
+                        'website_key' => $websiteKey,
+                        'menu_id' => $menu->id,
+                        'translation_id' => $target->id,
+                        'locale' => $target->locale,
+                        'translated' => $progress['translated'],
+                        'total' => $progress['total'],
+                    ];
+                }
+
+                if ($this->menuTranslationEqualsSource(
+                    $sourceItems,
+                    $payload,
+                )) {
+                    $issues[] = [
+                        'type' => 'published_menu_translation_equals_source',
+                        'website_key' => $websiteKey,
+                        'menu_id' => $menu->id,
+                        'translation_id' => $target->id,
+                        'locale' => $target->locale,
+                    ];
+                }
+            }
+
+            if (
+                in_array((string) $menu->id, $currentMenuIds, true)
+                && Schema::hasTable('theme_translations')
+            ) {
+                $legacyLocales = ThemeTranslation::query()
+                    ->withoutGlobalScopes()
+                    ->where('website_key', $websiteKey)
+                    ->where('theme_key', 'site-content:'.$websiteKey)
+                    ->where('group', 'content')
+                    ->where('locale', '!=', $sourceLocale)
+                    ->where('translation_key', 'like', 'cms_menu.%')
+                    ->get(['locale', 'translation_key'])
+                    ->filter(fn (ThemeTranslation $translation): bool => (
+                        str_starts_with(
+                            (string) $translation->translation_key,
+                            'cms_menu.'.(string) $menu->location.'.',
+                        )
+                        || str_starts_with(
+                            (string) $translation->translation_key,
+                            'cms_menu.'.(string) $menu->id.'.items.',
+                        )
+                    ))
+                    ->pluck('locale')
+                    ->unique();
+
+                foreach ($legacyLocales as $legacyLocale) {
+                    $migrated = $targets->firstWhere(
+                        'locale',
+                        (string) $legacyLocale,
+                    );
+
+                    if (
+                        $migrated === null
+                        || (int) data_get(
+                            $migrated->payload,
+                            'items.schema_version',
+                        ) !== CmsMenuLocalization::SCHEMA_VERSION
+                    ) {
+                        $issues[] = [
+                            'type' => 'unmigrated_legacy_menu_override',
+                            'website_key' => $websiteKey,
+                            'menu_id' => $menu->id,
+                            'locale' => $legacyLocale,
+                        ];
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param  array<int, mixed>  $sourceItems
+     * @param  array<string, mixed>  $payload
+     */
+    private function menuTranslationEqualsSource(
+        array $sourceItems,
+        array $payload,
+    ): bool {
+        $sourceLabels = $this->menuLabelsByKey($sourceItems);
+
+        return $sourceLabels !== []
+            && collect($sourceLabels)->every(
+                fn (string $sourceLabel, string $itemKey): bool => (
+                    trim($sourceLabel) === trim((string) data_get(
+                        $payload,
+                        "items.by_key.{$itemKey}.label",
+                        '',
+                    ))
+                ),
+            );
+    }
+
+    /**
+     * @param  array<int, mixed>  $items
+     * @return array<string, string>
+     */
+    private function menuLabelsByKey(array $items): array
+    {
+        $labels = [];
+
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $itemKey = trim((string) ($item['item_key'] ?? ''));
+
+            if ($itemKey !== '') {
+                $labels[$itemKey] = trim((string) ($item['label'] ?? ''));
+            }
+
+            if (is_array($item['children'] ?? null)) {
+                $labels = array_replace(
+                    $labels,
+                    $this->menuLabelsByKey($item['children']),
+                );
+            }
+        }
+
+        return $labels;
+    }
+
+    /**
+     * @param  array<int, mixed>  $items
+     * @param  list<array<string, mixed>>  $issues
+     */
+    private function auditMenuLinkIdentities(
+        array $items,
+        CmsMenu $menu,
+        CmsMenuLinkRegistry $links,
+        array &$issues,
+        string $path = 'items',
+    ): void {
+        foreach (array_values($items) as $index => $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $itemPath = "{$path}.{$index}";
+            $linkType = trim((string) ($item['link_type'] ?? ''));
+            $expectedResourceType = $links->resourceType($linkType);
+            $identity = $links->identity($item);
+
+            if ($expectedResourceType !== null && $identity === null) {
+                $issues[] = [
+                    'type' => 'menu_resource_identity_missing',
+                    'website_key' => $menu->website_key,
+                    'menu_id' => $menu->id,
+                    'item_path' => $itemPath,
+                    'link_type' => $linkType,
+                ];
+            } elseif (
+                $identity !== null
+                && (
+                    $identity['resource_type'] !== $expectedResourceType
+                    || (string) ($item['link_value'] ?? '') !== $identity['resource_id']
+                )
+            ) {
+                $issues[] = [
+                    'type' => 'menu_resource_identity_mismatch',
+                    'website_key' => $menu->website_key,
+                    'menu_id' => $menu->id,
+                    'item_path' => $itemPath,
+                    'link_type' => $linkType,
+                    'resource_type' => $identity['resource_type'],
+                    'resource_id' => $identity['resource_id'],
+                ];
+            }
+
+            if (is_array($item['children'] ?? null)) {
+                $this->auditMenuLinkIdentities(
+                    $item['children'],
+                    $menu,
+                    $links,
+                    $issues,
+                    $itemPath.'.children',
+                );
+            }
         }
     }
 
@@ -561,6 +916,117 @@ class LocalizationAuditCommand extends Command
                     'locale' => $translation->locale,
                 ];
             }
+        }
+
+        $pageTranslations = CmsPageTranslation::query()
+            ->withoutGlobalScopes()
+            ->publishedTranslation()
+            ->when($website, fn ($query) => $query
+                ->where('website_key', $website))
+            ->get();
+
+        foreach ($pageTranslations as $translation) {
+            $this->auditExpectedCanonicalRoute(
+                (string) $translation->website_key,
+                (string) $translation->locale,
+                'cms_page',
+                (string) $translation->cms_page_id,
+                '/p/'.trim((string) $translation->slug, '/'),
+                (int) $translation->id,
+                $issues,
+            );
+        }
+
+        $landingTranslations = LandingPageData::query()
+            ->withoutGlobalScopes()
+            ->publishedTranslation()
+            ->whereHas('landingPage', fn ($query) => $query
+                ->when($website, fn ($builder) => $builder
+                    ->where('website_key', $website))
+                ->where('is_home', false))
+            ->with('landingPage:id,website_key')
+            ->get();
+
+        foreach ($landingTranslations as $translation) {
+            $page = $translation->landingPage;
+
+            if ($page === null) {
+                continue;
+            }
+
+            $this->auditExpectedCanonicalRoute(
+                (string) $page->website_key,
+                (string) $translation->locale,
+                'landing_page',
+                (string) $translation->landing_page_id,
+                '/land/'.trim((string) $translation->slug, '/'),
+                (int) $translation->id,
+                $issues,
+            );
+        }
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $issues
+     */
+    private function auditExpectedCanonicalRoute(
+        string $websiteKey,
+        string $locale,
+        string $resourceType,
+        string $resourceId,
+        string $expectedPath,
+        int $translationId,
+        array &$issues,
+    ): void {
+        $routes = LocalizedRoute::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', $websiteKey)
+            ->where('locale', $locale)
+            ->where('resource_type', $resourceType)
+            ->where('resource_id', $resourceId)
+            ->where('is_canonical', true)
+            ->get();
+        $publishedCanonical = $routes->where('is_published', true);
+
+        if ($publishedCanonical->isEmpty()) {
+            $issues[] = [
+                'type' => 'missing_canonical_route',
+                'translation_id' => $translationId,
+                'website_key' => $websiteKey,
+                'resource_type' => $resourceType,
+                'resource_id' => $resourceId,
+                'locale' => $locale,
+                'expected_path' => $expectedPath,
+            ];
+
+            return;
+        }
+
+        if ($publishedCanonical->count() > 1) {
+            $issues[] = [
+                'type' => 'duplicate_canonical_routes',
+                'translation_id' => $translationId,
+                'website_key' => $websiteKey,
+                'resource_type' => $resourceType,
+                'resource_id' => $resourceId,
+                'locale' => $locale,
+                'route_ids' => $publishedCanonical->pluck('id')->all(),
+            ];
+        }
+
+        if (! $publishedCanonical->contains(
+            fn (LocalizedRoute $route): bool => $route->path === $expectedPath,
+        )) {
+            $issues[] = [
+                'type' => 'canonical_route_path_mismatch',
+                'translation_id' => $translationId,
+                'website_key' => $websiteKey,
+                'resource_type' => $resourceType,
+                'resource_id' => $resourceId,
+                'locale' => $locale,
+                'expected_path' => $expectedPath,
+                'actual_paths' => $publishedCanonical->pluck('path')->all(),
+            ];
         }
     }
 }

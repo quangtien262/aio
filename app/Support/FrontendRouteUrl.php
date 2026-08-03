@@ -22,6 +22,14 @@ final class FrontendRouteUrl
         ], $absolute);
     }
 
+    public static function landing(string $slug, ?string $locale = null, bool $absolute = true): string
+    {
+        return route('site.landing.show', [
+            'locale' => self::locale($locale),
+            'slug' => self::slug($slug),
+        ], $absolute);
+    }
+
     public static function product(string $slug, ?string $locale = null, bool $absolute = true): string
     {
         $resolvedLocale = self::locale($locale);
@@ -304,6 +312,13 @@ final class FrontendRouteUrl
         $locale = FrontendLocalization::defaultLocale();
 
         return self::withoutLocale(self::page($slug, $locale, false), $locale);
+    }
+
+    public static function landingPath(string $slug): string
+    {
+        $locale = FrontendLocalization::defaultLocale();
+
+        return self::withoutLocale(self::landing($slug, $locale, false), $locale);
     }
 
     public static function productPath(string $slug, ?string $locale = null): string

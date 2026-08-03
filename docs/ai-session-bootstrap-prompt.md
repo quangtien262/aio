@@ -1,6 +1,13 @@
 # AIO Project Bootstrap Prompt
 
-```md
+> Mục đích: đây là tài liệu bàn giao cho một AI session mới làm việc trực tiếp
+> trên repository này. Hãy xem các nguyên tắc/invariant trong tài liệu là
+> baseline, nhưng luôn đối chiếu source code, migration, test và database hiện
+> tại trước khi kết luận trạng thái runtime.
+>
+> Xác minh gần nhất: **2026-08-02**, workspace `E:\Project\aio`, database local
+> của `website-main`. Các số liệu audit và trạng thái working tree là snapshot,
+> không phải hằng số.
 
 Đây là một base source website AIO (All In One) của HT Việt Nam. Mục tiêu sản phẩm là xây một **hệ sinh thái website + quản trị doanh nghiệp** đủ lớn để bán cho nhiều khách hàng. Mỗi khách hàng khi triển khai thực tế sẽ **clone ra 1 source code riêng**, không dùng chung runtime multi-tenant.
 
@@ -8,7 +15,7 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 
 ## 0. Trình tự đọc bắt buộc cho AI session mới
 
-1. Đọc hết file bootstrap này để nắm định hướng sản phẩm, module, theme, website context và convention.
+1. Đọc hết file bootstrap này để nắm định hướng sản phẩm, module, theme, website context và convention. Yêu cầu mới nhất của người dùng vẫn là phạm vi công việc hiện hành; không tự tiếp tục một hạng mục lịch sử chỉ vì nó xuất hiện trong tài liệu.
 2. Đọc thêm tài liệu đúng miền trước khi sửa:
    - Đa ngôn ngữ, CMS Pages, phần Nội dung, Landing Page, theme locale hoặc SEO: `docs/architecture/localization-foundation.md` và `docs/architecture/localization-rollout-runbook.md`.
    - Tài khoản, đăng nhập, permission, middleware, module lifecycle hoặc dữ liệu admin: `docs/architecture/admin-access-control.md`.
@@ -18,11 +25,30 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 4. Kiểm tra `git status --short` trước khi sửa và không ghi đè thay đổi đang có của người dùng/session khác.
 5. Với auth/RBAC, luôn đọc test `AccessControlSecurityTest`, `AuthSplitTest`, `AdminFoundationApiTest` để hiểu invariant đã được khóa.
 
+Thứ tự ưu tiên khi thông tin mâu thuẫn:
+
+1. source code + test đang chạy + schema/migration đã áp dụng;
+2. tài liệu kiến trúc chuyên miền trong `docs/architecture/`;
+3. tài liệu bootstrap này;
+4. các con số/snapshot lịch sử và mô tả trong hội thoại cũ.
+
+Không suy luận rằng một thay đổi đã hoàn tất chỉ vì có file mới hoặc migration
+đã chạy. Phải kiểm tra đủ reader/API/Admin/storefront và regression test tương
+ứng. Ngược lại, không tự revert thay đổi chưa commit chỉ vì diff rộng.
+
 Trạng thái chốt ngày 2026-07-21: kiến trúc quản lý tài khoản/RBAC mới đã được triển khai và migrate trên database local. Session admin cũ bị thu hồi; admin ID 1 phải đổi mật khẩu ở lần đăng nhập kế tiếp. Không được quay lại mô hình scope legacy.
 
-Trạng thái chốt ngày 2026-07-30: nền tảng đa ngôn ngữ, CMS Pages, 17 nhóm nội dung, Landing Page, theme contract và cơ chế rollout đã được triển khai trên database local. Kiến trúc và dữ liệu nguồn đang nhất quán, nhưng nội dung tiếng Anh chưa đủ điều kiện phát hành; phải đọc mục 7.2 và chạy release-readiness audit trước khi public thêm locale.
+Trạng thái chốt gần nhất ngày 2026-08-02: nền tảng đa ngôn ngữ, CMS Pages, 17 resource type nội dung, Landing Page, Menu, theme contract và cơ chế rollout đã được triển khai trên database local. Kiến trúc và dữ liệu nguồn đang nhất quán theo strict audit, nhưng nội dung tiếng Anh chưa đủ điều kiện phát hành; phải đọc mục 7.2 và chạy release-readiness audit trước khi public thêm locale.
 
 Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM, xuất phát đi lên từ kỹ thuật và đây là sản phẩm chiến lược của công ty nên tôi sẽ trực tiếp quản lý dự án này. hãy xưng em và gọi tôi là Sếp.
+
+### Tóm tắt 60 giây cho session mới
+
+- Đây là Laravel monolith; Admin React chạy trong cùng ứng dụng. Business feature đi theo module, storefront đi theo theme.
+- Triển khai khách hàng là single-tenant theo codebase. `website_key` vẫn tồn tại để tách dữ liệu giữa các website/domain demo nội bộ trong cùng workspace.
+- Theme chỉ render dữ liệu đã được controller/builder resolve. Không đặt business data trong theme và không query translation table trực tiếp từ theme.
+- Đa ngôn ngữ đã có contract hoàn chỉnh về schema, workflow, route, Admin và storefront; phần còn thiếu chủ yếu là chất lượng/số lượng nội dung EN, không phải nền tảng kỹ thuật.
+- Definition of done cho thay đổi có ảnh hưởng public: đúng website context, đúng locale, Admin/API/storefront cùng contract, có migration tiến tới nếu đổi schema, có regression test và build/compile phù hợp.
 
 ## 1. Tầm nhìn sản phẩm và định hướng phát triển
 
@@ -49,7 +75,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 
 ## 2.1. Định hướng đa ngôn ngữ và theme translation
 
-- `system_locales` là danh mục locale BCP 47 dùng chung; `website_locales` mới là nguồn sự thật về locale của từng website.
+- `system_locales` là danh mục locale BCP 47 dùng chung. `website_locales` là nguồn sự thật về locale được bật, locale mặc định, quyền biên tập/public và fallback của từng website; locale nguồn hiện lấy từ `config('localization.source_locale')`.
 - Tách rõ ba khái niệm: locale nguồn, locale mặc định và fallback locale. Không giả định chúng luôn giống nhau, dù `website-main` hiện dùng `vi` cho cả ba.
 - Locale được phép biên tập (`is_enabled_for_editing`) và locale được public (`is_published`) là hai trạng thái độc lập. Storefront chỉ chấp nhận locale có đủ cả hai cờ.
 - Route public dùng prefix `/{locale}`. Locale runtime phải resolve qua `LocaleContext`, không hardcode `vi/en` và không đóng băng danh sách locale khi ứng dụng boot.
@@ -151,9 +177,10 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Theme `XD0301` là theme chuẩn nhất, nếu có chỗ nào khó hiểu thì hãy tham khảo code của theme này, đặc biệt là cách cài đặt trang chủ và Landing Page. Xem chi tiết ở `docs/landing-page-builder.md` và `docs/theme-starter-checklist.md`.
 - Locale manager cho phép xem `default/source/fallback`, bật/tắt `active/published`, đổi `default locale`, thêm locale custom và phân biệt locale built-in của theme.
 - Translation drawer đã hỗ trợ locale động, tách `static` / `business content`, search, pagination, entity filter và edit từng entry.
-- Cả 66 theme trong registry đã có bộ chọn ngôn ngữ trên storefront. Trong 65 header partial, 63 file dùng `resources/views/partials/storefront-language-switcher.blade.php`; `DN302` và `XD0301` giữ UI riêng nhưng phải có marker `data-storefront-language-switcher`. Theme không có header partial là `corporate-starter`, được phủ qua `resources/views/site.blade.php`/`site-cms.blade.php`.
+- Cả 65 theme có manifest đã có bộ chọn ngôn ngữ trên storefront. Trong 63 header partial, 61 file dùng `resources/views/partials/storefront-language-switcher.blade.php`; `DN302` và `XD0301` giữ UI riêng nhưng phải có marker `data-storefront-language-switcher`. `corporate-starter` và `SER0101` không có header partial, được phủ qua `resources/views/site.blade.php`/`site-cms.blade.php`.
 - Bộ chọn chỉ đọc locale active + published từ `FrontendLocalization::localeOptions()`, không hardcode VI/EN và không dùng query `?locale=`. URL được tạo bằng `FrontendRouteUrl::localeSwitchUrls()`/`switchLocale()`; resource có slug dịch riêng phải đi theo canonical path trong `localized_routes`, còn locale chưa có bản dịch public phải về homepage locale đích.
 - Business content translation đã phủ các nhóm chính như `site_profile`, `site_banner`, `cms_menu`, `cms_page`, `cms_post`, `cms_category`, `catalog_category`, `catalog_product`.
+- `cms_menu` không còn được sửa bằng entity `menu` trong drawer “Bản dịch frontend”. Menu có editor locale chuyên biệt tại `/admin/cms/menus`; không tạo lại hai nơi quản trị song song.
 - Auth modal storefront hiện đã được đồng bộ shared login admin/customer trên tất cả các theme đang có engagement modal chính: `XD0301`, `XD0302`.....
 - Rule cần giữ: login panel của các theme này phải dùng field identity chung `Email khách hàng / Username admin`, post về `customer.auth.store`, để backend thử admin trước rồi mới fallback customer.
 - Có guide riêng để AI đọc trước khi dựng theme mới: `docs/theme-authoring-guide.md`.
@@ -277,7 +304,7 @@ Lưu ý khi tiếp tục phát triển:
 
 ## 7.2. Đa ngôn ngữ — trạng thái hiện hành và handoff bắt buộc
 
-Phần này là trạng thái thực tế sau các giai đoạn chuyển đổi ngày 2026-07-30. Không dùng lại mô tả cũ rằng CMS Pages/Nội dung/Landing Page “sẽ được làm ở giai đoạn sau”.
+Phần này là trạng thái thực tế sau các giai đoạn chuyển đổi đến ngày 2026-07-31 và lần đối chiếu dữ liệu ngày 2026-08-02. Không dùng lại mô tả cũ rằng CMS Pages/Nội dung/Landing Page/Menu “sẽ được làm ở giai đoạn sau”.
 
 ### Phạm vi đã triển khai
 
@@ -293,20 +320,32 @@ Phần này là trạng thái thực tế sau các giai đoạn chuyển đổi 
   - `cms_team_member`, `cms_partner`, `cms_testimonial`;
   - `cms_menu`, `site_banner`, `cms_media`, `site_profile`;
   - `real_estate_listing`, `real_estate_property_type`.
+- Menu đa ngôn ngữ đã hoàn thành năm bước:
+  - mọi node có `item_key` ổn định, được backfill bằng migration `2026_07_31_000001_add_stable_item_keys_to_cms_menus.php`; server tự sinh/giữ key khi thêm, sửa hoặc sắp xếp cây;
+  - Admin `/admin/cms/menus` dùng tab locale, chỉ dịch `label`; URL, target, icon, thứ tự và cây con luôn thuộc bản nguồn. Payload v2 lưu gọn tại `content_translations.payload.items.by_key.<item_key>.label`, publish guard yêu cầu đủ toàn bộ nhãn;
+  - storefront, Landing Page dynamic source và route BDS701 đều đọc qua `App\Core\Cms\CmsMenuResolver`. Resolver chỉ dùng bản `published`, cách ly theo `website_key`, fallback nhãn nguồn khi bản dịch thiếu/rỗng, và chỉ đọc `theme_translations` dạng vị trí cũ khi chưa có bản v2;
+  - liên kết nội bộ lưu identity ổn định bằng `resource_type + resource_id`, đồng thời giữ `link_type + link_value + url` để Admin và dữ liệu cũ tiếp tục tương thích. `page`, `landing-page`, Product/Category, Post/Category, Service/Category và Project/Category đều được quản lý theo identity; các trang index chuẩn có `link_type` riêng;
+  - resolver nội địa hóa link nội bộ theo locale lúc render và ưu tiên canonical path chính xác của locale đích trong `localized_routes`. Không được ghép prefix locale đích với slug của locale nguồn. Nếu resource đã biết nhưng locale đích chưa có canonical public, resolver đưa người dùng về homepage của locale đích thay vì redirect chéo locale. Anchor, `mailto:`, `tel:` và domain ngoài được giữ nguyên;
+  - migration `2026_07_31_000002_backfill_cms_menu_translations.php` đã đồng bộ lại bản nguồn từ cây hiện tại và chuyển mọi bản đích đã có sang payload v2 theo `item_key`. Bản đích trống tiếp tục được biểu diễn bằng trạng thái `missing`/không có row; bản đích giống hoàn toàn nguồn bị hạ về `needs_translation`; bản index cũ được copy sang v2 nhưng vẫn giữ nguyên trong `theme_translations` cho rollback;
+  - migration `2026_07_31_000003_repair_localized_navigation_contract.php` backfill identity cho toàn bộ Menu và dựng lại canonical route còn thiếu của CMS Page bằng đúng `CmsPageLocalization::syncRoutes()`. Migration cộng thêm dữ liệu, chạy lặp an toàn, giữ URL cũ và không làm bản dịch nhãn đang publish thành `outdated`;
+  - tác vụ vận hành `php artisan localization:repair-navigation --website=website-main --dry-run --json` dùng để đối chiếu trước; bỏ `--dry-run` để sửa. `localization:audit --strict` kiểm tra thêm Page/Landing canonical path chính xác, duplicate canonical và identity Menu không đồng bộ;
+  - rollout Menu có ba stage `legacy | canary | all`, điều khiển bằng `LOCALIZATION_MENU_ROLLOUT_STAGE`. Quyết định reader nhận đủ `resource_type + website_key + theme_key`; website override là công tắc rollback khẩn cấp và thắng theme override. Cache resolver được cách ly theo website, locale, theme, reader và trạng thái fallback. `BOOK920`, `DN302`, `BDS701` là canary; mặc định hiện là `all` vì contract các nhóm theme đã pass;
+  - theme không được query `CmsMenu` hoặc translation table trực tiếp. Theme nhận mảng `location => items` đã resolve từ controller/builder.
 - Landing Page đã tách identity/layout khỏi dữ liệu theo locale. Slug, status, SEO nằm trong `landing_page_data`; nội dung block nằm trong `landing_page_block_data`.
 - Admin Pages, Nội dung, Catalog, Bất động sản và Landing Page đã có locale context/editor tương ứng.
 - UX chuẩn cho form dịch là tab locale nằm ngay trong Drawer như `CmsPageFormModal`; không chỉ đặt locale selector ở bảng phía sau Drawer. Pattern này đã áp dụng cho CMS Pages, Products/Catalog, Tin tức, Dịch vụ, Dự án, Đội ngũ nhân sự, Đối tác và Cảm nhận khách hàng qua component dùng chung `resources/admin/src/shared/components/LocalizedContentTabs.jsx`. Locale chưa có bản dịch phải để trống các field dịch; field dùng chung phải kế thừa từ bản gốc và bị khóa trong chế độ dịch. Slug phải hiện ở mọi tab có detail route và tự cập nhật mỗi khi tiêu đề/tên của chính locale đó thay đổi. Trạng thái `draft/published` là trạng thái riêng của từng locale, không phải dữ liệu dùng chung. Khi tạo mới, cả generic content/Product và CMS Pages đều cho nhập trước các locale đích, giữ draft phía client, rồi yêu cầu quay lại locale nguồn để tạo master và lần lượt lưu từng bản dịch; lựa chọn trạng thái của từng tab được giữ nguyên.
 - Bộ lọc `Ngôn ngữ nội dung` tại list Pages, Sản phẩm, Tin tức, Dịch vụ, Dự án, Đội ngũ nhân sự, Đối tác và Cảm nhận khách hàng phải gửi `?locale=<code>` xuống API. Generic list dùng `app/Support/Localization/AdminLocalizedContentList.php` để bulk-overlay từ `content_translations` (không N+1); bản dịch thiếu vẫn giữ nhãn nguồn làm fallback nhận diện nhưng phải trả `_translation_status=missing` để Admin hiển thị `Chưa có`. Page list resolve trực tiếp từ `cms_page_translations` theo locale được chọn.
 - Controller/builder localize dữ liệu trước khi đưa vào theme. Theme không được tự query translation table.
 - Theme static dictionary, SEO head và locale route contract đã được refactor trên các theme hiện có. Canary rollout là `BOOK920`, `DN302`, `BDS701`.
-- Theme localization contract bắt buộc mọi header/full-document storefront render bộ chọn ngôn ngữ. Contract hiện phủ đủ 68 theme, bao gồm cả fallback document của theme không có header; regression nằm trong `tests/Feature/ThemeLocalizationContractTest.php`.
+- Theme localization contract bắt buộc mọi header/full-document storefront render bộ chọn ngôn ngữ. Contract hiện phủ đủ 65 theme có manifest, bao gồm cả fallback document của theme không có header; regression nằm trong `tests/Feature/ThemeLocalizationContractTest.php`.
 - Reader mới, dual-write và legacy fallback được điều khiển bằng:
   - `LOCALIZATION_CONTENT_READER=new`;
   - `LOCALIZATION_CONTENT_DUAL_WRITE=true`;
   - `LOCALIZATION_CONTENT_LEGACY_FALLBACK=true`.
+  - `LOCALIZATION_MENU_ROLLOUT_STAGE=all` (`legacy | canary | all`).
   - Các giá trị runtime tương ứng đọc tại `config('localized-content.rollout.reader')`, `config('localized-content.rollout.dual_write')` và `config('localized-content.rollout.legacy_fallback')`.
 
-### Sáu migration localization đã tạo và đã chạy trên database local
+### Chín migration localization cốt lõi đã tạo và đã chạy trên database local
 
 1. `2026_07_30_000001_create_localization_foundation_tables.php`
 2. `2026_07_30_000002_create_cms_page_translations_table.php`
@@ -314,6 +353,9 @@ Phần này là trạng thái thực tế sau các giai đoạn chuyển đổi 
 4. `2026_07_30_000004_upgrade_landing_page_localization.php`
 5. `2026_07_30_000005_reconcile_localized_content_payloads.php`
 6. `2026_07_30_000006_quarantine_partial_landing_block_translations.php`
+7. `2026_07_31_000001_add_stable_item_keys_to_cms_menus.php`
+8. `2026_07_31_000002_backfill_cms_menu_translations.php`
+9. `2026_07_31_000003_repair_localized_navigation_contract.php`
 
 Migration số 6 không xóa nội dung. Nó hạ các block EN còn chứa dấu hiệu tiếng Việt từ `published` về `needs_translation`, xóa mốc review/publish và giữ nguyên payload để biên tập tiếp.
 
@@ -321,19 +363,30 @@ Migration số 6 không xóa nội dung. Nó hạ các block EN còn chứa dấ
 
 | Nhóm | Bản nguồn cần có bản dịch | EN đạt release gate | EN còn thiếu/chưa đạt |
 | --- | ---: | ---: | ---: |
-| 17 nhóm Nội dung | 394 | 1 | 393 |
+| 17 resource type Nội dung | 142 | 1 | 141 |
 | CMS Pages | 2 | 1 | 1 |
-| Landing Page metadata/SEO | 12 | 0 | 12 |
-| Landing Page blocks | 114 | 74 | 40 |
-| **Tổng** | **522** | **76** | **446** |
+| Landing Page metadata/SEO | 2 | 1 | 1 |
+| Landing Page blocks | 19 | 4 | 15 |
+| **Tổng** | **165** | **7** | **158** |
 
-Audit ngày 2026-07-30 ghi nhận coverage EN là 14,6%. Kiến trúc/dữ liệu nguồn đang nhất quán nhưng EN chưa sẵn sàng phát hành. 76 mục vượt kiểm tra revision/trạng thái vẫn cần người thật kiểm tra nội dung và giao diện trước khi mở toàn cầu. Đây là snapshot dữ liệu, không phải hằng số; session sau phải chạy lại audit thay vì mặc định các con số này còn nguyên.
+Strict audit ngày 2026-08-02 ghi nhận coverage EN là 4,2%, `issue_count=0`. Kiến trúc/dữ liệu nguồn đang nhất quán nhưng EN chưa sẵn sàng phát hành. 7 mục vượt kiểm tra revision/trạng thái vẫn cần người thật kiểm tra nội dung và giao diện trước khi mở toàn cầu. Đây là snapshot dữ liệu, không phải hằng số; session sau phải chạy lại audit thay vì mặc định các con số này còn nguyên. Số lượng tăng so với snapshot 2026-07-31 vì database local đã có thêm content/Landing Page, không phải do contract localization bị lùi.
+
+Smoke test cùng ngày: Menu `primary` đã có bản EN `published`, identity Page `resource_type=cms_page/resource_id=2`, canonical VI `/p/gioi-thieu` và EN `/p/about`. Từ `/en/p/about`, mục About phải giữ URL `/en/p/about`; resource chưa có bản EN public phải về `/en`, không được chuyển sang `/vi`.
 
 `website-main` hiện dùng `vi` làm source/default/fallback. `en` có thể vẫn mang cờ public từ dữ liệu tương thích cũ; cờ này không đồng nghĩa EN đã sẵn sàng kinh doanh. Session sau không được dựa riêng vào `website_locales.is_published` để kết luận release-ready.
 
 ### Lệnh bắt buộc trước khi sửa hoặc phát hành
 
+Ưu tiên lệnh read-only/dry-run khi chỉ đang phân tích. Các lệnh có ghi database
+chỉ được chạy khi yêu cầu hiện tại cho phép sửa và đã kiểm tra chính xác
+`website_key`/phạm vi dữ liệu.
+
 - Kiểm tra migration: `php artisan migrate:status`.
+- Kiểm tra trước việc backfill Menu mà không ghi dữ liệu: `php artisan localization:backfill-menus --website=website-main --dry-run`.
+- Chỉ chạy ghi backfill Menu sau khi đã đọc báo cáo dry-run: `php artisan localization:backfill-menus --website=website-main`.
+- Đối chiếu route/identity navigation không ghi dữ liệu: `php artisan localization:repair-navigation --website=website-main --dry-run --json`.
+- Sửa lại route/identity navigation khi audit báo lỗi: `php artisan localization:repair-navigation --website=website-main --json`.
+- Xem reader Menu thực tế theo website/theme: `php artisan localization:menu-rollout-status --website=website-main --theme=DN302`.
 - Kiểm tra tính nhất quán cấu trúc: `php artisan localization:audit --website=website-main --strict`.
 - Kiểm tra đủ nội dung để phát hành: `php artisan localization:audit --website=website-main --require-ready`.
 - Xuất cho CI/máy đọc: thêm `--json`.
@@ -344,7 +397,14 @@ Audit ngày 2026-07-30 ghi nhận coverage EN là 14,6%. Kiến trúc/dữ liệ
 
 `--strict` chỉ chứng minh schema, nguồn, route và đối chiếu dữ liệu không mâu thuẫn. Nó không chứng minh một locale đã dịch xong. Chỉ `--require-ready` mới chặn release khi translation đích chưa `published` hoặc `source_revision` không khớp nguồn hiện tại.
 
-Validation cập nhật ngày 2026-07-30 sau rollout bộ chọn ngôn ngữ: 326 tests/5.921 assertions pass; Blade compile pass; Admin build pass. Build còn warning không chặn về 2 chunk lớn hơn 950 kB. Localization strict audit có `issue_count=0`; `--require-ready` trả exit code lỗi đúng thiết kế vì còn 446 mục EN.
+Validation snapshot ngày 2026-07-31 cho Menu/localization: 66 test với 520 assertions pass sau khi chuẩn hóa code style; Blade compile pass; Admin build pass. Reader `all`, `canary`, global/resource `legacy`, website override, theme override và cache isolation đều có regression test. Build còn warning không chặn về 2 chunk lớn hơn 950 kB. Nhóm test mở rộng từng ghi nhận 2 lỗi fixture/demo độc lập với Menu localization (tên thương hiệu XD0309 và hotline BDS701); session mới phải chạy lại test liên quan trước khi kết luận chúng còn tồn tại.
+
+Đối chiếu dry-run ngày 2026-08-02:
+
+- `localization:repair-navigation`: 3 Page translation không cần sửa route; 1 Menu không cần bổ sung identity;
+- `localization:backfill-menus`: không ghi dữ liệu vì dùng `--dry-run`, nhưng báo *would update* 1 bản nguồn và 1 bản EN. Không được diễn giải báo cáo này là “sạch” hoặc chạy bản ghi tự động; phải xem diff payload/revision trước nếu công việc tiếp theo cần áp dụng backfill.
+
+Strict audit hiện có `issue_count=0`; EN còn 158 mục chưa đạt release gate. Menu EN trống phải giữ đúng trạng thái `missing`, không tự sao chép hay xuất bản nội dung VI.
 
 ### Invariant không được phá
 
@@ -354,6 +414,7 @@ Validation cập nhật ngày 2026-07-30 sau rollout bộ chọn ngôn ngữ: 32
 - Không nhận `website_key` từ payload admin; luôn lấy website từ `SiteContext`.
 - Không dùng `migrate:fresh`, không rollback/xóa bảng localization để “làm lại”, không sửa migration đã chạy; chỉ tạo migration tiến tới.
 - Không tắt dual-write/legacy fallback và không xóa bảng/cơ chế cũ trước khi canary ổn định ít nhất một chu kỳ vận hành.
+- Không đổi `LOCALIZATION_MENU_ROLLOUT_STAGE=legacy` hoặc dùng website override để rollback mà rollback migration; sau khi đổi flag chỉ xóa cache cấu hình. Reader legacy phải dùng dữ liệu Menu legacy làm nguồn chính ngay cả khi fallback của reader mới đang tắt.
 - Không coi fallback VI là bản dịch EN hoàn chỉnh và không public/marketing locale mới khi release-readiness audit chưa pass.
 - Khi thêm resource dịch mới, phải cập nhật contract, Admin/API, frontend reader, route/SEO nếu có slug, backfill, audit và regression test.
 - Khi đổi schema block không tương thích, tăng `schema_version` và viết migration/upcaster; không đổi âm thầm ý nghĩa payload cũ.
@@ -367,6 +428,16 @@ Validation cập nhật ngày 2026-07-30 sau rollout bộ chọn ngôn ngữ: 32
   - `app/Support/Localization/LandingPageLocalization.php`
   - `app/Support/Localization/LocalizedRouteRegistry.php`
   - `app/Support/Localization/TranslationWorkflowManager.php`
+  - `app/Core/Cms/CmsMenuItemKeyNormalizer.php`
+  - `app/Core/Cms/CmsMenuLinkRegistry.php`
+  - `app/Core/Cms/CmsMenuLinkTargetResolver.php`
+  - `app/Core/Cms/CmsMenuLocalization.php`
+  - `app/Core/Cms/CmsMenuResolver.php`
+  - `app/Core/Cms/CmsMenuTranslationBackfill.php`
+  - `app/Core/Cms/CmsMenuLinkIdentityBackfill.php`
+  - `app/Console/Commands/BackfillCmsMenuTranslationsCommand.php`
+  - `app/Console/Commands/RepairLocalizedNavigationCommand.php`
+  - `app/Support/Localization/CmsPageRouteRepair.php`
   - `app/Support/FrontendLocalization.php`
   - `app/Support/FrontendRouteUrl.php`
   - `app/Support/BusinessContentTranslationService.php`
@@ -383,8 +454,11 @@ Validation cập nhật ngày 2026-07-30 sau rollout bộ chọn ngôn ngữ: 32
   - `tests/Feature/ThemeContentTranslationTest.php`
   - `tests/Feature/ThemeLocalizationContractTest.php`
   - `tests/Feature/FrontendPageRouteTest.php`
+  - `tests/Feature/CmsMenuLocalizationAdminTest.php`
+  - `tests/Feature/CmsMenuPublicResolverTest.php`
+  - `tests/Feature/CmsMenuTranslationBackfillTest.php`
 
-Working tree tại thời điểm handoff đang có phạm vi thay đổi localization/theme rất lớn và chưa commit. Session mới bắt buộc chạy `git status --short`, giữ nguyên thay đổi hiện có và không tự ý revert file chỉ vì thấy diff rộng.
+Working tree tại snapshot handoff đang có phạm vi thay đổi localization/theme rất lớn và chưa commit. Đây là thông tin tạm thời; session mới bắt buộc chạy lại `git status --short`, giữ nguyên thay đổi hiện có và không tự ý revert file chỉ vì thấy diff rộng.
 
 ## 8. Những capability nghiệp vụ cần luôn ghi nhớ khi làm việc
 
@@ -456,7 +530,7 @@ Working tree tại thời điểm handoff đang có phạm vi thay đổi locali
 - Sau khi sửa frontend, ưu tiên chạy `npm run build` nếu thay đổi đủ đáng kể.
 - Sau khi sửa backend Laravel, ưu tiên chạy `php artisan optimize:clear` nếu phù hợp.
 - Nếu có bug runtime ở UI admin, hãy kiểm tra cả import thiếu, prop sai, mismatch Ant Design/React, và những chỗ render component con trong drawer/modal.
-- Nếu người dùng hỏi “tiếp tục phần trước”, hãy đọc `git status` và trạng thái tài liệu trước. Ngữ cảnh gần nhất hiện gồm CMS admin, media, posts, permissions, themes, setup, UX quản trị và đợt chuyển đổi đa ngôn ngữ toàn hệ thống ngày 2026-07-30.
+- Nếu người dùng hỏi “tiếp tục phần trước”, hãy đọc `git status` và trạng thái tài liệu trước. Ngữ cảnh gần nhất hiện gồm CMS admin, media, posts, permissions, themes, setup, UX quản trị và đợt chuyển đổi đa ngôn ngữ toàn hệ thống đến ngày 2026-07-31.
 - Ở ngữ cảnh gần đây hơn của repo này, hãy đặc biệt nhớ thêm:
   - admin login dùng `username` hoặc `email`, customer dùng `email`
   - modal storefront login là form dùng chung `admin username` + `customer email`
@@ -478,4 +552,22 @@ Working tree tại thời điểm handoff đang có phạm vi thay đổi locali
 - Nếu có validation đã chạy, nói rõ cái gì pass, cái gì chỉ là warning không chặn chức năng.
 
 Hãy dùng ngữ cảnh trên làm baseline và tiếp tục hỗ trợ tôi trên đúng codebase này.
-```
+
+## 12. Handoff cập nhật ngày 2026-08-03
+
+Các invariant sau đã được triển khai và phải được giữ nguyên trong session kế tiếp:
+
+- Module lifecycle: production không tự nạp migration của mọi module; chỉ test runtime mới aggregate module migrations. Enable bị chặn khi còn bản nâng cấp hoặc dependency chưa enabled. Disable/uninstall giữ nguyên schema, config, asset và dữ liệu; quyền của module disabled không được system owner bypass. Route thay đổi lifecycle module yêu cầu quyền global thật sự.
+- Website/auth: `X-Website-Key` chỉ được xử lý sau authentication, phải trỏ tới `sites.status=active` và nằm trong scope của admin; website không tồn tại trả 404, không có quyền trả 403. `/admin/api/me` được phép fallback server-side về website active đầu tiên mà admin truy cập được. Tài khoản mới có `must_change_password` chỉ được gọi `/me` và `/me/password` cho tới khi đổi mật khẩu.
+- HRM/security: cập nhật nhân viên sang `terminated` khóa/archive tài khoản liên kết và tăng `auth_version`; các trường PII cần quyền sensitive; audit log loại bỏ PII/payroll; URL menu từ chối scheme `javascript:`, `data:` và `vbscript:`.
+- Localization release gate: readiness chỉ tính source translation còn master record; target ở trạng thái `ready` hoặc `published` với `source_revision` khớp đều đủ điều kiện mở locale. Khi unpublish locale, mọi target translation được hạ về `ready` và localized route bị tắt. Source Page/Landing/Real Estate đổi revision phải làm target cũ `outdated` và ngừng public route.
+- Dữ liệu local `website-main`: đã xóa vĩnh viễn 47 orphan `content_translations` sau dry-run (cms_post 3, cms_service 12, cms_project 4, cms_team_member 3, cms_partner 16, cms_menu 3, site_banner 6). EN đã được unpublish vì trước đó chỉ đạt 7/118 mục sẵn sàng (5,9%); strict audit sau cleanup có `issue_count=0`.
+- Theme activation là per website: cập nhật đồng thời `sites.theme_key` và `site_profiles.active_theme_key`, refresh metadata từ manifest, giữ `theme_installations.is_active=true` nếu theme đang được bất kỳ website nào dùng, và chặn theme sai `website_type` khi setup đã hoàn tất. `BDS701` khai báo `requires_modules: ["real-estate"]`.
+- Public Real Estate và Landing Builder phải dùng published translation cho listing/property type, gồm title, slug, filter, URL, detail page và dynamic block. Không dựng URL locale đích bằng slug nguồn.
+
+Lệnh vận hành mới:
+
+- `php artisan localization:prune-orphans --website=website-main` là dry-run.
+- Chỉ thêm `--force` sau khi đã kiểm tra chính xác resource/count; thao tác xóa không tự phục hồi nếu không có backup.
+
+Regression trọng yếu: `LocalizationReleaseReadinessTest`, `CmsPageSourceRevisionTest`, `LandingPageSourceRevisionTest`, `RealEstateLocalizationTest`, `ThemeActivationInvariantTest`, `MenuUrlSecurityTest`. Full suite cuối ngày 2026-08-03 đã pass hoàn toàn: 375 test, 5.957 assertions. Blade compile và Admin production build cũng pass; Vite chỉ cảnh báo không chặn về hai chunk lớn hơn 950 kB.

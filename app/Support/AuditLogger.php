@@ -13,6 +13,9 @@ class AuditLogger
     private const SENSITIVE_KEYS = [
         'password', 'password_confirmation', 'current_password', 'remember_token',
         'two_factor_secret', 'two_factor_recovery_codes', 'token',
+        'identity_number', 'personal_email', 'phone', 'date_of_birth', 'address',
+        'base_salary', 'allowances', 'deductions', 'net_salary', 'bank_account',
+        'tax_code',
     ];
 
     public function record(

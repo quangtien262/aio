@@ -2,12 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Core\Cms\CmsMenuLocalization;
 use App\Core\Modules\ModuleRegistry;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
+use App\Models\CmsMenu;
+use App\Models\ContentTranslation;
+use App\Models\ModuleInstallation;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\RealEstate\Database\Seeders\RealEstateModuleSeeder;
 use Tests\TestCase;
@@ -15,6 +20,20 @@ use Tests\TestCase;
 class Bds701ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        ModuleInstallation::query()->updateOrCreate(
+            ['key' => 'cms'],
+            [
+                'name' => 'CMS',
+                'version' => '1.0.0',
+                'status' => 'enabled',
+            ],
+        );
+    }
 
     public function test_bds701_is_registered_as_a_real_estate_landing_theme(): void
     {
@@ -115,6 +134,46 @@ class Bds701ThemeTest extends TestCase
             ->assertOk()
             ->assertSee('src="https://cdn.example.com/branding/custom-logo.png"', false)
             ->assertSee('alt="Delta Platinum"', false);
+    }
+
+    public function test_real_estate_routes_use_the_published_menu_translation(): void
+    {
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('BDS701');
+        $provider->generate($provider->defaultPreset());
+        ModuleInstallation::query()->updateOrCreate(
+            ['key' => 'real-estate'],
+            [
+                'name' => 'Real Estate',
+                'version' => '1.0.0',
+                'status' => 'enabled',
+            ],
+        );
+        app(WebsiteLocaleManager::class)->updateLocale(
+            'website-main',
+            'en',
+            ['is_published' => true],
+        );
+        $menu = CmsMenu::query()
+            ->where('location', 'primary-navigation')
+            ->firstOrFail();
+        $translatedItems = $menu->items;
+        $translatedItems[0]['label'] = 'English property home';
+        ContentTranslation::query()->create([
+            'website_key' => 'website-main',
+            'resource_type' => 'cms_menu',
+            'resource_id' => (string) $menu->id,
+            'locale' => 'en',
+            'payload' => app(CmsMenuLocalization::class)->storagePayload(
+                $menu->items,
+                ['items' => $translatedItems],
+            ),
+            'translation_status' => 'published',
+            'translation_published_at' => now(),
+        ]);
+
+        $this->get(route('site.real-estate.index', ['locale' => 'en']))
+            ->assertOk()
+            ->assertSee('English property home');
     }
 
     public function test_bds701_topbar_uses_branding_contact_and_opens_the_shared_auth_modal(): void

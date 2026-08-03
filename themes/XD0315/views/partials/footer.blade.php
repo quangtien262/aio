@@ -19,7 +19,7 @@
         </section>
 
         <section>
-            <h3>Hinh anh</h3>
+            <h3>Hình ảnh</h3>
             <div class="af15-footer-gallery">
                 @foreach ($footerGallery as $item)
                     @php $image = $item['image'] ?? $item['image_url'] ?? ''; @endphp
@@ -36,10 +36,10 @@
         </section>
 
         <section>
-            <h3>Gio lam viec</h3>
-            <p><strong>Thu 2 - Thu 6</strong><br>06:00 - 22:00</p>
-            <p><strong>Thu 7 - Chu nhat</strong><br>06:00 - 21:00</p>
-            <a class="af15-outline" href="#top">Xem them ↪</a>
+            <h3>Giờ làm việc</h3>
+            <p><strong>Thứ 2 - Thứ 6</strong><br>06:00 - 22:00</p>
+            <p><strong>Thứ 7 - Chủ nhật</strong><br>06:00 - 21:00</p>
+            <a class="af15-outline" href="#top">Xem thêm ↪</a>
         </section>
     </div>
 </footer>

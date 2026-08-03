@@ -8,8 +8,8 @@
     {!! $editButton !!}
     <div class="fg18-container fg18-faq__grid">
         <div>
-            <p class="fg18-kicker">{{ $data['subtitle'] ?? 'Cau hoi thuong gap' }}</p>
-            <h2 class="fg18-title">{{ $data['title'] ?? 'Giai dap cac thac mac ve dich vu cua ban' }}</h2>
+            <p class="fg18-kicker">{{ $data['subtitle'] ?? 'Câu hỏi thường gặp' }}</p>
+            <h2 class="fg18-title">{{ $data['title'] ?? 'Giải đáp các thắc mắc về dịch vụ của bạn' }}</h2>
             @if (filled($data['description'] ?? null))
                 <p class="fg18-faq__lead">{{ $data['description'] }}</p>
             @endif
@@ -26,7 +26,7 @@
         </div>
         <aside class="fg18-faq-images">
             <img src="{{ $imageOne }}" alt="Kho van">
-            <img src="{{ $imageTwo }}" alt="Nhan vien logistics">
+            <img src="{{ $imageTwo }}" alt="Nhân viên logistics">
         </aside>
     </div>
 </section>

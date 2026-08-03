@@ -2,15 +2,12 @@
 
 namespace App\Providers;
 
-use App\Core\Themes\ThemeTranslationService;
-use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
-use App\Core\Themes\Demo\Ser102DemoContentProvider;
-use App\Core\Themes\Demo\Shop601DemoContentProvider;
-use App\Core\Themes\Demo\Shop602DemoContentProvider;
-use App\Core\Themes\Demo\Shop603DemoContentProvider;
-use App\Core\Themes\Demo\Shop604DemoContentProvider;
-use App\Core\Themes\Demo\Shop605DemoContentProvider;
+use App\Core\Themes\Demo\Bds701DemoContentProvider;
+use App\Core\Themes\Demo\Book920DemoContentProvider;
 use App\Core\Themes\Demo\Ca0050DemoContentProvider;
+use App\Core\Themes\Demo\Dn202DemoContentProvider;
+use App\Core\Themes\Demo\Dn350DemoContentProvider;
+use App\Core\Themes\Demo\Dn351DemoContentProvider;
 use App\Core\Themes\Demo\Ec900DemoContentProvider;
 use App\Core\Themes\Demo\Ec901DemoContentProvider;
 use App\Core\Themes\Demo\Ec902DemoContentProvider;
@@ -28,17 +25,19 @@ use App\Core\Themes\Demo\Ec913DemoContentProvider;
 use App\Core\Themes\Demo\Ec914DemoContentProvider;
 use App\Core\Themes\Demo\Ec915DemoContentProvider;
 use App\Core\Themes\Demo\Ec916DemoContentProvider;
-use App\Core\Themes\Demo\Book920DemoContentProvider;
 use App\Core\Themes\Demo\Ec917DemoContentProvider;
-use App\Core\Themes\Demo\Spa111DemoContentProvider;
 use App\Core\Themes\Demo\Nt502DemoContentProvider;
 use App\Core\Themes\Demo\Nt503DemoContentProvider;
-use App\Core\Themes\Demo\Th0050DemoContentProvider;
-use App\Core\Themes\Demo\Dn202DemoContentProvider;
-use App\Core\Themes\Demo\Dn350DemoContentProvider;
-use App\Core\Themes\Demo\Dn351DemoContentProvider;
+use App\Core\Themes\Demo\Ser102DemoContentProvider;
 use App\Core\Themes\Demo\Ser103DemoContentProvider;
-use App\Core\Themes\Demo\Bds701DemoContentProvider;
+use App\Core\Themes\Demo\Shop601DemoContentProvider;
+use App\Core\Themes\Demo\Shop602DemoContentProvider;
+use App\Core\Themes\Demo\Shop603DemoContentProvider;
+use App\Core\Themes\Demo\Shop604DemoContentProvider;
+use App\Core\Themes\Demo\Shop605DemoContentProvider;
+use App\Core\Themes\Demo\Spa111DemoContentProvider;
+use App\Core\Themes\Demo\Th0050DemoContentProvider;
+use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\Demo\Xd0302DemoContentProvider;
 use App\Core\Themes\Demo\Xd0303DemoContentProvider;
 use App\Core\Themes\Demo\Xd0304DemoContentProvider;
@@ -53,21 +52,22 @@ use App\Core\Themes\Demo\Xd0312DemoContentProvider;
 use App\Core\Themes\Demo\Xd0322DemoContentProvider;
 use App\Core\Themes\Demo\Xd0323DemoContentProvider;
 use App\Core\Themes\Demo\Xd321DemoContentProvider;
-use App\Support\FrontendLocalization;
-use App\Support\Localization\LocaleContext;
-use App\Support\Localization\WebsiteLocaleManager;
-use App\Support\Localization\LocalizedContentRepository;
-use App\Support\SiteContext;
+use App\Core\Themes\ThemeTranslationService;
 use App\Models\Admin;
 use App\Models\Permission;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Schema;
+use App\Support\FrontendLocalization;
+use App\Support\Localization\LocaleContext;
+use App\Support\Localization\LocalizedContentRepository;
+use App\Support\Localization\WebsiteLocaleManager;
+use App\Support\SiteContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -177,17 +177,23 @@ class AppServiceProvider extends ServiceProvider
         app()->setLocale(FrontendLocalization::defaultLocale());
         URL::defaults(FrontendLocalization::routeParameterDefaults(FrontendLocalization::defaultLocale()));
         Blade::directive('themeT', function (string $expression): string {
-            return "<?php echo e(app(".ThemeTranslationService::class."::class)->bladeText((string) data_get(\$activeTheme ?? [], 'key', 'corporate-starter'), app()->getLocale(), {$expression})); ?>";
+            return '<?php echo e(app('.ThemeTranslationService::class."::class)->bladeText((string) data_get(\$activeTheme ?? [], 'key', 'corporate-starter'), app()->getLocale(), {$expression})); ?>";
         });
 
-        $migrationPaths = collect(File::directories(base_path('modules')))
-            ->map(fn (string $modulePath): string => $modulePath.DIRECTORY_SEPARATOR.'database'.DIRECTORY_SEPARATOR.'migrations')
-            ->filter(fn (string $path): bool => File::isDirectory($path))
-            ->values()
-            ->all();
+        // Production module schemas are owned by ModuleManager. Loading every
+        // package migration here would create disabled/uninstalled modules on
+        // a normal `artisan migrate`. Tests keep the aggregate schema for the
+        // broad fixture suite; lifecycle boundaries have dedicated tests.
+        if ($this->app->runningUnitTests()) {
+            $migrationPaths = collect(File::directories(base_path('modules')))
+                ->map(fn (string $modulePath): string => $modulePath.DIRECTORY_SEPARATOR.'database'.DIRECTORY_SEPARATOR.'migrations')
+                ->filter(fn (string $path): bool => File::isDirectory($path))
+                ->values()
+                ->all();
 
-        if ($migrationPaths !== []) {
-            $this->loadMigrationsFrom($migrationPaths);
+            if ($migrationPaths !== []) {
+                $this->loadMigrationsFrom($migrationPaths);
+            }
         }
 
         collect(File::directories(base_path('themes')))

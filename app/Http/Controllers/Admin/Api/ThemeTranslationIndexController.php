@@ -101,7 +101,6 @@ class ThemeTranslationIndexController
     {
         return match (true) {
             str_starts_with($key, 'site_profile.'), str_starts_with($key, 'branding.') => 'site-profile',
-            str_starts_with($key, 'cms_menu.') => 'menu',
             str_starts_with($key, 'site_banner.') => 'banner',
             str_starts_with($key, 'theme_block.'), str_starts_with($key, 'theme_metric.'), str_starts_with($key, 'theme_section.') => 'theme',
             str_starts_with($key, 'catalog_category.') => 'catalog-category',
@@ -139,7 +138,6 @@ class ThemeTranslationIndexController
             'all',
             'site-profile',
             'theme',
-            'menu',
             'banner',
             'catalog',
             'catalog-category',
