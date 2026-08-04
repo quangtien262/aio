@@ -67,6 +67,47 @@ class AccessControlSecurityTest extends TestCase
         $this->assertTrue($adminIds->contains($visibleAdmin->id));
     }
 
+    public function test_platform_owner_is_assignable_without_unlocking_super_admin(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $owner = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
+        $platformOwnerRole = Role::query()->where('key', 'platform-owner')->firstOrFail();
+        $superAdminRole = Role::query()->where('key', 'super-admin')->firstOrFail();
+        $customerAdmin = Admin::factory()->create([
+            'name' => 'Customer Admin',
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($owner, 'admin');
+
+        $accountsPayload = $this->getJson('/admin/api/admins')
+            ->assertOk()
+            ->json('data');
+
+        $assignableRoleKeys = collect($accountsPayload['roles'])->pluck('key');
+
+        $this->assertTrue($assignableRoleKeys->contains('platform-owner'));
+        $this->assertFalse($assignableRoleKeys->contains('super-admin'));
+        $this->assertFalse($platformOwnerRole->is_system);
+        $this->assertTrue($platformOwnerRole->is_assignable);
+
+        $this->putJson("/admin/api/admins/{$customerAdmin->id}/roles", [
+            'role_ids' => [$platformOwnerRole->id],
+        ])->assertOk();
+
+        $this->putJson("/admin/api/admins/{$customerAdmin->id}/roles", [
+            'role_ids' => [$superAdminRole->id],
+        ])->assertStatus(422);
+
+        $customerAdmin->refresh();
+
+        $this->assertFalse($customerAdmin->isSuperAdmin());
+        $this->assertTrue($customerAdmin->hasPermission('rbac.role.manage'));
+        $this->assertTrue($customerAdmin->hasPermission('admin.account.manage'));
+    }
+
     public function test_role_assignment_is_bound_to_its_website_scope(): void
     {
         $this->seed(DatabaseSeeder::class);

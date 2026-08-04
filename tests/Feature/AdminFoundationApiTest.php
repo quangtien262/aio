@@ -10,6 +10,7 @@ use App\Models\CmsPage;
 use App\Models\ModuleInstallation;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Site;
 use App\Models\SiteProfile;
 use App\Models\ThemeInstallation;
 use Database\Seeders\DatabaseSeeder;
@@ -422,6 +423,43 @@ class AdminFoundationApiTest extends TestCase
             'scope_type' => 'global',
             'scope_value' => null,
         ]);
+
+        Site::query()->create([
+            'name' => 'Customer Website',
+            'website_key' => 'customer-site',
+            'domain' => 'customer.test',
+            'status' => 'active',
+        ]);
+
+        $this->putJson("/admin/api/admins/{$scopedAdmin->id}", [
+            'name' => 'Scope Admin Updated',
+            'username' => 'scope-admin',
+            'email' => 'scope-admin@aio.local',
+            'is_active' => true,
+            'assignments' => [
+                [
+                    'role_id' => $role->id,
+                    'scope_type' => 'website',
+                    'scope_value' => 'customer-site',
+                ],
+            ],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('admin_role_assignments', [
+            'admin_id' => $scopedAdmin->id,
+            'role_id' => $role->id,
+            'scope_type' => 'website',
+            'scope_value' => 'customer-site',
+        ]);
+
+        $adminPayload = $this->getJson('/admin/api/admins')
+            ->assertOk()
+            ->json('data');
+
+        $serializedAdmin = collect($adminPayload['admins'])->firstWhere('id', $scopedAdmin->id);
+
+        $this->assertSame('customer-site', data_get($serializedAdmin, 'assignments.0.scope_value'));
+        $this->assertContains('customer-site', collect($adminPayload['websites'])->pluck('website_key')->all());
 
         $this->putJson("/admin/api/admins/{$scopedAdmin->id}/password", [
             'password' => 'NewPassword123!',

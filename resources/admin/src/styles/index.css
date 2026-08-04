@@ -152,6 +152,71 @@ a {
     background: linear-gradient(135deg, #0c416d 0%, #15588d 100%) !important;
 }
 
+.admin-app-dropdown-trigger.ant-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    height: 42px;
+    padding-inline: 14px 16px;
+    border: 1px solid #d9e6f3;
+    border-radius: 999px;
+    color: #11315f;
+    background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.admin-app-dropdown-trigger.ant-btn:hover,
+.admin-app-dropdown-trigger.ant-btn:focus {
+    color: #0f4c81 !important;
+    border-color: #bfd6f0 !important;
+    background: #f7fbff !important;
+}
+
+.admin-app-dropdown-kicker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 22px;
+    padding-inline: 8px;
+    border-radius: 999px;
+    color: #ffffff;
+    background: #0f766e;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transform: translateY(0);
+}
+
+.admin-app-dropdown-label {
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 800;
+}
+
+.admin-app-switcher-overlay {
+    min-width: 280px;
+}
+
+.admin-app-switcher-item {
+    display: grid;
+    gap: 2px;
+}
+
+.admin-app-switcher-item-title {
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.admin-app-switcher-item-subtitle {
+    font-size: 12px;
+    color: #64748b;
+}
+
 .admin-section-switcher-overlay {
     min-width: 340px;
 }
@@ -433,6 +498,11 @@ a {
     border-color: #bfd6f0 !important;
     background: #f7fbff !important;
     color: #0f4c81 !important;
+}
+
+.admin-header-account-button.ant-btn {
+    width: 42px;
+    padding-inline: 0;
 }
 
 .admin-header-settings-button.ant-btn {
@@ -2557,6 +2627,42 @@ a {
     width: 100%;
 }
 
+.admin-accounts-card > .ant-card-body {
+    display: grid;
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    gap: 16px;
+}
+
+.admin-accounts-card > .ant-card-body > .ant-space,
+.admin-accounts-card .admin-table-stats {
+    grid-column: 1 / -1;
+}
+
+.admin-accounts-card .admin-table-filters {
+    align-self: start;
+    margin-bottom: 0 !important;
+    padding: 16px;
+    border: 1px solid #dbe7e4;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%);
+}
+
+.admin-accounts-card .admin-table-filters > .ant-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+.admin-accounts-card .admin-table-filters .ant-select,
+.admin-accounts-card .admin-table-filters .ant-input-search,
+.admin-accounts-card .admin-table-filters .ant-input-search .ant-input-group,
+.admin-accounts-card .admin-table-filters .ant-input-search-button {
+    width: 100%;
+}
+
+.admin-accounts-card .admin-responsive-table {
+    min-width: 0;
+}
+
 .admin-responsive-table .ant-table-wrapper {
     width: 100%;
 }
@@ -2773,6 +2879,15 @@ a {
 }
 
 @media (max-width: 992px) {
+    .admin-accounts-card > .ant-card-body {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-accounts-card .admin-table-filters,
+    .admin-accounts-card .admin-responsive-table {
+        grid-column: 1;
+    }
+
     .project-kanban-board-wrap {
         overflow-x: visible;
     }
@@ -2847,12 +2962,14 @@ a {
     }
 
     .admin-section-dropdown-trigger.ant-btn,
+    .admin-app-dropdown-trigger.ant-btn,
     .admin-header-utility-button.ant-btn {
         height: 38px;
         padding-inline: 12px;
     }
 
-    .admin-section-dropdown-label {
+    .admin-section-dropdown-label,
+    .admin-app-dropdown-label {
         max-width: 112px;
         overflow: hidden;
         text-overflow: ellipsis;

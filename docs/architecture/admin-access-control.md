@@ -11,6 +11,7 @@ Hệ thống dùng một codebase riêng cho mỗi khách hàng, không có tena
 - Admin ID `1` là System Owner, luôn hoạt động, không thể khóa, sửa hoặc xóa qua ứng dụng.
 - Role key `super-admin` là role hệ thống, không thể đổi key, sửa permission, cấp thủ công hoặc xóa.
 - System Owner và mọi tài khoản có role hệ thống `super-admin` luôn có toàn bộ permission đang hoạt động, kể cả permission được module bổ sung sau này.
+- Role key `platform-owner` là role toàn quyền có thể gán cho tài khoản bàn giao khách hàng. Role này nhận toàn bộ permission active và được đồng bộ khi module mới bổ sung permission, nhưng không phải role hệ thống và không kích hoạt bypass `isSuperAdmin()`.
 - Module bị gỡ không xóa permission lịch sử; permission được đánh dấu inactive/deprecated để audit log và role cũ vẫn truy vết được.
 - Không dùng lại `tenant_key`, `owner_key`, `admin_role` hay `admin_role_scopes`.
 

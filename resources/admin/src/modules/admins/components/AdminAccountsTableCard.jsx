@@ -240,7 +240,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
 
     return (
         <Card
-            className="admin-table-card"
+            className="admin-table-card admin-accounts-card"
             title="Admin Accounts"
             extra={(
                 <Space wrap>

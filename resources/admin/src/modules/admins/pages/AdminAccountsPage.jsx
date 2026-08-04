@@ -20,6 +20,17 @@ const emptyAccountForm = {
 };
 const SYSTEM_OWNER_ADMIN_ID = 1;
 
+function normalizeAssignment(assignment) {
+    const scopeType = assignment?.scope_type ?? 'global';
+
+    return {
+        ...assignment,
+        role_id: assignment?.role_id === undefined || assignment?.role_id === null ? undefined : Number(assignment.role_id),
+        scope_type: scopeType,
+        scope_value: scopeType === 'website' && assignment?.scope_value ? String(assignment.scope_value) : null,
+    };
+}
+
 export default function AdminAccountsPage({
     adminAccounts,
     roles,
@@ -57,10 +68,35 @@ export default function AdminAccountsPage({
         label,
         value,
     })), [scopeTypes]);
-    const websiteOptions = useMemo(() => (websites ?? []).map((website) => ({
-        value: website.website_key,
-        label: website.name || website.domain || website.website_key,
-    })), [websites]);
+    const websiteOptions = useMemo(() => {
+        const optionsByValue = new Map();
+
+        (websites ?? []).forEach((website) => {
+            if (!website?.website_key) {
+                return;
+            }
+
+            optionsByValue.set(String(website.website_key), {
+                value: String(website.website_key),
+                label: website.name || website.domain || website.website_key,
+            });
+        });
+
+        (editingAccount.assignments ?? [])
+            .filter((assignment) => assignment.scope_type === 'website' && assignment.scope_value)
+            .forEach((assignment) => {
+                const value = String(assignment.scope_value);
+
+                if (!optionsByValue.has(value)) {
+                    optionsByValue.set(value, {
+                        value,
+                        label: value,
+                    });
+                }
+            });
+
+        return Array.from(optionsByValue.values());
+    }, [editingAccount.assignments, websites]);
 
     const openCreateModal = () => {
         setEditingAccount(emptyAccountForm);
@@ -75,7 +111,7 @@ export default function AdminAccountsPage({
             email: admin.email,
             status: admin.status,
             is_system_owner: admin.is_system_owner,
-            assignments: admin.assignments ?? [],
+            assignments: (admin.assignments ?? []).map(normalizeAssignment),
         });
         setAccountModalOpen(true);
     };

@@ -205,12 +205,15 @@ class ModuleManager
                 'deprecated_at' => now(),
             ]);
 
-        $superAdminRole = Role::query()->where('key', 'super-admin')->first();
+        $fullAccessRoleIds = Role::query()
+            ->whereIn('key', ['super-admin', 'platform-owner'])
+            ->pluck('id');
 
-        if ($superAdminRole) {
-            $superAdminRole->permissions()->syncWithoutDetaching(
+        Role::query()
+            ->whereIn('id', $fullAccessRoleIds)
+            ->get()
+            ->each(fn (Role $role) => $role->permissions()->syncWithoutDetaching(
                 Permission::query()->where('is_active', true)->pluck('id')->all(),
-            );
-        }
+            ));
     }
 }

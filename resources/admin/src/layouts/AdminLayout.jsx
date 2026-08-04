@@ -10,6 +10,7 @@ import SafetyCertificateOutlined from '@ant-design/icons/SafetyCertificateOutlin
 import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import TagsOutlined from '@ant-design/icons/TagsOutlined';
 import TeamOutlined from '@ant-design/icons/TeamOutlined';
+import UserOutlined from '@ant-design/icons/UserOutlined';
 import Alert from 'antd/es/alert';
 import App from 'antd/es/app';
 import Breadcrumb from 'antd/es/breadcrumb';
@@ -82,6 +83,16 @@ const cmsStandaloneMenuLabelMap = new Map([
     ['cms-newsletter', 'ĐK nhận tin'],
 ]);
 
+const moduleLabelFallbackMap = new Map([
+    ['cms', 'CMS'],
+    ['hrm', 'Quản lý nhân sự'],
+    ['payroll', 'Tiền lương'],
+    ['catalog', 'Catalog'],
+    ['inventory', 'Kho hàng'],
+    ['project', 'Dự án'],
+    ['real-estate', 'Bất động sản'],
+]);
+
 function withCmsMenuLabel(item) {
     return {
         ...item,
@@ -140,6 +151,14 @@ function normalizeWebsiteSearch(value) {
         .replace(/[đĐ]/g, 'd')
         .toLowerCase()
         .trim();
+}
+
+function normalizeAdminSpaRoute(route) {
+    if (!route) {
+        return '/';
+    }
+
+    return /^\/admin(?:\/|$)/.test(route) ? route.replace(/^\/admin(?=\/|$)/, '') || '/' : route;
 }
 
 function renderLazyRouteElement(Component, props, fallbackTitle) {
@@ -342,6 +361,8 @@ export default function AdminLayout() {
         }
     }, [loadShellData, message]);
 
+    const normalizeRoute = useCallback(normalizeAdminSpaRoute, []);
+
     const navigationItems = useMemo(() => {
         return [
             ...adminNavigation,
@@ -366,7 +387,7 @@ export default function AdminLayout() {
             .filter((item) => !item.permission || hasPermission(item.permission));
     }, [currentAdmin, hasPermission]);
 
-    const defaultRoute = navigationItems[0]?.route ?? '/dashboard';
+    const defaultRoute = normalizeRoute(navigationItems[0]?.route ?? '/dashboard');
 
     const resolveNavigationIcon = useCallback((itemKey, iconKey = null) => {
         const iconMap = {
@@ -387,14 +408,6 @@ export default function AdminLayout() {
         };
 
         return iconMap[iconKey] ?? iconMap[itemKey] ?? <AppstoreOutlined />;
-    }, []);
-
-    const normalizeRoute = useCallback((route) => {
-        if (!route) {
-            return '/';
-        }
-
-        return /^\/admin(?:\/|$)/.test(route) ? route.replace(/^\/admin(?=\/|$)/, '') || '/' : route;
     }, []);
 
     const renderModuleRoutes = useCallback(() => {
@@ -450,6 +463,57 @@ export default function AdminLayout() {
             ?? navigationMenuItems.find((item) => item.route !== '/' && location.pathname.startsWith(`${item.route}/`))
             ?? null;
     }, [location.pathname, navigationMenuItems]);
+
+    const moduleSwitcherItems = useMemo(() => {
+        const itemsByModule = new Map();
+
+        visibleNavigationMenuItems
+            .filter((item) => item.source === 'module' && item.moduleKey)
+            .forEach((item) => {
+                if (itemsByModule.has(item.moduleKey)) {
+                    return;
+                }
+
+                const modulePayload = modules.find((moduleItem) => moduleItem.key === item.moduleKey);
+                itemsByModule.set(item.moduleKey, {
+                    key: item.moduleKey,
+                    label: modulePayload?.name ?? moduleLabelFallbackMap.get(item.moduleKey) ?? item.moduleKey,
+                    route: item.route,
+                    icon: item.icon,
+                    firstMenuLabel: item.label,
+                });
+            });
+
+        return Array.from(itemsByModule.values());
+    }, [modules, visibleNavigationMenuItems]);
+
+    const activeModuleSwitcherItem = useMemo(() => {
+        if (!currentNavigationItem?.moduleKey) {
+            return null;
+        }
+
+        return moduleSwitcherItems.find((item) => item.key === currentNavigationItem.moduleKey) ?? null;
+    }, [currentNavigationItem?.moduleKey, moduleSwitcherItems]);
+
+    const moduleSwitcherMenuItems = useMemo(() => moduleSwitcherItems.map((item) => ({
+        key: item.key,
+        label: (
+            <div className="admin-app-switcher-item">
+                <span className="admin-app-switcher-item-title">{item.label}</span>
+                <span className="admin-app-switcher-item-subtitle">{item.firstMenuLabel}</span>
+            </div>
+        ),
+        icon: resolveNavigationIcon(item.key, item.icon),
+    })), [moduleSwitcherItems, resolveNavigationIcon]);
+
+    const handleModuleSwitcherClick = useCallback(({ key }) => {
+        const target = moduleSwitcherItems.find((item) => item.key === key);
+
+        if (target) {
+            setMobileNavigationOpen(false);
+            navigate(target.route);
+        }
+    }, [moduleSwitcherItems, navigate]);
 
     const availableTopSections = useMemo(() => {
         return adminNavigationSections.filter((section) => visibleNavigationMenuItems.some((item) => item.section === section.key));
@@ -705,6 +769,25 @@ export default function AdminLayout() {
                                     label: site.domain || (site.website_key === 'website-main' ? 'Website mặc định' : 'Chưa cấu hình domain'),
                                 }))}
                             />
+                            {moduleSwitcherItems.length > 1 ? (
+                                <Dropdown
+                                    menu={{
+                                        items: moduleSwitcherMenuItems,
+                                        selectable: true,
+                                        selectedKeys: activeModuleSwitcherItem ? [activeModuleSwitcherItem.key] : [],
+                                        onClick: handleModuleSwitcherClick,
+                                    }}
+                                    trigger={['click']}
+                                    placement="bottomRight"
+                                    overlayClassName="admin-app-switcher-overlay"
+                                >
+                                    <Button type="text" className="admin-app-dropdown-trigger">
+                                        <span className="admin-app-dropdown-kicker">App</span>
+                                        <span className="admin-app-dropdown-label">{activeModuleSwitcherItem?.label ?? 'Chọn app'}</span>
+                                        <span className="admin-section-dropdown-caret" aria-hidden="true" />
+                                    </Button>
+                                </Dropdown>
+                            ) : null}
                             <Dropdown
                                 menu={{
                                     items: sectionDropdownItems,
@@ -783,7 +866,7 @@ export default function AdminLayout() {
                                 trigger={['click']}
                                 placement="bottomRight"
                             >
-                                <Button className="admin-header-utility-button" icon={<MoreOutlined />} aria-label="Tài khoản">Tài khoản</Button>
+                                <Button className="admin-header-utility-button admin-header-account-button" icon={<UserOutlined />} aria-label="Tài khoản" title="Tài khoản" />
                             </Dropdown>
                         </Space>
                     )}
@@ -835,6 +918,16 @@ export default function AdminLayout() {
                         items={topMenuItems}
                         onClick={handleTopMenuClick}
                     />
+
+                    {moduleSwitcherItems.length > 1 ? (
+                        <Menu
+                            mode="inline"
+                            className="admin-mobile-app-menu"
+                            selectedKeys={activeModuleSwitcherItem ? [activeModuleSwitcherItem.key] : []}
+                            items={moduleSwitcherMenuItems}
+                            onClick={handleModuleSwitcherClick}
+                        />
+                    ) : null}
 
                     <Menu
                         mode="inline"

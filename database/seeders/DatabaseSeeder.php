@@ -49,6 +49,19 @@ class DatabaseSeeder extends Seeder
         );
 
         $role->permissions()->sync(Permission::query()->pluck('id')->all());
+
+        $platformOwnerRole = Role::query()->updateOrCreate(
+            ['key' => 'platform-owner'],
+            [
+                'name' => 'Chủ quản trị website',
+                'description' => 'Quyền quản trị cao nhất có thể bàn giao cho khách hàng, không phải role hệ thống.',
+                'is_system' => false,
+                'is_assignable' => true,
+                'status' => 'active',
+            ],
+        );
+
+        $platformOwnerRole->permissions()->sync(Permission::query()->where('is_active', true)->pluck('id')->all());
     }
 
     private function seedDefaultAdmin(): void
