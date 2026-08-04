@@ -1,18 +1,21 @@
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', data_get($themeShellData ?? [], 'branding.company_name', data_get($siteProfile ?? [], 'site_name', 'Website')))</title>
-    @if(filled($pageDescription ?? null))<meta name="description" content="{{ $pageDescription }}">@endif
-    @if(filled($pageKeywords ?? null))<meta name="keywords" content="{{ $pageKeywords }}">@endif
+<x-storefront-head
+    :site-profile="$siteProfile ?? null"
+    :theme-shell-data="$themeShellData ?? []"
+    :active-theme="$activeTheme ?? null"
+    :landing-page="$landingPage ?? null"
+    :page-title="$pageTitle ?? null"
+    :page-description="$pageDescription ?? null"
+    :page-keywords="$pageKeywords ?? null"
+    :canonical-url="$canonicalUrl ?? null"
+    :hreflang-urls="$hreflangUrls ?? []"
+    :is-preview="$isPreview ?? false"
+>
     @include('themes.common.fonts.chakra-manrope')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    @include('theme-dn302::partials.styles')
-    @stack('head')
-    @include('partials.localized-seo')
-</head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        @include('theme-dn302::partials.styles')
+</x-storefront-head>
 <body>
     <div id="top" class="dn302-page">
         @include('theme-dn302::partials.header')

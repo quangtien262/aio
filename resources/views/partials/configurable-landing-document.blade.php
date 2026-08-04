@@ -14,18 +14,24 @@
 @endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ data_get($landingPage ?? [], 'meta_title') ?: data_get($landingPage ?? [], 'title') ?: data_get($documentBranding, 'company_name', $documentThemeKey) }}</title>
-    <link rel="icon" href="{{ data_get($documentBranding, 'favicon_url', 'https://htvietnam.vn/images/logo/logo_vn_noslogan.png') }}">
+<x-storefront-head
+    :site-profile="$siteProfile ?? null"
+    :theme-shell-data="$documentShellData"
+    :active-theme="$activeTheme ?? null"
+    :landing-page="$landingPage ?? null"
+    :page-title="data_get($landingPage ?? [], 'meta_title') ?: data_get($landingPage ?? [], 'title')"
+    :page-description="$pageDescription ?? null"
+    :page-keywords="$pageKeywords ?? null"
+    :canonical-url="$canonicalUrl ?? null"
+    :hreflang-urls="$hreflangUrls ?? []"
+    :is-preview="$isPreview ?? false"
+>
     @vite('resources/css/app.css')
-    <style>
-        :root{--th-landing-accent:{{ data_get($documentBranding,'primary_color','#0f3557') }};--th-landing-accent-deep:{{ data_get($documentBranding,'primary_color_deep','#0a2741') }};--th-surface:{{ data_get($documentBranding,'surface_color','#fff') }}}
-        *{box-sizing:border-box}body{margin:0;background:{{ data_get($documentBranding,'background_color','#f5f1ea') }};color:#172033;font-family:Segoe UI,sans-serif}a{color:inherit;text-decoration:none}.aio-doc-container{width:min(1200px,calc(100% - 28px));margin:auto}.aio-doc-header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.94);border-bottom:1px solid rgba(15,23,42,.1);backdrop-filter:blur(16px)}.aio-doc-header-inner{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px}.aio-doc-logo{display:flex;align-items:center;gap:12px;font-weight:900}.aio-doc-logo img{width:150px;height:48px;object-fit:contain}.aio-doc-nav{display:flex;gap:20px;overflow:auto;font-size:14px;font-weight:800}.aio-doc-actions{display:flex;align-items:center;gap:10px}.aio-doc-button{padding:10px 15px;border:0;border-radius:999px;background:var(--th-landing-accent);color:#fff;font-weight:800;cursor:pointer}.aio-doc-footer{margin-top:36px;padding:36px 0;background:#111827;color:#fff}.aio-doc-footer-grid{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}.aio-doc-footer p{color:#cbd5e1}@media(max-width:760px){.aio-doc-header-inner{padding:12px 0;flex-wrap:wrap}.aio-doc-nav{order:3;width:100%;padding-bottom:8px}}
-    </style>
-</head>
+        <style>
+            :root{--th-landing-accent:{{ data_get($documentBranding,'primary_color','#0f3557') }};--th-landing-accent-deep:{{ data_get($documentBranding,'primary_color_deep','#0a2741') }};--th-surface:{{ data_get($documentBranding,'surface_color','#fff') }}}
+            *{box-sizing:border-box}body{margin:0;background:{{ data_get($documentBranding,'background_color','#f5f1ea') }};color:#172033;font-family:Segoe UI,sans-serif}a{color:inherit;text-decoration:none}.aio-doc-container{width:min(1200px,calc(100% - 28px));margin:auto}.aio-doc-header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.94);border-bottom:1px solid rgba(15,23,42,.1);backdrop-filter:blur(16px)}.aio-doc-header-inner{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px}.aio-doc-logo{display:flex;align-items:center;gap:12px;font-weight:900}.aio-doc-logo img{width:150px;height:48px;object-fit:contain}.aio-doc-nav{display:flex;gap:20px;overflow:auto;font-size:14px;font-weight:800}.aio-doc-actions{display:flex;align-items:center;gap:10px}.aio-doc-button{padding:10px 15px;border:0;border-radius:999px;background:var(--th-landing-accent);color:#fff;font-weight:800;cursor:pointer}.aio-doc-footer{margin-top:36px;padding:36px 0;background:#111827;color:#fff}.aio-doc-footer-grid{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}.aio-doc-footer p{color:#cbd5e1}@media(max-width:760px){.aio-doc-header-inner{padding:12px 0;flex-wrap:wrap}.aio-doc-nav{order:3;width:100%;padding-bottom:8px}}
+        </style>
+</x-storefront-head>
 <body>
         @include('partials.storefront-language-switcher')
 <header class="aio-doc-header"><div class="aio-doc-container aio-doc-header-inner">

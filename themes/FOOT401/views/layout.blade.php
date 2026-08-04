@@ -1,18 +1,23 @@
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'FOOT401 Restaurant')</title>
+<x-storefront-head
+    :site-profile="$siteProfile ?? null"
+    :theme-shell-data="$themeShellData ?? []"
+    :active-theme="$activeTheme ?? null"
+    :landing-page="$landingPage ?? null"
+    :page-title="$pageTitle ?? null"
+    :page-description="$pageDescription ?? null"
+    :page-keywords="$pageKeywords ?? null"
+    :canonical-url="$canonicalUrl ?? null"
+    :hreflang-urls="$hreflangUrls ?? []"
+    :is-preview="$isPreview ?? false"
+>
     @include('theme-foot401::partials.dining-font')
-    @include('theme-foot401::partials.styles')
-    @if($canEditLanding ?? false)
-        @include('theme-foot403::partials.inline-editor-styles')
-    @endif
-    @stack('head')
-    @include('partials.localized-seo')
-</head>
+        @include('theme-foot401::partials.styles')
+        @if($canEditLanding ?? false)
+            @include('theme-foot403::partials.inline-editor-styles')
+        @endif
+</x-storefront-head>
 <body>
     <div id="top" class="foot-page">
         @include('theme-foot401::partials.header')

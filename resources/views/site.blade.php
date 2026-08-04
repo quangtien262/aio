@@ -1,104 +1,112 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ config('app.name', 'AIO Platform') }}</title>
-        @vite('resources/css/app.css')
-        <style>
-            body {
-                margin: 0;
-                font-family: 'Segoe UI', sans-serif;
-                background:
-                    radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 28%),
-                    linear-gradient(180deg, #f4fbf8 0%, #ffffff 100%);
-                color: #16302b;
-            }
+    <x-storefront-head
+    :site-profile="$siteProfile ?? null"
+    :theme-shell-data="$themeShellData ?? []"
+    :active-theme="$activeTheme ?? null"
+    :landing-page="$landingPage ?? null"
+    :page-title="$pageTitle ?? null"
+    :page-description="$pageDescription ?? null"
+    :page-keywords="$pageKeywords ?? null"
+    :canonical-url="$canonicalUrl ?? null"
+    :hreflang-urls="$hreflangUrls ?? []"
+    :is-preview="$isPreview ?? false"
+>
+    @vite('resources/css/app.css')
+            <style>
+                body {
+                    margin: 0;
+                    font-family: 'Segoe UI', sans-serif;
+                    background:
+                        radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 28%),
+                        linear-gradient(180deg, #f4fbf8 0%, #ffffff 100%);
+                    color: #16302b;
+                }
 
-            .shell {
-                min-height: 100vh;
-                display: grid;
-                place-items: center;
-                padding: 32px;
-            }
+                .shell {
+                    min-height: 100vh;
+                    display: grid;
+                    place-items: center;
+                    padding: 32px;
+                }
 
-            .panel {
-                width: min(960px, 100%);
-                background: rgba(255, 255, 255, 0.86);
-                border: 1px solid #dbe7e4;
-                border-radius: 24px;
-                padding: 32px;
-                box-shadow: 0 30px 90px rgba(22, 48, 43, 0.08);
-                backdrop-filter: blur(14px);
-            }
+                .panel {
+                    width: min(960px, 100%);
+                    background: rgba(255, 255, 255, 0.86);
+                    border: 1px solid #dbe7e4;
+                    border-radius: 24px;
+                    padding: 32px;
+                    box-shadow: 0 30px 90px rgba(22, 48, 43, 0.08);
+                    backdrop-filter: blur(14px);
+                }
 
-            .kicker {
-                text-transform: uppercase;
-                letter-spacing: 0.14em;
-                font-size: 12px;
-                color: #0f766e;
-                margin-bottom: 10px;
-            }
+                .kicker {
+                    text-transform: uppercase;
+                    letter-spacing: 0.14em;
+                    font-size: 12px;
+                    color: #0f766e;
+                    margin-bottom: 10px;
+                }
 
-            h1 {
-                font-size: clamp(32px, 5vw, 56px);
-                line-height: 1.05;
-                margin: 0 0 16px;
-            }
+                h1 {
+                    font-size: clamp(32px, 5vw, 56px);
+                    line-height: 1.05;
+                    margin: 0 0 16px;
+                }
 
-            p {
-                font-size: 18px;
-                line-height: 1.7;
-                color: #46635c;
-            }
+                p {
+                    font-size: 18px;
+                    line-height: 1.7;
+                    color: #46635c;
+                }
 
-            .actions {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 14px;
-                margin-top: 28px;
-            }
+                .actions {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 14px;
+                    margin-top: 28px;
+                }
 
-            .button {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                padding: 14px 18px;
-                border-radius: 14px;
-                text-decoration: none;
-                font-weight: 600;
-            }
+                .button {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 14px 18px;
+                    border-radius: 14px;
+                    text-decoration: none;
+                    font-weight: 600;
+                }
 
-            .button-primary {
-                background: #0f766e;
-                color: #fff;
-            }
+                .button-primary {
+                    background: #0f766e;
+                    color: #fff;
+                }
 
-            .button-secondary {
-                background: #edf6f3;
-                color: #16302b;
-            }
+                .button-secondary {
+                    background: #edf6f3;
+                    color: #16302b;
+                }
 
-            .grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 16px;
-                margin-top: 28px;
-            }
+                .grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                    gap: 16px;
+                    margin-top: 28px;
+                }
 
-            .card {
-                padding: 18px;
-                border-radius: 18px;
-                background: #f8fbfa;
-                border: 1px solid #dbe7e4;
-            }
+                .card {
+                    padding: 18px;
+                    border-radius: 18px;
+                    background: #f8fbfa;
+                    border: 1px solid #dbe7e4;
+                }
 
-            .card strong {
-                display: block;
-                margin-bottom: 8px;
-            }
-        </style>
-    </head>
+                .card strong {
+                    display: block;
+                    margin-bottom: 8px;
+                }
+            </style>
+</x-storefront-head>
     <body>
         @php
             $branding = (array) data_get($themeShellData ?? [], 'branding', data_get($siteProfile ?? [], 'branding', []));

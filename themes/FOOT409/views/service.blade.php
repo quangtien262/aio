@@ -1,0 +1,1 @@
+@extends('theme-foot409::layout') @section('title',data_get($service??null,'title','Dịch vụ')) @section('content')<main><section class="f409-content f409-product-page"><article class="f409-container"><h1>{{ data_get($service??null,'title','Dịch vụ') }}</h1>{!! data_get($service??null,'content',data_get($service??null,'description')) !!}</article></section></main>@endsection

@@ -162,15 +162,23 @@ class ThemeLocalizationContractTest extends TestCase
                 "{$group}/{$key}: locale-specific conditionals must use the theme translation catalog.",
             );
 
-            if (! preg_match('/<head(?:\s|>)/i', $contents)) {
+            if ($view->getFilename() === 'layout.blade.php') {
+                $this->assertStringContainsString(
+                    '<x-storefront-head',
+                    $contents,
+                    "{$group}/{$key}: theme layout must use the shared storefront head component.",
+                );
+
                 continue;
             }
 
-            $this->assertStringContainsString(
-                "partials.localized-seo",
-                $contents,
-                "{$group}/{$key}: every HTML document must expose canonical/hreflang metadata.",
-            );
+            if (preg_match('/<head(?:\s|>)/i', $contents)) {
+                $this->assertStringContainsString(
+                    'partials.localized-seo',
+                    $contents,
+                    "{$group}/{$key}: every standalone HTML document must expose canonical/hreflang metadata.",
+                );
+            }
         }
 
         $headerViews = $views

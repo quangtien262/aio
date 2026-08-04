@@ -1,0 +1,1 @@
+@extends('theme-foot409::layout') @section('title','Bộ sưu tập') @section('content') @include('theme-foot409::partials.listing',['title'=>'Bộ sưu tập','summary'=>'Khám phá không gian và những món ăn nổi bật.']) @endsection

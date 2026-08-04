@@ -42,7 +42,7 @@ class LandingPageBuilder
 
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'XD0320', 'NT501', 'NT502', 'NT503', 'NT504', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750'], true);
+        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'FOOT409', 'XD0320', 'NT501', 'NT502', 'NT503', 'NT504', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750'], true);
     }
 
     /**
@@ -838,6 +838,10 @@ class LandingPageBuilder
             'foot407_knowledge_posts',
             'foot408_menu_products',
             'foot408_blog_posts',
+            'foot409_categories',
+            'foot409_featured_products',
+            'foot409_recommendations',
+            'foot409_blog_posts',
             'ec916_featured_deals',
             'ec916_beauty_deals',
             'ec915_best_sellers',
@@ -861,8 +865,8 @@ class LandingPageBuilder
             'dn351_product_grid',
         ], true)) {
             $defaultSource = match ($block->block_type) {
-                'dn351_category_rail', 'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories', 'foot404_categories', 'foot405_categories', 'foot406_categories' => 'catalog_categories',
-                'ec917_inspiration', 'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news', 'foot406_latest_posts', 'foot407_media_posts', 'foot407_knowledge_posts', 'foot408_blog_posts' => 'cms_posts',
+                'dn351_category_rail', 'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories', 'foot404_categories', 'foot405_categories', 'foot406_categories', 'foot409_categories' => 'catalog_categories',
+                'ec917_inspiration', 'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news', 'foot406_latest_posts', 'foot407_media_posts', 'foot407_knowledge_posts', 'foot408_blog_posts', 'foot409_blog_posts' => 'cms_posts',
                 default => 'cms_products',
             };
 
@@ -1936,6 +1940,7 @@ class LandingPageBuilder
             'FOOT406' => $this->foot406DefaultBlocks(),
             'FOOT407' => $this->foot407DefaultBlocks(),
             'FOOT408' => $this->foot408DefaultBlocks(),
+            'FOOT409' => $this->foot409DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
@@ -2984,6 +2989,42 @@ class LandingPageBuilder
             ['block_type' => 'foot408_combo_mosaic', 'label' => 'Combo và ưu đãi', 'description' => 'Bốn banner ưu đãi dạng lưới bất đối xứng.', 'preview_image' => $preview, 'anchor_id' => 'combo', 'data' => ['vi' => $withItems($heading('Combo và ưu đãi', 'Chọn phần ăn phù hợp với từng khoảnh khắc'), $comboCards), 'en' => $withItems($heading('Combos and offers'), $comboCards)]],
             ['block_type' => 'foot408_testimonials', 'label' => 'Phản hồi khách hàng', 'description' => 'Phản hồi lấy từ CMS Testimonials.', 'preview_image' => $preview, 'anchor_id' => 'phan-hoi', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 4, 'featured_only' => false, 'background_image' => '/theme-demo/ec903/food-grill.webp'], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_testimonials', 'label' => 'Phản hồi CMS'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số phản hồi', 'default' => 4], 'background_image' => ['type' => 'image', 'label' => 'Ảnh nền']], 'data' => ['vi' => $withItems($heading('Phản hồi của khách hàng', 'Những chia sẻ giúp chúng tôi phục vụ tốt hơn'), $testimonials), 'en' => $withItems($heading('Customer feedback'), $testimonials)]],
             ['block_type' => 'foot408_blog_posts', 'label' => 'Blog - Tin tức', 'description' => 'Ba bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $postSchema(3), 'data' => ['vi' => $heading('Blog - Tin tức', 'Câu chuyện ẩm thực, mẹo hay và thông tin mới'), 'en' => $heading('Blog and news', 'Food stories, tips and updates')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function foot409DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/FOOT409/cover-foot409.svg';
+        $heading = static fn (?string $title = null, ?string $description = null, ?string $subtitle = null, ?string $button = null): array => array_filter(['title' => $title, 'description' => $description, 'subtitle' => $subtitle, 'button_label' => $button], static fn (mixed $value): bool => $value !== null);
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số món ăn', 'default' => $limit], 'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'], 'category_id' => ['type' => 'select', 'label' => 'Danh mục món ăn'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ món nổi bật']];
+        $categorySchema = ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số danh mục', 'default' => 6], 'order' => ['type' => 'select', 'label' => 'Sắp xếp', 'options' => [['value' => 'sort_order', 'label' => 'Thứ tự quản trị'], ['value' => 'name', 'label' => 'Tên']]]];
+        $postSchema = ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 4], 'category_id' => ['type' => 'select', 'label' => 'Danh mục tin']];
+        $promos = [
+            ['title' => 'Gà cuộn ngon tuyệt', 'subtitle' => 'Giá sốc 28K', 'summary' => 'Ưu đãi 50% OFF', 'image' => '/theme-demo/foot409/promo-wrap.png', 'url' => '#mon-moi'],
+            ['title' => 'Gà rán cay giòn', 'subtitle' => 'Giá sốc 55K', 'summary' => 'Ưu đãi hấp dẫn', 'image' => '/theme-demo/foot409/promo-feast.png', 'url' => '#mon-moi'],
+            ['title' => 'Burger giòn đặc biệt', 'subtitle' => 'Deal trong ngày', 'summary' => 'Chốt đơn nhanh', 'image' => '/theme-demo/foot409/promo-burger.png', 'url' => '#mon-moi'],
+        ];
+        $benefits = [
+            ['title' => 'Giao hàng siêu tốc', 'summary' => 'Nội thành chỉ trong 30 phút'],
+            ['title' => 'Đổi món dễ dàng', 'summary' => 'Miễn phí đổi món trong 15 phút'],
+            ['title' => 'Hỗ trợ tức thì', 'summary' => 'Hỗ trợ khách hàng 24/7'],
+            ['title' => 'Deal hot bùng nổ', 'summary' => 'Giảm giá sốc mỗi ngày'],
+        ];
+        $suppliers = collect(['Coca-Cola', 'Dalat Milk', 'CP', 'Maggi', 'Kamereo', 'Ajinomoto'])->map(fn (string $title): array => ['title' => $title])->all();
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero đồ ăn nhanh', 'description' => 'Banner lớn toàn chiều rộng lấy từ kho banner.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'foot409-hero-slider', 'limit' => 3, 'autoplay_ms' => 5200], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số banner'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Gà cay giòn tan', 'Giòn rụm bên ngoài, mềm ngon bên trong', 'TỚI FOOT409', 'Đặt ngay'), ['content' => ['slides' => [['title' => 'Gà cay giòn tan', 'summary' => 'Deal nóng hổi giao nhanh tận nơi', 'button_label' => 'Đặt ngay', 'image' => '/theme-demo/foot409/hero-fried-chicken.png', 'link_url' => '#mon-moi']]]]), 'en' => $heading('Hot and crispy chicken', 'Freshly made and fast delivered')]],
+            ['block_type' => 'foot409_categories', 'label' => 'Lựa chọn thực đơn', 'description' => 'Sáu danh mục lấy trực tiếp từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'thuc-don', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 6, 'order' => 'sort_order'], 'settings_schema' => $categorySchema, 'data' => ['vi' => $heading('Lựa chọn thực đơn'), 'en' => $heading('Choose your menu')]],
+            ['block_type' => 'foot409_promo_banner', 'label' => 'Banner Pizza', 'description' => 'Banner khuyến mãi pizza có thể thay ảnh và nội dung.', 'preview_image' => $preview, 'anchor_id' => 'pizza', 'settings' => ['background_image' => '/theme-demo/foot409/promo-pizza.png'], 'settings_schema' => ['background_image' => ['type' => 'image', 'label' => 'Ảnh nền']], 'data' => ['vi' => $heading('Pizza hôm nay', 'Giá sốc bất ngờ', 'ƯU ĐÃI 45%', 'Chốt đơn liền tay'), 'en' => $heading('Pizza today', 'A surprising deal', '45% OFF', 'Order now')]],
+            ['block_type' => 'foot409_featured_products', 'label' => 'Chào ngày mới', 'description' => 'Bốn món nổi bật lấy từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'mon-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $heading('Chào ngày mới'), 'en' => $heading('Hello new day')]],
+            ['block_type' => 'foot409_dual_promos', 'label' => 'Hai banner ưu đãi', 'description' => 'Hai banner khuyến mãi đặt cạnh nhau.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai-doi', 'data' => ['vi' => $withItems($heading('Ưu đãi hấp dẫn'), array_slice($promos, 0, 2)), 'en' => $withItems($heading('Hot offers'), array_slice($promos, 0, 2))]],
+            ['block_type' => 'foot409_recommendations', 'label' => 'Gợi ý cho bạn', 'description' => 'Tám món gợi ý lấy từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'goi-y', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => false], 'settings_schema' => $productSchema(8), 'data' => ['vi' => $heading('Gợi ý cho bạn'), 'en' => $heading('Recommended for you')]],
+            ['block_type' => 'foot409_triple_promos', 'label' => 'Ba banner khuyến mãi', 'description' => 'Ba banner ngang trước khu tin tức.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai-ba', 'data' => ['vi' => $withItems($heading('Deal hôm nay'), $promos), 'en' => $withItems($heading('Today deals'), $promos)]],
+            ['block_type' => 'foot409_blog_posts', 'label' => 'Bảng tin khuyến mãi', 'description' => 'Bốn bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4], 'settings_schema' => $postSchema, 'data' => ['vi' => $heading('Bảng tin khuyến mãi'), 'en' => $heading('Promotion news')]],
+            ['block_type' => 'foot409_suppliers', 'label' => 'Nhà cung cấp uy tín', 'description' => 'Dải tên nhà cung cấp có thể chỉnh sửa.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'data' => ['vi' => $withItems($heading('Nhà cung cấp uy tín'), $suppliers), 'en' => $withItems($heading('Trusted suppliers'), $suppliers)]],
+            ['block_type' => 'foot409_benefits', 'label' => 'Quyền lợi khách hàng', 'description' => 'Bốn cam kết dịch vụ trước chân trang.', 'preview_image' => $preview, 'anchor_id' => 'quyen-loi', 'data' => ['vi' => $withItems($heading('Quyền lợi khách hàng'), $benefits), 'en' => $withItems($heading('Customer benefits'), $benefits)]],
         ];
     }
 

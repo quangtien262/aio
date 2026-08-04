@@ -1,0 +1,12 @@
+{
+  "name": "FOOT409 Fast Food",
+  "key": "FOOT409",
+  "version": "1.0.0",
+  "description": "Theme bán đồ ăn nhanh hiện đại với sắc đỏ cam, danh mục trực quan và luồng đặt món nhanh.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-foot409.svg", "cover": "cover-foot409.svg" },
+  "blocks": ["hero-slider", "menu-categories", "promo-banner", "featured-products", "dual-promos", "recommendations", "triple-promos", "blog-posts", "suppliers", "benefits"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] }
+}

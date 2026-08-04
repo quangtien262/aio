@@ -114,6 +114,9 @@ Checklist:
 - [ ] Tất cả `@extends(...)` dùng namespace lowercase: `theme-{lowercase_key}::layout`.
 - [ ] Không còn namespace copy nhầm từ theme cũ, ví dụ `theme-xd0322`.
 - [ ] `layout.blade.php` include header/footer dùng chung cho toàn website.
+- [ ] `layout.blade.php` dùng `<x-storefront-head>`; không tự viết `<head>`, `<title>`, favicon, canonical/hreflang hoặc Open Graph trong từng theme.
+- [ ] Font, icon library, CSS và script chạy sớm của theme được đặt trong slot `<x-storefront-head>...</x-storefront-head>`; không thêm dependency asset đặc thù vào component chung.
+- [ ] Vẫn dùng `@push('head')` ở trang con khi cần; component chung chịu trách nhiệm render stack đúng một lần.
 - [ ] Header/footer có fallback dữ liệu nếu chưa có `SiteProfile`/menu.
 - [ ] Dùng route helper, không hardcode URL legacy:
   - `route('site.home')`
@@ -343,6 +346,7 @@ Checklist UI:
 Contract bắt buộc:
 
 ```bash
+php artisan test --filter=ThemeDocumentHeadContractTest
 php artisan test --filter=ThemeLocalizationContractTest
 php artisan test --filter=ThemeBrandingContractTest
 ```

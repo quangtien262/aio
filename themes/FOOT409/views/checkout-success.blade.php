@@ -1,0 +1,1 @@
+@extends('theme-foot409::layout') @section('title','Đặt hàng thành công') @section('content')<main><section class="f409-content f409-product-page"><div class="f409-container"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ sớm liên hệ để xác nhận.</p><a class="f409-button" href="{{ route('site.home') }}">Về trang chủ</a></div></section></main>@endsection

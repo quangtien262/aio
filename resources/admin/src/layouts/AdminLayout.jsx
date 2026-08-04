@@ -610,7 +610,11 @@ export default function AdminLayout() {
 
     const siteBranding = currentAdmin?.site_profile?.branding ?? {};
     const sidebarLogoUrl = brandLogoFailed ? '' : (siteBranding.logo_url ?? '');
-    const sidebarIdentity = siteBranding.company_name || currentAdmin?.site_profile?.site_name || 'AIO Platform';
+    const sidebarIdentity = siteBranding.company_name || currentAdmin?.site_profile?.site_name || 'AIO Website';
+    const adminDocumentIdentity = currentAdmin?.site_profile?.site_name || siteBranding.company_name || 'AIO Website';
+    useEffect(() => {
+        document.title = `${String(adminDocumentIdentity).trim() || 'AIO Website'} Admin`;
+    }, [adminDocumentIdentity]);
     const brandInitials = useMemo(() => {
         const normalizedIdentity = String(sidebarIdentity).trim();
 

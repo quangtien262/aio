@@ -232,7 +232,7 @@ File neo:
 
 1. Tạo thư mục `themes/{KEY}` với ít nhất `theme.json`, `views/`, `lang/`.
 2. Viết manifest đúng các field admin đang dùng: `key`, `name`, `website_type`, `preview`, `blocks`, `supports`, `localization`, `demo` nếu có.
-3. Tạo đầy đủ các view storefront chính để `CmsSiteController` render được.
+3. Tạo đầy đủ các view storefront chính để `CmsSiteController` render được; `layout.blade.php` bắt buộc dùng `<x-storefront-head>` và chỉ truyền font/CSS/script đặc thù qua slot.
 4. Đưa static copy vào `lang/vi.json`, `lang/en.json` hoặc locale built-in tương ứng.
 5. Dùng `ThemeTranslationService` / `@themeT` cho copy tĩnh thay vì hardcode tràn lan.
 6. Include bộ chọn ngôn ngữ storefront dùng chung trong header và kiểm tra desktop/mobile.
@@ -241,6 +241,15 @@ File neo:
 9. Nếu theme cần config riêng như palette, đặt editor ở Theme Manager.
 10. Thêm preview/avatar tương ứng trong `public/theme-previews/{KEY}`.
 11. Kiểm tra theme có xuất hiện đúng trong Theme Manager, activate được, render được các route storefront chính, translation hoạt động, và nếu có thì demo data chạy được.
+
+### Shared document head contract
+
+- Mọi theme layout dùng `resources/views/components/storefront-head.blade.php`; không tự khai báo `<head>` hoặc `<title>`.
+- Component chung sở hữu charset, viewport, CSRF, title, description, keywords, favicon, robots, Open Graph, Twitter metadata, canonical, hreflang và `@stack('head')`.
+- Theme chỉ đặt font, icon library, stylesheet, preload hoặc script cần chạy sớm trong slot của component.
+- Không đưa Google Fonts hay Font Awesome thành dependency mặc định của component vì theme có thể dùng font đóng gói riêng.
+- Title ưu tiên SEO title thực sự của trang, sau đó `site_profiles.site_name`, `branding.company_name` và fallback trung tính. Tiêu đề landing mẫu tự sinh theo mã theme không được ghi đè tên website trong DB.
+- Contract bắt buộc: `ThemeDocumentHeadContractTest`, `ThemeLocalizationContractTest` và `ThemeBrandingContractTest`.
 
 ## 13. Các file nên đọc trước khi bắt tay làm theme mới
 
