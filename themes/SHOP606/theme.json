@@ -1,0 +1,13 @@
+{
+  "name": "SHOP606 Atelier",
+  "key": "SHOP606",
+  "version": "1.0.0",
+  "description": "Theme thời trang cao cấp tối giản với bộ sưu tập, flash sale, phối đồ, tin tức và gallery.",
+  "website_type": "ecommerce",
+  "requires_modules": ["catalog", "cms"],
+  "parent": null,
+  "preview": {"thumbnail": "preview-shop606.svg", "cover": "cover-shop606.svg"},
+  "blocks": ["hero-slider", "shop606-collections", "shop606-sale", "shop606-feature", "shop606-new", "shop606-campaign", "shop606-outfit", "shop606-news", "shop606-gallery", "shop606-benefits"],
+  "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true},
+  "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]}
+}

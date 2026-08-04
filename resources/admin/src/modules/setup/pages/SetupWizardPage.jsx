@@ -83,6 +83,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
     const [supportHotline, setSupportHotline] = useState('');
     const [supportEmail, setSupportEmail] = useState('');
     const [supportLocation, setSupportLocation] = useState('');
+    const [copyrightText, setCopyrightText] = useState('');
     const [popLogoVisible, setPopLogoVisible] = useState(false);
     const [tempLogo, setTempLogo] = useState('');
     const [popFaviconVisible, setPopFaviconVisible] = useState(false);
@@ -94,6 +95,8 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
     const [tempEmail, setTempEmail] = useState('');
     const [popLocationVisible, setPopLocationVisible] = useState(false);
     const [tempLocation, setTempLocation] = useState('');
+    const [popCopyrightVisible, setPopCopyrightVisible] = useState(false);
+    const [tempCopyrightText, setTempCopyrightText] = useState('');
     const [popCompanyVisible, setPopCompanyVisible] = useState(false);
     const [tempCompany, setTempCompany] = useState('');
     const [popSiteDescriptionVisible, setPopSiteDescriptionVisible] = useState(false);
@@ -131,6 +134,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
         setSupportHotline(setup?.branding?.support_hotline ?? '');
         setSupportEmail(setup?.branding?.support_email ?? '');
         setSupportLocation(setup?.branding?.support_location ?? '');
+        setCopyrightText(setup?.branding?.copyright_text ?? '');
         setBocStatus(setup?.branding?.boc_status ?? 'not_notified');
         setBocConfirmationUrl(setup?.branding?.boc_confirmation_url ?? '');
         setBocFooterNote(setup?.branding?.boc_footer_note ?? DEFAULT_BOC_FOOTER_NOTE);
@@ -225,6 +229,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
             support_hotline: supportHotline,
             support_email: supportEmail,
             support_location: supportLocation,
+            copyright_text: copyrightText,
             boc_status: bocStatus,
             boc_confirmation_url: bocConfirmationUrl,
             boc_footer_note: bocFooterNote,
@@ -248,6 +253,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
         if (changes.support_hotline !== undefined) setSupportHotline(changes.support_hotline);
         if (changes.support_email !== undefined) setSupportEmail(changes.support_email);
         if (changes.support_location !== undefined) setSupportLocation(changes.support_location);
+        if (changes.copyright_text !== undefined) setCopyrightText(changes.copyright_text);
         if (changes.boc_status !== undefined) setBocStatus(changes.boc_status);
         if (changes.boc_confirmation_url !== undefined) setBocConfirmationUrl(changes.boc_confirmation_url);
         if (changes.boc_footer_note !== undefined) setBocFooterNote(changes.boc_footer_note);
@@ -432,6 +438,32 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                                     onOpenChange={(v) => { setPopCompanyDescriptionVisible(v); if (v) setTempCompanyDescription(companyDescription); }}
                                 >
                                     <Button size="small" onClick={() => setPopCompanyDescriptionVisible(true)}>Sửa</Button>
+                                </Popconfirm>
+                            </div>
+
+                            <div className="setup-profile-item setup-profile-item-wide">
+                                <ProfileFieldLabel tooltip="Dòng bản quyền hiển thị ở cuối website. Có thể nhập tên pháp nhân, đơn vị sở hữu hoặc thông tin bảo lưu quyền.">Thông tin bản quyền</ProfileFieldLabel>
+                                <div className="detail-value is-multiline" title={copyrightText || ''}>{copyrightText || 'Chưa cấu hình'}</div>
+                                <Popconfirm
+                                    title={(
+                                        <div style={{ minWidth: 420 }}>
+                                            <Input.TextArea
+                                                value={tempCopyrightText}
+                                                onChange={(e) => setTempCopyrightText(e.target.value)}
+                                                placeholder="Ví dụ: Bản quyền nội dung thuộc về Công ty ABC"
+                                                autoSize={{ minRows: 2, maxRows: 5 }}
+                                                maxLength={500}
+                                                showCount
+                                            />
+                                        </div>
+                                    )}
+                                    okText="Lưu"
+                                    cancelText="Hủy"
+                                    onConfirm={() => { saveProfile({ copyright_text: tempCopyrightText }); setPopCopyrightVisible(false); }}
+                                    open={popCopyrightVisible}
+                                    onOpenChange={(visible) => { setPopCopyrightVisible(visible); if (visible) setTempCopyrightText(copyrightText); }}
+                                >
+                                    <Button size="small" onClick={() => setPopCopyrightVisible(true)}>Sửa</Button>
                                 </Popconfirm>
                             </div>
 

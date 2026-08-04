@@ -1,0 +1,12 @@
+{
+  "name": "FOOT404 Pure Commerce",
+  "key": "FOOT404",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử thực phẩm và quà tặng với bố cục banner mosaic, danh mục, nhiều dải sản phẩm và ưu đãi.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-foot404.svg", "cover": "cover-foot404.svg" },
+  "blocks": ["hero-mosaic", "product-categories", "promo-trio", "featured-deals", "new-products", "coupon-banner", "best-sellers", "promo-duo"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] }
+}

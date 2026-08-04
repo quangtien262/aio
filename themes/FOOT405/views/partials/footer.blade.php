@@ -1,0 +1,13 @@
+@php
+    $shell = $themeShellData ?? $themeHomeData ?? [];
+    $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
+    $logo = trim((string) data_get($branding, 'logo_url'));
+    $siteName = trim((string) data_get($siteProfile ?? [], 'site_name', 'FOOT405'));
+    $hotline = trim((string) data_get($branding, 'support_hotline'));
+    $email = trim((string) data_get($branding, 'support_email'));
+    $address = trim((string) data_get($branding, 'support_location'));
+    $hours = trim((string) data_get($branding, 'business_hours', data_get($branding, 'working_hours')));
+    $description = trim((string) data_get($branding, 'company_description', data_get($branding, 'description', 'Sản phẩm chọn lọc, dịch vụ tận tâm và trải nghiệm mua sắm thuận tiện.')));
+    $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
+@endphp
+<footer class="f405-footer" id="lien-he"><div class="f405-container f405-footer__grid"><section class="f405-footer__brand"><a class="f405-logo" href="{{ route('site.home') }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span><i class="fa-solid fa-leaf"></i></span><strong>{{ $siteName }}</strong>@endif</a><p>{{ $description }}</p>@if($address)<p><i class="fa-solid fa-location-dot"></i><span>{{ $address }}</span></p>@endif @if($hotline)<p><i class="fa-solid fa-headset"></i><a href="tel:{{ preg_replace('/\s+/', '', $hotline) }}">{{ $hotline }}</a></p>@endif @if($email)<p><i class="fa-regular fa-envelope"></i><a href="mailto:{{ $email }}">{{ $email }}</a></p>@endif @if($hours)<p><i class="fa-regular fa-clock"></i><span>{{ $hours }}</span></p>@endif</section><section><h3>@themeT('FOOT405.support', 'Dịch vụ')</h3><a href="{{ route('site.contact') }}">@themeT('FOOT405.customer_support', 'Hỗ trợ khách hàng')</a><a href="{{ route('site.services.index') }}">Dịch vụ khác</a><button type="button" data-xd-auth-open="login">@themeT('FOOT405.login', 'Đăng nhập')</button></section><section><h3>@themeT('FOOT405.products', 'Sản phẩm')</h3><a href="{{ route('site.catalog.search') }}">@themeT('FOOT405.product_categories', 'Danh mục sản phẩm')</a><a href="{{ route('site.catalog.search', ['sort' => 'newest']) }}">Sản phẩm mới</a><a href="{{ route('site.catalog.search', ['featured' => 1]) }}">Sản phẩm nổi bật</a></section><section><h3>@themeT('FOOT405.menu', 'Menu')</h3>@foreach($nav as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>@endforeach</section></div><div class="f405-footer__bottom"><div class="f405-container">© {{ now()->year }} {{ $siteName }}. All rights reserved.</div></div></footer>

@@ -1,0 +1,12 @@
+{
+  "name": "FOOT407 Golden Wellness",
+  "key": "FOOT407",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử chăm sóc sức khỏe với bảng màu xanh rừng và vàng ánh kim.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-foot407.svg", "cover": "cover-foot407.svg" },
+  "blocks": ["hero-slider", "benefits", "product-tabs", "why-choose", "gallery", "media-posts", "knowledge-posts", "partners"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] }
+}

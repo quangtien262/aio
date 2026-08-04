@@ -1,0 +1,6 @@
+{
+  "home": "Home", "about": "About", "projects": "Projects", "services": "Services", "news": "News", "contact": "Contact",
+  "auth.login": "Log in", "auth.register": "Register", "auth.account": "Account", "auth.logout": "Log out",
+  "consult.name": "Full name", "consult.phone": "Phone", "consult.email": "Email", "consult.address": "Address", "consult.message": "Consultation request",
+  "footer.support": "Customer support", "footer.map": "View map", "footer.back_to_top": "Back to top"
+}

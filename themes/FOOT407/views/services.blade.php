@@ -1,0 +1,1 @@
+@extends('theme-foot407::layout') @section('title','Dịch vụ') @section('content') @include('theme-foot407::partials.listing',['title'=>'Dịch vụ','summary'=>'Các dịch vụ hỗ trợ dành cho khách hàng.']) @endsection

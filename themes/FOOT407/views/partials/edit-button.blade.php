@@ -1,0 +1,1 @@
+@if(auth('admin')->check()&&request('mod')==='admin'&&filled(data_get($block??[],'id')))<button class="xd-inline-edit-trigger" type="button" data-xd-inline-edit data-block-id="{{ data_get($block,'id') }}" aria-label="Chỉnh sửa khối"><i class="fa-solid fa-pen"></i></button>@endif

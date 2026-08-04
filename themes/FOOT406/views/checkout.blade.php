@@ -1,0 +1,1 @@
+@extends('theme-foot406::layout') @section('title','Thanh toán') @section('content')<main><section class="f406-inner-hero"><div class="f406-container"><h1>Thanh toán</h1></div></section><section class="f406-content"><div class="f406-container f406-prose"><p>Vui lòng điền đầy đủ thông tin nhận hàng trong biểu mẫu thanh toán.</p></div></section></main>@endsection

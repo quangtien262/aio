@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
@@ -26,7 +26,7 @@ function escapeCsvCell(value) {
 
 function formatLastLogin(value) {
     if (!value) {
-        return 'Chưa đăng nhập';
+        return 'ChÆ°a Ä‘Äƒng nháº­p';
     }
 
     const date = new Date(value);
@@ -45,7 +45,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
     const [scopeTypeFilter, setScopeTypeFilter] = useState('all');
 
     const roleOptions = useMemo(() => ([
-        { label: 'Tất cả role', value: 'all' },
+        { label: 'Táº¥t cáº£ role', value: 'all' },
         ...((roles ?? []).map((role) => ({
             label: role.name,
             value: String(role.id),
@@ -53,7 +53,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
     ]), [roles]);
 
     const scopeTypeOptions = useMemo(() => ([
-        { label: 'Tất cả scope type', value: 'all' },
+        { label: 'Táº¥t cáº£ scope type', value: 'all' },
         ...Object.entries(scopeTypes ?? {}).map(([value, label]) => ({
             label,
             value,
@@ -88,7 +88,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
 
     const handleExportCsv = () => {
         const rows = [
-            ['ID', 'Tên admin', 'Username', 'Email', 'Trạng thái', 'Khóa', 'Lý do khóa', 'Lần đăng nhập cuối', 'Roles', 'Scopes'],
+            ['ID', 'TÃªn admin', 'Username', 'Email', 'Tráº¡ng thÃ¡i', 'KhÃ³a', 'LÃ½ do khÃ³a', 'Láº§n Ä‘Äƒng nháº­p cuá»‘i', 'Roles', 'Scopes'],
             ...filteredAdmins.map((admin) => [
                 admin.id,
                 admin.name,
@@ -134,7 +134,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
             ),
         },
         {
-            title: 'Trạng thái',
+            title: 'Tráº¡ng thÃ¡i',
             key: 'status',
             render: (_, admin) => (
                 <Space direction="vertical" size={4}>
@@ -171,36 +171,36 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
             ),
         },
         {
-            title: 'Lần đăng nhập cuối',
+            title: 'Láº§n Ä‘Äƒng nháº­p cuá»‘i',
             dataIndex: 'last_login_at',
             key: 'last_login_at',
             render: (value) => formatLastLogin(value),
         },
         {
-            title: 'Tác vụ',
+            title: 'TÃ¡c vá»¥',
             key: 'actions',
             render: (_, admin) => {
                 const isCurrentAdmin = currentAdmin?.id === admin.id;
                 const actionItems = [
                     {
                         key: 'edit',
-                        label: 'Sửa admin',
+                        label: 'Sá»­a admin',
                         disabled: !canManageAdmins || admin.is_system_owner,
                     },
                     {
                         key: 'password',
-                        label: 'Đặt lại mật khẩu',
+                        label: 'Äáº·t láº¡i máº­t kháº©u',
                         disabled: !canResetPassword || admin.is_system_owner,
                     },
                     admin.is_locked
                         ? {
                             key: 'unlock',
-                            label: 'Mở khóa tài khoản',
+                            label: 'Má»Ÿ khÃ³a tÃ i khoáº£n',
                             disabled: !canLockAdmins || admin.is_system_owner,
                         }
                         : {
                             key: 'lock',
-                            label: isCurrentAdmin ? 'Không thể tự khóa tài khoản đang dùng' : 'Khóa tài khoản',
+                            label: isCurrentAdmin ? 'KhÃ´ng thá»ƒ tá»± khÃ³a tÃ i khoáº£n Ä‘ang dÃ¹ng' : 'KhÃ³a tÃ i khoáº£n',
                             disabled: !canLockAdmins || isCurrentAdmin || admin.is_system_owner,
                             danger: true,
                         },
@@ -230,7 +230,7 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                 return (
                     <Dropdown menu={{ items: actionItems, onClick: handleActionClick }} trigger={['click']}>
                         <Button size="small">
-                            Tác vụ
+                            TÃ¡c vá»¥
                         </Button>
                     </Dropdown>
                 );
@@ -248,41 +248,41 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                         Export CSV
                     </Button>
                     <Button type="primary" disabled={!canManageAdmins} onClick={onCreateAdmin}>
-                        Tạo admin
+                        Táº¡o admin
                     </Button>
                 </Space>
             )}
         >
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label">Admin Management</Text>
-                <Title level={4}>Quản lý tài khoản, vai trò và phạm vi website</Title>
+                <Title level={4}>Quáº£n lÃ½ tÃ i khoáº£n, vai trÃ² vÃ  pháº¡m vi website</Title>
                 <Paragraph>
-                    Mỗi vai trò được gán ở phạm vi toàn hệ thống hoặc theo website. System Owner luôn toàn quyền và không thể bị khóa.
+                    Má»—i vai trÃ² Ä‘Æ°á»£c gÃ¡n á»Ÿ pháº¡m vi toÃ n há»‡ thá»‘ng hoáº·c theo website. System Owner luÃ´n toÃ n quyá»n vÃ  khÃ´ng thá»ƒ bá»‹ khÃ³a.
                 </Paragraph>
             </Space>
 
             <Row className="admin-table-stats" gutter={[12, 12]} style={{ marginBottom: 16 }}>
                 <Col xs={12} md={6}>
                     <Card size="small">
-                        <Text className="detail-label">Tổng admin</Text>
+                        <Text className="detail-label">Tá»•ng admin</Text>
                         <Title level={4} style={{ margin: 0 }}>{stats?.total ?? 0}</Title>
                     </Card>
                 </Col>
                 <Col xs={12} md={6}>
                     <Card size="small">
-                        <Text className="detail-label">Đang hoạt động</Text>
+                        <Text className="detail-label">Äang hoáº¡t Ä‘á»™ng</Text>
                         <Title level={4} style={{ margin: 0 }}>{stats?.active ?? 0}</Title>
                     </Card>
                 </Col>
                 <Col xs={12} md={6}>
                     <Card size="small">
-                        <Text className="detail-label">Đang khóa</Text>
+                        <Text className="detail-label">Äang khÃ³a</Text>
                         <Title level={4} style={{ margin: 0 }}>{stats?.locked ?? 0}</Title>
                     </Card>
                 </Col>
                 <Col xs={12} md={6}>
                     <Card size="small">
-                        <Text className="detail-label">Có scope riêng</Text>
+                        <Text className="detail-label">CÃ³ scope riÃªng</Text>
                         <Title level={4} style={{ margin: 0 }}>{stats?.withScopes ?? 0}</Title>
                     </Card>
                 </Col>
@@ -290,34 +290,45 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
 
             <Row className="admin-table-filters" gutter={[12, 12]} style={{ marginBottom: 16 }}>
                 <Col xs={24} md={12}>
-                    <Input.Search
-                        allowClear
-                        value={keyword}
-                        onChange={(event) => setKeyword(event.target.value)}
-                        placeholder="Tìm theo tên, username, email, role hoặc scope"
-                    />
+                    <Space direction="vertical" size={6} className="admin-filter-field">
+                        <Text className="admin-filter-label">Từ khóa</Text>
+                        <Input.Search
+                            allowClear
+                            value={keyword}
+                            onChange={(event) => setKeyword(event.target.value)}
+                            placeholder="Tìm theo tên, username, email..."
+                        />
+                    </Space>
                 </Col>
                 <Col xs={24} md={6}>
-                    <Select
-                        style={{ width: '100%' }}
-                        value={statusFilter}
-                        onChange={setStatusFilter}
-                        options={[
-                            { label: 'Tất cả trạng thái', value: 'all' },
-                            { label: 'Đang hoạt động', value: 'active' },
-                            { label: 'Ngưng hoạt động', value: 'inactive' },
-                            { label: 'Đang khóa', value: 'locked' },
-                        ]}
-                    />
+                    <Space direction="vertical" size={6} className="admin-filter-field">
+                        <Text className="admin-filter-label">Trạng thái</Text>
+                        <Select
+                            style={{ width: '100%' }}
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                            options={[
+                                { label: 'Tất cả trạng thái', value: 'all' },
+                                { label: 'Đang hoạt động', value: 'active' },
+                                { label: 'Ngưng hoạt động', value: 'inactive' },
+                                { label: 'Đang khóa', value: 'locked' },
+                            ]}
+                        />
+                    </Space>
                 </Col>
                 <Col xs={24} md={6}>
-                    <Select style={{ width: '100%' }} value={roleFilter} onChange={setRoleFilter} options={roleOptions} />
+                    <Space direction="vertical" size={6} className="admin-filter-field">
+                        <Text className="admin-filter-label">Vai trò</Text>
+                        <Select style={{ width: '100%' }} value={roleFilter} onChange={setRoleFilter} options={roleOptions} />
+                    </Space>
                 </Col>
                 <Col xs={24} md={6} lg={6}>
-                    <Select style={{ width: '100%' }} value={scopeTypeFilter} onChange={setScopeTypeFilter} options={scopeTypeOptions} />
+                    <Space direction="vertical" size={6} className="admin-filter-field">
+                        <Text className="admin-filter-label">Phạm vi</Text>
+                        <Select style={{ width: '100%' }} value={scopeTypeFilter} onChange={setScopeTypeFilter} options={scopeTypeOptions} />
+                    </Space>
                 </Col>
             </Row>
-
             <div className="admin-responsive-table">
                 <Table
                     rowKey="id"
@@ -325,9 +336,10 @@ export default function AdminAccountsTableCard({ adminAccounts, roles, scopeType
                     dataSource={filteredAdmins}
                     scroll={{ x: 980 }}
                     pagination={{ pageSize: 8, hideOnSinglePage: true, showSizeChanger: false }}
-                    locale={{ emptyText: <Empty description="Không có admin phù hợp với bộ lọc hiện tại." /> }}
+                    locale={{ emptyText: <Empty description="KhÃ´ng cÃ³ admin phÃ¹ há»£p vá»›i bá»™ lá»c hiá»‡n táº¡i." /> }}
                 />
             </div>
         </Card>
     );
 }
+

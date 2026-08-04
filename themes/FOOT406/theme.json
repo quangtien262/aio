@@ -1,0 +1,12 @@
+{
+  "name": "FOOT406 Fresh Drinks",
+  "key": "FOOT406",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử đồ uống với sắc hồng san hô, sản phẩm trực quan, tin tức và đối tác động.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-foot406.svg", "cover": "cover-foot406.svg" },
+  "blocks": ["hero-slider", "drink-categories", "promotion-products", "promo-duo", "favourite-products", "latest-posts", "partners"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] }
+}

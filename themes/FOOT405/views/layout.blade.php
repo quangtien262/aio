@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', data_get($siteProfile ?? [], 'site_name', 'FOOT405'))</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap&subset=vietnamese" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+    @include('theme-foot405::partials.styles')
+    @stack('head')
+    @include('partials.localized-seo')
+</head>
+<body>
+@php
+    $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
+    $editorLocales = collect(\App\Support\FrontendLocalization::localeOptions())->filter(fn (array $locale): bool => (bool) ($locale['active'] ?? true))->map(fn (array $locale): array => ['code' => $locale['code'] ?? '', 'label' => $locale['label'] ?? strtoupper($locale['code'] ?? '')])->filter(fn (array $locale): bool => filled($locale['code']))->values()->all();
+@endphp
+<div class="f405-page" id="top">
+    @include('theme-foot405::partials.header')
+    @yield('content')
+    @include('theme-foot405::partials.footer')
+</div>
+@include('theme-xd0323::partials.auth-modal')
+@include('theme-xd0323::partials.inline-editor', ['canEditLanding' => $canEditLanding, 'editorLocales' => $editorLocales])
+@include('theme-foot405::partials.scripts')
+@if($canEditLanding) @include('theme-xd0301::partials.scripts') @endif
+@stack('scripts')
+</body>
+</html>

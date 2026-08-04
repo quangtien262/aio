@@ -1,0 +1,12 @@
+{
+  "name": "FOOT408 Urban Restaurant",
+  "key": "FOOT408",
+  "version": "1.0.0",
+  "description": "Theme nhà hàng hiện đại với sắc đỏ, vàng ấm và chất liệu gỗ.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-foot408.svg", "cover": "cover-foot408.svg" },
+  "blocks": ["hero-slider", "welcome", "menu-products", "combo-mosaic", "testimonials", "blog-posts"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] }
+}

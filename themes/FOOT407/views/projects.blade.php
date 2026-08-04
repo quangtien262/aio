@@ -1,0 +1,1 @@
+@extends('theme-foot407::layout') @section('title','Bộ sưu tập') @section('content') @include('theme-foot407::partials.listing',['title'=>'Bộ sưu tập','summary'=>'Khám phá hành trình chất lượng.']) @endsection

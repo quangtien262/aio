@@ -1,0 +1,13 @@
+{
+  "name": "BDS702 Aurelia Estates",
+  "key": "BDS702",
+  "version": "1.0.0",
+  "description": "Theme bất động sản cao cấp màu champagne với dự án, đầu tư, tư vấn và đối tác động từ hệ thống.",
+  "website_type": "real_estate",
+  "requires_modules": ["real-estate", "cms"],
+  "parent": null,
+  "preview": {"thumbnail": "preview-bds702.svg", "cover": "cover-bds702.svg"},
+  "blocks": ["hero-slider", "bds702-intro", "bds702-featured-projects", "bds702-investment-activities", "bds702-recommended-projects", "bds702-consultation", "bds702-partners"],
+  "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true},
+  "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]}
+}

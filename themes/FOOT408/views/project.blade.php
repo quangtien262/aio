@@ -1,0 +1,1 @@
+@extends('theme-foot408::layout') @section('title',data_get($project??null,'title','Bộ sưu tập')) @section('content')<main><section class="f408-content f408-product-page"><article class="f408-container"><h1>{{ data_get($project??null,'title','Bộ sưu tập') }}</h1>{!! data_get($project??null,'content',data_get($project??null,'description')) !!}</article></section></main>@endsection

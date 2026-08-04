@@ -51,6 +51,7 @@ class ThemeBrandingController
             'support_hotline' => ['sometimes', 'nullable', 'string', 'max:120'],
             'support_email' => ['sometimes', 'nullable', 'email', 'max:255'],
             'support_location' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'copyright_text' => ['sometimes', 'nullable', 'string', 'max:500'],
             'boc_status' => ['sometimes', 'nullable', 'string', Rule::in(['notified', 'not_notified', 'pending'])],
             'boc_confirmation_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
             'boc_footer_note' => ['sometimes', 'nullable', 'string', 'max:500'],

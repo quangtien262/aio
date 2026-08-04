@@ -1,0 +1,1 @@
+@extends('theme-foot408::layout') @section('title','Tin tức') @section('content') @include('theme-foot408::partials.listing',['title'=>'Tin tức','summary'=>'Câu chuyện ẩm thực và những thông tin mới.']) @endsection

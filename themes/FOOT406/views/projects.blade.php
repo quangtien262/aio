@@ -1,0 +1,1 @@
+@extends('theme-foot406::layout') @section('title','Bộ sưu tập') @section('content') @include('theme-foot406::partials.listing',['title'=>'Bộ sưu tập','summary'=>'Khám phá những hương vị nổi bật.']) @endsection

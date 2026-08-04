@@ -1,0 +1,1 @@
+@extends('theme-foot407::layout') @section('title','Thanh toán') @section('content')<main><section class="f407-inner-hero"><div class="f407-container"><h1>Thanh toán</h1></div></section><section class="f407-content"><div class="f407-container"><p>Vui lòng điền đầy đủ thông tin nhận hàng trong biểu mẫu thanh toán.</p></div></section></main>@endsection

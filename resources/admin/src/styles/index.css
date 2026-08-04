@@ -2659,6 +2659,19 @@ a {
     width: 100%;
 }
 
+.admin-filter-field {
+    width: 100%;
+}
+
+.admin-filter-label {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
 .admin-accounts-card .admin-responsive-table {
     min-width: 0;
 }

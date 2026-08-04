@@ -42,7 +42,7 @@ class LandingPageBuilder
 
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701'], true);
+        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750'], true);
     }
 
     /**
@@ -707,6 +707,14 @@ class LandingPageBuilder
             'bds701_rental_listings' => 3,
             'bds701_market_news' => 5,
             'bds701_latest_news' => 3,
+            'bds702_featured_projects' => 6,
+            'bds702_investment_activities', 'bds702_recommended_projects' => 3,
+            'dl750_categories' => 8,
+            'dl750_services' => 6,
+            'dl750_products' => 6,
+            'dl750_news' => 4,
+            'shop606_collections', 'shop606_sale', 'shop606_new' => 4,
+            'shop606_outfit', 'shop606_news' => 3,
             default => 3,
         };
         $maximumLimit = $block->block_type === 'ec907_category_grid' ? 16 : 12;
@@ -732,7 +740,7 @@ class LandingPageBuilder
             );
         }
 
-        if (in_array($block->block_type, ['bds701_latest_listings', 'bds701_rental_listings'], true)) {
+        if (in_array($block->block_type, ['bds701_latest_listings', 'bds701_rental_listings', 'bds702_featured_projects', 'bds702_recommended_projects'], true)) {
             if ($block->block_type === 'bds701_rental_listings') {
                 $settings['transaction_type'] = 'rent';
             }
@@ -747,6 +755,34 @@ class LandingPageBuilder
 
         if (in_array($block->block_type, ['bds701_market_news', 'bds701_latest_news'], true)) {
             return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if ($block->block_type === 'bds702_investment_activities') {
+            return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['dl750_categories', 'dl750_services', 'dl750_products'], true)) {
+            $source = match ($block->block_type) {
+                'dl750_categories' => 'catalog_categories',
+                'dl750_services' => 'cms_services',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems($settings, $source, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if ($block->block_type === 'dl750_news') {
+            return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['shop606_collections', 'shop606_sale', 'shop606_new', 'shop606_outfit', 'shop606_news'], true)) {
+            $source = match ($block->block_type) {
+                'shop606_collections' => 'catalog_categories',
+                'shop606_news' => 'cms_posts',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems($settings, $source, $limit, $locale, $block->landingPage?->website_key);
         }
 
         if ($this->isCmsTestimonialBlock($block->block_type)) {
@@ -780,6 +816,24 @@ class LandingPageBuilder
         if (in_array($block->block_type, [
             'ec917_summer_sale',
             'ec917_inspiration',
+            'foot404_categories',
+            'foot404_deals',
+            'foot404_new_products',
+            'foot404_best_sellers',
+            'foot405_categories',
+            'foot405_popular_products',
+            'foot405_best_sellers',
+            'foot405_daily_deals',
+            'foot405_product_columns',
+            'foot406_categories',
+            'foot406_promo_products',
+            'foot406_favorites',
+            'foot406_latest_posts',
+            'foot407_product_tabs',
+            'foot407_media_posts',
+            'foot407_knowledge_posts',
+            'foot408_menu_products',
+            'foot408_blog_posts',
             'ec916_featured_deals',
             'ec916_beauty_deals',
             'ec915_best_sellers',
@@ -803,8 +857,8 @@ class LandingPageBuilder
             'dn351_product_grid',
         ], true)) {
             $defaultSource = match ($block->block_type) {
-                'dn351_category_rail', 'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories' => 'catalog_categories',
-                'ec917_inspiration', 'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news' => 'cms_posts',
+                'dn351_category_rail', 'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories', 'foot404_categories', 'foot405_categories', 'foot406_categories' => 'catalog_categories',
+                'ec917_inspiration', 'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news', 'foot406_latest_posts', 'foot407_media_posts', 'foot407_knowledge_posts', 'foot408_blog_posts' => 'cms_posts',
                 default => 'cms_products',
             };
 
@@ -1845,6 +1899,7 @@ class LandingPageBuilder
     {
         return match (strtoupper($themeKey)) {
             'SHOP605' => $this->shop605DefaultBlocks(),
+            'SHOP606' => $this->shop606DefaultBlocks(),
             'CA0050' => $this->ca0050DefaultBlocks(),
             'SHOP604' => $this->shop604DefaultBlocks(),
             'SHOP603' => $this->shop603DefaultBlocks(),
@@ -1869,6 +1924,11 @@ class LandingPageBuilder
             'BOOK920' => $this->book920DefaultBlocks(),
             'EC916' => $this->ec916DefaultBlocks(),
             'EC917' => $this->ec917DefaultBlocks(),
+            'FOOT404' => $this->foot404DefaultBlocks(),
+            'FOOT405' => $this->foot405DefaultBlocks(),
+            'FOOT406' => $this->foot406DefaultBlocks(),
+            'FOOT407' => $this->foot407DefaultBlocks(),
+            'FOOT408' => $this->foot408DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
@@ -1896,6 +1956,8 @@ class LandingPageBuilder
             'SPA502' => $this->spa502DefaultBlocks(),
             'SPA111' => $this->spa111DefaultBlocks(),
             'BDS701' => $this->bds701DefaultBlocks(),
+            'BDS702' => $this->bds702DefaultBlocks(),
+            'DL750' => $this->dl750DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -1949,6 +2011,58 @@ class LandingPageBuilder
             ['block_type' => 'featured_products', 'label' => 'Sản phẩm nội thất', 'description' => 'Sản phẩm nổi bật lấy động từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 4), 'media' => ['image' => $interior], 'data' => ['vi' => $heading('Sản phẩm nội thất'), 'en' => $heading('Interior products')]],
             ['block_type' => 'content_showcase', 'label' => 'Dự án hoàn thành', 'description' => 'Các dự án đã bàn giao lấy động từ CMS Projects.', 'preview_image' => $preview, 'anchor_id' => 'du-an', 'dynamic' => true, 'settings' => ['source' => 'cms_projects', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_projects', 'Dự án CMS', 4), 'data' => ['vi' => $heading('Dự án hoàn thành', 'Những mẫu dự án đã bàn giao'), 'en' => $heading('Completed projects', 'A selection of delivered spaces')]],
             ['block_type' => 'partner_logos', 'label' => 'Đối tác tiêu biểu', 'description' => 'Logo đối tác lấy động từ CMS Partners.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_partners', 'Đối tác CMS', 6), 'data' => ['vi' => $heading('Đối tác tiêu biểu', 'Những đối tác lâu năm tại DN202'), 'en' => $heading('Featured partners', 'Long-term partners of DN202')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function shop606DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/SHOP606/preview-shop606.svg';
+        $hero = '/theme-demo/shop604/hero-fashion.png';
+        $fashion = '/theme-demo/shop605/hero-fashion.png';
+        $beige = '/theme-demo/shop604/product-women-knit.png';
+        $rose = '/theme-demo/shop604/product-women-rose.png';
+        $navy = '/theme-demo/shop604/product-men-green.png';
+        $editorial = '/theme-demo/shop604/ad-lac-quan.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ nội dung nổi bật', 'default' => false],
+        ];
+        $products = [
+            ['title' => 'Đầm xếp ly cổ V thanh lịch', 'summary' => 'SORIA', 'price' => 950000, 'original_price' => 1200000, 'image' => $beige, 'url' => '#san-pham'],
+            ['title' => 'Đầm midi kèm thắt lưng', 'summary' => 'SORIA', 'price' => 890000, 'original_price' => 1100000, 'image' => $rose, 'url' => '#san-pham'],
+            ['title' => 'Đầm dạo phố cổ V', 'summary' => 'SORIA', 'price' => 790000, 'original_price' => 850000, 'image' => $navy, 'url' => '#san-pham'],
+            ['title' => 'Đầm công sở thanh lịch', 'summary' => 'LOVINA', 'price' => 2500000, 'original_price' => 2950000, 'image' => $beige, 'url' => '#san-pham'],
+        ];
+        $categories = [
+            ['title' => 'Đầm cao cấp', 'image' => $beige, 'url' => '#san-pham'],
+            ['title' => 'Túi xách', 'image' => $rose, 'url' => '#san-pham'],
+            ['title' => 'Áo khoác & Blazer', 'image' => $navy, 'url' => '#san-pham'],
+            ['title' => 'Phụ kiện', 'image' => $editorial, 'url' => '#san-pham'],
+        ];
+        $benefits = [
+            ['title' => 'Giao hỏa tốc', 'summary' => 'Nhanh chóng và an toàn', 'icon' => 'fa-solid fa-truck-fast'],
+            ['title' => 'Đổi trả miễn phí', 'summary' => 'Trong vòng 30 ngày', 'icon' => 'fa-solid fa-box-open'],
+            ['title' => 'Hỗ trợ 24/7', 'summary' => 'Luôn sẵn sàng đồng hành', 'icon' => 'fa-regular fa-credit-card'],
+            ['title' => 'Ưu đãi hấp dẫn', 'summary' => 'Khuyến mãi được cập nhật', 'icon' => 'fa-solid fa-bag-shopping'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero thời trang', 'description' => 'Slider toàn màn hình cho chiến dịch thời trang.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'shop606-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'media' => ['image' => $hero], 'data' => ['vi' => array_merge($heading('TÚI XÁCH THỜI TRANG', null, 'Những thiết kế giản dị, tinh tế và thu hút', 'Mua ngay'), ['content' => ['slides' => [['title' => 'TÚI XÁCH THỜI TRANG', 'summary' => 'Những thiết kế giản dị, tinh tế và thu hút', 'button_label' => 'Mua ngay', 'image' => $hero, 'link_url' => '#san-pham']]]]), 'en' => $heading('FASHION BAGS', null, 'Simple, elegant and magnetic designs', 'Shop now')]],
+            ['block_type' => 'shop606_collections', 'label' => 'Khám phá bộ sưu tập', 'description' => 'Bốn danh mục thời trang lấy từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $sourceSchema('catalog_categories', 'Danh mục Catalog', 4), 'data' => ['vi' => $withItems($heading('Khám phá các bộ sưu tập'), $categories), 'en' => $withItems($heading('Explore collections'), $categories)]],
+            ['block_type' => 'shop606_sale', 'label' => 'Ưu đãi có giới hạn', 'description' => 'Flash sale với bộ đếm và bốn sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false, 'countdown_hours' => 24], 'settings_schema' => array_merge($sourceSchema('cms_products', 'Sản phẩm Catalog', 4), ['countdown_hours' => ['type' => 'number', 'label' => 'Thời lượng đếm ngược (giờ)', 'default' => 24]]), 'data' => ['vi' => $withItems($heading('Ưu đãi có giới hạn', 'Nhanh lên nào!', 'Sự kiện sắp kết thúc'), $products), 'en' => $withItems($heading('Limited offer'), $products)]],
+            ['block_type' => 'shop606_feature', 'label' => 'Sản phẩm nổi bật', 'description' => 'Ảnh editorial và nội dung giới thiệu sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'noi-bat', 'media' => ['image' => $fashion], 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $withItems($heading('Sản phẩm nổi bật', null, 'Phom dáng hiện đại, chất liệu mềm mại và hoàn thiện chỉn chu tạo nên một thiết kế dễ mặc trong nhiều dịp.', 'Xem ngay'), [['title' => 'Chất liệu cao cấp, thoáng khí'], ['title' => 'Kiểu dáng năng động, thanh lịch'], ['title' => 'Dễ dàng phối cùng nhiều phong cách']]), 'en' => $heading('Featured product', null, 'Modern form and carefully selected materials.', 'View now')]],
+            ['block_type' => 'shop606_new', 'label' => 'Hàng mới về', 'description' => 'Bốn sản phẩm mới nhất từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 4), 'data' => ['vi' => $withItems($heading('Hàng mới về'), $products), 'en' => $withItems($heading('New arrivals'), $products)]],
+            ['block_type' => 'shop606_campaign', 'label' => 'Banner bộ sưu tập', 'description' => 'Banner editorial toàn chiều rộng.', 'preview_image' => $preview, 'anchor_id' => 'chien-dich', 'media' => ['image' => $editorial], 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $heading('SẮC MÀU THANH XUÂN', 'Bộ sưu tập mới', null, 'Xem bộ sưu tập'), 'en' => $heading('COLORS OF YOUTH', 'New collection', null, 'Explore')]],
+            ['block_type' => 'shop606_outfit', 'label' => 'Mua trọn bộ trang phục', 'description' => 'Ảnh phối đồ và ba sản phẩm liên quan.', 'preview_image' => $preview, 'anchor_id' => 'phoi-do', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'featured_only' => false, 'feature_image' => $fashion], 'settings_schema' => array_merge($sourceSchema('cms_products', 'Sản phẩm Catalog', 3), ['feature_image' => ['type' => 'image', 'label' => 'Ảnh phối đồ']]), 'media' => ['image' => $fashion], 'data' => ['vi' => $withItems($heading('Mua trọn bộ trang phục', null, null, 'Thêm tất cả'), array_slice($products, 0, 3)), 'en' => $withItems($heading('Shop the look', null, null, 'Add all'), array_slice($products, 0, 3))]],
+            ['block_type' => 'shop606_news', 'label' => 'Tin tức thời trang', 'description' => 'Ba bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_posts', 'Bài viết CMS', 3), 'data' => ['vi' => $withItems($heading('Tin tức'), [['title' => 'Bí quyết chăm sóc trang phục bền đẹp', 'summary' => 'Những lưu ý đơn giản giúp trang phục luôn giữ phom.', 'image' => $beige], ['title' => 'Xu hướng phối đồ thanh lịch', 'summary' => 'Cảm hứng mới cho tủ đồ hằng ngày.', 'image' => $rose], ['title' => 'Phong cách cá nhân và sự tự tin', 'summary' => 'Chọn thiết kế phù hợp với chính bạn.', 'image' => $navy]]), 'en' => $heading('News')]],
+            ['block_type' => 'shop606_gallery', 'label' => 'Bộ sưu tập hình ảnh', 'description' => 'Gallery ba ảnh phong cách.', 'preview_image' => $preview, 'anchor_id' => 'thu-vien', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $withItems($heading('Bộ sưu tập'), [['title' => 'Phong cách mùa hè', 'image' => $rose], ['title' => 'Thanh lịch hiện đại', 'image' => $fashion], ['title' => 'Dạo phố tự tin', 'image' => $hero]]), 'en' => $heading('Gallery')]],
+            ['block_type' => 'shop606_benefits', 'label' => 'Tiện ích mua sắm', 'description' => 'Bốn cam kết dịch vụ trước footer.', 'preview_image' => $preview, 'anchor_id' => 'tien-ich', 'settings' => [], 'settings_schema' => [], 'data' => ['vi' => $withItems($heading(), $benefits), 'en' => $withItems($heading(), $benefits)]],
         ];
     }
 
@@ -2772,6 +2886,234 @@ class LandingPageBuilder
     }
 
     /** @return array<int, array<string, mixed>> */
+    private function foot404DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/FOOT404/cover-foot404.svg';
+        $heading = static fn (?string $title = null, ?string $description = null, ?string $subtitle = null, ?string $button = null): array => array_filter([
+            'title' => $title,
+            'description' => $description,
+            'subtitle' => $subtitle,
+            'button_label' => $button,
+        ], static fn (mixed $value): bool => $value !== null);
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $categorySchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số danh mục', 'default' => 6],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+        ];
+        $promoTrio = [
+            ['title' => 'Món ngon thuần tự nhiên', 'summary' => 'Nguyên liệu được chọn lọc kỹ lưỡng', 'image' => '/theme-demo/ec903/food-dessert.webp', 'url' => '#san-pham-uu-dai'],
+            ['title' => 'Quà tặng sức khỏe', 'summary' => 'Tinh tế trong từng lựa chọn', 'image' => '/theme-demo/ec903/food-brunch.webp', 'url' => '#san-pham-moi'],
+            ['title' => 'Gắn kết yêu thương', 'summary' => 'Chia sẻ khoảnh khắc trọn vẹn', 'image' => '/theme-demo/ec903/food-dimsum.webp', 'url' => '#ban-chay'],
+        ];
+        $promoDuo = [
+            ['title' => 'Thương hiệu chuẩn nguồn gốc', 'summary' => 'Chọn sản phẩm minh bạch, an tâm mỗi ngày', 'image' => '/theme-demo/ec903/food-banquet.webp', 'url' => '#san-pham-moi'],
+            ['title' => 'Chất lượng tạo nên khác biệt', 'summary' => 'Ưu đãi dành cho những lựa chọn tinh tế', 'image' => '/theme-demo/ec903/food-brunch.webp', 'url' => '#ban-chay'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero khuyến mãi dạng mosaic', 'description' => 'Banner chính và hai banner phụ lấy từ kho banner.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'foot404-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số banner'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Ưu đãi chọn lọc', 'Khám phá sản phẩm chất lượng cho gia đình', 'Mua sắm an tâm', 'Khám phá ngay'), ['content' => ['slides' => [['title' => 'Ưu đãi chọn lọc', 'summary' => 'Sản phẩm chất lượng, nguồn gốc rõ ràng', 'button_label' => 'Khám phá ngay', 'image' => '/theme-demo/ec903/food-banquet.webp', 'link_url' => '#san-pham-uu-dai']]]]), 'en' => $heading('Curated offers', 'Quality products for every family')]],
+            ['block_type' => 'foot404_categories', 'label' => 'Dải danh mục sản phẩm', 'description' => 'Sáu danh mục lấy trực tiếp từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 6, 'featured_only' => false, 'order' => 'sort_order'], 'settings_schema' => $categorySchema, 'data' => ['vi' => $heading('Danh mục sản phẩm'), 'en' => $heading('Product categories')]],
+            ['block_type' => 'foot404_promo_trio', 'label' => 'Ba banner giá trị nổi bật', 'description' => 'Ba banner nhỏ theo bố cục tham chiếu.', 'preview_image' => $preview, 'anchor_id' => 'gia-tri', 'data' => ['vi' => $withItems($heading('Giá trị chúng tôi theo đuổi'), $promoTrio), 'en' => $withItems($heading('Our values'), $promoTrio)]],
+            ['block_type' => 'foot404_deals', 'label' => 'Sản phẩm ưu đãi', 'description' => 'Bốn sản phẩm ưu đãi từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-uu-dai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $heading('Sản phẩm ưu đãi', 'Đừng bỏ lỡ những lựa chọn nổi bật dành cho bạn', 'Ưu đãi trong tuần', 'Xem tất cả'), 'en' => $heading('Featured offers')]],
+            ['block_type' => 'foot404_new_products', 'label' => 'Sản phẩm mới', 'description' => 'Banner dọc đi cùng bốn sản phẩm mới.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false, 'feature_image' => '/theme-demo/ec903/food-cruise.webp'], 'settings_schema' => array_merge($productSchema(4), ['feature_image' => ['type' => 'image', 'label' => 'Ảnh banner bên trái']]), 'data' => ['vi' => $heading('Sản phẩm mới', 'Những sản phẩm vừa được cập nhật', 'Lựa chọn mới', 'Xem tất cả'), 'en' => $heading('New products')]],
+            ['block_type' => 'foot404_coupon', 'label' => 'Banner mã ưu đãi', 'description' => 'Banner ngang cho mã khuyến mãi.', 'preview_image' => $preview, 'anchor_id' => 'ma-uu-dai', 'settings' => ['coupon_code' => 'FOOT404', 'background_image' => '/theme-demo/ec903/food-source.png'], 'settings_schema' => ['coupon_code' => ['type' => 'text', 'label' => 'Mã ưu đãi'], 'background_image' => ['type' => 'image', 'label' => 'Ảnh nền']], 'data' => ['vi' => $heading('Nhận ưu đãi cho đơn hàng đầu tiên', 'Áp dụng theo điều kiện chương trình', 'Ưu đãi thành viên'), 'en' => $heading('Welcome offer')]],
+            ['block_type' => 'foot404_best_sellers', 'label' => 'Sản phẩm bán chạy', 'description' => 'Năm sản phẩm được quan tâm nhiều.', 'preview_image' => $preview, 'anchor_id' => 'ban-chay', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => false], 'settings_schema' => $productSchema(5), 'data' => ['vi' => $heading('Sản phẩm bán chạy', 'Những lựa chọn được khách hàng yêu thích', 'Được yêu thích', 'Xem tất cả'), 'en' => $heading('Best sellers')]],
+            ['block_type' => 'foot404_promo_duo', 'label' => 'Hai banner thương hiệu', 'description' => 'Hai banner lớn trước chân trang.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'data' => ['vi' => $withItems($heading('Mua sắm an tâm'), $promoDuo), 'en' => $withItems($heading('Shop with confidence'), $promoDuo)]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function foot408DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/FOOT408/cover-foot408.svg';
+        $heading = static fn (?string $title = null, ?string $description = null, ?string $subtitle = null, ?string $button = null): array => array_filter([
+            'title' => $title,
+            'description' => $description,
+            'subtitle' => $subtitle,
+            'button_label' => $button,
+        ], static fn (mixed $value): bool => $value !== null);
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số món ăn', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục món ăn'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ món nổi bật'],
+        ];
+        $postSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $welcomeCards = [
+            ['title' => 'Phiếu quà tặng ẩm thực', 'summary' => 'Món quà nhỏ cho những cuộc gặp gỡ đáng nhớ', 'image' => '/theme-demo/ec903/food-banquet.webp', 'url' => '#thuc-don'],
+            ['title' => 'Hương vị theo mùa', 'summary' => 'Khám phá thực đơn được cập nhật mỗi ngày', 'image' => '/theme-demo/ec903/deal-restaurant.webp', 'url' => '#thuc-don'],
+        ];
+        $comboCards = [
+            ['title' => 'Combo sum họp', 'subtitle' => 'Món ngon đủ đầy', 'summary' => 'Bữa ăn trọn vị cho gia đình và bạn bè.', 'image' => '/theme-demo/ec903/food-banquet.webp', 'url' => '#thuc-don'],
+            ['title' => 'Combo tiện lợi', 'subtitle' => 'Ưu đãi trong ngày', 'summary' => 'Lựa chọn nhanh gọn cho một ngày bận rộn.', 'image' => '/theme-demo/ec903/food-brunch.webp', 'url' => '#thuc-don'],
+            ['title' => 'Thức uống mát lành', 'subtitle' => 'Dùng kèm món chính', 'summary' => 'Hương vị cân bằng cho bữa ăn thêm vui.', 'image' => '/theme-demo/ec903/deal-tea.webp', 'url' => '#thuc-don'],
+            ['title' => 'Món ăn kèm giòn ngon', 'subtitle' => 'Được yêu thích', 'summary' => 'Những phần ăn vừa miệng để sẻ chia.', 'image' => '/theme-demo/ec903/food-grill.webp', 'url' => '#thuc-don'],
+        ];
+        $testimonials = [
+            ['name' => 'Minh Anh', 'role' => 'Khách hàng thân thiết', 'quote' => 'Món ăn được chuẩn bị chỉn chu, giao đúng giờ và đội ngũ tư vấn rất nhiệt tình.', 'image' => '/theme-demo/ec903/food-source.png'],
+            ['name' => 'Hoàng Nam', 'role' => 'Khách hàng', 'quote' => 'Không gian thân thiện, thực đơn dễ chọn và hương vị phù hợp với cả gia đình.', 'image' => '/theme-demo/ec903/food-brunch.webp'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero nhà hàng', 'description' => 'Banner toàn chiều rộng lấy từ kho banner.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'foot408-hero-slider', 'limit' => 3, 'autoplay_ms' => 5200], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số banner'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Bữa ngon thêm gắn kết', 'Thực đơn hấp dẫn dành cho những khoảnh khắc sum họp', 'Ưu đãi trong tuần', 'Tìm hiểu ngay'), ['content' => ['slides' => [['title' => 'Bữa ngon thêm gắn kết', 'summary' => 'Khám phá những món ăn được chuẩn bị từ nguyên liệu chọn lọc', 'button_label' => 'Xem thực đơn', 'image' => '/theme-demo/ec903/deal-restaurant.webp', 'link_url' => '#thuc-don']]]]), 'en' => $heading('Great food, better moments', 'A warm menu for every gathering')]],
+            ['block_type' => 'foot408_welcome', 'label' => 'Giới thiệu nhà hàng', 'description' => 'Nội dung chào mừng và hai banner giới thiệu.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'data' => ['vi' => $withItems($heading('Chào mừng đến với nhà hàng', 'Chúng tôi mang đến không gian gần gũi cùng những món ăn được chuẩn bị tận tâm.', 'Phục vụ mỗi ngày', 'Tìm hiểu thêm'), $welcomeCards), 'en' => $withItems($heading('Welcome to our restaurant', 'Warm hospitality and carefully prepared food.'), $welcomeCards)]],
+            ['block_type' => 'foot408_menu_products', 'label' => 'Thực đơn món ăn', 'description' => 'Tám món ăn lấy trực tiếp từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'thuc-don', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => false], 'settings_schema' => $productSchema(8), 'data' => ['vi' => $heading('Thực đơn', 'Những món ăn được khách hàng yêu thích', 'Món ngon mỗi ngày'), 'en' => $heading('Our menu', 'Customer favourites')]],
+            ['block_type' => 'foot408_combo_mosaic', 'label' => 'Combo và ưu đãi', 'description' => 'Bốn banner ưu đãi dạng lưới bất đối xứng.', 'preview_image' => $preview, 'anchor_id' => 'combo', 'data' => ['vi' => $withItems($heading('Combo và ưu đãi', 'Chọn phần ăn phù hợp với từng khoảnh khắc'), $comboCards), 'en' => $withItems($heading('Combos and offers'), $comboCards)]],
+            ['block_type' => 'foot408_testimonials', 'label' => 'Phản hồi khách hàng', 'description' => 'Phản hồi lấy từ CMS Testimonials.', 'preview_image' => $preview, 'anchor_id' => 'phan-hoi', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 4, 'featured_only' => false, 'background_image' => '/theme-demo/ec903/food-grill.webp'], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_testimonials', 'label' => 'Phản hồi CMS'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số phản hồi', 'default' => 4], 'background_image' => ['type' => 'image', 'label' => 'Ảnh nền']], 'data' => ['vi' => $withItems($heading('Phản hồi của khách hàng', 'Những chia sẻ giúp chúng tôi phục vụ tốt hơn'), $testimonials), 'en' => $withItems($heading('Customer feedback'), $testimonials)]],
+            ['block_type' => 'foot408_blog_posts', 'label' => 'Blog - Tin tức', 'description' => 'Ba bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $postSchema(3), 'data' => ['vi' => $heading('Blog - Tin tức', 'Câu chuyện ẩm thực, mẹo hay và thông tin mới'), 'en' => $heading('Blog and news', 'Food stories, tips and updates')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function foot407DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/FOOT407/cover-foot407.svg';
+        $heading = static fn (?string $title = null, ?string $description = null, ?string $subtitle = null, ?string $button = null): array => array_filter(['title' => $title, 'description' => $description, 'subtitle' => $subtitle, 'button_label' => $button], static fn (mixed $value): bool => $value !== null);
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit], 'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'], 'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật']];
+        $postSchema = static fn (int $limit): array => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => $limit], 'search' => ['type' => 'text', 'label' => 'Từ khóa'], 'category_id' => ['type' => 'select', 'label' => 'Danh mục tin']];
+        $benefits = [
+            ['title' => 'Sản phẩm nguồn gốc rõ ràng', 'summary' => 'Minh bạch thông tin và tiêu chuẩn chất lượng', 'icon' => 'fa-medal'],
+            ['title' => 'Giao hàng thuận tiện', 'summary' => 'Đóng gói cẩn thận, hỗ trợ tận nơi', 'icon' => 'fa-truck-fast'],
+            ['title' => 'Kiểm tra khi nhận hàng', 'summary' => 'Yên tâm trước khi hoàn tất thanh toán', 'icon' => 'fa-shield-heart'],
+            ['title' => 'Chăm sóc khách hàng', 'summary' => 'Đội ngũ tư vấn tận tâm và chuyên nghiệp', 'icon' => 'fa-headset'],
+        ];
+        $whyItems = [
+            ['title' => 'Nguồn nguyên liệu chọn lọc', 'summary' => 'Mỗi sản phẩm được tuyển chọn kỹ lưỡng và công bố thông tin minh bạch.', 'icon' => 'fa-seedling'],
+            ['title' => 'Quy trình kiểm soát chặt chẽ', 'summary' => 'Chất lượng được theo dõi xuyên suốt từ đầu vào đến khi giao tới khách hàng.', 'icon' => 'fa-magnifying-glass-chart'],
+            ['title' => 'Đồng hành cùng sức khỏe', 'summary' => 'Tư vấn phù hợp để khách hàng có lựa chọn an tâm và chủ động.', 'icon' => 'fa-heart-pulse'],
+        ];
+        $gallery = [
+            ['title' => 'Tinh hoa từ thiên nhiên', 'image' => '/theme-demo/ec903/food-source.png', 'url' => '#san-pham'],
+            ['title' => 'Quà tặng sức khỏe', 'image' => '/theme-demo/ec903/food-banquet.webp', 'url' => '#san-pham'],
+            ['title' => 'Chọn lựa an tâm', 'image' => '/theme-demo/ec903/food-dessert.webp', 'url' => '#san-pham'],
+        ];
+        $partners = [
+            ['title' => 'Đối tác chất lượng', 'image' => '/theme-demo/service/brand-mark.svg', 'url' => '#'],
+            ['title' => 'Đối tác phân phối', 'image' => '/theme-demo/service/ser0101-slide-01.svg', 'url' => '#'],
+            ['title' => 'Đối tác dịch vụ', 'image' => '/theme-demo/service/ser0101-slide-02.svg', 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero sức khỏe cao cấp', 'description' => 'Banner lớn xanh vàng lấy từ kho banner.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'foot407-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số banner'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Tinh hoa chăm sóc sức khỏe', 'Sản phẩm chọn lọc cho cuộc sống chủ động và an tâm', 'Quà tặng sức khỏe', 'Khám phá sản phẩm'), ['content' => ['slides' => [['title' => 'Tinh hoa chăm sóc sức khỏe', 'summary' => 'Lựa chọn chất lượng cho người thân và gia đình', 'button_label' => 'Khám phá sản phẩm', 'image' => '/theme-demo/ec903/food-source.png', 'link_url' => '#san-pham']]]]), 'en' => $heading('Wellness essentials', 'Curated products for proactive living')]],
+            ['block_type' => 'foot407_benefits', 'label' => 'Bốn cam kết', 'description' => 'Bốn cam kết dịch vụ dưới hero.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service commitments'), $benefits)]],
+            ['block_type' => 'foot407_product_tabs', 'label' => 'Sản phẩm theo nhu cầu', 'description' => 'Bốn sản phẩm và tab danh mục động.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $heading('Chọn sản phẩm bạn đang cần', 'Những lựa chọn nổi bật dành cho bạn'), 'en' => $heading('Choose what you need')]],
+            ['block_type' => 'foot407_why_choose', 'label' => 'Vì sao chọn chúng tôi', 'description' => 'Khối giới thiệu hai cột xanh vàng.', 'preview_image' => $preview, 'anchor_id' => 'vi-sao', 'settings' => ['image' => '/theme-demo/ec903/food-banquet.webp'], 'settings_schema' => ['image' => ['type' => 'image', 'label' => 'Ảnh giới thiệu']], 'data' => ['vi' => $withItems($heading('Vì sao chọn chúng tôi', 'Để có một cuộc sống khỏe mạnh và chủ động', 'Giá trị khác biệt', 'Tìm hiểu thêm'), $whyItems), 'en' => $withItems($heading('Why choose us', 'For a healthier and more proactive life'), $whyItems)]],
+            ['block_type' => 'foot407_gallery', 'label' => 'Bộ sưu tập hình ảnh', 'description' => 'Ba ảnh sản phẩm và thương hiệu.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap', 'data' => ['vi' => $withItems($heading('Hành trình chất lượng'), $gallery), 'en' => $withItems($heading('Quality journey'), $gallery)]],
+            ['block_type' => 'foot407_media_posts', 'label' => 'Truyền thông nói về chúng tôi', 'description' => 'Bốn bài viết từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'truyen-thong', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $postSchema(4), 'data' => ['vi' => $heading('Truyền thông nói về chúng tôi', 'Thông tin và câu chuyện nổi bật'), 'en' => $heading('Media highlights')]],
+            ['block_type' => 'foot407_knowledge_posts', 'label' => 'Kiến thức chuyên sâu', 'description' => 'Ba bài kiến thức mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'kien-thuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $postSchema(3), 'data' => ['vi' => $heading('Kiến thức chuyên sâu', 'Góc chia sẻ hữu ích cho sức khỏe'), 'en' => $heading('Expert knowledge')]],
+            ['block_type' => 'foot407_partners', 'label' => 'Đối tác khách hàng', 'description' => 'Dải logo đối tác lấy từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 8], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_partners', 'label' => 'Đối tác CMS'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số đối tác', 'default' => 8]], 'data' => ['vi' => $withItems($heading('Đối tác - khách hàng'), $partners), 'en' => $withItems($heading('Partners and customers'), $partners)]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function foot406DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/FOOT406/cover-foot406.svg';
+        $heading = static fn (?string $title = null, ?string $description = null, ?string $subtitle = null, ?string $button = null): array => array_filter(['title' => $title, 'description' => $description, 'subtitle' => $subtitle, 'button_label' => $button], static fn (mixed $value): bool => $value !== null);
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $categorySchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số danh mục', 'default' => 3],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Tin tức CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số bài viết', 'default' => 4],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục tin'],
+        ];
+        $promoBanners = [
+            ['title' => 'Mát lành ngày mới', 'summary' => 'Ưu đãi cho thức uống thanh mát', 'image' => '/theme-demo/ec903/deal-tea.webp', 'url' => '#khuyen-mai'],
+            ['title' => 'Hương vị đầy cảm hứng', 'summary' => 'Khám phá lựa chọn được yêu thích', 'image' => '/theme-demo/ec903/food-dessert.webp', 'url' => '#yeu-thich'],
+        ];
+        $partnerFallback = [
+            ['title' => 'Đối tác nguyên liệu', 'image' => '/theme-demo/service/brand-mark.svg', 'url' => '#'],
+            ['title' => 'Đối tác vận chuyển', 'image' => '/theme-demo/service/ser0101-slide-01.svg', 'url' => '#'],
+            ['title' => 'Đối tác dịch vụ', 'image' => '/theme-demo/service/ser0101-slide-02.svg', 'url' => '#'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero đồ uống', 'description' => 'Banner toàn chiều rộng lấy từ kho banner.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'foot406-hero-slider', 'limit' => 3, 'autoplay_ms' => 5200], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số banner'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Hương vị tươi mát mỗi ngày', 'Thưởng thức đồ uống được pha chế từ nguyên liệu chọn lọc', 'Ưu đãi trong tuần', 'Khám phá thực đơn'), ['content' => ['slides' => [['title' => 'Hương vị tươi mát mỗi ngày', 'summary' => 'Đồ uống thơm ngon cho mọi khoảnh khắc', 'button_label' => 'Khám phá thực đơn', 'image' => '/theme-demo/ec903/deal-tea.webp', 'link_url' => '#khuyen-mai']]]]), 'en' => $heading('Fresh flavours every day', 'Drinks crafted from selected ingredients')]],
+            ['block_type' => 'foot406_categories', 'label' => 'Ba nhóm đồ uống', 'description' => 'Ba danh mục ảnh tròn lấy từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 3, 'featured_only' => false, 'order' => 'sort_order'], 'settings_schema' => $categorySchema, 'data' => ['vi' => $heading('Chào mừng bạn đến với cửa hàng', 'Khám phá ba nhóm hương vị nổi bật'), 'en' => $heading('Welcome to our store')]],
+            ['block_type' => 'foot406_promo_products', 'label' => 'Đồ uống khuyến mãi', 'description' => 'Mười đồ uống khuyến mãi từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 10, 'featured_only' => true], 'settings_schema' => $productSchema(10), 'data' => ['vi' => $heading('Đồ uống khuyến mãi', 'Những hương vị đang có giá tốt'), 'en' => $heading('Drink promotions')]],
+            ['block_type' => 'foot406_promo_duo', 'label' => 'Hai banner khuyến mãi', 'description' => 'Hai banner ngang giữa các dải sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'banner-uu-dai', 'data' => ['vi' => $withItems($heading('Ưu đãi nổi bật'), $promoBanners), 'en' => $withItems($heading('Featured offers'), $promoBanners)]],
+            ['block_type' => 'foot406_favorites', 'label' => 'Đồ uống yêu thích', 'description' => 'Năm sản phẩm được yêu thích.', 'preview_image' => $preview, 'anchor_id' => 'yeu-thich', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => false], 'settings_schema' => $productSchema(5), 'data' => ['vi' => $heading('Đồ uống yêu thích', 'Những lựa chọn được khách hàng quan tâm'), 'en' => $heading('Favourite drinks')]],
+            ['block_type' => 'foot406_latest_posts', 'label' => 'Bài viết mới nhất', 'description' => 'Bốn bài viết mới từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'bai-viet', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $postSchema, 'data' => ['vi' => $heading('Các bài viết mới nhất', 'Câu chuyện, bí quyết và xu hướng đồ uống'), 'en' => $heading('Latest articles')]],
+            ['block_type' => 'foot406_partners', 'label' => 'Đối tác', 'description' => 'Logo đối tác lấy từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 5], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_partners', 'label' => 'Đối tác CMS'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số đối tác', 'default' => 5]], 'data' => ['vi' => $withItems($heading('Đối tác đồng hành'), $partnerFallback), 'en' => $withItems($heading('Our partners'), $partnerFallback)]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function foot405DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/FOOT405/cover-foot405.svg';
+        $heading = static fn (?string $title = null, ?string $description = null, ?string $subtitle = null, ?string $button = null): array => array_filter([
+            'title' => $title,
+            'description' => $description,
+            'subtitle' => $subtitle,
+            'button_label' => $button,
+        ], static fn (mixed $value): bool => $value !== null);
+        $withItems = static fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $productSchema = static fn (int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số sản phẩm', 'default' => $limit],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa / SKU'],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục sản phẩm'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật'],
+        ];
+        $categorySchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]],
+            'limit' => ['type' => 'number', 'label' => 'Số danh mục', 'default' => 6],
+            'search' => ['type' => 'text', 'label' => 'Từ khóa'],
+        ];
+        $promos = [
+            ['title' => 'Tươi ngon mỗi ngày', 'summary' => 'Sản phẩm chọn lọc từ nguồn uy tín', 'image' => '/theme-demo/ec916/promo-grocery.webp', 'url' => '#pho-bien'],
+            ['title' => 'Bữa sáng nhẹ nhàng', 'summary' => 'Khởi đầu ngày mới đầy năng lượng', 'image' => '/theme-demo/ec903/food-brunch.webp', 'url' => '#ban-chay'],
+            ['title' => 'Dinh dưỡng từ thiên nhiên', 'summary' => 'Lựa chọn an tâm cho mọi gia đình', 'image' => '/theme-demo/ec916/promo-family.webp', 'url' => '#khuyen-mai'],
+        ];
+        $benefits = [
+            ['title' => 'Giá hợp lý', 'summary' => 'Minh bạch và cạnh tranh', 'icon' => 'fa-tags'],
+            ['title' => 'Giao hàng thuận tiện', 'summary' => 'Theo chính sách từng khu vực', 'icon' => 'fa-truck-fast'],
+            ['title' => 'Ưu đãi thường xuyên', 'summary' => 'Nhiều chương trình hấp dẫn', 'icon' => 'fa-gift'],
+            ['title' => 'Hỗ trợ đổi trả', 'summary' => 'Tư vấn rõ ràng, tận tâm', 'icon' => 'fa-box-open'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero siêu thị xanh', 'description' => 'Banner lớn bo góc, tự chuyển từ kho banner.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'foot405-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số banner'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'data' => ['vi' => array_merge($heading('Ưu đãi tươi mới mỗi ngày', 'Mua sắm thuận tiện với sản phẩm được chọn lọc', 'Chất lượng cho gia đình', 'Khám phá sản phẩm'), ['content' => ['slides' => [['title' => 'Ưu đãi tươi mới mỗi ngày', 'summary' => 'Sản phẩm được chọn lọc cho bữa ăn ngon lành', 'button_label' => 'Khám phá sản phẩm', 'image' => '/theme-demo/ec916/hero-mega-sale.webp', 'link_url' => '#pho-bien']]]]), 'en' => $heading('Fresh offers every day', 'Curated products for your family')]],
+            ['block_type' => 'foot405_categories', 'label' => 'Danh mục chính', 'description' => 'Sáu danh mục lấy trực tiếp từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 6, 'featured_only' => false, 'order' => 'sort_order'], 'settings_schema' => $categorySchema, 'data' => ['vi' => $heading('Danh mục chính', null, null, 'Tất cả sản phẩm'), 'en' => $heading('Main categories', null, null, 'All products')]],
+            ['block_type' => 'foot405_popular_products', 'label' => 'Sản phẩm phổ biến', 'description' => 'Bốn sản phẩm phổ biến từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'pho-bien', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $productSchema(4), 'data' => ['vi' => $heading('Sản phẩm phổ biến', 'Các lựa chọn được quan tâm trong tuần'), 'en' => $heading('Popular products')]],
+            ['block_type' => 'foot405_promo_trio', 'label' => 'Ba banner ngành hàng', 'description' => 'Ba banner quảng bá nhỏ theo bố cục tham chiếu.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai-noi-bat', 'data' => ['vi' => $withItems($heading('Ưu đãi nổi bật'), $promos), 'en' => $withItems($heading('Featured offers'), $promos)]],
+            ['block_type' => 'foot405_best_sellers', 'label' => 'Sản phẩm bán chạy', 'description' => 'Banner dọc đi cùng ba sản phẩm bán chạy.', 'preview_image' => $preview, 'anchor_id' => 'ban-chay', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'featured_only' => false, 'feature_image' => '/theme-demo/ec916/product-grocery.webp'], 'settings_schema' => array_merge($productSchema(3), ['feature_image' => ['type' => 'image', 'label' => 'Ảnh banner bên trái']]), 'data' => ['vi' => $heading('Sản phẩm bán chạy', 'Những lựa chọn được khách hàng yêu thích', null, 'Xem tất cả'), 'en' => $heading('Best sellers')]],
+            ['block_type' => 'foot405_daily_deals', 'label' => 'Khuyến mãi trong ngày', 'description' => 'Ba sản phẩm khuyến mãi dạng thẻ lớn.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'featured_only' => true], 'settings_schema' => $productSchema(3), 'data' => ['vi' => $heading('Khuyến mãi trong ngày', 'Ưu đãi giới hạn dành cho bạn', null, 'Xem tất cả'), 'en' => $heading('Daily deals')]],
+            ['block_type' => 'foot405_product_columns', 'label' => 'Ba cột sản phẩm', 'description' => 'Chín sản phẩm chia thành ba nhóm gọn.', 'preview_image' => $preview, 'anchor_id' => 'bo-suu-tap', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 9, 'featured_only' => false], 'settings_schema' => $productSchema(9), 'data' => ['vi' => $heading('Gợi ý mua sắm', 'Sản phẩm mới · Được mua nhiều · Gợi ý cho bạn'), 'en' => $heading('Shopping suggestions')]],
+            ['block_type' => 'foot405_newsletter', 'label' => 'Đăng ký nhận ưu đãi', 'description' => 'Banner đăng ký nhận tin và khuyến mãi.', 'preview_image' => $preview, 'anchor_id' => 'nhan-tin', 'settings' => ['background_image' => '/theme-demo/ec906/hero-minimart.png'], 'settings_schema' => ['background_image' => ['type' => 'image', 'label' => 'Ảnh minh họa']], 'data' => ['vi' => $heading('Mua sắm tại nhà thật dễ dàng', 'Đăng ký để nhận thông tin sản phẩm và ưu đãi mới', 'Bản tin ưu đãi', 'Đăng ký'), 'en' => $heading('Easy shopping at home', 'Subscribe for product news and offers', 'Newsletter', 'Subscribe')]],
+            ['block_type' => 'foot405_benefits', 'label' => 'Cam kết dịch vụ', 'description' => 'Bốn cam kết dịch vụ trước chân trang.', 'preview_image' => $preview, 'anchor_id' => 'cam-ket', 'data' => ['vi' => $withItems($heading('Cam kết dịch vụ'), $benefits), 'en' => $withItems($heading('Service benefits'), $benefits)]],
+        ];
+    }
+
     private function ec917DefaultBlocks(): array
     {
         $preview = '/theme-previews/EC917/cover-ec917.png';
@@ -8010,6 +8352,89 @@ class LandingPageBuilder
     /**
      * @return array<int, array<string, mixed>>
      */
+    private function dl750DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/DL750/preview-dl750.svg';
+        $heading = fn (string $title, string $subtitle = '', string $description = '', string $button = ''): array => compact('title', 'subtitle', 'description') + ['button_label' => $button];
+        $withItems = fn (array $data, array $items): array => array_merge($data, ['content' => ['items' => $items]]);
+        $productSchema = ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_products', 'label' => 'Sản phẩm Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số sản phẩm'], 'category_id' => ['type' => 'select', 'label' => 'Danh mục'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ sản phẩm nổi bật']];
+        $categoryFallback = [
+            ['title' => 'Lều và mái che', 'summary' => 'Không gian nghỉ giữa thiên nhiên', 'icon' => 'fa-solid fa-campground', 'url' => '#san-pham'],
+            ['title' => 'Túi ngủ', 'summary' => 'Ấm áp cho mọi hành trình', 'icon' => 'fa-solid fa-bed', 'url' => '#san-pham'],
+            ['title' => 'Đèn dã ngoại', 'summary' => 'Ánh sáng bền bỉ ngoài trời', 'icon' => 'fa-regular fa-lightbulb', 'url' => '#san-pham'],
+            ['title' => 'Trang phục', 'summary' => 'Thoải mái và linh hoạt', 'icon' => 'fa-solid fa-shirt', 'url' => '#san-pham'],
+            ['title' => 'Dụng cụ đa năng', 'summary' => 'Gọn nhẹ, hữu ích', 'icon' => 'fa-solid fa-screwdriver-wrench', 'url' => '#san-pham'],
+            ['title' => 'Đạp xe', 'summary' => 'Khám phá cung đường mới', 'icon' => 'fa-solid fa-bicycle', 'url' => '#dich-vu'],
+            ['title' => 'Chèo thuyền', 'summary' => 'Trải nghiệm trên mặt nước', 'icon' => 'fa-solid fa-sailboat', 'url' => '#dich-vu'],
+            ['title' => 'Bếp và phụ kiện', 'summary' => 'Bữa ngon giữa thiên nhiên', 'icon' => 'fa-solid fa-fire-burner', 'url' => '#san-pham'],
+        ];
+        $services = [
+            ['title' => 'Thuê lều trại', 'summary' => 'Bộ lều chất lượng, phù hợp từ chuyến đi ngắn đến hành trình dài ngày.', 'image' => 'https://images.unsplash.com/photo-1475483768296-6163e08872a1?auto=format&fit=crop&w=1000&q=85', 'url' => '#lien-he'],
+            ['title' => 'Thuê phụ kiện', 'summary' => 'Bếp, đèn, bàn ghế và dụng cụ dã ngoại được chuẩn bị đầy đủ.', 'image' => 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=1000&q=85', 'url' => '#lien-he'],
+            ['title' => 'Hành trình trekking', 'summary' => 'Gợi ý cung đường và thiết bị an toàn cho người yêu khám phá.', 'image' => 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1000&q=85', 'url' => '#lien-he'],
+            ['title' => 'Khu vui chơi ngoài trời', 'summary' => 'Hoạt động gắn kết dành cho gia đình và nhóm bạn.', 'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=85', 'url' => '#lien-he'],
+            ['title' => 'Chèo thuyền thư giãn', 'summary' => 'Tận hưởng mặt nước yên bình với trang bị tiêu chuẩn.', 'image' => 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=85', 'url' => '#lien-he'],
+            ['title' => 'Xe camping tiện nghi', 'summary' => 'Linh hoạt di chuyển và nghỉ ngơi giữa thiên nhiên.', 'image' => 'https://images.unsplash.com/photo-1525811902-f2342640856e?auto=format&fit=crop&w=1000&q=85', 'url' => '#lien-he'],
+        ];
+        $products = [
+            ['title' => 'Lều dã ngoại Alpine 2P', 'price' => 1850000, 'image' => 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+            ['title' => 'Túi ngủ Trail Warm', 'price' => 890000, 'image' => 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+            ['title' => 'Đèn trại Forest Light', 'price' => 620000, 'image' => 'https://images.unsplash.com/photo-1527221579996-0de6d1ae2069?auto=format&fit=crop&w=900&q=85', 'url' => '#'],
+        ];
+        $faq = [
+            ['title' => 'Có những hoạt động ngoài trời nào?', 'summary' => 'Bạn có thể trải nghiệm cắm trại, trekking, chèo thuyền và nhiều hoạt động kết nối cùng thiên nhiên.'],
+            ['title' => 'Có dịch vụ cho thuê lều không?', 'summary' => 'Có. Các bộ lều được vệ sinh, kiểm tra trước khi bàn giao và có nhiều kích thước lựa chọn.'],
+            ['title' => 'Tôi cần chuẩn bị gì cho chuyến đi?', 'summary' => 'Đội ngũ tư vấn sẽ gửi danh sách thiết bị phù hợp theo địa điểm, thời tiết và số người tham gia.'],
+            ['title' => 'Có hỗ trợ nhóm gia đình và doanh nghiệp?', 'summary' => 'Có. Chúng tôi thiết kế gói trải nghiệm riêng cho gia đình, trường học và chương trình gắn kết đội ngũ.'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero du lịch dã ngoại', 'description' => 'Banner toàn màn hình lấy từ kho banner.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'dl750-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số banner'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'media' => ['image' => 'https://images.unsplash.com/photo-1504851149312-7a075b496cc7?auto=format&fit=crop&w=2200&q=90'], 'data' => ['vi' => $heading('Chạm vào thiên nhiên', 'Hành trình đáng nhớ bắt đầu từ đây', 'Khám phá những trải nghiệm ngoài trời được chuẩn bị chỉn chu và an toàn.', 'Xem dịch vụ'), 'en' => $heading('Reconnect with nature', 'Memorable outdoor journeys begin here')]],
+            ['block_type' => 'dl750_categories', 'label' => 'Danh mục nổi bật', 'description' => 'Tám danh mục lấy từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 8], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'catalog_categories', 'label' => 'Danh mục Catalog']]], 'limit' => ['type' => 'number', 'label' => 'Số danh mục']], 'data' => ['vi' => $withItems($heading('Danh mục nổi bật', 'Trang bị cho mọi chuyến đi'), $categoryFallback), 'en' => $withItems($heading('Featured categories'), $categoryFallback)]],
+            ['block_type' => 'dl750_about', 'label' => 'Về chúng tôi', 'description' => 'Giới thiệu thương hiệu và cam kết phục vụ.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'media' => ['image' => 'https://images.unsplash.com/photo-1521336575822-6da63fb45455?auto=format&fit=crop&w=1300&q=85', 'image_secondary' => 'https://images.unsplash.com/photo-1496545672447-f699b503d270?auto=format&fit=crop&w=900&q=85'], 'data' => ['vi' => $withItems($heading('Về chúng tôi', 'Cùng nhau trải nghiệm điều khác biệt', 'Chúng tôi cung cấp thiết bị, dịch vụ và giải pháp phù hợp để mỗi hành trình ngoài trời trở nên nhẹ nhàng, an toàn và đáng nhớ.', 'Khám phá thêm'), [['title' => 'Sản phẩm chất lượng', 'icon' => 'fa-solid fa-award'], ['title' => 'Giá cả minh bạch', 'icon' => 'fa-solid fa-tags'], ['title' => 'Phục vụ chu đáo', 'icon' => 'fa-solid fa-hands-holding-circle'], ['title' => 'Hỗ trợ hành trình', 'icon' => 'fa-solid fa-truck-fast']]), 'en' => $heading('About us', 'Experience the outdoors differently')]],
+            ['block_type' => 'dl750_services', 'label' => 'Dịch vụ cung cấp', 'description' => 'Sáu dịch vụ lấy từ CMS Services.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => false], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_services', 'label' => 'Dịch vụ CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số dịch vụ'], 'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ dịch vụ nổi bật']], 'data' => ['vi' => $withItems($heading('Dịch vụ cung cấp', 'Từ trang bị đến trải nghiệm trọn gói'), $services), 'en' => $withItems($heading('Our services'), $services)]],
+            ['block_type' => 'dl750_reasons', 'label' => 'Lý do lựa chọn', 'description' => 'Ba giá trị nổi bật và hotline động.', 'preview_image' => $preview, 'anchor_id' => 'ly-do', 'data' => ['vi' => $withItems($heading('Lý do chọn chúng tôi', 'Chuyên nghiệp trong từng chi tiết', 'Trải nghiệm gần thiên nhiên, trang bị tiện nghi và đội ngũ hỗ trợ tận tâm.'), [['title' => 'Hoạt động ngoài trời', 'summary' => 'Những trải nghiệm giúp bạn kết nối sâu hơn với thiên nhiên.', 'icon' => 'fa-solid fa-campground'], ['title' => 'Thể thao trên mặt nước', 'summary' => 'Hoạt động thư giãn với trang bị được kiểm tra an toàn.', 'icon' => 'fa-solid fa-person-swimming'], ['title' => 'Phụ kiện dã ngoại', 'summary' => 'Danh mục thiết bị đa dạng, phù hợp nhiều nhu cầu.', 'icon' => 'fa-solid fa-fire']]), 'en' => $heading('Why choose us')]],
+            ['block_type' => 'dl750_products', 'label' => 'Sản phẩm nổi bật', 'description' => 'Sản phẩm dã ngoại lấy từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 6, 'featured_only' => true, 'feature_image' => 'https://images.unsplash.com/photo-1496545672447-f699b503d270?auto=format&fit=crop&w=1200&q=85'], 'settings_schema' => array_merge($productSchema, ['feature_image' => ['type' => 'image', 'label' => 'Ảnh chiến dịch']]), 'data' => ['vi' => $withItems($heading('Sản phẩm nổi bật', 'Trang bị đáng tin cậy cho mọi hành trình'), $products), 'en' => $withItems($heading('Featured products'), $products)]],
+            ['block_type' => 'dl750_gallery', 'label' => 'Hình ảnh hoạt động', 'description' => 'Bộ ảnh hoạt động ngoài trời.', 'preview_image' => $preview, 'anchor_id' => 'thu-vien', 'data' => ['vi' => $withItems($heading('Hình ảnh hoạt động', 'Khoảnh khắc giữa thiên nhiên'), [['title' => 'Cắm trại ven hồ', 'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=85'], ['title' => 'Bạn bè cùng khám phá', 'image' => 'https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1400&q=85'], ['title' => 'Bữa tối giữa rừng', 'image' => 'https://images.unsplash.com/photo-1475483768296-6163e08872a1?auto=format&fit=crop&w=1200&q=85']]), 'en' => $heading('Outdoor moments')]],
+            ['block_type' => 'dl750_news', 'label' => 'Tin tức', 'description' => 'Bốn bài viết mới từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Bài viết CMS']]], 'limit' => ['type' => 'number', 'label' => 'Số bài viết']], 'data' => ['vi' => $heading('Tin tức', 'Kinh nghiệm dã ngoại và câu chuyện hành trình'), 'en' => $heading('News and stories')]],
+            ['block_type' => 'dl750_faq', 'label' => 'Câu hỏi thường gặp', 'description' => 'Khối FAQ dạng accordion.', 'preview_image' => $preview, 'anchor_id' => 'faq', 'media' => ['image' => 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=85'], 'data' => ['vi' => $withItems($heading('Câu hỏi thường gặp', 'Giải đáp nhanh trước chuyến đi', '', 'Đăng ký nhận tư vấn'), $faq), 'en' => $withItems($heading('Frequently asked questions'), $faq)]],
+            ['block_type' => 'dl750_partners', 'label' => 'Đối tác', 'description' => 'Logo đối tác lấy từ CMS Partners.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_partners', 'label' => 'Đối tác CMS'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => $heading('Đối tác', 'Những thương hiệu cùng đồng hành'), 'en' => $heading('Partners')]],
+        ];
+    }
+
+    private function bds702DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/BDS702/preview-bds702.svg';
+        $listingSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'real_estate_listings', 'label' => 'Tin bất động sản']]],
+            'limit' => ['type' => 'number', 'label' => 'Số dự án hiển thị'],
+            'category_id' => ['type' => 'number', 'label' => 'Loại hình bất động sản'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy dự án nổi bật'],
+        ];
+        $postSchema = [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_posts', 'label' => 'Bài viết CMS']]],
+            'limit' => ['type' => 'number', 'label' => 'Số hoạt động hiển thị'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy bài nổi bật'],
+        ];
+        $heading = fn (string $title, string $subtitle = '', string $description = '', string $button = ''): array => compact('title', 'subtitle', 'description') + ['button_label' => $button];
+        $withItems = fn (array $data, array $items): array => array_merge($data, ['content' => ['items' => $items]]);
+        $projectFallback = [
+            ['title' => 'Không gian sống xanh giữa lòng đô thị', 'summary' => 'Quy hoạch đồng bộ, tiện ích hiện đại và kết nối thuận tiện.', 'image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=85', 'location' => 'Khu đô thị trung tâm', 'area' => 180, 'bedrooms' => 3, 'bathrooms' => 2, 'url' => '#lien-he'],
+            ['title' => 'Căn hộ thanh lịch bên công viên', 'summary' => 'Thiết kế tối ưu ánh sáng tự nhiên và trải nghiệm sống riêng tư.', 'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=85', 'location' => 'Khu dân cư mới', 'area' => 145, 'bedrooms' => 3, 'bathrooms' => 2, 'url' => '#lien-he'],
+            ['title' => 'Biệt thự sân vườn cao cấp', 'summary' => 'Nơi tận hưởng sự yên tĩnh, sang trọng và gần gũi thiên nhiên.', 'image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85', 'location' => 'Khu đô thị sinh thái', 'area' => 320, 'bedrooms' => 5, 'bathrooms' => 4, 'url' => '#lien-he'],
+        ];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero dự án bất động sản', 'description' => 'Banner lớn lấy từ kho banner của website.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'bds702-hero-slider', 'limit' => 3, 'autoplay_ms' => 5600], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số banner'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tự chuyển (ms)']], 'media' => ['image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2200&q=90'], 'data' => ['vi' => $heading('Kiến tạo không gian sống bền vững', 'Kiến trúc tinh hoa · Hài hòa cuộc sống', 'Những công trình được phát triển theo tiêu chuẩn hiện đại và bền vững cùng thời gian.', 'Khám phá dự án'), 'en' => $heading('Creating sustainable living spaces', 'Refined architecture · Harmonious living')]],
+            ['block_type' => 'bds702_intro', 'label' => 'Giới thiệu dự án', 'description' => 'Ảnh tổng mặt bằng, nội dung giới thiệu và bốn chỉ số nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'media' => ['image' => 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1400&q=85'], 'data' => ['vi' => $withItems($heading('Giới thiệu', 'Một không gian sống được quy hoạch chỉn chu', 'Từ cảnh quan đến tiện ích, mỗi chi tiết đều hướng đến trải nghiệm sống cân bằng và giá trị lâu dài.'), [['title' => 'Quy hoạch đồng bộ', 'summary' => 'Không gian được tổ chức khoa học'], ['title' => 'Giá trị bền vững', 'summary' => 'Tối ưu hiệu quả đầu tư dài hạn'], ['title' => 'Mảng xanh rộng mở', 'summary' => 'Hài hòa cùng thiên nhiên'], ['title' => 'Kết nối thuận tiện', 'summary' => 'Dễ dàng tiếp cận tiện ích thiết yếu']]), 'en' => $heading('Introduction', 'A thoughtfully planned living environment')]],
+            ['block_type' => 'bds702_featured_projects', 'label' => 'Dự án tiêu biểu', 'description' => 'Sáu dự án lấy từ module Bất động sản.', 'preview_image' => $preview, 'anchor_id' => 'du-an', 'dynamic' => true, 'settings' => ['source' => 'real_estate_listings', 'limit' => 6, 'featured_only' => false], 'settings_schema' => $listingSchema, 'data' => ['vi' => $withItems($heading('Dự án tiêu biểu', 'Những lựa chọn nổi bật dành cho khách hàng'), array_merge($projectFallback, $projectFallback)), 'en' => $withItems($heading('Featured projects'), $projectFallback)]],
+            ['block_type' => 'bds702_investment_activities', 'label' => 'Hoạt động đầu tư', 'description' => 'Ba nội dung tư vấn và hoạt động đầu tư lấy từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'hoat-dong', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false, 'background_image' => 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=2200&q=85'], 'settings_schema' => array_merge($postSchema, ['background_image' => ['type' => 'image', 'label' => 'Ảnh nền']]), 'data' => ['vi' => $withItems($heading('Hoạt động đầu tư', 'Giải pháp chuyên nghiệp cho từng nhu cầu', 'Đồng hành từ tư vấn, thiết kế đến triển khai dự án.'), [['title' => 'Tư vấn phát triển dự án', 'image' => 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85'], ['title' => 'Thiết kế không gian sống', 'image' => 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=85'], ['title' => 'Quản lý đầu tư bền vững', 'image' => 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=85']]), 'en' => $heading('Investment activities')]],
+            ['block_type' => 'bds702_recommended_projects', 'label' => 'Dự án phù hợp', 'description' => 'Ba dự án gợi ý lấy từ module Bất động sản.', 'preview_image' => $preview, 'anchor_id' => 'de-xuat', 'dynamic' => true, 'settings' => ['source' => 'real_estate_listings', 'limit' => 3, 'featured_only' => true], 'settings_schema' => $listingSchema, 'data' => ['vi' => $withItems($heading('Dự án tốt cho bạn', 'Không gian phù hợp với phong cách sống riêng'), $projectFallback), 'en' => $withItems($heading('Projects for you'), $projectFallback)]],
+            ['block_type' => 'bds702_consultation', 'label' => 'Đăng ký tư vấn', 'description' => 'Form liên hệ gửi về hệ thống CMS.', 'preview_image' => $preview, 'anchor_id' => 'lien-he', 'settings' => ['background_image' => 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=2200&q=85'], 'settings_schema' => ['background_image' => ['type' => 'image', 'label' => 'Ảnh nền']], 'data' => ['vi' => $heading('Đăng ký tư vấn miễn phí', 'Chuyên viên sẽ liên hệ trong thời gian sớm nhất', 'Hãy để lại thông tin và nhu cầu, đội ngũ tư vấn sẽ đồng hành cùng bạn.', 'Gửi đăng ký'), 'en' => $heading('Free consultation', 'Our consultant will contact you shortly')]],
+            ['block_type' => 'bds702_partners', 'label' => 'Đối tác chiến lược', 'description' => 'Logo đối tác lấy trực tiếp từ CMS Partners.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 8], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_partners', 'label' => 'Đối tác CMS'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số đối tác']], 'data' => ['vi' => $heading('Đối tác chiến lược', 'Cùng kiến tạo những giá trị bền vững'), 'en' => $heading('Strategic partners')]],
+        ];
+    }
+
     private function bds701DefaultBlocks(): array
     {
         $preview = '/theme-previews/BDS701/preview-bds701.svg';

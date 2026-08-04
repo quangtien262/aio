@@ -1,0 +1,1 @@
+@extends('theme-foot406::layout') @section('title',data_get($service??null,'title','Dịch vụ')) @section('content')<main><section class="f406-content"><article class="f406-container f406-prose"><h1>{{ data_get($service??null,'title','Dịch vụ') }}</h1>{!! data_get($service??null,'content',data_get($service??null,'description')) !!}</article></section></main>@endsection

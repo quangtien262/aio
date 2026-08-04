@@ -1,0 +1,12 @@
+{
+  "name": "FOOT405 Fresh Market",
+  "key": "FOOT405",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử thực phẩm với phong cách xanh tươi, danh mục trực quan và nhiều dải sản phẩm động.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-foot405.svg", "cover": "cover-foot405.svg" },
+  "blocks": ["hero-slider", "main-categories", "popular-products", "promo-trio", "best-sellers", "daily-deals", "product-columns", "newsletter", "benefits"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] }
+}

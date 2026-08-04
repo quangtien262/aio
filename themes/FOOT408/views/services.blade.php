@@ -1,0 +1,1 @@
+@extends('theme-foot408::layout') @section('title','Dịch vụ') @section('content') @include('theme-foot408::partials.listing',['title'=>'Dịch vụ','summary'=>'Các dịch vụ dành cho khách hàng.']) @endsection

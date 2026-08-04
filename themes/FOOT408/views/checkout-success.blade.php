@@ -1,0 +1,1 @@
+@extends('theme-foot408::layout') @section('title','Đặt hàng thành công') @section('content')<main><section class="f408-content f408-product-page"><div class="f408-container"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ sớm liên hệ để xác nhận.</p><a class="f408-button" href="{{ route('site.home') }}">Về trang chủ</a></div></section></main>@endsection

@@ -1,0 +1,13 @@
+{
+  "name": "DL750 Forest Camp",
+  "key": "DL750",
+  "version": "1.0.0",
+  "description": "Theme du lịch dã ngoại tông xanh rừng đậm với dịch vụ, sản phẩm, thư viện, tin tức và FAQ.",
+  "website_type": "ecommerce",
+  "requires_modules": ["catalog", "cms"],
+  "parent": null,
+  "preview": {"thumbnail": "preview-dl750.svg", "cover": "cover-dl750.svg"},
+  "blocks": ["hero-slider", "dl750-categories", "dl750-about", "dl750-services", "dl750-reasons", "dl750-products", "dl750-gallery", "dl750-news", "dl750-faq", "dl750-partners"],
+  "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true},
+  "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]}
+}

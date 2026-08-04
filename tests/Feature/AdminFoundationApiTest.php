@@ -210,6 +210,7 @@ class AdminFoundationApiTest extends TestCase
             'background_color' => '#faf6f1',
             'surface_color' => '#ffffff',
             'surface_tint_color' => '#fff4e8',
+            'copyright_text' => 'Bản quyền nội dung thuộc về AIO Website.',
         ])->assertOk();
 
         $siteProfile = SiteProfile::query()->firstOrFail();
@@ -221,6 +222,7 @@ class AdminFoundationApiTest extends TestCase
         $this->assertSame('#faf6f1', data_get($siteProfile->branding, 'background_color'));
         $this->assertSame('#ffffff', data_get($siteProfile->branding, 'surface_color'));
         $this->assertSame('#fff4e8', data_get($siteProfile->branding, 'surface_tint_color'));
+        $this->assertSame('Bản quyền nội dung thuộc về AIO Website.', data_get($siteProfile->branding, 'copyright_text'));
         $this->assertContains('branding', $siteProfile->completed_steps ?? []);
 
         $this->getJson('/admin/api/setup')
@@ -229,6 +231,9 @@ class AdminFoundationApiTest extends TestCase
             ->assertJsonPath('data.branding.primary_color_deep', '#af5f1f')
             ->assertJsonPath('data.branding.accent_color', '#d98d4a')
             ->assertJsonPath('data.branding.accent_soft_color', '#efaa4c');
+        $this->getJson('/admin/api/setup')
+            ->assertOk()
+            ->assertJsonPath('data.branding.copyright_text', 'Bản quyền nội dung thuộc về AIO Website.');
     }
 
     public function test_admin_can_store_theme_palette_per_theme(): void

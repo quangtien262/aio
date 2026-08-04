@@ -1,0 +1,4 @@
+<article class="f408-product" data-f408-reveal>
+    <a class="f408-product__image" href="{{ data_get($item,'url','#') }}"><img src="{{ data_get($item,'image','/theme-demo/ec903/deal-restaurant.webp') }}" alt="{{ data_get($item,'alt',data_get($item,'title')) }}"></a>
+    <div><h3><a href="{{ data_get($item,'url','#') }}">{{ data_get($item,'title') }}</a></h3><p class="f408-price">@if(data_get($item,'price'))<strong>{{ number_format((float)data_get($item,'price'),0,',','.') }} đ</strong>@else<strong>@themeT('FOOT408.contact_price','Liên hệ')</strong>@endif @if(data_get($item,'original_price'))<del>{{ number_format((float)data_get($item,'original_price'),0,',','.') }} đ</del>@endif</p><p>{{ data_get($item,'summary') }}</p><a class="f408-detail" href="{{ data_get($item,'url','#') }}">@themeT('FOOT408.view_detail','Xem chi tiết')</a></div>
+</article>

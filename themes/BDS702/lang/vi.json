@@ -1,0 +1,6 @@
+{
+  "home": "Trang chủ", "about": "Giới thiệu", "projects": "Dự án", "services": "Dịch vụ", "news": "Tin tức", "contact": "Liên hệ",
+  "auth.login": "Đăng nhập", "auth.register": "Đăng ký", "auth.account": "Tài khoản", "auth.logout": "Đăng xuất",
+  "consult.name": "Họ và tên", "consult.phone": "Số điện thoại", "consult.email": "Email", "consult.address": "Địa chỉ", "consult.message": "Nội dung cần tư vấn",
+  "footer.support": "Hỗ trợ khách hàng", "footer.map": "Xem bản đồ", "footer.back_to_top": "Lên đầu trang"
+}

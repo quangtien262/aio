@@ -1,0 +1,1 @@
+@extends('theme-foot408::layout') @section('title','Thanh toán') @section('content')<main><section class="f408-inner-hero"><div class="f408-container"><h1>Thanh toán</h1></div></section><section class="f408-content"><div class="f408-container"><p>Vui lòng điền đầy đủ thông tin nhận hàng trong biểu mẫu thanh toán.</p></div></section></main>@endsection

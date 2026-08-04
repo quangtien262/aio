@@ -1,0 +1,1 @@
+@extends('theme-foot406::layout') @section('title','Tin tức') @section('content') @include('theme-foot406::partials.listing',['title'=>'Tin tức','summary'=>'Câu chuyện và xu hướng đồ uống mới nhất.']) @endsection
