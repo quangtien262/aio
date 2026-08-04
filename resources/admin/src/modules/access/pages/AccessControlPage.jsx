@@ -10,6 +10,7 @@ const { Paragraph, Text, Title } = Typography;
 const RoleTableCard = lazy(() => import('../components/RoleTableCard'));
 const PermissionCatalogCard = lazy(() => import('../components/PermissionCatalogCard'));
 const RoleFormModal = lazy(() => import('../components/RoleFormModal'));
+
 const emptyRoleForm = {
     id: null,
     name: '',
@@ -20,6 +21,7 @@ const emptyRoleForm = {
 
 export default function AccessControlPage({ accessControl, onCreateRole, onUpdateRole, onDeleteRole, canManageRoles }) {
     const [roleModalOpen, setRoleModalOpen] = useState(false);
+    const [permissionCatalogOpen, setPermissionCatalogOpen] = useState(false);
     const [editingRole, setEditingRole] = useState(emptyRoleForm);
 
     const permissions = accessControl?.permissions ?? [];
@@ -32,6 +34,7 @@ export default function AccessControlPage({ accessControl, onCreateRole, onUpdat
 
     const groupedPermissions = useMemo(() => normalizedPermissions.reduce((carry, permission) => {
         const groupKey = permission.module_key ?? 'platform';
+
         return {
             ...carry,
             [groupKey]: [...(carry[groupKey] ?? []), permission],
@@ -83,7 +86,7 @@ export default function AccessControlPage({ accessControl, onCreateRole, onUpdat
                 </Card>
             </Col>
 
-            <Col xs={24} xl={15}>
+            <Col span={24}>
                 <Suspense fallback={<Card loading title="Danh sách vai trò" />}>
                     <RoleTableCard
                         roles={roles}
@@ -91,15 +94,20 @@ export default function AccessControlPage({ accessControl, onCreateRole, onUpdat
                         onCreateRole={openCreateRole}
                         onEditRole={openEditRole}
                         onDeleteRole={onDeleteRole}
+                        onOpenPermissionCatalog={() => setPermissionCatalogOpen(true)}
                     />
                 </Suspense>
             </Col>
 
-            <Col xs={24} xl={9}>
+            {permissionCatalogOpen ? (
                 <Suspense fallback={<Card loading title="Danh mục quyền" />}>
-                    <PermissionCatalogCard groupedPermissions={groupedPermissions} />
+                    <PermissionCatalogCard
+                        groupedPermissions={groupedPermissions}
+                        open={permissionCatalogOpen}
+                        onClose={() => setPermissionCatalogOpen(false)}
+                    />
                 </Suspense>
-            </Col>
+            ) : null}
 
             {roleModalOpen ? (
                 <Suspense fallback={null}>

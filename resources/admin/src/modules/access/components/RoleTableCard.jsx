@@ -1,13 +1,17 @@
+import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
+import EditOutlined from '@ant-design/icons/EditOutlined';
+import SafetyCertificateOutlined from '@ant-design/icons/SafetyCertificateOutlined';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Popconfirm from 'antd/es/popconfirm';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
+import Tooltip from 'antd/es/tooltip';
 import Typography from 'antd/es/typography';
 
 const { Text } = Typography;
 
-export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onEditRole, onDeleteRole }) {
+export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onEditRole, onDeleteRole, onOpenPermissionCatalog }) {
     const roleColumns = [
         {
             title: 'Vai trò',
@@ -31,28 +35,45 @@ export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onE
             title: 'Số quyền',
             dataIndex: 'permissions_count',
             key: 'permissions_count',
+            width: 90,
         },
         {
             title: 'Tài khoản',
             dataIndex: 'admins_count',
             key: 'admins_count',
+            width: 100,
         },
         {
             title: 'Tác vụ',
             key: 'actions',
+            width: 130,
             render: (_, role) => (
-                <Space>
-                    <Button size="small" disabled={!canManageRoles || role.is_system} onClick={() => onEditRole?.(role)}>
-                        Sửa
-                    </Button>
+                <Space size={8} className="role-action-buttons">
+                    <Tooltip title="Sửa vai trò">
+                        <Button
+                            className="role-action-button role-action-button-edit"
+                            shape="circle"
+                            icon={<EditOutlined />}
+                            disabled={!canManageRoles || role.is_system}
+                            onClick={() => onEditRole?.(role)}
+                        />
+                    </Tooltip>
                     <Popconfirm
                         disabled={!canManageRoles || role.is_system}
-                        title="Xóa role này?"
+                        title="Xóa vai trò này?"
+                        okText="Xóa"
+                        cancelText="Hủy"
                         onConfirm={() => onDeleteRole?.(role.id)}
                     >
-                        <Button danger size="small" disabled={!canManageRoles || role.is_system}>
-                            Xóa
-                        </Button>
+                        <Tooltip title="Xóa vai trò">
+                            <Button
+                                danger
+                                className="role-action-button role-action-button-delete"
+                                shape="circle"
+                                icon={<DeleteOutlined />}
+                                disabled={!canManageRoles || role.is_system}
+                            />
+                        </Tooltip>
                     </Popconfirm>
                 </Space>
             ),
@@ -63,7 +84,16 @@ export default function RoleTableCard({ roles, canManageRoles, onCreateRole, onE
         <Card
             className="admin-table-card"
             title="Danh sách vai trò"
-            extra={<Button type="primary" disabled={!canManageRoles} onClick={onCreateRole}>Tạo vai trò</Button>}
+            extra={(
+                <Space wrap>
+                    <Button icon={<SafetyCertificateOutlined />} onClick={onOpenPermissionCatalog}>
+                        Danh mục quyền
+                    </Button>
+                    <Button type="primary" disabled={!canManageRoles} onClick={onCreateRole}>
+                        Tạo vai trò
+                    </Button>
+                </Space>
+            )}
         >
             <Table rowKey="id" columns={roleColumns} dataSource={roles} pagination={false} scroll={{ x: 760 }} />
         </Card>

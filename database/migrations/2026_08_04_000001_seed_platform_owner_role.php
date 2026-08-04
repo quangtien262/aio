@@ -17,8 +17,8 @@ return new class extends Migration
         DB::table('roles')->updateOrInsert(
             ['key' => 'platform-owner'],
             [
-                'name' => 'Chủ quản trị website',
-                'description' => 'Quyền quản trị cao nhất có thể bàn giao cho khách hàng, không phải role hệ thống.',
+                'name' => 'Administrator',
+                'description' => 'Quyền quản trị cao nhất.',
                 'is_system' => false,
                 'is_assignable' => true,
                 'status' => 'active',
