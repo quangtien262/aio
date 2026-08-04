@@ -218,8 +218,9 @@ Nếu theme dùng homepage/landing dạng block:
 - [ ] Không hardcode `VI/EN`, icon cờ hoặc dùng `?locale=en`. Danh sách phải lấy từ `FrontendLocalization::localeOptions()` và chỉ hiển thị locale đang active + published.
 - [ ] URL đổi ngôn ngữ phải đi qua `FrontendRouteUrl::localeSwitchUrls()`/`switchLocale()`. Với Page, Landing Page, sản phẩm, danh mục, bài viết, dịch vụ hoặc dự án có slug dịch riêng, phải đi tới đúng canonical slug của locale đích; nếu resource chưa có bản dịch public thì về homepage của locale đích, không tạo link 404.
 - [ ] Bộ chọn phải hoạt động trên homepage và mọi trang phụ, có `hreflang`, `data-locale-code`, `aria-current` và không làm vỡ header desktop/mobile.
-- [ ] Logo header/footer phải đọc từ `site_profiles.branding.logo_url` (dữ liệu lưu tại **Cài đặt website**); chỉ hiển thị logo chữ/icon mặc định khi `logo_url` rỗng.
+- [ ] Logo header/footer phải đọc từ `themeShellData.branding.logo_url`; dữ liệu này đã được controller resolve từ `site_theme_profiles.branding` và fallback legacy `site_profiles.branding`. Theme không query DB trực tiếp.
 - [ ] Không hardcode logo thương hiệu bằng text, SVG hoặc ảnh demo nếu `branding.logo_url` đã có giá trị.
+- [ ] Logo trong ảnh thiết kế/asset demo chỉ là dữ liệu minh họa, không được dùng làm logo runtime của website. Khi `logo_url` rỗng chỉ được fallback về `branding.company_name`/`site_name`, không fallback về tên thương hiệu của mẫu thiết kế.
 - [ ] CSS cho logo upload phải giới hạn `max-width`, `max-height` và dùng `object-fit: contain` để không làm vỡ header/footer.
 - [ ] Provider tạo dữ liệu demo phải giữ nguyên `branding.logo_url` hiện có; không được gán `logo_url => null` hoặc thay logo người dùng đã cài.
 - [ ] Kiểm thử tích hợp: cài một URL logo tùy chỉnh, chạy/tạo lại demo data, mở storefront và xác nhận header/footer vẫn render đúng URL logo đó.
@@ -343,6 +344,7 @@ Contract bắt buộc:
 
 ```bash
 php artisan test --filter=ThemeLocalizationContractTest
+php artisan test --filter=ThemeBrandingContractTest
 ```
 
 ## 11. Bài học từ XD0323

@@ -151,6 +151,13 @@
     $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
     $supportEmail = trim((string) ($branding['support_email'] ?? $branding['email'] ?? ''));
     $supportAddress = trim((string) ($branding['support_location'] ?? $branding['address'] ?? ''));
+    $landingMetaTitle = trim((string) data_get($landingPage ?? [], 'meta_title'));
+    $landingTitle = trim((string) data_get($landingPage ?? [], 'title'));
+    $generatedTitles = ['XD0301 Landing', 'XD0301 Construction Landing'];
+    $customLandingTitle = collect([$landingMetaTitle, $landingTitle])
+        ->first(fn (string $title): bool => $title !== '' && ! in_array($title, $generatedTitles, true));
+    $databaseSiteTitle = trim((string) data_get($siteProfile ?? [], 'site_name'));
+    $documentTitle = $customLandingTitle ?: ($databaseSiteTitle ?: $companyName);
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blockUpdateUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.update', ['block' => '__BLOCK_ID__']) : '';
     $blockSourcePreviewUrlTemplate = $canEditLanding ? route('admin.api.landing.blocks.source-preview', ['block' => '__BLOCK_ID__']) : '';
@@ -168,7 +175,7 @@
 
 @extends('theme-xd0301::layout')
 
-@section('title', data_get($landingPage ?? [], 'meta_title') ?: data_get($landingPage ?? [], 'title', 'XD0301 Construction Landing'))
+@section('title', $documentTitle)
 
 @section('content')
 <main>

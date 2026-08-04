@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'XD0301 Construction Landing')</title>
+    <title>@yield('title', data_get($siteProfile ?? [], 'site_name', data_get($themeShellData ?? [], 'branding.company_name', 'AIO Website')))</title>
     @include('theme-xd0301::partials.styles')
     @stack('head')
     @include('partials.localized-seo')

@@ -42,7 +42,7 @@ class LandingPageBuilder
 
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'XD0320', 'NT501', 'NT502', 'NT503', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750'], true);
+        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'XD0320', 'NT501', 'NT502', 'NT503', 'NT504', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750'], true);
     }
 
     /**
@@ -701,6 +701,10 @@ class LandingPageBuilder
             'nt503_mattresses', 'nt503_kids_collection' => 4,
             'nt503_flash_sale' => 5,
             'nt503_advice' => 4,
+            'nt504_spaces', 'nt504_sale_products' => 5,
+            'nt504_product_categories' => 4,
+            'nt504_category_rail' => 8,
+            'nt504_latest_news' => 4,
             'bds701_hero_search' => 5,
             'bds701_latest_listings' => 6,
             'bds701_property_types' => 5,
@@ -931,6 +935,9 @@ class LandingPageBuilder
                 'nt503_categories' => 'catalog_categories',
                 'nt503_mattresses', 'nt503_flash_sale', 'nt503_kids_collection' => 'cms_products',
                 'nt503_advice' => 'cms_posts',
+                'nt504_spaces', 'nt504_product_categories', 'nt504_category_rail' => 'catalog_categories',
+                'nt504_sale_products' => 'cms_products',
+                'nt504_latest_news' => 'cms_posts',
                 'solutions_split_list', 'collection_gallery' => 'cms_services',
                 default => 'cms_services',
             };
@@ -1273,13 +1280,13 @@ class LandingPageBuilder
                 );
 
                 return [
-                'id' => $type->id,
-                'title' => $type->name,
-                'summary' => $type->description,
-                'image' => $type->image_url ?: $this->fallbackCategoryImage($index),
-                'icon' => $type->icon ?: 'fa-solid fa-building',
-                'count_label' => $type->listings_count.' dự án',
-                'url' => FrontendRouteUrl::realEstate($locale).'?property_type='.rawurlencode($type->slug),
+                    'id' => $type->id,
+                    'title' => $type->name,
+                    'summary' => $type->description,
+                    'image' => $type->image_url ?: $this->fallbackCategoryImage($index),
+                    'icon' => $type->icon ?: 'fa-solid fa-building',
+                    'count_label' => $type->listings_count.' dự án',
+                    'url' => FrontendRouteUrl::realEstate($locale).'?property_type='.rawurlencode($type->slug),
                 ];
             })
             ->all();
@@ -1943,6 +1950,7 @@ class LandingPageBuilder
             'NT501' => $this->nt501DefaultBlocks(),
             'NT502' => $this->nt502DefaultBlocks(),
             'NT503' => $this->nt503DefaultBlocks(),
+            'NT504' => $this->nt504DefaultBlocks(),
             'XD321' => $this->xd321DefaultBlocks(),
             'XD0322' => $this->xd0322DefaultBlocks(),
             'XD0323' => $this->xd0323EuroFarmDefaultBlocks(),
@@ -6722,6 +6730,39 @@ class LandingPageBuilder
         $news['data']['vi'] = ['title' => 'Cập nhật tin tức logistics', 'subtitle' => 'Kiến thức và thị trường', 'description' => '', 'button_label' => 'Xem thêm', 'content' => ['items' => []]];
 
         return [$hero, $quality, $about, $services, $solutions, $process, $products, $testimonials, $partners, $news];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function nt504DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/NT504/nt504.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => [
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $button,
+        ];
+        $sourceSchema = fn (array $options, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => $options],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật', 'default' => false],
+        ];
+        $categories = [['value' => 'catalog_categories', 'label' => 'Danh mục sản phẩm']];
+        $products = [['value' => 'cms_products', 'label' => 'Sản phẩm']];
+        $posts = [['value' => 'cms_posts', 'label' => 'Tin tức']];
+
+        return [
+            ['block_type' => 'hero_slider', 'label' => 'Hero bộ sưu tập màu', 'description' => 'Banner lớn đầu trang kèm lợi ích dịch vụ.', 'preview_image' => $preview, 'anchor_id' => 'top', 'dynamic' => true, 'settings' => ['source' => 'site_banners', 'placement' => 'nt504-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500], 'settings_schema' => ['placement' => ['type' => 'text', 'label' => 'Placement banner'], 'limit' => ['type' => 'number', 'label' => 'Số slide'], 'autoplay_ms' => ['type' => 'number', 'label' => 'Tốc độ tự chạy (ms)']], 'data' => ['vi' => array_merge($heading('Sơn nhà đẹp bắt đầu từ một màu sắc đúng', 'BST MÀU SẮC MỚI 2026', 'Bảng màu thời thượng, bền đẹp vượt trội và thân thiện với môi trường.', 'Khám phá bộ sưu tập'), ['content' => ['slides' => [['title' => 'Sơn nhà đẹp bắt đầu từ một màu sắc đúng', 'summary' => 'Bảng màu thời thượng, bền đẹp vượt trội và thân thiện với môi trường.', 'badge' => 'BST MÀU SẮC MỚI 2026', 'button_label' => 'Khám phá bộ sưu tập', 'image' => '/theme-demo/nt504/hero.png', 'link_url' => '#san-pham']]]]), 'en' => $heading('A beautiful home starts with the right colour', 'NEW COLOUR COLLECTION 2026', 'Modern, durable and environmentally mindful colour solutions.', 'Explore the collection')]],
+            ['block_type' => 'nt504_spaces', 'label' => 'Màu sơn theo không gian', 'description' => 'Năm không gian sống dạng ảnh.', 'preview_image' => $preview, 'anchor_id' => 'khong-gian', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 5], 'settings_schema' => $sourceSchema($categories, 5), 'data' => ['vi' => $heading('Không gian sống', 'CHỌN MÀU SƠN THEO', 'Khám phá các bảng màu được chuyên gia phối sẵn cho từng không gian trong nhà.'), 'en' => $heading('Living spaces', 'CHOOSE PAINT BY', 'Explore expert-curated palettes for every room.')]],
+            ['block_type' => 'nt504_product_categories', 'label' => 'Danh mục sản phẩm lớn', 'description' => 'Bốn nhóm sơn chủ lực.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 4], 'settings_schema' => $sourceSchema($categories, 4), 'data' => ['vi' => $heading('Sản phẩm chất lượng cho mọi công trình', 'DANH MỤC SẢN PHẨM'), 'en' => $heading('Quality products for every project', 'PRODUCT CATEGORIES')]],
+            ['block_type' => 'nt504_premium_promo', 'label' => 'Banner ưu đãi cao cấp', 'description' => 'Banner sản phẩm rộng với ba lợi ích.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai-cao-cap', 'settings' => ['background_image' => '/theme-demo/nt504/promo.png'], 'settings_schema' => ['background_image' => ['type' => 'text', 'label' => 'Ảnh nền']], 'data' => ['vi' => $heading('Sắc màu hoàn hảo', 'ƯU ĐÃI CÓ HẠN', 'Khám phá bộ sưu tập sơn cao cấp với công nghệ tiên tiến, mang đến màu sắc bền đẹp và bảo vệ tối ưu cho mọi công trình.', 'Mua ngay'), 'en' => $heading('Perfect colours', 'LIMITED OFFER', 'Premium paint technology for beautiful, durable protection.', 'Shop now')]],
+            ['block_type' => 'nt504_category_rail', 'label' => 'Rail danh mục tròn', 'description' => 'Tám danh mục sản phẩm dạng avatar tròn.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 8], 'settings_schema' => $sourceSchema($categories, 8), 'data' => ['vi' => $heading('Danh mục sơn'), 'en' => $heading('Paint categories')]],
+            ['block_type' => 'nt504_sale_products', 'label' => 'Sản phẩm khuyến mãi', 'description' => 'Năm sản phẩm ưu đãi nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => true], 'settings_schema' => $sourceSchema($products, 5), 'data' => ['vi' => $heading('Sản phẩm khuyến mãi', 'ƯU ĐÃI NỔI BẬT', 'Chọn lựa những sản phẩm chất lượng với mức giá tốt nhất trong tháng này.'), 'en' => $heading('Promotional products', 'FEATURED OFFERS', 'Quality products at this month’s best prices.')]],
+            ['block_type' => 'nt504_service_promos', 'label' => 'Ba banner dịch vụ', 'description' => 'Khuyến mãi, tư vấn màu và giao hàng.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'data' => ['vi' => $heading('Dịch vụ nổi bật'), 'en' => $heading('Featured services')]],
+            ['block_type' => 'nt504_latest_news', 'label' => 'Tin tức & kiến thức', 'description' => 'Một bài lớn và ba bài tin mới.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $sourceSchema($posts, 4), 'data' => ['vi' => $heading('Cập nhật tin tức mới nhất', 'TIN TỨC & KIẾN THỨC', 'Khám phá xu hướng, mẹo hay và những kiến thức hữu ích về sơn & không gian sống.'), 'en' => $heading('Latest news and ideas', 'NEWS & KNOWLEDGE', 'Colour trends, practical tips and paint expertise.')]],
+            ['block_type' => 'nt504_footer', 'label' => 'Footer Wolf Paint', 'description' => 'Thông tin thương hiệu, sản phẩm, hỗ trợ và liên hệ.', 'preview_image' => $preview, 'anchor_id' => 'footer', 'data' => ['vi' => $heading('Wolf Paint', null, 'Giải pháp sơn cao cấp, bền đẹp, an toàn cho mọi công trình.'), 'en' => $heading('Wolf Paint', null, 'Premium, durable and safe paint solutions for every project.')]],
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */

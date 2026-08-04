@@ -1,0 +1,1 @@
+@extends('theme-nt504::layout') @section('title','Đặt hàng thành công') @section('content')<main class="n504-section"><div class="n504-container" style="text-align:center"><h1>Đặt hàng thành công</h1><p>Cảm ơn bạn đã mua sắm tại Wolf Paint.</p><a href="{{ route('site.home') }}">Về trang chủ</a></div></main>@endsection

@@ -215,6 +215,14 @@ Rule cần giữ:
 - cấu hình UI chuyên biệt của từng theme nên ở Theme Manager
 - không để một loại dữ liệu bị chỉnh ở 2 nơi
 
+Branding public của storefront phải tuân theo contract dùng chung:
+
+- Blade đọc từ `themeShellData.branding`, không query database trực tiếp.
+- `ThemeBrandingResolver` ưu tiên `site_theme_profiles.branding` của đúng website/theme và fallback dữ liệu legacy trong `site_profiles.branding`.
+- Logo trong ảnh/asset demo không phải logo runtime. Header và footer chỉ render `branding.logo_url`; nếu rỗng có thể dùng `branding.company_name` hoặc `site_name` làm fallback chữ.
+- Provider demo không được xóa hay thay `logo_url` đã cấu hình.
+- Theme mới bắt buộc chạy `ThemeBrandingContractTest` bên cạnh localization contract.
+
 File neo:
 
 - `resources/admin/src/modules/themes/components/ThemePaletteEditorDrawer.jsx`

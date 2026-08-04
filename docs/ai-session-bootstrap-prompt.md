@@ -571,3 +571,14 @@ Lệnh vận hành mới:
 - Chỉ thêm `--force` sau khi đã kiểm tra chính xác resource/count; thao tác xóa không tự phục hồi nếu không có backup.
 
 Regression trọng yếu: `LocalizationReleaseReadinessTest`, `CmsPageSourceRevisionTest`, `LandingPageSourceRevisionTest`, `RealEstateLocalizationTest`, `ThemeActivationInvariantTest`, `MenuUrlSecurityTest`. Full suite cuối ngày 2026-08-03 đã pass hoàn toàn: 375 test, 5.957 assertions. Blade compile và Admin production build cũng pass; Vite chỉ cảnh báo không chặn về hai chunk lớn hơn 950 kB.
+
+## 13. Handoff theme NT504 ngày 2026-08-04
+
+- Đã thêm theme ecommerce `NT504 Wolf Paint`, gồm manifest, locale VI/EN, đầy đủ storefront con, demo provider và 9 block homepage theo đúng thứ tự: hero, không gian sống, danh mục lớn, banner ưu đãi cao cấp, rail danh mục, sản phẩm khuyến mãi, ba banner dịch vụ, tin tức và footer.
+- Bộ ảnh riêng của NT504 nằm tại `public/theme-demo/nt504`; ảnh không chứa chữ hoặc logo giả, toàn bộ tiêu đề, giá, nút và liên kết được render bằng HTML và dữ liệu catalog/CMS thật.
+- Demo preset là `nt504-wolf-paint`: 8 danh mục, 12 sản phẩm, 1 hero banner, 1 danh mục tin, 4 bài viết, menu, trang liên hệ và landing home 9 block.
+- `LandingPageBuilder` hỗ trợ các nguồn động `catalog_categories`, `cms_products`, `cms_posts`; homepage có fallback riêng để không bị rỗng khi website chưa publish đủ dữ liệu.
+- Local `website-main` đã được nạp demo NT504 và đồng bộ `sites.theme_key` cùng `site_profiles.active_theme_key` sang `NT504` để kiểm tra trực tiếp tại `/vi`.
+- Regression mới: `Nt504ThemeTest`. Kiểm tra desktop 1473 px và mobile 375 px xác nhận đủ 9 block, 5 product, 4 news, không tràn ngang và menu mobile hoạt động.
+- Validation cuối ngày 2026-08-04: Blade compile pass; nhóm contract theme pass 15 test/3.184 assertions; full suite chạy bằng `php -d memory_limit=256M vendor/bin/phpunit` pass 395 test/6.502 assertions, memory thực tế 134 MB. `php artisan test` dùng tiến trình con với giới hạn 128 MB nên dừng vì memory tại compiled view XD0302, không có assertion failure trước khi dừng.
+- Demo provider NT504 đã dọn `content_translations` tương ứng trước khi xóa record demo để không sinh orphan khi nạp lại preset. Hai orphan `cms_menu`/`site_banner` phát sinh từ vòng kiểm thử trước khi có fix đã được xóa; strict audit cuối cùng trở lại `issue_count=0`.
