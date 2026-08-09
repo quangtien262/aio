@@ -66,6 +66,13 @@ workflow thay vì bị ghi đè âm thầm.
 - `content_translations`: bản dịch generic, phân biệt bằng
   `resource_type + resource_id + locale`. Resource contract nằm trong
   `config/localized-content.php`.
+- Hồ sơ website dùng `resource_type=site_profile`. Backend resolve `site_name`,
+  `description` và các field branding có nội dung (`company_name`,
+  `company_description`, `slogan`, `support_location`, `copyright_text`,
+  `boc_footer_note`) trước khi tạo `themeShellData`. Logo, favicon, hotline,
+  email, palette và social URL vẫn là cấu hình dùng chung, không nằm trong
+  payload bản dịch. Vì vậy mọi theme nhận cùng một contract theo locale và
+  không được tự query translation table trong header/footer.
 - `landing_page_data`: slug, status, SEO và metadata Landing Page theo locale.
 - `landing_page_block_data`: payload của từng Landing Page block theo locale.
 - `theme_translations` và `themes/{theme}/lang/{locale}.json`: override và

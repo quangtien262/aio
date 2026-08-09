@@ -290,12 +290,22 @@ class BusinessContentTranslationService
                 'label' => 'Site profile / Site name',
                 'source_value' => (string) $siteProfile->site_name,
             ]);
+            if (filled($siteProfile->description)) {
+                $entries->push([
+                    'key' => 'site_profile.description',
+                    'label' => 'Site profile / Description',
+                    'source_value' => (string) $siteProfile->description,
+                ]);
+            }
         }
 
         foreach ([
             'company_name' => 'Site profile / Company name',
+            'company_description' => 'Site profile / Company description',
             'slogan' => 'Site profile / Slogan',
             'support_location' => 'Site profile / Support location',
+            'copyright_text' => 'Site profile / Copyright text',
+            'boc_footer_note' => 'Site profile / Ministry of Industry and Trade footer note',
         ] as $field => $label) {
             if (filled($branding[$field] ?? null)) {
                 $entries->push([

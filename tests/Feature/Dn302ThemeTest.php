@@ -20,6 +20,7 @@ use App\Models\SiteProfile;
 use App\Support\FrontendRouteUrl;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\Localization\WebsiteLocaleManager;
+use App\Support\Localization\SiteProfileLocalization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -66,6 +67,7 @@ class Dn302ThemeTest extends TestCase
         $siteProfile->forceFill([
             'branding' => array_merge((array) $siteProfile->branding, [
                 'company_name' => 'Build Mart Custom',
+                'copyright_text' => 'Build Mart Custom - Trang chủ',
                 'logo_url' => 'https://cdn.example.com/branding/build-mart-custom.svg',
             ]),
         ])->save();
@@ -127,6 +129,34 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('QL1A, Thủ Đức, TP.HCM')
             ->assertSee('name="source" value="contact"', false)
             ->assertSee('Gửi yêu cầu tư vấn');
+    }
+
+    public function test_dn302_footer_receives_localized_profile_content_from_backend(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        $profile = SiteProfile::query()->firstOrFail();
+
+        app(SiteProfileLocalization::class)->savePublished($profile, 'en', [
+            'site_name' => 'Masami Website',
+            'description' => 'Masami corporate website',
+            'branding' => [
+                'company_name' => 'MASAMI VIETNAM COMPANY LIMITED',
+                'company_description' => 'Procurement services for industrial parks.',
+                'slogan' => 'Your trusted procurement partner',
+                'support_location' => 'No. 7 Nguyen Khuyen Street, Hanoi',
+                'copyright_text' => 'Copyright 2026 Masami. All rights reserved.',
+            ],
+        ]);
+
+        $response = $this->get(route('site.home', ['locale' => 'en']));
+
+        $response
+            ->assertOk()
+            ->assertSee('MASAMI VIETNAM COMPANY LIMITED')
+            ->assertSee('Procurement services for industrial parks.')
+            ->assertSee('No. 7 Nguyen Khuyen Street, Hanoi')
+            ->assertSee('Copyright 2026 Masami. All rights reserved.')
+            ->assertDontSee('MASAMI dịch vụ mua hàng cho khu công nghiệp.');
     }
 
     public function test_dn302_storefront_admin_mode_renders_landing_block_editor(): void

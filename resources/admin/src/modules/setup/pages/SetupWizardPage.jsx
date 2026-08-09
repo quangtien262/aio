@@ -341,9 +341,19 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
 
                         <div className="setup-profile-section-head">
                             <div>
-                                <Text className="setup-profile-eyebrow">Thiết lập nhanh</Text>
+                                <Space size={8} wrap>
+                                    <Text className="setup-profile-eyebrow">Thiết lập nhanh</Text>
+                                    <Tag color={setup.is_source_locale ? 'blue' : 'gold'}>
+                                        {(setup.selected_locale || frontendLocale).toUpperCase()}
+                                    </Tag>
+                                    {!setup.is_source_locale ? <Tag color="processing">Nội dung dịch</Tag> : null}
+                                </Space>
                             </div>
-                            <Text type="secondary">Click “Sửa” ở từng dòng để cập nhật nhanh.</Text>
+                            <Text type="secondary">
+                                {setup.is_source_locale
+                                    ? 'Click “Sửa” ở từng dòng để cập nhật nội dung gốc.'
+                                    : `Đang cập nhật nội dung ${String(setup.selected_locale || frontendLocale).toUpperCase()}; logo, màu sắc và liên hệ vẫn dùng chung.`}
+                            </Text>
                         </div>
                         <div className="setup-profile-grid">
                             <div className="setup-profile-item">

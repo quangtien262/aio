@@ -6,6 +6,7 @@
     $address = trim((string) ($branding['support_location'] ?? data_get($siteProfile ?? [], 'address', '')));
     $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $email = trim((string) ($branding['support_email'] ?? data_get($siteProfile ?? [], 'email', '')));
+    $copyrightText = trim((string) ($branding['copyright_text'] ?? ''));
     $phoneHref = preg_replace('/[^0-9+]/', '', $hotline);
 
     $footerMenuItems = collect(data_get(
@@ -38,7 +39,7 @@
     <div class="dn-footer-accent" aria-hidden="true"></div>
     <div class="dn-container dn-footer-main" data-dn-reveal="up">
         <section class="dn-footer-brand">
-            <a class="dn-footer-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
+            <a class="dn-footer-logo" href="{{ route('site.home') }}" aria-label="@themeT('DN302.common.home', 'Trang chủ')">
                 @if($logo !== '')
                     <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
                 <span>{{ $siteName }}</span>
@@ -92,9 +93,15 @@
     </div>
     <div class="dn-footer-copy">
         <div class="dn-container dn-footer-copy-inner">
-            <span>© {{ now()->year }} {{ $siteName }}. @themeT('DN302.footer.rights', 'Bảo lưu mọi quyền.')</span>
+            <span>
+                @if($copyrightText !== '')
+                    {{ $copyrightText }}
+                @else
+                    © {{ now()->year }} {{ $siteName }}. @themeT('DN302.footer.rights', 'Bảo lưu mọi quyền.')
+                @endif
+            </span>
             <span>@themeT('DN302.footer.copyright', 'Sản phẩm của HT Việt Nam')</span>
         </div>
     </div>
-    <a class="dn-to-top" href="#top" aria-label="Lên đầu trang"><i class="fa-solid fa-arrow-up"></i></a>
+    <a class="dn-to-top" href="#top" aria-label="@themeT('DN302.footer.back_to_top', 'Lên đầu trang')"><i class="fa-solid fa-arrow-up"></i></a>
 </footer>

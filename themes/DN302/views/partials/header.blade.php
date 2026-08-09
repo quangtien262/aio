@@ -34,7 +34,7 @@
 @endphp
 <header class="dn-header" data-dn-header>
     <div class="dn-header-inner dn-container">
-        <a class="dn-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
+        <a class="dn-logo" href="{{ route('site.home') }}" aria-label="@themeT('DN302.common.home', 'Trang chủ')">
             @if($logo !== '')
                 <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
         </a>

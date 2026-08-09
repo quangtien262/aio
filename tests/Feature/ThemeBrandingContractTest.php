@@ -5,6 +5,10 @@ namespace Tests\Feature;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\SiteProfile;
 use App\Models\SiteThemeProfile;
+use App\Models\WebsiteLocale;
+use App\Support\Localization\LocaleContext;
+use App\Support\Localization\SiteProfileLocalization;
+use App\Support\Localization\WebsiteLocaleManager;
 use DOMDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -116,12 +120,113 @@ class ThemeBrandingContractTest extends TestCase
         $this->assertSame([], $failures, "Empty branding contract failures:\n".implode("\n", $failures));
     }
 
+    public function test_every_registered_theme_footer_uses_backend_localized_profile_content(): void
+    {
+        $profile = SiteProfile::query()->create([
+            'website_key' => 'website-main',
+            'site_name' => 'SOURCE PROFILE NAME',
+            'description' => 'SOURCE PROFILE DESCRIPTION',
+            'website_type' => 'ecommerce',
+            'active_theme_key' => 'DN202',
+            'branding' => [],
+        ]);
+        app(WebsiteLocaleManager::class)->provisionWebsite('website-main');
+        WebsiteLocale::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', 'website-main')
+            ->where('locale', 'en')
+            ->update(['is_enabled_for_editing' => true, 'is_published' => true]);
+        app(LocaleContext::class)->flush('website-main');
+        $localizer = app(SiteProfileLocalization::class);
+        $failures = [];
+
+        foreach (app(ThemeRegistry::class)->all() as $theme) {
+            $themeKey = (string) $theme['key'];
+            $pairs = [
+                'site_name' => ['SOURCE PROFILE NAME', "ENGLISH COMPANY {$themeKey}"],
+                'description' => ['SOURCE PROFILE DESCRIPTION', "ENGLISH DESCRIPTION {$themeKey}"],
+                'company_name' => ["SOURCE COMPANY {$themeKey}", "ENGLISH COMPANY {$themeKey}"],
+                'company_description' => ["SOURCE DESCRIPTION {$themeKey}", "ENGLISH DESCRIPTION {$themeKey}"],
+                'slogan' => ["SOURCE SLOGAN {$themeKey}", "ENGLISH SLOGAN {$themeKey}"],
+                'support_location' => ["SOURCE ADDRESS {$themeKey}", "ENGLISH ADDRESS {$themeKey}"],
+                'copyright_text' => ["SOURCE COPYRIGHT {$themeKey}", "ENGLISH COPYRIGHT {$themeKey}"],
+                'boc_footer_note' => ["SOURCE LEGAL NOTE {$themeKey}", "ENGLISH LEGAL NOTE {$themeKey}"],
+            ];
+
+            SiteThemeProfile::query()->updateOrCreate(
+                ['website_key' => 'website-main', 'theme_key' => strtoupper($themeKey)],
+                ['branding' => [
+                    'company_name' => $pairs['company_name'][0],
+                    'company_description' => $pairs['company_description'][0],
+                    'slogan' => $pairs['slogan'][0],
+                    'support_location' => $pairs['support_location'][0],
+                    'copyright_text' => $pairs['copyright_text'][0],
+                    'boc_footer_note' => $pairs['boc_footer_note'][0],
+                    'support_hotline' => '0900000000',
+                    'support_email' => 'shared@example.test',
+                ]],
+            );
+            $profile->forceFill(['active_theme_key' => $themeKey])->save();
+            $profile->refresh();
+
+            $sourceResponse = $this->get('/vi');
+            if ($sourceResponse->getStatusCode() !== 200) {
+                $failures[] = "{$themeKey}: source HTTP {$sourceResponse->getStatusCode()}";
+
+                continue;
+            }
+
+            [, $sourceFooter] = $this->headerAndFooter($sourceResponse->getContent());
+            $sourceVisibleText = html_entity_decode(strip_tags($sourceFooter), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $localizer->savePublished($profile, 'en', [
+                'site_name' => $pairs['site_name'][1],
+                'description' => $pairs['description'][1],
+                'branding' => [
+                    'company_name' => $pairs['company_name'][1],
+                    'company_description' => $pairs['company_description'][1],
+                    'slogan' => $pairs['slogan'][1],
+                    'support_location' => $pairs['support_location'][1],
+                    'copyright_text' => $pairs['copyright_text'][1],
+                    'boc_footer_note' => $pairs['boc_footer_note'][1],
+                ],
+            ]);
+
+            $response = $this->get('/en');
+            if ($response->getStatusCode() !== 200) {
+                $failures[] = "{$themeKey}: HTTP {$response->getStatusCode()}";
+
+                continue;
+            }
+
+            [, $footer] = $this->headerAndFooter($response->getContent());
+            $visibleText = html_entity_decode(strip_tags($footer), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            foreach ($pairs as $field => [$sourceText, $targetText]) {
+                if (str_contains($sourceVisibleText, $sourceText) && ! str_contains($visibleText, $targetText)) {
+                    $failures[] = "{$themeKey}: {$field} was not localized";
+                }
+
+                if (str_contains($visibleText, $sourceText)) {
+                    $failures[] = "{$themeKey}: leaked source {$field}";
+                }
+            }
+
+            foreach (['0900000000', 'shared@example.test'] as $sharedValue) {
+                if (! str_contains($visibleText, $sharedValue)) {
+                    $failures[] = "{$themeKey}: shared branding {$sharedValue} was lost";
+                }
+            }
+        }
+
+        $this->assertSame([], $failures, "Localized footer contract failures:\n".implode("\n", $failures));
+    }
+
     /**
      * @return array{string, string}
      */
     private function headerAndFooter(string $html): array
     {
-        $document = new DOMDocument();
+        $document = new DOMDocument;
         $previous = libxml_use_internal_errors(true);
         $document->loadHTML('<?xml encoding="utf-8" ?>'.$html);
         libxml_clear_errors();
@@ -142,7 +247,7 @@ class ThemeBrandingContractTest extends TestCase
 
     private function containsBrandImage(string $html): bool
     {
-        $document = new DOMDocument();
+        $document = new DOMDocument;
         $previous = libxml_use_internal_errors(true);
         $document->loadHTML('<?xml encoding="utf-8" ?>'.$html);
         libxml_clear_errors();

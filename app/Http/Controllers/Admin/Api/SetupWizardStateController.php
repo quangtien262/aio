@@ -2,21 +2,32 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
+use App\Enums\TranslationStatus;
 use App\Models\Admin;
 use App\Models\ModuleInstallation;
 use App\Models\SiteProfile;
+use App\Support\FrontendLocalization;
+use App\Support\Localization\SiteProfileLocalization;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class SetupWizardStateController
 {
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request, SiteProfileLocalization $siteProfileLocalization): JsonResponse
     {
         $siteProfile = SiteProfile::query()->first();
+        $selectedLocale = FrontendLocalization::resolveEditableLocale(
+            (string) $request->query('locale', FrontendLocalization::sourceLocale()),
+        );
+        $sourceLocale = FrontendLocalization::sourceLocale();
+        $editableProfile = $siteProfile
+            ? $siteProfileLocalization->localizeForEditor($siteProfile, $selectedLocale)
+            : null;
         $allSteps = config('aio.setup_steps', []);
         $stepMeta = config('aio.setup_step_meta', []);
         $completedSteps = collect($siteProfile?->completed_steps ?? []);
         $websiteTypes = config('aio.website_types', []);
-        $branding = $siteProfile?->branding ?? [];
+        $branding = $editableProfile?->branding ?? [];
         $themePalettes = $siteProfile?->theme_palettes ?? [];
 
         $signals = [
@@ -68,11 +79,15 @@ class SetupWizardStateController
 
         $completedCount = collect($steps)->where('is_completed', true)->count();
         $nextStep = collect($steps)->first(fn (array $step): bool => ! $step['is_completed']);
+        $translationStatus = $editableProfile?->translation_status;
+        $translationStatusValue = $translationStatus instanceof TranslationStatus
+            ? $translationStatus->value
+            : ((string) $translationStatus ?: TranslationStatus::Missing->value);
 
         return response()->json([
             'data' => [
-                'site_name' => $siteProfile?->site_name,
-                'description' => $siteProfile?->description,
+                'site_name' => $editableProfile?->site_name,
+                'description' => $editableProfile?->description,
                 'website_type' => $siteProfile?->website_type,
                 'website_type_label' => $websiteTypes[$siteProfile?->website_type] ?? null,
                 'website_type_options' => collect($websiteTypes)
@@ -81,6 +96,13 @@ class SetupWizardStateController
                     ->all(),
                 'active_theme_key' => $siteProfile?->active_theme_key,
                 'branding' => $branding,
+                'selected_locale' => $selectedLocale,
+                'source_locale' => $sourceLocale,
+                'is_source_locale' => $selectedLocale === $sourceLocale,
+                'translation_status' => $selectedLocale === $sourceLocale
+                    ? 'published'
+                    : $translationStatusValue,
+                'locale_options' => FrontendLocalization::localeOptions(),
                 'theme_palettes' => $themePalettes,
                 'is_setup_completed' => (bool) $siteProfile?->is_setup_completed,
                 'setup_completed_at' => $siteProfile?->setup_completed_at?->toDateTimeString(),

@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Admin\Api;
 
 use App\Models\SiteProfile;
+use App\Rules\ValidLocaleCode;
+use App\Support\FrontendLocalization;
+use App\Support\Localization\LocalizedContentRepository;
+use App\Support\Localization\SiteProfileLocalization;
 use App\Support\SiteContext;
 use App\Support\ThemeBrandingResolver;
 use Illuminate\Http\JsonResponse;
@@ -13,10 +17,20 @@ use Illuminate\Validation\ValidationException;
 
 class SetupProfileController
 {
-    public function __invoke(Request $request, SiteContext $siteContext, ThemeBrandingResolver $brandingResolver): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        SiteContext $siteContext,
+        ThemeBrandingResolver $brandingResolver,
+        SiteProfileLocalization $siteProfileLocalization,
+        LocalizedContentRepository $localizedContent,
+    ): JsonResponse {
+        $selectedLocale = FrontendLocalization::resolveEditableLocale(
+            (string) $request->input('locale', FrontendLocalization::sourceLocale()),
+        );
+        $isSourceLocale = $selectedLocale === FrontendLocalization::sourceLocale();
         $validated = $request->validate([
-            'site_name' => ['required', 'string', 'max:255'],
+            'locale' => ['nullable', 'string', 'max:35', new ValidLocaleCode],
+            'site_name' => [$isSourceLocale ? 'required' : 'nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'website_type' => ['required', 'string', Rule::in(array_keys(config('aio.website_types', [])))],
             'company_name' => ['nullable', 'string', 'max:255'],
@@ -104,10 +118,20 @@ class SetupProfileController
 
         $globalBranding = $siteProfile->globalBranding();
         $themeKey = strtoupper(trim((string) ($validated['theme_key'] ?? $siteContext->themeKey() ?? $siteProfile->active_theme_key)));
+        $translatedBranding = collect($branding)
+            ->only(SiteProfileLocalization::BRANDING_FIELDS)
+            ->all();
+        $globalThemeBranding = collect($branding)
+            ->except(SiteProfileLocalization::BRANDING_FIELDS)
+            ->all();
 
         $siteProfile->forceFill([
-            'site_name' => $validated['site_name'],
-            'description' => $request->exists('description') ? ($validated['description'] ?? null) : $siteProfile->description,
+            'site_name' => $isSourceLocale
+                ? $validated['site_name']
+                : ($siteProfile->site_name ?: 'AIO Website'),
+            'description' => $isSourceLocale && $request->exists('description')
+                ? ($validated['description'] ?? null)
+                : $siteProfile->description,
             'website_type' => $validated['website_type'],
             'branding' => $globalBranding,
             'completed_steps' => $completedSteps->unique()->values()->all(),
@@ -117,15 +141,37 @@ class SetupProfileController
             $brandingResolver->update(
                 $siteContext->websiteKey(),
                 $themeKey,
-                $branding,
+                $isSourceLocale ? $branding : $globalThemeBranding,
                 $globalBranding,
             );
-        } elseif ($branding !== []) {
+        } elseif (($isSourceLocale ? $branding : $globalThemeBranding) !== []) {
             // Compatibility for the setup stage before a theme has been selected.
-            $siteProfile->forceFill(['branding' => array_merge($globalBranding, $branding)])->save();
+            $siteProfile->forceFill([
+                'branding' => array_merge(
+                    $globalBranding,
+                    $isSourceLocale ? $branding : $globalThemeBranding,
+                ),
+            ])->save();
+        }
+
+        // Theme branding lives outside SiteProfile. Refresh the source snapshot
+        // after saving it so translations always compare against current data.
+        $siteProfile->refresh();
+        $localizedContent->syncLegacyModel($siteProfile);
+
+        if (! $isSourceLocale) {
+            $siteProfileLocalization->savePublished($siteProfile, $selectedLocale, [
+                'site_name' => $validated['site_name'] ?? '',
+                'description' => $validated['description'] ?? '',
+                'branding' => $translatedBranding,
+            ]);
         }
 
         return response()->json([
+            'data' => [
+                'locale' => $selectedLocale,
+                'is_source_locale' => $isSourceLocale,
+            ],
             'message' => 'Đã lưu cấu hình website.',
         ]);
     }

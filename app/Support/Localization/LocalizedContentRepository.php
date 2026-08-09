@@ -506,6 +506,7 @@ class LocalizedContentRepository
         string $locale,
         array $payload,
         bool $machineTranslated = false,
+        bool $replacePayload = false,
     ): ContentTranslation {
         $definition = $this->definition($resourceType);
 
@@ -530,7 +531,9 @@ class LocalizedContentRepository
             'resource_id' => $resourceId,
             'locale' => $locale,
         ]);
-        $mergedPayload = array_replace((array) ($translation->payload ?? []), $payload);
+        $mergedPayload = $replacePayload
+            ? $payload
+            : array_replace((array) ($translation->payload ?? []), $payload);
         $slugField = $definition['slug_field'] ?? null;
 
         if (is_string($slugField) && array_key_exists($slugField, $mergedPayload)) {

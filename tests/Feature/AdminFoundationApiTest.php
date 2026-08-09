@@ -7,6 +7,7 @@ use App\Models\AdminRoleAssignment;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CmsPage;
+use App\Models\ContentTranslation;
 use App\Models\ModuleInstallation;
 use App\Models\Permission;
 use App\Models\Role;
@@ -234,6 +235,62 @@ class AdminFoundationApiTest extends TestCase
         $this->getJson('/admin/api/setup')
             ->assertOk()
             ->assertJsonPath('data.branding.copyright_text', 'Bản quyền nội dung thuộc về AIO Website.');
+    }
+
+    public function test_setup_can_edit_and_return_localized_site_profile_content(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $this->actingAs(Admin::query()->where('email', 'admin@aio.local')->firstOrFail(), 'admin');
+
+        $this->putJson('/admin/api/setup', [
+            'locale' => 'vi',
+            'site_name' => 'Website Masami',
+            'description' => 'Mô tả website tiếng Việt',
+            'website_type' => 'ecommerce',
+            'company_name' => 'CÔNG TY TNHH MASAMI VIỆT NAM',
+            'company_description' => 'Dịch vụ mua hàng cho khu công nghiệp.',
+            'slogan' => 'Đồng hành cùng doanh nghiệp',
+            'support_location' => 'Hà Nội, Việt Nam',
+            'copyright_text' => 'Bản quyền thuộc Masami.',
+        ])->assertOk();
+
+        $this->putJson('/admin/api/setup', [
+            'locale' => 'en',
+            'site_name' => 'Masami Website',
+            'description' => 'Masami corporate website',
+            'website_type' => 'ecommerce',
+            'company_name' => 'MASAMI VIETNAM COMPANY LIMITED',
+            'company_description' => 'Procurement services for industrial parks.',
+            'slogan' => 'Your trusted procurement partner',
+            'support_location' => 'Hanoi, Vietnam',
+            'copyright_text' => 'Copyright Masami. All rights reserved.',
+        ])->assertOk()
+            ->assertJsonPath('data.locale', 'en')
+            ->assertJsonPath('data.is_source_locale', false);
+
+        $profile = SiteProfile::query()->firstOrFail();
+        $this->assertSame('Website Masami', $profile->site_name);
+
+        $translation = ContentTranslation::query()
+            ->withoutGlobalScope('current_website')
+            ->where('resource_type', 'site_profile')
+            ->where('resource_id', (string) $profile->id)
+            ->where('locale', 'en')
+            ->firstOrFail();
+
+        $this->assertSame('published', $translation->translation_status->value);
+        $this->assertSame('MASAMI VIETNAM COMPANY LIMITED', data_get($translation->payload, 'branding.company_name'));
+        $this->assertArrayNotHasKey('support_email', data_get($translation->payload, 'branding', []));
+
+        $this->getJson('/admin/api/setup?locale=en')
+            ->assertOk()
+            ->assertJsonPath('data.selected_locale', 'en')
+            ->assertJsonPath('data.is_source_locale', false)
+            ->assertJsonPath('data.translation_status', 'published')
+            ->assertJsonPath('data.site_name', 'Masami Website')
+            ->assertJsonPath('data.branding.company_name', 'MASAMI VIETNAM COMPANY LIMITED')
+            ->assertJsonPath('data.branding.company_description', 'Procurement services for industrial parks.')
+            ->assertJsonPath('data.branding.support_location', 'Hanoi, Vietnam');
     }
 
     public function test_admin_can_store_theme_palette_per_theme(): void

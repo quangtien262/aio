@@ -16,6 +16,9 @@ class SiteProfile extends Model
     use HasFactory;
     use HasWebsiteScope;
 
+    /** @var array<string, mixed>|null */
+    private ?array $localizedBranding = null;
+
     protected function casts(): array
     {
         return [
@@ -35,6 +38,10 @@ class SiteProfile extends Model
      */
     public function getBrandingAttribute(mixed $value): array
     {
+        if ($this->localizedBranding !== null) {
+            return $this->localizedBranding;
+        }
+
         $legacyBranding = is_array($value)
             ? $value
             : (json_decode((string) $value, true) ?: []);
@@ -49,6 +56,18 @@ class SiteProfile extends Model
             is_string($themeKey) ? $themeKey : null,
             $legacyBranding,
         );
+    }
+
+    /**
+     * Keep translated presentation data separate from persisted/global branding.
+     *
+     * @param  array<string, mixed>  $branding
+     */
+    public function setLocalizedBranding(array $branding): static
+    {
+        $this->localizedBranding = $branding;
+
+        return $this;
     }
 
     /**

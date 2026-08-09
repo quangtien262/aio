@@ -12,7 +12,7 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
         enabled: canAccess,
         loader: async () => {
             const [setupPayload, themesPayload] = await Promise.all([
-                callAdminApi(adminApi('setup')),
+                callAdminApi(`${adminApi('setup')}?locale=${encodeURIComponent(frontendLocale)}`),
                 callAdminApi(adminApi('themes')),
             ]);
 
@@ -21,7 +21,8 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
                 themes: themesPayload.data ?? [],
             };
         },
-        cacheKey: 'admin.route.setup',
+        deps: [frontendLocale],
+        cacheKey: `admin.route.setup.${frontendLocale}`,
     });
 
     const pushSetupStepFeedback = (stepKey) => {
@@ -47,7 +48,10 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
             activeTheme={(data?.themes ?? []).find((theme) => theme.is_active) ?? null}
             onSaveProfile={async (payload) => {
                 const didSave = await runAdminAction(
-                    () => callAdminApi(adminApi('setup'), { method: 'PUT', body: JSON.stringify(payload) }),
+                    () => callAdminApi(adminApi('setup'), {
+                        method: 'PUT',
+                        body: JSON.stringify({ ...payload, locale: frontendLocale }),
+                    }),
                     'Đã lưu cấu hình setup.',
                     reload,
                 );

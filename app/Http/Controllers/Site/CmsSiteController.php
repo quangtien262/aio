@@ -34,6 +34,7 @@ use App\Support\Localization\CmsPageLocalization;
 use App\Support\Localization\LandingPageLocalization;
 use App\Support\Localization\LocaleContext;
 use App\Support\Localization\LocalizedContentRepository;
+use App\Support\Localization\SiteProfileLocalization;
 use App\Support\OrderConfirmationSender;
 use App\Support\SiteContext;
 use App\Support\StorefrontCart;
@@ -67,6 +68,7 @@ class CmsSiteController
         private readonly LandingPageBuilder $landingPageBuilder,
         private readonly CmsPageLocalization $cmsPageLocalization,
         private readonly LocalizedContentRepository $localizedContent,
+        private readonly SiteProfileLocalization $siteProfileLocalization,
         private readonly CmsMenuResolver $menuResolver,
         private readonly LocaleContext $localeContext,
         private readonly LandingPageLocalization $landingLocalization,
@@ -2027,7 +2029,7 @@ class CmsSiteController
                 $branding = array_merge($branding, $themePalette);
             }
 
-            foreach (['company_name', 'slogan', 'support_location'] as $field) {
+            foreach (SiteProfileLocalization::BRANDING_FIELDS as $field) {
                 if (filled($branding[$field] ?? null)) {
                     $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
                 }
@@ -3175,24 +3177,23 @@ class CmsSiteController
 
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         /** @var SiteProfile $localized */
-        $localized = $this->localizedContent->localize(
+        $localized = $this->siteProfileLocalization->localize(
             $siteProfile,
-            'site_profile',
             $this->currentLocale(),
-            $websiteKey,
         );
         $localized->site_name = $this->contentText($websiteKey, 'site_profile.site_name', $localized->site_name);
+        $localized->description = $this->contentText($websiteKey, 'site_profile.description', $localized->description);
 
         $branding = $localized->branding ?? [];
         if (! $this->isDemoPresetBranding($branding)) {
-            foreach (['company_name', 'slogan', 'support_location'] as $field) {
+            foreach (SiteProfileLocalization::BRANDING_FIELDS as $field) {
                 if (filled($branding[$field] ?? null)) {
                     $branding[$field] = $this->contentText($websiteKey, sprintf('branding.%s', $field), (string) $branding[$field]);
                 }
             }
         }
 
-        $localized->setAttribute('branding', $branding);
+        $localized->setLocalizedBranding($branding);
 
         return $localized;
     }

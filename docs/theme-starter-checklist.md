@@ -224,9 +224,13 @@ Nếu theme dùng homepage/landing dạng block:
 - [ ] Logo header/footer phải đọc từ `themeShellData.branding.logo_url`; dữ liệu này đã được controller resolve từ `site_theme_profiles.branding` và fallback legacy `site_profiles.branding`. Theme không query DB trực tiếp.
 - [ ] Không hardcode logo thương hiệu bằng text, SVG hoặc ảnh demo nếu `branding.logo_url` đã có giá trị.
 - [ ] Logo trong ảnh thiết kế/asset demo chỉ là dữ liệu minh họa, không được dùng làm logo runtime của website. Khi `logo_url` rỗng chỉ được fallback về `branding.company_name`/`site_name`, không fallback về tên thương hiệu của mẫu thiết kế.
+- [ ] Nội dung hồ sơ ở header/footer (`company_name`, `company_description`, `slogan`, `support_location`, `copyright_text`, `boc_footer_note`) phải đọc từ `themeShellData.branding` đã được backend localize; theme không tự query bảng dịch, không tự rẽ nhánh `vi/en` và không hardcode nội dung mẫu.
+- [ ] Logo, favicon, hotline, email, màu sắc và social URL là cấu hình dùng chung giữa các locale; không sao chép các field này vào payload bản dịch và không để lần lưu locale phụ ghi đè cấu hình toàn website.
 - [ ] CSS cho logo upload phải giới hạn `max-width`, `max-height` và dùng `object-fit: contain` để không làm vỡ header/footer.
 - [ ] Provider tạo dữ liệu demo phải giữ nguyên `branding.logo_url` hiện có; không được gán `logo_url => null` hoặc thay logo người dùng đã cài.
 - [ ] Kiểm thử tích hợp: cài một URL logo tùy chỉnh, chạy/tạo lại demo data, mở storefront và xác nhận header/footer vẫn render đúng URL logo đó.
+- [ ] Kiểm thử localization: cấu hình tên/mô tả/địa chỉ/copyright khác nhau cho locale nguồn và locale phụ, mở cả hai URL storefront rồi xác nhận mỗi footer nhận đúng dữ liệu backend tương ứng trong khi logo/hotline/email vẫn giữ nguyên.
+- [ ] Chạy `ThemeBrandingContractTest`; contract này render toàn bộ theme ở locale nguồn và locale phụ, chỉ bắt buộc dịch field mà chính footer có sử dụng và chặn rò nội dung nguồn hoặc mất branding dùng chung.
 - [ ] Header đọc menu từ `primary-navigation` hoặc `primary`.
 - [ ] Có fallback menu nếu chưa tạo menu.
 - [ ] Nếu đang login admin, có thể show link `Admin` mở tab mới nếu theme yêu cầu.
