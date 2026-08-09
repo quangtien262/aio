@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Api;
 
 use App\Enums\TranslationStatus;
 use App\Models\Admin;
+use App\Models\ContentTranslation;
 use App\Models\ModuleInstallation;
 use App\Models\SiteProfile;
 use App\Support\FrontendLocalization;
@@ -83,6 +84,22 @@ class SetupWizardStateController
         $translationStatusValue = $translationStatus instanceof TranslationStatus
             ? $translationStatus->value
             : ((string) $translationStatus ?: TranslationStatus::Missing->value);
+        $translationStatuses = ContentTranslation::query()
+            ->where('website_key', (string) $siteProfile?->website_key)
+            ->where('resource_type', 'site_profile')
+            ->where('resource_id', (string) $siteProfile?->getKey())
+            ->get(['locale', 'translation_status'])
+            ->mapWithKeys(function (ContentTranslation $translation): array {
+                $status = $translation->translation_status;
+
+                return [
+                    $translation->locale => $status instanceof TranslationStatus
+                        ? $status->value
+                        : (string) $status,
+                ];
+            })
+            ->put($sourceLocale, TranslationStatus::Published->value)
+            ->all();
 
         return response()->json([
             'data' => [
@@ -102,6 +119,7 @@ class SetupWizardStateController
                 'translation_status' => $selectedLocale === $sourceLocale
                     ? 'published'
                     : $translationStatusValue,
+                'translation_statuses' => $translationStatuses,
                 'locale_options' => FrontendLocalization::localeOptions(),
                 'theme_palettes' => $themePalettes,
                 'is_setup_completed' => (bool) $siteProfile?->is_setup_completed,

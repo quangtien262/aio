@@ -9,6 +9,7 @@ import Input from 'antd/es/input';
 import Popconfirm from 'antd/es/popconfirm';
 import Modal from 'antd/es/modal';
 import Checkbox from 'antd/es/checkbox';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import List from 'antd/es/list';
 import Progress from 'antd/es/progress';
@@ -68,7 +69,7 @@ function ProfileFieldLabel({ children, tooltip }) {
     );
 }
 
-export default function SetupWizardPage({ setup, themes = [], activeTheme = null, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps, canViewThemeManager = false, canManageThemeActions = false, frontendLocale = 'vi', defaultFrontendLocale = 'vi', onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, runAdminAction, callAdminApi }) {
+export default function SetupWizardPage({ setup, themes = [], activeTheme = null, onSaveProfile, onCompleteStep, canEditProfile, canCompleteSteps, canViewThemeManager = false, canManageThemeActions = false, frontendLocale = 'vi', defaultFrontendLocale = 'vi', onProfileLocaleChange, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, runAdminAction, callAdminApi }) {
     const { message } = App.useApp();
     const [searchParams, setSearchParams] = useSearchParams();
     const themeActionController = useThemeActionOverlayController();
@@ -337,6 +338,23 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                                 <Button onClick={() => { setPopLogoVisible(true); setTempLogo(logoUrl); }}>Sửa logo</Button>
                                 <Button disabled={!canQuickEditPalette} onClick={() => themeActionController.openPalette(activeTheme)}>Bảng màu</Button>
                             </div>
+                        </div>
+
+                        <div className="setup-profile-localization">
+                            <LocalizedContentTabs
+                                localeOptions={(setup.locale_options ?? []).filter((locale) => locale.is_enabled_for_editing !== false)}
+                                contentLocale={frontendLocale}
+                                sourceLocale={setup.source_locale || defaultFrontendLocale}
+                                editingRecord={{
+                                    id: 'site-profile',
+                                    _translation_status: setup.translation_status,
+                                    _translation_statuses: setup.translation_statuses,
+                                }}
+                                entityLabel="hồ sơ website"
+                                sourceDescription="Đây là nội dung gốc của hồ sơ website. Logo, màu sắc, hotline và email được dùng chung cho mọi ngôn ngữ."
+                                translationDescription="Tên website, tên công ty, mô tả, slogan, địa chỉ, copyright và ghi chú pháp lý được lưu riêng cho ngôn ngữ này. Logo, màu sắc, hotline và email vẫn dùng chung."
+                                onLocaleChange={onProfileLocaleChange}
+                            />
                         </div>
 
                         <div className="setup-profile-section-head">

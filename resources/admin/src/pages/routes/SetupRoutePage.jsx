@@ -1,6 +1,7 @@
 import { adminApi } from '../../shared/config/routes';
 import Alert from 'antd/es/alert';
 import Card from 'antd/es/card';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SetupWizardPage from '../../modules/setup/pages/SetupWizardPage';
 import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
@@ -8,11 +9,17 @@ import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
 export default function SetupRoutePage({ canAccess, canComplete, canViewThemeManager, canManageThemeActions, callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const { data, loading, error, reload } = useAdminRouteResource({
+    const [contentLocale, setContentLocale] = useState(frontendLocale || defaultFrontendLocale || 'vi');
+
+    useEffect(() => {
+        setContentLocale(frontendLocale || defaultFrontendLocale || 'vi');
+    }, [defaultFrontendLocale, frontendLocale]);
+
+    const { data, loading, error, reload, mutateData } = useAdminRouteResource({
         enabled: canAccess,
         loader: async () => {
             const [setupPayload, themesPayload] = await Promise.all([
-                callAdminApi(`${adminApi('setup')}?locale=${encodeURIComponent(frontendLocale)}`),
+                callAdminApi(`${adminApi('setup')}?locale=${encodeURIComponent(contentLocale)}`),
                 callAdminApi(adminApi('themes')),
             ]);
 
@@ -21,9 +28,27 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
                 themes: themesPayload.data ?? [],
             };
         },
-        deps: [frontendLocale],
-        cacheKey: `admin.route.setup.${frontendLocale}`,
+        deps: [contentLocale],
+        cacheKey: `admin.route.setup.${contentLocale}`,
     });
+
+    const changeProfileLocale = async (nextLocale) => {
+        try {
+            const setupPayload = await callAdminApi(
+                `${adminApi('setup')}?locale=${encodeURIComponent(nextLocale)}`,
+            );
+
+            mutateData((currentData) => ({
+                ...(currentData ?? {}),
+                setup: setupPayload.data,
+            }));
+            setContentLocale(nextLocale);
+
+            return true;
+        } catch {
+            return false;
+        }
+    };
 
     const pushSetupStepFeedback = (stepKey) => {
         const nextParams = new URLSearchParams(location.search);
@@ -50,7 +75,7 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
                 const didSave = await runAdminAction(
                     () => callAdminApi(adminApi('setup'), {
                         method: 'PUT',
-                        body: JSON.stringify({ ...payload, locale: frontendLocale }),
+                        body: JSON.stringify({ ...payload, locale: contentLocale }),
                     }),
                     'Đã lưu cấu hình setup.',
                     reload,
@@ -75,8 +100,9 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
             canCompleteSteps={canComplete}
             canViewThemeManager={canViewThemeManager}
             canManageThemeActions={canManageThemeActions}
-            frontendLocale={frontendLocale}
+            frontendLocale={contentLocale}
             defaultFrontendLocale={defaultFrontendLocale}
+            onProfileLocaleChange={changeProfileLocale}
             onGenerateDemoData={(themeKey, preset) => runAdminAction(
                 () => callAdminApi(adminApi(`themes/${themeKey}/demo-data`), { method: 'POST', body: JSON.stringify({ preset }) }),
                 'Đã tạo data test cho theme.',

@@ -64,6 +64,9 @@
 .setup-profile-badges{display:flex;flex-wrap:wrap;gap:6px}
 .setup-profile-actions{display:flex;flex-direction:column;gap:8px;min-width:128px}
 .setup-profile-actions .ant-btn{width:100%}
+.setup-profile-localization{padding:18px 20px 0;border-bottom:1px solid #edf2f7;background:#fbfdff}
+.setup-profile-localization .ant-tabs-nav{margin-bottom:12px}
+.setup-profile-localization .ant-alert{margin-bottom:18px!important}
 .setup-profile-section-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px 10px}
 .setup-profile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 20px 20px}
 .setup-profile-item{min-width:0;display:grid;grid-template-columns:minmax(118px,.45fr) minmax(0,1fr) auto;align-items:center;gap:10px;min-height:58px;padding:12px 14px;border:1px solid #e8edf2;border-radius:10px;background:#fff;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}

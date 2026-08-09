@@ -282,7 +282,7 @@ class AdminFoundationApiTest extends TestCase
         $this->assertSame('MASAMI VIETNAM COMPANY LIMITED', data_get($translation->payload, 'branding.company_name'));
         $this->assertArrayNotHasKey('support_email', data_get($translation->payload, 'branding', []));
 
-        $this->getJson('/admin/api/setup?locale=en')
+        $setupData = $this->getJson('/admin/api/setup?locale=en')
             ->assertOk()
             ->assertJsonPath('data.selected_locale', 'en')
             ->assertJsonPath('data.is_source_locale', false)
@@ -290,7 +290,31 @@ class AdminFoundationApiTest extends TestCase
             ->assertJsonPath('data.site_name', 'Masami Website')
             ->assertJsonPath('data.branding.company_name', 'MASAMI VIETNAM COMPANY LIMITED')
             ->assertJsonPath('data.branding.company_description', 'Procurement services for industrial parks.')
-            ->assertJsonPath('data.branding.support_location', 'Hanoi, Vietnam');
+            ->assertJsonPath('data.branding.support_location', 'Hanoi, Vietnam')
+            ->assertJsonPath('data.translation_statuses.vi', 'published')
+            ->assertJsonPath('data.translation_statuses.en', 'published')
+            ->json('data');
+
+        $editableLocaleCodes = collect($setupData['locale_options'] ?? [])
+            ->where('is_enabled_for_editing', true)
+            ->pluck('code')
+            ->all();
+        $this->assertContains('vi', $editableLocaleCodes);
+        $this->assertContains('en', $editableLocaleCodes);
+    }
+
+    public function test_setup_admin_profile_exposes_locale_tabs_and_uses_the_selected_locale(): void
+    {
+        $routePage = File::get(resource_path('admin/src/pages/routes/SetupRoutePage.jsx'));
+        $wizardPage = File::get(resource_path('admin/src/modules/setup/pages/SetupWizardPage.jsx'));
+
+        $this->assertStringContainsString('const [contentLocale, setContentLocale]', $routePage);
+        $this->assertStringContainsString('locale=${encodeURIComponent(contentLocale)}', $routePage);
+        $this->assertStringContainsString('locale: contentLocale', $routePage);
+        $this->assertStringContainsString('onProfileLocaleChange', $routePage);
+        $this->assertStringContainsString('<LocalizedContentTabs', $wizardPage);
+        $this->assertStringContainsString('setup.locale_options', $wizardPage);
+        $this->assertStringContainsString('_translation_statuses: setup.translation_statuses', $wizardPage);
     }
 
     public function test_admin_can_store_theme_palette_per_theme(): void
