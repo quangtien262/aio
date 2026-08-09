@@ -82,8 +82,14 @@ class CmsSiteController
 
         if ($themeHomeView = $this->resolveThemeHomeView($activeTheme)) {
             $landingPage = $this->landingPageBuilder->resolveHome($websiteKey, $themeKey);
+            $canEditLanding = auth('admin')->check() && request()->query('mod') === 'admin';
             $landingViewData = $landingPage
-                ? $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())
+                ? $this->landingPageBuilder->viewData(
+                    $landingPage,
+                    app()->getLocale(),
+                    FrontendLocalization::defaultLocale(),
+                    $canEditLanding,
+                )
                 : [];
             $landingTranslation = $landingPage?->data
                 ->filter(fn ($data): bool => $data->isPublishedTranslation())
@@ -224,7 +230,12 @@ class CmsSiteController
             'canonicalUrl' => data_get($localizedSeo, 'canonical_url'),
             'hreflangUrls' => data_get($localizedSeo, 'alternates', []),
             'resolvedContentLocale' => data_get($localizedSeo, 'resolved_locale'),
-        ], $this->landingPageBuilder->viewData($landingPage, app()->getLocale(), FrontendLocalization::defaultLocale())));
+        ], $this->landingPageBuilder->viewData(
+            $landingPage,
+            app()->getLocale(),
+            FrontendLocalization::defaultLocale(),
+            $canPreviewDraft,
+        )));
     }
 
     public function switchThemePreset(Request $request): RedirectResponse

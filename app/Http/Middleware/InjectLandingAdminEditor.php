@@ -53,6 +53,7 @@ class InjectLandingAdminEditor
             $landingPage,
             app()->getLocale(),
             FrontendLocalization::defaultLocale(),
+            $request->user('admin') !== null && $request->query('mod') === 'admin',
         );
         $blocks = collect($viewData['landingBlocks'] ?? [])
             ->filter(fn (array $block): bool => filled($block['id'] ?? null))
@@ -79,7 +80,7 @@ class InjectLandingAdminEditor
             $html,
         ) === 1;
         $hasEditor = str_contains($html, 'data-xd-editor');
-        $hasEditorScript = str_contains($html, 'updateUrlTemplate');
+        $hasEditorScript = str_contains($html, 'data-xd-editor-runtime');
 
         if ($hasButtons && $hasEditor && $hasEditorScript) {
             return $response;
@@ -103,6 +104,7 @@ class InjectLandingAdminEditor
             'editorLocales' => $editorLocales,
             'hasButtons' => $hasButtons,
             'hasEditor' => $hasEditor,
+            'hasEditorScript' => $hasEditorScript,
         ])->render();
 
         $response->setContent(Str::replaceLast('</body>', $injection.'</body>', $html));

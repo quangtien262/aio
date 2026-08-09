@@ -128,13 +128,24 @@ class LandingPageBuilder
     /**
      * @return array<string, mixed>
      */
-    public function viewData(LandingPage $page, string $locale, string $fallbackLocale = 'vi'): array
+    public function viewData(
+        LandingPage $page,
+        string $locale,
+        string $fallbackLocale = 'vi',
+        bool $includeEditableLocales = false,
+    ): array
     {
         $pageData = $this->localizedPageData($page, $locale, $fallbackLocale, true);
 
         $blocks = $page->blocks
             ->filter(fn (LandingPageBlock $block): bool => $block->is_visible && $block->block_type !== 'footer_contact')
-            ->map(fn (LandingPageBlock $block): array => $this->serializeBlock($block, $locale, $fallbackLocale, true))
+            ->map(fn (LandingPageBlock $block): array => $this->serializeBlock(
+                $block,
+                $locale,
+                $fallbackLocale,
+                true,
+                $includeEditableLocales,
+            ))
             ->values()
             ->all();
 

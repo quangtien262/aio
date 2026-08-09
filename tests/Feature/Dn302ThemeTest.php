@@ -135,11 +135,13 @@ class Dn302ThemeTest extends TestCase
         $admin = Admin::factory()->create();
         $this->actingAs($admin, 'admin');
 
-        $this->get(route('site.home', ['locale' => 'vi', 'mod' => 'admin']))
+        $response = $this->get(route('site.home', ['locale' => 'vi', 'mod' => 'admin']))
             ->assertOk()
             ->assertSee('data-xd-edit-block', false)
             ->assertSee('data-xd-editor', false)
             ->assertSee('Sửa khối');
+        $response->assertSee('originalLocaleDrafts', false)->assertSee('masterOnly', false);
+        $this->assertSame(1, substr_count($response->getContent(), 'data-xd-editor-runtime'));
     }
 
     public function test_dn302_product_detail_renders_full_gallery_and_commerce_sections(): void

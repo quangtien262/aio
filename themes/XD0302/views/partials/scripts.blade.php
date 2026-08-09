@@ -1,4 +1,4 @@
-    <script>
+    <script data-xd-editor-runtime>
         (() => {
             const slides = Array.from(document.querySelectorAll('.xd-slide'));
             const dots = Array.from(document.querySelectorAll('.xd-dot'));
@@ -224,6 +224,7 @@
             let activeBlock = null;
             let activeEditorLocale = @json(app()->getLocale());
             let localeDrafts = {};
+            let originalLocaleDrafts = {};
             let sourcePreviewController = null;
             let sourcePreviewTimer = null;
             const sourceLabels = {
@@ -324,6 +325,16 @@
             const normalizeContentObject = (value) => {
                 return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
             };
+            const cloneDraft = (value) => JSON.parse(JSON.stringify(value || {}));
+            const editableLocaleDraft = (draft = {}) => ({
+                locale: draft.locale || '',
+                title: draft.title || '',
+                subtitle: draft.subtitle || '',
+                description: draft.description || '',
+                button_label: draft.button_label || '',
+                content: normalizeContentObject(draft.content),
+            });
+            const localeDraftChanged = (draft) => JSON.stringify(editableLocaleDraft(draft)) !== JSON.stringify(editableLocaleDraft(originalLocaleDrafts[draft?.locale]));
             const syncMediaEditorVisibility = (block) => {
                 if (!mediaEditor) return;
                 const blockType = block?.block_type || '';
@@ -1005,37 +1016,44 @@
                 });
             });
 
-            document.querySelectorAll('[data-xd-edit-block]').forEach((button) => {
-                button.addEventListener('click', () => {
-                    const block = blocks[button.dataset.xdEditBlock];
-                    if (!block || !editor) return;
-                    activeBlock = block;
-                    localeDrafts = {};
-                    const availableLocales = editorLocales.length ? editorLocales.map((locale) => locale.code) : [block.data?.locale || activeEditorLocale];
-                    availableLocales.forEach((locale) => {
-                        const localeContent = block.data_by_locale?.[locale]?.content || block.data?.content || {};
-                        localeDrafts[locale] = {
-                            locale,
-                            ...(block.data_by_locale?.[locale] || block.data || {}),
-                            content: normalizeContentObject(localeContent),
-                        };
-                    });
-                    field('block_id').value = block.id;
-                    field('anchor_id').value = block.anchor_id || '';
-                    field('is_visible').checked = Boolean(block.is_visible);
-                    field('settings').value = pretty(block.settings || {});
-                    syncBlockCtaVisibility(block.block_type);
-                    if (field('cta_url')) field('cta_url').value = block.block_type === 'hero_slider' && !heroUsesBlockCta ? '' : (block.settings?.cta_url || '');
-                    field('media').value = pretty(block.media || {});
-                    syncMediaEditorVisibility(block);
-                    loadMediaFields(block);
-                    syncContactEditorVisibility(block);
-                    syncFaqEditorVisibility(block);
-                    renderSourceEditor(block);
-                    loadLocaleDraft(block.data?.locale || activeEditorLocale);
-                    editor.hidden = false;
+            const openBlockEditor = (blockId) => {
+                const block = blocks[blockId];
+                if (!block || !editor) return;
+                activeBlock = block;
+                localeDrafts = {};
+                originalLocaleDrafts = {};
+                const availableLocales = editorLocales.length ? editorLocales.map((locale) => locale.code) : [block.data?.locale || activeEditorLocale];
+                availableLocales.forEach((locale) => {
+                    const localeData = block.data_by_locale?.[locale]
+                        || (block.data?.locale === locale ? block.data : null)
+                        || {locale, content: {}};
+                    localeDrafts[locale] = {
+                        locale,
+                        ...localeData,
+                        content: normalizeContentObject(localeData.content),
+                    };
+                    originalLocaleDrafts[locale] = cloneDraft(localeDrafts[locale]);
                 });
+                field('block_id').value = block.id;
+                field('anchor_id').value = block.anchor_id || '';
+                field('is_visible').checked = Boolean(block.is_visible);
+                field('settings').value = pretty(block.settings || {});
+                syncBlockCtaVisibility(block.block_type);
+                if (field('cta_url')) field('cta_url').value = block.block_type === 'hero_slider' && !heroUsesBlockCta ? '' : (block.settings?.cta_url || '');
+                field('media').value = pretty(block.media || {});
+                syncMediaEditorVisibility(block);
+                loadMediaFields(block);
+                syncContactEditorVisibility(block);
+                syncFaqEditorVisibility(block);
+                renderSourceEditor(block);
+                loadLocaleDraft(block.data?.locale || activeEditorLocale);
+                editor.hidden = false;
+            };
+            document.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-xd-edit-block]');
+                if (button) openBlockEditor(button.dataset.xdEditBlock);
             });
+            document.documentElement.dataset.xdEditorReady = '1';
 
             document.querySelectorAll('[data-xd-editor-close]').forEach((button) => button.addEventListener('click', () => { editor.hidden = true; closeItemModal(); }));
             form?.addEventListener('submit', async (event) => {
@@ -1043,7 +1061,7 @@
                 const blockId = field('block_id').value;
                 try {
                     localeDrafts[activeEditorLocale] = collectCurrentLocaleDraft();
-                    const localePayloads = Object.values(localeDrafts);
+                    const localePayloads = Object.values(localeDrafts).filter(localeDraftChanged);
                     const settingsPayload = collectSourceSettings(parseJson(field('settings').value, {}));
                     if (activeBlock?.block_type === 'hero_slider' && !heroUsesBlockCta) {
                         delete settingsPayload.cta_url;
@@ -1056,20 +1074,21 @@
                     mediaPayload = mergeFaqMediaFields(mediaPayload);
                     field('media').value = pretty(mediaPayload);
 
-                    for (const draft of localePayloads) {
+                    const draftsToSave = localePayloads.length ? localePayloads : [{locale: activeEditorLocale, masterOnly: true}];
+                    for (const draft of draftsToSave) {
                         const payload = {
                             locale: draft.locale,
                             anchor_id: field('anchor_id').value,
                             is_visible: field('is_visible').checked,
                             settings: settingsPayload,
                             media: mediaPayload,
-                            data: {
-                                title: draft.title || '',
-                                subtitle: draft.subtitle || '',
-                                description: draft.description || '',
-                                button_label: draft.button_label || '',
-                                content: draft.content || {},
-                            },
+                        };
+                        if (!draft.masterOnly) payload.data = {
+                            title: draft.title || '',
+                            subtitle: draft.subtitle || '',
+                            description: draft.description || '',
+                            button_label: draft.button_label || '',
+                            content: draft.content || {},
                         };
                         const response = await fetch(updateUrlTemplate.replace('__BLOCK_ID__', blockId), {
                             method: 'PUT',

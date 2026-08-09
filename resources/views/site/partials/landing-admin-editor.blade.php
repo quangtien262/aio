@@ -31,4 +31,6 @@
     @media(max-width:700px){.aio-landing-editor-toolbar{right:10px;top:10px;width:min(240px,calc(100vw - 20px));max-height:45vh}}
 </style>
 
-@include('theme-xd0302::partials.scripts')
+@unless($hasEditorScript)
+    @include('theme-xd0302::partials.scripts')
+@endunless
