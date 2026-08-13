@@ -663,11 +663,12 @@ class CmsSiteController
 
     public function contact(): View
     {
-        $siteProfile = $this->currentSiteProfile();
+        $siteProfile = $this->localizeSiteProfile($this->currentSiteProfile());
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
+        $locale = $this->currentLocale();
 
         $query = CmsPage::query()
-            ->with('featuredMedia')
+            ->with(['featuredMedia', 'translations'])
             ->where('status', 'published')
             ->whereIn('slug', ['contact', 'lien-he']);
         $this->applyWebsiteScope($query, $websiteKey);
@@ -686,6 +687,25 @@ class CmsSiteController
                 'meta_title' => 'Liên hệ',
                 'meta_description' => 'Thông tin liên hệ và biểu mẫu gửi yêu cầu tư vấn.',
             ]);
+        } else {
+            $translation = $page->translations
+                ->first(fn ($item): bool => (
+                    $item->locale === $locale && $item->isPublishedTranslation()
+                ));
+
+            if ($translation !== null) {
+                $page = $this->cmsPageLocalization->apply($page, $translation);
+            } elseif ($locale !== $this->localeContext->sourceLocale()) {
+                $page = new CmsPage([
+                    'slug' => 'contact',
+                    'status' => 'published',
+                    'title' => '',
+                    'excerpt' => '',
+                    'body' => '',
+                    'meta_title' => '',
+                    'meta_description' => '',
+                ]);
+            }
         }
 
         return $this->renderContent('contact', $page, [

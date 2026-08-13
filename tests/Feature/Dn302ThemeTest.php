@@ -21,8 +21,9 @@ use App\Models\LandingPageBlockData;
 use App\Models\SiteProfile;
 use App\Support\FrontendRouteUrl;
 use App\Support\LandingPages\LandingPageBuilder;
-use App\Support\Localization\WebsiteLocaleManager;
+use App\Support\Localization\CmsPageLocalization;
 use App\Support\Localization\SiteProfileLocalization;
+use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -491,6 +492,48 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Liên hệ')
             ->assertSee('Thông tin liên hệ')
             ->assertSee('name="source" value="contact"', false);
+    }
+
+    public function test_dn302_contact_page_localizes_static_copy_and_published_page_content(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        app(WebsiteLocaleManager::class)->updateLocale(
+            'website-main',
+            'en',
+            ['is_published' => true],
+        );
+        $page = CmsPage::query()
+            ->where('website_key', 'website-main')
+            ->whereIn('slug', ['contact', 'lien-he'])
+            ->firstOrFail();
+        $page->forceFill([
+            'title' => 'Liên hệ',
+            'status' => 'published',
+            'excerpt' => 'Nội dung giới thiệu tiếng Việt.',
+            'body' => '',
+        ])->save();
+        $localization = app(CmsPageLocalization::class);
+        $localization->syncLegacySource($page);
+        $localization->saveDraft($page, 'en', [
+            'title' => 'Contact our specialists',
+            'slug' => 'contact',
+            'excerpt' => 'English content managed in the database.',
+            'body' => '',
+            'meta_title' => 'Contact our specialists',
+            'meta_description' => 'English contact description.',
+            'meta_keywords' => '',
+        ]);
+        $localization->transition($page, 'en', TranslationStatus::Ready);
+        $localization->transition($page, 'en', TranslationStatus::Published);
+
+        $this->get(route('site.contact', ['locale' => 'en']))
+            ->assertOk()
+            ->assertSee('Contact our specialists')
+            ->assertSee('English content managed in the database.')
+            ->assertSee('Let us start a conversation')
+            ->assertSee('How can we help you?')
+            ->assertSee('Send consultation request')
+            ->assertDontSee('Hãy bắt đầu bằng một cuộc trao đổi');
     }
 
     public function test_dn302_service_category_hero_and_entries_use_database_values(): void
