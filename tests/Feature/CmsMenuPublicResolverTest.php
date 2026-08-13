@@ -10,6 +10,7 @@ use App\Models\CmsPage;
 use App\Models\ContentTranslation;
 use App\Models\LocalizedRoute;
 use App\Models\ThemeTranslation;
+use App\Support\FrontendRouteUrl;
 use App\Support\Localization\LocalizedRouteRegistry;
 use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -344,6 +345,55 @@ class CmsMenuPublicResolverTest extends TestCase
 
         $this->assertSame('/en', $resolved[0]['url']);
         $this->assertSame('404', $menu->items[0]['resource_id']);
+    }
+
+    public function test_resource_links_without_target_routes_fall_back_to_their_localized_indexes(): void
+    {
+        $this->publishEnglishFor('website-main');
+        CmsMenu::query()->create([
+            'website_key' => 'website-main',
+            'name' => 'Primary',
+            'location' => 'primary',
+            'items' => [
+                [
+                    'label' => 'Products',
+                    'url' => '/danh-muc/hoa-chat',
+                    'resource_type' => 'catalog_category',
+                    'resource_id' => '101',
+                ],
+                [
+                    'label' => 'Services',
+                    'url' => '/s/dich-vu',
+                    'resource_type' => 'cms_service_category',
+                    'resource_id' => '102',
+                ],
+                [
+                    'label' => 'News',
+                    'url' => '/c/tin-tuc',
+                    'resource_type' => 'cms_category',
+                    'resource_id' => '103',
+                ],
+            ],
+        ]);
+
+        $resolved = app(CmsMenuResolver::class)->items(
+            'primary',
+            'website-main',
+            'en',
+        );
+
+        $this->assertSame(
+            FrontendRouteUrl::localized(FrontendRouteUrl::catalogSearchPath(), 'en', false),
+            $resolved[0]['url'],
+        );
+        $this->assertSame(
+            FrontendRouteUrl::localized(FrontendRouteUrl::servicesPath(), 'en', false),
+            $resolved[1]['url'],
+        );
+        $this->assertSame(
+            FrontendRouteUrl::localized(FrontendRouteUrl::blogPath(), 'en', false),
+            $resolved[2]['url'],
+        );
     }
 
     private function publishEnglishFor(string $websiteKey): void

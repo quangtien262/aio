@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['title', 'slug', 'status', 'excerpt', 'body', 'meta_title', 'meta_description', 'meta_keywords', 'featured_media_id', 'category_id', 'publish_at', 'is_highlight', 'website_key'])]
 class CmsPost extends Model
@@ -38,5 +39,10 @@ class CmsPost extends Model
         $relation = $this->belongsTo(CmsMedia::class, 'featured_media_id');
 
         return $relation;
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(CmsPostComment::class, 'cms_post_id');
     }
 }

@@ -57,4 +57,9 @@ class Customer extends Authenticatable
     {
         return $this->hasMany(CustomerServiceInterest::class);
     }
+
+    public function postComments(): HasMany
+    {
+        return $this->hasMany(CmsPostComment::class);
+    }
 }

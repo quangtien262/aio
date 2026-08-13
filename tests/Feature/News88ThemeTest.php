@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
+use App\Models\CmsPost;
+use App\Models\CmsPostComment;
+use App\Models\Customer;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -89,5 +92,67 @@ class News88ThemeTest extends TestCase
             ->assertOk()
             ->assertSee('data-xd-edit-block=', false)
             ->assertSee('data-xd-editor-form', false);
+    }
+
+    public function test_news_detail_shows_related_latest_and_requires_account_for_threaded_comments(): void
+    {
+        SiteProfile::query()->create([
+            'site_name' => 'NEWS88', 'website_type' => 'news', 'active_theme_key' => 'NEWS88', 'branding' => [],
+        ]);
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88')?->generate('news88-editorial');
+
+        $post = CmsPost::query()->where('status', 'published')->firstOrFail();
+        $otherPost = CmsPost::query()->whereKeyNot($post->getKey())->where('status', 'published')->firstOrFail();
+        $detailUrl = route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]);
+
+        $this->get($detailUrl)->assertOk()
+            ->assertSee('id="n88-related-title"', false)
+            ->assertSee('class="n88-article-sidebar"', false)
+            ->assertSee('id="binh-luan"', false)
+            ->assertSee(route('customer.auth.login', ['locale' => 'vi']), false)
+            ->assertSee(route('customer.auth.register', ['locale' => 'vi']), false);
+
+        $this->from($detailUrl)
+            ->post(route('site.blog.comments.store', ['locale' => 'vi', 'post' => $post->getKey()]))
+            ->assertRedirect(route('customer.auth.login', ['locale' => 'vi']));
+
+        $customer = Customer::factory()->create(['name' => 'Độc giả NEWS88']);
+        $this->actingAs($customer, 'customer')->from($detailUrl)
+            ->post(route('site.blog.comments.store', ['locale' => 'vi', 'post' => $post->getKey()]), [
+                'body' => '<script>alert(1)</script> Bình luận đầu tiên',
+            ])->assertRedirect($detailUrl.'#binh-luan');
+
+        $root = CmsPostComment::query()->firstOrFail();
+        $this->assertSame('alert(1) Bình luận đầu tiên', $root->body);
+        $this->assertSame($customer->getKey(), $root->customer_id);
+
+        $this->actingAs($customer, 'customer')->from($detailUrl)
+            ->post(route('site.blog.comments.store', ['locale' => 'vi', 'post' => $post->getKey()]), [
+                'body' => 'Đây là câu trả lời',
+                'parent_id' => $root->getKey(),
+            ])->assertRedirect($detailUrl.'#binh-luan');
+
+        $this->assertDatabaseHas('cms_post_comments', [
+            'cms_post_id' => $post->getKey(),
+            'parent_id' => $root->getKey(),
+            'body' => 'Đây là câu trả lời',
+        ]);
+
+        $foreignParent = CmsPostComment::query()->create([
+            'website_key' => $otherPost->website_key,
+            'cms_post_id' => $otherPost->getKey(),
+            'customer_id' => $customer->getKey(),
+            'body' => 'Bình luận bài khác',
+            'status' => 'published',
+        ]);
+        $this->actingAs($customer, 'customer')->post(
+            route('site.blog.comments.store', ['locale' => 'vi', 'post' => $post->getKey()]),
+            ['body' => 'Không được nối sai bài', 'parent_id' => $foreignParent->getKey()],
+        )->assertNotFound();
+
+        $this->get($detailUrl)->assertOk()
+            ->assertSee('Độc giả NEWS88')
+            ->assertSee('Bình luận đầu tiên')
+            ->assertSee('Đây là câu trả lời');
     }
 }

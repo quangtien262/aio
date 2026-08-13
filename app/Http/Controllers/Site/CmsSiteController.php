@@ -14,6 +14,7 @@ use App\Models\CmsFeaturedCategory;
 use App\Models\CmsMedia;
 use App\Models\CmsPage;
 use App\Models\CmsPost;
+use App\Models\CmsPostComment;
 use App\Models\CmsProject;
 use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
@@ -1538,7 +1539,33 @@ class CmsSiteController
 
         if ($contentType === 'post' && $entry instanceof CmsPost && ! array_key_exists('relatedPosts', $extra)) {
             $isDn302 = strtoupper((string) data_get($activeTheme, 'key')) === 'DN302';
-            $extra['relatedPosts'] = $this->resolveRelatedPosts($entry, $siteProfile, $isDn302 ? 10 : 3, ! $isDn302);
+            $isNews88 = strtoupper((string) data_get($activeTheme, 'key')) === 'NEWS88';
+            $extra['relatedPosts'] = $this->resolveRelatedPosts($entry, $siteProfile, $isDn302 ? 10 : ($isNews88 ? 4 : 3), ! $isDn302);
+
+            if ($isNews88) {
+                $latestPostsQuery = CmsPost::query()
+                    ->with(['category', 'featuredMedia'])
+                    ->where('status', 'published')
+                    ->whereKeyNot($entry->getKey())
+                    ->latest('publish_at');
+                $this->applyWebsiteScope($latestPostsQuery, $websiteKey);
+                $extra['latestPosts'] = $latestPostsQuery->take(5)->get()
+                    ->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))
+                    ->values();
+                $extra['postComments'] = CmsPostComment::query()
+                    ->published()
+                    ->with(['customer', 'children.customer', 'children.children.customer', 'children.children.children.customer'])
+                    ->where('website_key', $websiteKey)
+                    ->where('cms_post_id', $entry->getKey())
+                    ->whereNull('parent_id')
+                    ->oldest()
+                    ->get();
+                $extra['postCommentCount'] = CmsPostComment::query()
+                    ->published()
+                    ->where('website_key', $websiteKey)
+                    ->where('cms_post_id', $entry->getKey())
+                    ->count();
+            }
         }
 
         if ($contentType === 'service' && $entry instanceof CmsService && ! array_key_exists('latestServices', $extra)) {

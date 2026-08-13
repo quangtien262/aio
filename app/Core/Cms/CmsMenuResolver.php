@@ -336,7 +336,7 @@ final class CmsMenuResolver
         );
 
         if ($identity !== null) {
-            return $this->canonicalUrlOrLocaleHome(
+            return $this->canonicalUrlOrResourceIndex(
                 $identity['resource_type'],
                 $identity['resource_id'],
                 $websiteKey,
@@ -383,7 +383,7 @@ final class CmsMenuResolver
         ).$query.$fragment;
     }
 
-    private function canonicalUrlOrLocaleHome(
+    private function canonicalUrlOrResourceIndex(
         string $resourceType,
         string $resourceId,
         string $websiteKey,
@@ -407,7 +407,19 @@ final class CmsMenuResolver
             ).$query.$fragment;
         }
 
-        return FrontendRouteUrl::home($locale, $absolute).$query.$fragment;
+        $fallbackLinkType = match ($resourceType) {
+            'catalog_category', 'catalog_product' => 'catalog-index',
+            'cms_category', 'cms_post' => 'post-index',
+            'cms_service_category', 'cms_service' => 'service-index',
+            'cms_project_category', 'cms_project' => 'project-index',
+            default => 'home',
+        };
+
+        return $this->specialUrl(
+            $fallbackLinkType,
+            $locale,
+            $absolute,
+        ).$query.$fragment;
     }
 
     private function specialUrl(

@@ -7,6 +7,7 @@ use App\Http\Controllers\Customer\Api\ProfileUpdateController;
 use App\Http\Controllers\Customer\Api\PasswordUpdateController;
 use App\Http\Controllers\Customer\Api\ServiceInterestController;
 use App\Http\Controllers\Customer\AuthenticatedSessionController as CustomerAuthenticatedSessionController;
+use App\Http\Controllers\Customer\CmsPostCommentController;
 use App\Http\Controllers\Customer\CustomerAccountController;
 use App\Http\Controllers\Customer\CustomerFavoriteController;
 use App\Http\Controllers\Customer\NewsletterSubscriptionController;
@@ -115,6 +116,10 @@ Route::prefix('{locale}')
 			->name('site.blog.category');
 		Route::get('/n/{slug}', [CmsSiteController::class, 'post'])
 			->name('site.blog.show');
+		Route::post('/n/{post}/comments', CmsPostCommentController::class)
+			->middleware('throttle:post-comments')
+			->whereNumber('post')
+			->name('site.blog.comments.store');
 		Route::get('/s', [CmsSiteController::class, 'servicesIndex'])
 			->name('site.services.index');
 		Route::get('/s/{slug}', [CmsSiteController::class, 'servicesIndex'])

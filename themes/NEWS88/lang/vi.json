@@ -11,5 +11,22 @@
   "NEWS88.no_content": "Nội dung đang được cập nhật.",
   "NEWS88.login": "Đăng nhập",
   "NEWS88.register": "Đăng ký",
-  "NEWS88.account": "Tài khoản"
+  "NEWS88.account": "Tài khoản",
+  "NEWS88.latest_articles": "Bài viết mới nhất",
+  "NEWS88.updated": "Mới cập nhật",
+  "NEWS88.continue_reading": "Đọc tiếp",
+  "NEWS88.related_articles": "Bài viết liên quan",
+  "NEWS88.view_all": "Xem tất cả",
+  "NEWS88.discussion": "Thảo luận",
+  "NEWS88.comments": "Bình luận",
+  "NEWS88.join_discussion": "Tham gia thảo luận",
+  "NEWS88.comment_placeholder": "Chia sẻ ý kiến của bạn...",
+  "NEWS88.post_comment": "Đăng bình luận",
+  "NEWS88.login_to_comment": "Đăng nhập để bình luận",
+  "NEWS88.comment_account_note": "Bạn cần có tài khoản để tham gia thảo luận và trả lời độc giả khác.",
+  "NEWS88.no_comments": "Chưa có bình luận. Hãy là người đầu tiên chia sẻ ý kiến.",
+  "NEWS88.former_member": "Thành viên",
+  "NEWS88.reply": "Trả lời",
+  "NEWS88.reply_placeholder": "Viết câu trả lời...",
+  "NEWS88.send_reply": "Gửi trả lời"
 }

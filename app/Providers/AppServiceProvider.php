@@ -166,6 +166,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($identity.'|'.$request->ip());
         });
 
+        RateLimiter::for('post-comments', function (Request $request): Limit {
+            return Limit::perMinute(8)->by((string) ($request->user('customer')?->getKey() ?: $request->ip()));
+        });
+
         Gate::before(function (mixed $user): ?bool {
             return $user instanceof Admin && $user->isSuperAdmin() ? true : null;
         });

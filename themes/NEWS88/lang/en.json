@@ -11,5 +11,22 @@
   "NEWS88.no_content": "Content is being updated.",
   "NEWS88.login": "Sign in",
   "NEWS88.register": "Register",
-  "NEWS88.account": "Account"
+  "NEWS88.account": "Account",
+  "NEWS88.latest_articles": "Latest articles",
+  "NEWS88.updated": "Just updated",
+  "NEWS88.continue_reading": "Keep reading",
+  "NEWS88.related_articles": "Related articles",
+  "NEWS88.view_all": "View all",
+  "NEWS88.discussion": "Discussion",
+  "NEWS88.comments": "Comments",
+  "NEWS88.join_discussion": "Join the discussion",
+  "NEWS88.comment_placeholder": "Share your thoughts...",
+  "NEWS88.post_comment": "Post comment",
+  "NEWS88.login_to_comment": "Sign in to comment",
+  "NEWS88.comment_account_note": "You need an account to join the discussion and reply to other readers.",
+  "NEWS88.no_comments": "No comments yet. Be the first to share your thoughts.",
+  "NEWS88.former_member": "Member",
+  "NEWS88.reply": "Reply",
+  "NEWS88.reply_placeholder": "Write a reply...",
+  "NEWS88.send_reply": "Send reply"
 }
