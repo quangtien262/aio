@@ -11,6 +11,14 @@
             <div class="n88-header-tools">
                 <div class="n88-social"><a href="#footer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a><a href="#footer" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a><a href="#footer" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a></div>
                 <button type="button" data-n88-search aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <div class="n88-auth-links">
+                    @guest('customer')
+                        <a class="n88-auth-login" href="{{ route('customer.auth.login') }}"><i class="fa-regular fa-user"></i><span>@themeT('NEWS88.login', 'Đăng nhập')</span></a>
+                        <a class="n88-auth-register" href="{{ route('customer.auth.register') }}">@themeT('NEWS88.register', 'Đăng ký')</a>
+                    @else
+                        <a class="n88-auth-account" href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>@themeT('NEWS88.account', 'Tài khoản')</span></a>
+                    @endguest
+                </div>
                 @include('partials.storefront-language-switcher')
             </div>
         </div>

@@ -8,5 +8,8 @@
   "NEWS88.recent": "Recent Posts",
   "NEWS88.keywords": "Keywords",
   "NEWS88.read_more": "Read more",
-  "NEWS88.no_content": "Content is being updated."
+  "NEWS88.no_content": "Content is being updated.",
+  "NEWS88.login": "Sign in",
+  "NEWS88.register": "Register",
+  "NEWS88.account": "Account"
 }

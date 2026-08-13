@@ -52,6 +52,9 @@ class News88ThemeTest extends TestCase
             ->assertSee('Cù lao được mệnh danh', false)
             ->assertSee('class="n88-topbar"', false)
             ->assertSee('class="n88-container n88-nav-wrap"', false)
+            ->assertSee(route('customer.auth.login'), false)
+            ->assertSee(route('customer.auth.register'), false)
+            ->assertSee('class="n88-auth-links"', false)
             ->assertSee('data-storefront-language-switcher', false)
             ->assertSee('data-block-type="news88_health_posts"', false);
         $this->get(route('site.home', ['locale' => 'en']))->assertOk()
@@ -71,6 +74,7 @@ class News88ThemeTest extends TestCase
         $this->assertStringContainsString('background-size:44px 44px', $styles);
         $this->assertStringContainsString('linear-gradient(145deg,#081522', $styles);
         $this->assertStringContainsString('.n88-tags a:hover', $styles);
+        $this->assertStringContainsString('.n88-auth-links{', $styles);
     }
 
     public function test_news88_admin_mode_exposes_landing_editor_controls(): void
