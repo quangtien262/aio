@@ -850,6 +850,7 @@
                             button_label: draft.button_label || '',
                             content: draft.content || {},
                         };
+                        if (!draft.masterOnly) payload.publish = true;
                         const response = await fetch(updateUrlTemplate.replace('__BLOCK_ID__', blockId), {
                             method: 'PUT',
                             headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf},

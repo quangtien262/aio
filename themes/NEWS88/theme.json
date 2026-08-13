@@ -1,0 +1,12 @@
+{
+  "name": "NEWS88 Editorial",
+  "key": "NEWS88",
+  "version": "1.0.0",
+  "description": "Theme tin tức hiện đại với lưới bài nổi bật, video, chuyên mục và footer tòa soạn.",
+  "website_type": "news",
+  "parent": null,
+  "preview": { "thumbnail": "preview-news88.svg", "cover": "cover-news88.svg" },
+  "blocks": ["hero-posts", "latest-video", "health-posts", "car-posts", "travel-posts", "entertainment-posts", "footer-posts"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] }
+}

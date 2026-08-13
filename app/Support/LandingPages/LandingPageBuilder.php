@@ -42,7 +42,7 @@ class LandingPageBuilder
 
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'FOOT409', 'XD0320', 'NT501', 'NT502', 'NT503', 'NT504', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750'], true);
+        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'FOOT409', 'NEWS88', 'XD0320', 'NT501', 'NT502', 'NT503', 'NT504', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750'], true);
     }
 
     /**
@@ -133,8 +133,7 @@ class LandingPageBuilder
         string $locale,
         string $fallbackLocale = 'vi',
         bool $includeEditableLocales = false,
-    ): array
-    {
+    ): array {
         $pageData = $this->localizedPageData($page, $locale, $fallbackLocale, true);
 
         $blocks = $page->blocks
@@ -730,6 +729,10 @@ class LandingPageBuilder
             'dl750_news' => 4,
             'shop606_collections', 'shop606_sale', 'shop606_new' => 4,
             'shop606_outfit', 'shop606_news' => 3,
+            'news88_hero_posts' => 5,
+            'news88_latest_video' => 8,
+            'news88_health_posts' => 6,
+            'news88_car_posts', 'news88_travel_posts', 'news88_entertainment_posts', 'news88_footer_posts' => 4,
             default => 3,
         };
         $maximumLimit = $block->block_type === 'ec907_category_grid' ? 16 : 12;
@@ -745,6 +748,18 @@ class LandingPageBuilder
 
         if ($block->block_type === 'latest_posts') {
             return $this->contentSourceItems($settings, 'cms_posts', $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, [
+            'news88_hero_posts',
+            'news88_latest_video',
+            'news88_health_posts',
+            'news88_car_posts',
+            'news88_travel_posts',
+            'news88_entertainment_posts',
+            'news88_footer_posts',
+        ], true)) {
+            return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
         }
 
         if (in_array($block->block_type, ['bds701_hero_search', 'bds701_property_types'], true)) {
@@ -1554,7 +1569,7 @@ class LandingPageBuilder
     private function latestPostItems(array $settings, int $limit, string $locale, ?string $websiteKey): array
     {
         /** @var Builder $query */
-        $query = CmsPost::query()->with('featuredMedia')->where('status', 'published')->latest('publish_at');
+        $query = CmsPost::query()->with(['featuredMedia', 'category'])->where('status', 'published')->latest('publish_at');
 
         if (filled($settings['search'] ?? null)) {
             $search = '%'.trim((string) $settings['search']).'%';
@@ -1570,14 +1585,26 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(fn (CmsPost $post): array => [
-            'title' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.title', $post->id), $post->title),
-            'summary' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.excerpt', $post->id), $post->excerpt),
-            'icon' => '▦',
-            'image' => $post->featuredMedia?->file_url ?: (string) ($settings['fallback_image'] ?? $this->fallbackContentImage()),
-            'alt' => $post->featuredMedia?->alt_text ?: $post->title,
-            'url' => route('site.blog.show', ['slug' => $post->slug]),
-        ])->all();
+        return $query->take($limit)->get()->map(function (CmsPost $post) use ($resolvedWebsiteKey, $locale, $settings): array {
+            $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.title', $post->id), $post->title);
+            $categoryName = $post->category
+                ? $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_category.%d.name', $post->category->id), $post->category->name)
+                : '';
+
+            return [
+                'id' => $post->id,
+                'slug' => $post->slug,
+                'title' => $title,
+                'summary' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.excerpt', $post->id), $post->excerpt),
+                'icon' => '▦',
+                'image' => $post->featuredMedia?->file_url ?: (string) ($settings['fallback_image'] ?? $this->fallbackContentImage()),
+                'alt' => $post->featuredMedia?->alt_text ?: $title,
+                'url' => route('site.blog.show', ['slug' => $post->slug]),
+                'category' => $categoryName,
+                'published_at' => $post->publish_at?->toDateString(),
+                'date' => $post->publish_at?->format('d/m/Y'),
+            ];
+        })->all();
     }
 
     /**
@@ -1952,6 +1979,7 @@ class LandingPageBuilder
             'FOOT407' => $this->foot407DefaultBlocks(),
             'FOOT408' => $this->foot408DefaultBlocks(),
             'FOOT409' => $this->foot409DefaultBlocks(),
+            'NEWS88' => $this->news88DefaultBlocks(),
             'TH0050' => $this->th0050DefaultBlocks(),
             'SER0101' => $this->legacyServiceDefaultBlocks($themeKey),
             'SER102' => $this->ser102DefaultBlocks(),
@@ -8445,6 +8473,38 @@ class LandingPageBuilder
     /**
      * @return array<int, array<string, mixed>>
      */
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function news88DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/NEWS88/preview-news88.svg';
+        $schema = static fn (int $limit): array => [
+            'source' => [
+                'type' => 'select',
+                'label' => 'Nguồn dữ liệu',
+                'options' => [['value' => 'cms_posts', 'label' => 'Bài viết CMS']],
+            ],
+            'limit' => ['type' => 'number', 'label' => 'Số bài hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Chuyên mục'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy bài nổi bật'],
+        ];
+        $heading = static fn (string $vi, string $en): array => [
+            'vi' => ['title' => $vi, 'content' => ['items' => []]],
+            'en' => ['title' => $en, 'content' => ['items' => []]],
+        ];
+
+        return [
+            ['block_type' => 'news88_hero_posts', 'label' => 'Tin nổi bật đầu trang', 'description' => 'Một bài lớn và bốn bài nổi bật trong lưới đầu trang.', 'preview_image' => $preview, 'anchor_id' => 'tin-noi-bat', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 5, 'featured_only' => true], 'settings_schema' => $schema(5), 'data' => $heading('Tin nổi bật', 'Top stories')],
+            ['block_type' => 'news88_latest_video', 'label' => 'Tin mới nhất & Video', 'description' => 'Sáu tin mới nhất và hai nội dung dạng video.', 'preview_image' => $preview, 'anchor_id' => 'tin-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 8, 'featured_only' => false], 'settings_schema' => $schema(8), 'data' => $heading('Tin Mới Nhất', 'Latest news')],
+            ['block_type' => 'news88_health_posts', 'label' => 'Tin Sức Khỏe', 'description' => 'Lưới sáu bài viết thuộc chuyên mục sức khỏe.', 'preview_image' => $preview, 'anchor_id' => 'suc-khoe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 6, 'featured_only' => false], 'settings_schema' => $schema(6), 'data' => $heading('Tin Sức Khỏe', 'Health')],
+            ['block_type' => 'news88_car_posts', 'label' => 'Tin Xe', 'description' => 'Một tin xe nổi bật và ba tin ngắn.', 'preview_image' => $preview, 'anchor_id' => 'xe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $schema(4), 'data' => $heading('Tin Xe', 'Motoring')],
+            ['block_type' => 'news88_travel_posts', 'label' => 'Tin Du Lịch', 'description' => 'Một tin du lịch nổi bật và ba tin ngắn.', 'preview_image' => $preview, 'anchor_id' => 'du-lich', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $schema(4), 'data' => $heading('Tin Du Lịch', 'Travel')],
+            ['block_type' => 'news88_entertainment_posts', 'label' => 'Tin Giải Trí', 'description' => 'Một tin giải trí nổi bật và ba tin ngắn.', 'preview_image' => $preview, 'anchor_id' => 'giai-tri', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $schema(4), 'data' => $heading('Tin Giải Trí', 'Entertainment')],
+            ['block_type' => 'news88_footer_posts', 'label' => 'Tin gần đây ở footer', 'description' => 'Danh sách bài viết mới dùng trong footer.', 'preview_image' => $preview, 'anchor_id' => 'footer-news', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $schema(4), 'data' => $heading('Tin Gần Đây', 'Recent posts')],
+        ];
+    }
+
     private function dl750DefaultBlocks(): array
     {
         $preview = '/theme-previews/DL750/preview-dl750.svg';

@@ -283,6 +283,13 @@ class ThemeDemoWebsiteFinalizer
             $created = false;
         }
 
+        // NEWS88 ships a category-led editorial menu whose labels and targets
+        // are part of its localized demo contract. Do not replace that owned
+        // menu with the generic business/ecommerce navigation sequence.
+        if ($themeKey === 'NEWS88' && collect($menu->items)->isNotEmpty()) {
+            return $created;
+        }
+
         $menu->forceFill([
             'items' => $this->primaryMenuItems(
                 $themeKey,

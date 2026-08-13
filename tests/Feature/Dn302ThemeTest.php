@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Core\Cms\CmsMenuLocalization;
 use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
+use App\Enums\TranslationStatus;
 use App\Models\Admin;
 use App\Models\CatalogProduct;
 use App\Models\CatalogProductImage;
@@ -16,6 +17,7 @@ use App\Models\CmsServiceCategory;
 use App\Models\CmsServiceImage;
 use App\Models\ContentTranslation;
 use App\Models\LandingPage;
+use App\Models\LandingPageBlockData;
 use App\Models\SiteProfile;
 use App\Support\FrontendRouteUrl;
 use App\Support\LandingPages\LandingPageBuilder;
@@ -162,7 +164,10 @@ class Dn302ThemeTest extends TestCase
     public function test_dn302_storefront_admin_mode_renders_landing_block_editor(): void
     {
         app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
-        $admin = Admin::factory()->create();
+        $admin = Admin::factory()->create([
+            'is_system_owner' => true,
+            'status' => 'active',
+        ]);
         $this->actingAs($admin, 'admin');
 
         $response = $this->get(route('site.home', ['locale' => 'vi', 'mod' => 'admin']))
@@ -172,6 +177,62 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('Sửa khối');
         $response->assertSee('originalLocaleDrafts', false)->assertSee('masterOnly', false);
         $this->assertSame(1, substr_count($response->getContent(), 'data-xd-editor-runtime'));
+    }
+
+    public function test_dn302_inline_editor_publishes_saved_english_block_for_public_storefront(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+        app(WebsiteLocaleManager::class)->updateLocale('website-main', 'en', [
+            'is_enabled_for_editing' => true,
+            'is_published' => true,
+        ]);
+
+        $landing = LandingPage::query()
+            ->where('theme_key', 'DN302')
+            ->where('is_home', true)
+            ->firstOrFail();
+        $block = $landing->blocks()->where('block_type', 'content_showcase')->firstOrFail();
+        $admin = Admin::factory()->create([
+            'is_system_owner' => true,
+            'status' => 'active',
+        ]);
+        $this->actingAs($admin, 'admin');
+
+        $this->putJson(route('admin.api.landing.blocks.update', ['block' => $block]), [
+            'locale' => 'en',
+            'data' => [
+                'title' => 'Key Product Categories',
+                'subtitle' => 'Product categories',
+                'description' => 'MASAMI provides logistics for industrial park development.',
+                'button_label' => '',
+                'content' => [
+                    'items' => [
+                        ['title' => 'Production Chemicals', 'summary' => 'Reliable industrial chemical supplies.'],
+                        ['title' => 'Operational Products', 'summary' => 'Products for safe daily operations.'],
+                    ],
+                ],
+            ],
+            'publish' => true,
+        ])->assertOk()->assertJsonPath('data.data.translation_status', 'published');
+
+        $this->assertSame(
+            TranslationStatus::Published,
+            LandingPageBlockData::query()
+                ->where('landing_page_block_id', $block->id)
+                ->where('locale', 'en')
+                ->firstOrFail()
+                ->translation_status,
+        );
+
+        $this->get(route('site.home', ['locale' => 'en']))
+            ->assertOk()
+            ->assertSee('Key Product Categories')
+            ->assertSee('MASAMI provides logistics for industrial park development.')
+            ->assertSee('Production Chemicals')
+            ->assertDontSee('Nhóm sản phẩm chính');
+
+        $scripts = file_get_contents(base_path('themes/XD0302/views/partials/scripts.blade.php'));
+        $this->assertStringContainsString('payload.publish = true', $scripts);
     }
 
     public function test_dn302_product_detail_renders_full_gallery_and_commerce_sections(): void
