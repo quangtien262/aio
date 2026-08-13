@@ -2242,10 +2242,10 @@ class CmsSiteController
 
         if ($this->isLandingHybridThemeKey($themeKey) && ($items->isEmpty() || $this->shouldUseLandingHybridTopMenuFallback($items->all()))) {
             return [
-                ['label' => 'Dịch vụ', 'url' => route('site.services.index'), 'target' => '_self'],
-                ['label' => 'Tin tức', 'url' => route('site.blog.index'), 'target' => '_self'],
-                ['label' => 'Giới thiệu', 'url' => FrontendRouteUrl::page('gioi-thieu', $this->currentLocale()), 'target' => '_self'],
-                ['label' => 'Liên hệ', 'url' => route('site.contact'), 'target' => '_self'],
+                ['label' => __('storefront.menu.services'), 'url' => route('site.services.index'), 'target' => '_self'],
+                ['label' => __('storefront.menu.blog'), 'url' => route('site.blog.index'), 'target' => '_self'],
+                ['label' => __('storefront.menu.about'), 'url' => FrontendRouteUrl::page('gioi-thieu', $this->currentLocale()), 'target' => '_self'],
+                ['label' => __('storefront.menu.contact'), 'url' => route('site.contact'), 'target' => '_self'],
             ];
         }
 
@@ -2253,9 +2253,9 @@ class CmsSiteController
             $resolvedThemeKey = $this->isCommerceThemeKey($themeKey) ? (string) $themeKey : 'SHOP601';
 
             return [
-                ['label' => $this->themeText('menu.default.blog', 'Tin tức', $resolvedThemeKey), 'url' => route('site.blog.index'), 'target' => '_self'],
-                ['label' => $this->themeText('menu.default.about', 'Giới thiệu', $resolvedThemeKey), 'url' => $this->localizedStaticPageUrl('gioi-thieu'), 'target' => '_self'],
-                ['label' => $this->themeText('menu.default.contact', 'Liên hệ', $resolvedThemeKey), 'url' => route('site.contact'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.blog', __('storefront.menu.blog'), $resolvedThemeKey), 'url' => route('site.blog.index'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.about', __('storefront.menu.about'), $resolvedThemeKey), 'url' => $this->localizedStaticPageUrl('gioi-thieu'), 'target' => '_self'],
+                ['label' => $this->themeText('menu.default.contact', __('storefront.menu.contact'), $resolvedThemeKey), 'url' => route('site.contact'), 'target' => '_self'],
             ];
         }
 

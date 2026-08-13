@@ -14,7 +14,7 @@
         ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('SPA502', app()->getLocale(), 'SPA502.nav.news'), 'href' => route('site.blog.index')],
         ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('SPA502', app()->getLocale(), 'SPA502.nav.contact'), 'href' => route('site.contact')],
     ];
-    $menuItems = collect($landingMenuItems ?? $menus['primary-navigation'] ?? $menus['primary'] ?? $fallbackMenu)
+    $menuItems = collect($menus['primary-navigation'] ?? $menus['primary'] ?? $landingMenuItems ?? $fallbackMenu)
         ->map(fn ($item) => is_array($item) ? $item : [])
         ->filter(fn ($item) => filled($item['label'] ?? $item['title'] ?? null))
         ->values();

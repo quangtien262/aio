@@ -305,6 +305,41 @@ class LocalizationFoundationTest extends TestCase
         );
     }
 
+    public function test_published_block_translation_is_authoritative_even_when_its_optional_content_is_empty(): void
+    {
+        $page = app(LandingPageBuilder::class)->seedHome('website-main', 'DN302');
+        $block = $page->blocks()->with('data')->firstOrFail();
+        $source = $block->data->firstWhere('locale', 'vi');
+        $translation = $block->data->firstWhere('locale', 'en');
+
+        $source->forceFill([
+            'title' => 'Nội dung nguồn không được rò rỉ',
+            'subtitle' => 'Nhãn phụ nguồn',
+            'content' => json_encode(['items' => [['title' => 'Mục tiếng Việt']]], JSON_UNESCAPED_UNICODE),
+            'translation_status' => TranslationStatus::Published,
+            'translation_published_at' => now(),
+        ])->save();
+        $translation->forceFill([
+            'title' => 'Authoritative English title',
+            'subtitle' => null,
+            'content' => json_encode(['items' => []], JSON_UNESCAPED_UNICODE),
+            'translation_status' => TranslationStatus::Published,
+            'reviewed_at' => now(),
+            'translation_published_at' => now(),
+        ])->save();
+
+        $serialized = app(LandingPageBuilder::class)->serializeBlock(
+            $block->fresh('data'),
+            'en',
+            'vi',
+        );
+
+        $this->assertSame('Authoritative English title', data_get($serialized, 'data.title'));
+        $this->assertNull(data_get($serialized, 'data.subtitle'));
+        $this->assertSame([], data_get($serialized, 'data.content.items'));
+        $this->assertSame([], data_get($serialized, 'data_by_locale.en.content.items'));
+    }
+
     public function test_theme_translation_runtime_cache_is_isolated_by_website(): void
     {
         $manager = app(WebsiteLocaleManager::class);

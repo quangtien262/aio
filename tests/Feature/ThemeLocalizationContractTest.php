@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Core\Themes\ThemeTranslationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
@@ -128,8 +129,8 @@ class ThemeLocalizationContractTest extends TestCase
 
         foreach ($catalogs as $locale => $catalog) {
             $this->assertEqualsCanonicalizing(
-                array_keys($catalogs['vi']),
-                array_keys($catalog),
+                array_keys(Arr::dot($catalogs['vi'])),
+                array_keys(Arr::dot($catalog)),
                 "{$group}/{$key}: {$locale}.json must keep the same key contract as vi.json.",
             );
         }

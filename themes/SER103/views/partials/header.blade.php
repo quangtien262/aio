@@ -1,30 +1,19 @@
 @php
     $branding = data_get($siteProfile ?? [], 'branding', []);
-    $companyName = data_get($siteProfile ?? [], 'site_name', 'Bøhu.');
+    $companyName = data_get($siteProfile ?? [], 'site_name', 'SER103');
     $logoUrl = data_get($branding, 'logo_url') ?: data_get($siteProfile ?? [], 'logo_url');
+    $themeText = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)
+        ->bladeText('SER103', app()->getLocale(), $key);
     $fallbackMenu = [
-        ['label' => 'Giới thiệu', 'href' => '#gioi-thieu'],
-        ['label' => 'Dịch vụ', 'href' => '#dich-vu'],
-        ['label' => 'Tin tức', 'href' => '#tin-tuc'],
-        ['label' => 'Thư viện', 'href' => '#thu-vien'],
-        ['label' => 'Liên hệ', 'href' => '#lien-he'],
+        ['label' => $themeText('SER103.nav.home'), 'href' => route('site.home')],
+        ['label' => $themeText('SER103.nav.services'), 'href' => '#dich-vu'],
+        ['label' => $themeText('SER103.nav.pricing'), 'href' => '#bang-gia'],
+        ['label' => $themeText('SER103.nav.products'), 'href' => '#san-pham'],
+        ['label' => $themeText('SER103.nav.news'), 'href' => '#tin-tuc'],
+        ['label' => $themeText('SER103.nav.contact'), 'href' => '#lien-he'],
     ];
-    $anchorLabels = [
-        '#gioi-thieu' => 'Giới thiệu',
-        '#dich-vu' => 'Dịch vụ',
-        '#tin-tuc' => 'Tin tức',
-        '#thu-vien' => 'Thư viện',
-        '#lien-he' => 'Liên hệ',
-    ];
-    $menuItems = collect($landingMenuItems ?? data_get($menus ?? [], 'primary-navigation') ?? data_get($menus ?? [], 'primary') ?? $fallbackMenu)
-        ->map(function ($item) use ($anchorLabels) {
-            $item = is_array($item) ? $item : [];
-            $href = $item['href'] ?? $item['url'] ?? '#';
-            if (isset($anchorLabels[$href])) {
-                $item['label'] = $anchorLabels[$href];
-            }
-            return $item;
-        })
+    $menuItems = collect(data_get($menus ?? [], 'primary-navigation') ?? data_get($menus ?? [], 'primary') ?? $landingMenuItems ?? $fallbackMenu)
+        ->map(fn ($item) => is_array($item) ? $item : [])
         ->filter(fn ($item) => filled($item['label'] ?? $item['title'] ?? null))
         ->values();
 @endphp
@@ -32,9 +21,10 @@
     <div class="ser103-container ser103-header__inner">
         <a class="ser103-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if(filled($logoUrl))
-                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
+                <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
+            @endif
         </a>
-        <button class="ser103-menu-toggle" type="button" data-ser103-menu-toggle aria-label="Mở menu">
+        <button class="ser103-menu-toggle" type="button" data-ser103-menu-toggle aria-label="@themeT('SER103.header.open_menu')">
             <i class="fa-solid fa-bars"></i>
         </button>
         <nav class="ser103-nav" data-ser103-menu>
@@ -43,9 +33,9 @@
             @endforeach
         </nav>
         <div class="ser103-header__actions">
-            <a href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></a>
+            <a href="{{ route('site.catalog.search') }}" aria-label="@themeT('SER103.header.search')"><i class="fa-solid fa-magnifying-glass"></i></a>
             <button class="ser103-booking-button" type="button" data-ser103-booking-open>
-                <span>Đặt lịch hẹn</span><i class="fa-solid fa-arrow-right-long"></i>
+                <span>@themeT('SER103.header.booking')</span><i class="fa-solid fa-arrow-right-long"></i>
             </button>
         </div>
     </div>

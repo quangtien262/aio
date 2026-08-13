@@ -308,7 +308,8 @@ class LandingPageBuilder
             : $block->data->filter(
                 fn (LandingPageBlockData $item): bool => $item->isPublishedTranslation(),
             );
-        $data = $availableData->firstWhere('locale', $locale)
+        $localizedData = $availableData->firstWhere('locale', $locale);
+        $data = $localizedData
             ?? $availableData->firstWhere('locale', $fallbackLocale)
             ?? $availableData->first();
         $fallbackData = $availableData->firstWhere('locale', $fallbackLocale)
@@ -316,9 +317,16 @@ class LandingPageBuilder
         $content = $this->decodeContent($data?->content);
         $fallbackContent = $this->decodeContent($fallbackData?->content);
 
-        if ($content === [] || (array_key_exists('items', $content) && ($content['items'] ?? []) === [])) {
+        if (
+            $localizedData === null
+            && ($content === [] || (array_key_exists('items', $content) && ($content['items'] ?? []) === []))
+        ) {
             $content = $fallbackContent;
         }
+
+        $localizedValue = static fn (string $field): mixed => $localizedData !== null
+            ? $localizedData->{$field}
+            : ($data?->{$field} ?? $fallbackData?->{$field});
 
         return [
             'id' => $block->id,
@@ -337,10 +345,10 @@ class LandingPageBuilder
                 'schema_version' => (int) ($data?->schema_version ?? $block->schema_version ?? 1),
                 'translation_status' => $data?->translation_status?->value
                     ?? TranslationStatus::Missing->value,
-                'title' => $data?->title ?? $fallbackData?->title,
-                'subtitle' => $data?->subtitle ?? $fallbackData?->subtitle,
-                'description' => $data?->description ?? $fallbackData?->description,
-                'button_label' => $data?->button_label ?? $fallbackData?->button_label,
+                'title' => $localizedValue('title'),
+                'subtitle' => $localizedValue('subtitle'),
+                'description' => $localizedValue('description'),
+                'button_label' => $localizedValue('button_label'),
                 'content' => $content,
             ],
             'data_by_locale' => collect(
@@ -354,10 +362,15 @@ class LandingPageBuilder
 
                     if (
                         ! $includeEditableLocales
+                        && $localeData === null
                         && ($localeContent === [] || (array_key_exists('items', $localeContent) && ($localeContent['items'] ?? []) === []))
                     ) {
                         $localeContent = $fallbackContent;
                     }
+
+                    $localeValue = static fn (string $field): mixed => $localeData !== null
+                        ? $localeData->{$field}
+                        : ($includeEditableLocales ? null : $fallbackData?->{$field});
 
                     return [
                         $supportedLocale => [
@@ -370,10 +383,10 @@ class LandingPageBuilder
                                     ->map(fn (TranslationStatus $status): string => $status->value)
                                     ->all()
                                 : [],
-                            'title' => $localeData?->title ?? ($includeEditableLocales ? null : $fallbackData?->title),
-                            'subtitle' => $localeData?->subtitle ?? ($includeEditableLocales ? null : $fallbackData?->subtitle),
-                            'description' => $localeData?->description ?? ($includeEditableLocales ? null : $fallbackData?->description),
-                            'button_label' => $localeData?->button_label ?? ($includeEditableLocales ? null : $fallbackData?->button_label),
+                            'title' => $localeValue('title'),
+                            'subtitle' => $localeValue('subtitle'),
+                            'description' => $localeValue('description'),
+                            'button_label' => $localeValue('button_label'),
                             'content' => $localeContent,
                         ],
                     ];
@@ -1414,6 +1427,7 @@ class LandingPageBuilder
                 ->get()
                 ->map(function (CmsCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_category.%d.name', $category->id), $category->name);
+                    $slug = $this->localizedContent->localizedSlug($category, 'cms_category', $locale, $resolvedWebsiteKey);
 
                     return [
                         'title' => $title,
@@ -1422,7 +1436,7 @@ class LandingPageBuilder
                         'alt' => $title,
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->posts_count > 0 ? $category->posts_count.' bài viết' : null,
-                        'url' => route('site.blog.category', ['locale' => $locale, 'slug' => $category->slug]),
+                        'url' => route('site.blog.category', ['locale' => $locale, 'slug' => $slug]),
                     ];
                 })
                 ->all();
@@ -1449,6 +1463,7 @@ class LandingPageBuilder
                 ->map(function (CmsServiceCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service_category.%d.name', $category->id), $category->name);
                     $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service_category.%d.description', $category->id), $category->description);
+                    $slug = $this->localizedContent->localizedSlug($category, 'cms_service_category', $locale, $resolvedWebsiteKey);
 
                     return [
                         'title' => $title,
@@ -1457,7 +1472,7 @@ class LandingPageBuilder
                         'alt' => $title,
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->services_count > 0 ? $category->services_count.' dịch vụ' : null,
-                        'url' => route('site.services.category', ['locale' => $locale, 'slug' => $category->slug]),
+                        'url' => route('site.services.category', ['locale' => $locale, 'slug' => $slug]),
                     ];
                 })
                 ->all();
@@ -1479,6 +1494,7 @@ class LandingPageBuilder
                 ->map(function (CmsProjectCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project_category.%d.name', $category->id), $category->name);
                     $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project_category.%d.description', $category->id), $category->description);
+                    $slug = $this->localizedContent->localizedSlug($category, 'cms_project_category', $locale, $resolvedWebsiteKey);
 
                     return [
                         'title' => $title,
@@ -1487,7 +1503,7 @@ class LandingPageBuilder
                         'alt' => $title,
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->projects_count > 0 ? $category->projects_count.' dự án' : null,
-                        'url' => route('site.projects.category', ['locale' => $locale, 'slug' => $category->slug]),
+                        'url' => route('site.projects.category', ['locale' => $locale, 'slug' => $slug]),
                     ];
                 })
                 ->all();
@@ -1517,6 +1533,7 @@ class LandingPageBuilder
             ->map(function (CatalogCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                 $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_category.%d.name', $category->id), $category->name);
                 $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_category.%d.description', $category->id), $category->description);
+                $slug = $this->localizedContent->localizedSlug($category, 'catalog_category', $locale, $resolvedWebsiteKey);
 
                 return [
                     'title' => $title,
@@ -1525,7 +1542,7 @@ class LandingPageBuilder
                     'alt' => $title,
                     'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                     'count_label' => (int) $category->products_count > 0 ? $category->products_count.' sản phẩm' : null,
-                    'url' => route('site.catalog.category', ['locale' => $locale, 'slug' => $category->slug]),
+                    'url' => route('site.catalog.category', ['locale' => $locale, 'slug' => $slug]),
                 ];
             })
             ->all();
@@ -1587,19 +1604,20 @@ class LandingPageBuilder
 
         return $query->take($limit)->get()->map(function (CmsPost $post) use ($resolvedWebsiteKey, $locale, $settings): array {
             $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.title', $post->id), $post->title);
+            $slug = $this->localizedContent->localizedSlug($post, 'cms_post', $locale, $resolvedWebsiteKey);
             $categoryName = $post->category
                 ? $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_category.%d.name', $post->category->id), $post->category->name)
                 : '';
 
             return [
                 'id' => $post->id,
-                'slug' => $post->slug,
+                'slug' => $slug,
                 'title' => $title,
                 'summary' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.excerpt', $post->id), $post->excerpt),
                 'icon' => '▦',
                 'image' => $post->featuredMedia?->file_url ?: (string) ($settings['fallback_image'] ?? $this->fallbackContentImage()),
                 'alt' => $post->featuredMedia?->alt_text ?: $title,
-                'url' => route('site.blog.show', ['slug' => $post->slug]),
+                'url' => route('site.blog.show', ['locale' => $locale, 'slug' => $slug]),
                 'category' => $categoryName,
                 'published_at' => $post->publish_at?->toDateString(),
                 'date' => $post->publish_at?->format('d/m/Y'),
@@ -1641,7 +1659,10 @@ class LandingPageBuilder
             'alt' => $product->name,
             'price' => (float) $product->price,
             'original_price' => filled($product->original_price) ? (float) $product->original_price : null,
-            'url' => route('site.catalog.product', ['slug' => $product->slug]),
+            'url' => route('site.catalog.product', [
+                'locale' => $locale,
+                'slug' => $this->localizedContent->localizedSlug($product, 'catalog_product', $locale, $resolvedWebsiteKey),
+            ]),
         ])->all();
     }
 
@@ -1689,7 +1710,10 @@ class LandingPageBuilder
                 'alt' => $featuredImage?->alt_text ?: $project->title,
                 'images' => $projectImages,
                 'gallery_images' => $projectImages,
-                'url' => route('site.projects.show', ['slug' => $project->slug]),
+                'url' => route('site.projects.show', [
+                    'locale' => $locale,
+                    'slug' => $this->localizedContent->localizedSlug($project, 'cms_project', $locale, $resolvedWebsiteKey),
+                ]),
                 'date' => $project->publish_at?->format('d/m/Y'),
                 'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project.%d.button_label', $project->id), $project->button_label),
             ];
@@ -1723,6 +1747,7 @@ class LandingPageBuilder
 
         return $query->take($limit)->get()->map(function (CmsService $service) use ($locale, $resolvedWebsiteKey): array {
             $featuredImage = $service->images->firstWhere('is_featured', true) ?? $service->images->first();
+            $slug = $this->localizedContent->localizedSlug($service, 'cms_service', $locale, $resolvedWebsiteKey);
 
             return [
                 'title' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service.%d.title', $service->id), $service->title),
@@ -1731,7 +1756,7 @@ class LandingPageBuilder
                 'icon' => $service->icon ?: 'â–¦',
                 'image' => $featuredImage?->image_url ?: $this->fallbackContentImage(),
                 'alt' => $featuredImage?->alt_text ?: $service->title,
-                'url' => $service->slug !== '' ? route('site.services.show', ['slug' => $service->slug]) : ($service->link_url ?: '#lien-he'),
+                'url' => $slug !== '' ? route('site.services.show', ['locale' => $locale, 'slug' => $slug]) : ($service->link_url ?: '#lien-he'),
                 'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service.%d.button_label', $service->id), $service->button_label),
             ];
         })->all();

@@ -115,8 +115,11 @@
             $hotline = data_get($branding, 'support_hotline');
             $email = data_get($branding, 'support_email');
             $address = data_get($branding, 'support_location');
+            $headerMenu = collect(data_get($themeShellData ?? [], 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
+                ->filter(fn ($item) => is_array($item) && filled($item['label'] ?? null))
+                ->values();
         @endphp
-        <header style="padding:18px 32px;background:#fff;border-bottom:1px solid #dbe7e4">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:18px 32px;background:#fff;border-bottom:1px solid #dbe7e4">
             <a href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
                 @if(filled($logo))
                     <img src="{{ $logo }}" alt="{{ $companyName }}" style="max-height:56px;max-width:240px">
@@ -124,6 +127,13 @@
                     <strong>{{ $companyName }}</strong>
                 @endif
             </a>
+            @if($headerMenu->isNotEmpty())
+                <nav style="display:flex;align-items:center;flex-wrap:wrap;gap:18px">
+                    @foreach($headerMenu as $item)
+                        <a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}" style="color:#16302b;text-decoration:none;font-weight:600">{{ $item['label'] }}</a>
+                    @endforeach
+                </nav>
+            @endif
         </header>
         @include('partials.storefront-language-switcher')
         <main class="shell">

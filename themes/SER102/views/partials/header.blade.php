@@ -11,7 +11,7 @@
         ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('SER102', app()->getLocale(), 'SER102.nav.news'), 'href' => '#tin-tuc'],
         ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('SER102', app()->getLocale(), 'SER102.nav.contact'), 'href' => '#lien-he'],
     ];
-    $menuItems = collect($landingMenuItems ?? data_get($menus ?? [], 'primary-navigation') ?? data_get($menus ?? [], 'primary') ?? $fallbackMenu)
+    $menuItems = collect(data_get($menus ?? [], 'primary-navigation') ?? data_get($menus ?? [], 'primary') ?? $landingMenuItems ?? $fallbackMenu)
         ->map(fn ($item) => is_array($item) ? $item : [])
         ->filter(fn ($item) => filled($item['label'] ?? $item['title'] ?? null))
         ->values();
