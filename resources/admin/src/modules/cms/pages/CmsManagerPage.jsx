@@ -1950,8 +1950,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openCategoryManager = async () => {
+        setContentLocale(contentSourceLocale);
         setCategoryManagerOpen(true);
-        await loadCategoryItems();
+        await loadCategoryItems({ locale: contentSourceLocale });
     };
 
     const openCreateCategory = () => {
@@ -2083,6 +2084,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         if (didSaveWithoutPageReload) {
+            setContentLocale(contentSourceLocale);
+            await loadCategoryItems({ showLoading: false, locale: contentSourceLocale });
             setCategoryFormOpen(false);
             setEditingCategoryRecord(emptyCategory);
         }
@@ -2136,8 +2139,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openServiceCategoryManager = async () => {
+        setContentLocale(contentSourceLocale);
         setServiceCategoryManagerOpen(true);
-        await loadServiceCategoryItems();
+        await loadServiceCategoryItems({ locale: contentSourceLocale });
     };
 
     const openCreateServiceCategory = () => {
@@ -2201,6 +2205,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         if (didSaveWithoutPageReload) {
+            setContentLocale(contentSourceLocale);
+            await loadServiceCategoryItems({ showLoading: false, locale: contentSourceLocale });
             setServiceCategoryFormOpen(false);
             setEditingServiceCategoryRecord(emptyServiceCategory);
         }
@@ -2254,8 +2260,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openProjectCategoryManager = async () => {
+        setContentLocale(contentSourceLocale);
         setProjectCategoryManagerOpen(true);
-        await loadProjectCategoryItems();
+        await loadProjectCategoryItems({ locale: contentSourceLocale });
     };
 
     const openCreateProjectCategory = () => {
@@ -2319,6 +2326,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         if (didSaveWithoutPageReload) {
+            setContentLocale(contentSourceLocale);
+            await loadProjectCategoryItems({ showLoading: false, locale: contentSourceLocale });
             setProjectCategoryFormOpen(false);
             setEditingProjectCategoryRecord(emptyProjectCategory);
         }
@@ -2372,8 +2381,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     };
 
     const openProductCategoryManager = async () => {
+        setContentLocale(contentSourceLocale);
         setProductCategoryManagerOpen(true);
-        await loadProductCategoryItems();
+        await loadProductCategoryItems({ locale: contentSourceLocale });
     };
 
     const openCreateProductCategory = () => {
@@ -2437,6 +2447,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         if (didSaveWithoutPageReload) {
+            setContentLocale(contentSourceLocale);
+            await loadProductCategoryItems({ silent: true, locale: contentSourceLocale });
             setProductCategoryFormOpen(false);
             setEditingProductCategoryRecord(emptyProductCategory);
         }
@@ -6243,7 +6255,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             <Modal
                 title="Cài đặt danh mục tin tức"
                 open={categoryManagerOpen}
-                onCancel={() => setCategoryManagerOpen(false)}
+                onCancel={() => {
+                    setContentLocale(contentSourceLocale);
+                    setCategoryManagerOpen(false);
+                }}
                 footer={null}
                 width={980}
                 destroyOnHidden
@@ -6316,6 +6331,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     sourceLocale={contentSourceLocale}
                     submitLoading={categorySaving}
                     onCancel={() => {
+                        setContentLocale(contentSourceLocale);
+                        loadCategoryItems({ showLoading: false, locale: contentSourceLocale });
                         setCategoryFormOpen(false);
                         setEditingCategoryRecord(emptyCategory);
                     }}
@@ -6335,7 +6352,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             <Modal
                 title="Cài đặt danh mục dịch vụ"
                 open={serviceCategoryManagerOpen}
-                onCancel={() => setServiceCategoryManagerOpen(false)}
+                onCancel={() => {
+                    setContentLocale(contentSourceLocale);
+                    setServiceCategoryManagerOpen(false);
+                }}
                 footer={null}
                 width={1040}
                 destroyOnHidden
@@ -6412,6 +6432,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     callAdminApi={callAdminApi}
                     submitLoading={serviceCategorySaving}
                     onCancel={() => {
+                        setContentLocale(contentSourceLocale);
+                        loadServiceCategoryItems({ showLoading: false, locale: contentSourceLocale });
                         setServiceCategoryFormOpen(false);
                         setEditingServiceCategoryRecord(emptyServiceCategory);
                     }}
@@ -6431,7 +6453,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             <Modal
                 title="Cài đặt danh mục SP"
                 open={productCategoryManagerOpen}
-                onCancel={() => setProductCategoryManagerOpen(false)}
+                onCancel={() => {
+                    setContentLocale(contentSourceLocale);
+                    setProductCategoryManagerOpen(false);
+                }}
                 footer={null}
                 width={1040}
                 destroyOnHidden
@@ -6535,6 +6560,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     callAdminApi={callAdminApi}
                     submitLoading={productCategorySaving}
                     onCancel={() => {
+                        setContentLocale(contentSourceLocale);
+                        loadProductCategoryItems({ silent: true, locale: contentSourceLocale });
                         setProductCategoryFormOpen(false);
                         setEditingProductCategoryRecord(emptyProductCategory);
                     }}
@@ -6554,7 +6581,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             <Modal
                 title="Cài đặt danh mục dự án"
                 open={projectCategoryManagerOpen}
-                onCancel={() => setProjectCategoryManagerOpen(false)}
+                onCancel={() => {
+                    setContentLocale(contentSourceLocale);
+                    setProjectCategoryManagerOpen(false);
+                }}
                 footer={null}
                 width={1040}
                 destroyOnHidden
@@ -6631,6 +6661,8 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     callAdminApi={callAdminApi}
                     submitLoading={projectCategorySaving}
                     onCancel={() => {
+                        setContentLocale(contentSourceLocale);
+                        loadProjectCategoryItems({ showLoading: false, locale: contentSourceLocale });
                         setProjectCategoryFormOpen(false);
                         setEditingProjectCategoryRecord(emptyProjectCategory);
                     }}

@@ -593,6 +593,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                         sourceLocale={sourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => {
+                            setContentLocale(sourceLocale);
                             setCategoryModalOpen(false);
                             setEditingCategory(emptyCategoryForm);
                         }}
@@ -613,6 +614,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                                 });
 
                             if (didSave) {
+                                setContentLocale(sourceLocale);
                                 setCategoryModalOpen(false);
                                 setEditingCategory(emptyCategoryForm);
                             }
