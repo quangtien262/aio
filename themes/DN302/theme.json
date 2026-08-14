@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Theme doanh nghiệp cửa nhôm kính cao cấp với dự án, dịch vụ, tư vấn và chuyển động cuộn trang.",
   "website_type": "service",
+  "requires_modules": ["cms", "catalog"],
   "parent": null,
   "preview": {
     "thumbnail": "preview-dn302.png",

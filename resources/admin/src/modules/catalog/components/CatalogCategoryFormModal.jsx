@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import Alert from 'antd/es/alert';
+import Button from 'antd/es/button';
 import Checkbox from 'antd/es/checkbox';
 import Col from 'antd/es/col';
 import Form from 'antd/es/form';
@@ -8,10 +9,12 @@ import InputNumber from 'antd/es/input-number';
 import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
+import Space from 'antd/es/space';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import { toSlug } from '../../../shared/utils/slug';
 
-export default function CatalogCategoryFormModal({ open, canManage, translationMode = false, editingCategory, categoryOptions = [], callAdminApi, submitLoading = false, onCancel, onSubmit }) {
+export default function CatalogCategoryFormModal({ open, canManage, translationMode = false, editingCategory, categoryOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', entityLabel = 'danh mục sản phẩm', callAdminApi, submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
     const [form] = Form.useForm();
     const imageUrl = Form.useWatch('image_url', form) ?? '';
     const categoryName = Form.useWatch('name', form) ?? '';
@@ -20,7 +23,7 @@ export default function CatalogCategoryFormModal({ open, canManage, translationM
         form.setFieldsValue(editingCategory);
     }, [editingCategory, form]);
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (publish = true) => {
         const values = await form.validateFields();
         const didSubmit = await onSubmit?.({
             ...values,
@@ -28,7 +31,7 @@ export default function CatalogCategoryFormModal({ open, canManage, translationM
             slug: toSlug(values.slug || values.name),
             image_url: values.image_url || null,
             is_active: Boolean(values.is_active),
-        });
+        }, { publish });
 
         if (didSubmit !== false) {
             form.resetFields();
@@ -50,12 +53,31 @@ export default function CatalogCategoryFormModal({ open, canManage, translationM
             title={editingCategory?.id ? 'Cập nhật danh mục' : 'Tạo danh mục'}
             open={open}
             onCancel={onCancel}
-            onOk={handleSubmit}
-            okButtonProps={{ disabled: !canManage }}
+            footer={(
+                <Space>
+                    <Button onClick={onCancel}>Hủy</Button>
+                    {translationMode ? <Button disabled={!canManage} loading={submitLoading} onClick={() => handleSubmit(false)}>Lưu nháp</Button> : null}
+                    <Button type="primary" disabled={!canManage} loading={submitLoading} onClick={() => handleSubmit(true)}>
+                        {translationMode ? 'Lưu và xuất bản' : 'Lưu danh mục'}
+                    </Button>
+                </Space>
+            )}
             confirmLoading={submitLoading}
             width={860}
             destroyOnHidden
         >
+            <LocalizedContentTabs
+                localeOptions={localeOptions}
+                contentLocale={contentLocale}
+                sourceLocale={sourceLocale}
+                editingRecord={editingCategory}
+                entityLabel={entityLabel}
+                translationDescription="Tên, slug và mô tả được lưu riêng cho ngôn ngữ này. Danh mục cha, ảnh, thứ tự và trạng thái dùng chung từ bản gốc."
+                sourceDescription="Đây là ngôn ngữ gốc. Cấu trúc, ảnh, thứ tự và trạng thái được quản lý tại đây."
+                isDirty={() => form.isFieldsTouched()}
+                getCurrentValues={() => form.getFieldsValue(true)}
+                onLocaleChange={onLocaleChange}
+            />
             <Form form={form} layout="vertical" initialValues={editingCategory} onValuesChange={handleValuesChange}>
                 {translationMode ? (
                     <Alert
@@ -118,6 +140,18 @@ export default function CatalogCategoryFormModal({ open, canManage, translationM
                 <Form.Item name="description" label="Mô tả">
                     <Input.TextArea rows={4} placeholder="Mô tả ngắn cho landing page danh mục" />
                 </Form.Item>
+                <Row gutter={16}>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="meta_title" label="SEO Title">
+                            <Input placeholder="Tiêu đề dùng trên công cụ tìm kiếm" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="meta_description" label="SEO Description">
+                            <Input.TextArea rows={2} placeholder="Mô tả ngắn trên công cụ tìm kiếm" />
+                        </Form.Item>
+                    </Col>
+                </Row>
                 <Row gutter={16}>
                     <Col span={8}>
                         <Form.Item name="sort_order" label="Thứ tự">

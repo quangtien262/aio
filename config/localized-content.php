@@ -41,7 +41,7 @@ return [
         ],
         'cms_service_category' => [
             'model' => CmsServiceCategory::class,
-            'fields' => ['name', 'slug', 'description'],
+            'fields' => ['name', 'slug', 'description', 'meta_title', 'meta_description'],
             'label_field' => 'name',
             'slug_field' => 'slug',
             'active_field' => 'is_active',
@@ -61,7 +61,7 @@ return [
         ],
         'cms_project_category' => [
             'model' => CmsProjectCategory::class,
-            'fields' => ['name', 'slug', 'description'],
+            'fields' => ['name', 'slug', 'description', 'meta_title', 'meta_description'],
             'label_field' => 'name',
             'slug_field' => 'slug',
             'active_field' => 'is_active',
@@ -81,7 +81,7 @@ return [
         ],
         'catalog_category' => [
             'model' => CatalogCategory::class,
-            'fields' => ['name', 'slug', 'description'],
+            'fields' => ['name', 'slug', 'description', 'meta_title', 'meta_description'],
             'label_field' => 'name',
             'slug_field' => 'slug',
             'active_field' => 'is_active',

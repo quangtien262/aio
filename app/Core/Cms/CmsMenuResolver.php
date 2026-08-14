@@ -230,23 +230,47 @@ final class CmsMenuResolver
                 }
 
                 if (array_key_exists('url', $item)) {
-                    $item['url'] = $this->localizedUrl(
+                    $localizedUrl = $this->localizedUrl(
                         $item,
                         $websiteKey,
                         $locale,
                     );
+
+                    // A translated label is not enough to publish a category.
+                    // Hide category nodes that do not yet have a canonical
+                    // route for the requested locale instead of rendering many
+                    // misleading links to the same index/search page.
+                    if ($localizedUrl === null) {
+                        return null;
+                    }
+
+                    $item['url'] = $localizedUrl;
                 }
 
                 if (is_array($item['children'] ?? null)) {
+                    $sourceChildren = $item['children'];
                     $item['children'] = $this->localizeUrls(
-                        $item['children'],
+                        $sourceChildren,
                         $websiteKey,
                         $locale,
                     );
+
+                    if ($sourceChildren !== [] && $item['children'] === []) {
+                        $fallbackLinkType = $this->categoryIndexLinkType($sourceChildren);
+
+                        if ($fallbackLinkType !== null) {
+                            $item['url'] = $this->specialUrl(
+                                $fallbackLinkType,
+                                $locale,
+                                false,
+                            );
+                        }
+                    }
                 }
 
                 return $item;
             })
+            ->filter(fn (mixed $item): bool => is_array($item))
             ->all();
     }
 
@@ -254,7 +278,7 @@ final class CmsMenuResolver
         array $item,
         string $websiteKey,
         string $locale,
-    ): string {
+    ): ?string {
         $url = (string) ($item['url'] ?? '');
         $url = trim($url);
 
@@ -336,6 +360,18 @@ final class CmsMenuResolver
         );
 
         if ($identity !== null) {
+            if (
+                $this->isCategoryResource((string) $identity['resource_type'])
+                && ! $this->hasCanonicalRoute(
+                    (string) $identity['resource_type'],
+                    (string) $identity['resource_id'],
+                    $websiteKey,
+                    $locale,
+                )
+            ) {
+                return null;
+            }
+
             return $this->canonicalUrlOrResourceIndex(
                 $identity['resource_type'],
                 $identity['resource_id'],
@@ -381,6 +417,57 @@ final class CmsMenuResolver
             $locale,
             $absolute,
         ).$query.$fragment;
+    }
+
+    private function isCategoryResource(string $resourceType): bool
+    {
+        return in_array($resourceType, [
+            'catalog_category',
+            'cms_category',
+            'cms_service_category',
+            'cms_project_category',
+        ], true);
+    }
+
+    private function hasCanonicalRoute(
+        string $resourceType,
+        string $resourceId,
+        string $websiteKey,
+        string $locale,
+    ): bool {
+        $canonical = $this->routeRegistry->canonicalPaths(
+            $resourceType,
+            $resourceId,
+            [$locale],
+            $websiteKey,
+        )[$locale] ?? null;
+
+        return is_string($canonical) && $canonical !== '';
+    }
+
+    /**
+     * @param  array<int, mixed>  $children
+     */
+    private function categoryIndexLinkType(array $children): ?string
+    {
+        $resourceTypes = collect($children)
+            ->filter(fn (mixed $child): bool => is_array($child))
+            ->map(fn (array $child): string => (string) ($child['resource_type'] ?? ''))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($resourceTypes->count() !== 1) {
+            return null;
+        }
+
+        return match ($resourceTypes->first()) {
+            'catalog_category' => 'catalog-index',
+            'cms_category' => 'post-index',
+            'cms_service_category' => 'service-index',
+            'cms_project_category' => 'project-index',
+            default => null,
+        };
     }
 
     private function canonicalUrlOrResourceIndex(

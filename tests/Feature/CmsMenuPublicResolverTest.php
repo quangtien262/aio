@@ -347,7 +347,7 @@ class CmsMenuPublicResolverTest extends TestCase
         $this->assertSame('404', $menu->items[0]['resource_id']);
     }
 
-    public function test_resource_links_without_target_routes_fall_back_to_their_localized_indexes(): void
+    public function test_untranslated_category_links_are_hidden_instead_of_repeating_localized_indexes(): void
     {
         $this->publishEnglishFor('website-main');
         CmsMenu::query()->create([
@@ -382,18 +382,33 @@ class CmsMenuPublicResolverTest extends TestCase
             'en',
         );
 
-        $this->assertSame(
-            FrontendRouteUrl::localized(FrontendRouteUrl::catalogSearchPath(), 'en', false),
-            $resolved[0]['url'],
-        );
-        $this->assertSame(
-            FrontendRouteUrl::localized(FrontendRouteUrl::servicesPath(), 'en', false),
-            $resolved[1]['url'],
-        );
-        $this->assertSame(
-            FrontendRouteUrl::localized(FrontendRouteUrl::blogPath(), 'en', false),
-            $resolved[2]['url'],
-        );
+        $this->assertSame([], $resolved);
+    }
+
+    public function test_parent_with_only_untranslated_category_children_links_to_one_localized_index(): void
+    {
+        $this->publishEnglishFor('website-main');
+        CmsMenu::query()->create([
+            'website_key' => 'website-main',
+            'name' => 'Primary',
+            'location' => 'primary',
+            'items' => [[
+                'label' => 'Products',
+                'url' => '#',
+                'children' => [[
+                    'label' => 'Chemicals',
+                    'url' => '/danh-muc/hoa-chat',
+                    'resource_type' => 'catalog_category',
+                    'resource_id' => '101',
+                ]],
+            ]],
+        ]);
+
+        $resolved = app(CmsMenuResolver::class)->items('primary', 'website-main', 'en');
+
+        $this->assertCount(1, $resolved);
+        $this->assertSame([], $resolved[0]['children']);
+        $this->assertSame('/en/search', $resolved[0]['url']);
     }
 
     private function publishEnglishFor(string $websiteKey): void

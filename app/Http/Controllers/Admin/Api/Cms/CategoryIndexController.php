@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsCategory;
+use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CategoryIndexController
 {
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request, AdminLocalizedContentList $localizedList): JsonResponse
     {
         $query = CmsCategory::query()->orderBy('name');
 
@@ -20,6 +22,8 @@ class CategoryIndexController
             'meta_description' => $category->meta_description,
             'parent_id' => $category->parent_id,
         ])->values()->all();
+
+        $items = $localizedList->overlay($items, 'cms_category', $request->query('locale'));
 
         return response()->json([
             'data' => [

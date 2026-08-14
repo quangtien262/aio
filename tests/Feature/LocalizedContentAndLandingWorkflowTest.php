@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\TranslationStatus;
 use App\Models\Admin;
+use App\Models\CatalogCategory;
 use App\Models\CmsPost;
 use App\Models\ContentTranslation;
 use App\Models\LandingPage;
@@ -31,6 +32,14 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
             [
                 'name' => 'CMS',
                 'version' => '1.0.0',
+                'status' => 'enabled',
+            ],
+        );
+        ModuleInstallation::query()->updateOrCreate(
+            ['key' => 'catalog'],
+            [
+                'name' => 'Catalog',
+                'version' => '0.2.0',
                 'status' => 'enabled',
             ],
         );
@@ -74,6 +83,47 @@ class LocalizedContentAndLandingWorkflowTest extends TestCase
             ->assertJsonPath('data.items.0.title', 'Tin tiếng Việt')
             ->assertJsonPath('data.items.0.slug', 'tin-tieng-viet')
             ->assertJsonPath('data.items.0.status', 'published');
+    }
+
+    public function test_category_admin_list_and_route_follow_the_requested_translation_locale(): void
+    {
+        $admin = Admin::factory()->create(['id' => Admin::SYSTEM_OWNER_ID]);
+        $this->actingAs($admin, 'admin');
+        $category = CatalogCategory::query()->create([
+            'name' => 'Hoá chất sản xuất',
+            'slug' => 'hoa-chat-san-xuat',
+            'description' => 'Nội dung nguồn',
+            'is_active' => true,
+        ]);
+
+        $this->putJson("/admin/api/localization/content/catalog_category/{$category->id}/en", [
+            'payload' => [
+                'name' => 'Production chemicals',
+                'slug' => 'production-chemicals',
+                'description' => 'English category copy',
+                'meta_title' => 'Production chemicals',
+                'meta_description' => 'Industrial chemical supplies',
+            ],
+            'publish' => true,
+        ])->assertOk();
+
+        $this->getJson('/admin/api/catalog/categories?locale=en')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.name', 'Production chemicals')
+            ->assertJsonPath('data.items.0.slug', 'production-chemicals')
+            ->assertJsonPath('data.items.0._translation_status', 'published');
+
+        $this->assertDatabaseHas('localized_routes', [
+            'resource_type' => 'catalog_category',
+            'resource_id' => (string) $category->id,
+            'locale' => 'en',
+            'path' => '/category/production-chemicals',
+            'is_published' => true,
+        ]);
+
+        $this->get('/en/category/production-chemicals')
+            ->assertOk()
+            ->assertSee('Production chemicals');
     }
 
     public function test_generic_content_uses_localized_slug_workflow_and_keeps_old_slug_redirect(): void

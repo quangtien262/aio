@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsProjectCategory;
+use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProjectCategoryIndexController
 {
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request, AdminLocalizedContentList $localizedList): JsonResponse
     {
         /** @var EloquentBuilder<CmsProjectCategory> $query */
         $query = CmsProjectCategory::query()
@@ -24,12 +26,16 @@ class ProjectCategoryIndexController
             'name' => $category->name,
             'slug' => $category->slug,
             'description' => $category->description,
+            'meta_title' => $category->meta_title,
+            'meta_description' => $category->meta_description,
             'image_url' => $category->image_url,
             'sort_order' => $category->sort_order,
             'is_active' => $category->is_active,
             'children_count' => $category->children_count,
             'projects_count' => $category->projects_count,
         ])->values()->all();
+
+        $items = $localizedList->overlay($items, 'cms_project_category', $request->query('locale'));
 
         return response()->json([
             'data' => [

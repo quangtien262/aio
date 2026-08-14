@@ -46,6 +46,8 @@ const emptyCategoryForm = {
     name: '',
     slug: '',
     description: '',
+    meta_title: '',
+    meta_description: '',
     image_url: '',
     sort_order: 0,
     is_active: true,
@@ -228,11 +230,44 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
             name: record.name,
             slug: record.slug ?? '',
             description: record.description ?? '',
+            meta_title: record.meta_title ?? '',
+            meta_description: record.meta_description ?? '',
             image_url: record.image_url ?? '',
             sort_order: record.sort_order ?? 0,
             is_active: record.is_active ?? true,
         } : emptyCategoryForm);
         setCategoryModalOpen(true);
+    };
+
+    const handleCategoryLocaleChange = async (nextLocale) => {
+        if (!editingCategory?.id || nextLocale === contentLocale) return true;
+
+        const sourceRecord = (data?.categories?.items ?? []).find((category) => category.id === editingCategory.id)
+            ?? editingCategory;
+
+        try {
+            const record = await localizedRecord('catalog_category', sourceRecord, nextLocale);
+
+            setContentLocale(nextLocale);
+            setEditingCategory({
+                id: record.id,
+                parent_id: record.parent_id ?? null,
+                name: record.name ?? '',
+                slug: record.slug ?? '',
+                description: record.description ?? '',
+                meta_title: record.meta_title ?? '',
+                meta_description: record.meta_description ?? '',
+                image_url: record.image_url ?? '',
+                sort_order: record.sort_order ?? 0,
+                is_active: record.is_active ?? true,
+                _translation_status: record._translation_status ?? 'missing',
+                _translation_statuses: record._translation_statuses ?? {},
+            });
+
+            return true;
+        } catch {
+            return false;
+        }
     };
 
     const openBannerModal = async (banner = null, defaultPlacement = null) => {
@@ -553,18 +588,21 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
                         translationMode={contentLocale !== sourceLocale}
                         editingCategory={editingCategory}
                         categoryOptions={categoryOptions.filter((option) => option.value !== editingCategory.id)}
+                        localeOptions={data?.localization?.locales ?? []}
+                        contentLocale={contentLocale}
+                        sourceLocale={sourceLocale}
                         callAdminApi={callAdminApi}
                         onCancel={() => {
                             setCategoryModalOpen(false);
                             setEditingCategory(emptyCategoryForm);
                         }}
-                        onSubmit={async (payload) => {
+                        onSubmit={async (payload, { publish = true } = {}) => {
                             const didSave = contentLocale !== sourceLocale
                                 ? await saveLocalizedRecord({
                                     resourceType: 'catalog_category',
                                     resourceId: editingCategory.id,
                                     payload,
-                                    publish: payload.is_active !== false,
+                                    publish,
                                     label: 'danh mục',
                                 })
                                 : await runCrud({
@@ -581,6 +619,7 @@ export default function CatalogManagerPage({ callAdminApi, runAdminAction, curre
 
                             return didSave;
                         }}
+                        onLocaleChange={handleCategoryLocaleChange}
                     />
                 </Suspense>
             ) : null}

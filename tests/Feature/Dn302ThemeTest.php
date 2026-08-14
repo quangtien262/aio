@@ -37,6 +37,7 @@ class Dn302ThemeTest extends TestCase
 
         $this->assertNotNull($theme);
         $this->assertSame('service', $theme['website_type']);
+        $this->assertSame(['cms', 'catalog'], $theme['requires_modules']);
 
         $builder = app(LandingPageBuilder::class);
         $this->assertTrue($builder->supportsTheme('DN302'));

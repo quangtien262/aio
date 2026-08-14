@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 import Alert from 'antd/es/alert';
+import Button from 'antd/es/button';
 import Col from 'antd/es/col';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
+import Space from 'antd/es/space';
+import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 
 export const emptyCmsCategoryForm = {
     id: null,
@@ -18,14 +21,14 @@ export const emptyCmsCategoryForm = {
     website_key: '',
 };
 
-export default function CmsCategoryFormModal({ open, canManage, translationMode = false, editingCategory, parentOptions = [], submitLoading = false, onCancel, onSubmit }) {
+export default function CmsCategoryFormModal({ open, canManage, translationMode = false, editingCategory, parentOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
         form.setFieldsValue(editingCategory);
     }, [editingCategory, form]);
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (publish = true) => {
         const values = await form.validateFields();
 
         const didSubmit = await onSubmit?.({
@@ -34,7 +37,7 @@ export default function CmsCategoryFormModal({ open, canManage, translationMode 
             meta_title: values.meta_title || null,
             meta_description: values.meta_description || null,
             parent_id: values.parent_id || null,
-        });
+        }, { publish });
 
         if (didSubmit !== false) {
             form.resetFields();
@@ -51,12 +54,31 @@ export default function CmsCategoryFormModal({ open, canManage, translationMode 
             title={editingCategory?.id ? 'Cập nhật category CMS' : 'Tạo category CMS'}
             open={open}
             onCancel={handleCancel}
-            onOk={handleSubmit}
-            okButtonProps={{ disabled: !canManage }}
+            footer={(
+                <Space>
+                    <Button onClick={handleCancel}>Hủy</Button>
+                    {translationMode ? <Button disabled={!canManage} loading={submitLoading} onClick={() => handleSubmit(false)}>Lưu nháp</Button> : null}
+                    <Button type="primary" disabled={!canManage} loading={submitLoading} onClick={() => handleSubmit(true)}>
+                        {translationMode ? 'Lưu và xuất bản' : 'Lưu danh mục'}
+                    </Button>
+                </Space>
+            )}
             confirmLoading={submitLoading}
             width={820}
             destroyOnHidden
         >
+            <LocalizedContentTabs
+                localeOptions={localeOptions}
+                contentLocale={contentLocale}
+                sourceLocale={sourceLocale}
+                editingRecord={editingCategory}
+                entityLabel="danh mục tin tức"
+                translationDescription="Tên, slug, mô tả và SEO được lưu riêng cho ngôn ngữ này. Quan hệ danh mục cha dùng chung từ bản gốc."
+                sourceDescription="Đây là ngôn ngữ gốc. Quan hệ danh mục cha và cấu trúc được quản lý tại đây."
+                isDirty={() => form.isFieldsTouched()}
+                getCurrentValues={() => form.getFieldsValue(true)}
+                onLocaleChange={onLocaleChange}
+            />
             <Form form={form} layout="vertical" initialValues={editingCategory}>
                 {translationMode ? (
                     <Alert
