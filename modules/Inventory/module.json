@@ -5,6 +5,14 @@
   "description": "Quản lý nhiều kho, vị trí, hàng hóa, tồn kho, lô/serial và giao dịch nhập, xuất, chuyển kho.",
   "website_type": ["backoffice", "ecommerce", "corporate", "landingpage"],
   "dependencies": ["cms", "catalog"],
+  "provides": {
+    "inventory.stock.read.v1": {
+      "description": "Read inventory availability and costing snapshots."
+    },
+    "inventory.documents.write.v1": {
+      "description": "Create inventory receipt or issue document proposals from accounting flows."
+    }
+  },
   "permissions": [
     "inventory.view",
     "inventory.warehouse.manage",

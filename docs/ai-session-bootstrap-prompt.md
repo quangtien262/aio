@@ -5,7 +5,7 @@
 > baseline, nhưng luôn đối chiếu source code, migration, test và database hiện
 > tại trước khi kết luận trạng thái runtime.
 >
-> Xác minh gần nhất: **2026-08-02**, workspace `E:\Project\aio`, database local
+> Xác minh gần nhất: **2026-08-14**, workspace `E:\Project\aio`, database local
 > của `website-main`. Các số liệu audit và trạng thái working tree là snapshot,
 > không phải hằng số.
 
@@ -103,7 +103,10 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
   - UI field login trong modal nên được hiểu là `Email khách hàng / Username admin`, không quay lại hardcode thuần `email` cho flow login chung này.
 - Phân quyền hiện dùng **RBAC theo từng module**. Mỗi assignment gắn role và scope ngay trên cùng một dòng trong `admin_role_assignments`.
 - Scope hợp lệ chỉ có `global` và `website`. Không được đưa lại `tenant`, `owner`, `tenant_key`, `owner_key`, `admin_role` hoặc `admin_role_scopes`.
+- API quản trị account, role, assignment, audit log và site mapping là global-only. Permission cùng tên ở website scope không được phép đọc hoặc mutate state toàn cục.
+- Khi tạo/sửa role hoặc assignment, actor không được cấp scope/permission vượt quá ceiling của chính mình. Endpoint legacy `role_ids` không được âm thầm chuyển assignment website thành global.
 - Admin ID `1` là System Owner bất biến. Role `super-admin` là role hệ thống bất biến và luôn có toàn bộ permission active.
+- Role `platform-owner` là role Administrator toàn quyền có thể gán, nhưng bản thân role không được sửa, giảm permission hoặc xóa qua application.
 - Khi module bị gỡ, permission được đánh dấu inactive/deprecated để giữ lịch sử, không xóa vật lý.
 - Tài liệu kiến trúc chuẩn: `docs/architecture/admin-access-control.md`.
 
@@ -177,7 +180,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Theme `XD0301` là theme chuẩn nhất, nếu có chỗ nào khó hiểu thì hãy tham khảo code của theme này, đặc biệt là cách cài đặt trang chủ và Landing Page. Xem chi tiết ở `docs/landing-page-builder.md` và `docs/theme-starter-checklist.md`.
 - Locale manager cho phép xem `default/source/fallback`, bật/tắt `active/published`, đổi `default locale`, thêm locale custom và phân biệt locale built-in của theme.
 - Translation drawer đã hỗ trợ locale động, tách `static` / `business content`, search, pagination, entity filter và edit từng entry.
-- Cả 65 theme có manifest đã có bộ chọn ngôn ngữ trên storefront. Trong 63 header partial, 61 file dùng `resources/views/partials/storefront-language-switcher.blade.php`; `DN302` và `XD0301` giữ UI riêng nhưng phải có marker `data-storefront-language-switcher`. `corporate-starter` và `SER0101` không có header partial, được phủ qua `resources/views/site.blade.php`/`site-cms.blade.php`.
+- Cả 76 theme có manifest đã có bộ chọn ngôn ngữ trên storefront. Trong 75 theme có header partial, 73 theme dùng shared switcher; `DN302` và `XD0301` giữ UI riêng nhưng phải có marker `data-storefront-language-switcher`. `corporate-starter` không có header partial và được phủ qua fallback storefront document.
 - Bộ chọn chỉ đọc locale active + published từ `FrontendLocalization::localeOptions()`, không hardcode VI/EN và không dùng query `?locale=`. URL được tạo bằng `FrontendRouteUrl::localeSwitchUrls()`/`switchLocale()`; resource có slug dịch riêng phải đi theo canonical path trong `localized_routes`, còn locale chưa có bản dịch public phải về homepage locale đích.
 - Business content translation đã phủ các nhóm chính như `site_profile`, `site_banner`, `cms_menu`, `cms_page`, `cms_post`, `cms_category`, `catalog_category`, `catalog_product`.
 - `cms_menu` không còn được sửa bằng entity `menu` trong drawer “Bản dịch frontend”. Menu có editor locale chuyên biệt tại `/admin/cms/menus`; không tạo lại hai nơi quản trị song song.
@@ -337,7 +340,7 @@ Phần này là trạng thái thực tế sau các giai đoạn chuyển đổi 
 - Bộ lọc `Ngôn ngữ nội dung` tại list Pages, Sản phẩm, Tin tức, Dịch vụ, Dự án, Đội ngũ nhân sự, Đối tác và Cảm nhận khách hàng phải gửi `?locale=<code>` xuống API. Generic list dùng `app/Support/Localization/AdminLocalizedContentList.php` để bulk-overlay từ `content_translations` (không N+1); bản dịch thiếu vẫn giữ nhãn nguồn làm fallback nhận diện nhưng phải trả `_translation_status=missing` để Admin hiển thị `Chưa có`. Page list resolve trực tiếp từ `cms_page_translations` theo locale được chọn.
 - Controller/builder localize dữ liệu trước khi đưa vào theme. Theme không được tự query translation table.
 - Theme static dictionary, SEO head và locale route contract đã được refactor trên các theme hiện có. Canary rollout là `BOOK920`, `DN302`, `BDS701`.
-- Theme localization contract bắt buộc mọi header/full-document storefront render bộ chọn ngôn ngữ. Contract hiện phủ đủ 65 theme có manifest, bao gồm cả fallback document của theme không có header; regression nằm trong `tests/Feature/ThemeLocalizationContractTest.php`.
+- Theme localization contract bắt buộc mọi header/full-document storefront render bộ chọn ngôn ngữ. Contract hiện phủ đủ 76 theme có manifest, bao gồm cả fallback document của theme không có header; regression nằm trong `tests/Feature/ThemeLocalizationContractTest.php`.
 - Reader mới, dual-write và legacy fallback được điều khiển bằng:
   - `LOCALIZATION_CONTENT_READER=new`;
   - `LOCALIZATION_CONTENT_DUAL_WRITE=true`;
@@ -582,3 +585,118 @@ Regression trọng yếu: `LocalizationReleaseReadinessTest`, `CmsPageSourceRevi
 - Regression mới: `Nt504ThemeTest`. Kiểm tra desktop 1473 px và mobile 375 px xác nhận đủ 9 block, 5 product, 4 news, không tràn ngang và menu mobile hoạt động.
 - Validation cuối ngày 2026-08-04: Blade compile pass; nhóm contract theme pass 15 test/3.184 assertions; full suite chạy bằng `php -d memory_limit=256M vendor/bin/phpunit` pass 395 test/6.502 assertions, memory thực tế 134 MB. `php artisan test` dùng tiến trình con với giới hạn 128 MB nên dừng vì memory tại compiled view XD0302, không có assertion failure trước khi dừng.
 - Demo provider NT504 đã dọn `content_translations` tương ứng trước khi xóa record demo để không sinh orphan khi nạp lại preset. Hai orphan `cms_menu`/`site_banner` phát sinh từ vòng kiểm thử trước khi có fix đã được xóa; strict audit cuối cùng trở lại `issue_count=0`.
+
+## 14. Handoff security, fresh-install và localization ngày 2026-08-14
+
+Mục này supersede các con số/trạng thái runtime trong checkpoint cũ, nhưng không xóa giá trị
+lịch sử của các handoff trước.
+
+- Account/RBAC/audit/site-mapping API là global-only. Website-scoped permission cùng tên
+  không được dùng để đọc hoặc mutate state toàn cục. `AdminPrivilegeGuard` chặn cấp role,
+  permission hoặc scope vượt ceiling của actor; `platform-owner` không được sửa/giảm quyền/xóa;
+  `super-admin` chỉ bypass khi assignment thực sự là global.
+- Fresh production install đã có subprocess smoke test riêng. Core migrate chạy được với
+  `CACHE_STORE=database` trước khi bảng cache tồn tại và không aggregate module migrations.
+  Sau đó lifecycle cài/bật CMS rồi Catalog phải đưa cả hai module tới latest schema, gồm
+  localization tables, website indexes và deferred foreign keys.
+- CMS manifest hiện là `0.2.6`, Catalog là `0.2.1`. Local installation snapshot vẫn đang ở
+  CMS `0.2.5` và Catalog `0.2.0`; phải upgrade qua Module Manager, không sửa tay version trong DB.
+  Forward migration `2026_08_14_000003_sync_catalog_module_permissions.php` đã chạy và khôi
+  phục đủ bốn permission `catalog.*` active cho installation legacy.
+- Landing quick-edit partial phải chịu được layout include trực tiếp mà không truyền
+  `hasEditorScript`; regression hiện phủ NT502/NT503/NT504 và toàn bộ landing themes.
+- Chuyển target locale thành default cũng phải qua release-readiness. Public generic reader
+  không phục vụ target có `source_revision` lệch nguồn; legacy row chưa có revision metadata
+  vẫn tương thích. Fallback chain đi theo cấu hình từng locale và chống vòng lặp. Dynamic item
+  của Landing Builder chỉ dùng canonical route published đúng locale; thiếu route thì về
+  localized index/home, không dựng URL bằng source/master slug.
+- Inventory theme hiện có 76 manifest; 75 theme có header. Runtime `website-main` đang resolve
+  DN302 từ `site_profiles.active_theme_key`; `sites.theme_key` hiện vẫn null nên đây là data drift
+  cần được xử lý qua activation flow, không hardcode trong reader.
+- Localization strict audit hiện còn đúng một structural issue: bốn orphan source translation
+  `site_banner` ID 1-4. EN đạt 33/108 mục ready (30,6%), còn 75 mục pending; không được coi cờ
+  `is_published` là bằng chứng release-ready và không prune dữ liệu nếu chưa kiểm tra backup.
+
+Validation chốt ngày 2026-08-14:
+
+- targeted integration: 99 test, 3.912 assertions pass;
+- full PHPUnit: 430 test, 6.834 assertions pass, 140 MB, 4 phút 31 giây;
+- production-like fresh install smoke pass;
+- Admin production build pass; Vite chỉ warning không chặn về chunk khoảng 961 kB và 1,21 MB;
+- `git diff --check` pass.
+
+## 15. Handoff AccountingTax/Minvoice ngày 2026-08-17
+
+Mục này supersede handoff AccountingTax 2026-08-16.
+
+- `accounting-tax` 0.2.0 vận hành độc lập với CMS/Catalog/Inventory/Minvoice. Pháp nhân
+  `acct_organizations` là partition kế toán; website chỉ là kênh nguồn và mỗi website chỉ có
+  một mapping hiệu lực. Item/source mapping được scope theo pháp nhân, không FK trực tiếp sang
+  bảng module optional.
+- Runtime MySQL local đã đồng bộ: CMS 0.2.6, Catalog 0.2.1, AccountingTax 0.2.0 và
+  MinvoiceConnector 0.2.0 đều `enabled`; Inventory vẫn chưa cài/bật nên các adapter kho tự ẩn và
+  Catalog tiếp tục là nguồn tồn storefront. Hai global gate gọi mạng/production Minvoice vẫn tắt.
+- Chứng từ nội bộ có CRUD draft, numbering theo pháp nhân/năm/loại, maker-checker,
+  `draft -> approved -> posted`, optimistic version + row lock, idempotency, snapshot bên bán/
+  bên mua/dòng hàng, decimal money/VAT, tax category, payment/refund, void trước ghi sổ và
+  reversal sau ghi sổ. Posted document/line/event/payment được bảo vệ khỏi sửa/xóa trực tiếp.
+- Tax eligibility chỉ được đánh giá server-side. Báo cáo `operational` luôn là estimate;
+  báo cáo `tax` nhận đầu ra `tax_invoice|credit_note|debit_note` đã posted và có trạng thái pháp lý
+  hợp lệ; đầu vào còn phải được đánh giá eligible. Chứng từ nội bộ, đầu vào chưa đánh giá và trạng
+  thái provider không hợp lệ bị loại. Tax period có review/lock/file/reopen, snapshot + checksum;
+  không được lock khi còn đầu vào chưa đánh giá, đầu vào eligible đã mất hiệu lực pháp lý hoặc đầu
+  ra chưa xác minh.
+- Item kế toán hỗ trợ `goods|service|charge|asset|bundle`; line hỗ trợ
+  `item|discount|adjustment|note`. Catalog product và CMS service đồng bộ theo capability;
+  order adapter tạo draft idempotent và bắt kế toán phân loại dòng chưa map trước khi duyệt.
+  Inventory chỉ tạo proposal rồi post tường minh khi module đang enabled và capability hợp lệ.
+  Kho được map độc quyền vào pháp nhân, có một kho mặc định; lúc post phải kiểm lại mapping.
+- Khi Inventory enabled và capability/schema đầy đủ, storefront lấy tồn khả dụng từ Inventory theo
+  các kho đã map đúng pháp nhân của website; Catalog chỉ fallback khi Inventory disabled/incomplete.
+  Mapping thiếu/mơ hồ và item chưa đồng bộ đều fail-closed. Checkout nạp lại giá/tồn ngay trước khi
+  tạo đơn và ghi đầu đơn+dòng hàng atomically; hard reservation chống oversell tuyệt đối vẫn là bước
+  vận hành tiếp theo cho tải đồng thời cao.
+- Export chạy queue, idempotent, hỗ trợ CSV/XLSX/PDF, chống formula injection, lưu private bằng
+  atomic write + checksum và có retention. Email dùng immutable snapshot/attachment, after-commit
+  queue, attempt/provider/error history và retry có kiểm checksum.
+- `minvoice-connector` 0.2.0 có connection mã hóa theo pháp nhân/channel/environment,
+  readiness/health/kill-switch/HTTPS allowlist, series, outbound outbox/reconcile, mSMI inbound
+  header+line+VAT+warning, match/unmatch và tạo internal draft `not_assessed`. PDF/XML provider
+  được validate, lưu private và kiểm checksum khi tải.
+- Mọi network/production call Minvoice mặc định tắt qua hai global gate; reviewed contract version
+  mặc định để trống và phải cấu hình tường minh sau UAT/phê duyệt. Production còn yêu cầu sandbox
+  sibling healthy, đúng contract version, confirmation phrase, connection approval,
+  document posted và tax-point metadata. `adjust|replace|cancel` hiện cố ý chỉ preview/audit
+  `blocked`; luồng phát hành chuẩn chỉ nhận `tax_invoice`, không đoán endpoint pháp lý chưa xác nhận.
+- RBAC hỗ trợ thêm scope `organization`. Toàn bộ AccountingTax/Minvoice API và artifact chặn
+  cross-organization; role scope này không được chứa permission module khác. Tạo pháp nhân mới
+  vẫn là global-only. Admin chỉ có scope pháp nhân được vào khu kế toán nhưng không được dùng
+  scope đó cho API website/platform.
+- Audit log core append-only, recursive masking và hash chain; lệnh
+  `php artisan audit:verify-chain --json` được schedule hàng ngày. Scheduler còn dispatch outbound,
+  mSMI sync và dọn export hết hạn; production phải chạy queue worker + scheduler.
+- Admin UI đã có dashboard, pháp nhân/đối tác/item/chứng từ, duyệt/ghi sổ/đảo/thanh toán,
+  tax assessment/period, inventory bridge, reports/export/email và màn Minvoice outbound/inbound.
+- `docs/API_HOA_DON_DIEN_TU.md` chỉ là legacy research, không phải contract hiện hành. Contract
+  vận hành và các gate nằm tại `docs/architecture/accounting-tax-module.md`; OpenAPI nội bộ v1 ở
+  `docs/api/accounting-tax-v1.openapi.json`, provider fixture đã khử dữ liệu thật ở
+  `tests/Fixtures/minvoice`.
+- Dependency phục vụ XLSX/PDF đã được thêm; Laravel/Guzzle/Symfony được nâng trong constraint để
+  xử lý advisory mới. Composer audit hiện không còn advisory.
+- Catalog lifecycle định vị profile mặc định bằng `website_key`, không phụ thuộc tên/site scope.
+  Migration hardening AccountingTax tạo index FK thay thế trước khi gỡ unique cũ và guard toàn bộ
+  cột/index/FK, nên có thể tiếp tục an toàn sau MySQL DDL partial failure mà không xóa bảng.
+
+Validation chốt ngày 2026-08-17:
+
+- targeted Accounting/RBAC/provider/inventory/fresh-install: 36 test, 520 assertions pass;
+- targeted lifecycle/MySQL-resume/fresh-install: 23 test, 347 assertions pass;
+- Minvoice provider regressions: 10 test, 64 assertions pass, gồm chặn chứng từ nội bộ đi nhầm
+  luồng phát hành hóa đơn thuế chuẩn;
+- fresh production core migrate rồi lifecycle cài/bật CMS, Catalog, AccountingTax và
+  MinvoiceConnector: 1 test, 45 assertions pass;
+- full PHPUnit trên PHP 8.3/Laravel 13.25: 467 test, 7.331 assertions pass, 146 MB,
+  4 phút 44 giây;
+- Admin production build pass; Vite chỉ warning không chặn về hai chunk lớn khoảng 961 kB và
+  1,21 MB;
+- Composer validate, Composer audit, Pint và `git diff --check` pass.

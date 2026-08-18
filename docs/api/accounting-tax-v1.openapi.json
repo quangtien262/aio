@@ -1,0 +1,502 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AIO AccountingTax Admin API",
+    "version": "1.0.0",
+    "description": "Versioned contract for the AIO internal admin API. Provider URLs and raw payload contracts are intentionally excluded and require a separately accepted Minvoice/mSMI contract."
+  },
+  "servers": [{ "url": "/admin/api/accounting-tax" }],
+  "security": [{ "adminSession": [], "csrfToken": [] }],
+  "paths": {
+    "/organizations": {
+      "get": {
+        "operationId": "listAccountingOrganizations",
+        "summary": "List legal entities visible to the current admin",
+        "x-permission": "accounting.view@organization:*",
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      },
+      "post": {
+        "operationId": "createAccountingOrganization",
+        "summary": "Create a legal entity; global permission is required",
+        "x-permission": "accounting.organization.manage@global",
+        "requestBody": { "$ref": "#/components/requestBodies/Organization" },
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/organizations/{organization}": {
+      "put": {
+        "operationId": "updateAccountingOrganization",
+        "summary": "Update a legal entity in the caller's organization scope",
+        "x-permission": "accounting.organization.manage@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationPath" }],
+        "requestBody": { "$ref": "#/components/requestBodies/Organization" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/parties": {
+      "get": {
+        "operationId": "listAccountingParties",
+        "summary": "List customers and suppliers for one organization",
+        "x-permission": "accounting.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      },
+      "post": {
+        "operationId": "createAccountingParty",
+        "summary": "Create a customer or supplier for one organization",
+        "x-permission": "accounting.party.manage@organization",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PartyInput" } } } },
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/parties/{party}": {
+      "put": {
+        "operationId": "updateAccountingParty",
+        "summary": "Update a party in the caller's organization scope",
+        "x-permission": "accounting.party.manage@organization",
+        "parameters": [{ "name": "party", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PartyInput" } } } },
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/items": {
+      "get": {
+        "operationId": "listAccountingItems",
+        "summary": "List accounting item masters for one organization",
+        "x-permission": "accounting.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      },
+      "post": {
+        "operationId": "createAccountingItem",
+        "summary": "Create an accounting item master",
+        "x-permission": "accounting.item.manage@organization",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItemInput" } } } },
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/items/sync-sources": {
+      "post": {
+        "operationId": "syncAccountingItemSources",
+        "summary": "Synchronize enabled Catalog/CMS sources for one organization",
+        "x-permission": "accounting.integration.sync@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" } }
+      }
+    },
+    "/items/{item}": {
+      "put": {
+        "operationId": "updateAccountingItem",
+        "summary": "Update accounting-owned tax and ledger fields",
+        "x-permission": "accounting.item.manage@organization",
+        "parameters": [{ "name": "item", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ItemInput" } } } },
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/documents": {
+      "get": {
+        "operationId": "listAccountingDocuments",
+        "summary": "List internal invoices and documents for one organization",
+        "x-permission": "accounting.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      },
+      "post": {
+        "operationId": "createAccountingDocument",
+        "summary": "Create an internal invoice or accounting document draft",
+        "x-permission": "accounting.document.create@organization",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DocumentCreate" } } } },
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/documents/{document}": {
+      "get": {
+        "operationId": "showAccountingDocument",
+        "summary": "Read one document with immutable lines and payments",
+        "x-permission": "accounting.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "description": "Document not found" } }
+      },
+      "put": {
+        "operationId": "updateAccountingDocument",
+        "summary": "Update a draft using optimistic versioning",
+        "x-permission": "accounting.document.update@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DocumentUpdate" } } } },
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/documents/{document}/approve": {
+      "post": {
+        "operationId": "approveAccountingDocument",
+        "summary": "Approve a draft with maker-checker enforcement",
+        "x-permission": "accounting.document.approve@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "requestBody": { "$ref": "#/components/requestBodies/Transition" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/documents/{document}/post": {
+      "post": {
+        "operationId": "postAccountingDocument",
+        "summary": "Post an approved document",
+        "x-permission": "accounting.document.post@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "requestBody": { "$ref": "#/components/requestBodies/Transition" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/documents/{document}/void": {
+      "post": {
+        "operationId": "voidAccountingDocument",
+        "summary": "Void a draft or approved document with a reason",
+        "x-permission": "accounting.document.void@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "requestBody": { "$ref": "#/components/requestBodies/ReasonTransition" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/documents/{document}/reverse": {
+      "post": {
+        "operationId": "reverseAccountingDocument",
+        "summary": "Create a reversal draft for a posted document",
+        "x-permission": "accounting.document.void@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "requestBody": { "$ref": "#/components/requestBodies/ReasonTransition" },
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/documents/{document}/payments": {
+      "post": {
+        "operationId": "recordAccountingPayment",
+        "summary": "Append an idempotent payment or refund",
+        "x-permission": "accounting.document.payment.manage@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaymentRequest" } } } },
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/documents/{document}/tax-assessment": {
+      "post": {
+        "operationId": "assessAccountingDocumentTax",
+        "summary": "Assess tax eligibility server-side",
+        "x-permission": "accounting.tax.assess@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TaxAssessmentRequest" } } } },
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/orders/{order}/draft": {
+      "post": {
+        "operationId": "createAccountingDraftFromOrder",
+        "summary": "Create an idempotent review-only accounting draft from an order",
+        "x-permission": "accounting.document.create@organization",
+        "parameters": [
+          { "name": "order", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "$ref": "#/components/parameters/OrganizationQuery" }
+        ],
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/inventory/warehouses": {
+      "get": {
+        "operationId": "listAccountingInventoryWarehouses",
+        "summary": "List mapped and safely available Inventory warehouses",
+        "x-permission": "accounting.inventory.post@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      },
+      "post": {
+        "operationId": "mapAccountingInventoryWarehouse",
+        "summary": "Map one active warehouse exclusively to a legal entity",
+        "x-permission": "accounting.inventory.post@organization",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["organization_id", "warehouse_id"], "properties": { "organization_id": { "type": "integer" }, "warehouse_id": { "type": "integer" }, "is_default": { "type": "boolean" } } } } } },
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/inventory/warehouses/{mapping}": {
+      "delete": {
+        "operationId": "unmapAccountingInventoryWarehouse",
+        "summary": "Remove a legal-entity warehouse mapping",
+        "x-permission": "accounting.inventory.post@organization",
+        "parameters": [{ "name": "mapping", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      }
+    },
+    "/documents/{document}/inventory/propose": {
+      "post": {
+        "operationId": "proposeAccountingInventoryDocument",
+        "summary": "Create an idempotent receipt or issue proposal",
+        "x-permission": "accounting.inventory.post@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/inventory-links/{link}/post": {
+      "post": {
+        "operationId": "postAccountingInventoryDocument",
+        "summary": "Post a confirmed Inventory proposal after rechecking warehouse scope",
+        "x-permission": "accounting.inventory.post@organization",
+        "parameters": [{ "name": "link", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/reports/summary": {
+      "get": {
+        "operationId": "getAccountingReportSummary",
+        "summary": "Get an operational or tax-mode summary",
+        "x-permission": "accounting.report.view@organization",
+        "parameters": [
+          { "$ref": "#/components/parameters/OrganizationQuery" },
+          { "name": "mode", "in": "query", "schema": { "enum": ["operational", "tax"] } },
+          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      }
+    },
+    "/tax-periods": {
+      "get": {
+        "operationId": "listAccountingTaxPeriods",
+        "summary": "List tax periods and immutable filing snapshots",
+        "x-permission": "accounting.report.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      },
+      "post": {
+        "operationId": "createAccountingTaxPeriod",
+        "summary": "Create a non-overlapping tax period",
+        "x-permission": "accounting.period.manage@organization",
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/tax-periods/{period}/transition": {
+      "post": {
+        "operationId": "transitionAccountingTaxPeriod",
+        "summary": "Review, lock, file or reopen a tax period",
+        "x-permission": "accounting.period.manage@organization",
+        "parameters": [{ "name": "period", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/exports": {
+      "get": {
+        "operationId": "listAccountingExports",
+        "summary": "List report artifacts for one organization",
+        "x-permission": "accounting.report.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      },
+      "post": {
+        "operationId": "queueAccountingExport",
+        "summary": "Queue a versioned CSV, XLSX or PDF report",
+        "x-permission": "accounting.export.create@organization",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ExportRequest" } } } },
+        "responses": { "202": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/exports/{export}/retry": {
+      "post": {
+        "operationId": "retryAccountingExport",
+        "summary": "Retry a failed export",
+        "x-permission": "accounting.export.create@organization",
+        "parameters": [{ "name": "export", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "202": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/exports/{export}/download": {
+      "get": {
+        "operationId": "downloadAccountingExport",
+        "summary": "Download a private export after checksum verification",
+        "x-permission": "accounting.report.view@organization",
+        "parameters": [{ "name": "export", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Verified private artifact" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" } }
+      }
+    },
+    "/documents/{document}/email": {
+      "post": {
+        "operationId": "queueAccountingDocumentEmail",
+        "summary": "Queue an immutable document email delivery",
+        "x-permission": "accounting.mail.send@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["recipient_email"], "properties": { "recipient_email": { "type": "string", "format": "email" }, "idempotency_key": { "type": ["string", "null"] } } } } } },
+        "responses": { "202": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/email-deliveries": {
+      "get": {
+        "operationId": "listAccountingEmailDeliveries",
+        "summary": "List email deliveries for one organization",
+        "x-permission": "accounting.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      }
+    },
+    "/email-deliveries/{delivery}/retry": {
+      "post": {
+        "operationId": "retryAccountingEmailDelivery",
+        "summary": "Retry a failed immutable email delivery",
+        "x-permission": "accounting.mail.send@organization",
+        "parameters": [{ "name": "delivery", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "202": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/integrations": {
+      "get": {
+        "operationId": "getAccountingIntegrations",
+        "summary": "Resolve optional-module and connector readiness for one organization",
+        "x-permission": "accounting.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      }
+    },
+    "/minvoice/connections": {
+      "get": {
+        "operationId": "listMinvoiceConnections",
+        "summary": "List redacted provider connections for one organization",
+        "x-permission": "minvoice.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/OrganizationQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      },
+      "post": {
+        "operationId": "createMinvoiceConnection",
+        "summary": "Create an encrypted provider connection",
+        "x-permission": "minvoice.connection.manage@organization",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProviderConnectionInput" } } } },
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    },
+    "/minvoice/documents/{document}/preview": {
+      "post": {
+        "operationId": "previewMinvoiceDocument",
+        "summary": "Preview a provider-neutral payload and blocking warnings",
+        "x-permission": "minvoice.outbound.preview@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" } }
+      }
+    },
+    "/minvoice/documents/{document}/create-draft": {
+      "post": {
+        "operationId": "queueMinvoiceDraft",
+        "summary": "Queue an idempotent outbound create-draft transmission",
+        "x-permission": "minvoice.outbound.issue@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "responses": { "202": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" } }
+      }
+    },
+    "/minvoice/documents/{document}/sign-send": {
+      "post": {
+        "operationId": "queueMinvoiceSignSend",
+        "summary": "Queue an idempotent outbound sign/send transmission",
+        "x-permission": "minvoice.outbound.issue@organization",
+        "parameters": [{ "$ref": "#/components/parameters/DocumentPath" }],
+        "responses": { "202": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" } }
+      }
+    },
+    "/minvoice/inbound": {
+      "get": {
+        "operationId": "listMinvoiceInboundMirrors",
+        "summary": "List read-only mSMI mirrors for one connection",
+        "x-permission": "minvoice.view@organization",
+        "parameters": [{ "$ref": "#/components/parameters/ConnectionQuery" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      }
+    },
+    "/minvoice/inbound/sync": {
+      "post": {
+        "operationId": "queueMinvoiceInboundSync",
+        "summary": "Queue a read-only, connection-scoped mSMI sync",
+        "x-permission": "minvoice.inbound.sync@organization",
+        "parameters": [{ "$ref": "#/components/parameters/ConnectionQuery" }],
+        "responses": { "202": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" } }
+      }
+    },
+    "/minvoice/inbound/{invoice}/create-internal-draft": {
+      "post": {
+        "operationId": "createInternalDraftFromInbound",
+        "summary": "Create an idempotent internal draft with tax eligibility not assessed",
+        "x-permission": ["minvoice.inbound.sync@organization", "accounting.document.create@organization"],
+        "parameters": [{ "$ref": "#/components/parameters/InboundInvoicePath" }],
+        "responses": { "201": { "$ref": "#/components/responses/Success" }, "403": { "$ref": "#/components/responses/Forbidden" }, "422": { "$ref": "#/components/responses/ValidationError" } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "adminSession": { "type": "apiKey", "in": "cookie", "name": "laravel_session" },
+      "csrfToken": { "type": "apiKey", "in": "header", "name": "X-XSRF-TOKEN" }
+    },
+    "parameters": {
+      "OrganizationQuery": { "name": "organization_id", "in": "query", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+      "OrganizationPath": { "name": "organization", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+      "DocumentPath": { "name": "document", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+      "InboundInvoicePath": { "name": "invoice", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 1 } },
+      "ConnectionQuery": { "name": "connection_id", "in": "query", "required": true, "schema": { "type": "integer", "minimum": 1 } }
+    },
+    "responses": {
+      "Success": { "description": "Successful data envelope", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DataEnvelope" } } } },
+      "Forbidden": { "description": "Permission or organization scope denied" },
+      "Conflict": { "description": "A readiness, workflow, checksum or provider safety gate blocked the action" },
+      "ValidationError": { "description": "Request or domain validation failed" }
+    },
+    "requestBodies": {
+      "Organization": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrganizationInput" } } } },
+      "Transition": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TransitionRequest" } } } },
+      "ReasonTransition": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ReasonTransitionRequest" } } } }
+    },
+    "schemas": {
+      "DataEnvelope": { "type": "object", "required": ["data"], "properties": { "data": {} } },
+      "OrganizationInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "maxLength": 255 },
+          "legal_name": { "type": ["string", "null"], "maxLength": 255 },
+          "tax_code": { "type": ["string", "null"], "maxLength": 32 },
+          "default_currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+          "website_keys": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+        }
+      },
+      "PartyInput": {
+        "type": "object",
+        "required": ["organization_id", "type", "name"],
+        "properties": { "organization_id": { "type": "integer", "minimum": 1 }, "type": { "enum": ["customer", "supplier", "both"] }, "name": { "type": "string" }, "tax_code": { "type": ["string", "null"] }, "email": { "type": ["string", "null"], "format": "email" } }
+      },
+      "ItemInput": {
+        "type": "object",
+        "required": ["organization_id", "kind", "name"],
+        "properties": { "organization_id": { "type": "integer", "minimum": 1 }, "kind": { "enum": ["goods", "service", "charge", "asset", "bundle"] }, "name": { "type": "string" }, "sku": { "type": ["string", "null"] }, "tax_category": { "$ref": "#/components/schemas/TaxCategory" } }
+      },
+      "DocumentCreate": {
+        "type": "object",
+        "required": ["organization_id", "direction", "lines"],
+        "properties": {
+          "organization_id": { "type": "integer", "minimum": 1 }, "party_id": { "type": ["integer", "null"] }, "direction": { "enum": ["inbound", "outbound"] }, "document_type": { "$ref": "#/components/schemas/DocumentType" }, "document_no": { "type": ["string", "null"] }, "document_date": { "type": ["string", "null"], "format": "date" }, "currency": { "type": "string", "minLength": 3, "maxLength": 3 }, "exchange_rate": { "type": ["string", "number", "null"] }, "idempotency_key": { "type": ["string", "null"] }, "metadata": { "type": ["object", "null"], "additionalProperties": true }, "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/DocumentLine" } }
+        }
+      },
+      "DocumentUpdate": {
+        "type": "object",
+        "properties": {
+          "version": { "type": "integer", "minimum": 1 }, "party_id": { "type": ["integer", "null"] }, "direction": { "enum": ["inbound", "outbound"] }, "document_type": { "$ref": "#/components/schemas/DocumentType" }, "document_no": { "type": ["string", "null"] }, "document_date": { "type": ["string", "null"], "format": "date" }, "metadata": { "type": ["object", "null"], "additionalProperties": true }, "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/DocumentLine" } }
+        }
+      },
+      "DocumentLine": {
+        "type": "object",
+        "properties": { "line_type": { "enum": ["item", "discount", "adjustment", "note"] }, "item_kind": { "enum": ["goods", "service", "charge", "asset", "bundle"] }, "name": { "type": "string" }, "quantity": { "type": ["string", "number"] }, "unit_price": { "type": ["string", "number"] }, "discount_amount": { "type": ["string", "number"] }, "tax_category": { "$ref": "#/components/schemas/TaxCategory" }, "tax_rate": { "type": ["string", "number", "null"] } }
+      },
+      "TransitionRequest": { "type": "object", "properties": { "version": { "type": "integer", "minimum": 1 }, "idempotency_key": { "type": ["string", "null"] } } },
+      "ReasonTransitionRequest": { "allOf": [{ "$ref": "#/components/schemas/TransitionRequest" }, { "type": "object", "required": ["reason"], "properties": { "reason": { "type": "string", "minLength": 1 } } }] },
+      "PaymentRequest": { "type": "object", "required": ["amount"], "properties": { "kind": { "enum": ["payment", "refund"] }, "amount": { "type": ["string", "number"] }, "paid_at": { "type": ["string", "null"], "format": "date-time" }, "version": { "type": "integer", "minimum": 1 }, "idempotency_key": { "type": ["string", "null"] } } },
+      "TaxAssessmentRequest": { "type": "object", "required": ["tax_eligibility", "reason"], "properties": { "tax_eligibility": { "enum": ["eligible", "ineligible"] }, "reason": { "type": "string", "minLength": 1 }, "version": { "type": "integer", "minimum": 1 }, "idempotency_key": { "type": ["string", "null"] } } },
+      "ExportRequest": { "type": "object", "required": ["organization_id", "report_type"], "properties": { "organization_id": { "type": "integer", "minimum": 1 }, "report_type": { "enum": ["document_register", "vat_operational_estimate"] }, "format": { "enum": ["csv", "xlsx", "pdf"] }, "filters": { "type": "object", "additionalProperties": true }, "timezone": { "type": "string" }, "idempotency_key": { "type": ["string", "null"] } } },
+      "ProviderConnectionInput": { "type": "object", "required": ["organization_id", "name", "channel", "environment", "base_url", "credentials"], "properties": { "organization_id": { "type": "integer", "minimum": 1 }, "name": { "type": "string" }, "channel": { "enum": ["outbound", "inbound"] }, "environment": { "enum": ["sandbox", "production"] }, "base_url": { "type": "string", "format": "uri", "pattern": "^https://" }, "credentials": { "type": "object", "writeOnly": true, "additionalProperties": true }, "settings": { "type": "object", "additionalProperties": true } } },
+      "DocumentType": { "enum": ["internal_invoice", "tax_invoice", "credit_note", "debit_note", "receipt", "expense"] },
+      "TaxCategory": { "enum": ["standard", "zero_rated", "not_subject", "not_declared", "exempt"] }
+    }
+  },
+  "x-provider-contract": {
+    "state": "gated",
+    "note": "No Minvoice or mSMI production endpoint is authorized by this document. Use the reviewed vendor contract version required by ACCOUNTING_EINVOICE_CONTRACT_VERSION."
+  }
+}

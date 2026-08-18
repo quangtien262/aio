@@ -1,0 +1,123 @@
+{
+  "name": "Kế toán & Thuế",
+  "key": "accounting-tax",
+  "version": "0.2.0",
+  "description": "Quản lý chứng từ kế toán nội bộ, hóa đơn đầu vào/đầu ra, báo cáo thuế, email và nền tảng tích hợp hóa đơn điện tử.",
+  "website_type": ["backoffice", "ecommerce", "corporate", "service"],
+  "dependencies": [],
+  "optional_dependencies": ["catalog", "cms", "inventory"],
+  "provides": {
+    "accounting.documents.manage.v1": {
+      "description": "Manage internal accounting documents and immutable invoice snapshots."
+    },
+    "accounting.tax.reports.v1": {
+      "description": "Build accounting and tax report exports from posted documents."
+    }
+  },
+  "permissions": [
+    "accounting.view",
+    "accounting.organization.manage",
+    "accounting.party.manage",
+    "accounting.item.manage",
+    "accounting.document.create",
+    "accounting.document.update",
+    "accounting.document.approve",
+    "accounting.document.post",
+    "accounting.document.void",
+    "accounting.document.payment.manage",
+    "accounting.tax.assess",
+    "accounting.period.manage",
+    "accounting.inventory.post",
+    "accounting.report.view",
+    "accounting.export.create",
+    "accounting.mail.send",
+    "accounting.integration.sync",
+    "accounting.einvoice.issue",
+    "accounting.einvoice.configure",
+    "accounting.audit.view"
+  ],
+  "hooks": ["Modules\\AccountingTax\\Hooks\\AccountingTaxLifecycleHook"],
+  "menus": [
+    {
+      "key": "accounting-tax-dashboard",
+      "label": "Kế toán & Thuế",
+      "description": "Quản lý hóa đơn nội bộ, hóa đơn điện tử, báo cáo và đối soát.",
+      "badge": "Tài chính",
+      "color": "gold",
+      "icon": "profile",
+      "route": "/admin/accounting-tax",
+      "permission": "accounting.view"
+    },
+    {
+      "key": "accounting-tax-documents",
+      "label": "Hóa đơn & chứng từ",
+      "description": "Theo dõi đầu vào, đầu ra, trạng thái duyệt, gửi CQT và email.",
+      "badge": "Chứng từ",
+      "color": "blue",
+      "icon": "read",
+      "route": "/admin/accounting-tax/documents",
+      "permission": "accounting.view"
+    },
+    {
+      "key": "accounting-tax-items",
+      "label": "Sản phẩm/Dịch vụ kế toán",
+      "description": "Chuẩn hóa hàng hóa, dịch vụ và mapping với CMS/Catalog/Inventory.",
+      "badge": "Đồng bộ",
+      "color": "cyan",
+      "icon": "tags",
+      "route": "/admin/accounting-tax/items",
+      "permission": "accounting.item.manage"
+    },
+    {
+      "key": "accounting-tax-reports",
+      "label": "Báo cáo thuế",
+      "description": "Xuất bảng kê đầu vào, đầu ra và VAT ở định dạng CSV, XLSX hoặc PDF.",
+      "badge": "Báo cáo",
+      "color": "purple",
+      "icon": "read",
+      "route": "/admin/accounting-tax/reports",
+      "permission": "accounting.report.view"
+    },
+    {
+      "key": "accounting-tax-integrations",
+      "label": "Đồng bộ & tích hợp",
+      "description": "Theo dõi khả năng kết nối Catalog, CMS, Kho và nhà cung cấp hóa đơn điện tử.",
+      "badge": "Kết nối",
+      "color": "geekblue",
+      "icon": "appstore",
+      "route": "/admin/accounting-tax/integrations",
+      "permission": "accounting.view"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.2.0",
+      "date": "2026-08-17",
+      "notes": [
+        "Khóa cách ly pháp nhân, snapshot pháp lý, state machine, idempotency, audit và tính tiền-thuế an toàn.",
+        "Bổ sung API nghiệp vụ, export/email, giao diện quản trị và nền provider connection có readiness gate."
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-08-16",
+      "notes": [
+        "Khởi tạo nền tảng kế toán thuế độc lập với pháp nhân, item kế toán, chứng từ nội bộ, truyền nhận hóa đơn điện tử và export/email metadata.",
+        "Bổ sung optional capability contract để đồng bộ Catalog/CMS/Inventory khi các module đó đã được cài và bật."
+      ]
+    }
+  ],
+  "package": {
+    "migrations": ["database/migrations"],
+    "seeders": [],
+    "config": [],
+    "assets": []
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": false
+  }
+}

@@ -18,8 +18,10 @@ const ProjectManagerPage = lazy(() => import('../../modules/project/pages/Projec
 const HrmManagerPage = lazy(() => import('../../modules/hrm/pages/HrmManagerPage'));
 const PayrollManagerPage = lazy(() => import('../../modules/payroll/pages/PayrollManagerPage'));
 const RealEstateManagerPage = lazy(() => import('../../modules/real-estate/pages/RealEstateManagerPage'));
+const AccountingTaxManagerPage = lazy(() => import('../../modules/accounting-tax/pages/AccountingTaxManagerPage'));
+const MinvoiceManagerPage = lazy(() => import('../../modules/accounting-tax/pages/MinvoiceManagerPage'));
 
-export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentPermissions }) {
+export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentAdmin, currentPermissions }) {
     const resourceEndpointMap = {
         catalog: null,
     };
@@ -144,6 +146,32 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
                     modulePayload={modulePayload}
                     callAdminApi={callAdminApi}
                     runAdminAction={runAdminAction}
+                    currentPermissions={currentPermissions}
+                />
+            </Suspense>
+        );
+    }
+
+    if (modulePayload.key === 'accounting-tax') {
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <AccountingTaxManagerPage
+                    moduleMenu={moduleMenu}
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    currentPermissions={currentPermissions}
+                />
+            </Suspense>
+        );
+    }
+
+    if (modulePayload.key === 'minvoice-connector') {
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <MinvoiceManagerPage
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    organizationOptions={currentAdmin?.organization_options ?? []}
                     currentPermissions={currentPermissions}
                 />
             </Suspense>

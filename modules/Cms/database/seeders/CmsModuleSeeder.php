@@ -3,6 +3,7 @@
 namespace Modules\Cms\Database\Seeders;
 
 use App\Models\CmsMenu;
+use App\Models\CmsPage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -12,8 +13,8 @@ if (! class_exists(__NAMESPACE__.'\\CmsModuleSeeder', false)) {
     {
         public function run(): void
         {
-            DB::table('cms_pages')->updateOrInsert(
-                ['slug' => 'home'],
+            CmsPage::query()->withoutGlobalScopes()->updateOrCreate(
+                ['website_key' => 'website-main', 'slug' => 'home'],
                 [
                     'title' => 'Trang chủ',
                     'status' => 'published',
@@ -34,8 +35,8 @@ if (! class_exists(__NAMESPACE__.'\\CmsModuleSeeder', false)) {
                     'body' => 'Liên hệ đội ngũ XD0301 để nhận tư vấn thiết kế, thi công và báo giá sơ bộ cho công trình nhà ở, văn phòng hoặc dự án thương mại.',
                 ],
             ] as $slug => $page) {
-                DB::table('cms_pages')->updateOrInsert(
-                    ['slug' => $slug],
+                CmsPage::query()->withoutGlobalScopes()->updateOrCreate(
+                    ['website_key' => 'website-main', 'slug' => $slug],
                     [
                         'title' => $page['title'],
                         'status' => 'published',

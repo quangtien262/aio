@@ -133,6 +133,209 @@ class AccessControlSecurityTest extends TestCase
         $this->assertFalse($admin->hasPermission('cms.view', 'website-b'));
     }
 
+    public function test_website_scoped_admin_cannot_read_or_mutate_global_security_and_site_mapping_state(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $owner = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
+        $otherSite = Site::query()->create([
+            'name' => 'Other Website',
+            'website_key' => 'website-other',
+            'domain' => 'other.test',
+            'theme_key' => 'DN302',
+            'status' => 'active',
+        ]);
+
+        $permissionIds = Permission::query()
+            ->whereIn('key', [
+                'admin.account.view',
+                'admin.account.manage',
+                'admin.account.reset_password',
+                'admin.account.lock',
+                'admin.audit.view',
+                'rbac.role.view',
+                'rbac.role.manage',
+                'rbac.permission.assign',
+                'theme.view',
+                'theme.customize',
+            ])
+            ->pluck('id');
+        $role = Role::query()->create([
+            'name' => 'Website Security Operator',
+            'key' => 'website-security-operator',
+            'status' => 'active',
+            'is_system' => false,
+            'is_assignable' => true,
+        ]);
+        $role->permissions()->sync($permissionIds);
+
+        $scopedAdmin = Admin::factory()->create(['status' => 'active', 'is_active' => true]);
+        $targetAdmin = Admin::factory()->create(['status' => 'active', 'is_active' => true]);
+        AdminRoleAssignment::query()->create([
+            'admin_id' => $scopedAdmin->id,
+            'role_id' => $role->id,
+            'scope_type' => 'website',
+            'scope_value' => 'website-main',
+            'assigned_by' => $owner->id,
+        ]);
+        AuditLog::query()->create([
+            'actor_admin_id' => $owner->id,
+            'action' => 'security.global.secret',
+            'website_key' => 'website-other',
+        ]);
+
+        $this->actingAs($scopedAdmin, 'admin')->withHeader('X-Website-Key', 'website-main');
+
+        $this->getJson('/admin/api/admins')->assertForbidden();
+        $this->getJson('/admin/api/access')->assertForbidden();
+        $this->getJson('/admin/api/audit-logs')->assertForbidden();
+        $this->postJson('/admin/api/roles', [
+            'name' => 'Escalated Role',
+            'key' => 'escalated-role',
+            'permission_ids' => [],
+        ])->assertForbidden();
+        $this->putJson("/admin/api/admins/{$targetAdmin->id}/roles", [
+            'role_ids' => [$role->id],
+        ])->assertForbidden();
+        $this->getJson('/admin/api/site-mappings')->assertForbidden();
+        $this->patchJson("/admin/api/site-mappings/{$otherSite->id}/checklist", [
+            'tested' => true,
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('roles', ['key' => 'escalated-role']);
+        $this->assertDatabaseMissing('admin_role_assignments', ['admin_id' => $targetAdmin->id]);
+        $this->assertFalse((bool) data_get($otherSite->fresh()->settings, 'checklist.tested', false));
+    }
+
+    public function test_global_rbac_operator_cannot_delegate_or_create_permissions_beyond_its_own_ceiling(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $owner = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
+        $platformOwnerRole = Role::query()->where('key', Role::PLATFORM_OWNER_KEY)->firstOrFail();
+        $operatorRole = Role::query()->create([
+            'name' => 'Limited Global RBAC Operator',
+            'key' => 'limited-global-rbac-operator',
+            'status' => 'active',
+            'is_system' => false,
+            'is_assignable' => true,
+        ]);
+        $operatorRole->permissions()->sync(Permission::query()
+            ->whereIn('key', ['admin.account.manage', 'rbac.permission.assign', 'rbac.role.manage'])
+            ->pluck('id'));
+        $operator = Admin::factory()->create(['status' => 'active', 'is_active' => true]);
+        AdminRoleAssignment::query()->create([
+            'admin_id' => $operator->id,
+            'role_id' => $operatorRole->id,
+            'scope_type' => 'global',
+            'scope_value' => null,
+            'assigned_by' => $owner->id,
+        ]);
+        $target = Admin::factory()->create(['status' => 'active', 'is_active' => true]);
+        $extraPermission = Permission::query()->where('key', 'theme.customize')->firstOrFail();
+
+        $this->actingAs($operator, 'admin');
+
+        $this->postJson('/admin/api/admins', [
+            'name' => 'Escalated Admin',
+            'username' => 'escalated-admin',
+            'email' => 'escalated-admin@example.test',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+            'status' => 'active',
+            'assignments' => [[
+                'role_id' => $platformOwnerRole->id,
+                'scope_type' => 'global',
+                'scope_value' => null,
+            ]],
+        ])->assertUnprocessable()->assertJsonValidationErrors(['assignments']);
+
+        $this->putJson("/admin/api/admins/{$target->id}/roles", [
+            'role_ids' => [$platformOwnerRole->id],
+        ])->assertUnprocessable()->assertJsonValidationErrors(['assignments']);
+
+        $this->postJson('/admin/api/roles', [
+            'name' => 'Broader Than Actor',
+            'key' => 'broader-than-actor',
+            'permission_ids' => [$extraPermission->id],
+        ])->assertUnprocessable()->assertJsonValidationErrors(['permission_ids']);
+
+        $this->assertDatabaseMissing('admins', ['username' => 'escalated-admin']);
+        $this->assertDatabaseMissing('admin_role_assignments', ['admin_id' => $target->id]);
+        $this->assertDatabaseMissing('roles', ['key' => 'broader-than-actor']);
+    }
+
+    public function test_legacy_role_endpoint_refuses_to_convert_website_assignments_to_global(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $owner = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
+        $role = Role::query()->create([
+            'name' => 'Scoped Legacy Role',
+            'key' => 'scoped-legacy-role',
+            'status' => 'active',
+            'is_system' => false,
+            'is_assignable' => true,
+        ]);
+        $target = Admin::factory()->create(['status' => 'active', 'is_active' => true]);
+        AdminRoleAssignment::query()->create([
+            'admin_id' => $target->id,
+            'role_id' => $role->id,
+            'scope_type' => 'website',
+            'scope_value' => 'website-main',
+            'assigned_by' => $owner->id,
+        ]);
+
+        $this->actingAs($owner, 'admin')
+            ->putJson("/admin/api/admins/{$target->id}/roles", ['role_ids' => [$role->id]])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['role_ids']);
+
+        $this->assertDatabaseHas('admin_role_assignments', [
+            'admin_id' => $target->id,
+            'role_id' => $role->id,
+            'scope_type' => 'website',
+            'scope_value' => 'website-main',
+        ]);
+        $this->assertDatabaseMissing('admin_role_assignments', [
+            'admin_id' => $target->id,
+            'role_id' => $role->id,
+            'scope_type' => 'global',
+        ]);
+    }
+
+    public function test_platform_owner_role_and_scoped_super_admin_invariants_are_enforced(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $owner = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
+        $platformOwnerRole = Role::query()->where('key', Role::PLATFORM_OWNER_KEY)->firstOrFail();
+        $superAdminRole = Role::query()->where('key', Role::SUPER_ADMIN_KEY)->firstOrFail();
+        $permissionCount = Permission::query()->where('is_active', true)->count();
+
+        $this->actingAs($owner, 'admin');
+        $this->putJson("/admin/api/roles/{$platformOwnerRole->id}", [
+            'name' => 'Reduced Administrator',
+            'key' => Role::PLATFORM_OWNER_KEY,
+            'permission_ids' => [],
+        ])->assertUnprocessable();
+        $this->deleteJson("/admin/api/roles/{$platformOwnerRole->id}")->assertUnprocessable();
+
+        $this->assertSame($permissionCount, $platformOwnerRole->fresh()->permissions()->where('is_active', true)->count());
+
+        $scopedAdmin = Admin::factory()->create(['status' => 'active', 'is_active' => true]);
+        AdminRoleAssignment::query()->create([
+            'admin_id' => $scopedAdmin->id,
+            'role_id' => $superAdminRole->id,
+            'scope_type' => 'website',
+            'scope_value' => 'website-main',
+            'assigned_by' => $owner->id,
+        ]);
+
+        $this->assertFalse($scopedAdmin->isSuperAdmin());
+        $this->flushSession();
+        $this->actingAs($scopedAdmin, 'admin')
+            ->withHeader('X-Website-Key', 'website-main')
+            ->getJson('/admin/api/access')
+            ->assertForbidden();
+    }
+
     public function test_auth_version_revokes_an_existing_session(): void
     {
         $this->seed(DatabaseSeeder::class);

@@ -2,6 +2,21 @@
 
 use App\Http\Controllers\Admin\AdminShellController;
 use App\Http\Controllers\Admin\Api\AccessControlIndexController;
+use App\Http\Controllers\Admin\Api\AccountingTax\AccountingDashboardController;
+use App\Http\Controllers\Admin\Api\AccountingTax\DocumentController as AccountingDocumentController;
+use App\Http\Controllers\Admin\Api\AccountingTax\EmailDeliveryController as AccountingEmailDeliveryController;
+use App\Http\Controllers\Admin\Api\AccountingTax\ExportController as AccountingExportController;
+use App\Http\Controllers\Admin\Api\AccountingTax\IntegrationController as AccountingIntegrationController;
+use App\Http\Controllers\Admin\Api\AccountingTax\InventoryBridgeController as AccountingInventoryBridgeController;
+use App\Http\Controllers\Admin\Api\AccountingTax\ItemController as AccountingItemController;
+use App\Http\Controllers\Admin\Api\AccountingTax\Minvoice\MinvoiceInboundController;
+use App\Http\Controllers\Admin\Api\AccountingTax\Minvoice\MinvoiceOutboundController;
+use App\Http\Controllers\Admin\Api\AccountingTax\Minvoice\ProviderConnectionController;
+use App\Http\Controllers\Admin\Api\AccountingTax\OrderConversionController as AccountingOrderConversionController;
+use App\Http\Controllers\Admin\Api\AccountingTax\OrganizationController as AccountingOrganizationController;
+use App\Http\Controllers\Admin\Api\AccountingTax\PartyController as AccountingPartyController;
+use App\Http\Controllers\Admin\Api\AccountingTax\ReportController as AccountingReportController;
+use App\Http\Controllers\Admin\Api\AccountingTax\TaxPeriodController as AccountingTaxPeriodController;
 use App\Http\Controllers\Admin\Api\AdminAccountController;
 use App\Http\Controllers\Admin\Api\AdminCurrentProfileController;
 use App\Http\Controllers\Admin\Api\AdminRoleAssignmentController;
@@ -66,6 +81,7 @@ use App\Http\Controllers\Admin\Api\Inventory\WarehouseIndexController as Invento
 use App\Http\Controllers\Admin\Api\Inventory\WarehouseManagementController as InventoryWarehouseManagementController;
 use App\Http\Controllers\Admin\Api\LandingPageBlockController;
 use App\Http\Controllers\Admin\Api\LandingPageController;
+use App\Http\Controllers\Admin\Api\LocalizedContentController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
@@ -78,9 +94,6 @@ use App\Http\Controllers\Admin\Api\Project\ProjectChecklistManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectDetailController;
 use App\Http\Controllers\Admin\Api\Project\ProjectFileManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectIndexController;
-use App\Http\Controllers\Admin\Api\RealEstate\RealEstateIndexController;
-use App\Http\Controllers\Admin\Api\RealEstate\RealEstateListingManagementController;
-use App\Http\Controllers\Admin\Api\RealEstate\RealEstatePropertyTypeManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectMemberManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectReportIndexController;
@@ -91,6 +104,9 @@ use App\Http\Controllers\Admin\Api\Project\ProjectTaskIndexController;
 use App\Http\Controllers\Admin\Api\Project\ProjectTaskManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectTaskStatusManagementController;
 use App\Http\Controllers\Admin\Api\Project\ProjectTaskTimeEntryManagementController;
+use App\Http\Controllers\Admin\Api\RealEstate\RealEstateIndexController;
+use App\Http\Controllers\Admin\Api\RealEstate\RealEstateListingManagementController;
+use App\Http\Controllers\Admin\Api\RealEstate\RealEstatePropertyTypeManagementController;
 use App\Http\Controllers\Admin\Api\RoleManagementController;
 use App\Http\Controllers\Admin\Api\SetupProfileController;
 use App\Http\Controllers\Admin\Api\SetupStepController;
@@ -100,11 +116,10 @@ use App\Http\Controllers\Admin\Api\SiteBannerManagementController;
 use App\Http\Controllers\Admin\Api\SiteMappingController;
 use App\Http\Controllers\Admin\Api\ThemeActivationController;
 use App\Http\Controllers\Admin\Api\ThemeAvatarController;
+use App\Http\Controllers\Admin\Api\ThemeBrandingController;
 use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
 use App\Http\Controllers\Admin\Api\ThemeLocaleController;
-use App\Http\Controllers\Admin\Api\LocalizedContentController;
 use App\Http\Controllers\Admin\Api\ThemePaletteController;
-use App\Http\Controllers\Admin\Api\ThemeBrandingController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationManagementController;
@@ -136,34 +151,34 @@ Route::prefix('admin')
                     ->middleware('admin.permission:cms.newsletter.delete')
                     ->name('newsletter-subscribers.destroy');
                 Route::get('/access', AccessControlIndexController::class)
-                    ->middleware('admin.permission:rbac.role.view')
+                    ->middleware('admin.permission:rbac.role.view,global')
                     ->name('access.index');
                 Route::get('/audit-logs', AuditLogIndexController::class)
-                    ->middleware('admin.permission:admin.audit.view')
+                    ->middleware('admin.permission:admin.audit.view,global')
                     ->name('audit-logs.index');
                 Route::post('/roles', [RoleManagementController::class, 'store'])
-                    ->middleware('admin.permission:rbac.role.manage')
+                    ->middleware('admin.permission:rbac.role.manage,global')
                     ->name('roles.store');
                 Route::put('/roles/{role}', [RoleManagementController::class, 'update'])
-                    ->middleware('admin.permission:rbac.role.manage')
+                    ->middleware('admin.permission:rbac.role.manage,global')
                     ->name('roles.update');
                 Route::delete('/roles/{role}', [RoleManagementController::class, 'destroy'])
-                    ->middleware('admin.permission:rbac.role.manage')
+                    ->middleware('admin.permission:rbac.role.manage,global')
                     ->name('roles.destroy');
                 Route::put('/admins/{admin}/roles', AdminRoleAssignmentController::class)
-                    ->middleware('admin.permission:rbac.permission.assign')
+                    ->middleware('admin.permission:rbac.permission.assign,global')
                     ->name('admins.roles.update');
                 Route::get('/admins', [AdminAccountController::class, 'index'])
-                    ->middleware('admin.permission:admin.account.view')
+                    ->middleware('admin.permission:admin.account.view,global')
                     ->name('admins.index');
                 Route::post('/admins', [AdminAccountController::class, 'store'])
-                    ->middleware('admin.permission:admin.account.manage')
+                    ->middleware('admin.permission:admin.account.manage,global')
                     ->name('admins.store');
                 Route::put('/admins/{admin}', [AdminAccountController::class, 'update'])
-                    ->middleware('admin.permission:admin.account.manage')
+                    ->middleware('admin.permission:admin.account.manage,global')
                     ->name('admins.update');
                 Route::put('/admins/{admin}/password', [AdminAccountController::class, 'resetPassword'])
-                    ->middleware('admin.permission:admin.account.reset_password')
+                    ->middleware('admin.permission:admin.account.reset_password,global')
                     ->name('admins.password.reset');
                 Route::put('/me/password', [AdminAccountController::class, 'changeOwnPassword'])
                     ->name('me.password.update');
@@ -174,17 +189,167 @@ Route::prefix('admin')
                 Route::delete('/me/two-factor', [AdminTwoFactorController::class, 'disable'])
                     ->name('me.two-factor.disable');
                 Route::post('/admins/{admin}/sessions/revoke', [AdminAccountController::class, 'revokeSessions'])
-                    ->middleware('admin.permission:admin.account.manage')
+                    ->middleware('admin.permission:admin.account.manage,global')
                     ->name('admins.sessions.revoke');
                 Route::post('/admins/{admin}/lock', [AdminAccountController::class, 'lock'])
-                    ->middleware('admin.permission:admin.account.lock')
+                    ->middleware('admin.permission:admin.account.lock,global')
                     ->name('admins.lock');
                 Route::post('/admins/{admin}/unlock', [AdminAccountController::class, 'unlock'])
-                    ->middleware('admin.permission:admin.account.lock')
+                    ->middleware('admin.permission:admin.account.lock,global')
                     ->name('admins.unlock');
                 Route::get('/modules', ModuleRegistryController::class)
                     ->middleware('admin.permission:store.module.view')
                     ->name('modules');
+                Route::prefix('accounting-tax')->middleware('module.enabled:accounting-tax')->name('accounting-tax.')->group(function (): void {
+                    Route::get('/dashboard', AccountingDashboardController::class)
+                        ->middleware('admin.permission:accounting.view,organization,organization_id')->name('dashboard');
+                    Route::get('/integrations', AccountingIntegrationController::class)
+                        ->middleware('admin.permission:accounting.view,organization,organization_id')->name('integrations');
+                    Route::get('/organizations', [AccountingOrganizationController::class, 'index'])
+                        ->middleware('admin.permission:accounting.view,organization,*')->name('organizations.index');
+                    Route::post('/organizations', [AccountingOrganizationController::class, 'store'])
+                        ->middleware('admin.permission:accounting.organization.manage,global')->name('organizations.store');
+                    Route::put('/organizations/{organization}', [AccountingOrganizationController::class, 'update'])
+                        ->middleware('admin.permission:accounting.organization.manage,organization,organization')->name('organizations.update');
+                    Route::get('/parties', [AccountingPartyController::class, 'index'])
+                        ->middleware('admin.permission:accounting.view,organization,organization_id')->name('parties.index');
+                    Route::post('/parties', [AccountingPartyController::class, 'store'])
+                        ->middleware('admin.permission:accounting.party.manage,organization,organization_id')->name('parties.store');
+                    Route::put('/parties/{party}', [AccountingPartyController::class, 'update'])
+                        ->middleware('admin.permission:accounting.party.manage,organization,party')->name('parties.update');
+                    Route::get('/items', [AccountingItemController::class, 'index'])
+                        ->middleware('admin.permission:accounting.view,organization,organization_id')->name('items.index');
+                    Route::post('/items', [AccountingItemController::class, 'store'])
+                        ->middleware('admin.permission:accounting.item.manage,organization,organization_id')->name('items.store');
+                    Route::put('/items/{item}', [AccountingItemController::class, 'update'])
+                        ->middleware('admin.permission:accounting.item.manage,organization,item')->name('items.update');
+                    Route::post('/items/sync-sources', [AccountingItemController::class, 'sync'])
+                        ->middleware('admin.permission:accounting.integration.sync,organization,organization_id')->name('items.sync-sources');
+                    Route::get('/documents', [AccountingDocumentController::class, 'index'])
+                        ->middleware('admin.permission:accounting.view,organization,organization_id')->name('documents.index');
+                    Route::post('/documents', [AccountingDocumentController::class, 'store'])
+                        ->middleware('admin.permission:accounting.document.create,organization,organization_id')->name('documents.store');
+                    Route::get('/documents/{document}', [AccountingDocumentController::class, 'show'])
+                        ->middleware('admin.permission:accounting.view,organization,document')->name('documents.show');
+                    Route::put('/documents/{document}', [AccountingDocumentController::class, 'update'])
+                        ->middleware('admin.permission:accounting.document.update,organization,document')->name('documents.update');
+                    Route::post('/documents/{document}/approve', [AccountingDocumentController::class, 'approve'])
+                        ->middleware('admin.permission:accounting.document.approve,organization,document')->name('documents.approve');
+                    Route::post('/documents/{document}/post', [AccountingDocumentController::class, 'post'])
+                        ->middleware('admin.permission:accounting.document.post,organization,document')->name('documents.post');
+                    Route::post('/documents/{document}/void', [AccountingDocumentController::class, 'voidDocument'])
+                        ->middleware('admin.permission:accounting.document.void,organization,document')->name('documents.void');
+                    Route::post('/documents/{document}/reverse', [AccountingDocumentController::class, 'reverse'])
+                        ->middleware('admin.permission:accounting.document.void,organization,document')->name('documents.reverse');
+                    Route::post('/documents/{document}/payments', [AccountingDocumentController::class, 'payment'])
+                        ->middleware('admin.permission:accounting.document.payment.manage,organization,document')->name('documents.payments.store');
+                    Route::post('/documents/{document}/tax-assessment', [AccountingDocumentController::class, 'assessTax'])
+                        ->middleware('admin.permission:accounting.tax.assess,organization,document')->name('documents.tax-assessment');
+                    Route::post('/orders/{order}/draft', AccountingOrderConversionController::class)
+                        ->middleware('admin.permission:accounting.document.create,organization,organization_id')->name('orders.draft');
+                    Route::get('/inventory/warehouses', [AccountingInventoryBridgeController::class, 'warehouses'])
+                        ->middleware('admin.permission:accounting.inventory.post,organization,organization_id')->name('inventory.warehouses.index');
+                    Route::post('/inventory/warehouses', [AccountingInventoryBridgeController::class, 'mapWarehouse'])
+                        ->middleware('admin.permission:accounting.inventory.post,organization,organization_id')->name('inventory.warehouses.store');
+                    Route::delete('/inventory/warehouses/{mapping}', [AccountingInventoryBridgeController::class, 'unmapWarehouse'])
+                        ->middleware('admin.permission:accounting.inventory.post,organization,mapping')->name('inventory.warehouses.destroy');
+                    Route::post('/documents/{document}/inventory/propose', [AccountingInventoryBridgeController::class, 'propose'])
+                        ->middleware('admin.permission:accounting.inventory.post,organization,document')->name('documents.inventory.propose');
+                    Route::post('/inventory-links/{link}/post', [AccountingInventoryBridgeController::class, 'post'])
+                        ->middleware('admin.permission:accounting.inventory.post,organization,link')->name('inventory-links.post');
+                    Route::get('/reports/summary', AccountingReportController::class)
+                        ->middleware('admin.permission:accounting.report.view,organization,organization_id')->name('reports.summary');
+                    Route::get('/tax-periods', [AccountingTaxPeriodController::class, 'index'])
+                        ->middleware('admin.permission:accounting.report.view,organization,organization_id')->name('tax-periods.index');
+                    Route::post('/tax-periods', [AccountingTaxPeriodController::class, 'store'])
+                        ->middleware('admin.permission:accounting.period.manage,organization,organization_id')->name('tax-periods.store');
+                    Route::post('/tax-periods/{period}/transition', [AccountingTaxPeriodController::class, 'transition'])
+                        ->middleware('admin.permission:accounting.period.manage,organization,period')->name('tax-periods.transition');
+                    Route::get('/exports', [AccountingExportController::class, 'index'])
+                        ->middleware('admin.permission:accounting.report.view,organization,organization_id')->name('exports.index');
+                    Route::post('/exports', [AccountingExportController::class, 'store'])
+                        ->middleware('admin.permission:accounting.export.create,organization,organization_id')->name('exports.store');
+                    Route::post('/exports/{export}/retry', [AccountingExportController::class, 'retry'])
+                        ->middleware('admin.permission:accounting.export.create,organization,export')->name('exports.retry');
+                    Route::get('/exports/{export}/download', [AccountingExportController::class, 'download'])
+                        ->middleware('admin.permission:accounting.report.view,organization,export')->name('exports.download');
+                    Route::get('/email-deliveries', [AccountingEmailDeliveryController::class, 'index'])
+                        ->middleware('admin.permission:accounting.view,organization,organization_id')->name('email-deliveries.index');
+                    Route::post('/documents/{document}/email', [AccountingEmailDeliveryController::class, 'store'])
+                        ->middleware('admin.permission:accounting.mail.send,organization,document')->name('documents.email');
+                    Route::post('/email-deliveries/{delivery}/retry', [AccountingEmailDeliveryController::class, 'retry'])
+                        ->middleware('admin.permission:accounting.mail.send,organization,delivery')->name('email-deliveries.retry');
+
+                    Route::prefix('minvoice')->middleware('module.enabled:minvoice-connector')->name('minvoice.')->group(function (): void {
+                        Route::get('/connections', [ProviderConnectionController::class, 'index'])
+                            ->middleware('admin.permission:minvoice.view,organization,organization_id')->name('connections.index');
+                        Route::post('/connections', [ProviderConnectionController::class, 'store'])
+                            ->middleware('admin.permission:minvoice.connection.manage,organization,organization_id')->name('connections.store');
+                        Route::put('/connections/{connection}', [ProviderConnectionController::class, 'update'])
+                            ->middleware('admin.permission:minvoice.connection.manage,organization,connection')->name('connections.update');
+                        Route::post('/connections/{connection}/test', [ProviderConnectionController::class, 'test'])
+                            ->middleware('admin.permission:minvoice.configure,organization,connection')->name('connections.test');
+                        Route::post('/connections/{connection}/allow-production', [ProviderConnectionController::class, 'allowProduction'])
+                            ->middleware('admin.permission:minvoice.configure,organization,connection')->name('connections.allow-production');
+                        Route::post('/connections/{connection}/kill-switch', [ProviderConnectionController::class, 'killSwitch'])
+                            ->middleware('admin.permission:minvoice.connection.manage,organization,connection')->name('connections.kill-switch');
+                        Route::get('/connections/{connection}/series', [MinvoiceOutboundController::class, 'series'])
+                            ->middleware('admin.permission:minvoice.view,organization,connection')->name('connections.series');
+                        Route::post('/connections/{connection}/series/sync', [MinvoiceOutboundController::class, 'syncSeries'])
+                            ->middleware('admin.permission:minvoice.outbound.sync,organization,connection')->name('connections.series.sync');
+
+                        Route::get('/documents/{document}/transmissions', [MinvoiceOutboundController::class, 'transmissions'])
+                            ->middleware('admin.permission:minvoice.view,organization,document')->name('documents.transmissions');
+                        Route::post('/documents/{document}/preview', [MinvoiceOutboundController::class, 'preview'])
+                            ->middleware('admin.permission:minvoice.outbound.preview,organization,document')->name('documents.preview');
+                        Route::post('/documents/{document}/create-draft', [MinvoiceOutboundController::class, 'createDraft'])
+                            ->middleware('admin.permission:minvoice.outbound.issue,organization,document')->name('documents.create-draft');
+                        Route::post('/documents/{document}/create-and-sign', [MinvoiceOutboundController::class, 'createAndSign'])
+                            ->middleware('admin.permission:minvoice.outbound.issue,organization,document')->name('documents.create-and-sign');
+                        Route::post('/documents/{document}/sign-send', [MinvoiceOutboundController::class, 'signSend'])
+                            ->middleware('admin.permission:minvoice.outbound.issue,organization,document')->name('documents.sign-send');
+                        Route::post('/documents/{document}/sync-status', [MinvoiceOutboundController::class, 'syncStatus'])
+                            ->middleware('admin.permission:minvoice.outbound.sync,organization,document')->name('documents.sync-status');
+                        Route::post('/documents/{document}/fetch-pdf', [MinvoiceOutboundController::class, 'downloadPdf'])
+                            ->middleware('admin.permission:minvoice.artifact.download,organization,document')->name('documents.fetch-pdf');
+                        Route::post('/documents/{document}/fetch-xml', [MinvoiceOutboundController::class, 'downloadXml'])
+                            ->middleware('admin.permission:minvoice.artifact.download,organization,document')->name('documents.fetch-xml');
+                        Route::post('/documents/{document}/legal-preview', [MinvoiceOutboundController::class, 'legalPreview'])
+                            ->middleware('admin.permission:minvoice.outbound.preview,organization,document')->name('documents.legal-preview');
+                        Route::post('/documents/{document}/adjust', [MinvoiceOutboundController::class, 'adjust'])
+                            ->middleware('admin.permission:minvoice.outbound.issue,organization,document')->name('documents.adjust');
+                        Route::post('/documents/{document}/replace', [MinvoiceOutboundController::class, 'replace'])
+                            ->middleware('admin.permission:minvoice.outbound.issue,organization,document')->name('documents.replace');
+                        Route::post('/documents/{document}/cancel', [MinvoiceOutboundController::class, 'cancel'])
+                            ->middleware('admin.permission:minvoice.outbound.issue,organization,document')->name('documents.cancel');
+                        Route::get('/transmissions/{transmission}/artifacts/{format}', [MinvoiceOutboundController::class, 'artifact'])
+                            ->middleware('admin.permission:minvoice.artifact.download,organization,transmission.document')->name('transmissions.artifact');
+
+                        Route::get('/inbound', [MinvoiceInboundController::class, 'index'])
+                            ->middleware('admin.permission:minvoice.view,organization,connection_id')->name('inbound.index');
+                        Route::get('/inbound/{invoice}', [MinvoiceInboundController::class, 'show'])
+                            ->middleware('admin.permission:minvoice.view,organization,invoice')->name('inbound.show');
+                        Route::post('/inbound/sync', [MinvoiceInboundController::class, 'sync'])
+                            ->middleware('admin.permission:minvoice.inbound.sync,organization,connection_id')->name('inbound.sync');
+                        Route::post('/inbound/{invoice}/fetch-xml', [MinvoiceInboundController::class, 'downloadXml'])
+                            ->middleware('admin.permission:minvoice.inbound.sync,organization,invoice')->name('inbound.fetch-xml');
+                        Route::post('/inbound/{invoice}/fetch-html', [MinvoiceInboundController::class, 'downloadHtml'])
+                            ->middleware('admin.permission:minvoice.inbound.sync,organization,invoice')->name('inbound.fetch-html');
+                        Route::post('/inbound/{invoice}/check-warning', [MinvoiceInboundController::class, 'checkWarning'])
+                            ->middleware('admin.permission:minvoice.inbound.sync,organization,invoice')->name('inbound.check-warning');
+                        Route::post('/inbound/{invoice}/create-internal-draft', [MinvoiceInboundController::class, 'createInternalDraft'])
+                            ->middleware([
+                                'admin.permission:minvoice.inbound.sync,organization,invoice',
+                                'admin.permission:accounting.document.create,organization,invoice',
+                            ])->name('inbound.create-internal-draft');
+                        Route::post('/inbound/{invoice}/match', [MinvoiceInboundController::class, 'match'])
+                            ->middleware('admin.permission:minvoice.inbound.sync,organization,invoice')->name('inbound.match');
+                        Route::post('/inbound/{invoice}/unmatch', [MinvoiceInboundController::class, 'unmatch'])
+                            ->middleware('admin.permission:minvoice.inbound.sync,organization,invoice')->name('inbound.unmatch');
+                        Route::get('/inbound/{invoice}/artifacts/{format}', [MinvoiceInboundController::class, 'artifact'])
+                            ->middleware('admin.permission:minvoice.artifact.download,organization,invoice')->name('inbound.artifact');
+                    });
+                });
                 Route::get('/inventory/dashboard', InventoryDashboardController::class)
                     ->middleware('admin.permission:inventory.view')
                     ->name('inventory.dashboard');
@@ -732,34 +897,34 @@ Route::prefix('admin')
                     ->middleware('admin.permission:theme.view')
                     ->name('themes');
                 Route::get('/site-mappings', [SiteMappingController::class, 'index'])
-                    ->middleware('admin.permission:theme.view')
+                    ->middleware('admin.permission:theme.view,global')
                     ->name('site-mappings.index');
                 Route::post('/site-mappings', [SiteMappingController::class, 'store'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.store');
                 Route::post('/site-mappings/bulk', [SiteMappingController::class, 'bulkStore'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.bulk-store');
                 Route::put('/site-mappings/bulk/status', [SiteMappingController::class, 'bulkStatus'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.bulk-status');
                 Route::delete('/site-mappings/bulk', [SiteMappingController::class, 'bulkDestroy'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.bulk-destroy');
                 Route::post('/site-mappings/{site}/copy-content', [SiteMappingController::class, 'copyContent'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.copy-content');
                 Route::post('/site-mappings/{site}/demo-data', [SiteMappingController::class, 'generateDemoData'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.demo-data');
                 Route::patch('/site-mappings/{site}/checklist', [SiteMappingController::class, 'updateChecklist'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.checklist');
                 Route::put('/site-mappings/{site}', [SiteMappingController::class, 'update'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.update');
                 Route::delete('/site-mappings/{site}', [SiteMappingController::class, 'destroy'])
-                    ->middleware('admin.permission:theme.customize')
+                    ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.destroy');
                 Route::post('/themes/{key}/avatar', ThemeAvatarController::class)
                     ->middleware('admin.permission:theme.customize')

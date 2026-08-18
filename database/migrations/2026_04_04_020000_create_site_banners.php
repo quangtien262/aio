@@ -8,23 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('catalog_categories')) {
-            Schema::create('catalog_categories', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('parent_id')->nullable()->constrained('catalog_categories')->nullOnDelete();
-                $table->string('name');
-                $table->string('slug')->unique();
-                $table->text('description')->nullable();
-                $table->string('image_url')->nullable();
-                $table->unsignedInteger('sort_order')->default(0);
-                $table->boolean('is_active')->default(true);
-                $table->string('website_key')->nullable()->index();
-                $table->string('owner_key')->nullable()->index();
-                $table->string('tenant_key')->nullable()->index();
-                $table->timestamps();
-            });
-        }
-
         if (! Schema::hasTable('site_banners')) {
             Schema::create('site_banners', function (Blueprint $table) {
                 $table->id();
@@ -45,12 +28,10 @@ return new class extends Migration
             });
         }
 
-
     }
 
     public function down(): void
     {
         Schema::dropIfExists('site_banners');
-        Schema::dropIfExists('catalog_categories');
     }
 };

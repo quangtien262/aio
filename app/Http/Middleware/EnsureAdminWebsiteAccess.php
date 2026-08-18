@@ -36,6 +36,17 @@ class EnsureAdminWebsiteAccess
             return $next($request);
         }
 
+        if ($admin->hasOrganizationAssignmentScope()
+            && ($request->is('admin/api/accounting-tax/*') || $request->routeIs('admin.api.me'))) {
+            // Organization-only accounting operators do not need access to a
+            // storefront website. Keep the site context detached so it cannot
+            // be mistaken for website authorization; accounting routes still
+            // require their explicit organization scope middleware.
+            $this->siteContext->set(null, SiteContext::DEFAULT_WEBSITE_KEY);
+
+            return $next($request);
+        }
+
         if ($request->routeIs('admin.api.me')) {
             $fallbackSite = Site::query()
                 ->where('status', 'active')

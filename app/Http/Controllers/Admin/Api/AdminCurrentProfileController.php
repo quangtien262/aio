@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin\Api;
 
 use App\Core\Modules\ModuleRegistry;
+use App\Models\AcctOrganization;
 use App\Models\Site;
 use App\Models\SiteProfile;
-use App\Support\SiteContext;
 use App\Support\FrontendLocalization;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -16,38 +17,65 @@ class AdminCurrentProfileController
     public function __invoke(Request $request, ModuleRegistry $moduleRegistry): JsonResponse
     {
         $admin = $request->user('admin');
-        $permissions = $admin?->permissions() ?? [];
+        $permissions = $admin?->visiblePermissions() ?? [];
         $siteProfile = SiteProfile::query()->first();
         $siteContext = app(SiteContext::class);
         $siteOptions = Schema::hasTable('sites')
                 ? Site::query()
-                ->when(! $admin?->isSystemOwner(), fn ($query) => $query->where(function ($siteQuery) use ($admin): void {
-                    $websiteKeys = $admin?->roleAssignments()
-                        ->where('scope_type', 'website')
-                        ->where(fn ($assignmentQuery) => $assignmentQuery->whereNull('expires_at')->orWhere('expires_at', '>', now()))
-                        ->pluck('scope_value')
-                        ->filter()
-                        ->all() ?? [];
-                    $hasGlobal = $admin?->roleAssignments()
-                        ->where('scope_type', 'global')
-                        ->where(fn ($assignmentQuery) => $assignmentQuery->whereNull('expires_at')->orWhere('expires_at', '>', now()))
-                        ->exists() ?? false;
+                    ->when(! $admin?->isSystemOwner(), fn ($query) => $query->where(function ($siteQuery) use ($admin): void {
+                        $websiteKeys = $admin?->roleAssignments()
+                            ->where('scope_type', 'website')
+                            ->where(fn ($assignmentQuery) => $assignmentQuery->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                            ->pluck('scope_value')
+                            ->filter()
+                            ->all() ?? [];
+                        $hasGlobal = $admin?->roleAssignments()
+                            ->where('scope_type', 'global')
+                            ->where(fn ($assignmentQuery) => $assignmentQuery->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                            ->exists() ?? false;
 
-                    if (! $hasGlobal) {
-                        $siteQuery->whereIn('website_key', $websiteKeys);
-                    }
-                }))
-                ->orderByRaw('domain is null')
-                ->orderBy('domain')
-                ->orderBy('website_key')
-                ->get(['id', 'domain', 'website_key', 'theme_key', 'name', 'status'])
-                ->map(fn (Site $site): array => [
-                    'id' => $site->id,
-                    'label' => $site->name ?: ($site->domain ?: $site->website_key),
-                    'domain' => $site->domain,
-                    'website_key' => $site->website_key,
-                    'theme_key' => $site->theme_key,
-                    'status' => $site->status,
+                        if (! $hasGlobal) {
+                            $siteQuery->whereIn('website_key', $websiteKeys);
+                        }
+                    }))
+                    ->orderByRaw('domain is null')
+                    ->orderBy('domain')
+                    ->orderBy('website_key')
+                    ->get(['id', 'domain', 'website_key', 'theme_key', 'name', 'status'])
+                    ->map(fn (Site $site): array => [
+                        'id' => $site->id,
+                        'label' => $site->name ?: ($site->domain ?: $site->website_key),
+                        'domain' => $site->domain,
+                        'website_key' => $site->website_key,
+                        'theme_key' => $site->theme_key,
+                        'status' => $site->status,
+                    ])
+                    ->values()
+                    ->all()
+            : [];
+        $organizationOptions = Schema::hasTable('acct_organizations') && $admin !== null
+            ? AcctOrganization::query()
+                ->when(
+                    ! $admin->hasGlobalAssignmentScope(),
+                    fn ($query) => $query->whereIn(
+                        'id',
+                        $admin->roleAssignments()
+                            ->whereHas('role', fn ($roleQuery) => $roleQuery->where('status', 'active'))
+                            ->where('scope_type', 'organization')
+                            ->where(fn ($assignmentQuery) => $assignmentQuery->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                            ->pluck('scope_value'),
+                    ),
+                )
+                ->where('status', 'active')
+                ->orderByDesc('is_default')
+                ->orderBy('name')
+                ->get(['id', 'name', 'legal_name', 'tax_code', 'is_default'])
+                ->map(fn (AcctOrganization $organization): array => [
+                    'id' => $organization->id,
+                    'name' => $organization->name,
+                    'legal_name' => $organization->legal_name,
+                    'tax_code' => $organization->tax_code,
+                    'is_default' => $organization->is_default,
                 ])
                 ->values()
                 ->all()
@@ -77,6 +105,7 @@ class AdminCurrentProfileController
                     'theme_key' => $siteContext->themeKey(),
                 ],
                 'site_options' => $siteOptions,
+                'organization_options' => $organizationOptions,
                 'frontend_localization' => [
                     'default_locale' => FrontendLocalization::defaultLocale(),
                     'fallback_locale' => FrontendLocalization::fallbackLocale(),

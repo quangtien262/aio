@@ -26,7 +26,10 @@ use App\Models\ThemeDemoRecord;
 use App\Models\ThemeTranslation;
 use App\Support\FrontendLocalization;
 use App\Support\FrontendRouteUrl;
+use App\Support\Localization\LandingPageLocalization;
+use App\Support\Localization\LocaleContext;
 use App\Support\Localization\LocalizedContentRepository;
+use App\Support\Localization\LocalizedRouteRegistry;
 use App\Support\Localization\TranslationRevision;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +41,8 @@ class LandingPageBuilder
     public function __construct(
         private readonly LocalizedContentRepository $localizedContent,
         private readonly CmsMenuResolver $menuResolver,
+        private readonly LocaleContext $localeContext,
+        private readonly LocalizedRouteRegistry $routeRegistry,
     ) {}
 
     public function supportsTheme(?string $themeKey): bool
@@ -144,6 +149,7 @@ class LandingPageBuilder
                 $fallbackLocale,
                 true,
                 $includeEditableLocales,
+                $page->website_key,
             ))
             ->values()
             ->all();
@@ -151,7 +157,10 @@ class LandingPageBuilder
         return [
             'landingPage' => $this->serializePage($page, $pageData),
             'landingBlocks' => $blocks,
-            'landingMenuItems' => $this->landingMenuItems($blocks, $page->is_home ? null : $page->slug),
+            'landingMenuItems' => $this->landingMenuItems(
+                $blocks,
+                $this->landingMenuBaseUrl($page, $locale),
+            ),
             'landingEditorOptions' => $this->editorOptions(),
         ];
     }
@@ -302,6 +311,7 @@ class LandingPageBuilder
         string $fallbackLocale = 'vi',
         bool $includeDynamic = false,
         bool $includeEditableLocales = false,
+        ?string $websiteKey = null,
     ): array {
         $availableData = $includeEditableLocales
             ? $block->data
@@ -309,11 +319,13 @@ class LandingPageBuilder
                 fn (LandingPageBlockData $item): bool => $item->isPublishedTranslation(),
             );
         $localizedData = $availableData->firstWhere('locale', $locale);
-        $data = $localizedData
-            ?? $availableData->firstWhere('locale', $fallbackLocale)
-            ?? $availableData->first();
-        $fallbackData = $availableData->firstWhere('locale', $fallbackLocale)
-            ?? $availableData->first();
+        $data = $this->firstLocaleData(
+            $availableData,
+            $locale,
+            $fallbackLocale,
+            $websiteKey,
+        );
+        $fallbackData = $data;
         $content = $this->decodeContent($data?->content);
         $fallbackContent = $this->decodeContent($fallbackData?->content);
 
@@ -356,21 +368,30 @@ class LandingPageBuilder
                     ? FrontendLocalization::editableLocales()
                     : FrontendLocalization::publicLocales(),
             )
-                ->mapWithKeys(function (string $supportedLocale) use ($availableData, $fallbackData, $fallbackContent, $includeEditableLocales, $block): array {
+                ->mapWithKeys(function (string $supportedLocale) use ($availableData, $fallbackLocale, $includeEditableLocales, $block, $websiteKey): array {
                     $localeData = $availableData->firstWhere('locale', $supportedLocale);
+                    $localeFallbackData = $includeEditableLocales
+                        ? null
+                        : $this->firstLocaleData(
+                            $availableData,
+                            $supportedLocale,
+                            $fallbackLocale,
+                            $websiteKey,
+                        );
                     $localeContent = $this->decodeContent($localeData?->content);
+                    $localeFallbackContent = $this->decodeContent($localeFallbackData?->content);
 
                     if (
                         ! $includeEditableLocales
                         && $localeData === null
                         && ($localeContent === [] || (array_key_exists('items', $localeContent) && ($localeContent['items'] ?? []) === []))
                     ) {
-                        $localeContent = $fallbackContent;
+                        $localeContent = $localeFallbackContent;
                     }
 
                     $localeValue = static fn (string $field): mixed => $localeData !== null
                         ? $localeData->{$field}
-                        : ($includeEditableLocales ? null : $fallbackData?->{$field});
+                        : ($includeEditableLocales ? null : $localeFallbackData?->{$field});
 
                     return [
                         $supportedLocale => [
@@ -579,9 +600,36 @@ class LandingPageBuilder
             )
             : $page->data;
 
-        return $availableData->firstWhere('locale', $locale)
-            ?? $availableData->firstWhere('locale', $fallbackLocale)
-            ?? $availableData->first();
+        /** @var LandingPageData|null */
+        return $this->firstLocaleData(
+            $availableData,
+            $locale,
+            $fallbackLocale,
+            $page->website_key,
+        );
+    }
+
+    private function firstLocaleData(
+        iterable $availableData,
+        string $locale,
+        string $fallbackLocale,
+        ?string $websiteKey,
+    ): ?Model {
+        $availableData = collect($availableData);
+        $candidates = collect($this->localeContext->fallbackChain($locale, $websiteKey))
+            ->push($fallbackLocale)
+            ->filter()
+            ->unique();
+
+        foreach ($candidates as $candidate) {
+            $data = $availableData->firstWhere('locale', $candidate);
+
+            if ($data instanceof Model) {
+                return $data;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -602,9 +650,9 @@ class LandingPageBuilder
      * @param  array<int, array<string, mixed>>  $blocks
      * @return array<int, array{label:string,url:string,children:array<int, array{label:string,url:string}>}>
      */
-    private function landingMenuItems(array $blocks, ?string $slug): array
+    private function landingMenuItems(array $blocks, ?string $base): array
     {
-        $base = $slug ? route('site.landing.show', ['locale' => app()->getLocale(), 'slug' => $slug]) : '';
+        $base ??= '';
 
         return collect($blocks)
             ->filter(fn (array $block): bool => filled($block['anchor_id'] ?? null))
@@ -619,6 +667,37 @@ class LandingPageBuilder
             })
             ->values()
             ->all();
+    }
+
+    private function landingMenuBaseUrl(LandingPage $page, string $locale): ?string
+    {
+        if ($page->is_home) {
+            return null;
+        }
+
+        $canonicalPath = $this->routeRegistry->canonicalPaths(
+            LandingPageLocalization::ROUTE_RESOURCE_TYPE,
+            $page->id,
+            [$locale],
+            $page->website_key,
+        )[$locale] ?? null;
+
+        if ($canonicalPath !== null) {
+            return FrontendRouteUrl::localized($canonicalPath, $locale);
+        }
+
+        if (
+            $locale === $this->localeContext->sourceLocale()
+            && $page->status === 'published'
+            && filled($page->slug)
+        ) {
+            return route('site.landing.show', [
+                'locale' => $locale,
+                'slug' => $page->slug,
+            ]);
+        }
+
+        return FrontendRouteUrl::home($locale);
     }
 
     /**
@@ -1280,7 +1359,13 @@ class LandingPageBuilder
                 'summary' => $listing->summary,
                 'image' => $image?->media_url ?: $this->fallbackCategoryImage($listing->id),
                 'alt' => $image?->alt_text ?: $listing->title,
-                'url' => FrontendRouteUrl::realEstateListing($listing->slug, $locale),
+                'url' => $this->publicContentUrl(
+                    $listing,
+                    'real_estate_listing',
+                    $locale,
+                    (string) ($websiteKey ?: 'website-main'),
+                    'site.real-estate.index',
+                ),
                 'transaction_type' => $listing->transaction_type,
                 'transaction_label' => $listing->transaction_type === 'rent' ? 'Cho thuê' : 'Bán',
                 'price' => $listing->price !== null ? (float) $listing->price : null,
@@ -1427,7 +1512,6 @@ class LandingPageBuilder
                 ->get()
                 ->map(function (CmsCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_category.%d.name', $category->id), $category->name);
-                    $slug = $this->localizedContent->localizedSlug($category, 'cms_category', $locale, $resolvedWebsiteKey);
 
                     return [
                         'title' => $title,
@@ -1436,7 +1520,13 @@ class LandingPageBuilder
                         'alt' => $title,
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->posts_count > 0 ? $category->posts_count.' bài viết' : null,
-                        'url' => route('site.blog.category', ['locale' => $locale, 'slug' => $slug]),
+                        'url' => $this->publicContentUrl(
+                            $category,
+                            'cms_category',
+                            $locale,
+                            $resolvedWebsiteKey,
+                            'site.blog.index',
+                        ),
                     ];
                 })
                 ->all();
@@ -1463,7 +1553,6 @@ class LandingPageBuilder
                 ->map(function (CmsServiceCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service_category.%d.name', $category->id), $category->name);
                     $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service_category.%d.description', $category->id), $category->description);
-                    $slug = $this->localizedContent->localizedSlug($category, 'cms_service_category', $locale, $resolvedWebsiteKey);
 
                     return [
                         'title' => $title,
@@ -1472,7 +1561,13 @@ class LandingPageBuilder
                         'alt' => $title,
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->services_count > 0 ? $category->services_count.' dịch vụ' : null,
-                        'url' => route('site.services.category', ['locale' => $locale, 'slug' => $slug]),
+                        'url' => $this->publicContentUrl(
+                            $category,
+                            'cms_service_category',
+                            $locale,
+                            $resolvedWebsiteKey,
+                            'site.services.index',
+                        ),
                     ];
                 })
                 ->all();
@@ -1494,7 +1589,6 @@ class LandingPageBuilder
                 ->map(function (CmsProjectCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project_category.%d.name', $category->id), $category->name);
                     $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project_category.%d.description', $category->id), $category->description);
-                    $slug = $this->localizedContent->localizedSlug($category, 'cms_project_category', $locale, $resolvedWebsiteKey);
 
                     return [
                         'title' => $title,
@@ -1503,7 +1597,13 @@ class LandingPageBuilder
                         'alt' => $title,
                         'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                         'count_label' => (int) $category->projects_count > 0 ? $category->projects_count.' dự án' : null,
-                        'url' => route('site.projects.category', ['locale' => $locale, 'slug' => $slug]),
+                        'url' => $this->publicContentUrl(
+                            $category,
+                            'cms_project_category',
+                            $locale,
+                            $resolvedWebsiteKey,
+                            'site.projects.index',
+                        ),
                     ];
                 })
                 ->all();
@@ -1533,7 +1633,6 @@ class LandingPageBuilder
             ->map(function (CatalogCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                 $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_category.%d.name', $category->id), $category->name);
                 $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_category.%d.description', $category->id), $category->description);
-                $slug = $this->localizedContent->localizedSlug($category, 'catalog_category', $locale, $resolvedWebsiteKey);
 
                 return [
                     'title' => $title,
@@ -1542,7 +1641,13 @@ class LandingPageBuilder
                     'alt' => $title,
                     'icon' => Str::upper(Str::substr((string) $title, 0, 1)),
                     'count_label' => (int) $category->products_count > 0 ? $category->products_count.' sản phẩm' : null,
-                    'url' => route('site.catalog.category', ['locale' => $locale, 'slug' => $slug]),
+                    'url' => $this->publicContentUrl(
+                        $category,
+                        'catalog_category',
+                        $locale,
+                        $resolvedWebsiteKey,
+                        'site.home',
+                    ),
                 ];
             })
             ->all();
@@ -1617,7 +1722,13 @@ class LandingPageBuilder
                 'icon' => '▦',
                 'image' => $post->featuredMedia?->file_url ?: (string) ($settings['fallback_image'] ?? $this->fallbackContentImage()),
                 'alt' => $post->featuredMedia?->alt_text ?: $title,
-                'url' => route('site.blog.show', ['locale' => $locale, 'slug' => $slug]),
+                'url' => $this->publicContentUrl(
+                    $post,
+                    'cms_post',
+                    $locale,
+                    $resolvedWebsiteKey,
+                    'site.blog.index',
+                ),
                 'category' => $categoryName,
                 'published_at' => $post->publish_at?->toDateString(),
                 'date' => $post->publish_at?->format('d/m/Y'),
@@ -1659,10 +1770,13 @@ class LandingPageBuilder
             'alt' => $product->name,
             'price' => (float) $product->price,
             'original_price' => filled($product->original_price) ? (float) $product->original_price : null,
-            'url' => route('site.catalog.product', [
-                'locale' => $locale,
-                'slug' => $this->localizedContent->localizedSlug($product, 'catalog_product', $locale, $resolvedWebsiteKey),
-            ]),
+            'url' => $this->publicContentUrl(
+                $product,
+                'catalog_product',
+                $locale,
+                $resolvedWebsiteKey,
+                'site.home',
+            ),
         ])->all();
     }
 
@@ -1710,10 +1824,13 @@ class LandingPageBuilder
                 'alt' => $featuredImage?->alt_text ?: $project->title,
                 'images' => $projectImages,
                 'gallery_images' => $projectImages,
-                'url' => route('site.projects.show', [
-                    'locale' => $locale,
-                    'slug' => $this->localizedContent->localizedSlug($project, 'cms_project', $locale, $resolvedWebsiteKey),
-                ]),
+                'url' => $this->publicContentUrl(
+                    $project,
+                    'cms_project',
+                    $locale,
+                    $resolvedWebsiteKey,
+                    'site.projects.index',
+                ),
                 'date' => $project->publish_at?->format('d/m/Y'),
                 'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project.%d.button_label', $project->id), $project->button_label),
             ];
@@ -1756,7 +1873,15 @@ class LandingPageBuilder
                 'icon' => $service->icon ?: 'â–¦',
                 'image' => $featuredImage?->image_url ?: $this->fallbackContentImage(),
                 'alt' => $featuredImage?->alt_text ?: $service->title,
-                'url' => $slug !== '' ? route('site.services.show', ['locale' => $locale, 'slug' => $slug]) : ($service->link_url ?: '#lien-he'),
+                'url' => $slug !== ''
+                    ? $this->publicContentUrl(
+                        $service,
+                        'cms_service',
+                        $locale,
+                        $resolvedWebsiteKey,
+                        'site.services.index',
+                    )
+                    : ($service->link_url ?: '#lien-he'),
                 'button_label' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service.%d.button_label', $service->id), $service->button_label),
             ];
         })->all();
@@ -1964,6 +2089,25 @@ class LandingPageBuilder
             ->value('value');
 
         return filled($legacyValue) ? (string) $legacyValue : $fallback;
+    }
+
+    private function publicContentUrl(
+        Model $model,
+        string $resourceType,
+        string $locale,
+        string $websiteKey,
+        string $fallbackRoute,
+    ): string {
+        $canonicalPath = $this->localizedContent->publicCanonicalPath(
+            $model,
+            $resourceType,
+            $locale,
+            $websiteKey,
+        );
+
+        return $canonicalPath !== null
+            ? FrontendRouteUrl::localized($canonicalPath, $locale)
+            : route($fallbackRoute, ['locale' => $locale]);
     }
 
     /**

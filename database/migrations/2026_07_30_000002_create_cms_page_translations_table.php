@@ -11,6 +11,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('cms_pages')) {
+            return;
+        }
+
         if (! Schema::hasTable('cms_page_translations')) {
             Schema::create('cms_page_translations', function (Blueprint $table): void {
                 $table->id();

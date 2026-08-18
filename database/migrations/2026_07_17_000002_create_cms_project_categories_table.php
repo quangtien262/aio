@@ -8,17 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cms_project_categories', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('parent_id')->nullable()->constrained('cms_project_categories')->nullOnDelete();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->string('image_url', 2048)->nullable();
-            $table->unsignedInteger('sort_order')->default(0);
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('cms_projects')) {
+            return;
+        }
+
+        if (! Schema::hasTable('cms_project_categories')) {
+            Schema::create('cms_project_categories', function (Blueprint $table): void {
+                $table->id();
+                $table->foreignId('parent_id')->nullable()->constrained('cms_project_categories')->nullOnDelete();
+                $table->string('name');
+                $table->string('slug')->unique();
+                $table->text('description')->nullable();
+                $table->string('image_url', 2048)->nullable();
+                $table->unsignedInteger('sort_order')->default(0);
+                $table->boolean('is_active')->default(true);
+                $table->timestamps();
+            });
+        }
 
         Schema::table('cms_projects', function (Blueprint $table): void {
             if (! Schema::hasColumn('cms_projects', 'cms_project_category_id')) {
@@ -33,11 +39,15 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('cms_projects', function (Blueprint $table): void {
-            if (Schema::hasColumn('cms_projects', 'cms_project_category_id')) {
+        if (Schema::hasTable('cms_projects')) {
+            Schema::table('cms_projects', function (Blueprint $table): void {
+                if (! Schema::hasColumn('cms_projects', 'cms_project_category_id')) {
+                    return;
+                }
+
                 $table->dropConstrainedForeignId('cms_project_category_id');
-            }
-        });
+            });
+        }
 
         Schema::dropIfExists('cms_project_categories');
     }

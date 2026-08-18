@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('customer_service_interests', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('cms_service_id')->nullable()->constrained('cms_services')->nullOnDelete();
+            // CMS is optional and its tables are not part of a core migration.
+            $table->unsignedBigInteger('cms_service_id')->nullable()->index();
             $table->string('title');
             $table->text('message')->nullable();
             $table->string('status', 40)->default('interested');

@@ -23,7 +23,7 @@ Trang chủ là một record bình thường trong `landing_pages`:
 - `slug = home`
 - `template = home`
 
-Route `/vi` resolve landing page có `is_home = true`. Route `/vi/{slug}` resolve landing page theo slug. Admin không nên cho xóa record home, chỉ cho sửa cấu trúc block.
+Route `/vi` resolve landing page có `is_home = true`. Landing page thường dùng `/vi/land/{slug}` qua route `site.landing.show`; không dùng generic `/vi/{slug}`. Admin không nên cho xóa record home, chỉ cho sửa cấu trúc block.
 
 ## Đa Ngôn Ngữ
 
@@ -34,10 +34,12 @@ Landing builder dùng mô hình master/data:
 
 Các bảng chính:
 
-- `landing_pages`: master page, lưu `website_key`, `theme_key`, `slug`, `status`, `template`, `is_home`, `settings`, `media`.
-- `landing_page_data`: title, excerpt, SEO text theo `locale`.
+- `landing_pages`: master page, lưu identity và config không dịch như `website_key`, `theme_key`, `page_type`, `template`, `is_home`, `sort_order`, `settings`, `media`. Các cột `slug`, `status`, `published_at` còn tồn tại để tương thích với flow cũ nhưng không phải canonical đa locale.
+- `landing_page_data`: lưu `slug`, title, excerpt, SEO text và workflow dịch theo `locale`, gồm `translation_status`, revision và các mốc review/publish.
 - `landing_page_blocks`: master block, lưu `block_type`, `sort_order`, `is_visible`, `anchor_id`, `settings`, `media`.
-- `landing_page_block_data`: title, subtitle, description, button label, content JSON theo `locale`.
+- `landing_page_block_data`: title, subtitle, description, button label, content JSON và workflow dịch theo `locale`.
+
+Canonical public path được đăng ký trong `localized_routes` theo website, resource và locale. Chỉ translation ở trạng thái `published` mới có route public; đổi slug đã publish sẽ giữ route cũ làm redirect về canonical mới.
 
 Không nên lưu toàn bộ content đa ngôn ngữ vào một JSON duy nhất trong bảng master vì sẽ khó validate, fallback locale, import/export và edit theo tab ngôn ngữ.
 
@@ -163,17 +165,26 @@ API hiện tại:
 - `GET /admin/api/landing/pages/{landingPage}/blocks`
 - `POST /admin/api/landing/pages/{landingPage}/blocks`
 - `PUT /admin/api/landing/pages/{landingPage}/blocks/reorder`
+- `POST /admin/api/landing/pages/{landingPage}/translations/{locale}/transition`
 - `PUT /admin/api/landing/blocks/{block}`
+- `POST /admin/api/landing/blocks/{block}/translations/{locale}/transition`
 - `DELETE /admin/api/landing/blocks/{block}`
+
+Workflow authoring cần giữ:
+
+- Nội dung và slug từng locale được ghi trong `data_by_locale` vào `landing_page_data`, không lấy slug master làm canonical cho locale đích.
+- Trạng thái locale chuyển qua endpoint `translations/{locale}/transition` theo workflow `draft` → `in_review`/`ready` → `published`; chỉ `published` mới được public resolver và language switcher sử dụng.
+- Top-level `slug`/`status` trên API hiện còn hỗ trợ source-locale và compatibility, nhưng code mới không được bypass workflow bằng cách chỉ sửa master.
+- Dynamic item trong landing block chỉ dùng canonical route đã publish của locale đang render. Nếu target locale chưa có route đó, item phải về localized index phù hợp (`/c`, `/s`, `/pj`, `/bds`) hoặc homepage của target locale; không dùng source slug dưới prefix locale đích.
 
 ## Menu Landingpage
 
 Landing page có thể dùng menu kiểu `landingpage`. Menu item trỏ tới anchor của block:
 
 - Trang chủ: `#gioi-thieu`
-- Landing page khác: `/vi/{slug}#gioi-thieu`
+- Landing page khác: `/vi/land/{localized-slug}#gioi-thieu`
 
-Anchor nằm ở `landing_page_blocks.anchor_id`, vì vậy khi đổi thứ tự block thì menu vẫn đúng.
+Anchor nằm ở `landing_page_blocks.anchor_id`, vì vậy khi đổi thứ tự block thì menu vẫn đúng. Base URL của menu được lấy từ canonical localized route; nếu locale đích chưa có bản publish thì về homepage locale đích thay vì ghép với slug nguồn.
 
 ## Nguyên Tắc Tiếp Tục
 
@@ -181,3 +192,4 @@ Anchor nằm ở `landing_page_blocks.anchor_id`, vì vậy khi đổi thứ t�
 - Không dùng `id = 0` cho trang chủ.
 - Không nhét landing block instance vào `theme_block` translation hiện tại; `theme_block` chỉ phù hợp copy cố định theo theme.
 - Khi thêm block type mới, cần định nghĩa default content, settings schema và render case trong theme/partial tương ứng.
+- Không lấy `landing_pages.slug/status` làm nguồn canonical đa locale; mọi slug, publish state và link public phải đi qua `landing_page_data` cùng `localized_routes`.

@@ -1,10 +1,15 @@
 {
   "name": "CMS - Quản trị website",
   "key": "cms",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Module quản lý nội dung, trang, bài viết, menu và media cho AIO Platform.",
   "website_type": ["corporate", "news", "ecommerce", "landingpage", "real_estate"],
   "dependencies": [],
+  "provides": {
+    "cms.services.read.v1": {
+      "description": "Read CMS services as billable service masters for accounting integrations."
+    }
+  },
   "permissions": [
     "cms.view",
     "cms.create",
@@ -197,6 +202,14 @@
     }
   ],
   "changelog": [
+    {
+      "version": "0.2.6",
+      "date": "2026-08-14",
+      "notes": [
+        "Reconcile CMS schema upgrades when the module is installed after core migrations.",
+        "Preserve website-scoped indexes, localization tables and media/category extensions on fresh installs."
+      ]
+    },
     {
       "version": "0.2.5",
       "date": "2026-06-25",

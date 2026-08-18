@@ -146,6 +146,37 @@ class LocalizedContentRepository
         );
     }
 
+    public function publicCanonicalPath(
+        Model $model,
+        string $resourceType,
+        string $locale,
+        ?string $websiteKey = null,
+    ): ?string {
+        $websiteKey = trim((string) ($websiteKey ?: $model->getAttribute('website_key') ?: 'website-main'));
+        $locale = LocaleCode::tryNormalize($locale);
+
+        if ($locale === null || ! $this->localeContext->isPublic($locale, $websiteKey)) {
+            return null;
+        }
+
+        if ($this->translation(
+            $websiteKey,
+            $resourceType,
+            (string) $model->getKey(),
+            $locale,
+            true,
+        ) === null) {
+            return null;
+        }
+
+        return $this->routeRegistry->canonicalPaths(
+            $resourceType,
+            (string) $model->getKey(),
+            [$locale],
+            $websiteKey,
+        )[$locale] ?? null;
+    }
+
     public function findPublishedBySlug(
         string $resourceType,
         string $websiteKey,
@@ -167,7 +198,7 @@ class LocalizedContentRepository
             ->where('slug', $slug)
             ->first();
 
-        if ($translation === null) {
+        if ($translation === null || ! $this->hasCurrentSourceRevision($translation)) {
             return null;
         }
 
@@ -219,6 +250,13 @@ class LocalizedContentRepository
             if (
                 $registered !== null
                 && $registered->resource_type === $resourceType
+                && $this->translation(
+                    $websiteKey,
+                    $resourceType,
+                    (string) $registered->resource_id,
+                    $locale,
+                    true,
+                ) !== null
             ) {
                 /** @var Model|null $registeredModel */
                 $registeredModel = $modelClass::query()
@@ -312,7 +350,9 @@ class LocalizedContentRepository
             ->where('resource_id', (string) $resourceId)
             ->whereIn('locale', $this->localeContext->publicLocales($websiteKey))
             ->orderBy('locale')
-            ->get();
+            ->get()
+            ->filter(fn (ContentTranslation $translation): bool => $this->hasCurrentSourceRevision($translation))
+            ->values();
     }
 
     public function syncLegacyModel(Model $model): ?ContentTranslation
@@ -703,13 +743,52 @@ class LocalizedContentRepository
             return null;
         }
 
-        return ContentTranslation::query()
+        $translation = ContentTranslation::query()
             ->forWebsite($websiteKey)
             ->where('resource_type', $resourceType)
             ->where('resource_id', $resourceId)
             ->where('locale', $locale)
             ->when($publishedOnly, fn ($query) => $query->publishedTranslation())
             ->first();
+
+        if (
+            $translation !== null
+            && $publishedOnly
+            && ! $this->hasCurrentSourceRevision($translation)
+        ) {
+            return null;
+        }
+
+        return $translation;
+    }
+
+    private function hasCurrentSourceRevision(ContentTranslation $translation): bool
+    {
+        if ($translation->locale === $this->localeContext->sourceLocale()) {
+            return true;
+        }
+
+        $translatedFromRevision = trim((string) $translation->source_revision);
+
+        // Legacy imported rows may not carry revision metadata. Keep serving
+        // them until they re-enter the managed translation workflow.
+        if ($translatedFromRevision === '') {
+            return true;
+        }
+
+        $source = ContentTranslation::query()
+            ->withoutGlobalScope('current_website')
+            ->where('website_key', $translation->website_key)
+            ->where('resource_type', $translation->resource_type)
+            ->where('resource_id', $translation->resource_id)
+            ->where('locale', $this->localeContext->sourceLocale())
+            ->first(['source_revision', 'translation_revision']);
+        $currentSourceRevision = trim((string) (
+            $source?->translation_revision ?: $source?->source_revision
+        ));
+
+        return $currentSourceRevision === ''
+            || hash_equals($currentSourceRevision, $translatedFromRevision);
     }
 
     /**

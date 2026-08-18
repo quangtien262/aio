@@ -35,7 +35,9 @@ return new class extends Migration
         Schema::create('order_items', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
-            $table->foreignId('catalog_product_id')->nullable()->constrained('catalog_products')->nullOnDelete();
+            // Catalog is optional and may be installed after the core schema.
+            // Its package migration adds the foreign key once the target table exists.
+            $table->unsignedBigInteger('catalog_product_id')->nullable()->index();
             $table->string('product_name');
             $table->string('product_slug')->nullable();
             $table->string('sku')->nullable();

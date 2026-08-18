@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('customer_favorites', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
-            $table->foreignId('catalog_product_id')->constrained('catalog_products')->cascadeOnDelete();
+            // Catalog owns the target table and may be installed later.
+            $table->unsignedBigInteger('catalog_product_id')->index();
             $table->timestamps();
             $table->unique(['customer_id', 'catalog_product_id']);
         });

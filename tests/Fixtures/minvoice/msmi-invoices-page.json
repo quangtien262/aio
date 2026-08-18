@@ -1,0 +1,54 @@
+{
+  "status": true,
+  "totalPage": 1,
+  "listInvoice": [
+    {
+      "_id": "mongo-001",
+      "id": "tax-id-001",
+      "type": "purchase",
+      "nbmst": "0300000000",
+      "nbten": "Supplier Co",
+      "nbdchi": "Ho Chi Minh City",
+      "nmmst": "0100000000",
+      "nmten": "AIO Tax Company Limited",
+      "khmshdon": "1",
+      "khhdon": "C26TAA",
+      "shdon": "000001",
+      "mhdon": "AUTH-001",
+      "tdlap": "2026-08-15T09:30:00+07:00",
+      "dvtte": "VND",
+      "tgia": 1,
+      "tgtcthue": 100000,
+      "tgtthue": 10000,
+      "tgtttbso": 110000,
+      "tthai": 1,
+      "ttxly": 5,
+      "bhphap": 0,
+      "isHDTrung": false,
+      "hdhhdvu": [
+        {
+          "id": "line-1",
+          "idhdon": "tax-id-001",
+          "stt": 1,
+          "ten": "Cloud service",
+          "dvtinh": "month",
+          "sluong": 1,
+          "dgia": 100000,
+          "thtien": 100000,
+          "tsuat": 10,
+          "tthue": 10000,
+          "stckhau": 0,
+          "tlckhau": 0,
+          "tchat": 1
+        }
+      ],
+      "thttltsuat": [
+        {
+          "tsuat": 10,
+          "thtien": 100000,
+          "tthue": 10000
+        }
+      ]
+    }
+  ]
+}

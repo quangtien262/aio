@@ -1,10 +1,15 @@
 {
   "name": "Catalog",
   "key": "catalog",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Module quản lý danh mục sản phẩm và kho dữ liệu thương mại điện tử cho AIO Platform.",
   "website_type": ["ecommerce"],
   "dependencies": ["cms"],
+  "provides": {
+    "catalog.items.read.v1": {
+      "description": "Read catalog products as billable goods for accounting integrations."
+    }
+  },
   "permissions": [
     "catalog.view",
     "catalog.create",
@@ -27,6 +32,14 @@
     }
   ],
   "changelog": [
+    {
+      "version": "0.2.1",
+      "date": "2026-08-14",
+      "notes": [
+        "Move the complete Catalog schema into the module package for production fresh installs.",
+        "Reconcile localized SEO fields, website-scoped indexes and deferred core foreign keys."
+      ]
+    },
     {
       "version": "0.2.0",
       "date": "2026-04-03",

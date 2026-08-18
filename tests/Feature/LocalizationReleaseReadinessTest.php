@@ -6,6 +6,8 @@ use App\Enums\TranslationStatus;
 use App\Models\CmsPost;
 use App\Models\ContentTranslation;
 use App\Models\LocalizedRoute;
+use App\Models\WebsiteLocale;
+use App\Support\Localization\LocaleContext;
 use App\Support\Localization\LocalizationReleaseReadiness;
 use App\Support\Localization\LocalizedContentRepository;
 use App\Support\Localization\TranslationRevision;
@@ -42,7 +44,6 @@ class LocalizationReleaseReadinessTest extends TestCase
             'translation_revision' => $revision,
             'translation_published_at' => now(),
         ]);
-
         $report = app(LocalizationReleaseReadiness::class)->report($websiteKey, ['en']);
         $this->assertSame(1, $report['en']['scopes']['content']['required']);
         $this->assertSame(1, $report['en']['pending']);
@@ -120,5 +121,120 @@ class LocalizationReleaseReadinessTest extends TestCase
             'path' => '/posts/source-news',
             'is_published' => false,
         ]);
+    }
+
+    public function test_target_locale_cannot_be_made_default_until_all_source_content_is_ready(): void
+    {
+        $websiteKey = 'release-default-gate-test';
+        CmsPost::query()->create([
+            'website_key' => $websiteKey,
+            'title' => 'Source news',
+            'slug' => 'source-news',
+            'status' => 'published',
+            'body' => '<p>Source content</p>',
+            'publish_at' => now(),
+        ]);
+        $manager = app(WebsiteLocaleManager::class);
+        $manager->ensureSystemLocale('en', 'English', 'English');
+        $manager->provisionWebsite($websiteKey);
+
+        try {
+            $manager->updateLocale($websiteKey, 'en', ['is_default' => true]);
+            $this->fail('Making an incomplete target locale the default should fail.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('is_default', $exception->errors());
+        }
+
+        $this->assertDatabaseHas('website_locales', [
+            'website_key' => $websiteKey,
+            'locale' => 'vi',
+            'is_default' => true,
+        ]);
+        $this->assertDatabaseHas('website_locales', [
+            'website_key' => $websiteKey,
+            'locale' => 'en',
+            'is_default' => false,
+            'is_published' => false,
+        ]);
+    }
+
+    public function test_public_generic_reader_rejects_a_published_target_with_a_stale_source_revision(): void
+    {
+        $websiteKey = 'stale-public-reader-test';
+        $post = CmsPost::query()->create([
+            'website_key' => $websiteKey,
+            'title' => 'Current source title',
+            'slug' => 'current-source',
+            'status' => 'published',
+            'body' => '<p>Current source content</p>',
+            'publish_at' => now(),
+        ]);
+        $manager = app(WebsiteLocaleManager::class);
+        $manager->ensureSystemLocale('en', 'English', 'English');
+        $manager->provisionWebsite($websiteKey);
+        WebsiteLocale::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', $websiteKey)
+            ->where('locale', 'en')
+            ->update(['is_published' => true]);
+        app(LocaleContext::class)->flush($websiteKey);
+
+        $source = ContentTranslation::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', $websiteKey)
+            ->where('resource_type', 'cms_post')
+            ->where('resource_id', (string) $post->id)
+            ->where('locale', 'vi')
+            ->firstOrFail();
+        $this->assertNotEmpty($source->translation_revision);
+
+        ContentTranslation::query()->create([
+            'website_key' => $websiteKey,
+            'resource_type' => 'cms_post',
+            'resource_id' => (string) $post->id,
+            'locale' => 'en',
+            'slug' => 'stale-news',
+            'payload' => [
+                'title' => 'Stale translated title',
+                'slug' => 'stale-news',
+                'body' => '<p>Stale translated content</p>',
+            ],
+            'translation_status' => TranslationStatus::Published,
+            'source_revision' => str_repeat('0', 64),
+            'translation_revision' => str_repeat('1', 64),
+            'translation_published_at' => now(),
+        ]);
+        LocalizedRoute::query()->create([
+            'website_key' => $websiteKey,
+            'locale' => 'en',
+            'resource_type' => 'cms_post',
+            'resource_id' => (string) $post->id,
+            'path' => '/n/stale-news',
+            'is_canonical' => true,
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        $repository = app(LocalizedContentRepository::class);
+        $localized = $repository->localize($post, 'cms_post', 'en', $websiteKey);
+
+        $this->assertSame('Current source title', $localized->title);
+        $this->assertSame('vi', $localized->resolved_locale);
+        $this->assertNull($repository->findPublishedBySlug(
+            'cms_post',
+            $websiteKey,
+            'en',
+            'stale-news',
+        ));
+        $this->assertNull($repository->resolvePublishedBySlug(
+            'cms_post',
+            $websiteKey,
+            'en',
+            'stale-news',
+        ));
+        $this->assertNotContains(
+            'en',
+            $repository->publicTranslations('cms_post', $post->id, $websiteKey)->pluck('locale')->all(),
+        );
     }
 }

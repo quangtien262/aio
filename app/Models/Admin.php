@@ -116,9 +116,32 @@ class Admin extends Authenticatable
             ->exists();
     }
 
+    /** Permissions exposed to the admin UI across every currently assigned scope. */
+    public function visiblePermissions(?string $websiteKey = null): array
+    {
+        if ($this->isSuperAdmin()) {
+            return $this->permissions($websiteKey);
+        }
+
+        $organizationPermissions = Permission::query()
+            ->where('is_active', true)
+            ->whereIn('module_key', config('aio.organization_scope_module_keys', []))
+            ->whereHas('roles', fn ($query) => $query->whereIn('roles.id', $this->activeScopedRoleIds('organization')))
+            ->pluck('key');
+
+        return collect($this->permissions($websiteKey))
+            ->merge($organizationPermissions)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+    }
+
     public function scopeMatrix(): array
     {
         return $this->roleAssignments()
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->get(['role_id', 'scope_type', 'scope_value'])
             ->groupBy('scope_type')
             ->map(fn ($items): array => $items->pluck('scope_value')->filter()->unique()->values()->all())
@@ -127,20 +150,112 @@ class Admin extends Authenticatable
 
     public function canAccessWebsite(string $websiteKey): bool
     {
-        return $this->isSystemOwner() || $this->roleAssignments()
-            ->where(fn ($query) => $query
-                ->where('scope_type', 'global')
-                ->orWhere(fn ($websiteQuery) => $websiteQuery
-                    ->where('scope_type', 'website')
-                    ->where('scope_value', $websiteKey)))
+        return $this->hasGlobalAssignmentScope() || $this->roleAssignments()
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+            ->where('scope_type', 'website')
+            ->where('scope_value', $websiteKey)
             ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->exists();
+    }
+
+    public function hasGlobalAssignmentScope(): bool
+    {
+        return $this->isSystemOwner() || $this->roleAssignments()
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+            ->where('scope_type', 'global')
+            ->whereNull('scope_value')
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->exists();
+    }
+
+    public function hasOrganizationAssignmentScope(): bool
+    {
+        return $this->roleAssignments()
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+            ->where('scope_type', 'organization')
+            ->whereNotNull('scope_value')
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->exists();
+    }
+
+    public function canAccessOrganization(string|int $organizationId): bool
+    {
+        if ($this->hasGlobalAssignmentScope()) {
+            return true;
+        }
+
+        return $this->roleAssignments()
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+            ->where('scope_type', 'organization')
+            ->where('scope_value', (string) $organizationId)
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->exists();
+    }
+
+    /**
+     * Return the organization ids available for a permission. A null result
+     * means the permission is granted globally and therefore is not filtered.
+     *
+     * @return list<int>|null
+     */
+    public function organizationIdsForPermission(string $permission): ?array
+    {
+        if ($this->hasGlobalPermission($permission)) {
+            return null;
+        }
+
+        $roleIds = Permission::query()
+            ->where('key', $permission)
+            ->where('is_active', true)
+            ->first()?->roles()
+            ->pluck('roles.id')
+            ->all() ?? [];
+
+        return $this->roleAssignments()
+            ->whereIn('role_id', $roleIds)
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+            ->where('scope_type', 'organization')
+            ->whereNotNull('scope_value')
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->pluck('scope_value')
+            ->filter(fn (mixed $value): bool => ctype_digit((string) $value) && (int) $value > 0)
+            ->map(fn (mixed $value): int => (int) $value)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     public function canAccess(string $permission, ?string $scopeType = null, ?string $scopeValue = null): bool
     {
         if ($scopeType === 'global') {
             return $this->hasGlobalPermission($permission);
+        }
+
+        if ($scopeType === 'organization') {
+            if ($this->hasGlobalPermission($permission)) {
+                return true;
+            }
+
+            $assignments = $this->roleAssignments()
+                ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+                ->where('scope_type', 'organization')
+                ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+
+            if ($scopeValue !== '*') {
+                if (blank($scopeValue)) {
+                    return false;
+                }
+
+                $assignments->where('scope_value', (string) $scopeValue);
+            }
+
+            $roleIds = $assignments->pluck('role_id');
+
+            return Permission::query()
+                ->where('key', $permission)
+                ->where('is_active', true)
+                ->whereHas('roles', fn ($query) => $query->whereIn('roles.id', $roleIds))
+                ->exists();
         }
 
         if (! $this->hasPermission($permission, $scopeType === 'website' ? $scopeValue : null)) {
@@ -167,6 +282,8 @@ class Admin extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return $this->isSystemOwner() || $this->roleAssignments()
+            ->where('scope_type', 'global')
+            ->whereNull('scope_value')
             ->whereHas('role', fn ($query) => $query
                 ->where('key', 'super-admin')
                 ->where('is_system', true)
@@ -218,5 +335,18 @@ class Admin extends Authenticatable
             ->where('is_active', true)
             ->whereHas('roles', fn ($query) => $query->whereIn('roles.id', $roleIds))
             ->exists();
+    }
+
+    /** @return array<int, int> */
+    private function activeScopedRoleIds(string $scopeType): array
+    {
+        return $this->roleAssignments()
+            ->whereHas('role', fn ($query) => $query->where('status', 'active'))
+            ->where('scope_type', $scopeType)
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->pluck('role_id')
+            ->unique()
+            ->values()
+            ->all();
     }
 }

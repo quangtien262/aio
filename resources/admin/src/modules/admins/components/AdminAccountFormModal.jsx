@@ -12,6 +12,31 @@ import Typography from 'antd/es/typography';
 
 const { Text } = Typography;
 
+function ScopeValueField({ field, form, websiteOptions, organizationOptions, disabled }) {
+    const scopeType = Form.useWatch(['assignments', field.name, 'scope_type'], form) ?? 'global';
+    const isWebsite = scopeType === 'website';
+    const isOrganization = scopeType === 'organization';
+    const needsValue = isWebsite || isOrganization;
+
+    return (
+        <Form.Item
+            name={[field.name, 'scope_value']}
+            label={isOrganization ? 'Pháp nhân' : (isWebsite ? 'Website' : 'Giá trị phạm vi')}
+            rules={[{
+                required: needsValue,
+                message: isOrganization ? 'Chọn pháp nhân kế toán' : 'Chọn website',
+            }]}
+        >
+            <Select
+                allowClear
+                disabled={disabled || !needsValue}
+                options={isOrganization ? organizationOptions : websiteOptions}
+                placeholder={isOrganization ? 'Chọn pháp nhân kế toán' : (isWebsite ? 'Chọn website' : 'Không áp dụng cho toàn hệ thống')}
+            />
+        </Form.Item>
+    );
+}
+
 export const emptyAccountForm = {
     id: null,
     name: '',
@@ -22,7 +47,7 @@ export const emptyAccountForm = {
     assignments: [],
 };
 
-export default function AdminAccountFormModal({ open, canManageAdmins, editingAccount, roleOptions, scopeTypeOptions, websiteOptions, onCancel, onSubmit }) {
+export default function AdminAccountFormModal({ open, canManageAdmins, editingAccount, roleOptions, scopeTypeOptions, websiteOptions, organizationOptions, onCancel, onSubmit }) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -109,13 +134,20 @@ export default function AdminAccountFormModal({ open, canManageAdmins, editingAc
                                     </Col>
                                     <Col xs={24} md={6}>
                                         <Form.Item {...field} name={[field.name, 'scope_type']} label="Phạm vi" rules={[{ required: true }]}>
-                                            <Select options={scopeTypeOptions} />
+                                            <Select
+                                                options={scopeTypeOptions}
+                                                onChange={() => form.setFieldValue(['assignments', field.name, 'scope_value'], null)}
+                                            />
                                         </Form.Item>
                                     </Col>
                                     <Col xs={20} md={8}>
-                                        <Form.Item {...field} name={[field.name, 'scope_value']} label="Website">
-                                            <Select allowClear options={websiteOptions} placeholder="Chỉ chọn khi phạm vi là Website" />
-                                        </Form.Item>
+                                        <ScopeValueField
+                                            field={field}
+                                            form={form}
+                                            websiteOptions={websiteOptions}
+                                            organizationOptions={organizationOptions}
+                                            disabled={editingAccount.is_system_owner}
+                                        />
                                     </Col>
                                     <Col xs={4} md={2}>
                                         <Button danger style={{ marginTop: 30 }} disabled={editingAccount.is_system_owner} onClick={() => remove(field.name)}>Xóa</Button>

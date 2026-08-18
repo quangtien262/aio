@@ -33,6 +33,8 @@ class ModuleRegistry
                     'description' => $manifest->description,
                     'website_types' => $manifest->websiteTypes,
                     'dependencies' => $manifest->dependencies,
+                    'optional_dependencies' => $manifest->optionalDependencies,
+                    'provides' => $manifest->provides,
                     'permissions' => $manifest->permissions,
                     'hooks' => $manifest->hooks,
                     'menus' => $this->normalizeMenus($manifest->menus, $manifest->key),

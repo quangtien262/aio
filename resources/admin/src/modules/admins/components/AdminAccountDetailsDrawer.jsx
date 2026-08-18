@@ -134,7 +134,7 @@ export default function AdminAccountDetailsDrawer({ open, admin, scopeTypes, can
                                     <div className="admin-scope-row" key={`${admin.id}-${assignment.role_id}-${assignment.scope_type}-${assignment.scope_value ?? 'all'}`}>
                                         <div>
                                             <Text className="detail-label">{scopeTypes?.[assignment.scope_type] ?? assignment.scope_type}</Text>
-                                            <Title level={5} style={{ margin: '4px 0 0' }}>{assignment.scope_value ?? 'Tất cả website'}</Title>
+                                            <Title level={5} style={{ margin: '4px 0 0' }}>{assignment.scope_value ?? 'Toàn hệ thống'}</Title>
                                         </div>
                                         <Tag>{`role #${assignment.role_id}`}</Tag>
                                     </div>

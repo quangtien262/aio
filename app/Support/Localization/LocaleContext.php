@@ -32,6 +32,15 @@ class LocaleContext
         }
 
         $cacheKey = $this->cacheKey($websiteKey);
+
+        if (! $this->configuredCacheStoreIsAvailable()) {
+            // The default database cache is not available until the first
+            // migration creates its tables. Localization is boot-critical,
+            // so use the config/schema fallback without making cache storage
+            // a prerequisite for running `artisan migrate`.
+            return $this->memory[$websiteKey] = $this->loadOptions($websiteKey);
+        }
+
         $this->rememberCacheKey($cacheKey);
 
         return $this->memory[$websiteKey] = Cache::rememberForever(
@@ -146,19 +155,34 @@ class LocaleContext
     {
         $websiteKey = $this->websiteKey($websiteKey);
         $locale = LocaleCode::tryNormalize($locale) ?? $this->defaultLocale($websiteKey);
-        $option = collect($this->options($websiteKey))->firstWhere('code', $locale);
+        $options = collect($this->options($websiteKey))->keyBy('code');
+        $chain = [];
 
-        return collect([
+        $appendWithConfiguredFallbacks = function (?string $candidate) use (&$appendWithConfiguredFallbacks, &$chain, $options): void {
+            $candidate = LocaleCode::tryNormalize($candidate);
+
+            if ($candidate === null || in_array($candidate, $chain, true)) {
+                return;
+            }
+
+            $chain[] = $candidate;
+            $option = $options->get($candidate);
+
+            if (is_array($option)) {
+                $appendWithConfiguredFallbacks((string) ($option['fallback_locale'] ?? ''));
+            }
+        };
+
+        foreach ([
             $locale,
-            LocaleCode::tryNormalize((string) ($option['fallback_locale'] ?? '')),
             $this->defaultLocale($websiteKey),
             $this->sourceLocale(),
             $this->fallbackLocale($websiteKey),
-        ])
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
+        ] as $candidate) {
+            $appendWithConfiguredFallbacks($candidate);
+        }
+
+        return $chain;
     }
 
     /**
@@ -347,6 +371,22 @@ class LocaleContext
             ->all();
 
         Cache::forever(self::CACHE_INDEX_KEY, $keys);
+    }
+
+    private function configuredCacheStoreIsAvailable(): bool
+    {
+        $store = (string) config('cache.default', 'database');
+
+        if ((string) config("cache.stores.{$store}.driver") !== 'database') {
+            return true;
+        }
+
+        $table = (string) config("cache.stores.{$store}.table", 'cache');
+        $connection = config("cache.stores.{$store}.connection");
+
+        return is_string($connection) && $connection !== ''
+            ? Schema::connection($connection)->hasTable($table)
+            : Schema::hasTable($table);
     }
 
     private function canReadWebsiteLocales(): bool

@@ -113,8 +113,18 @@ php artisan localization:repair-navigation --website=website-main --json
 public. Một translation chỉ được tính là sẵn sàng khi:
 
 - có record đích;
-- trạng thái là `published`;
+- trạng thái là `ready` hoặc `published`;
 - `source_revision` của bản dịch khớp revision của nguồn hiện tại.
+
+Gate này áp dụng cho cả hai thao tác public locale và chuyển một target locale thành
+default. Không được dùng nhánh `is_default` để tự bật `is_published` khi nội dung chưa
+đạt readiness.
+
+Public generic reader phải bỏ qua target translation có `source_revision` đã lệch nguồn.
+Các row legacy chưa có revision metadata vẫn được đọc để giữ tương thích cho tới khi đi
+qua workflow chuẩn. Với dynamic item của Landing Builder, chỉ canonical route `published`
+đúng locale mới được dùng; nếu target route chưa tồn tại thì link phải về index/home trong
+chính locale đích, không được dựng URL bằng source/master slug.
 
 Các nhóm được tính trong release gate:
 

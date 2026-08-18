@@ -431,12 +431,13 @@ export default function AdminLayout() {
                         modulePayload,
                         callAdminApi,
                         runAdminAction,
+                        currentAdmin,
                         currentPermissions: currentAdmin?.permissions ?? [],
                     }, item.label ?? modulePayload?.name ?? 'Module')}
                 />
             );
         });
-    }, [callAdminApi, modules, navigationItems, normalizeRoute, runAdminAction]);
+    }, [callAdminApi, currentAdmin, modules, navigationItems, normalizeRoute, runAdminAction]);
 
     const navigationMenuItems = useMemo(() => {
         return navigationItems.map((item) => ({

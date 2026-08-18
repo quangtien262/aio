@@ -5,12 +5,11 @@ namespace Modules\Catalog\Hooks;
 use App\Core\Modules\Contracts\ModuleLifecycleHook;
 use App\Core\Modules\Support\ModuleLifecycleContext;
 use App\Models\SiteProfile;
+use App\Support\SiteContext;
 
 class CatalogLifecycleHook implements ModuleLifecycleHook
 {
-    public function preInstall(ModuleLifecycleContext $context): void
-    {
-    }
+    public function preInstall(ModuleLifecycleContext $context): void {}
 
     public function postInstall(ModuleLifecycleContext $context): void
     {
@@ -21,9 +20,7 @@ class CatalogLifecycleHook implements ModuleLifecycleHook
         ]);
     }
 
-    public function preEnable(ModuleLifecycleContext $context): void
-    {
-    }
+    public function preEnable(ModuleLifecycleContext $context): void {}
 
     public function postEnable(ModuleLifecycleContext $context): void
     {
@@ -33,9 +30,7 @@ class CatalogLifecycleHook implements ModuleLifecycleHook
         ]);
     }
 
-    public function preDisable(ModuleLifecycleContext $context): void
-    {
-    }
+    public function preDisable(ModuleLifecycleContext $context): void {}
 
     public function postDisable(ModuleLifecycleContext $context): void
     {
@@ -45,9 +40,7 @@ class CatalogLifecycleHook implements ModuleLifecycleHook
         ]);
     }
 
-    public function preUpgrade(ModuleLifecycleContext $context): void
-    {
-    }
+    public function preUpgrade(ModuleLifecycleContext $context): void {}
 
     public function postUpgrade(ModuleLifecycleContext $context): void
     {
@@ -59,19 +52,17 @@ class CatalogLifecycleHook implements ModuleLifecycleHook
         ]);
     }
 
-    public function preUninstall(ModuleLifecycleContext $context): void
-    {
-    }
+    public function preUninstall(ModuleLifecycleContext $context): void {}
 
     public function postUninstall(ModuleLifecycleContext $context): void
     {
-        $profile = SiteProfile::query()->first();
+        $profile = $this->defaultSiteProfile();
 
         if (! $profile) {
             return;
         }
 
-        $branding = $profile->branding ?? [];
+        $branding = $profile->globalBranding();
         unset($branding['catalog']);
 
         $profile->forceFill([
@@ -81,12 +72,14 @@ class CatalogLifecycleHook implements ModuleLifecycleHook
 
     private function updateBranding(array $catalogBranding): void
     {
-        $profile = SiteProfile::query()->firstOrCreate(
-            ['site_name' => 'AIO Website'],
-            ['completed_steps' => [], 'branding' => []],
-        );
+        $profile = SiteProfile::query()
+            ->withoutGlobalScope('current_website')
+            ->firstOrCreate(
+                ['website_key' => SiteContext::DEFAULT_WEBSITE_KEY],
+                ['site_name' => 'AIO Website', 'completed_steps' => [], 'branding' => []],
+            );
 
-        $branding = $profile->branding ?? [];
+        $branding = $profile->globalBranding();
         $branding['catalog'] = $catalogBranding;
 
         $profile->forceFill([
@@ -94,15 +87,23 @@ class CatalogLifecycleHook implements ModuleLifecycleHook
         ])->save();
     }
 
+    private function defaultSiteProfile(): ?SiteProfile
+    {
+        return SiteProfile::query()
+            ->withoutGlobalScope('current_website')
+            ->where('website_key', SiteContext::DEFAULT_WEBSITE_KEY)
+            ->first();
+    }
+
     private function updateBrandingState(array $state): void
     {
-        $profile = SiteProfile::query()->first();
+        $profile = $this->defaultSiteProfile();
 
         if (! $profile) {
             return;
         }
 
-        $branding = $profile->branding ?? [];
+        $branding = $profile->globalBranding();
         $branding['catalog'] = array_merge($branding['catalog'] ?? [], $state);
 
         $profile->forceFill([

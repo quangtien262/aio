@@ -8,9 +8,11 @@ readonly class ModuleManifest
      * @param  array<int, string>  $dependencies
      * @param  array<int, string>  $websiteTypes
      * @param  array<int, string>  $permissions
-    * @param  array<int, string>  $hooks
+     * @param  array<int, string>  $hooks
      * @param  array<int, array<string, mixed>>  $menus
      * @param  array<int, array<string, mixed>>  $changelog
+     * @param  array<string, mixed>  $provides
+     * @param  array<int, string>  $optionalDependencies
      * @param  array<string, mixed>  $package
      * @param  array<string, bool>  $lifecycle
      */
@@ -25,13 +27,14 @@ readonly class ModuleManifest
         public array $hooks = [],
         public array $menus = [],
         public array $changelog = [],
+        public array $provides = [],
+        public array $optionalDependencies = [],
         public array $package = [],
         public array $lifecycle = [],
-    ) {
-    }
+    ) {}
 
     /**
-     * @param  array{name:string,key:string,version:string,description?:string,website_type?:array<int,string>,dependencies?:array<int,string>,permissions?:array<int,string>,hooks?:array<int,string>,menus?:array<int,array<string,mixed>>,changelog?:array<int,array<string,mixed>>,package?:array<string,mixed>,lifecycle?:array<string,bool>}  $payload
+     * @param  array{name:string,key:string,version:string,description?:string,website_type?:array<int,string>,dependencies?:array<int,string>,permissions?:array<int,string>,hooks?:array<int,string>,menus?:array<int,array<string,mixed>>,changelog?:array<int,array<string,mixed>>,provides?:array<string,mixed>,optional_dependencies?:array<int,string>,package?:array<string,mixed>,lifecycle?:array<string,bool>}  $payload
      */
     public static function fromArray(array $payload): self
     {
@@ -46,6 +49,8 @@ readonly class ModuleManifest
             hooks: $payload['hooks'] ?? [],
             menus: $payload['menus'] ?? [],
             changelog: $payload['changelog'] ?? [],
+            provides: $payload['provides'] ?? [],
+            optionalDependencies: $payload['optional_dependencies'] ?? [],
             package: $payload['package'] ?? [],
             lifecycle: $payload['lifecycle'] ?? [],
         );

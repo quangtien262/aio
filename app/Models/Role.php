@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\AdminRoleAssignment;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,18 +13,30 @@ class Role extends Model
 {
     use HasFactory;
 
+    public const PLATFORM_OWNER_KEY = 'platform-owner';
+
+    public const SUPER_ADMIN_KEY = 'super-admin';
+
     protected static function booted(): void
     {
         static::saving(function (Role $role): void {
-            if ($role->key === 'super-admin' || ($role->exists && $role->getOriginal('key') === 'super-admin')) {
-                $role->key = 'super-admin';
+            if ($role->key === self::SUPER_ADMIN_KEY || ($role->exists && $role->getOriginal('key') === self::SUPER_ADMIN_KEY)) {
+                $role->key = self::SUPER_ADMIN_KEY;
                 $role->is_system = true;
                 $role->is_assignable = false;
                 $role->status = 'active';
             }
+
+            if ($role->key === self::PLATFORM_OWNER_KEY || ($role->exists && $role->getOriginal('key') === self::PLATFORM_OWNER_KEY)) {
+                $role->key = self::PLATFORM_OWNER_KEY;
+                $role->is_system = false;
+                $role->is_assignable = true;
+                $role->status = 'active';
+            }
         });
 
-        static::deleting(fn (Role $role): bool => $role->key !== 'super-admin' && ! $role->is_system);
+        static::deleting(fn (Role $role): bool => ! in_array($role->key, [self::SUPER_ADMIN_KEY, self::PLATFORM_OWNER_KEY], true)
+            && ! $role->is_system);
     }
 
     public function admins(): BelongsToMany

@@ -244,6 +244,14 @@ class WebsiteLocaleManager
             $this->assertReleaseReady($websiteKey, $code);
         }
 
+        if (
+            ($attributes['is_default'] ?? false) === true
+            && ! $locale->is_default
+            && $code !== $sourceLocale
+        ) {
+            $this->assertReleaseReady($websiteKey, $code, 'is_default');
+        }
+
         if (array_key_exists('fallback_locale', $attributes) && $attributes['fallback_locale'] !== null) {
             $fallbackLocale = LocaleCode::normalize((string) $attributes['fallback_locale']);
 
@@ -308,8 +316,11 @@ class WebsiteLocaleManager
         return $locale->fresh('systemLocale');
     }
 
-    private function assertReleaseReady(string $websiteKey, string $locale): void
-    {
+    private function assertReleaseReady(
+        string $websiteKey,
+        string $locale,
+        string $field = 'is_published',
+    ): void {
         $readiness = $this->releaseReadiness->report($websiteKey, [$locale])[$locale] ?? null;
 
         if (($readiness['ready'] ?? false) === true) {
@@ -317,7 +328,7 @@ class WebsiteLocaleManager
         }
 
         throw ValidationException::withMessages([
-            'is_published' => sprintf(
+            $field => sprintf(
                 'Chưa thể publish %s: còn %d/%d nội dung chưa sẵn sàng.',
                 $locale,
                 (int) ($readiness['pending'] ?? 0),

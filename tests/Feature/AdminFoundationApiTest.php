@@ -126,9 +126,9 @@ class AdminFoundationApiTest extends TestCase
 
         $this->assertDatabaseHas('module_installations', [
             'key' => 'catalog',
-            'version' => '0.2.0',
+            'version' => '0.2.1',
         ]);
-        $this->assertSame('0.2.0', data_get(SiteProfile::query()->first(), 'branding.catalog.version'));
+        $this->assertSame('0.2.1', data_get(SiteProfile::query()->first(), 'branding.catalog.version'));
 
         $this->deleteJson('/admin/api/modules/catalog')
             ->assertOk();

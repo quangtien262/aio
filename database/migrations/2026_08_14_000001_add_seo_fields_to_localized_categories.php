@@ -9,9 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         foreach (['catalog_categories', 'cms_service_categories', 'cms_project_categories'] as $tableName) {
+            if (! Schema::hasTable($tableName)) {
+                continue;
+            }
+
             Schema::table($tableName, function (Blueprint $table): void {
-                $table->string('meta_title')->nullable()->after('description');
-                $table->text('meta_description')->nullable()->after('meta_title');
+                if (! Schema::hasColumn($table->getTable(), 'meta_title')) {
+                    $table->string('meta_title')->nullable()->after('description');
+                }
+
+                if (! Schema::hasColumn($table->getTable(), 'meta_description')) {
+                    $table->text('meta_description')->nullable()->after('meta_title');
+                }
             });
         }
     }
@@ -19,8 +28,18 @@ return new class extends Migration
     public function down(): void
     {
         foreach (['catalog_categories', 'cms_service_categories', 'cms_project_categories'] as $tableName) {
+            if (! Schema::hasTable($tableName)) {
+                continue;
+            }
+
             Schema::table($tableName, function (Blueprint $table): void {
-                $table->dropColumn(['meta_title', 'meta_description']);
+                $columns = collect(['meta_title', 'meta_description'])
+                    ->filter(fn (string $column): bool => Schema::hasColumn($table->getTable(), $column))
+                    ->all();
+
+                if ($columns !== []) {
+                    $table->dropColumn($columns);
+                }
             });
         }
     }

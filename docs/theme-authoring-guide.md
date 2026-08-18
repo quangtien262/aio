@@ -11,7 +11,7 @@ Nếu cần bắt tay làm ngay theo kiểu copy-paste từng bước, đọc th
   - `theme.json`
   - `views/`
   - `lang/`
-- Pattern hiện tại là single-site: theme chỉ quyết định render storefront, không nắm dữ liệu lõi.
+- Theme được kích hoạt theo từng website trong cùng codebase; theme chỉ quyết định render storefront, không nắm dữ liệu lõi.
 - Dữ liệu CMS, Catalog, Banner, SiteProfile, Translation vẫn là dữ liệu chung của hệ thống; đổi theme không được làm mất dữ liệu đó.
 
 ## 2. Runtime đang nhận diện theme như thế nào
@@ -56,11 +56,12 @@ File neo:
 - Admin lấy danh sách theme qua `ThemeRegistryController`.
 - Khi kích hoạt theme, `ThemeActivationController` sẽ:
   - đảm bảo có record trong `theme_installations`
-  - set `is_active=true` cho theme được chọn
-  - set `is_active=false` cho theme còn lại
-  - cập nhật `site_profiles.active_theme_key`
+  - lấy website hiện tại từ `SiteContext`
+  - cập nhật đồng thời `sites.theme_key` và `site_profiles.active_theme_key` của đúng website đó
   - đồng bộ `site_profiles.website_type` nếu cần
-- Thực tế storefront render theo `site_profiles.active_theme_key`, không render theo route riêng của từng theme.
+  - tính lại `theme_installations.is_active` trên toàn hệ thống: một theme vẫn active nếu còn ít nhất một `site_profile` đang dùng theme đó
+- `SiteContext::themeKey()` ưu tiên `sites.theme_key`; `site_profiles.active_theme_key` chỉ là fallback tương thích khi site chưa có `theme_key`.
+- Storefront render theo theme của website hiện tại, không có route riêng cho từng theme và không được giả định chỉ có một active theme cho toàn bộ codebase.
 
 File neo:
 
@@ -69,12 +70,14 @@ File neo:
 
 ## 5. Storefront chọn view theme như thế nào
 
-- `CmsSiteController` resolve active theme từ `site_profiles.active_theme_key`.
+- `CmsSiteController` resolve active theme qua `SiteContext::themeKey()`, tức ưu tiên `sites.theme_key` rồi mới fallback `site_profiles.active_theme_key`.
 - Sau đó controller cố gắng render view theo namespace theme:
   - homepage: `theme-{key}::home`
-  - CMS page/blog-like page: `theme-{key}::cms`
+  - CMS page/content: view chuyên biệt theo content type (`services`, `service`, `projects`, `project`, `news`, `news-detail`, `contact`), rồi fallback về `theme-{key}::cms`
   - catalog views khác: `theme-{key}::{viewKey}`
-- Nếu view không tồn tại thì hiện tại flow catalog sẽ `abort(404)`. Nghĩa là khi làm theme mới, các view storefront chính phải có thật, không có fallback magic an toàn.
+- Nếu theme không có CMS view chuyên biệt lẫn `cms`, controller fallback về shared view `site-cms`.
+- Với Catalog, controller ưu tiên view của active theme, sau đó fallback về view cùng tên trong `theme-shop601`; chỉ `abort(404)` nếu cả hai đều không có.
+- Fallback giúp storefront không vỡ ngay khi thiếu view, nhưng theme mới vẫn nên cung cấp các view phù hợp với trải nghiệm và contract riêng của theme thay vì phụ thuộc lâu dài vào fallback chung.
 
 Các view storefront chính thường phải có tối thiểu:
 
@@ -115,6 +118,7 @@ Rule khi làm theme mới:
 - header phải include `partials.storefront-language-switcher`, trừ khi theme có UI riêng nhưng vẫn tuân thủ contract `data-storefront-language-switcher`
 - không hardcode `VI/EN`, icon cờ hoặc query `?locale=`; locale public lấy từ `FrontendLocalization::localeOptions()`
 - URL đổi locale dùng `FrontendRouteUrl::localeSwitchUrls()`/`switchLocale()` để giữ đúng canonical slug của từng bản dịch và về homepage locale đích nếu resource chưa được dịch
+- Với item động, chỉ tạo detail/category URL khi locale đích có canonical route đã publish; nếu chưa có thì link về index hoặc homepage của locale đích, tuyệt đối không ghép locale đích với slug master/source
 
 File neo:
 
@@ -165,9 +169,10 @@ File neo:
 
 ## 9. Storefront route conventions for CMS/content pages
 
-Keep CMS/content routes explicit. Do not route blog, service, or contact pages through the generic `/{slug}` page fallback.
+Keep CMS/content routes explicit. Do not route blog, service, landing, or contact pages through a generic `/{slug}` fallback.
 
-- Normal CMS page: `/{slug}` via `site.page`.
+- Normal CMS page: `/p/{slug}` via `site.pages.show`.
+- Landing page: `/land/{slug}` via `site.landing.show`; homepage remains `/` via `site.home` inside the locale prefix.
 - Service index/category: `/s` and `/s/{slug}` via `site.services.index` / `site.services.category`.
 - Service detail: `/ser/{slug}` via `site.services.show`.
 - News index/category: `/c` and `/c/{slug}` via `site.blog.index` / `site.blog.category`.
@@ -175,7 +180,9 @@ Keep CMS/content routes explicit. Do not route blog, service, or contact pages t
 - Contact page/form: `/contact` via `site.contact` / `site.contact.submit`.
 - Product category/detail currently keep the localized catalog route helpers: `site.catalog.category` and `site.catalog.product`.
 
-Theme Blade files should use route helpers instead of hard-coded legacy URLs. Avoid reintroducing `/tin-tuc`, `/tin-tuc?category=...`, `/dich-vu`, or `/lien-he`; saved legacy links may redirect, but new theme/admin/demo data must use the route names above. Do not add `.html` suffixes unless the whole route strategy is changed consistently with canonical/redirect rules.
+Slug và trạng thái public của CMS page/landing page là dữ liệu theo locale trong `cms_page_translations` / `landing_page_data`, được publish thành canonical path trong `localized_routes`. Các cột slug/status ở master chỉ còn phục vụ tương thích; theme không được tự coi chúng là canonical của mọi locale.
+
+Theme Blade files should use route helpers or canonical URLs returned by the localization layer instead of hard-coded legacy/source URLs. Avoid reintroducing `/tin-tuc`, `/tin-tuc?category=...`, `/dich-vu`, `/lien-he`, generic `/{slug}`, or landing `/{slug}`; saved legacy links may redirect, but new theme/admin/demo data must use the route names above. Do not add `.html` suffixes unless the whole route strategy is changed consistently with canonical/redirect rules.
 
 ## 10. Shared auth modal là convention storefront mới
 

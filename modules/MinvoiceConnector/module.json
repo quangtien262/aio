@@ -1,0 +1,71 @@
+{
+  "name": "Minvoice Connector",
+  "key": "minvoice-connector",
+  "version": "0.2.0",
+  "description": "Khung tích hợp Minvoice/mSMI cho hóa đơn điện tử đầu ra và đồng bộ hóa đơn đầu vào.",
+  "website_type": ["backoffice", "ecommerce", "corporate", "service"],
+  "dependencies": ["accounting-tax"],
+  "provides": {
+    "einvoice.minvoice.outbound.v1": {
+      "description": "Prepare outbound e-invoice operations for Minvoice once production API credentials are configured."
+    },
+    "einvoice.minvoice.inbound.v1": {
+      "description": "Prepare inbound mSMI invoice sync into the accounting external invoice mirror."
+    }
+  },
+  "permissions": [
+    "minvoice.view",
+    "minvoice.configure",
+    "minvoice.connection.manage",
+    "minvoice.outbound.preview",
+    "minvoice.outbound.issue",
+    "minvoice.outbound.sync",
+    "minvoice.inbound.sync",
+    "minvoice.artifact.download",
+    "minvoice.audit.view"
+  ],
+  "hooks": ["Modules\\MinvoiceConnector\\Hooks\\MinvoiceConnectorLifecycleHook"],
+  "menus": [
+    {
+      "key": "minvoice-connector",
+      "label": "Minvoice",
+      "description": "Cấu hình và theo dõi trạng thái tích hợp hóa đơn điện tử Minvoice.",
+      "badge": "HĐĐT",
+      "color": "volcano",
+      "icon": "profile",
+      "route": "/admin/accounting-tax/minvoice",
+      "permission": "minvoice.view"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.2.0",
+      "date": "2026-08-17",
+      "notes": [
+        "Bổ sung provider connection theo pháp nhân/môi trường, secret mã hóa và readiness/kill-switch.",
+        "Bổ sung khung đồng bộ mSMI và phát hành Minvoice sandbox-safe với outbox, retry và artifact private."
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-08-16",
+      "notes": [
+        "Tách connector Minvoice khỏi lõi AccountingTax để có thể đổi provider và kiểm soát lifecycle độc lập.",
+        "Chưa bật gửi hóa đơn thật cho đến khi có API contract, sandbox và quy trình ký cập nhật theo Nghị định 254/2026/NĐ-CP và Thông tư 91/2026/TT-BTC."
+      ]
+    }
+  ],
+  "package": {
+    "migrations": ["database/migrations"],
+    "seeders": [],
+    "config": [],
+    "assets": []
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": false
+  }
+}

@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Core\Cms\CmsMenuLocalization;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Enums\TranslationStatus;
 use App\Models\CmsMenu;
+use App\Models\CmsPost;
 use App\Models\CmsService;
 use App\Models\CmsTestimonial;
 use App\Models\ContentTranslation;
@@ -12,7 +14,10 @@ use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
 use App\Models\LandingPageData;
+use App\Models\WebsiteLocale;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\Localization\LocaleContext;
+use App\Support\Localization\LocalizedContentRepository;
 use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -109,6 +114,169 @@ class LandingPageBuilderSourceTest extends TestCase
             route('site.landing.show', ['locale' => 'vi', 'slug' => 'summer-sale']).'#san-pham-hot',
             $viewData['landingMenuItems'][0]['url'],
         );
+        $targetViewData = app(LandingPageBuilder::class)->viewData(
+            $page->load(['data', 'blocks.data']),
+            'en',
+        );
+        $this->assertSame(
+            route('site.home', ['locale' => 'en']).'#san-pham-hot',
+            $targetViewData['landingMenuItems'][0]['url'],
+        );
+    }
+
+    public function test_dynamic_post_link_uses_only_an_exact_published_locale_route(): void
+    {
+        $manager = app(WebsiteLocaleManager::class);
+        $manager->provisionWebsite('website-main');
+        WebsiteLocale::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', 'website-main')
+            ->where('locale', 'en')
+            ->update(['is_published' => true]);
+        app(LocaleContext::class)->flush('website-main');
+
+        $post = CmsPost::query()->create([
+            'website_key' => 'website-main',
+            'title' => 'Source-only news',
+            'slug' => 'source-only-news',
+            'status' => 'published',
+            'body' => '<p>Source content</p>',
+            'publish_at' => now(),
+        ]);
+        $page = LandingPage::query()->create([
+            'website_key' => 'website-main',
+            'theme_key' => 'XD0302',
+            'page_type' => 'home',
+            'slug' => 'home',
+            'status' => 'published',
+            'template' => 'home',
+            'is_home' => true,
+        ]);
+        $block = LandingPageBlock::query()->create([
+            'landing_page_id' => $page->id,
+            'theme_key' => 'XD0302',
+            'block_type' => 'latest_posts',
+            'sort_order' => 10,
+            'is_visible' => true,
+            'settings' => ['source' => 'cms_posts', 'limit' => 1, 'featured_only' => false],
+        ]);
+        $builder = app(LandingPageBuilder::class);
+
+        $sourceOnlyItem = $builder->previewDynamicItems($block, 'en')[0];
+
+        $this->assertSame(route('site.blog.index', ['locale' => 'en']), $sourceOnlyItem['url']);
+        $this->assertStringNotContainsString('/en/n/source-only-news', $sourceOnlyItem['url']);
+
+        $repository = app(LocalizedContentRepository::class);
+        $translation = $repository->saveDraftPayload(
+            'website-main',
+            'cms_post',
+            (string) $post->id,
+            'en',
+            [
+                'title' => 'Translated news',
+                'slug' => 'translated-news',
+                'body' => '<p>Translated content</p>',
+            ],
+        );
+        $translation = $repository->transition($translation, TranslationStatus::Ready);
+        $repository->transition($translation, TranslationStatus::Published);
+
+        $translatedItem = $builder->previewDynamicItems($block, 'en')[0];
+
+        $this->assertSame(
+            route('site.blog.show', ['locale' => 'en', 'slug' => 'translated-news']),
+            $translatedItem['url'],
+        );
+    }
+
+    public function test_landing_block_uses_the_recursive_locale_specific_fallback_chain(): void
+    {
+        $manager = app(WebsiteLocaleManager::class);
+
+        foreach ([
+            ['fr', 'French', 'Français'],
+            ['fr-CA', 'Canadian French', 'Français canadien'],
+        ] as [$code, $name, $nativeName]) {
+            $manager->ensureSystemLocale($code, $name, $nativeName);
+
+            if (! WebsiteLocale::query()->forWebsite('website-main')->where('locale', $code)->exists()) {
+                $manager->addLocale('website-main', $code, ['is_published' => false]);
+            }
+        }
+
+        $manager->updateLocale('website-main', 'fr-CA', ['fallback_locale' => 'fr']);
+        $manager->updateLocale('website-main', 'fr', ['fallback_locale' => 'en']);
+
+        $page = LandingPage::query()->create([
+            'website_key' => 'website-main',
+            'theme_key' => 'XD0302',
+            'page_type' => 'home',
+            'slug' => 'recursive-fallback-home',
+            'status' => 'published',
+            'template' => 'home',
+            'is_home' => true,
+        ]);
+        $block = LandingPageBlock::query()->create([
+            'landing_page_id' => $page->id,
+            'theme_key' => 'XD0302',
+            'block_type' => 'content_mosaic',
+            'sort_order' => 10,
+            'is_visible' => true,
+        ]);
+        LandingPageBlockData::query()->create([
+            'landing_page_block_id' => $block->id,
+            'locale' => 'vi',
+            'title' => 'Vietnamese fallback',
+            'translation_status' => TranslationStatus::Published,
+            'translation_published_at' => now(),
+        ]);
+        LandingPageBlockData::query()->create([
+            'landing_page_block_id' => $block->id,
+            'locale' => 'en',
+            'title' => 'English configured fallback',
+            'translation_status' => TranslationStatus::Published,
+            'translation_published_at' => now(),
+        ]);
+
+        $serialized = app(LandingPageBuilder::class)->serializeBlock(
+            $block->load('data'),
+            'fr-CA',
+            'vi',
+            false,
+            false,
+            'website-main',
+        );
+
+        $this->assertSame('English configured fallback', $serialized['data']['title']);
+        $this->assertSame('en', $serialized['data']['locale']);
+
+        $unrelatedBlock = LandingPageBlock::query()->create([
+            'landing_page_id' => $page->id,
+            'theme_key' => 'XD0302',
+            'block_type' => 'content_mosaic',
+            'sort_order' => 20,
+            'is_visible' => true,
+        ]);
+        LandingPageBlockData::query()->create([
+            'landing_page_block_id' => $unrelatedBlock->id,
+            'locale' => 'de',
+            'title' => 'Unrelated locale content',
+            'translation_status' => TranslationStatus::Published,
+            'translation_published_at' => now(),
+        ]);
+
+        $withoutConfiguredFallback = app(LandingPageBuilder::class)->serializeBlock(
+            $unrelatedBlock->load('data'),
+            'fr-CA',
+            'vi',
+            false,
+            false,
+            'website-main',
+        );
+
+        $this->assertNull($withoutConfiguredFallback['data']['title']);
+        $this->assertSame('fr-CA', $withoutConfiguredFallback['data']['locale']);
     }
 
     public function test_xd0302_featured_service_list_can_use_menu_items_as_its_source(): void

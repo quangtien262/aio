@@ -41,6 +41,14 @@ return [
     'scope_types' => [
         'global' => 'Toàn hệ thống',
         'website' => 'Website',
+        'organization' => 'Pháp nhân kế toán',
+    ],
+
+    // Organization-scoped assignments are deliberately restricted to these
+    // modules so a mixed role cannot accidentally expose unrelated admin UI.
+    'organization_scope_module_keys' => [
+        'accounting-tax',
+        'minvoice-connector',
     ],
 
     'setup_steps' => [

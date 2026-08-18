@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('cms_posts') || Schema::hasTable('cms_post_comments')) {
+            return;
+        }
+
         Schema::create('cms_post_comments', function (Blueprint $table): void {
             $table->id();
             $table->string('website_key')->index();

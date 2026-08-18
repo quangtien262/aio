@@ -30,6 +30,7 @@ use App\Models\SiteProfile;
 use App\Support\BusinessContentTranslationService;
 use App\Support\FrontendLocalization;
 use App\Support\FrontendRouteUrl;
+use App\Support\InventoryAvailabilityResolver;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\Localization\CmsPageLocalization;
 use App\Support\Localization\LandingPageLocalization;
@@ -48,6 +49,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -65,6 +67,7 @@ class CmsSiteController
         private readonly ThemeTranslationService $themeTranslationService,
         private readonly BusinessContentTranslationService $businessContentTranslationService,
         private readonly StorefrontCart $storefrontCart,
+        private readonly InventoryAvailabilityResolver $inventoryAvailability,
         private readonly OrderConfirmationSender $orderConfirmationSender,
         private readonly LandingPageBuilder $landingPageBuilder,
         private readonly CmsPageLocalization $cmsPageLocalization,
@@ -1423,40 +1426,44 @@ class CmsSiteController
             'payment_method' => ['required', 'in:cod,bank_transfer,pickup'],
         ]);
 
-        $cartSummary = $this->storefrontCart->summary();
+        $cartSummary = $this->storefrontCart->revalidatedSummary();
         /** @var Customer|null $customer */
         $customer = $request->user('customer');
 
-        $order = Order::query()->create([
-            'order_code' => 'AIO'.now()->format('ymdHis').str_pad((string) random_int(0, 999), 3, '0', STR_PAD_LEFT),
-            'website_key' => app(SiteContext::class)->websiteKey(),
-            'customer_id' => $customer?->id,
-            'status' => 'placed',
-            'customer_name' => $validated['customer_name'],
-            'customer_phone' => $validated['customer_phone'],
-            'customer_email' => $validated['customer_email'] ?? null,
-            'delivery_address' => $validated['delivery_address'],
-            'note' => $validated['note'] ?? null,
-            'payment_method' => $validated['payment_method'],
-            'payment_label' => $this->paymentMethodOptions()[$validated['payment_method']]['label'] ?? $validated['payment_method'],
-            'subtotal' => $cartSummary['subtotal'],
-            'item_count' => $cartSummary['count'],
-            'placed_at' => now(),
-        ]);
+        $order = DB::transaction(function () use ($cartSummary, $customer, $validated): Order {
+            $order = Order::query()->create([
+                'order_code' => 'AIO'.now()->format('ymdHis').str_pad((string) random_int(0, 999), 3, '0', STR_PAD_LEFT),
+                'website_key' => app(SiteContext::class)->websiteKey(),
+                'customer_id' => $customer?->id,
+                'status' => 'placed',
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'],
+                'customer_email' => $validated['customer_email'] ?? null,
+                'delivery_address' => $validated['delivery_address'],
+                'note' => $validated['note'] ?? null,
+                'payment_method' => $validated['payment_method'],
+                'payment_label' => $this->paymentMethodOptions()[$validated['payment_method']]['label'] ?? $validated['payment_method'],
+                'subtotal' => $cartSummary['subtotal'],
+                'item_count' => $cartSummary['count'],
+                'placed_at' => now(),
+            ]);
 
-        $order->items()->createMany(collect($cartSummary['items'])->map(function (array $item): array {
-            return [
-                'catalog_product_id' => $item['product_id'] ?? null,
-                'product_name' => $item['title'] ?? 'Sản phẩm',
-                'product_slug' => $item['slug'] ?? null,
-                'sku' => $item['sku'] ?? null,
-                'unit_price' => (float) ($item['price'] ?? 0),
-                'original_price' => $item['old_price'] ?? null,
-                'quantity' => (int) ($item['quantity'] ?? 1),
-                'line_total' => ((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 1)),
-                'image_url' => $item['image'] ?? null,
-            ];
-        })->all());
+            $order->items()->createMany(collect($cartSummary['items'])->map(function (array $item): array {
+                return [
+                    'catalog_product_id' => $item['product_id'] ?? null,
+                    'product_name' => $item['title'] ?? 'Sản phẩm',
+                    'product_slug' => $item['slug'] ?? null,
+                    'sku' => $item['sku'] ?? null,
+                    'unit_price' => (float) ($item['price'] ?? 0),
+                    'original_price' => $item['old_price'] ?? null,
+                    'quantity' => (int) ($item['quantity'] ?? 1),
+                    'line_total' => ((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 1)),
+                    'image_url' => $item['image'] ?? null,
+                ];
+            })->all());
+
+            return $order;
+        }, 3);
 
         $this->storefrontCart->clear();
         $this->orderConfirmationSender->send($order->load('items'));
@@ -3467,14 +3474,19 @@ class CmsSiteController
 
         $quantity = (int) $validated['quantity'];
 
-        if ($product->stock !== null && (int) $product->stock <= 0) {
+        $stock = $this->inventoryAvailability->quantity(
+            $product,
+            app(SiteContext::class)->websiteKey(),
+        );
+
+        if ($stock !== null && $stock <= 0) {
             throw ValidationException::withMessages([
                 'cart' => 'Sản phẩm hiện đã hết hàng.',
             ]);
         }
 
-        if ($product->stock !== null) {
-            $quantity = min($quantity, max(1, (int) $product->stock));
+        if ($stock !== null) {
+            $quantity = min($quantity, $stock);
         }
 
         return $quantity;

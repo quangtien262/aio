@@ -12,10 +12,12 @@ use App\Models\CmsPage;
 use App\Models\CmsPageTranslation;
 use App\Models\ContentTranslation;
 use App\Models\LandingPage;
+use App\Models\LandingPageBlockData;
 use App\Models\LandingPageData;
 use App\Models\LocalizedRoute;
 use App\Models\Site;
 use App\Models\ThemeTranslation;
+use App\Models\WebsiteLocale;
 use App\Support\FrontendRouteUrl;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\Localization\LocaleContext;
@@ -54,6 +56,36 @@ class LocalizationFoundationTest extends TestCase
         Event::assertDispatched(
             WebsiteLocalesChanged::class,
             fn (WebsiteLocalesChanged $event): bool => $event->websiteKey === 'website-a',
+        );
+    }
+
+    public function test_fallback_chain_follows_each_locale_configuration_recursively(): void
+    {
+        $websiteKey = 'recursive-fallback-test';
+        $manager = app(WebsiteLocaleManager::class);
+
+        foreach ([
+            ['fr', 'French', 'Français'],
+            ['fr-CA', 'Canadian French', 'Français canadien'],
+        ] as [$code, $name, $nativeName]) {
+            $manager->ensureSystemLocale($code, $name, $nativeName);
+        }
+
+        $manager->provisionWebsite($websiteKey);
+
+        foreach (['fr', 'fr-CA'] as $code) {
+            if (! WebsiteLocale::query()->forWebsite($websiteKey)->where('locale', $code)->exists()) {
+                $manager->addLocale($websiteKey, $code, ['is_published' => false]);
+            }
+        }
+
+        $manager->updateLocale($websiteKey, 'fr-CA', ['fallback_locale' => 'fr']);
+        $manager->updateLocale($websiteKey, 'fr', ['fallback_locale' => 'en']);
+        $manager->updateLocale($websiteKey, 'en', ['fallback_locale' => 'vi']);
+
+        $this->assertSame(
+            ['fr-CA', 'fr', 'en', 'vi'],
+            app(LocaleContext::class)->fallbackChain('fr-CA', $websiteKey),
         );
     }
 
@@ -106,6 +138,21 @@ class LocalizationFoundationTest extends TestCase
         ContentTranslation::query()
             ->withoutGlobalScopes()
             ->where('website_key', 'website-main')
+            ->delete();
+        CmsPageTranslation::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', 'website-main')
+            ->delete();
+        LandingPageData::query()
+            ->withoutGlobalScopes()
+            ->whereHas('landingPage', fn ($query) => $query->where('website_key', 'website-main'))
+            ->delete();
+        LandingPageBlockData::query()
+            ->withoutGlobalScopes()
+            ->whereHas(
+                'landingPageBlock.landingPage',
+                fn ($query) => $query->where('website_key', 'website-main'),
+            )
             ->delete();
         $manager = app(WebsiteLocaleManager::class);
         $manager->ensureSystemLocale('fr', 'French', 'Français');

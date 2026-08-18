@@ -117,7 +117,7 @@ return new class extends Migration
         $this->ensureUnique('site_profiles', ['website_key'], 'site_profiles_website_key_unique');
     }
 
-    private function ensureWebsiteColumns(string $table, bool $withIndex = true, bool $ownerColumns = true): void
+    private function ensureWebsiteColumns(string $table, bool $withIndex = true, bool $ownerColumns = false): void
     {
         if (! Schema::hasTable($table)) {
             return;

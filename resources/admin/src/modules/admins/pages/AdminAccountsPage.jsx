@@ -27,7 +27,7 @@ function normalizeAssignment(assignment) {
         ...assignment,
         role_id: assignment?.role_id === undefined || assignment?.role_id === null ? undefined : Number(assignment.role_id),
         scope_type: scopeType,
-        scope_value: scopeType === 'website' && assignment?.scope_value ? String(assignment.scope_value) : null,
+        scope_value: ['website', 'organization'].includes(scopeType) && assignment?.scope_value ? String(assignment.scope_value) : null,
     };
 }
 
@@ -36,6 +36,7 @@ export default function AdminAccountsPage({
     roles,
     scopeTypes,
     websites,
+    organizations,
     currentAdmin,
     canManageAdmins,
     canResetPassword,
@@ -97,6 +98,34 @@ export default function AdminAccountsPage({
 
         return Array.from(optionsByValue.values());
     }, [editingAccount.assignments, websites]);
+    const organizationOptions = useMemo(() => {
+        const optionsByValue = new Map();
+
+        (organizations ?? []).forEach((organization) => {
+            if (!organization?.id) {
+                return;
+            }
+
+            const value = String(organization.id);
+            const suffix = organization.tax_code ? ` · MST ${organization.tax_code}` : '';
+            optionsByValue.set(value, {
+                value,
+                label: `${organization.legal_name || organization.name || `Pháp nhân #${value}`}${suffix}`,
+            });
+        });
+
+        (editingAccount.assignments ?? [])
+            .filter((assignment) => assignment.scope_type === 'organization' && assignment.scope_value)
+            .forEach((assignment) => {
+                const value = String(assignment.scope_value);
+
+                if (!optionsByValue.has(value)) {
+                    optionsByValue.set(value, { value, label: `Pháp nhân #${value}` });
+                }
+            });
+
+        return Array.from(optionsByValue.values());
+    }, [editingAccount.assignments, organizations]);
 
     const openCreateModal = () => {
         setEditingAccount(emptyAccountForm);
@@ -223,7 +252,7 @@ export default function AdminAccountsPage({
             total: accounts.length,
             active: accounts.filter((admin) => admin.is_active).length,
             locked: accounts.filter((admin) => admin.is_locked).length,
-            withScopes: accounts.filter((admin) => (admin.assignments ?? []).some((assignment) => assignment.scope_type === 'website')).length,
+            withScopes: accounts.filter((admin) => (admin.assignments ?? []).some((assignment) => assignment.scope_type !== 'global')).length,
         };
     }, [visibleAdminAccounts]);
 
@@ -289,6 +318,7 @@ export default function AdminAccountsPage({
                         roleOptions={roleOptions}
                         scopeTypeOptions={scopeTypeOptions}
                         websiteOptions={websiteOptions}
+                        organizationOptions={organizationOptions}
                         onCancel={handleCloseAccountModal}
                         onSubmit={handleSaveAccount}
                     />

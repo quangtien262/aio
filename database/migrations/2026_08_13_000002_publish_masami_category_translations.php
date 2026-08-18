@@ -66,6 +66,12 @@ return new class extends Migration
         $repository = app(LocalizedContentRepository::class);
 
         foreach ($records as [$modelClass, $resourceType, $sourceName, $payload]) {
+            $table = (new $modelClass)->getTable();
+
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+
             /** @var Model|null $record */
             $record = $modelClass::query()
                 ->withoutGlobalScopes()

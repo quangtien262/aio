@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
+use App\Models\AcctOrganization;
 use App\Models\Admin;
 use App\Models\AdminRoleAssignment;
 use App\Models\Role;
 use App\Models\Site;
+use App\Support\AdminPrivilegeGuard;
 use App\Support\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,12 +20,16 @@ use Illuminate\Validation\ValidationException;
 
 class AdminAccountController
 {
-    public function __construct(private readonly AuditLogger $auditLogger)
-    {
-    }
+    public function __construct(
+        private readonly AuditLogger $auditLogger,
+        private readonly AdminPrivilegeGuard $privilegeGuard,
+    ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $actor = $request->user('admin');
+        abort_unless($actor instanceof Admin, 403);
+
         $admins = Admin::query()
             ->where('id', '!=', Admin::SYSTEM_OWNER_ID)
             ->with(['roles:id,name,key,is_system', 'roleAssignments:id,admin_id,role_id,scope_type,scope_value,expires_at'])
@@ -46,15 +52,38 @@ class AdminAccountController
                 'websites' => Schema::hasTable('sites')
                     ? Site::query()->where('status', 'active')->orderBy('name')->get(['website_key', 'name', 'domain'])->toArray()
                     : [],
+                'organizations' => Schema::hasTable('acct_organizations')
+                    ? AcctOrganization::query()
+                        ->when(
+                            ! $actor->hasGlobalAssignmentScope(),
+                            fn ($query) => $query->whereIn(
+                                'id',
+                                $actor->roleAssignments()
+                                    ->whereHas('role', fn ($roleQuery) => $roleQuery->where('status', 'active'))
+                                    ->where('scope_type', 'organization')
+                                    ->where(fn ($assignmentQuery) => $assignmentQuery->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                                    ->pluck('scope_value'),
+                            ),
+                        )
+                        ->where('status', 'active')
+                        ->orderByDesc('is_default')
+                        ->orderBy('name')
+                        ->get(['id', 'name', 'legal_name', 'tax_code'])
+                        ->toArray()
+                    : [],
             ],
         ]);
     }
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $this->validatePayload($request, requirePassword: true);
+        $actor = $request->user('admin');
+        abort_unless($actor instanceof Admin, 403);
 
-        $admin = DB::transaction(function () use ($request, $validated): Admin {
+        $validated = $this->validatePayload($request, requirePassword: true);
+        $this->privilegeGuard->assertCanDelegateAssignments($actor, $validated['assignments'] ?? []);
+
+        $admin = DB::transaction(function () use ($actor, $validated): Admin {
             $admin = Admin::query()->create([
                 'name' => $validated['name'],
                 'username' => $validated['username'],
@@ -65,7 +94,7 @@ class AdminAccountController
                 'must_change_password' => true,
             ]);
 
-            $this->syncAssignments($admin, $validated['assignments'] ?? [], $request->user('admin'));
+            $this->syncAssignments($admin, $validated['assignments'] ?? [], $actor);
 
             return $admin;
         });
@@ -78,10 +107,13 @@ class AdminAccountController
     public function update(Request $request, Admin $admin): JsonResponse
     {
         $actor = $request->user('admin');
+        abort_unless($actor instanceof Admin, 403);
         abort_if($admin->isSystemOwner(), 422, 'Tài khoản System Owner là tài khoản hệ thống và không thể chỉnh sửa.');
+        $this->privilegeGuard->assertCanManageProtectedAccount($actor, $admin);
 
         $before = $this->serializeAdmin($admin->load(['roles', 'roleAssignments']));
         $validated = $this->validatePayload($request, $admin);
+        $this->privilegeGuard->assertCanReplaceAssignments($actor, $admin, $validated['assignments'] ?? []);
 
         if ($admin->isSystemOwner()) {
             $validated['status'] = 'active';
@@ -113,6 +145,9 @@ class AdminAccountController
     public function resetPassword(Request $request, Admin $admin): JsonResponse
     {
         abort_if($admin->isSystemOwner(), 422, 'System Owner chỉ có thể tự đổi mật khẩu sau khi xác nhận mật khẩu hiện tại.');
+        $actor = $request->user('admin');
+        abort_unless($actor instanceof Admin, 403);
+        $this->privilegeGuard->assertCanManageProtectedAccount($actor, $admin);
 
         $validated = $request->validate([
             'password' => ['required', 'confirmed', $this->passwordRule()],
@@ -157,9 +192,13 @@ class AdminAccountController
 
     public function revokeSessions(Request $request, Admin $admin): JsonResponse
     {
+        $actor = $request->user('admin');
+        abort_unless($actor instanceof Admin, 403);
+        $this->privilegeGuard->assertCanManageProtectedAccount($actor, $admin);
+
         $admin->increment('auth_version');
 
-        if ($request->user('admin')?->is($admin)) {
+        if ($actor->is($admin)) {
             $request->session()->put('admin_auth_version', $admin->auth_version);
         }
 
@@ -171,7 +210,10 @@ class AdminAccountController
     public function lock(Request $request, Admin $admin): JsonResponse
     {
         abort_if($admin->isSystemOwner(), 422, 'System Owner không thể bị khóa.');
-        abort_if($request->user('admin')?->is($admin), 422, 'Không thể tự khóa tài khoản đang sử dụng.');
+        $actor = $request->user('admin');
+        abort_unless($actor instanceof Admin, 403);
+        abort_if($actor->is($admin), 422, 'Không thể tự khóa tài khoản đang sử dụng.');
+        $this->privilegeGuard->assertCanManageProtectedAccount($actor, $admin);
 
         $validated = $request->validate(['reason' => ['nullable', 'string', 'max:255']]);
         $admin->update([
@@ -186,9 +228,12 @@ class AdminAccountController
         return response()->json(['message' => 'Đã khóa tài khoản quản trị.']);
     }
 
-    public function unlock(Admin $admin): JsonResponse
+    public function unlock(Request $request, Admin $admin): JsonResponse
     {
         abort_if($admin->isSystemOwner(), 422, 'System Owner luôn ở trạng thái hoạt động.');
+        $actor = $request->user('admin');
+        abort_unless($actor instanceof Admin, 403);
+        $this->privilegeGuard->assertCanManageProtectedAccount($actor, $admin);
         $admin->update([
             'status' => 'active',
             'is_active' => true,
@@ -211,13 +256,15 @@ class AdminAccountController
             'status' => ['nullable', 'string', Rule::in(['active', 'suspended', 'archived'])],
             'assignments' => ['nullable', 'array'],
             'assignments.*.role_id' => ['required', 'integer', 'exists:roles,id'],
-            'assignments.*.scope_type' => ['required', 'string', Rule::in(['global', 'website'])],
+            'assignments.*.scope_type' => ['required', 'string', Rule::in(array_keys(config('aio.scope_types', [])))],
             'assignments.*.scope_value' => ['nullable', 'string', 'max:255'],
         ]);
 
         $assignments = collect($validated['assignments'] ?? [])->map(function (array $assignment): array {
             $scopeType = $assignment['scope_type'];
-            $scopeValue = $scopeType === 'website' ? trim((string) ($assignment['scope_value'] ?? '')) : null;
+            $scopeValue = in_array($scopeType, ['website', 'organization'], true)
+                ? trim((string) ($assignment['scope_value'] ?? ''))
+                : null;
 
             if ($scopeType === 'website' && $scopeValue === '') {
                 throw ValidationException::withMessages(['assignments' => ['Phạm vi website phải chọn một website cụ thể.']]);
@@ -225,6 +272,17 @@ class AdminAccountController
 
             if ($scopeType === 'website' && Schema::hasTable('sites') && ! Site::query()->where('status', 'active')->where('website_key', $scopeValue)->exists()) {
                 throw ValidationException::withMessages(['assignments' => ['Website được phân quyền không tồn tại hoặc đã ngừng hoạt động.']]);
+            }
+
+            if ($scopeType === 'organization' && ($scopeValue === '' || ! ctype_digit($scopeValue) || (int) $scopeValue < 1)) {
+                throw ValidationException::withMessages(['assignments' => ['Phạm vi pháp nhân phải chọn một pháp nhân kế toán cụ thể.']]);
+            }
+
+            if ($scopeType === 'organization' && (! Schema::hasTable('acct_organizations') || ! AcctOrganization::query()
+                ->whereKey((int) $scopeValue)
+                ->where('status', 'active')
+                ->exists())) {
+                throw ValidationException::withMessages(['assignments' => ['Pháp nhân kế toán không tồn tại hoặc đã ngừng hoạt động.']]);
             }
 
             return [
@@ -284,7 +342,7 @@ class AdminAccountController
                 'scope_value' => $assignment->scope_value,
                 'expires_at' => $assignment->expires_at?->toIso8601String(),
             ])->values()->all(),
-            'permissions' => $admin->permissions(),
+            'permissions' => $admin->visiblePermissions(),
         ];
     }
 

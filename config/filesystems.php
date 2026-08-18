@@ -63,6 +63,14 @@ return [
             'report' => false,
         ],
 
+        'accounting_private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/accounting-private'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => true,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
