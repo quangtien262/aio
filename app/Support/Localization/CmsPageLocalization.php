@@ -9,7 +9,6 @@ use App\Models\LocalizedRoute;
 use App\Support\FrontendRouteUrl;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class CmsPageLocalization
@@ -33,6 +32,7 @@ class CmsPageLocalization
         private readonly LocaleContext $localeContext,
         private readonly LocalizedRouteRegistry $routeRegistry,
         private readonly TranslationWorkflowManager $workflow,
+        private readonly LocalizedSlugGenerator $slugs,
     ) {}
 
     /**
@@ -88,8 +88,17 @@ class CmsPageLocalization
     ): CmsPageTranslation {
         $websiteKey = (string) ($page->website_key ?: 'website-main');
         $locale = $this->localeContext->resolveEditable($locale, $websiteKey);
-        $payload = $this->normalizedPayload($payload);
-        $this->guardSlugUniqueness($page, $locale, $payload['slug']);
+        $payload = $this->normalizedPayload($payload, $locale);
+        $payload['slug'] = $this->slugs->unique(
+            $payload['slug'],
+            fn (string $candidate): bool => CmsPageTranslation::query()
+                ->withoutGlobalScope('current_website')
+                ->where('website_key', $websiteKey)
+                ->where('locale', $locale)
+                ->where('slug', $candidate)
+                ->where('cms_page_id', '!=', $page->getKey())
+                ->exists(),
+        );
 
         $source = $this->sourceTranslation($page);
         $sourcePayload = $source
@@ -222,6 +231,13 @@ class CmsPageLocalization
                 $locale,
                 false,
             );
+        }
+
+        // Secondary storefront locales use an exact-published contract. A page
+        // without a published translation is unavailable instead of falling
+        // back to the source language.
+        if ($locale !== $this->localeContext->sourceLocale()) {
+            return null;
         }
 
         foreach ($this->localeContext->fallbackChain($locale, $websiteKey) as $fallbackLocale) {
@@ -372,10 +388,14 @@ class CmsPageLocalization
     /**
      * @return array<string, mixed>
      */
-    private function normalizedPayload(array $payload): array
+    private function normalizedPayload(array $payload, string $locale): array
     {
         $title = trim((string) ($payload['title'] ?? ''));
-        $slug = Str::slug((string) ($payload['slug'] ?? ''));
+        $slug = $this->slugs->normalize(
+            (string) ($payload['slug'] ?? $title),
+            $locale,
+            (string) ($payload['fallback_slug'] ?? ''),
+        );
 
         if ($title === '' || $slug === '') {
             throw ValidationException::withMessages([
@@ -391,23 +411,6 @@ class CmsPageLocalization
                     : ($payload[$field] ?? null),
             ])
             ->all();
-    }
-
-    private function guardSlugUniqueness(CmsPage $page, string $locale, string $slug): void
-    {
-        $exists = CmsPageTranslation::query()
-            ->withoutGlobalScope('current_website')
-            ->where('website_key', $page->website_key ?: 'website-main')
-            ->where('locale', $locale)
-            ->where('slug', $slug)
-            ->where('cms_page_id', '!=', $page->getKey())
-            ->exists();
-
-        if ($exists) {
-            throw ValidationException::withMessages([
-                'slug' => 'Slug này đã được dùng bởi một Page khác trong cùng ngôn ngữ.',
-            ]);
-        }
     }
 
     private function guardPublishable(CmsPageTranslation $translation): void

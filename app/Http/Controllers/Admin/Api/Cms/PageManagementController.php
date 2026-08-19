@@ -8,6 +8,7 @@ use App\Models\CmsPageTranslation;
 use App\Support\FrontendLocalization;
 use App\Support\Localization\CmsPageLocalization;
 use App\Support\Localization\LocaleContext;
+use App\Support\Localization\LocalizedSlugGenerator;
 use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ class PageManagementController
     public function __construct(
         private readonly CmsPageLocalization $localization,
         private readonly LocaleContext $localeContext,
+        private readonly LocalizedSlugGenerator $slugs,
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -28,6 +30,17 @@ class PageManagementController
         $locale = $this->localeContext->resolveEditable(
             (string) ($validated['locale'] ?? ''),
             $websiteKey,
+        );
+        $validated['slug'] = $this->slugs->unique(
+            $this->slugs->normalize(
+                $validated['slug'] ?? $validated['title'],
+                $locale,
+            ),
+            fn (string $candidate): bool => CmsPage::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', $websiteKey)
+                ->where('slug', $candidate)
+                ->exists(),
         );
 
         $page = DB::transaction(function () use ($validated, $websiteKey, $locale): CmsPage {
@@ -168,7 +181,7 @@ class PageManagementController
         return $request->validate([
             'locale' => ['nullable', 'string', 'max:35'],
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', Rule::in(['draft', 'published'])],
             'translation_status' => [
                 'nullable',

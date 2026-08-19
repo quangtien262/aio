@@ -109,22 +109,47 @@ php artisan localization:repair-navigation --website=website-main --json
 - nội dung public thiếu canonical route, có nhiều canonical hoặc canonical path
   không khớp slug của locale.
 
-`--require-ready` chạy toàn bộ kiểm tra trên và bổ sung release-readiness theo từng locale
+`--require-ready` chạy toàn bộ kiểm tra trên và bổ sung strict release-readiness theo từng locale
 public. Một translation chỉ được tính là sẵn sàng khi:
 
 - có record đích;
 - trạng thái là `ready` hoặc `published`;
 - `source_revision` của bản dịch khớp revision của nguồn hiện tại.
 
-Gate này áp dụng cho cả hai thao tác public locale và chuyển một target locale thành
-default. Không được dùng nhánh `is_default` để tự bật `is_published` khi nội dung chưa
-đạt readiness.
+Admin hiển thị preflight hai tầng trước khi public locale:
+
+- `critical`: Site Profile, Menu, Banner, Home Landing/Page blocks và resource
+  được menu tham chiếu. Tầng này bắt buộc đạt 100% mới bật nút Publish.
+- `extended`: toàn bộ nội dung còn lại. Tầng này không chặn public; resource chưa
+  có bản `published` đúng locale sẽ bị ẩn/404, không fallback sang tiếng nguồn.
+
+Quy trình Publish trong Admin:
+
+1. Nhấn `Publish` chỉ mở preflight, chưa thay đổi trạng thái locale.
+2. Admin gọi endpoint preflight riêng và hiển thị tiến độ critical/extended theo
+   từng scope, kèm lối tắt tới Website Setup, Menu, Pages và Landing Pages.
+3. Sau khi sửa dữ liệu, nhấn `Kiểm tra lại`; nút xác nhận chỉ bật khi critical
+   đạt 100%.
+4. Khi xác nhận Publish, backend bắt buộc tính readiness lại trong writer. Kết
+   quả preflight trên trình duyệt không phải quyền vượt gate và không tránh được
+   kiểm tra cạnh tranh nếu dữ liệu vừa thay đổi.
+5. Audit log hiện có của locale ghi nhận lần thay đổi trạng thái thành công.
+
+Chuyển một target locale thành default vẫn bắt buộc strict readiness 100% toàn bộ
+critical + extended. Lệnh `--require-ready` cũng giữ vai trò release/marketing gate
+nghiêm ngặt và không bị nới lỏng. Không được dùng nhánh `is_default` để tự bật
+`is_published` khi nội dung chưa đạt readiness.
 
 Public generic reader phải bỏ qua target translation có `source_revision` đã lệch nguồn.
 Các row legacy chưa có revision metadata vẫn được đọc để giữ tương thích cho tới khi đi
 qua workflow chuẩn. Với dynamic item của Landing Builder, chỉ canonical route `published`
-đúng locale mới được dùng; nếu target route chưa tồn tại thì link phải về index/home trong
-chính locale đích, không được dựng URL bằng source/master slug.
+đúng locale mới được dùng; nếu target translation/route chưa tồn tại thì item bị ẩn.
+Trang chi tiết trả 404 và không được dựng URL bằng source/master slug.
+
+Slug đa hệ chữ phải đi qua `LocalizedSlugGenerator` dùng chung ở backend. ICU
+Transliterator tạo Pinyin/Romaji/Latin, writer tự xử lý slug rỗng và xung đột;
+Admin chỉ cung cấp gợi ý, khóa tự động sau khi người dùng sửa thủ công và có nút
+`Tạo lại`. Không dùng API dịch ngoài để sinh URL.
 
 Các nhóm được tính trong release gate:
 
@@ -137,7 +162,7 @@ Không được dùng kết quả `--strict` để kết luận locale đã dị
 test workflow, theme contract, visual QA canary, Admin build, strict audit hoặc
 `--require-ready` không đạt.
 
-## Checkpoint dữ liệu ngày 2026-07-31
+## Checkpoint dữ liệu ngày 2026-08-19
 
 Sáu migration localization `2026_07_30_000001` đến `2026_07_30_000006` đã chạy trên
 database local. Migration số 6 chỉ hạ bản EN còn chứa dấu hiệu tiếng Việt về
@@ -154,19 +179,17 @@ bản dịch Menu không lệch khi sắp xếp/chèn/xóa node và để URL gi
 không xóa dữ liệu index cũ; bản EN trống vẫn là `missing`, bản sao nguyên VI bị hạ về
 `needs_translation` và không tự public.
 
-Kết quả gần nhất của `website-main`:
+Kết quả gần nhất của locale ZH trên `website-main` sau khi tách gate:
 
-| Nhóm | Required | Ready EN | Pending EN |
+| Tầng | Required | Ready ZH | Pending ZH |
 | --- | ---: | ---: | ---: |
-| Generic content | 99 | 1 | 98 |
-| CMS Pages | 2 | 1 | 1 |
-| Landing Pages | 1 | 1 | 0 |
-| Landing blocks | 10 | 4 | 6 |
-| **Tổng** | **112** | **7** | **105** |
+| Critical | 20 | 0 | 20 |
+| Extended | 90 | 0 | 90 |
+| **Strict tổng** | **110** | **0** | **110** |
 
 - Structural audit: 0 issue.
-- Release coverage EN: 6,3%; `--require-ready` đang trả exit code lỗi đúng thiết kế.
-- 7 mục EN đạt gate tự động vẫn cần human/visual QA.
+- ZH chưa thể public vì critical đang 0/20; `--require-ready` tiếp tục trả exit
+  code lỗi do strict coverage đang 0/110. UI preflight phải hiển thị riêng hai tầng.
 - Menu `primary` EN hiện `published`. Page Giới thiệu có canonical VI
   `/p/gioi-thieu`, canonical EN `/p/about` và Menu lưu identity `cms_page:2`.
   Smoke test bắt buộc click About từ `/en/p/about` vẫn ở `/en/p/about`; resource
@@ -176,8 +199,8 @@ Kết quả gần nhất của `website-main`:
   `all`, `canary`, `legacy`, override và cache isolation có regression test;
   backfill dry-run sau migration không tạo thêm thay đổi; strict audit có
   `issue_count=0`; Blade compile và Admin build pass.
-- Không public/marketing EN cho tới khi hoàn tất 106 mục còn lại, duyệt 6 mục hiện có
-  và `--require-ready` pass.
+- Chỉ public locale khi critical đạt 100% và visual QA đạt. Chỉ dùng locale cho
+  marketing hoặc đặt làm default khi strict readiness và `--require-ready` đều pass.
 
 ## Quy tắc thay đổi sau này
 

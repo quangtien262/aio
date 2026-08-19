@@ -116,6 +116,15 @@ thẳng thành `published`.
   lưu để chuyển tab.
 - Slug là nội dung theo locale đối với resource có `slug_field`; form phải cho
   nhập slug và có thể tự sinh từ tiêu đề/tên của chính locale đang biên tập.
+- `LocalizedSlugGenerator` ở backend là nguồn quyết định cuối cùng cho slug. Nó
+  dùng ICU Transliterator để phiên âm `zh/ja/ko` và các hệ chữ không Latin,
+  chuẩn hóa, giới hạn độ dài và tự thêm hậu tố `-2`, `-3` trong phạm vi
+  website + resource + locale; không gọi API dịch bên ngoài.
+- Admin chỉ xin gợi ý slug với debounce. Khi người dùng đã sửa thủ công, thay
+  đổi tiêu đề không được ghi đè; nút `Tạo lại` mới chủ động xin gợi ý mới.
+  Writer backend vẫn tự tạo slug nếu client/API/import gửi rỗng hoặc không hợp lệ.
+- Slug của nội dung đã public không tự đổi theo tiêu đề. Khi người dùng chủ động
+  đổi, `LocalizedRouteRegistry` giữ route cũ làm redirect 301.
 - Rich editor phải thay `recordKey`/instance key khi đổi locale để nội dung cũ
   không rò sang form của locale mới.
 - Khi tạo entity mới, Admin cho phép chuyển qua các tab locale đích và giữ tạm
@@ -206,6 +215,10 @@ và file dịch của `en`.
   `vi → zh → zh-Hant → zh-Hant-HK`.
 - Controller/builder phải localize dữ liệu trước khi truyền vào theme. Theme
   không tự query các bảng translation.
+- Storefront locale phụ dùng hợp đồng `exact published`: page/detail, listing và
+  dynamic source chỉ hiển thị resource có translation `published` đúng locale
+  và còn khớp source revision. Nội dung thiếu bản dịch bị ẩn/404; không hiển thị
+  tiếng nguồn. Language switcher và menu có thể về homepage cùng locale.
 - Override cũ vẫn được hỗ trợ qua legacy fallback trong thời gian rollout.
   Luồng dịch mới phải dùng `TranslationWorkflowManager`.
 
@@ -226,7 +239,7 @@ và file dịch của `en`.
 9. Viết tối thiểu các test: cách ly website, draft không public, fallback,
    route trùng, stale revision và locale BCP 47 có region/script.
 
-## Trạng thái triển khai chốt ngày 2026-07-31
+## Trạng thái triển khai chốt ngày 2026-08-19
 
 - Sáu migration `2026_07_30_000001` đến `2026_07_30_000006` và ba migration Menu/navigation
   `2026_07_31_000001_add_stable_item_keys_to_cms_menus.php`,
@@ -235,9 +248,11 @@ và file dịch của `en`.
 - CMS Pages, 17 resource generic, Landing Page và theme contract đã chuyển sang
   kiến trúc này.
 - Structural audit của `website-main` có 0 issue.
-- Release-readiness EN hiện là 7/112 mục (6,3%); 105 mục còn thiếu hoặc chưa
-  đạt trạng thái/revision yêu cầu.
-- 7 mục EN vượt gate tự động vẫn cần human/visual QA.
+- Release gate có hai tầng: `critical` cho shell/menu/home và tài nguyên được
+  menu tham chiếu; `extended` cho phần nội dung còn lại. Public locale chỉ mở
+  khi critical đạt 100%; extended chưa dịch được ẩn theo hợp đồng exact locale.
+- Chuyển locale thành default và lệnh audit `--require-ready` vẫn yêu cầu strict
+  readiness 100% toàn bộ dữ liệu.
 - Validation Menu Bước 5 gần nhất: 69 test liên quan, 3.333 assertions pass;
   contract theo nhóm theme và smoke test Menu của ba canary đều pass; các stage
   `all`, `canary`, `legacy`, override và cache isolation có regression test;

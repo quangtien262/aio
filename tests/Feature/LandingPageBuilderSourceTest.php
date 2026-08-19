@@ -162,10 +162,7 @@ class LandingPageBuilderSourceTest extends TestCase
         ]);
         $builder = app(LandingPageBuilder::class);
 
-        $sourceOnlyItem = $builder->previewDynamicItems($block, 'en')[0];
-
-        $this->assertSame(route('site.blog.index', ['locale' => 'en']), $sourceOnlyItem['url']);
-        $this->assertStringNotContainsString('/en/n/source-only-news', $sourceOnlyItem['url']);
+        $this->assertSame([], $builder->previewDynamicItems($block, 'en'));
 
         $repository = app(LocalizedContentRepository::class);
         $translation = $repository->saveDraftPayload(

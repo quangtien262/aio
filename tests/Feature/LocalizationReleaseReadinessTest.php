@@ -63,6 +63,7 @@ class LocalizationReleaseReadinessTest extends TestCase
 
     public function test_target_locale_cannot_be_published_until_all_source_content_is_ready(): void
     {
+        config()->set('localized-content.release.critical_resource_types', ['cms_post']);
         $websiteKey = 'release-gate-test';
         $post = CmsPost::query()->create([
             'website_key' => $websiteKey,
@@ -121,6 +122,31 @@ class LocalizationReleaseReadinessTest extends TestCase
             'path' => '/posts/source-news',
             'is_published' => false,
         ]);
+    }
+
+    public function test_extended_content_does_not_block_locale_publish_when_critical_shell_is_ready(): void
+    {
+        config()->set('localized-content.release.critical_resource_types', []);
+        $websiteKey = 'incremental-release-test';
+        CmsPost::query()->create([
+            'website_key' => $websiteKey,
+            'title' => 'Bài viết chưa dịch',
+            'slug' => 'bai-viet-chua-dich',
+            'status' => 'published',
+            'body' => '<p>Nội dung</p>',
+            'publish_at' => now(),
+        ]);
+        $manager = app(WebsiteLocaleManager::class);
+        $manager->ensureSystemLocale('en', 'English', 'English');
+        $manager->provisionWebsite($websiteKey);
+
+        $report = app(LocalizationReleaseReadiness::class)->report($websiteKey, ['en'])['en'];
+        $this->assertTrue($report['publishable']);
+        $this->assertFalse($report['strict_ready']);
+        $this->assertSame(1, $report['extended']['pending']);
+
+        $locale = $manager->updateLocale($websiteKey, 'en', ['is_published' => true]);
+        $this->assertTrue((bool) $locale->is_published);
     }
 
     public function test_target_locale_cannot_be_made_default_until_all_source_content_is_ready(): void

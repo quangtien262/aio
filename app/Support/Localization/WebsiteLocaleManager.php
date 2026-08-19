@@ -323,16 +323,32 @@ class WebsiteLocaleManager
     ): void {
         $readiness = $this->releaseReadiness->report($websiteKey, [$locale])[$locale] ?? null;
 
-        if (($readiness['ready'] ?? false) === true) {
+        $isReady = $field === 'is_default'
+            ? (bool) ($readiness['strict_ready'] ?? $readiness['ready'] ?? false)
+            : (bool) ($readiness['publishable'] ?? $readiness['ready'] ?? false);
+
+        if ($isReady) {
             return;
+        }
+
+        if ($field === 'is_default') {
+            throw ValidationException::withMessages([
+                $field => sprintf(
+                    'Chưa thể đặt %s làm mặc định: còn %d/%d nội dung chưa sẵn sàng.',
+                    $locale,
+                    (int) ($readiness['pending'] ?? 0),
+                    (int) ($readiness['required'] ?? 0),
+                ),
+            ]);
         }
 
         throw ValidationException::withMessages([
             $field => sprintf(
-                'Chưa thể publish %s: còn %d/%d nội dung chưa sẵn sàng.',
+                'Chưa thể publish %s: còn %d/%d nội dung thiết yếu chưa sẵn sàng. %d nội dung mở rộng chưa sẵn sàng sẽ được ẩn trên storefront.',
                 $locale,
-                (int) ($readiness['pending'] ?? 0),
-                (int) ($readiness['required'] ?? 0),
+                (int) data_get($readiness, 'critical.pending', 0),
+                (int) data_get($readiness, 'critical.required', 0),
+                (int) data_get($readiness, 'extended.pending', 0),
             ),
         ]);
     }

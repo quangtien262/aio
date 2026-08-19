@@ -33,6 +33,7 @@ use App\Support\Localization\LocalizedRouteRegistry;
 use App\Support\Localization\TranslationRevision;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -1334,7 +1335,9 @@ class LandingPageBuilder
             ->orderBy('sort_order')
             ->latest('published_at');
 
-        return $query->take($limit)->get()->map(function (RealEstateListing $listing) use ($locale, $websiteKey): array {
+        return $this->publishedLocaleItems($query->take($limit * 4)->get(), 'real_estate_listing', $locale, $websiteKey)
+            ->take($limit)
+            ->map(function (RealEstateListing $listing) use ($locale, $websiteKey): array {
             $listing = $this->localizedContent->localize(
                 $listing,
                 'real_estate_listing',
@@ -1392,13 +1395,16 @@ class LandingPageBuilder
             return [];
         }
 
-        return RealEstatePropertyType::query()
+        $types = RealEstatePropertyType::query()
             ->where('is_active', true)
             ->withCount(['listings' => fn (Builder $builder) => $builder->where('publication_status', 'published')])
             ->orderBy('sort_order')
             ->orderBy('name')
+            ->take($limit * 4)
+            ->get();
+
+        return $this->publishedLocaleItems($types, 'real_estate_property_type', $locale, $websiteKey)
             ->take($limit)
-            ->get()
             ->map(function (RealEstatePropertyType $type, int $index) use ($locale, $websiteKey): array {
                 $type = $this->localizedContent->localize(
                     $type,
@@ -1472,6 +1478,24 @@ class LandingPageBuilder
         return 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80';
     }
 
+    private function publishedLocaleItems(
+        Collection $items,
+        string $resourceType,
+        string $locale,
+        ?string $websiteKey,
+    ): Collection {
+        $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
+
+        return $items
+            ->filter(fn (Model $item): bool => $this->localizedContent->isPublishedForLocale(
+                $item,
+                $resourceType,
+                $locale,
+                $resolvedWebsiteKey,
+            ))
+            ->values();
+    }
+
     private function fallbackCategoryImage(int $index = 0): string
     {
         $images = [
@@ -1508,8 +1532,10 @@ class LandingPageBuilder
                 ->withCount(['posts' => fn (Builder $query) => $query->where('status', 'published')])
                 ->orderByDesc('posts_count')
                 ->orderBy('name')
-                ->take($limit)
+                ->take($limit * 4)
                 ->get()
+                ->pipe(fn (Collection $items): Collection => $this->publishedLocaleItems($items, 'cms_category', $locale, $resolvedWebsiteKey))
+                ->take($limit)
                 ->map(function (CmsCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_category.%d.name', $category->id), $category->name);
 
@@ -1548,8 +1574,10 @@ class LandingPageBuilder
                 ->orderByDesc('services_count')
                 ->orderBy('sort_order')
                 ->orderBy('name')
-                ->take($limit)
+                ->take($limit * 4)
                 ->get()
+                ->pipe(fn (Collection $items): Collection => $this->publishedLocaleItems($items, 'cms_service_category', $locale, $resolvedWebsiteKey))
+                ->take($limit)
                 ->map(function (CmsServiceCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service_category.%d.name', $category->id), $category->name);
                     $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_service_category.%d.description', $category->id), $category->description);
@@ -1584,8 +1612,10 @@ class LandingPageBuilder
                 ->orderByDesc('projects_count')
                 ->orderBy('sort_order')
                 ->orderBy('name')
-                ->take($limit)
+                ->take($limit * 4)
                 ->get()
+                ->pipe(fn (Collection $items): Collection => $this->publishedLocaleItems($items, 'cms_project_category', $locale, $resolvedWebsiteKey))
+                ->take($limit)
                 ->map(function (CmsProjectCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                     $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project_category.%d.name', $category->id), $category->name);
                     $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_project_category.%d.description', $category->id), $category->description);
@@ -1628,8 +1658,10 @@ class LandingPageBuilder
                 fn (Builder $query) => $query->orderByDesc('products_count')->orderBy('sort_order'),
             )
             ->orderBy('name')
-            ->take($limit)
+            ->take($limit * 4)
             ->get()
+            ->pipe(fn (Collection $items): Collection => $this->publishedLocaleItems($items, 'catalog_category', $locale, $resolvedWebsiteKey))
+            ->take($limit)
             ->map(function (CatalogCategory $category, int $index) use ($resolvedWebsiteKey, $locale): array {
                 $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_category.%d.name', $category->id), $category->name);
                 $summary = $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_category.%d.description', $category->id), $category->description);
@@ -1707,7 +1739,9 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(function (CmsPost $post) use ($resolvedWebsiteKey, $locale, $settings): array {
+        return $this->publishedLocaleItems($query->take($limit * 4)->get(), 'cms_post', $locale, $resolvedWebsiteKey)
+            ->take($limit)
+            ->map(function (CmsPost $post) use ($resolvedWebsiteKey, $locale, $settings): array {
             $title = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_post.%d.title', $post->id), $post->title);
             $slug = $this->localizedContent->localizedSlug($post, 'cms_post', $locale, $resolvedWebsiteKey);
             $categoryName = $post->category
@@ -1762,7 +1796,9 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(fn (CatalogProduct $product): array => [
+        return $this->publishedLocaleItems($query->take($limit * 4)->get(), 'catalog_product', $locale, $resolvedWebsiteKey)
+            ->take($limit)
+            ->map(fn (CatalogProduct $product): array => [
             'title' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_product.%d.name', $product->id), $product->name),
             'summary' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('catalog_product.%d.short_description', $product->id), $product->short_description),
             'icon' => '▦',
@@ -1802,7 +1838,9 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(function (CmsProject $project) use ($locale, $resolvedWebsiteKey): array {
+        return $this->publishedLocaleItems($query->take($limit * 4)->get(), 'cms_project', $locale, $resolvedWebsiteKey)
+            ->take($limit)
+            ->map(function (CmsProject $project) use ($locale, $resolvedWebsiteKey): array {
             $featuredImage = $project->images->firstWhere('is_featured', true) ?? $project->images->first();
             $projectImages = $project->images
                 ->filter(fn ($image): bool => filled($image->image_url))
@@ -1862,7 +1900,9 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(function (CmsService $service) use ($locale, $resolvedWebsiteKey): array {
+        return $this->publishedLocaleItems($query->take($limit * 4)->get(), 'cms_service', $locale, $resolvedWebsiteKey)
+            ->take($limit)
+            ->map(function (CmsService $service) use ($locale, $resolvedWebsiteKey): array {
             $featuredImage = $service->images->firstWhere('is_featured', true) ?? $service->images->first();
             $slug = $this->localizedContent->localizedSlug($service, 'cms_service', $locale, $resolvedWebsiteKey);
 
@@ -1917,7 +1957,9 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(function (CmsTestimonial $testimonial) use ($resolvedWebsiteKey, $locale): array {
+        return $this->publishedLocaleItems($query->take($limit * 4)->get(), 'cms_testimonial', $locale, $resolvedWebsiteKey)
+            ->take($limit)
+            ->map(function (CmsTestimonial $testimonial) use ($resolvedWebsiteKey, $locale): array {
             $name = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.name', $testimonial->id), $testimonial->name);
             $quote = $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_testimonial.%d.quote', $testimonial->id), $testimonial->quote);
 
@@ -1961,7 +2003,9 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(function (CmsTeamMember $member) use ($locale, $resolvedWebsiteKey): array {
+        return $this->publishedLocaleItems($query->take($limit * 4)->get(), 'cms_team_member', $locale, $resolvedWebsiteKey)
+            ->take($limit)
+            ->map(function (CmsTeamMember $member) use ($locale, $resolvedWebsiteKey): array {
             $featuredImage = $member->images->firstWhere('is_featured', true) ?? $member->images->first();
 
             return [
@@ -2006,7 +2050,9 @@ class LandingPageBuilder
 
         $resolvedWebsiteKey = (string) ($websiteKey ?: 'website-main');
 
-        return $query->take($limit)->get()->map(fn (CmsPartner $partner): array => [
+        return $this->publishedLocaleItems($query->take($limit * 4)->get(), 'cms_partner', $locale, $resolvedWebsiteKey)
+            ->take($limit)
+            ->map(fn (CmsPartner $partner): array => [
             'name' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_partner.%d.title', $partner->id), $partner->title),
             'title' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_partner.%d.title', $partner->id), $partner->title),
             'description' => $this->contentText($resolvedWebsiteKey, $locale, sprintf('cms_partner.%d.description', $partner->id), $partner->description),

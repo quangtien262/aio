@@ -5,7 +5,10 @@ namespace App\Support\Localization;
 use App\Enums\TranslationStatus;
 use App\Models\CmsPage;
 use App\Models\CmsPageTranslation;
+use App\Models\CmsMenu;
 use App\Models\ContentTranslation;
+use App\Models\LandingPage;
+use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
 use App\Models\LandingPageData;
 use Illuminate\Database\Eloquent\Model;
@@ -48,7 +51,7 @@ class LocalizationReleaseReadiness
                 $translation->resource_type.'|'.$translation->resource_id => (string) (
                     $translation->translation_revision ?: $translation->source_revision
                 ),
-            ]);
+            ])->toBase();
         $sourcePageIds = CmsPage::query()
             ->withoutGlobalScopes()
             ->where('website_key', $websiteKey)
@@ -64,7 +67,7 @@ class LocalizationReleaseReadiness
                 (string) $translation->cms_page_id => (string) (
                     $translation->translation_revision ?: $translation->source_revision
                 ),
-            ]);
+            ])->toBase();
         $sourceLandingPages = LandingPageData::query()
             ->withoutGlobalScopes()
             ->publishedTranslation()
@@ -75,7 +78,7 @@ class LocalizationReleaseReadiness
                 (string) $translation->landing_page_id => (string) (
                     $translation->translation_revision ?: $translation->source_revision
                 ),
-            ]);
+            ])->toBase();
         $sourceLandingBlocks = LandingPageBlockData::query()
             ->withoutGlobalScopes()
             ->publishedTranslation()
@@ -89,7 +92,7 @@ class LocalizationReleaseReadiness
                 (string) $translation->landing_page_block_id => (string) (
                     $translation->translation_revision ?: $translation->source_revision
                 ),
-            ]);
+            ])->toBase();
 
         return $locales->mapWithKeys(function (string $locale) use (
             $sourceContent,
@@ -109,7 +112,7 @@ class LocalizationReleaseReadiness
                 ->get(['resource_type', 'resource_id', 'source_revision'])
                 ->mapWithKeys(fn (ContentTranslation $translation): array => [
                     $translation->resource_type.'|'.$translation->resource_id => (string) $translation->source_revision,
-                ]);
+                ])->toBase();
             $targetPages = CmsPageTranslation::query()
                 ->withoutGlobalScopes()
                 ->whereIn('translation_status', [
@@ -121,7 +124,7 @@ class LocalizationReleaseReadiness
                 ->get(['cms_page_id', 'source_revision'])
                 ->mapWithKeys(fn (CmsPageTranslation $translation): array => [
                     (string) $translation->cms_page_id => (string) $translation->source_revision,
-                ]);
+                ])->toBase();
             $targetLandingPages = LandingPageData::query()
                 ->withoutGlobalScopes()
                 ->whereIn('translation_status', [
@@ -133,7 +136,7 @@ class LocalizationReleaseReadiness
                 ->get(['landing_page_id', 'source_revision'])
                 ->mapWithKeys(fn (LandingPageData $translation): array => [
                     (string) $translation->landing_page_id => (string) $translation->source_revision,
-                ]);
+                ])->toBase();
             $targetLandingBlocks = LandingPageBlockData::query()
                 ->withoutGlobalScopes()
                 ->whereIn('translation_status', [
@@ -145,7 +148,7 @@ class LocalizationReleaseReadiness
                 ->get(['landing_page_block_id', 'source_revision'])
                 ->mapWithKeys(fn (LandingPageBlockData $translation): array => [
                     (string) $translation->landing_page_block_id => (string) $translation->source_revision,
-                ]);
+                ])->toBase();
 
             $scopes = [
                 'content' => $this->scope($sourceContent, $targetContent),
@@ -156,16 +159,136 @@ class LocalizationReleaseReadiness
             $required = (int) collect($scopes)->sum('required');
             $translated = (int) collect($scopes)->sum('ready');
             $pending = $required - $translated;
+            $criticalKeys = $this->criticalResourceKeys($websiteKey);
+            $criticalPageIds = $criticalKeys
+                ->filter(fn (string $key): bool => str_starts_with($key, 'cms_page|'))
+                ->map(fn (string $key): string => substr($key, strlen('cms_page|')))
+                ->values();
+            $criticalContentKeys = $criticalKeys
+                ->reject(fn (string $key): bool => str_starts_with($key, 'cms_page|'))
+                ->merge($sourceContent->keys()->filter(function (string $key): bool {
+                    $resourceType = explode('|', $key, 2)[0];
+
+                    return in_array(
+                        $resourceType,
+                        (array) config('localized-content.release.critical_resource_types', []),
+                        true,
+                    );
+                }))
+                ->unique()
+                ->values();
+            $homeLandingIds = collect(LandingPage::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', $websiteKey)
+                ->where('is_home', true)
+                ->pluck('id')
+                ->map(fn (mixed $id): string => (string) $id)
+                ->all());
+            $homeBlockIds = collect(LandingPageBlock::query()
+                ->withoutGlobalScopes()
+                ->whereIn('landing_page_id', $homeLandingIds)
+                ->where('is_visible', true)
+                ->where('block_type', '!=', 'footer_contact')
+                ->pluck('id')
+                ->map(fn (mixed $id): string => (string) $id)
+                ->all());
+            $criticalSources = [
+                'content' => $sourceContent->only($criticalContentKeys),
+                'cms_pages' => $sourcePages->only($criticalPageIds),
+                'landing_pages' => $sourceLandingPages->only($homeLandingIds),
+                'landing_blocks' => $sourceLandingBlocks->only($homeBlockIds),
+            ];
+            $targets = [
+                'content' => $targetContent,
+                'cms_pages' => $targetPages,
+                'landing_pages' => $targetLandingPages,
+                'landing_blocks' => $targetLandingBlocks,
+            ];
+            $allSources = [
+                'content' => $sourceContent,
+                'cms_pages' => $sourcePages,
+                'landing_pages' => $sourceLandingPages,
+                'landing_blocks' => $sourceLandingBlocks,
+            ];
+            $criticalScopes = collect($criticalSources)
+                ->map(fn (Collection $source, string $scope): array => $this->scope($source, $targets[$scope]))
+                ->all();
+            $extendedScopes = collect($allSources)
+                ->map(fn (Collection $source, string $scope): array => $this->scope(
+                    $source->except($criticalSources[$scope]->keys()),
+                    $targets[$scope],
+                ))
+                ->all();
+            $critical = $this->summary($criticalScopes);
+            $extended = $this->summary($extendedScopes);
 
             return [$locale => [
                 'ready' => $pending === 0,
+                'strict_ready' => $pending === 0,
+                'publishable' => $critical['pending'] === 0,
                 'required' => $required,
                 'translated' => $translated,
                 'pending' => $pending,
                 'coverage' => $this->coverage($translated, $required),
                 'scopes' => $scopes,
+                'critical' => $critical,
+                'extended' => $extended,
             ]];
         })->all();
+    }
+
+    /** @return Collection<int, string> */
+    private function criticalResourceKeys(string $websiteKey): Collection
+    {
+        return collect(CmsMenu::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', $websiteKey)
+            ->get(['items'])
+            ->flatMap(fn (CmsMenu $menu): array => $this->menuResourceKeys((array) $menu->items))
+            ->unique()
+            ->values()
+            ->all());
+    }
+
+    /** @param array<int, mixed> $items @return list<string> */
+    private function menuResourceKeys(array $items): array
+    {
+        $keys = [];
+
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $resourceType = trim((string) ($item['resource_type'] ?? ''));
+            $resourceId = trim((string) ($item['resource_id'] ?? ''));
+
+            if ($resourceType !== '' && $resourceId !== '') {
+                $keys[] = $resourceType.'|'.$resourceId;
+            }
+
+            if (is_array($item['children'] ?? null)) {
+                array_push($keys, ...$this->menuResourceKeys($item['children']));
+            }
+        }
+
+        return $keys;
+    }
+
+    /** @param array<string, array{required:int,ready:int,pending:int,coverage:float}> $scopes */
+    private function summary(array $scopes): array
+    {
+        $required = (int) collect($scopes)->sum('required');
+        $ready = (int) collect($scopes)->sum('ready');
+
+        return [
+            'ready' => $required === $ready,
+            'required' => $required,
+            'translated' => $ready,
+            'pending' => $required - $ready,
+            'coverage' => $this->coverage($ready, $required),
+            'scopes' => $scopes,
+        ];
     }
 
     /** @return Collection<int, string> */

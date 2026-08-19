@@ -119,6 +119,7 @@ use App\Http\Controllers\Admin\Api\ThemeAvatarController;
 use App\Http\Controllers\Admin\Api\ThemeBrandingController;
 use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
 use App\Http\Controllers\Admin\Api\ThemeLocaleController;
+use App\Http\Controllers\Admin\Api\LocalizedSlugController;
 use App\Http\Controllers\Admin\Api\ThemePaletteController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
@@ -428,12 +429,18 @@ Route::prefix('admin')
                 Route::get('/themes/locales', [ThemeLocaleController::class, 'index'])
                     ->middleware('admin.permission:theme.view')
                     ->name('themes.locales.index');
+                Route::get('/themes/locales/{code}/preflight', [ThemeLocaleController::class, 'preflight'])
+                    ->middleware('admin.permission:theme.customize')
+                    ->name('themes.locales.preflight');
                 Route::post('/themes/locales', [ThemeLocaleController::class, 'store'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.locales.store');
                 Route::put('/themes/locales/{code}', [ThemeLocaleController::class, 'update'])
                     ->middleware('admin.permission:theme.customize')
                     ->name('themes.locales.update');
+                Route::post('/localization/slug-suggest', LocalizedSlugController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('localization.slug-suggest');
                 Route::post('/modules/{key}/install', [ModuleLifecycleController::class, 'install'])
                     ->middleware('admin.permission:store.module.install,global')
                     ->name('modules.install');

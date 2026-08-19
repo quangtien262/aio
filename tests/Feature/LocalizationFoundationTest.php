@@ -121,6 +121,25 @@ class LocalizationFoundationTest extends TestCase
             ->assertJsonPath('data.locale.is_enabled_for_editing', true)
             ->assertJsonPath('data.locale.is_published', false);
 
+        $this->withHeader('X-Website-Key', 'website-a')
+            ->getJson('/admin/api/themes/locales/fr-CA/preflight?theme_key=SHOP601')
+            ->assertOk()
+            ->assertJsonPath('data.website_key', 'website-a')
+            ->assertJsonPath('data.locale.code', 'fr-CA')
+            ->assertJsonStructure([
+                'data' => [
+                    'checked_at',
+                    'locale' => [
+                        'release_readiness' => [
+                            'publishable',
+                            'strict_ready',
+                            'critical' => ['required', 'translated', 'pending', 'coverage', 'scopes'],
+                            'extended' => ['required', 'translated', 'pending', 'coverage', 'scopes'],
+                        ],
+                    ],
+                ],
+            ]);
+
         $websiteB = $this->withHeader('X-Website-Key', 'website-b')
             ->getJson('/admin/api/themes/locales')
             ->assertOk()

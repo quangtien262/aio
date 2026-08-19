@@ -26,6 +26,7 @@ class LocalizedContentRepository
         private readonly TranslationWorkflowManager $workflow,
         private readonly LocalizedRouteRegistry $routeRegistry,
         private readonly CmsMenuLocalization $menuLocalization,
+        private readonly LocalizedSlugGenerator $slugs,
     ) {}
 
     public function textByKey(
@@ -144,6 +145,32 @@ class LocalizedContentRepository
             ?: $model->getAttribute($slugField)
             ?: $model->getKey()
         );
+    }
+
+    public function isPublishedForLocale(
+        Model $model,
+        string $resourceType,
+        string $locale,
+        ?string $websiteKey = null,
+    ): bool {
+        $websiteKey = trim((string) ($websiteKey ?: $model->getAttribute('website_key') ?: 'website-main'));
+        $locale = LocaleCode::tryNormalize($locale);
+
+        if ($locale === null) {
+            return false;
+        }
+
+        if ($locale === $this->localeContext->sourceLocale()) {
+            return true;
+        }
+
+        return $this->translation(
+            $websiteKey,
+            $resourceType,
+            (string) $model->getKey(),
+            $locale,
+            true,
+        ) !== null;
     }
 
     public function publicCanonicalPath(
@@ -281,6 +308,12 @@ class LocalizedContentRepository
                     ];
                 }
             }
+        }
+
+        // A public secondary locale must never expose source-language content.
+        // Missing translations are hidden until their exact locale is published.
+        if ($locale !== $this->localeContext->sourceLocale()) {
+            return null;
         }
 
         foreach ($this->localeContext->fallbackChain($locale, $websiteKey) as $candidate) {
@@ -509,12 +542,28 @@ class LocalizedContentRepository
         $slugField = $definition['slug_field'] ?? null;
 
         if (is_string($slugField)) {
-            $translation->slug = trim((string) (
+            $slugValue = (string) (
                 $field === $slugField
                     ? $value
                     : ($translation->slug ?: data_get($payload, $slugField))
-            )) ?: null;
-            $this->guardSlugUnique($translation);
+            );
+            $labelField = (string) ($definition['label_field'] ?? '');
+            $translation->slug = $this->slugs->unique(
+                $this->slugs->normalize(
+                    $slugValue !== '' ? $slugValue : data_get($payload, $labelField),
+                    $locale,
+                    (string) data_get($source?->payload, $slugField, ''),
+                ),
+                fn (string $candidate): bool => ContentTranslation::query()
+                    ->withoutGlobalScopes()
+                    ->where('website_key', $websiteKey)
+                    ->where('resource_type', $resourceType)
+                    ->where('locale', $locale)
+                    ->where('slug', $candidate)
+                    ->where('resource_id', '!=', $resourceId)
+                    ->exists(),
+            );
+            data_set($payload, $slugField, $translation->slug);
         }
 
         $translation = $this->workflow->saveDraft(
@@ -574,13 +623,6 @@ class LocalizedContentRepository
         $mergedPayload = $replacePayload
             ? $payload
             : array_replace((array) ($translation->payload ?? []), $payload);
-        $slugField = $definition['slug_field'] ?? null;
-
-        if (is_string($slugField) && array_key_exists($slugField, $mergedPayload)) {
-            $translation->slug = trim((string) $mergedPayload[$slugField]) ?: null;
-            $this->guardSlugUnique($translation);
-        }
-
         $source = $this->translation(
             $websiteKey,
             $resourceType,
@@ -588,6 +630,29 @@ class LocalizedContentRepository
             $this->localeContext->sourceLocale(),
             false,
         );
+        $slugField = $definition['slug_field'] ?? null;
+
+        if (is_string($slugField)) {
+            $labelField = (string) ($definition['label_field'] ?? '');
+            $slugValue = (string) ($mergedPayload[$slugField] ?? '');
+            $labelValue = $labelField !== '' ? (string) ($mergedPayload[$labelField] ?? '') : '';
+            $translation->slug = $this->slugs->unique(
+                $this->slugs->normalize(
+                    $slugValue !== '' ? $slugValue : $labelValue,
+                    $locale,
+                    (string) data_get($source?->payload, $slugField, ''),
+                ),
+                fn (string $candidate): bool => ContentTranslation::query()
+                    ->withoutGlobalScopes()
+                    ->where('website_key', $websiteKey)
+                    ->where('resource_type', $resourceType)
+                    ->where('locale', $locale)
+                    ->where('slug', $candidate)
+                    ->where('resource_id', '!=', $resourceId)
+                    ->exists(),
+            );
+            $mergedPayload[$slugField] = $translation->slug;
+        }
 
         /** @var ContentTranslation $translation */
         $translation = $this->workflow->saveDraft(
@@ -805,31 +870,6 @@ class LocalizedContentRepository
         }
 
         return [$matches[1], $matches[2], $matches[3]];
-    }
-
-    private function guardSlugUnique(ContentTranslation $translation): void
-    {
-        if (blank($translation->slug)) {
-            return;
-        }
-
-        $exists = ContentTranslation::query()
-            ->withoutGlobalScope('current_website')
-            ->where('website_key', $translation->website_key)
-            ->where('resource_type', $translation->resource_type)
-            ->where('locale', $translation->locale)
-            ->where('slug', $translation->slug)
-            ->when(
-                $translation->exists,
-                fn ($query) => $query->whereKeyNot($translation->getKey()),
-            )
-            ->exists();
-
-        if ($exists) {
-            throw ValidationException::withMessages([
-                'slug' => 'Slug đã được dùng trong cùng loại nội dung và ngôn ngữ.',
-            ]);
-        }
     }
 
     private function removeOrphanedSlugConflict(

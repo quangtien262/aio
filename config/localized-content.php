@@ -19,6 +19,17 @@ use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 
 return [
+    'release' => [
+        // These resources form the storefront shell. Missing translations in
+        // this group block publishing a locale; other published source
+        // content may be rolled out incrementally and stays hidden until its
+        // exact locale translation is published.
+        'critical_resource_types' => [
+            'site_profile',
+            'cms_menu',
+            'site_banner',
+        ],
+    ],
     'resources' => [
         'cms_category' => [
             'model' => CmsCategory::class,

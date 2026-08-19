@@ -1624,21 +1624,28 @@ class CmsSiteController
         $themeKey = (string) ($activeTheme['key'] ?? 'SHOP601');
         $menus = $extra['menus'] ?? $this->resolveMenus($websiteKey);
         $viewName = $this->resolveThemeCmsView($activeTheme, $contentType) ?? 'site-cms';
+        $locale = $this->currentLocale();
 
         if (is_object($items) && method_exists($items, 'getCollection') && method_exists($items, 'setCollection')) {
-            $items->setCollection($items->getCollection()->map(fn (mixed $item): mixed => match (true) {
-                $item instanceof CmsPost => $this->localizePostModel($item, $websiteKey),
-                $item instanceof CmsService => $this->localizeServiceModel($item, $websiteKey),
-                $item instanceof CmsProject => $this->localizeProjectModel($item, $websiteKey),
-                default => $item,
-            }));
+            $items->setCollection($items->getCollection()
+                ->filter(fn (mixed $item): bool => $this->isPublishedForCurrentLocale($item, $locale, $websiteKey))
+                ->map(fn (mixed $item): mixed => match (true) {
+                    $item instanceof CmsPost => $this->localizePostModel($item, $websiteKey),
+                    $item instanceof CmsService => $this->localizeServiceModel($item, $websiteKey),
+                    $item instanceof CmsProject => $this->localizeProjectModel($item, $websiteKey),
+                    default => $item,
+                })
+                ->values());
         } elseif ($items instanceof Collection) {
-            $items = $items->map(fn (mixed $item): mixed => match (true) {
-                $item instanceof CmsPost => $this->localizePostModel($item, $websiteKey),
-                $item instanceof CmsService => $this->localizeServiceModel($item, $websiteKey),
-                $item instanceof CmsProject => $this->localizeProjectModel($item, $websiteKey),
-                default => $item,
-            });
+            $items = $items
+                ->filter(fn (mixed $item): bool => $this->isPublishedForCurrentLocale($item, $locale, $websiteKey))
+                ->map(fn (mixed $item): mixed => match (true) {
+                    $item instanceof CmsPost => $this->localizePostModel($item, $websiteKey),
+                    $item instanceof CmsService => $this->localizeServiceModel($item, $websiteKey),
+                    $item instanceof CmsProject => $this->localizeProjectModel($item, $websiteKey),
+                    default => $item,
+                })
+                ->values();
         }
 
         if ($contentType === 'posts' && ! array_key_exists('latestPosts', $extra)) {
@@ -1646,8 +1653,15 @@ class CmsSiteController
             $this->applyWebsiteScope($latestPostsQuery, $websiteKey);
 
             $extra['latestPosts'] = $latestPostsQuery
-                ->take(3)
+                ->take(12)
                 ->get()
+                ->filter(fn (CmsPost $post): bool => $this->localizedContent->isPublishedForLocale(
+                    $post,
+                    'cms_post',
+                    $locale,
+                    $websiteKey,
+                ))
+                ->take(3)
                 ->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey));
         }
 
@@ -1664,6 +1678,23 @@ class CmsSiteController
                 ? $this->themeText('cms.posts.description', $description, $themeKey)
                 : $description,
         ], $extra));
+    }
+
+    private function isPublishedForCurrentLocale(mixed $item, string $locale, string $websiteKey): bool
+    {
+        $resourceType = match (true) {
+            $item instanceof CmsPost => 'cms_post',
+            $item instanceof CmsService => 'cms_service',
+            $item instanceof CmsProject => 'cms_project',
+            default => null,
+        };
+
+        return $resourceType === null || $this->localizedContent->isPublishedForLocale(
+            $item,
+            $resourceType,
+            $locale,
+            $websiteKey,
+        );
     }
 
     private function resolveMenus(?string $websiteKey = null): array

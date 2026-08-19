@@ -9,6 +9,7 @@ use App\Support\AuditLogger;
 use App\Support\FrontendLocalization;
 use App\Support\Localization\LocaleCode;
 use App\Support\Localization\LocaleContext;
+use App\Support\Localization\LocalizationReleaseReadiness;
 use App\Support\Localization\WebsiteLocaleManager;
 use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +23,7 @@ class ThemeLocaleController
         private readonly WebsiteLocaleManager $localeManager,
         private readonly SiteContext $siteContext,
         private readonly AuditLogger $auditLogger,
+        private readonly LocalizationReleaseReadiness $releaseReadiness,
     ) {}
 
     public function index(Request $request, ThemeRegistry $themeRegistry): JsonResponse
@@ -32,6 +34,38 @@ class ThemeLocaleController
         $theme = $this->resolveTheme($themeRegistry, $validated['theme_key'] ?? null);
 
         return response()->json(['data' => $this->responsePayload($theme)]);
+    }
+
+    public function preflight(string $code, Request $request, ThemeRegistry $themeRegistry): JsonResponse
+    {
+        $validated = $request->validate([
+            'theme_key' => ['nullable', 'string', 'max:120'],
+        ]);
+        $theme = $this->resolveTheme($themeRegistry, $validated['theme_key'] ?? null);
+        $websiteKey = $this->siteContext->websiteKey();
+        $locale = LocaleCode::tryNormalize($code);
+
+        abort_if($locale === null, 404);
+        $option = collect($this->localeContext->options($websiteKey))->firstWhere('code', $locale);
+        abort_if($option === null, 404);
+
+        $readiness = $this->releaseReadiness->report($websiteKey, [$locale])[$locale] ?? [
+            'ready' => true,
+            'strict_ready' => true,
+            'publishable' => true,
+            'required' => 0,
+            'translated' => 0,
+            'pending' => 0,
+            'coverage' => 100.0,
+            'critical' => ['ready' => true, 'required' => 0, 'translated' => 0, 'pending' => 0, 'coverage' => 100.0, 'scopes' => []],
+            'extended' => ['ready' => true, 'required' => 0, 'translated' => 0, 'pending' => 0, 'coverage' => 100.0, 'scopes' => []],
+        ];
+
+        return response()->json(['data' => [
+            'website_key' => $websiteKey,
+            'locale' => $this->localeItemPayload($option, $theme, $readiness),
+            'checked_at' => now()->toIso8601String(),
+        ]]);
     }
 
     public function store(Request $request, ThemeRegistry $themeRegistry): JsonResponse
@@ -184,6 +218,11 @@ class ThemeLocaleController
     {
         $websiteKey = $this->siteContext->websiteKey();
         $this->localeManager->provisionWebsite($websiteKey);
+        $options = collect($this->localeContext->options($websiteKey));
+        $readiness = $this->releaseReadiness->report(
+            $websiteKey,
+            $options->pluck('code')->all(),
+        );
 
         return [
             'website_key' => $websiteKey,
@@ -191,8 +230,12 @@ class ThemeLocaleController
             'fallback_locale' => $this->localeContext->fallbackLocale($websiteKey),
             'source_locale' => $this->localeContext->sourceLocale(),
             'theme' => $theme,
-            'locales' => collect($this->localeContext->options($websiteKey))
-                ->map(fn (array $locale): array => $this->localeItemPayload($locale, $theme))
+            'locales' => $options
+                ->map(fn (array $locale): array => $this->localeItemPayload(
+                    $locale,
+                    $theme,
+                    $readiness[(string) ($locale['code'] ?? '')] ?? null,
+                ))
                 ->values()
                 ->all(),
             'available_builtin_locales' => $this->availableBuiltinLocales($theme),
@@ -204,7 +247,7 @@ class ThemeLocaleController
      * @param  array<string, mixed>|null  $theme
      * @return array<string, mixed>
      */
-    private function localeItemPayload(array $locale, ?array $theme): array
+    private function localeItemPayload(array $locale, ?array $theme, ?array $readiness = null): array
     {
         $code = (string) ($locale['code'] ?? FrontendLocalization::defaultLocale());
         $preset = FrontendLocalization::presetLocale($code);
@@ -223,6 +266,7 @@ class ThemeLocaleController
             'is_theme_supported' => $isThemeSupported,
             'theme_support_status' => $isThemeSupported ? 'built_in' : 'custom',
             'sort_order' => (int) ($locale['sort_order'] ?? 0),
+            'release_readiness' => $readiness,
         ]);
     }
 

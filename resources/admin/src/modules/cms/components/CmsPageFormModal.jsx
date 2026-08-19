@@ -43,7 +43,7 @@ import {
 import 'ckeditor5/ckeditor5.css';
 import RichContentEditor from '../../../shared/components/RichContentEditor';
 import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
-import { toSlug } from '../../../shared/utils/slug';
+import useLocalizedAutoSlug from '../../../shared/hooks/useLocalizedAutoSlug';
 
 const { Text } = Typography;
 
@@ -153,12 +153,21 @@ export default function CmsPageFormModal({
     const videoInputRef = useRef(null);
     const sampleImageInputRef = useRef(null);
     const featuredMediaInputRef = useRef(null);
-    const lastTitleRef = useRef('');
     const titleValue = Form.useWatch('title', form) ?? '';
     const statusValue = Form.useWatch('status', form) ?? 'draft';
     const featuredMediaId = Form.useWatch('featured_media_id', form) ?? null;
     const bodyValue = Form.useWatch('body', form) ?? '';
     const websiteKey = Form.useWatch('website_key', form);
+    const autoSlug = useLocalizedAutoSlug({
+        form,
+        sourceValue: titleValue,
+        locale: activeLocale,
+        resourceType: 'cms_page',
+        resourceId: editingPage?.id,
+        fallbackSlug: editingPage?.slug ?? '',
+        callAdminApi,
+        enabled: open,
+    });
     const locales = useMemo(() => {
         if (localeOptions.length) return localeOptions;
 
@@ -236,7 +245,7 @@ export default function CmsPageFormModal({
 
         form.setFieldsValue(values);
         form.setFieldValue('body', values.body ?? '');
-        lastTitleRef.current = String(values.title ?? '');
+        autoSlug.reset(values.title ?? '', { manual: Boolean(values.slug) });
         setContentMode('editor');
         setEditorContentVersion((current) => current + 1);
         editorInstanceRef.current = null;
@@ -257,15 +266,6 @@ export default function CmsPageFormModal({
             return Array.from(nextMap.values());
         });
     }, [mediaOptions]);
-
-    useEffect(() => {
-        if (titleValue === lastTitleRef.current) {
-            return;
-        }
-
-        form.setFieldValue('slug', toSlug(titleValue));
-        lastTitleRef.current = titleValue;
-    }, [form, titleValue]);
 
     const editorConfig = useMemo(() => ({
         licenseKey: 'GPL',
@@ -737,7 +737,8 @@ export default function CmsPageFormModal({
     };
 
     const handleSlugChange = (event) => {
-        form.setFieldValue('slug', toSlug(event.target.value, { trimEdges: false }));
+        autoSlug.markManual();
+        form.setFieldValue('slug', event.target.value.toLowerCase().replace(/\s+/g, '-'));
     };
 
     const handleLocaleChange = (locale) => {
@@ -838,7 +839,22 @@ export default function CmsPageFormModal({
                             </Col>
                             <Col xs={24} md={12}>
                                 <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug' }]}>
-                                    <Input placeholder="trang-gioi-thieu" onChange={handleSlugChange} />
+                                    <Input
+                                        placeholder="trang-gioi-thieu"
+                                        onChange={handleSlugChange}
+                                        onBlur={(event) => void autoSlug.normalizeManual(event.target.value)}
+                                        suffix={(
+                                            <Button
+                                                type="link"
+                                                size="small"
+                                                loading={autoSlug.loading}
+                                                onClick={() => void autoSlug.regenerate()}
+                                                style={{ paddingInline: 4 }}
+                                            >
+                                                Tạo lại
+                                            </Button>
+                                        )}
+                                    />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>

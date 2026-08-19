@@ -9,6 +9,7 @@ use App\Models\CmsPage;
 use App\Models\CmsPageTranslation;
 use App\Models\LocalizedRoute;
 use App\Models\Site;
+use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -121,7 +122,64 @@ class CmsPageLocalizationTest extends TestCase
             ->assertSee('/en/p/about-us', false);
     }
 
-    public function test_public_resolver_redirects_fallback_and_previous_localized_slugs(): void
+    public function test_chinese_page_slug_is_generated_server_side_and_scoped_by_locale(): void
+    {
+        $admin = Admin::factory()->create(['id' => Admin::SYSTEM_OWNER_ID]);
+        $this->actingAs($admin, 'admin');
+        $locales = app(WebsiteLocaleManager::class);
+        $locales->ensureSystemLocale('zh', 'Chinese', '中文');
+        $locales->provisionWebsite('website-main');
+
+        if (! collect(app(\App\Support\Localization\LocaleContext::class)->options('website-main'))->contains('code', 'zh')) {
+            $locales->addLocale('website-main', 'zh');
+        }
+
+        $first = $this->postJson('/admin/api/cms/pages', [
+            'locale' => 'vi',
+            'title' => 'Trang thứ nhất',
+        ])->assertCreated();
+        $second = $this->postJson('/admin/api/cms/pages', [
+            'locale' => 'vi',
+            'title' => 'Trang thứ hai',
+        ])->assertCreated();
+
+        $this->putJson('/admin/api/cms/pages/'.$first->json('data.id'), [
+            'locale' => 'zh',
+            'title' => '公司简介',
+            'slug' => '',
+        ])->assertOk()
+            ->assertJsonPath('data.translations.zh.slug', 'gong-si-jian-jie');
+        $this->putJson('/admin/api/cms/pages/'.$second->json('data.id'), [
+            'locale' => 'zh',
+            'title' => '公司简介',
+            'slug' => '',
+        ])->assertOk()
+            ->assertJsonPath('data.translations.zh.slug', 'gong-si-jian-jie-2');
+    }
+
+    public function test_admin_slug_suggestion_uses_the_same_backend_generator(): void
+    {
+        $admin = Admin::factory()->create(['id' => Admin::SYSTEM_OWNER_ID]);
+        $this->actingAs($admin, 'admin');
+
+        $locales = app(WebsiteLocaleManager::class);
+        $locales->provisionWebsite('website-main');
+        $locales->ensureSystemLocale('zh', 'Chinese', '中文');
+
+        if (! collect(app(\App\Support\Localization\LocaleContext::class)->options('website-main'))->contains('code', 'zh')) {
+            $locales->addLocale('website-main', 'zh');
+        }
+
+        $this->postJson('/admin/api/localization/slug-suggest', [
+            'value' => '联系我们',
+            'locale' => 'zh',
+            'resource_type' => 'cms_page',
+        ])->assertOk()
+            ->assertJsonPath('data.slug', 'lian-xi-wo-men')
+            ->assertJsonPath('data.locale', 'zh');
+    }
+
+    public function test_public_resolver_hides_missing_target_and_redirects_previous_localized_slugs(): void
     {
         $page = CmsPage::query()->create([
             'website_key' => 'website-main',
@@ -132,7 +190,7 @@ class CmsPageLocalizationTest extends TestCase
         ]);
 
         $this->get('/en/p/gioi-thieu')
-            ->assertRedirect('/vi/p/gioi-thieu');
+            ->assertNotFound();
 
         $admin = Admin::factory()->create(['id' => Admin::SYSTEM_OWNER_ID]);
         $this->actingAs($admin, 'admin');

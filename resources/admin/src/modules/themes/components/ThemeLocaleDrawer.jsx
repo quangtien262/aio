@@ -8,8 +8,10 @@ import Input from 'antd/es/input';
 import Select from 'antd/es/select';
 import List from 'antd/es/list';
 import Modal from 'antd/es/modal';
+import Progress from 'antd/es/progress';
 import Space from 'antd/es/space';
 import Spin from 'antd/es/spin';
+import Steps from 'antd/es/steps';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 
@@ -29,6 +31,8 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
     const [sourceLocale, setSourceLocale] = useState('vi');
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [formState, setFormState] = useState({ code: '', name: '', native_name: '' });
+    const [publishCandidate, setPublishCandidate] = useState(null);
+    const [publishChecking, setPublishChecking] = useState(false);
 
     const builtinLanguageOptions = useMemo(() => ([
         { code: 'en', name: 'English', native: 'English' },
@@ -153,6 +157,47 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
         );
     };
 
+    const loadPublishPreflight = async (code) => {
+        try {
+            setPublishChecking(true);
+            setError(null);
+            const response = await callAdminApi(adminApi(`themes/locales/${encodeURIComponent(code)}/preflight?theme_key=${encodeURIComponent(theme?.key ?? '')}`));
+
+            setPublishCandidate(response?.data?.locale ?? null);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Không kiểm tra được điều kiện phát hành.');
+        } finally {
+            setPublishChecking(false);
+        }
+    };
+
+    const requestPublishLocale = (localeItem) => {
+        if (localeItem.is_published) {
+            void handleUpdateLocale(localeItem.code, { is_published: false }, 'Đã chuyển locale về draft.');
+            return;
+        }
+
+        setPublishCandidate(localeItem);
+        void loadPublishPreflight(localeItem.code);
+    };
+
+    const confirmPublishLocale = async () => {
+        if (!publishCandidate) return;
+
+        await handleUpdateLocale(
+            publishCandidate.code,
+            { is_published: true },
+            'Đã publish locale storefront.',
+        );
+        setPublishCandidate(null);
+    };
+
+    const refreshPublishReadiness = async () => {
+        if (!publishCandidate?.code) return;
+
+        await loadPublishPreflight(publishCandidate.code);
+    };
+
     return (
         <>
             <Drawer
@@ -212,7 +257,7 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                                             key="publish"
                                             type="link"
                                             disabled={!canManageLocales}
-                                            onClick={() => handleUpdateLocale(localeItem.code, { is_published: !localeItem.is_published }, localeItem.is_published ? 'Đã chuyển locale về draft.' : 'Đã publish locale storefront.')}
+                                            onClick={() => requestPublishLocale(localeItem)}
                                         >
                                             {localeItem.is_published ? 'Chuyển draft' : 'Publish'}
                                         </Button>,
@@ -254,6 +299,88 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
                     )}
                 </Space>
             </Drawer>
+
+            <Modal
+                title={publishCandidate ? `Kiểm tra trước khi publish ${publishCandidate.code.toUpperCase()}` : 'Kiểm tra phát hành'}
+                open={Boolean(publishCandidate)}
+                onCancel={() => setPublishCandidate(null)}
+                footer={publishCandidate ? [
+                    <Button key="cancel" onClick={() => setPublishCandidate(null)}>Hủy</Button>,
+                    <Button key="refresh" loading={publishChecking} onClick={refreshPublishReadiness}>Kiểm tra lại</Button>,
+                    <Button
+                        key="publish"
+                        type="primary"
+                        disabled={!publishCandidate.release_readiness?.publishable}
+                        onClick={confirmPublishLocale}
+                    >
+                        Publish locale
+                    </Button>,
+                ] : null}
+                width={680}
+                destroyOnHidden
+            >
+                {publishCandidate ? (
+                    <Spin spinning={publishChecking} tip="Đang kiểm tra dữ liệu phát hành...">
+                        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                            <Steps
+                            size="small"
+                            current={publishCandidate.release_readiness?.publishable ? 2 : 1}
+                            items={[
+                                { title: 'Preflight' },
+                                { title: 'Hoàn thiện thiết yếu' },
+                                { title: 'Publish' },
+                            ]}
+                            />
+                            <Alert
+                            type={publishCandidate.release_readiness?.publishable ? 'success' : 'warning'}
+                            showIcon
+                            message={publishCandidate.release_readiness?.publishable
+                                ? 'Nội dung thiết yếu đã sẵn sàng.'
+                                : 'Chưa thể publish vì còn thiếu nội dung thiết yếu.'}
+                            description="Nội dung mở rộng chưa dịch sẽ được ẩn trên storefront của locale này, không fallback sang ngôn ngữ nguồn."
+                            />
+                            {[
+                            ['Nội dung thiết yếu', publishCandidate.release_readiness?.critical],
+                            ['Nội dung mở rộng', publishCandidate.release_readiness?.extended],
+                            ].map(([label, report]) => (
+                            <div key={label}>
+                                <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                                    <Text strong>{label}</Text>
+                                    <Text>{report?.translated ?? 0}/{report?.required ?? 0}</Text>
+                                </Space>
+                                <Progress
+                                    percent={report?.coverage ?? 0}
+                                    status={label === 'Nội dung thiết yếu' && (report?.pending ?? 0) > 0 ? 'exception' : 'normal'}
+                                />
+                                <Space size={8} wrap>
+                                    {Object.entries(report?.scopes ?? {}).map(([scope, scopeReport]) => (
+                                        <Tag key={scope} color={scopeReport.pending ? 'orange' : 'green'}>
+                                            {scope}: {scopeReport.ready}/{scopeReport.required}
+                                        </Tag>
+                                    ))}
+                                </Space>
+                            </div>
+                            ))}
+                            {!publishCandidate.release_readiness?.publishable ? (
+                            <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                                <Text type="secondary">
+                                    Hãy hoàn thiện các bản dịch menu, hồ sơ website, trang chủ, khối trang chủ và các trang được menu liên kết trước khi thử lại.
+                                </Text>
+                                <Space size={8} wrap>
+                                    <Button href="/admin/setup">Cài đặt website</Button>
+                                    <Button href="/admin/cms/menus">Bản dịch menu</Button>
+                                    <Button href="/admin/cms/pages">Pages</Button>
+                                    <Button href="/admin/cms/landing-pages">Landing pages</Button>
+                                </Space>
+                            </Space>
+                            ) : null}
+                            <Text type="secondary">
+                                Khi xác nhận, backend sẽ kiểm tra readiness lần cuối để tránh publish bằng dữ liệu preflight đã cũ.
+                            </Text>
+                        </Space>
+                    </Spin>
+                ) : null}
+            </Modal>
 
             <Modal
                 title="Thêm ngôn ngữ"
