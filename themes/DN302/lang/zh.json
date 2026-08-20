@@ -1,0 +1,54 @@
+{
+  "DN302": {
+    "common": {
+      "discover": "立即了解",
+      "read_more": "阅读更多",
+      "view_more": "查看更多",
+      "send": "提交请求"
+    },
+    "header": {
+      "consultation": "预约咨询",
+      "address": "胡志明市第七郡平顺坊黄晋发街344号"
+    },
+    "contact": {
+      "default_working_hours": "星期一至星期六，08:00 - 17:30",
+      "page_title": "联系我们",
+      "page_intro": "联系我们的顾问团队，获取符合您需求的支持。",
+      "hero_eyebrow": "联系我们",
+      "information": "联系信息",
+      "conversation_title": "让我们从沟通开始",
+      "conversation_intro": "我们通过以下渠道受理咨询、现场勘察、报价及技术支持需求。",
+      "address": "地址",
+      "hotline": "咨询热线",
+      "working_hours": "工作时间",
+      "request_eyebrow": "提交需求",
+      "request_title": "我们能为您提供什么帮助？",
+      "request_intro": "请填写以下信息，我们的专员将尽快与您联系。",
+      "validation_error": "请检查并完善相关信息。",
+      "name": "姓名",
+      "name_placeholder": "请输入您的姓名",
+      "phone": "电话号码",
+      "subject": "咨询需求",
+      "subject_solution": "解决方案咨询",
+      "subject_quote": "现场勘察与项目报价",
+      "subject_product": "产品与材料咨询",
+      "subject_support": "维护与技术支持",
+      "message": "需要支持的内容",
+      "message_placeholder": "请描述您的需求、项目类型或方便联系的时间……",
+      "privacy": "您的信息仅用于咨询与支持。",
+      "submit": "提交咨询请求"
+    },
+    "footer": {
+      "copyright": "HT Việt Nam 产品",
+      "description": "为每个项目提供一体化、专业且可持续的解决方案。",
+      "quick_links": "快速链接",
+      "contact": "联系信息",
+      "address": "地址",
+      "cta_kicker": "需要咨询吗？",
+      "cta_title": "与我们一起实现您的理想空间",
+      "cta_description": "请留下您的需求，我们的专业团队将与您联系并提出合适的解决方案。",
+      "cta_button": "预约咨询",
+      "rights": "版权所有。"
+    }
+  }
+}

@@ -166,6 +166,36 @@ class Dn302ThemeTest extends TestCase
             ->assertDontSee('MASAMI dịch vụ mua hàng cho khu công nghiệp.');
     }
 
+    public function test_dn302_chinese_theme_dictionary_covers_footer_and_contact_copy(): void
+    {
+        $locales = app(WebsiteLocaleManager::class);
+        $locales->ensureSystemLocale('zh', 'Chinese', '中文');
+        $locales->provisionWebsite('website-main');
+        $locales->addLocale('website-main', 'zh', [
+            'is_enabled_for_editing' => true,
+            'is_published' => true,
+        ]);
+
+        $translations = app(\App\Core\Themes\ThemeTranslationService::class)
+            ->translations('DN302', 'zh');
+
+        $this->assertSame('预约咨询', data_get($translations, 'DN302.header.consultation'));
+        $this->assertSame('快速链接', data_get($translations, 'DN302.footer.quick_links'));
+        $this->assertSame('联系信息', data_get($translations, 'DN302.footer.contact'));
+        $this->assertSame('需要咨询吗？', data_get($translations, 'DN302.footer.cta_kicker'));
+        $this->assertSame('与我们一起实现您的理想空间', data_get($translations, 'DN302.footer.cta_title'));
+        $this->assertSame(
+            '请留下您的需求，我们的专业团队将与您联系并提出合适的解决方案。',
+            data_get($translations, 'DN302.footer.cta_description'),
+        );
+        $this->assertSame('预约咨询', data_get($translations, 'DN302.footer.cta_button'));
+        $this->assertSame('联系我们', data_get($translations, 'DN302.contact.page_title'));
+
+        $encoded = json_encode($translations, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        $this->assertStringNotContainsString('Bạn cần tư vấn?', $encoded);
+        $this->assertStringNotContainsString('Cùng chúng tôi hiện thực hóa không gian của bạn', $encoded);
+    }
+
     public function test_dn302_storefront_admin_mode_renders_landing_block_editor(): void
     {
         app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
