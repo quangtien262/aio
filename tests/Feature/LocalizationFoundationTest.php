@@ -148,6 +148,7 @@ class LocalizationFoundationTest extends TestCase
         $this->withHeader('X-Website-Key', 'website-a')
             ->getJson('/admin/api/themes/locales/fr-CA/preflight?theme_key=SHOP601')
             ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
             ->assertJsonPath('data.website_key', 'website-a')
             ->assertJsonPath('data.locale.code', 'fr-CA')
             ->assertJsonStructure([

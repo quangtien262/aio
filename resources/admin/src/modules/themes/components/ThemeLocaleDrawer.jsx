@@ -162,14 +162,43 @@ export default function ThemeLocaleDrawer({ open, theme, canManageLocales, callA
             setPublishChecking(true);
             setError(null);
             const response = await callAdminApi(adminApi(`themes/locales/${encodeURIComponent(code)}/preflight?theme_key=${encodeURIComponent(theme?.key ?? '')}`));
+            const localeItem = response?.data?.locale ?? null;
 
-            setPublishCandidate(response?.data?.locale ?? null);
+            if (localeItem) {
+                setLocales((current) => current.map((item) => (
+                    item.code === localeItem.code ? { ...item, ...localeItem } : item
+                )));
+            }
+
+            setPublishCandidate(localeItem?.is_published ? null : localeItem);
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Không kiểm tra được điều kiện phát hành.');
         } finally {
             setPublishChecking(false);
         }
     };
+
+    useEffect(() => {
+        if (!open) return undefined;
+
+        const refreshAfterExternalChange = () => {
+            if (document.visibilityState !== 'visible') return;
+
+            void loadLocales();
+
+            if (publishCandidate?.code) {
+                void loadPublishPreflight(publishCandidate.code);
+            }
+        };
+
+        window.addEventListener('focus', refreshAfterExternalChange);
+        document.addEventListener('visibilitychange', refreshAfterExternalChange);
+
+        return () => {
+            window.removeEventListener('focus', refreshAfterExternalChange);
+            document.removeEventListener('visibilitychange', refreshAfterExternalChange);
+        };
+    }, [open, theme?.key, publishCandidate?.code]);
 
     const requestPublishLocale = (localeItem) => {
         if (localeItem.is_published) {

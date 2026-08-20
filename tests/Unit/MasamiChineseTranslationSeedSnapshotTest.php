@@ -84,6 +84,17 @@ class MasamiChineseTranslationSeedSnapshotTest extends TestCase
         );
     }
 
+    public function test_snapshot_does_not_link_chinese_visitors_back_to_vietnamese_routes(): void
+    {
+        $json = json_encode(
+            $this->snapshot(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+        );
+
+        $this->assertStringNotContainsString('/vi/', $json);
+        $this->assertStringContainsString('/zh/', $json);
+    }
+
     /** @return array<string, mixed> */
     private function snapshot(): array
     {

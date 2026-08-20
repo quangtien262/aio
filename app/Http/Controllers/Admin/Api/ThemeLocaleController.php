@@ -65,7 +65,7 @@ class ThemeLocaleController
             'website_key' => $websiteKey,
             'locale' => $this->localeItemPayload($option, $theme, $readiness),
             'checked_at' => now()->toIso8601String(),
-        ]]);
+        ]])->header('Cache-Control', 'no-store, private');
     }
 
     public function store(Request $request, ThemeRegistry $themeRegistry): JsonResponse

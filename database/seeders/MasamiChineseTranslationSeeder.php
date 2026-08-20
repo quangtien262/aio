@@ -14,6 +14,7 @@ use App\Models\WebsiteLocale;
 use App\Support\FrontendLocalization;
 use App\Support\Localization\CmsPageLocalization;
 use App\Support\Localization\LandingPageLocalization;
+use App\Support\Localization\LocalizationReleaseReadiness;
 use App\Support\Localization\LocalizedContentRepository;
 use App\Support\Localization\WebsiteLocaleManager;
 use Illuminate\Database\Seeder;
@@ -28,11 +29,12 @@ class MasamiChineseTranslationSeeder extends Seeder
 
     private const TARGET_LOCALE = 'zh';
 
-    /** @var array{created:int,updated:int,preserved:int} */
+    /** @var array{created:int,updated:int,preserved:int,published:int} */
     private array $stats = [
         'created' => 0,
         'updated' => 0,
         'preserved' => 0,
+        'published' => 0,
     ];
 
     public function run(): void
@@ -46,19 +48,66 @@ class MasamiChineseTranslationSeeder extends Seeder
             $this->seedCmsPages((array) ($snapshot['cms_pages'] ?? []));
             $this->seedLandingPages((array) ($snapshot['landing_pages'] ?? []));
             $this->seedLandingBlocks((array) ($snapshot['landing_blocks'] ?? []));
+            $this->synchronizeSourceRevisions($snapshot);
+            $this->markTranslationsReady($snapshot);
+            $this->publishTargetLocale();
+            $this->publishTranslations($snapshot);
         });
 
         FrontendLocalization::flushCache();
 
         $this->command?->info(sprintf(
-            'Masami Chinese seed complete: %d created, %d machine drafts updated, %d human translations preserved.',
+            'Masami Chinese seed complete: %d created, %d machine translations updated, %d human translations preserved, %d translations published.',
             $this->stats['created'],
             $this->stats['updated'],
             $this->stats['preserved'],
+            $this->stats['published'],
         ));
-        $this->command?->warn(
-            'Chinese remains private. Machine translations are stored as machine_draft and must be reviewed before Ready/Publish.',
-        );
+        $this->command?->info('Chinese is public on the storefront. Internal /vi/ links were localized to /zh/.');
+    }
+
+    /** @param array<string, mixed> $snapshot */
+    private function synchronizeSourceRevisions(array $snapshot): void
+    {
+        foreach ((array) ($snapshot['content'] ?? []) as $entry) {
+            $this->contentTranslation($entry)->forceFill([
+                'source_revision' => (string) ($entry['source_revision'] ?? ''),
+            ])->save();
+        }
+
+        foreach ((array) ($snapshot['cms_pages'] ?? []) as $entry) {
+            CmsPageTranslation::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', self::WEBSITE_KEY)
+                ->where('cms_page_id', (string) ($entry['cms_page_id'] ?? ''))
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail()
+                ->forceFill([
+                    'source_revision' => (string) ($entry['source_revision'] ?? ''),
+                ])->save();
+        }
+
+        foreach ((array) ($snapshot['landing_pages'] ?? []) as $entry) {
+            LandingPageData::query()
+                ->withoutGlobalScopes()
+                ->where('landing_page_id', (string) ($entry['landing_page_id'] ?? ''))
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail()
+                ->forceFill([
+                    'source_revision' => (string) ($entry['source_revision'] ?? ''),
+                ])->save();
+        }
+
+        foreach ((array) ($snapshot['landing_blocks'] ?? []) as $entry) {
+            LandingPageBlockData::query()
+                ->withoutGlobalScopes()
+                ->where('landing_page_block_id', (string) ($entry['landing_page_block_id'] ?? ''))
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail()
+                ->forceFill([
+                    'source_revision' => (string) ($entry['source_revision'] ?? ''),
+                ])->save();
+        }
     }
 
     /** @param list<array<string, mixed>> $entries */
@@ -260,17 +309,237 @@ class MasamiChineseTranslationSeeder extends Seeder
             return;
         }
 
-        if ($locale->is_published) {
-            throw new RuntimeException(
-                'Refusing to replace Chinese content while the locale is public. Unpublish zh before running this seeder.',
-            );
-        }
-
         if (! $locale->is_enabled_for_editing) {
             $manager->updateLocale(self::WEBSITE_KEY, self::TARGET_LOCALE, [
                 'is_enabled_for_editing' => true,
             ]);
         }
+    }
+
+    /** @param array<string, mixed> $snapshot */
+    private function markTranslationsReady(array $snapshot): void
+    {
+        $repository = app(LocalizedContentRepository::class);
+        $pageLocalization = app(CmsPageLocalization::class);
+        $landingLocalization = app(LandingPageLocalization::class);
+
+        foreach ((array) ($snapshot['content'] ?? []) as $entry) {
+            $translation = $this->contentTranslation($entry);
+            $this->transitionToReady(
+                $translation,
+                fn () => $repository->transition($translation, TranslationStatus::Ready),
+            );
+        }
+
+        foreach ((array) ($snapshot['cms_pages'] ?? []) as $entry) {
+            $page = CmsPage::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', self::WEBSITE_KEY)
+                ->findOrFail((string) ($entry['cms_page_id'] ?? ''));
+            $translation = CmsPageTranslation::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', self::WEBSITE_KEY)
+                ->where('cms_page_id', $page->id)
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail();
+            $this->transitionToReady(
+                $translation,
+                fn () => $pageLocalization->transition($page, self::TARGET_LOCALE, TranslationStatus::Ready),
+            );
+        }
+
+        foreach ((array) ($snapshot['landing_blocks'] ?? []) as $entry) {
+            $block = $this->landingBlock($entry);
+            $translation = LandingPageBlockData::query()
+                ->withoutGlobalScopes()
+                ->where('landing_page_block_id', $block->id)
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail();
+            $this->transitionToReady(
+                $translation,
+                fn () => $landingLocalization->transitionBlock(
+                    $block,
+                    self::TARGET_LOCALE,
+                    TranslationStatus::Ready,
+                ),
+            );
+        }
+
+        foreach ((array) ($snapshot['landing_pages'] ?? []) as $entry) {
+            $page = $this->landingPage($entry);
+            $translation = LandingPageData::query()
+                ->withoutGlobalScopes()
+                ->where('landing_page_id', $page->id)
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail();
+            $this->transitionToReady(
+                $translation,
+                fn () => $landingLocalization->transitionPage(
+                    $page,
+                    self::TARGET_LOCALE,
+                    TranslationStatus::Ready,
+                ),
+            );
+        }
+    }
+
+    private function publishTargetLocale(): void
+    {
+        $locale = WebsiteLocale::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', self::WEBSITE_KEY)
+            ->where('locale', self::TARGET_LOCALE)
+            ->firstOrFail();
+
+        if (! $locale->is_published) {
+            $readiness = app(LocalizationReleaseReadiness::class)
+                ->report(self::WEBSITE_KEY, [self::TARGET_LOCALE])[self::TARGET_LOCALE] ?? [];
+            $this->command?->line('Chinese release readiness: '.json_encode([
+                'critical' => $readiness['critical'] ?? null,
+                'extended' => $readiness['extended'] ?? null,
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+            app(WebsiteLocaleManager::class)->updateLocale(
+                self::WEBSITE_KEY,
+                self::TARGET_LOCALE,
+                ['is_published' => true],
+            );
+        }
+    }
+
+    /** @param array<string, mixed> $snapshot */
+    private function publishTranslations(array $snapshot): void
+    {
+        $repository = app(LocalizedContentRepository::class);
+        $pageLocalization = app(CmsPageLocalization::class);
+        $landingLocalization = app(LandingPageLocalization::class);
+
+        foreach ((array) ($snapshot['content'] ?? []) as $entry) {
+            $translation = $this->contentTranslation($entry);
+            $this->transitionToPublished(
+                $translation,
+                fn () => $repository->transition($translation, TranslationStatus::Published),
+            );
+        }
+
+        foreach ((array) ($snapshot['cms_pages'] ?? []) as $entry) {
+            $page = CmsPage::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', self::WEBSITE_KEY)
+                ->findOrFail((string) ($entry['cms_page_id'] ?? ''));
+            $translation = CmsPageTranslation::query()
+                ->withoutGlobalScopes()
+                ->where('website_key', self::WEBSITE_KEY)
+                ->where('cms_page_id', $page->id)
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail();
+            $this->transitionToPublished(
+                $translation,
+                fn () => $pageLocalization->transition(
+                    $page,
+                    self::TARGET_LOCALE,
+                    TranslationStatus::Published,
+                ),
+            );
+        }
+
+        // Landing pages require every visible block to be public first.
+        foreach ((array) ($snapshot['landing_blocks'] ?? []) as $entry) {
+            $block = $this->landingBlock($entry);
+            $translation = LandingPageBlockData::query()
+                ->withoutGlobalScopes()
+                ->where('landing_page_block_id', $block->id)
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail();
+            $this->transitionToPublished(
+                $translation,
+                fn () => $landingLocalization->transitionBlock(
+                    $block,
+                    self::TARGET_LOCALE,
+                    TranslationStatus::Published,
+                ),
+            );
+        }
+
+        foreach ((array) ($snapshot['landing_pages'] ?? []) as $entry) {
+            $page = $this->landingPage($entry);
+            $translation = LandingPageData::query()
+                ->withoutGlobalScopes()
+                ->where('landing_page_id', $page->id)
+                ->where('locale', self::TARGET_LOCALE)
+                ->firstOrFail();
+            $this->transitionToPublished(
+                $translation,
+                fn () => $landingLocalization->transitionPage(
+                    $page,
+                    self::TARGET_LOCALE,
+                    TranslationStatus::Published,
+                ),
+            );
+        }
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function contentTranslation(array $entry): ContentTranslation
+    {
+        return ContentTranslation::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', self::WEBSITE_KEY)
+            ->where('resource_type', (string) ($entry['resource_type'] ?? ''))
+            ->where('resource_id', (string) ($entry['resource_id'] ?? ''))
+            ->where('locale', self::TARGET_LOCALE)
+            ->firstOrFail();
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function landingPage(array $entry): LandingPage
+    {
+        return LandingPage::query()
+            ->withoutGlobalScopes()
+            ->where('website_key', self::WEBSITE_KEY)
+            ->findOrFail((string) ($entry['landing_page_id'] ?? ''));
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function landingBlock(array $entry): LandingPageBlock
+    {
+        return LandingPageBlock::query()
+            ->withoutGlobalScopes()
+            ->whereHas('landingPage', fn ($query) => $query
+                ->withoutGlobalScopes()
+                ->where('website_key', self::WEBSITE_KEY))
+            ->findOrFail((string) ($entry['landing_page_block_id'] ?? ''));
+    }
+
+    private function transitionToReady(object $translation, callable $transition): void
+    {
+        if (in_array($this->statusOf($translation), [
+            TranslationStatus::Ready,
+            TranslationStatus::Published,
+        ], true)) {
+            return;
+        }
+
+        $transition();
+    }
+
+    private function transitionToPublished(object $translation, callable $transition): void
+    {
+        if ($this->statusOf($translation) === TranslationStatus::Published) {
+            return;
+        }
+
+        $transition();
+        $this->stats['published']++;
+    }
+
+    private function statusOf(object $translation): TranslationStatus
+    {
+        $status = $translation->translation_status;
+
+        return $status instanceof TranslationStatus
+            ? $status
+            : TranslationStatus::from((string) $status);
     }
 
     private function preserveHumanTranslation(?object $translation): bool
