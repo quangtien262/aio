@@ -1,0 +1,1517 @@
+{
+    "metadata": {
+        "website_key": "website-main",
+        "source_locale": "vi",
+        "target_locale": "zh",
+        "generated_at": "2026-08-20T02:06:53+00:00",
+        "translator": "Google Translate vi -> zh-CN; static snapshot",
+        "request_count": 349
+    },
+    "content": [
+        {
+            "resource_type": "catalog_category",
+            "resource_id": "1",
+            "source_revision": "5e956d596ac112c1d881fb8fb65fd3f1dd7a0cd0b5be3bae20ab3fd09a265a4d",
+            "payload": {
+                "name": "建筑和地基",
+                "description": "建筑及地基产品：工厂沥青、工厂地面防水、工厂屋顶防热、防渗漏"
+            }
+        },
+        {
+            "resource_type": "catalog_category",
+            "resource_id": "2",
+            "source_revision": "e579e0a0d71ad0947679e15dd1ae0767f4c7eebdbd59f3a642fee2eba19f6277",
+            "payload": {
+                "name": "操作",
+                "description": "润滑剂、冷却剂和润滑脂等运营产品组"
+            }
+        },
+        {
+            "resource_type": "catalog_category",
+            "resource_id": "3",
+            "source_revision": "854fb73f0b31d9936a9f643723bb97bf2a99dfa2ce8ff6773f09140fdfca0e6e",
+            "payload": {
+                "name": "生产化学品",
+                "description": "生产化学品：烧碱、碱性酸、工业洗涤剂"
+            }
+        },
+        {
+            "resource_type": "catalog_category",
+            "resource_id": "4",
+            "source_revision": "923490103d331ab91018ba29f2c25fbf7a8b98829bb26efbfe3bceec24d4f76a",
+            "payload": {
+                "name": "生产燃料",
+                "description": "生产燃料：LNG、CNG、LPG、LH2、工业气体"
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "1",
+            "source_revision": "df7cad41a85a603d94c2d1b63ca80e1517c49752587de6211b7553c05688ca9d",
+            "payload": {
+                "name": "工厂沥青施工",
+                "short_description": "MASAMI 专门为工厂、工业园区、内部道路、停车场和仓库建造沥青。高品质的沥青路面解决方案，承载能力高，施工速度快，确保进度和长期耐久性。",
+                "detail_content": "<p><strong>MASAMI</strong> 以专业的流程为工厂、工业园区和停车场 <strong>提供沥青施工服务</strong> ，满足耐久性、承载能力和施工进度的要求。我们采用优质沥青材料与现代机械系统相结合，打造出抗下沉、抗裂并能承受重型车辆交通的平坦表面。</p>\n\n<h2>MASAMI 沥青施工服务</h2>\n\n<ul>\n<li>工厂内部道路施工。</li>\n<li>集装箱卡车堆场建设。</li>\n<li>建造仓库。</li>\n<li>建设工业园区道路。</li>\n<li>翻新旧沥青路面。</li>\n<li>修补坑洼，修复路面。</li>\n</ul>\n\n<h2>优点</h2>\n\n<ul>\n<li>施工速度快。</li>\n<li>高耐用性。</li>\n<li>负载能力大。</li>\n<li>美观、防滑的表面。</li>\n<li>易于维护和修理。</li>\n</ul>\n\n<h2>为什么选择MASAMI？</h2>\n\n<p>经验丰富的工程师团队、现代化机械和严格的质量控制程序帮助 MASAMI 带来符合技术标准的沥青项目，确保进度并优化企业成本。</p>",
+                "meta_title": "工厂沥青施工",
+                "meta_description": "MASAMI 专门为工厂、工业园区、内部道路、停车场和仓库建造沥青。高品质的沥青路面解决方案，承载能力高，施工速度快，确保进度和长期耐久性。",
+                "meta_keywords": "工厂沥青, 沥青施工, 工厂沥青摊铺, 工业园区沥青, 工厂内部道路建设, 集装箱堆场建设, 沥青修补, 仓库沥青, 工业沥青, masami",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "10",
+            "source_revision": "c2be8a452c6c6eeeb0ccf3c7cdc7c9256508647d478768fc6e74c9c4e79de02a",
+            "payload": {
+                "name": "LNG（液化天然气）",
+                "short_description": "MASAMI 提供高质量的液化天然气，为锅炉、熔炉、工厂和工业园区提供服务。清洁燃料解决方案有助于降低运营成本并减少排放。",
+                "detail_content": "<h1>液化天然气——工业生产的清洁燃料来源</h1>\n\n<p>LNG（液化天然气）是在极低温度下液化的天然气，以减少体积并便于储存和运输。这是一种清洁、高性能的燃料来源，许多企业正在选择它来替代传统燃料。</p>\n\n<h2>应用</h2>\n\n<ul>\n<li>工业锅炉</li>\n<li>熔炉。</li>\n<li>食品工厂。</li>\n<li>纺织染色</li>\n<li>水泥。</li>\n<li>钢铁</li>\n</ul>\n\n<h2>优点</h2>\n\n<ul>\n<li>减少排放。</li>\n<li>高性能。</li>\n<li>运营成本低。</li>\n<li>环保。</li>\n</ul>",
+                "meta_title": "LNG（液化天然气）",
+                "meta_description": "MASAMI 提供高质量的液化天然气，为锅炉、熔炉、工厂和工业园区提供服务。清洁燃料解决方案有助于降低运营成本并减少排放。",
+                "meta_keywords": "LNG、液化天然气、工业LNG、LNG燃料、LNG站、LNG储罐、液化天然气、正美",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "11",
+            "source_revision": "681656b169343e841b03300edf3eba582477eda61da9f76cca75889698d9606d",
+            "payload": {
+                "name": "CNG（压缩天然气）",
+                "short_description": "MASAMI向工厂和工业园区供应CNG，有助于节省燃料、减少排放并提高生产效率。",
+                "detail_content": "<h1>CNG – 经济环保的能源解决方案</h1>\n\n<p>CNG是经高压压缩的天然气，用于满足工业生产和运营需要。对于许多想要降低燃料成本和保护环境的企业来说，这是一个合适的解决方案。</p>\n\n<h2>优点</h2>\n\n<ul>\n<li>成本合理。</li>\n<li>燃烧干净。</li>\n<li>易于运输。</li>\n<li>按照标准使用是安全的。</li>\n</ul>",
+                "meta_title": "CNG（压缩天然气）",
+                "meta_description": "MASAMI向工厂和工业园区供应CNG，有助于节省燃料、减少排放并提高生产效率。",
+                "meta_keywords": "CNG、压缩天然气、压缩天然气、CNG燃料、工业压缩空气、工厂CNG、正美",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "12",
+            "source_revision": "7bf7f57cb3f60548cb10dd7e25f3cf6773ee237ead78a9b5c2b8c39255c9042c",
+            "payload": {
+                "name": "工业液化石油气 - 工厂用液化气",
+                "short_description": "MASAMI为工厂、工业炉灶、锅炉和生产线提供高品质的工业液化石油气、液化石油气供气解决方案。",
+                "detail_content": "<h1>工业液化石油气 - 企业稳定的能源</h1>\n\n<p>LPG（液化石油气）因其高生热能力、易于运输且适合许多生产线而成为工业上流行的燃料来源。</p>\n\n<h2>应用</h2>\n\n<ul>\n<li>工业厨房</li>\n<li>锅炉</li>\n<li>干燥箱</li>\n<li>食品工厂。</li>\n<li>酒店</li>\n</ul>",
+                "meta_title": "工业液化石油气 - 工厂用液化气",
+                "meta_description": "MASAMI为工厂、工业炉灶、锅炉和生产线提供高品质的工业液化石油气、液化石油气供气解决方案。",
+                "meta_keywords": "LPG、工业气体、液化石油气、工厂LPG、工业LPG、LPG罐、LPG系统、masami",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "13",
+            "source_revision": "611fd8af2f67339a6bc5d6af631fd4e9de70d949fc63b92fd889b5e65c62135a",
+            "payload": {
+                "name": "LH2（液氢）",
+                "short_description": "MASAMI 为研究、高科技产业和未来清洁能源解决方案提供液氢 (LH2)。",
+                "detail_content": "<h1>液氢 (LH2) – 未来的能源</h1>\n\n<p>液氢（LH2）是一种高能量密度的清洁燃料来源，用于航空航天、高科技和新一代能源系统。</p>\n\n<h2>优点</h2>\n\n<ul>\n<li>使用时不会排放二氧化碳。</li>\n<li>能源效率高。</li>\n<li>符合绿色转型趋势。</li>\n</ul>",
+                "meta_title": "LH2（液氢）",
+                "meta_description": "MASAMI 为研究、高科技产业和未来清洁能源解决方案提供液氢 (LH2)。",
+                "meta_keywords": "液氢、LH2、液氢、氢燃料、工业氢、masami",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "14",
+            "source_revision": "260afd7800aa6f3c25bbc2fdea77efafcefdf04ba44aac9d864199b16e6b5844",
+            "payload": {
+                "name": "工业气体",
+                "short_description": "MASAMI 提供工业气体氧气、氮气、氩气、二氧化碳以及许多用于生产、医疗保健、食品和机械工程的专用气体。",
+                "detail_content": "<h1>工业气体 – 现代生产的综合解决方案</h1>\n\n<p>MASAMI提供多种高品质工业气体，满足机械、电子、食品、医疗、化工等众多行业的需求。</p>\n\n<h2>产品</h2>\n\n<ul>\n<li>氧气 (O2)。</li>\n<li>氮气 (N2)。</li>\n<li>氩气 (Ar)。</li>\n<li>二氧化碳。</li>\n<li>氦气。</li>\n<li>氢气</li>\n</ul>\n\n<h2>承诺</h2>\n\n<ul>\n<li>供应稳定。</li>\n<li>质量符合标准。</li>\n<li>经过全面认证。</li>\n<li>专业的技术支持和运输。</li>\n</ul>",
+                "meta_title": "工业气体",
+                "meta_description": "MASAMI 提供工业气体氧气、氮气、氩气、二氧化碳以及许多用于生产、医疗保健、食品和机械工程的专用气体。",
+                "meta_keywords": "工业气体、工业氧气、工业氮气、氩气、CO2、O2气体、N2气体、Ar气体、masami",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "15",
+            "source_revision": "72d9f2d15157073cf8c55a36a0de473b81fb8d3adb152e1f39b297a7816b65f8",
+            "payload": {
+                "name": "LPG（液化石油气）",
+                "short_description": "了解什么是液化石油气、其优势、应用以及工业液化石油气系统解决方案。 MASAMI 专门从事咨询、设计、供应和安装安全有效的液化石油气系统。",
+                "detail_content": "<p><strong>LPG（液化石油气）</strong> 又称 <strong>液化石油气</strong>，是广泛应用于工业、商业和民用的清洁燃料来源之一。液化石油气凭借燃烧效率高、环境友好、易于储存和运输等优点，正在成为许多企业向现代能源解决方案转型的最佳选择。</p>\n\n<p>在 <strong>MASAMI越南</strong>，我们提供从咨询、系统设计、液化石油气供应到供气系统建设、安装和维护的全面解决方案，帮助企业优化运营成本并确保安全生产。</p>\n\n<hr>\n\n<h2>什么是液化石油气？</h2>\n\n<p>LPG（液化石油气）是烃类气体的混合物，主要成分为 <strong>丙烷(C₃H₈)</strong> 和 <strong>丁烷(C₄H₁₀)</strong>，在压力下液化以减少体积，有助于储存和运输变得更加方便。</p>\n\n<p>当从储罐或储罐中取出时，液化石油气将从液态变为气态，并用作燃烧设备、锅炉、工业炉灶或生产线的燃料。</p>\n\n<hr>\n\n<h2>液化石油气的优点</h2>\n\n<ul>\n<li>发热效率高。</li>\n<li>粉尘及有害气体排放量低。</li>\n<li>与许多传统燃料相比，可减少二氧化碳排放。</li>\n<li>易于储存和运输。</li>\n<li>供应稳定。</li>\n<li>易于控制流量和压力。</li>\n<li>投资成本合理。</li>\n<li>适用于许多制造行业。</li>\n</ul>\n\n<hr>\n\n<h2>液化石油气在工业中的应用</h2>\n\n<p>目前，液化石油气广泛应用于许多制造和服务领域。</p>\n\n<h3>工厂制造</h3>\n\n<ul>\n<li>工业锅炉。</li>\n<li>干燥箱。</li>\n<li>熔炉。</li>\n<li>加热线。</li>\n</ul>\n\n<h3>食品工业</h3>\n\n<ul>\n<li>食品加工厂。</li>\n<li>糖果生产。</li>\n<li>饮料。</li>\n<li>冷冻食物。</li>\n</ul>\n\n<h3>HORECA 行业</h3>\n\n<ul>\n<li>酒店。</li>\n<li>餐厅。</li>\n<li>度假村。</li>\n<li>工业厨房。</li>\n<li>餐饮连锁店。</li>\n</ul>\n\n<h3>建筑材料行业</h3>\n\n<ul>\n<li>砖生产。</li>\n<li>陶瓷。</li>\n<li>眼镜。</li>\n<li>油漆。</li>\n</ul>\n\n<h3>机械工业</h3>\n\n<ul>\n<li>金属加热。</li>\n<li>焊接和切割。</li>\n<li>模具干燥。</li>\n</ul>\n\n<hr>\n\n<h2>工业液化石油气供应系统包括哪些内容？</h2>\n\n<p>一个完整的工业液化石油气系统通常包括：</p>\n\n<ul>\n<li>液化石油气储罐或钢瓶。</li>\n<li>蒸发器。</li>\n<li>加压系统。</li>\n<li>供气管。</li>\n<li>锁阀和安全阀。</li>\n<li>压力表。</li>\n<li>气体泄漏检测装置。</li>\n<li>紧急关闭和警告系统。</li>\n</ul>\n\n<hr>\n\n<h2>投资专业液化石油气系统的好处</h2>\n\n<p>投资根据标准设计的液化石油气系统可为企业带来许多长期利益：</p>\n\n<ul>\n<li>确保稳定的燃料来源。</li>\n<li>减少燃油损失。</li>\n<li>提高生产效率。</li>\n<li>节省运营成本。</li>\n<li>确保劳动安全。</li>\n<li>易于维护和扩展。</li>\n<li>延长设备寿命。</li>\n<li>符合消防和技术标准。</li>\n</ul>\n\n<hr>\n\n<h2>MASAMI 的液化石油气服务</h2>\n\n<p>MASAMI 为工业液化石油气系统提供同步解决方案，包括：</p>\n\n<ul>\n<li>液化石油气使用解决方案咨询。</li>\n<li>施工调查。</li>\n<li>液化石油气系统设计。</li>\n<li>供应坦克和设备。</li>\n<li>施工和安装。</li>\n<li>检查和试运行。</li>\n<li>定期维护。</li>\n<li>24/7 技术支持。</li>\n</ul>\n\n<hr>\n\n<h2>MASAMI 的实施流程</h2>\n\n<ol>\n<li>接收请求。</li>\n<li>现状调查。</li>\n<li>解决方案咨询。</li>\n<li>系统设计。</li>\n<li>报价和规划。</li>\n<li>施工和安装。</li>\n<li>检查并试运行。</li>\n<li>验收并移交。</li>\n<li>维护和技术支持。</li>\n</ol>\n\n<hr>\n\n<h2>为什么要选择MASAMI？</h2>\n\n<ul>\n<li>经验丰富的工程师团队。</li>\n<li>每个项目的优化设计。</li>\n<li>施工符合技术标准。</li>\n<li>正品。</li>\n<li>专业的工作流程。</li>\n<li>投资成本合理。</li>\n<li>明确的保修。</li>\n<li>长期陪伴客户。</li>\n</ul>\n\n<hr>\n\n<h2>液化石油气使用的未来趋势</h2>\n\n<p>在企业日益关注能源效率和可持续发展的背景下，液化石油气凭借其减少排放的能力、合理的投资成本以及许多生产领域的灵活性，继续成为首选燃料来源。</p>\n\n<p>结合现代系统设计解决方案，液化石油气可帮助企业提高竞争力、优化运营绩效并满足环保要求。</p>\n\n<hr>\n\n<h2>结论</h2>\n\n<p>液化石油气是一种清洁、高效的燃料来源，适用于许多制造、商业和服务业。投资正确设计的液化石油气系统将有助于企业节省成本、提高生产效率并确保运营安全。</p>\n\n<p>如果您的企业需要 <strong>工业液化石油气系统的咨询、设计、供应或安装</strong>，请联系 <strong>MASAMI Vietnam</strong>。我们致力于为每个项目提供最佳、安全和可持续的解决方案。</p>\n\n<blockquote>\n<p><strong>MASAMI – 适用于所有企业的全面、安全和有效的液化石油气解决方案。</strong></p>\n</blockquote>",
+                "meta_title": "LPG（液化石油气）",
+                "meta_description": "了解什么是液化石油气、其优势、应用以及工业液化石油气系统解决方案。 MASAMI 专门从事咨询、设计、供应和安装安全有效的液化石油气系统。",
+                "meta_keywords": null,
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "16",
+            "source_revision": "e854d074d9a91c7e2286c7c9d82ee711863f2a034bf059301fb5f963426a2932",
+            "payload": {
+                "name": "HORECA 清洁化学品 - MASAMI 的清洁、消毒和同步操作解决方案",
+                "short_description": "适用于酒店、餐厅、度假村、咖啡馆、中央厨房、工业厨房和烹饪服务连锁店的解决方案组合。",
+                "detail_content": "<div style=\"box-sizing:border-box;width:100%;margin:0;padding:0;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#253247;line-height:1.75;\">\n\n    <!-- HERO -->\n    <div style=\"box-sizing:border-box;width:100%;padding:68px 22px;background:linear-gradient(135deg,#07356f 0%,#0b559c 58%,#168d54 100%);color:#ffffff;\">\n        <div style=\"box-sizing:border-box;max-width:1180px;margin:0 auto;text-align:center;\">\n            <div style=\"display:inline-block;margin-bottom:16px;padding:8px 18px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(255,255,255,.1);font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;\">\n                HORECA 专业化学品解决方案\n            </div>\n\n            <h1 style=\"max-width:980px;margin:0 auto;color:#ffffff;font-size:42px;line-height:1.28;font-weight:800;\">\n                HORECA 清洁化学品 - MASAMI 的清洁、消毒和同步操作解决方案\n            </h1>\n\n            <p style=\"max-width:880px;margin:20px auto 0;color:rgba(255,255,255,.88);font-size:18px;line-height:1.8;\">\n                酒店、餐厅、度假村、咖啡馆、中央厨房、\n                工业厨房和烹饪服务链。\n            </p>\n\n            <div style=\"display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:28px;\">\n                <span style=\"display:inline-block;padding:10px 16px;border-radius:10px;background:rgba(255,255,255,.12);font-size:14px;font-weight:700;\">强化清洁</span>\n                <span style=\"display:inline-block;padding:10px 16px;border-radius:10px;background:rgba(255,255,255,.12);font-size:14px;font-weight:700;\">表面消毒</span>\n                <span style=\"display:inline-block;padding:10px 16px;border-radius:10px;background:rgba(255,255,255,.12);font-size:14px;font-weight:700;\">个人卫生</span>\n                <span style=\"display:inline-block;padding:10px 16px;border-radius:10px;background:rgba(255,255,255,.12);font-size:14px;font-weight:700;\">加药设备</span>\n                <span style=\"display:inline-block;padding:10px 16px;border-radius:10px;background:rgba(255,255,255,.12);font-size:14px;font-weight:700;\">流程咨询</span>\n            </div>\n        </div>\n    </div>\n\n    <div style=\"box-sizing:border-box;max-width:1180px;margin:0 auto;padding:58px 22px;\">\n\n        <!-- INTRO -->\n        <div style=\"box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:stretch;gap:24px;margin-bottom:50px;\">\n            <div style=\"box-sizing:border-box;flex:1 1 620px;min-width:280px;padding:32px;border:1px solid #dbe6ef;border-radius:22px;background:#ffffff;box-shadow:0 12px 34px rgba(16,24,40,.07);\">\n                <div style=\"margin-bottom:10px;color:#168d54;font-size:14px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;\">解决方案概述</div>\n                <h2 style=\"margin:0 0 16px;color:#0a3c78;font-size:31px;line-height:1.38;font-weight:800;\">\n                    清洁的环境创造良好的体验并保护品牌声誉\n                </h2>\n                <p style=\"margin:0 0 14px;color:#58677a;font-size:16px;\">\n                    在餐饮行业，卫生质量直接影响客户的感知，\n                    设施的运营效率、品牌形象和控制风险的能力。\n                </p>\n                <p style=\"margin:0;color:#58677a;font-size:16px;\">\n                    MASAMI 旨在为每个使用领域提供化学溶液系统，\n                    包含稀释说明、清洁程序、支持工具和成本控制选项。\n                </p>\n            </div>\n\n            <div style=\"box-sizing:border-box;flex:1 1 360px;min-width:280px;padding:30px;border-radius:22px;background:linear-gradient(145deg,#f2f7fd 0%,#ffffff 55%,#eef9f3 100%);border:1px solid #dbe6ef;\">\n                <h3 style=\"margin:0 0 16px;color:#0a3c78;font-size:22px;font-weight:800;\">MASAMI 注重 5 个价值观</h3>\n                <div style=\"margin-bottom:11px;padding:13px 15px;border-radius:12px;background:#ffffff;border-left:4px solid #0a4b8d;color:#47566a;\"><strong>安全：</strong> 选择正确的产品、正确的表面和正确的浓度。</div>\n                <div style=\"margin-bottom:11px;padding:13px 15px;border-radius:12px;background:#ffffff;border-left:4px solid #168d54;color:#47566a;\"><strong>功效：</strong> 处理正确类型的污渍并减少重复操作。</div>\n                <div style=\"margin-bottom:11px;padding:13px 15px;border-radius:12px;background:#ffffff;border-left:4px solid #0a4b8d;color:#47566a;\"><strong>节省：</strong> 控制化学品消耗的用量和用量。</div>\n                <div style=\"margin-bottom:11px;padding:13px 15px;border-radius:12px;background:#ffffff;border-left:4px solid #168d54;color:#47566a;\"><strong>同步：</strong> 为每个操作区域构建进程。</div>\n                <div style=\"padding:13px 15px;border-radius:12px;background:#ffffff;border-left:4px solid #0a4b8d;color:#47566a;\"><strong>支持：</strong> 用户手册和需要时的人员培训。</div>\n            </div>\n        </div>\n\n        <!-- CATEGORY NAV -->\n        <div style=\"box-sizing:border-box;margin-bottom:50px;padding:28px;border-radius:22px;background:#f6f9fc;border:1px solid #dde7ef;\">\n            <div style=\"text-align:center;margin-bottom:22px;\">\n                <div style=\"color:#168d54;font-size:14px;font-weight:800;text-transform:uppercase;\">解决方案类别</div>\n                <h2 style=\"margin:7px 0 0;color:#0a3c78;font-size:30px;line-height:1.35;font-weight:800;\">HORECA 10 个关键化学组</h2>\n            </div>\n\n            <div style=\"display:flex;flex-wrap:wrap;gap:12px;justify-content:center;\">\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">01. 房间清洁</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">02. 厨房泡沫清洁</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">03. 厨房强化清洁</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">04. 手动洗碗</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">05. 机洗餐具</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">06. 表面消毒</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">07. 洗手和手部卫生</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">08. 洗手液</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">09. 专业产品</span>\n                <span style=\"padding:10px 14px;border-radius:10px;background:#ffffff;border:1px solid #d8e3ec;color:#0a3c78;font-size:14px;font-weight:700;\">10. 公共区域清洁</span>\n            </div>\n        </div>\n\n        <!-- 01 -->\n        <div style=\"box-sizing:border-box;margin-bottom:28px;padding:32px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n            <div style=\"display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;\">\n                <div style=\"flex:0 0 72px;width:72px;height:72px;border-radius:18px;background:#eaf2fb;color:#0a4b8d;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;\">01</div>\n                <div style=\"flex:1 1 700px;min-width:260px;\">\n                    <h2 style=\"margin:0 0 10px;color:#0a3c78;font-size:28px;line-height:1.4;font-weight:800;\">清洁房间和住宿区域的化学品</h2>\n                    <p style=\"margin:0 0 16px;color:#59687a;font-size:16px;\">维护客厅、浴室和室内表面的解决方案 始终清洁、明亮、宜人经验。</p>\n                    <div style=\"display:flex;flex-wrap:wrap;gap:14px;\">\n                        <div style=\"box-sizing:border-box;flex:1 1 250px;padding:18px;border-radius:15px;background:#f7f9fc;\">\n                            <strong style=\"display:block;color:#0a3c78;font-size:16px;\">中性多用途清洁剂</strong>\n                            <span style=\"display:block;margin-top:6px;color:#667487;font-size:14px;\">适用于玻璃、塑料、瓷砖、油漆表面和防水家具。</span>\n                        </div>\n                        <div style=\"box-sizing:border-box;flex:1 1 250px;padding:18px;border-radius:15px;background:#f7f9fc;\">\n                            <strong style=\"display:block;color:#0a3c78;font-size:16px;\">碱性厕所清洁剂</strong>\n                            <span style=\"display:block;margin-top:6px;color:#667487;font-size:14px;\">有助于去除皂垢、身体油脂和日常有机污渍。</span>\n                        </div>\n                        <div style=\"box-sizing:border-box;flex:1 1 250px;padding:18px;border-radius:15px;background:#f7f9fc;\">\n                            <strong style=\"display:block;color:#0a3c78;font-size:16px;\">酸性矿物垢清洁剂</strong>\n                            <span style=\"display:block;margin-top:6px;color:#667487;font-size:14px;\">用于水垢、水渍和合适的耐酸表面。</span>\n                        </div>\n                        <div style=\"box-sizing:border-box;flex:1 1 250px;padding:18px;border-radius:15px;background:#f7f9fc;\">\n                            <strong style=\"display:block;color:#0a3c78;font-size:16px;\">玻璃清洁剂和除臭剂溶液</strong>\n                            <span style=\"display:block;margin-top:6px;color:#667487;font-size:14px;\">帮助玻璃快速干燥，限制条纹并改善房间、走廊和卫生间的气味。</span>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n\n        <!-- 02 -->\n        <div style=\"box-sizing:border-box;margin-bottom:28px;padding:32px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n            <div style=\"display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;\">\n                <div style=\"flex:0 0 72px;width:72px;height:72px;border-radius:18px;background:#edf9f2;color:#168d54;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;\">02</div>\n                <div style=\"flex:1 1 700px;min-width:260px;\">\n                    <h2 style=\"margin:0 0 10px;color:#0a3c78;font-size:28px;line-height:1.4;font-weight:800;\">起泡厨房清洁化学品</h2>\n                    <p style=\"margin:0 0 16px;color:#59687a;font-size:16px;\">适用于中型、大型或中央厨房的地板、墙壁、电器、准备区和烹饪区。</p>\n                    <ul style=\"margin:0;padding-left:22px;color:#59687a;font-size:15px;\">\n                        <li style=\"margin-bottom:8px;\"><strong>弱碱性发泡剂：</strong> 用于日常清洁和常见油渍。</li>\n                        <li style=\"margin-bottom:8px;\"><strong>强碱性发泡剂：</strong> 处理长期粘附的脂肪、蛋白质、油类和有机污垢。</li>\n                        <li style=\"margin-bottom:8px;\"><strong>含有抗菌活性成分的泡沫：</strong> 根据适当的程序支持清洁和微生物控制。</li>\n                        <li><strong>发泡酸：</strong> 有助于去除矿物质沉积物、硬水沉积物和无机膜。</li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n\n        <!-- 03 -->\n        <div style=\"box-sizing:border-box;margin-bottom:28px;padding:32px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n            <div style=\"display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;\">\n                <div style=\"flex:0 0 72px;width:72px;height:72px;border-radius:18px;background:#eaf2fb;color:#0a4b8d;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;\">03</div>\n                <div style=\"flex:1 1 700px;min-width:260px;\">\n                    <h2 style=\"margin:0 0 10px;color:#0a3c78;font-size:28px;line-height:1.4;font-weight:800;\">强化厨房清洁化学品</h2>\n                    <p style=\"margin:0 0 16px;color:#59687a;font-size:16px;\">适用于烤箱、烤架、油炸锅、托盘、有烧焦残渣的设备以及需要浸泡和清洁的部件的解决方案。</p>\n                    <div style=\"padding:20px;border-radius:15px;background:linear-gradient(135deg,#f2f7fd,#f1faf5);border-left:5px solid #168d54;color:#526174;\">\n                        <strong style=\"color:#0a3c78;\">推荐产品组：</strong>\n                        强碱性无泡除垢剂；设备浸泡液；\n                        能够保护铝的清洁剂；合适的表面增白剂；\n                        用于清洁烤箱、托盘和不锈钢器具的化学品。\n                    </div>\n                </div>\n            </div>\n        </div>\n\n        <!-- 04 -->\n        <div style=\"box-sizing:border-box;margin-bottom:28px;padding:32px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n            <div style=\"display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;\">\n                <div style=\"flex:0 0 72px;width:72px;height:72px;border-radius:18px;background:#edf9f2;color:#168d54;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;\">04</div>\n                <div style=\"flex:1 1 700px;min-width:260px;\">\n                    <h2 style=\"margin:0 0 10px;color:#0a3c78;font-size:28px;line-height:1.4;font-weight:800;\">洗碗液、眼镜和工艺工具</h2>\n                    <p style=\"margin:0 0 14px;color:#59687a;font-size:16px;\">浓缩产品有助于去除盘子、杯子、加工器具和工作台上的油脂、食物残渣和异味。</p>\n                    <ul style=\"margin:0;padding-left:22px;color:#59687a;font-size:15px;\">\n                        <li style=\"margin-bottom:8px;\">中性 pH 值洗碗液，适合经常使用。</li>\n                        <li style=\"margin-bottom:8px;\">专用杯子清洁液，支持光亮表面并限制保鲜膜。</li>\n                        <li>该产品适用于餐厅厨房、酒吧、食堂和工业厨房。</li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n\n        <!-- 05 -->\n        <div style=\"box-sizing:border-box;margin-bottom:28px;padding:32px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n            <div style=\"display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;\">\n                <div style=\"flex:0 0 72px;width:72px;height:72px;border-radius:18px;background:#eaf2fb;color:#0a4b8d;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;\">05</div>\n                <div style=\"flex:1 1 700px;min-width:260px;\">\n                    <h2 style=\"margin:0 0 10px;color:#0a3c78;font-size:28px;line-height:1.4;font-weight:800;\">洗碗机和玻璃清洗机化学品</h2>\n                    <p style=\"margin:0 0 16px;color:#59687a;font-size:16px;\">根据水质、机器类型、洗涤能力和实际污垢程度构建解决方案系统。</p>\n                    <div style=\"display:flex;flex-wrap:wrap;gap:14px;\">\n                        <div style=\"flex:1 1 250px;padding:18px;border-radius:15px;background:#f7f9fc;\"><strong style=\"color:#0a3c78;\">主要洗涤剂</strong><br><span style=\"color:#667487;font-size:14px;\">支持去除油脂、淀粉、蛋白质和食物残渣。</span></div>\n                        <div style=\"flex:1 1 250px;padding:18px;border-radius:15px;background:#f7f9fc;\"><strong style=\"color:#0a3c78;\">漂洗助剂</strong><br><span style=\"color:#667487;font-size:14px;\">帮助快速排水、帮助干燥并减少餐具上的条纹。</span></div>\n                        <div style=\"flex:1 1 250px;padding:18px;border-radius:15px;background:#f7f9fc;\"><strong style=\"color:#0a3c78;\">专用玻璃清洁剂</strong><br><span style=\"color:#667487;font-size:14px;\">优先保护杯子的表面和透明度。</span></div>\n                    </div>\n                </div>\n            </div>\n        </div>\n\n        <!-- 06 -->\n        <div style=\"box-sizing:border-box;margin-bottom:28px;padding:32px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n            <div style=\"display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;\">\n                <div style=\"flex:0 0 72px;width:72px;height:72px;border-radius:18px;background:#edf9f2;color:#168d54;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;\">06</div>\n                <div style=\"flex:1 1 700px;min-width:260px;\">\n                    <h2 style=\"margin:0 0 10px;color:#0a3c78;font-size:28px;line-height:1.4;font-weight:800;\">表面消毒剂</h2>\n                    <p style=\"margin:0 0 16px;color:#59687a;font-size:16px;\">用于准备台、把手、吧台、设备、高接触区域以及厨房或服务区域的合适表面。</p>\n                    <ul style=\"margin:0;padding-left:22px;color:#59687a;font-size:15px;\">\n                        <li style=\"margin-bottom:8px;\"><strong>酒精基溶液：</strong> 干燥速度快，适合在兼容表面上快速处理。</li>\n                        <li style=\"margin-bottom:8px;\"><strong>QAC 溶液或等效活性成分：</strong> 根据指示的浓度和接触时间使用。</li>\n                        <li><strong>使用方法：</strong> 根据产品类型和设备喷洒、擦拭或浸泡。</li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n\n        <!-- 07 + 08 -->\n        <div style=\"box-sizing:border-box;display:flex;flex-wrap:wrap;gap:22px;margin-bottom:28px;\">\n            <div style=\"box-sizing:border-box;flex:1 1 470px;min-width:280px;padding:30px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n                <div style=\"display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;border-radius:16px;background:#eaf2fb;color:#0a4b8d;font-size:22px;font-weight:800;\">07</div>\n                <h2 style=\"margin:18px 0 10px;color:#0a3c78;font-size:25px;line-height:1.4;font-weight:800;\">洗手液和个人卫生</h2>\n                <p style=\"margin:0 0 12px;color:#59687a;font-size:15px;\">洗手液系列温和、中性或有助于控制微生物。</p>\n                <ul style=\"margin:0;padding-left:21px;color:#59687a;font-size:14px;\">\n                    <li style=\"margin-bottom:7px;\">用于厨房、卫生间、更衣室和服务区。</li>\n                    <li style=\"margin-bottom:7px;\">食品加工区域可以选择无味型。</li>\n                    <li>适用于手动泵或计量分配器。</li>\n                </ul>\n            </div>\n\n            <div style=\"box-sizing:border-box;flex:1 1 470px;min-width:280px;padding:30px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n                <div style=\"display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;border-radius:16px;background:#edf9f2;color:#168d54;font-size:22px;font-weight:800;\">08</div>\n                <h2 style=\"margin:18px 0 10px;color:#0a3c78;font-size:25px;line-height:1.4;font-weight:800;\">洗手液解决方案</h2>\n                <p style=\"margin:0 0 12px;color:#59687a;font-size:15px;\">接待区、收银台、厨房、办公室和高频接触点的快速手部卫生解决方案。</p>\n                <ul style=\"margin:0;padding-left:21px;color:#59687a;font-size:14px;\">\n                    <li style=\"margin-bottom:7px;\">液体、凝胶或适合输送装置的形式。</li>\n                    <li style=\"margin-bottom:7px;\">选择具有清晰技术文档和说明的产品。</li>\n                    <li>当手明显脏时，请勿用肥皂代替洗手。</li>\n                </ul>\n            </div>\n        </div>\n\n        <!-- 09 -->\n        <div style=\"box-sizing:border-box;margin-bottom:28px;padding:32px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n            <div style=\"display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;\">\n                <div style=\"flex:0 0 72px;width:72px;height:72px;border-radius:18px;background:#eaf2fb;color:#0a4b8d;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;\">09</div>\n                <div style=\"flex:1 1 700px;min-width:260px;\">\n                    <h2 style=\"margin:0 0 10px;color:#0a3c78;font-size:28px;line-height:1.4;font-weight:800;\">专业清洁产品</h2>\n                    <div style=\"display:flex;flex-wrap:wrap;gap:14px;margin-top:16px;\">\n                        <div style=\"flex:1 1 220px;padding:18px;border-radius:15px;background:#f7f9fc;\"><strong style=\"color:#0a3c78;\">地毯和室内装潢清洁</strong><br><span style=\"color:#667487;font-size:14px;\">清洁油脂、污渍并帮助刷新表面颜色。</span></div>\n                        <div style=\"flex:1 1 220px;padding:18px;border-radius:15px;background:#f7f9fc;\"><strong style=\"color:#0a3c78;\">金属抛光</strong><br><span style=\"color:#667487;font-size:14px;\">护理不锈钢、铜、铬和合适的金属表面。</span></div>\n                        <div style=\"flex:1 1 220px;padding:18px;border-radius:15px;background:#f7f9fc;\"><strong style=\"color:#0a3c78;\">清理管道</strong><br><span style=\"color:#667487;font-size:14px;\">根据安全说明处理油脂和有机物造成的堵塞。</span></div>\n                        <div style=\"flex:1 1 220px;padding:18px;border-radius:15px;background:#f7f9fc;\"><strong style=\"color:#0a3c78;\">表面维护油</strong><br><span style=\"color:#667487;font-size:14px;\">有助于保护和维护金属设备表面。</span></div>\n                    </div>\n                </div>\n            </div>\n        </div>\n\n        <!-- 10 -->\n        <div style=\"box-sizing:border-box;margin-bottom:48px;padding:32px;border:1px solid #dce6ee;border-radius:22px;background:#ffffff;box-shadow:0 10px 28px rgba(16,24,40,.06);\">\n            <div style=\"display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;\">\n                <div style=\"flex:0 0 72px;width:72px;height:72px;border-radius:18px;background:#edf9f2;color:#168d54;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;\">10</div>\n                <div style=\"flex:1 1 700px;min-width:260px;\">\n                    <h2 style=\"margin:0 0 10px;color:#0a3c78;font-size:28px;line-height:1.4;font-weight:800;\">公共区域清洁化学品</h2>\n                    <p style=\"margin:0 0 14px;color:#59687a;font-size:16px;\">适用于大堂、走廊、电梯、餐厅、办公室、公共区域和人流量大的表面。</p>\n                    <ul style=\"margin:0;padding-left:22px;color:#59687a;font-size:15px;\">\n                        <li style=\"margin-bottom:8px;\">低泡沫地板清洁剂，用于洗地机或手动拖地。</li>\n                        <li style=\"margin-bottom:8px;\">适用于多种表面的中性清洁剂。</li>\n                        <li style=\"margin-bottom:8px;\">油、烟灰、蜡、橡胶条纹和环境污渍的去除剂。</li>\n                        <li>根据地板材料和污垢程度的专业清洁产品。</li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n\n        <!-- EQUIPMENT -->\n        <div style=\"box-sizing:border-box;margin-bottom:48px;padding:38px;border-radius:24px;background:linear-gradient(135deg,#08366f 0%,#0b4f92 100%);color:#ffffff;\">\n            <div style=\"max-width:820px;margin:0 auto 24px;text-align:center;\">\n                <div style=\"color:#7fe3a4;font-size:14px;font-weight:800;text-transform:uppercase;\">支持设备和工具</div>\n                <h2 style=\"margin:8px 0 12px;color:#ffffff;font-size:31px;line-height:1.4;font-weight:800;\">使用适当的剂量系统控制化学品</h2>\n                <p style=\"margin:0;color:rgba(255,255,255,.8);font-size:16px;\">MASAMI 可以根据运营规模就工具和设备的选择提供建议。</p>\n            </div>\n\n            <div style=\"display:flex;flex-wrap:wrap;gap:14px;\">\n                <div style=\"flex:1 1 210px;padding:18px;border-radius:14px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);\"><strong style=\"display:block;margin-bottom:5px;\">颜色编码喷雾器</strong><span style=\"color:rgba(255,255,255,.75);font-size:14px;\">限制化学组之间的混淆。</span></div>\n                <div style=\"flex:1 1 210px;padding:18px;border-radius:14px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);\"><strong style=\"display:block;margin-bottom:5px;\">泡沫发生器</strong><span style=\"color:rgba(255,255,255,.75);font-size:14px;\">增加垂直表面和大面积的粘合时间。</span></div>\n                <div style=\"flex:1 1 210px;padding:18px;border-radius:14px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);\"><strong style=\"display:block;margin-bottom:5px;\">计量泵</strong><span style=\"color:rgba(255,255,255,.75);font-size:14px;\">稳定控制浓度和用量。</span></div>\n                <div style=\"flex:1 1 210px;padding:18px;border-radius:14px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);\"><strong style=\"display:block;margin-bottom:5px;\">肥皂和消毒盒</strong><span style=\"color:rgba(255,255,255,.75);font-size:14px;\">根据需要安排在手部卫生点。</span></div>\n            </div>\n        </div>\n\n        <!-- PROCESS -->\n        <div style=\"box-sizing:border-box;margin-bottom:48px;\">\n            <div style=\"max-width:800px;margin:0 auto 30px;text-align:center;\">\n                <div style=\"color:#168d54;font-size:14px;font-weight:800;text-transform:uppercase;\">咨询流程</div>\n                <h2 style=\"margin:8px 0 0;color:#0a3c78;font-size:31px;line-height:1.4;font-weight:800;\">MASAMI根据实际情况构建解决方案</h2>\n            </div>\n\n            <div style=\"display:flex;flex-wrap:wrap;gap:14px;\">\n                <div style=\"flex:1 1 170px;padding:22px;border-radius:17px;background:#f6f9fc;border-top:4px solid #0a4b8d;text-align:center;\"><strong style=\"display:block;color:#0a3c78;font-size:16px;\">01. 调查</strong><span style=\"display:block;margin-top:7px;color:#667487;font-size:14px;\">面积、材料、污渍和清洁频率。</span></div>\n                <div style=\"flex:1 1 170px;padding:22px;border-radius:17px;background:#f6f9fc;border-top:4px solid #168d54;text-align:center;\"><strong style=\"display:block;color:#0a3c78;font-size:16px;\">02. 分析</strong><span style=\"display:block;margin-top:7px;color:#667487;font-size:14px;\">水源、设备和操作要求。</span></div>\n                <div style=\"flex:1 1 170px;padding:22px;border-radius:17px;background:#f6f9fc;border-top:4px solid #0a4b8d;text-align:center;\"><strong style=\"display:block;color:#0a3c78;font-size:16px;\">03. 推荐</strong><span style=\"display:block;margin-top:7px;color:#667487;font-size:14px;\">合适的产品、浓度和方法。</span></div>\n                <div style=\"flex:1 1 170px;padding:22px;border-radius:17px;background:#f6f9fc;border-top:4px solid #168d54;text-align:center;\"><strong style=\"display:block;color:#0a3c78;font-size:16px;\">04. 测试</strong><span style=\"display:block;margin-top:7px;color:#667487;font-size:14px;\">在大面积应用之前先进行小面积测试。</span></div>\n                <div style=\"flex:1 1 170px;padding:22px;border-radius:17px;background:#f6f9fc;border-top:4px solid #0a4b8d;text-align:center;\"><strong style=\"display:block;color:#0a3c78;font-size:16px;\">05. 说明</strong><span style=\"display:block;margin-top:7px;color:#667487;font-size:14px;\">操作程序和安全注意事项。</span></div>\n                <div style=\"flex:1 1 170px;padding:22px;border-radius:17px;background:#f6f9fc;border-top:4px solid #168d54;text-align:center;\"><strong style=\"display:block;color:#0a3c78;font-size:16px;\">06. 伴侣</strong><span style=\"display:block;margin-top:7px;color:#667487;font-size:14px;\">监控性能并根据需要进行调整。</span></div>\n            </div>\n        </div>\n\n        <!-- WHY MASAMI -->\n        <div style=\"box-sizing:border-box;margin-bottom:48px;padding:38px;border-radius:24px;background:linear-gradient(135deg,#f2f7fd 0%,#ffffff 48%,#eff9f3 100%);border:1px solid #dce6ee;\">\n            <h2 style=\"margin:0 0 22px;color:#0a3c78;font-size:31px;line-height:1.4;font-weight:800;text-align:center;\">为什么要选择MASAMI的HORECA化学溶液？</h2>\n            <div style=\"display:flex;flex-wrap:wrap;gap:15px;\">\n                <div style=\"flex:1 1 260px;padding:18px;border-radius:14px;background:#ffffff;border-left:4px solid #0a4b8d;\"><strong style=\"color:#0a3c78;\">区域类别</strong><br><span style=\"color:#667487;font-size:14px;\">易于管理、培训和控制使用。</span></div>\n                <div style=\"flex:1 1 260px;padding:18px;border-radius:14px;background:#ffffff;border-left:4px solid #168d54;\"><strong style=\"color:#0a3c78;\">关于正确表面的建议</strong><br><span style=\"color:#667487;font-size:14px;\">限制腐蚀、变色或材料损坏。</span></div>\n                <div style=\"flex:1 1 260px;padding:18px;border-radius:14px;background:#ffffff;border-left:4px solid #0a4b8d;\"><strong style=\"color:#0a3c78;\">定量控制</strong><br><span style=\"color:#667487;font-size:14px;\">减少过量并稳定成本。</span></div>\n                <div style=\"flex:1 1 260px;padding:18px;border-radius:14px;background:#ffffff;border-left:4px solid #168d54;\"><strong style=\"color:#0a3c78;\">技术支持</strong><br><span style=\"color:#667487;font-size:14px;\">使用说明和处理出现的问题。</span></div>\n                <div style=\"flex:1 1 260px;padding:18px;border-radius:14px;background:#ffffff;border-left:4px solid #0a4b8d;\"><strong style=\"color:#0a3c78;\">产品简介</strong><br><span style=\"color:#667487;font-size:14px;\">提供每个实际产品的技术文档。</span></div>\n                <div style=\"flex:1 1 260px;padding:18px;border-radius:14px;background:#ffffff;border-left:4px solid #168d54;\"><strong style=\"color:#0a3c78;\">可扩展的解决方案</strong><br><span style=\"color:#667487;font-size:14px;\">适用于从单一设施到 HORECA 连锁店。</span></div>\n            </div>\n        </div>\n\n        <!-- SAFETY -->\n        <div style=\"box-sizing:border-box;margin-bottom:42px;padding:28px;border-radius:18px;background:#fff9e8;border:1px solid #f0d98a;color:#625328;\">\n            <h2 style=\"margin:0 0 12px;color:#755e17;font-size:24px;font-weight:800;\">使用化学品时的安全建议</h2>\n            <p style=\"margin:0 0 10px;font-size:15px;\">\n                有效使用取决于污渍类型、表面、温度、水质、\n                操作方法和曝光时间。在大规模部署之前需要先进行小范围测试。\n            </p>\n            <p style=\"margin:0;font-size:15px;\">\n                用户必须阅读正确产品的标签、技术说明和化学品安全数据表（SDS/MSDS）；\n                适当的防护装备；不得随意混合化学品；按照现行规定储存和处理。\n                pH参数、混合比例、接触时间、规格和认证仅根据MASAMI提供的每个实际产品的记录发布。\n            </p>\n        </div>\n\n        <!-- CTA -->\n        <div style=\"box-sizing:border-box;padding:44px 26px;border-radius:24px;background:linear-gradient(135deg,#07356f 0%,#0b559c 62%,#168d54 100%);color:#ffffff;text-align:center;\">\n            <div style=\"max-width:860px;margin:0 auto;\">\n                <h2 style=\"margin:0;color:#ffffff;font-size:32px;line-height:1.4;font-weight:800;\">MASAMI - 适用于所有操作区域的同步 HORECA 化学解决方案</h2>\n                <p style=\"margin:16px auto 0;color:rgba(255,255,255,.84);font-size:16px;line-height:1.8;\">\n                    联系 MASAMI 调查需求，咨询产品清单并为酒店、餐厅、度假村、咖啡馆或工业厨房制定适当的清洁程序。\n                </p>\n                <div style=\"display:inline-block;margin-top:24px;padding:14px 24px;border-radius:11px;background:#ffffff;color:#0a3c78;font-size:16px;font-weight:800;\">\n                    获取有关 HORECA 解决方案的建议\n                </div>\n            </div>\n        </div>\n\n    </div>\n</div>",
+                "meta_title": "专业HORECA清洁化学品|酒店和餐厅解决方案|正美",
+                "meta_description": "MASAMI 为酒店、餐厅、度假村、工业厨房和餐饮连锁店提供 HORECA 清洁化学品解决方案：清洁房间、厨房、洗碗、消毒、手部护理和清洁公共区域。",
+                "meta_keywords": "HORECA化学品、酒店清洁化学品、餐厅清洁化学品、工业厨房化学品、工业洗碗液、表面消毒化学品、地板清洁化学品、MASAMI",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "2",
+            "source_revision": "ecd28e1ba9916b20e093950a0f5dbececa4aa0a242f0e454727e519194bc5ecb",
+            "payload": {
+                "name": "工厂地面防水",
+                "short_description": "MASAMI 提供工厂地板防水服务，处理水损坏的混凝土地板，并使用优质材料对工业地板进行防水，以帮助延长项目寿命并降低维护成本。",
+                "detail_content": "<h1>有效且可持续的工厂地板防水服务</h1>\n\n<p>工厂地板经常受到水、化学品、油脂和重物的影响。如果防水处理不当，很容易造成基​​础裂缝、混凝土剥落，影响生产过程。</p>\n\n<p><strong>MASAMI</strong> 采用现代材料和技术提供 <strong>工厂地面防水解决方案</strong> ，有助于延长项目寿命并降低维护成本。</p>\n\n<h2>我们的服务</h2>\n\n<ul>\n<li>测量当前的地面状况。</li>\n<li>裂纹处理。</li>\n<li>新型混凝土防水。</li>\n<li>旧基础防水。</li>\n<li>应用防水环氧涂层。</li>\n<li>处理浸水的地板。</li>\n</ul>\n\n<h2>优点</h2>\n\n<ul>\n<li>防止水渗透。</li>\n<li>延长混凝土寿命。</li>\n<li>降低维修成本。</li>\n<li>保证生产环境。</li>\n<li>增加美观度。</li>\n</ul>\n\n<h2>MASAMI的承诺</h2>\n\n<p>我们使用纯正的材料、技术标准的施工工艺和经验丰富的工程师团队，确保所有项目的长期防水效果。</p>",
+                "meta_title": "工厂地面防水",
+                "meta_description": "MASAMI 提供工厂地板防水服务，处理水损坏的混凝土地板，并使用优质材料对工业地板进行防水，以帮助延长项目寿命并降低维护成本。",
+                "meta_keywords": "工厂地面防水、混凝土地面防水、工厂地面防水、地坪防水处理、工厂防水、工业防水、地坪防水施工、环氧防水、正美",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "3",
+            "source_revision": "ee47242abad5cbaba58ad03cc2d6cf80132324b1bd6442f6a925e13625f84494",
+            "payload": {
+                "name": "耐热防漏工厂屋顶",
+                "short_description": "MASAMI 提供工厂地板防水服务，处理水损坏的混凝土地板，并使用优质材料对工业地板进行防水，以帮助延长项目寿命并降低维护成本。",
+                "detail_content": "<h1>工厂屋顶综合防热防漏解决方案</h1>\n\n<p>工厂屋顶是直接受高温、雨水、暴风雨和持续温度变化影响的区域。随着时间的推移，屋顶很容易漏水并吸收大量的热量，影响工作环境和建筑物的寿命。</p>\n\n<p><strong>MASAMI</strong> 为工厂屋顶 <strong>提供</strong> 防热和防漏服务，为每种类型的波纹铁皮屋顶、混凝土屋顶和板式屋顶提供许多合适的解决方案。</p>\n\n<h2>服务包括</h2>\n\n<ul>\n<li>处理漏水的波纹铁皮屋顶。</li>\n<li>波纹铁皮屋顶的热保护。</li>\n<li>耐热涂料。</li>\n<li>聚氨酯防水涂料。</li>\n<li>加固螺钉和接头。</li>\n<li>更换损坏的屋顶板。</li>\n<li>定期维护。</li>\n</ul>\n\n<h2>优点</h2>\n\n<ul>\n<li>降低工厂温度。</li>\n<li>防止雨水渗漏。</li>\n<li>保护机械和设备。</li>\n<li>节省冷却功率。</li>\n<li>延长屋顶寿命。</li>\n</ul>\n\n<h2>MASAMI的解决方案</h2>\n\n<p>我们进行实际调查，评估泄漏原因并选择最佳处理方案，帮助企业节省成本，但仍能保证长期效率。</p>",
+                "meta_title": "耐热防漏工厂屋顶",
+                "meta_description": "MASAMI专门从事工厂屋顶的耐热、防漏、漏水波纹铁皮屋顶的处理、耐热涂料和工业屋顶维护。该解决方案可节省成本、延长项目寿命并确保生产运营。",
+                "meta_keywords": "工厂屋顶隔热、波纹铁皮屋顶防漏、工厂屋顶防水、工业波纹铁皮屋顶维修、波纹铁皮屋顶隔热涂料、防止工厂渗漏、建造隔热屋顶、工业屋顶防水、正美",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "4",
+            "source_revision": "615f7437fea4cfb00ef96542c1ab8faf53c12279f888071a91d9ae18874ab161",
+            "payload": {
+                "name": "工业润滑油",
+                "short_description": "MASAMI为工厂、工业园区和生产线提供真正的工业润滑油。多种液压油、齿轮油、空压机油帮助设备稳定运行，延长使用寿命。",
+                "detail_content": "<h1>适用于工厂和生产线的正品工业润滑油</h1>\n\n<p><strong>MASAMI</strong>为机械系统、生产线和工业设备提供高品质<strong>工业润滑油</strong>系列。该产品有助于减少摩擦、防止磨损、稳定工作温度并延长设备使用寿命。</p>\n\n<h2>提供的产品</h2>\n\n<ul>\n<li>液压油。</li>\n<li>齿轮油。</li>\n<li>空气压缩机油。</li>\n<li>导热油</li>\n<li>循环油。</li>\n<li>数控机床油。</li>\n<li>金属切削油</li>\n</ul>\n\n<h2>好处</h2>\n\n<ul>\n<li>减少摩擦。</li>\n<li>抗氧化剂</li>\n<li>延长机器寿命。</li>\n<li>节省维护成本。</li>\n<li>在高温条件下稳定。</li>\n</ul>",
+                "meta_title": "工业润滑油",
+                "meta_description": "MASAMI为工厂、工业园区和生产线提供真正的工业润滑油。多种液压油、齿轮油、空压机油帮助设备稳定运行，延长使用寿命。",
+                "meta_keywords": "工业润滑油，工业润滑油，液压油，齿轮油，空气压缩机油，工业机械油，机械润滑油，正品工业油，工厂润滑油，masami",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "5",
+            "source_revision": "6920f80942983d3c6eae80d62ca9753adcaf2c0a3eecbc09c06c441987a514bf",
+            "payload": {
+                "name": "工业冷却水",
+                "short_description": "MASAMI 提供高品质工业冷却液，帮助控制温度、防止腐蚀并提高发动机、数控机床和工业系统的运行性能。",
+                "detail_content": "<h1>高品质工业冷却水</h1>\n\n<p><strong>工业冷却剂</strong>是一种重要的解决方案，有助于维持机器、发动机和生产系统的稳定温度。 MASAMI 提供有效的冷却解决方案，帮助设备持久运行并限制因过热引起的问题。</p>\n\n<h2>应用</h2>\n\n<ul>\n<li>数控机床。</li>\n<li>柴油发动机。</li>\n<li>发电机</li>\n<li>工业冷却系统。</li>\n<li>塑料注射机。</li>\n<li>生产线。</li>\n</ul>\n\n<h2>优点</h2>\n\n<ul>\n<li>传热能力高。</li>\n<li>防垢</li>\n<li>耐腐蚀。</li>\n<li>延长设备使用寿命。</li>\n<li>降低维护成本。</li>\n</ul>",
+                "meta_title": "工业冷却水",
+                "meta_description": "MASAMI 提供高品质工业冷却液，帮助控制温度、防止腐蚀并提高发动机、数控机床和工业系统的运行性能。",
+                "meta_keywords": "工业冷却液、发动机冷却液、工业冷却液、机械冷却液、CNC冷却液、防腐冷却液、工厂冷却液、masami",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "6",
+            "source_revision": "17934795327e79a1dbe1f296bc0095b85805e066084f2b54f610ae96140847f2",
+            "payload": {
+                "name": "工业润滑油脂",
+                "short_description": "MASAMI提供高品质工业润滑油，具有有效的耐热性、耐负载性和耐水性，适用于机械、轴承和工业设备。",
+                "detail_content": "<h1>设备和机械用工业润滑脂</h1>\n\n<p><strong>工业润滑剂</strong>有助于减少摩擦、限制磨损并保护恶劣工作条件下的机械部件。 MASAMI 提供各种润滑脂，可满足现代制造业的要求。</p>\n\n<h2>产品</h2>\n\n<ul>\n<li>锂基润滑脂。</li>\n<li>耐热润滑脂。</li>\n<li>防水润滑脂。</li>\n<li>重负荷润滑脂。</li>\n<li>轴承润滑脂。</li>\n<li>食物脂肪。</li>\n</ul>\n\n<h2>好处</h2>\n\n<ul>\n<li>减少磨损</li>\n<li>耐高温。</li>\n<li>抗氧化剂</li>\n<li>防水。</li>\n<li>延长设备使用寿命。</li>\n</ul>",
+                "meta_title": "工业润滑油脂",
+                "meta_description": "MASAMI提供高品质工业润滑油，具有有效的耐热性、耐负载性和耐水性，适用于机械、轴承和工业设备。",
+                "meta_keywords": "工业润滑脂、耐热润滑脂、承载润滑脂、工业润滑脂、轴承润滑脂、滚珠轴承润滑脂、锂基润滑脂、防水润滑脂、工业机械润滑脂、masami",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "7",
+            "source_revision": "3a0dcc0bbf46c192c6c02d5701f13d970fa02157473cd191e37fc7c9b0e7cf10",
+            "payload": {
+                "name": "氢氧化钠 (NaOH)",
+                "short_description": "MASAMI 供应纯正、高品质的 99% NaOH 片，用于水处理、造纸、纺织染色、肥皂、食品和许多其他行业。",
+                "detail_content": "<h1>氢氧化钠 (NaOH) - 多用途工业化学品</h1>\n\n<p><strong>氢氧化钠 - NaOH</strong> 是广泛应用于许多行业的基本化学品之一。烧碱纯度高、溶解速度快、反应强烈，在水处理、造纸、纺织印染、化工、食品等众多领域发挥着重要作用。</p>\n\n<h2>突出特点</h2>\n\n<ul>\n<li>NaOH含量高达99%。</li>\n<li>高纯度。</li>\n<li>快速溶于水。</li>\n<li>标准包装 25kg 或根据要求。</li>\n<li>来源清晰，COA和MSDS齐全。</li>\n</ul>\n\n<h2>应用</h2>\n\n<ul>\n<li>水和废水处理。</li>\n<li>纸张生产。</li>\n<li>纺织染色。</li>\n<li>肥皂生产。</li>\n<li>食品工业。</li>\n<li>冶金。</li>\n<li>化工。</li>\n</ul>\n\n<h2>为什么选择MASAMI？</h2>\n\n<p>MASAMI提供质量稳定、产地清晰的烧碱以及技术咨询服务和全国快速交货，满足众多制造企业的需求。</p>",
+                "meta_title": "氢氧化钠 (NaOH)",
+                "meta_description": "MASAMI 供应纯正、高品质的 99% NaOH 片，用于水处理、造纸、纺织染色、肥皂、食品和许多其他行业。",
+                "meta_keywords": "片碱，氢氧化钠，NaOH 99%，片碱，烧碱，工业烧碱，NaOH化学品，水处理烧碱，造纸烧碱，正美",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "8",
+            "source_revision": "b89b830a987061eb20d7155cad3602c94a061557ce433db6bb8569063ff3d86b",
+            "payload": {
+                "name": "碱性酸",
+                "short_description": "MASAMI提供高品质工业酸，如HCl、H2SO4、HNO3、H3PO4，服务于水处理、电镀、化工、食品和许多行业。",
+                "detail_content": "<h1>用于生产的高品质工业酸</h1>\n\n<p>MASAMI提供各种<strong>工业酸</strong>，质量稳定，满足工厂和企业在多个生产领域的需求。</p>\n\n<h2>提供的产品</h2>\n\n<ul>\n<li>盐酸 (HCl)。</li>\n<li>硫酸 (H2SO₄)。</li>\n<li>硝酸 (HNO₃)。</li>\n<li>磷酸 (H₃PO₄)。</li>\n<li>乙酸。</li>\n<li>甲酸。</li>\n</ul>\n\n<h2>应用</h2>\n\n<ul>\n<li>水处理。</li>\n<li>金属电镀。</li>\n<li>化肥生产。</li>\n<li>化学工业。</li>\n<li>纺织染色</li>\n<li>食物。</li>\n</ul>\n\n<h2>优点</h2>\n\n<ul>\n<li>纯度高。</li>\n<li>多种包装风格。</li>\n<li>完整的质量文件。</li>\n<li>交货快捷。</li>\n</ul>",
+                "meta_title": "碱性酸",
+                "meta_description": "MASAMI提供高品质工业酸，如HCl、H2SO4、HNO3、H3PO4，服务于水处理、电镀、化工、食品和许多行业。",
+                "meta_keywords": "工业酸、盐酸、硫酸、硝酸、磷酸、HCl、H2SO4、HNO3、工业化学品、masami",
+                "highlights": null,
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "catalog_product",
+            "resource_id": "9",
+            "source_revision": "7fa0c33294af6947517da7b838983894b1d5fa4a4132111617586691b5eea47c",
+            "payload": {
+                "name": "工业清洁剂",
+                "short_description": "MASAMI提供工业清洁化学品，可有效清洁油脂、水垢和设备表面，适用于工厂、工业园区和生产线。",
+                "detail_content": "<h1>高效工业清洁剂</h1>\n\n<p><strong>工业清洁剂</strong> 是一种专门的清洁解决方案，有助于去除机械、设备和生产线上的油脂、水垢、污垢和粘附物。</p>\n\n<h2>产品提供</h2>\n\n<ul>\n<li>碱性清洁剂。</li>\n<li>酸性清洁剂。</li>\n<li>脱脂剂。</li>\n<li>设备清洁化学品。</li>\n<li>专门的清洁解决方案。</li>\n</ul>\n\n<h2>应用</h2>\n\n<ul>\n<li>清洁生产设备。</li>\n<li>工厂清洁。</li>\n<li>清洁管道。</li>\n<li>对模具进行脱脂。</li>\n<li>清洁热交换系统。</li>\n<li>清洁传送带。</li>\n</ul>\n\n<h2>优点</h2>\n\n<ul>\n<li>快速清洁。</li>\n<li>节省时间。</li>\n<li>保护设备。</li>\n<li>提高生产效率。</li>\n<li>降低维护成本。</li>\n</ul>\n\n<h2>MASAMI 的承诺</h2>\n\n<p>MASAMI 提供高质量的工业清洁化学品系列，符合安全标准，具有出色的清洁效率，适用于许多生产领域。</p>",
+                "meta_title": "工业清洁剂",
+                "meta_description": "MASAMI提供工业清洁化学品，可有效清洁油脂、水垢和设备表面，适用于工厂、工业园区和生产线。",
+                "meta_keywords": null,
+                "highlights": "工业清洁剂、工业清洁化学品、脱脂剂、碱性清洁剂、酸性清洁剂、脱脂化学品、工厂清洁剂、masami",
+                "usage_terms": null,
+                "usage_location": null
+            }
+        },
+        {
+            "resource_type": "cms_category",
+            "resource_id": "1",
+            "source_revision": "eb14c3ea19311b39d6f3a67f594bc208cec4ccfb68514788193dee160560b6a8",
+            "payload": {
+                "name": "知识和经验",
+                "description": null,
+                "meta_title": null,
+                "meta_description": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "1",
+            "source_revision": "138f77e9624929ee36da49b7b76541082212a1a7f1d702785ba2e09c0af35538",
+            "payload": {
+                "title": "logo-masami",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "10",
+            "source_revision": "7c28eca09c09cb72616b4f056ed3cbfb911661729778b5e5465df5b2b37a9cd4",
+            "payload": {
+                "title": "Untitled-2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "11",
+            "source_revision": "aa00faee116950b4cc5b6a03f87d8b264ebf56b2e16629b0fa242cc99dbe2541",
+            "payload": {
+                "title": "Untitled-3",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "12",
+            "source_revision": "aae5d0148ff43b3f0c32c84717b381898f40df505977206125032b2e9143fa4c",
+            "payload": {
+                "title": "Untitled-1",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "13",
+            "source_revision": "7c28eca09c09cb72616b4f056ed3cbfb911661729778b5e5465df5b2b37a9cd4",
+            "payload": {
+                "title": "Untitled-2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "14",
+            "source_revision": "aa00faee116950b4cc5b6a03f87d8b264ebf56b2e16629b0fa242cc99dbe2541",
+            "payload": {
+                "title": "Untitled-3",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "15",
+            "source_revision": "3268915051fc0560d142294816b646fecb876be947cacd418fff291710d80a9d",
+            "payload": {
+                "title": "伊奇博伊特隆",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "16",
+            "source_revision": "01d2432a46be23565eb826b90103538356e25317fe2a62a6f3fd3debf085fbc6",
+            "payload": {
+                "title": "新头发",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "17",
+            "source_revision": "048d8ca236c1b878205f82f31d848fad96d9d0ca85d2b21ee15b7c35d2d50755",
+            "payload": {
+                "title": "loi ich - 冷却水",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "18",
+            "source_revision": "e0b30b726868d9deb30da02aa722001d9b9d9532f8625b10afa32cdfda755ba3",
+            "payload": {
+                "title": "水很冷",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "19",
+            "source_revision": "e91cdc7001ae708104b7e2d7d6834348ddb27475783b45d6f7a8349a14ad5135",
+            "payload": {
+                "title": "仁仁",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "2",
+            "source_revision": "50b0141d5eed012bdc7a427a546ee11069905d42e31ee3cd9e1e7eec9b0a2359",
+            "payload": {
+                "title": "各类住宅门的施工和安装",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "20",
+            "source_revision": "1cc387dc89114a18381e8a7ca6dde16f4e299ff04e3cff087248c6914b16bd60",
+            "payload": {
+                "title": "小痛",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "21",
+            "source_revision": "83d285e107ad70fb75efffb1e3d0865a551d46df5a212b9f21bcbbc84cd8b833",
+            "payload": {
+                "title": "专业手聊2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "22",
+            "source_revision": "40ba0d4bd648df6574a6c2ca2fc999b45d5dc3331d42bf6ec04d2829bff0b516",
+            "payload": {
+                "title": "专业手聊1",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "23",
+            "source_revision": "c72c9ff361a848abd63103d4c74dedd84c64be8b4e7612c472c66cd71928acae",
+            "payload": {
+                "title": "钴酸2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "24",
+            "source_revision": "1e7b40fb0d0a4e08cf27c950249937ea6313305b684ddd441e0c2c0cd63aa599",
+            "payload": {
+                "title": "钴酸",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "25",
+            "source_revision": "6a7bd2687935ee9c1b28533953e87af1230623ec6924ebe7a6fab4cbbb28fae5",
+            "payload": {
+                "title": "贷款2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "26",
+            "source_revision": "3c330160e139a8ad79b647ef6bc07ce79be886ba93e6136293be740bff043b24",
+            "payload": {
+                "title": "贷款",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "27",
+            "source_revision": "5c7b8aba30cf33f654dc87fd2d8a6d3527ee26601eea54c4e6295bed42607b61",
+            "payload": {
+                "title": "5-loai-khi-cong-nghiep-thuong-duoc-su-dung-nhat-trong-benh-vien_s1275",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "28",
+            "source_revision": "559a050e2c771417756554484ba2826882d409e71dff6092219200a2274b0734",
+            "payload": {
+                "title": "images",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "29",
+            "source_revision": "bd7d4483e0d8d645510a24ab497069a65e57b0afe688c7a5e2a7ea04ae2e0047",
+            "payload": {
+                "title": "liquid-hydrogen-lh2-cryogenic-fuel",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "3",
+            "source_revision": "eb22c98e36952c485b441635f5be1b05e216bf7aadd9402542ba66497c34bf4e",
+            "payload": {
+                "title": "创造开放空间",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "30",
+            "source_revision": "c5b069f476b8849bd2bb6e0bcb0dd4de8cab00178bb7240db9a4477b2e5bc755",
+            "payload": {
+                "title": "lpg3",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "31",
+            "source_revision": "0940b59b77455dd728b06ad30fb73b82de2ecc1b834317dddfb9f80dc77ce3e8",
+            "payload": {
+                "title": "lpg2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "32",
+            "source_revision": "2efd1e77ba4d9dff4e1900d34abd86eeb98179c128fa905eb18af4c8a41039bf",
+            "payload": {
+                "title": "cng",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "33",
+            "source_revision": "43b3be3f67950f81c72dfa33ee48afc0aec71a835ecb4c32b890f4182eb01c3c",
+            "payload": {
+                "title": "CNG",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "34",
+            "source_revision": "37018f2f214536912547c28689f35e2700de0fa0a4d151e2b6f65785aec080bf",
+            "payload": {
+                "title": "LNG",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "35",
+            "source_revision": "e98731a2a4d8a5baf45350880919edf283de82bcb5bd8a2b8be883c160f7002c",
+            "payload": {
+                "title": "生产化学品",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "36",
+            "source_revision": "95eb9a8fb2ae22ddcfcae54aef3b61ad2f325cb7d9e8c35552980e24c6e1cd48",
+            "payload": {
+                "title": "生产燃料",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "37",
+            "source_revision": "aa61471459be1a7cc1c27a3a0ed5aa2c66ac343683a4793a070eaa90a7a93fc8",
+            "payload": {
+                "title": "操作",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "38",
+            "source_revision": "05225037d92540dd3e917e6b378d9d5af265381a14465e680e683a566259ab6e",
+            "payload": {
+                "title": "建筑和地基",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "39",
+            "source_revision": "08bc0a2aaea835aa84504b403b1ddad8f015684914021ac97297eed689bf54f3",
+            "payload": {
+                "title": "khac-phuc-tu-lanh-bi-ro-ri-gas-8-1781511010233377782375",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "4",
+            "source_revision": "aae5d0148ff43b3f0c32c84717b381898f40df505977206125032b2e9143fa4c",
+            "payload": {
+                "title": "Untitled-1",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "40",
+            "source_revision": "fe760994426d48d8fde187180933865de30344cca2ff54004a1c9498fb540868",
+            "payload": {
+                "title": "binh-giu-nhiet-khong-nen-dung-gi-172502",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "41",
+            "source_revision": "92b85dc3c0fba778ffd115bc7924b74d4efabff220abe5d6a2e26b58403cd833",
+            "payload": {
+                "title": "screenshot_1784722395",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "42",
+            "source_revision": "e5dec75b3052f60320a38a8cc214bdfe335a685fded15927d92e055680486bd3",
+            "payload": {
+                "title": "NM-Xu-ly-khi-Dinh-Co-3432-1501300697",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "43",
+            "source_revision": "0d5ac831690c80a16e59567102f4d12fc0a2c6e30504723dd1be430a12ecfcc9",
+            "payload": {
+                "title": "quy-trinh-masami",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "44",
+            "source_revision": "60ae383e29c04194359a94eadb6dddcde484a3631a82657ba4e7ce4a229980b8",
+            "payload": {
+                "title": "生产燃料",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "45",
+            "source_revision": "44fdd34db42c849c313cb490170247d877ab4abbf93151242c594a0b7020cd08",
+            "payload": {
+                "title": "燃气系统安装服务",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "46",
+            "source_revision": "e91f2dfe326ea99e1f0603dc0ad3131870827dd39ce7d2c137dd543072ad8c27",
+            "payload": {
+                "title": "gioi-thieu",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "47",
+            "source_revision": "650a9074058fafcbee41477b344ad37b3928c64ba7977ada9a1772be63500610",
+            "payload": {
+                "title": "燃料和工业气体供应系统设计咨询",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "48",
+            "source_revision": "972f7d437d2ce6f95485920f6f58a6091b5129d9804a2110e337733e20f9484e",
+            "payload": {
+                "title": "Horeca产品使用系统设计咨询",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "49",
+            "source_revision": "05a73dda27049f6b6bf5a0a8c8aab1806eeee9ef2b6b12928b9a62f620da79f7",
+            "payload": {
+                "title": "LPG（液化石油气）",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "5",
+            "source_revision": "7c28eca09c09cb72616b4f056ed3cbfb911661729778b5e5465df5b2b37a9cd4",
+            "payload": {
+                "title": "Untitled-2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "50",
+            "source_revision": "d376be011b028e0cddc4ec5c63aab373bac2887320f3d343ab80695d69957eb1",
+            "payload": {
+                "title": "专业 HORECA 清洁化学品",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "51",
+            "source_revision": "77f03ca0a6832590bbfc8da4579b3881bbb46894ceedc3d024bf118425bbcb58",
+            "payload": {
+                "title": "专业 HORECA 清洁化学品1",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "52",
+            "source_revision": "094eaf67cdf8e51cec7a3867060029a473b3527e270f1e270c7f777dd3f4c96e",
+            "payload": {
+                "title": "专业 HORECA 清洁化学品2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "53",
+            "source_revision": "0e2df4f1025e30da8c24ecd9bf8abeced512cad6c9e081544482346ef9fd097e",
+            "payload": {
+                "title": "专业 HORECA 清洁化学品3",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "54",
+            "source_revision": "7ba819739d742f80d95fdea4d90f452f9e91297a720d8a0250504cd8095fb343",
+            "payload": {
+                "title": "专业 HORECA 清洁化学品5",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "55",
+            "source_revision": "5580ff5f63c561ed0610eb55b3f4492b00d410c623e3c84d042596a3fc2bdc12",
+            "payload": {
+                "title": "专业 HORECA 清洁化学品6",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "6",
+            "source_revision": "aa00faee116950b4cc5b6a03f87d8b264ebf56b2e16629b0fa242cc99dbe2541",
+            "payload": {
+                "title": "Untitled-3",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "7",
+            "source_revision": "dcc07dbbd9a7d0cefb568ed1ef0710592f49e992db475b15ceb8127225f14a14",
+            "payload": {
+                "title": "aspha2",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "8",
+            "source_revision": "02ac48665168bf5f446092cbde8261ec2cd09624a8c9a23295097b6511e5a371",
+            "payload": {
+                "title": "be-tong-nhua-asphalt",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_media",
+            "resource_id": "9",
+            "source_revision": "aae5d0148ff43b3f0c32c84717b381898f40df505977206125032b2e9143fa4c",
+            "payload": {
+                "title": "Untitled-1",
+                "alt_text": null
+            }
+        },
+        {
+            "resource_type": "cms_menu",
+            "resource_id": "1",
+            "source_revision": "ce4e650b6b34372875fb0432f01396f4373931a65c29375e43c50da6582589cc",
+            "payload": {
+                "items": {
+                    "schema_version": 2,
+                    "by_key": {
+                        "62f49580-229d-4ade-8ac9-e57b99c82814": {
+                            "label": "主页"
+                        },
+                        "99a0642e-5509-4732-81ca-6e489654aa7a": {
+                            "label": "介绍"
+                        },
+                        "feb2820c-9485-42a3-a179-a1025ead01e6": {
+                            "label": "产品"
+                        },
+                        "1ebf5b87-8c10-469e-ba2b-c754d8c5bba8": {
+                            "label": "生产化学品"
+                        },
+                        "d539e55a-2b20-472f-9aef-422aeb6f1330": {
+                            "label": "生产燃料"
+                        },
+                        "c37af7b0-0b21-4e8e-b3d8-ab574ffb6ee5": {
+                            "label": "操作"
+                        },
+                        "9272737e-56b4-4dc8-b177-f65c0d9e14f3": {
+                            "label": "建筑和地基"
+                        },
+                        "596cb1ea-26e9-467b-944c-9ca9f47b7e3d": {
+                            "label": "服务"
+                        },
+                        "6d0ae21a-b387-4334-bc5c-237785453c74": {
+                            "label": "消息"
+                        },
+                        "89597a12-6efa-47f7-8019-86655de0db29": {
+                            "label": "接触"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "resource_type": "cms_partner",
+            "resource_id": "1",
+            "source_revision": "db5d847492b371b6c07cc5c79f1b120912989a1ed77ebe31ed2541a5f9388f58",
+            "payload": {
+                "title": "华宾",
+                "description": "设计和施工生态系统的战略合作伙伴。",
+                "image_alt": "HOABINH"
+            }
+        },
+        {
+            "resource_type": "cms_partner",
+            "resource_id": "2",
+            "source_revision": "7e9028005872ad6494e0cab621a9ec45115f1e2e82445bf78a2e94e2c55c5663",
+            "payload": {
+                "title": "兴盛地",
+                "description": "设计和施工生态系统的战略合作伙伴。",
+                "image_alt": "HUNG THINH LAND"
+            }
+        },
+        {
+            "resource_type": "cms_partner",
+            "resource_id": "3",
+            "source_revision": "c8bd3e304a4eb660c9f4216653d1e23764cdd748be2e143795f96efa8c77bb9e",
+            "payload": {
+                "title": "越唐",
+                "description": "设计和施工生态系统的战略合作伙伴。",
+                "image_alt": "VIET THANG"
+            }
+        },
+        {
+            "resource_type": "cms_partner",
+            "resource_id": "4",
+            "source_revision": "409ecf93e74a0cb4c191bd0afe8eeb61445d244fc184795074a13e9f0b5e7309",
+            "payload": {
+                "title": "薄层色谱法",
+                "description": "设计和施工生态系统的战略合作伙伴。",
+                "image_alt": "TLC"
+            }
+        },
+        {
+            "resource_type": "cms_partner",
+            "resource_id": "5",
+            "source_revision": "fffe7d25e67e74f23dc5b56be0855e6ce0483ea38d17cd465cc8f3852820f357",
+            "payload": {
+                "title": "兴福",
+                "description": "设计和施工生态系统的战略合作伙伴。",
+                "image_alt": "HUNG PHUOC"
+            }
+        },
+        {
+            "resource_type": "cms_partner",
+            "resource_id": "6",
+            "source_revision": "b57260f9efae34eac18cf689f837f361fd67c5d435dce55380ee6496008e7ee0",
+            "payload": {
+                "title": "莲花集团",
+                "description": "设计和施工生态系统的战略合作伙伴。",
+                "image_alt": "HOA SEN GROUP"
+            }
+        },
+        {
+            "resource_type": "cms_post",
+            "resource_id": "1",
+            "source_revision": "26e3e570b01b9ae1584f17f65b7773fd08b39111088d88f2015dfd0dc5313d3c",
+            "payload": {
+                "title": "冰箱煤气泄漏极其危险，如何使用肥皂粉检查煤气泄漏并在家中安全处理",
+                "excerpt": "冰箱燃气泄漏不仅会导致设备快速失效、耗电，而且还存在火灾、爆炸、中毒等潜在风险。下面的文章将指出不可预测的有害影响，并告诉您如何识别和处理这个问题。",
+                "body": "<h2><strong>原因</strong></h2><p>在使用过程中，冰箱漏气的原因有很多。除了制造商的原因外，还有管道或连接处打开或刺破的情况，因为冰箱内的气体不能自毁，而且也是一个封闭的循环系统。冰箱燃气泄漏的一些基本原因包括：</p><p><i>线圈故障：</i> 因为冰箱使用时间太长，其寿命很长。系统上出现小孔，导致气体缓慢逸出，随着时间的推移，导致冰箱耗尽气体。用户很少能及早发现此错误。只有当他们看到冰箱不冷或者没有煤气时才会发现。</p><p><i>开焊缝：</i> 这种原因可能是由于厂家制作的焊缝不严密、不牢靠，所以使用一段时间后，就会造成漏气。不过，也有可能您的冰箱之前曾被修理过，导致焊缝开路。</p><p><i>强烈撞击：</i> 冰箱在生产和运输过程中受到强烈撞击，影响柜内气体部分，导致气体泄漏。另外，当您移动冰箱的位置时，不小心会对冰箱造成强烈震动。</p><figure class=\"VCSortableInPreviewMode\" style=\"-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);border:0px;box-sizing:border-box;color:rgb(51, 51, 51);cursor:default;display:inline-block;flex-direction:column;font-family:Arial;font-feature-settings:inherit;font-kerning:inherit;font-language-override:inherit;font-optical-sizing:inherit;font-size-adjust:inherit;font-size:17px;font-stretch:inherit;font-style:normal;font-variant-alternates:inherit;font-variant-caps:normal;font-variant-east-asian:inherit;font-variant-emoji:inherit;font-variant-ligatures:normal;font-variant-numeric:inherit;font-variant-position:inherit;font-variation-settings:inherit;font-weight:400;letter-spacing:normal;line-height:inherit;margin:0px auto 15px;max-width:100%;orphans:2;overflow-wrap:break-word;padding:0px;position:relative;text-align:start;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-rendering:geometricprecision;text-transform:none;transition:0.3s ease-in-out;vertical-align:baseline;visibility:visible;white-space:normal;widows:2;width:669px;word-spacing:0px;\" type=\"Photo\"><div style=\"-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;border:0px;box-sizing:border-box;font:inherit;margin:0px;outline:0px;padding:0px;text-rendering:geometricprecision;vertical-align:baseline;\" data-alt=\"Alt SEO: Tủ lạnh rò rỉ gas: Nguy hiểm khôn lường và cách xử lý an toàn tại nhà - Ảnh 1.\" title=\"Tủ lạnh rò rỉ gas: Nguy hiểm khôn lường và cách xử lý an toàn tại nhà - Ảnh 1.\"><a href=\"https://giadinh.mediacdn.vn/296230595582509056/2026/6/15/ck2914529-tu-lanh-gia-re-tai-nghe-an-17815109781121922316912.jpg\"><img class=\"image_resized lightbox-content\" style=\"-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;aspect-ratio:780/521;border:0px;box-sizing:border-box;display:inline-block;font:inherit;height:auto;margin:0px auto;max-width:100%;padding:0px;text-rendering:geometricprecision;vertical-align:top;width:669px;\" src=\"https://giadinh.mediacdn.vn/thumb_w/640/296230595582509056/2026/6/15/ck2914529-tu-lanh-gia-re-tai-nghe-an-17815109781121922316912.jpg\" alt=\"Tủ lạnh rò rỉ gas: Nguy hiểm khôn lường và cách xử lý an toàn tại nhà - Ảnh 1.\" width=\"780\" height=\"521\" data-author=\"\" id=\"img_228547161088471040\" w=\"780\" h=\"521\" rel=\"lightbox\" photoid=\"228547161088471040\" data-original=\"https://giadinh.mediacdn.vn/296230595582509056/2026/6/15/ck2914529-tu-lanh-gia-re-tai-nghe-an-17815109781121922316912.jpg\" type=\"photo\" data-nosnippet=\"\" loading=\"lazy\"></a></div><p>冰箱燃气泄漏不仅会导致设备快速故障、耗电，而且还存在潜在的火灾、爆炸和中毒风险。</p></figure><p><i>穿孔：</i> 这是冰箱的主要原因和最常见的原因之一。在使用过程中，用户使用尖锐物体清除冰雪，导致冰箱线圈被刺破。气体会通过穿孔逸出，导致冰箱冷却不良。在这种情况下，请寻求技术专家的帮助以快速修复。</p><h2><strong>如何检查冰箱是否漏气？</strong></h2><p>对于非专业人士来说，识别冰箱是否煤气泄漏的迹象并不简单。不过，可以根据冰箱上积雪较多、冰箱内电流微弱、制冷时间长、冰箱发出的冷风微弱等迹象来检查冰箱是否漏气……</p><p>用户通过让机组、冷凝器和制冷装置正常运行来进行检查。然后观察零件上是否有油污。如果有油渍，则说明您的冰箱存在煤气泄漏。</p><p>同时，用户可以使用肥皂粉检查冰箱是否漏气，在管道上涂抹足够均匀的一层。如果您看到气泡上升，则表明您的管道已被刺破，导致气体泄漏。</p><p>另外，您可以用火柴检查冰箱是否漏水。你点燃一根火柴，把火放在冷凝器上，看到管子烧坏的地方变得太热，那么冰箱就缺气了。</p><h2><strong>冰箱燃气泄漏的有害影响</strong></h2><p>冰箱内含气量极低，约为0.1公斤，但当冰箱泄漏或漏气时，气体很容易混入空气中，影响环境和使用者的健康。</p><p>冰箱中常用的两种制冷剂气体是有机氟利昂化合物和无机氨气化合物。氨气毒性很大，并且有难闻的气味。泄漏时，会刺激眼睛和胃内壁……因此，这种气体主要用于大容量制冷行业。</p><p>家用制冷器具中将很少使用氨，主要使用氟利昂。氟利昂虽然无毒，泄漏后不会直接影响人体健康，但会危害环境，破坏臭氧层，间接影响健康。</p><h2><strong>如何处理</strong></h2><p>将柜体放置于阴凉处，避免潮湿的地方，不要放置在靠近电器或阳光照射的地方，以免漏电或煤气泄漏。</p><figure class=\"VCSortableInPreviewMode small-img\" style=\"-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);border:0px;box-sizing:border-box;color:rgb(51, 51, 51);cursor:default;display:inline-block;flex-direction:column;font-family:Arial;font-feature-settings:inherit;font-kerning:inherit;font-language-override:inherit;font-optical-sizing:inherit;font-size-adjust:inherit;font-size:17px;font-stretch:inherit;font-style:normal;font-variant-alternates:inherit;font-variant-caps:normal;font-variant-east-asian:inherit;font-variant-emoji:inherit;font-variant-ligatures:normal;font-variant-numeric:inherit;font-variant-position:inherit;font-variation-settings:inherit;font-weight:400;letter-spacing:normal;line-height:inherit;margin:0px auto 15px;max-width:100%;orphans:2;overflow-wrap:break-word;padding:0px;position:relative;text-align:start;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-rendering:geometricprecision;text-transform:none;transition:0.3s ease-in-out;vertical-align:baseline;visibility:visible;white-space:normal;widows:2;width:669px;word-spacing:0px;\" type=\"Photo\"><div style=\"-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;border:0px;box-sizing:border-box;font:inherit;margin:0px;outline:0px;padding:0px;text-rendering:geometricprecision;vertical-align:baseline;\" data-alt=\"Alt SEO: Tủ lạnh rò rỉ gas: Nguy hiểm khôn lường và cách xử lý an toàn tại nhà - Ảnh 3.\" title=\"Tủ lạnh rò rỉ gas: Nguy hiểm khôn lường và cách xử lý an toàn tại nhà - Ảnh 3.\"><a href=\"https://giadinh.mediacdn.vn/296230595582509056/2026/6/15/base64-178151108528559147205.png\"><img class=\"image_resized lightbox-content\" style=\"-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;aspect-ratio:571/354;border:0px;box-sizing:border-box;display:inline-block;font:inherit;height:auto;margin:0px auto;max-width:100%;padding:0px;text-rendering:geometricprecision;vertical-align:top;width:669px;\" src=\"https://giadinh.mediacdn.vn/thumb_w/640/296230595582509056/2026/6/15/base64-178151108528559147205.png\" alt=\"Tủ lạnh rò rỉ gas: Nguy hiểm khôn lường và cách xử lý an toàn tại nhà - Ảnh 3.\" width=\"571\" height=\"354\" data-author=\"\" id=\"img_228547362114920448\" w=\"571\" h=\"354\" rel=\"lightbox\" photoid=\"228547362114920448\" data-original=\"https://giadinh.mediacdn.vn/296230595582509056/2026/6/15/base64-178151108528559147205.png\" type=\"photo\" data-nosnippet=\"\" loading=\"lazy\"></a></div><p>冰箱所含气体量极低，约为0.1公斤，但当冰箱泄漏或漏气时，气体很容易混入空气中，影响环境和使用者的健康。</p></figure><p>如果您需要将冰箱搬到很远的地方，例如搬家、卖旧冰箱等，搬动时必须非常小心，避免强烈撞击影响冰箱内部的部件。</p><p>当您遇到煤气泄漏或其他无法修复的错误时，涉及到技术，请咨询专业维修人员。请勿自行修理，因为这样很容易损坏柜体的其他部件。</p><p><i>据suckhoedoisong.vn 报纸报道</i></p>",
+                "meta_title": "冰箱煤气泄漏极其危险，如何使用肥皂粉检查煤气泄漏并在家中安全处理",
+                "meta_description": "冰箱燃气泄漏不仅会导致设备快速失效、耗电，而且还存在火灾、爆炸、中毒等潜在风险。下面的文章将指出不可预测的有害影响，并告诉您如何识别和处理这个问题。",
+                "meta_keywords": null
+            }
+        },
+        {
+            "resource_type": "cms_post",
+            "resource_id": "2",
+            "source_revision": "f3976e88eaaf6ed55b7d2538a57fa5a2c0dcb2c06e887255b56d968907b99fbd",
+            "payload": {
+                "title": "为什么不应该将碳酸软饮料存放在保温瓶中？很多人在不知情的情况下仍然这样做",
+                "excerpt": "保温瓶是一种常见的物品，可以帮助将饮料的温度保持数小时。夏天，很多人带上学、上班或旅行时，都有将碳酸饮料倒入保温瓶中的习惯，以保冷更长时间。然而，专家和许多保温瓶制造商建议不要使用保温瓶长时间储存​​碳酸饮料。",
+                "body": "<h2><strong>为什么不应该将碳酸软饮料存放在保温瓶中？</strong></h2><p>原因不仅影响 <a href=\"https://tiepthigiadinh.vn/dung-binh-giu-nhiet-can-tranh-sai-lam-nay-can-than-ruoc-kim-loai-nang-va-vi-khuan-vao-nguoi-d27213.html\">保温瓶</a> 的使用寿命，而且在使用过程中存在潜在的不便甚至安全风险。</p><h3><strong>气压可能导致盖子弹出</strong></h3><p>碳酸软饮料含有在压力下溶解的二氧化碳 (CO2)。当储存在密封的保温瓶中时，尤其是摇动罐子或温度变化时，二氧化碳气体会继续逸出并导致内部压力增加。</p><figure class=\"cmxNonEdit\" style='-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);box-sizing:border-box;color:rgb(34, 34, 34);display:block;font-family:Arial, \"Helvetica Neue\", Helvetica, sans-serif;font-size:18px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;margin:0px auto 1em;max-width:960px;orphans:2;text-align:left;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:normal;widows:2;word-spacing:0px;'><figure class=\"image image_resized\" style=\"height:auto;width:auto;\"><img style=\"aspect-ratio:640/335;border:0px;box-sizing:border-box;display:block;max-width:100%;object-fit:cover;vertical-align:middle;\" src=\"https://t.cmx-cdn.com/tiepthigiadinh.vn/files/storage/2026/07/20/avatar1784473021244-1784473022758124779423-172510.webp\" alt=\"avatar1784473021244-1784473022758124779423-1725\" width=\"640\" height=\"335\" title=\"\" loading=\"lazy\"></figure></figure><p>打开盖子时，这种压力会导致水溅出，造成不便，并有溅到用户脸部或眼睛的风险。对于某些并非设计用于容纳碳酸饮料的瓶子，长时间使用后，高压也会影响橡胶垫圈或瓶盖。</p><h3><strong>如果放置太久，饮料的品质会很快下降</strong></h3><p>碳酸软饮料开封后立即使用味道最佳。如果在保温瓶中放置数小时，气体量会逐渐损失，导致饮料失去泡腾性并失去其原有的风味。</p><p>此外，软饮料中含有大量的糖。如果在瓶中放置时间过长，尤其是直接饮用后，如果不及时清洁，口腔中的细菌可能会进入饮料并生长。</p><h3><strong>难以清洁，易残留异味</strong></h3><p>碳酸软饮料中的糖和调味剂很容易粘附在瓶壁、橡胶垫圈和瓶盖上。如果使用后不立即清洗，瓶子可能会残留异味、产生残留物并为细菌生长创造条件。</p><p>这也是很多保温瓶用普通水清洗后仍有难闻气味的原因。</p><h3><strong>会影响瓶子的使用寿命</strong></h3><p>如今大多数保温瓶均由不锈钢制成，能够承受多种类型的饮料。然而，碳酸软饮料通常呈弱酸性，并含有许多食品添加剂。</p><figure class=\"cmxNonEdit\" style='-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);box-sizing:border-box;color:rgb(34, 34, 34);display:block;font-family:Arial, \"Helvetica Neue\", Helvetica, sans-serif;font-size:18px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;margin:0px auto 1em;max-width:960px;orphans:2;text-align:left;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:normal;widows:2;word-spacing:0px;'><figure class=\"image image_resized\" style=\"height:auto;width:auto;\"><img style=\"aspect-ratio:1920/1280;border:0px;box-sizing:border-box;display:block;max-width:100%;object-fit:cover;vertical-align:middle;\" src=\"https://t.cmx-cdn.com/tiepthigiadinh.vn/files/storage/2026/07/20/2024_5_12_638511490547139780_binh-giu-nhiet-khong-nen-dung-gi-172502.webp\" alt=\"2024_5_12_638511490547139780_binh-giu-nhiet-khong-nen-dung-gi\" width=\"1920\" height=\"1280\" title=\"\" loading=\"lazy\"></figure></figure><p>如果长时间浸泡，特别是质量差的罐子或罐子内部被划伤，不锈钢表面的保护层可能会受到影响，降低产品的耐用性。因此，很多厂家建议不要使用保温瓶长时间保存碳酸饮料。</p><h2><strong>保温瓶里应该存放什么？</strong></h2><p>保温瓶最适合储存过滤水、茶、咖啡或一些不含太多酸的非碳酸饮料。如果您想携带碳酸软饮料，应将其存放在制造商的罐子或瓶子中，或使用专门为碳酸饮料设计的专用瓶子。</p><p>每次使用保温瓶后，应用温水和温和的洗洁精清洗，彻底清洁盖子和橡胶垫圈，并使其完全干燥后再存放。适当的清洁不仅有助于限制气味，还可以延长瓶子的使用寿命。</p><p>一般来说，在某些情况下，将碳酸软饮料存放在保温瓶中可能很方便，但不建议使用。为了确保安全、保留饮料的全部风味并延长瓶子的使用寿命，用户应限制这种习惯，并优先使用适合每种饮料的瓶子。</p><p><i>根据 tiepthigiadinh.vn</i></p>",
+                "meta_title": "为什么不应该将碳酸软饮料存放在保温瓶中？很多人在不知情的情况下仍然这样做",
+                "meta_description": "保温瓶是一种常见的物品，可以帮助将饮料的温度保持数小时。夏天，很多人带上学、上班或旅行时，都有将碳酸饮料倒入保温瓶中的习惯，以保冷更长时间。然而，专家和许多保温瓶制造商建议不要使用保温瓶长时间储存​​碳酸饮料。",
+                "meta_keywords": null
+            }
+        },
+        {
+            "resource_type": "cms_post",
+            "resource_id": "3",
+            "source_revision": "27576cc8845c3f524ef92e08a9e811316704adfd63b5eed0e35c7ed421970a51",
+            "payload": {
+                "title": "一艘停靠在俄罗斯港口的油轮上布满了来自北约的地雷",
+                "excerpt": "俄罗斯当局表示，最近停靠在列宁格勒省的一艘油轮被发现在船体上安装了磁性水雷。",
+                "body": "<p>RT通讯社援引调查委员会的声明 <u>俄罗斯</u> （ICR）表示，该机构最近对“策划对停靠在列宁格勒省海港的阿累尼乌斯油轮发动恐怖袭击”展开调查。</p><p>ICR 公告摘录如下：“潜水员在北大西洋公约组织成员国之一发现了工业生产的磁性地雷（<u>北约</u>当上述车辆出现在乌斯季卢加港时，安装在阿伦尼乌斯号船的船体上。随后，俄罗斯联邦安全局（FSB）特工、国防部和俄罗斯国民警卫队士兵将这些地雷拆除。</p><figure class=\"image image_resized vnn-content-image\" style=\"-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);border:0px;box-sizing:border-box;color:rgb(111, 111, 111);display:block;font-family:arial;font-feature-settings:inherit;font-kerning:inherit;font-language-override:inherit;font-optical-sizing:inherit;font-size-adjust:inherit;font-size:14px;font-stretch:inherit;font-variant-alternates:inherit;font-variant-caps:normal;font-variant-east-asian:inherit;font-variant-emoji:inherit;font-variant-ligatures:normal;font-variant-numeric:inherit;font-variant-position:inherit;font-variation-settings:inherit;font-weight:400;height:auto;letter-spacing:normal;line-height:inherit;list-style:none;margin:20px auto;orphans:2;padding:0px;text-align:center;text-decoration:none;text-indent:0px;text-transform:none;white-space:normal;widows:2;width:760px;word-spacing:0px;\" data-vnnembed=\"true\" data-vnnembedtype=\"image\" data-vnnembedid=\"014PX5\"><img class=\"lazy-loaded\" style=\"aspect-ratio:1/1;border:0px;box-sizing:border-box;display:block;font-family:inherit;font-feature-settings:inherit;font-kerning:inherit;font-language-override:inherit;font-optical-sizing:inherit;font-size-adjust:inherit;font-size:inherit;font-stretch:inherit;font-style:inherit;font-variant:inherit;font-variation-settings:inherit;font-weight:inherit;line-height:0;list-style:none;margin:0px auto;max-width:100%;padding:0px;text-decoration:none;\" src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" alt=\"Russsia1 Trim ezgif.com resize.gif\" srcset=\"https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/5/25/russsia1-trim-ezgifcom-resize-2687.gif?width=0&amp;s=blzBJD9FPT1byzz5M4yJzA\" sizes=\"100vw\" width=\"1\" height=\"1\" data-original=\"https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/5/25/russsia1-trim-ezgifcom-resize-2687.gif?width=0&amp;s=blzBJD9FPT1byzz5M4yJzA\" data-srcset=\"https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/5/25/russsia1-trim-ezgifcom-resize-2687.gif?width=0&amp;s=blzBJD9FPT1byzz5M4yJzA\" data-thumb-small-src=\"https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/5/25/russsia1-trim-ezgifcom-resize-2687.gif?width=260&amp;s=0J7Howmn_n9oOpbhsZqpNg\" data-thumb-src=\"https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/5/25/russsia1-trim-ezgifcom-resize-2687.gif?width=260&amp;s=0J7Howmn_n9oOpbhsZqpNg\" data-sub-html=\"&lt;figcaption&gt;Thiết bị nổ gắn ở thân tàu Arrhenius. Ảnh: RT/FSB&lt;/figcaption&gt;\" data-lg-id=\"cdd06f2a-f91a-4eb4-8f18-88614aa50973\" data-adbro-processed=\"true\"><figcaption><i>安装在阿累尼乌斯号船体上的爆炸装置。照片：RT/FSB</i></figcaption></figure><p>根据初步调查，ICR暂时得出结论，潜水员发现的磁性水雷“不可能在车辆位于俄罗斯领海时放置在船上”。据了解，阿累尼乌斯号于5月20日出现在比利时安特卫普港，随后停靠俄罗斯乌斯季卢加港加油，最终目的地是土耳其萨姆松港。 </p><p>根据船长的证言，在比利时安特卫普港卸货前，阿累尼乌斯号船在这里抛锚了大约1天半，因为这个港口的工人正在罢工。</p><p><i>据 vietnamnet.vn</i></p>",
+                "meta_title": "一艘停靠在俄罗斯港口的油轮上布满了来自北约的地雷",
+                "meta_description": "俄罗斯当局表示，最近停靠在列宁格勒省的一艘油轮被发现在船体上安装了磁性水雷。",
+                "meta_keywords": null
+            }
+        },
+        {
+            "resource_type": "cms_post",
+            "resource_id": "4",
+            "source_revision": "80c71fc7c3fd2e93ea2bc65c33d79a27aba46e7a9a389da2eb605205174df878",
+            "payload": {
+                "title": "公布越南天然气工业发展计划",
+                "excerpt": "该规划旨在实现2025年天然气工业目标和2035年愿景。",
+                "body": "<p>该规划旨在实现2025年之前的天然气工业目标和2035年的定位。</p><p>越南石油天然气集团（PVN）刚刚在河内举行的一次会议上宣布了发展越南天然气工业的总体规划。</p><p>因此，落实越南石油和天然气工业发展战略至2025年和2035年方向中天然气工业目标的规划已获得总理批准。</p><p>特别是，政府提出了一些重要观点，例如：结合国家电力发展战略发展越南天然气工业，规划有效利用清洁燃料资源，为确保国家能源安全和减少温室气体排放做出贡献。该领域将促进国内资源并促进国际合作，同时经济、有效、合理地利用国内资源，部署液化天然气（LNG）进口；收集新的国内气源，补充下降的气源，保持向消费者的供气能力。</p><figure class=\"tplCaption action_thumb_added\" style=\"-webkit-text-stroke-width:0px;background-color:rgb(252, 250, 246);box-sizing:border-box;clear:both;color:rgb(34, 34, 34);display:flex;flex-wrap:wrap;float:none !important;font-family:arial;font-size:18px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;margin:0px auto 15px;max-width:100%;orphans:2;padding:0px;position:relative;text-align:center;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-rendering:optimizelegibility;text-transform:none;white-space:normal;widows:2;width:670px;word-spacing:0px;\" data-size=\"js\" itemprop=\"associatedMedia image\" itemscope=\"\" itemtype=\"http://schema.org/ImageObject\"><div class=\"fig-picture el_valid\" style=\"box-sizing:border-box;margin:0px;overflow:hidden;padding:0px 0px 305px;position:relative;text-rendering:optimizelegibility;width:670px;\" data-src=\"https://i1-kinhdoanh.vnecdn.net/2017/07/29/Quang-canh-Hoi-nghi-1-JPG-2668-1501300697.jpg?w=0&amp;h=0&amp;q=100&amp;dpr=2&amp;fit=crop&amp;s=Js_H4B-kjYROWV08LBBpeg\" data-sub-html='&lt;div class=\"ss-wrapper\"&gt;&lt;div class=\"ss-content\"&gt;\n&lt;p class=\"Image\"&gt;\nHội nghị công bố quy hoạch tổng thể phát triển ngành công nghiệp khí Việt Nam vừa diễn ra tại Hà Nội.&lt;/p&gt;\n&lt;/div&gt;&lt;/div&gt;'><img class=\"image-style-align-left image_resized lazy lazied\" style=\"aspect-ratio:500/305;border:0px;box-sizing:border-box;font-size:0px;left:335px;line-height:0;margin:0px;max-width:100%;opacity:1;padding:0px;position:absolute;text-rendering:optimizelegibility;top:0px;transform:translateX(-50%);width:500px;\" src=\"https://i1-kinhdoanh.vnecdn.net/2017/07/29/Quang-canh-Hoi-nghi-1-JPG-2668-1501300697.jpg?w=1020&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=tNiEXctke64b0ZeNDy0vIw\" alt=\"cong-bo-quy-hoach-phat-trien-nganh-cong-nghiep-khi-viet-nam\" width=\"500\" height=\"305\" itemprop=\"contentUrl\" intrinsicsize=\"1020x0\" data-src=\"https://i1-kinhdoanh.vnecdn.net/2017/07/29/Quang-canh-Hoi-nghi-1-JPG-2668-1501300697.jpg?w=1020&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=tNiEXctke64b0ZeNDy0vIw\" data-ll-status=\"loaded\"></div><p>越南天然气工业发展总体规划会议刚刚在河内举行。</p></figure><p>规划还提出，要按照最大限度利用现有基础设施系统能力的原则，完善收集、运输、处理等基础设施体系，逐步建设和完善液化天然气储存、进口、配送系统等基础设施。</p><p>此外，天然气行业需要推动天然气深加工投资和产品多元化，提高天然气的使用价值和天然气产品在经济中的效率。</p><p>能源总司（工贸部）总司长Dang Huy Cuong先生表示，PVN通过在实践中仔细研究和评估规划实施问题，关心天然气工业的发展，并提出了许多相关建议和建议。</p><p>这也是政府强调建立政策机制体系，逐步转变越南天然气工业和天然气商业机制的管理模式，走向自由天然气市场、与地区和世界天然气市场接轨的方向。</p><p>能源部表示，按照国家监管的市场机制发展天然气消费市场，鼓励外国承包商和投资者对天然气价值链上游、中游和下游进行投资，有助于确保国家长期能源安全。</p><figure class=\"tplCaption action_thumb_added\" style=\"-webkit-text-stroke-width:0px;background-color:rgb(252, 250, 246);box-sizing:border-box;clear:both;color:rgb(34, 34, 34);display:flex;flex-wrap:wrap;float:none !important;font-family:arial;font-size:18px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;margin:0px auto 15px;max-width:100%;orphans:2;padding:0px;position:relative;text-align:center;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-rendering:optimizelegibility;text-transform:none;white-space:normal;widows:2;width:670px;word-spacing:0px;\" data-size=\"js\" itemprop=\"associatedMedia image\" itemscope=\"\" itemtype=\"http://schema.org/ImageObject\"><div class=\"fig-picture el_valid\" style=\"box-sizing:border-box;margin:0px;overflow:hidden;padding:0px 0px 333px;position:relative;text-rendering:optimizelegibility;width:670px;\" data-src=\"https://i1-kinhdoanh.vnecdn.net/2017/07/29/NM-Xu-ly-khi-Dinh-Co-3432-1501300697.jpg?w=0&amp;h=0&amp;q=100&amp;dpr=2&amp;fit=crop&amp;s=LE-QOaOWtphjo-cg1v8DLw\" data-sub-html='&lt;div class=\"ss-wrapper\"&gt;&lt;div class=\"ss-content\"&gt;\n&lt;p class=\"Image\"&gt;\nPVN cho rằng, khai thác chế biến khí sẽ tạo ra giá trị gia tăng lớn, sản xuất nhiều sản phẩm có lợi cho nền kinh tế đất nước.&lt;/p&gt;\n&lt;/div&gt;&lt;/div&gt;'><img class=\"image-style-align-left image_resized lazy lazied\" style=\"aspect-ratio:500/333;border:0px;box-sizing:border-box;font-size:0px;left:335px;line-height:0;margin:0px;max-width:100%;opacity:1;padding:0px;position:absolute;text-rendering:optimizelegibility;top:0px;transform:translateX(-50%);width:500px;\" src=\"https://i1-kinhdoanh.vnecdn.net/2017/07/29/NM-Xu-ly-khi-Dinh-Co-3432-1501300697.jpg?w=1020&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=-on0YkKFzy4fQoa0VHmErQ\" alt=\"cong-bo-quy-hoach-phat-trien-nganh-cong-nghiep-khi-viet-nam-1\" width=\"500\" height=\"333\" itemprop=\"contentUrl\" intrinsicsize=\"1020x0\" data-src=\"https://i1-kinhdoanh.vnecdn.net/2017/07/29/NM-Xu-ly-khi-Dinh-Co-3432-1501300697.jpg?w=1020&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=-on0YkKFzy4fQoa0VHmErQ\" data-ll-status=\"loaded\"></div><p>PVN相信天然气开采和加工将创造巨大的附加值，生产许多有利于国家经济的产品。</p></figure><p>作为越南直接生产和贸易天然气的单位，越南天然气公司PV Gas的代表提出了发展天然气工业需要立即落实的一系列问题，例如：预测天然气市场供需，巩固天然气供应基础设施；制定天然气价格机制和政策，按照项目链管理模式管理天然气项目投资和建设；分散投资、管理招投标，加快实施进度。</p><p>PVN领导认为，应深入加大天然气加工投资。天然气开采和加工将创造巨大的附加值，生产许多有利于国家经济的产品，适合越南气田规模的开采。</p><p>除了在项目投资时实施天然气市场预测和风险评估的一系列建议和建议外，PVN表示，相关单位还需要重点实施三个重要阶段，包括：确保天然气供应；确保基础设施系统和深入的市场研究（客户系统、天然气价格）。</p><p><i>根据 vnexpress.net</i></p>",
+                "meta_title": "公布越南天然气工业发展计划",
+                "meta_description": "该规划旨在实现2025年天然气工业目标和2035年愿景。",
+                "meta_keywords": null
+            }
+        },
+        {
+            "resource_type": "cms_project",
+            "resource_id": "1",
+            "source_revision": "b69eb242d948ce3cddb99878df644041c76bcd47a5abc3e9ca8c5cecbb56fff7",
+            "payload": {
+                "title": "幼儿园项目",
+                "summary": "设计的亮点是绿地、开放式游乐场和儿童安全活动。",
+                "content": "学前项目是按照自然光、良好通风和可持续材料的标准实施的。",
+                "button_label": "查看详情",
+                "meta_title": null,
+                "meta_description": null
+            }
+        },
+        {
+            "resource_type": "cms_project",
+            "resource_id": "2",
+            "source_revision": "3ba472d7ac4a19f52a059042d9f525d08a4b2d3571e13e6150401362ab9219b5",
+            "payload": {
+                "title": "办公楼",
+                "summary": "现代化的工作空间、大面积的玻璃幕墙和灵活的企业运营布局。",
+                "content": "办公项目注重效率、照明控制和日常使用体验。",
+                "button_label": "查看详情",
+                "meta_title": null,
+                "meta_description": null
+            }
+        },
+        {
+            "resource_type": "cms_project",
+            "resource_id": "3",
+            "source_revision": "43c5cfc93058363037978d3f5572d02d1d4a2b23a1b951a52844f1f8500837aa",
+            "payload": {
+                "title": "酒店建设",
+                "summary": "协调结构、电力、水和装修，打造专业的住宿体验。",
+                "content": "酒店项目按各个验收阶段进行管理，保证了移交后的开发进度。",
+                "button_label": "查看详情",
+                "meta_title": null,
+                "meta_description": null
+            }
+        },
+        {
+            "resource_type": "cms_project",
+            "resource_id": "4",
+            "source_revision": "11fe2bcf57b2a8a5168651a673afced67192acffc0de04f24ca2d6f638e17637",
+            "payload": {
+                "title": "花园别墅项目",
+                "summary": "该设计为多代家庭创造了一个绿色、通风、私密的居住环境。",
+                "content": "花园别墅项目将景观、天然材料和开放的居住空间融为一体。",
+                "button_label": "查看详情",
+                "meta_title": null,
+                "meta_description": null
+            }
+        },
+        {
+            "resource_type": "cms_service",
+            "resource_id": "1",
+            "source_revision": "466beee3de2f9f2b794ef9604ea5c99ccd819a2b3aef297a2ca90221aed4f78b",
+            "payload": {
+                "title": "燃气系统安装服务",
+                "summary": "MASAMI 专门从事设计、建造和安装工业气体系统、LPG、LNG、CNG 和中央供气系统。安全、经济的解决方案，符合技术标准，24/7 技术支持。",
+                "content": "<p>在工厂、工业园区、酒店、医院、集体厨房等众多生产领域， <strong>工业气体系统</strong> 在提供稳定、安全的燃料来源和节省运营成本方面发挥着重要作用。按照技术标准设计和安装系统，不仅保证了系统的有效使用，而且最大限度地降低了运行过程中的风险。</p><p><strong>MASAMI</strong> 是一家专业从事 <strong>咨询、设计、施工和安装工业气体系统</strong> 的单位，拥有经验丰富的工程师团队、专业的流程和针对每种业务的最佳解决方案。</p><h2>为什么需要安装标准燃气系统？</h2><p>与使用住宅储气罐的系统不同，工业气体系统需要从存储区、燃气管道、调压器、安全设备到监控报警系统同步设计。</p><p>按照标准设计的系统将带来许多好处：</p><ul><li data-list-item-id=\"efe49e76ecc576f7b457dbdd5e1762d7a\">确保运行过程中的安全。</li><li data-list-item-id=\"efceef5fd8fd9fd5f0553bf3eef1b9a8d\">整条生产线供气稳定。</li><li data-list-item-id=\"ebcc2bf15109ed831979cdb5a2360a3cf\">节省燃油成本。</li><li data-list-item-id=\"efa846e0516054c92b788ffdfc6b59e12\">减少空气损失。</li><li data-list-item-id=\"e8acde8123c45dc38ff06e57711b7bfc1\">易于维护。</li><li data-list-item-id=\"eeb8f07a8c759303d3ffb054a161022fa\">提高系统寿命。</li><li data-list-item-id=\"ecd6928f4f3b652c64aa116aac65516d1\">符合消防安全和技术标准。</li></ul><h2>MASAMI燃气系统安装服务</h2><p>MASAMI提供从勘察现状到移交整个系统的完整解决方案。</p><ul><li data-list-item-id=\"e8b670c4232523bc0a3e571767c61bd1d\">调查和评估用户需求。</li><li data-list-item-id=\"ef915f727a45b9aec26ebc0beb6f74c66\">咨询合适的解决方案。</li><li data-list-item-id=\"e273ddca5542d2c71f2ae5a81f1593dfb\">燃气管道系统设计。</li><li data-list-item-id=\"e6cbaeabd97bca747ea304392d347fa59\">设计放置储罐或容器的区域。</li><li data-list-item-id=\"ed9213ad3515edfa1194759db857bbd05\">安装煤气管道。</li><li data-list-item-id=\"e82d71756810e683b5d4127d93d23366f\">安装压力调节阀和安全装置。</li><li data-list-item-id=\"e30e496943b58fef93cbba3c5d5e9d015\">安装燃气泄漏警告系统。</li><li data-list-item-id=\"ed575faa73dd2b9cf846772925e975ad4\">检查压力并测试运行。</li><li data-list-item-id=\"e0a5c8af504cddb91807d84e85e073bc3\">验收和移交。</li><li data-list-item-id=\"e90dde3f2cbfd20129df7743027606ddc\">定期维护和修理。</li></ul><h2>MASAMI 系统部署</h2><ul><li data-list-item-id=\"ebe7af147d5dc0aa90d58088c60540783\">工业液化石油气系统。</li><li data-list-item-id=\"e4468245b0e2d5f2e92889678c857fef6\">液化天然气系统。</li><li data-list-item-id=\"eeda006835bffe65c34a1846932458b06\">CNG 系统。</li><li data-list-item-id=\"eebb4117a1a78d534b42e03d17e1d2b2e\">氧气系统。</li><li data-list-item-id=\"e11b10298f1218badd6112adf6d24ef7c\">氮气系统。</li><li data-list-item-id=\"e9e8e405be57f5aa6f4b74598a168aaa1\">氩气系统。</li><li data-list-item-id=\"e316646a6a41af66be2ad6ecbbd3b88d6\">二氧化碳系统。</li><li data-list-item-id=\"edc19441f878e270c1700420fbca2f79c\">中央送风系统。</li><li data-list-item-id=\"ed27d06839aa8eaad1a0c9efce45f8dd4\">工厂燃气管道系统。</li></ul><h2>目标客户</h2><p>MASAMI的服务适用于许多领域：</p><ul><li data-list-item-id=\"e84ceba60db38c2d4ba26c7508af4cab2\">制造工厂。</li><li data-list-item-id=\"e7913058dac34f712e08e9ff96c1baa39\">工业园。</li><li data-list-item-id=\"e80ba21fe32e8ee2f925858b6ef711768\">医院。</li><li data-list-item-id=\"e9b38645b6e6654fcf57481bb305d2128\">实验室。</li><li data-list-item-id=\"e5fe600c73aca607a6c6ce92d2de39643\">餐厅。</li><li data-list-item-id=\"e283218473b01ddbadee1d4ecc9fe20e8\">酒店。</li><li data-list-item-id=\"e276f8da1430e05e8aa8df3ed12ca9691\">工业厨房。</li><li data-list-item-id=\"e20b8e15e40c75e72f4a8aaad76e9ec49\">食品厂。</li><li data-list-item-id=\"e7cb1ae9c86c1c01bdd1a751f3c84d3f1\">机械工厂。</li><li data-list-item-id=\"e1c8877037a245d81073061028b22df98\">化工企业。</li></ul><h2>专业的实施流程</h2><ol><li data-list-item-id=\"e79a7e7399520cc6fc1bd3854617f2bc0\">接收客户请求。</li><li data-list-item-id=\"eb877c5c7684dc4e48cd9ffac90ea2f62\">项目实际调查。</li><li data-list-item-id=\"e1b164c5c960c46c88cb9f03f1c9d5567\">最佳解决方案咨询。</li><li data-list-item-id=\"e1f02f553f30b09f91a485a3af448554b\">设计技术图纸。</li><li data-list-item-id=\"e47eb72e4fbfb35b72c5b32d2b97fc66e\">准备详细报价。</li><li data-list-item-id=\"edefd6bbf69357170e0d484cfbe72ea0a\">施工和安装。</li><li data-list-item-id=\"eed399795194d3163f1a1951d2dd9ec03\">检查压力，试运行。</li><li data-list-item-id=\"edb942d23397a268fe1a044edc1ef6d8f\">验收和移交。</li><li data-list-item-id=\"eda0401cdb473e27bc965d96b39705767\">保修和 24/7 技术支持。</li></ol><h2>为什么要选择MASAMI？</h2><ul><li data-list-item-id=\"e3f976fde79f334188b0885ec6bcf3b69\">拥有多年经验的工程师团队。</li><li data-list-item-id=\"e1f06bf7ea3fa6efef07133647fd28f3d\">按技术标准设计。</li><li data-list-item-id=\"e4a97a8604cccc09873fbf1d2a61178c0\">施工确保安全。</li><li data-list-item-id=\"ed8a5a2302ff9958247f132779b8b6aec\">使用正品材料。</li><li data-list-item-id=\"e9b94a11271cdba01ea49c5bcfad4c9f7\">进展很快。</li><li data-list-item-id=\"e4988cd7b1d80d0b9942674cc21506419\">最佳投资成本。</li><li data-list-item-id=\"e103ed4f4b2f761a5e822b6f356c49fe2\">明确的保修。</li><li data-list-item-id=\"e1659fea30b6fe5a4694a7377adba81a7\">24/7 技术支持。</li></ul><h2>MASAMI的承诺</h2><p>我们始终将 <strong>安全-质量-效率</strong> 因素放在每个项目的首位。 MASAMI部署的每个气体系统都严格遵守技术法规，帮助客户在长期使用和操作过程中感到安全。</p><p>除了施工安装外，MASAMI还陪伴客户提供维护服务、定期检查和快速技术支持，确保系统始终稳定、安全、有效地运行。</p><div style=\"background:linear-gradient(135deg,#082d60 0%,#0b4c91 100%);border-radius:20px;box-sizing:border-box;color:#ffffff;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:38px;padding:24px;\"><div style=\"align-items:center;box-sizing:border-box;display:flex;flex:1 1 190px;gap:12px;min-width:180px;padding:10px 14px;\"><div style=\"align-items:center;background:rgba(255,255,255,0.1);border-radius:13px;border:1px solid rgba(255,255,255,0.3);display:flex;flex:0 0 44px;font-size:23px;height:44px;justify-content:center;width:44px;\">✓</div><div><strong>品质保证 </strong>来源明确的产品 </div></div><div style=\"align-items:center;box-sizing:border-box;display:flex;flex:1 1 190px;gap:12px;min-width:180px;padding:10px 14px;\"><div style=\"align-items:center;background:rgba(255,255,255,0.1);border-radius:13px;border:1px solid rgba(255,255,255,0.3);display:flex;flex:0 0 44px;font-size:23px;height:44px;justify-content:center;width:44px;\">★</div><div><strong>最佳解决方案 </strong>适合各种需求 </div></div><div style=\"align-items:center;box-sizing:border-box;display:flex;flex:1 1 190px;gap:12px;min-width:180px;padding:10px 14px;\"><div style=\"align-items:center;background:rgba(255,255,255,0.1);border-radius:13px;border:1px solid rgba(255,255,255,0.3);display:flex;flex:0 0 44px;font-size:23px;height:44px;justify-content:center;width:44px;\">⛨</div><div><strong>操作安全 </strong>符合技术标准 </div></div><div style=\"align-items:center;box-sizing:border-box;display:flex;flex:1 1 190px;gap:12px;min-width:180px;padding:10px 14px;\"><div style=\"align-items:center;background:rgba(255,255,255,0.1);border-radius:13px;border:1px solid rgba(255,255,255,0.3);display:flex;flex:0 0 44px;font-size:23px;height:44px;justify-content:center;width:44px;\">◷</div><div><strong>确保进展 </strong>按承诺部署  </div></div><div style=\"align-items:center;box-sizing:border-box;display:flex;flex:1 1 190px;gap:12px;min-width:180px;padding:10px 14px;\"><div style=\"align-items:center;background:rgba(255,255,255,0.1);border-radius:13px;border:1px solid rgba(255,255,255,0.3);display:flex;flex:0 0 44px;font-size:23px;height:44px;justify-content:center;width:44px;\">🤝</div><div><strong>长期伴侣 </strong>专注、快速支持 </div></div><div style=\"align-items:center;box-sizing:border-box;display:flex;flex:1 1 190px;gap:12px;min-width:180px;padding:10px 14px;\"><div style=\"align-items:center;background:rgba(255,255,255,0.1);border-radius:13px;border:1px solid rgba(255,255,255,0.3);display:flex;flex:0 0 44px;font-size:23px;height:44px;justify-content:center;width:44px;\">🎧</div><div><strong>24/7 技术支持 </strong>随时准备咨询和故障排除 </div></div></div><h2>  </h2><h2>联系 MASAMI</h2><p>如果您的企业需要 <strong>安装工业气体系统、LPG、LNG、CNG系统或中央供气系统</strong>，请联系MASAMI，让工程师团队就最合适的解决方案提供建议。</p><blockquote><p><strong>MASAMI – 适用于所有项目的安全、现代和可持续的工业气体系统解决方案。</strong></p></blockquote>",
+                "button_label": "立即了解",
+                "meta_title": "安装工业气体系统|全套设计和施工|正美",
+                "meta_description": "MASAMI 专门从事设计、建造和安装工业气体系统、LPG、LNG、CNG 和中央供气系统。安全、经济的解决方案，符合技术标准，24/7 技术支持。",
+                "meta_keywords": "燃气系统安装、工业燃气系统安装、LPG系统、LNG系统、CNG系统、中央供气系统、燃气管道施工、燃气系统设计、工业燃气管道安装、MASAMI"
+            }
+        },
+        {
+            "resource_type": "cms_service",
+            "resource_id": "4",
+            "source_revision": "95a05f66e978542589a96a2c9b2e29e1a4553c279cc4ce90207f8718ac749c4c",
+            "payload": {
+                "title": "燃料和工业气体供应系统设计咨询",
+                "summary": "MASAMI 就工厂的 LPG、LNG、CNG 和工业气体供应系统的设计提供建议。同步、安全的解决方案，优化容量、成本和可操作性。",
+                "content": "<p>在现代制造作业中，燃料和工业气体供应系统不仅影响生产线的连续运行，而且直接关系到整个工厂的能源消耗、生产成本和安全。</p>\n\n<p>设计不当的系统可能会导致压力不稳定、燃油损失、流量控制困难、问题以及长期运营成本增加。因此，选择有能力的单位 <strong>来咨询和设计燃料和工业气体供应系统</strong> 是实施投资之前的重要一步。</p>\n\n<p><strong>越南正美</strong> 提供适合各企业实际需求的调查、咨询和系统设计服务，从LPG、LNG、CNG系统到氧气、氮气、氩气、二氧化碳系统和其他特种气体。</p>\n\n<h2>解决方案根据实际运营需求构建</h2>\n\n<p>每个工厂在产能、所用设备类型、场地、燃料消耗和未来扩展要求方面都有不同的特点。因此，MASAMI 并没有对所有项目应用通用的解决方案。</p>\n\n<p>我们的技术团队收集信息，调查现状并分析用户需求，制定适合每个项目的计划。该解决方案同时考虑以下因素：</p>\n\n<ul>\n    <li>使用的燃料或工业气体的类型。</li>\n    <li>当前和预期的未来功耗。</li>\n    <li>每个使用点所需的压力和流量。</li>\n    <li>存储区域到消费设备的距离。</li>\n    <li>地面条件和生产环境。</li>\n    <li>维护、测试和扩展系统的能力。</li>\n    <li>安全、防火和操作要求。</li>\n    <li>投资成本和长期使用效率。</li>\n</ul>\n\n<h2>MASAMI 建议使用哪些系统？</h2>\n\n<p>MASAMI 的设计咨询服务满足工厂、工业园区和专业项目中使用的多种燃料和工业气体的要求。</p>\n\n<h3>液化石油气供应系统</h3>\n\n<p>液化石油气钢瓶或储罐的使用方案、设计供气站、汽化系统、压力调节器、分配管道和适合消耗能力的安全设备的咨询。</p>\n\n<h3>液化天然气供应系统</h3>\n\n<p>设计用于存储、再气化、加压和分配液化天然气到锅炉、熔炉、干燥机和生产线等消耗设备的解决方案。</p>\n\n<h3>CNG供应系统</h3>\n\n<p>使用区CNG接收群、减压站、供热系统、测量、控制和供气管道的布置咨询。</p>\n\n<h3>工业气体系统</h3>\n\n<p>设计为机械、食品、电子、化工厂、实验室和许多其他领域供应氧气、氮气、氩气、二氧化碳、氢气、氦气和混合气体的系统。</p>\n\n<h3>中央供气系统</h3>\n\n<p>中央管网设计咨询，将燃料或天然气从储存区域分配到工厂内的多条管线和使用点。</p>\n\n<h2>咨询设计工作范围</h2>\n\n<p>根据项目规模和要求，MASAMI可同步开展以下项目：</p>\n\n<ul>\n    <li>调查项目的地点和现状。</li>\n    <li>收集设备参数和消耗需求。</li>\n    <li>计算所需的供气量。</li>\n    <li>确定每个使用点的流量和压力。</li>\n    <li>选择燃料储存和供应选项。</li>\n    <li>储罐、储罐、汽化器和压力调节器咨询。</li>\n    <li>设计管道路线和设备位置。</li>\n    <li>选择管道直径、材料和配件。</li>\n    <li>设计测量和控制系统。</li>\n    <li>燃气泄漏检测和报警系统咨询。</li>\n    <li>绘制原理图和技术图纸。</li>\n    <li>准备一份材料、设备和预期数量的清单。</li>\n    <li>推荐的操作、检查和维护程序。</li>\n    <li>编制施工计划和实施进度。</li>\n</ul>\n\n<h2>从一开始就正确设计系统的好处</h2>\n\n<p>投资咨询和设计不仅可以帮助企业拥有合适的系统，还可以显着限制建设和运营期间产生的成本。</p>\n\n<ul>\n    <li><strong>稳定供应：</strong> 为所用设备保持适当的流量和压力。</li>\n    <li><strong>减少损失：</strong> 限制管道中的泄漏和压力损失。</li>\n    <li><strong>优化投资：</strong> 避免选择过大或容量不足的设备。</li>\n    <li><strong>操作便捷：</strong> 系统布局科学，易于查看和控制。</li>\n    <li><strong>提高安全性：</strong> 主动识别和控制运营中的风险。</li>\n    <li><strong>维护方便：</strong> 重要设备位置方便，便于检查和更换。</li>\n    <li><strong>准备扩展：</strong> 可以配置系统以满足增加的容量需求。</li>\n    <li><strong>长期节省：</strong> 减少燃料消耗以及未来的维修和翻新成本。</li>\n</ul>\n\n<h2>MASAMI 的设计咨询流程</h2>\n\n<ol>\n    <li>\n        <strong>接收请求：</strong>\n        收集有关燃料类型、设备能力、产量和投资目标的信息。\n    </li>\n    <li>\n        <strong>调查现状：</strong>\n        评估场地、储存地点、消耗点、管道路线和施工条件。\n    </li>\n    <li>\n        <strong>需求分析：</strong>\n        确定流量、压力、功耗和未来扩展。\n    </li>\n    <li>\n        <strong>建议的解决方案：</strong>\n        比较技术方案、投资水平、运营能力和效率。\n    </li>\n    <li>\n        <strong>系统设计：</strong>\n        完成原理图、管道路线、设备位置和材料清单。\n    </li>\n    <li>\n        <strong>解释和引用：</strong>\n        介绍技术计划、工作范围、进度和预期成本。\n    </li>\n    <li>\n        <strong>实施支持：</strong>\n        在施工、测试、调试和系统校准期间进行协调。\n    </li>\n</ol>\n\n<h2>在众多制造领域的应用</h2>\n\n<p>MASAMI 的解决方案可部署于多种类型的项目和制造行业：</p>\n\n<ul>\n    <li>机械和金属加工厂。</li>\n    <li>食品饮料工厂。</li>\n    <li>纺织染厂。</li>\n    <li>建筑材料厂。</li>\n    <li>电子及元件工厂。</li>\n    <li>化学和制药厂。</li>\n    <li>锅炉、熔炉和干燥器系统。</li>\n    <li>冷藏和保鲜线。</li>\n    <li>医院和医疗设施。</li>\n    <li>实验室和研究中心。</li>\n    <li>餐厅、酒店和工业厨房。</li>\n</ul>\n\n<h2>企业为何选择MASAMI？</h2>\n\n<ul>\n    <li>根据实际需求和运行情况进行咨询。</li>\n    <li>解决方案是根据每个项目规模构建的。</li>\n    <li>燃料源、设备和分配系统之间的同步。</li>\n    <li>优先考虑安全性、稳定性和可维护性。</li>\n    <li>透明的技术信息和工作范围。</li>\n    <li>能够继续施工、安装和调试。</li>\n    <li>整个实施过程中的技术支持。</li>\n    <li>系统移交后陪同客户。</li>\n</ul>\n\n<h2>MASAMI – 从设计计划到有效的操作系统</h2>\n\n<p>有效的燃料和工业气体供应系统需要从正确的设计计划开始。它是技术计算、适当设备选择、科学布局以及整个使用过程安全控制能力的结合。</p>\n\n<p>MASAMI以提供同步解决方案为导向，从初始勘察、燃料选择咨询、系统设计到施工、试运行、维护和技术支持，随时陪伴企业。</p>\n\n<blockquote>\n    <p><strong>MASAMI – 咨询正确的需求，设计正确的解决方案，陪伴企业安全有效地运营。</strong></p>\n</blockquote>\n\n<p><strong>立即联系 MASAMI，对适合您业务需求的燃料和工业气体供应系统选项进行调查并提供建议。</strong></p>",
+                "button_label": "立即了解",
+                "meta_title": "燃料和工业气体供应系统设计咨询|正美",
+                "meta_description": "MASAMI 就工厂的 LPG、LNG、CNG 和工业气体供应系统的设计提供建议。同步、安全的解决方案，优化容量、成本和可操作性。",
+                "meta_keywords": "工业燃气系统设计、燃料供应系统设计、LPG系统设计、LNG系统设计、CNG系统设计、燃气管道设计、中央供气系统、工厂燃气系统咨询、MASAMI咨询"
+            }
+        },
+        {
+            "resource_type": "cms_service",
+            "resource_id": "5",
+            "source_revision": "beefdc4894cd00f5c3d9eb5ac938177d8bbb0c4f602c1a6303ed377874999a40",
+            "payload": {
+                "title": "HORECA 产品使用系统设计咨询",
+                "summary": "MASAMI 专门为酒店、餐厅、度假村、工业厨房和餐饮连锁店提供使用 HORECA 产品的系统设计咨询服务。同步、安全的解决方案，优化成本并提高运营效率。",
+                "content": "<p>在 <strong>HORECA（酒店-餐厅-餐饮/咖啡厅）</strong>领域，燃料、燃气和厨房设备系统的投资不仅影响运营效率，还决定安全水平、使用成本和客户服务体验。</p>\n\n<p>科学设计的系统将有助于优化空间、确保稳定的燃料流量、减少能量损失并满足消防安全和食品卫生标准。</p>\n\n<p><strong>MASAMI Vietnam</strong> 使用HORECA的产品提供系统设计咨询服务 <strong></strong>为餐厅、酒店、度假村、工业厨房、连锁餐饮提供从勘察、设计、设备选型到运营实施的同步解决方案。</p>\n\n<h2>每种商业模式的同步设计解决方案</h2>\n\n<p>每个 HORECA 模式都有不同的规模、容量和运营方法。因此，MASAMI总是根据实际情况制定合适的方案，而不是采用固定的设计。</p>\n\n<p>我们综合分析以下因素：</p>\n\n<ul>\n<li>服务规模和厨房容量。</li>\n<li>燃气或燃料使用流程。</li>\n<li>厨房区域。</li>\n<li>安排加工设备。</li>\n<li>人员流通。</li>\n<li>未来的扩展能力。</li>\n<li>消防要求和安全标准。</li>\n<li>投资效率和运营成本。</li>\n</ul>\n\n<h2>MASAMI的设计咨询服务</h2>\n\n<p>MASAMI为HORECA系统提供从概念阶段到投入使用的完整解决方案。</p>\n\n<ul>\n<li>调查项目的当前状态。</li>\n<li>厨房区域布局咨询。</li>\n<li>中央供气系统设计。</li>\n<li>LPG、LNG 或 CNG 系统设计。</li>\n<li>燃油供应管道设计。</li>\n<li>选择合适的厨房设备。</li>\n<li>排烟和通风系统咨询。</li>\n<li>给排水系统咨询。</li>\n<li>油脂处理系统咨询。</li>\n<li>燃气泄漏报警系统咨询。</li>\n<li>计算容量和流量。</li>\n<li>设计技术图和施工图。</li>\n</ul>\n\n<h2>客户目标</h2>\n\n<ul>\n<li>酒店。</li>\n<li>度假村。</li>\n<li>餐厅。</li>\n<li>连锁餐厅。</li>\n<li>咖啡厅。</li>\n<li>会议中心。</li>\n<li>工业厨房。</li>\n<li>学校。</li>\n<li>医院。</li>\n<li>超市。</li>\n<li>旅游区。</li>\n</ul>\n\n<h2>选择MASAMI的好处</h2>\n\n<p>一个精心设计的系统将为企业带来许多长期价值。</p>\n\n<ul>\n<li>优化厨房面积。</li>\n<li>提高服务效率。</li>\n<li>节省燃油。</li>\n<li>减少能量损失。</li>\n<li>确保操作安全。</li>\n<li>易于维护和检查。</li>\n<li>延长设备寿命。</li>\n<li>符合消防标准。</li>\n<li>方便扩展。</li>\n</ul>\n\n<h2>设计咨询流程</h2>\n\n<ol>\n<li>接收客户请求。</li>\n<li>实际现场勘察。</li>\n<li>评估使用需求。</li>\n<li>提出最优解决方案。</li>\n<li>技术图纸设计。</li>\n<li>准备投资估算。</li>\n<li>设备选型咨询。</li>\n<li>支持建设实施。</li>\n<li>检查、验收和操作说明。</li>\n</ol>\n\n<h2>不仅是设计，而且全程陪伴</h2>\n\n<p>MASAMI的不同之处在于能够在系统投入使用后陪伴客户。我们支持系统的定期测试、升级、扩容和优化咨询，确保系统长期稳定运行。</p>\n\n<p>MASAMI的工程团队随时准备在客户业务需求发生变化时提供技术支持、处理出现的问题并就改进计划提供建议。</p>\n\n<h2>为什么要选择MASAMI？</h2>\n\n<ul>\n<li>一支在 HORECA 领域拥有丰富经验的工程师团队。</li>\n<li>根据实际需要进行设计。</li>\n<li>从燃料到设备的同步解决方案。</li>\n<li>优先考虑安全和运营效率。</li>\n<li>优化投资成本。</li>\n<li>清晰的图纸和技术文件。</li>\n<li>支持实施和验收。</li>\n<li>长期保修和技术支持。</li>\n</ul>\n\n<h2>MASAMI – 伴随 HORECA 行业的合作伙伴</h2>\n\n<p>MASAMI不仅提供产品，还提供适合每种HORECA商业模式的设计解决方案。我们相信，从一开始就正确投资的系统将有助于企业节省成本、提高服务效率并可持续发展。</p>\n\n<blockquote>\n<p><strong>MASAMI – 适用于所有商业模式的安全、现代和最佳的 HORECA 系统设计解决方案。</strong></p>\n</blockquote>\n\n<p><strong>立即联系 MASAMI，使用 HORECA 的产品进行系统设计解决方案的调查并提供适合您业务需求的建议。</strong></p>",
+                "button_label": "立即了解",
+                "meta_title": "使用 HORECA 产品进行系统设计咨询 |正美",
+                "meta_description": "MASAMI 专门为酒店、餐厅、度假村、工业厨房和餐饮连锁店提供使用 HORECA 产品的系统设计咨询服务。同步、安全的解决方案，优化成本并提高运营效率。",
+                "meta_keywords": "酒店设计咨询、工业厨房设计、餐厅燃气系统、酒店燃气系统、LPG 系统设计、HORECA 系统设计、餐厅厨房系统咨询、度假村设计、酒店设计、MASAMI"
+            }
+        },
+        {
+            "resource_type": "cms_service_category",
+            "resource_id": "1",
+            "source_revision": "e6f8817d7da633c6b121cbac5d67b7538d4572997afaa1911dfad6139f4def6a",
+            "payload": {
+                "name": "服务",
+                "description": "正美的服务"
+            }
+        },
+        {
+            "resource_type": "cms_team_member",
+            "resource_id": "1",
+            "source_revision": "a94cc1467f10f5a56ac70ca3343e69ad062ae08ae637e229522c9416a4d8fb59",
+            "payload": {
+                "name": "Jhon Castellon",
+                "role": "监视器",
+                "department": "建造",
+                "summary": "负责现场监理、安全和施工质量。",
+                "bio": "负责现场监理、安全和施工质量。"
+            }
+        },
+        {
+            "resource_type": "cms_team_member",
+            "resource_id": "2",
+            "source_revision": "fff44e70d7821afedaa81a04a4df532992a0fabf178f8e5d9251d0fd3623c779",
+            "payload": {
+                "name": "José Carpio",
+                "role": "经理",
+                "department": "项目",
+                "summary": "协调各阶段的进度、预算和验收。",
+                "bio": "协调各阶段的进度、预算和验收。"
+            }
+        },
+        {
+            "resource_type": "cms_team_member",
+            "resource_id": "3",
+            "source_revision": "b0d536dd0fb431619f70dc9399c117266355440358ef9e69a09dfb99ef3ac766",
+            "payload": {
+                "name": "Valentin Lacoste",
+                "role": "建筑师",
+                "department": "设计",
+                "summary": "开发概念、前提和建筑细节。",
+                "bio": "开发概念、前提和建筑细节。"
+            }
+        },
+        {
+            "resource_type": "cms_team_member",
+            "resource_id": "4",
+            "source_revision": "950b5a1e78ca51f06e5121606c3b6b27231766c5d2f24b91f4b0ed7f7463f4d3",
+            "payload": {
+                "name": "Kyle Frederick",
+                "role": "组长",
+                "department": "技术",
+                "summary": "负责施工文件的技术协调和控制。",
+                "bio": "负责施工文件的技术协调和控制。"
+            }
+        },
+        {
+            "resource_type": "cms_testimonial",
+            "resource_id": "1",
+            "source_revision": "6e626f782376aade0e839317336108530c7a73da01b2d05ef236f6e3a63b0ed4",
+            "payload": {
+                "name": "Sharah Albert",
+                "role": "投资者",
+                "company": "涛殿别墅",
+                "quote": "是我合作过的最专业的设计施工单位。房子设计非常漂亮，每个细节都是标准建造。",
+                "image_alt": "Sharah Albert"
+            }
+        },
+        {
+            "resource_type": "cms_testimonial",
+            "resource_id": "2",
+            "source_revision": "f15c4747912957a160b4b60e365a97085cf601408131c89938a7ad676245eecc",
+            "payload": {
+                "name": "Emily Blunt",
+                "role": "客户",
+                "company": "联排别墅第3区",
+                "quote": "该公司始终根据要求提供多样化的设计。我们的房子很漂亮，适合家庭的需要。",
+                "image_alt": "Emily Blunt"
+            }
+        },
+        {
+            "resource_type": "site_profile",
+            "resource_id": "1",
+            "source_revision": "1d1c3e6742f580bd78bea13a822c1bb9c464538c814c6faef5864042c935db67",
+            "payload": {
+                "site_name": "正美越南有限公司",
+                "description": "MASAMI为工业园区提供采购服务。",
+                "branding": {
+                    "company_name": "正美越南有限公司",
+                    "company_description": "MASAMI为工业园区提供采购服务。",
+                    "slogan": "MASAMI工业园区采购服务",
+                    "support_location": "河内市同迈区阮德景街 130 号 Generalexim 大厦 6 楼",
+                    "boc_footer_note": "网站正在等待向工贸部申报",
+                    "copyright_text": null
+                }
+            }
+        }
+    ],
+    "cms_pages": [
+        {
+            "cms_page_id": "2",
+            "source_revision": "2d9442b31a57ed84fcda1cbad83e36f8e6678c2a1edda85f10915f36321788f2",
+            "payload": {
+                "title": "介绍",
+                "excerpt": "正美越南有限公司",
+                "body": "<h2>MASAMI – 一家信誉良好的燃气、工业燃气和燃气系统解决方案供应商</h2><p><strong>MASAMI</strong> 是一家在 <strong>领域运营的企业，供应燃气、工业燃气以及设计、建造和安装燃气系统</strong> ，为工厂、工业园区和医院、研究所、实验室、餐馆、酒店和许多其他生产场所提供服务字段。</p><p>秉承 <strong>“操作安全-产品质量-服务专业”</strong>的座右铭，MASAMI始终致力于为客户提供有效、经济的用气解决方案，完全满足操作过程中的技术标准和安全要求。</p><h2>活动领域</h2><p>目前，MASAMI 重点发展两个核心服务集团：</p><ul><li data-list-item-id=\"e1699e03b418633ceac8b4017396a154e\"><strong>供应天然气和工业气体</strong> 服务于生产、加工、金属焊接和切割、医疗保健、食品和许多其他行业。</li><li data-list-item-id=\"e2f10092cfeeb971b37b4c104cc12981f\"><strong>根据各项目的要求进行燃气管道系统</strong>、供气站、燃气分配系统及辅助项目的咨询、设计、施工和安装。</li></ul><p>我们始终选择符合质量标准的产品，结合经验丰富的技术团队，提供适合每种实际使用需求的解决方案。</p><h2>燃气系统综合解决方案</h2><p>MASAMI不仅提供产品，还从勘察阶段、解决方案咨询、系统设计、设备选型、安装到投产后的维护和技术支持全程陪伴客户。</p><p>每个项目均按照科学流程实施，严格遵循技术和安全要求，确保系统运行稳定、耐用并优化运营成本。</p><h2>质量创造声誉</h2><p>MASAMI 的声誉建立在每个项目的产品质量、责任和透明度之上。</p><p>我们承诺：</p><ul><li data-list-item-id=\"e4438375dccf5bcc106afc4f5dbdde71d\">提供来源明确的天然气和工业气体。</li><li data-list-item-id=\"e8e182a11ac10e4da871829f5812ffebc\">该产品符合质量和安全标准。</li><li data-list-item-id=\"ef84d655b1c01feb146514ddd8f105294\">就正确的需求、正确的解决方案进行咨询。</li><li data-list-item-id=\"edd6749804fd680f0c8bbd0d5962fbc9a\">施工符合技术标准。</li><li data-list-item-id=\"ecd0ed6a6c684e5a52f97e85f86609c05\">确保项目进度和质量。</li><li data-list-item-id=\"e448907c991d242f5f4c39880a5e04150\">移交后快速的技术支持。</li></ul><h2>核心价值观</h2><ul><li data-list-item-id=\"eaf3ed0f79ba419c234d42229a9456748\"><strong>安全</strong> 是每个产品和项目的重中之重。</li><li data-list-item-id=\"e9291cd78dda226ef9e4f037e58fcd189\"><strong>质量</strong> 是可持续发展的基础。</li><li data-list-item-id=\"ec1b1e6dce004a3fac4ff4e39c5766466\"><strong>声誉</strong> 是建立在认真履行承诺的基础上的。</li><li data-list-item-id=\"e5e0a12c9b9382c46626633c4ced542bd\"><strong>专业</strong> 咨询、施工和客户服务。</li><li data-list-item-id=\"e63e4b2b554279291d1101bb2826d76e2\"><strong>在客户使用系统的整个过程中长期陪伴</strong> 。</li></ul><h2>愿景</h2><p>MASAMI旨在成为越南天然气供应、工业气体和气体系统解决方案领域的信誉企业，不断提高产品质量、服务和技术能力，以满足市场日益增长的要求。</p><h2>使命</h2><p>为客户提供优质的产品、最优的技术解决方案和专业的服务，为提高生产效率、保障运营安全、为每个企业创造可持续价值做出贡献。</p><h2>MASAMI – 值得信赖的企业合作伙伴</h2><p>我们相信客户的成功是衡量MASAMI发展的标准。因此，提供的每一个产品和实施的每一个项目都是以高度的责任感、奉献精神和对质量的承诺进行的。</p><p>未来，MASAMI将继续扩大产品组合、提高建设能力和完善服务，为全国客户带来现代化、安全、有效的工业气体解决方案。</p><blockquote><p><strong>MASAMI – 适用于所有项目的安全、优质和可持续的工业气体解决方案。</strong></p></blockquote>",
+                "meta_title": null,
+                "meta_description": null,
+                "meta_keywords": null
+            }
+        },
+        {
+            "cms_page_id": "4",
+            "source_revision": "f6c07bad37b157423937028d17328ba9f96c5fa10e6b8adbc1ab6d2c3a07dc7f",
+            "payload": {
+                "title": "提供产品及解决方案的流程",
+                "excerpt": null,
+                "body": "<div style=\"box-sizing:border-box;width:100%;padding:65px 20px;background:linear-gradient(135deg,#f5f9ff 0%,#ffffff 48%,#f3fbf6 100%);font-family:Arial,Helvetica,sans-serif;color:#172033;\">\n\n    <div style=\"box-sizing:border-box;width:100%;max-width:1380px;margin:0 auto;\">\n\n        <!-- Tiêu đề -->\n        <div style=\"box-sizing:border-box;max-width:850px;margin:0 auto 45px;text-align:center;\">\n\n            <div style=\"display:inline-block;margin-bottom:14px;padding:8px 18px;border-radius:30px;background:#eaf2fb;color:#0b3b78;font-size:14px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;\">\n                ● 专业流程\n            </div>\n\n            <h2 style=\"margin:0;color:#0b3b78;font-size:38px;line-height:1.3;font-weight:800;\">\n                MASAMI 的工作流程\n            </h2>\n\n            <p style=\"margin:16px auto 0;color:#667085;font-size:17px;line-height:1.7;\">\n                每个客户的要求都由 MASAMI 根据明确的流程来实现，\n                从接待到验收以及交接后的支持都严格把控。\n            </p>\n\n        </div>\n\n        <!-- Danh sách quy trình -->\n        <div style=\"box-sizing:border-box;display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:20px;\">\n\n            <!-- Bước 1 -->\n            <div style=\"box-sizing:border-box;position:relative;flex:1 1 190px;max-width:220px;min-width:190px;padding-top:36px;\">\n\n                <div style=\"position:absolute;top:0;left:50%;z-index:2;display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:7px solid #ffffff;border-radius:50%;background:#0b3b78;color:#ffffff;box-shadow:0 9px 24px rgba(11,59,120,0.24);font-size:21px;font-weight:800;transform:translateX(-50%);\">\n                    01\n                </div>\n\n                <div style=\"box-sizing:border-box;height:100%;padding:58px 20px 28px;border:1px solid #dfe6ee;border-radius:20px;background:#ffffff;box-shadow:0 12px 32px rgba(16,24,40,0.08);text-align:center;\">\n\n                    <div style=\"display:flex;align-items:center;justify-content:center;width:66px;height:66px;margin:0 auto 20px;border-radius:18px;background:#eaf2fb;color:#0b3b78;font-size:31px;\">\n                        ☎\n                    </div>\n\n                    <h3 style=\"margin:0 0 12px;color:#0b3b78;font-size:19px;line-height:1.4;font-weight:800;\">\n                        接收请求\n                    </h3>\n\n                    <p style=\"margin:0;color:#667085;font-size:14px;line-height:1.7;\">\n                        接收信息、使用需求、技术要求和目标\n                        客户部署。\n                    </p>\n\n                </div>\n            </div>\n\n            <!-- Bước 2 -->\n            <div style=\"box-sizing:border-box;position:relative;flex:1 1 190px;max-width:220px;min-width:190px;padding-top:36px;\">\n\n                <div style=\"position:absolute;top:0;left:50%;z-index:2;display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:7px solid #ffffff;border-radius:50%;background:#20a34a;color:#ffffff;box-shadow:0 9px 24px rgba(32,163,74,0.24);font-size:21px;font-weight:800;transform:translateX(-50%);\">\n                    02\n                </div>\n\n                <div style=\"box-sizing:border-box;height:100%;padding:58px 20px 28px;border:1px solid #dfe6ee;border-radius:20px;background:#ffffff;box-shadow:0 12px 32px rgba(16,24,40,0.08);text-align:center;\">\n\n                    <div style=\"display:flex;align-items:center;justify-content:center;width:66px;height:66px;margin:0 auto 20px;border-radius:18px;background:#edf9f1;color:#20a34a;font-size:31px;\">\n                        ✓\n                    </div>\n\n                    <h3 style=\"margin:0 0 12px;color:#16863d;font-size:19px;line-height:1.4;font-weight:800;\">\n                        调查咨询\n                    </h3>\n\n                    <p style=\"margin:0;color:#667085;font-size:14px;line-height:1.7;\">\n                        调查现状，分析实际需求，提出解决方案\n                        适合操作条件。\n                    </p>\n\n                </div>\n            </div>\n\n            <!-- Bước 3 -->\n            <div style=\"box-sizing:border-box;position:relative;flex:1 1 190px;max-width:220px;min-width:190px;padding-top:36px;\">\n\n                <div style=\"position:absolute;top:0;left:50%;z-index:2;display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:7px solid #ffffff;border-radius:50%;background:#0b3b78;color:#ffffff;box-shadow:0 9px 24px rgba(11,59,120,0.24);font-size:21px;font-weight:800;transform:translateX(-50%);\">\n                    03\n                </div>\n\n                <div style=\"box-sizing:border-box;height:100%;padding:58px 20px 28px;border:1px solid #dfe6ee;border-radius:20px;background:#ffffff;box-shadow:0 12px 32px rgba(16,24,40,0.08);text-align:center;\">\n\n                    <div style=\"display:flex;align-items:center;justify-content:center;width:66px;height:66px;margin:0 auto 20px;border-radius:18px;background:#eaf2fb;color:#0b3b78;font-size:31px;\">\n                        ▤\n                    </div>\n\n                    <h3 style=\"margin:0 0 12px;color:#0b3b78;font-size:19px;line-height:1.4;font-weight:800;\">\n                        计划规划\n                    </h3>\n\n                    <p style=\"margin:0;color:#667085;font-size:14px;line-height:1.7;\">\n                        制定技术方案，选择产品并确定进度\n                        适当的实施。\n                    </p>\n\n                </div>\n            </div>\n\n            <!-- Bước 4 -->\n            <div style=\"box-sizing:border-box;position:relative;flex:1 1 190px;max-width:220px;min-width:190px;padding-top:36px;\">\n\n                <div style=\"position:absolute;top:0;left:50%;z-index:2;display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:7px solid #ffffff;border-radius:50%;background:#168fa5;color:#ffffff;box-shadow:0 9px 24px rgba(22,143,165,0.24);font-size:21px;font-weight:800;transform:translateX(-50%);\">\n                    04\n                </div>\n\n                <div style=\"box-sizing:border-box;height:100%;padding:58px 20px 28px;border:1px solid #dfe6ee;border-radius:20px;background:#ffffff;box-shadow:0 12px 32px rgba(16,24,40,0.08);text-align:center;\">\n\n                    <div style=\"display:flex;align-items:center;justify-content:center;width:66px;height:66px;margin:0 auto 20px;border-radius:18px;background:#eaf8fa;color:#168fa5;font-size:31px;\">\n                        ⚙\n                    </div>\n\n                    <h3 style=\"margin:0 0 12px;color:#137b8e;font-size:19px;line-height:1.4;font-weight:800;\">\n                        供货及施工\n                    </h3>\n\n                    <p style=\"margin:0;color:#667085;font-size:14px;line-height:1.7;\">\n                        按程序供应产品或进行施工安装\n                        技术和安全标准。\n                    </p>\n\n                </div>\n            </div>\n\n            <!-- Bước 5 -->\n            <div style=\"box-sizing:border-box;position:relative;flex:1 1 190px;max-width:220px;min-width:190px;padding-top:36px;\">\n\n                <div style=\"position:absolute;top:0;left:50%;z-index:2;display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:7px solid #ffffff;border-radius:50%;background:#0b3b78;color:#ffffff;box-shadow:0 9px 24px rgba(11,59,120,0.24);font-size:21px;font-weight:800;transform:translateX(-50%);\">\n                    05\n                </div>\n\n                <div style=\"box-sizing:border-box;height:100%;padding:58px 20px 28px;border:1px solid #dfe6ee;border-radius:20px;background:#ffffff;box-shadow:0 12px 32px rgba(16,24,40,0.08);text-align:center;\">\n\n                    <div style=\"display:flex;align-items:center;justify-content:center;width:66px;height:66px;margin:0 auto 20px;border-radius:18px;background:#eaf2fb;color:#0b3b78;font-size:31px;\">\n                        ☑\n                    </div>\n\n                    <h3 style=\"margin:0 0 12px;color:#0b3b78;font-size:19px;line-height:1.4;font-weight:800;\">\n                        检查验收\n                    </h3>\n\n                    <p style=\"margin:0;color:#667085;font-size:14px;line-height:1.7;\">\n                        质量检查、试运行、纠错及验收\n                        同一个客户。\n                    </p>\n\n                </div>\n            </div>\n\n            <!-- Bước 6 -->\n            <div style=\"box-sizing:border-box;position:relative;flex:1 1 190px;max-width:220px;min-width:190px;padding-top:36px;\">\n\n                <div style=\"position:absolute;top:0;left:50%;z-index:2;display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:7px solid #ffffff;border-radius:50%;background:#20a34a;color:#ffffff;box-shadow:0 9px 24px rgba(32,163,74,0.24);font-size:21px;font-weight:800;transform:translateX(-50%);\">\n                    06\n                </div>\n\n                <div style=\"box-sizing:border-box;height:100%;padding:58px 20px 28px;border:1px solid #dfe6ee;border-radius:20px;background:#ffffff;box-shadow:0 12px 32px rgba(16,24,40,0.08);text-align:center;\">\n\n                    <div style=\"display:flex;align-items:center;justify-content:center;width:66px;height:66px;margin:0 auto 20px;border-radius:18px;background:#edf9f1;color:#20a34a;font-size:31px;\">\n                        ♻\n                    </div>\n\n                    <h3 style=\"margin:0 0 12px;color:#16863d;font-size:19px;line-height:1.4;font-weight:800;\">\n                        保修和陪伴\n                    </h3>\n\n                    <p style=\"margin:0;color:#667085;font-size:14px;line-height:1.7;\">\n                        技术支持、维护、服务以及与客户的陪伴\n                        操作期间。\n                    </p>\n\n                </div>\n            </div>\n\n        </div>\n\n        <!-- Cam kết -->\n       <div style=\"box-sizing:border-box;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:38px;padding:24px;border-radius:20px;background:linear-gradient(135deg,#082d60 0%,#0b4c91 100%);color:#ffffff;\">\n\n    <div style=\"box-sizing:border-box;display:flex;align-items:center;gap:12px;flex:1 1 190px;min-width:180px;padding:10px 14px;\">\n        <div style=\"display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border:1px solid rgba(255,255,255,0.3);border-radius:13px;background:rgba(255,255,255,0.1);font-size:23px;\">\n            ✓\n        </div>\n        <div>\n            <strong style=\"display:block;margin-bottom:4px;font-size:14px;line-height:1.4;\">\n                品质保证\n            </strong>\n            <span style=\"display:block;color:rgba(255,255,255,0.75);font-size:12px;line-height:1.5;\">\n                来源明确的产品\n            </span>\n        </div>\n    </div>\n\n    <div style=\"box-sizing:border-box;display:flex;align-items:center;gap:12px;flex:1 1 190px;min-width:180px;padding:10px 14px;\">\n        <div style=\"display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border:1px solid rgba(255,255,255,0.3);border-radius:13px;background:rgba(255,255,255,0.1);font-size:23px;\">\n            ★\n        </div>\n        <div>\n            <strong style=\"display:block;margin-bottom:4px;font-size:14px;line-height:1.4;\">\n                最佳解决方案\n            </strong>\n            <span style=\"display:block;color:rgba(255,255,255,0.75);font-size:12px;line-height:1.5;\">\n                适合各种需求\n            </span>\n        </div>\n    </div>\n\n    <div style=\"box-sizing:border-box;display:flex;align-items:center;gap:12px;flex:1 1 190px;min-width:180px;padding:10px 14px;\">\n        <div style=\"display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border:1px solid rgba(255,255,255,0.3);border-radius:13px;background:rgba(255,255,255,0.1);font-size:23px;\">\n            ⛨\n        </div>\n        <div>\n            <strong style=\"display:block;margin-bottom:4px;font-size:14px;line-height:1.4;\">\n                操作安全\n            </strong>\n            <span style=\"display:block;color:rgba(255,255,255,0.75);font-size:12px;line-height:1.5;\">\n                符合技术标准\n            </span>\n        </div>\n    </div>\n\n    <div style=\"box-sizing:border-box;display:flex;align-items:center;gap:12px;flex:1 1 190px;min-width:180px;padding:10px 14px;\">\n        <div style=\"display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border:1px solid rgba(255,255,255,0.3);border-radius:13px;background:rgba(255,255,255,0.1);font-size:23px;\">\n            ◷\n        </div>\n        <div>\n            <strong style=\"display:block;margin-bottom:4px;font-size:14px;line-height:1.4;\">\n                确保进展\n            </strong>\n            <span style=\"display:block;color:rgba(255,255,255,0.75);font-size:12px;line-height:1.5;\">\n                按承诺部署\n            </span>\n        </div>\n    </div>\n\n    <div style=\"box-sizing:border-box;display:flex;align-items:center;gap:12px;flex:1 1 190px;min-width:180px;padding:10px 14px;\">\n        <div style=\"display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border:1px solid rgba(255,255,255,0.3);border-radius:13px;background:rgba(255,255,255,0.1);font-size:23px;\">\n            🤝\n        </div>\n        <div>\n            <strong style=\"display:block;margin-bottom:4px;font-size:14px;line-height:1.4;\">\n                长期伴侣\n            </strong>\n            <span style=\"display:block;color:rgba(255,255,255,0.75);font-size:12px;line-height:1.5;\">\n                专注、快速支持\n            </span>\n        </div>\n    </div>\n\n    <div style=\"box-sizing:border-box;display:flex;align-items:center;gap:12px;flex:1 1 190px;min-width:180px;padding:10px 14px;\">\n        <div style=\"display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border:1px solid rgba(255,255,255,0.3);border-radius:13px;background:rgba(255,255,255,0.1);font-size:23px;\">\n            🎧\n        </div>\n        <div>\n            <strong style=\"display:block;margin-bottom:4px;font-size:14px;line-height:1.4;\">\n                24/7 技术支持\n            </strong>\n            <span style=\"display:block;color:rgba(255,255,255,0.75);font-size:12px;line-height:1.5;\">\n                随时准备咨询和故障排除\n            </span>\n        </div>\n    </div>\n\n</div>\n\n    </div>\n\n</div>",
+                "meta_title": null,
+                "meta_description": null,
+                "meta_keywords": null
+            }
+        }
+    ],
+    "landing_pages": [
+        {
+            "landing_page_id": "1",
+            "source_revision": "814412baf378d67c582701cda112eb538fee9af52c68f22b1fc8c18928dd7a25",
+            "payload": {
+                "title": "主页 - 内容块设置",
+                "excerpt": "登陆页面主页。",
+                "meta_title": null,
+                "meta_description": "登陆页面由块管理。"
+            }
+        }
+    ],
+    "landing_blocks": [
+        {
+            "landing_page_block_id": "1",
+            "source_revision": "1dbd9cd4607220408a69f154052b21232fb241793160bd8902371a416083c315",
+            "payload": {
+                "schema_version": 1,
+                "title": null,
+                "subtitle": null,
+                "description": null,
+                "button_label": "立即了解",
+                "content": {
+                    "slides": [
+                        {
+                            "image": "https://masami.com.vn/files/cms/website-main/8omp4O6boexmofxaf4ECnS4Cevje7w31shsaxDTo.png"
+                        },
+                        {
+                            "image": "https://masami.com.vn/files/cms/website-main/VayI60V5HrtCRa4fmnYDnAcXEpBFS5t6ZLrocaVo.png"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "2",
+            "source_revision": "0131f1fd51d31d38b27d631fba1e4e70f761ffa45fd5261162e96fd7c2016c4b",
+            "payload": {
+                "schema_version": 1,
+                "title": "正美越南有限公司",
+                "subtitle": "介绍",
+                "description": "MASAMI是一家从事燃气供应、工业气体及燃气系统设计、施工和安装领域的企业，服务于工厂、工业园区、医院、实验室、餐厅、酒店等众多生产领域。",
+                "button_label": null,
+                "content": {
+                    "items": [
+                        {
+                            "title": "生产化学品"
+                        },
+                        {
+                            "title": "生产燃料"
+                        },
+                        {
+                            "title": "运营产品"
+                        },
+                        {
+                            "title": "建筑和地基"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "3",
+            "source_revision": "b0eddfb38fb730bd72928b5df3a7326fe0ab3a5aca0a438719aee3690fc31209",
+            "payload": {
+                "schema_version": 1,
+                "title": "优秀产品",
+                "subtitle": "杰出的",
+                "description": "质量是成功的基础。我们致力于准确的产品、专业的服务和长期的保修。",
+                "button_label": null,
+                "content": {
+                    "items": [
+                        {
+                            "title": "旋转推拉门",
+                            "summary": "铝合金门系统功能优越，操作灵活，适用于多种类型的项目。",
+                            "image": "/theme-demo/dn302/dn302-living-room.png",
+                            "url": "#lien-he"
+                        },
+                        {
+                            "title": "单翼铝合金推拉门",
+                            "summary": "适用于狭窄空间、需要节省空间并接收自然光的最佳解决方案。",
+                            "image": "/theme-demo/dn302/dn302-villa.png",
+                            "url": "#lien-he"
+                        },
+                        {
+                            "title": "漂亮的两板铝推拉门",
+                            "summary": "在越南天气条件下运行平稳、简约美观且耐用。",
+                            "image": "/theme-demo/dn302/dn302-living-room.png",
+                            "url": "#lien-he"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "4",
+            "source_revision": "8b530bdff45f09ff99d6d7794310418a0f9ca4aecbe6abefca8ec20f9a6908e6",
+            "payload": {
+                "schema_version": 1,
+                "title": "MASAMI的工作流程",
+                "subtitle": "发现",
+                "description": "MASAMI工业园区采购服务",
+                "button_label": null,
+                "content": {
+                    "items": [
+                        {
+                            "title": "B1 - 接收请求",
+                            "icon": "fa-solid fa-temperature-half",
+                            "url": "https://masami.com.vn/vi/p/quy-trinh-cung-cap-san-pham-giai-phap"
+                        },
+                        {
+                            "title": "B2 - 调查与咨询",
+                            "icon": "fa-regular fa-window-restore",
+                            "url": "https://masami.com.vn/vi/p/quy-trinh-cung-cap-san-pham-giai-phap"
+                        },
+                        {
+                            "title": "B3 - 计划与报价",
+                            "icon": "fa-solid fa-sun",
+                            "url": "https://masami.com.vn/vi/p/quy-trinh-cung-cap-san-pham-giai-phap"
+                        },
+                        {
+                            "title": "B4 - 供应与建筑",
+                            "icon": "fa-solid fa-feather-pointed",
+                            "url": "https://masami.com.vn/vi/p/quy-trinh-cung-cap-san-pham-giai-phap"
+                        },
+                        {
+                            "title": "B5-检验与验收",
+                            "url": "https://masami.com.vn/vi/p/quy-trinh-cung-cap-san-pham-giai-phap"
+                        },
+                        {
+                            "title": "支持 - 保修和配套",
+                            "icon": "fa-solid fa-handshake",
+                            "url": "https://masami.com.vn/vi/p/quy-trinh-cung-cap-san-pham-giai-phap"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "5",
+            "source_revision": "ec27f4400e8daccebaf1fa7ef1092e57cea283aeb8a4e7c5b15348fa9a21268c",
+            "payload": {
+                "schema_version": 1,
+                "title": "完全的",
+                "subtitle": "项目",
+                "description": null,
+                "button_label": null,
+                "content": {
+                    "items": [
+                        {
+                            "title": "莫耶克别墅",
+                            "summary": "玻璃门系统扩大了视野并连接了花园。",
+                            "image": "/theme-demo/dn302/dn302-villa.png",
+                            "url": "#lien-he"
+                        },
+                        {
+                            "title": "热带温室",
+                            "summary": "用于度假空间的同步铝制玻璃门。",
+                            "image": "/theme-demo/dn302/dn302-living-room.png",
+                            "url": "#lien-he"
+                        },
+                        {
+                            "title": "现代联排别墅",
+                            "summary": "建造高级玻璃幕墙和门。",
+                            "image": "/theme-demo/dn302/dn302-villa.png",
+                            "url": "#lien-he"
+                        },
+                        {
+                            "title": "绿色阳台",
+                            "summary": "灵活的开放式居住空间解决方案。",
+                            "image": "/theme-demo/dn302/dn302-living-room.png",
+                            "url": "#lien-he"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "6",
+            "source_revision": "4862f47aa228fd01449e3cd239209192950a5246528e8f3c21c22fbc41b56291",
+            "payload": {
+                "schema_version": 1,
+                "title": "主要产品组",
+                "subtitle": "产品目录",
+                "description": "MASAMI是工业园区开发的物流提供商",
+                "button_label": null,
+                "content": {
+                    "items": [
+                        {
+                            "title": "生产化学品",
+                            "summary": "MASAMI 供应纯正、高品质的 99% NaOH 片，用于水处理、造纸、纺织染色、肥皂、食品和许多其他行业。",
+                            "image": "https://masami.com.vn/files/cms/website-main/4Pt0aIKmjnVU97Qv1qY0vpyGMlj0gfJNCbkisLbx.png",
+                            "icon": "fa-solid fa-archway"
+                        },
+                        {
+                            "title": "运营产品",
+                            "image": "https://masami.com.vn/files/cms/website-main/VpI9o5l3Rb08LacicsSr4VZq97TOsr6IRixjReQA.png",
+                            "icon": "fa-solid fa-border-all"
+                        },
+                        {
+                            "title": "建筑和地基",
+                            "image": "https://masami.com.vn/files/cms/website-main/nvIX1i2Toif8gDNpc2uueKhThHEB7F55Cq2vk7gZ.png",
+                            "icon": "fa-solid fa-door-closed"
+                        },
+                        {
+                            "title": "生产燃料",
+                            "image": "https://masami.com.vn/files/cms/website-main/r3ZjF4EZytw80nPuhalSi7tjED5XzSs7IxawDPII.png",
+                            "icon": "fa-solid fa-door-open"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "7",
+            "source_revision": "bbe4464ce23b0936cf1a66ba0d294dc8b66b9ca630eb2e4ecc54045392f7f75a",
+            "payload": {
+                "schema_version": 1,
+                "title": "注册以接收最新的新闻通讯和更新",
+                "subtitle": "登记",
+                "description": null,
+                "button_label": null,
+                "content": []
+            }
+        },
+        {
+            "landing_page_block_id": "8",
+            "source_revision": "a01cfa2b30bbf107ded3d465fd9c2cc1ee8ab5fc392d62063fb7ffd4f47e2a04",
+            "payload": {
+                "schema_version": 1,
+                "title": "客户",
+                "subtitle": "评论来自",
+                "description": "该产品效果很好，家人和朋友都很欣赏我的选择。",
+                "button_label": null,
+                "content": {
+                    "items": [
+                        {
+                            "name": "黎黄宝",
+                            "role": "主持人",
+                            "quote": "该产品效果很好，家人和朋友都很欣赏我的选择。",
+                            "image": "/theme-demo/dn302/dn302-villa.png"
+                        },
+                        {
+                            "name": "华氏琼",
+                            "role": "客户",
+                            "quote": "专注的服务团队，明确的建议并按承诺按时完成。",
+                            "image": "/theme-demo/dn302/dn302-living-room.png"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "9",
+            "source_revision": "7d727f0b8d4531ea5dbf9b128faf839725c7711d4dba3fb1c2aeecc75cad54db",
+            "payload": {
+                "schema_version": 1,
+                "title": "知识和经验",
+                "subtitle": "最新消息",
+                "description": null,
+                "button_label": null,
+                "content": {
+                    "items": [
+                        {
+                            "title": "兴发铝门在生活中的多样化应用",
+                            "summary": "了解常见应用以及如何选择合适的门系统。",
+                            "date": "2022 年 4 月 15 日",
+                            "image": "/theme-demo/dn302/dn302-living-room.png",
+                            "url": "#"
+                        },
+                        {
+                            "title": "顶级最新漂亮铝玻璃窗型号",
+                            "summary": "设计趋势有助于使建筑物通风且现代。",
+                            "date": "2022 年 4 月 15 日",
+                            "image": "/theme-demo/dn302/dn302-villa.png",
+                            "url": "#"
+                        },
+                        {
+                            "title": "为房屋选择铝玻璃门的经验",
+                            "summary": "型材、玻璃、配件和安装技术的标准。",
+                            "date": "2022 年 4 月 15 日",
+                            "image": "/theme-demo/dn302/dn302-living-room.png",
+                            "url": "#"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "10",
+            "source_revision": "a31b9eefd59278fb52fcc02504f67334e28c81911b3c14a768c0eb41822ecd85",
+            "payload": {
+                "schema_version": 1,
+                "title": "注册咨询服务",
+                "subtitle": "接触",
+                "description": null,
+                "button_label": null,
+                "content": {
+                    "form_title": null,
+                    "note_title": null,
+                    "note_text": null
+                }
+            }
+        },
+        {
+            "landing_page_block_id": "11",
+            "source_revision": "16219a032b01b7c030be504ab9348d2848f64568d540088e3af1a435bc6b3fb1",
+            "payload": {
+                "schema_version": 1,
+                "title": "我们的合作伙伴",
+                "subtitle": null,
+                "description": null,
+                "button_label": null,
+                "content": {
+                    "items": [
+                        {
+                            "image": "https://htvietnam.vn/layouts/HTVietNam/images/logo.png"
+                        },
+                        {
+                            "image": "https://vihomeplus.com/layouts/ViHomePlus/images/logo.jpg"
+                        },
+                        {
+                            "image": "http://xaydungminhchien.com/files/cms/dvjCVwfSc5rwSlZ573oAvbmRGnVarqEhBFCMaoYX.png"
+                        },
+                        {
+                            "title": "房地产"
+                        },
+                        {
+                            "title": "智能家居"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
