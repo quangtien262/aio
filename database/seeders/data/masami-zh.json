@@ -47,7 +47,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "1",
-            "source_revision": "2368ed4c3553ccfe7a4716b00777315b0000aff59e970a48e76e4641f26a5d74",
+            "source_revision": "df7cad41a85a603d94c2d1b63ca80e1517c49752587de6211b7553c05688ca9d",
             "payload": {
                 "name": "工厂沥青施工",
                 "short_description": "MASAMI 专门为工厂、工业园区、内部道路、停车场和仓库建造沥青。高品质的沥青路面解决方案，承载能力高，施工速度快，确保进度和长期耐久性。",
@@ -63,7 +63,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "10",
-            "source_revision": "b9ba4e989a5c5ffbaa3769c613ac06cff36437b4388d97370eff33101d1397da",
+            "source_revision": "c2be8a452c6c6eeeb0ccf3c7cdc7c9256508647d478768fc6e74c9c4e79de02a",
             "payload": {
                 "name": "LNG（液化天然气）",
                 "short_description": "MASAMI 提供高质量的液化天然气，为锅炉、熔炉、工厂和工业园区提供服务。清洁燃料解决方案有助于降低运营成本并减少排放。",
@@ -79,7 +79,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "11",
-            "source_revision": "8753fa84f8918c4cd203560f1924d293b1f61709b51b08ad3cdace469f61765d",
+            "source_revision": "681656b169343e841b03300edf3eba582477eda61da9f76cca75889698d9606d",
             "payload": {
                 "name": "CNG（压缩天然气）",
                 "short_description": "MASAMI向工厂和工业园区供应CNG，有助于节省燃料、减少排放并提高生产效率。",
@@ -95,7 +95,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "12",
-            "source_revision": "2b150aabe8a96d59148c6dcdb0483b0d089f305c49834bdb73986644f78f311f",
+            "source_revision": "7bf7f57cb3f60548cb10dd7e25f3cf6773ee237ead78a9b5c2b8c39255c9042c",
             "payload": {
                 "name": "工业液化石油气 - 工厂用液化气",
                 "short_description": "MASAMI为工厂、工业炉灶、锅炉和生产线提供高品质的工业液化石油气、液化石油气供气解决方案。",
@@ -111,7 +111,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "13",
-            "source_revision": "13ccd43d7f0f2cda72cc766e2cb4a427d150f14c64de57ee2b10d03f904371a4",
+            "source_revision": "611fd8af2f67339a6bc5d6af631fd4e9de70d949fc63b92fd889b5e65c62135a",
             "payload": {
                 "name": "LH2（液氢）",
                 "short_description": "MASAMI 为研究、高科技产业和未来清洁能源解决方案提供液氢 (LH2)。",
@@ -127,7 +127,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "14",
-            "source_revision": "a5ed9e3e8027bfc1ce6b7c86731843fd2f086303cfb934f4de028a71b79c3191",
+            "source_revision": "260afd7800aa6f3c25bbc2fdea77efafcefdf04ba44aac9d864199b16e6b5844",
             "payload": {
                 "name": "工业气体",
                 "short_description": "MASAMI 提供工业气体氧气、氮气、氩气、二氧化碳以及许多用于生产、医疗保健、食品和机械工程的专用气体。",
@@ -143,7 +143,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "15",
-            "source_revision": "1d3bb0b7c41d5fdc52b3e3e6f08df14b30f8e9a8da7a4f3e6859130f234b9a9c",
+            "source_revision": "72d9f2d15157073cf8c55a36a0de473b81fb8d3adb152e1f39b297a7816b65f8",
             "payload": {
                 "name": "LPG（液化石油气）",
                 "short_description": "了解什么是液化石油气、其优势、应用以及工业液化石油气系统解决方案。 MASAMI 专门从事咨询、设计、供应和安装安全有效的液化石油气系统。",
@@ -159,7 +159,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "16",
-            "source_revision": "45bcb3615ec6ca956997a9ea4ae72412be05246c0b9baa7538e40caf8e35fb03",
+            "source_revision": "e854d074d9a91c7e2286c7c9d82ee711863f2a034bf059301fb5f963426a2932",
             "payload": {
                 "name": "HORECA 清洁化学品 - MASAMI 的清洁、消毒和同步操作解决方案",
                 "short_description": "适用于酒店、餐厅、度假村、咖啡馆、中央厨房、工业厨房和烹饪服务连锁店的解决方案组合。",
@@ -175,7 +175,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "2",
-            "source_revision": "9c712919a26bf66b709fe4f8b5d2072cfc3e9e38da5ae7824df3b4f9894d7556",
+            "source_revision": "ecd28e1ba9916b20e093950a0f5dbececa4aa0a242f0e454727e519194bc5ecb",
             "payload": {
                 "name": "工厂地面防水",
                 "short_description": "MASAMI 提供工厂地板防水服务，处理水损坏的混凝土地板，并使用优质材料对工业地板进行防水，以帮助延长项目寿命并降低维护成本。",
@@ -191,7 +191,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "3",
-            "source_revision": "c2f35f55b40ffa0d13a532d611b124451f45725db8909017a82607ef3a19f6e8",
+            "source_revision": "ee47242abad5cbaba58ad03cc2d6cf80132324b1bd6442f6a925e13625f84494",
             "payload": {
                 "name": "耐热防漏工厂屋顶",
                 "short_description": "MASAMI 提供工厂地板防水服务，处理水损坏的混凝土地板，并使用优质材料对工业地板进行防水，以帮助延长项目寿命并降低维护成本。",
@@ -207,7 +207,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "4",
-            "source_revision": "31edee101d979d4d7d360a9fdd4a0dec91b654a8bc5dd680799cbc01df2bbf70",
+            "source_revision": "615f7437fea4cfb00ef96542c1ab8faf53c12279f888071a91d9ae18874ab161",
             "payload": {
                 "name": "工业润滑油",
                 "short_description": "MASAMI为工厂、工业园区和生产线提供真正的工业润滑油。多种液压油、齿轮油、空压机油帮助设备稳定运行，延长使用寿命。",
@@ -223,7 +223,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "5",
-            "source_revision": "697e3c3400db038d8de745420ac24fc0bf4b839bb50a6a4d23d0c5a07c36e44c",
+            "source_revision": "6920f80942983d3c6eae80d62ca9753adcaf2c0a3eecbc09c06c441987a514bf",
             "payload": {
                 "name": "工业冷却水",
                 "short_description": "MASAMI 提供高品质工业冷却液，帮助控制温度、防止腐蚀并提高发动机、数控机床和工业系统的运行性能。",
@@ -239,7 +239,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "6",
-            "source_revision": "9961d3835dacd074a09cb096c30c13615af331003e9222017d3e09cd389e6b31",
+            "source_revision": "17934795327e79a1dbe1f296bc0095b85805e066084f2b54f610ae96140847f2",
             "payload": {
                 "name": "工业润滑油脂",
                 "short_description": "MASAMI提供高品质工业润滑油，具有有效的耐热性、耐负载性和耐水性，适用于机械、轴承和工业设备。",
@@ -255,7 +255,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "7",
-            "source_revision": "8cddd5995123104564f94b3edea5d4094e6fde8b6e46aecf8f4bf52d0bb61baf",
+            "source_revision": "3a0dcc0bbf46c192c6c02d5701f13d970fa02157473cd191e37fc7c9b0e7cf10",
             "payload": {
                 "name": "氢氧化钠 (NaOH)",
                 "short_description": "MASAMI 供应纯正、高品质的 99% NaOH 片，用于水处理、造纸、纺织染色、肥皂、食品和许多其他行业。",
@@ -271,7 +271,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "8",
-            "source_revision": "673006670bef87ac31de2a94042d1da358789189bc4252412faad860d33aee51",
+            "source_revision": "b89b830a987061eb20d7155cad3602c94a061557ce433db6bb8569063ff3d86b",
             "payload": {
                 "name": "碱性酸",
                 "short_description": "MASAMI提供高品质工业酸，如HCl、H2SO4、HNO3、H3PO4，服务于水处理、电镀、化工、食品和许多行业。",
@@ -287,7 +287,7 @@
         {
             "resource_type": "catalog_product",
             "resource_id": "9",
-            "source_revision": "7b4a20f3f39524071c63d4c1c64268835d6dfff872f541362f4a6e3f10519e78",
+            "source_revision": "7fa0c33294af6947517da7b838983894b1d5fa4a4132111617586691b5eea47c",
             "payload": {
                 "name": "工业清洁剂",
                 "short_description": "MASAMI提供工业清洁化学品，可有效清洁油脂、水垢和设备表面，适用于工厂、工业园区和生产线。",

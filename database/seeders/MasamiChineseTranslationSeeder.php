@@ -569,8 +569,10 @@ class MasamiChineseTranslationSeeder extends Seeder
         }
 
         throw new RuntimeException(sprintf(
-            'Masami Chinese snapshot is stale for %s. Regenerate it from the current Vietnamese source before seeding.',
+            'Masami Chinese snapshot is stale for %s (expected %s, actual %s). Regenerate it from the current Vietnamese source before seeding.',
             $identity,
+            $expected !== '' ? $expected : '[missing]',
+            $actual !== '' ? $actual : '[missing]',
         ));
     }
 

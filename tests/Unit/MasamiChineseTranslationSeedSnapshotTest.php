@@ -95,6 +95,18 @@ class MasamiChineseTranslationSeedSnapshotTest extends TestCase
         $this->assertStringContainsString('/zh/', $json);
     }
 
+    public function test_snapshot_tracks_the_original_production_product_source_revision(): void
+    {
+        $product = collect($this->snapshot()['content'])->first(fn (array $entry): bool => (
+            $entry['resource_type'] === 'catalog_product' && $entry['resource_id'] === '1'
+        ));
+
+        $this->assertSame(
+            'df7cad41a85a603d94c2d1b63ca80e1517c49752587de6211b7553c05688ca9d',
+            $product['source_revision'],
+        );
+    }
+
     /** @return array<string, mixed> */
     private function snapshot(): array
     {
