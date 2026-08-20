@@ -31,8 +31,6 @@
                 @endguest
             </span>
             <a class="rx13-appointment" href="#footer">Đặt lịch tư vấn <span>→</span></a>
-            <span class="rx13-flag rx13-flag--en">EN</span>
-            <span class="rx13-flag">VN</span>
             <button class="rx13-menu" type="button" data-rx13-menu aria-expanded="false" aria-label="Menu">=</button>
         </div>
     </div>

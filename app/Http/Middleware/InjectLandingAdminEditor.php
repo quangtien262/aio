@@ -87,10 +87,19 @@ class InjectLandingAdminEditor
         }
 
         $editorLocales = collect(FrontendLocalization::localeOptions())
-            ->filter(fn (array $locale): bool => (bool) ($locale['active'] ?? true))
+            ->filter(fn (array $locale): bool => (bool) (
+                $locale['is_enabled_for_editing']
+                ?? $locale['is_active']
+                ?? $locale['active']
+                ?? false
+            ))
             ->map(fn (array $locale): array => [
                 'code' => $locale['code'] ?? '',
-                'label' => $locale['label'] ?? ($locale['code'] ?? ''),
+                'label' => $locale['native_name']
+                    ?? $locale['name']
+                    ?? $locale['label']
+                    ?? ($locale['code'] ?? ''),
+                'is_published' => (bool) ($locale['is_published'] ?? false),
             ])
             ->filter(fn (array $locale): bool => filled($locale['code']))
             ->values()

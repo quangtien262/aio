@@ -59,6 +59,30 @@ class LocalizationFoundationTest extends TestCase
         );
     }
 
+    public function test_every_backend_locale_option_exposes_a_storefront_image_icon(): void
+    {
+        $websiteKey = 'locale-icon-test';
+        $manager = app(WebsiteLocaleManager::class);
+        $manager->ensureSystemLocale('zh-Hant-HK', 'Traditional Chinese (Hong Kong)', '繁體中文');
+        $manager->ensureSystemLocale('eo', 'Esperanto', 'Esperanto');
+        $manager->provisionWebsite($websiteKey);
+        $manager->addLocale($websiteKey, 'zh-Hant-HK', ['is_published' => true]);
+        $manager->addLocale($websiteKey, 'eo', ['is_published' => true]);
+
+        $options = collect(app(LocaleContext::class)->options($websiteKey))->keyBy('code');
+
+        $this->assertSame('HK', data_get($options->get('zh-Hant-HK'), 'country_code'));
+        $this->assertNull(data_get($options->get('eo'), 'country_code'));
+
+        foreach ($options as $option) {
+            $this->assertStringStartsWith(
+                'data:image/svg+xml;base64,',
+                (string) ($option['icon_url'] ?? ''),
+            );
+            $this->assertNotSame('', (string) ($option['icon_alt'] ?? ''));
+        }
+    }
+
     public function test_fallback_chain_follows_each_locale_configuration_recursively(): void
     {
         $websiteKey = 'recursive-fallback-test';

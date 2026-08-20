@@ -1090,13 +1090,20 @@
                             button_label: draft.button_label || '',
                             content: draft.content || {},
                         };
-                        if (!draft.masterOnly) payload.publish = true;
+                        const localeOption = editorLocales.find((option) => option.code === draft.locale);
+                        if (!draft.masterOnly && localeOption?.is_published === true) payload.publish = true;
                         const response = await fetch(updateUrlTemplate.replace('__BLOCK_ID__', blockId), {
                             method: 'PUT',
                             headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf},
                             body: JSON.stringify(payload),
                         });
-                        if (!response.ok) throw new Error('Không lưu được khối landing.');
+                        if (!response.ok) {
+                            const errorPayload = await response.json().catch(() => ({}));
+                            const validationMessage = Object.values(errorPayload?.errors || {})
+                                .flat()
+                                .find((message) => typeof message === 'string' && message.trim() !== '');
+                            throw new Error(validationMessage || errorPayload?.message || 'Không lưu được khối landing.');
+                        }
                     }
                     window.location.reload();
                 } catch (error) {

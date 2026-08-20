@@ -28,8 +28,6 @@
                 <a href="{{ route('customer.account') }}">Tài khoản</a>
             @endguest
             <a class="fg18-search" href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"></a>
-            <span class="fg18-flag fg18-flag--en">EN</span>
-            <span class="fg18-flag">VN</span>
             <button class="fg18-menu" type="button" data-fg18-menu aria-expanded="false" aria-label="Menu">=</button>
         </div>
     </div>

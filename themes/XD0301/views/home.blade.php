@@ -167,6 +167,7 @@
         ->map(fn (array $locale): array => [
             'code' => (string) ($locale['code'] ?? ''),
             'label' => (string) (($locale['native_name'] ?? null) ?: ($locale['name'] ?? $locale['code'] ?? '')),
+            'is_published' => (bool) ($locale['is_published'] ?? false),
         ])
         ->filter(fn (array $locale): bool => $locale['code'] !== '')
         ->values()

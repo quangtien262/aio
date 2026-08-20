@@ -269,6 +269,10 @@ class LocaleContext
                         'code' => (string) $locale->code,
                         'name' => (string) $locale->name,
                         'native_name' => $locale->native_name,
+                        ...LocaleIcon::metadata(
+                            (string) $locale->code,
+                            (string) ($locale->native_name ?: $locale->name),
+                        ),
                         'is_default' => (bool) $locale->is_default,
                         'is_active' => (bool) $locale->is_active,
                         'is_enabled_for_editing' => (bool) $locale->is_active,
@@ -298,6 +302,10 @@ class LocaleContext
                     'code' => $code,
                     'name' => (string) ($preset['name'] ?? strtoupper($code)),
                     'native_name' => $preset['native_name'] ?? null,
+                    ...LocaleIcon::metadata(
+                        $code,
+                        (string) ($preset['native_name'] ?? $preset['name'] ?? strtoupper($code)),
+                    ),
                     'is_default' => $code === config('localization.default_locale', 'vi'),
                     'is_active' => true,
                     'is_enabled_for_editing' => true,
@@ -325,6 +333,12 @@ class LocaleContext
             'code' => (string) $locale->locale,
             'name' => (string) ($locale->systemLocale?->name ?? strtoupper($locale->locale)),
             'native_name' => $locale->systemLocale?->native_name,
+            ...LocaleIcon::metadata(
+                (string) $locale->locale,
+                (string) ($locale->systemLocale?->native_name
+                    ?: $locale->systemLocale?->name
+                    ?: strtoupper($locale->locale)),
+            ),
             'is_default' => (bool) $locale->is_default,
             'is_active' => (bool) $locale->is_enabled_for_editing,
             'is_enabled_for_editing' => (bool) $locale->is_enabled_for_editing,
@@ -359,7 +373,7 @@ class LocaleContext
 
     private function cacheKey(string $websiteKey): string
     {
-        return 'localization:website:'.sha1($websiteKey).':options';
+        return 'localization:website:'.sha1($websiteKey).':options:v2';
     }
 
     private function rememberCacheKey(string $cacheKey): void

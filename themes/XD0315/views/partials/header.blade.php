@@ -26,8 +26,6 @@
                         <a href="{{ route('customer.account') }}">Tai khoan</a>
                     @endguest
                 </span>
-                <span class="af15-flag">VN</span>
-                <span class="af15-flag af15-flag--en">EN</span>
                 <a class="af15-search" href="{{ route('site.catalog.search') }}" aria-label="Tim kiem">o</a>
                 <button class="af15-menu-toggle" type="button" data-af15-menu-toggle aria-expanded="false" aria-label="Menu">=</button>
             </div>

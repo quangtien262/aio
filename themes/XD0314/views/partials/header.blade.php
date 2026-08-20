@@ -20,8 +20,6 @@
                 <a href="#footer" aria-label="Twitter">t</a>
                 <a href="#footer" aria-label="Youtube">▶</a>
                 <a href="#footer" aria-label="Pinterest">p</a>
-                <span class="bb14-flag">VN</span>
-                <span class="bb14-flag">EN</span>
             </div>
         </div>
     </div>

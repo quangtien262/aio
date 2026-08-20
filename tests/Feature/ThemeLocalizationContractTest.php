@@ -85,6 +85,8 @@ class ThemeLocalizationContractTest extends TestCase
         $this->assertStringContainsString('FrontendRouteUrl::localeSwitchUrls(', $contents);
         $this->assertStringContainsString('data-storefront-language-switcher', $contents);
         $this->assertStringContainsString('data-locale-code', $contents);
+        $this->assertStringContainsString('data-locale-icon', $contents);
+        $this->assertStringContainsString("['icon_url']", $contents);
     }
 
     public function test_theme_catalogs_and_views_have_no_repairable_legacy_encoding(): void
@@ -192,6 +194,11 @@ class ThemeLocalizationContractTest extends TestCase
         if ($headerViews->isNotEmpty()) {
             foreach ($headerViews as $headerView) {
                 $contents = (string) File::get($headerView->getPathname());
+                $this->assertDoesNotMatchRegularExpression(
+                    '/<span[^>]*class="[^"]*(?:flag|language)[^"]*"[^>]*>\s*(?:VI|VN|EN|ZH|JA|KO)\s*<\/span>/i',
+                    $contents,
+                    "{$group}/{$key}: hard-coded locale text must not replace the shared image icon.",
+                );
                 $usesSharedSwitcher = str_contains(
                     $contents,
                     'partials.storefront-language-switcher',

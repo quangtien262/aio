@@ -20,6 +20,15 @@
     );
     $languageUrl = static fn (string $locale): string => $languageUrls[$locale]
         ?? \App\Support\FrontendRouteUrl::home($locale);
+    $languageLabel = static fn (array $locale): string => trim((string) (
+        ($locale['native_name'] ?? null)
+        ?: ($locale['name'] ?? null)
+        ?: strtoupper((string) ($locale['code'] ?? ''))
+    ));
+    $languageIcon = static fn (array $locale): string => (string) (
+        ($locale['icon_url'] ?? null)
+        ?: \App\Support\Localization\LocaleIcon::dataUri((string) ($locale['code'] ?? ''))
+    );
     if ($menuItems->isEmpty()) {
         $menuItems = collect([
             ['label' => 'Trang chủ', 'url' => route('site.home')],
@@ -44,7 +53,6 @@
                 <span class="dn-socials"><i class="fa-brands fa-facebook-f"></i><i class="fa-brands fa-youtube"></i><i class="fa-brands fa-pinterest-p"></i></span>
                 @if($headerLocales->count() > 1)
                     <div class="dn-language-switcher" data-dn-language-switcher data-storefront-language-switcher aria-label="Chọn ngôn ngữ">
-                        <i class="fa-solid fa-globe" aria-hidden="true"></i>
                         @foreach($headerLocales as $locale)
                             @php($localeCode = (string) $locale['code'])
                             <a
@@ -52,8 +60,10 @@
                                 href="{{ $languageUrl($localeCode) }}"
                                 hreflang="{{ $localeCode }}"
                                 data-locale-code="{{ $localeCode }}"
+                                aria-label="{{ $languageLabel($locale) }}"
+                                title="{{ $languageLabel($locale) }}"
                                 @if($localeCode === $currentLocale) aria-current="true" @endif
-                            >{{ strtoupper(explode('-', $localeCode)[0]) }}</a>
+                            ><img data-locale-icon="{{ $localeCode }}" src="{{ $languageIcon($locale) }}" alt="" width="28" height="20"></a>
                         @endforeach
                     </div>
                 @endif
@@ -92,8 +102,12 @@
                                     href="{{ $languageUrl($localeCode) }}"
                                     hreflang="{{ $localeCode }}"
                                     data-locale-code="{{ $localeCode }}"
+                                    aria-label="{{ $languageLabel($locale) }}"
                                     @if($localeCode === $currentLocale) aria-current="true" @endif
-                                >{{ strtoupper(explode('-', $localeCode)[0]) }}</a>
+                                >
+                                    <img data-locale-icon="{{ $localeCode }}" src="{{ $languageIcon($locale) }}" alt="" width="28" height="20">
+                                    <span>{{ $languageLabel($locale) }}</span>
+                                </a>
                             @endforeach
                         </span>
                     @endif

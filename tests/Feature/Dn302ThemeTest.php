@@ -98,6 +98,9 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('data-dn-language-switcher', false)
             ->assertSee('data-locale-code="vi"', false)
             ->assertSee('data-locale-code="en"', false)
+            ->assertSee('data-locale-icon="vi"', false)
+            ->assertSee('data-locale-icon="en"', false)
+            ->assertSee('data:image/svg+xml;base64,', false)
             ->assertSee('href="'.route('site.home', ['locale' => 'en']).'"', false)
             ->assertSee('data-dn-consult-open', false)
             ->assertSee('data-dn-consult-modal', false)
@@ -234,7 +237,64 @@ class Dn302ThemeTest extends TestCase
             ->assertDontSee('Nhóm sản phẩm chính');
 
         $scripts = file_get_contents(base_path('themes/XD0302/views/partials/scripts.blade.php'));
-        $this->assertStringContainsString('payload.publish = true', $scripts);
+        $this->assertStringContainsString("localeOption?.is_published === true", $scripts);
+    }
+
+    public function test_dn302_inline_editor_saves_an_unpublished_chinese_locale_as_draft(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('DN302', 'construction-materials');
+
+        $locales = app(WebsiteLocaleManager::class);
+        $locales->ensureSystemLocale('zh', 'Chinese', '中文');
+        $locales->provisionWebsite('website-main');
+
+        if (! collect(app(\App\Support\Localization\LocaleContext::class)->options('website-main'))->contains('code', 'zh')) {
+            $locales->addLocale('website-main', 'zh', [
+                'is_enabled_for_editing' => true,
+                'is_published' => false,
+            ]);
+        } else {
+            $locales->updateLocale('website-main', 'zh', [
+                'is_enabled_for_editing' => true,
+                'is_published' => false,
+            ]);
+        }
+
+        $landing = LandingPage::query()
+            ->where('theme_key', 'DN302')
+            ->where('is_home', true)
+            ->firstOrFail();
+        $block = $landing->blocks()->where('block_type', 'content_showcase')->firstOrFail();
+        $admin = Admin::factory()->create([
+            'is_system_owner' => true,
+            'status' => 'active',
+        ]);
+        $this->actingAs($admin, 'admin');
+
+        $this->get(route('site.home', ['locale' => 'vi']).'?mod=admin')
+            ->assertOk()
+            ->assertSee('"code":"zh"', false)
+            ->assertSee('"is_published":false', false);
+
+        $this->putJson(route('admin.api.landing.blocks.update', ['block' => $block]), [
+            'locale' => 'zh',
+            'data' => [
+                'title' => '主要产品类别',
+                'subtitle' => '产品类别',
+                'description' => '为工业园区提供物流服务。',
+                'button_label' => '',
+                'content' => [],
+            ],
+        ])->assertOk()->assertJsonPath('data.data.translation_status', 'draft');
+
+        $this->assertSame(
+            TranslationStatus::Draft,
+            LandingPageBlockData::query()
+                ->where('landing_page_block_id', $block->id)
+                ->where('locale', 'zh')
+                ->firstOrFail()
+                ->translation_status,
+        );
     }
 
     public function test_dn302_product_detail_renders_full_gallery_and_commerce_sections(): void
