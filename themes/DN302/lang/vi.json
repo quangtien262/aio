@@ -1,6 +1,8 @@
 {
   "DN302": {
     "common": {
+      "home": "Trang chủ",
+      "choose_language": "Chọn ngôn ngữ",
       "discover": "Tìm hiểu ngay",
       "read_more": "Đọc thêm",
       "view_more": "Xem thêm",
@@ -8,6 +10,7 @@
     },
     "header": {
       "consultation": "Đăng ký tư vấn",
+      "consultation_short": "ĐK Tư vấn",
       "address": "344 Huỳnh Tấn Phát, Phường Bình Thuận, Quận 7, TP.HCM"
     },
     "contact": {

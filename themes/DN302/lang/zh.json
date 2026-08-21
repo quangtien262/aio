@@ -2,6 +2,7 @@
   "DN302": {
     "common": {
       "home": "主页",
+      "choose_language": "选择语言",
       "discover": "立即了解",
       "read_more": "阅读更多",
       "view_more": "查看更多",
@@ -9,6 +10,7 @@
     },
     "header": {
       "consultation": "预约咨询",
+      "consultation_short": "咨询",
       "address": "胡志明市第七郡平顺坊黄晋发街344号"
     },
     "contact": {

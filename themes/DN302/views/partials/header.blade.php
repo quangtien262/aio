@@ -29,6 +29,7 @@
         ($locale['icon_url'] ?? null)
         ?: \App\Support\Localization\LocaleIcon::dataUri((string) ($locale['code'] ?? ''))
     );
+    $activeHeaderLocale = $headerLocales->firstWhere('code', $currentLocale) ?? $headerLocales->first();
     if ($menuItems->isEmpty()) {
         $menuItems = collect([
             ['label' => 'Trang chủ', 'url' => route('site.home')],
@@ -112,7 +113,36 @@
                         </span>
                     @endif
                 </nav>
-                <a class="dn-consult" href="{{ route('site.contact') }}" data-dn-consult-open>@themeT('DN302.header.consultation', 'Đăng ký tư vấn')</a>
+                <div class="dn-navbar-actions">
+                    <a class="dn-consult" href="{{ route('site.contact') }}" data-dn-consult-open>
+                        <span class="dn-consult-label-full">@themeT('DN302.header.consultation', 'Đăng ký tư vấn')</span>
+                        <span class="dn-consult-label-mobile">@themeT('DN302.header.consultation_short', 'ĐK Tư vấn')</span>
+                    </a>
+                    @if($headerLocales->count() > 1 && is_array($activeHeaderLocale))
+                        <details class="dn-mobile-language" data-dn-language-switcher data-storefront-language-switcher>
+                            <summary aria-label="@themeT('DN302.common.choose_language', 'Chọn ngôn ngữ')" title="{{ $languageLabel($activeHeaderLocale) }}">
+                                <img src="{{ $languageIcon($activeHeaderLocale) }}" alt="" width="28" height="20">
+                                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                            </summary>
+                            <div class="dn-mobile-language-menu">
+                                @foreach($headerLocales as $locale)
+                                    @php($localeCode = (string) $locale['code'])
+                                    <a
+                                        class="{{ $localeCode === $currentLocale ? 'is-active' : '' }}"
+                                        href="{{ $languageUrl($localeCode) }}"
+                                        hreflang="{{ $localeCode }}"
+                                        data-locale-code="{{ $localeCode }}"
+                                        aria-label="{{ $languageLabel($locale) }}"
+                                        @if($localeCode === $currentLocale) aria-current="true" @endif
+                                    >
+                                        <img data-locale-icon="{{ $localeCode }}" src="{{ $languageIcon($locale) }}" alt="" width="28" height="20">
+                                        <span>{{ $languageLabel($locale) }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </details>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

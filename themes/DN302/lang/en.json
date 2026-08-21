@@ -1,6 +1,8 @@
 {
   "DN302": {
     "common": {
+      "home": "Home",
+      "choose_language": "Choose language",
       "discover": "Discover now",
       "read_more": "Read more",
       "view_more": "View more",
@@ -8,6 +10,7 @@
     },
     "header": {
       "consultation": "Book a consultation",
+      "consultation_short": "Consult",
       "address": "344 Huynh Tan Phat, District 7, Ho Chi Minh City"
     },
     "contact": {

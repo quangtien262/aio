@@ -96,6 +96,8 @@ class Dn302ThemeTest extends TestCase
             ->assertSee('data-dn-auth-panel="register"', false)
             ->assertSee('name="two_factor_code"', false)
             ->assertSee('data-dn-language-switcher', false)
+            ->assertSee('class="dn-mobile-language"', false)
+            ->assertSee('class="dn-mobile-language-menu"', false)
             ->assertSee('data-locale-code="vi"', false)
             ->assertSee('data-locale-code="en"', false)
             ->assertSee('data-locale-icon="vi"', false)
@@ -180,6 +182,7 @@ class Dn302ThemeTest extends TestCase
             ->translations('DN302', 'zh');
 
         $this->assertSame('预约咨询', data_get($translations, 'DN302.header.consultation'));
+        $this->assertSame('咨询', data_get($translations, 'DN302.header.consultation_short'));
         $this->assertSame('主页', data_get($translations, 'DN302.common.home'));
         $this->assertSame('快速链接', data_get($translations, 'DN302.footer.quick_links'));
         $this->assertSame('联系信息', data_get($translations, 'DN302.footer.contact'));
@@ -209,6 +212,13 @@ class Dn302ThemeTest extends TestCase
         $this->assertStringContainsString('left:50%;width:128px;min-height:64px', $styles);
         $this->assertStringContainsString('transform:translateX(-50%)', $styles);
         $this->assertStringContainsString('.dn-header.is-compact .dn-logo{display:flex}', $styles);
+        $this->assertStringContainsString('.dn-mobile-language,.dn-consult-label-mobile{display:none}', $styles);
+        $this->assertStringContainsString('@media(max-width:900px){.dn-navbar-actions{height:64px', $styles);
+        $this->assertStringContainsString('.dn-language-mobile{display:none!important}', $styles);
+        $this->assertStringContainsString('.dn-consult-label-full{display:none}.dn-consult-label-mobile{display:inline}', $styles);
+
+        $header = file_get_contents(base_path('themes/DN302/views/partials/header.blade.php'));
+        $this->assertStringContainsString("DN302.header.consultation_short', 'ĐK Tư vấn'", $header);
     }
 
     public function test_dn302_storefront_admin_mode_renders_landing_block_editor(): void
