@@ -108,4 +108,7 @@
 @media(max-width:1100px){.dn-related-posts__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.dn-related-posts__grid{grid-template-columns:1fr}.dn-related-post__image{height:230px}}
 @media(max-width:900px){.dn-language-mobile{flex-wrap:wrap}.dn-language-mobile a{display:flex;align-items:center;gap:9px;min-width:125px;min-height:42px}.dn-language-mobile img{display:block;width:28px;height:20px;border-radius:4px;object-fit:cover}}
+/* Mobile shell: keep the brand compact and centered between Menu and consultation. */
+@media(max-width:900px){.dn-header-inner{position:relative;display:block;width:100%;max-width:none;margin:0}.dn-head-main,.dn-navbar{width:100%}.dn-logo{position:absolute;z-index:4;top:0;left:50%;width:128px;min-height:64px;padding:6px 10px;transform:translateX(-50%);background:transparent}.dn-logo img{max-width:108px;max-height:52px}.dn-header.is-compact .dn-logo{display:flex}.dn-navbar{position:relative}}
+@media(max-width:600px){.dn-logo{width:112px;min-height:64px;padding:7px 8px}.dn-logo img{max-width:96px;max-height:48px}}
 </style>

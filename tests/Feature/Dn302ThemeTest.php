@@ -180,6 +180,7 @@ class Dn302ThemeTest extends TestCase
             ->translations('DN302', 'zh');
 
         $this->assertSame('预约咨询', data_get($translations, 'DN302.header.consultation'));
+        $this->assertSame('主页', data_get($translations, 'DN302.common.home'));
         $this->assertSame('快速链接', data_get($translations, 'DN302.footer.quick_links'));
         $this->assertSame('联系信息', data_get($translations, 'DN302.footer.contact'));
         $this->assertSame('需要咨询吗？', data_get($translations, 'DN302.footer.cta_kicker'));
@@ -194,6 +195,20 @@ class Dn302ThemeTest extends TestCase
         $encoded = json_encode($translations, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
         $this->assertStringNotContainsString('Bạn cần tư vấn?', $encoded);
         $this->assertStringNotContainsString('Cùng chúng tôi hiện thực hóa không gian của bạn', $encoded);
+    }
+
+    public function test_dn302_mobile_header_centers_a_compact_logo_in_the_navigation_row(): void
+    {
+        $styles = file_get_contents(base_path('themes/DN302/views/partials/styles.blade.php'));
+
+        $this->assertStringContainsString(
+            '@media(max-width:900px){.dn-header-inner{position:relative;display:block;width:100%;max-width:none;margin:0}',
+            $styles,
+        );
+        $this->assertStringContainsString('.dn-head-main,.dn-navbar{width:100%}', $styles);
+        $this->assertStringContainsString('left:50%;width:128px;min-height:64px', $styles);
+        $this->assertStringContainsString('transform:translateX(-50%)', $styles);
+        $this->assertStringContainsString('.dn-header.is-compact .dn-logo{display:flex}', $styles);
     }
 
     public function test_dn302_storefront_admin_mode_renders_landing_block_editor(): void
