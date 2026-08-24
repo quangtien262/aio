@@ -156,11 +156,11 @@ Route::prefix('{locale}')
 			->whereIn('cartSegment', FrontendLocalization::segmentValues('cart'))
 			->whereIn('buyNowSegment', FrontendLocalization::segmentValues('buy_now'))
 			->name('site.cart.buy_now');
-		Route::post('/{cartSegment}/{cartUpdateSegment}/{productId}', [CmsSiteController::class, 'updateCartItem'])
+		Route::match(['post', 'patch'], '/{cartSegment}/{cartUpdateSegment}/{productId}', [CmsSiteController::class, 'updateCartItem'])
 			->whereIn('cartSegment', FrontendLocalization::segmentValues('cart'))
 			->whereIn('cartUpdateSegment', FrontendLocalization::segmentValues('cart_update'))
 			->name('site.cart.update');
-		Route::post('/{cartSegment}/{cartRemoveSegment}/{productId}', [CmsSiteController::class, 'removeCartItem'])
+		Route::match(['post', 'delete'], '/{cartSegment}/{cartRemoveSegment}/{productId}', [CmsSiteController::class, 'removeCartItem'])
 			->whereIn('cartSegment', FrontendLocalization::segmentValues('cart'))
 			->whereIn('cartRemoveSegment', FrontendLocalization::segmentValues('cart_remove'))
 			->name('site.cart.remove');

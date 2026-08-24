@@ -36,6 +36,46 @@ class CustomerPortalTest extends TestCase
             ->assertSessionHas('open_auth_modal', 'login');
     }
 
+    public function test_cart_update_and_remove_accept_restful_and_legacy_form_methods(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $product = CatalogProduct::query()->create([
+            'name' => 'Cart Route Contract Product',
+            'slug' => 'cart-route-contract-product',
+            'sku' => 'CART-ROUTE-001',
+            'price' => 125000,
+            'stock' => 8,
+            'is_active' => true,
+        ]);
+
+        $this->postJson(route('site.cart.add', [
+            'locale' => 'vi',
+            'slug' => $product->slug,
+        ]), ['quantity' => 1])->assertOk();
+
+        $updateUrl = route('site.cart.update', [
+            'locale' => 'vi',
+            'productId' => $product->id,
+        ]);
+        $removeUrl = route('site.cart.remove', [
+            'locale' => 'vi',
+            'productId' => $product->id,
+        ]);
+
+        $this->patchJson($updateUrl, ['quantity' => 3])
+            ->assertOk()
+            ->assertJsonPath('data.item.quantity', 3);
+
+        $this->postJson($updateUrl, ['quantity' => 2])
+            ->assertOk()
+            ->assertJsonPath('data.item.quantity', 2);
+
+        $this->deleteJson($removeUrl)
+            ->assertOk()
+            ->assertJsonPath('data.cart_summary.count', 0);
+    }
+
     public function test_customer_can_subscribe_newsletter_and_view_portal_overview(): void
     {
         $this->seed(DatabaseSeeder::class);
