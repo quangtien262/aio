@@ -26,6 +26,12 @@ use App\Core\Themes\Demo\Ec914DemoContentProvider;
 use App\Core\Themes\Demo\Ec915DemoContentProvider;
 use App\Core\Themes\Demo\Ec916DemoContentProvider;
 use App\Core\Themes\Demo\Ec917DemoContentProvider;
+use App\Core\Themes\Demo\E800DemoContentProvider;
+use App\Core\Themes\Demo\E801DemoContentProvider;
+use App\Core\Themes\Demo\E802DemoContentProvider;
+use App\Core\Themes\Demo\E803DemoContentProvider;
+use App\Core\Themes\Demo\E804DemoContentProvider;
+use App\Core\Themes\Demo\E805DemoContentProvider;
 use App\Core\Themes\Demo\Foot409DemoContentProvider;
 use App\Core\Themes\Demo\News88DemoContentProvider;
 use App\Core\Themes\Demo\Nt502DemoContentProvider;
@@ -85,6 +91,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(WebsiteLocaleManager::class);
 
         $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
+            $this->app->make(E805DemoContentProvider::class),
+            $this->app->make(E804DemoContentProvider::class),
+            $this->app->make(E803DemoContentProvider::class),
+            $this->app->make(E802DemoContentProvider::class),
+            $this->app->make(E801DemoContentProvider::class),
+            $this->app->make(E800DemoContentProvider::class),
             $this->app->make(Nt502DemoContentProvider::class),
             $this->app->make(Nt503DemoContentProvider::class),
             $this->app->make(Nt504DemoContentProvider::class),

@@ -1,0 +1,13 @@
+{
+  "name": "E805 Retail Paradise",
+  "key": "E805",
+  "version": "1.0.0",
+  "description": "Theme bán lẻ đa ngành với hero sale, danh mục sản phẩm, cụm deal theo tab và tin tức.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-e805.png", "cover": "cover-e805.png" },
+  "blocks": ["hero-slider", "retail-categories", "tabbed-sale", "technology-grid", "today-picks", "latest-news"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "e805-retail" }
+}

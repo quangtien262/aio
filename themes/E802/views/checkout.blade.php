@@ -1,0 +1,1 @@
+@extends('theme-e802::layout') @section('title','Thanh toán') @section('content')<main><section class="e802-inner-hero"><div class="e802-container"><h1>Thanh toán</h1></div></section><section class="e802-inner"><div class="e802-container">@include('site.checkout.partials.form')</div></section></main>@endsection

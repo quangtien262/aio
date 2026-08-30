@@ -1,0 +1,38 @@
+{
+  "name": "E800 Sneaker Performance",
+  "key": "E800",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử sneaker hiện đại với bộ sưu tập, sản phẩm theo nhu cầu, shop-the-look, thương hiệu và bản tin khuyến mãi.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-e800.png",
+    "cover": "cover-e800.png"
+  },
+  "blocks": [
+    "hero-slider",
+    "collections",
+    "featured-deals",
+    "shop-the-look",
+    "products-by-need",
+    "featured-categories",
+    "brand-strip",
+    "promotion-news",
+    "shopping-benefits"
+  ],
+  "supports": {
+    "dark_mode": false,
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "e800-sneaker-performance"
+  }
+}

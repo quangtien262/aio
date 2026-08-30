@@ -1,0 +1,17 @@
+{
+  "E802.brand.default": "E802 Moto",
+  "E802.nav.home": "Home",
+  "E802.nav.about": "About",
+  "E802.nav.products": "Products",
+  "E802.nav.news": "News",
+  "E802.nav.contact": "Contact",
+  "E802.nav.stores": "Stores",
+  "E802.nav.faq": "FAQ",
+  "E802.auth.login": "Sign in",
+  "E802.auth.register": "Register",
+  "E802.search": "Search",
+  "E802.cart": "Cart",
+  "E802.footer.guide": "Guides",
+  "E802.footer.policy": "Policies",
+  "E802.footer.newsletter": "Promotion newsletter"
+}

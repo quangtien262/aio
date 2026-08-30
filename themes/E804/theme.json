@@ -1,0 +1,13 @@
+{
+  "name": "E804 Marketplace Mall",
+  "key": "E804",
+  "version": "1.0.0",
+  "description": "Theme marketplace đa ngành với mega menu, deal theo ngày, gian hàng chính hãng và gợi ý mua sắm.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-e804.png", "cover": "cover-e804.png" },
+  "blocks": ["hero-slider", "market-categories", "daily-deals", "featured-categories", "official-brands", "brand-deals", "weekly-deals", "recommendations", "market-news"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "e804-marketplace" }
+}
