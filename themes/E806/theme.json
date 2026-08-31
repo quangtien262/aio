@@ -1,0 +1,14 @@
+{
+  "name": "E806 Golden Electronics",
+  "key": "E806",
+  "version": "1.0.0",
+  "description": "Theme điện máy hiện đại với mega menu, danh mục sản phẩm, cụm deal công nghệ và hệ thống cửa hàng.",
+  "website_type": "ecommerce",
+  "parent": null,
+  "preview": { "thumbnail": "preview-e806.png", "cover": "cover-e806.png" },
+  "blocks": ["hero-market", "featured-tabs", "electronics-grid", "promo-duo", "gift-slider", "brand-strip", "store-network"],
+  "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
+  "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },
+  "demo": { "content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "e806-electronics" }
+}
+

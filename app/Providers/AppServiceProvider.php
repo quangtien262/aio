@@ -32,6 +32,8 @@ use App\Core\Themes\Demo\E802DemoContentProvider;
 use App\Core\Themes\Demo\E803DemoContentProvider;
 use App\Core\Themes\Demo\E804DemoContentProvider;
 use App\Core\Themes\Demo\E805DemoContentProvider;
+use App\Core\Themes\Demo\E806DemoContentProvider;
+use App\Core\Themes\Demo\E807DemoContentProvider;
 use App\Core\Themes\Demo\Foot409DemoContentProvider;
 use App\Core\Themes\Demo\News88DemoContentProvider;
 use App\Core\Themes\Demo\Nt502DemoContentProvider;
@@ -91,6 +93,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(WebsiteLocaleManager::class);
 
         $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
+            $this->app->make(E806DemoContentProvider::class),
+            $this->app->make(E807DemoContentProvider::class),
             $this->app->make(E805DemoContentProvider::class),
             $this->app->make(E804DemoContentProvider::class),
             $this->app->make(E803DemoContentProvider::class),
