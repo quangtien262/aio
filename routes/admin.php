@@ -82,6 +82,7 @@ use App\Http\Controllers\Admin\Api\Inventory\WarehouseManagementController as In
 use App\Http\Controllers\Admin\Api\LandingPageBlockController;
 use App\Http\Controllers\Admin\Api\LandingPageController;
 use App\Http\Controllers\Admin\Api\LocalizedContentController;
+use App\Http\Controllers\Admin\Api\LocalizedSlugController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
@@ -119,7 +120,6 @@ use App\Http\Controllers\Admin\Api\ThemeAvatarController;
 use App\Http\Controllers\Admin\Api\ThemeBrandingController;
 use App\Http\Controllers\Admin\Api\ThemeDemoDataController;
 use App\Http\Controllers\Admin\Api\ThemeLocaleController;
-use App\Http\Controllers\Admin\Api\LocalizedSlugController;
 use App\Http\Controllers\Admin\Api\ThemePaletteController;
 use App\Http\Controllers\Admin\Api\ThemeRegistryController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
@@ -134,6 +134,8 @@ Route::prefix('admin')
             Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 
             Route::prefix('api')->name('api.')->group(function (): void {
+                require __DIR__.'/fnb.php';
+
                 Route::get('/me', AdminCurrentProfileController::class)
                     ->name('me');
                 Route::get('/dashboard', DashboardController::class)

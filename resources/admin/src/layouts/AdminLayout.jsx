@@ -201,25 +201,27 @@ export default function AdminLayout() {
     const callAdminApi = useCallback(async (url, options = {}) => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         const isFormData = options.body instanceof FormData;
+        const { headers: optionHeaders = {}, responseType, ...requestOptions } = options;
         const response = await fetch(url, {
             credentials: 'same-origin',
+            ...requestOptions,
             headers: {
                 'X-CSRF-TOKEN': token ?? '',
                 Accept: 'application/json',
                 'X-Website-Key': selectedAdminWebsiteKey,
                 ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-                ...(options.headers ?? {}),
+                ...optionHeaders,
             },
-            ...options,
         });
 
         if (!response.ok) {
             let errorMessage = 'Không thực hiện được thao tác.';
+            let errorPayload = null;
 
             try {
-                const payload = await response.json();
-                errorMessage = payload.message ?? errorMessage;
-                const firstValidationError = Object.values(payload.errors ?? {})
+                errorPayload = await response.json();
+                errorMessage = errorPayload.message ?? errorMessage;
+                const firstValidationError = Object.values(errorPayload.errors ?? errorPayload.details?.errors ?? {})
                     .flat()
                     .find(Boolean);
 
@@ -230,11 +232,22 @@ export default function AdminLayout() {
                 // Ignore invalid JSON body.
             }
 
-            throw new Error(errorMessage);
+            const requestError = new Error(errorMessage);
+            requestError.status = response.status;
+            requestError.code = errorPayload?.code ?? null;
+            requestError.requestId = errorPayload?.request_id ?? null;
+            requestError.details = errorPayload?.details ?? null;
+            requestError.payload = errorPayload;
+
+            throw requestError;
         }
 
         if (response.status === 204) {
             return null;
+        }
+
+        if (responseType === 'blob') {
+            return response.blob();
         }
 
         return response.json();

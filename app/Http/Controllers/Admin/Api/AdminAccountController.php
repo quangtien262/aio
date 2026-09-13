@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\Site;
 use App\Support\AdminPrivilegeGuard;
 use App\Support\AuditLogger;
+use App\Support\ModulePermissionAssignmentGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,7 @@ class AdminAccountController
     public function __construct(
         private readonly AuditLogger $auditLogger,
         private readonly AdminPrivilegeGuard $privilegeGuard,
+        private readonly ModulePermissionAssignmentGuard $modulePermissionGuard,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -298,6 +300,10 @@ class AdminAccountController
             ->where('status', 'active')
             ->count();
         abort_unless($assignableRoleCount === $assignments->pluck('role_id')->unique()->count(), 422, 'Không thể gán vai trò hệ thống hoặc vai trò ngừng hoạt động.');
+        $this->modulePermissionGuard->assertGenericRoleAssignmentsAllowed(
+            $assignments->pluck('role_id')->unique()->map(fn ($id): int => (int) $id)->all(),
+            'assignments',
+        );
 
         $validated['assignments'] = $assignments->all();
 

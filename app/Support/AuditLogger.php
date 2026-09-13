@@ -29,6 +29,7 @@ class AuditLogger
         ?array $after = null,
         ?Admin $actor = null,
         ?string $moduleKey = null,
+        ?string $websiteKey = null,
     ): AuditLog {
         /** @var Request|null $request */
         $request = app()->bound('request') ? request() : null;
@@ -39,7 +40,7 @@ class AuditLogger
             'actor_admin_id' => ($actor ?? $request?->user('admin'))?->id,
             'action' => $action,
             'module_key' => $moduleKey ?: Str::before($action, '.'),
-            'website_key' => app()->bound(SiteContext::class) ? app(SiteContext::class)->websiteKey() : null,
+            'website_key' => $websiteKey ?? (app()->bound(SiteContext::class) ? app(SiteContext::class)->websiteKey() : null),
             'target_type' => $targetType,
             'target_id' => $targetId,
             'before' => $this->sanitize($before),

@@ -20,6 +20,7 @@ const PayrollManagerPage = lazy(() => import('../../modules/payroll/pages/Payrol
 const RealEstateManagerPage = lazy(() => import('../../modules/real-estate/pages/RealEstateManagerPage'));
 const AccountingTaxManagerPage = lazy(() => import('../../modules/accounting-tax/pages/AccountingTaxManagerPage'));
 const MinvoiceManagerPage = lazy(() => import('../../modules/accounting-tax/pages/MinvoiceManagerPage'));
+const FnbPosManagerPage = lazy(() => import('../../modules/fnb-pos/pages/FnbPosManagerPage'));
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentAdmin, currentPermissions }) {
     const resourceEndpointMap = {
@@ -172,6 +173,21 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
                     callAdminApi={callAdminApi}
                     runAdminAction={runAdminAction}
                     organizationOptions={currentAdmin?.organization_options ?? []}
+                    currentPermissions={currentPermissions}
+                />
+            </Suspense>
+        );
+    }
+
+    if (modulePayload.key === 'fnb-pos') {
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <FnbPosManagerPage
+                    moduleMenu={moduleMenu}
+                    modulePayload={modulePayload}
+                    callAdminApi={callAdminApi}
+                    runAdminAction={runAdminAction}
+                    currentAdmin={currentAdmin}
                     currentPermissions={currentPermissions}
                 />
             </Suspense>

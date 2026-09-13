@@ -31,10 +31,12 @@ readonly class ModuleManifest
         public array $optionalDependencies = [],
         public array $package = [],
         public array $lifecycle = [],
+        public ?string $securityProvider = null,
+        public ?string $lifecycleStateProvider = null,
     ) {}
 
     /**
-     * @param  array{name:string,key:string,version:string,description?:string,website_type?:array<int,string>,dependencies?:array<int,string>,permissions?:array<int,string>,hooks?:array<int,string>,menus?:array<int,array<string,mixed>>,changelog?:array<int,array<string,mixed>>,provides?:array<string,mixed>,optional_dependencies?:array<int,string>,package?:array<string,mixed>,lifecycle?:array<string,bool>}  $payload
+     * @param  array{name:string,key:string,version:string,description?:string,website_type?:array<int,string>,dependencies?:array<int,string>,permissions?:array<int,string>,hooks?:array<int,string>,menus?:array<int,array<string,mixed>>,changelog?:array<int,array<string,mixed>>,provides?:array<string,mixed>,optional_dependencies?:array<int,string>,package?:array<string,mixed>,lifecycle?:array<string,bool>,security_provider?:string,lifecycle_state_provider?:string}  $payload
      */
     public static function fromArray(array $payload): self
     {
@@ -53,6 +55,8 @@ readonly class ModuleManifest
             optionalDependencies: $payload['optional_dependencies'] ?? [],
             package: $payload['package'] ?? [],
             lifecycle: $payload['lifecycle'] ?? [],
+            securityProvider: $payload['security_provider'] ?? null,
+            lifecycleStateProvider: $payload['lifecycle_state_provider'] ?? null,
         );
     }
 }

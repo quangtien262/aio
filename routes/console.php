@@ -27,3 +27,7 @@ Schedule::job(new ScheduleMsmiInboundSyncs)
 Schedule::job(new PruneExpiredAccountingExports)
     ->dailyAt('03:10')
     ->withoutOverlapping(60);
+
+Schedule::command('fnb:recover-exports --limit=100')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(10);

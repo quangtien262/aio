@@ -7,6 +7,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Support\AdminPrivilegeGuard;
 use App\Support\AuditLogger;
+use App\Support\ModulePermissionAssignmentGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,7 @@ class RoleManagementController
     public function __construct(
         private readonly AuditLogger $auditLogger,
         private readonly AdminPrivilegeGuard $privilegeGuard,
+        private readonly ModulePermissionAssignmentGuard $modulePermissionGuard,
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -23,6 +25,7 @@ class RoleManagementController
         $actor = $request->user('admin');
         abort_unless($actor instanceof Admin, 403);
         $validated = $this->validatePayload($request);
+        $this->modulePermissionGuard->assertGenericRolePermissionsAllowed($validated['permission_ids'] ?? []);
         $this->privilegeGuard->assertCanManageRolePermissions($actor, $validated['permission_ids'] ?? []);
 
         $role = Role::query()->create([
@@ -50,6 +53,7 @@ class RoleManagementController
 
         $before = $role->load('permissions')->toArray();
         $validated = $this->validatePayload($request, $role);
+        $this->modulePermissionGuard->assertGenericRolePermissionsAllowed($validated['permission_ids'] ?? [], $role);
         $this->privilegeGuard->assertCanManageRolePermissions($actor, $validated['permission_ids'] ?? [], $role);
 
         $role->update([

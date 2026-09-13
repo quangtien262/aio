@@ -6,6 +6,7 @@ use App\Models\Admin;
 use App\Models\Role;
 use App\Support\AdminPrivilegeGuard;
 use App\Support\AuditLogger;
+use App\Support\ModulePermissionAssignmentGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ class AdminRoleAssignmentController
     public function __construct(
         private readonly AuditLogger $auditLogger,
         private readonly AdminPrivilegeGuard $privilegeGuard,
+        private readonly ModulePermissionAssignmentGuard $modulePermissionGuard,
     ) {}
 
     public function __invoke(Request $request, Admin $admin): JsonResponse
@@ -31,6 +33,7 @@ class AdminRoleAssignmentController
         ]);
         $roleIds = collect($validated['role_ids'])->map(fn ($id): int => (int) $id)->unique()->values();
         abort_unless(Role::query()->whereIn('id', $roleIds)->where('is_assignable', true)->where('status', 'active')->count() === $roleIds->count(), 422, 'Không thể gán vai trò hệ thống.');
+        $this->modulePermissionGuard->assertGenericRoleAssignmentsAllowed($roleIds->all(), 'role_ids');
 
         if ($admin->roleAssignments()->where('scope_type', '!=', 'global')->exists()) {
             throw ValidationException::withMessages([

@@ -41,6 +41,8 @@ class ModuleRegistry
                     'changelog' => $this->normalizeChangelog($manifest->changelog),
                     'package' => $this->normalizePackage($manifest->package),
                     'lifecycle' => $this->normalizeLifecycle($manifest->lifecycle),
+                    'security_provider' => $manifest->securityProvider,
+                    'lifecycle_state_provider' => $manifest->lifecycleStateProvider,
                     'status' => $status,
                     'is_installed' => $this->isInstalledStatus($status),
                     'is_enabled' => $status === 'enabled',
@@ -196,7 +198,7 @@ class ModuleRegistry
 
         if (($module['upgrade_available'] ?? false) !== true) {
             $upgradeBlockers[] = 'Module đang ở phiên bản mới nhất.';
-        } else {
+        } elseif (blank($module['security_provider'] ?? null)) {
             $enableBlockers[] = 'Cần nâng cấp module lên phiên bản mới nhất trước khi bật.';
         }
 

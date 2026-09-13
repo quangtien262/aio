@@ -48,6 +48,8 @@ class FreshProductionInstallTest extends TestCase
             'Production core migrations must not aggregate optional module migrations.',
         );
         $this->assertFalse($this->hasTable($database, 'catalog_categories'));
+        $this->assertFalse($this->hasTable($database, 'fnb_outlets'));
+        $this->assertFalse($this->hasTable($database, 'fnb_orders'));
 
         $moduleLifecycle = $this->moduleLifecycleProcess();
 
@@ -131,6 +133,12 @@ class FreshProductionInstallTest extends TestCase
             'enabled',
             $database->query("select status from module_installations where key = 'minvoice-connector'")->fetchColumn(),
         );
+        $this->assertTrue($this->hasTable($database, 'fnb_outlets'));
+        $this->assertTrue($this->hasTable($database, 'fnb_orders'));
+        $this->assertTrue($this->hasTable($database, 'fnb_checks'));
+        $this->assertSame('enabled', $database->query("select status from module_installations where key = 'fnb-pos'")->fetchColumn());
+        $this->assertSame(53, (int) $database->query("select count(*) from permissions where module_key = 'fnb-pos' and is_active = 1")->fetchColumn());
+        $this->assertSame(8, (int) $database->query("select count(*) from module_role_definitions where module_key = 'fnb-pos'")->fetchColumn());
     }
 
     /**
@@ -164,6 +172,8 @@ $modules->install('accounting-tax');
 $modules->enable('accounting-tax');
 $modules->install('minvoice-connector');
 $modules->enable('minvoice-connector');
+$modules->install('fnb-pos');
+$modules->enable('fnb-pos');
 PHP;
 
         $process = new Process(

@@ -1,0 +1,119 @@
+{
+  "name": "Quản lý quán Cafe",
+  "key": "fnb-pos",
+  "version": "0.1.0-dev.1",
+  "security_provider": "Modules\\FnbPos\\Security\\FnbVersionedSecurity",
+  "lifecycle_state_provider": "Modules\\FnbPos\\Services\\Security\\FnbOperationalStateManager",
+  "description": "Bán hàng tại quầy và tại bàn, pha chế, thanh toán, quản lý ca và báo cáo cho quán cafe/trà sữa.",
+  "website_type": [
+    "backoffice",
+    "service",
+    "ecommerce",
+    "corporate",
+    "news",
+    "landingpage"
+  ],
+  "dependencies": [],
+  "optional_dependencies": [
+    "catalog",
+    "cms",
+    "inventory",
+    "accounting-tax",
+    "minvoice-connector",
+    "hrm",
+    "payroll"
+  ],
+  "permissions": [
+    "fnb.dashboard.view",
+    "fnb.outlet.view",
+    "fnb.outlet.manage",
+    "fnb.terminal.manage",
+    "fnb.staff.view",
+    "fnb.staff.assign",
+    "fnb.floor.view",
+    "fnb.floor.manage",
+    "fnb.menu.view",
+    "fnb.menu.manage",
+    "fnb.menu.publish",
+    "fnb.menu.availability.update",
+    "fnb.price.override",
+    "fnb.order.view",
+    "fnb.order.create",
+    "fnb.order.update",
+    "fnb.order.submit",
+    "fnb.order.transfer",
+    "fnb.order.split",
+    "fnb.order.void",
+    "fnb.order.void.approve",
+    "fnb.order.reopen",
+    "fnb.kitchen.view",
+    "fnb.kitchen.update",
+    "fnb.kitchen.priority",
+    "fnb.payment.collect",
+    "fnb.payment.refund",
+    "fnb.payment.refund.approve",
+    "fnb.discount.apply",
+    "fnb.discount.override",
+    "fnb.shift.view",
+    "fnb.shift.open",
+    "fnb.shift.close",
+    "fnb.shift.reconcile",
+    "fnb.cash.adjust",
+    "fnb.recipe.view",
+    "fnb.recipe.manage",
+    "fnb.stock.view",
+    "fnb.waste.record",
+    "fnb.consumption.reverse",
+    "fnb.customer.lookup",
+    "fnb.customer.create",
+    "fnb.customer.attach",
+    "fnb.customer.view",
+    "fnb.customer.update",
+    "fnb.customer.merge",
+    "fnb.report.operations.view",
+    "fnb.report.financial.view",
+    "fnb.report.export",
+    "fnb.integration.view",
+    "fnb.audit.view",
+    "fnb.settings.view",
+    "fnb.settings.manage"
+  ],
+  "hooks": [
+    "Modules\\FnbPos\\Hooks\\FnbLifecycleHook"
+  ],
+  "menus": [
+    {
+      "key": "fnb-pos",
+      "label": "Quản lý quán Cafe",
+      "description": "Vận hành quán, bán hàng và pha chế.",
+      "icon": "shop",
+      "route": "/admin/modules/fnb-pos",
+      "permission": "fnb.outlet.view"
+    }
+  ],
+  "provides": {},
+  "package": {
+    "migrations": [
+      "database/migrations"
+    ],
+    "seeders": [],
+    "config": [],
+    "assets": []
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": false
+  },
+  "changelog": [
+    {
+      "version": "0.1.0-dev.1",
+      "date": "2026-09-05",
+      "notes": [
+        "Bản phát triển F&B POS; cần hoàn tất release gates trước khi vận hành production."
+      ]
+    }
+  ]
+}

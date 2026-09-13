@@ -2,28 +2,23 @@
 
 namespace App\Support\AccountingTax;
 
+use App\Core\Modules\ModuleCapabilityChecker;
 use App\Core\Modules\ModuleRegistry;
 use App\Models\AcctProviderConnection;
 use Illuminate\Support\Facades\Schema;
 
 class ModuleCapabilityService
 {
-    /** @var array<string, array<string, mixed>|null> */
-    private array $modules = [];
-
     public function __construct(private readonly ModuleRegistry $registry) {}
 
     public function moduleEnabled(string $moduleKey): bool
     {
-        return ($this->module($moduleKey)['is_enabled'] ?? false) === true;
+        return (new ModuleCapabilityChecker($this->registry))->enabled($moduleKey);
     }
 
     public function has(string $moduleKey, string $capability): bool
     {
-        $module = $this->module($moduleKey);
-
-        return ($module['is_enabled'] ?? false) === true
-            && array_key_exists($capability, $module['provides'] ?? []);
+        return (new ModuleCapabilityChecker($this->registry))->has($moduleKey, $capability);
     }
 
     /**
@@ -128,10 +123,6 @@ class ModuleCapabilityService
 
     private function module(string $moduleKey): ?array
     {
-        if (! array_key_exists($moduleKey, $this->modules)) {
-            $this->modules[$moduleKey] = $this->registry->find($moduleKey);
-        }
-
-        return $this->modules[$moduleKey];
+        return $this->registry->find($moduleKey);
     }
 }
