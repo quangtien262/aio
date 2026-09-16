@@ -1,0 +1,41 @@
+{
+  "name": "TOOL750 Industrial Store",
+  "key": "TOOL750",
+  "version": "1.0.0",
+  "description": "Theme thương mại điện tử dụng cụ cơ khí phong cách công nghiệp vàng đen, tối ưu cho Catalog và CMS.",
+  "website_type": "ecommerce",
+  "requires_modules": ["catalog", "cms"],
+  "parent": null,
+  "preview": {
+    "thumbnail": "preview-tool750.png",
+    "cover": "cover-tool750.png"
+  },
+  "blocks": [
+    "tool750-hero",
+    "tool750-promo-categories",
+    "tool750-sale-products",
+    "tool750-category-grid",
+    "tool750-weekly-products",
+    "tool750-reasons",
+    "tool750-compact-products",
+    "tool750-promo-banner",
+    "tool750-news",
+    "tool750-testimonials",
+    "tool750-partners"
+  ],
+  "supports": {
+    "multi_homepage": true,
+    "custom_css": true,
+    "block_mapping": true,
+    "responsive_navigation": true
+  },
+  "localization": {
+    "default_locale": "vi",
+    "supported_locales": ["vi", "en"]
+  },
+  "demo": {
+    "content_path": "demo/content",
+    "settings_path": "demo/settings",
+    "default_preset": "tool750-industrial"
+  }
+}

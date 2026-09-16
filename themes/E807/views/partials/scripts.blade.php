@@ -1,0 +1,1 @@
+<script>document.addEventListener('DOMContentLoaded',()=>{const t=document.querySelector('[data-e807-toggle]'),n=document.querySelector('[data-e807-nav]');t?.addEventListener('click',()=>n?.classList.toggle('is-open'));});</script>

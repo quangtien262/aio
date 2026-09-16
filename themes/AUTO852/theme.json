@@ -1,0 +1,14 @@
+{
+  "name": "AUTO852 Onyx Detailing",
+  "key": "AUTO852",
+  "version": "1.0.0",
+  "description": "Theme chăm sóc và detailing ô tô cao cấp với ngôn ngữ thiết kế đen, cam và trắng.",
+  "website_type": "ecommerce",
+  "requires_modules": ["catalog", "cms"],
+  "parent": null,
+  "preview": {"thumbnail": "preview-auto852.png", "cover": "cover-auto852.png"},
+  "blocks": ["auto852-hero", "auto852-services", "auto852-process", "auto852-promotions", "auto852-pricing", "auto852-product-banner", "auto852-products", "auto852-news"],
+  "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "responsive_navigation": true},
+  "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},
+  "demo": {"content_path": "demo/content", "settings_path": "demo/settings", "default_preset": "auto852-onyx-detailing"}
+}
