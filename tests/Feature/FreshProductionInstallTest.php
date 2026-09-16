@@ -44,6 +44,10 @@ class FreshProductionInstallTest extends TestCase
         $this->assertTrue($this->hasTable($database, 'module_installations'));
         $this->assertTrue($this->hasTable($database, 'orders'));
         $this->assertFalse(
+            $this->hasTable($database, 'cms_media'),
+            'Production core migrations must not create optional CMS tables.',
+        );
+        $this->assertFalse(
             $this->hasTable($database, 'catalog_products'),
             'Production core migrations must not aggregate optional module migrations.',
         );
@@ -56,6 +60,7 @@ class FreshProductionInstallTest extends TestCase
         $this->assertProcessSucceeded($moduleLifecycle, 'CMS, Catalog, AccountingTax and Minvoice module lifecycle');
 
         $this->assertTrue($this->hasTable($database, 'cms_page_translations'));
+        $this->assertTrue($this->hasTable($database, 'cms_media'));
         $this->assertTrue($this->hasTable($database, 'cms_media_folders'));
         $this->assertTrue($this->hasTable($database, 'cms_service_categories'));
         $this->assertTrue($this->hasTable($database, 'cms_project_categories'));
