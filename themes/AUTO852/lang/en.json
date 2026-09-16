@@ -1,0 +1,8 @@
+{
+  "home": "Home", "about": "About", "products": "Products", "services": "Services", "news": "News", "contact": "Contact",
+  "search": "Search", "search.placeholder": "Find products and services...", "cart": "Cart", "auth.login": "Sign in", "auth.account": "Account",
+  "menu.open": "Open menu", "price.contact": "Contact us", "view_all": "View all", "read_more": "Read more", "book_now": "Book now",
+  "footer.info": "Information", "footer.policies": "Policies", "footer.support": "Support", "footer.categories": "Featured categories", "footer.contact": "Contact",
+  "footer.about_copy": "Professional car detailing services and premium care products.",
+  "footer.back_to_top": "Back to top", "empty": "Content is being updated."
+}

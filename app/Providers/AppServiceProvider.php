@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use App\Core\Themes\Demo\Bds701DemoContentProvider;
+use App\Core\Themes\Demo\Auto850DemoContentProvider;
+use App\Core\Themes\Demo\Auto851DemoContentProvider;
+use App\Core\Themes\Demo\Auto852DemoContentProvider;
+use App\Core\Themes\Demo\Auto853DemoContentProvider;
 use App\Core\Themes\Demo\Book920DemoContentProvider;
 use App\Core\Themes\Demo\Ca0050DemoContentProvider;
 use App\Core\Themes\Demo\Dn202DemoContentProvider;
@@ -49,6 +53,8 @@ use App\Core\Themes\Demo\Shop605DemoContentProvider;
 use App\Core\Themes\Demo\Spa111DemoContentProvider;
 use App\Core\Themes\Demo\Th0050DemoContentProvider;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Core\Themes\Demo\Tool750DemoContentProvider;
+use App\Core\Themes\Demo\Tool751DemoContentProvider;
 use App\Core\Themes\Demo\Xd0302DemoContentProvider;
 use App\Core\Themes\Demo\Xd0303DemoContentProvider;
 use App\Core\Themes\Demo\Xd0304DemoContentProvider;
@@ -93,6 +99,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(WebsiteLocaleManager::class);
 
         $this->app->singleton(ThemeDemoContentProviderRegistry::class, fn () => new ThemeDemoContentProviderRegistry([
+            $this->app->make(Auto853DemoContentProvider::class),
+            $this->app->make(Auto852DemoContentProvider::class),
+            $this->app->make(Auto851DemoContentProvider::class),
+            $this->app->make(Auto850DemoContentProvider::class),
+            $this->app->make(Tool751DemoContentProvider::class),
+            $this->app->make(Tool750DemoContentProvider::class),
             $this->app->make(E806DemoContentProvider::class),
             $this->app->make(E807DemoContentProvider::class),
             $this->app->make(E805DemoContentProvider::class),

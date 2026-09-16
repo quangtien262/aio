@@ -48,7 +48,7 @@ class LandingPageBuilder
 
     public function supportsTheme(?string $themeKey): bool
     {
-        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'FOOT409', 'NEWS88', 'XD0320', 'NT501', 'NT502', 'NT503', 'NT504', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'E800', 'E801', 'E802', 'E803', 'E804', 'E805', 'E806', 'E807', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750'], true);
+        return in_array(strtoupper((string) $themeKey), ['BOOK920', 'TH0050', 'SER0101', 'SER102', 'SER103', 'XD0301', 'XD0302', 'XD0303', 'XD0304', 'XD0305', 'XD0306', 'XD0307', 'XD0308', 'XD0309', 'XD0310', 'XD0311', 'XD0312', 'XD0313', 'XD0314', 'XD0315', 'XD0318', 'FOOT401', 'FOOT403', 'FOOT404', 'FOOT405', 'FOOT406', 'FOOT407', 'FOOT408', 'FOOT409', 'NEWS88', 'XD0320', 'NT501', 'NT502', 'NT503', 'NT504', 'XD321', 'XD0322', 'XD0323', 'XD0324', 'XD0325', 'DN202', 'DN302', 'DN350', 'DN351', 'BZ501', 'SPA502', 'SPA111', 'E800', 'E801', 'E802', 'E803', 'E804', 'E805', 'E806', 'E807', 'SHOP601', 'SHOP602', 'SHOP603', 'SHOP604', 'SHOP605', 'SHOP606', 'EC900', 'EC901', 'EC902', 'EC903', 'EC904', 'EC905', 'EC906', 'EC907', 'EC908', 'EC909', 'EC910', 'EC911', 'EC912', 'EC913', 'EC914', 'EC915', 'EC916', 'EC917', 'CA0050', 'BDS701', 'BDS702', 'DL750', 'TOOL750', 'TOOL751', 'AUTO850', 'AUTO851', 'AUTO852', 'AUTO853'], true);
     }
 
     /**
@@ -896,6 +896,69 @@ class LandingPageBuilder
 
         if ($block->block_type === 'dl750_news') {
             return $this->latestPostItems($settings, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['tool750_category_grid', 'tool750_sale_products', 'tool750_weekly_products', 'tool750_compact_products', 'tool750_news'], true)) {
+            $source = match ($block->block_type) {
+                'tool750_category_grid' => 'catalog_categories',
+                'tool750_news' => 'cms_posts',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems($settings, $source, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['tool751_category_icons', 'tool751_sale_products', 'tool751_compact_products', 'tool751_category_products', 'tool751_news'], true)) {
+            $source = match ($block->block_type) {
+                'tool751_category_icons' => 'catalog_categories',
+                'tool751_news' => 'cms_posts',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems($settings, $source, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['auto850_brands', 'auto850_categories', 'auto850_deals', 'auto850_featured_products', 'auto850_services', 'auto850_testimonials', 'auto850_news'], true)) {
+            $source = match ($block->block_type) {
+                'auto850_brands' => 'cms_partners',
+                'auto850_categories' => 'catalog_categories',
+                'auto850_services' => 'cms_services',
+                'auto850_testimonials' => 'cms_testimonials',
+                'auto850_news' => 'cms_posts',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems($settings, $source, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['auto851_model_rail', 'auto851_featured_cars', 'auto851_accessories', 'auto851_testimonials', 'auto851_news'], true)) {
+            $source = match ($block->block_type) {
+                'auto851_testimonials' => 'cms_testimonials',
+                'auto851_news' => 'cms_posts',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems($settings, $source, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['auto852_services', 'auto852_products', 'auto852_news'], true)) {
+            $source = match ($block->block_type) {
+                'auto852_services' => 'cms_services',
+                'auto852_news' => 'cms_posts',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems($settings, $source, $limit, $locale, $block->landingPage?->website_key);
+        }
+
+        if (in_array($block->block_type, ['auto853_categories', 'auto853_flash_sale', 'auto853_collection', 'auto853_news'], true)) {
+            $source = match ($block->block_type) {
+                'auto853_categories' => 'catalog_categories',
+                'auto853_news' => 'cms_posts',
+                default => 'cms_products',
+            };
+
+            return $this->contentSourceItems($settings, $source, $limit, $locale, $block->landingPage?->website_key);
         }
 
         if (in_array($block->block_type, ['shop606_collections', 'shop606_sale', 'shop606_new', 'shop606_outfit', 'shop606_news'], true)) {
@@ -2110,6 +2173,358 @@ class LandingPageBuilder
         }
     }
 
+    /** @return array<int, array<string, mixed>> */
+    private function tool750DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/TOOL750/preview-tool750.png';
+        $asset = fn (string $name): string => '/themes/TOOL750/images/'.$name.'.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter([
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $button,
+        ], fn ($value) => $value !== null);
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
+                ['value' => $source, 'label' => $label],
+                ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ]],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy mục nổi bật'],
+        ];
+        $products = collect([
+            ['Máy khoan búa pin Brushless 20V', 'product-drill', 4890000, 5690000],
+            ['Máy mài góc công nghiệp 125mm', 'product-grinder', 2190000, 2590000],
+            ['Máy siết bu lông lực cao 20V', 'product-wrench', 3750000, 4290000],
+            ['Máy cưa đĩa chính xác 185mm', 'product-saw', 3290000, 3890000],
+            ['Bộ đo laser và thước cuộn Pro', 'product-measure', 1490000, 1790000],
+            ['Máy thổi bụi công trường Compact', 'product-blower', 1890000, 2290000],
+            ['Bộ máy khoan và sạc nhanh 2 pin', 'product-drill', 5250000, 6150000],
+            ['Máy mài pin không chổi than', 'product-grinder', 3490000, 4090000],
+            ['Máy siết vít va đập thân máy', 'product-wrench', 2450000, 2950000],
+            ['Máy cắt đa năng đế hợp kim', 'product-saw', 2790000, 3290000],
+            ['Thiết bị đo khoảng cách 60m', 'product-measure', 1190000, 1490000],
+            ['Máy thổi khí pin hiệu suất cao', 'product-blower', 2290000, 2690000],
+        ])->map(fn (array $product): array => [
+            'title' => $product[0],
+            'summary' => 'TOOL750 PROFESSIONAL',
+            'image' => $asset($product[1]),
+            'price' => $product[2],
+            'original_price' => $product[3],
+            'url' => '#san-pham',
+        ])->all();
+        $categories = collect([
+            ['Dụng cụ điện', 'fa-solid fa-screwdriver'],
+            ['Dụng cụ cầm tay', 'fa-solid fa-screwdriver-wrench'],
+            ['Phụ kiện cơ khí', 'fa-solid fa-gears'],
+            ['Thiết bị ngoài trời', 'fa-solid fa-tractor'],
+            ['Máy móc nhà xưởng', 'fa-solid fa-industry'],
+            ['Đồ bảo hộ', 'fa-solid fa-helmet-safety'],
+        ])->map(fn (array $category, int $index): array => [
+            'title' => $category[0],
+            'summary' => 'Thiết bị chính hãng · tư vấn đúng nhu cầu',
+            'icon' => $category[1],
+            'image' => $asset(['product-drill', 'product-wrench', 'product-measure', 'product-blower', 'product-saw', 'product-grinder'][$index]),
+            'url' => '#san-pham',
+        ])->all();
+
+        return [
+            ['block_type' => 'tool750_hero', 'label' => 'Hero dụng cụ cơ khí', 'description' => 'Banner đầu trang tông vàng đen với lời mời hành động.', 'preview_image' => $preview, 'anchor_id' => 'top', 'media' => ['image' => $asset('hero-tools')], 'settings' => [], 'data' => ['vi' => $heading('Sức mạnh trong từng thao tác', 'DỤNG CỤ CHUYÊN NGHIỆP', 'Hiệu suất bền bỉ cho xưởng máy, công trình và người thợ hiện đại.', 'Mua ngay'), 'en' => $heading('Power in every move', 'PROFESSIONAL TOOLS', 'Dependable performance for workshops, jobsites and modern makers.', 'Shop now')]],
+            ['block_type' => 'tool750_promo_categories', 'label' => 'Ba nhóm sản phẩm', 'description' => 'Ba banner dọc giới thiệu nhóm dụng cụ chính.', 'preview_image' => $preview, 'anchor_id' => 'nhom-san-pham', 'settings' => [], 'data' => ['vi' => $withItems($heading(), [['title' => 'Dụng cụ cầm tay', 'summary' => 'Khám phá ngay', 'image' => $asset('product-drill'), 'url' => '#san-pham'], ['title' => 'Dụng cụ điện', 'summary' => 'Sản phẩm yêu thích', 'image' => $asset('product-grinder'), 'url' => '#san-pham'], ['title' => 'Phụ kiện cơ khí', 'summary' => 'Ưu đãi trong tuần', 'image' => $asset('product-saw'), 'url' => '#san-pham']]), 'en' => $heading()]],
+            ['block_type' => 'tool750_sale_products', 'label' => 'Khuyến mãi và bán chạy', 'description' => 'Một sản phẩm ưu đãi lớn cạnh lưới bán chạy.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 9, 'featured_only' => true, 'countdown_hours' => 36], 'settings_schema' => array_merge($sourceSchema('cms_products', 'Sản phẩm Catalog', 9), ['countdown_hours' => ['type' => 'number', 'label' => 'Thời lượng đếm ngược', 'default' => 36]]), 'data' => ['vi' => $withItems($heading('Khuyến mãi', 'Sản phẩm bán chạy'), array_slice($products, 0, 9)), 'en' => $withItems($heading('Special offer', 'Best sellers'), array_slice($products, 0, 9))]],
+            ['block_type' => 'tool750_category_grid', 'label' => 'Danh mục sản phẩm', 'description' => 'Sáu danh mục trên nền xưởng cơ khí.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 6], 'settings_schema' => $sourceSchema('catalog_categories', 'Danh mục Catalog', 6), 'media' => ['image' => $asset('workshop-service')], 'data' => ['vi' => $withItems($heading('Danh mục sản phẩm', 'Thiết bị phù hợp cho mọi công việc'), $categories), 'en' => $withItems($heading('Product categories', 'The right gear for every job'), $categories)]],
+            ['block_type' => 'tool750_weekly_products', 'label' => 'Nổi bật trong tuần', 'description' => 'Thanh danh mục dọc và lưới tám sản phẩm.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 8), 'data' => ['vi' => $withItems($heading('Nổi bật trong tuần'), array_slice($products, 2, 8)), 'en' => $withItems($heading('Weekly highlights'), array_slice($products, 2, 8))]],
+            ['block_type' => 'tool750_reasons', 'label' => 'Vì sao chọn chúng tôi', 'description' => 'Ba cam kết dịch vụ cạnh ảnh kỹ thuật viên.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'media' => ['image' => $asset('workshop-service')], 'settings' => [], 'data' => ['vi' => $withItems($heading('Vì sao chọn chúng tôi?'), [['title' => 'Hỗ trợ kỹ thuật 24/7', 'summary' => 'Đội ngũ am hiểu sản phẩm sẵn sàng hỗ trợ lựa chọn, vận hành và bảo trì.', 'icon' => 'fa-solid fa-headset'], ['title' => 'Đổi trả thuận tiện', 'summary' => 'Quy trình minh bạch giúp khách hàng yên tâm khi mua sắm.', 'icon' => 'fa-solid fa-rotate-left'], ['title' => 'Chất lượng được kiểm chứng', 'summary' => 'Danh mục được tuyển chọn theo độ bền, hiệu suất và an toàn sử dụng.', 'icon' => 'fa-solid fa-certificate']]), 'en' => $heading('Why choose us?')]],
+            ['block_type' => 'tool750_compact_products', 'label' => 'Phụ kiện và sản phẩm khác', 'description' => 'Hai cột danh sách sản phẩm nhỏ gọn.', 'preview_image' => $preview, 'anchor_id' => 'phu-kien', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 6], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 6), 'data' => ['vi' => $withItems($heading('Phụ kiện', 'Sản phẩm khác'), array_slice($products, 4, 6)), 'en' => $withItems($heading('Accessories', 'More products'), array_slice($products, 4, 6))]],
+            ['block_type' => 'tool750_promo_banner', 'label' => 'Banner thiết bị ngoài trời', 'description' => 'Banner ngang cho chiến dịch nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'chien-dich', 'media' => ['image' => $asset('promo-outdoor')], 'settings' => [], 'data' => ['vi' => $heading('Thiết bị ngoài trời', 'SẢN PHẨM KHUYẾN MÃI', 'Sẵn sàng cho công việc nặng ngoài công trường.', 'Xem sản phẩm'), 'en' => $heading('Outdoor equipment', 'PROMOTED PRODUCTS', 'Ready for demanding jobsites.', 'View products')]],
+            ['block_type' => 'tool750_news', 'label' => 'Tin tức kỹ thuật', 'description' => 'Bài viết mới từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 2], 'settings_schema' => $sourceSchema('cms_posts', 'Bài viết CMS', 2), 'data' => ['vi' => $withItems($heading('Tin tức'), [['title' => 'Cách chọn máy khoan phù hợp từng vật liệu', 'summary' => 'Các thông số cần lưu ý khi làm việc với gỗ, kim loại và bê tông.', 'image' => $asset('hero-tools'), 'url' => '#'], ['title' => 'Bảo dưỡng dụng cụ điện đúng cách', 'summary' => 'Lịch kiểm tra đơn giản giúp thiết bị vận hành ổn định hơn.', 'image' => $asset('workshop-service'), 'url' => '#']]), 'en' => $heading('News')]],
+            ['block_type' => 'tool750_testimonials', 'label' => 'Đánh giá khách hàng', 'description' => 'Phản hồi thực tế lấy từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'danh-gia', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 3], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đánh giá', 'default' => 3]], 'media' => ['image' => $asset('hero-tools')], 'data' => ['vi' => $withItems($heading('Khách hàng nói gì'), [['title' => 'Minh Hoàng', 'role' => 'Quản lý xưởng', 'summary' => 'Sản phẩm chắc chắn, tư vấn đúng nhu cầu và giao hàng rất nhanh.']]), 'en' => $heading('Customer stories')]],
+            ['block_type' => 'tool750_partners', 'label' => 'Thương hiệu đồng hành', 'description' => 'Dải đối tác lấy từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6], 'settings_schema' => ['limit' => ['type' => 'number', 'label' => 'Số đối tác', 'default' => 6]], 'data' => ['vi' => $withItems($heading('Thương hiệu đồng hành'), collect(['IRONWORKS', 'PROGEAR', 'MAKERLAB', 'FORTIS', 'MECHANO', 'BUILDMAX'])->map(fn (string $title): array => ['title' => $title])->all()), 'en' => $heading('Trusted brands')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function tool751DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/TOOL751/preview-tool751.png';
+        $asset = fn (string $name): string => '/themes/TOOL751/images/'.$name.'.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter([
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $button,
+        ], fn ($value) => $value !== null);
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
+                ['value' => $source, 'label' => $label],
+                ['value' => 'custom', 'label' => 'Nhập thủ công'],
+            ]],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy mục nổi bật'],
+        ];
+        $products = collect([
+            ['Máy khoan pin đa năng 20V', 'product-drill', 3290000, 3790000],
+            ['Máy mài góc công suất lớn', 'product-grinder', 2250000, 2500000],
+            ['Máy siết bu lông lực cao', 'product-wrench', 4100000, 4550000],
+            ['Máy cưa đĩa bàn cắt 185mm', 'product-saw', 3650000, 4190000],
+            ['Bộ thước đo công trường Pro', 'product-measure', 1450000, 1690000],
+            ['Máy thổi bụi pin gọn nhẹ', 'product-blower', 1890000, 2190000],
+            ['Bộ khoan động lực hai pin', 'product-drill', 4990000, 5590000],
+            ['Máy mài pin không chổi than', 'product-grinder', 3450000, 3890000],
+            ['Thân máy siết vít va đập', 'product-wrench', 2750000, 3090000],
+            ['Máy cắt đa năng chuyên dụng', 'product-saw', 2890000, 3290000],
+        ])->map(fn (array $product): array => [
+            'title' => $product[0],
+            'summary' => 'TOOL751 PRO SERIES',
+            'image' => $asset($product[1]),
+            'price' => $product[2],
+            'original_price' => $product[3],
+            'url' => '#san-pham',
+        ])->all();
+        $categories = collect([
+            ['Dụng cụ cầm tay', 'fa-solid fa-screwdriver-wrench'],
+            ['Dụng cụ dùng pin', 'fa-solid fa-battery-full'],
+            ['Máy nổ', 'fa-solid fa-gauge-high'],
+            ['Máy cắt', 'fa-solid fa-compact-disc'],
+            ['Dụng cụ cơ khí', 'fa-solid fa-gears'],
+            ['Dụng cụ xây dựng', 'fa-solid fa-trowel-bricks'],
+            ['Dụng cụ gia đình', 'fa-solid fa-house'],
+        ])->map(fn (array $category, int $index): array => [
+            'title' => $category[0],
+            'icon' => $category[1],
+            'image' => $asset(['product-wrench', 'product-drill', 'product-blower', 'product-saw', 'product-grinder', 'product-measure', 'product-drill'][$index]),
+            'url' => '#san-pham',
+        ])->all();
+
+        return [
+            ['block_type' => 'tool751_hero', 'label' => 'Hero khuyến mãi', 'description' => 'Banner vàng lớn kèm hai thẻ sản phẩm nhanh.', 'preview_image' => $preview, 'anchor_id' => 'top', 'media' => ['image' => $asset('hero-sale')], 'settings' => [], 'data' => ['vi' => $withItems($heading('13 ngày giảm giá cực sốc', 'ƯU ĐÃI DỤNG CỤ CHUYÊN NGHIỆP', 'Chốt giá tốt cho máy móc, phụ kiện và thiết bị công trường.', 'Mua ngay'), array_slice($products, 0, 2)), 'en' => $withItems($heading('13 days of power deals', 'PROFESSIONAL TOOL SALE', 'Better prices for jobsites, workshops and makers.', 'Shop now'), array_slice($products, 0, 2))]],
+            ['block_type' => 'tool751_category_icons', 'label' => 'Dải danh mục', 'description' => 'Bảy danh mục dạng biểu tượng như thiết kế tham chiếu.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 7], 'settings_schema' => $sourceSchema('catalog_categories', 'Danh mục Catalog', 7), 'data' => ['vi' => $withItems($heading('Danh mục nổi bật'), $categories), 'en' => $withItems($heading('Featured categories'), $categories)]],
+            ['block_type' => 'tool751_sale_products', 'label' => 'Sản phẩm khuyến mãi', 'description' => 'Banner giảm giá cạnh ba sản phẩm ưu đãi.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 3), 'data' => ['vi' => $withItems($heading('Khuyến mãi', 'Sản phẩm'), array_slice($products, 0, 3)), 'en' => $withItems($heading('Deals', 'Products'), array_slice($products, 0, 3))]],
+            ['block_type' => 'tool751_compact_products', 'label' => 'Hai nhóm sản phẩm', 'description' => 'Hai cột danh sách linh kiện và phụ kiện.', 'preview_image' => $preview, 'anchor_id' => 'phu-kien', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 8), 'data' => ['vi' => $withItems($heading('Linh kiện cơ khí', 'Phụ kiện gia đình'), array_slice($products, 1, 8)), 'en' => $withItems($heading('Mechanical parts', 'Home accessories'), array_slice($products, 1, 8))]],
+            ['block_type' => 'tool751_category_products', 'label' => 'Sản phẩm theo danh mục', 'description' => 'Thanh tab trên nền xưởng và năm sản phẩm nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 5), 'media' => ['image' => $asset('workshop-service')], 'data' => ['vi' => $withItems($heading('Danh mục sản phẩm'), array_slice($products, 3, 5)), 'en' => $withItems($heading('Product categories'), array_slice($products, 3, 5))]],
+            ['block_type' => 'tool751_news', 'label' => 'Góc tin tức', 'description' => 'Ba bài viết kỹ thuật mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3], 'settings_schema' => $sourceSchema('cms_posts', 'Bài viết CMS', 3), 'data' => ['vi' => $withItems($heading('Góc tin tức'), [['title' => 'Ra mắt dòng máy khoan pin thế hệ mới', 'summary' => 'Thiết kế nhỏ gọn, mạnh mẽ và phù hợp nhiều bề mặt thi công.', 'image' => $asset('hero-sale'), 'url' => '#'], ['title' => 'Cách nhận biết dụng cụ chính hãng', 'summary' => 'Những dấu hiệu quan trọng khi kiểm tra máy và phụ kiện.', 'image' => $asset('product-drill'), 'url' => '#'], ['title' => 'Chọn máy khoan cho công việc gia đình', 'summary' => 'Công suất, đầu kẹp và nguồn pin là ba yếu tố nên cân nhắc.', 'image' => $asset('workshop-service'), 'url' => '#']]), 'en' => $heading('Tool news')]],
+            ['block_type' => 'tool751_partners', 'label' => 'Thương hiệu đồng hành', 'description' => 'Dải đối tác lấy trực tiếp từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'doi-tac', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6], 'settings_schema' => ['source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => 'cms_partners', 'label' => 'Đối tác CMS'], ['value' => 'custom', 'label' => 'Nhập thủ công']]], 'limit' => ['type' => 'number', 'label' => 'Số đối tác', 'default' => 6]], 'data' => ['vi' => $withItems($heading('Thương hiệu đồng hành'), collect(['WORKFORGE', 'BEEPRO', 'IRONLAB', 'TOOLMATE', 'BUILDFORCE', 'MECHLAB'])->map(fn (string $title): array => ['title' => $title])->all()), 'en' => $heading('Trusted brands')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function auto850DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/AUTO850/preview-auto850.png';
+        $asset = fn (string $name): string => '/themes/AUTO850/images/'.$name.'.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter([
+            'title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button,
+        ], fn ($value) => $value !== null);
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy mục nổi bật'],
+        ];
+        $products = collect([
+            ['Đèn LED tăng sáng RoadBeam', 1, 2690000, 2990000], ['Camera hành trình Vision Pro', 2, 3450000, 3890000],
+            ['Loa sub gầm ghế BassCore', 3, 5900000, 6500000], ['Phim bảo vệ sơn ClearGuard', 4, 8500000, 9200000],
+            ['Mâm hợp kim thể thao Aero', 5, 7800000, 8600000], ['Màn hình ô tô DriveLink 10 inch', 6, 6990000, 7490000],
+        ])->map(fn (array $item): array => ['title' => $item[0], 'summary' => 'Bảo hành chính hãng · lắp đặt chuyên nghiệp', 'image' => $asset('accessory-'.$item[1]), 'price' => $item[2], 'original_price' => $item[3], 'url' => '#san-pham'])->all();
+        $categories = collect([
+            ['Nâng cấp ánh sáng', 'fa-solid fa-lightbulb'], ['Phim cách nhiệt ô tô', 'fa-solid fa-shield-halved'], ['Camera hành trình', 'fa-solid fa-video'],
+            ['Âm thanh', 'fa-solid fa-volume-high'], ['Mâm & lốp xe', 'fa-solid fa-compact-disc'], ['Màn hình Android', 'fa-solid fa-display'],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'summary' => 'Giải pháp tuyển chọn cho từng dòng xe', 'icon' => $item[1], 'image' => $asset('accessory-'.($index + 1)), 'url' => '#san-pham'])->all();
+        $services = collect([
+            ['Chẩn đoán tổng quát', 'Kiểm tra toàn diện bằng thiết bị hiện đại.'], ['Kiểm tra hệ thống phanh', 'Đo kiểm má phanh, đĩa phanh và dầu phanh.'],
+            ['Bảo dưỡng động cơ', 'Quy trình chuẩn giúp động cơ vận hành bền bỉ.'], ['Thay lốp & cân bằng động', 'Cân chỉnh chính xác, an toàn trên mọi hành trình.'],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'summary' => $item[1], 'image' => $asset('service-'.($index + 1)), 'url' => '#dat-lich'])->all();
+        $process = collect([
+            ['Tiếp nhận & kiểm tra xe', 'Lắng nghe nhu cầu và kiểm tra tổng quát.'], ['Báo giá & xác nhận', 'Minh bạch hạng mục, chi phí và thời gian.'],
+            ['Tiến hành bảo dưỡng', 'Kỹ thuật viên thực hiện theo quy trình chuẩn.'], ['Kiểm tra cuối & bàn giao', 'Chạy thử, vệ sinh và hướng dẫn sau dịch vụ.'],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'summary' => $item[1], 'image' => $asset('service-'.($index + 1))])->all();
+
+        return [
+            ['block_type' => 'auto850_hero', 'label' => 'Hero dịch vụ ô tô', 'description' => 'Banner dịch vụ lốp và lời mời đặt lịch.', 'preview_image' => $preview, 'anchor_id' => 'top', 'media' => ['image' => $asset('hero-service')], 'settings' => [], 'data' => ['vi' => $heading('Dịch vụ lốp xe chuyên nghiệp', 'AUTO850 EURO CARE', 'Kiểm tra, thay mới, cân bằng động và vá lốp với trang thiết bị hiện đại.', 'Đặt lịch ngay'), 'en' => $heading('Professional tyre service', 'AUTO850 EURO CARE', 'Inspection, fitting and balancing for a safer drive.', 'Book now')]],
+            ['block_type' => 'auto850_brands', 'label' => 'Thương hiệu nổi bật', 'description' => 'Dải đối tác và thương hiệu từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'thuong-hieu', 'dynamic' => true, 'settings' => ['source' => 'cms_partners', 'limit' => 6], 'settings_schema' => $sourceSchema('cms_partners', 'Đối tác CMS', 6), 'data' => ['vi' => $withItems($heading('Thương hiệu nổi bật'), collect(['HONRIN', 'MITSUBA', 'MERCURA', 'KIO', 'BAVEN', 'AUDRIA'])->map(fn (string $title) => ['title' => $title])->all()), 'en' => $heading('Featured brands')]],
+            ['block_type' => 'auto850_about', 'label' => 'Giới thiệu garage', 'description' => 'Giới thiệu năng lực và ba nhóm giá trị.', 'preview_image' => $preview, 'anchor_id' => 'gioi-thieu', 'media' => ['image' => $asset('service-strip')], 'settings' => [], 'data' => ['vi' => $withItems($heading('Đồng hành cùng mọi hành trình', 'Giới thiệu về chúng tôi', 'AUTO850 là trung tâm chăm sóc, bảo dưỡng và nâng cấp ô tô với quy trình minh bạch cùng đội ngũ kỹ thuật giàu kinh nghiệm.', 'Xem thêm'), [['title' => 'Dịch vụ chuyên nghiệp', 'summary' => 'Bảo dưỡng đúng chuẩn, kiểm tra kỹ từng hạng mục.'], ['title' => 'Phụ kiện chọn lọc', 'summary' => 'Sản phẩm phù hợp, nguồn gốc rõ ràng.'], ['title' => 'Cam kết dài lâu', 'summary' => 'Bảo hành minh bạch và hỗ trợ tận tâm.']]), 'en' => $heading('With you on every journey', 'About us')]],
+            ['block_type' => 'auto850_categories', 'label' => 'Danh mục nổi bật', 'description' => 'Sáu nhóm phụ kiện ô tô nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 6], 'settings_schema' => $sourceSchema('catalog_categories', 'Danh mục Catalog', 6), 'data' => ['vi' => $withItems($heading('Danh mục nổi bật', 'Gợi ý cho bạn'), $categories), 'en' => $heading('Featured categories')]],
+            ['block_type' => 'auto850_deals', 'label' => 'Khuyến mãi đặc biệt', 'description' => 'Lưới sản phẩm ưu đãi kèm bộ đếm.', 'preview_image' => $preview, 'anchor_id' => 'khuyen-mai', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => true, 'countdown_hours' => 48], 'settings_schema' => array_merge($sourceSchema('cms_products', 'Sản phẩm Catalog', 5), ['countdown_hours' => ['type' => 'number', 'label' => 'Thời lượng đếm ngược', 'default' => 48]]), 'data' => ['vi' => $withItems($heading('Khuyến mãi đặc biệt', 'Ưu đãi giới hạn'), array_slice($products, 0, 5)), 'en' => $heading('Special deals')]],
+            ['block_type' => 'auto850_featured_products', 'label' => 'Sản phẩm nổi bật', 'description' => 'Phụ kiện và nâng cấp ô tô được yêu thích.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 6], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 6), 'data' => ['vi' => $withItems($heading('Phụ kiện & nâng cấp ô tô', 'Lựa chọn nổi bật'), $products), 'en' => $heading('Automotive upgrades')]],
+            ['block_type' => 'auto850_services', 'label' => 'Dịch vụ nổi bật', 'description' => 'Bốn dịch vụ lấy trực tiếp từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_services', 'Dịch vụ CMS', 4), 'data' => ['vi' => $withItems($heading('Đáp ứng mọi nhu cầu chăm sóc xe', 'Dịch vụ nổi bật'), $services), 'en' => $heading('Our services')]],
+            ['block_type' => 'auto850_process', 'label' => 'Quy trình dịch vụ', 'description' => 'Quy trình chăm sóc xe bốn bước.', 'preview_image' => $preview, 'anchor_id' => 'quy-trinh', 'settings' => [], 'data' => ['vi' => $withItems($heading('Chăm sóc xế yêu chỉ với 4 bước đơn giản', 'Quy trình dịch vụ chuyên nghiệp'), $process), 'en' => $heading('Four simple service steps')]],
+            ['block_type' => 'auto850_testimonials', 'label' => 'Khách hàng chia sẻ', 'description' => 'Ba phản hồi chân thực từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'danh-gia', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 3, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_testimonials', 'Đánh giá CMS', 3), 'data' => ['vi' => $heading('Những phản hồi chân thực về AUTO850', 'Khách hàng chia sẻ'), 'en' => $heading('Customer stories')]],
+            ['block_type' => 'auto850_news', 'label' => 'Tin tức mới nhất', 'description' => 'Bốn bài viết ô tô từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4], 'settings_schema' => $sourceSchema('cms_posts', 'Bài viết CMS', 4), 'data' => ['vi' => $heading('Tin tức mới nhất', 'Tin tức'), 'en' => $heading('Latest news')]],
+            ['block_type' => 'auto850_faq', 'label' => 'Câu hỏi thường gặp', 'description' => 'Danh sách câu hỏi dạng accordion.', 'preview_image' => $preview, 'anchor_id' => 'faq', 'media' => ['image' => $asset('hero-service')], 'settings' => [], 'data' => ['vi' => $withItems($heading('Câu hỏi thường gặp về dịch vụ AUTO850', 'Giải đáp mọi thắc mắc'), [['title' => 'AUTO850 cung cấp những dịch vụ gì?', 'summary' => 'Chúng tôi bảo dưỡng, sửa chữa, chăm sóc và nâng cấp phụ kiện cho nhiều dòng xe.'], ['title' => 'Bao lâu tôi nên bảo dưỡng xe một lần?', 'summary' => 'Thông thường mỗi 5.000–10.000 km hoặc theo khuyến cáo của hãng xe.'], ['title' => 'Có sử dụng phụ tùng chính hãng không?', 'summary' => 'Mọi lựa chọn đều được tư vấn rõ nguồn gốc và chính sách bảo hành.'], ['title' => 'Tôi có cần đặt lịch trước không?', 'summary' => 'Đặt lịch giúp trung tâm chuẩn bị kỹ thuật viên và rút ngắn thời gian chờ.'], ['title' => 'Dịch vụ có bảo hành sau sửa chữa không?', 'summary' => 'Có, thời hạn bảo hành phụ thuộc từng hạng mục và được ghi rõ khi bàn giao.']]), 'en' => $heading('Frequently asked questions')]],
+            ['block_type' => 'auto850_booking', 'label' => 'Đặt lịch chăm sóc xe', 'description' => 'Biểu mẫu đặt lịch và chọn dịch vụ.', 'preview_image' => $preview, 'anchor_id' => 'dat-lich', 'media' => ['image' => $asset('service-1')], 'settings' => [], 'data' => ['vi' => $withItems($heading('Đặt lịch chăm sóc ô tô tại AUTO850', 'Liên hệ ngay', 'Để lại thông tin, đội ngũ tư vấn sẽ liên hệ xác nhận lịch trong thời gian sớm nhất.', 'Gửi liên hệ'), $services), 'en' => $heading('Book your car care', 'Contact us')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function auto851DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/AUTO851/preview-auto851.png';
+        $asset = fn (string $name): string => '/themes/AUTO851/images/'.$name.'.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter(['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button], fn ($value) => $value !== null);
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy mục nổi bật'],
+        ];
+        $cars = collect([
+            ['Everest Platinum', 'SUV', 1545000000], ['Nordic XC60 Ultra', 'SUV', 2279000000], ['Lynk One 2024', 'CUV', 999000000], ['Executive Camry 2.0Q', 'Sedan', 1220000000],
+            ['GLC 300 Sport Coupe', 'Sport', 2399000000], ['Royal Dawn Cabriolet', 'Sport', 16000000000], ['GT-R Performance', 'Sport', 2600000000], ['CCGT Hypercar', 'Sport', 4000000000],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'summary' => $item[1], 'image' => $asset('car-'.($index + 1)), 'price' => $item[2], 'url' => '#mua-xe'])->all();
+        $accessories = collect([
+            ['Phục hồi và làm mới nhựa', 257000], ['Vệ sinh bóng nhanh nội thất', 224000], ['Súc béc xăng chuyên dụng', 205000], ['Nhớt hộp số tự động', 387000], ['Dầu nhớt ô tô cao cấp', 1380000],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'summary' => 'Cập nhật', 'image' => $asset('accessory-'.($index + 1)), 'price' => $item[1], 'url' => '#phu-kien'])->all();
+        $faq = collect(['Sự vượt trội của OH!Car so với các đơn vị khác?', 'Sản phẩm tại OH!Car có xuất xứ từ đâu?', 'Mua xe tại OH!Car có được lái thử không?', 'Chất lượng nhân viên kỹ thuật như thế nào?', 'Kiểm định 160 điểm theo tiêu chuẩn nào?'])->map(fn (string $title): array => ['title' => $title, 'summary' => 'Đội ngũ AUTO851 tư vấn minh bạch, kiểm định rõ ràng và đồng hành trong suốt quá trình mua bán.'])->all();
+
+        return [
+            ['block_type' => 'auto851_hero', 'label' => 'Hero thị trường ô tô', 'description' => 'Banner vàng navy với xe SUV cao cấp.', 'preview_image' => $preview, 'anchor_id' => 'top', 'media' => ['image' => $asset('hero-suv')], 'settings' => [], 'data' => ['vi' => $heading('Chinh phục tầm cao mới', 'AUTO851 OH!CAR', 'Nền tảng mua bán ô tô minh bạch, thuận tiện và giúp mỗi hành trình thêm giá trị.', 'Tìm hiểu thêm'), 'en' => $heading('Conquer new heights', 'AUTO851 OH!CAR', 'A transparent and convenient automotive marketplace.', 'Discover')]],
+            ['block_type' => 'auto851_model_rail', 'label' => 'Dải mẫu xe', 'description' => 'Năm mẫu xe được quan tâm.', 'preview_image' => $preview, 'anchor_id' => 'mau-xe', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 5), 'data' => ['vi' => $withItems($heading('Mẫu xe nổi bật'), array_slice($cars, 0, 5)), 'en' => $heading('Popular models')]],
+            ['block_type' => 'auto851_buy_sell', 'label' => 'Mua xe và bán xe', 'description' => 'Bộ lọc mua xe và biểu mẫu bán xe.', 'preview_image' => $preview, 'anchor_id' => 'mua-xe', 'settings' => [], 'data' => ['vi' => $heading('Mua xe', 'Bán xe'), 'en' => $heading('Buy a car', 'Sell a car')]],
+            ['block_type' => 'auto851_featured_cars', 'label' => 'Xe nổi bật', 'description' => 'Lưới tám mẫu xe từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'xe-noi-bat', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 8), 'data' => ['vi' => $withItems($heading('Xe nổi bật'), $cars), 'en' => $heading('Featured cars')]],
+            ['block_type' => 'auto851_accessories', 'label' => 'Phụ kiện ô tô', 'description' => 'Năm sản phẩm chăm sóc xe.', 'preview_image' => $preview, 'anchor_id' => 'phu-kien', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 5], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 5), 'data' => ['vi' => $withItems($heading('Phụ kiện ô tô'), $accessories), 'en' => $heading('Car accessories')]],
+            ['block_type' => 'auto851_testimonials', 'label' => 'Phản hồi khách hàng', 'description' => 'Ba phản hồi từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'danh-gia', 'dynamic' => true, 'settings' => ['source' => 'cms_testimonials', 'limit' => 3, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_testimonials', 'Đánh giá CMS', 3), 'data' => ['vi' => $heading('Phản hồi của khách hàng', null, 'Hơn 1.000 khách hàng tin dùng dịch vụ của OH!Car.'), 'en' => $heading('Customer reviews')]],
+            ['block_type' => 'auto851_faq', 'label' => 'Câu hỏi thường gặp', 'description' => 'Accordion giải đáp về mua bán xe.', 'preview_image' => $preview, 'anchor_id' => 'faq', 'settings' => [], 'data' => ['vi' => $withItems($heading('Câu hỏi thường gặp'), $faq), 'en' => $heading('Frequently asked questions')]],
+            ['block_type' => 'auto851_news', 'label' => 'Blog và chia sẻ', 'description' => 'Ba bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 3], 'settings_schema' => $sourceSchema('cms_posts', 'Bài viết CMS', 3), 'data' => ['vi' => $heading('Blog & Chia sẻ'), 'en' => $heading('Blog & insights')]],
+            ['block_type' => 'auto851_newsletter', 'label' => 'Đăng ký nhận tin', 'description' => 'Biểu mẫu đăng ký email trước chân trang.', 'preview_image' => $preview, 'anchor_id' => 'nhan-tin', 'settings' => [], 'data' => ['vi' => $heading('Đăng ký nhận bản tin', null, 'Nhận bản tin để không bỏ lỡ thông tin và khuyến mãi của OH!Car.'), 'en' => $heading('Subscribe', null, 'Get the latest automotive news and offers.')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function auto852DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/AUTO852/preview-auto852.png';
+        $asset = fn (string $name): string => '/themes/AUTO852/images/'.$name.'.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter(['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button], fn ($value) => $value !== null);
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy mục nổi bật'],
+        ];
+        $services = collect([
+            ['Phủ ceramic cao cấp', 'Bảo vệ sơn, chống bám bẩn và duy trì độ bóng sâu.'],
+            ['Hiệu chỉnh bề mặt sơn', 'Loại bỏ xước nhẹ, phục hồi độ bóng và chiều sâu màu sơn.'],
+            ['Dán phim bảo vệ PPF', 'Bảo vệ bề mặt sơn trước va quệt và tác động môi trường.'],
+            ['Vệ sinh nội thất', 'Làm sạch sâu, khử khuẩn và phục hồi bề mặt da, nỉ.'],
+            ['Chăm sóc khoang máy', 'Làm sạch an toàn, bảo vệ chi tiết và duy trì hiệu suất.'],
+            ['Rửa xe detailing', 'Quy trình rửa xe không chạm, an toàn cho mọi bề mặt.'],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'summary' => $item[1], 'image' => $asset('service-'.($index + 1)), 'url' => '#bang-gia'])->all();
+        $process = collect([
+            ['Kiểm tra xe', 'Đánh giá tổng thể tình trạng xe và ghi nhận nhu cầu.'],
+            ['Tư vấn dịch vụ', 'Đề xuất giải pháp phù hợp cùng báo giá minh bạch.'],
+            ['Thực hiện', 'Chăm sóc xe theo quy trình và sản phẩm chuyên dụng.'],
+            ['Kiểm tra chất lượng', 'Nghiệm thu kỹ từng chi tiết trước khi bàn giao.'],
+            ['Bàn giao xe', 'Hướng dẫn bảo quản để hiệu quả được bền lâu.'],
+        ])->map(fn (array $item): array => ['title' => $item[0], 'summary' => $item[1]])->all();
+        $promotions = [
+            ['title' => 'Dán PPF chống trầy', 'summary' => 'Giảm đến 10%', 'eyebrow' => 'Ưu đãi tháng này', 'image' => $asset('service-3')],
+            ['title' => 'Combo chăm sóc toàn diện', 'summary' => 'Giảm đến 20%', 'eyebrow' => 'Đặc quyền thành viên', 'image' => $asset('service-6')],
+        ];
+        $prices = [
+            ['title' => 'Rửa xe tiêu chuẩn', 'price' => '200.000đ', 'icon' => 'car-side', 'features' => ['Rửa xe ngoại thất', 'Hút bụi nội thất', 'Lau chùi cơ bản', 'Dưỡng lốp và nhựa', 'Vệ sinh kính']],
+            ['title' => 'Rửa xe cao cấp', 'price' => '400.000đ', 'icon' => 'wand-magic-sparkles', 'features' => ['Rửa xe chi tiết', 'Vệ sinh nội thất', 'Dưỡng lốp và phủ bóng', 'Khử mùi khoang cabin', 'Kiểm tra bề mặt']],
+            ['title' => 'Phủ ceramic', 'price' => '4.500.000đ', 'icon' => 'shield-halved', 'featured' => true, 'features' => ['Ceramic cao cấp', 'Hiệu chỉnh bề mặt sơn', 'Tăng độ bóng sâu', 'Vệ sinh kính ngoài', 'Bảo hành rõ ràng']],
+            ['title' => 'Vệ sinh nội thất', 'price' => '800.000đ', 'icon' => 'couch', 'features' => ['Vệ sinh chi tiết', 'Khử mùi và diệt khuẩn', 'Dưỡng da và nhựa', 'Vệ sinh trần xe', 'Làm sạch khe kẽ']],
+        ];
+        $products = collect([
+            ['Dung dịch vệ sinh kính Crystal Clear', 108000, 140000], ['Dung dịch vệ sinh mâm xe chuyên sâu', 285000, 385000], ['Xịt phủ bóng nhanh Quick Detailer', 247000, 350000], ['Khử mùi và diệt khuẩn cabin', 247000, 350000], ['Chai vệ sinh mạch điện chuyên dụng', 195000, 0],
+            ['Nước rửa kính lái đậm đặc', 175000, 0], ['Nước rửa xe bóng sơn Premium Wash', 160000, 200000], ['Dung dịch đánh bóng hoàn thiện', 660000, 800000], ['Dung dịch bảo dưỡng lốp xe', 170000, 0], ['Bộ phủ chống bám nước kính xe', 320000, 0],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'image' => $asset('product-'.($index + 1)), 'price' => $item[1], 'original_price' => $item[2], 'url' => '#san-pham'])->all();
+        $news = collect([
+            ['Bảo dưỡng ô tô thế nào sau hành trình dài?', 'Các bước kiểm tra và vệ sinh quan trọng giúp xe sẵn sàng cho hành trình tiếp theo.', 'service-5'],
+            ['Sơn xe cần được bảo vệ thế nào trong mùa mưa?', 'Giải pháp hạn chế bám bẩn, vệt nước và tác động môi trường.', 'service-1'],
+            ['Khi nào nên vệ sinh khoang động cơ?', 'Những dấu hiệu cho thấy khoang máy cần được chăm sóc đúng cách.', 'service-5'],
+            ['Năm vị trí dễ bỏ quên khi chăm sóc nội thất', 'Kinh nghiệm làm sạch giúp khoang xe luôn thoáng và dễ chịu.', 'service-4'],
+        ])->map(fn (array $item): array => ['title' => $item[0], 'summary' => $item[1], 'image' => $asset($item[2]), 'date' => now()->format('d/m/Y'), 'url' => '#tin-tuc'])->all();
+
+        return [
+            ['block_type' => 'auto852_hero', 'label' => 'Hero Onyx Detailing', 'description' => 'Banner tối cao cấp giới thiệu sản phẩm chăm sóc xe.', 'preview_image' => $preview, 'anchor_id' => 'top', 'media' => ['image' => $asset('hero-detailing')], 'settings' => [], 'data' => ['vi' => $heading('Sản phẩm chăm sóc xe ô tô', 'ONYX DETAILING', 'Chất lượng vượt trội, bảo vệ toàn diện và giữ trọn vẻ đẹp cho xế yêu.', 'Khám phá sản phẩm'), 'en' => $heading('Premium car care products', 'ONYX DETAILING', 'Superior protection and a lasting showroom finish.', 'Explore products')]],
+            ['block_type' => 'auto852_services', 'label' => 'Dịch vụ nổi bật', 'description' => 'Sáu dịch vụ detailing lấy trực tiếp từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'dich-vu', 'dynamic' => true, 'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_services', 'Dịch vụ CMS', 6), 'data' => ['vi' => $withItems($heading('Chăm sóc toàn diện - hoàn hảo từng chi tiết', 'Dịch vụ nổi bật', 'Đội ngũ kỹ thuật chuyên nghiệp cùng sản phẩm cao cấp mang đến diện mạo hoàn hảo cho xe của bạn.'), $services), 'en' => $heading('Complete care, perfected in every detail', 'Featured services')]],
+            ['block_type' => 'auto852_process', 'label' => 'Quy trình chăm xe', 'description' => 'Năm bước dịch vụ chuẩn hóa.', 'preview_image' => $preview, 'anchor_id' => 'quy-trinh', 'settings' => [], 'data' => ['vi' => $withItems($heading('Chăm sóc xe chuyên nghiệp', 'Quy trình', 'Đúng quy trình – Đúng kỹ thuật – Đúng chất lượng'), $process), 'en' => $heading('Professional car care process', 'Process')]],
+            ['block_type' => 'auto852_promotions', 'label' => 'Banner ưu đãi', 'description' => 'Hai chương trình khuyến mãi nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai', 'settings' => [], 'data' => ['vi' => $withItems($heading('Ưu đãi nổi bật'), $promotions), 'en' => $heading('Featured offers')]],
+            ['block_type' => 'auto852_pricing', 'label' => 'Bảng giá dịch vụ', 'description' => 'Bốn gói chăm sóc xe và tính năng đi kèm.', 'preview_image' => $preview, 'anchor_id' => 'bang-gia', 'settings' => [], 'data' => ['vi' => $withItems($heading('Dịch vụ chăm sóc xe', 'Bảng giá', 'Chăm sóc toàn diện – Bảo vệ tối ưu – Nâng tầm đẳng cấp xế yêu'), $prices), 'en' => $heading('Car care packages', 'Pricing')]],
+            ['block_type' => 'auto852_product_banner', 'label' => 'Banner sản phẩm chính hãng', 'description' => 'Banner sáng giới thiệu dòng sản phẩm chăm xe.', 'preview_image' => $preview, 'anchor_id' => 'san-pham-chinh-hang', 'media' => ['image' => $asset('product-banner')], 'settings' => [], 'data' => ['vi' => $heading('Chăm sóc toàn diện, bảo vệ vượt trội', 'Sản phẩm chọn lọc', 'Công thức chuyên dụng giúp làm sạch, bảo vệ và duy trì vẻ sáng bóng bền lâu.', 'Xem sản phẩm'), 'en' => $heading('Complete care and superior protection', 'Selected products', 'Professional formulas for a brilliant, lasting finish.', 'View products')]],
+            ['block_type' => 'auto852_products', 'label' => 'Sản phẩm chăm sóc xe', 'description' => 'Mười sản phẩm nổi bật lấy từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 10, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 10), 'data' => ['vi' => $withItems($heading('Sản phẩm chăm sóc xe', 'Sản phẩm nổi bật', 'Giải pháp chuyên dụng cho từng bề mặt và nhu cầu chăm sóc.'), $products), 'en' => $heading('Car care products', 'Featured products')]],
+            ['block_type' => 'auto852_news', 'label' => 'Kiến thức chăm sóc xe', 'description' => 'Một bài nổi bật và ba bài mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4], 'settings_schema' => $sourceSchema('cms_posts', 'Bài viết CMS', 4), 'data' => ['vi' => $withItems($heading('Kiến thức và kinh nghiệm chăm sóc xe', 'Tin mới nhất', 'Thông tin hữu ích giúp bạn chăm sóc và bảo vệ xế yêu bền đẹp như mới.'), $news), 'en' => $heading('Car care knowledge and experience', 'Latest news')]],
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function auto853DefaultBlocks(): array
+    {
+        $preview = '/theme-previews/AUTO853/preview-auto853.png';
+        $asset = fn (string $name): string => '/themes/AUTO853/images/'.$name.'.png';
+        $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter([
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'description' => $description,
+            'button_label' => $button,
+        ], fn ($value) => $value !== null);
+        $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
+        $sourceSchema = fn (string $source, string $label, int $limit): array => [
+            'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [['value' => $source, 'label' => $label], ['value' => 'custom', 'label' => 'Nhập thủ công']]],
+            'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
+            'category_id' => ['type' => 'select', 'label' => 'Danh mục lọc'],
+            'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy mục nổi bật'],
+        ];
+
+        $categories = collect([
+            ['Xe đạp địa hình', '19 sản phẩm'], ['Xe đạp đường trường', '19 sản phẩm'], ['Xe đạp điện', '19 sản phẩm'],
+            ['Xe đạp đô thị', '3 sản phẩm'], ['Xe đạp đi làm', '19 sản phẩm'], ['Xe đạp trẻ em', '19 sản phẩm'],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'summary' => $item[1], 'image' => $asset('bike-'.($index + 1)), 'url' => '#san-pham'])->all();
+
+        $products = collect([
+            ['Summit Trail X9', 'Xe đạp địa hình', 32590000, 44990000],
+            ['Apex Road R5 Disc', 'Xe đạp đường trường', 32590000, 44990000],
+            ['Metro Step City', 'Xe đạp đô thị', 17838000, 24580000],
+            ['Aero Carbon Pro', 'Xe đạp đường trường', 38900000, 0],
+            ['Gravel Venture 7', 'Xe đạp đi làm', 18990000, 22990000],
+            ['Terra E-MTB Pro', 'Xe đạp điện', 26190000, 29990000],
+            ['Urban Flow 3', 'Xe đạp đô thị', 12990000, 0],
+            ['Commuter Daily 2', 'Xe đạp đi làm', 15990000, 18990000],
+            ['Junior Explorer', 'Xe đạp trẻ em', 6490000, 0],
+            ['Summit Cross 2.0', 'Xe đạp điện', 25190000, 28990000],
+            ['RaceLine SL 6', 'Xe đạp đường trường', 42900000, 49900000],
+            ['Trail Scout 27.5', 'Xe đạp địa hình', 21990000, 25990000],
+        ])->map(fn (array $item, int $index): array => ['title' => $item[0], 'category' => $item[1], 'image' => $asset('bike-'.($index + 1)), 'price' => $item[2], 'original_price' => $item[3], 'url' => '#san-pham'])->all();
+
+        $promotions = [
+            ['title' => 'Săn hàng sale 30%', 'subtitle' => 'Phụ kiện hiệu suất', 'summary' => 'Nâng cấp từng vòng quay', 'image' => $asset('promo-accessories')],
+            ['title' => 'Chiếu sáng an toàn', 'subtitle' => 'Trang bị hành trình', 'summary' => 'An tâm mọi cung đường', 'image' => $asset('promo-light')],
+            ['title' => 'Yên xe đỉnh cao', 'subtitle' => 'Thoải mái dài lâu', 'summary' => 'Giảm đến 10%', 'image' => $asset('promo-saddle')],
+        ];
+        $bikepacking = collect(['Full Frame Setup', 'Adventure Accessory', 'Dry Bag Touring'])->map(fn (string $title, int $index): array => ['title' => $title, 'image' => $asset('story-'.($index + 1)), 'url' => '#san-pham'])->all();
+        $videos = collect([
+            ['Dấu chân xanh', 4], ['Chuẩn bị yên xe', 5], ['Đam mê gravel bike', 2], ['Hành trình vượt giới hạn', 3],
+        ])->map(fn (array $item): array => ['title' => $item[0], 'image' => $asset('story-'.$item[1]), 'url' => '#'])->all();
+        $news = collect([
+            ['Top 5 xe đạp thể thao chính hãng không thể bỏ qua', 'Gợi ý những mẫu xe phù hợp cho cả người mới và tay đua giàu kinh nghiệm.', 4],
+            ['Hướng dẫn chọn xe đạp đường trường cho người mới', 'Các tiêu chí về khung xe, tư thế và bộ truyền động giúp bạn chọn đúng.', 5],
+            ['Bí quyết chuẩn bị hành trình bikepacking', 'Danh sách trang bị để chuyến đi xa thêm nhẹ nhàng và chủ động.', 2],
+            ['Bảo dưỡng xe đạp sau chuyến đi dài', 'Những bước kiểm tra quan trọng giúp xe luôn vận hành trơn tru.', 6],
+        ])->map(fn (array $item): array => ['title' => $item[0], 'summary' => $item[1], 'image' => $asset('story-'.$item[2]), 'date' => now()->format('d/m/Y'), 'url' => '#tin-tuc'])->all();
+
+        return [
+            ['block_type' => 'auto853_hero', 'label' => 'Hero hành trình', 'description' => 'Banner núi cao với xe đạp địa hình nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'top', 'media' => ['image' => $asset('hero-mountain')], 'settings' => [], 'data' => ['vi' => $heading('Chinh phục mọi nẻo đường', 'Bắt đầu hành trình', 'Khám phá những mẫu xe được tạo nên cho tự do, tốc độ và mọi giới hạn mới.', 'Khám phá ngay'), 'en' => $heading('Conquer every road', 'Start the journey', 'Bikes built for freedom, speed and new frontiers.', 'Explore now')]],
+            ['block_type' => 'auto853_categories', 'label' => 'Danh mục sản phẩm', 'description' => 'Sáu nhóm xe đạp lấy trực tiếp từ Catalog.', 'preview_image' => $preview, 'anchor_id' => 'danh-muc', 'dynamic' => true, 'settings' => ['source' => 'catalog_categories', 'limit' => 6], 'settings_schema' => $sourceSchema('catalog_categories', 'Danh mục Catalog', 6), 'data' => ['vi' => $withItems($heading('Danh mục sản phẩm'), $categories), 'en' => $heading('Product categories')]],
+            ['block_type' => 'auto853_flash_sale', 'label' => 'Flash Sale', 'description' => 'Bốn mẫu xe ưu đãi cùng đồng hồ đếm ngược.', 'preview_image' => $preview, 'anchor_id' => 'flash-sale', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 4, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 4), 'data' => ['vi' => $withItems($heading('Happy Summer - giảm đến 50%'), array_slice($products, 0, 4)), 'en' => $heading('Happy Summer - up to 50% off')]],
+            ['block_type' => 'auto853_promotions', 'label' => 'Mosaic ưu đãi', 'description' => 'Ba banner phụ kiện và trang bị nổi bật.', 'preview_image' => $preview, 'anchor_id' => 'uu-dai', 'settings' => [], 'data' => ['vi' => $withItems($heading('Ưu đãi trang bị'), $promotions), 'en' => $heading('Gear offers')]],
+            ['block_type' => 'auto853_bikepacking', 'label' => 'Bikepacking Equipment', 'description' => 'Bộ sưu tập hành trang touring dạng ba cột.', 'preview_image' => $preview, 'anchor_id' => 'bikepacking', 'settings' => [], 'data' => ['vi' => $withItems($heading('Bikepacking Equipment'), $bikepacking), 'en' => $heading('Bikepacking Equipment')]],
+            ['block_type' => 'auto853_feature', 'label' => 'Xe đạp nổi bật', 'description' => 'Câu chuyện nổi bật với ảnh xe khổ lớn.', 'preview_image' => $preview, 'anchor_id' => 'noi-bat', 'media' => ['image' => $asset('bike-10')], 'settings' => [], 'data' => ['vi' => array_merge($heading('Summit Cross 2.0 - Lựa chọn hoàn hảo cho hành trình phượt và di chuyển trong thành phố!', 'Thiết kế linh hoạt', 'Chiếc xe hybrid cân bằng giữa hiệu suất, sự thoải mái và khả năng thích nghi trên nhiều địa hình.', 'Xem chi tiết'), ['content' => ['features' => ['Khung hợp kim nhôm siêu nhẹ và bền bỉ', 'Phuộc trước êm ái cho đường hỗn hợp', 'Hệ truyền động Shimano chuyển số linh hoạt', 'Phanh thủy lực an toàn và chính xác', 'Trang bị đầy đủ cho hành trình dài']]]), 'en' => $heading('Summit Cross 2.0 - ready for every journey', 'Flexible design', 'A versatile hybrid bike for city rides and weekend escapes.', 'View details')]],
+            ['block_type' => 'auto853_sale_banner', 'label' => 'Banner In-stock Sale', 'description' => 'Banner phong cảnh đạp xe và ưu đãi 30%.', 'preview_image' => $preview, 'anchor_id' => 'in-stock-sale', 'media' => ['image' => $asset('promo-trail')], 'settings' => [], 'data' => ['vi' => $heading('30% OFF IN-STOCK SALE', 'Sẵn sàng lên đường', 'Tận hưởng chuyến đi của bạn với ưu đãi giới hạn.', 'Mua ngay'), 'en' => $heading('30% OFF IN-STOCK SALE', 'Ready to ride', 'Enjoy your next journey with limited offers.', 'Shop now')]],
+            ['block_type' => 'auto853_collection', 'label' => 'Bộ sưu tập xe', 'description' => 'Ba mẫu xe nổi bật theo phong cách editorial.', 'preview_image' => $preview, 'anchor_id' => 'san-pham', 'dynamic' => true, 'settings' => ['source' => 'cms_products', 'limit' => 3, 'featured_only' => true], 'settings_schema' => $sourceSchema('cms_products', 'Sản phẩm Catalog', 3), 'data' => ['vi' => $withItems($heading('Khơi nguồn cảm hứng'), array_slice($products, 8, 3)), 'en' => $heading('Inspire every ride')]],
+            ['block_type' => 'auto853_videos', 'label' => 'Video nổi bật', 'description' => 'Bốn video hành trình dạng thẻ dọc.', 'preview_image' => $preview, 'anchor_id' => 'video', 'settings' => [], 'data' => ['vi' => $withItems($heading('Video được xem nhiều nhất'), $videos), 'en' => $heading('Most watched videos')]],
+            ['block_type' => 'auto853_news', 'label' => 'Tin tức xe đạp', 'description' => 'Bốn bài viết mới nhất từ CMS.', 'preview_image' => $preview, 'anchor_id' => 'tin-tuc', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4], 'settings_schema' => $sourceSchema('cms_posts', 'Bài viết CMS', 4), 'data' => ['vi' => $withItems($heading('Tin tức'), $news), 'en' => $heading('News')]],
+        ];
+    }
+
     private function contentText(string $websiteKey, string $locale, string $key, ?string $fallback): ?string
     {
         $value = $this->localizedContent->textByKey(
@@ -2233,6 +2648,12 @@ class LandingPageBuilder
             'BDS701' => $this->bds701DefaultBlocks(),
             'BDS702' => $this->bds702DefaultBlocks(),
             'DL750' => $this->dl750DefaultBlocks(),
+            'TOOL750' => $this->tool750DefaultBlocks(),
+            'TOOL751' => $this->tool751DefaultBlocks(),
+            'AUTO850' => $this->auto850DefaultBlocks(),
+            'AUTO851' => $this->auto851DefaultBlocks(),
+            'AUTO852' => $this->auto852DefaultBlocks(),
+            'AUTO853' => $this->auto853DefaultBlocks(),
             'XD0312' => $this->xd0312DefaultBlocks(),
             'XD0311' => $this->xd0311DefaultBlocks(),
             'XD0310' => $this->xd0310DefaultBlocks(),
@@ -9170,4 +9591,3 @@ class LandingPageBuilder
         ];
     }
 }
-
