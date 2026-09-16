@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Database\MigrationRollback;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -46,6 +47,7 @@ return new class extends Migration
 
     public function down(): void
     {
+        MigrationRollback::dropForeignKeysForColumns('customer_service_interests', ['cms_service_id']);
         Schema::dropIfExists('cms_service_images');
         Schema::dropIfExists('cms_services');
     }

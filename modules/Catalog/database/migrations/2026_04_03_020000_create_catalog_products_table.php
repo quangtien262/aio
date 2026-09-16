@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Database\MigrationRollback;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -69,6 +70,8 @@ return new class extends Migration
 
     public function down(): void
     {
+        MigrationRollback::dropForeignKeysForColumns('order_items', ['catalog_product_id']);
+        MigrationRollback::dropForeignKeysForColumns('customer_favorites', ['catalog_product_id']);
         Schema::dropIfExists('catalog_product_images');
         Schema::dropIfExists('catalog_products');
         Schema::dropIfExists('catalog_categories');

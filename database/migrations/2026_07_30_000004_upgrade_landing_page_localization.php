@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TranslationStatus;
+use App\Support\Database\MigrationRollback;
 use App\Support\FrontendRouteUrl;
 use App\Support\Localization\TranslationRevision;
 use Illuminate\Database\Migrations\Migration;
@@ -51,9 +52,7 @@ return new class extends Migration
         }
 
         if (Schema::hasColumn('landing_page_data', 'slug')) {
-            Schema::table('landing_page_data', function (Blueprint $table): void {
-                $table->dropColumn('slug');
-            });
+            MigrationRollback::dropColumns('landing_page_data', ['slug']);
         }
     }
 

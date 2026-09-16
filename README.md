@@ -73,6 +73,29 @@ php artisan localization:audit --website=website-main --strict --require-ready
 
 `--strict` kiểm tra cấu trúc; chỉ `--require-ready` mới chứng minh target locale đủ điều kiện phát hành.
 
+### Tạo lại database phát triển
+
+`php artisan migrate:refresh` rollback các migration đã chạy, bao gồm migration
+của module, rồi chạy lại **core**. Lệnh này xóa dữ liệu trong các bảng bị rollback;
+không dùng để nâng cấp deployment có dữ liệu cần giữ. Nâng cấp dùng `php artisan migrate`
+và Module Manager.
+
+`php artisan migrate:refresh --seed` cài/bật lại CMS và tạo tài khoản System Owner
+qua seeder. Các module khác cần cài lại qua Module Manager. Môi trường production
+vẫn bắt buộc cấu hình `AIO_SYSTEM_OWNER_PASSWORD`; nếu vừa sửa `.env`, chạy
+`php artisan config:clear` trước khi seed. `--step` chỉ refresh số migration đã chọn,
+kể cả migration module; `--path` giữ nguyên phạm vi được chỉ định.
+
+Kiểm chứng vòng migrate/refresh/seed trên database cô lập:
+
+```bash
+php -d memory_limit=256M vendor/bin/phpunit tests/Feature/FreshProductionInstallTest.php
+php tests/Support/migration-refresh-mysql.php
+```
+
+Smoke MySQL cần quyền tạo database, tự tạo database tên ngẫu nhiên
+`aio_refresh_test_*` và chỉ xóa database đó khi kết thúc; không sao chép dữ liệu local.
+
 ## Tài liệu bắt đầu
 
 - `docs/ai-session-bootstrap-prompt.md`

@@ -48,8 +48,10 @@ return new class extends Migration
         Schema::dropIfExists('inv_serial_numbers');
         Schema::dropIfExists('inv_batches');
 
-        if (Schema::hasTable('inv_items')) Schema::table('inv_items', function (Blueprint $table): void { foreach (['barcode', 'costing_method', 'track_batch', 'track_serial', 'reorder_min', 'reorder_max', 'preferred_supplier'] as $column) if (Schema::hasColumn('inv_items', $column)) $table->dropColumn($column); });
-        if (Schema::hasTable('inv_locations')) Schema::table('inv_locations', function (Blueprint $table): void { foreach (['barcode', 'sort_order'] as $column) if (Schema::hasColumn('inv_locations', $column)) $table->dropColumn($column); if (Schema::hasColumn('inv_locations', 'parent_id')) $table->dropConstrainedForeignId('parent_id'); });
+        \App\Support\Database\MigrationRollback::dropColumns('inv_items', [
+            'barcode', 'costing_method', 'track_batch', 'track_serial', 'reorder_min', 'reorder_max', 'preferred_supplier',
+        ]);
+        \App\Support\Database\MigrationRollback::dropColumns('inv_locations', ['barcode', 'sort_order', 'parent_id']);
     }
 
     private function extendLocations(): void

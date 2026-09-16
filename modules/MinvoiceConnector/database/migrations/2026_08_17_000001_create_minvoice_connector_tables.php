@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Database\MigrationRollback;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -150,46 +151,44 @@ return new class extends Migration
         Schema::dropIfExists('acct_external_invoice_vat_breakdowns');
         Schema::dropIfExists('acct_external_invoice_lines');
 
+        MigrationRollback::dropColumns('acct_external_invoices', [
+            'connection_id',
+            'provider_tax_id',
+            'provider_type',
+            'seller_name',
+            'seller_address',
+            'buyer_name',
+            'template_code',
+            'invoice_code',
+            'currency',
+            'exchange_rate',
+            'subtotal_ex_vat',
+            'non_taxable_amount',
+            'discount_amount',
+            'fee_amount',
+            'other_amount',
+            'invoice_status_code',
+            'processing_status_code',
+            'illegal_status',
+            'illegal_reason',
+            'duplicate_status',
+            'issued_at',
+            'tax_authority_code_issued_at',
+            'tax_authority_received_at',
+            'provider_updated_at',
+            'xml_checksum',
+            'html_checksum',
+            'vat_breakdown',
+            'warning_payload',
+            'sync_status',
+        ]);
         Schema::table('acct_external_invoices', function (Blueprint $table): void {
-            $table->dropUnique('acct_external_connection_provider_id_unique');
-            $table->dropConstrainedForeignId('connection_id');
-            $table->dropColumn([
-                'provider_tax_id',
-                'provider_type',
-                'seller_name',
-                'seller_address',
-                'buyer_name',
-                'template_code',
-                'invoice_code',
-                'currency',
-                'exchange_rate',
-                'subtotal_ex_vat',
-                'non_taxable_amount',
-                'discount_amount',
-                'fee_amount',
-                'other_amount',
-                'invoice_status_code',
-                'processing_status_code',
-                'illegal_status',
-                'illegal_reason',
-                'duplicate_status',
-                'issued_at',
-                'tax_authority_code_issued_at',
-                'tax_authority_received_at',
-                'provider_updated_at',
-                'xml_checksum',
-                'html_checksum',
-                'vat_breakdown',
-                'warning_payload',
-                'sync_status',
-            ]);
             $table->unique(['provider', 'provider_invoice_id'], 'acct_external_provider_id_unique');
         });
 
-        Schema::table('acct_einvoice_transmissions', function (Blueprint $table): void {
-            $table->dropConstrainedForeignId('connection_id');
-            $table->dropColumn(['status', 'next_attempt_at', 'completed_at', 'pdf_checksum', 'xml_checksum']);
-        });
+        MigrationRollback::dropColumns('acct_einvoice_transmissions', [
+            'connection_id', 'status', 'next_attempt_at', 'completed_at', 'pdf_checksum', 'xml_checksum',
+        ]);
 
         Schema::dropIfExists('acct_provider_series');
         Schema::dropIfExists('acct_provider_connections');

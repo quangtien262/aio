@@ -261,7 +261,7 @@ class LandingPageBuilder
      */
     private function catalogCategoryOptions(): array
     {
-        if (! Schema::hasTable('catalog_categories')) {
+        if (! Schema::hasTable('catalog_categories') || ! Schema::hasTable('catalog_products')) {
             return [];
         }
 
@@ -1702,7 +1702,7 @@ class LandingPageBuilder
                 ->all();
         }
 
-        if (! Schema::hasTable('catalog_categories')) {
+        if (! Schema::hasTable('catalog_categories') || ! Schema::hasTable('catalog_products')) {
             return [];
         }
 
@@ -1839,6 +1839,10 @@ class LandingPageBuilder
      */
     private function featuredProductItems(array $settings, int $limit, string $locale, ?string $websiteKey): array
     {
+        if (! Schema::hasTable('catalog_products')) {
+            return [];
+        }
+
         /** @var Builder $query */
         $query = CatalogProduct::query()->where('is_active', true);
         $this->orderByHighlight($query, 'catalog_products');

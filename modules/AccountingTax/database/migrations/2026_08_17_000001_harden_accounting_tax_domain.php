@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Database\MigrationRollback;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -312,48 +313,45 @@ return new class extends Migration
 
         $this->restoreLegalDocumentCascadeConstraints();
 
-        Schema::table('acct_document_lines', function (Blueprint $table): void {
-            $table->dropColumn(['tax_category', 'line_subtotal', 'tax_base']);
-        });
+        MigrationRollback::dropColumns('acct_document_lines', ['tax_category', 'line_subtotal', 'tax_base']);
 
         Schema::table('acct_documents', function (Blueprint $table): void {
-            $table->dropForeign('acct_documents_original_fk');
             $table->dropUnique('acct_documents_org_idempotency_unique');
             $table->dropIndex('acct_documents_org_workflow_date_idx');
-            $table->dropColumn([
-                'created_by',
-                'version',
-                'request_fingerprint',
-                'seller_snapshot',
-                'buyer_snapshot',
-                'snapshot_hash',
-                'tax_breakdown',
-                'tax_period',
-                'tax_eligibility',
-                'base_currency',
-                'exchange_rate',
-                'base_subtotal',
-                'base_discount_total',
-                'base_tax_total',
-                'base_grand_total',
-                'paid_amount',
-                'original_document_id',
-                'correction_type',
-                'effect_sign',
-                'reversal_status',
-                'voided_at',
-                'voided_by',
-                'void_reason',
-                'reversed_at',
-                'reversed_by',
-            ]);
+        });
+        MigrationRollback::dropColumns('acct_documents', [
+            'created_by',
+            'version',
+            'request_fingerprint',
+            'seller_snapshot',
+            'buyer_snapshot',
+            'snapshot_hash',
+            'tax_breakdown',
+            'tax_period',
+            'tax_eligibility',
+            'base_currency',
+            'exchange_rate',
+            'base_subtotal',
+            'base_discount_total',
+            'base_tax_total',
+            'base_grand_total',
+            'paid_amount',
+            'original_document_id',
+            'correction_type',
+            'effect_sign',
+            'reversal_status',
+            'voided_at',
+            'voided_by',
+            'void_reason',
+            'reversed_at',
+            'reversed_by',
+        ]);
+        Schema::table('acct_documents', function (Blueprint $table): void {
             $table->unique('idempotency_key', 'acct_documents_idempotency_key_unique');
         });
 
+        MigrationRollback::dropColumns('acct_item_sources', ['organization_id']);
         Schema::table('acct_item_sources', function (Blueprint $table): void {
-            $table->dropForeign('acct_item_sources_org_fk');
-            $table->dropUnique('acct_item_sources_org_source_unique');
-            $table->dropColumn('organization_id');
             $table->unique(
                 ['source_module', 'source_type', 'source_id'],
                 'acct_item_sources_source_unique',
@@ -361,17 +359,17 @@ return new class extends Migration
         });
 
         Schema::table('acct_organization_websites', function (Blueprint $table): void {
-            $table->dropUnique('acct_org_websites_website_unique');
-            $table->dropIndex('acct_org_websites_org_primary_idx');
             $table->unique(
                 ['organization_id', 'website_key'],
                 'acct_org_websites_org_website_unique',
             );
         });
-
-        Schema::table('acct_organizations', function (Blueprint $table): void {
-            $table->dropColumn('default_slot');
+        Schema::table('acct_organization_websites', function (Blueprint $table): void {
+            $table->dropUnique('acct_org_websites_website_unique');
+            $table->dropIndex('acct_org_websites_org_primary_idx');
         });
+
+        MigrationRollback::dropColumns('acct_organizations', ['default_slot']);
     }
 
     private function deduplicateWebsiteMappings(): void

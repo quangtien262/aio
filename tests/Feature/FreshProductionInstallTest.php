@@ -146,6 +146,93 @@ class FreshProductionInstallTest extends TestCase
         $this->assertSame(8, (int) $database->query("select count(*) from module_role_definitions where module_key = 'fnb-pos'")->fetchColumn());
     }
 
+    public function test_production_core_migrations_can_be_refreshed_repeatedly(): void
+    {
+        $this->assertProcessSucceeded($this->artisanProcess(['migrate', '--force']), 'Initial core migration');
+
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $this->assertProcessSucceeded(
+                $this->artisanProcess(['migrate:refresh', '--force', '--no-interaction']),
+                'Core refresh',
+            );
+        }
+
+        $this->assertTrue($this->hasTable($this->database(), 'admin_role_assignments'));
+        $this->assertFalse($this->hasTable($this->database(), 'cms_pages'));
+    }
+
+    public function test_production_refresh_after_module_installation_resets_module_schema(): void
+    {
+        $this->assertProcessSucceeded($this->artisanProcess(['migrate', '--force']), 'Initial core migration');
+        $this->assertProcessSucceeded($this->moduleLifecycleProcess(), 'Module installation');
+        $stepRefresh = $this->artisanProcess(['migrate:refresh', '--step=1', '--force', '--no-interaction']);
+        $this->assertProcessSucceeded($stepRefresh, 'Partial module refresh');
+        $this->assertStringNotContainsString('Migration not found', $stepRefresh->getOutput());
+        $this->assertContains('fnb_check_day_hot_idx', $this->indexes($this->database(), 'fnb_checks'));
+        $this->assertSame(10, $this->tableCount($this->database(), 'module_installations'));
+
+        $refresh = $this->artisanProcess(['migrate:refresh', '--force', '--no-interaction']);
+        $this->assertProcessSucceeded($refresh, 'Refresh with installed modules');
+        $this->assertStringNotContainsString('Migration not found', $refresh->getOutput());
+        $this->assertFalse($this->hasTable($this->database(), 'cms_pages'));
+        $this->assertFalse($this->hasTable($this->database(), 'fnb_orders'));
+        $this->assertProcessSucceeded($this->moduleLifecycleProcess(), 'Module reinstall after refresh');
+        $this->assertProcessSucceeded(
+            $this->artisanProcess(['migrate:refresh', '--seed', '--force', '--no-interaction']),
+            'Refresh and seed after reinstall',
+        );
+        $this->assertSame('enabled', $this->database()->query("select status from module_installations where key = 'cms'")->fetchColumn());
+        $this->assertSame(1, $this->tableCount($this->database(), 'admins'));
+        $this->assertFalse($this->hasTable($this->database(), 'catalog_products'));
+        $this->assertProcessSucceeded($this->storefrontProcess(), 'CMS-only storefront after refresh and seed');
+    }
+
+    public function test_production_cms_only_install_renders_storefront_without_catalog_tables(): void
+    {
+        $this->assertProcessSucceeded($this->artisanProcess(['migrate', '--seed', '--force']), 'Fresh CMS installation');
+        $this->assertFalse($this->hasTable($this->database(), 'catalog_categories'));
+        $this->assertProcessSucceeded($this->storefrontProcess(), 'Fresh CMS-only storefront');
+        $this->assertFalse($this->hasTable($this->database(), 'catalog_products'));
+    }
+
+    private function storefrontProcess(): Process
+    {
+        $script = <<<'PHP'
+require getcwd().'/vendor/autoload.php';
+$app = require getcwd().'/bootstrap/app.php';
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+$profile = App\Models\SiteProfile::query()->firstOrFail();
+$originalTheme = $profile->active_theme_key;
+foreach (array_unique([$originalTheme, 'SHOP601', 'SER0101', 'AUTO850']) as $theme) {
+    if ($theme && ! $app->make(App\Core\Themes\ThemeRegistry::class)->all()->contains('key', $theme)) {
+        throw new RuntimeException("Unknown test theme: {$theme}");
+    }
+    $profile->forceFill(['active_theme_key' => $theme])->save();
+    $app->forgetScopedInstances();
+    $request = Illuminate\Http\Request::create('http://localhost/vi', 'GET');
+    $response = $kernel->handle($request);
+    if ($response->getStatusCode() !== 200) {
+        throw new RuntimeException("{$theme}: HTTP ".$response->getStatusCode());
+    }
+    if (strlen($response->getContent()) < 100) {
+        throw new RuntimeException("{$theme}: Empty storefront");
+    }
+    $kernel->terminate($request, $response);
+    echo "{$theme}: HTTP 200\n";
+}
+if (Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
+    throw new RuntimeException('Rendering must not install Catalog implicitly.');
+}
+PHP;
+
+        $process = new Process([PHP_BINARY, '-r', $script], base_path(), $this->productionEnvironment());
+        $process->setTimeout(120);
+        $process->run();
+
+        return $process;
+    }
+
     /**
      * @param  list<string>  $arguments
      */
@@ -173,10 +260,20 @@ $modules->install('cms');
 $modules->enable('cms');
 $modules->install('catalog');
 $modules->enable('catalog');
+$modules->install('inventory');
+$modules->enable('inventory');
 $modules->install('accounting-tax');
 $modules->enable('accounting-tax');
 $modules->install('minvoice-connector');
 $modules->enable('minvoice-connector');
+$modules->install('hrm');
+$modules->enable('hrm');
+$modules->install('payroll');
+$modules->enable('payroll');
+$modules->install('project');
+$modules->enable('project');
+$modules->install('real-estate');
+$modules->enable('real-estate');
 $modules->install('fnb-pos');
 $modules->enable('fnb-pos');
 PHP;
@@ -200,6 +297,7 @@ PHP;
         return [
             'APP_ENV' => 'production',
             'APP_DEBUG' => 'false',
+            'APP_CONFIG_CACHE' => $this->databasePath.'-config.php',
             'APP_KEY' => 'base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
             'DB_CONNECTION' => 'sqlite',
             'DB_DATABASE' => $this->databasePath,
@@ -208,6 +306,7 @@ PHP;
             'SESSION_DRIVER' => 'database',
             'QUEUE_CONNECTION' => 'database',
             'MAIL_MAILER' => 'array',
+            'AIO_SYSTEM_OWNER_PASSWORD' => 'Synthetic-Refresh-Test-Owner1!',
         ];
     }
 

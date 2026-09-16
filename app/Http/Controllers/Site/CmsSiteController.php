@@ -51,6 +51,7 @@ use Illuminate\Routing\Redirector;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -1858,18 +1859,7 @@ class CmsSiteController
         $websiteKey = $this->resolveWebsiteKey($siteProfile);
         $shellData = $this->resolveThemeShellData($siteProfile, $activeTheme, $menus);
 
-        $parentCategories = CatalogCategory::query()
-            ->with(['children' => function ($query) use ($websiteKey): void {
-                $this->applyWebsiteScope($query, $websiteKey);
-                $query->where('is_active', true)->orderBy('sort_order')->orderBy('name');
-            }])
-            ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name');
-        $this->applyWebsiteScope($parentCategories, $websiteKey);
-
-        $parentCategories = $parentCategories->take(10)->get();
+        $parentCategories = $this->resolveParentCatalogCategories($websiteKey, 10);
 
         $heroBanner = $this->resolveHeroBanner($websiteKey, $themeKey);
         $sideBanners = $this->resolveSidePromos($websiteKey, $themeKey);
@@ -1915,18 +1905,7 @@ class CmsSiteController
         $shellData = $this->resolveThemeShellData($siteProfile, $activeTheme, $menus);
         $themeKey = (string) ($activeTheme['key'] ?? 'SER0101');
 
-        $parentCategories = CatalogCategory::query()
-            ->with(['children' => function ($query) use ($websiteKey): void {
-                $this->applyWebsiteScope($query, $websiteKey);
-                $query->where('is_active', true)->orderBy('sort_order')->orderBy('name');
-            }])
-            ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name');
-        $this->applyWebsiteScope($parentCategories, $websiteKey);
-
-        $parentCategories = $parentCategories->take(6)->get();
+        $parentCategories = $this->resolveParentCatalogCategories($websiteKey, 6);
         $featuredServices = $this->resolveFeaturedProducts($websiteKey);
         $latestPosts = $this->resolveLatestPostHighlights($websiteKey);
 
@@ -2135,18 +2114,7 @@ class CmsSiteController
             })->exists()
             : false;
 
-        $parentCategories = CatalogCategory::query()
-            ->with(['children' => function ($query) use ($websiteKey): void {
-                $this->applyWebsiteScope($query, $websiteKey);
-                $query->where('is_active', true)->orderBy('sort_order')->orderBy('name');
-            }])
-            ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name');
-        $this->applyWebsiteScope($parentCategories, $websiteKey);
-
-        $parentCategories = $parentCategories->take(10)->get();
+        $parentCategories = $this->resolveParentCatalogCategories($websiteKey, 10);
 
         return [
             'branding' => $branding,
@@ -2531,8 +2499,39 @@ class CmsSiteController
         return $this->resolveSideBanners($websiteKey, $themeKey);
     }
 
+    private function catalogSchemaAvailable(): bool
+    {
+        return Schema::hasTable('catalog_categories')
+            && Schema::hasTable('catalog_products')
+            && Schema::hasTable('catalog_product_images');
+    }
+
+    private function resolveParentCatalogCategories(string $websiteKey, int $limit): Collection
+    {
+        if (! $this->catalogSchemaAvailable()) {
+            return collect();
+        }
+
+        $query = CatalogCategory::query()
+            ->with(['children' => function ($query) use ($websiteKey): void {
+                $this->applyWebsiteScope($query, $websiteKey);
+                $query->where('is_active', true)->orderBy('sort_order')->orderBy('name');
+            }])
+            ->whereNull('parent_id')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name');
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        return $query->take($limit)->get();
+    }
+
     private function resolveFeaturedProducts(string $websiteKey): array
     {
+        if (! $this->catalogSchemaAvailable()) {
+            return [];
+        }
+
         $featuredQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true)->where('is_featured', true)->latest('created_at');
         $this->applyWebsiteScope($featuredQuery, $websiteKey);
 
@@ -2662,8 +2661,8 @@ class CmsSiteController
         $this->applyWebsiteScope($postCountQuery, $websiteKey);
 
         return [
-            $this->resolveServiceMetricEntry($websiteKey, $themeKey, 0, (string) max(12, $categoryCountQuery->count() * 2), '+', 'gói dịch vụ và tuyến tham khảo'),
-            $this->resolveServiceMetricEntry($websiteKey, $themeKey, 1, (string) max(24, $productCountQuery->count()), '+', 'mẫu nội dung catalog đang hiển thị'),
+            $this->resolveServiceMetricEntry($websiteKey, $themeKey, 0, (string) max(12, ($this->catalogSchemaAvailable() ? $categoryCountQuery->count() : 0) * 2), '+', 'gói dịch vụ và tuyến tham khảo'),
+            $this->resolveServiceMetricEntry($websiteKey, $themeKey, 1, (string) max(24, $this->catalogSchemaAvailable() ? $productCountQuery->count() : 0), '+', 'mẫu nội dung catalog đang hiển thị'),
             $this->resolveServiceMetricEntry($websiteKey, $themeKey, 2, (string) max(3, $postCountQuery->count()), '+', 'bài viết hướng dẫn và cẩm nang'),
             $this->resolveServiceMetricEntry($websiteKey, $themeKey, 3, '24', '/7', 'hỗ trợ lead demo trong giao diện'),
         ];

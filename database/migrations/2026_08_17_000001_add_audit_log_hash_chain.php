@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Database\MigrationRollback;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -71,9 +72,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('audit_log_chain_heads');
 
-        Schema::table('audit_logs', function (Blueprint $table): void {
-            $table->dropColumn(['sequence', 'previous_hash', 'entry_hash']);
-        });
+        MigrationRollback::dropColumns('audit_logs', ['sequence', 'previous_hash', 'entry_hash']);
     }
 
     private function decodeJson(mixed $value): mixed

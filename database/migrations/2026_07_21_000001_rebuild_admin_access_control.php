@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Database\MigrationRollback;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -219,17 +220,17 @@ return new class extends Migration
         Schema::dropIfExists('audit_logs');
         Schema::dropIfExists('admin_role_assignments');
 
-        Schema::table('permissions', fn (Blueprint $table) => $table->dropColumn([
+        MigrationRollback::dropColumns('permissions', [
             'description', 'risk_level', 'is_active', 'deprecated_at',
-        ]));
-        Schema::table('roles', fn (Blueprint $table) => $table->dropColumn([
+        ]);
+        MigrationRollback::dropColumns('roles', [
             'is_system', 'is_assignable', 'status',
-        ]));
-        Schema::table('admins', fn (Blueprint $table) => $table->dropColumn([
+        ]);
+        MigrationRollback::dropColumns('admins', [
             'status', 'is_system_owner', 'must_change_password', 'auth_version',
             'password_changed_at', 'last_login_ip', 'two_factor_secret',
             'two_factor_recovery_codes', 'two_factor_confirmed_at',
-        ]));
+        ]);
     }
 
     private function backfillAssignments(): void

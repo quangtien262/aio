@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Database\MigrationRollback;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -59,38 +60,33 @@ return new class extends Migration
     {
         Schema::dropIfExists('acct_email_delivery_attempts');
 
-        Schema::table('acct_email_deliveries', function (Blueprint $table): void {
-            $table->dropForeign(['organization_id']);
-            $table->dropColumn([
-                'uuid',
-                'organization_id',
-                'idempotency_key',
-                'request_fingerprint',
-                'recipient_name',
-                'subject',
-                'payload_snapshot',
-                'provider',
-                'requested_by',
-                'started_at',
-                'completed_at',
-            ]);
-        });
+        MigrationRollback::dropColumns('acct_email_deliveries', [
+            'uuid',
+            'organization_id',
+            'idempotency_key',
+            'request_fingerprint',
+            'recipient_name',
+            'subject',
+            'payload_snapshot',
+            'provider',
+            'requested_by',
+            'started_at',
+            'completed_at',
+        ]);
 
-        Schema::table('acct_exports', function (Blueprint $table): void {
-            $table->dropColumn([
-                'uuid',
-                'definition_version',
-                'idempotency_key',
-                'request_fingerprint',
-                'timezone',
-                'mime_type',
-                'original_name',
-                'byte_size',
-                'row_count',
-                'snapshot_at',
-                'started_at',
-                'expires_at',
-            ]);
-        });
+        MigrationRollback::dropColumns('acct_exports', [
+            'uuid',
+            'definition_version',
+            'idempotency_key',
+            'request_fingerprint',
+            'timezone',
+            'mime_type',
+            'original_name',
+            'byte_size',
+            'row_count',
+            'snapshot_at',
+            'started_at',
+            'expires_at',
+        ]);
     }
 };

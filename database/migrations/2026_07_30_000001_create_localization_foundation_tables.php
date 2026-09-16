@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Database\MigrationRollback;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -153,18 +154,16 @@ return new class extends Migration
                 continue;
             }
 
-            Schema::table($tableName, function (Blueprint $table): void {
-                $table->dropColumn([
-                    'translation_status',
-                    'source_revision',
-                    'translation_revision',
-                    'is_machine_translated',
-                    'translation_meta',
-                    'translated_at',
-                    'reviewed_at',
-                    'translation_published_at',
-                ]);
-            });
+            MigrationRollback::dropColumns($tableName, [
+                'translation_status',
+                'source_revision',
+                'translation_revision',
+                'is_machine_translated',
+                'translation_meta',
+                'translated_at',
+                'reviewed_at',
+                'translation_published_at',
+            ]);
         }
     }
 

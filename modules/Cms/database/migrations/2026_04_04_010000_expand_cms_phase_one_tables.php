@@ -69,6 +69,9 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Core upgrades can be replayed by CMS after the core migration batch.
+        // Remove their child tables before dropping the owning module tables.
+        Schema::dropIfExists('cms_post_comments');
         Schema::dropIfExists('cms_menus');
         Schema::dropIfExists('cms_posts');
         Schema::dropIfExists('cms_media');
