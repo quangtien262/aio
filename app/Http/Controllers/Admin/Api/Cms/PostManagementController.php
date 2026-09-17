@@ -172,7 +172,7 @@ class PostManagementController
     {
         return [
             'id' => $post->id,
-            'tags' => $post->tags->pluck('name')->all(),
+            'tags' => CmsPostTags::available() ? $post->tags->pluck('name')->all() : [],
             'title' => $post->title,
             'slug' => $post->slug,
             'status' => $post->status,

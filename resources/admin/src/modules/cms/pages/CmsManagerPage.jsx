@@ -4806,6 +4806,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         mediaOptions={data?.media ?? []}
                         categoryOptions={data?.categories ?? []}
                         tagOptions={data?.tagOptions ?? []}
+                        tagsAvailable={data?.tagsAvailable !== false}
                         localeOptions={contentLocaleOptions}
                         contentLocale={contentLocale}
                         sourceLocale={contentSourceLocale}

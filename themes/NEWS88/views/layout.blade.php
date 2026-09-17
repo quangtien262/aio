@@ -21,6 +21,18 @@
         @include('theme-foot403::partials.inline-editor-styles')
     @endif
 </x-storefront-head>
+<style>
+    pre, code {
+        font-family: 'Be Vietnam Pro', sans-serif;
+    }
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        background: #ccc;
+        padding: 15px;
+        border: 1px #9f9f9f solid;
+    }
+</style>
 <body>
 @php
     $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);

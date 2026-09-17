@@ -362,7 +362,7 @@ class CmsSiteController
 
     public function postsByTag(Request $request): View|RedirectResponse
     {
-        abort_unless(Schema::hasTable('cms_tags'), 404);
+        abort_unless(\App\Support\CmsPostTags::available(), 404);
         $profile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($profile);
         $locale = $this->currentLocale();
@@ -1585,7 +1585,7 @@ class CmsSiteController
         }
 
         if ($entry instanceof CmsPost) {
-            $extra['postTags'] = Schema::hasTable('cms_tags') ? $entry->tags
+            $extra['postTags'] = \App\Support\CmsPostTags::available() ? $entry->tags
                 ->filter(fn ($tag): bool => $this->localizedContent->isPublishedForLocale($tag, 'cms_tag', $this->currentLocale(), $websiteKey))
                 ->map(function ($tag) use ($websiteKey): array {
                     $tag = $this->localizedContent->localize($tag, 'cms_tag', $this->currentLocale(), $websiteKey);

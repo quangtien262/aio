@@ -111,6 +111,7 @@ export default function CmsPostFormModal({
     mediaOptions = [],
     categoryOptions = [],
     tagOptions = [],
+    tagsAvailable = true,
     localeOptions = [],
     contentLocale = 'vi',
     sourceLocale = 'vi',
@@ -620,8 +621,9 @@ export default function CmsPostFormModal({
                 <div className="cms-post-form-shell">
                     <Card size="small" className="cms-post-form-card" title="Thông tin bài viết">
                         {translationMode && editingPost?.tags?.length > 0 ? <Button onClick={() => setTagTranslationOpen(true)} style={{ marginBottom: 12 }}>Dịch tên tags ({contentLocale.toUpperCase()})</Button> : null}
+                        {!tagsAvailable ? <Alert type="warning" showIcon message="Tags chưa sẵn sàng. Cần cập nhật cơ sở dữ liệu CMS trên máy chủ; các nội dung khác vẫn có thể lưu." style={{ marginBottom: 12 }} /> : null}
                         <Form.Item name="tags" label="Tags bài viết" extra="Nhập từ khóa rồi Enter, hoặc chọn tag có sẵn. Tối đa 20 tags, mỗi tag 80 ký tự. Tags được dùng chung giữa các ngôn ngữ." rules={[{ type: 'array', max: 20, message: 'Tối đa 20 tags.' }, { validator: (_, values = []) => values.some(value => value.length > 80) ? Promise.reject(new Error('Mỗi tag tối đa 80 ký tự.')) : Promise.resolve() }]}>
-                            <Select mode="tags" disabled={translationMode} allowClear options={tagOptions} tokenSeparators={[',']} placeholder="Thêm tags cho bài viết" />
+                            <Select mode="tags" disabled={translationMode || !tagsAvailable} allowClear options={tagOptions} tokenSeparators={[',']} placeholder="Thêm tags cho bài viết" />
                         </Form.Item>
                         <Row gutter={[16, 14]} align="top">
                             <Col xs={24} md={14}>

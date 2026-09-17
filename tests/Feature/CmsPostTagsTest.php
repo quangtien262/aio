@@ -45,6 +45,31 @@ class CmsPostTagsTest extends TestCase
         $this->assertDatabaseMissing('cms_posts', ['title' => 'Invalid']);
     }
 
+    public function test_posts_remain_usable_until_the_tags_migration_is_applied(): void
+    {
+        $migration = require base_path('modules/Cms/database/migrations/2026_09_17_000001_create_cms_tags.php');
+        foreach ([false, true] as $dropTags) {
+            \Illuminate\Support\Facades\Schema::dropIfExists('cms_post_tag');
+            if ($dropTags) {
+                \Illuminate\Support\Facades\Schema::dropIfExists('cms_tags');
+            }
+            try {
+                $id = $this->postJson('/admin/api/cms/posts', ['title' => 'Without tags '.(int) $dropTags, 'status' => 'published', 'tags' => []])
+                    ->assertCreated()->assertJsonPath('data.tags', [])->json('data.id');
+                $this->getJson('/admin/api/cms/posts')->assertOk()->assertJsonPath('data.tagsAvailable', false)->assertJsonPath('data.tagOptions', []);
+                $this->putJson('/admin/api/cms/posts/'.$id, ['title' => 'Changed '.(int) $dropTags, 'status' => 'published', 'tags' => []])->assertOk();
+                $this->putJson('/admin/api/cms/posts/'.$id, ['title' => 'Must roll back', 'status' => 'published', 'tags' => ['Tag']])
+                    ->assertUnprocessable()->assertJsonValidationErrors('tags');
+                $this->assertSame('Changed '.(int) $dropTags, CmsPost::findOrFail($id)->title);
+                $this->get('/vi/n/'.CmsPost::findOrFail($id)->slug)->assertOk();
+                $this->get('/vi/tags/missing')->assertNotFound();
+            } finally {
+                $migration->up();
+            }
+            $this->getJson('/admin/api/cms/posts')->assertOk()->assertJsonPath('data.tagsAvailable', true);
+        }
+    }
+
     public function test_tag_page_is_paginated_and_excludes_drafts_future_and_other_websites(): void
     {
         for ($i = 0; $i < 12; $i++) {

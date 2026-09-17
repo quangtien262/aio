@@ -11,6 +11,12 @@ use Illuminate\Support\Str;
 
 class CmsPostTags
 {
+    public static function available(): bool
+    {
+        return \Illuminate\Support\Facades\Schema::hasTable('cms_tags')
+            && \Illuminate\Support\Facades\Schema::hasTable('cms_post_tag');
+    }
+
     public function publishedPosts(CmsTag $tag, string $locale): Builder
     {
         $query = CmsPost::query()->where('website_key', $tag->website_key)
@@ -45,6 +51,16 @@ class CmsPostTags
 
     public function sync(CmsPost $post, array $names): void
     {
+        if (! self::available()) {
+            if ($names !== []) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'tags' => 'Tính năng tags chưa sẵn sàng. Vui lòng chạy migration CMS tags trên máy chủ.',
+                ]);
+            }
+
+            return;
+        }
+
         $ids = [];
         foreach ($names as $name) {
             $name = Str::squish($name);
