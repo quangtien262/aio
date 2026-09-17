@@ -22,7 +22,10 @@
             @if($email)<p><i class="fa-regular fa-envelope"></i> <a href="mailto:{{ $email }}">{{ $email }}</a></p>@endif
             <div class="n88-footer-social"><a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i class="fa-brands fa-x-twitter"></i></a><a href="#"><i class="fa-brands fa-youtube"></i></a><a href="#"><i class="fa-brands fa-pinterest-p"></i></a></div>
         </section>
-        <section><h2>@themeT('NEWS88.recent', 'Tin Gần Đây')</h2><div class="n88-footer-posts">@foreach($footerPosts as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a>@endforeach</div></section>
+        <section class="xd-landing-block" data-landing-block-id="{{ data_get($footerBlock, 'id') }}" data-block-type="news88_footer_posts">
+            @include('theme-news88::partials.edit-button', ['block' => $footerBlock])
+            <h2>@themeT('NEWS88.recent', 'Tin Gần Đây')</h2><div class="n88-footer-posts">@foreach($footerPosts as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a>@endforeach</div>
+        </section>
         <section><h2>@themeT('NEWS88.keywords', 'Từ Khóa')</h2><div class="n88-tags">@foreach($tags as $tag)<a href="{{ route('site.catalog.search', ['q' => $tag]) }}">{{ mb_strtolower($tag) }}</a>@endforeach</div></section>
         <section class="n88-map">@if($address)<iframe title="{{ $address }}" loading="lazy" src="https://www.google.com/maps?q={{ urlencode($address) }}&output=embed"></iframe>@else<div><i class="fa-solid fa-location-dot"></i><span>{{ $company }}</span></div>@endif</section>
     </div>

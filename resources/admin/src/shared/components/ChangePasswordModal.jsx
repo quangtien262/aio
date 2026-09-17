@@ -5,7 +5,7 @@ import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import Button from 'antd/es/button';
 
-export default function ChangePasswordModal({ open, onClose, callAdminApi, runAdminAction, forceChange = false }) {
+export default function ChangePasswordModal({ open, onClose, onChanged, callAdminApi, runAdminAction, forceChange = false }) {
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (values) => {
@@ -15,7 +15,7 @@ export default function ChangePasswordModal({ open, onClose, callAdminApi, runAd
             await runAdminAction(
                 () => callAdminApi(adminApi('me/password'), { method: 'PUT', body: JSON.stringify(values) }),
                 'Đã cập nhật mật khẩu.',
-                onClose,
+                onChanged ?? onClose,
             );
         } finally {
             setLoading(false);

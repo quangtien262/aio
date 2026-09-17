@@ -1,4 +1,5 @@
 @php
+    $canEditLanding = auth('admin')->check() && request('mod') === 'admin' && is_array($landingPage ?? null);
     $blocks = collect($landingBlocks ?? [])->filter(fn($block) => (bool) data_get($block, 'is_visible', true))->values();
     $block = fn(string $type): array => (array) ($blocks->first(fn($item) => data_get($item, 'block_type') === $type) ?? []);
     $items = function(array $block) {

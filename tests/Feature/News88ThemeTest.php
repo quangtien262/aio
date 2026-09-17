@@ -88,10 +88,19 @@ class News88ThemeTest extends TestCase
         app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88')?->generate('news88-editorial');
 
         $admin = Admin::factory()->create();
-        $this->actingAs($admin, 'admin')->get(route('site.home', ['locale' => 'vi', 'mod' => 'admin']))
+        $response = $this->actingAs($admin, 'admin')->get(route('site.home', ['locale' => 'vi', 'mod' => 'admin']))
             ->assertOk()
             ->assertSee('data-xd-edit-block=', false)
-            ->assertSee('data-xd-editor-form', false);
+            ->assertSee('data-xd-editor-form', false)
+            ->assertDontSee('const blocks = [];', false)
+            ->assertDontSee('const updateUrlTemplate = "";', false)
+            ->assertDontSee('const sourcePreviewUrlTemplate = "";', false);
+
+        $this->assertSame(7, preg_match_all('/<button[^>]+data-xd-edit-block="[0-9]+"/', $response->getContent()));
+        $this->assertSame(1, substr_count($response->getContent(), '<script data-xd-editor-runtime>'));
+        $this->get(route('site.home', ['locale' => 'vi']))->assertOk()
+            ->assertDontSee('data-xd-edit-block=', false)
+            ->assertDontSee('<script data-xd-editor-runtime>', false);
     }
 
     public function test_news_detail_shows_related_latest_and_requires_account_for_threaded_comments(): void

@@ -271,7 +271,7 @@ export default function AdminLayout() {
                 setSelectedAdminWebsiteKey(resolvedWebsiteKey);
             }
 
-            if ((nextCurrentAdmin?.permissions ?? []).includes('store.module.view')) {
+            if (!nextCurrentAdmin?.must_change_password && (nextCurrentAdmin?.permissions ?? []).includes('store.module.view')) {
                 try {
                     const modulePayload = await callAdminApi(adminApi('modules'));
                     setModules(modulePayload.data ?? []);
@@ -281,9 +281,12 @@ export default function AdminLayout() {
             } else {
                 setModules([]);
             }
+
+            return nextCurrentAdmin;
         } catch (error) {
             setLoadError(error instanceof Error ? error.message : 'Không tải được dữ liệu admin.');
             setShellReady(true);
+            return null;
         }
     }, [callAdminApi]);
 
@@ -894,6 +897,12 @@ export default function AdminLayout() {
             <ChangePasswordModal
                 open={changePasswordOpen}
                 onClose={() => setChangePasswordOpen(false)}
+                onChanged={async () => {
+                    const admin = await loadShellData();
+                    if (admin && !admin.must_change_password) {
+                        setChangePasswordOpen(false);
+                    }
+                }}
                 callAdminApi={callAdminApi}
                 runAdminAction={runAdminAction}
                 forceChange={Boolean(currentAdmin?.must_change_password)}
@@ -964,7 +973,7 @@ export default function AdminLayout() {
 
                         {!shellReady && !loadError ? (
                             <Card loading title={shellLoadingTitle} />
-                        ) : (
+                        ) : currentAdmin?.must_change_password ? null : (
                             <>
                                 {shouldShowBreadcrumb ? <Breadcrumb className="admin-breadcrumb" items={breadcrumbItems} /> : null}
 
