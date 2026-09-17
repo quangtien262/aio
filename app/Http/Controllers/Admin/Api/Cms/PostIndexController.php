@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 use App\Models\CmsCategory;
 use App\Models\CmsMedia;
 use App\Models\CmsPost;
+use App\Models\CmsTag;
 use App\Support\FrontendLocalization;
 use App\Support\Localization\AdminLocalizedContentList;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -20,11 +21,12 @@ class PostIndexController
     public function __invoke(Request $request): JsonResponse
     {
         /** @var EloquentBuilder<CmsPost> $query */
-        $query = (new CmsPost())->newQuery();
-        $query->with(['category', 'featuredMedia'])->orderByDesc('updated_at');
+        $query = (new CmsPost)->newQuery();
+        $query->with(['category', 'featuredMedia', 'tags'])->orderByDesc('updated_at');
 
         $items = $query->get()->map(fn (CmsPost $post): array => [
             'id' => $post->id,
+            'tags' => $post->tags->pluck('name')->all(),
             'title' => $post->title,
             'slug' => $post->slug,
             'status' => $post->status,
@@ -49,10 +51,10 @@ class PostIndexController
         );
 
         /** @var EloquentBuilder<CmsCategory> $categoryQuery */
-        $categoryQuery = (new CmsCategory())->newQuery();
+        $categoryQuery = (new CmsCategory)->newQuery();
         $categoryQuery->orderBy('name');
         /** @var EloquentBuilder<CmsMedia> $mediaQuery */
-        $mediaQuery = (new CmsMedia())->newQuery();
+        $mediaQuery = (new CmsMedia)->newQuery();
         $mediaQuery->latest();
 
         return response()->json([
@@ -64,6 +66,7 @@ class PostIndexController
                     'draft' => collect($items)->where('status', 'draft')->count(),
                     'highlight' => collect($items)->where('is_highlight', true)->count(),
                 ],
+                'tagOptions' => CmsTag::query()->orderBy('name')->get()->map(fn ($tag): array => ['id' => $tag->id, 'label' => $tag->name, 'value' => $tag->name])->all(),
                 'categories' => $categoryQuery->get(['id', 'name'])->map(fn (CmsCategory $category): array => ['label' => $category->name, 'value' => $category->id])->values()->all(),
                 'media' => $mediaQuery->get(['id', 'title', 'file_path', 'file_url'])->map(fn (CmsMedia $media): array => ['id' => $media->id, 'title' => $media->title, 'file_url' => $media->file_url])->values()->all(),
             ],

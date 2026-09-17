@@ -360,6 +360,42 @@ class CmsSiteController
         ]);
     }
 
+    public function postsByTag(Request $request): View|RedirectResponse
+    {
+        abort_unless(Schema::hasTable('cms_tags'), 404);
+        $profile = $this->currentSiteProfile();
+        $websiteKey = $this->resolveWebsiteKey($profile);
+        $locale = $this->currentLocale();
+        $resolution = $this->localizedContent->resolvePublishedBySlug('cms_tag', $websiteKey, $locale, (string) $request->route('slug'));
+        abort_if($resolution === null, 404);
+        $tag = $resolution['model'];
+        if ($resolution['used_fallback'] || $resolution['redirect_to'] !== null) {
+            return redirect()->to(FrontendRouteUrl::tag($tag->slug, $resolution['resolved_locale']), $resolution['redirect_to'] !== null ? 301 : 302);
+        }
+
+        $posts = app(\App\Support\CmsPostTags::class)->publishedPosts($tag, $locale)
+            ->with(['category', 'featuredMedia'])->latest('publish_at')->orderByDesc('id')->paginate(10)->withQueryString();
+        $title = __('storefront.tags.posts_about', ['tag' => $tag->name]);
+        $canonical = FrontendRouteUrl::tag($tag->slug, $locale);
+        $page = max(1, (int) $request->query('page', 1));
+        $alternates = [];
+        foreach (FrontendLocalization::localeOptions() as $option) {
+            $code = $option['code'];
+            $path = $this->localizedContent->publicCanonicalPath($tag, 'cms_tag', $code, $websiteKey);
+            if ($path !== null) {
+                $alternates[$code] = FrontendRouteUrl::localized($path, $code);
+            }
+        }
+
+        return $this->renderListing('posts', $title, '', $posts, [
+            'siteProfile' => $profile,
+            'pageTitle' => $title,
+            'pageDescription' => $title,
+            'canonicalUrl' => $canonical.($page > 1 ? '?page='.$page : ''),
+            'hreflangUrls' => $page === 1 ? $alternates : [],
+        ]);
+    }
+
     public function post(Request $request): View|RedirectResponse
     {
         $slug = (string) $request->route('slug');
@@ -1549,6 +1585,12 @@ class CmsSiteController
         }
 
         if ($entry instanceof CmsPost) {
+            $extra['postTags'] = Schema::hasTable('cms_tags') ? $entry->tags
+                ->filter(fn ($tag): bool => $this->localizedContent->isPublishedForLocale($tag, 'cms_tag', $this->currentLocale(), $websiteKey))
+                ->map(function ($tag) use ($websiteKey): array {
+                    $tag = $this->localizedContent->localize($tag, 'cms_tag', $this->currentLocale(), $websiteKey);
+                    return ['name' => $tag->name, 'url' => FrontendRouteUrl::tag($tag->slug, $this->currentLocale())];
+                })->values()->all() : [];
             $entry = $this->localizePostModel($entry, $websiteKey);
         }
 

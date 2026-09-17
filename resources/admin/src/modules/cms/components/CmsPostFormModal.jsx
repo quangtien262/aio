@@ -1,3 +1,4 @@
+import CmsTagTranslationModal from './CmsTagTranslationModal';
 import { adminApi } from '../../../shared/config/routes';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
@@ -104,10 +105,12 @@ function getYoutubeEmbedUrl(value) {
 export default function CmsPostFormModal({
     open,
     canManage,
+    canPublish = false,
     translationMode = false,
     editingPost,
     mediaOptions = [],
     categoryOptions = [],
+    tagOptions = [],
     localeOptions = [],
     contentLocale = 'vi',
     sourceLocale = 'vi',
@@ -117,6 +120,7 @@ export default function CmsPostFormModal({
     onLocaleChange,
 }) {
     const [form] = Form.useForm();
+    const [tagTranslationOpen, setTagTranslationOpen] = useState(false);
     const [messageApi, messageContextHolder] = message.useMessage();
     const [uploadingAsset, setUploadingAsset] = useState(null);
     const [featuredMediaMode, setFeaturedMediaMode] = useState('upload');
@@ -150,6 +154,7 @@ export default function CmsPostFormModal({
     useEffect(() => {
         form.setFieldsValue({
             status: 'published',
+            tags: [],
             ...editingPost,
         });
         form.setFieldValue('body', editingPost?.body ?? '');
@@ -485,8 +490,9 @@ export default function CmsPostFormModal({
         syncCurrentEditorBodyToForm();
         const values = await form.validateFields();
 
-        await onSubmit?.({
+        const saved = await onSubmit?.({
             ...values,
+            tags: [...new Map((values.tags ?? []).map(value => { const name = value.trim().replace(/\s+/g, ' '); return [name.toLocaleLowerCase(), name]; })).values()].filter(Boolean),
             excerpt: values.excerpt || null,
             body: values.body || null,
             slug: toSlug(values.slug || values.title),
@@ -499,7 +505,7 @@ export default function CmsPostFormModal({
             publish_at: values.status === 'published' ? dayjs().format('YYYY-MM-DDTHH:mm:ss') : null,
         });
 
-        form.resetFields();
+        if (saved !== false) form.resetFields();
     };
 
     const handleCancel = () => {
@@ -613,6 +619,10 @@ export default function CmsPostFormModal({
             <Form form={form} layout="vertical" initialValues={editingPost}>
                 <div className="cms-post-form-shell">
                     <Card size="small" className="cms-post-form-card" title="Thông tin bài viết">
+                        {translationMode && editingPost?.tags?.length > 0 ? <Button onClick={() => setTagTranslationOpen(true)} style={{ marginBottom: 12 }}>Dịch tên tags ({contentLocale.toUpperCase()})</Button> : null}
+                        <Form.Item name="tags" label="Tags bài viết" extra="Nhập từ khóa rồi Enter, hoặc chọn tag có sẵn. Tối đa 20 tags, mỗi tag 80 ký tự. Tags được dùng chung giữa các ngôn ngữ." rules={[{ type: 'array', max: 20, message: 'Tối đa 20 tags.' }, { validator: (_, values = []) => values.some(value => value.length > 80) ? Promise.reject(new Error('Mỗi tag tối đa 80 ký tự.')) : Promise.resolve() }]}>
+                            <Select mode="tags" disabled={translationMode} allowClear options={tagOptions} tokenSeparators={[',']} placeholder="Thêm tags cho bài viết" />
+                        </Form.Item>
                         <Row gutter={[16, 14]} align="top">
                             <Col xs={24} md={14}>
                                 <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề bài viết' }]}>
@@ -957,6 +967,7 @@ export default function CmsPostFormModal({
                     />
                 </Space>
             </Modal>
+            <CmsTagTranslationModal open={open && tagTranslationOpen} onClose={() => setTagTranslationOpen(false)} locale={contentLocale} options={tagOptions.filter(tag => (editingPost?.tags ?? []).includes(tag.value))} callAdminApi={callAdminApi} canPublish={canPublish} />
         </Drawer>
     );
 }

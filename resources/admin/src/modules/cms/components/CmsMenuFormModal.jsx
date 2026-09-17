@@ -487,12 +487,23 @@ export default function CmsMenuFormModal({
     callAdminApi,
     runAdminAction,
     onLocationsChanged,
+    onManagePostCategories,
+    onManageProductCategories,
+    onManageServiceCategories,
+    onManageProjectCategories,
     onCancel,
     onSubmit,
     onLocaleChange,
 }) {
     const [form] = Form.useForm();
+    const categoryManagers = {
+        'post-category': { open: onManagePostCategories, label: 'tin tức' },
+        'product-category': { open: onManageProductCategories, label: 'sản phẩm' },
+        'service-category': { open: onManageServiceCategories, label: 'dịch vụ' },
+        'project-category': { open: onManageProjectCategories, label: 'dự án' },
+    };
     const [itemForm] = Form.useForm();
+    const itemValues = Form.useWatch((values) => values, itemForm);
     const [locationModalOpen, setLocationModalOpen] = useState(false);
     const [locationForm] = Form.useForm();
     const [editingLocation, setEditingLocation] = useState(null);
@@ -508,6 +519,8 @@ export default function CmsMenuFormModal({
     const [dragOverState, setDragOverState] = useState({ key: null, mode: null });
     const initialItemsSignatureRef = useRef('[]');
     const linkLookups = useMemo(() => buildLinkLookups(linkOptions), [linkOptions]);
+    const linkLookupsRef = useRef(linkLookups);
+    linkLookupsRef.current = linkLookups;
     const menuTreeData = useMemo(() => buildMenuTreeData(menuItems), [menuItems]);
     const expandableKeys = useMemo(() => collectExpandableKeys(menuItems), [menuItems]);
     const expandedKeys = useMemo(() => manualExpandedKeys.filter((key) => expandableKeys.includes(key)), [expandableKeys, manualExpandedKeys]);
@@ -521,7 +534,7 @@ export default function CmsMenuFormModal({
                 ? (editingMenu?._translation_status === 'published' ? 'published' : 'draft')
                 : undefined,
         });
-        const normalizedItems = normalizeMenuItemsForForm(editingMenu?.items, linkLookups);
+        const normalizedItems = normalizeMenuItemsForForm(editingMenu?.items, linkLookupsRef.current);
 
         setMenuItems(normalizedItems);
         initialItemsSignatureRef.current = menuTranslationSignature(normalizedItems);
@@ -529,7 +542,7 @@ export default function CmsMenuFormModal({
         setSelectedItemKeys([]);
         setDragOverState({ key: null, mode: null });
         setSelectedLocation(editingMenu?.location ?? 'primary');
-    }, [editingMenu, form, linkLookups, translationMode]);
+    }, [editingMenu, form, translationMode]);
 
     useEffect(() => {
         setManualExpandedKeys((current) => current.filter((key) => expandableKeys.includes(key)));
@@ -865,7 +878,7 @@ export default function CmsMenuFormModal({
         }
     };
 
-    const itemPreviewUrl = resolveItemUrl(itemForm.getFieldsValue(true), linkLookups);
+    const itemPreviewUrl = resolveItemUrl(itemValues ?? {}, linkLookups);
     const sourceLabelForEditor = itemEditorState.path
         ? getItemAtPath(menuItems, itemEditorState.path)?._source_label
         : '';
@@ -913,7 +926,7 @@ export default function CmsMenuFormModal({
                         onLocaleChange={onLocaleChange}
                     />
 
-                    <Form form={form} layout="vertical" initialValues={editingMenu}>
+                    <Form name="cms-menu" form={form} layout="vertical" initialValues={editingMenu}>
                         <Card>
                             <Row gutter={16}>
                                 <Col span={12}>
@@ -1134,7 +1147,7 @@ export default function CmsMenuFormModal({
                         style={{ marginBottom: 16 }}
                     />
                 ) : null}
-                <Form form={itemForm} layout="vertical" initialValues={createEmptyMenuItem()}>
+                <Form name="cms-menu-item" form={itemForm} layout="vertical" initialValues={createEmptyMenuItem()}>
                     <Row gutter={16}>
                         <Col span={translationMode ? 24 : 16}>
                             <Form.Item name="label" label={translationMode ? 'Nhãn dịch' : 'Label'} rules={[{ required: true, message: 'Nhập label' }]}>
@@ -1166,6 +1179,16 @@ export default function CmsMenuFormModal({
                                         {LINK_TYPE_OPTIONS.map((option) => (
                                             <Col key={option.value} xs={24} sm={12} md={8}>
                                                 <Radio value={option.value}>{option.label}</Radio>
+                                                {categoryManagers[option.value]?.open ? (
+                                                    <Button
+                                                        type="text"
+                                                        size="small"
+                                                        icon={<SettingOutlined />}
+                                                        aria-label={`Cài đặt danh mục ${categoryManagers[option.value].label}`}
+                                                        title={`Cài đặt danh mục ${categoryManagers[option.value].label}`}
+                                                        onClick={categoryManagers[option.value].open}
+                                                    />
+                                                ) : null}
                                             </Col>
                                         ))}
                                     </Row>

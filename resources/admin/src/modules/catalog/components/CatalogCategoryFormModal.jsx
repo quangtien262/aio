@@ -14,7 +14,7 @@ import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import { toSlug } from '../../../shared/utils/slug';
 
-export default function CatalogCategoryFormModal({ open, canManage, translationMode = false, editingCategory, categoryOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', entityLabel = 'danh mục sản phẩm', callAdminApi, submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
+export default function CatalogCategoryFormModal({ open, canManage, zIndex, translationMode = false, editingCategory, categoryOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', entityLabel = 'danh mục sản phẩm', callAdminApi, submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
     const [form] = Form.useForm();
     const imageUrl = Form.useWatch('image_url', form) ?? '';
     const categoryName = Form.useWatch('name', form) ?? '';
@@ -50,6 +50,7 @@ export default function CatalogCategoryFormModal({ open, canManage, translationM
 
     return (
         <Modal
+            zIndex={zIndex}
             title={editingCategory?.id ? 'Cập nhật danh mục' : 'Tạo danh mục'}
             open={open}
             onCancel={onCancel}
@@ -78,7 +79,7 @@ export default function CatalogCategoryFormModal({ open, canManage, translationM
                 getCurrentValues={() => form.getFieldsValue(true)}
                 onLocaleChange={onLocaleChange}
             />
-            <Form form={form} layout="vertical" initialValues={editingCategory} onValuesChange={handleValuesChange}>
+            <Form name="catalog-category" form={form} layout="vertical" initialValues={editingCategory} onValuesChange={handleValuesChange}>
                 {translationMode ? (
                     <Alert
                         type="info"

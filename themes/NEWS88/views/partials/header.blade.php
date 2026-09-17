@@ -27,11 +27,11 @@
         <a class="n88-brand" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">
             @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<strong>{{ $siteName }}</strong>@endif
         </a>
-        <button class="n88-menu-button" type="button" data-n88-menu aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
-        <nav class="n88-nav" data-n88-nav>
-            @foreach($nav as $index => $item)
-                <a class="{{ $index === 0 ? 'is-active' : '' }}" href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>
-            @endforeach
+        <button class="n88-menu-button" type="button" data-n88-menu aria-label="Menu" aria-expanded="false" aria-controls="n88-navigation"><i class="fa-solid fa-bars"></i></button>
+        <nav class="n88-nav" data-n88-nav id="n88-navigation" aria-label="Menu chính">
+            <ul class="n88-nav-list">
+                @include('theme-news88::partials.nav-items', ['items' => $nav, 'path' => 'root'])
+            </ul>
         </nav>
     </div>
     <form class="n88-search" data-n88-search-panel method="get" action="{{ route('site.catalog.search') }}"><input type="search" name="q" placeholder="@themeT('NEWS88.search_placeholder', 'Nhập từ khóa...')"><button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button></form>

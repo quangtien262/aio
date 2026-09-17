@@ -60,6 +60,11 @@ final class FrontendRouteUrl
         ], $absolute);
     }
 
+    public static function tag(string $slug, ?string $locale = null, bool $absolute = true): string
+    {
+        return route('site.blog.tag', ['locale' => self::locale($locale), 'slug' => self::slug($slug)], $absolute);
+    }
+
     public static function post(string $slug, ?string $locale = null, bool $absolute = true): string
     {
         return route('site.blog.show', [

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'tags' => ['label' => 'Tags', 'posts_about' => 'Posts tagged: :tag'],
     'menu' => [
         'home' => 'Home',
         'services' => 'Services',

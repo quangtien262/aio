@@ -21,6 +21,12 @@
             @if(filled(data_get($entry, 'excerpt')))<p class="n88-article-lead">{{ data_get($entry, 'excerpt') }}</p>@endif
             @if($cover)<img class="n88-article-cover" src="{{ $cover }}" alt="{{ data_get($entry, 'featuredMedia.alt_text', $title) }}">@endif
             <div class="n88-article-body">{!! $body !!}</div>
+            @if(!empty($postTags))
+                <nav class="n88-post-tags" aria-label="{{ __('storefront.tags.label') }}">
+                    <strong>{{ __('storefront.tags.label') }}:</strong>
+                    @foreach($postTags as $tag)<a href="{{ $tag['url'] }}" rel="tag">{{ $tag['name'] }}</a>@endforeach
+                </nav>
+            @endif
         </article>
 
         <aside class="n88-article-sidebar" aria-label="@themeT('NEWS88.latest_articles', 'Bài viết mới nhất')">

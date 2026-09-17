@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Col from 'antd/es/col';
@@ -9,6 +9,7 @@ import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
+import { toSlug } from '../../../shared/utils/slug';
 
 export const emptyCmsCategoryForm = {
     id: null,
@@ -21,12 +22,24 @@ export const emptyCmsCategoryForm = {
     website_key: '',
 };
 
-export default function CmsCategoryFormModal({ open, canManage, translationMode = false, editingCategory, parentOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
+export default function CmsCategoryFormModal({ open, canManage, zIndex, translationMode = false, editingCategory, parentOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
     const [form] = Form.useForm();
+    const manualSlugRef = useRef(false);
 
     useEffect(() => {
         form.setFieldsValue(editingCategory);
-    }, [editingCategory, form]);
+        manualSlugRef.current = Boolean(editingCategory?.slug);
+    }, [editingCategory, form, open, contentLocale]);
+
+    const handleValuesChange = (changedValues) => {
+        if (Object.prototype.hasOwnProperty.call(changedValues, 'slug')) {
+            manualSlugRef.current = Boolean(changedValues.slug);
+        }
+
+        if (Object.prototype.hasOwnProperty.call(changedValues, 'name') && !manualSlugRef.current) {
+            form.setFieldValue('slug', toSlug(changedValues.name));
+        }
+    };
 
     const handleSubmit = async (publish = true) => {
         const values = await form.validateFields();
@@ -51,6 +64,7 @@ export default function CmsCategoryFormModal({ open, canManage, translationMode 
 
     return (
         <Modal
+            zIndex={zIndex}
             title={editingCategory?.id ? 'Cập nhật category CMS' : 'Tạo category CMS'}
             open={open}
             onCancel={handleCancel}
@@ -79,7 +93,7 @@ export default function CmsCategoryFormModal({ open, canManage, translationMode 
                 getCurrentValues={() => form.getFieldsValue(true)}
                 onLocaleChange={onLocaleChange}
             />
-            <Form form={form} layout="vertical" initialValues={editingCategory}>
+            <Form name="cms-category" form={form} layout="vertical" initialValues={editingCategory} onValuesChange={handleValuesChange}>
                 {translationMode ? (
                     <Alert
                         type="info"

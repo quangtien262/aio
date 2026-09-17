@@ -11,6 +11,7 @@ use App\Models\CmsProject;
 use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
+use App\Models\CmsTag;
 use App\Models\CmsTeamMember;
 use App\Models\CmsTestimonial;
 use App\Models\RealEstateListing;
@@ -39,6 +40,15 @@ return [
             'view_permissions' => ['cms.view'],
             'update_permissions' => ['cms.category.manage'],
             'publish_permissions' => ['cms.category.manage'],
+        ],
+        'cms_tag' => [
+            'model' => CmsTag::class,
+            'fields' => ['name', 'slug'],
+            'label_field' => 'name',
+            'slug_field' => 'slug',
+            'view_permissions' => ['cms.post.view'],
+            'update_permissions' => ['cms.post.update'],
+            'publish_permissions' => ['cms.publish'],
         ],
         'cms_post' => [
             'model' => CmsPost::class,
@@ -219,6 +229,7 @@ return [
         'modules' => [
             'cms_category' => true,
             'cms_post' => true,
+            'cms_tag' => true,
             'cms_service_category' => true,
             'cms_service' => true,
             'cms_project_category' => true,

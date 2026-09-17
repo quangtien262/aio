@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['title', 'slug', 'status', 'excerpt', 'body', 'meta_title', 'meta_description', 'meta_keywords', 'featured_media_id', 'category_id', 'publish_at', 'is_highlight', 'website_key'])]
@@ -23,6 +24,11 @@ class CmsPost extends Model
             'publish_at' => 'datetime',
             'is_highlight' => 'boolean',
         ];
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(CmsTag::class, 'cms_post_tag')->orderBy('name');
     }
 
     public function category(): BelongsTo

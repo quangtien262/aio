@@ -26,6 +26,18 @@ App\Models\SiteProfile::query()->create([
     'website_type' => 'news', 'active_theme_key' => 'NEWS88', 'branding' => [],
 ]);
 Illuminate\Support\Facades\Auth::guard('admin')->setUser(App\Models\Admin::factory()->create());
+if (in_array('--nested-menu', $argv, true)) {
+    App\Models\CmsMenu::query()->create([
+        'website_key' => 'website-main', 'name' => 'Navigation browser fixture', 'location' => 'primary-navigation',
+        'items' => [[
+            'label' => 'Giới thiệu', 'url' => '#about', 'children' => [[
+                'label' => 'Đội ngũ', 'url' => '#team', 'children' => [[
+                    'label' => 'Ban lãnh đạo', 'url' => 'https://example.test/leaders', 'target' => '_blank',
+                ]],
+            ]],
+        ]],
+    ]);
+}
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 $request = Illuminate\Http\Request::create('http://localhost/vi?mod=admin');
 $response = $kernel->handle($request);

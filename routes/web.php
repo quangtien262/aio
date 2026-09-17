@@ -110,6 +110,7 @@ Route::prefix('{locale}')
 				->name('site.preview.products');
 		});
 
+		Route::get('/tags/{slug}', [CmsSiteController::class, 'postsByTag'])->name('site.blog.tag');
 		Route::get('/c', [CmsSiteController::class, 'postsIndex'])
 			->name('site.blog.index');
 		Route::get('/c/{slug}', [CmsSiteController::class, 'postsIndex'])

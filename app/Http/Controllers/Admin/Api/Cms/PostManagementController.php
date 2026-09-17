@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsPost;
+use App\Support\CmsPostTags;
 use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -15,8 +17,13 @@ class PostManagementController
     {
         $validated = $this->validatePayload($request);
 
-        $post = CmsPost::query()->create($this->normalizePayload($validated));
-        $post->update(['slug' => $this->uniqueSlug($post->title, $post->id)]);
+        $post = DB::transaction(function () use ($validated): CmsPost {
+            $post = CmsPost::query()->create($this->normalizePayload($validated));
+            $post->update(['slug' => $this->uniqueSlug($post->title, $post->id)]);
+            app(CmsPostTags::class)->sync($post, $validated['tags'] ?? []);
+
+            return $post;
+        });
 
         return response()->json(['message' => 'Đã tạo bài viết CMS.', 'data' => $this->serialize($post)], 201);
     }
@@ -26,8 +33,13 @@ class PostManagementController
         /** @var CmsPost $record */
         $record = CmsPost::query()->findOrFail($post);
         $validated = $this->validatePayload($request, $record);
-        $record->update($this->normalizePayload($validated, $record));
-        $record->update(['slug' => $this->uniqueSlug($record->title, $record->id)]);
+        DB::transaction(function () use ($record, $validated): void {
+            $record->update($this->normalizePayload($validated, $record));
+            $record->update(['slug' => $this->uniqueSlug($record->title, $record->id)]);
+            if (array_key_exists('tags', $validated)) {
+                app(CmsPostTags::class)->sync($record, $validated['tags']);
+            }
+        });
 
         return response()->json(['message' => 'Đã cập nhật bài viết CMS.', 'data' => $this->serialize($record->fresh())]);
     }
@@ -90,6 +102,8 @@ class PostManagementController
         $websiteKey = $post?->website_key ?: app(SiteContext::class)->websiteKey();
 
         return $request->validate([
+            'tags' => ['sometimes', 'array', 'max:20'],
+            'tags.*' => ['required', 'string', 'max:80'],
             'title' => ['required', 'string', 'max:255'],
             'slug' => [
                 'nullable',
@@ -118,6 +132,7 @@ class PostManagementController
      */
     private function normalizePayload(array $validated, ?CmsPost $post = null): array
     {
+        unset($validated['tags']);
         $title = trim((string) $validated['title']);
         $excerpt = $this->normalizeTextBlock($validated['excerpt'] ?? null);
 
@@ -157,6 +172,7 @@ class PostManagementController
     {
         return [
             'id' => $post->id,
+            'tags' => $post->tags->pluck('name')->all(),
             'title' => $post->title,
             'slug' => $post->slug,
             'status' => $post->status,

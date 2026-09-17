@@ -37,7 +37,7 @@ import Typography from 'antd/es/typography';
 import Upload from 'antd/es/upload';
 import dayjs from 'dayjs';
 import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
-import { ADMIN_API_ROUTES, adminApi } from '../../../shared/config/routes';
+import { ADMIN_API_ROUTES, STOREFRONT_ROUTES, adminApi } from '../../../shared/config/routes';
 
 const CmsPageFormModal = lazy(() => import('../components/CmsPageFormModal'));
 const CmsPartnerFormModal = lazy(() => import('../components/CmsPartnerFormModal'));
@@ -769,6 +769,16 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         canPublish: sectionConfig.permissionPublish ? (currentPermissions ?? []).includes(sectionConfig.permissionPublish) : false,
     }), [currentPermissions, sectionConfig]);
     const canManageCategories = (currentPermissions ?? []).includes('cms.category.manage');
+    const categoryPermissions = (prefix, viewPermission) => ({
+        canView: (currentPermissions ?? []).includes(viewPermission),
+        canCreate: (currentPermissions ?? []).includes(`${prefix}.create`),
+        canUpdate: (currentPermissions ?? []).includes(`${prefix}.update`),
+        canDelete: (currentPermissions ?? []).includes(`${prefix}.delete`),
+    });
+    const productCategoryPermissions = categoryPermissions('cms.product', 'cms.product.view');
+    const serviceCategoryPermissions = categoryPermissions('cms', 'cms.view');
+    const projectCategoryPermissions = serviceCategoryPermissions;
+
     const supportsLocalizedList = localizedListSectionKeys.has(sectionKey);
     const withContentLocale = (endpoint, locale = contentLocale) => {
         if (!supportsLocalizedList || !locale) {
@@ -1934,6 +1944,20 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             const items = payload.data?.items ?? [];
             setCategoryItems(items);
 
+            if (sectionKey === 'cms-menus') {
+                mutateData((currentData) => currentData ? ({
+                    ...currentData,
+                    linkOptions: {
+                        ...currentData.linkOptions,
+                        postCategories: items.map((item) => ({
+                            label: item.name,
+                            value: String(item.id),
+                            url: STOREFRONT_ROUTES.blogCategory(item.slug),
+                        })),
+                    },
+                }) : currentData);
+            }
+
             if (sectionKey === 'cms-posts') {
                 mutateData((currentData) => currentData ? ({
                     ...currentData,
@@ -1952,7 +1976,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const openCategoryManager = async () => {
         setContentLocale(contentSourceLocale);
         setCategoryManagerOpen(true);
-        await loadCategoryItems({ locale: contentSourceLocale });
+        try {
+            await loadCategoryItems({ locale: contentSourceLocale });
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể tải danh mục tin tức.');
+        }
     };
 
     const openCreateCategory = () => {
@@ -2096,6 +2124,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const handleDeleteCategory = (record) => {
         Modal.confirm({
             title: 'Xóa danh mục tin tức?',
+            zIndex: 1600,
             content: `Danh mục "${record.name}" sẽ bị xóa khỏi CMS. Các bài viết đang gắn danh mục này có thể cần gắn lại danh mục khác.`,
             okText: 'Xóa',
             okButtonProps: { danger: true },
@@ -2106,7 +2135,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     'Đã xóa danh mục tin tức.',
                     async () => {
                         await loadCategoryItems();
-                        await reload();
+                        if (sectionKey !== 'cms-menus') await reload();
                     },
                 );
             },
@@ -2122,6 +2151,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             const payload = await callAdminApi(withContentLocale(adminApi('cms/service-categories'), locale));
             const items = payload.data?.items ?? [];
             setServiceCategoryItems(items);
+            if (sectionKey === 'cms-menus') {
+                mutateData((current) => current ? ({
+                    ...current,
+                    linkOptions: {
+                        ...current.linkOptions,
+                        serviceCategories: items.map((item) => ({
+                            label: item.name, value: String(item.id),
+                            url: STOREFRONT_ROUTES.serviceCategory(item.slug),
+                        })),
+                    },
+                }) : current);
+            }
+
 
             if (sectionKey === 'cms-services') {
                 mutateData((currentData) => currentData ? ({
@@ -2141,7 +2183,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const openServiceCategoryManager = async () => {
         setContentLocale(contentSourceLocale);
         setServiceCategoryManagerOpen(true);
-        await loadServiceCategoryItems({ locale: contentSourceLocale });
+        try {
+            await loadServiceCategoryItems({ locale: contentSourceLocale });
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể tải danh mục dịch vụ.');
+        }
     };
 
     const openCreateServiceCategory = () => {
@@ -2217,6 +2263,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const handleDeleteServiceCategory = (record) => {
         Modal.confirm({
             title: 'Xóa danh mục dịch vụ?',
+            zIndex: 1600,
             content: `Danh mục "${record.name}" sẽ bị xóa. Các dịch vụ đang gắn danh mục này có thể cần cập nhật lại.`,
             okText: 'Xóa',
             okButtonProps: { danger: true },
@@ -2227,7 +2274,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     'Đã xóa danh mục dịch vụ.',
                     async () => {
                         await loadServiceCategoryItems();
-                        await reload();
+                        if (sectionKey !== 'cms-menus') await reload();
                     },
                 );
             },
@@ -2243,6 +2290,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             const payload = await callAdminApi(withContentLocale(adminApi('cms/project-categories'), locale));
             const items = payload.data?.items ?? [];
             setProjectCategoryItems(items);
+            if (sectionKey === 'cms-menus') {
+                mutateData((current) => current ? ({
+                    ...current,
+                    linkOptions: {
+                        ...current.linkOptions,
+                        projectCategories: items.map((item) => ({
+                            label: item.name, value: String(item.id),
+                            url: STOREFRONT_ROUTES.projectCategory(item.slug),
+                        })),
+                    },
+                }) : current);
+            }
+
 
             if (sectionKey === 'cms-projects') {
                 mutateData((currentData) => currentData ? ({
@@ -2262,7 +2322,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const openProjectCategoryManager = async () => {
         setContentLocale(contentSourceLocale);
         setProjectCategoryManagerOpen(true);
-        await loadProjectCategoryItems({ locale: contentSourceLocale });
+        try {
+            await loadProjectCategoryItems({ locale: contentSourceLocale });
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể tải danh mục dự án.');
+        }
     };
 
     const openCreateProjectCategory = () => {
@@ -2338,6 +2402,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const handleDeleteProjectCategory = (record) => {
         Modal.confirm({
             title: 'Xóa danh mục dự án?',
+            zIndex: 1600,
             content: `Danh mục "${record.name}" sẽ bị xóa. Các dự án đang gắn danh mục này có thể cần cập nhật lại.`,
             okText: 'Xóa',
             okButtonProps: { danger: true },
@@ -2348,7 +2413,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     'Đã xóa danh mục dự án.',
                     async () => {
                         await loadProjectCategoryItems();
-                        await reload();
+                        if (sectionKey !== 'cms-menus') await reload();
                     },
                 );
             },
@@ -2364,6 +2429,19 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             const payload = await callAdminApi(withContentLocale(adminApi('cms/product-categories'), locale));
             const items = payload.data?.items ?? [];
             setProductCategoryItems(items);
+            if (sectionKey === 'cms-menus') {
+                mutateData((current) => current ? ({
+                    ...current,
+                    linkOptions: {
+                        ...current.linkOptions,
+                        productCategories: items.map((item) => ({
+                            label: item.name, value: String(item.id),
+                            url: STOREFRONT_ROUTES.category(item.slug),
+                        })),
+                    },
+                }) : current);
+            }
+
 
             if (sectionKey === 'cms-products') {
                 mutateData((currentData) => currentData ? ({
@@ -2383,7 +2461,11 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const openProductCategoryManager = async () => {
         setContentLocale(contentSourceLocale);
         setProductCategoryManagerOpen(true);
-        await loadProductCategoryItems({ locale: contentSourceLocale });
+        try {
+            await loadProductCategoryItems({ locale: contentSourceLocale });
+        } catch (error) {
+            messageApi.error(error instanceof Error ? error.message : 'Không thể tải danh mục sản phẩm.');
+        }
     };
 
     const openCreateProductCategory = () => {
@@ -2516,6 +2598,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const handleDeleteProductCategory = (record) => {
         Modal.confirm({
             title: 'Xóa danh mục sản phẩm?',
+            zIndex: 1600,
             content: `Danh mục "${record.name}" sẽ bị xóa. Sản phẩm hoặc danh mục con đang liên kết có thể cần cập nhật lại.`,
             okText: 'Xóa',
             okButtonProps: { danger: true },
@@ -4715,12 +4798,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             return (
                 <Suspense fallback={null}>
                     <CmsPostFormModal
+                        canPublish={sectionPermissions.canPublish}
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         translationMode={contentLocale !== contentSourceLocale}
                         editingPost={editingRecord}
                         mediaOptions={data?.media ?? []}
                         categoryOptions={data?.categories ?? []}
+                        tagOptions={data?.tagOptions ?? []}
                         localeOptions={contentLocaleOptions}
                         contentLocale={contentLocale}
                         sourceLocale={contentSourceLocale}
@@ -4929,6 +5014,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         callAdminApi={callAdminApi}
                         runAdminAction={runAdminAction}
                         onLocationsChanged={reload}
+                        onManagePostCategories={canManageCategories ? openCategoryManager : undefined}
+                        onManageProductCategories={productCategoryPermissions.canView ? openProductCategoryManager : undefined}
+                        onManageServiceCategories={serviceCategoryPermissions.canView ? openServiceCategoryManager : undefined}
+                        onManageProjectCategories={projectCategoryPermissions.canView ? openProjectCategoryManager : undefined}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
                         onLocaleChange={handleFormLocaleChange}
@@ -6254,6 +6343,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Modal
                 title="Cài đặt danh mục tin tức"
+                zIndex={1400}
                 open={categoryManagerOpen}
                 onCancel={() => {
                     setContentLocale(contentSourceLocale);
@@ -6265,7 +6355,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             >
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
-                        <Text type="secondary">Quản lý nhanh danh mục để gắn cho bài viết mà không cần rời màn Tin tức.</Text>
+                        <Text type="secondary">Quản lý nhanh danh mục tin tức ngay tại màn hình hiện tại.</Text>
                         <Button type="primary" icon={<PlusOutlined />} disabled={!canManageCategories || contentLocale !== contentSourceLocale} onClick={openCreateCategory}>
                             Thêm danh mục
                         </Button>
@@ -6321,12 +6411,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Suspense fallback={null}>
                 <CmsCategoryFormModal
+                    zIndex={1500}
                     open={categoryFormOpen}
                     canManage={canManageCategories}
                     translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingCategoryRecord}
                     parentOptions={categoryParentOptions}
-                    localeOptions={contentLocaleOptions}
+                    localeOptions={sectionKey === 'cms-menus' ? contentLocaleOptions.filter((locale) => locale.code === contentSourceLocale) : contentLocaleOptions}
                     contentLocale={contentLocale}
                     sourceLocale={contentSourceLocale}
                     submitLoading={categorySaving}
@@ -6351,6 +6442,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Modal
                 title="Cài đặt danh mục dịch vụ"
+                zIndex={1400}
                 open={serviceCategoryManagerOpen}
                 onCancel={() => {
                     setContentLocale(contentSourceLocale);
@@ -6363,7 +6455,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <Text type="secondary">Quản lý danh mục dịch vụ ngay trong màn Services để tiện tạo, sửa và gắn danh mục.</Text>
-                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateServiceCategory}>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!serviceCategoryPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateServiceCategory}>
                             Thêm danh mục dịch vụ
                         </Button>
                     </Space>
@@ -6404,10 +6496,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 key: 'actions',
                                 render: (_, record) => (
                                     <Space>
-                                        <Button size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditServiceCategory(record)}>
+                                        <Button size="small" icon={<EditOutlined />} disabled={!serviceCategoryPermissions.canUpdate} onClick={() => openEditServiceCategory(record)}>
                                             Sửa
                                         </Button>
-                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteServiceCategory(record)}>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!serviceCategoryPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteServiceCategory(record)}>
                                             Xóa
                                         </Button>
                                     </Space>
@@ -6420,12 +6512,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Suspense fallback={null}>
                 <CatalogCategoryFormModal
+                    zIndex={1500}
                     open={serviceCategoryFormOpen}
-                    canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    canManage={editingServiceCategoryRecord?.id ? serviceCategoryPermissions.canUpdate : serviceCategoryPermissions.canCreate}
                     translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingServiceCategoryRecord}
                     categoryOptions={serviceCategoryParentOptions}
-                    localeOptions={contentLocaleOptions}
+                    localeOptions={sectionKey === 'cms-menus' ? contentLocaleOptions.filter((locale) => locale.code === contentSourceLocale) : contentLocaleOptions}
                     contentLocale={contentLocale}
                     sourceLocale={contentSourceLocale}
                     entityLabel="danh mục dịch vụ"
@@ -6452,6 +6545,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Modal
                 title="Cài đặt danh mục SP"
+                zIndex={1400}
                 open={productCategoryManagerOpen}
                 onCancel={() => {
                     setContentLocale(contentSourceLocale);
@@ -6464,7 +6558,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <Text type="secondary">Quản lý danh mục sản phẩm ngay trong màn Products để tiện tạo, sửa và gắn danh mục.</Text>
-                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateProductCategory}>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!productCategoryPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateProductCategory}>
                             Thêm danh mục SP
                         </Button>
                     </Space>
@@ -6482,7 +6576,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         row: (rowProps) => (
                                             <SortableProductCategoryTableRow
                                                 {...rowProps}
-                                                disabled={!sectionPermissions.canUpdate || productCategoryLoading || contentLocale !== contentSourceLocale}
+                                                disabled={!productCategoryPermissions.canUpdate || productCategoryLoading || contentLocale !== contentSourceLocale}
                                             />
                                         ),
                                     },
@@ -6497,7 +6591,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         type="text"
                                         size="small"
                                         icon={<HolderOutlined />}
-                                        disabled={!sectionPermissions.canUpdate || productCategoryLoading || contentLocale !== contentSourceLocale}
+                                        disabled={!productCategoryPermissions.canUpdate || productCategoryLoading || contentLocale !== contentSourceLocale}
                                         aria-label="Kéo thả để sắp xếp danh mục"
                                     />
                                 ),
@@ -6530,10 +6624,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 key: 'actions',
                                 render: (_, record) => (
                                     <Space>
-                                        <Button size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditProductCategory(record)}>
+                                        <Button size="small" icon={<EditOutlined />} disabled={!productCategoryPermissions.canUpdate} onClick={() => openEditProductCategory(record)}>
                                             Sửa
                                         </Button>
-                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteProductCategory(record)}>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!productCategoryPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteProductCategory(record)}>
                                             Xóa
                                         </Button>
                                     </Space>
@@ -6548,12 +6642,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Suspense fallback={null}>
                 <CatalogCategoryFormModal
+                    zIndex={1500}
                     open={productCategoryFormOpen}
-                    canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    canManage={editingProductCategoryRecord?.id ? productCategoryPermissions.canUpdate : productCategoryPermissions.canCreate}
                     translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingProductCategoryRecord}
                     categoryOptions={productCategoryParentOptions}
-                    localeOptions={contentLocaleOptions}
+                    localeOptions={sectionKey === 'cms-menus' ? contentLocaleOptions.filter((locale) => locale.code === contentSourceLocale) : contentLocaleOptions}
                     contentLocale={contentLocale}
                     sourceLocale={contentSourceLocale}
                     entityLabel="danh mục sản phẩm"
@@ -6580,6 +6675,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Modal
                 title="Cài đặt danh mục dự án"
+                zIndex={1400}
                 open={projectCategoryManagerOpen}
                 onCancel={() => {
                     setContentLocale(contentSourceLocale);
@@ -6592,7 +6688,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                         <Text type="secondary">Quản lý danh mục dự án ngay trong màn Projects để tiện tạo, sửa và gắn danh mục.</Text>
-                        <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateProjectCategory}>
+                        <Button type="primary" icon={<PlusOutlined />} disabled={!projectCategoryPermissions.canCreate || contentLocale !== contentSourceLocale} onClick={openCreateProjectCategory}>
                             Thêm danh mục dự án
                         </Button>
                     </Space>
@@ -6633,10 +6729,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 key: 'actions',
                                 render: (_, record) => (
                                     <Space>
-                                        <Button size="small" icon={<EditOutlined />} disabled={!sectionPermissions.canUpdate} onClick={() => openEditProjectCategory(record)}>
+                                        <Button size="small" icon={<EditOutlined />} disabled={!projectCategoryPermissions.canUpdate} onClick={() => openEditProjectCategory(record)}>
                                             Sửa
                                         </Button>
-                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!sectionPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteProjectCategory(record)}>
+                                        <Button size="small" danger icon={<DeleteOutlined />} disabled={!projectCategoryPermissions.canDelete || contentLocale !== contentSourceLocale} onClick={() => handleDeleteProjectCategory(record)}>
                                             Xóa
                                         </Button>
                                     </Space>
@@ -6649,12 +6745,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Suspense fallback={null}>
                 <CatalogCategoryFormModal
+                    zIndex={1500}
                     open={projectCategoryFormOpen}
-                    canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
+                    canManage={editingProjectCategoryRecord?.id ? projectCategoryPermissions.canUpdate : projectCategoryPermissions.canCreate}
                     translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingProjectCategoryRecord}
                     categoryOptions={projectCategoryParentOptions}
-                    localeOptions={contentLocaleOptions}
+                    localeOptions={sectionKey === 'cms-menus' ? contentLocaleOptions.filter((locale) => locale.code === contentSourceLocale) : contentLocaleOptions}
                     contentLocale={contentLocale}
                     sourceLocale={contentSourceLocale}
                     entityLabel="danh mục dự án"

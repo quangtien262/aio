@@ -120,6 +120,11 @@ class LocalizedContentController
             $rules["payload.{$field}"] = ['nullable'];
         }
 
+        if ($resourceType === 'cms_tag') {
+            $rules['payload.name'] = ['required', 'string', 'max:80'];
+            $rules['payload.slug'] = ['nullable', 'string', 'max:255'];
+        }
+
         $rules['publish'] = ['nullable', 'boolean'];
         $rules['is_machine_translated'] = ['nullable', 'boolean'];
         $validated = $request->validate($rules);

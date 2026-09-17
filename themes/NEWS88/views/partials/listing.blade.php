@@ -21,4 +21,7 @@
             <article><a href="{{ $url }}"><img src="{{ $image }}" alt="{{ data_get($item, 'title', data_get($item, 'name')) }}"></a><div><h2><a href="{{ $url }}">{{ data_get($item, 'title', data_get($item, 'name')) }}</a></h2><p>{{ data_get($item, 'excerpt', data_get($item, 'summary', data_get($item, 'description'))) }}</p><a href="{{ $url }}">@themeT('NEWS88.read_more', 'Đọc tiếp') →</a></div></article>
         @empty<p>@themeT('NEWS88.no_content', 'Nội dung đang được cập nhật.')</p>@endforelse
     </div>
+    @if(is_object($source) && method_exists($source, 'links'))
+        <div class="n88-pagination">{{ $source->links('pagination::bootstrap-4') }}</div>
+    @endif
 </div></main>
