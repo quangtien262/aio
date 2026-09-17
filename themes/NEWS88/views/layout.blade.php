@@ -28,7 +28,7 @@
     pre {
         white-space: pre-wrap;
         word-wrap: break-word;
-        background: #ccc;
+        background: #ededed;
         padding: 15px;
         border: 1px #9f9f9f solid;
     }
