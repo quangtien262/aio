@@ -19,6 +19,7 @@ use App\Support\Localization\AdminLocalizedContentList;
 use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class MenuIndexController
 {
@@ -83,10 +84,11 @@ class MenuIndexController
                         })
                         ->values()
                         ->all(),
-                    'productCategories' => CatalogCategory::query()
+                    'productCategories' => (Schema::hasTable('catalog_categories') ? CatalogCategory::query()
                         ->orderBy('sort_order')
                         ->orderBy('name')
-                        ->get()
+                        ->get() : collect())
+                        ->filter(fn (CatalogCategory $category): bool => filled($category->slug))
                         ->map(fn (CatalogCategory $category): array => [
                             'label' => $category->name,
                             'value' => (string) $category->id,
@@ -94,10 +96,11 @@ class MenuIndexController
                         ])
                         ->values()
                         ->all(),
-                    'products' => CatalogProduct::query()
+                    'products' => (Schema::hasTable('catalog_products') ? CatalogProduct::query()
                         ->orderBy('sort_order')
                         ->orderBy('name')
-                        ->get()
+                        ->get() : collect())
+                        ->filter(fn (CatalogProduct $product): bool => filled($product->slug))
                         ->map(fn (CatalogProduct $product): array => [
                             'label' => $product->name,
                             'value' => (string) $product->id,
