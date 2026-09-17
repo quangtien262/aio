@@ -56,6 +56,8 @@ class CategoryManagementController
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
             'parent_id' => ['nullable', 'integer', Rule::exists('cms_categories', 'id')],
+        ], [
+            'slug.unique' => 'Slug đã được dùng cho danh mục khác. Vui lòng chọn slug khác.',
         ]);
     }
 

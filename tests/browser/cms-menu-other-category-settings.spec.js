@@ -28,7 +28,7 @@ test('product category settings reuse CRUD and preserve menu', async ({ page }) 
     await item.getByLabel('Label', { exact: true }).fill('Nhãn chưa lưu');
     await item.getByRole('button', { name: 'Cài đặt danh mục sản phẩm', exact: true }).click();
     const manager = page.getByRole('dialog', { name: 'Cài đặt danh mục SP', exact: true });
-    await manager.getByRole('button', { name: /Thêm danh mục$/ }).click();
+    await manager.getByRole('button', { name: /Thêm danh mục SP$/ }).click();
     const category = page.getByRole('dialog', { name: 'Tạo danh mục', exact: true });
     await category.getByLabel('Tên danh mục', { exact: true }).fill('Danh mục mới');
     await expect(category.getByLabel('Slug', { exact: true })).toHaveValue('danh-muc-moi');
@@ -132,4 +132,5 @@ test('project category settings reuse CRUD and preserve menu', async ({ page }) 
     await item.getByRole('button', { name: 'OK', exact: true }).click();
     await expect(drawer.getByLabel('Tên menu', { exact: true })).toHaveValue('Menu chưa lưu');
 });
+
 

@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 test('menu category settings reuse CRUD and preserve unsaved menu fields', async ({ page }) => {
     const manifest = JSON.parse(readFileSync('public/build/manifest.json', 'utf8'));
     const entry = manifest['resources/admin/src/main.jsx'];
-    let categories = [];
+    let categories = [{ id: 3, name: 'Tin mới', slug: 'tin-moi' }];
     await page.route('**/admin/cms/menus', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><head><meta charset="utf-8"><meta name="csrf-token" content="test">${(entry.css ?? []).map(file => `<link rel="stylesheet" href="/build/${file}">`).join('')}</head><body><div id="admin-root"></div><script type="module" src="/build/${entry.file}"></script></body></html>` }));
     await page.route('**/admin/api/**', route => {
         const path = new URL(route.request().url()).pathname;
@@ -30,6 +30,11 @@ test('menu category settings reuse CRUD and preserve unsaved menu fields', async
     const manager = page.getByRole('dialog', { name: 'Cài đặt danh mục tin tức', exact: true });
     await manager.getByRole('button', { name: /Thêm danh mục$/ }).click();
     const category = page.getByRole('dialog', { name: 'Tạo category CMS', exact: true });
+    await category.getByLabel('Tên category', { exact: true }).fill('Tin mới');
+    await expect(category.getByText('Slug đã được dùng cho danh mục khác. Vui lòng chọn slug khác.', { exact: true })).toBeVisible();
+    await category.getByRole('button', { name: /Lưu danh mục$/ }).click();
+    await expect(category).toBeVisible();
+    expect(categories).toHaveLength(1);
     await category.getByLabel('Tên category', { exact: true }).fill('Danh mục mới');
     await expect(category.getByLabel('Slug', { exact: true })).toHaveValue('danh-muc-moi');
     await category.getByLabel('Slug', { exact: true }).fill('slug-tu-chon');

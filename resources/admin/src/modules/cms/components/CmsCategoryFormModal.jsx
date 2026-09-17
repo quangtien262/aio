@@ -22,9 +22,18 @@ export const emptyCmsCategoryForm = {
     website_key: '',
 };
 
-export default function CmsCategoryFormModal({ open, canManage, zIndex, translationMode = false, editingCategory, parentOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
+export default function CmsCategoryFormModal({ open, canManage, zIndex, translationMode = false, editingCategory, categories = [], parentOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
     const [form] = Form.useForm();
     const manualSlugRef = useRef(false);
+    const slug = Form.useWatch('slug', form);
+    const duplicateSlug = !translationMode && categories.some((category) => (
+        String(category.id) !== String(editingCategory?.id)
+        && String(category.slug ?? '').trim().toLowerCase() === String(slug ?? '').trim().toLowerCase()
+    ));
+
+    useEffect(() => {
+        if (open && slug) void form.validateFields(['slug']).catch(() => {});
+    }, [open, slug, duplicateSlug, form]);
 
     useEffect(() => {
         form.setFieldsValue(editingCategory);
@@ -109,7 +118,12 @@ export default function CmsCategoryFormModal({ open, canManage, zIndex, translat
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug category' }]}>
+                        <Form.Item name="slug" label="Slug" rules={[
+                            { required: true, message: 'Nhập slug category' },
+                            { validator: () => duplicateSlug
+                                ? Promise.reject(new Error('Slug đã được dùng cho danh mục khác. Vui lòng chọn slug khác.'))
+                                : Promise.resolve() },
+                        ]}>
                             <Input placeholder="tin-doanh-nghiep" />
                         </Form.Item>
                     </Col>

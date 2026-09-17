@@ -4955,6 +4955,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         translationMode={contentLocale !== contentSourceLocale}
                         editingCategory={editingRecord}
+                        categories={data?.items ?? []}
                         parentOptions={(data?.items ?? []).filter((item) => item.id !== editingRecord?.id).map((item) => ({ label: item.name, value: item.id }))}
                         onCancel={() => setModalOpen(false)}
                         onSubmit={handleSaveRecord}
@@ -6416,6 +6417,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     canManage={canManageCategories}
                     translationMode={contentLocale !== contentSourceLocale}
                     editingCategory={editingCategoryRecord}
+                    categories={categoryItems}
                     parentOptions={categoryParentOptions}
                     localeOptions={sectionKey === 'cms-menus' ? contentLocaleOptions.filter((locale) => locale.code === contentSourceLocale) : contentLocaleOptions}
                     contentLocale={contentLocale}
