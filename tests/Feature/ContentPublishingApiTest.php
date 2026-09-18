@@ -232,6 +232,9 @@ class ContentPublishingApiTest extends TestCase
 
     public function test_api_upserts_and_auto_publishes_an_english_machine_translation(): void
     {
+        ContentApiToken::query()->firstOrFail()->update([
+            'abilities' => ['posts.read', 'posts.write', 'posts.publish', 'media.write'],
+        ]);
         $category = CmsCategory::query()->create(['name' => 'Hướng dẫn', 'slug' => 'huong-dan']);
         $externalId = 'tech-content:core-web-vitals';
 

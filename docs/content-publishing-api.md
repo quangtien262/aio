@@ -39,7 +39,11 @@ Token có thể có các abilities: `posts.read`, `posts.write`, `posts.publish`
 
 `translations.publish` là quyền tin cậy cao dành riêng cho publisher tự động.
 Nó cho phép bản dịch do AI tạo đi thẳng qua `machine_draft -> ready -> published`;
-luồng dịch trong admin và các token không có quyền này vẫn phải qua quy trình duyệt.
+luồng dịch trong admin vẫn giữ nguyên quy trình duyệt.
+Để tương thích với token publisher đã cấp trước API đa ngôn ngữ, `posts.read`,
+`posts.write`, `posts.publish` lần lượt cũng cho phép đọc, ghi và publish bản dịch
+của chính bài viết trong cùng website. Token cấp mới vẫn nên khai báo rõ ba quyền
+`translations.*` để contract dễ kiểm tra.
 
 ## Endpoints
 

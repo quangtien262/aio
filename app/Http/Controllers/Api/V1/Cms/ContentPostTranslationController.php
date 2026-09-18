@@ -49,7 +49,11 @@ class ContentPostTranslationController
         }
 
         $publish = (bool) ($validated['publish'] ?? true);
-        if ($publish && ! $token->hasAbility('translations.publish')) {
+        if (
+            $publish
+            && ! $token->hasAbility('translations.publish')
+            && ! $token->hasAbility('posts.publish')
+        ) {
             throw ValidationException::withMessages([
                 'publish' => 'API token không có quyền xuất bản bản dịch trực tiếp.',
             ]);

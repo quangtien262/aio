@@ -573,6 +573,9 @@ Hãy dùng ngữ cảnh trên làm baseline và tiếp tục hỗ trợ tôi tr�
   từ client; website luôn lấy từ token.
 - Publisher workspace mặc định tìm `articles/en/<cùng-tên-file>.html`, đăng bài
   nguồn trước rồi bản tiếng Anh. Chỉ dùng `--vi-only` khi được yêu cầu rõ ràng.
+- Bài legacy chưa có resource link phải gọi `POST /api/v1/cms/posts/link` với
+  `external_id`, `post_id` và `expected_slug` khớp chính xác trước khi publish;
+  endpoint từ chối mapping xung đột để tránh tạo bài trùng.
 - Contract, payload và bước deploy/token nằm ở `docs/content-publishing-api.md`
   và `../../docs/content-production-runbook.md`.
 
