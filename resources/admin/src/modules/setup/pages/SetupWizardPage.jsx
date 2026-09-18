@@ -74,6 +74,9 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
     const [searchParams, setSearchParams] = useSearchParams();
     const themeActionController = useThemeActionOverlayController();
     const [socialLinks, setSocialLinks] = useState({});
+    const [socialModalOpen, setSocialModalOpen] = useState(false);
+    const [socialSaving, setSocialSaving] = useState(false);
+    const [socialError, setSocialError] = useState('');
     const [siteName, setSiteName] = useState('');
     const [siteDescription, setSiteDescription] = useState('');
     const [websiteType, setWebsiteType] = useState('');
@@ -261,12 +264,33 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
         if (changes.boc_confirmation_url !== undefined) setBocConfirmationUrl(changes.boc_confirmation_url);
         if (changes.boc_footer_note !== undefined) setBocFooterNote(changes.boc_footer_note);
 
-        onSaveProfile?.(payload);
+        return onSaveProfile?.(payload);
     }
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Card title="Mạng xã hội">
+
+            <Modal title="Cài đặt mạng xã hội" open={socialModalOpen} width={600}
+                onCancel={() => { if (!socialSaving) setSocialModalOpen(false); }}
+                okText="Lưu cài đặt" cancelText="Hủy" confirmLoading={socialSaving}
+                okButtonProps={{ disabled: !canEditProfile }}
+                cancelButtonProps={{ disabled: socialSaving }}
+                closable={!socialSaving} maskClosable={!socialSaving}
+                onOk={async () => {
+                    if (socialSaving) return;
+                    setSocialSaving(true);
+                    setSocialError('');
+                    try {
+                        const saved = await saveProfile(Object.fromEntries(Object.entries(socialLinks).map(([key, value]) => [key, value.trim()])));
+                        if (saved) setSocialModalOpen(false);
+                        else setSocialError('Chưa lưu được cài đặt. Kiểm tra đường dẫn và thử lại.');
+                    } catch (error) {
+                        setSocialError(error.message || 'Không thể lưu cài đặt mạng xã hội.');
+                    } finally {
+                        setSocialSaving(false);
+                    }
+                }}>
+                {socialError ? <Alert type="error" showIcon message={socialError} style={{ marginBottom: 12 }} /> : null}
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
                     <Text type="secondary">Nhập đường dẫn đầy đủ https://. Để trống để ẩn icon tương ứng trên NEWS88.</Text>
                     {[['facebook_url', 'Facebook'], ['x_url', 'X (Twitter)'], ['youtube_url', 'YouTube']].map(([key, label]) => (
@@ -275,9 +299,8 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                             <Input disabled={!canEditProfile} type="url" value={socialLinks[key] ?? ''} placeholder="https://..." onChange={event => setSocialLinks(current => ({ ...current, [key]: event.target.value }))} />
                         </label>
                     ))}
-                    <Button type="primary" disabled={!canEditProfile} onClick={() => saveProfile(Object.fromEntries(Object.entries(socialLinks).map(([key, value]) => [key, value.trim()])))}>Lưu mạng xã hội</Button>
                 </Space>
-            </Card>
+            </Modal>
             <Card title="Cài đặt website">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
                     <div>
@@ -351,6 +374,11 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                             <div className="setup-profile-actions">
                                 <Button onClick={() => { setPopLogoVisible(true); setTempLogo(logoUrl); }}>Sửa logo</Button>
                                 <Button disabled={!canQuickEditPalette} onClick={() => themeActionController.openPalette(activeTheme)}>Bảng màu</Button>
+                                <Button disabled={!canEditProfile} onClick={() => {
+                                    setSocialLinks(Object.fromEntries(['facebook_url', 'x_url', 'youtube_url'].map(key => [key, setup?.branding?.[key] ?? ''])));
+                                    setSocialError('');
+                                    setSocialModalOpen(true);
+                                }}>Cài đặt mạng xã hội</Button>
                             </div>
                         </div>
 

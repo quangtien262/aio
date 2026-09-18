@@ -84,6 +84,7 @@ export default function SetupRoutePage({ canAccess, canComplete, canViewThemeMan
                 if (didSave) {
                     pushSetupStepFeedback('branding');
                 }
+                return didSave;
             }}
             onCompleteStep={async (stepKey) => {
                 const didComplete = await runAdminAction(
