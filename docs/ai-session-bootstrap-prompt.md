@@ -17,6 +17,7 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
 
 1. Đọc hết file bootstrap này để nắm định hướng sản phẩm, module, theme, website context và convention. Yêu cầu mới nhất của người dùng vẫn là phạm vi công việc hiện hành; không tự tiếp tục một hạng mục lịch sử chỉ vì nó xuất hiện trong tài liệu.
 2. Đọc thêm tài liệu đúng miền trước khi sửa:
+   - API đăng bài từ workspace `tech_content`, ảnh đại diện, token hoặc vận hành production `tech.htvietnam.vn`: `docs/content-publishing-api.md` và `../../docs/content-production-runbook.md`.
    - Đa ngôn ngữ, CMS Pages, phần Nội dung, Landing Page, theme locale hoặc SEO: `docs/architecture/localization-foundation.md` và `docs/architecture/localization-rollout-runbook.md`.
    - Tài khoản, đăng nhập, permission, middleware, module lifecycle hoặc dữ liệu admin: `docs/architecture/admin-access-control.md`.
    - Nhân sự/tiền lương: `docs/architecture/hrm-and-payroll-modules.md`.
@@ -143,6 +144,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 - Giữ style thay đổi nhỏ, đúng codebase hiện tại, không refactor rộng nếu user không yêu cầu.
 - UI admin đang dùng tiếng Việt cho label/nút/copy nên ưu tiên giữ tiếng Việt nhất quán.
 - Nếu làm việc với media public thì hiện tại URL public đi theo hướng `/files/...`.
+- Content API production dùng token-scoped `website-main`; không nhận `website_key` từ client. Publisher mặc định xuất bản lên `https://tech.htvietnam.vn`, chạy tuần tự và chặn ảnh cover trên 1 MB. Đọc runbook trước khi thao tác vì bài legacy có thể chưa được backfill `external_id`.
 - Với frontend dev server, repo này từng gặp lỗi stale Vite optimize deps; script dev hiện dùng `vite --force`.
 - Khi phân tích hoặc đề xuất kiến trúc mới, luôn cân nhắc khả năng scale về sau cho nhiều module nghiệp vụ khác nhau, không chỉ riêng CMS.
 
@@ -555,6 +557,24 @@ Working tree tại snapshot handoff đang có phạm vi thay đổi localization
 - Nếu có validation đã chạy, nói rõ cái gì pass, cái gì chỉ là warning không chặn chức năng.
 
 Hãy dùng ngữ cảnh trên làm baseline và tiếp tục hỗ trợ tôi trên đúng codebase này.
+
+## Content API đa ngôn ngữ cho tech.htvietnam.vn (2026-09-18)
+
+- Bài nguồn tiếng Việt dùng `POST /api/v1/cms/posts/upsert`; bản tiếng Anh dùng
+  `POST /api/v1/cms/posts/{externalId}/translations/en/upsert` và cùng trỏ tới
+  một `cms_posts`.
+- Content API bản dịch phải đi qua `LocalizedContentRepository`, không ghi trực
+  tiếp `content_translations` hoặc `localized_routes`.
+- Token publisher tự động cần thêm `translations.read`, `translations.write`,
+  `translations.publish`. Chỉ quyền `translations.publish` mới cho phép bản dịch
+  AI đi thẳng `machine_draft -> ready -> published`; admin flow không đổi.
+- Auto-publish bản dịch chỉ hợp lệ khi bài nguồn đã `published` và locale đích
+  đang editable + public trong `website_locales`. Không được gửi `website_key`
+  từ client; website luôn lấy từ token.
+- Publisher workspace mặc định tìm `articles/en/<cùng-tên-file>.html`, đăng bài
+  nguồn trước rồi bản tiếng Anh. Chỉ dùng `--vi-only` khi được yêu cầu rõ ràng.
+- Contract, payload và bước deploy/token nằm ở `docs/content-publishing-api.md`
+  và `../../docs/content-production-runbook.md`.
 
 ## 12. Handoff cập nhật ngày 2026-08-03
 

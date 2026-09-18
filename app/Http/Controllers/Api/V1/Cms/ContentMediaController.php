@@ -20,7 +20,7 @@ class ContentMediaController
     {
         $validated = $request->validate([
             'external_id' => ['required', 'string', 'max:191', 'regex:/^[A-Za-z0-9._:-]+$/'],
-            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:1024'],
             'title' => ['nullable', 'string', 'max:255'],
             'alt_text' => ['nullable', 'string', 'max:255'],
             'payload_hash' => ['nullable', 'string', 'size:64', 'regex:/^[a-f0-9]{64}$/'],

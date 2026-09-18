@@ -15,7 +15,7 @@ class IssueContentApiTokenCommand extends Command
         {name : Tên nhận diện token}
         {--website=website-main : Website được phép ghi dữ liệu}
         {--source=tech-content : Mã nguồn tích hợp dùng cho external_id}
-        {--abilities=posts.read,posts.write,posts.publish,media.write : Danh sách quyền, phân tách bằng dấu phẩy}
+        {--abilities=posts.read,posts.write,posts.publish,media.write,translations.read,translations.write,translations.publish : Danh sách quyền, phân tách bằng dấu phẩy}
         {--expires= : Ngày hết hạn theo định dạng được PHP hỗ trợ}
         {--output= : Ghi cấu hình publisher vào file này}
         {--base-url=http://127.0.0.1:8000 : URL dùng khi ghi file cấu hình}';
@@ -40,7 +40,16 @@ class IssueContentApiTokenCommand extends Command
             ->values()
             ->all();
 
-        $allowed = ['*', 'posts.read', 'posts.write', 'posts.publish', 'media.write'];
+        $allowed = [
+            '*',
+            'posts.read',
+            'posts.write',
+            'posts.publish',
+            'media.write',
+            'translations.read',
+            'translations.write',
+            'translations.publish',
+        ];
         $invalid = array_values(array_diff($abilities, $allowed));
         if ($abilities === [] || $invalid !== []) {
             $this->error('Abilities không hợp lệ: '.implode(', ', $invalid));
