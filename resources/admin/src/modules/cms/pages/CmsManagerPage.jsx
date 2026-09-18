@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import CopyOutlined from '@ant-design/icons/CopyOutlined';
+import CalendarOutlined from '@ant-design/icons/CalendarOutlined';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
@@ -9,6 +10,10 @@ import HolderOutlined from '@ant-design/icons/HolderOutlined';
 import InboxOutlined from '@ant-design/icons/InboxOutlined';
 import MoreOutlined from '@ant-design/icons/MoreOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
+import FilterOutlined from '@ant-design/icons/FilterOutlined';
+import SearchOutlined from '@ant-design/icons/SearchOutlined';
+import ReloadOutlined from '@ant-design/icons/ReloadOutlined';
+import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import UploadOutlined from '@ant-design/icons/UploadOutlined';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -36,6 +41,7 @@ import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import Upload from 'antd/es/upload';
 import dayjs from 'dayjs';
+import './CmsPostFilters.css';
 import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
 import { ADMIN_API_ROUTES, STOREFRONT_ROUTES, adminApi } from '../../../shared/config/routes';
 
@@ -705,6 +711,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [bulkOrderStatusOpen, setBulkOrderStatusOpen] = useState(false);
     const [bulkServiceCategoryOpen, setBulkServiceCategoryOpen] = useState(false);
     const [bulkContentCategoryOpen, setBulkContentCategoryOpen] = useState(false);
+    const [bulkPostHighlightOpen, setBulkPostHighlightOpen] = useState(false);
+    const [bulkPublishOpen, setBulkPublishOpen] = useState(false);
+    const [bulkPublishAt, setBulkPublishAt] = useState(null);
+    const [bulkPublishSaving, setBulkPublishSaving] = useState(false);
+    const [bulkPublishError, setBulkPublishError] = useState('');
+    const [bulkPostHighlight, setBulkPostHighlight] = useState(true);
+    const [bulkPostHighlightSaving, setBulkPostHighlightSaving] = useState(false);
+    const [bulkPostHighlightError, setBulkPostHighlightError] = useState('');
     const [keyword, setKeyword] = useState('');
     const [orderStatusFilter, setOrderStatusFilter] = useState('all');
     const [orderDatePreset, setOrderDatePreset] = useState('custom');
@@ -715,6 +729,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productPublishFilter, setProductPublishFilter] = useState('all');
     const [productSort, setProductSort] = useState('newest');
     const [serviceCategoryFilter, setServiceCategoryFilter] = useState('all');
+    const [postCategoryFilter, setPostCategoryFilter] = useState('all');
+    const [postStatusFilter, setPostStatusFilter] = useState('all');
+    const [postFeaturedFilter, setPostFeaturedFilter] = useState('all');
     const [serviceStatusFilter, setServiceStatusFilter] = useState('all');
     const [serviceFeaturedFilter, setServiceFeaturedFilter] = useState('all');
     const [productPagination, setProductPagination] = useState({ current: 1, pageSize: 10 });
@@ -1308,6 +1325,27 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             });
         }
 
+        if (sectionKey === 'cms-posts') {
+            return (data?.items ?? []).filter((post) => {
+                const matchesKeyword = normalizedKeyword === '' || [
+                    post.title,
+                    post.slug,
+                    post.category_name,
+                    post.excerpt,
+                    post.meta_keywords,
+                    ...(post.tags ?? []),
+                ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
+                const matchesCategory = postCategoryFilter === 'all'
+                    || String(post.category_id ?? '') === String(postCategoryFilter);
+                const matchesStatus = postStatusFilter === 'all' || post.status === postStatusFilter;
+                const matchesFeatured = postFeaturedFilter === 'all'
+                    || (postFeaturedFilter === 'featured' && post.is_highlight)
+                    || (postFeaturedFilter === 'normal' && !post.is_highlight);
+
+                return matchesKeyword && matchesCategory && matchesStatus && matchesFeatured;
+            });
+        }
+
         if (sectionKey === 'cms-services') {
             return (data?.items ?? []).filter((service) => {
                 const matchesKeyword = normalizedKeyword === '' || [
@@ -1351,7 +1389,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return data?.items ?? [];
-    }, [activeMediaFolder, data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey, serviceCategoryFilter, serviceFeaturedFilter, serviceStatusFilter]);
+    }, [activeMediaFolder, data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey, postCategoryFilter, postStatusFilter, postFeaturedFilter, serviceCategoryFilter, serviceFeaturedFilter, serviceStatusFilter]);
 
     const paginatedMediaItems = useMemo(() => {
         if (sectionKey !== 'cms-media') {
@@ -3023,7 +3061,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             ? { ids: state.ids, is_featured: isFeatured, is_highlight: isFeatured }
             : { ids: state.ids, is_highlight: isFeatured };
 
-        runAdminAction(
+        return runAdminAction(
             () => callAdminApi(`${state.endpoint}/bulk`, {
                 method: 'PUT',
                 body: JSON.stringify(body),
@@ -3034,6 +3072,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             if (didUpdate) {
                 state.clearSelection();
             }
+            return didUpdate;
         });
     };
 
@@ -4306,19 +4345,25 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             items: [
                                 {
                                     key: 'bulk-feature',
-                                    label: 'Đánh dấu nổi bật',
+                                    label: sectionKey === 'cms-posts' ? 'Nổi bật' : 'Đánh dấu nổi bật',
                                     icon: <EditOutlined />,
                                     disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
                                 },
-                                {
+                                ...(sectionKey === 'cms-posts' ? [] : [{
                                     key: 'bulk-unfeature',
                                     label: 'Bỏ nổi bật',
                                     icon: <EditOutlined />,
                                     disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
-                                },
+                                }]),
+                                ...(sectionKey === 'cms-posts' ? [{
+                                    key: 'bulk-publish-time',
+                                    label: 'Thời gian xuất bản',
+                                    icon: <CalendarOutlined />,
+                                    disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
+                                }] : []),
                                 {
                                     key: 'bulk-category',
-                                    label: 'Đổi danh mục đã chọn',
+                                    label: 'Đổi danh mục',
                                     icon: <EditOutlined />,
                                     disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
                                 },
@@ -4332,7 +4377,17 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             ],
                             onClick: ({ key }) => {
                                 if (key === 'bulk-feature') {
-                                    handleBulkFeatureContentItems(true);
+                                    if (sectionKey === 'cms-posts') {
+                                        setBulkPostHighlight(true);
+                                        setBulkPostHighlightError('');
+                                        setBulkPostHighlightOpen(true);
+                                    } else handleBulkFeatureContentItems(true);
+                                }
+
+                                if (key === 'bulk-publish-time') {
+                                    setBulkPublishAt(dayjs());
+                                    setBulkPublishError('');
+                                    setBulkPublishOpen(true);
                                 }
 
                                 if (key === 'bulk-unfeature') {
@@ -4474,15 +4529,13 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                 <Button type="link" style={{ paddingInline: 0, height: 'auto' }} onClick={() => openPostDetailsDrawer(record)}>
                                     <Text strong style={{ color: '#1677ff' }}>{value}</Text>
                                 </Button>
-                                <Text type="secondary">{record.category_name || 'Chưa phân loại'}</Text>
+                                <Text type="secondary" style={{ overflowWrap: 'anywhere' }}>{record.slug}</Text>
                             </Space>
                         </Space>
                     ),
                 },
-                { title: 'Slug', dataIndex: 'slug', key: 'slug' },
                 { title: 'Category', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa phân loại' },
                 { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
-                { title: 'Publish At', dataIndex: 'publish_at', key: 'publish_at', render: formatPublishAt },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
         }
@@ -5137,7 +5190,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             : sectionKey === 'cms-posts'
                 ? (
                     <Space wrap>
-                        <Button onClick={openCategoryManager}>Cài đặt danh mục tin tức</Button>
+                        <Button color="orange" variant="filled" icon={<SettingOutlined />} onClick={openCategoryManager}>Cài đặt danh mục tin tức</Button>
                         <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                     </Space>
                 )
@@ -5454,7 +5507,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Card
                 className="admin-table-card"
-                title={`${sectionConfig.title} (${sectionKey === 'cms-orders' || sectionKey === 'cms-media' || sectionKey === 'cms-services' ? filteredItems.length : (data?.total ?? 0)})`}
+                title={`${sectionConfig.title} (${sectionKey === 'cms-orders' || sectionKey === 'cms-media' || sectionKey === 'cms-services' || sectionKey === 'cms-posts' ? filteredItems.length : (data?.total ?? 0)})`}
                 extra={localeEditor || tableExtra ? <Space wrap>{localeEditor}{tableExtra}</Space> : null}
             >
                 {sectionKey === 'cms-products' ? (
@@ -5570,6 +5623,105 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     </Row>
                 ) : null}
 
+                {sectionKey === 'cms-posts' ? (
+                    <Row gutter={[16, 16]} align="top">
+                        <Col xs={24} lg={7}>
+                            <Card
+                                size="small"
+                                title={(
+                                    <div className="cms-post-filters-heading">
+                                        <span className="cms-post-filters-icon"><FilterOutlined aria-hidden="true" /></span>
+                                        <div>
+                                            <span>Tìm kiếm bài viết</span>
+                                            <p>Lọc nhanh nội dung cần tìm</p>
+                                        </div>
+                                    </div>
+                                )}
+                                className="admin-table-filters cms-post-filters"
+                            >
+                                <Space direction="vertical" size={18} style={{ width: '100%' }}>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Từ khóa</Text>
+                                        <Input
+                                            allowClear
+                                            value={keyword}
+                                            aria-label="Từ khóa tìm kiếm bài viết"
+                                            prefix={<SearchOutlined aria-hidden="true" />}
+                                            onChange={(event) => setKeyword(event.target.value)}
+                                            placeholder="Tìm theo tên, slug, danh mục, mô tả..."
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Danh mục</Text>
+                                        <Select
+                                            value={postCategoryFilter}
+                                            onChange={setPostCategoryFilter}
+                                            options={[{ label: 'Tất cả danh mục', value: 'all' }, ...(data?.categories ?? [])]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Trạng thái</Text>
+                                        <Select
+                                            value={postStatusFilter}
+                                            onChange={setPostStatusFilter}
+                                            options={[
+                                                { label: 'Tất cả trạng thái', value: 'all' },
+                                                { label: 'Đã xuất bản', value: 'published' },
+                                                { label: 'Bản nháp', value: 'draft' },
+                                            ]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Nổi bật</Text>
+                                        <Select
+                                            value={postFeaturedFilter}
+                                            onChange={setPostFeaturedFilter}
+                                            options={[
+                                                { label: 'Tất cả', value: 'all' },
+                                                { label: 'Nổi bật', value: 'featured' },
+                                                { label: 'Thường', value: 'normal' },
+                                            ]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Button
+                                        block
+                                        className="cms-post-filters-reset"
+                                        icon={<ReloadOutlined aria-hidden="true" />}
+                                        aria-label="Xóa bộ lọc"
+                                        onClick={() => {
+                                            setKeyword('');
+                                            setPostCategoryFilter('all');
+                                            setPostStatusFilter('all');
+                                            setPostFeaturedFilter('all');
+                                        }}
+                                    >
+                                        Xóa bộ lọc
+                                    </Button>
+                                </Space>
+                            </Card>
+                        </Col>
+                        <Col xs={24} lg={17}>
+                            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                {contentBulkActions}
+                                {filteredItems.length ? (
+                                    <Table
+                                        rowKey="id"
+                                        rowSelection={postRowSelection}
+                                        columns={columns}
+                                        dataSource={filteredItems}
+                                        pagination={{ pageSize: 10, hideOnSinglePage: true }}
+                                    />
+                                ) : (
+                                    <Empty description="Không có bài viết phù hợp với bộ lọc." />
+                                )}
+                            </Space>
+                        </Col>
+                    </Row>
+                ) : null}
+
                 {sectionKey === 'cms-services' ? (
                     <Row gutter={[16, 16]} align="top">
                         <Col xs={24} xl={7}>
@@ -5654,7 +5806,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                 {sectionKey === 'cms-media' ? renderMediaLibrary() : null}
 
-                {sectionKey !== 'cms-products' && sectionKey !== 'cms-services' && sectionKey !== 'cms-media' && filteredItems.length ? (
+                {sectionKey !== 'cms-posts' && sectionKey !== 'cms-products' && sectionKey !== 'cms-services' && sectionKey !== 'cms-media' && filteredItems.length ? (
                     <Space direction="vertical" size={12} style={{ width: '100%' }}>
                         {sectionKey === 'cms-pages' ? pageBulkActions : null}
                         {sectionKey === 'cms-orders' ? orderBulkActions : null}
@@ -5690,7 +5842,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                             }) : undefined}
                         />
                     </Space>
-                ) : sectionKey !== 'cms-products' && sectionKey !== 'cms-services' && sectionKey !== 'cms-media' ? (
+                ) : sectionKey !== 'cms-posts' && sectionKey !== 'cms-products' && sectionKey !== 'cms-services' && sectionKey !== 'cms-media' ? (
                     <Empty description={`Chưa có dữ liệu cho ${sectionConfig.title}.`} />
                 ) : null}
             </Card>
@@ -5712,6 +5864,78 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     onChanged={refreshCurrentSectionDataSilently}
                 />
             </Suspense>
+
+            <Modal title="Thời gian xuất bản" open={sectionKey === 'cms-posts' && bulkPublishOpen}
+                okText="Lưu" cancelText="Hủy" confirmLoading={bulkPublishSaving}
+                closable={!bulkPublishSaving} maskClosable={!bulkPublishSaving} keyboard={!bulkPublishSaving}
+                cancelButtonProps={{ disabled: bulkPublishSaving }}
+                onCancel={() => { if (!bulkPublishSaving) setBulkPublishOpen(false); }}
+                onOk={async () => {
+                    if (bulkPublishSaving || !sectionPermissions.canUpdate || !selectedPostRowKeys.length) return;
+                    if (!bulkPublishAt?.isValid()) {
+                        setBulkPublishError('Vui lòng chọn thời gian xuất bản hợp lệ.');
+                        return;
+                    }
+                    setBulkPublishSaving(true);
+                    setBulkPublishError('');
+                    try {
+                        const saved = await runAdminAction(
+                            () => callAdminApi(`${adminApi('cms/posts')}/bulk`, {
+                                method: 'PUT',
+                                body: JSON.stringify({ ids: selectedPostRowKeys, publish_at: bulkPublishAt.format('YYYY-MM-DD HH:mm:ss') }),
+                            }),
+                            `Đã cập nhật thời gian xuất bản cho ${selectedPostRowKeys.length} bài viết.`,
+                            refreshCurrentSectionDataSilently,
+                        );
+                        if (saved) {
+                            setBulkPublishOpen(false);
+                            setSelectedPostRowKeys([]);
+                        } else setBulkPublishError('Chưa lưu được thời gian xuất bản. Vui lòng thử lại.');
+                    } catch (error) {
+                        setBulkPublishError(error?.message || 'Chưa lưu được thời gian xuất bản.');
+                    } finally {
+                        setBulkPublishSaving(false);
+                    }
+                }}
+            >
+                <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Text>Áp dụng cho {selectedPostRowKeys.length} bài viết đã chọn.</Text>
+                    {bulkPublishError ? <Alert type="error" showIcon message={bulkPublishError} /> : null}
+                    <DatePicker showTime format="DD/MM/YYYY HH:mm:ss" value={bulkPublishAt}
+                        aria-label="Thời gian xuất bản" placeholder="Chọn ngày và giờ"
+                        disabled={bulkPublishSaving} onChange={setBulkPublishAt} style={{ width: '100%' }} />
+                </Space>
+            </Modal>
+            <Modal title="Nổi bật" open={sectionKey === 'cms-posts' && bulkPostHighlightOpen}
+                okText="Lưu" cancelText="Hủy" confirmLoading={bulkPostHighlightSaving}
+                okButtonProps={{ disabled: !sectionPermissions.canUpdate || !selectedPostRowKeys.length }}
+                closable={!bulkPostHighlightSaving} maskClosable={!bulkPostHighlightSaving}
+                cancelButtonProps={{ disabled: bulkPostHighlightSaving }}
+                onCancel={() => { if (!bulkPostHighlightSaving) setBulkPostHighlightOpen(false); }}
+                onOk={async () => {
+                    if (bulkPostHighlightSaving || !sectionPermissions.canUpdate || !selectedPostRowKeys.length) return;
+                    setBulkPostHighlightSaving(true);
+                    setBulkPostHighlightError('');
+                    try {
+                        if (await handleBulkFeatureContentItems(bulkPostHighlight)) setBulkPostHighlightOpen(false);
+                        else setBulkPostHighlightError('Chưa cập nhật được trạng thái nổi bật. Vui lòng thử lại.');
+                    } catch (error) {
+                        setBulkPostHighlightError(error.message || 'Không thể cập nhật trạng thái nổi bật.');
+                    } finally {
+                        setBulkPostHighlightSaving(false);
+                    }
+                }}>
+                <Space direction="vertical" size={16}>
+                    <Text>Áp dụng cho {selectedPostRowKeys.length} bài viết đã chọn.</Text>
+                    {bulkPostHighlightError ? <Alert type="error" showIcon message={bulkPostHighlightError} /> : null}
+                    <Radio.Group value={bulkPostHighlight} disabled={bulkPostHighlightSaving} onChange={event => setBulkPostHighlight(event.target.value)}>
+                        <Space direction="vertical">
+                            <Radio value={true}>Đánh dấu nổi bật</Radio>
+                            <Radio value={false}>Bỏ nổi bật</Radio>
+                        </Space>
+                    </Radio.Group>
+                </Space>
+            </Modal>
 
             <Modal
                 title={`Đổi trạng thái ${selectedOrderRowKeys.length} đơn hàng`}

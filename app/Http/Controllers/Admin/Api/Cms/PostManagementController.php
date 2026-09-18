@@ -37,9 +37,14 @@ class PostManagementController
             'ids.*' => ['integer', Rule::exists('cms_posts', 'id')],
             'category_id' => ['sometimes', 'nullable', 'integer', Rule::exists('cms_categories', 'id')],
             'is_highlight' => ['sometimes', 'boolean'],
+            'publish_at' => ['sometimes', 'required', 'date'],
         ]);
 
         $updates = [];
+
+        if (array_key_exists('publish_at', $validated)) {
+            $updates['publish_at'] = \Illuminate\Support\Carbon::parse($validated['publish_at'])->format('Y-m-d H:i:s');
+        }
 
         if (array_key_exists('category_id', $validated)) {
             $updates['category_id'] = $validated['category_id'];

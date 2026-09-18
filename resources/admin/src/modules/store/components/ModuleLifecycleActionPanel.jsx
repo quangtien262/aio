@@ -74,7 +74,7 @@ function DetailTags({ values, emptyText = 'Không có' }) {
     );
 }
 
-export default function ModuleLifecycleActionPanel({ moduleCard, permissions, onAction, onOpenChangelog }) {
+export default function ModuleLifecycleActionPanel({ moduleCard, permissions, onAction, onOpenChangelog, pendingAction = null }) {
     const canInstall = permissions?.install ?? false;
     const canEnable = permissions?.enable ?? false;
     const canDisable = permissions?.disable ?? false;
@@ -215,8 +215,8 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
                         {!moduleCard.is_installed ? (
                             <Button
                                 type="primary"
-                                disabled={!canInstall || !moduleCard.available_actions?.install}
-                                onClick={() => onAction?.(moduleCard.key, 'install')}
+                                disabled={Boolean(pendingAction) || !canInstall || !moduleCard.available_actions?.install}
+                                loading={pendingAction === 'install'} onClick={() => onAction?.(moduleCard.key, 'install')}
                             >
                                 Cài đặt App
                             </Button>
@@ -224,35 +224,36 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
                         {moduleCard.status !== 'enabled' ? (
                             <Button
                                 type="primary"
-                                disabled={!canEnable || !moduleCard.available_actions?.enable}
-                                onClick={() => onAction?.(moduleCard.key, 'enable')}
+                                disabled={Boolean(pendingAction) || !canEnable || !moduleCard.available_actions?.enable}
+                                loading={pendingAction === 'enable'} onClick={() => onAction?.(moduleCard.key, 'enable')}
                             >
                                 Bật App
                             </Button>
                         ) : null}
                         {moduleCard.status === 'enabled' ? (
-                            <Button disabled={!canDisable || !moduleCard.available_actions?.disable} onClick={() => onAction?.(moduleCard.key, 'disable')}>
+                            <Button disabled={Boolean(pendingAction) || !canDisable || !moduleCard.available_actions?.disable} loading={pendingAction === 'disable'} onClick={() => onAction?.(moduleCard.key, 'disable')}>
                                 Tắt App
                             </Button>
                         ) : null}
                         {moduleCard.is_installed ? (
-                            <Button disabled={!canUpgrade || !moduleCard.available_actions?.upgrade} onClick={() => onAction?.(moduleCard.key, 'upgrade')}>
+                            <Button disabled={Boolean(pendingAction) || !canUpgrade || !moduleCard.available_actions?.upgrade} loading={pendingAction === 'upgrade'} onClick={() => onAction?.(moduleCard.key, 'upgrade')}>
                                 Nâng cấp
                             </Button>
                         ) : null}
                         {moduleCard.key === 'project' && moduleCard.is_installed ? (
-                            <Button disabled={!canGenerateDemoData} onClick={openDemoDataModal}>
+                            <Button disabled={Boolean(pendingAction) || !canGenerateDemoData} onClick={openDemoDataModal}>
                                 Tạo data test
                             </Button>
                         ) : null}
-                        <Button onClick={() => onOpenChangelog?.(moduleCard)}>Nhật ký thay đổi</Button>
+                        <Button disabled={Boolean(pendingAction)} onClick={() => onOpenChangelog?.(moduleCard)}>Nhật ký thay đổi</Button>
                         {moduleCard.is_installed ? (
-                            <Button danger disabled={!canUninstall || !moduleCard.available_actions?.uninstall} onClick={() => onAction?.(moduleCard.key, 'uninstall')}>
+                            <Button danger disabled={Boolean(pendingAction) || !canUninstall || !moduleCard.available_actions?.uninstall} loading={pendingAction === 'uninstall'} onClick={() => onAction?.(moduleCard.key, 'uninstall')}>
                                 Gỡ bỏ
                             </Button>
                         ) : null}
                     </Space>
 
+                    {pendingAction ? <Alert type="info" showIcon message={pendingAction === 'install' ? 'Đang cài đặt App…' : 'Đang xử lý thao tác App…'} description="Vui lòng chờ, quá trình này có thể mất một lúc." style={{ marginTop: 12 }} /> : null}
                     <div className="module-detail-blockers">
                         {Object.entries(moduleCard.blockers ?? {}).map(([actionKey, blockers]) => (
                             blockers?.length ? (

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import Card from 'antd/es/card';
 import Drawer from 'antd/es/drawer';
 import Space from 'antd/es/space';
@@ -10,6 +10,19 @@ const ModuleLifecycleActionPanel = lazy(() => import('../components/ModuleLifecy
 const ModuleUpgradeChangelogModal = lazy(() => import('../components/ModuleUpgradeChangelogModal'));
 
 export default function ModuleStorePage({ modules, onAction, permissions }) {
+    const [pendingAction, setPendingAction] = useState(null);
+    const actionLock = useRef(false);
+    const handleAction = async (...args) => {
+        if (actionLock.current) return false;
+        actionLock.current = true;
+        setPendingAction(args[1]);
+        try {
+            return await onAction?.(...args);
+        } finally {
+            actionLock.current = false;
+            setPendingAction(null);
+        }
+    };
     const canUpgrade = permissions?.upgrade ?? false;
     const [selectedModuleKey, setSelectedModuleKey] = useState(null);
     const [changelogModuleKey, setChangelogModuleKey] = useState(null);
@@ -41,7 +54,10 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
 
             <Drawer
                 open={Boolean(selectedModuleKey)}
-                onClose={() => setSelectedModuleKey(null)}
+                onClose={() => { if (!actionLock.current) setSelectedModuleKey(null); }}
+                closable={!pendingAction}
+                maskClosable={!pendingAction}
+                keyboard={!pendingAction}
                 width="min(760px, 96vw)"
                 title={selectedModule ? `Chi tiết App: ${selectedModule.name}` : 'Chi tiết App'}
                 className="module-detail-drawer"
@@ -52,7 +68,8 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                         <ModuleLifecycleActionPanel
                             moduleCard={selectedModule}
                             permissions={permissions}
-                            onAction={onAction}
+                            onAction={handleAction}
+                            pendingAction={pendingAction}
                             onOpenChangelog={(moduleCard) => setChangelogModuleKey(moduleCard.key)}
                         />
                     </Suspense>
@@ -67,8 +84,8 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                         canUpgrade={canUpgrade}
                         onCancel={() => setChangelogModuleKey(null)}
                         onAction={async (...args) => {
-                            await onAction?.(...args);
-                            setChangelogModuleKey(null);
+                            const saved = await handleAction(...args);
+                            if (saved !== false) setChangelogModuleKey(null);
                         }}
                     />
                 </Suspense>

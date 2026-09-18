@@ -22,7 +22,7 @@
 <main class="n88-main">
     <div class="n88-container">
         <section class="n88-hotbar" data-n88-reveal>
-            <strong><i class="fa-solid fa-fire-flame-curved"></i> @themeT('NEWS88.hot_news', 'Tin nóng')</strong>
+            <strong aria-label="@themeT('NEWS88.hot_news', 'Tin nóng')"><i class="fa-solid fa-fire-flame-curved" aria-hidden="true"></i></strong>
             @foreach($heroItems->take(2) as $item)<a href="{{ data_get($item, 'url', '#') }}"><span>{{ mb_strtoupper(mb_substr(data_get($item, 'category', 'N'), 0, 1)) }}</span>{{ data_get($item, 'title') }}</a>@endforeach
         </section>
 
