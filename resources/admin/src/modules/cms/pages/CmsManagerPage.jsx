@@ -4535,7 +4535,20 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                     ),
                 },
                 { title: 'Category', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa phân loại' },
-                { title: 'Status', dataIndex: 'status', key: 'status', render: renderStatusTag },
+                {
+                    title: 'Status', dataIndex: 'status', key: 'status',
+                    render: (value, record) => (
+                        <Space direction="vertical" size={6}>
+                            {renderStatusTag(value)}
+                            {record.publish_at && dayjs(record.publish_at).isValid() ? (
+                                <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }} title={formatPublishAt(record.publish_at)}>
+                                    <CalendarOutlined aria-hidden="true" style={{ marginRight: 6 }} />
+                                    <time dateTime={record.publish_at}>{dayjs(record.publish_at).format('DD/MM/YYYY')}</time>
+                                </Text>
+                            ) : null}
+                        </Space>
+                    ),
+                },
                 { title: 'Tác vụ', key: 'actions', render: (_, record) => renderActions(record) },
             ];
         }

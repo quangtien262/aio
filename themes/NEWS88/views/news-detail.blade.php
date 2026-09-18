@@ -4,7 +4,7 @@
     $cover = data_get($entry, 'featuredMedia.file_url');
     $body = data_get($entry, 'body') ?: '<p>'.e(data_get($entry, 'excerpt', __('NEWS88.no_content'))).'</p>';
     $related = collect($relatedPosts ?? [])->take(4);
-    $latest = collect($latestPosts ?? [])->take(5);
+    $latest = collect($latestPosts ?? [])->take(10);
     $comments = collect($postComments ?? []);
     $commentCount = (int) ($postCommentCount ?? 0);
     $postUrl = fn($item) => route('site.blog.show', ['slug' => data_get($item, 'slug')]);
@@ -39,6 +39,14 @@
                     </article>
                 @endforeach
             </div>
+            @if(!empty($sidebarTags))
+                <section class="n88-sidebar-tags" aria-labelledby="n88-sidebar-tags-title">
+                    <h2 id="n88-sidebar-tags-title">{{ __('storefront.tags.label') }}</h2>
+                    <nav class="n88-post-tags" aria-label="{{ __('storefront.tags.label') }}">
+                        @foreach($sidebarTags as $tag)<a href="{{ $tag['url'] }}" rel="tag">{{ $tag['name'] }}</a>@endforeach
+                    </nav>
+                </section>
+            @endif
         </aside>
     </div>
 

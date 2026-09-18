@@ -23,7 +23,7 @@
     <div class="n88-container">
         <section class="n88-hotbar" data-n88-reveal>
             <strong aria-label="@themeT('NEWS88.hot_news', 'Tin nóng')"><i class="fa-solid fa-fire-flame-curved" aria-hidden="true"></i></strong>
-            @foreach($heroItems->take(2) as $item)<a href="{{ data_get($item, 'url', '#') }}"><span>{{ mb_strtoupper(mb_substr(data_get($item, 'category', 'N'), 0, 1)) }}</span>{{ data_get($item, 'title') }}</a>@endforeach
+            @foreach($hotbarPosts ?? [] as $item)<a href="{{ data_get($item, 'url', '#') }}"><span>{{ mb_strtoupper(mb_substr(data_get($item, 'category') ?: 'N', 0, 1)) }}</span>{{ data_get($item, 'title') }}</a>@endforeach
         </section>
 
         <section class="n88-hero xd-landing-block" id="tin-noi-bat" data-landing-block-id="{{ data_get($hero, 'id') }}" data-block-type="news88_hero_posts">

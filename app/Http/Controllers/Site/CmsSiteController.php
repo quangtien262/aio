@@ -123,6 +123,7 @@ class CmsSiteController
                 'activeTheme' => $activeTheme,
                 'menus' => $menus,
                 'themeHomeData' => $this->resolveThemeHomeData($siteProfile, $activeTheme, $menus),
+                'hotbarPosts' => $themeKey === 'NEWS88' ? $this->randomHighlightedPosts($websiteKey) : [],
                 'themeShellData' => $this->resolveThemeShellData($siteProfile, $activeTheme, $menus),
                 'canonicalUrl' => data_get($localizedSeo, 'canonical_url'),
                 'hreflangUrls' => data_get($localizedSeo, 'alternates', []),
@@ -1613,15 +1614,31 @@ class CmsSiteController
             $extra['relatedPosts'] = $this->resolveRelatedPosts($entry, $siteProfile, $isDn302 ? 10 : ($isNews88 ? 4 : 3), ! $isDn302);
 
             if ($isNews88) {
+                $extra['sidebarTags'] = $extra['postTags'] ?? [];
+                if ($extra['sidebarTags'] === [] && \App\Support\CmsPostTags::available()) {
+                    $extra['sidebarTags'] = \App\Models\CmsTag::query()->where('website_key', $websiteKey)
+                        ->withCount(['posts' => fn (EloquentBuilder $query) => $query
+                            ->where('website_key', $websiteKey)->where('status', 'published')
+                            ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))])
+                        ->orderByDesc('posts_count')->orderBy('id')->cursor()
+                        ->filter(fn ($tag) => $this->localizedContent->isPublishedForLocale($tag, 'cms_tag', $this->currentLocale(), $websiteKey))
+                        ->take(10)->map(function ($tag) use ($websiteKey): array {
+                            $tag = $this->localizedContent->localize($tag, 'cms_tag', $this->currentLocale(), $websiteKey);
+                            return ['name' => $tag->name, 'url' => FrontendRouteUrl::tag($tag->slug, $this->currentLocale())];
+                        })->values()->all();
+                }
                 $latestPostsQuery = CmsPost::query()
                     ->with(['category', 'featuredMedia'])
                     ->where('status', 'published')
                     ->whereKeyNot($entry->getKey())
-                    ->latest('publish_at');
+                    ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
+                    ->latest('publish_at')->orderByDesc('id');
                 $this->applyWebsiteScope($latestPostsQuery, $websiteKey);
-                $extra['latestPosts'] = $latestPostsQuery->take(5)->get()
+                $extra['latestPosts'] = $latestPostsQuery->lazy(50)
+                    ->filter(fn (CmsPost $item) => $this->localizedContent->isPublishedForLocale($item, 'cms_post', $this->currentLocale(), $websiteKey))
+                    ->take(10)
                     ->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))
-                    ->values();
+                    ->collect()->values();
                 $extra['postComments'] = CmsPostComment::query()
                     ->published()
                     ->with(['customer', 'children.customer', 'children.children.customer', 'children.children.children.customer'])
@@ -2967,6 +2984,28 @@ class CmsSiteController
                 'summary' => $category->children->pluck('name')->take(3)->implode(', ') ?: $defaults[$index]['summary'],
             ];
         })->all();
+    }
+
+    private function randomHighlightedPosts(string $websiteKey): array
+    {
+        $locale = $this->currentLocale();
+        $query = CmsPost::query()->where('status', 'published')->where('is_highlight', true)
+            ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()));
+        $this->applyWebsiteScope($query, $websiteKey);
+
+        return $query->inRandomOrder()->cursor()
+            ->filter(fn (CmsPost $post) => $this->localizedContent->isPublishedForLocale($post, 'cms_post', $locale, $websiteKey))
+            ->take(2)->map(function (CmsPost $post) use ($websiteKey, $locale): array {
+                $post = $this->localizePostModel($post, $websiteKey);
+
+                return [
+                    'title' => $post->title,
+                    'url' => FrontendRouteUrl::post($post->slug, $locale),
+                    'category' => $post->category
+                        ? $this->localizedContent->localize($post->category, 'cms_category', $locale, $websiteKey)->name
+                        : '',
+                ];
+            })->values()->all();
     }
 
     private function resolveLatestPostHighlights(string $websiteKey): array

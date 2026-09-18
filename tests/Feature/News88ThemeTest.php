@@ -17,6 +17,55 @@ class News88ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_article_sidebar_has_ten_latest_posts_and_tag_fallback(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        $post = CmsPost::create(['title' => 'Current', 'slug' => 'current', 'status' => 'published']);
+        foreach (range(1, 12) as $number) {
+            CmsPost::create(['title' => 'Recent '.$number, 'slug' => 'recent-'.$number, 'status' => 'published', 'publish_at' => now()->subDays($number)]);
+        }
+        $response = $this->get('/vi/n/current')->assertOk()->assertDontSee('id="n88-sidebar-tags-title"', false);
+        preg_match('/<div class="n88-article-latest">(.*?)<\/aside>/s', $response->getContent(), $matches);
+        $this->assertSame(10, substr_count($matches[1], '<article>'));
+        $this->assertStringContainsString('Recent 10', $matches[1]);
+        $this->assertStringNotContainsString('Recent 11', $matches[1]);
+        $tags = app(\App\Support\CmsPostTags::class);
+        $tags->sync(CmsPost::where('slug', 'recent-1')->firstOrFail(), array_map(fn ($n) => 'Popular '.$n, range(1, 12)));
+        $response = $this->get('/vi/n/current')->assertOk();
+        preg_match('/<section class="n88-sidebar-tags"(.*?)<\/section>/s', $response->getContent(), $matches);
+        $this->assertSame(10, substr_count($matches[1], 'rel="tag"'));
+        $tags->sync($post, ['Own tag']);
+        $response = $this->get('/vi/n/current')->assertOk();
+        preg_match('/<section class="n88-sidebar-tags"(.*?)<\/section>/s', $response->getContent(), $matches);
+        $this->assertSame(1, substr_count($matches[1], 'rel="tag"'));
+        $this->assertStringContainsString('Own tag', $matches[1]);
+        $this->assertStringContainsString('/vi/tags/own-tag', $matches[1]);
+    }
+
+    public function test_hotbar_uses_only_public_highlighted_posts_independently_of_hero(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        foreach (range(1, 7) as $number) {
+            CmsPost::create(['title' => 'Regular '.$number, 'slug' => 'regular-'.$number, 'status' => 'published', 'is_highlight' => false, 'publish_at' => now()->subDay()]);
+        }
+        foreach (range(1, 2) as $number) {
+            CmsPost::create(['title' => 'Highlighted '.$number, 'slug' => 'highlighted-'.$number, 'status' => 'published', 'is_highlight' => true, 'publish_at' => now()->subYear()]);
+        }
+        CmsPost::create(['title' => 'Future', 'slug' => 'future', 'status' => 'published', 'is_highlight' => true, 'publish_at' => now()->addDay()]);
+        CmsPost::create(['title' => 'Draft', 'slug' => 'draft', 'status' => 'draft', 'is_highlight' => true]);
+        CmsPost::create(['website_key' => 'other-site', 'title' => 'Other', 'slug' => 'other', 'status' => 'published', 'is_highlight' => true]);
+        $response = $this->get('/vi')->assertOk();
+        preg_match('/<section class="n88-hotbar"[^>]*>(.*?)<\/section>/s', $response->getContent(), $matches);
+        $hotbar = $matches[1];
+        $this->assertSame(2, substr_count($hotbar, '<a '));
+        $this->assertStringContainsString('Highlighted 1', $hotbar);
+        $this->assertStringContainsString('Highlighted 2', $hotbar);
+        CmsPost::query()->where('is_highlight', true)->update(['is_highlight' => false]);
+        $response = $this->get('/vi')->assertOk();
+        preg_match('/<section class="n88-hotbar"[^>]*>(.*?)<\/section>/s', $response->getContent(), $matches);
+        $this->assertStringNotContainsString('<a ', $matches[1]);
+    }
+
     public function test_admin_header_link_requires_an_admin_session(): void
     {
         SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
