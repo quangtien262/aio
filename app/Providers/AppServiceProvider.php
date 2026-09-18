@@ -2,16 +2,24 @@
 
 namespace App\Providers;
 
-use App\Core\Themes\Demo\Bds701DemoContentProvider;
 use App\Core\Themes\Demo\Auto850DemoContentProvider;
 use App\Core\Themes\Demo\Auto851DemoContentProvider;
 use App\Core\Themes\Demo\Auto852DemoContentProvider;
 use App\Core\Themes\Demo\Auto853DemoContentProvider;
+use App\Core\Themes\Demo\Bds701DemoContentProvider;
 use App\Core\Themes\Demo\Book920DemoContentProvider;
 use App\Core\Themes\Demo\Ca0050DemoContentProvider;
 use App\Core\Themes\Demo\Dn202DemoContentProvider;
 use App\Core\Themes\Demo\Dn350DemoContentProvider;
 use App\Core\Themes\Demo\Dn351DemoContentProvider;
+use App\Core\Themes\Demo\E800DemoContentProvider;
+use App\Core\Themes\Demo\E801DemoContentProvider;
+use App\Core\Themes\Demo\E802DemoContentProvider;
+use App\Core\Themes\Demo\E803DemoContentProvider;
+use App\Core\Themes\Demo\E804DemoContentProvider;
+use App\Core\Themes\Demo\E805DemoContentProvider;
+use App\Core\Themes\Demo\E806DemoContentProvider;
+use App\Core\Themes\Demo\E807DemoContentProvider;
 use App\Core\Themes\Demo\Ec900DemoContentProvider;
 use App\Core\Themes\Demo\Ec901DemoContentProvider;
 use App\Core\Themes\Demo\Ec902DemoContentProvider;
@@ -30,14 +38,6 @@ use App\Core\Themes\Demo\Ec914DemoContentProvider;
 use App\Core\Themes\Demo\Ec915DemoContentProvider;
 use App\Core\Themes\Demo\Ec916DemoContentProvider;
 use App\Core\Themes\Demo\Ec917DemoContentProvider;
-use App\Core\Themes\Demo\E800DemoContentProvider;
-use App\Core\Themes\Demo\E801DemoContentProvider;
-use App\Core\Themes\Demo\E802DemoContentProvider;
-use App\Core\Themes\Demo\E803DemoContentProvider;
-use App\Core\Themes\Demo\E804DemoContentProvider;
-use App\Core\Themes\Demo\E805DemoContentProvider;
-use App\Core\Themes\Demo\E806DemoContentProvider;
-use App\Core\Themes\Demo\E807DemoContentProvider;
 use App\Core\Themes\Demo\Foot409DemoContentProvider;
 use App\Core\Themes\Demo\News88DemoContentProvider;
 use App\Core\Themes\Demo\Nt502DemoContentProvider;
@@ -196,6 +196,12 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('post-comments', function (Request $request): Limit {
             return Limit::perMinute(8)->by((string) ($request->user('customer')?->getKey() ?: $request->ip()));
+        });
+
+        RateLimiter::for('content-publishing', function (Request $request): Limit {
+            $tokenId = $request->attributes->get('content_api_token')?->getKey();
+
+            return Limit::perMinute(60)->by((string) ($tokenId ?: $request->ip()));
         });
 
         Gate::before(function (mixed $user): ?bool {

@@ -3,43 +3,29 @@
 namespace App\Http\Controllers\Admin\Api\Cms;
 
 use App\Models\CmsPost;
+use App\Support\Cms\CmsPostWriter;
 use App\Support\CmsPostTags;
 use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PostManagementController
 {
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, CmsPostWriter $writer): JsonResponse
     {
         $validated = $this->validatePayload($request);
-
-        $post = DB::transaction(function () use ($validated): CmsPost {
-            $post = CmsPost::query()->create($this->normalizePayload($validated));
-            $post->update(['slug' => $this->uniqueSlug($post->title, $post->id)]);
-            app(CmsPostTags::class)->sync($post, $validated['tags'] ?? []);
-
-            return $post;
-        });
+        $post = $writer->create($validated);
 
         return response()->json(['message' => 'Đã tạo bài viết CMS.', 'data' => $this->serialize($post)], 201);
     }
 
-    public function update(Request $request, int $post): JsonResponse
+    public function update(Request $request, int $post, CmsPostWriter $writer): JsonResponse
     {
         /** @var CmsPost $record */
         $record = CmsPost::query()->findOrFail($post);
         $validated = $this->validatePayload($request, $record);
-        DB::transaction(function () use ($record, $validated): void {
-            $record->update($this->normalizePayload($validated, $record));
-            $record->update(['slug' => $this->uniqueSlug($record->title, $record->id)]);
-            if (array_key_exists('tags', $validated)) {
-                app(CmsPostTags::class)->sync($record, $validated['tags']);
-            }
-        });
+        $record = $writer->update($record, $validated);
 
         return response()->json(['message' => 'Đã cập nhật bài viết CMS.', 'data' => $this->serialize($record->fresh())]);
     }
@@ -124,48 +110,6 @@ class PostManagementController
             'publish_at' => ['nullable', 'date'],
             'is_highlight' => ['boolean'],
         ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $validated
-     * @return array<string, mixed>
-     */
-    private function normalizePayload(array $validated, ?CmsPost $post = null): array
-    {
-        unset($validated['tags']);
-        $title = trim((string) $validated['title']);
-        $excerpt = $this->normalizeTextBlock($validated['excerpt'] ?? null);
-
-        return [
-            ...$validated,
-            'title' => $title,
-            'slug' => $post?->slug ?: 'pending-post-'.Str::lower((string) Str::uuid()),
-            'excerpt' => $excerpt,
-            'body' => $this->normalizeTextBlock($validated['body'] ?? null),
-            'meta_title' => $title,
-            'meta_description' => $this->normalizeTextBlock($validated['meta_description'] ?? null) ?: $excerpt,
-            'meta_keywords' => $this->normalizeTextBlock($validated['meta_keywords'] ?? null),
-            'is_highlight' => (bool) ($validated['is_highlight'] ?? false),
-        ];
-    }
-
-    private function normalizeTextBlock(mixed $value): ?string
-    {
-        $normalized = trim((string) ($value ?? ''));
-
-        return $normalized === '' ? null : $normalized;
-    }
-
-    private function uniqueSlug(string $title, int $id): string
-    {
-        $baseSlug = Str::slug($title) ?: 'bai-viet-'.$id;
-
-        $exists = CmsPost::query()
-            ->where('slug', $baseSlug)
-            ->whereKeyNot($id)
-            ->exists();
-
-        return $exists ? $baseSlug.'-'.$id : $baseSlug;
     }
 
     private function serialize(CmsPost $post): array

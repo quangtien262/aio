@@ -21,9 +21,10 @@ class CmsMedia extends Model
             return null;
         }
 
-        $baseUrl = rtrim((string) config('filesystems.disks.public.url', url('/storage')), '/');
+        $configuredUrl = (string) config('filesystems.disks.public.url', '/storage');
+        $basePath = parse_url($configuredUrl, PHP_URL_PATH) ?: '/storage';
 
-        return $baseUrl.'/'.ltrim($path, '/');
+        return url(rtrim($basePath, '/').'/'.ltrim($path, '/'));
     }
 
     public function getFileUrlAttribute(?string $value): ?string

@@ -1,17 +1,19 @@
 <?php
 
-use App\Http\Middleware\EnsureAdminHasPermission;
+use App\Http\Middleware\AuthenticateContentApiToken;
 use App\Http\Middleware\EnsureAdminAccountIsActive;
+use App\Http\Middleware\EnsureAdminHasPermission;
 use App\Http\Middleware\EnsureAdminWebsiteAccess;
+use App\Http\Middleware\EnsureContentApiAbility;
 use App\Http\Middleware\EnsureModuleIsEnabled;
 use App\Http\Middleware\InjectLandingAdminEditor;
 use App\Http\Middleware\ResolveCurrentSite;
 use App\Http\Middleware\SetFrontendLocale;
 use App\Support\FrontendLocalization;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
@@ -19,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -36,6 +39,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.website' => EnsureAdminWebsiteAccess::class,
             'frontend.locale' => SetFrontendLocale::class,
             'module.enabled' => EnsureModuleIsEnabled::class,
+            'content.api' => AuthenticateContentApiToken::class,
+            'content.ability' => EnsureContentApiAbility::class,
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request): string {
