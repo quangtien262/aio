@@ -17,6 +17,37 @@ class News88ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_admin_header_link_requires_an_admin_session(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        $this->get('/vi')->assertOk()->assertDontSee('class="n88-auth-admin"', false);
+        $this->actingAs(Customer::factory()->create(), 'customer');
+        $this->get('/vi')->assertOk()->assertDontSee('class="n88-auth-admin"', false);
+        $this->actingAs(Admin::factory()->create(), 'admin');
+        foreach (['/vi', '/vi?mod=admin'] as $url) {
+            $this->get($url)->assertOk()->assertSee('class="n88-auth-admin" href="'.url('/admin').'"', false);
+        }
+    }
+
+    public function test_header_search_targets_news_and_filters_post_content(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        foreach (['title', 'excerpt', 'body'] as $field) {
+            CmsPost::create(array_merge([
+                'website_key' => 'website-main', 'title' => 'Article '.$field, 'slug' => 'search-'.$field,
+                'status' => 'published', 'publish_at' => now()->subDay(),
+            ], [$field => 'Needle '.$field]));
+        }
+        CmsPost::create(['title' => 'Unrelated article', 'slug' => 'unrelated', 'status' => 'published']);
+        CmsPost::create(['title' => 'Needle draft', 'slug' => 'draft', 'status' => 'draft']);
+        $this->get('/vi')->assertOk()->assertSee('action="'.url('/vi/c').'"', false);
+        $this->get('/vi/c?q=Needle')->assertOk()
+            ->assertSee('search-title')->assertSee('search-excerpt')->assertSee('search-body')
+            ->assertDontSee('Unrelated article')->assertDontSee('Needle draft')
+            ->assertSee('value="Needle"', false)->assertSee('Kết quả tìm kiếm cho');
+        $this->get('/vi/c?q=NoMatchingKeyword')->assertOk()->assertSee('Không tìm thấy bài viết phù hợp.');
+    }
+
     public function test_social_links_are_configurable_and_empty_links_are_hidden(): void
     {
         SiteProfile::query()->create(['website_key' => 'website-main', 'site_name' => 'Social test', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);

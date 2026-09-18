@@ -32,6 +32,7 @@
 .n88-auth-links{display:flex;align-items:center;gap:7px;margin-left:2px;padding-left:12px;border-left:1px solid #d8dce1}
 .n88-auth-links a{min-height:30px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:5px 10px;border-radius:3px;font-size:12px;font-weight:700;line-height:1;white-space:nowrap;transition:.2s}
 .n88-auth-login,.n88-auth-account{color:#30343a}
+.n88-auth-admin{border:1px solid #cbdedb;background:#edf6f4;color:#0f766e}.n88-auth-admin:hover{border-color:#0f766e;background:#dceee9}
 .n88-auth-login:hover,.n88-auth-account:hover{color:var(--n88-red)}
 .n88-auth-register{border:1px solid var(--n88-red);background:var(--n88-red);color:#fff;box-shadow:0 4px 10px rgba(228,0,43,.13)}
 .n88-auth-register:hover{border-color:#bd0024;background:#bd0024}

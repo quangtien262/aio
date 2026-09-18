@@ -19,6 +19,9 @@
                 </div>
                 <button type="button" data-n88-search aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <div class="n88-auth-links">
+                    @auth('admin')
+                        <a class="n88-auth-admin" href="{{ url('/admin') }}"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Admin</span></a>
+                    @endauth
                     @guest('customer')
                         <a class="n88-auth-login" href="{{ route('customer.auth.login') }}"><i class="fa-regular fa-user"></i><span>@themeT('NEWS88.login', 'Đăng nhập')</span></a>
                         <a class="n88-auth-register" href="{{ route('customer.auth.register') }}">@themeT('NEWS88.register', 'Đăng ký')</a>
@@ -41,5 +44,5 @@
             </ul>
         </nav>
     </div>
-    <form class="n88-search" data-n88-search-panel method="get" action="{{ route('site.catalog.search') }}"><input type="search" name="q" placeholder="@themeT('NEWS88.search_placeholder', 'Nhập từ khóa...')"><button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button></form>
+    <form class="n88-search" data-n88-search-panel method="get" action="{{ route('site.blog.index') }}"><input type="search" name="q" value="{{ request('q', '') }}" aria-label="@themeT('NEWS88.search_news', 'Tìm kiếm tin tức')" placeholder="@themeT('NEWS88.search_placeholder', 'Nhập từ khóa...')"><button type="submit" aria-label="@themeT('NEWS88.search_news', 'Tìm kiếm tin tức')"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></button></form>
 </header>
