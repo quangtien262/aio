@@ -17,6 +17,31 @@ class News88ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_demo_generation_respects_unpublished_english_on_new_websites(): void
+    {
+        $context = app(\App\Support\SiteContext::class);
+        $previousSite = $context->site();
+        $previousKey = $context->websiteKey();
+        $context->set(null, 'news88-new-site');
+        try {
+            SiteProfile::create(['website_key' => 'news88-new-site', 'site_name' => 'New site', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+            \App\Models\WebsiteLocale::query()->where('website_key', 'news88-new-site')->where('locale', 'en')
+                ->update(['is_enabled_for_editing' => true, 'is_published' => false]);
+            app(\App\Support\Localization\LocaleContext::class)->flush('news88-new-site');
+            $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88');
+            $result = $provider->generate('news88-editorial');
+            $this->assertSame(22, $result['counts']['posts']);
+            $this->assertDatabaseHas('content_translations', ['website_key' => 'news88-new-site', 'resource_type' => 'cms_post', 'locale' => 'en', 'translation_status' => 'ready']);
+            $this->assertDatabaseMissing('content_translations', ['website_key' => 'news88-new-site', 'locale' => 'en', 'translation_status' => 'published']);
+            $this->assertFalse(app(\App\Support\Localization\LocaleContext::class)->isPublic('en', 'news88-new-site'));
+            \App\Models\WebsiteLocale::query()->where('website_key', 'news88-new-site')->where('locale', 'en')->update(['is_enabled_for_editing' => false]);
+            app(\App\Support\Localization\LocaleContext::class)->flush('news88-new-site');
+            $this->assertSame(22, $provider->generate('news88-editorial')['counts']['posts']);
+        } finally {
+            $context->set($previousSite, $previousKey);
+        }
+    }
+
     public function test_article_sidebar_has_ten_latest_posts_and_tag_fallback(): void
     {
         SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);

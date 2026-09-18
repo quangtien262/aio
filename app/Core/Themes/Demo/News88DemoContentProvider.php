@@ -209,7 +209,11 @@ class News88DemoContentProvider implements ThemeDemoContentProvider
                     }
                 }
 
-                $landing->blocks()->with('landingPage')->get()->each(function (LandingPageBlock $block): void {
+                $localeContext = app(\App\Support\Localization\LocaleContext::class);
+                $landing->blocks()->with('landingPage')->get()->each(function (LandingPageBlock $block) use ($localeContext, $websiteKey): void {
+                    if (! $localeContext->isEditable('en', $websiteKey)) {
+                        return;
+                    }
                     $translation = $block->data()->where('locale', 'en')->first();
                     if (! $translation || $translation->translation_status === TranslationStatus::Published) {
                         return;
@@ -226,11 +230,13 @@ class News88DemoContentProvider implements ThemeDemoContentProvider
                         'content' => $content,
                     ]);
                     $this->landingLocalization->transitionBlock($block, 'en', TranslationStatus::Ready);
-                    $this->landingLocalization->transitionBlock($block, 'en', TranslationStatus::Published);
+                    if ($localeContext->isPublic('en', $websiteKey)) {
+                        $this->landingLocalization->transitionBlock($block, 'en', TranslationStatus::Published);
+                    }
                 });
 
                 $pageTranslation = $landing->data()->where('locale', 'en')->first();
-                if ($pageTranslation && $pageTranslation->translation_status !== TranslationStatus::Published) {
+                if ($localeContext->isEditable('en', $websiteKey) && $pageTranslation && $pageTranslation->translation_status !== TranslationStatus::Published) {
                     $this->landingLocalization->savePageDraft($landing, 'en', [
                         'slug' => $pageTranslation->slug ?: 'home',
                         'title' => $pageTranslation->title,
@@ -239,7 +245,9 @@ class News88DemoContentProvider implements ThemeDemoContentProvider
                         'meta_description' => $pageTranslation->meta_description,
                     ]);
                     $this->landingLocalization->transitionPage($landing, 'en', TranslationStatus::Ready);
-                    $this->landingLocalization->transitionPage($landing, 'en', TranslationStatus::Published);
+                    if ($localeContext->isPublic('en', $websiteKey)) {
+                        $this->landingLocalization->transitionPage($landing, 'en', TranslationStatus::Published);
+                    }
                 }
             }
 
@@ -275,9 +283,16 @@ class News88DemoContentProvider implements ThemeDemoContentProvider
 
     private function publishTranslation(Model $model, string $resourceType, array $payload): void
     {
+        $websiteKey = $this->siteContext->websiteKey();
+        $localeContext = app(\App\Support\Localization\LocaleContext::class);
+        if (! $localeContext->isEditable('en', $websiteKey)) {
+            return;
+        }
         $translation = $this->localizedContent->saveDraftPayload($this->siteContext->websiteKey(), $resourceType, (string) $model->getKey(), 'en', $payload, false, true);
         $translation = $this->localizedContent->transition($translation, TranslationStatus::Ready);
-        $this->localizedContent->transition($translation, TranslationStatus::Published);
+        if ($localeContext->isPublic('en', $websiteKey)) {
+            $this->localizedContent->transition($translation, TranslationStatus::Published);
+        }
     }
 
     private function record(Model $model): void
