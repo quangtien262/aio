@@ -84,6 +84,22 @@ Chỉ trả danh mục thuộc website của token.
 sẽ cập nhật đúng record. `category_id` và `featured_media_id` luôn được xác nhận
 thuộc website của token. `published` yêu cầu ability `posts.publish`.
 
+### Liên kết bài legacy với external ID
+
+`POST /api/v1/cms/posts/link` dùng ability `posts.write`:
+
+```json
+{
+  "external_id": "tech-content:legacy-article",
+  "post_id": 1,
+  "expected_slug": "legacy-article"
+}
+```
+
+Endpoint chỉ tìm bài trong website của token, bắt buộc slug xác nhận phải khớp
+và từ chối nếu `external_id` đã trỏ tới bài khác. Dùng thao tác này trước khi
+publisher cập nhật một bài được tạo thủ công từ trước, nhằm tránh tạo bản trùng.
+
 ### Đọc bài theo khóa nguồn
 
 `GET /api/v1/cms/posts/{externalId}`

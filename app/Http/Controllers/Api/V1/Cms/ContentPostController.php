@@ -16,6 +16,65 @@ use Illuminate\Validation\ValidationException;
 
 class ContentPostController
 {
+    public function link(Request $request, AuditLogger $audit): JsonResponse
+    {
+        $validated = $request->validate([
+            'external_id' => ['required', 'string', 'max:191', 'regex:/^[A-Za-z0-9._:-]+$/'],
+            'post_id' => ['required', 'integer'],
+            'expected_slug' => ['required', 'string', 'max:255'],
+        ]);
+        /** @var ContentApiToken $token */
+        $token = $request->attributes->get('content_api_token');
+        $websiteKey = app(SiteContext::class)->websiteKey();
+        $post = CmsPost::query()->findOrFail($validated['post_id']);
+
+        if (! hash_equals($post->slug, $validated['expected_slug'])) {
+            throw ValidationException::withMessages([
+                'expected_slug' => 'Slug xác nhận không khớp với bài viết đích.',
+            ]);
+        }
+
+        $identity = [
+            'source_key' => $token->source_key,
+            'website_key' => $websiteKey,
+            'resource_type' => 'cms_post',
+            'external_id' => $validated['external_id'],
+        ];
+        $created = false;
+
+        $link = DB::transaction(function () use ($identity, $post, $token, &$created): ContentApiResourceLink {
+            $link = ContentApiResourceLink::query()->where($identity)->lockForUpdate()->first();
+            if ($link !== null && (int) $link->resource_id !== (int) $post->id) {
+                throw ValidationException::withMessages([
+                    'external_id' => 'External ID đã liên kết với một bài viết khác.',
+                ]);
+            }
+
+            if ($link === null) {
+                $created = true;
+                $link = ContentApiResourceLink::query()->create([
+                    ...$identity,
+                    'resource_id' => $post->id,
+                    'payload_hash' => hash('sha256', $post->getRawOriginal('updated_at').':'.$post->id),
+                    'last_token_id' => $token->id,
+                ]);
+            }
+
+            return $link;
+        });
+
+        $audit->record('cms.content_api.post.linked', $post, null, [
+            'external_id' => $validated['external_id'],
+            'source_key' => $token->source_key,
+            'resource_link_id' => $link->id,
+        ], websiteKey: $websiteKey);
+
+        return response()->json([
+            'message' => $created ? 'Đã liên kết bài viết hiện có.' : 'Liên kết bài viết đã tồn tại.',
+            'data' => $this->serialize($post, $validated['external_id']),
+        ], $created ? 201 : 200);
+    }
+
     public function upsert(Request $request, CmsPostWriter $writer, AuditLogger $audit): JsonResponse
     {
         $validated = $request->validate([

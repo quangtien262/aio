@@ -19,6 +19,9 @@ Route::prefix('v1/cms')
         Route::post('/posts/upsert', [ContentPostController::class, 'upsert'])
             ->middleware('content.ability:posts.write')
             ->name('posts.upsert');
+        Route::post('/posts/link', [ContentPostController::class, 'link'])
+            ->middleware('content.ability:posts.write')
+            ->name('posts.link');
         Route::post('/posts/{externalId}/translations/{locale}/upsert', [ContentPostTranslationController::class, 'upsert'])
             ->where('externalId', '[A-Za-z0-9._:-]+')
             ->where('locale', '[A-Za-z0-9_-]+')

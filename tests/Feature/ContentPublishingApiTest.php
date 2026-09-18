@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CmsCategory;
 use App\Models\CmsMedia;
+use App\Models\CmsPost;
 use App\Models\ContentApiToken;
 use App\Models\ContentTranslation;
 use App\Models\ModuleInstallation;
@@ -148,6 +149,52 @@ class ContentPublishingApiTest extends TestCase
             'slug' => 'ci-laravel-github-actions',
             'meta_title' => $payload['meta_title'],
         ]);
+    }
+
+    public function test_api_safely_links_an_existing_legacy_post(): void
+    {
+        $post = CmsPost::query()->create([
+            'title' => 'Legacy article',
+            'slug' => 'legacy-article',
+            'status' => 'published',
+            'body' => '<p>Legacy body.</p>',
+        ]);
+        $payload = [
+            'external_id' => 'tech-content:legacy-article',
+            'post_id' => $post->id,
+            'expected_slug' => 'legacy-article',
+        ];
+
+        $this->withToken($this->rawToken)
+            ->postJson('/api/v1/cms/posts/link', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $post->id);
+        $this->withToken($this->rawToken)
+            ->postJson('/api/v1/cms/posts/link', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.id', $post->id);
+
+        $this->withToken($this->rawToken)
+            ->postJson('/api/v1/cms/posts/link', [
+                ...$payload,
+                'expected_slug' => 'wrong-slug',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('expected_slug');
+
+        $otherPost = CmsPost::query()->create([
+            'title' => 'Other article',
+            'slug' => 'other-article',
+            'status' => 'published',
+        ]);
+        $this->withToken($this->rawToken)
+            ->postJson('/api/v1/cms/posts/link', [
+                ...$payload,
+                'post_id' => $otherPost->id,
+                'expected_slug' => 'other-article',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('external_id');
     }
 
     public function test_api_rejects_cross_website_category_and_direct_publish_without_ability(): void
