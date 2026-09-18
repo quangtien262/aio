@@ -17,6 +17,22 @@ class News88ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_social_links_are_configurable_and_empty_links_are_hidden(): void
+    {
+        SiteProfile::query()->create(['website_key' => 'website-main', 'site_name' => 'Social test', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        $this->actingAs(Admin::factory()->create(['id' => 1]), 'admin');
+        $this->putJson('/admin/api/themes/NEWS88/settings', [
+            'facebook_url' => 'https://facebook.com/example',
+            'x_url' => 'https://x.com/example',
+            'youtube_url' => 'https://youtube.com/@example',
+        ])->assertOk();
+        $this->get('/vi')->assertOk()->assertSee('href="https://facebook.com/example"', false)
+            ->assertSee('href="https://x.com/example"', false)->assertSee('href="https://youtube.com/@example"', false);
+        $this->putJson('/admin/api/themes/NEWS88/settings', ['facebook_url' => 'javascript:alert(1)'])->assertUnprocessable();
+        $this->putJson('/admin/api/themes/NEWS88/settings', ['facebook_url' => null])->assertOk();
+        $this->get('/vi')->assertOk()->assertDontSee('aria-label="Facebook"', false)->assertSee('aria-label="YouTube"', false);
+    }
+
     public function test_news88_is_registered_with_editorial_homepage_blocks(): void
     {
         $theme = app(ThemeRegistry::class)->all()->firstWhere('key', 'NEWS88');

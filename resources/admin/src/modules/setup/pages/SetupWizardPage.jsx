@@ -73,6 +73,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
     const { message } = App.useApp();
     const [searchParams, setSearchParams] = useSearchParams();
     const themeActionController = useThemeActionOverlayController();
+    const [socialLinks, setSocialLinks] = useState({});
     const [siteName, setSiteName] = useState('');
     const [siteDescription, setSiteDescription] = useState('');
     const [websiteType, setWebsiteType] = useState('');
@@ -134,6 +135,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
         setFaviconUrl(setup?.branding?.favicon_url ?? '');
         setSupportHotline(setup?.branding?.support_hotline ?? '');
         setSupportEmail(setup?.branding?.support_email ?? '');
+        setSocialLinks(Object.fromEntries(['facebook_url', 'x_url', 'youtube_url'].map(key => [key, setup?.branding?.[key] ?? ''])));
         setSupportLocation(setup?.branding?.support_location ?? '');
         setCopyrightText(setup?.branding?.copyright_text ?? '');
         setBocStatus(setup?.branding?.boc_status ?? 'not_notified');
@@ -264,6 +266,18 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
+            <Card title="Mạng xã hội">
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    <Text type="secondary">Nhập đường dẫn đầy đủ https://. Để trống để ẩn icon tương ứng trên NEWS88.</Text>
+                    {[['facebook_url', 'Facebook'], ['x_url', 'X (Twitter)'], ['youtube_url', 'YouTube']].map(([key, label]) => (
+                        <label key={key} style={{ display: 'block', width: '100%' }}>
+                            <span>{label}</span>
+                            <Input disabled={!canEditProfile} type="url" value={socialLinks[key] ?? ''} placeholder="https://..." onChange={event => setSocialLinks(current => ({ ...current, [key]: event.target.value }))} />
+                        </label>
+                    ))}
+                    <Button type="primary" disabled={!canEditProfile} onClick={() => saveProfile(Object.fromEntries(Object.entries(socialLinks).map(([key, value]) => [key, value.trim()])))}>Lưu mạng xã hội</Button>
+                </Space>
+            </Card>
             <Card title="Cài đặt website">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
                     <div>

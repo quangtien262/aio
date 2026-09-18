@@ -9,7 +9,14 @@
     <div class="n88-topbar">
         <div class="n88-container n88-topbar-inner">
             <div class="n88-header-tools">
-                <div class="n88-social"><a href="#footer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a><a href="#footer" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a><a href="#footer" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a></div>
+                <div class="n88-social">
+                    @foreach(['facebook_url' => ['Facebook', 'facebook-f'], 'x_url' => ['X', 'x-twitter'], 'youtube_url' => ['YouTube', 'youtube']] as $socialKey => [$socialLabel, $socialIcon])
+                        @php($socialUrl = trim((string) data_get($branding, $socialKey, '')))
+                        @if(filter_var($socialUrl, FILTER_VALIDATE_URL) && in_array(strtolower((string) parse_url($socialUrl, PHP_URL_SCHEME)), ['http', 'https'], true))
+                            <a href="{{ $socialUrl }}" aria-label="{{ $socialLabel }}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-{{ $socialIcon }}"></i></a>
+                        @endif
+                    @endforeach
+                </div>
                 <button type="button" data-n88-search aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <div class="n88-auth-links">
                     @guest('customer')
