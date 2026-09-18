@@ -11,6 +11,7 @@ import Typography from 'antd/es/typography';
 import { EyeOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ThemeActionMenuCard from '../components/ThemeActionMenuCard';
+import '../components/ThemeThumbnail.css';
 import ThemeActionOverlayHost from '../components/ThemeActionOverlayHost';
 import useThemeActionOverlayController from '../hooks/useThemeActionOverlayController';
 
@@ -232,8 +233,8 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
             {activeThemeFromList ? (
                 <div style={{ marginBottom: 16 }}>
                     <Card size="small" bordered style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                        <div style={{ width: 260, flex: '0 0 260px', borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
-                            <img src={activeThemeFromList.avatar_url ?? activeThemeFromList.preview_urls?.thumbnail ?? ''} alt={activeThemeFromList.name} style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
+                        <div className="theme-thumbnail" style={{ width: 260, maxWidth: '100%', height: 150, flex: '0 0 260px', borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+                            <img src={activeThemeFromList.avatar_url ?? activeThemeFromList.preview_urls?.thumbnail ?? ''} alt={activeThemeFromList.name} />
                         </div>
 
                         <div style={{ flex: 1 }}>

@@ -31,7 +31,7 @@ return new class extends Migration
                 $table->id();
                 $table->string('name');
                 $table->string('sku')->unique();
-                $table->decimal('price', 12, 2)->default(0);
+                $table->decimal('price', 18, 2)->default(0);
                 $table->unsignedInteger('stock')->default(0);
                 $table->string('website_key')->nullable()->index();
                 $table->longText('detail_content')->nullable();
@@ -47,7 +47,7 @@ return new class extends Migration
                 $table->foreignId('catalog_category_id')->nullable()->constrained('catalog_categories')->nullOnDelete();
                 $table->text('short_description')->nullable();
                 $table->string('image_url')->nullable();
-                $table->decimal('original_price', 12, 2)->nullable();
+                $table->decimal('original_price', 18, 2)->nullable();
                 $table->boolean('is_featured')->default(false);
                 $table->boolean('is_highlight')->default(false)->index();
                 $table->unsignedInteger('sort_order')->default(0);

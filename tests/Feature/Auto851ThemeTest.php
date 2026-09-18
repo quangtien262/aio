@@ -46,6 +46,13 @@ class Auto851ThemeTest extends TestCase
         $first = $provider->generate($provider->defaultPreset()); $second = $provider->generate($provider->defaultPreset());
         $this->assertSame(2, $first['counts']['categories']); $this->assertSame(13, $first['counts']['products']); $this->assertSame(3, $first['counts']['posts']); $this->assertSame(3, $first['counts']['testimonials']);
         $this->assertSame(8, CatalogProduct::query()->where('sku', 'like', 'A851-CAR-%')->count()); $this->assertSame(5, CatalogProduct::query()->where('sku', 'like', 'A851-ACC-%')->count());
+        $car = CatalogProduct::query()->where('sku', 'A851-CAR-06')->firstOrFail();
+        $this->assertSame('16000000000.00', $car->price);
+        $car->update(['original_price' => '17000000000.00']);
+        $migration = require database_path('migrations/2026_09_18_000002_expand_catalog_price_precision.php');
+        $migration->up();
+        $this->assertSame('16000000000.00', $car->fresh()->price);
+        $this->assertSame('17000000000.00', $car->fresh()->original_price);
         $this->assertNotEquals(LandingPageBlock::query()->where('block_type', 'auto851_featured_cars')->value('settings'), LandingPageBlock::query()->where('block_type', 'auto851_accessories')->value('settings'));
         $this->assertGreaterThan(0, array_sum($second['purged'])); $this->assertSame('/storage/branding/existing-auto851.svg', data_get(SiteProfile::query()->first()->branding, 'logo_url'));
     }

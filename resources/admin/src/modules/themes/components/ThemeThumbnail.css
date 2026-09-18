@@ -1,0 +1,28 @@
+.theme-thumbnail {
+    overflow: hidden;
+}
+
+.theme-thumbnail > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: object-position 1s ease-out;
+}
+
+@media (hover: hover) {
+    .theme-thumbnail:hover > img {
+        object-position: center bottom;
+        transition-duration: 8s;
+        transition-timing-function: linear;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-thumbnail > img,
+    .theme-thumbnail:hover > img {
+        transition: none;
+        object-position: center top;
+    }
+}
