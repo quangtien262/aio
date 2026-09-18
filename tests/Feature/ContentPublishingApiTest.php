@@ -198,7 +198,8 @@ class ContentPublishingApiTest extends TestCase
         ])->assertCreated();
 
         $postId = $postResponse->json('data.id');
-        $translationUrl = "/api/v1/cms/posts/{$externalId}/translations/en/upsert";
+        $encodedExternalId = rawurlencode($externalId);
+        $translationUrl = "/api/v1/cms/posts/{$encodedExternalId}/translations/en/upsert";
         $translationResponse = $this->withToken($this->rawToken)->postJson($translationUrl, [
             'title' => 'How to improve Core Web Vitals',
             'slug' => 'improve-core-web-vitals',
@@ -224,7 +225,7 @@ class ContentPublishingApiTest extends TestCase
             'is_machine_translated' => true,
         ]);
         $this->withToken($this->rawToken)
-            ->getJson("/api/v1/cms/posts/{$externalId}/translations/en")
+            ->getJson("/api/v1/cms/posts/{$encodedExternalId}/translations/en")
             ->assertOk()
             ->assertJsonPath('data.payload.slug', 'improve-core-web-vitals');
         $this->get('/en/n/improve-core-web-vitals')
