@@ -8,6 +8,7 @@
     };
     $hero = $block('news88_hero_posts'); $heroItems = $items($hero);
     $latest = $block('news88_latest_video'); $latestItems = $items($latest);
+    $video = $block('news88_video_posts'); $videoItems = $items($video);
     $health = $block('news88_health_posts'); $healthItems = $items($health);
     $cars = $block('news88_car_posts'); $carItems = $items($cars);
     $travel = $block('news88_travel_posts'); $travelItems = $items($travel);
@@ -35,11 +36,14 @@
         </section>
 
         <section class="n88-latest-row xd-landing-block" id="tin-moi" data-landing-block-id="{{ data_get($latest, 'id') }}" data-block-type="news88_latest_video">
+            <div class="n88-panel n88-latest-panel">
             @include('theme-news88::partials.edit-button', ['block' => $latest])
-            <div class="n88-panel n88-latest-panel"><header><h2>{{ data_get($latest, 'data.title', __('NEWS88.latest')) }}</h2></header><div class="n88-latest-grid">
+            <header><h2>{{ data_get($latest, 'data.title', __('NEWS88.latest')) }}</h2></header><div class="n88-latest-grid">
                 @foreach($latestItems->take(6) as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"></a><h3><a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a></h3><small>@themeT('NEWS88.date', 'Ngày'): {{ $date($item) }} <b>@themeT('NEWS88.views', 'Lượt xem'): {{ $views($item) }}</b></small><p>{{ data_get($item, 'summary') }}</p></article>@endforeach
             </div></div>
-            <aside class="n88-panel n88-video-panel"><header><h2>@themeT('NEWS88.video', 'Video')</h2></header><div class="n88-video-grid">@foreach($latestItems->slice(6, 2) as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><span><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"><i class="fa-solid fa-play"></i></span><h3>{{ data_get($item, 'title') }}</h3></a><p>{{ data_get($item, 'summary') }}</p></article>@endforeach</div></aside>
+            <aside class="n88-panel n88-video-panel xd-landing-block" id="video" data-landing-block-id="{{ data_get($video, 'id') }}" data-block-type="news88_video_posts">
+                @include('theme-news88::partials.edit-button', ['block' => $video])
+                <header><h2>{{ data_get($video, 'data.title', 'Video') }}</h2></header><div class="n88-video-grid">@foreach($videoItems->take(2) as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><span><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"><i class="fa-solid fa-play"></i></span><h3>{{ data_get($item, 'title') }}</h3></a><p>{{ data_get($item, 'summary') }}</p></article>@endforeach</div></aside>
         </section>
 
         <section class="n88-panel n88-health xd-landing-block" id="suc-khoe" data-landing-block-id="{{ data_get($health, 'id') }}" data-block-type="news88_health_posts">

@@ -1744,6 +1744,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                 return true;
             } catch (error) {
+                if (sectionKey === 'cms-posts') throw error;
                 messageApi.error(error instanceof Error ? error.message : 'Không thể tạo Page đa ngôn ngữ.');
                 return false;
             }
@@ -1779,6 +1780,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 setModalOpen(false);
                 return true;
             } catch (error) {
+                if (sectionKey === 'cms-posts') throw error;
                 messageApi.error(error instanceof Error ? error.message : 'Không thể lưu bản dịch.');
                 return false;
             }
@@ -1860,6 +1862,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                 return true;
             } catch (error) {
+                if (sectionKey === 'cms-posts') throw error;
                 messageApi.error(error instanceof Error ? error.message : 'Không thể tạo dữ liệu.');
                 return false;
             }
@@ -1881,6 +1884,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 setModalOpen(false);
                 return true;
             } catch (error) {
+                if (sectionKey === 'cms-posts') throw error;
                 messageApi.error(error instanceof Error ? error.message : 'Không thể lưu dữ liệu.');
                 return false;
             }

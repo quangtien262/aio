@@ -27,7 +27,7 @@ class News88ThemeTest extends TestCase
         $builder = app(LandingPageBuilder::class);
         $this->assertTrue($builder->supportsTheme('NEWS88'));
         $this->assertSame([
-            'news88_hero_posts', 'news88_latest_video', 'news88_health_posts',
+            'news88_hero_posts', 'news88_latest_video', 'news88_video_posts', 'news88_health_posts',
             'news88_car_posts', 'news88_travel_posts', 'news88_entertainment_posts',
             'news88_footer_posts',
         ], collect($builder->availableBlocks('NEWS88'))->pluck('block_type')->all());
@@ -71,7 +71,7 @@ class News88ThemeTest extends TestCase
         );
         $home = file_get_contents(base_path('themes/NEWS88/views/home.blade.php'));
         $this->assertStringContainsString('$latestItems->take(6)', $home);
-        $this->assertStringContainsString('$latestItems->slice(6, 2)', $home);
+        $this->assertStringContainsString('$videoItems->take(2)', $home);
         $styles = file_get_contents(base_path('themes/NEWS88/views/partials/styles.blade.php'));
         $this->assertStringContainsString('.n88-footer::before,.n88-footer::after', $styles);
         $this->assertStringContainsString('background-size:44px 44px', $styles);
@@ -96,7 +96,7 @@ class News88ThemeTest extends TestCase
             ->assertDontSee('const updateUrlTemplate = "";', false)
             ->assertDontSee('const sourcePreviewUrlTemplate = "";', false);
 
-        $this->assertSame(7, preg_match_all('/<button[^>]+data-xd-edit-block="[0-9]+"/', $response->getContent()));
+        $this->assertSame(8, preg_match_all('/<button[^>]+data-xd-edit-block="[0-9]+"/', $response->getContent()));
         $this->assertSame(1, substr_count($response->getContent(), '<script data-xd-editor-runtime>'));
         $this->get(route('site.home', ['locale' => 'vi']))->assertOk()
             ->assertDontSee('data-xd-edit-block=', false)

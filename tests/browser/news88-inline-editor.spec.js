@@ -19,9 +19,9 @@ test('NEWS88 opens every empty homepage block and submits the selected block', a
     });
     await page.goto('/vi?mod=admin');
     const buttons = page.locator('[data-xd-edit-block]');
-    await expect(buttons).toHaveCount(7);
+    await expect(buttons).toHaveCount(8);
     const editor = page.locator('[data-xd-editor]');
-    for (let index = 0; index < 7; index++) {
+    for (let index = 0; index < 8; index++) {
         const button = buttons.nth(index);
         const id = await button.getAttribute('data-xd-edit-block');
         await button.click();
@@ -31,8 +31,10 @@ test('NEWS88 opens every empty homepage block and submits the selected block', a
         await editor.locator('[data-xd-editor-close]').last().click();
         await expect(editor).toBeHidden();
     }
-    const id = await buttons.first().getAttribute('data-xd-edit-block');
-    await buttons.first().click();
+    const videoButton = page.locator('.n88-video-panel [data-xd-edit-block]');
+    const id = await videoButton.getAttribute('data-xd-edit-block');
+    expect(id).not.toBe(await page.locator('.n88-latest-panel [data-xd-edit-block]').getAttribute('data-xd-edit-block'));
+    await videoButton.click();
     await editor.locator('[data-xd-field="title"]').fill('Tin nổi bật kiểm thử');
     const saved = page.waitForRequest((request) => request.method() === 'PUT' && new URL(request.url()).pathname.endsWith(`/blocks/${id}`));
     await editor.locator('button[type="submit"]').click();

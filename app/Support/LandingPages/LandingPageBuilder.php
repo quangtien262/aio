@@ -823,7 +823,8 @@ class LandingPageBuilder
             'shop606_collections', 'shop606_sale', 'shop606_new' => 4,
             'shop606_outfit', 'shop606_news' => 3,
             'news88_hero_posts' => 5,
-            'news88_latest_video' => 8,
+            'news88_latest_video' => 6,
+            'news88_video_posts' => 2,
             'news88_health_posts' => 6,
             'news88_car_posts', 'news88_travel_posts', 'news88_entertainment_posts', 'news88_footer_posts' => 4,
             default => 3,
@@ -846,6 +847,7 @@ class LandingPageBuilder
         if (in_array($block->block_type, [
             'news88_hero_posts',
             'news88_latest_video',
+            'news88_video_posts',
             'news88_health_posts',
             'news88_car_posts',
             'news88_travel_posts',
@@ -9336,7 +9338,8 @@ class LandingPageBuilder
 
         return [
             ['block_type' => 'news88_hero_posts', 'label' => 'Tin nổi bật đầu trang', 'description' => 'Một bài lớn và bốn bài nổi bật trong lưới đầu trang.', 'preview_image' => $preview, 'anchor_id' => 'tin-noi-bat', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 5, 'featured_only' => true], 'settings_schema' => $schema(5), 'data' => $heading('Tin nổi bật', 'Top stories')],
-            ['block_type' => 'news88_latest_video', 'label' => 'Tin mới nhất & Video', 'description' => 'Sáu tin mới nhất và hai nội dung dạng video.', 'preview_image' => $preview, 'anchor_id' => 'tin-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 8, 'featured_only' => false], 'settings_schema' => $schema(8), 'data' => $heading('Tin Mới Nhất', 'Latest news')],
+            ['block_type' => 'news88_latest_video', 'label' => 'Tin mới nhất', 'description' => 'Sáu tin mới nhất, cấu hình riêng với Video.', 'preview_image' => $preview, 'anchor_id' => 'tin-moi', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 8, 'featured_only' => false], 'settings_schema' => $schema(8), 'data' => $heading('Tin Mới Nhất', 'Latest news')],
+            ['block_type' => 'news88_video_posts', 'label' => 'Video', 'description' => 'Các bài viết của chuyên mục Video, cấu hình độc lập.', 'preview_image' => $preview, 'anchor_id' => 'video', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 2, 'featured_only' => false], 'settings_schema' => $schema(2), 'data' => $heading('Video', 'Video')],
             ['block_type' => 'news88_health_posts', 'label' => 'Tin Sức Khỏe', 'description' => 'Lưới sáu bài viết thuộc chuyên mục sức khỏe.', 'preview_image' => $preview, 'anchor_id' => 'suc-khoe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 6, 'featured_only' => false], 'settings_schema' => $schema(6), 'data' => $heading('Tin Sức Khỏe', 'Health')],
             ['block_type' => 'news88_car_posts', 'label' => 'Tin Xe', 'description' => 'Một tin xe nổi bật và ba tin ngắn.', 'preview_image' => $preview, 'anchor_id' => 'xe', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $schema(4), 'data' => $heading('Tin Xe', 'Motoring')],
             ['block_type' => 'news88_travel_posts', 'label' => 'Tin Du Lịch', 'description' => 'Một tin du lịch nổi bật và ba tin ngắn.', 'preview_image' => $preview, 'anchor_id' => 'du-lich', 'dynamic' => true, 'settings' => ['source' => 'cms_posts', 'limit' => 4, 'featured_only' => false], 'settings_schema' => $schema(4), 'data' => $heading('Tin Du Lịch', 'Travel')],

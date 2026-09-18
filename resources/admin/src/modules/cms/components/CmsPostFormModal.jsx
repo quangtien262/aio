@@ -1,3 +1,5 @@
+import { CollapsibleCardTitle } from '../../../shared/components/CollapsibleFormCard';
+import Alert from 'antd/es/alert';
 import CmsTagTranslationModal from './CmsTagTranslationModal';
 import { adminApi } from '../../../shared/config/routes';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -121,6 +123,9 @@ export default function CmsPostFormModal({
     onLocaleChange,
 }) {
     const [form] = Form.useForm();
+    const [seoCollapsed, setSeoCollapsed] = useState(true);
+    const [saveError, setSaveError] = useState('');
+    const [saving, setSaving] = useState(false);
     const [tagTranslationOpen, setTagTranslationOpen] = useState(false);
     const [messageApi, messageContextHolder] = message.useMessage();
     const [uploadingAsset, setUploadingAsset] = useState(null);
@@ -153,10 +158,17 @@ export default function CmsPostFormModal({
     );
 
     useEffect(() => {
+        setSeoCollapsed(true);
+        setSaveError('');
+    }, [open, editingPost?.id, contentLocale]);
+
+    useEffect(() => {
         form.setFieldsValue({
             status: 'published',
             tags: [],
             ...editingPost,
+            meta_title: editingPost?.meta_title || editingPost?.title || '',
+            meta_description: editingPost?.meta_description || editingPost?.excerpt || '',
         });
         form.setFieldValue('body', editingPost?.body ?? '');
         editorSelectionRef.current = null;
@@ -488,6 +500,10 @@ export default function CmsPostFormModal({
     };
 
     const handleSubmit = async () => {
+        if (saving) return;
+        setSaveError('');
+        setSaving(true);
+        try {
         syncCurrentEditorBodyToForm();
         const values = await form.validateFields();
 
@@ -507,6 +523,24 @@ export default function CmsPostFormModal({
         });
 
         if (saved !== false) form.resetFields();
+        } catch (error) {
+            const errors = error?.payload?.errors ?? error?.payload?.details?.errors ?? {};
+            const fields = Object.entries(errors).map(([name, messages]) => ({
+                name: name.split('.').map(part => /^\d+$/.test(part) ? Number(part) : part),
+                errors: (Array.isArray(messages) ? messages : [messages]).map(String),
+            }));
+            if (fields.length) form.setFields(fields);
+            const firstField = fields[0]?.name ?? error?.errorFields?.[0]?.name;
+            const text = fields.flatMap(field => field.errors).join(' ') || error?.errorFields?.[0]?.errors?.[0] || error?.message || 'Không thể lưu bài viết. Vui lòng thử lại.';
+            setSaveError(text);
+            messageApi.error(text);
+            if (firstField) {
+                if (String(firstField[0]).startsWith('meta_')) setSeoCollapsed(false);
+                window.setTimeout(() => form.scrollToField(firstField, { block: 'center', focus: true }), 100);
+            }
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleCancel = () => {
@@ -598,13 +632,14 @@ export default function CmsPostFormModal({
             extra={(
                 <Space>
                     <Button onClick={handleCancel}>Hủy</Button>
-                    <Button type="primary" disabled={!canManage || (!editingPost?.id && translationMode)} onClick={handleSubmit}>
+                    <Button type="primary" loading={saving} disabled={!canManage || (!editingPost?.id && translationMode)} onClick={handleSubmit}>
                         {!editingPost?.id && translationMode ? 'Lưu tại ngôn ngữ gốc' : (translationMode ? 'Lưu bản dịch' : 'Lưu bài viết')}
                     </Button>
                 </Space>
             )}
         >
             {messageContextHolder}
+            {saveError ? <Alert type="error" showIcon message="Chưa lưu được bài viết" description={saveError} style={{ marginBottom: 16 }} /> : null}
             <LocalizedContentTabs
                 localeOptions={localeOptions}
                 contentLocale={contentLocale}
@@ -617,14 +652,12 @@ export default function CmsPostFormModal({
                 getCurrentValues={() => form.getFieldsValue(true)}
                 onLocaleChange={onLocaleChange}
             />
-            <Form form={form} layout="vertical" initialValues={editingPost}>
+            <Form form={form} layout="vertical" initialValues={editingPost} onValuesChange={(changed) => {
+                if (Object.prototype.hasOwnProperty.call(changed, 'title')) form.setFieldValue('meta_title', changed.title);
+                if (Object.prototype.hasOwnProperty.call(changed, 'excerpt')) form.setFieldValue('meta_description', changed.excerpt);
+            }}>
                 <div className="cms-post-form-shell">
                     <Card size="small" className="cms-post-form-card" title="Thông tin bài viết">
-                        {translationMode && editingPost?.tags?.length > 0 ? <Button onClick={() => setTagTranslationOpen(true)} style={{ marginBottom: 12 }}>Dịch tên tags ({contentLocale.toUpperCase()})</Button> : null}
-                        {!tagsAvailable ? <Alert type="warning" showIcon message="Tags chưa sẵn sàng. Cần cập nhật cơ sở dữ liệu CMS trên máy chủ; các nội dung khác vẫn có thể lưu." style={{ marginBottom: 12 }} /> : null}
-                        <Form.Item name="tags" label="Tags bài viết" extra="Nhập từ khóa rồi Enter, hoặc chọn tag có sẵn. Tối đa 20 tags, mỗi tag 80 ký tự. Tags được dùng chung giữa các ngôn ngữ." rules={[{ type: 'array', max: 20, message: 'Tối đa 20 tags.' }, { validator: (_, values = []) => values.some(value => value.length > 80) ? Promise.reject(new Error('Mỗi tag tối đa 80 ký tự.')) : Promise.resolve() }]}>
-                            <Select mode="tags" disabled={translationMode || !tagsAvailable} allowClear options={tagOptions} tokenSeparators={[',']} placeholder="Thêm tags cho bài viết" />
-                        </Form.Item>
                         <Row gutter={[16, 14]} align="top">
                             <Col xs={24} md={14}>
                                 <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề bài viết' }]}>
@@ -660,16 +693,21 @@ export default function CmsPostFormModal({
                         >
                             <Input.TextArea rows={2} placeholder="tu khoa 1, tu khoa 2, tu khoa 3" />
                         </Form.Item>
+                        {translationMode && editingPost?.tags?.length > 0 ? <Button onClick={() => setTagTranslationOpen(true)} style={{ marginBottom: 12 }}>Dịch tên tags ({contentLocale.toUpperCase()})</Button> : null}
+                        {!tagsAvailable ? <Alert type="warning" showIcon message="Tags chưa sẵn sàng. Cần cập nhật cơ sở dữ liệu CMS trên máy chủ; các nội dung khác vẫn có thể lưu." style={{ marginBottom: 12 }} /> : null}
+                        <Form.Item name="tags" label="Tags bài viết" extra="Nhập từ khóa rồi Enter, hoặc chọn tag có sẵn. Tối đa 20 tags, mỗi tag 80 ký tự. Tags được dùng chung giữa các ngôn ngữ." rules={[{ type: 'array', max: 20, message: 'Tối đa 20 tags.' }, { validator: (_, values = []) => values.some(value => value.length > 80) ? Promise.reject(new Error('Mỗi tag tối đa 80 ký tự.')) : Promise.resolve() }]}>
+                            <Select mode="tags" disabled={translationMode || !tagsAvailable} allowClear options={tagOptions} tokenSeparators={[',']} placeholder="Thêm tags cho bài viết" />
+                        </Form.Item>
                     </Card>
 
                     <Card size="small" className="cms-post-form-card" title="Phân loại và hiển thị">
                         <Row gutter={[16, 14]} align="top">
-                            <Col xs={24}>
+                            <Col xs={24} md={12}>
                                 <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 0 }}>
                                     <Select disabled={translationMode} allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
                                 </Form.Item>
                             </Col>
-                            <Col xs={24}>
+                            <Col xs={24} md={12}>
                                 <div className="cms-post-highlight-row">
                                     <Form.Item name="is_highlight" label="Tin nổi bật" valuePropName="checked" style={{ marginBottom: 0 }}>
                                         <Switch disabled={translationMode} />
@@ -780,7 +818,10 @@ export default function CmsPostFormModal({
                         </Form.Item>
                     </Card>
 
-                    <Card size="small" className="cms-post-form-card" title="SEO cơ bản">
+                    <Card size="small" className={`cms-post-form-card shared-collapsible-card ${seoCollapsed ? 'is-collapsed' : 'is-expanded'}`}
+                        title={<CollapsibleCardTitle sectionKey="post-seo" title="SEO cơ bản" collapsed={seoCollapsed} onToggle={() => setSeoCollapsed(value => !value)} />}
+                        styles={{ body: { display: seoCollapsed ? 'none' : undefined } }}>
+                        <div id="shared-form-section-post-seo">
                         <Row gutter={16}>
                             <Col xs={24} md={12}>
                                 <Form.Item name="meta_title" label="SEO Title">
@@ -793,6 +834,7 @@ export default function CmsPostFormModal({
                                 </Form.Item>
                             </Col>
                         </Row>
+                    </div>
                     </Card>
 
                     <Card
