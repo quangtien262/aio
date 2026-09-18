@@ -41,13 +41,29 @@ class ContentPostController
             'external_id' => $validated['external_id'],
         ];
         $created = false;
+        $relinked = false;
 
-        $link = DB::transaction(function () use ($identity, $post, $token, &$created): ContentApiResourceLink {
+        $link = DB::transaction(function () use ($identity, $post, $token, &$created, &$relinked): ContentApiResourceLink {
             $link = ContentApiResourceLink::query()->where($identity)->lockForUpdate()->first();
             if ($link !== null && (int) $link->resource_id !== (int) $post->id) {
-                throw ValidationException::withMessages([
-                    'external_id' => 'External ID đã liên kết với một bài viết khác.',
-                ]);
+                $linkedPostStillExists = CmsPost::query()
+                    ->withoutGlobalScopes()
+                    ->where('website_key', $identity['website_key'])
+                    ->whereKey($link->resource_id)
+                    ->exists();
+
+                if ($linkedPostStillExists) {
+                    throw ValidationException::withMessages([
+                        'external_id' => 'External ID đã liên kết với một bài viết khác.',
+                    ]);
+                }
+
+                $relinked = true;
+                $link->forceFill([
+                    'resource_id' => $post->id,
+                    'payload_hash' => hash('sha256', $post->getRawOriginal('updated_at').':'.$post->id),
+                    'last_token_id' => $token->id,
+                ])->save();
             }
 
             if ($link === null) {
@@ -70,7 +86,11 @@ class ContentPostController
         ], websiteKey: $websiteKey);
 
         return response()->json([
-            'message' => $created ? 'Đã liên kết bài viết hiện có.' : 'Liên kết bài viết đã tồn tại.',
+            'message' => match (true) {
+                $created => 'Đã liên kết bài viết hiện có.',
+                $relinked => 'Đã chuyển liên kết mồ côi sang bài viết hiện có.',
+                default => 'Liên kết bài viết đã tồn tại.',
+            },
             'data' => $this->serialize($post, $validated['external_id']),
         ], $created ? 201 : 200);
     }

@@ -103,6 +103,8 @@ thuộc website của token. `published` yêu cầu ability `posts.publish`.
 Endpoint chỉ tìm bài trong website của token, bắt buộc slug xác nhận phải khớp
 và từ chối nếu `external_id` đã trỏ tới bài khác. Dùng thao tác này trước khi
 publisher cập nhật một bài được tạo thủ công từ trước, nhằm tránh tạo bản trùng.
+Nếu link cũ trỏ tới một `cms_posts` đã bị xóa, endpoint được phép chuyển link mồ
+côi sang bài đích đã xác nhận; link tới bài vẫn tồn tại luôn bị từ chối.
 
 ### Đọc bài theo khóa nguồn
 

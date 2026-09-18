@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\CmsCategory;
 use App\Models\CmsMedia;
 use App\Models\CmsPost;
+use App\Models\ContentApiResourceLink;
 use App\Models\ContentApiToken;
 use App\Models\ContentTranslation;
 use App\Models\ModuleInstallation;
@@ -195,6 +196,18 @@ class ContentPublishingApiTest extends TestCase
             ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('external_id');
+
+        ContentApiResourceLink::query()
+            ->where('external_id', $payload['external_id'])
+            ->update(['resource_id' => 999999]);
+        $this->withToken($this->rawToken)
+            ->postJson('/api/v1/cms/posts/link', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.id', $post->id);
+        $this->assertDatabaseHas('content_api_resource_links', [
+            'external_id' => $payload['external_id'],
+            'resource_id' => $post->id,
+        ]);
     }
 
     public function test_api_rejects_cross_website_category_and_direct_publish_without_ability(): void
