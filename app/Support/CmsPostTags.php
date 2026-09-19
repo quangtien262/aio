@@ -11,6 +11,29 @@ use Illuminate\Support\Str;
 
 class CmsPostTags
 {
+    public function publicTags(string $websiteKey, string $locale, int $limit = 10): array
+    {
+        if (! self::available()) {
+            return [];
+        }
+
+        $content = app(\App\Support\Localization\LocalizedContentRepository::class);
+
+        return CmsTag::query()->where('website_key', $websiteKey)
+            ->withCount(['posts' => fn (Builder $query) => $query
+                ->where('website_key', $websiteKey)->where('status', 'published')
+                ->where(fn (Builder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))])
+            ->orderByDesc('posts_count')->orderBy('id')->cursor()
+            ->filter(fn (CmsTag $tag) => $tag->posts_count > 0
+                && $content->isPublishedForLocale($tag, 'cms_tag', $locale, $websiteKey)
+                && $this->publishedPosts($tag, $locale)->exists())
+            ->take($limit)->map(function (CmsTag $tag) use ($content, $locale, $websiteKey): array {
+                $tag = $content->localize($tag, 'cms_tag', $locale, $websiteKey);
+
+                return ['name' => $tag->name, 'url' => FrontendRouteUrl::tag($tag->slug, $locale)];
+            })->values()->all();
+    }
+
     public static function available(): bool
     {
         return \Illuminate\Support\Facades\Schema::hasTable('cms_tags')

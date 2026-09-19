@@ -26,6 +26,9 @@ Route::get('/', function () {
 })->name('site.entry');
 
 Route::get('/sitemap.xml', SitemapController::class)->name('site.sitemap');
+Route::get('/sitemaps/{name}.xml', [SitemapController::class, 'part'])
+    ->where('name', '(pages|posts|products|services|projects|categories|tags)-[1-9][0-9]*')->name('site.sitemap.part');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('site.robots');
 
 require __DIR__.'/admin.php';
 

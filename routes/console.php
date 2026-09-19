@@ -31,3 +31,13 @@ Schedule::job(new PruneExpiredAccountingExports)
 Schedule::command('fnb:recover-exports --limit=100')
     ->everyFiveMinutes()
     ->withoutOverlapping(10);
+
+Artisan::command('sitemap:refresh', function () {
+    $sitemaps = app(\App\Support\SitemapService::class);
+    foreach (\App\Models\SiteProfile::withoutGlobalScopes()->distinct()->pluck('website_key') as $website) {
+        $snapshot = $sitemaps->snapshot($website ?: 'website-main', true);
+        $this->line(($website ?: 'website-main').': '.$snapshot['total'].' URLs');
+    }
+})->purpose('Refresh public sitemaps for every website');
+
+Schedule::command('sitemap:refresh')->everyFiveMinutes()->withoutOverlapping(5);

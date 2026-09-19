@@ -43,12 +43,12 @@
             </div></div>
             <aside class="n88-panel n88-video-panel xd-landing-block" id="video" data-landing-block-id="{{ data_get($video, 'id') }}" data-block-type="news88_video_posts">
                 @include('theme-news88::partials.edit-button', ['block' => $video])
-                <header><h2>{{ data_get($video, 'data.title', 'Video') }}</h2></header><div class="n88-video-grid">@foreach($videoItems->take(2) as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><span><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"><i class="fa-solid fa-play"></i></span><h3>{{ data_get($item, 'title') }}</h3></a><p>{{ data_get($item, 'summary') }}</p></article>@endforeach</div></aside>
+                <header><h2>{{ data_get($video, 'data.title', 'Video') }}</h2></header><div class="n88-video-grid">@foreach($videoItems as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><span><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"><i class="fa-solid fa-play"></i></span><h3>{{ data_get($item, 'title') }}</h3></a></article>@endforeach</div></aside>
         </section>
 
         <section class="n88-panel n88-health xd-landing-block" id="suc-khoe" data-landing-block-id="{{ data_get($health, 'id') }}" data-block-type="news88_health_posts">
             @include('theme-news88::partials.edit-button', ['block' => $health])
-            <header><h2>{{ data_get($health, 'data.title', 'Tin Sức Khỏe') }}</h2></header><div class="n88-health-grid">@foreach($healthItems->take(6) as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"></a><h3><a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a></h3><small>@themeT('NEWS88.date', 'Ngày'): {{ $date($item) }} <b>@themeT('NEWS88.views', 'Lượt xem'): {{ $views($item) }}</b></small><p>{{ data_get($item, 'summary') }}</p></article>@endforeach</div>
+            <header><h2>{{ data_get($health, 'data.title', 'Tin Sức Khỏe') }}</h2></header><div class="n88-health-grid">@foreach($healthItems->take(6) as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"></a><h3><a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a></h3><small>@themeT('NEWS88.date', 'Ngày'): {{ $date($item) }} <b>@themeT('NEWS88.views', 'Lượt xem'): {{ $views($item) }}</b></small></article>@endforeach</div>
         </section>
 
         <section class="n88-columns">
@@ -56,7 +56,7 @@
                 <div class="n88-panel n88-column xd-landing-block" id="{{ data_get($section, 'anchor_id') }}" data-landing-block-id="{{ data_get($section, 'id') }}" data-block-type="{{ $type }}">
                     @include('theme-news88::partials.edit-button', ['block' => $section])
                     <header><h2>{{ data_get($section, 'data.title') }}</h2></header>
-                    @foreach($sectionItems->take(4) as $index => $item)
+                    @foreach($sectionItems as $index => $item)
                         @if($index === 0)<article class="n88-column-feature" data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"></a><h3><a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a></h3><small>@themeT('NEWS88.date', 'Ngày'): {{ $date($item) }} <b>@themeT('NEWS88.views', 'Lượt xem'): {{ $views($item) }}</b></small></article>
                         @else<article class="n88-column-small" data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"><span><h3>{{ data_get($item, 'title') }}</h3><small>{{ $date($item) }} · {{ $views($item) }}</small></span></a></article>@endif
                     @endforeach

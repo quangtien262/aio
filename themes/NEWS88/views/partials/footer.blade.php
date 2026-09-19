@@ -11,7 +11,7 @@
     $copyright = trim((string) data_get($branding, 'copyright_text'));
     $footerBlock = collect($landingBlocks ?? [])->first(fn($block) => data_get($block, 'block_type') === 'news88_footer_posts');
     $footerPosts = collect(data_get($footerBlock, 'dynamic_items', data_get($footerBlock, 'data.content.items', [])))->take(4);
-    $tags = collect(data_get($shell, 'top_menu', []))->pluck('label')->filter()->take(10);
+    $footerTags = app(\App\Support\CmsPostTags::class)->publicTags(app(\App\Support\SiteContext::class)->websiteKey(), app()->getLocale());
 @endphp
 <footer class="n88-footer" id="footer">
     <div class="n88-container n88-footer-grid">
@@ -20,13 +20,22 @@
             <p><strong>{{ $company }}</strong>{{ filled($description) ? ' — '.$description : '' }}</p>
             @if($hotline)<p><i class="fa-solid fa-phone"></i> <a href="tel:{{ preg_replace('/\s+/', '', $hotline) }}">{{ $hotline }}</a></p>@endif
             @if($email)<p><i class="fa-regular fa-envelope"></i> <a href="mailto:{{ $email }}">{{ $email }}</a></p>@endif
-            <div class="n88-footer-social"><a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i class="fa-brands fa-x-twitter"></i></a><a href="#"><i class="fa-brands fa-youtube"></i></a><a href="#"><i class="fa-brands fa-pinterest-p"></i></a></div>
+            <div class="n88-footer-social">
+                @foreach(['facebook_url' => ['Facebook', 'facebook-f'], 'x_url' => ['X', 'x-twitter'], 'youtube_url' => ['YouTube', 'youtube']] as $socialKey => [$socialLabel, $socialIcon])
+                    @php($socialUrl = trim((string) data_get($branding, $socialKey, '')))
+                    @if(filter_var($socialUrl, FILTER_VALIDATE_URL) && in_array(strtolower((string) parse_url($socialUrl, PHP_URL_SCHEME)), ['http', 'https'], true))
+                        <a href="{{ $socialUrl }}" aria-label="{{ $socialLabel }}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-{{ $socialIcon }}" aria-hidden="true"></i></a>
+                    @endif
+                @endforeach
+            </div>
         </section>
         <section class="xd-landing-block" data-landing-block-id="{{ data_get($footerBlock, 'id') }}" data-block-type="news88_footer_posts">
             @include('theme-news88::partials.edit-button', ['block' => $footerBlock])
             <h2>@themeT('NEWS88.recent', 'Tin Gần Đây')</h2><div class="n88-footer-posts">@foreach($footerPosts as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a>@endforeach</div>
         </section>
-        <section><h2>@themeT('NEWS88.keywords', 'Từ Khóa')</h2><div class="n88-tags">@foreach($tags as $tag)<a href="{{ route('site.catalog.search', ['q' => $tag]) }}">{{ mb_strtolower($tag) }}</a>@endforeach</div></section>
+        @if($footerTags)
+        <section class="n88-footer-tags"><h2>Tags</h2><div class="n88-tags">@foreach($footerTags as $tag)<a href="{{ $tag['url'] }}" rel="tag">{{ $tag['name'] }}</a>@endforeach</div></section>
+        @endif
         <section class="n88-map">@if($address)<iframe title="{{ $address }}" loading="lazy" src="https://www.google.com/maps?q={{ urlencode($address) }}&output=embed"></iframe>@else<div><i class="fa-solid fa-location-dot"></i><span>{{ $company }}</span></div>@endif</section>
     </div>
     <div class="n88-footer-bottom"><div class="n88-container">{{ $copyright !== '' ? $copyright : '© '.now()->year.' '.$company.'. All rights reserved.' }}</div></div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './SetupWizardPage.css';
+import SitemapSettings from './SitemapSettings';
 import Alert from 'antd/es/alert';
 import App from 'antd/es/app';
 import Button from 'antd/es/button';
@@ -372,6 +373,7 @@ export default function SetupWizardPage({ setup, themes = [], activeTheme = null
                                 </div>
                             </div>
                             <div className="setup-profile-actions">
+                                <SitemapSettings callAdminApi={callAdminApi} canRefresh={canEditProfile} />
                                 <Button onClick={() => { setPopLogoVisible(true); setTempLogo(logoUrl); }}>Sửa logo</Button>
                                 <Button disabled={!canQuickEditPalette} onClick={() => themeActionController.openPalette(activeTheme)}>Bảng màu</Button>
                                 <Button disabled={!canEditProfile} onClick={() => {

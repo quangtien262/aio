@@ -950,6 +950,10 @@ Route::prefix('admin')
                 Route::get('/setup', SetupWizardStateController::class)
                     ->middleware('admin.permission:setup.view')
                     ->name('setup');
+                Route::get('/sitemap', [\App\Http\Controllers\Site\SitemapController::class, 'status'])
+                    ->middleware('admin.permission:setup.view')->name('sitemap.status');
+                Route::post('/sitemap/refresh', [\App\Http\Controllers\Site\SitemapController::class, 'refresh'])
+                    ->middleware('admin.permission:setup.complete')->name('sitemap.refresh');
                 Route::put('/setup', SetupProfileController::class)
                     ->middleware('admin.permission:setup.complete')
                     ->name('setup.update');

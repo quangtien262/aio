@@ -118,6 +118,8 @@ class CmsPageLocalizationTest extends TestCase
         $this->get('/sitemap.xml')
             ->assertOk()
             ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+            ->assertSee('/sitemaps/pages-1.xml', false);
+        $this->get('/sitemaps/pages-1.xml')->assertOk()
             ->assertSee('/vi/p/gioi-thieu', false)
             ->assertSee('/en/p/about-us', false);
     }

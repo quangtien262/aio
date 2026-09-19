@@ -17,6 +17,60 @@ class News88ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_news_columns_respect_limits_and_health_omits_excerpts(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88')->generate('news88-editorial');
+        $types = ['news88_car_posts', 'news88_travel_posts', 'news88_entertainment_posts'];
+        foreach ([5, 2] as $limit) {
+            foreach (\App\Models\LandingPageBlock::whereIn('block_type', $types)->get() as $block) {
+                $block->update(['settings' => ['source' => 'cms_posts', 'limit' => $limit, 'featured_only' => false]]);
+            }
+            $html = $this->get('/vi')->assertOk()->getContent();
+            foreach ($types as $type) {
+                $this->assertSame(1, preg_match('/<div[^>]*data-block-type="'.$type.'"[^>]*>(.*?)<\/div>/s', $html, $matches));
+                $this->assertSame($limit, substr_count($matches[1], '<article '));
+            }
+            $this->assertSame(1, preg_match('/<section[^>]*id="suc-khoe"[^>]*>(.*?)<\/section>/s', $html, $matches));
+            $this->assertStringContainsString('<article ', $matches[1]);
+            $this->assertStringNotContainsString('<p>', $matches[1]);
+        }
+    }
+
+    public function test_footer_shows_public_post_tags_instead_of_menu_keywords(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        $this->get('/vi')->assertOk()->assertDontSee('class="n88-footer-tags"', false);
+        $tags = app(\App\Support\CmsPostTags::class);
+        $post = CmsPost::create(['title' => 'Public', 'slug' => 'public', 'status' => 'published']);
+        $tags->sync($post, ['Công nghệ']);
+        $draft = CmsPost::create(['title' => 'Draft', 'slug' => 'draft', 'status' => 'draft']);
+        $tags->sync($draft, ['Draft tag']);
+        $other = CmsPost::create(['website_key' => 'other-site', 'title' => 'Other', 'slug' => 'other', 'status' => 'published']);
+        $tags->sync($other, ['Other tag']);
+        foreach (['/vi', '/vi/n/public'] as $url) {
+            $response = $this->get($url)->assertOk();
+            $this->assertSame(1, preg_match('/<section class="n88-footer-tags">(.*?)<\/section>/s', $response->getContent(), $matches));
+            $this->assertStringContainsString('/vi/tags/cong-nghe', $matches[1]);
+            $this->assertStringContainsString('Công nghệ', $matches[1]);
+            $this->assertStringNotContainsString('Draft tag', $matches[1]);
+            $this->assertStringNotContainsString('Other tag', $matches[1]);
+        }
+    }
+
+    public function test_video_block_renders_the_configured_number_of_posts(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88')->generate('news88-editorial');
+        $block = \App\Models\LandingPageBlock::where('block_type', 'news88_video_posts')->firstOrFail();
+        foreach ([4, 1] as $limit) {
+            $block->update(['settings' => ['source' => 'cms_posts', 'limit' => $limit, 'featured_only' => false]]);
+            $response = $this->get('/vi')->assertOk();
+            $this->assertSame(1, preg_match('/<aside[^>]*id="video"[^>]*>(.*?)<\/aside>/s', $response->getContent(), $matches));
+            $this->assertSame($limit, substr_count($matches[1], '<article '));
+        }
+    }
+
     public function test_demo_generation_respects_unpublished_english_on_new_websites(): void
     {
         $context = app(\App\Support\SiteContext::class);
@@ -133,6 +187,12 @@ class News88ThemeTest extends TestCase
         ])->assertOk();
         $this->get('/vi')->assertOk()->assertSee('href="https://facebook.com/example"', false)
             ->assertSee('href="https://x.com/example"', false)->assertSee('href="https://youtube.com/@example"', false);
+        $html = $this->get('/vi')->assertOk()->getContent();
+        $this->assertSame(1, preg_match('/<div class="n88-footer-social">(.*?)<\/div>/s', $html, $matches));
+        foreach (['https://facebook.com/example', 'https://x.com/example', 'https://youtube.com/@example'] as $url) {
+            $this->assertStringContainsString('href="'.$url.'"', $matches[1]);
+        }
+        $this->assertStringNotContainsString('href="#"', $matches[1]);
         $this->putJson('/admin/api/themes/NEWS88/settings', ['facebook_url' => 'javascript:alert(1)'])->assertUnprocessable();
         $this->putJson('/admin/api/themes/NEWS88/settings', ['facebook_url' => null])->assertOk();
         $this->get('/vi')->assertOk()->assertDontSee('aria-label="Facebook"', false)->assertSee('aria-label="YouTube"', false);
@@ -192,7 +252,7 @@ class News88ThemeTest extends TestCase
         );
         $home = file_get_contents(base_path('themes/NEWS88/views/home.blade.php'));
         $this->assertStringContainsString('$latestItems->take(6)', $home);
-        $this->assertStringContainsString('$videoItems->take(2)', $home);
+        $this->assertStringContainsString('@foreach($videoItems as $item)', $home);
         $styles = file_get_contents(base_path('themes/NEWS88/views/partials/styles.blade.php'));
         $this->assertStringContainsString('.n88-footer::before,.n88-footer::after', $styles);
         $this->assertStringContainsString('background-size:44px 44px', $styles);

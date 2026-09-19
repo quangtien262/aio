@@ -173,6 +173,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        foreach (['eloquent.saved: *', 'eloquent.deleted: *', 'eloquent.restored: *'] as $event) {
+            \Illuminate\Support\Facades\Event::listen($event, function (string $name, array $payload): void {
+                $model = $payload[0] ?? null;
+                if ($model instanceof \Illuminate\Database\Eloquent\Model
+                    && (str_starts_with($model->getTable(), 'cms_') || str_starts_with($model->getTable(), 'catalog_')
+                        || str_starts_with($model->getTable(), 'landing_')
+                        || in_array($model->getTable(), ['localized_routes', 'content_translations', 'website_locales', 'system_locales', 'sites', 'site_profiles', 'module_installations'], true))) {
+                    // Cache invalidation must not prevent content saves or initial provisioning.
+                    try {
+                        \Illuminate\Support\Facades\Cache::put('sitemap:revision', (string) \Illuminate\Support\Str::uuid(), 86400);
+                    } catch (\Throwable $exception) {
+                        report($exception);
+                    }
+                }
+            });
+        }
         foreach ((array) config('localized-content.resources', []) as $definition) {
             $modelClass = $definition['model'] ?? null;
 
