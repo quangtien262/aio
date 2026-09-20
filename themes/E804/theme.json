@@ -5,7 +5,7 @@
   "description": "Theme marketplace đa ngành với mega menu, deal theo ngày, gian hàng chính hãng và gợi ý mua sắm.",
   "website_type": "ecommerce",
   "parent": null,
-  "preview": { "thumbnail": "preview-e804.png", "cover": "cover-e804.png" },
+  "preview": { "thumbnail": "preview-e804.png", "cover": "preview-e804.png" },
   "blocks": ["hero-slider", "market-categories", "daily-deals", "featured-categories", "official-brands", "brand-deals", "weekly-deals", "recommendations", "market-news"],
   "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
   "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },

@@ -5,7 +5,7 @@
   "description": "Theme thương mại điện tử dụng cụ cơ khí với phong cách công nghiệp vàng–đen, deal sản phẩm và cẩm nang kỹ thuật.",
   "website_type": "ecommerce",
   "parent": null,
-  "preview": { "thumbnail": "preview-e807.png", "cover": "cover-e807.png" },
+  "preview": { "thumbnail": "preview-e807.png", "cover": "preview-e807.png" },
   "blocks": ["hero-tools", "tool-categories", "flash-deals", "new-products", "promo-trio", "best-sellers", "promo-duo", "about-tools", "news-tools", "testimonials", "knowledge", "brands", "policies"],
   "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
   "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },

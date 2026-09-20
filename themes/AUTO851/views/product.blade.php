@@ -49,6 +49,7 @@
 <script>
 document.querySelectorAll('[data-a851-photo]').forEach(button => button.addEventListener('click', () => {
     document.getElementById('a851-product-image').src = button.dataset.a851Photo;
+    document.getElementById('a851-product-image').alt = button.getAttribute('aria-label');
     document.querySelectorAll('[data-a851-photo]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
 }));
 </script>

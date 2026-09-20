@@ -7,7 +7,7 @@
   "parent": null,
   "preview": {
     "thumbnail": "preview-e800.png",
-    "cover": "cover-e800.png"
+    "cover": "preview-e800.png"
   },
   "blocks": [
     "hero-slider",

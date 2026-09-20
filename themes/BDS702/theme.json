@@ -6,7 +6,7 @@
   "website_type": "real_estate",
   "requires_modules": ["real-estate", "cms"],
   "parent": null,
-  "preview": {"thumbnail": "preview-bds702.svg", "cover": "cover-bds702.svg"},
+  "preview": {"thumbnail": "preview-bds702.png", "cover": "preview-bds702.png"},
   "blocks": ["hero-slider", "bds702-intro", "bds702-featured-projects", "bds702-investment-activities", "bds702-recommended-projects", "bds702-consultation", "bds702-partners"],
   "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "scroll_reveal": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]}

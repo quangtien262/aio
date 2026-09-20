@@ -47,9 +47,12 @@ class Auto852ThemeTest extends TestCase
     {
         SiteProfile::create(['site_name' => 'Detail product', 'website_type' => 'ecommerce', 'active_theme_key' => 'AUTO852']);
         $product = CatalogProduct::create(['name' => 'Dung dịch đánh bóng hoàn thiện', 'slug' => 'auto852-dung-dich-danh-bong-hoan-thien', 'sku' => 'A852-DETAIL', 'price' => 285000, 'stock' => 9, 'image_url' => '/themes/AUTO852/images/product-1.png', 'detail_content' => '<p>Thông tin dung dịch kiểm thử.</p>', 'is_active' => true]);
+        $product->images()->create(['image_url' => '/themes/AUTO852/images/product-2.png', 'sort_order' => 1]);
+        CatalogProduct::create(['name' => 'Sản phẩm gợi ý', 'slug' => 'goi-y-852', 'sku' => 'A852-RELATED', 'price' => 390000, 'stock' => 5, 'image_url' => '/themes/AUTO852/images/product-2.png', 'is_active' => true]);
         $url = route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]);
         $this->get($url)->assertOk()->assertSee($product->name)->assertSee('285.000đ')
             ->assertSee('/themes/AUTO852/images/product-1.png', false)->assertSee('Thông tin dung dịch kiểm thử.')
+            ->assertSee('data-a852-photo', false)->assertSee('Sản phẩm liên quan')->assertSee('Sản phẩm gợi ý')->assertDontSee('<section class="a852-inner-hero">', false)
             ->assertSee(route('site.cart.add', ['locale' => 'vi', 'slug' => $product->slug]), false);
         $product->update(['price' => 0, 'image_url' => null]);
         $this->get($url)->assertOk()->assertSee($product->name)->assertSee('Liên hệ');

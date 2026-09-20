@@ -5,7 +5,7 @@
   "description": "Theme thương mại điện tử xe đạp với tìm kiếm lớn, danh mục nhanh, sản phẩm theo dòng xe, banner thương hiệu và cẩm nang chọn mua.",
   "website_type": "ecommerce",
   "parent": null,
-  "preview": { "thumbnail": "preview-e801.png", "cover": "cover-e801.png" },
+  "preview": { "thumbnail": "preview-e801.png", "cover": "preview-e801.png" },
   "blocks": ["hero-slider", "quick-categories", "trend-banners", "street-bikes", "kids-bikes", "road-banner", "buying-guides"],
   "supports": { "dark_mode": false, "multi_homepage": true, "custom_css": true, "block_mapping": true },
   "localization": { "default_locale": "vi", "supported_locales": ["vi", "en"] },

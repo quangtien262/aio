@@ -3,7 +3,7 @@
     $image = data_get($item, 'image', data_get($item, 'image_url', asset('themes/AUTO851/images/accessory-1.png')));
     $url = data_get($item, 'url', '#san-pham');
     $price = (float) data_get($item, 'price', 0);
-    $original = (float) data_get($item, 'original_price', 0);
+    $original = (float) data_get($item, 'original_price', data_get($item, 'old_price', 0));
 @endphp
 <article class="a851-product-card">
     <a class="a851-product-image" href="{{ $url }}">@if($original > $price && $price > 0)<span>-{{ (int) round((1 - $price / $original) * 100) }}%</span>@endif<img src="{{ $image }}" alt="{{ $title }}" loading="lazy"></a>
