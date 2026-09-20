@@ -27,7 +27,7 @@ Route::get('/', function () {
 
 Route::get('/sitemap.xml', SitemapController::class)->name('site.sitemap');
 Route::get('/sitemaps/{name}.xml', [SitemapController::class, 'part'])
-    ->where('name', '(pages|posts|products|services|projects|categories|tags)-[1-9][0-9]*')->name('site.sitemap.part');
+    ->where('name', '(pages|posts|products|services|projects|categories|tags|topics)-[1-9][0-9]*')->name('site.sitemap.part');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('site.robots');
 
 require __DIR__.'/admin.php';
@@ -113,6 +113,7 @@ Route::prefix('{locale}')
 				->name('site.preview.products');
 		});
 
+		Route::get('/topics/{slug}', [CmsSiteController::class, 'postsByTopic'])->name('site.blog.topic');
 		Route::get('/tags/{slug}', [CmsSiteController::class, 'postsByTag'])->name('site.blog.tag');
 		Route::get('/c', [CmsSiteController::class, 'postsIndex'])
 			->name('site.blog.index');

@@ -424,6 +424,7 @@ final class CmsMenuResolver
         return in_array($resourceType, [
             'catalog_category',
             'cms_category',
+            'cms_topic',
             'cms_service_category',
             'cms_project_category',
         ], true);
@@ -496,7 +497,7 @@ final class CmsMenuResolver
 
         $fallbackLinkType = match ($resourceType) {
             'catalog_category', 'catalog_product' => 'catalog-index',
-            'cms_category', 'cms_post' => 'post-index',
+            'cms_category', 'cms_post', 'cms_topic' => 'post-index',
             'cms_service_category', 'cms_service' => 'service-index',
             'cms_project_category', 'cms_project' => 'project-index',
             default => 'home',

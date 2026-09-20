@@ -1,6 +1,6 @@
 # Sitemap website
 
-`/sitemap.xml` là danh mục sitemap tổng; các file `/sitemaps/{group}-{part}.xml` chứa URL nội dung và liên kết `hreflang` hai chiều giữa các bản ngôn ngữ. Các nhóm gồm: trang (`pages`), bài viết (`posts`), sản phẩm (`products`), dịch vụ (`services`), dự án (`projects`), danh mục (`categories`) và tags (`tags`). Chức năng này dùng chung cho mọi theme.
+`/sitemap.xml` là danh mục sitemap tổng; các file `/sitemaps/{group}-{part}.xml` chứa URL nội dung và liên kết `hreflang` hai chiều giữa các bản ngôn ngữ. Các nhóm gồm: trang (`pages`), bài viết (`posts`), sản phẩm (`products`), dịch vụ (`services`), dự án (`projects`), danh mục (`categories`), chuyên đề (`topics`) và tags (`tags`). Chức năng này dùng chung cho mọi theme.
 
 Cấu hình domain đang hoạt động xác định `website_key`. URL sử dụng `sites.domain` đang hoạt động của website với giao thức HTTPS; website chưa có cấu hình domain sẽ dùng `APP_URL`. Trên server, cần đặt `APP_URL` thành địa chỉ gốc chính thức của website; khi chạy local, thêm cổng nếu có. Hệ thống không dùng giá trị Host của request để tạo URL chuẩn. Mỗi website có khóa bộ nhớ đệm và phạm vi dữ liệu riêng.
 

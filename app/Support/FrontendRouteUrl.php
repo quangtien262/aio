@@ -7,6 +7,11 @@ use App\Support\Localization\LocalizedRouteRegistry;
 
 final class FrontendRouteUrl
 {
+    public static function topic(string $slug, ?string $locale = null): string
+    {
+        return route('site.blog.topic', ['locale' => self::locale($locale), 'slug' => $slug]);
+    }
+
     public static function home(?string $locale = null, bool $absolute = true): string
     {
         return route('site.home', [

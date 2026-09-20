@@ -26,8 +26,11 @@ class PostIndexController
         $tagsAvailable = CmsPostTags::available();
         $query->with($tagsAvailable ? ['category', 'featuredMedia', 'tags'] : ['category', 'featuredMedia'])->orderByDesc('updated_at');
 
+        $topicsAvailable = \App\Models\CmsTopic::available();
+        if ($topicsAvailable) $query->with('topics');
         $items = $query->get()->map(fn (CmsPost $post): array => [
             'id' => $post->id,
+            'topic_ids' => $topicsAvailable ? $post->topics->pluck('id')->all() : [],
             'tags' => $tagsAvailable ? $post->tags->pluck('name')->all() : [],
             'title' => $post->title,
             'slug' => $post->slug,
@@ -68,6 +71,8 @@ class PostIndexController
                     'draft' => collect($items)->where('status', 'draft')->count(),
                     'highlight' => collect($items)->where('is_highlight', true)->count(),
                 ],
+                'topicsAvailable' => $topicsAvailable,
+                'topics' => $topicsAvailable ? \App\Models\CmsTopic::orderBy('name')->get()->map(fn ($topic) => ['value' => $topic->id, 'label' => $topic->name])->all() : [],
                 'tagsAvailable' => $tagsAvailable,
                 'tagOptions' => $tagsAvailable ? CmsTag::query()->orderBy('name')->get()->map(fn ($tag): array => ['id' => $tag->id, 'label' => $tag->name, 'value' => $tag->name])->all() : [],
                 'categories' => $categoryQuery->get(['id', 'name'])->map(fn (CmsCategory $category): array => ['label' => $category->name, 'value' => $category->id])->values()->all(),

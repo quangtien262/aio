@@ -17,6 +17,25 @@ class News88ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_recent_footer_posts_match_home_on_child_pages(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88')->generate('news88-editorial');
+        $block = \App\Models\LandingPageBlock::where('block_type', 'news88_footer_posts')->firstOrFail();
+        $block->update(['settings' => ['source' => 'cms_posts', 'limit' => 5, 'featured_only' => false]]);
+        $post = CmsPost::where('status', 'published')->firstOrFail();
+        $expected = null;
+        foreach (['/vi', '/vi/n/'.$post->slug, '/vi/c'] as $url) {
+            $html = $this->get($url)->assertOk()->getContent();
+            $this->assertSame(1, preg_match('/<div class="n88-footer-posts">(.*?)<\/div>/s', $html, $matches));
+            $this->assertSame(5, substr_count($matches[1], '<a '));
+            $expected ??= $matches[1];
+            $this->assertSame($expected, $matches[1]);
+        }
+        $block->update(['is_visible' => false]);
+        $this->get('/vi/n/'.$post->slug)->assertOk()->assertDontSee('class="n88-footer-posts"', false);
+    }
+
     public function test_news_columns_respect_limits_and_health_omits_excerpts(): void
     {
         SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);

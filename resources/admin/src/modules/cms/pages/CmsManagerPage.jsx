@@ -47,6 +47,7 @@ import { ADMIN_API_ROUTES, STOREFRONT_ROUTES, adminApi } from '../../../shared/c
 
 const CmsPageFormModal = lazy(() => import('../components/CmsPageFormModal'));
 const CmsPartnerFormModal = lazy(() => import('../components/CmsPartnerFormModal'));
+const CmsTopicManager = lazy(() => import('../components/CmsTopicManager'));
 const CmsPostFormModal = lazy(() => import('../components/CmsPostFormModal'));
 const CmsProjectFormModal = lazy(() => import('../components/CmsProjectFormModal'));
 const CmsServiceFormModal = lazy(() => import('../components/CmsServiceFormModal'));
@@ -711,6 +712,9 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [bulkOrderStatusOpen, setBulkOrderStatusOpen] = useState(false);
     const [bulkServiceCategoryOpen, setBulkServiceCategoryOpen] = useState(false);
     const [bulkContentCategoryOpen, setBulkContentCategoryOpen] = useState(false);
+    const [bulkPostTopicsOpen, setBulkPostTopicsOpen] = useState(false);
+    const [bulkPostTopicIds, setBulkPostTopicIds] = useState([]);
+    const [bulkPostTopicsSaving, setBulkPostTopicsSaving] = useState(false);
     const [bulkPostHighlightOpen, setBulkPostHighlightOpen] = useState(false);
     const [bulkPublishOpen, setBulkPublishOpen] = useState(false);
     const [bulkPublishAt, setBulkPublishAt] = useState(null);
@@ -730,6 +734,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
     const [productSort, setProductSort] = useState('newest');
     const [serviceCategoryFilter, setServiceCategoryFilter] = useState('all');
     const [postCategoryFilter, setPostCategoryFilter] = useState('all');
+    const [postTopicFilter, setPostTopicFilter] = useState('all');
     const [postStatusFilter, setPostStatusFilter] = useState('all');
     const [postFeaturedFilter, setPostFeaturedFilter] = useState('all');
     const [serviceStatusFilter, setServiceStatusFilter] = useState('all');
@@ -1337,12 +1342,14 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 ].some((value) => String(value ?? '').toLowerCase().includes(normalizedKeyword));
                 const matchesCategory = postCategoryFilter === 'all'
                     || String(post.category_id ?? '') === String(postCategoryFilter);
+                const matchesTopic = postTopicFilter === 'all'
+                    || (post.topic_ids ?? []).some((id) => String(id) === String(postTopicFilter));
                 const matchesStatus = postStatusFilter === 'all' || post.status === postStatusFilter;
                 const matchesFeatured = postFeaturedFilter === 'all'
                     || (postFeaturedFilter === 'featured' && post.is_highlight)
                     || (postFeaturedFilter === 'normal' && !post.is_highlight);
 
-                return matchesKeyword && matchesCategory && matchesStatus && matchesFeatured;
+                return matchesKeyword && matchesCategory && matchesTopic && matchesStatus && matchesFeatured;
             });
         }
 
@@ -1389,7 +1396,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         }
 
         return data?.items ?? [];
-    }, [activeMediaFolder, data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey, postCategoryFilter, postStatusFilter, postFeaturedFilter, serviceCategoryFilter, serviceFeaturedFilter, serviceStatusFilter]);
+    }, [activeMediaFolder, data?.items, data?.orders, keyword, orderDateRange, orderStatusFilter, productActiveFilter, productCategoryFilter, productFeaturedFilter, productPublishFilter, productSort, sectionKey, postCategoryFilter, postTopicFilter, postStatusFilter, postFeaturedFilter, serviceCategoryFilter, serviceFeaturedFilter, serviceStatusFilter]);
 
     const paginatedMediaItems = useMemo(() => {
         if (sectionKey !== 'cms-media') {
@@ -3021,6 +3028,27 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
         setBulkContentCategoryOpen(true);
     };
 
+    const handleBulkPostTopics = async () => {
+        if (!selectedPostRowKeys.length || bulkPostTopicsSaving) return;
+        setBulkPostTopicsSaving(true);
+        try {
+            const didUpdate = await runAdminAction(
+                () => callAdminApi(`${adminApi('cms/posts')}/bulk`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ ids: selectedPostRowKeys, topic_ids: bulkPostTopicIds }),
+                }),
+                `Đã cập nhật chuyên đề cho ${selectedPostRowKeys.length} bài viết.`,
+                refreshCurrentSectionDataSilently,
+            );
+            if (didUpdate) {
+                setBulkPostTopicsOpen(false);
+                setSelectedPostRowKeys([]);
+            }
+        } finally {
+            setBulkPostTopicsSaving(false);
+        }
+    };
+
     const handleBulkContentCategory = async () => {
         const state = currentContentBulkState();
 
@@ -4367,6 +4395,12 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                     icon: <EditOutlined />,
                                     disabled: !sectionPermissions.canUpdate || !selectedKeys.length,
                                 },
+                                ...(sectionKey === 'cms-posts' ? [{
+                                    key: 'bulk-topics',
+                                    label: 'Đổi chuyên đề',
+                                    icon: <EditOutlined />,
+                                    disabled: !sectionPermissions.canUpdate || !selectedKeys.length || data?.topicsAvailable === false,
+                                }] : []),
                                 {
                                     key: 'bulk-delete',
                                     label: 'Xóa đã chọn',
@@ -4396,6 +4430,10 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
                                 if (key === 'bulk-category') {
                                     openBulkContentCategory();
+                                }
+                                if (key === 'bulk-topics') {
+                                    setBulkPostTopicIds([]);
+                                    setBulkPostTopicsOpen(true);
                                 }
 
                                 if (key === 'bulk-delete') {
@@ -4534,7 +4572,27 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         </Space>
                     ),
                 },
-                { title: 'Category', dataIndex: 'category_name', key: 'category_name', render: (value) => value || 'Chưa phân loại' },
+                {
+                    title: 'Category', dataIndex: 'category_name', key: 'category_name',
+                    render: (value, record) => {
+                        const topics = (data?.topics ?? []).filter((topic) =>
+                            (record.topic_ids ?? []).some((id) => String(id) === String(topic.value)));
+                        return (
+                            <Space direction="vertical" size={6}>
+                                <span>{value || 'Chưa phân loại'}</span>
+                                {topics.length > 0 ? (
+                                    <Space wrap size={[4, 4]} aria-label="Chuyên đề bài viết">
+                                        {topics.map((topic) => (
+                                            <Tag key={topic.value} color="cyan" style={{ marginInlineEnd: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+                                                {topic.label}
+                                            </Tag>
+                                        ))}
+                                    </Space>
+                                ) : null}
+                            </Space>
+                        );
+                    },
+                },
                 {
                     title: 'Status', dataIndex: 'status', key: 'status',
                     render: (value, record) => (
@@ -4840,7 +4898,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                 render: (_, record) => renderActions(record),
             },
         ];
-    }, [contentLocale, sectionKey, sectionPermissions.canDelete, sectionPermissions.canPublish, sectionPermissions.canUpdate]);
+    }, [contentLocale, data?.topics, sectionKey, sectionPermissions.canDelete, sectionPermissions.canPublish, sectionPermissions.canUpdate]);
 
     const renderModal = () => {
         if (!modalOpen) {
@@ -4874,6 +4932,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         translationMode={contentLocale !== contentSourceLocale}
                         editingPost={editingRecord}
                         mediaOptions={data?.media ?? []}
+                        topicOptions={data?.topics ?? []}
                         categoryOptions={data?.categories ?? []}
                         tagOptions={data?.tagOptions ?? []}
                         tagsAvailable={data?.tagsAvailable !== false}
@@ -5203,7 +5262,21 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             : sectionKey === 'cms-posts'
                 ? (
                     <Space wrap>
-                        <Button color="orange" variant="filled" icon={<SettingOutlined />} onClick={openCategoryManager}>Cài đặt danh mục tin tức</Button>
+                        <Suspense fallback={null}>
+                            <CmsTopicManager callAdminApi={callAdminApi} canManage={canManageCategories} onChanged={reload} localeOptions={contentLocaleOptions} sourceLocale={contentSourceLocale}
+                                renderTrigger={(openTopics) => (
+                                    <Dropdown trigger={['click']} menu={{
+                                        items: [
+                                            { key: 'categories', label: 'Cài đặt danh mục tin tức' },
+                                            { key: 'topics', label: 'QL chuyên đề' },
+                                        ],
+                                        onClick: ({ key }) => key === 'categories' ? openCategoryManager() : openTopics(),
+                                    }}>
+                                        <Button color="orange" variant="filled" icon={<SettingOutlined />} aria-label="Cài đặt tin tức" title="Cài đặt tin tức" />
+                                    </Dropdown>
+                                )}
+                            />
+                        </Suspense>
                         <Button type="primary" icon={<PlusOutlined />} disabled={!sectionPermissions.canCreate} onClick={openCreateModal}>{createButtonLabel}</Button>
                     </Space>
                 )
@@ -5674,6 +5747,18 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         />
                                     </Space>
                                     <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                        <Text strong>Chuyên đề</Text>
+                                        <Select
+                                            aria-label="Chuyên đề"
+                                            value={postTopicFilter}
+                                            onChange={setPostTopicFilter}
+                                            showSearch
+                                            optionFilterProp="label"
+                                            options={[{ label: 'Tất cả chuyên đề', value: 'all' }, ...(data?.topics ?? [])]}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Space>
+                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
                                         <Text strong>Trạng thái</Text>
                                         <Select
                                             value={postStatusFilter}
@@ -5707,6 +5792,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         onClick={() => {
                                             setKeyword('');
                                             setPostCategoryFilter('all');
+                                            setPostTopicFilter('all');
                                             setPostStatusFilter('all');
                                             setPostFeaturedFilter('all');
                                         }}
@@ -5725,7 +5811,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         rowSelection={postRowSelection}
                                         columns={columns}
                                         dataSource={filteredItems}
-                                        pagination={{ pageSize: 10, hideOnSinglePage: true }}
+                                        pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
                                     />
                                 ) : (
                                     <Empty description="Không có bài viết phù hợp với bộ lọc." />
@@ -6300,6 +6386,29 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                         />
                     </Form.Item>
                 </Form>
+            </Modal>
+
+            <Modal
+                title={`Đổi chuyên đề ${selectedPostRowKeys.length} bài viết`}
+                open={sectionKey === 'cms-posts' && bulkPostTopicsOpen}
+                onCancel={() => { if (!bulkPostTopicsSaving) setBulkPostTopicsOpen(false); }}
+                onOk={handleBulkPostTopics}
+                confirmLoading={bulkPostTopicsSaving}
+                cancelButtonProps={{ disabled: bulkPostTopicsSaving }}
+                okText="Lưu"
+                cancelText="Hủy"
+            >
+                <Alert type="info" showIcon
+                    message="Danh sách chuyên đề đã chọn sẽ thay thế chuyên đề hiện tại của các bài viết. Để trống để bỏ tất cả chuyên đề."
+                    style={{ marginBottom: 16 }} />
+                <Select mode="multiple" allowClear showSearch optionFilterProp="label"
+                    aria-label="Chuyên đề mới"
+                    placeholder="Chọn chuyên đề"
+                    options={data?.topics ?? []}
+                    value={bulkPostTopicIds}
+                    onChange={setBulkPostTopicIds}
+                    disabled={bulkPostTopicsSaving}
+                    style={{ width: '100%' }} />
             </Modal>
 
             <Modal

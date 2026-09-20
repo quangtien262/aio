@@ -13,6 +13,7 @@ class SitemapService
     private const TYPES = [
         'cms_page' => ['pages', 'cms'], 'landing_page' => ['pages', 'cms'],
         'cms_post' => ['posts', 'cms'], 'cms_category' => ['categories', 'cms'],
+        'cms_topic' => ['topics', 'cms'],
         'cms_tag' => ['tags', 'cms'], 'catalog_product' => ['products', 'catalog'],
         'catalog_category' => ['categories', 'catalog'], 'cms_service' => ['services', 'cms'],
         'cms_service_category' => ['categories', 'cms'], 'cms_project' => ['projects', 'cms'],

@@ -26,6 +26,11 @@ class CmsPost extends Model
         ];
     }
 
+    public function topics(): BelongsToMany
+    {
+        return $this->belongsToMany(CmsTopic::class, 'cms_post_topic')->orderBy('name');
+    }
+
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(CmsTag::class, 'cms_post_tag')->orderBy('name');

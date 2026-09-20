@@ -23,6 +23,7 @@ class CmsPostWriter
             $attributes = $this->normalize($payload);
             $post = CmsPost::query()->create($attributes);
             $this->tags->sync($post, $payload['tags'] ?? []);
+            if (\App\Models\CmsTopic::available()) $post->topics()->sync($payload['topic_ids'] ?? []);
 
             return $post->fresh($this->relations());
         });
@@ -34,6 +35,7 @@ class CmsPostWriter
 
         return DB::transaction(function () use ($post, $payload): CmsPost {
             $post->update($this->normalize($payload, $post));
+            if (array_key_exists('topic_ids', $payload) && \App\Models\CmsTopic::available()) $post->topics()->sync($payload['topic_ids']);
             if (array_key_exists('tags', $payload)) {
                 $this->tags->sync($post, $payload['tags']);
             }
@@ -89,6 +91,10 @@ class CmsPostWriter
     private function assertRelatedResources(array $payload): void
     {
         $errors = [];
+        if (! empty($payload['topic_ids'])
+            && (! \App\Models\CmsTopic::available() || \App\Models\CmsTopic::whereIn('id', $payload['topic_ids'])->count() !== count(array_unique($payload['topic_ids'])))) {
+            $errors['topic_ids'] = 'Chuyên đề không thuộc website hiện tại.';
+        }
         $websiteKey = app(SiteContext::class)->websiteKey();
 
         if (filled($payload['category_id'] ?? null)

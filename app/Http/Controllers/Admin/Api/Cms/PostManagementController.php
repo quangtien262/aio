@@ -32,9 +32,15 @@ class PostManagementController
 
     public function bulkUpdate(Request $request): JsonResponse
     {
+        $websiteKey = app(SiteContext::class)->websiteKey();
+        if ($request->has('topic_ids') && ! \App\Models\CmsTopic::available()) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['topic_ids' => 'Vui lòng nâng cấp ứng dụng CMS trước khi chọn chuyên đề.']);
+        }
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', Rule::exists('cms_posts', 'id')],
+            'ids.*' => ['integer', Rule::exists('cms_posts', 'id')->where('website_key', $websiteKey)],
+            'topic_ids' => ['sometimes', 'array', 'max:50'],
+            'topic_ids.*' => ['integer', 'distinct', Rule::exists('cms_topics', 'id')->where('website_key', $websiteKey)],
             'category_id' => ['sometimes', 'nullable', 'integer', Rule::exists('cms_categories', 'id')],
             'is_highlight' => ['sometimes', 'boolean'],
             'publish_at' => ['sometimes', 'required', 'date'],
@@ -54,13 +60,23 @@ class PostManagementController
             $updates['is_highlight'] = (bool) $validated['is_highlight'];
         }
 
-        if ($updates === []) {
+        if ($updates === [] && ! array_key_exists('topic_ids', $validated)) {
             return response()->json(['message' => 'Khong co thong tin can cap nhat.'], 422);
         }
 
-        $count = CmsPost::query()
-            ->whereIn('id', $validated['ids'])
-            ->update($updates);
+        $count = \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $updates) {
+            $query = CmsPost::query()->whereIn('id', $validated['ids']);
+            if (! array_key_exists('topic_ids', $validated)) {
+                return $query->update($updates);
+            }
+            $posts = $query->lockForUpdate()->get();
+            foreach ($posts as $post) {
+                $post->topics()->sync($validated['topic_ids']);
+                if ($updates !== []) $post->fill($updates);
+                $post->touch();
+            }
+            return $posts->count();
+        });
 
         return response()->json(['message' => 'Da cap nhat bai viet da chon.', 'data' => ['updated' => $count]]);
     }
@@ -92,7 +108,13 @@ class PostManagementController
     {
         $websiteKey = $post?->website_key ?: app(SiteContext::class)->websiteKey();
 
+        if (! empty($request->input('topic_ids')) && ! \App\Models\CmsTopic::available()) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['topic_ids' => 'Vui lòng nâng cấp ứng dụng CMS trước khi chọn chuyên đề.']);
+        }
+
         return $request->validate([
+            'topic_ids' => ['sometimes', 'array', 'max:50'],
+            'topic_ids.*' => ['integer', 'distinct', Rule::exists('cms_topics', 'id')->where('website_key', $websiteKey)],
             'tags' => ['sometimes', 'array', 'max:20'],
             'tags.*' => ['required', 'string', 'max:80'],
             'title' => ['required', 'string', 'max:255'],
@@ -121,6 +143,7 @@ class PostManagementController
     {
         return [
             'id' => $post->id,
+            'topic_ids' => \App\Models\CmsTopic::available() ? $post->topics->pluck('id')->all() : [],
             'tags' => CmsPostTags::available() ? $post->tags->pluck('name')->all() : [],
             'title' => $post->title,
             'slug' => $post->slug,

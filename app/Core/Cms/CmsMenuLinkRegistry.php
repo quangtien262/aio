@@ -41,6 +41,10 @@ final class CmsMenuLinkRegistry
             'resource_type' => 'catalog_product',
             'model' => CatalogProduct::class,
         ],
+        'post-topic' => [
+            'resource_type' => 'cms_topic',
+            'model' => \App\Models\CmsTopic::class,
+        ],
         'post-category' => [
             'resource_type' => 'cms_category',
             'model' => CmsCategory::class,

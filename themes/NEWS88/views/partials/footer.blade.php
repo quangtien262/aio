@@ -10,7 +10,17 @@
     $email = trim((string) data_get($branding, 'support_email'));
     $copyright = trim((string) data_get($branding, 'copyright_text'));
     $footerBlock = collect($landingBlocks ?? [])->first(fn($block) => data_get($block, 'block_type') === 'news88_footer_posts');
-    $footerPosts = collect(data_get($footerBlock, 'dynamic_items', data_get($footerBlock, 'data.content.items', [])))->take(4);
+    $canEditFooter = ($canEditLanding ?? false) && $footerBlock !== null;
+    if ($footerBlock === null) {
+        $websiteKey = app(\App\Support\SiteContext::class)->websiteKey();
+        $builder = app(\App\Support\LandingPages\LandingPageBuilder::class);
+        $home = $builder->resolveHome($websiteKey, 'NEWS88', false);
+        $savedFooter = $home?->blocks->first(fn($block) => $block->block_type === 'news88_footer_posts' && $block->is_visible);
+        if ($savedFooter) {
+            $footerBlock = $builder->serializeBlock($savedFooter, app()->getLocale(), app(\App\Support\Localization\LocaleContext::class)->sourceLocale($websiteKey), true, false, $websiteKey);
+        }
+    }
+    $footerPosts = collect(data_get($footerBlock, 'dynamic_items', data_get($footerBlock, 'data.content.items', [])));
     $footerTags = app(\App\Support\CmsPostTags::class)->publicTags(app(\App\Support\SiteContext::class)->websiteKey(), app()->getLocale());
 @endphp
 <footer class="n88-footer" id="footer">
@@ -29,10 +39,12 @@
                 @endforeach
             </div>
         </section>
+        @if($footerBlock)
         <section class="xd-landing-block" data-landing-block-id="{{ data_get($footerBlock, 'id') }}" data-block-type="news88_footer_posts">
-            @include('theme-news88::partials.edit-button', ['block' => $footerBlock])
+            @include('theme-news88::partials.edit-button', ['block' => $footerBlock, 'canEditLanding' => $canEditFooter])
             <h2>@themeT('NEWS88.recent', 'Tin Gần Đây')</h2><div class="n88-footer-posts">@foreach($footerPosts as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a>@endforeach</div>
         </section>
+        @endif
         @if($footerTags)
         <section class="n88-footer-tags"><h2>Tags</h2><div class="n88-tags">@foreach($footerTags as $tag)<a href="{{ $tag['url'] }}" rel="tag">{{ $tag['name'] }}</a>@endforeach</div></section>
         @endif

@@ -112,6 +112,7 @@ export default function CmsPostFormModal({
     editingPost,
     mediaOptions = [],
     categoryOptions = [],
+    topicOptions = [],
     tagOptions = [],
     tagsAvailable = true,
     localeOptions = [],
@@ -166,6 +167,7 @@ export default function CmsPostFormModal({
         form.setFieldsValue({
             status: 'published',
             tags: [],
+            topic_ids: [],
             ...editingPost,
             meta_title: editingPost?.meta_title || editingPost?.title || '',
             meta_description: editingPost?.meta_description || editingPost?.excerpt || '',
@@ -518,6 +520,7 @@ export default function CmsPostFormModal({
             meta_keywords: values.meta_keywords || null,
             featured_media_id: values.featured_media_id || null,
             category_id: values.category_id || null,
+            topic_ids: values.topic_ids ?? [],
             is_highlight: Boolean(values.is_highlight),
             publish_at: values.status === 'published' ? dayjs().format('YYYY-MM-DDTHH:mm:ss') : null,
         });
@@ -703,6 +706,7 @@ export default function CmsPostFormModal({
                     <Card size="small" className="cms-post-form-card" title="Phân loại và hiển thị">
                         <Row gutter={[16, 14]} align="top">
                             <Col xs={24} md={12}>
+                                <Form.Item name="topic_ids" label="Chuyên đề" extra="Có thể chọn nhiều chuyên đề."><Select mode="multiple" allowClear disabled={translationMode} options={topicOptions} placeholder="Chọn chuyên đề" /></Form.Item>
                                 <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 0 }}>
                                     <Select disabled={translationMode} allowClear showSearch optionFilterProp="label" options={categoryOptions} placeholder="Chọn danh mục" />
                                 </Form.Item>

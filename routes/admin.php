@@ -749,6 +749,10 @@ Route::prefix('admin')
                 Route::delete('/cms/partners/{partner}', [PartnerManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.delete')
                     ->name('cms.partners.destroy');
+                Route::get('/cms/topics', [\App\Http\Controllers\Admin\Api\Cms\TopicManagementController::class, 'index'])->middleware('admin.permission:cms.view')->name('cms.topics.index');
+                Route::post('/cms/topics', [\App\Http\Controllers\Admin\Api\Cms\TopicManagementController::class, 'store'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.store');
+                Route::put('/cms/topics/{topic}', [\App\Http\Controllers\Admin\Api\Cms\TopicManagementController::class, 'update'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.update');
+                Route::delete('/cms/topics/{topic}', [\App\Http\Controllers\Admin\Api\Cms\TopicManagementController::class, 'destroy'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.destroy');
                 Route::get('/cms/categories', CategoryIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.categories.index');

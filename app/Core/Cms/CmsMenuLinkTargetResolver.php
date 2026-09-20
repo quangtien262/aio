@@ -208,6 +208,7 @@ final class CmsMenuLinkTargetResolver
         return [
             'catalog_category' => ['model' => CatalogCategory::class, 'slug' => 'slug'],
             'catalog_product' => ['model' => CatalogProduct::class, 'slug' => 'slug'],
+            'cms_topic' => ['model' => \App\Models\CmsTopic::class, 'slug' => 'slug'],
             'cms_category' => ['model' => CmsCategory::class, 'slug' => 'slug'],
             'cms_post' => ['model' => CmsPost::class, 'slug' => 'slug'],
             'cms_service_category' => ['model' => CmsServiceCategory::class, 'slug' => 'slug'],
@@ -225,6 +226,7 @@ final class CmsMenuLinkTargetResolver
         return match ($resourceType) {
             'catalog_category' => FrontendRouteUrl::categoryPath($slug, $locale),
             'catalog_product' => FrontendRouteUrl::productPath($slug, $locale),
+            'cms_topic' => '/topics/'.rawurlencode($slug),
             'cms_category' => FrontendRouteUrl::blogCategoryPath($slug),
             'cms_post' => FrontendRouteUrl::postPath($slug),
             'cms_service_category' => FrontendRouteUrl::serviceCategoryPath($slug),

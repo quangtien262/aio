@@ -40,12 +40,12 @@ class CmsPostTags
             && \Illuminate\Support\Facades\Schema::hasTable('cms_post_tag');
     }
 
-    public function publishedPosts(CmsTag $tag, string $locale): Builder
+    public function publishedPosts(CmsTag|\App\Models\CmsTopic $tag, string $locale): Builder
     {
         $query = CmsPost::query()->where('website_key', $tag->website_key)
             ->where('status', 'published')
             ->where(fn ($q) => $q->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
-            ->whereHas('tags', fn ($q) => $q->where('cms_tags.id', $tag->id));
+            ->whereHas($tag instanceof CmsTag ? 'tags' : 'topics', fn ($q) => $q->where($tag->qualifyColumn('id'), $tag->id));
         $sourceLocale = app(LocaleContext::class)->sourceLocale();
         if ($locale !== $sourceLocale) {
             $query->whereExists(function ($q) use ($tag, $locale, $sourceLocale): void {

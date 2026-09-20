@@ -125,6 +125,14 @@ class LocalizedContentController
             $rules['payload.slug'] = ['nullable', 'string', 'max:255'];
         }
 
+        if ($resourceType === 'cms_topic') {
+            $rules['payload.name'] = ['required', 'string', 'max:255'];
+            $rules['payload.slug'] = ['nullable', 'string', 'max:255'];
+            $rules['payload.description'] = ['nullable', 'string'];
+            $rules['payload.meta_title'] = ['nullable', 'string', 'max:255'];
+            $rules['payload.meta_description'] = ['nullable', 'string', 'max:1000'];
+        }
+
         $rules['publish'] = ['nullable', 'boolean'];
         $rules['is_machine_translated'] = ['nullable', 'boolean'];
         $validated = $request->validate($rules);

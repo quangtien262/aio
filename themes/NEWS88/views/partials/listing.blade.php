@@ -1,12 +1,13 @@
 @php
     $source = $listingItems ?? $entries ?? $posts ?? $products ?? $services ?? $projects ?? [];
     $entries = is_object($source) && method_exists($source, 'getCollection') ? $source->getCollection() : collect($source);
-    $heading = $pageTitle ?? $title ?? __('NEWS88.latest');
+    $heading = ($topic->name ?? null) ?? $pageTitle ?? $title ?? __('NEWS88.latest');
     $searchTerm = ($contentType ?? null) === 'posts' ? trim((string) ($postFilters['q'] ?? '')) : '';
     $fallback = '/theme-demo/news88/hero-mekong.png';
 @endphp
 <main class="n88-inner"><div class="n88-container">
-    <header class="n88-inner-head"><h1>{{ $heading }}</h1>@if($searchTerm !== '')<p>@themeT('NEWS88.search_results', 'Kết quả tìm kiếm cho'): <strong>{{ $searchTerm }}</strong></p>@elseif(filled($pageDescription ?? null))<p>{{ $pageDescription }}</p>@endif</header>
+    @if(filled($topic->image_url ?? null))<img src="{{ $topic->image_url }}" alt="{{ $topic->name }}" style="width:100%;max-height:360px;object-fit:cover;margin-bottom:24px">@endif
+    <header class="n88-inner-head"><h1>{{ $heading }}</h1>@if($searchTerm !== '')<p>@themeT('NEWS88.search_results', 'Kết quả tìm kiếm cho'): <strong>{{ $searchTerm }}</strong></p>@elseif(filled($topic->description ?? $pageDescription ?? null))<p>{{ $topic->description ?? $pageDescription }}</p>@endif</header>
     <div class="n88-list">
         @forelse($entries as $item)
             @php

@@ -361,6 +361,43 @@ class CmsSiteController
         ]);
     }
 
+    public function postsByTopic(Request $request): View|RedirectResponse
+    {
+        abort_unless(\App\Models\CmsTopic::available(), 404);
+        $profile = $this->currentSiteProfile();
+        $websiteKey = $this->resolveWebsiteKey($profile);
+        $locale = $this->currentLocale();
+        $resolution = $this->localizedContent->resolvePublishedBySlug('cms_topic', $websiteKey, $locale, (string) $request->route('slug'));
+        abort_if($resolution === null, 404);
+        $topic = $resolution['model'];
+        if ($resolution['used_fallback'] || $resolution['redirect_to'] !== null) {
+            return redirect()->to(FrontendRouteUrl::topic($topic->slug, $resolution['resolved_locale']), $resolution['redirect_to'] !== null ? 301 : 302);
+        }
+
+        $posts = app(\App\Support\CmsPostTags::class)->publishedPosts($topic, $locale)
+            ->with(['category', 'featuredMedia'])->latest('publish_at')->orderByDesc('id')->paginate(10)->withQueryString();
+        $title = $topic->name;
+        $canonical = FrontendRouteUrl::topic($topic->slug, $locale);
+        $page = max(1, (int) $request->query('page', 1));
+        $alternates = [];
+        foreach (FrontendLocalization::localeOptions() as $option) {
+            $code = $option['code'];
+            $path = $this->localizedContent->publicCanonicalPath($topic, 'cms_topic', $code, $websiteKey);
+            if ($path !== null) {
+                $alternates[$code] = FrontendRouteUrl::localized($path, $code);
+            }
+        }
+
+        return $this->renderListing('posts', $title, $topic->description ?? '', $posts, [
+            'siteProfile' => $profile,
+            'topic' => $topic,
+            'pageTitle' => $topic->meta_title ?: $title,
+            'pageDescription' => $topic->meta_description ?: $topic->description,
+            'canonicalUrl' => $canonical.($page > 1 ? '?page='.$page : ''),
+            'hreflangUrls' => $page === 1 ? $alternates : [],
+        ]);
+    }
+
     public function postsByTag(Request $request): View|RedirectResponse
     {
         abort_unless(\App\Support\CmsPostTags::available(), 404);

@@ -1029,6 +1029,7 @@ class LocalizedContentRepository
         ?string $locale = null,
     ): ?string {
         return match ($resourceType) {
+            'cms_topic' => '/topics/'.rawurlencode($slug),
             'cms_tag' => '/tags/'.rawurlencode($slug),
             'cms_post' => FrontendRouteUrl::postPath($slug),
             'cms_service' => FrontendRouteUrl::servicePath($slug),
@@ -1046,6 +1047,7 @@ class LocalizedContentRepository
     private function routeName(string $resourceType): ?string
     {
         return match ($resourceType) {
+            'cms_topic' => 'site.blog.topic',
             'cms_tag' => 'site.blog.tag',
             'cms_post' => 'site.blog.show',
             'cms_service' => 'site.services.show',

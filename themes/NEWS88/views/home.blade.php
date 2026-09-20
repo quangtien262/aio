@@ -39,7 +39,7 @@
             <div class="n88-panel n88-latest-panel">
             @include('theme-news88::partials.edit-button', ['block' => $latest])
             <header><h2>{{ data_get($latest, 'data.title', __('NEWS88.latest')) }}</h2></header><div class="n88-latest-grid">
-                @foreach($latestItems->take(6) as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"></a><h3><a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a></h3><small>@themeT('NEWS88.date', 'Ngày'): {{ $date($item) }} <b>@themeT('NEWS88.views', 'Lượt xem'): {{ $views($item) }}</b></small><p>{{ data_get($item, 'summary') }}</p></article>@endforeach
+                @foreach($latestItems->take(6) as $item)<article data-n88-reveal><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image') }}" alt="{{ data_get($item, 'title') }}"></a><h3><a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title') }}</a></h3><small>@themeT('NEWS88.date', 'Ngày'): {{ $date($item) }} <b>@themeT('NEWS88.views', 'Lượt xem'): {{ $views($item) }}</b></small></article>@endforeach
             </div></div>
             <aside class="n88-panel n88-video-panel xd-landing-block" id="video" data-landing-block-id="{{ data_get($video, 'id') }}" data-block-type="news88_video_posts">
                 @include('theme-news88::partials.edit-button', ['block' => $video])
