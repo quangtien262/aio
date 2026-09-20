@@ -1,4 +1,11 @@
 @extends('theme-auto851::layout')
+@php
+    $title = data_get($productModel, 'name', data_get($product, 'title', ''));
+    $image = data_get($product, 'image') ?: data_get($productModel, 'image_url');
+    $price = data_get($productModel, 'price', 0);
+    $pageTitle = data_get($productModel, 'meta_title') ?: $title;
+    $pageDescription = data_get($productModel, 'meta_description') ?: strip_tags(data_get($productModel, 'short_description', '') ?? '');
+@endphp
 @section('content')
 <main><section class="a851-inner-hero"><div class="a851-container"><small>@themeT('products', 'Sản phẩm')</small><h1>{{ $title }}</h1></div></section><section class="a851-content"><div class="a851-container a851-detail">
     <div class="a851-detail-media"><img src="{{ $image ?: asset('themes/AUTO851/images/accessory-1.png') }}" alt="{{ $title }}"></div>

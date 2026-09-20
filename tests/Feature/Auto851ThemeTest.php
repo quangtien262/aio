@@ -39,6 +39,18 @@ class Auto851ThemeTest extends TestCase
         $this->get(route('site.home', ['locale' => 'vi']))->assertOk()->assertSee('/storage/branding/auto851-sentinel.svg', false)->assertSee('0888 851 851')->assertSee('auto851@sentinel.test')->assertSee('Showroom Sentinel')->assertSee('SUV AUTO851 Sentinel')->assertSee('Blog AUTO851 Sentinel')->assertSee('Khách AUTO851 Sentinel')->assertSee('data-block-type="auto851_newsletter"', false)->assertDontSee('support@htvietnam.vn')->assertDontSee('266 Đội Cấn');
     }
 
+    public function test_auto851_product_detail_uses_runtime_product_data(): void
+    {
+        SiteProfile::create(['site_name' => 'Auto detail', 'website_type' => 'ecommerce', 'active_theme_key' => 'AUTO851']);
+        $product = CatalogProduct::create(['name' => 'CCGT Hypercar', 'slug' => 'auto851-ccgt-hypercar', 'sku' => 'DETAIL-851', 'price' => 16000000000, 'stock' => 1, 'image_url' => '/themes/AUTO851/images/car-1.png', 'detail_content' => '<p>Chi tiết xe kiểm thử.</p>', 'is_active' => true]);
+        $url = route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]);
+        $this->get($url)->assertOk()->assertSee('CCGT Hypercar')->assertSee('16.000.000.000đ')
+            ->assertSee('/themes/AUTO851/images/car-1.png', false)->assertSee('Chi tiết xe kiểm thử.')
+            ->assertSee(route('site.cart.add', ['locale' => 'vi', 'slug' => $product->slug]), false);
+        $product->update(['price' => 0, 'image_url' => null]);
+        $this->get($url)->assertOk()->assertSee('Liên hệ')->assertSee('CCGT Hypercar');
+    }
+
     public function test_auto851_demo_provider_is_registered_repeatable_and_filters_product_groups(): void
     {
         $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('AUTO851'); $this->assertNotNull($provider); $this->assertSame('auto851-ohcar-marketplace', $provider->defaultPreset());
