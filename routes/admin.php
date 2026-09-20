@@ -626,6 +626,9 @@ Route::prefix('admin')
                 Route::get('/cms/posts', PostIndexController::class)
                     ->middleware('admin.permission:cms.post.view')
                     ->name('cms.posts.index');
+                Route::get('/cms/dashboard', \App\Http\Controllers\Admin\Api\Cms\CmsDashboardController::class)
+                    ->middleware('admin.permission:cms.view')
+                    ->name('cms.dashboard');
                 Route::post('/cms/posts', [PostManagementController::class, 'store'])
                     ->middleware('admin.permission:cms.post.create')
                     ->name('cms.posts.store');

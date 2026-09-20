@@ -39,6 +39,14 @@
   ],
   "menus": [
     {
+      "key": "cms-dashboard",
+      "label": "Tổng quan",
+      "description": "Tổng quan nội dung và hoạt động xuất bản của website.",
+      "icon": "dashboard",
+      "route": "/admin/cms/dashboard",
+      "permission": "cms.view"
+    },
+    {
       "key": "cms-pages",
       "label": "Pages",
       "description": "Quản lý page công khai, SEO cơ bản và preview unpublished.",

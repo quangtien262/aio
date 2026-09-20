@@ -12,6 +12,7 @@ import { ADMIN_API_ROUTES, adminApi } from '../../shared/config/routes';
 
 const { Paragraph, Title, Text } = Typography;
 const CmsManagerPage = lazy(() => import('../../modules/cms/pages/CmsManagerPage'));
+const CmsDashboardPage = lazy(() => import('../../modules/cms/pages/CmsDashboardPage'));
 const CatalogManagerPage = lazy(() => import('../../modules/catalog/pages/CatalogManagerPage'));
 const InventoryManagerPage = lazy(() => import('../../modules/inventory/pages/InventoryManagerPage'));
 const ProjectManagerPage = lazy(() => import('../../modules/project/pages/ProjectManagerPage'));
@@ -52,6 +53,9 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
     }
 
     if (modulePayload.key === 'cms') {
+        if (moduleMenu?.key === 'cms-dashboard') {
+            return <Suspense fallback={<Card loading title="Tổng quan CMS" />}><CmsDashboardPage callAdminApi={callAdminApi} currentPermissions={currentPermissions} /></Suspense>;
+        }
         if (moduleMenu?.key === 'cms-newsletter') {
             return (
                 <NewsletterSubscribersRoutePage
