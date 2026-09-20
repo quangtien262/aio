@@ -43,6 +43,18 @@ class Auto852ThemeTest extends TestCase
         $this->get(route('site.home', ['locale' => 'vi']))->assertOk()->assertSee('/storage/branding/auto852-sentinel.svg', false)->assertSee('0888 852 852')->assertSee('auto852@sentinel.test')->assertSee('Detailing Sentinel')->assertSee('Dung dịch AUTO852 Sentinel')->assertSee('Phủ bóng AUTO852 Sentinel')->assertSee('Kiến thức AUTO852 Sentinel')->assertSee('data-block-type="auto852_pricing"', false)->assertDontSee('support@htvietnam.vn')->assertDontSee('70 Lữ Gia');
     }
 
+    public function test_auto852_product_detail_renders_product_data_and_contact_price(): void
+    {
+        SiteProfile::create(['site_name' => 'Detail product', 'website_type' => 'ecommerce', 'active_theme_key' => 'AUTO852']);
+        $product = CatalogProduct::create(['name' => 'Dung dịch đánh bóng hoàn thiện', 'slug' => 'auto852-dung-dich-danh-bong-hoan-thien', 'sku' => 'A852-DETAIL', 'price' => 285000, 'stock' => 9, 'image_url' => '/themes/AUTO852/images/product-1.png', 'detail_content' => '<p>Thông tin dung dịch kiểm thử.</p>', 'is_active' => true]);
+        $url = route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]);
+        $this->get($url)->assertOk()->assertSee($product->name)->assertSee('285.000đ')
+            ->assertSee('/themes/AUTO852/images/product-1.png', false)->assertSee('Thông tin dung dịch kiểm thử.')
+            ->assertSee(route('site.cart.add', ['locale' => 'vi', 'slug' => $product->slug]), false);
+        $product->update(['price' => 0, 'image_url' => null]);
+        $this->get($url)->assertOk()->assertSee($product->name)->assertSee('Liên hệ');
+    }
+
     public function test_auto852_demo_provider_is_registered_and_repeatable(): void
     {
         $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('AUTO852'); $this->assertNotNull($provider); $this->assertSame('auto852-onyx-detailing', $provider->defaultPreset());

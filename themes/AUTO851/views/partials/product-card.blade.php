@@ -6,6 +6,6 @@
     $original = (float) data_get($item, 'original_price', 0);
 @endphp
 <article class="a851-product-card">
-    <a class="a851-product-image" href="{{ $url }}">@if($original > $price && $price > 0)<span>-{{ (int) round((1 - $price / $original) * 100) }}%</span>@endif<img src="{{ $image }}" alt="{{ $title }}" loading="lazy"><i class="fa-solid fa-cart-plus"></i></a>
+    <a class="a851-product-image" href="{{ $url }}">@if($original > $price && $price > 0)<span>-{{ (int) round((1 - $price / $original) * 100) }}%</span>@endif<img src="{{ $image }}" alt="{{ $title }}" loading="lazy"></a>
     <div class="a851-product-copy"><h3><a href="{{ $url }}">{{ $title }}</a></h3><div class="a851-price"><strong>{{ $price > 0 ? number_format($price, 0, ',', '.').'đ' : app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('AUTO851', app()->getLocale(), 'price.contact', 'Liên hệ') }}</strong>@if($original > $price && $price > 0)<del>{{ number_format($original, 0, ',', '.').'đ' }}</del>@endif</div></div>
 </article>
