@@ -1,5 +1,15 @@
 <script>
 (() => {
+    document.querySelectorAll('.n88-article-body table').forEach(table => {
+        if (table.parentElement.classList.contains('n88-table-scroll')) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'n88-table-scroll';
+        wrapper.tabIndex = 0;
+        wrapper.setAttribute('role', 'region');
+        wrapper.setAttribute('aria-label', table.caption?.textContent?.trim() || (document.documentElement.lang.startsWith('vi') ? 'Bảng nội dung, có thể cuộn ngang' : 'Content table, horizontally scrollable'));
+        table.before(wrapper);
+        wrapper.append(table);
+    });
     const nav = document.querySelector('[data-n88-nav]');
     const menuButton = document.querySelector('[data-n88-menu]');
     const setSubmenu = (button, open) => {
