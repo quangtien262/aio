@@ -15,10 +15,12 @@ class TopicManagementController
         abort_unless(CmsTopic::available(), 503, 'Chuyên đề chưa sẵn sàng. Vui lòng nâng cấp ứng dụng CMS để cập nhật cơ sở dữ liệu.');
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request, \App\Support\Localization\AdminLocalizedContentList $localizedList): JsonResponse
     {
         $this->ensureAvailable();
-        return response()->json(['data' => ['items' => CmsTopic::query()->withCount('posts')->orderBy('name')->get()]]);
+        $items = CmsTopic::query()->withCount('posts')->orderBy('name')->get()->toArray();
+        $items = array_map(fn ($item) => [...$item, '_source' => $item], $items);
+        return response()->json(['data' => ['items' => $localizedList->overlay($items, 'cms_topic', $request->query('locale'))]]);
     }
 
     public function store(Request $request): JsonResponse

@@ -72,7 +72,7 @@ class PostIndexController
                     'highlight' => collect($items)->where('is_highlight', true)->count(),
                 ],
                 'topicsAvailable' => $topicsAvailable,
-                'topics' => $topicsAvailable ? \App\Models\CmsTopic::orderBy('name')->get()->map(fn ($topic) => ['value' => $topic->id, 'label' => $topic->name])->all() : [],
+                'topics' => $topicsAvailable ? collect($this->localizedList->overlay(\App\Models\CmsTopic::orderBy('name')->get()->toArray(), 'cms_topic', $request->query('locale')))->map(fn ($topic) => ['value' => $topic['id'], 'label' => $topic['name']])->all() : [],
                 'tagsAvailable' => $tagsAvailable,
                 'tagOptions' => $tagsAvailable ? CmsTag::query()->orderBy('name')->get()->map(fn ($tag): array => ['id' => $tag->id, 'label' => $tag->name, 'value' => $tag->name])->all() : [],
                 'categories' => $categoryQuery->get(['id', 'name'])->map(fn (CmsCategory $category): array => ['label' => $category->name, 'value' => $category->id])->values()->all(),

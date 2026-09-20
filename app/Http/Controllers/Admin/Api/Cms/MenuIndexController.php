@@ -108,8 +108,8 @@ class MenuIndexController
                         ])
                         ->values()
                         ->all(),
-                    'postTopics' => (\App\Models\CmsTopic::available() ? \App\Models\CmsTopic::orderBy('name')->get() : collect())->map(fn ($topic) => [
-                        'label' => $topic->name, 'value' => (string) $topic->id, 'url' => '/topics/'.rawurlencode($topic->slug),
+                    'postTopics' => collect($this->localizedList->overlay(\App\Models\CmsTopic::available() ? \App\Models\CmsTopic::orderBy('name')->get()->toArray() : [], 'cms_topic', $request->query('locale')))->map(fn ($topic) => [
+                        'label' => $topic['name'], 'value' => (string) $topic['id'], 'url' => '/topics/'.rawurlencode($topic['slug']),
                     ])->all(),
                     'postCategories' => CmsCategory::query()
                         ->orderBy('name')

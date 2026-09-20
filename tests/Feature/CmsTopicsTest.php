@@ -104,7 +104,14 @@ class CmsTopicsTest extends TestCase
         $post = CmsPost::create(['title' => 'Bài gốc', 'slug' => 'bai-goc', 'status' => 'published']);
         $post->topics()->attach($topic);
         $endpoint = '/admin/api/localization/content/cms_topic/'.$topic->id.'/en';
+        $this->getJson('/admin/api/cms/topics?locale=en')->assertOk()->assertJsonPath('data.items.0._translation_status', 'missing')->assertJsonPath('data.items.0.name', 'Sống xanh');
+        $this->putJson($endpoint, ['payload' => ['name' => 'Green draft', 'slug' => 'green-draft'], 'publish' => false])->assertOk();
+        $this->getJson('/admin/api/cms/topics?locale=en')->assertOk()->assertJsonPath('data.items.0._translation_status', 'draft');
+        $this->get('/en/topics/green-draft')->assertNotFound();
         $this->putJson($endpoint, ['payload' => ['name' => 'Green living', 'slug' => 'green-living'], 'publish' => true])->assertOk();
+        $this->getJson('/admin/api/cms/topics?locale=en')->assertOk()->assertJsonPath('data.items.0.name', 'Green living')->assertJsonPath('data.items.0._source.name', 'Sống xanh')->assertJsonPath('data.items.0._translation_status', 'published');
+        $this->getJson('/admin/api/cms/posts?locale=en')->assertOk()->assertJsonPath('data.topics.0.label', 'Green living');
+        $this->getJson('/admin/api/cms/menus?locale=en')->assertOk()->assertJsonPath('data.linkOptions.postTopics.0.label', 'Green living')->assertJsonPath('data.linkOptions.postTopics.0.url', '/topics/green-living');
         $this->get('/en/topics/green-living')->assertOk()->assertDontSee('Bài gốc');
         $this->putJson('/admin/api/localization/content/cms_post/'.$post->id.'/en', ['payload' => ['title' => 'Green story', 'slug' => 'green-story'], 'publish' => true])->assertOk();
         $this->get('/en/topics/green-living')->assertOk()->assertSee('Green story')->assertSee('/en/n/green-story', false);

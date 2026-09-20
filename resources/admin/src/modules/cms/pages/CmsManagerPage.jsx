@@ -5272,7 +5272,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
                                         ],
                                         onClick: ({ key }) => key === 'categories' ? openCategoryManager() : openTopics(),
                                     }}>
-                                        <Button color="orange" variant="filled" icon={<SettingOutlined />} aria-label="Cài đặt tin tức" title="Cài đặt tin tức" />
+                                        <Button color="blue" variant="filled" icon={<SettingOutlined />} aria-label="Cài đặt tin tức" title="Cài đặt tin tức" />
                                     </Dropdown>
                                 )}
                             />

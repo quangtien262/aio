@@ -5,13 +5,16 @@ test('manage topics and select multiple topics in a post', async ({ page }) => {
     const entry = JSON.parse(readFileSync('public/build/manifest.json', 'utf8'))['resources/admin/src/main.jsx'];
     let topics = [{ id: 1, name: 'Sống xanh', slug: 'song-xanh', is_active: true, posts_count: 0 }];
     let savedPost;
+    let savedTranslation;
     await page.route('**/admin/cms/posts', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><head><meta charset="utf-8"><meta name="csrf-token" content="test">${(entry.css ?? []).map(file => `<link rel="stylesheet" href="/build/${file}">`).join('')}</head><body><div id="admin-root"></div><script type="module" src="/build/${entry.file}"></script></body></html>` }));
     await page.route('**/admin/api/**', async route => {
         const path = new URL(route.request().url()).pathname;
         const method = route.request().method();
         const json = data => route.fulfill({ json: { data } });
         if (path.endsWith('/me')) return json({ id: 1, permissions: ['cms.view', 'cms.category.manage', 'cms.post.view', 'cms.post.create', 'cms.post.update', 'cms.publish'], module_navigation: [{ key: 'cms-posts', label: 'Tin tức', module_key: 'cms', source: 'module', route: '/admin/cms/posts', permission: 'cms.post.view' }], current_website: { website_key: 'website-main' } });
-        if (path.endsWith('/themes/locales')) return json({ source_locale: 'vi', locales: [{ code: 'vi', name: 'Tiếng Việt', is_enabled_for_editing: true, is_published: true }] });
+        if (path.endsWith('/themes/locales')) return json({ source_locale: 'vi', locales: [{ code: 'vi', name: 'Tiếng Việt', is_enabled_for_editing: true, is_published: true }, { code: 'en', name: 'English', is_enabled_for_editing: true, is_published: true }] });
+        if (path.endsWith('/localization/content/cms_topic/1/en')) { savedTranslation = route.request().postDataJSON(); return json({}); }
+        if (path.endsWith('/localization/content/cms_topic/1')) return json({ translations: {} });
         if (path.endsWith('/cms/topics') && method === 'POST') { const item = { ...route.request().postDataJSON(), id: 2, posts_count: 0 }; topics.push(item); return json(item); }
         if (path.endsWith('/cms/topics')) return json({ items: topics });
         if (path.endsWith('/cms/topics/2') && method === 'PUT') { topics[1] = { ...topics[1], ...route.request().postDataJSON() }; return json(topics[1]); }
@@ -36,6 +39,16 @@ test('manage topics and select multiple topics in a post', async ({ page }) => {
     await form.getByRole('button', { name: 'Lưu chuyên đề' }).click();
     await expect(form).not.toBeVisible();
     await expect(manager.getByText('Tết mới', { exact: true })).toBeVisible();
+    await manager.locator('.ant-select-selector').click();
+    await page.locator('.ant-select-dropdown:visible .ant-select-item-option-content').getByText('English', { exact: true }).click();
+    await manager.getByRole('button', { name: 'Dịch', exact: true }).first().click();
+    const translation = page.getByRole('dialog', { name: 'Cập nhật chuyên đề', exact: true });
+    await expect(translation.getByLabel('Tên chuyên đề', { exact: true })).toHaveValue('');
+    await translation.getByLabel('Tên chuyên đề', { exact: true }).fill('Green living');
+    await translation.getByLabel('Slug', { exact: true }).fill('green-living');
+    await translation.getByRole('button', { name: 'Xuất bản bản dịch', exact: true }).click();
+    await expect(translation).not.toBeVisible();
+    expect(savedTranslation).toMatchObject({ publish: true, payload: { name: 'Green living', slug: 'green-living' } });
     await manager.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: /Tạo Tin tức/ }).click();
     const post = page.getByRole('dialog', { name: 'Tạo bài viết CMS', exact: true });

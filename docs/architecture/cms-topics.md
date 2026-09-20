@@ -32,3 +32,10 @@ node node_modules/@playwright/test/cli.js test tests/browser/cms-topics.spec.js
 ```
 
 Kiểm thử trình duyệt dùng API giả lập, không tạo dữ liệu trên website thật.
+# Đa ngôn ngữ trong quản trị chuyên đề
+
+Trong **Cài đặt tin tức → QL chuyên đề**, chọn ngôn ngữ của danh sách. Ngôn ngữ gốc cho phép thêm/sửa/xóa chuyên đề; ở ngôn ngữ khác, bấm **Dịch** để nhập tên, slug, mô tả và SEO riêng, sau đó **Lưu nháp** hoặc **Xuất bản bản dịch**. Chuyên đề mới luôn được tạo ở ngôn ngữ gốc trước khi dịch.
+
+Danh sách thể hiện trạng thái **Chưa dịch**, **Bản nháp**, **Đã xuất bản**. Tên gốc được dùng để đối chiếu khi chưa có bản dịch trong quản trị. Bộ chọn chuyên đề của bài viết, bộ lọc và loại liên kết chuyên đề trong quản lý menu lấy tên theo ngôn ngữ nội dung đang chọn.
+
+Ảnh, quan hệ bài viết–chuyên đề và trạng thái hiển thị gốc dùng chung. Việc xóa chuyên đề thực hiện tại ngôn ngữ gốc và xóa toàn bộ bản dịch. Ngoài website chỉ sử dụng bản dịch đã xuất bản và ngôn ngữ đã bật công khai.
