@@ -6,7 +6,7 @@
   "website_type": "ecommerce",
   "requires_modules": ["catalog", "cms"],
   "parent": null,
-  "preview": {"thumbnail": "preview-auto850.png", "cover": "cover-auto850.png"},
+  "preview": {"thumbnail": "preview-auto850.png", "cover": "preview-auto850.png"},
   "blocks": ["auto850-hero", "auto850-brands", "auto850-about", "auto850-categories", "auto850-deals", "auto850-featured-products", "auto850-services", "auto850-process", "auto850-testimonials", "auto850-news", "auto850-faq", "auto850-booking"],
   "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "responsive_navigation": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},

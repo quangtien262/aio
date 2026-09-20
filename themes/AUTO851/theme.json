@@ -6,7 +6,7 @@
   "website_type": "ecommerce",
   "requires_modules": ["catalog", "cms"],
   "parent": null,
-  "preview": {"thumbnail": "preview-auto851.png", "cover": "cover-auto851.png"},
+  "preview": {"thumbnail": "preview-auto851.png", "cover": "preview-auto851.png"},
   "blocks": ["auto851-hero", "auto851-model-rail", "auto851-buy-sell", "auto851-featured-cars", "auto851-accessories", "auto851-testimonials", "auto851-faq", "auto851-news", "auto851-newsletter"],
   "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "responsive_navigation": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},

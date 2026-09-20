@@ -43,9 +43,16 @@ class Auto851ThemeTest extends TestCase
     {
         SiteProfile::create(['site_name' => 'Auto detail', 'website_type' => 'ecommerce', 'active_theme_key' => 'AUTO851']);
         $product = CatalogProduct::create(['name' => 'CCGT Hypercar', 'slug' => 'auto851-ccgt-hypercar', 'sku' => 'DETAIL-851', 'price' => 16000000000, 'stock' => 1, 'image_url' => '/themes/AUTO851/images/car-1.png', 'detail_content' => '<p>Chi tiết xe kiểm thử.</p>', 'is_active' => true]);
+        $category = CatalogCategory::create(['name' => 'Hypercar', 'slug' => 'hypercar', 'is_active' => true]);
+        $product->update(['catalog_category_id' => $category->id]);
+        $related = CatalogProduct::create(['name' => 'Related car', 'slug' => 'related-car', 'sku' => 'RELATED-851', 'price' => 900000000, 'stock' => 2, 'catalog_category_id' => $category->id, 'is_active' => true]);
+        CatalogProduct::create(['name' => 'Hidden car', 'slug' => 'hidden-car', 'sku' => 'HIDDEN-851', 'price' => 1, 'stock' => 1, 'is_active' => false]);
+        CatalogProduct::create(['website_key' => 'other-site', 'name' => 'Foreign car', 'slug' => 'foreign-car', 'sku' => 'FOREIGN-851', 'price' => 1, 'stock' => 1, 'is_active' => true]);
         $url = route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]);
         $this->get($url)->assertOk()->assertSee('CCGT Hypercar')->assertSee('16.000.000.000đ')
             ->assertSee('/themes/AUTO851/images/car-1.png', false)->assertSee('Chi tiết xe kiểm thử.')
+            ->assertSee('Sản phẩm liên quan')->assertSee('Sản phẩm mới nhất')->assertSee('Related car')->assertDontSee('Hidden car')->assertDontSee('Foreign car')
+            ->assertViewHas('latestProducts', fn ($items) => count($items) === 1 && $items[0]['title'] === 'Related car')
             ->assertSee(route('site.cart.add', ['locale' => 'vi', 'slug' => $product->slug]), false);
         $product->update(['price' => 0, 'image_url' => null]);
         $this->get($url)->assertOk()->assertSee('Liên hệ')->assertSee('CCGT Hypercar');

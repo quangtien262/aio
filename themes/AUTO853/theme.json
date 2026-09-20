@@ -6,7 +6,7 @@
   "website_type": "ecommerce",
   "requires_modules": ["catalog", "cms"],
   "parent": null,
-  "preview": {"thumbnail": "preview-auto853.png", "cover": "cover-auto853.png"},
+  "preview": {"thumbnail": "preview-auto853.png", "cover": "preview-auto853.png"},
   "blocks": ["auto853-hero", "auto853-categories", "auto853-flash-sale", "auto853-promotions", "auto853-bikepacking", "auto853-feature", "auto853-sale-banner", "auto853-collection", "auto853-videos", "auto853-news"],
   "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "responsive_navigation": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},

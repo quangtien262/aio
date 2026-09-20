@@ -6,7 +6,7 @@
   "website_type": "ecommerce",
   "requires_modules": ["catalog", "cms"],
   "parent": null,
-  "preview": {"thumbnail": "preview-auto852.png", "cover": "cover-auto852.png"},
+  "preview": {"thumbnail": "preview-auto852.png", "cover": "preview-auto852.png"},
   "blocks": ["auto852-hero", "auto852-services", "auto852-process", "auto852-promotions", "auto852-pricing", "auto852-product-banner", "auto852-products", "auto852-news"],
   "supports": {"multi_homepage": true, "custom_css": true, "block_mapping": true, "responsive_navigation": true},
   "localization": {"default_locale": "vi", "supported_locales": ["vi", "en"]},

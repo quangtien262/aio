@@ -1142,6 +1142,13 @@ class CmsSiteController
         }
 
         $relatedProducts = $relatedProductsQuery->latest('created_at')->take(8)->get();
+        $latestProducts = [];
+        if (($activeTheme['key'] ?? '') === 'AUTO851') {
+            $latestQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true)->where('id', '!=', $product->id);
+            $this->applyWebsiteScope($latestQuery, $websiteKey);
+            $latestProducts = $latestQuery->orderByDesc('created_at')->orderByDesc('id')->limit(4)->get()
+                ->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, 'AUTO851'))->all();
+        }
         /** @var Customer|null $customer */
         $customer = auth('customer')->user();
         $favoriteProductIds = $customer
@@ -1156,6 +1163,7 @@ class CmsSiteController
             'product' => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'SHOP601')),
             'productModel' => $product,
             'productGallery' => $this->resolveProductGallery($product),
+            'latestProducts' => $latestProducts,
             'productHighlights' => $this->splitTextLines($product->highlights),
             'usageTerms' => $this->splitTextLines($product->usage_terms),
             'usageLocationLines' => $this->splitTextLines($product->usage_location),
