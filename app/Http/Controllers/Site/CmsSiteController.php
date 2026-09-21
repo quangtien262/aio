@@ -277,6 +277,11 @@ class CmsSiteController
             ->with('cart_success', 'Đã chuyển preset demo storefront.');
     }
 
+    private function postsPerPage(?array $theme): int
+    {
+        return strtoupper((string) data_get($theme, 'key')) === 'NEWS88' ? 30 : 10;
+    }
+
     public function postsIndex(Request $request): View|RedirectResponse
     {
         $siteProfile = $this->currentSiteProfile();
@@ -326,7 +331,7 @@ class CmsSiteController
             });
         }
 
-        $posts = $postsQuery->latest('publish_at')->paginate(10)->withQueryString();
+        $posts = $postsQuery->latest('publish_at')->orderByDesc('id')->paginate($this->postsPerPage($activeTheme))->withQueryString();
 
         $postCategories = CmsCategory::query()
             ->whereHas('posts', function (EloquentBuilder $query) use ($websiteKey): void {
@@ -375,7 +380,7 @@ class CmsSiteController
         }
 
         $posts = app(\App\Support\CmsPostTags::class)->publishedPosts($topic, $locale)
-            ->with(['category', 'featuredMedia'])->latest('publish_at')->orderByDesc('id')->paginate(10)->withQueryString();
+            ->with(['category', 'featuredMedia'])->latest('publish_at')->orderByDesc('id')->paginate($this->postsPerPage($this->resolveActiveTheme($profile)))->withQueryString();
         $title = $topic->name;
         $canonical = FrontendRouteUrl::topic($topic->slug, $locale);
         $page = max(1, (int) $request->query('page', 1));
@@ -412,7 +417,7 @@ class CmsSiteController
         }
 
         $posts = app(\App\Support\CmsPostTags::class)->publishedPosts($tag, $locale)
-            ->with(['category', 'featuredMedia'])->latest('publish_at')->orderByDesc('id')->paginate(10)->withQueryString();
+            ->with(['category', 'featuredMedia'])->latest('publish_at')->orderByDesc('id')->paginate($this->postsPerPage($this->resolveActiveTheme($profile)))->withQueryString();
         $title = __('storefront.tags.posts_about', ['tag' => $tag->name]);
         $canonical = FrontendRouteUrl::tag($tag->slug, $locale);
         $page = max(1, (int) $request->query('page', 1));

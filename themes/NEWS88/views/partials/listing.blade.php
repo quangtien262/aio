@@ -20,7 +20,7 @@
                 };
                 $image = data_get($item, 'image') ?: data_get($item, 'image_url') ?: data_get($item, 'featuredMedia.file_url') ?: data_get($item, 'featuredImage.image_url') ?: $fallback;
             @endphp
-            <article><a href="{{ $url }}"><img src="{{ $image }}" alt="{{ data_get($item, 'title', data_get($item, 'name')) }}"></a><div><h2><a href="{{ $url }}">{{ data_get($item, 'title', data_get($item, 'name')) }}</a></h2><p>{{ data_get($item, 'excerpt', data_get($item, 'summary', data_get($item, 'description'))) }}</p><a href="{{ $url }}">@themeT('NEWS88.read_more', 'Đọc tiếp') →</a></div></article>
+            <article><a href="{{ $url }}"><img src="{{ $image }}" alt="{{ data_get($item, 'title', data_get($item, 'name')) }}"></a><div><h2><a href="{{ $url }}">{{ data_get($item, 'title', data_get($item, 'name')) }}</a></h2>@if(($contentType ?? null) !== 'posts')<p>{{ data_get($item, 'excerpt', data_get($item, 'summary', data_get($item, 'description'))) }}</p>@endif<a href="{{ $url }}">@themeT('NEWS88.read_more', 'Đọc tiếp') →</a></div></article>
         @empty<p>@if($searchTerm !== '')@themeT('NEWS88.no_search_results', 'Không tìm thấy bài viết phù hợp. Vui lòng thử từ khóa khác.')@else @themeT('NEWS88.no_content', 'Nội dung đang được cập nhật.')@endif</p>@endforelse
     </div>
     @if(is_object($source) && method_exists($source, 'links'))

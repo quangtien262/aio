@@ -17,6 +17,24 @@ class News88ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_news_listing_has_thirty_posts_per_page_without_card_excerpts(): void
+    {
+        SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
+        $category = \App\Models\CmsCategory::create(['name' => 'Listing category', 'slug' => 'listing-category']);
+        for ($i = 1; $i <= 31; $i++) {
+            CmsPost::create(['title' => 'Listing post '.$i, 'slug' => 'listing-post-'.$i, 'category_id' => $category->id,
+                'excerpt' => 'CARD_EXCERPT_SHOULD_BE_HIDDEN', 'status' => 'published', 'publish_at' => now()->subMinutes($i)]);
+        }
+        foreach (['/vi/c', '/vi/c/listing-category'] as $url) {
+            foreach ([1 => 30, 2 => 1] as $page => $expected) {
+                $html = $this->get($url.'?page='.$page)->assertOk()->getContent();
+                $this->assertSame(1, preg_match('/<div class="n88-list">(.*?)<div class="n88-pagination">/s', $html, $matches));
+                $this->assertSame($expected, substr_count($matches[1], '<article>'));
+                $this->assertStringNotContainsString('CARD_EXCERPT_SHOULD_BE_HIDDEN', $matches[1]);
+            }
+        }
+    }
+
     public function test_recent_footer_posts_match_home_on_child_pages(): void
     {
         SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
@@ -188,10 +206,12 @@ class News88ThemeTest extends TestCase
         CmsPost::create(['title' => 'Unrelated article', 'slug' => 'unrelated', 'status' => 'published']);
         CmsPost::create(['title' => 'Needle draft', 'slug' => 'draft', 'status' => 'draft']);
         $this->get('/vi')->assertOk()->assertSee('action="'.url('/vi/c').'"', false);
-        $this->get('/vi/c?q=Needle')->assertOk()
+        $response = $this->get('/vi/c?q=Needle')->assertOk()
             ->assertSee('search-title')->assertSee('search-excerpt')->assertSee('search-body')
-            ->assertDontSee('Unrelated article')->assertDontSee('Needle draft')
+            ->assertDontSee('Needle draft')
             ->assertSee('value="Needle"', false)->assertSee('Kết quả tìm kiếm cho');
+        $this->assertSame(1, preg_match('/<div class="n88-list">(.*?)<div class="n88-pagination">/s', $response->getContent(), $matches));
+        $this->assertStringNotContainsString('Unrelated article', $matches[1]);
         $this->get('/vi/c?q=NoMatchingKeyword')->assertOk()->assertSee('Không tìm thấy bài viết phù hợp.');
     }
 
@@ -222,7 +242,7 @@ class News88ThemeTest extends TestCase
         $theme = app(ThemeRegistry::class)->all()->firstWhere('key', 'NEWS88');
         $this->assertNotNull($theme);
         $this->assertSame('news', $theme['website_type']);
-        $this->assertFileExists(public_path('theme-previews/NEWS88/preview-news88.svg'));
+        $this->assertFileExists(public_path('theme-previews/NEWS88/'.$theme['preview']['thumbnail']));
 
         $builder = app(LandingPageBuilder::class);
         $this->assertTrue($builder->supportsTheme('NEWS88'));
