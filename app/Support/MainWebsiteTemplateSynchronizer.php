@@ -24,6 +24,45 @@ class MainWebsiteTemplateSynchronizer
         return $this->normalizeDomain($rootDomain) === self::ROOT_DOMAIN;
     }
 
+    public function syncThumbnails(iterable $themes): array
+    {
+        $hasCode = Schema::connection(self::CONNECTION)->hasColumn(self::TABLE, 'code');
+
+        return DB::connection(self::CONNECTION)->transaction(function () use ($themes, $hasCode): array {
+            $result = ['updated' => 0, 'skipped' => []];
+            foreach (collect($themes)->unique('key') as $theme) {
+                $code = strtoupper($theme['key']);
+                $thumbnail = $this->thumbnailFileName($theme);
+                $template = DB::connection(self::CONNECTION)->table(self::TABLE)
+                    ->whereNull('deleted_at')
+                    ->where(function ($query) use ($code, $hasCode): void {
+                        $query->where('theme_code', $code)->orWhere('slug', $code);
+                        if ($hasCode) {
+                            $query->orWhere('code', $code);
+                        }
+                    })->lockForUpdate()->first();
+                if (! $thumbnail || ! $template) {
+                    $result['skipped'][] = $code;
+
+                    continue;
+                }
+                $path = parse_url($this->thumbnailPath($theme, $code), PHP_URL_PATH);
+                if (! is_string($path) || ! str_starts_with($path, '/theme-previews/')) {
+                    $result['skipped'][] = $code;
+
+                    continue;
+                }
+                $now = now();
+                DB::connection(self::CONNECTION)->table(self::TABLE)->where('id', $template->id)
+                    ->update(['preview_theme' => $thumbnail, 'updated_at' => $now]);
+                $this->syncThumbnailMedia((int) $template->id, $code, 'https://'.self::ROOT_DOMAIN.$path, $now);
+                $result['updated']++;
+            }
+
+            return $result;
+        });
+    }
+
     /**
      * @param  iterable<int, array<string, mixed>>  $themes
      * @return array{inserted:int,updated:int,items:list<array{theme_code:string,action:string}>}

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Support\MainWebsiteTemplateSynchronizer;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -69,6 +70,40 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
             $table->longText('metadata')->nullable();
             $table->timestamps();
         });
+    }
+
+    public function test_thumbnail_update_preserves_content_deduplicates_and_uses_public_url(): void
+    {
+        $id = DB::connection('ht')->table('website_templates')->insertGetId([
+            'name' => 'Custom title', 'slug' => 'custom-slug', 'theme_code' => 'EC910', 'base_price' => 765432,
+        ]);
+        $other = DB::connection('ht')->table('website_templates')->insertGetId([
+            'name' => 'Other', 'slug' => 'OTHER', 'theme_code' => 'OTHER',
+        ]);
+        $theme = ['key' => 'EC910', 'preview' => ['thumbnail' => 'new.png'],
+            'preview_urls' => ['thumbnail' => 'http://localhost:8000/theme-previews/EC910/new.png']];
+        $sync = app(MainWebsiteTemplateSynchronizer::class);
+        $result = $sync->syncThumbnails([$theme, $theme, ['key' => 'MISSING']]);
+        $this->assertSame(['updated' => 1, 'skipped' => ['MISSING']], $result);
+        $sync->syncThumbnails([$theme]);
+        $this->assertDatabaseHas('website_templates', ['id' => $id, 'name' => 'Custom title', 'slug' => 'custom-slug', 'base_price' => 765432, 'preview_theme' => 'new.png'], 'ht');
+        $this->assertDatabaseHas('website_templates', ['id' => $other, 'preview_theme' => 'violet'], 'ht');
+        $this->assertDatabaseHas('website_template_media', ['template_id' => $id, 'file_path' => 'https://demo.htvietnam.vn/theme-previews/EC910/new.png'], 'ht');
+        $this->assertSame(1, DB::connection('ht')->table('website_template_media')->count());
+        $this->assertSame(0, DB::connection('ht')->table('website_template_translations')->count());
+        $this->assertSame(2, DB::connection('ht')->table('website_templates')->count());
+    }
+
+    public function test_thumbnail_update_rolls_back_when_media_write_fails(): void
+    {
+        $id = DB::connection('ht')->table('website_templates')->insertGetId(['name' => 'Original', 'slug' => 'EC910', 'theme_code' => 'EC910']);
+        Schema::connection('ht')->drop('website_template_media');
+        try {
+            app(MainWebsiteTemplateSynchronizer::class)->syncThumbnails([['key' => 'EC910', 'preview' => ['thumbnail' => 'new.png']]]);
+            $this->fail('Expected missing media table to fail.');
+        } catch (QueryException $exception) {
+            $this->assertDatabaseHas('website_templates', ['id' => $id, 'preview_theme' => 'violet'], 'ht');
+        }
     }
 
     public function test_it_only_supports_the_ht_vietnam_demo_root_domain(): void

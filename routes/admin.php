@@ -921,6 +921,9 @@ Route::prefix('admin')
                 Route::post('/site-mappings/bulk', [SiteMappingController::class, 'bulkStore'])
                     ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.bulk-store');
+                Route::post('/site-mappings/bulk/main-website-thumbnails', [SiteMappingController::class, 'updateMainWebsiteThumbnails'])
+                    ->middleware('admin.permission:theme.customize,global')
+                    ->name('site-mappings.main-website-thumbnails');
                 Route::put('/site-mappings/bulk/status', [SiteMappingController::class, 'bulkStatus'])
                     ->middleware('admin.permission:theme.customize,global')
                     ->name('site-mappings.bulk-status');

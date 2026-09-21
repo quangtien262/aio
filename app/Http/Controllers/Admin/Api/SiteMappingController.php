@@ -189,6 +189,22 @@ class SiteMappingController
         ]);
     }
 
+    public function updateMainWebsiteThumbnails(Request $request, ThemeRegistry $registry, MainWebsiteTemplateSynchronizer $synchronizer): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:200'],
+            'ids.*' => ['required', 'integer', 'distinct', Rule::exists('sites', 'id')],
+        ]);
+        $themes = Site::query()->whereIn('id', $validated['ids'])->get()->map(function (Site $site) use ($registry): array {
+            $key = $this->siteThemeKey($site);
+            abort_if($key === null, 422, 'Domain chưa được gán theme.');
+
+            return $this->resolveTheme($registry, $key);
+        })->unique('key')->values()->all();
+
+        return response()->json(['data' => $synchronizer->syncThumbnails($themes)]);
+    }
+
     public function bulkStatus(Request $request): JsonResponse
     {
         $validated = $request->validate([

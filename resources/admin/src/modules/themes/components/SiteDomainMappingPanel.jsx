@@ -4,6 +4,7 @@ import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Checkbox from 'antd/es/checkbox';
+import Dropdown from 'antd/es/dropdown';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import Modal from 'antd/es/modal';
@@ -14,7 +15,7 @@ import Switch from 'antd/es/switch';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { CheckCircleOutlined, CopyOutlined, DatabaseOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
+import { DownOutlined, CheckCircleOutlined, CopyOutlined, DatabaseOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text } = Typography;
 
@@ -53,6 +54,10 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const [bulkForm] = Form.useForm();
     const [copyForm] = Form.useForm();
     const [demoForm] = Form.useForm();
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+    const [thumbnailSyncOpen, setThumbnailSyncOpen] = useState(false);
+    const [thumbnailSyncLoading, setThumbnailSyncLoading] = useState(false);
+    const [thumbnailSyncResult, setThumbnailSyncResult] = useState(null);
     const [demoBatch, setDemoBatch] = useState(null);
     const [demoBatchRunning, setDemoBatchRunning] = useState(false);
     const [demoBatchResults, setDemoBatchResults] = useState([]);
@@ -198,6 +203,20 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         if (ok) {
             setDemoSite(null);
             demoForm.resetFields();
+        }
+    };
+
+    const syncMainThumbnails = async () => {
+        setThumbnailSyncLoading(true);
+        try {
+            const result = await callAdminApi(adminApi('site-mappings/bulk/main-website-thumbnails'), {
+                method: 'POST', body: JSON.stringify({ ids: selectedRowKeys }),
+            });
+            setThumbnailSyncResult(result.data);
+        } catch (failure) {
+            setThumbnailSyncResult({ error: failure instanceof Error ? failure.message : 'Không cập nhật được ảnh đại diện.' });
+        } finally {
+            setThumbnailSyncLoading(false);
         }
     };
 
@@ -460,42 +479,18 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
 
                 <Space wrap>
                     <Text type="secondary">Đã chọn {selectedCount} domain</Text>
-                    <Button
-                        icon={<CheckCircleOutlined />}
-                        disabled={!canManage || !selectedCount}
-                        onClick={() => bulkUpdateStatus('active')}
-                    >
-                        Kích hoạt
-                    </Button>
-                    <Button
-                        icon={<StopOutlined />}
-                        disabled={!canManage || !selectedCount}
-                        onClick={() => bulkUpdateStatus('inactive')}
-                    >
-                        Tạm tắt
-                    </Button>
-                    <Button icon={<DatabaseOutlined />} disabled={!canManage || !selectedCount || demoBatchRunning}
-                        onClick={openDemoBatch}>
-                        Tạo lại data test
-                    </Button>
-                    <Popconfirm
-                        title={`Xóa ${selectedCount} cấu hình domain đã chọn?`}
-                        okText="Xóa"
-                        cancelText="Hủy"
-                        disabled={!canDeleteSelection}
-                        onConfirm={bulkDelete}
-                    >
-                        <Button danger icon={<DeleteOutlined />} disabled={!canDeleteSelection}>
-                            Xóa
+                    <Dropdown trigger={['click']} menu={{ items: [
+                        { key: 'activate', icon: <CheckCircleOutlined />, label: 'Kích hoạt', onClick: () => bulkUpdateStatus('active') },
+                        { key: 'deactivate', icon: <StopOutlined />, label: 'Tạm tắt', onClick: () => bulkUpdateStatus('inactive') },
+                        { key: 'demo', icon: <DatabaseOutlined />, label: 'Tạo lại data test', onClick: openDemoBatch },
+                        { key: 'thumbnail', icon: <ReloadOutlined />, label: 'Update htvietnam.vn', onClick: () => { setThumbnailSyncResult(null); setThumbnailSyncOpen(true); } },
+                        { type: 'divider' },
+                        { key: 'delete', icon: <DeleteOutlined />, label: 'Xóa domain', danger: true, disabled: !canDeleteSelection, onClick: () => setBulkDeleteOpen(true) },
+                    ] }}>
+                        <Button disabled={!canManage || !selectedCount || demoBatchRunning || thumbnailSyncLoading}>
+                            Thao tác đã chọn <DownOutlined />
                         </Button>
-                    </Popconfirm>
-                    <Checkbox
-                        checked={deleteContentOnRemove}
-                        disabled={!canManage}
-                        onChange={(event) => setDeleteContentOnRemove(event.target.checked)}
-                    >
-                        Xóa cả dữ liệu website_key khi xóa domain
-                    </Checkbox>
+                    </Dropdown>
                 </Space>
 
                 <Table
@@ -508,6 +503,27 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                     scroll={{ x: 1080 }}
                 />
             </Space>
+
+            <Modal title={`Xóa ${selectedCount} cấu hình domain đã chọn?`} open={bulkDeleteOpen}
+                okText="Xóa domain" okButtonProps={{ danger: true }} cancelText="Hủy"
+                onCancel={() => setBulkDeleteOpen(false)}
+                onOk={async () => { await bulkDelete(); setBulkDeleteOpen(false); }}>
+                <Checkbox checked={deleteContentOnRemove} onChange={(event) => setDeleteContentOnRemove(event.target.checked)}>
+                    Xóa cả dữ liệu website_key khi xóa domain
+                </Checkbox>
+            </Modal>
+            <Modal title="Update htvietnam.vn" open={thumbnailSyncOpen}
+                okText="Cập nhật ảnh đại diện" cancelText="Hủy" confirmLoading={thumbnailSyncLoading}
+                closable={!thumbnailSyncLoading} maskClosable={!thumbnailSyncLoading} keyboard={!thumbnailSyncLoading}
+                cancelButtonProps={{ disabled: thumbnailSyncLoading }} onOk={syncMainThumbnails}
+                onCancel={() => setThumbnailSyncOpen(false)}
+                footer={thumbnailSyncResult ? <Button onClick={() => setThumbnailSyncOpen(false)}>Đóng</Button> : undefined}>
+                <Paragraph>Cập nhật link thumbnail lên database htvietnam.vn cho theme của {selectedCount} domain đã chọn. Theme trùng nhau chỉ cập nhật một lần.</Paragraph>
+                <Paragraph>Chỉ cập nhật ảnh đại diện của bản ghi đang tồn tại; giữ nguyên tên, giá và nội dung. Link ảnh dùng domain công khai demo.htvietnam.vn.</Paragraph>
+                {thumbnailSyncResult ? <Alert showIcon type={thumbnailSyncResult.error ? 'error' : 'success'}
+                    message={thumbnailSyncResult.error || `Đã cập nhật ${thumbnailSyncResult.updated} theme.`}
+                    description={thumbnailSyncResult.skipped?.length ? `Bỏ qua do thiếu thumbnail hoặc bản ghi trên htvietnam.vn: ${thumbnailSyncResult.skipped.join(', ')}` : null} /> : null}
+            </Modal>
 
             <Modal
                 title="Tạo lại dữ liệu mẫu cho các website đã chọn"

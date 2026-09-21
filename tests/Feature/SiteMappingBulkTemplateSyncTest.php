@@ -14,6 +14,26 @@ class SiteMappingBulkTemplateSyncTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_thumbnail_endpoint_only_syncs_selected_themes_once(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+        $sites = collect(['one', 'two', 'three'])->map(fn ($key) => Site::query()->create([
+            'domain' => $key.'.demo.test', 'website_key' => $key, 'theme_key' => $key === 'three' ? 'EC911' : 'EC910', 'status' => 'active',
+        ]));
+        $this->mock(MainWebsiteTemplateSynchronizer::class, function ($mock) {
+            $mock->shouldReceive('syncThumbnails')->once()->withArgs(fn ($themes) => count($themes) === 1 && $themes[0]['key'] === 'EC910')->andReturn(['updated' => 1, 'skipped' => []]);
+        });
+        $this->postJson('/admin/api/site-mappings/bulk/main-website-thumbnails', ['ids' => $sites->take(2)->pluck('id')->all()])
+            ->assertOk()->assertJsonPath('data.updated', 1);
+        $this->postJson('/admin/api/site-mappings/bulk/main-website-thumbnails', ['ids' => []])->assertUnprocessable();
+    }
+
+    public function test_guest_cannot_update_main_website_thumbnails(): void
+    {
+        $this->mock(MainWebsiteTemplateSynchronizer::class)->shouldNotReceive('syncThumbnails');
+        $this->postJson('/admin/api/site-mappings/bulk/main-website-thumbnails', ['ids' => [1]])->assertUnauthorized();
+    }
+
     public function test_bulk_domain_creation_syncs_main_website_only_for_ht_vietnam_demo_domain(): void
     {
         $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
