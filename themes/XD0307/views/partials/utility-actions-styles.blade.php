@@ -40,6 +40,16 @@
     .xd5-auth-separator {
         opacity: .6;
     }
+    .xd5-admin-link {
+        padding: 6px 10px;
+        border: 1px solid #ffffff50;
+        border-radius: 6px;
+        background: #ffffff17;
+    }
+    .xd5-admin-link:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+    }
     .xd5-language {
         display: flex;
         align-items: center;

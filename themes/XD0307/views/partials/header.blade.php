@@ -17,6 +17,9 @@
                 @if(filled($xd5Hotline))<b>{{ $xd5Hotline }}</b>@endif
             </div>
             <div class="xd5-utility-actions">
+                @auth('admin')
+                    <a class="xd5-auth-link xd5-admin-link" href="{{ route('admin.index') }}" aria-label="Mở trang quản trị">Admin</a>
+                @endauth
                 @guest('customer')
                     <button type="button" class="xd5-auth-link" data-xd-auth-open="login">Đăng nhập</button>
                     <span class="xd5-auth-separator">/</span>

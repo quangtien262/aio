@@ -1,4 +1,5 @@
 @php
+    $isEnglish = app()->getLocale() === 'en';
     $projectLabel = app(\App\Core\Themes\ThemeTranslationService::class)
         ->bladeText('XD0301', app()->getLocale(), 'legacy_inline.6980f6dccf6e96cb', 'Dự án');
     $title = $pageTitle ?? ($entry->title ?? $projectLabel);

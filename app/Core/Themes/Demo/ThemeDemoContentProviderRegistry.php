@@ -13,6 +13,13 @@ class ThemeDemoContentProviderRegistry
     {
         $key = strtoupper(trim($themeKey));
 
+        if (str_starts_with($key, 'XD')) {
+            $definitions = XdCompleteDemoContentProvider::definitions();
+            if (isset($definitions[$key])) {
+                return new XdCompleteDemoContentProvider($key, $definitions[$key]);
+            }
+        }
+
         foreach ($this->providers as $provider) {
             if ($provider->themeKey() === $key) {
                 return $provider;

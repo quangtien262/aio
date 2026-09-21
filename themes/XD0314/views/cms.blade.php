@@ -1,4 +1,4 @@
-﻿@php
+@php
     $shell = $themeShellData ?? $themeHomeData ?? [];
     $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
     $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
@@ -256,6 +256,20 @@
 @section('content')
 <main class="xd-page-main">
             <div class="xd-container">
+                    @if (isset($listingItems))
+                    <h1>{{ $pageTitle ?? 'Dự án' }}</h1>
+                    <section class="xd-services-list">
+                        @foreach ($listingItems as $project)
+                            <article class="xd-service-card">
+                                @if ($project->featuredImage?->image_url)
+                                    <a class="xd-service-image" href="{{ route('site.projects.show', ['slug' => $project->slug]) }}"><img src="{{ $project->featuredImage->image_url }}" alt="{{ $project->title }}" loading="lazy"></a>
+                                @endif
+                                <div class="xd-service-body"><h2><a href="{{ route('site.projects.show', ['slug' => $project->slug]) }}">{{ $project->title }}</a></h2><p>{{ $project->summary }}</p></div>
+                            </article>
+                        @endforeach
+                    </section>
+                    @if (method_exists($listingItems, 'links')){{ $listingItems->links() }}@endif
+                    @else
                     <section class="xd-detail-card">
                         <div class="xd-detail-body">
                             <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
@@ -264,10 +278,11 @@
                                 <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
                             @endif
                             <div class="xd-rich-content">
-                                {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
+                                {!! ($entry->body ?? $entry->content) ?: '<p>Nội dung đang được cập nhật.</p>' !!}
                             </div>
                         </div>
                     </section>
+                    @endif
             </div>
 </main>
 @endsection

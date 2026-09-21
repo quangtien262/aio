@@ -29,7 +29,10 @@
   },
   "localization": {
     "default_locale": "vi",
-    "supported_locales": ["vi", "en"]
+    "supported_locales": [
+      "vi",
+      "en"
+    ]
   },
   "demo": {
     "content_path": "demo/content",

@@ -1,3 +1,15 @@
+@php
+    $xdShell = $themeShellData ?? $themeHomeData ?? [];
+    $xdBranding = (array) data_get($xdShell, 'branding', data_get($siteProfile ?? [], 'branding', []));
+    $companyName = $companyName ?? $xdBranding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', '');
+    $companyDescription = $companyDescription ?? $xdBranding['company_description'] ?? '';
+    $supportEmail = $supportEmail ?? $xdBranding['support_email'] ?? '';
+    $supportAddress = $supportAddress ?? $xdBranding['support_location'] ?? '';
+    $hotline = $hotline ?? $xdBranding['support_hotline'] ?? '';
+    $phoneHref = $phoneHref ?? preg_replace('/\D+/', '', $hotline);
+    $logoUrl = $logoUrl ?? $xdBranding['logo_url'] ?? '';
+    $logoAlt = $logoAlt ?? $companyName;
+@endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <x-storefront-head

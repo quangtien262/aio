@@ -193,7 +193,9 @@ class ThemeDemoWebsiteFinalizer
         string $presetKey,
         ?SiteProfile $profile,
     ): array {
-        $page = CmsPage::query()->where('slug', 'gioi-thieu')->first();
+        $page = str_starts_with($themeKey, 'XD')
+            ? CmsPage::query()->whereKey(ThemeDemoRecord::query()->where('theme_key', $themeKey)->where('model_type', CmsPage::class)->pluck('model_id'))->where('slug', strtolower($themeKey).'-gioi-thieu')->first()
+            : CmsPage::query()->where('slug', 'gioi-thieu')->first();
 
         if ($page === null) {
             $ownedPageIds = ThemeDemoRecord::query()
@@ -286,7 +288,7 @@ class ThemeDemoWebsiteFinalizer
         // NEWS88 ships a category-led editorial menu whose labels and targets
         // are part of its localized demo contract. Do not replace that owned
         // menu with the generic business/ecommerce navigation sequence.
-        if ($themeKey === 'NEWS88' && collect($menu->items)->isNotEmpty()) {
+        if (($themeKey === 'NEWS88' || str_starts_with($themeKey, 'XD')) && collect($menu->items)->isNotEmpty()) {
             return $created;
         }
 

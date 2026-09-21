@@ -1,1 +1,5 @@
-@extends('theme-ca0050::layout') @section('title','Kết quả tìm kiếm') @section('content') @include('theme-ca0050::partials.listing',['title'=>'Kết quả tìm kiếm']) @endsection
+@extends('theme-ca0050::layout')
+@php($pageTitle = filled($searchQuery ?? '') ? __('Kết quả tìm kiếm') : __('Sản phẩm'))
+@section('content')
+@include('theme-ca0050::partials.catalog')
+@endsection

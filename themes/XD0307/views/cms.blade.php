@@ -256,6 +256,23 @@
 @section('content')
 <main class="xd-page-main">
             <div class="xd-container">
+                @if (isset($listingItems))
+                    <section class="xd-cms-hero"><h1>{{ $pageTitle ?? 'Dự án' }}</h1></section>
+                    <div class="xd-service-grid">
+                        @foreach ($listingItems as $item)
+                            <article class="xd-service-card">
+                                @if ($image = $item->images->first()?->image_url)
+                                    <img class="xd-service-image" src="{{ $image }}" alt="{{ $item->title }}" loading="lazy">
+                                @endif
+                                <div class="xd-service-body">
+                                    <h2><a href="{{ route('site.projects.show', ['slug' => $item->slug]) }}">{{ $item->title }}</a></h2>
+                                    <p>{{ $item->summary }}</p>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                    @if (method_exists($listingItems, 'links')){{ $listingItems->links() }}@endif
+                @else
                     <section class="xd-detail-card">
                         <div class="xd-detail-body">
                             <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
@@ -264,10 +281,11 @@
                                 <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
                             @endif
                             <div class="xd-rich-content">
-                                {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
+                                {!! ($entry->body ?? $entry->content) ?: '<p>Nội dung đang được cập nhật.</p>' !!}
                             </div>
                         </div>
                     </section>
+                @endif
             </div>
 </main>
 @endsection

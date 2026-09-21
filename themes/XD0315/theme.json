@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "XD0315 Athletic Fitness",
   "key": "XD0315",
   "version": "0.1.0",
@@ -26,7 +26,10 @@
   },
   "localization": {
     "default_locale": "vi",
-    "supported_locales": ["vi", "en"]
+    "supported_locales": [
+      "vi",
+      "en"
+    ]
   },
   "demo": {
     "content_path": "demo/content",
@@ -34,5 +37,3 @@
     "default_preset": "xd0315-athletic"
   }
 }
-
-

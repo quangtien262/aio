@@ -24,7 +24,7 @@ export default function ThemeDemoDataModal({ open, theme, mode = 'generate', can
     const [countdown, setCountdown] = useState(0);
     const presetOptions = useMemo(() => {
         if (theme?.demo?.default_preset) {
-            return [{ label: `Du lieu mau danh rieng cho ${theme.name}`, value: theme.demo.default_preset, description: 'Noi dung duoc thiet ke rieng cho bo cuc va nguon du lieu cua theme.' }];
+            return [{ label: `Dữ liệu mẫu dành riêng cho ${theme.name}`, value: theme.demo.default_preset, description: 'Nội dung được thiết kế riêng cho bố cục và nguồn dữ liệu của theme.' }];
         }
 
         return (theme?.website_type ?? '').toLowerCase() === 'service' ? SERVICE_PRESET_OPTIONS : COMMERCE_PRESET_OPTIONS;
@@ -75,26 +75,26 @@ export default function ThemeDemoDataModal({ open, theme, mode = 'generate', can
 
     return (
         <Modal
-            title={theme ? `Tao data test: ${theme.name}` : 'Tao data test'}
+            title={theme ? `Tạo dữ liệu mẫu: ${theme.name}` : 'Tạo dữ liệu mẫu'}
             open={open}
             onCancel={close}
             onOk={handleOk}
-            okText={mode === 'rebuild' ? 'Rebuild du lieu' : 'Tao du lieu'}
+            okText={mode === 'rebuild' ? 'Tạo lại dữ liệu' : 'Tạo dữ liệu'}
             okButtonProps={{ disabled: !theme || !canGenerateDemoData || countdown > 0 }}
             destroyOnHidden
         >
             <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                <Alert type="info" showIcon message="He thong chi tao va quan ly cac ban ghi demo co marker rieng." />
-                <div><Text className="card-label">Theme dang chon</Text><Paragraph style={{ marginBottom: 0 }}>{theme?.name ?? 'Chua chon theme'}</Paragraph></div>
+                <Alert type="info" showIcon message="Hệ thống chỉ tạo và quản lý các bản ghi được đánh dấu là dữ liệu mẫu." />
+                <div><Text className="card-label">Theme đang chọn</Text><Paragraph style={{ marginBottom: 0 }}>{theme?.name ?? 'Chưa chọn theme'}</Paragraph></div>
                 <Form form={form} layout="vertical">
-                    <Form.Item name="preset" label="Nganh du lieu mau" rules={[{ required: true, message: 'Chon loai du lieu test can tao' }]}>
+                    <Form.Item name="preset" label="Bộ dữ liệu mẫu" rules={[{ required: true, message: 'Chọn bộ dữ liệu mẫu cần tạo' }]}>
                         <Select options={presetOptions} optionLabelProp="label" />
                     </Form.Item>
                 </Form>
                 <Checkbox checked={resetAll} onChange={(event) => setResetAll(event.target.checked)}>
-                    Reset toan bo data test da duoc he thong tao
+                    Xóa toàn bộ dữ liệu mẫu do hệ thống tạo trước khi tạo mới
                 </Checkbox>
-                {resetAll ? <Alert type="warning" showIcon message={countdown > 0 ? `Cho ${countdown} giay de xac nhan reset data test.` : 'Ban co the xac nhan reset data test.'} description="Chi cac ban ghi demo co marker cua he thong moi bi xoa. Du lieu tao thu cong khong bi anh huong." /> : null}
+                {resetAll ? <Alert type="warning" showIcon message={countdown > 0 ? `Chờ ${countdown} giây để xác nhận xóa dữ liệu mẫu.` : 'Bạn có thể xác nhận xóa dữ liệu mẫu.'} description="Chỉ xóa các bản ghi mẫu có đánh dấu của hệ thống. Dữ liệu tạo thủ công được giữ lại." /> : null}
             </Space>
         </Modal>
     );

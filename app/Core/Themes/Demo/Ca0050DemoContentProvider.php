@@ -9,6 +9,9 @@ use App\Models\CmsMenu;
 use App\Models\CmsPage;
 use App\Models\CmsPartner;
 use App\Models\CmsPost;
+use App\Models\CmsService;
+use App\Models\CmsServiceCategory;
+use App\Models\CmsServiceImage;
 use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
@@ -103,11 +106,32 @@ class Ca0050DemoContentProvider implements ThemeDemoContentProvider
                 $this->record($partner);
             }
 
-            $home = route('site.home');
+            $about = CmsPage::query()->create([
+                'slug' => 'ca0050-gioi-thieu', 'title' => 'Giới thiệu Sudes Aquarium', 'status' => 'published',
+                'excerpt' => 'Cá cảnh, cây thủy sinh và giải pháp chăm sóc bể cá dành cho người yêu thiên nhiên.',
+                'body' => '<h2>Không gian xanh từ thế giới dưới nước</h2><p>Sudes Aquarium giới thiệu cá cảnh, cây thủy sinh, hồ và phụ kiện giúp bạn xây dựng một góc thiên nhiên trong nhà.</p><h2>Đồng hành từ bước đầu</h2><p>Chúng tôi tư vấn lựa chọn bể, hệ thống lọc, ánh sáng và bố cục theo không gian, ngân sách và kinh nghiệm chăm sóc của bạn.</p><h2>Chăm sóc bền vững</h2><p>Tìm hiểu cách thay nước, vệ sinh thiết bị và theo dõi môi trường sống để duy trì một bể thủy sinh khỏe mạnh.</p>',
+                'publish_at' => now(),
+            ]);
+            $this->record($about);
+            $serviceCategory = CmsServiceCategory::query()->create(['name' => 'Dịch vụ thủy sinh', 'slug' => 'ca0050-dich-vu-thuy-sinh', 'description' => 'Thiết lập, chăm sóc và nâng cấp bể thủy sinh.', 'is_active' => true]);
+            $this->record($serviceCategory);
+            foreach ([
+                ['Thiết kế và setup bể thủy sinh', 'Tư vấn kích thước bể, bố cục, cây trồng và thiết bị phù hợp với không gian của bạn.', 'Khảo sát nhu cầu, thống nhất bố cục, lựa chọn thiết bị và hướng dẫn vận hành bể trong giai đoạn đầu.'],
+                ['Chăm sóc bể cá định kỳ', 'Vệ sinh bể, kiểm tra hệ thống lọc và chăm sóc cây thủy sinh theo tình trạng thực tế.', 'Kiểm tra chất lượng nước, vệ sinh thiết bị, cắt tỉa cây và hướng dẫn lịch chăm sóc phù hợp.'],
+                ['Tư vấn nâng cấp hồ cá', 'Đánh giá hệ thống hiện tại để cải thiện ánh sáng, lọc và môi trường sống.', 'Trao đổi về vấn đề đang gặp, kiểm tra thiết bị và đề xuất phương án nâng cấp theo ngân sách.'],
+            ] as $index => [$title, $summary, $detail]) {
+                $service = CmsService::query()->create(['cms_service_category_id' => $serviceCategory->id, 'title' => $title, 'slug' => Str::slug('ca0050-'.$title), 'status' => 'published', 'summary' => $summary, 'content' => '<h2>Nội dung dịch vụ</h2><p>'.$detail.'</p><h2>Trao đổi nhu cầu</h2><p>Gửi kích thước bể, hình ảnh hiện trạng và mong muốn của bạn qua trang liên hệ để được tư vấn.</p>', 'publish_at' => now(), 'sort_order' => $index, 'is_featured' => true]);
+                $this->record($service);
+                $serviceImage = CmsServiceImage::query()->create(['cms_service_id' => $service->id, 'image_url' => '/theme-demo/ca0050/aquascape.png', 'alt_text' => $title, 'is_featured' => true, 'sort_order' => 0]);
+                $this->record($serviceImage);
+            }
             $menu = CmsMenu::query()->create(['name' => 'CA0050 Main Menu', 'location' => 'primary-navigation', 'items' => [
-                ['label' => 'Trang chủ', 'url' => $home], ['label' => 'Giới thiệu', 'url' => $home.'#gioi-thieu'],
-                ['label' => 'Sản phẩm', 'url' => $home.'#the-gioi-ca-canh'], ['label' => 'Bộ sưu tập', 'url' => $home.'#setup'],
-                ['label' => 'Tin tức', 'url' => $home.'#tin-tuc'], ['label' => 'FAQ', 'url' => $home.'#faq'], ['label' => 'Liên hệ', 'url' => route('site.contact')],
+                ['label' => 'Trang chủ', 'link_type' => 'home', 'url' => route('site.home', [], false)],
+                ['label' => 'Giới thiệu', 'link_type' => 'page', 'link_value' => (string) $about->id, 'url' => route('site.pages.show', ['slug' => $about->slug], false)],
+                ['label' => 'Sản phẩm', 'link_type' => 'catalog-index', 'url' => route('site.catalog.search', [], false)],
+                ['label' => 'Dịch vụ', 'link_type' => 'service-category', 'link_value' => (string) $serviceCategory->id, 'url' => route('site.services.category', ['slug' => $serviceCategory->slug], false)],
+                ['label' => 'Tin tức', 'link_type' => 'post-category', 'link_value' => (string) $postCategory->id, 'url' => route('site.blog.category', ['slug' => $postCategory->slug], false)],
+                ['label' => 'Liên hệ', 'link_type' => 'contact', 'url' => route('site.contact', [], false)],
             ]]);
             $this->record($menu);
             $page = CmsPage::query()->firstOrCreate(['slug' => 'contact'], ['title' => 'Liên hệ', 'status' => 'published', 'excerpt' => 'Liên hệ Sudes Aquarium.', 'body' => '<p>Đội ngũ Sudes Aquarium luôn sẵn sàng tư vấn cá cảnh và setup hồ thủy sinh.</p>', 'publish_at' => now()]);
@@ -119,7 +143,7 @@ class Ca0050DemoContentProvider implements ThemeDemoContentProvider
             $landing = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);
             if ($landing && ! $existing) $this->record($landing);
 
-            return ['preset' => $this->preset(), 'counts' => ['categories' => 3, 'products' => 12, 'banners' => 2, 'post_categories' => 1, 'posts' => 4, 'partners' => 6, 'pages' => $page->wasRecentlyCreated ? 1 : 0, 'menus' => 1, 'landing_pages' => ! $existing && $landing ? 1 : 0], 'purged' => $purged];
+            return ['preset' => $this->preset(), 'counts' => ['categories' => 3, 'products' => 12, 'banners' => 2, 'post_categories' => 1, 'posts' => 4, 'partners' => 6, 'pages' => 1 + ($page->wasRecentlyCreated ? 1 : 0), 'services' => 3, 'service_categories' => 1, 'service_images' => 3, 'menus' => 1, 'landing_pages' => ! $existing && $landing ? 1 : 0], 'purged' => $purged];
         });
     }
 
@@ -127,7 +151,10 @@ class Ca0050DemoContentProvider implements ThemeDemoContentProvider
     {
         $records = ThemeDemoRecord::query()->where('theme_key', self::THEME_KEY)->where('preset_key', self::PRESET_KEY)->get();
         $ids = fn (string $type): array => $records->where('model_type', $type)->pluck('model_id')->all();
-        $counts = ['categories' => 0, 'products' => 0, 'banners' => 0, 'post_categories' => 0, 'posts' => 0, 'partners' => 0, 'pages' => 0, 'menus' => 0, 'landing_pages' => 0];
+        $counts = ['categories' => 0, 'products' => 0, 'banners' => 0, 'post_categories' => 0, 'posts' => 0, 'partners' => 0, 'pages' => 0, 'menus' => 0, 'landing_pages' => 0, 'services' => 0, 'service_categories' => 0, 'service_images' => 0];
+        foreach ([[CmsServiceImage::class, 'service_images'], [CmsService::class, 'services'], [CmsServiceCategory::class, 'service_categories']] as [$model, $key]) {
+            if ($modelIds = $ids($model)) $counts[$key] = $model::query()->whereKey($modelIds)->delete();
+        }
         if ($pageIds = $ids(LandingPage::class)) { $blockIds = LandingPageBlock::query()->whereIn('landing_page_id', $pageIds)->pluck('id'); LandingPageBlockData::query()->whereIn('landing_page_block_id', $blockIds)->delete(); LandingPageBlock::query()->whereIn('landing_page_id', $pageIds)->delete(); LandingPageData::query()->whereIn('landing_page_id', $pageIds)->delete(); $counts['landing_pages'] = LandingPage::query()->whereKey($pageIds)->delete(); }
         foreach ([[CmsPost::class, 'posts'], [CmsCategory::class, 'post_categories'], [CmsPartner::class, 'partners'], [CmsPage::class, 'pages'], [CatalogProduct::class, 'products'], [CatalogCategory::class, 'categories'], [CmsMenu::class, 'menus'], [SiteBanner::class, 'banners']] as [$model, $key]) if ($modelIds = $ids($model)) $counts[$key] = $model::query()->whereKey($modelIds)->delete();
         ThemeDemoRecord::query()->whereKey($records->pluck('id'))->delete();

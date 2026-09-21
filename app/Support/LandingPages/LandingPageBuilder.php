@@ -8619,11 +8619,31 @@ class LandingPageBuilder
         $blocks[1]['data']['vi']['subtitle'] = 'Dịch vụ của chúng tôi';
         $blocks[2]['data']['vi']['title'] = 'Chúng tôi cung cấp các dịch vụ vệ sinh tốt nhất';
         $blocks[2]['data']['vi']['subtitle'] = 'Tìm hiểu về chúng tôi';
-        $blocks[3]['data']['vi']['title'] = '25 năm kinh nghiệm trong ngành làm sạch';
+        $blocks[3]['data']['vi']['title'] = 'Làm sạch có quy trình, chăm sóc từng không gian';
         $blocks[4]['data']['vi']['title'] = 'Cảm nhận của khách hàng';
         $blocks[5]['data']['vi']['title'] = 'Gặp gỡ đội ngũ kinh nghiệm cao của chúng tôi';
         $blocks[6]['data']['vi']['title'] = 'Yêu cầu báo giá dịch vụ';
         $blocks[7]['data']['vi']['title'] = 'Các bài viết mới nhất từ chúng tôi';
+
+        $blocks[2]['data']['vi']['description'] = 'Khảo sát nhu cầu, thống nhất phạm vi và kiểm tra chất lượng trước khi bàn giao nhà ở hoặc văn phòng.';
+        $blocks[2]['data']['vi']['content'] = ['image_primary' => '/theme-demo/xd0307/reasons-team.webp', 'image_secondary' => '/theme-demo/xd0307/gallery-kitchen-work.webp', 'years' => '4', 'years_label' => 'Nhóm dịch vụ', 'progress_label' => 'Kiểm tra trước bàn giao', 'progress_value' => 100];
+        $blocks[3]['data']['vi']['description'] = 'Trao đổi rõ phạm vi công việc và lựa chọn phương pháp phù hợp với từng bề mặt.';
+        $blocks[3]['data']['vi']['content']['items'] = [['title' => 'Lịch làm việc linh hoạt'], ['title' => 'Phạm vi công việc rõ ràng'], ['title' => 'Thiết bị phù hợp'], ['title' => 'Kiểm tra khi bàn giao']];
+        $blocks[3]['data']['vi']['content']['image'] = '/theme-demo/xd0307/clean-home.webp';
+        $blocks[4]['data']['vi']['description'] = 'Các đánh giá dưới đây là nội dung minh họa của bộ dữ liệu mẫu.';
+        $blocks[5]['data']['vi']['description'] = 'Hồ sơ minh họa cho các vai trò điều phối, giám sát và tư vấn.';
+        $englishTitles = ['Cleaning services for homes and workplaces', 'Our cleaning services', 'A clear process for every space', 'Careful cleaning, from start to finish', 'Customer feedback', 'Meet the team', 'Request a cleaning quote', 'Cleaning guides', 'Our partners'];
+        foreach ($blocks as $index => &$block) {
+            $block['data']['en']['title'] = $englishTitles[$index];
+            $block['data']['en']['subtitle'] = 'Klean Services';
+            $block['data']['en']['description'] = 'Cleaning services with clear schedules and an agreed scope of work.';
+        }
+        unset($block);
+        $blocks[2]['data']['en']['content'] = array_merge($blocks[2]['data']['vi']['content'], ['years_label' => 'Service groups', 'progress_label' => 'Handover checklist']);
+        $blocks[3]['data']['en']['content']['items'] = [['title' => 'Flexible schedules'], ['title' => 'Clear scope of work'], ['title' => 'Suitable equipment'], ['title' => 'Handover checks']];
+        $blocks[3]['data']['en']['content']['image'] = '/theme-demo/xd0307/clean-home.webp';
+        $blocks[4]['data']['en']['description'] = 'Illustrative testimonials included with the demo content.';
+        $blocks[5]['data']['en']['description'] = 'Sample profiles for coordination, quality control and customer support.';
 
         return $blocks;
     }

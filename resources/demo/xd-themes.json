@@ -1,0 +1,569 @@
+{
+  "XD0301": {
+    "brand": "An Gia Construction",
+    "sector": "xây dựng dân dụng",
+    "preset": "xd0301-complete",
+    "services": [
+      "Tư vấn thiết kế",
+      "Thi công nhà ở",
+      "Cải tạo nội thất",
+      "Giám sát công trình"
+    ],
+    "products": [
+      "Mũ bảo hộ công trường",
+      "Máy khoan cầm tay",
+      "Thước đo laser"
+    ],
+    "image_group": "construction",
+    "photos": [
+      "photo-1504307651254-35680f356dfd",
+      "photo-1541888946425-d81bb19240f5",
+      "photo-1503387762-592deb58ef4e"
+    ],
+    "product_images": [
+      null,
+      "/themes/TOOL750/images/product-drill.png",
+      "/themes/TOOL750/images/product-measure.png"
+    ]
+  },
+  "XD0302": {
+    "brand": "Soler Energy",
+    "sector": "năng lượng mặt trời",
+    "preset": "xd0302-solar-energy",
+    "services": [
+      "Khảo sát mái nhà",
+      "Thiết kế điện mặt trời",
+      "Lắp đặt hệ thống",
+      "Bảo trì tấm pin"
+    ],
+    "products": [
+      "Tấm pin năng lượng mặt trời",
+      "Bộ biến tần",
+      "Bộ giám sát điện năng"
+    ],
+    "image_group": "solar",
+    "photos": [
+      "photo-1509391366360-2e959784a276",
+      "photo-1466611653911-95081537e5b7",
+      "photo-1497435334941-8c899ee9e8e9"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0303": {
+    "brand": "Service Operations",
+    "sector": "quản lý vận hành",
+    "preset": "xd0303-service-operations",
+    "services": [
+      "Vận hành tòa nhà",
+      "Bảo trì thiết bị",
+      "Quản lý cơ sở vật chất",
+      "Đánh giá hiệu suất"
+    ],
+    "products": [
+      "Bộ dụng cụ bảo trì",
+      "Thiết bị đo điện",
+      "Máy vệ sinh sàn"
+    ],
+    "image_group": "operations",
+    "photos": [
+      "photo-1497366754035-f200968a6e72",
+      "photo-1497366811353-6870744d04b2",
+      "photo-1527515637462-cff94eecc1ac"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0304": {
+    "brand": "Logistics Connect",
+    "sector": "vận tải và kho vận",
+    "preset": "xd0304-logistics",
+    "services": [
+      "Vận tải đường bộ",
+      "Giao nhận hàng hóa",
+      "Lưu kho",
+      "Điều phối phân phối"
+    ],
+    "products": [
+      "Pallet nhựa",
+      "Xe đẩy hàng",
+      "Thùng đóng gói"
+    ],
+    "image_group": "logistics",
+    "photos": [
+      "photo-1586528116311-ad8dd3c8310d",
+      "photo-1566576912321-d58ddd7a6088",
+      "photo-1494412519320-aa613dfb7738"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0305": {
+    "brand": "Bizmax Consulting",
+    "sector": "tư vấn doanh nghiệp",
+    "preset": "xd0305-business-consulting",
+    "services": [
+      "Tư vấn chiến lược",
+      "Tổ chức vận hành",
+      "Đào tạo quản lý",
+      "Phân tích thị trường"
+    ],
+    "products": [
+      "Sổ kế hoạch doanh nghiệp",
+      "Bộ tài liệu quản trị",
+      "Bảng kế hoạch công việc"
+    ],
+    "image_group": "business",
+    "photos": [
+      "photo-1454165804606-c3d57bc86b40",
+      "photo-1521737711867-e3b97375f902",
+      "photo-1460925895917-afdab827c52f"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0306": {
+    "brand": "Black Digital",
+    "sector": "thiết kế và truyền thông số",
+    "preset": "xd0306-digital-agency",
+    "services": [
+      "Thiết kế thương hiệu",
+      "Thiết kế website",
+      "Sản xuất nội dung",
+      "Tối ưu trải nghiệm số"
+    ],
+    "products": [
+      "Sổ phác thảo thiết kế",
+      "Bảng vẽ điện tử",
+      "Bộ thẻ màu"
+    ],
+    "image_group": "digital",
+    "photos": [
+      "photo-1558655146-d09347e92766",
+      "photo-1460925895917-afdab827c52f",
+      "photo-1547658719-da2b51169166"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0308": {
+    "brand": "Comgo Education",
+    "sector": "tư vấn du học",
+    "preset": "xd0308-study-abroad",
+    "services": [
+      "Tư vấn chọn trường",
+      "Chuẩn bị hồ sơ",
+      "Hỗ trợ thủ tục visa",
+      "Tìm hiểu học bổng"
+    ],
+    "products": [
+      "Sổ kế hoạch học tập",
+      "Túi đựng hồ sơ",
+      "Sách kỹ năng học tập"
+    ],
+    "image_group": "education",
+    "photos": [
+      "photo-1523240795612-9a054b0db644",
+      "photo-1523580846011-d3a5bc25702b",
+      "photo-1434030216411-0b793f4b4173"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0309": {
+    "brand": "Antek Safety",
+    "sector": "an toàn công nghiệp",
+    "preset": "xd0309-industrial-safety",
+    "services": [
+      "Đánh giá rủi ro",
+      "Huấn luyện an toàn",
+      "Tư vấn bảo hộ",
+      "Kiểm tra khu vực làm việc"
+    ],
+    "products": [
+      "Mũ bảo hộ",
+      "Găng tay bảo hộ",
+      "Áo phản quang"
+    ],
+    "image_group": "safety",
+    "photos": [
+      "photo-1504307651254-35680f356dfd",
+      "photo-1581092921461-eab62e97a780",
+      "photo-1504917595217-d4dc5ebe6122"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0310": {
+    "brand": "Garden Haven",
+    "sector": "cảnh quan sân vườn",
+    "preset": "xd0310-garden-landscape",
+    "services": [
+      "Thiết kế sân vườn",
+      "Thi công cảnh quan",
+      "Chăm sóc cây xanh",
+      "Lắp đặt tưới tự động"
+    ],
+    "products": [
+      "Bộ dụng cụ làm vườn",
+      "Chậu cây ngoài trời",
+      "Vòi tưới cây"
+    ],
+    "image_group": "garden",
+    "photos": [
+      "photo-1416879595882-3373a0480b5b",
+      "photo-1558904541-efa843a96f01",
+      "photo-1416879595882-3373a0480b5b"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0311": {
+    "brand": "InVess Advisory",
+    "sector": "kế toán và tư vấn tài chính",
+    "preset": "xd0311-accounting-advisory",
+    "services": [
+      "Tổ chức sổ sách",
+      "Báo cáo quản trị",
+      "Tư vấn quy trình tài chính",
+      "Đào tạo kế toán"
+    ],
+    "products": [
+      "Sổ thu chi",
+      "Bộ biểu mẫu kế toán",
+      "Máy tính để bàn"
+    ],
+    "image_group": "accounting",
+    "photos": [
+      "photo-1554224155-6726b3ff858f",
+      "photo-1454165804606-c3d57bc86b40",
+      "photo-1460925895917-afdab827c52f"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0312": {
+    "brand": "Bizgrow Logistics",
+    "sector": "chuỗi cung ứng",
+    "preset": "xd0312-logistics-bizgrow",
+    "services": [
+      "Tư vấn chuỗi cung ứng",
+      "Vận tải nội địa",
+      "Quản lý kho",
+      "Giao hàng doanh nghiệp"
+    ],
+    "products": [
+      "Thùng lưu trữ",
+      "Pallet vận chuyển",
+      "Tem quản lý hàng hóa"
+    ],
+    "image_group": "logistics",
+    "photos": [
+      "photo-1586528116311-ad8dd3c8310d",
+      "photo-1566576912321-d58ddd7a6088",
+      "photo-1494412519320-aa613dfb7738"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0313": {
+    "brand": "RouteX Visa",
+    "sector": "tư vấn hồ sơ và hành trình",
+    "preset": "xd0313-routex-visa",
+    "services": [
+      "Tư vấn hồ sơ du lịch",
+      "Hỗ trợ hồ sơ công tác",
+      "Rà soát giấy tờ",
+      "Chuẩn bị lịch trình"
+    ],
+    "products": [
+      "Túi đựng hộ chiếu",
+      "Vali du lịch",
+      "Gối du lịch"
+    ],
+    "image_group": "travel",
+    "photos": [
+      "photo-1488646953014-85cb44e25828",
+      "photo-1436491865332-7a61a109cc05",
+      "photo-1503220317375-aaad61436b1b"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0314": {
+    "brand": "Build Bench",
+    "sector": "thi công và cải tạo",
+    "preset": "xd0314-build-bench",
+    "services": [
+      "Thi công phần thô",
+      "Hoàn thiện nhà ở",
+      "Cải tạo văn phòng",
+      "Quản lý tiến độ"
+    ],
+    "products": [
+      "Máy khoan",
+      "Thước đo",
+      "Bộ dụng cụ thi công"
+    ],
+    "image_group": "construction",
+    "photos": [
+      "photo-1504307651254-35680f356dfd",
+      "photo-1541888946425-d81bb19240f5",
+      "photo-1503387762-592deb58ef4e"
+    ],
+    "product_images": [
+      "/themes/TOOL750/images/product-drill.png",
+      "/themes/TOOL750/images/product-measure.png",
+      null
+    ]
+  },
+  "XD0315": {
+    "brand": "Athletic Fitness",
+    "sector": "thể hình và vận động",
+    "preset": "xd0315-athletic",
+    "services": [
+      "Hướng dẫn tập cá nhân",
+      "Lớp vận động nhóm",
+      "Đánh giá thể lực",
+      "Lập kế hoạch luyện tập"
+    ],
+    "products": [
+      "Thảm tập",
+      "Tạ tay",
+      "Dây kháng lực"
+    ],
+    "image_group": "fitness",
+    "photos": [
+      "photo-1534438327276-14e5300c3a48",
+      "photo-1517836357463-d25dfeac3438",
+      "photo-1571019613454-1cb2f99b2d8b"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0318": {
+    "brand": "Fast Gear",
+    "sector": "xe đạp và thể thao ngoài trời",
+    "preset": "xd0318-fast-gear",
+    "services": [
+      "Bảo dưỡng xe đạp",
+      "Điều chỉnh tư thế lái",
+      "Thay thế phụ kiện",
+      "Tư vấn chọn xe"
+    ],
+    "products": [
+      "Mũ bảo hiểm xe đạp",
+      "Bơm xe cầm tay",
+      "Găng tay đạp xe"
+    ],
+    "image_group": "cycling",
+    "photos": [
+      "photo-1485965120184-e220f721d03e",
+      "photo-1485965120184-e220f721d03e",
+      "photo-1532298229144-0ec0c57515c7"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  },
+  "XD0320": {
+    "brand": "Industrial Solutions",
+    "sector": "kỹ thuật công nghiệp",
+    "preset": "xd0320-complete",
+    "services": [
+      "Bảo trì dây chuyền",
+      "Gia công cơ khí",
+      "Lắp đặt thiết bị",
+      "Tư vấn vận hành"
+    ],
+    "products": [
+      "Máy khoan công nghiệp",
+      "Dụng cụ đo",
+      "Thiết bị bảo hộ"
+    ],
+    "image_group": "industry",
+    "photos": [
+      "photo-1581092921461-eab62e97a780",
+      "photo-1504917595217-d4dc5ebe6122",
+      "photo-1581092160562-40aa08e78837"
+    ],
+    "product_images": [
+      "/themes/TOOL750/images/product-drill.png",
+      "/themes/TOOL750/images/product-measure.png",
+      null
+    ]
+  },
+  "XD0322": {
+    "brand": "Construction Pro",
+    "sector": "xây dựng và hoàn thiện",
+    "preset": "xd0322-construction",
+    "services": [
+      "Khảo sát công trình",
+      "Thiết kế thi công",
+      "Hoàn thiện nội thất",
+      "Bảo trì công trình"
+    ],
+    "products": [
+      "Mũ bảo hộ",
+      "Máy khoan",
+      "Máy cắt cầm tay"
+    ],
+    "image_group": "construction",
+    "photos": [
+      "photo-1504307651254-35680f356dfd",
+      "photo-1541888946425-d81bb19240f5",
+      "photo-1503387762-592deb58ef4e"
+    ],
+    "product_images": [
+      null,
+      "/themes/TOOL750/images/product-drill.png",
+      null
+    ]
+  },
+  "XD0323": {
+    "brand": "Euro Farm",
+    "sector": "nông nghiệp và thực phẩm",
+    "preset": "xd0323-euro-farm",
+    "services": [
+      "Tư vấn canh tác",
+      "Chăm sóc nông trại",
+      "Thiết kế tưới",
+      "Phân phối nông sản"
+    ],
+    "products": [
+      "Rau xanh theo mùa",
+      "Cà chua tươi",
+      "Giỏ nông sản"
+    ],
+    "image_group": "farm",
+    "photos": [
+      "photo-1500382017468-9049fed747ef",
+      "photo-1500937386664-56d1dfef3854",
+      "photo-1542838132-92c53300491e"
+    ],
+    "product_images": [
+      "/theme-demo/dn351/category-vegetables.jpg",
+      null,
+      "/theme-demo/dn351/category-vegetables.jpg"
+    ]
+  },
+  "XD0324": {
+    "brand": "WolfArch",
+    "sector": "kiến trúc và nội thất",
+    "preset": "xd0324-complete",
+    "services": [
+      "Thiết kế kiến trúc",
+      "Thiết kế nội thất",
+      "Tư vấn vật liệu",
+      "Giám sát hoàn thiện"
+    ],
+    "products": [
+      "Đèn trang trí",
+      "Ghế nội thất",
+      "Bàn làm việc"
+    ],
+    "image_group": "architecture",
+    "photos": [
+      "photo-1600607687939-ce8a6c25118c",
+      "photo-1600210492486-724fe5c67fb0",
+      "photo-1600566753086-00f18fb6b3ea"
+    ],
+    "product_images": [
+      "/theme-demo/ec917/product-lamp-black.webp",
+      "/theme-demo/ec917/product-chair-leather.webp",
+      "/theme-demo/ec917/product-desk-oak.webp"
+    ]
+  },
+  "XD0325": {
+    "brand": "Bean Construction",
+    "sector": "xây dựng dân dụng",
+    "preset": "xd0325-complete",
+    "services": [
+      "Khảo sát và báo giá",
+      "Thiết kế nhà ở",
+      "Thi công trọn gói",
+      "Cải tạo không gian"
+    ],
+    "products": [
+      "Mũ bảo hộ",
+      "Găng tay thi công",
+      "Máy khoan cầm tay"
+    ],
+    "image_group": "construction",
+    "photos": [
+      "photo-1504307651254-35680f356dfd",
+      "photo-1541888946425-d81bb19240f5",
+      "photo-1503387762-592deb58ef4e"
+    ],
+    "product_images": [
+      null,
+      null,
+      "/themes/TOOL750/images/product-drill.png"
+    ]
+  },
+  "XD321": {
+    "brand": "Cargo Logistics",
+    "sector": "vận chuyển hàng hóa",
+    "preset": "xd321-cargo-logistics",
+    "services": [
+      "Vận tải đường bộ",
+      "Giao nhận quốc tế",
+      "Kho bãi",
+      "Đóng gói hàng hóa"
+    ],
+    "products": [
+      "Pallet nhựa",
+      "Xe đẩy kho",
+      "Thùng vận chuyển"
+    ],
+    "image_group": "logistics",
+    "photos": [
+      "photo-1586528116311-ad8dd3c8310d",
+      "photo-1566576912321-d58ddd7a6088",
+      "photo-1494412519320-aa613dfb7738"
+    ],
+    "product_images": [
+      null,
+      null,
+      null
+    ]
+  }
+}
