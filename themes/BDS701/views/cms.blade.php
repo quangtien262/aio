@@ -1,3 +1,4 @@
+@php($contentEntry = $entry ?? $contentEntry ?? $page ?? null)
 @extends('theme-bds701::layout')
 @section('title', data_get($contentEntry ?? null, 'title', data_get($page ?? null, 'title', app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('BDS701', app()->getLocale(), 'pages.content', 'Nội dung'))))
 @section('content')

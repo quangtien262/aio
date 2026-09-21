@@ -53,6 +53,9 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const [bulkForm] = Form.useForm();
     const [copyForm] = Form.useForm();
     const [demoForm] = Form.useForm();
+    const [demoBatch, setDemoBatch] = useState(null);
+    const [demoBatchRunning, setDemoBatchRunning] = useState(false);
+    const [demoBatchResults, setDemoBatchResults] = useState([]);
     const [items, setItems] = useState([]);
     const [themeOptions, setThemeOptions] = useState(themes);
     const [demoPresetsByTheme, setDemoPresetsByTheme] = useState({});
@@ -198,6 +201,43 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         }
     };
 
+    const openDemoBatch = () => {
+        setDemoBatch(items.filter((item) => selectedRowKeys.includes(item.id)).map((item) => ({
+            ...item,
+            preset: demoPresetsByTheme[item.theme_key]?.[0]?.key,
+        })));
+        setDemoBatchResults([]);
+    };
+
+    const createDemoBatch = async () => {
+        if (demoBatchRunning || !demoBatch?.length) return;
+        setDemoBatchRunning(true);
+        const results = [];
+        const completedWebsites = new Set();
+        try {
+            for (const site of demoBatch) {
+                if (completedWebsites.has(site.website_key)) continue;
+                completedWebsites.add(site.website_key);
+                try {
+                    if (!site.preset) throw new Error('Theme chưa có bộ dữ liệu mẫu.');
+                    await callAdminApi(adminApi(`site-mappings/${site.id}/demo-data`), {
+                        method: 'POST',
+                        body: JSON.stringify({ preset: site.preset, reset_demo: true }),
+                    });
+                    results.push({ id: site.id, label: site.domain || site.website_key, ok: true });
+                } catch (failure) {
+                    results.push({ id: site.id, label: site.domain || site.website_key, ok: false,
+                        message: failure instanceof Error ? failure.message : 'Không tạo được dữ liệu mẫu.' });
+                }
+                setDemoBatchResults([...results]);
+            }
+            await loadItems();
+            setSelectedRowKeys(results.filter((result) => !result.ok).map((result) => result.id));
+        } finally {
+            setDemoBatchRunning(false);
+        }
+    };
+
     const copyContent = async () => {
         const values = await copyForm.validateFields();
         const target = items.find((item) => item.id === values.target_site_id);
@@ -282,11 +322,14 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
         selectedRowKeys,
         onChange: setSelectedRowKeys,
         getCheckboxProps: (item) => ({
-            disabled: !canManage || !item.domain,
+            disabled: !canManage || demoBatchRunning,
         }),
     };
 
     const selectedCount = selectedRowKeys.length;
+    const canDeleteSelection = canManage && selectedCount > 0
+        && items.filter((item) => selectedRowKeys.includes(item.id)).every((item) => item.domain);
+
 
     const columns = [
         {
@@ -431,14 +474,18 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                     >
                         Tạm tắt
                     </Button>
+                    <Button icon={<DatabaseOutlined />} disabled={!canManage || !selectedCount || demoBatchRunning}
+                        onClick={openDemoBatch}>
+                        Tạo lại data test
+                    </Button>
                     <Popconfirm
                         title={`Xóa ${selectedCount} cấu hình domain đã chọn?`}
                         okText="Xóa"
                         cancelText="Hủy"
-                        disabled={!canManage || !selectedCount}
+                        disabled={!canDeleteSelection}
                         onConfirm={bulkDelete}
                     >
-                        <Button danger icon={<DeleteOutlined />} disabled={!canManage || !selectedCount}>
+                        <Button danger icon={<DeleteOutlined />} disabled={!canDeleteSelection}>
                             Xóa
                         </Button>
                     </Popconfirm>
@@ -461,6 +508,40 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                     scroll={{ x: 1080 }}
                 />
             </Space>
+
+            <Modal
+                title="Tạo lại dữ liệu mẫu cho các website đã chọn"
+                open={demoBatch !== null}
+                onCancel={() => { if (!demoBatchRunning) setDemoBatch(null); }}
+                closable={!demoBatchRunning}
+                maskClosable={!demoBatchRunning}
+                keyboard={!demoBatchRunning}
+                footer={demoBatchResults.length && !demoBatchRunning ? (
+                    <Button onClick={() => setDemoBatch(null)}>Đóng</Button>
+                ) : undefined}
+                okText="Xóa dữ liệu mẫu cũ và tạo lại"
+                cancelText="Hủy"
+                confirmLoading={demoBatchRunning}
+                cancelButtonProps={{ disabled: demoBatchRunning }}
+                onOk={createDemoBatch}
+            >
+                <Space direction="vertical" style={{ width: '100%' }}>
+                    <Alert type="warning" showIcon
+                        message="Xóa toàn bộ dữ liệu mẫu cũ trên các website đã chọn và tạo lại theo theme tương ứng."
+                        description="Chỉ xóa dữ liệu mẫu có đánh dấu của hệ thống. Nội dung nhập thủ công được giữ lại. Mỗi website dùng chung nhiều domain chỉ được xử lý một lần." />
+                    {demoBatch?.map((site) => (
+                        <div key={site.id}>{site.domain || 'Domain mặc định'} — {site.theme_key}
+                            {!site.preset ? <Text type="danger"> — Chưa có bộ dữ liệu mẫu</Text> : null}
+                        </div>
+                    ))}
+                    {demoBatchRunning ? <Text>Đã xử lý {demoBatchResults.length}/{new Set(demoBatch?.map((site) => site.website_key)).size} website. Vui lòng giữ trang này mở.</Text> : null}
+                    {demoBatchResults.map((result) => (
+                        <Alert key={result.id} showIcon type={result.ok ? 'success' : 'error'}
+                            message={`${result.label}: ${result.ok ? 'Đã tạo lại dữ liệu mẫu' : 'Thất bại'}`}
+                            description={result.message} />
+                    ))}
+                </Space>
+            </Modal>
 
             <Modal
                 title="Tạo data test cho domain"

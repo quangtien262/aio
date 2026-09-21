@@ -113,9 +113,9 @@ class ThemeDemoContentGenerator
         $timestamp = Carbon::now();
 
         return DB::transaction(function () use ($preset, $siteProfile, $themeKey, $timestamp, $isServicePreset, $presetKey): array {
-            $this->websiteFinalizer->purge();
+            $this->websiteFinalizer->purge($themeKey);
             $this->replaceMenuLocations();
-            $purged = $this->purgeDemoContent();
+            $purged = $this->purgeDemoContent($themeKey);
 
             $newsCategory = CmsCategory::query()->create($this->buildDemoNewsCategory($preset, $themeKey));
             $this->recordDemoModel($newsCategory, $themeKey, $preset['key']);
@@ -399,7 +399,7 @@ class ThemeDemoContentGenerator
         foreach ($preset['departments'] as $parentIndex => $department) {
             $parent = CatalogCategory::query()->create([
                 'name' => $department['name'],
-                'slug' => Str::slug($preset['key'].'-'.$department['name']),
+                'slug' => Str::slug($themeKey.'-'.$preset['key'].'-'.$department['name']),
                 'description' => 'Danh mục '.$department['name'].' cho preset '.$preset['label'],
                 'image_url' => $this->imageUrl($preset['key'].'-cat-'.$parentIndex, 320, 320),
                 'sort_order' => $parentIndex,
@@ -412,7 +412,7 @@ class ThemeDemoContentGenerator
                 $child = CatalogCategory::query()->create([
                     'parent_id' => $parent->id,
                     'name' => $childName,
-                    'slug' => Str::slug($preset['key'].'-'.$department['name'].'-'.$childName),
+                    'slug' => Str::slug($themeKey.'-'.$preset['key'].'-'.$department['name'].'-'.$childName),
                     'description' => 'Nhóm '.$childName.' thuộc '.$department['name'],
                     'image_url' => $this->imageUrl($preset['key'].'-child-'.$parentIndex.'-'.$childIndex, 320, 320),
                     'sort_order' => $childIndex,
@@ -433,9 +433,9 @@ class ThemeDemoContentGenerator
                         'catalog_category_id' => $child->id,
                         'name' => $productName,
                         'slug' => Str::slug(
-                            $preset['key'].'-'.$department['name'].'-'.$childName.'-'.$productName,
+                            $themeKey.'-'.$preset['key'].'-'.$department['name'].'-'.$childName.'-'.$productName,
                         ),
-                        'sku' => $this->buildProductSku($preset, $department['name'], $parentIndex, $childIndex, $productIndex),
+                        'sku' => strtoupper($themeKey).'-'.$this->buildProductSku($preset, $department['name'], $parentIndex, $childIndex, $productIndex),
                         'price' => $price,
                         'original_price' => $isRealEstatePreset
                             ? $price + (int) round($price * (0.035 + ($productIndex * 0.005)))
@@ -510,14 +510,14 @@ class ThemeDemoContentGenerator
         })->all();
 
         $primaryMenu = CmsMenu::query()->create([
-            'name' => strtoupper($themeKey) === 'DN302' ? 'DN302 Primary Menu' : 'Primary Navigation',
+            'name' => strtoupper($themeKey).' Primary Menu',
             'location' => $primaryLocation,
             'items' => $this->buildPrimaryMenuItems($preset, $pageSlugs),
         ]);
         $this->recordDemoModel($primaryMenu, $themeKey, $preset['key']);
 
         $productMenu = CmsMenu::query()->create([
-            'name' => 'Product Navigation',
+            'name' => strtoupper($themeKey).' Product Navigation',
             'location' => 'product-navigation',
             'items' => $productItems,
         ]);
@@ -1532,7 +1532,7 @@ class ThemeDemoContentGenerator
         if ($this->isRealEstatePreset($preset)) {
             return [
                 'name' => 'Tin mở bán & cẩm nang',
-                'slug' => Str::slug('tin-mo-ban-'.$preset['key']),
+                'slug' => Str::slug($themeKey.'-tin-mo-ban-'.$preset['key']),
                 'description' => 'Chuyên mục demo cho tin thị trường, hướng dẫn chọn căn và cập nhật mở bán của AIO Real Estate.',
                 'meta_title' => 'Tin mở bán '.$preset['company_name'],
                 'meta_description' => 'Tin thị trường, thông tin mở bán và bài viết tư vấn demo cho '.$preset['company_name'],
@@ -1542,7 +1542,7 @@ class ThemeDemoContentGenerator
         if ($this->isInteriorPreset($preset)) {
             return [
                 'name' => 'Y tuong khong gian',
-                'slug' => Str::slug('y-tuong-khong-gian-'.$preset['key']),
+                'slug' => Str::slug($themeKey.'-y-tuong-khong-gian-'.$preset['key']),
                 'description' => 'Chuyen muc demo cho goi y phoi phong, vat lieu va cach chon noi that.',
                 'meta_title' => 'Y tuong noi that '.$preset['company_name'],
                 'meta_description' => 'Y tuong phoi phong, vat lieu va bai viet tu van demo cho '.$preset['company_name'],
@@ -1551,7 +1551,7 @@ class ThemeDemoContentGenerator
 
         return [
             'name' => 'Tin '.$preset['short_label'],
-            'slug' => Str::slug('tin-'.$preset['key']),
+            'slug' => Str::slug($themeKey.'-tin-'.$preset['key']),
             'description' => 'Chuyên mục cập nhật nội dung demo cho theme '.$themeKey,
             'meta_title' => 'Tin tức '.$preset['label'],
             'meta_description' => 'Tin tức và nội dung demo cho '.$preset['label'],

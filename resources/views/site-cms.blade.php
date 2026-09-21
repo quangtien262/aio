@@ -135,6 +135,22 @@
                             </article>
                         @endforeach
                     </section>
+                @elseif (($contentType ?? null) === 'projects')
+                    <section>
+                        <h1>{{ $pageTitle ?? 'Dự án' }}</h1>
+                        <div class="site-list-grid">
+                            @foreach ($listingItems as $project)
+                                <article class="site-list-card">
+                                    @if ($project->featuredImage?->image_url)
+                                        <img class="site-featured-image" src="{{ $project->featuredImage->image_url }}" alt="{{ $project->title }}" loading="lazy">
+                                    @endif
+                                    <h2><a href="{{ route('site.projects.show', ['slug' => $project->slug]) }}">{{ $project->title }}</a></h2>
+                                    <p>{{ $project->summary }}</p>
+                                </article>
+                            @endforeach
+                        </div>
+                        @if (method_exists($listingItems, 'links')){{ $listingItems->links() }}@endif
+                    </section>
                 @elseif (($contentType ?? null) === 'services')
                     <section class="site-hero">
                         <span class="site-kicker">Services</span>
@@ -268,7 +284,7 @@
                     </section>
 
                     <section class="site-content">
-                        {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
+                        {!! ($entry->body ?? $entry->content) ?: '<p>Nội dung đang được cập nhật.</p>' !!}
                     </section>
 
                     @if (($contentType ?? null) === 'service' && !empty($entry->images) && $entry->images->count() > 1)

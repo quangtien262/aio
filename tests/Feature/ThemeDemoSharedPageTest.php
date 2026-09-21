@@ -88,6 +88,17 @@ class ThemeDemoSharedPageTest extends TestCase
         ];
     }
 
+    public function test_generic_regeneration_preserves_other_theme_demo_records(): void
+    {
+        $generator = app(ThemeDemoContentGenerator::class);
+        $generator->generate('TEST-FIRST', 'electronics-superstore');
+        $ids = ThemeDemoRecord::where('theme_key', 'TEST-FIRST')->pluck('id')->all();
+        $generator->generate('TEST-SECOND', 'electronics-superstore');
+        $generator->generate('TEST-SECOND', 'electronics-superstore');
+        $this->assertSame($ids, ThemeDemoRecord::where('theme_key', 'TEST-FIRST')->pluck('id')->all());
+        $this->assertTrue(\App\Models\CatalogProduct::where('slug', 'like', 'test-first-%')->exists());
+    }
+
     private function createExistingContactPage(): CmsPage
     {
         return CmsPage::query()->create([

@@ -277,10 +277,10 @@ class SiteMappingCopyApiTest extends TestCase
         app(SiteContentInitializer::class)->initialize($site, SiteContentInitializer::MODE_SAMPLE);
 
         $this->assertSame(3, DB::table('cms_posts')->where('website_key', 'dn302-demo')->count());
-        $this->assertSame(3, DB::table('cms_services')->where('website_key', 'dn302-demo')->count());
-        $this->assertSame(2, DB::table('cms_projects')->where('website_key', 'dn302-demo')->count());
+        $this->assertSame(4, DB::table('cms_services')->where('website_key', 'dn302-demo')->count());
+        $this->assertSame(3, DB::table('cms_projects')->where('website_key', 'dn302-demo')->count());
         $this->assertSame(3, DB::table('cms_team_members')->where('website_key', 'dn302-demo')->count());
-        $this->assertSame(2, DB::table('cms_testimonials')->where('website_key', 'dn302-demo')->count());
+        $this->assertSame(3, DB::table('cms_testimonials')->where('website_key', 'dn302-demo')->count());
     }
 
     public function test_admin_can_update_each_domain_checklist_inline(): void

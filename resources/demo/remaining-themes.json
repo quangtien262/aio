@@ -1,0 +1,422 @@
+{
+  "BZ501": {
+    "brand": "HaluFin Business",
+    "sector": "tư vấn doanh nghiệp",
+    "preset": "bz501-complete",
+    "services": [
+      "Tư vấn chiến lược",
+      "Tổ chức vận hành",
+      "Phân tích tài chính",
+      "Đào tạo quản lý"
+    ],
+    "products": [
+      "Sổ kế hoạch",
+      "Tài liệu quản trị",
+      "Bộ biểu mẫu"
+    ],
+    "images": [
+      "/theme-demo/xd-shared/business-1.jpg",
+      "/theme-demo/xd-shared/business-2.jpg",
+      "/theme-demo/xd-shared/business-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/xd-shared/business-1.jpg",
+      "/theme-demo/xd-shared/business-2.jpg",
+      "/theme-demo/xd-shared/business-3.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-bz501.svg",
+    "website_type": "service"
+  },
+  "CORPORATE-STARTER": {
+    "brand": "Corporate Studio",
+    "sector": "giải pháp doanh nghiệp",
+    "preset": "corporate-starter-complete",
+    "services": [
+      "Tư vấn vận hành",
+      "Thiết kế quy trình",
+      "Đào tạo đội ngũ",
+      "Hỗ trợ triển khai"
+    ],
+    "products": [
+      "Tài liệu đào tạo",
+      "Sổ công việc",
+      "Bộ biểu mẫu"
+    ],
+    "images": [
+      "/theme-demo/xd-shared/business-1.jpg",
+      "/theme-demo/xd-shared/business-2.jpg",
+      "/theme-demo/xd-shared/business-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/xd-shared/business-1.jpg",
+      "/theme-demo/xd-shared/business-2.jpg",
+      "/theme-demo/xd-shared/business-3.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-corporate-starter.svg",
+    "website_type": "corporate"
+  },
+  "DL750": {
+    "brand": "Forest Camp",
+    "sector": "du lịch cắm trại",
+    "preset": "dl750-complete",
+    "services": [
+      "Tư vấn lịch trình",
+      "Thuê lều trại",
+      "Hướng dẫn trekking",
+      "Tổ chức dã ngoại"
+    ],
+    "products": [
+      "Lều dã ngoại",
+      "Balo du lịch",
+      "Đèn cắm trại"
+    ],
+    "images": [
+      "/theme-demo/xd-shared/travel-1.jpg",
+      "/theme-demo/xd-shared/travel-2.jpg",
+      "/theme-demo/xd-shared/travel-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/xd-shared/travel-1.jpg",
+      "/theme-demo/xd-shared/travel-2.jpg",
+      "/theme-demo/xd-shared/travel-3.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-dl750.svg",
+    "website_type": "ecommerce"
+  },
+  "DN302": {
+    "brand": "Janelas",
+    "sector": "cửa và không gian sống",
+    "preset": "dn302-complete",
+    "services": [
+      "Tư vấn cửa nhôm kính",
+      "Đo đạc hiện trạng",
+      "Lắp đặt cửa",
+      "Bảo trì phụ kiện"
+    ],
+    "products": [
+      "Cửa kính phòng khách",
+      "Cửa sổ biệt thự",
+      "Phụ kiện cửa"
+    ],
+    "images": [
+      "/theme-demo/dn302/dn302-living-room.png",
+      "/theme-demo/dn302/dn302-villa.png",
+      "/theme-demo/xd-shared/architecture-1.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/dn302/dn302-living-room.png",
+      "/theme-demo/dn302/dn302-villa.png",
+      "/theme-demo/xd-shared/architecture-1.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-dn302.svg",
+    "website_type": "service"
+  },
+  "FOOT401": {
+    "brand": "Restaurant",
+    "sector": "ẩm thực nhà hàng",
+    "preset": "foot401-complete",
+    "services": [
+      "Đặt bàn",
+      "Tiệc gia đình",
+      "Tiệc doanh nghiệp",
+      "Phục vụ theo yêu cầu"
+    ],
+    "products": [
+      "Pizza phô mai",
+      "Burger bò",
+      "Gà giòn"
+    ],
+    "images": [
+      "/theme-demo/foot409/promo-pizza.png",
+      "/theme-demo/foot409/promo-burger.png",
+      "/theme-demo/foot409/hero-fried-chicken.png"
+    ],
+    "product_images": [
+      "/theme-demo/foot409/promo-pizza.png",
+      "/theme-demo/foot409/promo-burger.png",
+      "/theme-demo/foot409/hero-fried-chicken.png"
+    ],
+    "logo": "/theme-demo/complete/logo-foot401.svg",
+    "website_type": "service"
+  },
+  "FOOT403": {
+    "brand": "HT Restaurant",
+    "sector": "ẩm thực nhà hàng",
+    "preset": "foot403-complete",
+    "services": [
+      "Đặt bàn",
+      "Đặt tiệc",
+      "Thiết kế thực đơn",
+      "Phục vụ sự kiện"
+    ],
+    "products": [
+      "Combo gia đình",
+      "Pizza",
+      "Burger"
+    ],
+    "images": [
+      "/theme-demo/foot409/promo-pizza.png",
+      "/theme-demo/foot409/promo-burger.png",
+      "/theme-demo/foot409/hero-fried-chicken.png"
+    ],
+    "product_images": [
+      "/theme-demo/foot409/promo-pizza.png",
+      "/theme-demo/foot409/promo-burger.png",
+      "/theme-demo/foot409/hero-fried-chicken.png"
+    ],
+    "logo": "/theme-demo/complete/logo-foot403.svg",
+    "website_type": "service"
+  },
+  "FOOT404": {
+    "brand": "Pure Commerce",
+    "sector": "thực phẩm và dinh dưỡng",
+    "preset": "foot404-complete",
+    "services": [
+      "Tư vấn thực phẩm",
+      "Gói quà tặng",
+      "Giao thực phẩm",
+      "Đơn hàng doanh nghiệp"
+    ],
+    "products": [
+      "Rau xanh",
+      "Giỏ thực phẩm",
+      "Thực phẩm theo mùa"
+    ],
+    "images": [
+      "/theme-demo/dn351/category-vegetables.jpg",
+      "/theme-demo/xd-shared/farm-2.jpg",
+      "/theme-demo/xd-shared/farm-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/dn351/category-vegetables.jpg",
+      "/theme-demo/xd-shared/farm-2.jpg",
+      "/theme-demo/xd-shared/farm-3.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-foot404.svg",
+    "website_type": "ecommerce"
+  },
+  "FOOT405": {
+    "brand": "Fresh Market",
+    "sector": "nông sản tươi",
+    "preset": "foot405-complete",
+    "services": [
+      "Tư vấn lựa chọn",
+      "Đặt hàng định kỳ",
+      "Giao thực phẩm",
+      "Cung cấp nhà hàng"
+    ],
+    "products": [
+      "Rau theo mùa",
+      "Giỏ nông sản",
+      "Thực phẩm tươi"
+    ],
+    "images": [
+      "/theme-demo/dn351/category-vegetables.jpg",
+      "/theme-demo/xd-shared/farm-2.jpg",
+      "/theme-demo/xd-shared/farm-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/dn351/category-vegetables.jpg",
+      "/theme-demo/xd-shared/farm-2.jpg",
+      "/theme-demo/xd-shared/farm-3.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-foot405.svg",
+    "website_type": "ecommerce"
+  },
+  "FOOT406": {
+    "brand": "Fresh Drinks",
+    "sector": "đồ uống và giải khát",
+    "preset": "foot406-complete",
+    "services": [
+      "Đặt đồ uống",
+      "Phục vụ sự kiện",
+      "Đặt theo nhóm",
+      "Giao đồ uống"
+    ],
+    "products": [
+      "Trà trái cây",
+      "Cà phê",
+      "Nước ép"
+    ],
+    "images": [
+      "/theme-demo/complete/drinks-1.jpg",
+      "/theme-demo/complete/drinks-2.jpg",
+      "/theme-demo/complete/drinks-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/complete/drinks-1.jpg",
+      "/theme-demo/complete/drinks-2.jpg",
+      "/theme-demo/complete/drinks-3.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-foot406.svg",
+    "website_type": "ecommerce"
+  },
+  "FOOT407": {
+    "brand": "Golden Wellness",
+    "sector": "sản phẩm chăm sóc sức khỏe",
+    "preset": "foot407-complete",
+    "services": [
+      "Tư vấn lựa chọn",
+      "Đặt quà tặng",
+      "Chăm sóc khách hàng",
+      "Giao sản phẩm"
+    ],
+    "products": [
+      "Trà thảo mộc",
+      "Hạt dinh dưỡng",
+      "Giỏ quà sức khỏe"
+    ],
+    "images": [
+      "/theme-demo/complete/wellness-1.jpg",
+      "/theme-demo/complete/wellness-2.jpg",
+      "/theme-demo/complete/wellness-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/complete/wellness-1.jpg",
+      "/theme-demo/complete/wellness-2.jpg",
+      "/theme-demo/complete/wellness-3.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-foot407.svg",
+    "website_type": "ecommerce"
+  },
+  "FOOT408": {
+    "brand": "Urban Restaurant",
+    "sector": "ẩm thực đô thị",
+    "preset": "foot408-complete",
+    "services": [
+      "Đặt bàn",
+      "Đặt tiệc",
+      "Thực đơn theo nhóm",
+      "Giao món ăn"
+    ],
+    "products": [
+      "Burger",
+      "Pizza",
+      "Combo gà"
+    ],
+    "images": [
+      "/theme-demo/foot409/promo-pizza.png",
+      "/theme-demo/foot409/promo-burger.png",
+      "/theme-demo/foot409/hero-fried-chicken.png"
+    ],
+    "product_images": [
+      "/theme-demo/foot409/promo-pizza.png",
+      "/theme-demo/foot409/promo-burger.png",
+      "/theme-demo/foot409/hero-fried-chicken.png"
+    ],
+    "logo": "/theme-demo/complete/logo-foot408.svg",
+    "website_type": "ecommerce"
+  },
+  "NT501": {
+    "brand": "Interior Studio",
+    "sector": "thiết kế nội thất",
+    "preset": "nt501-complete",
+    "services": [
+      "Tư vấn không gian",
+      "Thiết kế nội thất",
+      "Thi công hoàn thiện",
+      "Bảo trì nội thất"
+    ],
+    "products": [
+      "Ghế nội thất",
+      "Bàn làm việc",
+      "Đèn trang trí"
+    ],
+    "images": [
+      "/theme-demo/dn302/dn302-living-room.png",
+      "/theme-demo/dn302/dn302-villa.png",
+      "/theme-demo/xd-shared/architecture-1.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/dn302/dn302-living-room.png",
+      "/theme-demo/dn302/dn302-villa.png",
+      "/theme-demo/xd-shared/architecture-1.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-nt501.svg",
+    "website_type": "service"
+  },
+  "SER0101": {
+    "brand": "Premium Booking",
+    "sector": "đặt xe và vận chuyển",
+    "preset": "ser0101-complete",
+    "services": [
+      "Đưa đón sân bay",
+      "Thuê xe theo ngày",
+      "Xe doanh nghiệp",
+      "Tư vấn hành trình"
+    ],
+    "products": [
+      "Gói đưa đón",
+      "Gói thuê xe",
+      "Gói hành trình"
+    ],
+    "images": [
+      "/theme-demo/xd-shared/travel-1.jpg",
+      "/theme-demo/xd-shared/travel-2.jpg",
+      "/theme-demo/xd-shared/travel-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/xd-shared/travel-1.jpg",
+      "/theme-demo/xd-shared/travel-2.jpg",
+      "/theme-demo/xd-shared/travel-3.jpg"
+    ],
+    "logo": "/theme-demo/complete/logo-ser0101.svg",
+    "website_type": "service"
+  },
+  "SHOP606": {
+    "brand": "Atelier",
+    "sector": "thời trang và phong cách",
+    "preset": "shop606-complete",
+    "services": [
+      "Tư vấn phối đồ",
+      "Hướng dẫn chọn cỡ",
+      "Đóng gói quà tặng",
+      "Chăm sóc khách hàng"
+    ],
+    "products": [
+      "Áo sơ mi",
+      "Áo dệt kim",
+      "Đầm thanh lịch"
+    ],
+    "images": [
+      "/theme-demo/shop603/product-men-green.png",
+      "/theme-demo/shop603/product-women-knit.png",
+      "/theme-demo/shop603/product-women-rose.png"
+    ],
+    "product_images": [
+      "/theme-demo/shop603/product-men-green.png",
+      "/theme-demo/shop603/product-women-knit.png",
+      "/theme-demo/shop603/product-women-rose.png"
+    ],
+    "logo": "/theme-demo/complete/logo-shop606.svg",
+    "website_type": "ecommerce"
+  },
+  "SPA502": {
+    "brand": "Cosmetics Spa",
+    "sector": "làm đẹp và chăm sóc da",
+    "preset": "spa502-complete",
+    "services": [
+      "Chăm sóc da cơ bản",
+      "Thư giãn cơ thể",
+      "Tư vấn sản phẩm",
+      "Đặt lịch chăm sóc"
+    ],
+    "products": [
+      "Serum dưỡng da",
+      "Mặt nạ",
+      "Dầu gội"
+    ],
+    "images": [
+      "/theme-demo/spa111/product-serum.png",
+      "/theme-demo/spa111/product-mask.png",
+      "/theme-demo/spa111/product-shampoo.png"
+    ],
+    "product_images": [
+      "/theme-demo/spa111/product-serum.png",
+      "/theme-demo/spa111/product-mask.png",
+      "/theme-demo/spa111/product-shampoo.png"
+    ],
+    "logo": "/theme-demo/complete/logo-spa502.svg",
+    "website_type": "ecommerce"
+  }
+}

@@ -26,7 +26,9 @@ use Illuminate\Support\Str;
 class SiteContentInitializer
 {
     public const MODE_BLANK = 'blank';
+
     public const MODE_SAMPLE = 'sample';
+
     public const MODE_COPY_MAIN = 'copy_main';
 
     public function __construct(
@@ -34,13 +36,12 @@ class SiteContentInitializer
         private readonly ThemeDemoContentGenerator $demoContentGenerator,
         private readonly SiteContentCopier $contentCopier,
         private readonly SiteContext $siteContext,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
      */
-    public function initialize(Site $site, string $mode, ?string $presetKey = null): array
+    public function initialize(Site $site, string $mode, ?string $presetKey = null, bool $resetDemo = false): array
     {
         $mode = $this->normalizeMode($mode);
 
@@ -48,7 +49,7 @@ class SiteContentInitializer
             return ['mode' => $mode, 'counts' => []];
         }
 
-        return $this->runForSite($site, function () use ($site, $mode, $presetKey): array {
+        return $this->runForSite($site, function () use ($site, $mode, $presetKey, $resetDemo): array {
             if ($mode === self::MODE_COPY_MAIN) {
                 $counts = $this->contentCopier->copy(SiteContext::DEFAULT_WEBSITE_KEY, $site->website_key);
                 $this->landingPageBuilder->resolveHome($site->website_key, $site->theme_key, true);
@@ -59,7 +60,7 @@ class SiteContentInitializer
             $preset = $presetKey ?: $this->demoContentGenerator->defaultPresetForTheme($site->theme_key);
 
             if ($preset !== null) {
-                $result = $this->demoContentGenerator->generate($site->theme_key, $preset);
+                $result = $this->demoContentGenerator->generate($site->theme_key, $preset, $resetDemo);
                 $this->landingPageBuilder->resolveHome($site->website_key, $site->theme_key, true);
 
                 return ['mode' => $mode, 'preset' => $preset, 'counts' => (array) ($result['counts'] ?? [])];
@@ -78,7 +79,8 @@ class SiteContentInitializer
 
     /**
      * @template TReturn
-     * @param callable(): TReturn $callback
+     *
+     * @param  callable(): TReturn  $callback
      * @return TReturn
      */
     private function runForSite(Site $site, callable $callback): mixed

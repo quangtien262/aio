@@ -1,5 +1,5 @@
-@extends('theme-ec100::layout')
+@extends('theme-ec910::layout')
 @section('title', data_get($entry ?? null, 'title', 'Tạp chí đồng hồ'))
 @section('content')
-@include('theme-ec100::partials.content-shell')
+@include('theme-ec910::partials.content-shell')
 @endsection

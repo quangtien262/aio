@@ -10,6 +10,7 @@ use App\Support\MainWebsiteTemplateSynchronizer;
 use App\Support\SiteContentCopier;
 use App\Support\SiteContentInitializer;
 use App\Support\SiteDataPurger;
+use App\Support\ThemeBrandingResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -258,6 +259,7 @@ class SiteMappingController
         $validated = $request->validate([
             'preset' => ['required', 'string', Rule::in($availablePresets->pluck('key')->all())],
             'reset_all' => ['sometimes', 'boolean'],
+            'reset_demo' => ['sometimes', 'boolean'],
         ]);
 
         try {
@@ -275,6 +277,7 @@ class SiteMappingController
                     $site,
                     SiteContentInitializer::MODE_SAMPLE,
                     $validated['preset'],
+                    (bool) ($validated['reset_demo'] ?? false),
                 );
                 $this->markDemoDataCreated($site);
 
@@ -479,7 +482,7 @@ class SiteMappingController
                 ->first();
         }
 
-        $siteProfile ??= new SiteProfile();
+        $siteProfile ??= new SiteProfile;
 
         $branding = $siteProfile->branding ?? [];
         $branding['website_key'] = $site->website_key;
@@ -492,7 +495,7 @@ class SiteMappingController
             'branding' => $branding,
         ])->save();
 
-        app(\App\Support\ThemeBrandingResolver::class)->ensure(
+        app(ThemeBrandingResolver::class)->ensure(
             $site->website_key,
             $site->theme_key,
             $siteProfile->globalBranding(),

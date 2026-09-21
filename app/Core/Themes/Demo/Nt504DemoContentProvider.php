@@ -13,6 +13,7 @@ use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
 use App\Models\LandingPageBlockData;
 use App\Models\LandingPageData;
+use App\Models\LocalizedRoute;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Models\ThemeDemoRecord;
@@ -228,6 +229,11 @@ class Nt504DemoContentProvider implements ThemeDemoContentProvider
         $websiteKey = $this->siteContext->websiteKey();
         foreach ([[CmsPost::class, 'posts', 'cms_post'], [CmsCategory::class, 'post_categories', 'cms_category'], [CmsPage::class, 'pages', 'cms_page'], [CatalogProduct::class, 'products', 'catalog_product'], [CatalogCategory::class, 'categories', 'catalog_category'], [CmsMenu::class, 'menus', 'cms_menu'], [SiteBanner::class, 'banners', 'site_banner']] as [$model, $key, $resourceType]) {
             if ($modelIds = $ids($model)) {
+                LocalizedRoute::query()
+                    ->where('website_key', $websiteKey)
+                    ->where('resource_type', $resourceType)
+                    ->whereIn('resource_id', $modelIds)
+                    ->delete();
                 ContentTranslation::query()
                     ->where('website_key', $websiteKey)
                     ->where('resource_type', $resourceType)

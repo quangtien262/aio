@@ -23,37 +23,39 @@ use InvalidArgumentException;
 
 class Bds701DemoContentProvider implements ThemeDemoContentProvider
 {
-    private const THEME_KEY = 'BDS701';
-    private const PRESET_KEY = 'bds701-delta-platinum';
+    protected const THEME_KEY = 'BDS701';
+
+    protected const PRESET_KEY = 'bds701-delta-platinum';
+
+    protected const BRAND = 'Delta Platinum';
 
     public function __construct(
         private readonly LandingPageBuilder $landingPageBuilder,
         private readonly SiteContext $siteContext,
-    ) {
-    }
+    ) {}
 
     public function themeKey(): string
     {
-        return self::THEME_KEY;
+        return static::THEME_KEY;
     }
 
     public function defaultPreset(): string
     {
-        return self::PRESET_KEY;
+        return static::PRESET_KEY;
     }
 
     public function preset(): array
     {
         return [
-            'key' => self::PRESET_KEY,
-            'label' => 'BDS701 Delta Platinum',
+            'key' => static::PRESET_KEY,
+            'label' => static::THEME_KEY.' '.static::BRAND,
             'description' => 'Dữ liệu mẫu bất động sản gồm loại hình, tin bán/cho thuê, gallery, tin thị trường, menu và landing page.',
         ];
     }
 
     public function generate(string $presetKey): array
     {
-        if ($presetKey !== self::PRESET_KEY) {
+        if ($presetKey !== static::PRESET_KEY) {
             throw new InvalidArgumentException('Preset demo không hợp lệ cho BDS701.');
         }
 
@@ -86,7 +88,7 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
                 $typeWasExisting = $type->exists;
                 $type->fill([
                     'name' => $name, 'slug' => $slug, 'icon' => $icon, 'image_url' => $image,
-                    'description' => 'Không gian '.$name.' được chọn lọc bởi Delta Platinum.',
+                    'description' => 'Không gian '.$name.' được chọn lọc bởi '.static::BRAND.'.',
                     'sort_order' => $index, 'is_active' => true, 'website_key' => $websiteKey,
                 ])->save();
                 if (! $typeWasExisting) {
@@ -106,7 +108,7 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
                 ['Nhà phố thương mại ven sông', 'nha-pho', 'sale', 9200000000, 'An Phú', 'Thủ Đức', 'Hồ Chí Minh', 4, 4, 145, true],
             ];
             foreach ($listings as $index => [$title, $typeSlug, $transaction, $price, $ward, $district, $province, $bedrooms, $bathrooms, $area, $featured]) {
-                $listingSlug = Str::slug('bds701-'.$title);
+                $listingSlug = Str::slug(strtolower(static::THEME_KEY).'-'.$title);
                 $listing = RealEstateListing::query()->firstOrNew([
                     'website_key' => $websiteKey,
                     'slug' => $listingSlug,
@@ -116,7 +118,7 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
                     'property_type_id' => $types[$typeSlug]->id,
                     'title' => $title,
                     'slug' => $listingSlug,
-                    'code' => 'BDS701-'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT),
+                    'code' => static::THEME_KEY.'-'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT),
                     'publication_status' => 'published',
                     'availability_status' => 'available',
                     'transaction_type' => $transaction,
@@ -137,7 +139,7 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
                     'furnishing_status' => 'Nội thất hoàn thiện cao cấp',
                     'virtual_tour_url' => $index < 3 ? 'https://example.com/virtual-tour/'.$index : null,
                     'summary' => 'Bất động sản vị trí đẹp, không gian thoáng, tiện ích đồng bộ và phù hợp cho nhu cầu an cư hoặc đầu tư dài hạn.',
-                    'content' => '<p>Không gian được quy hoạch chỉn chu với hệ thống tiện ích, giao thông thuận lợi và tiềm năng gia tăng giá trị bền vững.</p><p>Liên hệ Delta Platinum để nhận hồ sơ chi tiết, lịch xem thực tế và tư vấn tài chính.</p>',
+                    'content' => '<p>Không gian được quy hoạch chỉn chu với hệ thống tiện ích, giao thông thuận lợi và tiềm năng gia tăng giá trị bền vững.</p><p>Liên hệ '.static::BRAND.' để nhận hồ sơ chi tiết, lịch xem thực tế và tư vấn tài chính.</p>',
                     'meta_title' => $title,
                     'meta_description' => 'Thông tin chi tiết '.$title.' tại '.$district.', '.$province.'.',
                     'is_featured' => $featured,
@@ -162,12 +164,12 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
 
             $category = CmsCategory::query()->firstOrNew([
                 'website_key' => $websiteKey,
-                'slug' => 'bds701-thi-truong-bat-dong-san',
+                'slug' => strtolower(static::THEME_KEY).'-thi-truong-bat-dong-san',
             ]);
             $categoryWasExisting = $category->exists;
             $category->fill([
                 'name' => 'Thị trường bất động sản',
-                'slug' => 'bds701-thi-truong-bat-dong-san',
+                'slug' => strtolower(static::THEME_KEY).'-thi-truong-bat-dong-san',
                 'description' => 'Phân tích, chính sách và xu hướng thị trường bất động sản.',
                 'website_key' => $websiteKey,
             ])->save();
@@ -182,7 +184,7 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
                 'Hàng loạt rào cản kìm hãm nguồn cung căn hộ giá hợp lý',
                 'Cuộc sống thượng lưu tại khu biệt thự ven sông',
             ] as $index => $title) {
-                $postSlug = Str::slug('bds701-'.$title);
+                $postSlug = Str::slug(strtolower(static::THEME_KEY).'-'.$title);
                 $post = CmsPost::query()->firstOrNew([
                     'website_key' => $websiteKey,
                     'slug' => $postSlug,
@@ -206,11 +208,11 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
 
             $menu = CmsMenu::query()->firstOrNew([
                 'website_key' => $websiteKey,
-                'name' => 'BDS701 Main Menu',
+                'name' => static::THEME_KEY.' Main Menu',
             ]);
             $menuWasExisting = $menu->exists;
             $menu->fill([
-                'name' => 'BDS701 Main Menu',
+                'name' => static::THEME_KEY.' Main Menu',
                 'location' => 'primary-navigation',
                 'items' => [
                     ['label' => 'Trang chủ', 'url' => route('site.home')],
@@ -227,7 +229,7 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
 
             $aboutPage = CmsPage::query()->firstOrCreate(
                 ['website_key' => $websiteKey, 'slug' => 'gioi-thieu'],
-                ['title' => 'Giới thiệu Delta Platinum', 'status' => 'published', 'excerpt' => 'Đồng hành cùng nhu cầu an cư và đầu tư.', 'body' => '<p>Delta Platinum cung cấp thông tin minh bạch và tư vấn bất động sản phù hợp theo từng nhu cầu.</p>', 'publish_at' => now()],
+                ['title' => 'Giới thiệu '.static::BRAND, 'status' => 'published', 'excerpt' => 'Đồng hành cùng nhu cầu an cư và đầu tư.', 'body' => '<p>'.static::BRAND.' cung cấp thông tin minh bạch và tư vấn bất động sản phù hợp theo từng nhu cầu.</p>', 'publish_at' => now()],
             );
             if ($aboutPage->wasRecentlyCreated) {
                 $this->record($aboutPage);
@@ -235,11 +237,11 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
 
             $profile = SiteProfile::query()->firstOrNew(['website_key' => $websiteKey]);
             $profile->forceFill([
-                'site_name' => 'Delta Platinum',
+                'site_name' => static::BRAND,
                 'website_type' => 'real_estate',
-                'active_theme_key' => self::THEME_KEY,
+                'active_theme_key' => static::THEME_KEY,
                 'branding' => array_merge((array) $profile->branding, [
-                    'company_name' => 'Delta Platinum',
+                    'company_name' => static::BRAND,
                     'company_description' => 'Nền tảng tư vấn và giao dịch bất động sản chọn lọc.',
                     'support_hotline' => '19006750',
                     'support_email' => 'hello@deltaplatinum.vn',
@@ -247,8 +249,8 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
                 ]),
             ])->save();
 
-            $existingPage = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
-            $page = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);
+            $existingPage = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', static::THEME_KEY)->where('is_home', true)->first();
+            $page = $this->landingPageBuilder->resolveHome($websiteKey, static::THEME_KEY, true);
             if ($page && $existingPage === null) {
                 $this->record($page);
             }
@@ -268,7 +270,7 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
 
     public function delete(): array
     {
-        $records = ThemeDemoRecord::query()->where('theme_key', self::THEME_KEY)->where('preset_key', self::PRESET_KEY)->get();
+        $records = ThemeDemoRecord::query()->where('theme_key', static::THEME_KEY)->where('preset_key', static::PRESET_KEY)->get();
         $ids = fn (string $type): array => $records->where('model_type', $type)->pluck('model_id')->all();
         $counts = ['property_types' => 0, 'listings' => 0, 'posts' => 0, 'post_categories' => 0, 'menus' => 0, 'pages' => 0, 'landing_pages' => 0];
 
@@ -299,8 +301,8 @@ class Bds701DemoContentProvider implements ThemeDemoContentProvider
     private function record(Model $model): void
     {
         ThemeDemoRecord::query()->updateOrCreate([
-            'theme_key' => self::THEME_KEY,
-            'preset_key' => self::PRESET_KEY,
+            'theme_key' => static::THEME_KEY,
+            'preset_key' => static::PRESET_KEY,
             'model_type' => $model::class,
             'model_id' => $model->getKey(),
         ]);

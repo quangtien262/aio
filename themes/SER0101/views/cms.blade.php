@@ -149,7 +149,25 @@
                 </div>
             @endif
 
-            @if (($contentType ?? null) === 'posts')
+            @if (isset($listingItems) && ($contentType ?? null) !== 'posts')
+                <section class="panel">
+                    <h1>{{ $pageTitle }}</h1>
+                    <div class="post-grid">
+                        @foreach ($listingItems as $item)
+                            <article class="post-card">
+                                @if ($item->featuredImage?->image_url)
+                                    <img src="{{ $item->featuredImage->image_url }}" alt="{{ $item->title }}" loading="lazy">
+                                @endif
+                                <div class="post-card-body">
+                                    <h2><a href="{{ route($item instanceof \App\Models\CmsProject ? 'site.projects.show' : 'site.services.show', ['slug' => $item->slug]) }}">{{ $item->title }}</a></h2>
+                                    <p>{{ $item->summary }}</p>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                    @if (method_exists($listingItems, 'links')){{ $listingItems->links() }}@endif
+                </section>
+            @elseif (($contentType ?? null) === 'posts')
                 <section class="hero">
                     <div class="hero-grid">
                         <div class="hero-copy">
@@ -259,7 +277,7 @@
                         <div class="hero-copy">
                             <span class="badge">{{ ($contentType ?? null) === 'post' ? $t('menu.default.blog', 'Cẩm nang') : $t('cms.company_content_badge', 'Nội dung doanh nghiệp') }}</span>
                             <h1>{{ $entry->title ?? $t('cms.default_title', 'Nội dung dịch vụ') }}</h1>
-                            <p>{{ $entry->excerpt ?: $pageDescription }}</p>
+                            <p>{{ $entry->excerpt ?? $entry->summary ?? $pageDescription }}</p>
                         </div>
                         <aside class="hero-dossier">
                             <strong>Trust layer</strong>
@@ -291,7 +309,7 @@
                             @if (($contentType ?? null) === 'post')
                                 <div class="meta">{{ $entry->publish_at?->format('d/m/Y') }}</div>
                             @endif
-                            <div class="body-copy">{!! $entry->body ?? '' !!}</div>
+                            <div class="body-copy">{!! $entry->body ?? $entry->content ?? '' !!}</div>
                         </article>
 
                         @if (($contentType ?? null) === 'page' && $latestPostItems->isNotEmpty())

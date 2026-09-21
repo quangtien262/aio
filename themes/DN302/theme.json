@@ -4,7 +4,10 @@
   "version": "1.0.0",
   "description": "Theme doanh nghiệp cửa nhôm kính cao cấp với dự án, dịch vụ, tư vấn và chuyển động cuộn trang.",
   "website_type": "service",
-  "requires_modules": ["cms", "catalog"],
+  "requires_modules": [
+    "cms",
+    "catalog"
+  ],
   "parent": null,
   "preview": {
     "thumbnail": "preview-dn302.png",
@@ -33,10 +36,14 @@
   },
   "localization": {
     "default_locale": "vi",
-    "supported_locales": ["vi", "en"]
+    "supported_locales": [
+      "vi",
+      "en"
+    ]
   },
   "demo": {
     "content_path": "demo/content",
-    "settings_path": "demo/settings"
+    "settings_path": "demo/settings",
+    "default_preset": "dn302-complete"
   }
 }

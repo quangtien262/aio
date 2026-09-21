@@ -1,3 +1,8 @@
+@php
+    $title = data_get($productModel ?? null, 'name', data_get($product ?? [], 'title', 'Sản phẩm'));
+    $image = data_get($product ?? [], 'image') ?: data_get($productModel ?? null, 'image_url');
+    $price = data_get($productModel ?? null, 'price', 0);
+@endphp
 @extends('theme-tool751::layout')
 @section('content')
 <main><section class="t751-inner-hero"><div class="t751-container"><small>@themeT('products', 'Sản phẩm')</small><h1>{{ $title }}</h1></div></section><section class="t751-content"><div class="t751-container t751-detail">

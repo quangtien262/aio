@@ -1,3 +1,8 @@
+@php
+    $title = data_get($productModel ?? null, 'name', data_get($product ?? [], 'title', 'Sản phẩm'));
+    $image = data_get($product ?? [], 'image') ?: data_get($productModel ?? null, 'image_url');
+    $price = data_get($productModel ?? null, 'price', 0);
+@endphp
 @extends('theme-tool750::layout')
 @section('content')
 <main>
