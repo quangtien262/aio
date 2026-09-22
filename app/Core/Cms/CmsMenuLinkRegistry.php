@@ -79,6 +79,8 @@ final class CmsMenuLinkRegistry
         'contact',
         'catalog-index',
         'post-index',
+        'post-topic-index',
+        'post-category-index',
         'service-index',
         'project-index',
         'real-estate-index',

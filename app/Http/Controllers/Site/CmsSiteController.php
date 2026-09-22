@@ -366,6 +366,51 @@ class CmsSiteController
         ]);
     }
 
+    public function topicsIndex(Request $request): View
+    {
+        abort_unless(\App\Models\CmsTopic::available(), 404);
+
+        return $this->newsDirectory($request, true);
+    }
+
+    public function postCategoriesIndex(Request $request): View
+    {
+        return $this->newsDirectory($request, false);
+    }
+
+    private function newsDirectory(Request $request, bool $topics): View
+    {
+        $profile = $this->currentSiteProfile();
+        $websiteKey = $this->resolveWebsiteKey($profile);
+        $theme = $this->resolveActiveTheme($profile);
+        $locale = $this->currentLocale();
+        $resource = $topics ? 'cms_topic' : 'cms_category';
+        $query = $topics ? \App\Models\CmsTopic::query()->where('is_active', true) : CmsCategory::query();
+        $this->applyWebsiteScope($query, $websiteKey);
+        $entries = $query->orderBy('name')->get()->filter(fn ($item) =>
+            $this->localizedContent->isPublishedForLocale($item, $resource, $locale, $websiteKey)
+        )->map(function ($item) use ($resource, $locale, $websiteKey) {
+            $localized = $this->localizedContent->localize($item, $resource, $locale, $websiteKey);
+
+            return ['name' => $localized->name, 'description' => $localized->description,
+                'image' => $localized->image_url ?? null,
+                'url' => $resource === 'cms_topic' ? FrontendRouteUrl::topic($localized->slug, $locale) : FrontendRouteUrl::blogCategory($localized->slug, $locale)];
+        })->filter(fn ($item) => $item['url'] !== null)->values();
+        $page = max(1, (int) $request->query('page', 1));
+        $items = new \Illuminate\Pagination\LengthAwarePaginator($entries->forPage($page, 30)->values(), $entries->count(), 30, $page, [
+            'path' => $request->url(), 'query' => $request->except('page'),
+        ]);
+        $menus = $this->resolveMenus($websiteKey);
+        $title = $topics ? ($locale === 'en' ? 'News topics' : 'Chuyên đề tin tức') : ($locale === 'en' ? 'News categories' : 'Danh mục tin tức');
+
+        return view('site-news-directory', [
+            'directoryLayout' => 'theme-'.strtolower($theme['key']).'::layout',
+            'directoryItems' => $items, 'pageTitle' => $title, 'siteProfile' => $this->localizeSiteProfile($profile),
+            'activeTheme' => $theme, 'menus' => $menus, 'isPreview' => false,
+            'themeShellData' => $this->resolveThemeShellData($profile, $theme, $menus),
+        ]);
+    }
+
     public function postsByTopic(Request $request): View|RedirectResponse
     {
         abort_unless(\App\Models\CmsTopic::available(), 404);

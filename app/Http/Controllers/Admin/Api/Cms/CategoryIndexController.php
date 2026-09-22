@@ -18,6 +18,7 @@ class CategoryIndexController
             'name' => $category->name,
             'slug' => $category->slug,
             'description' => $category->description,
+            'image_url' => $category->image_url,
             'meta_title' => $category->meta_title,
             'meta_description' => $category->meta_description,
             'parent_id' => $category->parent_id,

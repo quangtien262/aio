@@ -563,6 +563,7 @@ const emptyCategory = {
     name: '',
     slug: '',
     description: '',
+    image_url: '',
     meta_title: '',
     meta_description: '',
     parent_id: null,
@@ -5081,6 +5082,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
             return (
                 <Suspense fallback={null}>
                     <CmsCategoryFormModal
+                    callAdminApi={callAdminApi}
                         open={modalOpen}
                         canManage={sectionPermissions.canCreate || sectionPermissions.canUpdate}
                         translationMode={contentLocale !== contentSourceLocale}
@@ -6763,6 +6765,7 @@ export default function CmsManagerPage({ moduleMenu, callAdminApi, runAdminActio
 
             <Suspense fallback={null}>
                 <CmsCategoryFormModal
+                    callAdminApi={callAdminApi}
                     zIndex={1500}
                     open={categoryFormOpen}
                     canManage={canManageCategories}

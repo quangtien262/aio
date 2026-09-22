@@ -212,6 +212,18 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
             $block->update(['media' => $replace((array) $block->media), 'settings' => $settings]);
             foreach ($block->data as $data) {
                 $content = json_decode($data->content ?? '{}', true);
+                if ($this->key === 'XD0305') {
+                    $imageDefaults = match ($block->block_type) {
+                        'bizmax_about' => ['image_primary' => $this->image(0), 'image_secondary' => $this->image(1)],
+                        'bizmax_benefit_panel' => ['image' => $this->image(1)],
+                        default => [],
+                    };
+                    foreach ($imageDefaults as $field => $image) {
+                        if (blank($content[$field] ?? null)) {
+                            $content[$field] = $image;
+                        }
+                    }
+                }
                 if ($block->block_type === 'hero_slider' && $data->locale === 'vi') {
                     $content['slides'] = SiteBanner::where('theme_key', $this->key)->orderBy('sort_order')->get()->map(fn ($banner) => [
                         'title' => $banner->title, 'summary' => $banner->subtitle, 'kicker' => $this->brief['brand'],

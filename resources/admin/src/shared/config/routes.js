@@ -43,6 +43,8 @@ export const STOREFRONT_ROUTES = Object.freeze({
     category: (slug) => `/danh-muc/${encodeURIComponent(String(slug ?? '').replace(/^\/+|\/+$/g, ''))}`,
     product: (slug) => `/san-pham/${encodeURIComponent(String(slug ?? '').replace(/^\/+|\/+$/g, ''))}`,
     blog: '/c',
+    newsTopics: '/topics',
+    newsCategories: '/news-categories',
     blogCategory: (slug) => `/c/${encodeURIComponent(String(slug ?? '').replace(/^\/+|\/+$/g, ''))}`,
     post: (slug) => `/n/${encodeURIComponent(String(slug ?? '').replace(/^\/+|\/+$/g, ''))}`,
     services: '/s',

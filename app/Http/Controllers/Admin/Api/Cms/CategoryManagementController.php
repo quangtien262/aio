@@ -53,6 +53,15 @@ class CategoryManagementController
                     ->ignore($category?->id),
             ],
             'description' => ['nullable', 'string'],
+            'image_url' => ['sometimes', 'nullable', 'string', 'max:2048', function ($attribute, $value, $fail): void {
+                $localPath = str_starts_with($value, '/') && ! str_starts_with($value, '//')
+                    && ! str_contains($value, chr(92)) && ! preg_match('/\s/', $value);
+                $remoteUrl = filter_var($value, FILTER_VALIDATE_URL)
+                    && in_array(strtolower((string) parse_url($value, PHP_URL_SCHEME)), ['http', 'https'], true);
+                if (! $localPath && ! $remoteUrl) {
+                    $fail('Ảnh đại diện phải là URL http/https hoặc đường dẫn ảnh trên website.');
+                }
+            }],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
             'parent_id' => ['nullable', 'integer', Rule::exists('cms_categories', 'id')],
@@ -68,6 +77,7 @@ class CategoryManagementController
             'name' => $category->name,
             'slug' => $category->slug,
             'description' => $category->description,
+            'image_url' => $category->image_url,
             'meta_title' => $category->meta_title,
             'meta_description' => $category->meta_description,
             'parent_id' => $category->parent_id,

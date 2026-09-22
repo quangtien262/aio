@@ -523,6 +523,8 @@ final class CmsMenuResolver
                 $locale,
                 $absolute,
             ),
+            'post-topic-index' => route('site.blog.topics', ['locale' => $locale], $absolute),
+            'post-category-index' => route('site.blog.categories', ['locale' => $locale], $absolute),
             'post-index' => FrontendRouteUrl::localized(
                 FrontendRouteUrl::blogPath(),
                 $locale,

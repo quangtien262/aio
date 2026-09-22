@@ -51,7 +51,15 @@ class TopicManagementController
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('cms_topics', 'slug')->where('website_key', app(SiteContext::class)->websiteKey())->ignore($topic?->id)],
             'description' => ['nullable', 'string'],
-            'image_url' => ['nullable', 'url:http,https', 'max:2048'],
+            'image_url' => ['sometimes', 'nullable', 'string', 'max:2048', function ($attribute, $value, $fail): void {
+                $localPath = str_starts_with($value, '/') && ! str_starts_with($value, '//')
+                    && ! str_contains($value, chr(92)) && ! preg_match('/\s/', $value);
+                $remoteUrl = filter_var($value, FILTER_VALIDATE_URL)
+                    && in_array(strtolower((string) parse_url($value, PHP_URL_SCHEME)), ['http', 'https'], true);
+                if (! $localPath && ! $remoteUrl) {
+                    $fail('Ảnh đại diện phải là URL http/https hoặc đường dẫn ảnh trên website.');
+                }
+            }],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['required', 'boolean'],

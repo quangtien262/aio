@@ -73,6 +73,8 @@ final class CmsMenuLinkTargetResolver
             '/' => 'home',
             '/contact' => 'contact',
             '/c' => 'post-index',
+            '/topics' => 'post-topic-index',
+            '/news-categories' => 'post-category-index',
             '/s' => 'service-index',
             '/pj' => 'project-index',
             '/bds' => 'real-estate-index',

@@ -11,6 +11,7 @@ import Switch from 'antd/es/switch';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import FolderOutlined from '@ant-design/icons/FolderOutlined';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import { adminApi } from '../../../shared/config/routes';
 
 const slugify = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -88,7 +89,7 @@ export default function CmsTopicManager({ callAdminApi, canManage, onChanged, lo
                 { title: 'Thao tác', render: (_, item) => <Space><Button disabled={!canManage || busy} onClick={() => edit(item, listLocale)}>{listLocale === sourceLocale ? 'Sửa' : 'Dịch'}</Button><Popconfirm title="Xóa chuyên đề?" description="Xóa chuyên đề và mọi bản dịch. Bài viết được giữ lại, chỉ gỡ liên kết với chuyên đề này." onConfirm={() => remove(item)} okText="Xóa" cancelText="Hủy"><Button danger disabled={!canManage || busy || listLocale !== sourceLocale}>Xóa</Button></Popconfirm></Space> },
             ]} />
         </Modal>
-        <Modal title={editing?.id ? 'Cập nhật chuyên đề' : 'Thêm chuyên đề'} open={editing !== null} onCancel={() => { if (!busy) setEditing(null); }} footer={<Space><Button disabled={busy} onClick={() => setEditing(null)}>Hủy</Button><Button loading={busy} disabled={!canManage} type="primary" onClick={() => save(false)}>{translated ? 'Lưu nháp' : 'Lưu chuyên đề'}</Button>{translated && <Button disabled={!canManage} loading={busy} onClick={() => save(true)}>Xuất bản bản dịch</Button>}</Space>}>
+        <Modal width={820} title={editing?.id ? 'Cập nhật chuyên đề' : 'Thêm chuyên đề'} open={editing !== null} onCancel={() => { if (!busy) setEditing(null); }} footer={<Space><Button disabled={busy} onClick={() => setEditing(null)}>Hủy</Button><Button loading={busy} disabled={!canManage} type="primary" onClick={() => save(false)}>{translated ? 'Lưu nháp' : 'Lưu chuyên đề'}</Button>{translated && <Button disabled={!canManage} loading={busy} onClick={() => save(true)}>Xuất bản bản dịch</Button>}</Space>}>
             {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
             {translated && <Alert type="info" showIcon message={translationStatus === 'published' ? 'Bản dịch đã xuất bản' : translationStatus === 'missing' ? 'Chưa có bản dịch cho ngôn ngữ này' : 'Bản dịch đang là bản nháp'} description="Tên, slug, mô tả và SEO được lưu riêng theo ngôn ngữ. Ảnh, trạng thái hiển thị và bài viết liên kết dùng chung với bản gốc." style={{ marginBottom: 16 }} />}
             {editing?.id && <Select aria-label="Ngôn ngữ chuyên đề" value={locale} disabled={busy} style={{ width: '100%', marginBottom: 16 }} onChange={value => edit(editing, value)} options={localeOptions.map(option => ({ value: option.code ?? option.value, label: option.native_name ?? option.label ?? option.name ?? option.code }))} />}
@@ -96,7 +97,13 @@ export default function CmsTopicManager({ callAdminApi, canManage, onChanged, lo
                 <Form.Item name="name" label="Tên chuyên đề" rules={[{ required: true, whitespace: true, message: 'Nhập tên chuyên đề' }, { max: 255 }]}><Input /></Form.Item>
                 <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug' }, { pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'Dùng chữ thường không dấu, số và dấu gạch ngang.' }]}><Input /></Form.Item>
                 <Form.Item name="description" label="Mô tả"><Input.TextArea rows={3} /></Form.Item>
-                {!translated && <Form.Item name="image_url" label="Đường dẫn ảnh đại diện" rules={[{ type: 'url', message: 'Nhập URL ảnh đầy đủ https://...' }]}><Input placeholder="https://..." /></Form.Item>}
+                {!translated && (
+                    <Form.Item name="image_url" label="Ảnh đại diện chuyên đề" extra="Ảnh dùng chung cho các ngôn ngữ, hiển thị trên trang danh sách và trang chuyên đề.">
+                        <SingleMediaPicker open={editing !== null} canManage={canManage && !busy}
+                            callAdminApi={callAdminApi} recordTitle={form.getFieldValue('name') || 'Ảnh chuyên đề'}
+                            previewTitle="Ảnh đại diện chuyên đề" uploadButtonLabel="Upload ảnh trực tiếp" />
+                    </Form.Item>
+                )}
                 <Form.Item name="meta_title" label="SEO Title" rules={[{ max: 255 }]}><Input /></Form.Item>
                 <Form.Item name="meta_description" label="SEO Description" rules={[{ max: 1000 }]}><Input.TextArea rows={2} /></Form.Item>
                 {!translated && <Form.Item name="is_active" label="Hiển thị chuyên đề" valuePropName="checked"><Switch /></Form.Item>}

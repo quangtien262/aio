@@ -85,6 +85,24 @@ class XdCompleteDemoContentTest extends TestCase
         $this->assertDatabaseHas('cms_menus', ['id' => $menu->id]);
     }
 
+    public function test_xd0305_about_and_benefit_demo_images_exist_for_every_locale(): void
+    {
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0305');
+        foreach ([1, 2] as $run) {
+            app(ThemeDemoContentGenerator::class)->generate('XD0305', $provider->defaultPreset());
+            foreach (['bizmax_about' => 'image_primary', 'bizmax_benefit_panel' => 'image'] as $type => $field) {
+                $block = \App\Models\LandingPageBlock::where('block_type', $type)->firstOrFail();
+                $this->assertNotEmpty($block->data);
+                foreach ($block->data as $data) {
+                    $content = json_decode($data->content, true);
+                    $this->assertNotEmpty($content[$field]);
+                    $this->assertFileExists(public_path($content[$field]));
+                    $this->assertNotFalse(getimagesize(public_path($content[$field])));
+                }
+            }
+        }
+    }
+
     public function test_all_xd_themes_have_a_provider_and_valid_local_images(): void
     {
         $registry = app(ThemeDemoContentProviderRegistry::class);

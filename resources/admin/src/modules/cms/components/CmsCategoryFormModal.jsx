@@ -8,6 +8,7 @@ import Modal from 'antd/es/modal';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
+import SingleMediaPicker from '../../../shared/components/SingleMediaPicker';
 import LocalizedContentTabs from '../../../shared/components/LocalizedContentTabs';
 import { toSlug } from '../../../shared/utils/slug';
 
@@ -16,13 +17,14 @@ export const emptyCmsCategoryForm = {
     name: '',
     slug: '',
     description: '',
+    image_url: '',
     meta_title: '',
     meta_description: '',
     parent_id: null,
     website_key: '',
 };
 
-export default function CmsCategoryFormModal({ open, canManage, zIndex, translationMode = false, editingCategory, categories = [], parentOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
+export default function CmsCategoryFormModal({ open, callAdminApi, canManage, zIndex, translationMode = false, editingCategory, categories = [], parentOptions = [], localeOptions = [], contentLocale = 'vi', sourceLocale = 'vi', submitLoading = false, onCancel, onSubmit, onLocaleChange }) {
     const [form] = Form.useForm();
     const manualSlugRef = useRef(false);
     const slug = Form.useWatch('slug', form);
@@ -55,6 +57,7 @@ export default function CmsCategoryFormModal({ open, canManage, zIndex, translat
 
         const didSubmit = await onSubmit?.({
             ...values,
+            ...(!translationMode ? { image_url: values.image_url || null } : {}),
             description: values.description || null,
             meta_title: values.meta_title || null,
             meta_description: values.meta_description || null,
@@ -128,6 +131,13 @@ export default function CmsCategoryFormModal({ open, canManage, zIndex, translat
                         </Form.Item>
                     </Col>
                 </Row>
+
+                {!translationMode ? (
+                    <Form.Item name="image_url" label="Ảnh đại diện danh mục" extra="Hiển thị ở trang danh sách danh mục. Ảnh dùng chung cho các ngôn ngữ.">
+                        <SingleMediaPicker open={open} canManage={canManage} callAdminApi={callAdminApi}
+                            recordTitle={editingCategory?.name || 'Ảnh danh mục'} previewTitle="Ảnh đại diện danh mục" />
+                    </Form.Item>
+                ) : <Alert type="info" showIcon message="Ảnh đại diện dùng chung cho các ngôn ngữ; chỉnh sửa tại ngôn ngữ gốc." style={{ marginBottom: 16 }} />}
 
                 <Form.Item name="description" label="Mô tả">
                     <Input.TextArea rows={3} placeholder="Mô tả category" />

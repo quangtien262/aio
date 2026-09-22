@@ -17,6 +17,18 @@ class CmsTopicsTest extends TestCase
         $this->actingAs(Admin::factory()->create(['id' => 1]), 'admin');
     }
 
+    public function test_topic_image_accepts_library_paths_and_can_be_cleared(): void
+    {
+        $payload = ['name' => 'Image topic', 'slug' => 'image-topic', 'is_active' => true, 'image_url' => '/storage/cms/topic.jpg'];
+        $id = $this->postJson('/admin/api/cms/topics', $payload)->assertCreated()->assertJsonPath('data.image_url', $payload['image_url'])->json('data.id');
+        $this->get('/vi/topics')->assertOk()->assertSee('src="/storage/cms/topic.jpg"', false);
+        $this->putJson('/admin/api/cms/topics/'.$id, [...$payload, 'image_url' => 'https://example.com/topic.jpg'])->assertOk();
+        foreach (['javascript:alert(1)', '//example.com/topic.jpg'] as $invalid) {
+            $this->putJson('/admin/api/cms/topics/'.$id, [...$payload, 'image_url' => $invalid])->assertUnprocessable()->assertJsonValidationErrors('image_url');
+        }
+        $this->putJson('/admin/api/cms/topics/'.$id, [...$payload, 'image_url' => null])->assertOk()->assertJsonPath('data.image_url', null);
+    }
+
     public function test_topics_crud_post_assignments_and_tenant_boundaries(): void
     {
         $payload = ['name' => 'Sống xanh', 'slug' => 'song-xanh', 'is_active' => true];
