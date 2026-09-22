@@ -21,6 +21,7 @@ class SiteMappingDemoResetTest extends TestCase
     {
         $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
         $site = Site::query()->create(['domain' => 'reset.demo.test', 'website_key' => 'reset-demo', 'theme_key' => 'SHOP601', 'status' => 'active']);
+        $site->forceFill(['settings' => ['checklist' => ['demo_data_created' => true, 'tested' => true]]])->save();
         $ids = [];
         foreach (['old-sample', 'manual', 'other-site'] as $slug) {
             $ids[$slug] = DB::table('cms_pages')->insertGetId([
@@ -36,7 +37,9 @@ class SiteMappingDemoResetTest extends TestCase
         }
         $this->postJson("/admin/api/site-mappings/{$site->id}/demo-data", [
             'preset' => 'shop601-bean-style', 'reset_demo' => true,
-        ])->assertOk()->assertJsonPath('data.site.checklist.demo_data_created', true);
+        ])->assertOk()->assertJsonPath('data.site.checklist.demo_data_created', false);
+        $this->assertFalse((bool) data_get($site->fresh()->settings, 'checklist.demo_data_created'));
+        $this->assertTrue((bool) data_get($site->fresh()->settings, 'checklist.tested'));
         $this->assertDatabaseMissing('cms_pages', ['id' => $ids['old-sample']]);
         $this->assertDatabaseHas('cms_pages', ['id' => $ids['manual']]);
         $this->assertDatabaseHas('cms_pages', ['id' => $ids['other-site']]);

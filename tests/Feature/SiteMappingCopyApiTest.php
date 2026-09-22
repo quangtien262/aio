@@ -87,7 +87,7 @@ class SiteMappingCopyApiTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('data.site.website_key', 'electronics-demo')
-            ->assertJsonPath('data.site.checklist.demo_data_created', true)
+            ->assertJsonPath('data.site.checklist.demo_data_created', false)
             ->assertJsonPath('data.initialization.mode', 'sample')
             ->assertJsonPath('data.initialization.preset', 'shop601-bean-style');
 
@@ -147,7 +147,7 @@ class SiteMappingCopyApiTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('data.site.website_key', $site->website_key)
-            ->assertJsonPath('data.site.checklist.demo_data_created', true)
+            ->assertJsonPath('data.site.checklist.demo_data_created', false)
             ->assertJsonPath('data.purged.cms_pages', 1);
 
         $this->assertDatabaseMissing('cms_pages', [
@@ -259,7 +259,7 @@ class SiteMappingCopyApiTest extends TestCase
         ])
             ->assertCreated()
             ->assertJsonPath('data.website_key', 'dn302-demo')
-            ->assertJsonPath('data.checklist.demo_data_created', true)
+            ->assertJsonPath('data.checklist.demo_data_created', false)
             ->assertJsonPath('meta.initialization.mode', 'sample');
 
         $this->assertSame(1, DB::table('cms_categories')

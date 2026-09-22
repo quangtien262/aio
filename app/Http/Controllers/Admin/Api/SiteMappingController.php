@@ -65,7 +65,7 @@ class SiteMappingController
             $initialization = $initializer->initialize($site, $validated['content_mode']);
 
             if ($validated['content_mode'] === SiteContentInitializer::MODE_SAMPLE) {
-                $this->markDemoDataCreated($site);
+                $this->markDemoDataPendingReview($site);
             }
 
             return $site;
@@ -281,6 +281,8 @@ class SiteMappingController
         try {
             $purged = [];
             $result = DB::transaction(function () use ($site, $validated, $initializer, $purger, &$purged): array {
+                // Serialize resets for the same website, including requests from other tabs.
+                Site::query()->where('website_key', $site->website_key)->orderBy('id')->lockForUpdate()->get();
                 if ((bool) ($validated['reset_all'] ?? false)) {
                     $purged = $purger->purge(
                         $site->website_key,
@@ -295,7 +297,7 @@ class SiteMappingController
                     $validated['preset'],
                     (bool) ($validated['reset_demo'] ?? false),
                 );
-                $this->markDemoDataCreated($site);
+                $this->markDemoDataPendingReview($site);
 
                 return $result;
             });
@@ -575,10 +577,10 @@ class SiteMappingController
         return $profileThemeKey !== '' ? $profileThemeKey : null;
     }
 
-    private function markDemoDataCreated(Site $site): void
+    private function markDemoDataPendingReview(Site $site): void
     {
         $settings = (array) $site->settings;
-        data_set($settings, 'checklist.demo_data_created', true);
+        data_set($settings, 'checklist.demo_data_created', false);
         $site->forceFill(['settings' => $settings])->save();
     }
 }

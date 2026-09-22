@@ -66,6 +66,25 @@ class XdCompleteDemoContentTest extends TestCase
         $this->assertSame(0, CatalogProduct::count());
     }
 
+    public function test_reset_reuses_unmarked_menu_with_same_unique_key_without_claiming_it(): void
+    {
+        $menu = CmsMenu::create(['name' => 'XD0313 Main Menu', 'location' => 'primary-navigation',
+            'items' => [['label' => 'Manual link', 'url' => '/vi/contact', 'link_type' => 'contact']]]);
+        $original = $menu->fresh()->getRawOriginal('items');
+        $other = CmsMenu::create(['website_key' => 'other-site', 'name' => 'XD0313 Main Menu', 'location' => 'primary-navigation', 'items' => []]);
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('XD0313');
+        $generator = app(ThemeDemoContentGenerator::class);
+        foreach ([1, 2] as $run) {
+            $generator->generate('XD0313', $provider->defaultPreset(), true);
+            $this->assertSame(1, CmsMenu::where('name', 'XD0313 Main Menu')->count());
+            $this->assertSame($original, $menu->fresh()->getRawOriginal('items'));
+            $this->assertFalse(ThemeDemoRecord::where('model_type', CmsMenu::class)->where('model_id', $menu->id)->exists());
+            $this->assertDatabaseHas('cms_menus', ['id' => $other->id, 'website_key' => 'other-site']);
+        }
+        $generator->delete('XD0313');
+        $this->assertDatabaseHas('cms_menus', ['id' => $menu->id]);
+    }
+
     public function test_all_xd_themes_have_a_provider_and_valid_local_images(): void
     {
         $registry = app(ThemeDemoContentProviderRegistry::class);

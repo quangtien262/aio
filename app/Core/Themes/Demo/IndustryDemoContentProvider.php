@@ -61,7 +61,18 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
 
     private function create(string $type, array $data): Model
     {
-        $model = $type::create($data);
+        // Older imports or manual menus may have the same unique identity but no demo marker.
+        // Reuse them without changing their items or taking ownership of user content.
+        $model = $type === CmsMenu::class
+            ? CmsMenu::firstOrCreate([
+                'website_key' => app(SiteContext::class)->websiteKey(),
+                'location' => $data['location'],
+                'name' => $data['name'],
+            ], $data)
+            : $type::create($data);
+        if (! $model->wasRecentlyCreated) {
+            return $model;
+        }
         ThemeDemoRecord::create(['theme_key' => $this->key, 'preset_key' => $this->defaultPreset(), 'model_type' => $type, 'model_id' => $model->id]);
 
         return $model;
