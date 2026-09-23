@@ -18,6 +18,49 @@ class Dl750ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_product_detail_renders_gallery_purchase_and_related_content(): void
+    {
+        SiteProfile::create(['site_name' => 'Forest Camp', 'website_type' => 'ecommerce', 'active_theme_key' => 'DL750']);
+        $category = CatalogCategory::create(['name' => 'Balo du lịch', 'slug' => 'balo', 'is_active' => true]);
+        $product = CatalogProduct::create([
+            'catalog_category_id' => $category->id, 'name' => 'Balo du lịch', 'slug' => 'balo-du-lich',
+            'sku' => 'DL750-BALO', 'price' => 500000, 'original_price' => 650000, 'stock' => 10, 'is_active' => true,
+            'image_url' => '/theme-demo/xd-shared/travel-2.jpg',
+            'short_description' => 'Hành trang gọn nhẹ cho chuyến đi của bạn.',
+            'detail_content' => '<h2>Thiết kế cho hành trình</h2><p>Thông tin chi tiết từ CMS.</p>',
+            'highlights' => "Dễ sắp xếp hành lý\nThuận tiện mang theo", 'usage_terms' => 'Bảo quản nơi khô ráo.',
+        ]);
+        $product->images()->create(['image_url' => '/theme-demo/xd-shared/travel-3.jpg', 'sort_order' => 0]);
+        CatalogProduct::create(['catalog_category_id' => $category->id, 'name' => 'Balo đồng hành', 'slug' => 'balo-dong-hanh', 'sku' => 'RELATED', 'price' => 450000, 'is_active' => true]);
+        CatalogProduct::create(['catalog_category_id' => $category->id, 'name' => 'Sản phẩm ẩn', 'slug' => 'hidden-product', 'sku' => 'HIDDEN', 'is_active' => false]);
+
+        $response = $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))
+            ->assertOk()->assertSee('data-dl-main-image', false)->assertSee('data-dl-thumbnail', false)
+            ->assertSee('DL750-BALO')->assertSee('500.000đ')->assertSee('650.000đ')->assertSee('-23%')
+            ->assertSee('Dễ sắp xếp hành lý')->assertSee('Thông tin chi tiết từ CMS.')
+            ->assertSee('Bảo quản nơi khô ráo.')->assertSee('Balo đồng hành')->assertDontSee('Sản phẩm ẩn')
+            ->assertSee(route('site.cart.add', ['locale' => 'vi', 'slug' => $product->slug]), false);
+        if (getenv('DL750_PRODUCT_PREVIEW')) {
+            file_put_contents(getenv('DL750_PRODUCT_PREVIEW'), $response->getContent());
+        }
+        $this->from(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))
+            ->post(route('site.cart.add', ['locale' => 'vi', 'slug' => $product->slug]), ['quantity' => 2])
+            ->assertRedirect()->assertSessionHas('cart_success');
+        $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))
+            ->assertOk()->assertSee('role="status"', false);
+    }
+
+    public function test_product_detail_handles_missing_optional_content(): void
+    {
+        SiteProfile::create(['site_name' => 'Forest Camp', 'website_type' => 'ecommerce', 'active_theme_key' => 'DL750']);
+        $product = CatalogProduct::create(['name' => 'Trang bị mới', 'slug' => 'trang-bi-moi', 'sku' => 'NEW', 'price' => 0, 'is_active' => true]);
+        $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))
+            ->assertOk()->assertSee('Liên hệ báo giá')
+            ->assertSee('Liên hệ với chúng tôi để biết thêm thông tin về sản phẩm.')
+            ->assertDontSee('data-dl-thumbnail aria-pressed', false)->assertDontSee('class="dl-pdp-discount"', false)
+            ->assertDontSee('id="dl-related-title"', false);
+    }
+
     public function test_dl750_is_registered_with_expected_homepage_blocks(): void
     {
         $theme = app(ThemeRegistry::class)->all()->firstWhere('key', 'DL750');

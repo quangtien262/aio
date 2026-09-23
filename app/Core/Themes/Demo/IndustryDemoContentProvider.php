@@ -118,10 +118,30 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 $service = $this->create(CmsService::class, $published + ['cms_service_category_id' => $serviceCategory->id, 'title' => $title, 'slug' => $this->slug($title), 'summary' => $summary, 'content' => $this->body($title, $summary), 'button_label' => 'Tìm hiểu dịch vụ', 'link_url' => route('site.contact', [], false), 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $i]);
                 $this->create(CmsServiceImage::class, ['cms_service_id' => $service->id, 'image_url' => $this->image($i), 'alt_text' => $title.' — ảnh minh họa', 'is_featured' => true, 'sort_order' => 0]);
             }
-            $category = $this->create(CatalogCategory::class, ['name' => 'Sản phẩm và thiết bị', 'slug' => $this->slug('san-pham'), 'description' => 'Sản phẩm tham khảo cho lĩnh vực '.$sector, 'is_active' => true, 'image_url' => $this->image(1)]);
+            $categoryDefinitions = $this->brief['catalog_categories'] ?? [[
+                'name' => 'Sản phẩm và thiết bị',
+                'slug' => 'san-pham',
+                'description' => 'Sản phẩm tham khảo cho lĩnh vực '.$sector,
+            ]];
+            $categories = [];
+            $productCategoryIds = [];
+            foreach ($categoryDefinitions as $i => $definition) {
+                $category = $this->create(CatalogCategory::class, [
+                    'name' => $definition['name'],
+                    'slug' => $this->slug($definition['slug'] ?? $definition['name']),
+                    'description' => $definition['description'] ?? '',
+                    'is_active' => true,
+                    'image_url' => $definition['image_url'] ?? $this->image(1),
+                    'sort_order' => $i,
+                ]);
+                $categories[] = $category;
+                foreach ($definition['products'] ?? [] as $productTitle) {
+                    $productCategoryIds[$productTitle] = $category->id;
+                }
+            }
             foreach ($this->brief['products'] as $i => $title) {
                 $summary = $title.' phục vụ nhu cầu '.$sector.'. Hình ảnh minh họa lĩnh vực; liên hệ để xác nhận mẫu, quy cách và giá thực tế.';
-                $product = $this->create(CatalogProduct::class, ['catalog_category_id' => $category->id, 'name' => $title, 'slug' => $this->slug($title), 'sku' => $this->key.'-DEMO-'.($i + 1), 'price' => 250000 * ($i + 1), 'stock' => 20, 'short_description' => $summary, 'detail_content' => $this->body($title, $summary), 'image_url' => $this->brief['product_images'][$i] ?? $this->image($i), 'is_active' => true, 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $i]);
+                $product = $this->create(CatalogProduct::class, ['catalog_category_id' => $productCategoryIds[$title] ?? $categories[0]->id, 'name' => $title, 'slug' => $this->slug($title), 'sku' => $this->key.'-DEMO-'.($i + 1), 'price' => 250000 * ($i + 1), 'stock' => 20, 'short_description' => $summary, 'detail_content' => $this->body($title, $summary), 'image_url' => $this->brief['product_images'][$i] ?? $this->image($i), 'is_active' => true, 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $i]);
                 $this->create(CatalogProductImage::class, ['catalog_product_id' => $product->id, 'image_url' => $product->image_url, 'alt_text' => 'Ảnh minh họa '.$sector, 'sort_order' => 0]);
             }
             $news = $this->create(CmsCategory::class, ['name' => 'Kinh nghiệm và kiến thức', 'slug' => $this->slug('tin-tuc'), 'description' => 'Góc chia sẻ về '.$sector]);

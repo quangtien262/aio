@@ -1708,6 +1708,19 @@ class CmsSiteController
             $isNews88 = strtoupper((string) data_get($activeTheme, 'key')) === 'NEWS88';
             $extra['relatedPosts'] = $this->resolveRelatedPosts($entry, $siteProfile, $isDn302 ? 10 : ($isNews88 ? 4 : 3), ! $isDn302);
 
+            if (strtoupper((string) data_get($activeTheme, 'key')) === 'DL750') {
+                $extra['dl750RelatedPosts'] = $extra['relatedPosts']
+                    ->filter(fn (CmsPost $item): bool => ($item->publish_at === null || $item->publish_at->lte(now()))
+                        && $this->localizedContent->isPublishedForLocale($item, 'cms_post', $this->currentLocale(), $websiteKey))
+                    ->map(fn (CmsPost $item): array => [
+                        'title' => $item->title,
+                        'excerpt' => $item->excerpt,
+                        'image' => $item->featuredMedia?->file_url,
+                        'image_alt' => $item->featuredMedia?->alt_text ?: $item->title,
+                        'url' => FrontendRouteUrl::post($item->slug, $this->currentLocale()),
+                    ])->values()->all();
+            }
+
             if ($isNews88) {
                 $extra['sidebarTags'] = $extra['postTags'] ?? [];
                 if ($extra['sidebarTags'] === [] && \App\Support\CmsPostTags::available()) {

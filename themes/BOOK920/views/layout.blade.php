@@ -14,6 +14,7 @@
 >
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
         @include('theme-book920::partials.styles')
+    @include('theme-book920::partials.inner-styles')
 </x-storefront-head>
 <body>
 @php
@@ -33,7 +34,7 @@
 @if($canEditLanding)
     @include('theme-xd0301::partials.scripts')
 @endif
+@include('theme-book920::partials.inner-scripts')
 @stack('scripts')
 </body>
 </html>
-

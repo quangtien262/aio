@@ -59,6 +59,43 @@
     "brand": "Forest Camp",
     "sector": "du lịch cắm trại",
     "preset": "dl750-complete",
+    "catalog_categories": [
+      {
+        "name": "Lều và mái che",
+        "description": "Không gian nghỉ ngơi và che nắng cho chuyến cắm trại.",
+        "products": ["Lều dã ngoại"]
+      },
+      {
+        "name": "Túi ngủ và đệm",
+        "description": "Giữ ấm và nghỉ ngơi thoải mái giữa thiên nhiên."
+      },
+      {
+        "name": "Balo du lịch",
+        "description": "Sắp xếp hành trang gọn nhẹ cho mỗi cung đường.",
+        "products": ["Balo du lịch"]
+      },
+      {
+        "name": "Đèn dã ngoại",
+        "description": "Chiếu sáng lều trại và hoạt động ngoài trời về đêm.",
+        "products": ["Đèn cắm trại"]
+      },
+      {
+        "name": "Bàn ghế cắm trại",
+        "description": "Bàn ghế gấp gọn cho những buổi quây quần ngoài trời."
+      },
+      {
+        "name": "Bếp và dụng cụ nấu",
+        "description": "Chuẩn bị bữa ăn tiện lợi trong những chuyến dã ngoại."
+      },
+      {
+        "name": "Trang phục trekking",
+        "description": "Trang phục linh hoạt cho đi bộ đường dài và khám phá."
+      },
+      {
+        "name": "Phụ kiện dã ngoại",
+        "description": "Dụng cụ cần thiết giúp hành trình thêm thuận tiện."
+      }
+    ],
     "services": [
       "Tư vấn lịch trình",
       "Thuê lều trại",

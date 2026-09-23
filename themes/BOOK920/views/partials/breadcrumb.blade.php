@@ -1,0 +1,1 @@
+<nav class="book20-breadcrumb" aria-label="@themeT('inner.breadcrumb', 'Điều hướng')"><a href="{{ route('site.home') }}">@themeT('BOOK920.home', 'Trang chủ')</a>@if(filled($current ?? $pageTitle ?? ''))<span aria-hidden="true">/</span><span aria-current="page">{{ $current ?? $pageTitle }}</span>@endif</nav>
