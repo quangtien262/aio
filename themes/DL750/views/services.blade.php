@@ -1,1 +1,4 @@
-@include('theme-foot405::services')
+@extends('theme-dl750::layout')
+@section('content')
+    @include('theme-dl750::partials.listing', ['detailRoute' => 'site.services.show'])
+@endsection

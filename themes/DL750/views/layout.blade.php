@@ -10,5 +10,6 @@
     :hreflang-urls="$hreflangUrls ?? []"
     :is-preview="$isPreview ?? false"
 >
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">@include('theme-dl750::partials.styles')@if($canEditLanding ?? false)@include('theme-foot403::partials.inline-editor-styles')@endif
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">@include('theme-dl750::partials.styles')
+    @include('theme-dl750::partials.inner-styles')@if($canEditLanding ?? false)@include('theme-foot403::partials.inline-editor-styles')@endif
 </x-storefront-head><body><div id="top" class="dl750-page">@include('theme-dl750::partials.header')@yield('content')@include('theme-dl750::partials.footer')</div>@include('theme-xd0323::partials.auth-modal')@if($canEditLanding ?? false)@include('theme-xd0302::partials.inline-editor')@endif @include('theme-dl750::partials.scripts')@stack('scripts')</body></html>

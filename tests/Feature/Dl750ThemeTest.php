@@ -7,6 +7,7 @@ use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CmsPartner;
 use App\Models\CmsPost;
+use App\Models\CmsProject;
 use App\Models\CmsService;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
@@ -62,6 +63,7 @@ class Dl750ThemeTest extends TestCase
         CmsService::query()->create(['title' => 'Thuê bộ cắm trại trọn gói', 'slug' => 'thue-bo-cam-trai', 'status' => 'published', 'summary' => 'Trang bị đã kiểm tra kỹ trước mỗi chuyến đi.', 'content' => '<p>Nội dung dịch vụ.</p>', 'publish_at' => now(), 'is_featured' => true, 'is_highlight' => true]);
         CmsPost::query()->create(['title' => 'Kinh nghiệm dựng lều khi trời mưa', 'slug' => 'kinh-nghiem-dung-leu', 'status' => 'published', 'excerpt' => 'Các bước chuẩn bị để khu trại luôn khô ráo.', 'body' => '<p>Nội dung bài viết.</p>', 'publish_at' => now(), 'is_highlight' => true]);
         CmsPartner::query()->create(['title' => 'Peak Trail Việt Nam', 'slug' => 'peak-trail-viet-nam', 'status' => 'published', 'image_url' => '/storage/partners/peak-trail.svg', 'publish_at' => now(), 'is_featured' => true]);
+        CmsProject::query()->create(['title' => 'Hành trình Rừng Xanh', 'slug' => 'hanh-trinh-rung-xanh', 'status' => 'published', 'summary' => 'Khám phá thiên nhiên.', 'content' => '<p>Nội dung hành trình.</p>', 'publish_at' => now()]);
         app(LandingPageBuilder::class)->resolveHome('website-main', 'DL750', true);
 
         $this->get(route('site.home', ['locale' => 'vi']))
@@ -80,5 +82,57 @@ class Dl750ThemeTest extends TestCase
             ->assertDontSee('1900 6750')
             ->assertDontSee('support@sapo.vn')
             ->assertDontSee('70 Lữ Gia');
+
+        foreach ([
+            ['site.services.show', ['slug' => 'thue-bo-cam-trai'], 'Thuê bộ cắm trại trọn gói', 'Nội dung dịch vụ.'],
+            ['site.blog.show', ['slug' => 'kinh-nghiem-dung-leu'], 'Kinh nghiệm dựng lều khi trời mưa', 'Nội dung bài viết.'],
+            ['site.projects.show', ['slug' => 'hanh-trinh-rung-xanh'], 'Hành trình Rừng Xanh', 'Nội dung hành trình.'],
+            ['site.services.index', [], 'Thuê bộ cắm trại trọn gói', '/vi/ser/thue-bo-cam-trai'],
+            ['site.blog.index', [], 'Kinh nghiệm dựng lều khi trời mưa', '/vi/n/kinh-nghiem-dung-leu'],
+            ['site.projects.index', [], 'Hành trình Rừng Xanh', '/vi/prj/hanh-trinh-rung-xanh'],
+            ['site.catalog.search', [], 'Lều trekking Rừng Xanh', '/vi/san-pham/leu-trekking-rung-xanh'],
+            ['site.catalog.category', ['slug' => 'leu-trai-cao-cap'], 'Lều trại cao cấp', 'Lều trekking Rừng Xanh'],
+            ['site.catalog.product', ['slug' => 'leu-trekking-rung-xanh'], 'Lều trekking Rừng Xanh', '2.750.000'],
+        ] as [$routeName, $parameters, $title, $content]) {
+            $response = $this->get(route($routeName, ['locale' => 'vi', ...$parameters]))
+                ->assertOk()
+                ->assertSee('class="dl-header"', false)
+                ->assertSee('class="dl-footer"', false)
+                ->assertSee('/storage/branding/rung-xanh.svg', false)
+                ->assertSee($title)
+                ->assertSee($content, false)
+                ->assertDontSee('f405-page', false);
+
+            $this->assertSame(1, substr_count($response->getContent(), '<!doctype html>'), $routeName);
+        }
+    }
+
+    public function test_all_dl750_subpage_views_render_one_shared_shell(): void
+    {
+        $theme = app(ThemeRegistry::class)->all()->firstWhere('key', 'DL750');
+        $data = [
+            'activeTheme' => $theme,
+            'siteProfile' => new SiteProfile(['site_name' => 'DL750 Layout Test']),
+            'themeShellData' => ['branding' => ['company_name' => 'DL750 Layout Test', 'logo_url' => '/layout-test-logo.svg']],
+            'entry' => ['title' => 'Nội dung đã xuất bản', 'body' => '<p>Nội dung trang con.</p>'],
+            'productModel' => new CatalogProduct(['slug' => 'test-product', 'name' => 'Test product']),
+            'product' => ['title' => 'Test product', 'price' => 100000],
+            'category' => ['name' => 'Test category'],
+            'pageTitle' => 'Trang con DL750',
+            'listingItems' => [],
+            'products' => [],
+        ];
+
+        foreach (['cms', 'service', 'project', 'news-detail', 'contact', 'news', 'services', 'projects', 'category', 'search', 'product', 'cart', 'checkout', 'checkout-success'] as $view) {
+            $html = view('theme-dl750::'.$view, $data)->render();
+
+            $this->assertSame(1, substr_count($html, 'class="dl-header"'), $view);
+            $this->assertSame(1, substr_count($html, 'class="dl-footer"'), $view);
+            $this->assertSame(1, substr_count($html, '<!doctype html>'), $view);
+            $this->assertStringContainsString('/layout-test-logo.svg', $html, $view);
+            $this->assertStringContainsString('data-dl-menu', $html, $view);
+            $this->assertStringContainsString('data-xd-auth-modal', $html, $view);
+            $this->assertStringNotContainsString('f405-page', $html, $view);
+        }
     }
 }
