@@ -23,12 +23,15 @@ export default function ThemeDemoDataModal({ open, theme, mode = 'generate', can
     const [resetAll, setResetAll] = useState(false);
     const [countdown, setCountdown] = useState(0);
     const presetOptions = useMemo(() => {
+        if (theme?.demo?.presets?.length) {
+            return theme.demo.presets.map((preset) => ({ label: preset.label, value: preset.key, description: preset.description }));
+        }
         if (theme?.demo?.default_preset) {
             return [{ label: `Dữ liệu mẫu dành riêng cho ${theme.name}`, value: theme.demo.default_preset, description: 'Nội dung được thiết kế riêng cho bố cục và nguồn dữ liệu của theme.' }];
         }
 
         return (theme?.website_type ?? '').toLowerCase() === 'service' ? SERVICE_PRESET_OPTIONS : COMMERCE_PRESET_OPTIONS;
-    }, [theme?.demo?.default_preset, theme?.name, theme?.website_type]);
+    }, [theme?.demo?.presets, theme?.demo?.default_preset, theme?.name, theme?.website_type]);
 
     useEffect(() => {
         if (open) {

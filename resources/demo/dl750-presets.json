@@ -22,18 +22,18 @@
       "Chocolate đá"
     ],
     "images": [
-      "/theme-demo/complete/drinks-1.jpg",
       "/theme-demo/complete/drinks-2.jpg",
-      "/theme-demo/complete/drinks-3.jpg"
+      "/theme-demo/complete/drinks-3.jpg",
+      "/theme-demo/ec903/food-dessert.webp"
     ],
     "product_images": [
-      "/theme-demo/complete/drinks-1.jpg",
+      "/theme-demo/complete/drinks-2.jpg",
       "/theme-demo/complete/drinks-2.jpg",
       "/theme-demo/complete/drinks-3.jpg",
-      "/theme-demo/complete/drinks-1.jpg",
-      "/theme-demo/complete/drinks-2.jpg",
       "/theme-demo/complete/drinks-3.jpg",
-      "/theme-demo/complete/drinks-1.jpg",
+      "/theme-demo/ec903/food-dessert.webp",
+      "/theme-demo/ec903/food-dessert.webp",
+      "/theme-demo/complete/drinks-3.jpg",
       "/theme-demo/complete/drinks-2.jpg"
     ],
     "prices": {
@@ -54,7 +54,7 @@
           "Cà phê sữa đá",
           "Latte nóng"
         ],
-        "image_url": "/theme-demo/complete/drinks-1.jpg"
+        "image_url": "/theme-demo/complete/drinks-2.jpg"
       },
       {
         "name": "Trà trái cây",
@@ -63,7 +63,7 @@
           "Trà đào cam sả",
           "Trà vải hoa hồng"
         ],
-        "image_url": "/theme-demo/complete/drinks-2.jpg"
+        "image_url": "/theme-demo/complete/drinks-3.jpg"
       },
       {
         "name": "Bánh ngọt",
@@ -72,7 +72,7 @@
           "Bánh tiramisu",
           "Bánh croissant"
         ],
-        "image_url": "/theme-demo/complete/drinks-3.jpg"
+        "image_url": "/theme-demo/ec903/food-dessert.webp"
       },
       {
         "name": "Đồ uống mát",
@@ -81,7 +81,7 @@
           "Nước cam tươi",
           "Chocolate đá"
         ],
-        "image_url": "/theme-demo/complete/drinks-1.jpg"
+        "image_url": "/theme-demo/complete/drinks-3.jpg"
       }
     ],
     "intro": "Một góc vườn yên tĩnh để thưởng thức cà phê, đọc sách và trò chuyện cùng bạn bè.",

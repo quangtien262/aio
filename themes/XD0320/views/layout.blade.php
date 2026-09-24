@@ -9,6 +9,7 @@
     $phoneHref = $phoneHref ?? preg_replace('/\D+/', '', $hotline);
     $logoUrl = $logoUrl ?? $xdBranding['logo_url'] ?? '';
     $logoAlt = $logoAlt ?? $companyName;
+    $canEditLanding = $canEditLanding ?? false;
 @endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">

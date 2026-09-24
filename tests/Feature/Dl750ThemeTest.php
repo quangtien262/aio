@@ -83,8 +83,8 @@ class Dl750ThemeTest extends TestCase
 
         $this->assertNotNull($theme);
         $this->assertSame('ecommerce', $theme['website_type']);
-        $this->assertFileExists(public_path('theme-previews/DL750/preview-dl750.svg'));
-        $this->assertFileExists(public_path('theme-previews/DL750/cover-dl750.svg'));
+        $this->assertFileExists(public_path('theme-previews/DL750/'.$theme['preview']['thumbnail']));
+        $this->assertFileExists(public_path('theme-previews/DL750/'.$theme['preview']['cover']));
 
         $builder = app(LandingPageBuilder::class);
         $this->assertTrue($builder->supportsTheme('DL750'));

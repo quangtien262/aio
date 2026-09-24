@@ -253,8 +253,12 @@
     </style>
 @endpush
 
+@push('head')
+@include('themes.common.news-listing-styles')
+@endpush
+
 @section('content')
-<main class="xd-page-main">
+<main class="xd-page-main xd-news-listing">
             <div class="xd-container">
                     <section class="xd-cms-hero">
                         <div>

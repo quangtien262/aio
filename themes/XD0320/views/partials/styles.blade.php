@@ -1,4 +1,5 @@
 <style>
+@font-face{font-family:"XD0320 Navigation";src:url("/themes/XD0320/fonts/BeVietnamPro-SemiBold.ttf") format("truetype");font-style:normal;font-weight:600;font-display:swap}
 :root{--xd20-red:#e32918;--xd20-red-dark:#b91d11;--xd20-ink:#202124;--xd20-muted:#697079;--xd20-line:#e5e7e9;--xd20-soft:#f5f5f3;--xd20-dark:#202326;--xd20-white:#fff}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -22,7 +23,7 @@ img{display:block;max-width:100%}
 .foot-header__account button:hover,.foot-header__account a:hover{color:#ff6b5e}
 .foot-navigation-wrap{position:relative;display:flex;align-items:center;min-height:64px}
 .foot-navigation{display:flex;align-items:stretch;gap:2px;width:100%;min-height:64px}
-.foot-navigation a{display:flex;align-items:center;padding:0 19px;color:#292c30;font-family:"Arial Narrow","Segoe UI",sans-serif;font-size:16px;font-weight:800;letter-spacing:.035em;text-decoration:none;text-transform:uppercase;border-bottom:3px solid transparent}
+.foot-navigation a{display:flex;align-items:center;padding:0 19px;color:#292c30;font-family:"XD0320 Navigation","Segoe UI",sans-serif;font-size:14px;font-weight:600;line-height:1.6;letter-spacing:0;text-decoration:none;text-transform:uppercase;border-bottom:3px solid transparent}
 .foot-navigation a:first-child{padding-left:0}
 .foot-navigation a:hover,.foot-navigation a:focus-visible{color:var(--xd20-red);border-bottom-color:var(--xd20-red)}
 .foot-mobile-toggle{display:none}
@@ -35,7 +36,7 @@ img{display:block;max-width:100%}
 .xd20-hero__slide>div:nth-child(2){position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,rgba(14,18,20,.83) 0%,rgba(14,18,20,.57) 46%,rgba(14,18,20,.12) 82%)}
 .xd20-hero__copy{display:flex;min-height:650px;flex-direction:column;align-items:flex-start;justify-content:center;padding-block:84px}
 .xd20-hero__copy>p:first-child,.xd20-copy>p,.xd20-heading>p,.xd20-split__copy>p{margin:0 0 14px;color:var(--xd20-red);font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
-.xd20-hero__copy h1{max-width:760px;margin:0;font-family:"Arial Narrow","Segoe UI",sans-serif;font-size:clamp(42px,5.7vw,76px);font-weight:900;line-height:1.02;letter-spacing:-.025em;text-transform:uppercase}
+.xd20-hero__copy h1{max-width:760px;margin:0;font-family:"Arial Narrow","Segoe UI",sans-serif;font-size:clamp(42px,5.7vw,40px);font-weight:900;line-height:1.02;letter-spacing:-.025em;text-transform:uppercase}
 .xd20-hero__copy>p:not(:first-child){max-width:630px;margin:22px 0 0;color:#eef0f1;font-size:18px;line-height:1.7}
 .xd20-button,.foot-button{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 22px;border:1px solid transparent;background:var(--xd20-red);color:#fff;font-size:13px;font-weight:800;letter-spacing:.055em;text-decoration:none;text-transform:uppercase;transition:background .2s ease,transform .2s ease}
 .xd20-button{margin-top:28px}

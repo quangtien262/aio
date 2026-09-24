@@ -57,6 +57,10 @@ class ThemeDemoContentGenerator
      */
     public function presetsForTheme(string $themeKey): array
     {
+        $provider = $this->providerRegistry->forTheme($themeKey);
+        if ($provider instanceof \App\Core\Themes\Demo\Dl750DemoContentProvider) {
+            return $provider->presets();
+        }
         $defaultPreset = $this->defaultPresetForTheme($themeKey);
 
         if ($defaultPreset !== null) {

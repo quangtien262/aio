@@ -13,6 +13,10 @@ class ThemeDemoContentProviderRegistry
     {
         $key = strtoupper(trim($themeKey));
 
+        if ($key === 'DL750') {
+            return new Dl750DemoContentProvider;
+        }
+
         $remaining = json_decode(file_get_contents(resource_path('demo/remaining-themes.json')), true, 512, JSON_THROW_ON_ERROR);
         if (isset($remaining[$key])) {
             return new IndustryDemoContentProvider($key === 'CORPORATE-STARTER' ? 'corporate-starter' : $key, $remaining[$key]);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Api;
 
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Support\FrontendLocalization;
 use App\Support\SiteContext;
@@ -10,13 +11,14 @@ use Illuminate\Support\Facades\Auth;
 
 class ThemeRegistryController
 {
-    public function __invoke(ThemeRegistry $themeRegistry, SiteContext $siteContext): JsonResponse
+    public function __invoke(ThemeRegistry $themeRegistry, SiteContext $siteContext, ThemeDemoContentGenerator $demoGenerator): JsonResponse
     {
         $activeThemeKey = $siteContext->themeKey();
 
         return response()->json([
             'data' => $themeRegistry->all()->map(fn (array $theme): array => array_replace($theme, [
                 'is_active' => $activeThemeKey !== null && strcasecmp($theme['key'], $activeThemeKey) === 0,
+                'demo' => array_merge($theme['demo'] ?? [], ['presets' => $demoGenerator->presetsForTheme($theme['key'])]),
             ]))->all(),
             'meta' => [
                 'website_key' => $siteContext->websiteKey(),
