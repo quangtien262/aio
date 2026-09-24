@@ -1193,6 +1193,10 @@ class CmsSiteController
 
         $relatedProducts = $relatedProductsQuery->latest('created_at')->take(8)->get();
         $latestProducts = [];
+        if (($activeTheme['key'] ?? '') === 'BOOK920') {
+            [$relatedProducts, $newBooks] = $this->resolveBook920Recommendations($product, $websiteKey);
+            $latestProducts = $newBooks->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, 'BOOK920'))->all();
+        }
         if (in_array($activeTheme['key'] ?? '', ['AUTO850', 'AUTO851'], true)) {
             $latestQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true)->where('id', '!=', $product->id);
             $this->applyWebsiteScope($latestQuery, $websiteKey);
@@ -1225,6 +1229,30 @@ class CmsSiteController
             'isFavorite' => in_array($product->id, $favoriteProductIds, true),
             'isPreview' => $isPreview,
         ]);
+    }
+
+    /** @return array{Collection, Collection} */
+    private function resolveBook920Recommendations(CatalogProduct $product, string $websiteKey): array
+    {
+        $base = CatalogProduct::query()->with(['category', 'images'])
+            ->where('is_active', true)->whereKeyNot($product->getKey());
+        $this->applyWebsiteScope($base, $websiteKey);
+        $isPublic = fn (CatalogProduct $item): bool => $this->localizedContent->publicCanonicalPath(
+            $item, 'catalog_product', $this->currentLocale(), $websiteKey,
+        ) !== null;
+        $relatedQuery = clone $base;
+        if ($product->catalog_category_id !== null) {
+            $relatedQuery->orderByRaw('CASE WHEN catalog_category_id = ? THEN 0 ELSE 1 END', [$product->catalog_category_id]);
+        }
+        $candidates = $relatedQuery->orderByDesc('is_featured')->orderByDesc('created_at')->orderByDesc('id')
+            ->lazy(24)->filter($isPublic)->take(8)->collect();
+        // Reserve some books for the new arrivals shelf when the catalog is small.
+        $related = $candidates->take(min(4, max(1, (int) floor($candidates->count() / 2))))->values();
+        $latest = (clone $base)->whereNotIn('id', $related->pluck('id'))
+            ->orderByDesc('created_at')->orderByDesc('id')
+            ->lazy(24)->filter($isPublic)->take(4)->collect()->values();
+
+        return [$related, $latest];
     }
 
     public function searchProducts(Request $request): View

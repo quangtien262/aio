@@ -82,5 +82,12 @@
   "inner.reader_support": "Đồng hành cùng độc giả",
   "inner.newsletter": "Đăng ký nhận tin",
   "inner.newsletter_text": "Nhận những cập nhật mới từ nhà sách qua email.",
-  "inner.subscribe": "Đăng ký"
+  "inner.subscribe": "Đăng ký",
+  "inner.related_kicker": "Tiếp nối mạch đọc của bạn",
+  "inner.related_books": "Sách liên quan",
+  "inner.related_intro": "Ưu tiên cùng danh mục, thêm những lựa chọn đáng khám phá từ tủ sách.",
+  "inner.new_kicker": "Thêm lựa chọn cho tủ sách",
+  "inner.new_books": "Sách mới",
+  "inner.new_intro": "Khám phá những cuốn sách mới được thêm vào danh mục.",
+  "inner.view_new": "Xem sách mới"
 }

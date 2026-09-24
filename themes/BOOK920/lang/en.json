@@ -82,5 +82,12 @@
   "inner.reader_support": "Here for our readers",
   "inner.newsletter": "Newsletter",
   "inner.newsletter_text": "Receive the latest updates from our bookstore by email.",
-  "inner.subscribe": "Subscribe"
+  "inner.subscribe": "Subscribe",
+  "inner.related_books": "Related books",
+  "inner.new_books": "New arrivals",
+  "inner.view_new": "Browse new arrivals",
+  "inner.related_kicker": "Continue your reading journey",
+  "inner.new_intro": "Explore books recently added to our catalog.",
+  "inner.related_intro": "Books from the same category, with more selections to discover from our shelves.",
+  "inner.new_kicker": "More for your bookshelf"
 }

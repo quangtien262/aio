@@ -36,7 +36,18 @@
         </section>
     </div>
     <section class="book20-description"><div><p class="book20-kicker">@themeT('inner.discover', 'Khám phá nội dung')</p><h2>@themeT('inner.detail', 'Giới thiệu sách')</h2><div class="book20-prose">{!! data_get($productModel ?? null, 'detail_content') ?: data_get($product ?? [], 'summary', '') !!}</div>@if(!empty($usageTerms))<h3>@themeT('inner.notes', 'Thông tin cần biết')</h3><ul>@foreach($usageTerms as $term)<li>{{ $term }}</li>@endforeach</ul>@endif</div><aside class="book20-note"><i class="fa-solid fa-book-open" aria-hidden="true"></i><h2>@themeT('inner.find_title', 'Tìm cuốn sách dành cho bạn')</h2><p>@themeT('inner.find_text', 'Khám phá thêm những chủ đề và đầu sách phù hợp với sở thích đọc của bạn.')</p><a class="book20-button secondary" href="{{ route('site.catalog.search') }}">@themeT('inner.explore', 'Khám phá tủ sách') &rarr;</a></aside></section>
-    @if(!empty($relatedProducts))<section class="book20-related"><h2>@themeT('inner.related', 'Có thể bạn muốn đọc')</h2><div class="book20-product-grid">@foreach(array_slice($relatedProducts, 0, 4) as $item)@include('theme-book920::partials.product-card', ['item' => $item])@endforeach</div></section>@endif
+    @if(!empty($relatedProducts))
+        <section class="book20-related book20-recommendations" aria-labelledby="book20-related-title">
+            <div class="book20-shelf-heading"><div><p class="book20-kicker">@themeT('inner.related_kicker', 'Tiếp nối mạch đọc của bạn')</p><h2 id="book20-related-title">@themeT('inner.related_books', 'Sách liên quan')</h2><p>@themeT('inner.related_intro', 'Ưu tiên cùng danh mục, thêm những lựa chọn đáng khám phá từ tủ sách.')</p></div><a class="book20-button secondary" href="{{ route('site.catalog.search') }}">@themeT('inner.all_books', 'Xem tất cả sách') &rarr;</a></div>
+            <div class="book20-product-grid">@foreach($relatedProducts as $item)@include('theme-book920::partials.product-card', ['item' => $item])@endforeach</div>
+        </section>
+    @endif
+    @if(!empty($latestProducts))
+        <section class="book20-related book20-new-arrivals" aria-labelledby="book20-new-title">
+            <div class="book20-shelf-heading"><div><p class="book20-kicker">@themeT('inner.new_kicker', 'Thêm lựa chọn cho tủ sách')</p><h2 id="book20-new-title">@themeT('inner.new_books', 'Sách mới')</h2><p>@themeT('inner.new_intro', 'Khám phá những cuốn sách mới được thêm vào danh mục.')</p></div><a class="book20-button secondary" href="{{ route('site.catalog.search', ['sort' => 'newest']) }}">@themeT('inner.view_new', 'Xem sách mới') &rarr;</a></div>
+            <div class="book20-product-grid">@foreach($latestProducts as $item)@include('theme-book920::partials.product-card', ['item' => $item])@endforeach</div>
+        </section>
+    @endif
 </div>
 </main>
 @endsection
