@@ -18,6 +18,22 @@ class Dl750ThemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_demo_categories_have_distinct_local_images_on_homepage(): void
+    {
+        app(\App\Core\Themes\Demo\ThemeDemoContentProviderRegistry::class)->forTheme('DL750')->generate('dl750-complete');
+        $categories = CatalogCategory::query()->where('slug', 'like', 'dl750-%')->get();
+        $this->assertCount(8, $categories);
+        $this->assertCount(8, $categories->pluck('image_url')->unique());
+        $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        foreach ($categories as $category) {
+            $this->assertFileExists(public_path(ltrim($category->image_url, '/')));
+            $response->assertSee('src="'.$category->image_url.'"', false)->assertSee($category->name);
+        }
+        if ($path = getenv('DL750_CATEGORIES_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+    }
+
     public function test_product_detail_renders_gallery_purchase_and_related_content(): void
     {
         SiteProfile::create(['site_name' => 'Forest Camp', 'website_type' => 'ecommerce', 'active_theme_key' => 'DL750']);

@@ -22,7 +22,30 @@
             @if($slides->count() > 1)<button class="dl-arrow prev" data-dl-prev aria-label="Trước"><i class="fa-solid fa-chevron-left"></i></button><button class="dl-arrow next" data-dl-next aria-label="Sau"><i class="fa-solid fa-chevron-right"></i></button>@endif
         </section>
     @elseif($type === 'dl750_categories')
-        <section id="{{ data_get($block, 'anchor_id') }}" class="dl-section xd-landing-block" data-block-type="{{ $type }}"><div class="dl-wrap"><x-dl750-heading :block="$block"/><div class="dl-category-grid">@foreach($items($block) as $item)<a href="{{ data_get($item, 'url', '#san-pham') }}"><span><i class="{{ data_get($item, 'icon', 'fa-solid fa-campground') }}"></i></span><b>{{ data_get($item, 'title', data_get($item, 'name')) }}</b><small>{{ data_get($item, 'summary', 'Khám phá ngay') }}</small><i class="fa-solid fa-arrow-right"></i></a>@endforeach</div></div></section>
+        <section id="{{ data_get($block, 'anchor_id') }}" class="dl-section xd-landing-block" data-block-type="{{ $type }}">
+            <div class="dl-wrap">
+                <x-dl750-heading :block="$block"/>
+                <div class="dl-category-grid">
+                    @foreach($items($block) as $item)
+                        @php($categoryImage = data_get($item, 'image') ?: data_get($item, 'image_url'))
+                        <a href="{{ data_get($item, 'url', '#san-pham') }}">
+                            <div class="dl-category-media">
+                                @if($categoryImage)
+                                    <img src="{{ $categoryImage }}" alt="{{ data_get($item, 'alt') ?: data_get($item, 'title', data_get($item, 'name')) }}" loading="lazy" width="560" height="400">
+                                @else
+                                    <svg viewBox="0 0 560 400" aria-hidden="true"><path fill="#e8ede1" d="M0 0h560v400H0z"/><circle cx="420" cy="90" r="40" fill="#e8bc68"/><path fill="#c1d0b7" d="m0 280 130-140 140 150L400 170l160 100v130H0z"/><path fill="#6f8c61" d="m0 350 130-100 160 100 150-95 120 80v65H0z"/><path fill="#df9410" d="m150 335 125-180 135 180z"/><path fill="#193d25" d="m210 335 65-130 70 130z"/><path fill="#f3eee2" d="m275 205 14 130h-79z"/></svg>
+                                @endif
+                            </div>
+                            <div class="dl-category-copy">
+                                <h3>{{ data_get($item, 'title', data_get($item, 'name')) }}</h3>
+                                <p>{{ data_get($item, 'summary', 'Khám phá ngay') }}</p>
+                                <span class="dl-category-arrow" aria-hidden="true">→</span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
     @elseif($type === 'dl750_about')
         <section id="{{ data_get($block, 'anchor_id') }}" class="dl-section dl-about xd-landing-block" data-block-type="{{ $type }}"><div class="dl-wrap dl-about-grid"><div><x-dl750-heading :block="$block" align="left"/><p class="dl-lead">{{ data_get($block, 'data.description') }}</p><div class="dl-about-note">Mỗi sản phẩm và dịch vụ đều được lựa chọn để hành trình của bạn an toàn, thoải mái và gần gũi thiên nhiên hơn.</div><div class="dl-benefits">@foreach($items($block) as $item)<span><i class="{{ data_get($item, 'icon', 'fa-solid fa-check') }}"></i>{{ data_get($item, 'title') }}</span>@endforeach</div><a class="dl-primary" href="#dich-vu">{{ data_get($block, 'data.button_label') }}</a></div><div class="dl-about-media"><img src="{{ data_get($block, 'media.image') }}" alt="{{ data_get($block, 'data.title') }}"><img src="{{ data_get($block, 'media.image_secondary') }}" alt="{{ data_get($block, 'data.subtitle') }}">@if($hotline)<a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone"></i><span>Hotline tư vấn<b>{{ $hotline }}</b></span></a>@endif</div></div></section>
     @elseif($type === 'dl750_services')

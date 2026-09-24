@@ -62,37 +62,45 @@
     "catalog_categories": [
       {
         "name": "Lều và mái che",
+        "image_url": "/theme-demo/dl750/categories/tents.svg",
         "description": "Không gian nghỉ ngơi và che nắng cho chuyến cắm trại.",
         "products": ["Lều dã ngoại"]
       },
       {
         "name": "Túi ngủ và đệm",
+        "image_url": "/theme-demo/dl750/categories/sleeping-bags.svg",
         "description": "Giữ ấm và nghỉ ngơi thoải mái giữa thiên nhiên."
       },
       {
         "name": "Balo du lịch",
+        "image_url": "/theme-demo/dl750/categories/backpacks.svg",
         "description": "Sắp xếp hành trang gọn nhẹ cho mỗi cung đường.",
         "products": ["Balo du lịch"]
       },
       {
         "name": "Đèn dã ngoại",
+        "image_url": "/theme-demo/dl750/categories/lanterns.svg",
         "description": "Chiếu sáng lều trại và hoạt động ngoài trời về đêm.",
         "products": ["Đèn cắm trại"]
       },
       {
         "name": "Bàn ghế cắm trại",
+        "image_url": "/theme-demo/dl750/categories/camp-furniture.svg",
         "description": "Bàn ghế gấp gọn cho những buổi quây quần ngoài trời."
       },
       {
         "name": "Bếp và dụng cụ nấu",
+        "image_url": "/theme-demo/dl750/categories/camp-kitchen.svg",
         "description": "Chuẩn bị bữa ăn tiện lợi trong những chuyến dã ngoại."
       },
       {
         "name": "Trang phục trekking",
+        "image_url": "/theme-demo/dl750/categories/trekking-clothes.svg",
         "description": "Trang phục linh hoạt cho đi bộ đường dài và khám phá."
       },
       {
         "name": "Phụ kiện dã ngoại",
+        "image_url": "/theme-demo/dl750/categories/accessories.svg",
         "description": "Dụng cụ cần thiết giúp hành trình thêm thuận tiện."
       }
     ],
