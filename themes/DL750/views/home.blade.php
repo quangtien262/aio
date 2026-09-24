@@ -62,7 +62,23 @@
     @elseif($type === 'dl750_faq')
         <section id="{{ data_get($block, 'anchor_id') }}" class="dl-section dl-faq xd-landing-block" data-block-type="{{ $type }}"><div class="dl-wrap"><x-dl750-heading :block="$block" light/><div class="dl-faq-grid"><div class="dl-accordion">@foreach($items($block) as $item)<article class="{{ $loop->first ? 'is-open' : '' }}"><button data-dl-faq><span>{{ data_get($item, 'title') }}</span><i class="fa-solid fa-chevron-down"></i></button><div><p>{{ data_get($item, 'summary') }}</p></div></article>@endforeach</div><div class="dl-faq-media"><img src="{{ data_get($block, 'media.image') }}" alt="{{ data_get($block, 'data.title') }}"><a href="{{ route('site.contact',['locale'=>app()->getLocale()]) }}">{{ data_get($block, 'data.button_label') }}</a></div></div></div></section>
     @elseif($type === 'dl750_partners')
-        <section id="{{ data_get($block, 'anchor_id') }}" class="dl-section dl-partners xd-landing-block" data-block-type="{{ $type }}"><div class="dl-wrap"><x-dl750-heading :block="$block"/><div class="dl-partner-rail">@forelse($items($block) as $item)<a href="{{ data_get($item, 'url', '#') }}"><img src="{{ $image($item) }}" alt="{{ data_get($item, 'title') }}"><span>{{ data_get($item, 'title') }}</span></a>@empty @foreach(['Trail Works','Wild Camp','North Peak','Outdoor Pro','Forest Gear'] as $name)<span>{{ $name }}</span>@endforeach @endforelse</div></div></section>
+        <section id="{{ data_get($block, 'anchor_id') }}" class="dl-section dl-partners xd-landing-block" data-block-type="{{ $type }}" data-dl-partners>
+            <div class="dl-wrap">
+                <x-dl750-heading :block="$block"/>
+                <div class="dl-partner-controls" hidden>
+                    <button type="button" data-dl-partner-prev aria-label="@themeT('partners.previous', 'Đối tác trước')">←</button>
+                    <button type="button" data-dl-partner-toggle aria-label="@themeT('partners.pause', 'Tạm dừng tự chạy')" data-pause-label="@themeT('partners.pause', 'Tạm dừng tự chạy')" data-play-label="@themeT('partners.play', 'Bật tự chạy')">Ⅱ</button>
+                    <button type="button" data-dl-partner-next aria-label="@themeT('partners.next', 'Đối tác tiếp theo')">→</button>
+                </div>
+                <div class="dl-partner-rail" tabindex="0" role="region" aria-label="@themeT('partners.list', 'Danh sách đối tác')">
+                    @forelse($items($block) as $item)
+                        <a href="{{ data_get($item, 'url', '#') }}"><img src="{{ $image($item) }}" alt="{{ data_get($item, 'title') }}" loading="lazy"><span>{{ data_get($item, 'title') }}</span></a>
+                    @empty
+                        @foreach(['Trail Works','Wild Camp','North Peak','Outdoor Pro','Forest Gear'] as $name)<span>{{ $name }}</span>@endforeach
+                    @endforelse
+                </div>
+            </div>
+        </section>
     @endif
 @endforeach
 </main>
