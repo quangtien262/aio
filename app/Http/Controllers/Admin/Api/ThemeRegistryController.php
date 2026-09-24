@@ -4,16 +4,23 @@ namespace App\Http\Controllers\Admin\Api;
 
 use App\Core\Themes\ThemeRegistry;
 use App\Support\FrontendLocalization;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class ThemeRegistryController
 {
-    public function __invoke(ThemeRegistry $themeRegistry): JsonResponse
+    public function __invoke(ThemeRegistry $themeRegistry, SiteContext $siteContext): JsonResponse
     {
+        $activeThemeKey = $siteContext->themeKey();
+
         return response()->json([
-            'data' => $themeRegistry->all()->all(),
+            'data' => $themeRegistry->all()->map(fn (array $theme): array => array_replace($theme, [
+                'is_active' => $activeThemeKey !== null && strcasecmp($theme['key'], $activeThemeKey) === 0,
+            ]))->all(),
             'meta' => [
+                'website_key' => $siteContext->websiteKey(),
+                'active_theme_key' => $activeThemeKey,
                 'default_locale' => FrontendLocalization::defaultLocale(),
                 'fallback_locale' => FrontendLocalization::fallbackLocale(),
                 'source_locale' => FrontendLocalization::sourceLocale(),

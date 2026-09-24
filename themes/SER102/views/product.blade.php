@@ -28,4 +28,6 @@
             </div>
         </div>
     </section>
+
+@include('themes.common.product-recommendations', ['showRelatedRecommendations' => true])
 @endsection

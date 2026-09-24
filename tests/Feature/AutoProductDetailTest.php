@@ -22,10 +22,12 @@ class AutoProductDetailTest extends TestCase
         $product->images()->create(['image_url' => '/themes/'.$theme.'/images/accessory-2.png', 'sort_order' => 1]);
         $other = CatalogProduct::create(['name' => 'Gợi ý cùng danh mục', 'slug' => 'related', 'sku' => 'AUTO-RELATED', 'catalog_category_id' => $category->id, 'price' => 150000, 'stock' => 2, 'image_url' => $product->image_url, 'is_active' => true]);
         CatalogProduct::create(['name' => 'Không công khai', 'slug' => 'hidden', 'sku' => 'AUTO-HIDDEN', 'price' => 1, 'is_active' => false]);
+        $new = CatalogProduct::create(['name' => 'Sản phẩm mới', 'slug' => 'new-product', 'sku' => 'AUTO-NEW', 'price' => 200000, 'stock' => 2, 'is_active' => true]);
         $url = route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]);
         $response = $this->get($url)->assertOk()->assertSee('250.000đ')->assertSee('300.000đ')->assertSee('Thông tin chi tiết.')
             ->assertSee('Sản phẩm liên quan')->assertSee('Sản phẩm mới nhất')->assertDontSee('Không công khai')
-            ->assertViewHas('latestProducts', fn ($items) => count($items) === 1 && $items[0]['title'] === $other->name);
+            ->assertViewHas('relatedProducts', fn ($items) => count($items) === 1 && $items[0]['title'] === $other->name)
+            ->assertViewHas('latestProducts', fn ($items) => count($items) === 1 && $items[0]['title'] === $new->name);
         $prefix = strtolower(str_replace('AUTO', 'a', $theme));
         $response->assertSee('data-'.$prefix.'-photo', false)->assertDontSee('<section class="'.$prefix.'-inner-hero">', false);
         $product->update(['stock' => 0, 'price' => 0]);

@@ -9,6 +9,8 @@
 @section('title', $title)
 @section('content')
 <main><section class="ec99-content"><div class="ec99-container ec99-product-detail"><div><img src="{{ $image ?: '/theme-demo/ec909/whey-black.png' }}" alt="{{ $title }}"></div><div><p>EURO SOUND CHÍNH HÃNG</p><h1>{{ $title }}</h1><p>@if($original && $original > $price)<del>{{ number_format((float) $original, 0, ',', '.') }}₫</del>@endif</p><strong>{{ number_format((float) $price, 0, ',', '.') }}₫</strong><p>Giao hàng nhanh · Đổi trả minh bạch · Hỗ trợ tận tâm</p><form action="{{ route('site.cart.add', ['slug' => data_get($productModel ?? null, 'slug')]) }}" method="post">@csrf<input type="number" name="quantity" value="1" min="1"><button class="ec99-button">Thêm vào giỏ</button></form><div class="ec99-prose">{!! $body !!}</div></div></div></section></main>
+
+@include('themes.common.product-recommendations', ['showRelatedRecommendations' => true])
 @endsection
 
 

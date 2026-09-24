@@ -9,4 +9,6 @@
 @section('title', $title)
 @section('content')
 <main><section class="f405-content"><div class="f405-container f405-product-detail"><div><img src="{{ $image ?: '/theme-demo/ec916/product-grocery.webp' }}" alt="{{ $title }}"></div><div><span>Sản phẩm chọn lọc</span><h1>{{ $title }}</h1>@if($original > $price)<del>{{ number_format($original, 0, ',', '.') }}đ</del>@endif<h2>{{ $price > 0 ? number_format($price, 0, ',', '.').'đ' : 'Liên hệ' }}</h2><p>Thông tin minh bạch · Tư vấn tận tâm · Giao hàng thuận tiện</p><form action="{{ route('site.cart.add', ['slug' => data_get($productModel ?? null, 'slug')]) }}" method="post">@csrf<input type="number" name="quantity" value="1" min="1"><button class="f405-button">Thêm vào giỏ hàng</button></form><div class="f405-prose">{!! $body !!}</div></div></div></section></main>
+
+@include('themes.common.product-recommendations', ['showRelatedRecommendations' => true])
 @endsection

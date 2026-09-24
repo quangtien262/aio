@@ -98,6 +98,8 @@
         @endif
     </div>
 </main>
+
+@include('themes.common.product-recommendations', ['showRelatedRecommendations' => false])
 @endsection
 @push('scripts')
 <script>

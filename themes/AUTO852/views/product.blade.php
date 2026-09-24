@@ -39,7 +39,7 @@
             </div>
         </section>
         @if(filled($productModel->detail_content))<section class="a852-product-description"><h2>{{ __('Thông tin sản phẩm') }}</h2><div class="a852-prose">{!! $productModel->detail_content !!}</div></section>@endif
-        @foreach([['title' => __('Sản phẩm liên quan'), 'items' => $relatedProducts ?? []]] as $group)
+        @foreach([['title' => __('Sản phẩm liên quan'), 'items' => $relatedProducts ?? []], ['title' => __('Sản phẩm mới nhất'), 'items' => $latestProducts ?? []]] as $group)
             @if(count($group['items']))<section class="a852-product-recommendations"><header><h2>{{ $group['title'] }}</h2><a href="{{ route('site.catalog.search', ['locale' => app()->getLocale()]) }}">@themeT('view_all', 'Xem tất cả') <span aria-hidden="true">→</span></a></header><div class="a852-listing-grid">@foreach(array_slice($group['items'], 0, 4) as $item)@include('theme-auto852::partials.product-card', ['item' => $item])@endforeach</div></section>@endif
         @endforeach
     </div>

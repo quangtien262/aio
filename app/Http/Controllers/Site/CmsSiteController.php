@@ -1184,25 +1184,8 @@ class CmsSiteController
         $menus = $this->resolveMenus($websiteKey);
         $product = $this->localizeProductModel($product, $websiteKey);
 
-        $relatedProductsQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true)->where('id', '!=', $product->id);
-        $this->applyWebsiteScope($relatedProductsQuery, $websiteKey);
-
-        if ($product->catalog_category_id !== null) {
-            $relatedProductsQuery->where('catalog_category_id', $product->catalog_category_id);
-        }
-
-        $relatedProducts = $relatedProductsQuery->latest('created_at')->take(8)->get();
-        $latestProducts = [];
-        if (($activeTheme['key'] ?? '') === 'BOOK920') {
-            [$relatedProducts, $newBooks] = $this->resolveBook920Recommendations($product, $websiteKey);
-            $latestProducts = $newBooks->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, 'BOOK920'))->all();
-        }
-        if (in_array($activeTheme['key'] ?? '', ['AUTO850', 'AUTO851'], true)) {
-            $latestQuery = CatalogProduct::query()->with(['category', 'images'])->where('is_active', true)->where('id', '!=', $product->id);
-            $this->applyWebsiteScope($latestQuery, $websiteKey);
-            $latestProducts = $latestQuery->orderByDesc('created_at')->orderByDesc('id')->limit(4)->get()
-                ->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, $activeTheme['key']))->all();
-        }
+        [$relatedProducts, $newProducts] = $this->resolveProductRecommendations($product, $websiteKey);
+        $latestProducts = $newProducts->map(fn (CatalogProduct $item): array => $this->mapProductCard($item, (string) ($activeTheme['key'] ?? 'SHOP601')))->all();
         /** @var Customer|null $customer */
         $customer = auth('customer')->user();
         $favoriteProductIds = $customer
@@ -1232,7 +1215,7 @@ class CmsSiteController
     }
 
     /** @return array{Collection, Collection} */
-    private function resolveBook920Recommendations(CatalogProduct $product, string $websiteKey): array
+    private function resolveProductRecommendations(CatalogProduct $product, string $websiteKey): array
     {
         $base = CatalogProduct::query()->with(['category', 'images'])
             ->where('is_active', true)->whereKeyNot($product->getKey());
@@ -1246,7 +1229,7 @@ class CmsSiteController
         }
         $candidates = $relatedQuery->orderByDesc('is_featured')->orderByDesc('created_at')->orderByDesc('id')
             ->lazy(24)->filter($isPublic)->take(8)->collect();
-        // Reserve some books for the new arrivals shelf when the catalog is small.
+        // Reserve some products for the new arrivals shelf when the catalog is small.
         $related = $candidates->take(min(4, max(1, (int) floor($candidates->count() / 2))))->values();
         $latest = (clone $base)->whereNotIn('id', $related->pluck('id'))
             ->orderByDesc('created_at')->orderByDesc('id')

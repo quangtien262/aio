@@ -90,6 +90,17 @@ Các view storefront chính thường phải có tối thiểu:
 - `checkout.blade.php`
 - `checkout-success.blade.php`
 
+Trang chi tiết sản phẩm phải có cả `relatedProducts` và `latestProducts` do
+controller cung cấp. Hai danh sách chỉ chứa sản phẩm công khai của website và
+locale hiện tại, loại sản phẩm đang xem và không lặp giữa hai khu. Danh mục ít
+sản phẩm được bổ sung gợi ý từ danh mục khác; khu không có dữ liệu thì ẩn.
+Theme có thể dùng thiết kế riêng hoặc include
+`themes.common.product-recommendations`. Nếu đã render khu liên quan riêng,
+truyền `showRelatedRecommendations => false` để partial chỉ bổ sung khu mới.
+Copy của partial dùng `resources/lang/{locale}/catalog.php`; copy riêng của
+theme vẫn dùng dictionary theme. `ThemeProductRecommendationsTest` kiểm tra
+trang sản phẩm của tất cả theme, bao gồm các view kế thừa.
+
 File neo:
 
 - `app/Http/Controllers/Site/CmsSiteController.php`

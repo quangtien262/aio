@@ -7,4 +7,6 @@
 @section('title', $title)
 @section('content')
 @include('theme-ec900::partials.content-shell', ['title' => $title, 'cover' => $image, 'body' => $body])
+
+@include('themes.common.product-recommendations', ['showRelatedRecommendations' => true])
 @endsection

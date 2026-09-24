@@ -364,7 +364,9 @@
                     </div>
                 </aside>
             </section>
-        </main>
+
+@include('themes.common.product-recommendations', ['showRelatedRecommendations' => true])
+</main>
 
         <footer class="footer">
             <div class="wrap footer-inner">

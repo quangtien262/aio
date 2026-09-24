@@ -9,4 +9,6 @@
 @section('title', $title)
 @section('content')
 <main><section class="ec93-content"><div class="ec93-container ec93-product-detail"><div class="ec93-product-detail-image"><img src="{{ $image ?: '/theme-demo/ec903/deal-seafood.webp' }}" alt="{{ $title }}"></div><div><p>DEALVUI E-VOUCHER</p><h1>{{ $title }}</h1><div class="ec93-product-detail-price">@if($original && $original > $price)<del>{{ number_format((float) $original, 0, ',', '.') }}₫</del>@endif<strong>{{ number_format((float) $price, 0, ',', '.') }}₫</strong></div><p>Nhận voucher điện tử nhanh chóng · Thanh toán an toàn · Hỗ trợ tận tâm</p><form action="{{ route('site.cart.add', ['slug' => data_get($productModel ?? null, 'slug')]) }}" method="post">@csrf<input type="number" name="quantity" value="1" min="1"><button class="ec93-button">Mua voucher</button></form><div class="ec93-prose">{!! $body !!}</div></div></div></section></main>
+
+@include('themes.common.product-recommendations', ['showRelatedRecommendations' => true])
 @endsection
