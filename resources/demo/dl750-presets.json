@@ -1,0 +1,186 @@
+{
+  "dl750-cafe": {
+    "brand": "Mộc Garden Café",
+    "sector": "cà phê và bánh ngọt",
+    "preset": "dl750-cafe",
+    "website_type": "ecommerce",
+    "logo": "/theme-demo/dl750/cafe-logo.svg",
+    "services": [
+      "Đặt bàn tại quán",
+      "Cà phê mang đi",
+      "Tiệc trà nhỏ",
+      "Workshop pha cà phê"
+    ],
+    "products": [
+      "Cà phê sữa đá",
+      "Latte nóng",
+      "Trà đào cam sả",
+      "Trà vải hoa hồng",
+      "Bánh tiramisu",
+      "Bánh croissant",
+      "Nước cam tươi",
+      "Chocolate đá"
+    ],
+    "images": [
+      "/theme-demo/complete/drinks-1.jpg",
+      "/theme-demo/complete/drinks-2.jpg",
+      "/theme-demo/complete/drinks-3.jpg"
+    ],
+    "product_images": [
+      "/theme-demo/complete/drinks-1.jpg",
+      "/theme-demo/complete/drinks-2.jpg",
+      "/theme-demo/complete/drinks-3.jpg",
+      "/theme-demo/complete/drinks-1.jpg",
+      "/theme-demo/complete/drinks-2.jpg",
+      "/theme-demo/complete/drinks-3.jpg",
+      "/theme-demo/complete/drinks-1.jpg",
+      "/theme-demo/complete/drinks-2.jpg"
+    ],
+    "prices": {
+      "Cà phê sữa đá": 35000,
+      "Latte nóng": 45000,
+      "Trà đào cam sả": 49000,
+      "Trà vải hoa hồng": 49000,
+      "Bánh tiramisu": 55000,
+      "Bánh croissant": 39000,
+      "Nước cam tươi": 45000,
+      "Chocolate đá": 49000
+    },
+    "catalog_categories": [
+      {
+        "name": "Cà phê",
+        "description": "Khám phá cà phê trong thực đơn của Mộc Garden Café.",
+        "products": [
+          "Cà phê sữa đá",
+          "Latte nóng"
+        ],
+        "image_url": "/theme-demo/complete/drinks-1.jpg"
+      },
+      {
+        "name": "Trà trái cây",
+        "description": "Khám phá trà trái cây trong thực đơn của Mộc Garden Café.",
+        "products": [
+          "Trà đào cam sả",
+          "Trà vải hoa hồng"
+        ],
+        "image_url": "/theme-demo/complete/drinks-2.jpg"
+      },
+      {
+        "name": "Bánh ngọt",
+        "description": "Khám phá bánh ngọt trong thực đơn của Mộc Garden Café.",
+        "products": [
+          "Bánh tiramisu",
+          "Bánh croissant"
+        ],
+        "image_url": "/theme-demo/complete/drinks-3.jpg"
+      },
+      {
+        "name": "Đồ uống mát",
+        "description": "Khám phá đồ uống mát trong thực đơn của Mộc Garden Café.",
+        "products": [
+          "Nước cam tươi",
+          "Chocolate đá"
+        ],
+        "image_url": "/theme-demo/complete/drinks-1.jpg"
+      }
+    ],
+    "intro": "Một góc vườn yên tĩnh để thưởng thức cà phê, đọc sách và trò chuyện cùng bạn bè.",
+    "posts": [
+      "Chọn cà phê theo khẩu vị của bạn",
+      "Một buổi hẹn thư thái tại Mộc Garden",
+      "Kết hợp cà phê và bánh ngọt"
+    ]
+  },
+  "dl750-restaurant": {
+    "brand": "Mộc Garden Restaurant",
+    "sector": "ẩm thực và sum họp gia đình",
+    "preset": "dl750-restaurant",
+    "website_type": "ecommerce",
+    "logo": "/theme-demo/dl750/restaurant-logo.svg",
+    "services": [
+      "Đặt bàn gia đình",
+      "Tiệc sinh nhật",
+      "Bữa tối riêng tư",
+      "Tiệc nhóm và sự kiện"
+    ],
+    "products": [
+      "Salad vườn xanh",
+      "Súp nấm kem",
+      "Gà nướng thảo mộc",
+      "Bò nướng sốt tiêu",
+      "Lẩu hải sản",
+      "Sườn nướng mật ong",
+      "Bánh mousse",
+      "Trái cây theo mùa"
+    ],
+    "images": [
+      "/theme-demo/ec903/food-banquet.webp",
+      "/theme-demo/ec903/food-grill.webp",
+      "/theme-demo/ec903/food-dessert.webp"
+    ],
+    "product_images": [
+      "/theme-demo/ec903/food-brunch.webp",
+      "/theme-demo/ec903/food-brunch.webp",
+      "/theme-demo/ec903/food-grill.webp",
+      "/theme-demo/ec903/food-grill.webp",
+      "/theme-demo/ec903/food-hotpot.webp",
+      "/theme-demo/ec903/food-grill.webp",
+      "/theme-demo/ec903/food-dessert.webp",
+      "/theme-demo/ec903/food-dessert.webp"
+    ],
+    "prices": {
+      "Salad vườn xanh": 89000,
+      "Súp nấm kem": 69000,
+      "Gà nướng thảo mộc": 189000,
+      "Bò nướng sốt tiêu": 259000,
+      "Lẩu hải sản": 399000,
+      "Sườn nướng mật ong": 229000,
+      "Bánh mousse": 65000,
+      "Trái cây theo mùa": 79000
+    },
+    "catalog_categories": [
+      {
+        "name": "Khai vị",
+        "description": "Khám phá khai vị trong thực đơn của Mộc Garden Restaurant.",
+        "products": [
+          "Salad vườn xanh",
+          "Súp nấm kem"
+        ],
+        "image_url": "/theme-demo/ec903/food-banquet.webp"
+      },
+      {
+        "name": "Món chính",
+        "description": "Khám phá món chính trong thực đơn của Mộc Garden Restaurant.",
+        "products": [
+          "Gà nướng thảo mộc",
+          "Bò nướng sốt tiêu"
+        ],
+        "image_url": "/theme-demo/ec903/food-grill.webp"
+      },
+      {
+        "name": "Lẩu và món chia sẻ",
+        "description": "Khám phá lẩu và món chia sẻ trong thực đơn của Mộc Garden Restaurant.",
+        "products": [
+          "Lẩu hải sản",
+          "Sườn nướng mật ong"
+        ],
+        "image_url": "/theme-demo/ec903/food-dessert.webp"
+      },
+      {
+        "name": "Tráng miệng",
+        "description": "Khám phá tráng miệng trong thực đơn của Mộc Garden Restaurant.",
+        "products": [
+          "Bánh mousse",
+          "Trái cây theo mùa"
+        ],
+        "image_url": "/theme-demo/ec903/food-banquet.webp"
+      }
+    ],
+    "intro": "Không gian ấm cúng cho những bữa ăn ngon, những cuộc gặp gỡ và dịp sum họp đáng nhớ.",
+    "posts": [
+      "Gợi ý thực đơn cho bữa ăn gia đình",
+      "Chuẩn bị cho buổi tiệc sinh nhật",
+      "Khám phá hương vị theo mùa"
+    ]
+  }
+}

@@ -54,7 +54,7 @@ img{display:block;max-width:100%}
 .xd20-about__image img{width:100%;height:520px;object-fit:cover}
 .xd20-about__image strong{position:absolute;top:44px;right:0;min-width:142px;padding:22px 20px;background:var(--xd20-red);color:#fff;font-family:"Arial Narrow","Segoe UI",sans-serif;font-size:54px;line-height:.9;text-align:center;box-shadow:0 18px 38px rgba(132,20,11,.2)}
 .xd20-about__image small{display:block;margin-top:9px;font-family:"Segoe UI","Noto Sans",Arial,sans-serif;font-size:11px;line-height:1.3;letter-spacing:.09em;text-transform:uppercase}
-.xd20-copy h2,.xd20-split h2,.xd20-heading h2{margin:0 0 22px;font-family:"Arial Narrow","Segoe UI",sans-serif;font-size:clamp(38px,4.7vw,62px);font-weight:900;line-height:1.03;letter-spacing:-.025em;text-transform:uppercase}
+.xd20-copy h2,.xd20-split h2,.xd20-heading h2{margin:0 0 22px;font-family:"Arial Narrow","Segoe UI",sans-serif;font-size:clamp(38px,4.7vw,40px);font-weight:900;line-height:1.03;letter-spacing:-.025em;text-transform:uppercase}
 .xd20-copy>div,.xd20-split__copy>div,.xd20-heading>div{color:#555d64;font-size:17px;line-height:1.75}
 .xd20-copy ul,.xd20-split ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 22px;margin:28px 0 0;padding:0;list-style:none}
 .xd20-copy li,.xd20-split li{display:flex;gap:9px;align-items:flex-start;color:#626970;line-height:1.45}
