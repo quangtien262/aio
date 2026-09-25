@@ -1,7 +1,12 @@
 {
-  "Home": "Home",
-  "Products": "Products",
-  "Latest news": "Latest news",
-  "Contact": "Contact",
-  "Search": "Search"
+    "Home": "Home",
+    "Products": "Products",
+    "Latest news": "Latest news",
+    "Contact": "Contact",
+    "Search": "Search",
+    "category_menu": {
+        "title": "Product categories",
+        "all": "All products",
+        "navigation": "Website navigation"
+    }
 }

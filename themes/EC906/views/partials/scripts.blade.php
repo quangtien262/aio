@@ -1,7 +1,14 @@
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const menu=document.querySelector('[data-ec96-menu]'),nav=document.querySelector('[data-ec96-nav]');
-  menu?.addEventListener('click',()=>nav?.classList.toggle('is-open'));
+  const menu=document.querySelector('[data-ec96-menu]'),categories=document.querySelector('[data-ec96-categories]');
+  if(menu && categories){
+    const setOpen=open=>{categories.hidden=!open;menu.setAttribute('aria-expanded',String(open));};
+    menu.addEventListener('click',()=>setOpen(categories.hidden));
+    document.addEventListener('click',event=>{if(!menu.contains(event.target)&&!categories.contains(event.target))setOpen(false);});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!categories.hidden){setOpen(false);menu.focus();}});
+    document.addEventListener('focusin',event=>{if(!menu.contains(event.target)&&!categories.contains(event.target))setOpen(false);});
+    menu.addEventListener('keydown',event=>{if(event.key==='ArrowDown'){event.preventDefault();setOpen(true);categories.querySelector('a')?.focus();}});
+  }
   const root=document.querySelector('[data-ec96-slider]');
   if(root){
     const slides=[...root.querySelectorAll('[data-ec96-slide]')],dots=[...root.querySelectorAll('[data-ec96-dot]')];

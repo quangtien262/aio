@@ -1,7 +1,12 @@
 {
-  "Home": "Trang chủ",
-  "Products": "Sản phẩm",
-  "Latest news": "Tin mới nhất",
-  "Contact": "Liên hệ",
-  "Search": "Tìm kiếm"
+    "Home": "Trang chủ",
+    "Products": "Sản phẩm",
+    "Latest news": "Tin mới nhất",
+    "Contact": "Liên hệ",
+    "Search": "Tìm kiếm",
+    "category_menu": {
+        "title": "Danh mục sản phẩm",
+        "all": "Tất cả sản phẩm",
+        "navigation": "Điều hướng website"
+    }
 }

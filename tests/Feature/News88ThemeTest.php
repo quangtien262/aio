@@ -5,11 +5,17 @@ namespace Tests\Feature;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
+use App\Models\CmsCategory;
 use App\Models\CmsPost;
 use App\Models\CmsPostComment;
 use App\Models\Customer;
+use App\Models\LandingPageBlock;
 use App\Models\SiteProfile;
+use App\Models\WebsiteLocale;
+use App\Support\CmsPostTags;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\Localization\LocaleContext;
+use App\Support\SiteContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +26,7 @@ class News88ThemeTest extends TestCase
     public function test_news_listing_has_thirty_posts_per_page_without_card_excerpts(): void
     {
         SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
-        $category = \App\Models\CmsCategory::create(['name' => 'Listing category', 'slug' => 'listing-category']);
+        $category = CmsCategory::create(['name' => 'Listing category', 'slug' => 'listing-category']);
         for ($i = 1; $i <= 31; $i++) {
             CmsPost::create(['title' => 'Listing post '.$i, 'slug' => 'listing-post-'.$i, 'category_id' => $category->id,
                 'excerpt' => 'CARD_EXCERPT_SHOULD_BE_HIDDEN', 'status' => 'published', 'publish_at' => now()->subMinutes($i)]);
@@ -28,8 +34,8 @@ class News88ThemeTest extends TestCase
         foreach (['/vi/c', '/vi/c/listing-category'] as $url) {
             foreach ([1 => 30, 2 => 1] as $page => $expected) {
                 $html = $this->get($url.'?page='.$page)->assertOk()->getContent();
-                $this->assertSame(1, preg_match('/<div class="n88-list">(.*?)<div class="n88-pagination">/s', $html, $matches));
-                $this->assertSame($expected, substr_count($matches[1], '<article>'));
+                $this->assertSame(1, preg_match('/<section class="tnl-grid"[^>]*>(.*?)<\/section>/s', $html, $matches));
+                $this->assertSame($expected, substr_count($matches[1], '<article class="tnl-card">'));
                 $this->assertStringNotContainsString('CARD_EXCERPT_SHOULD_BE_HIDDEN', $matches[1]);
             }
         }
@@ -39,7 +45,7 @@ class News88ThemeTest extends TestCase
     {
         SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88')->generate('news88-editorial');
-        $block = \App\Models\LandingPageBlock::where('block_type', 'news88_footer_posts')->firstOrFail();
+        $block = LandingPageBlock::where('block_type', 'news88_footer_posts')->firstOrFail();
         $block->update(['settings' => ['source' => 'cms_posts', 'limit' => 5, 'featured_only' => false]]);
         $post = CmsPost::where('status', 'published')->firstOrFail();
         $expected = null;
@@ -60,7 +66,7 @@ class News88ThemeTest extends TestCase
         app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88')->generate('news88-editorial');
         $types = ['news88_car_posts', 'news88_travel_posts', 'news88_entertainment_posts'];
         foreach ([5, 2] as $limit) {
-            foreach (\App\Models\LandingPageBlock::whereIn('block_type', $types)->get() as $block) {
+            foreach (LandingPageBlock::whereIn('block_type', $types)->get() as $block) {
                 $block->update(['settings' => ['source' => 'cms_posts', 'limit' => $limit, 'featured_only' => false]]);
             }
             $html = $this->get('/vi')->assertOk()->getContent();
@@ -78,7 +84,7 @@ class News88ThemeTest extends TestCase
     {
         SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
         $this->get('/vi')->assertOk()->assertDontSee('class="n88-footer-tags"', false);
-        $tags = app(\App\Support\CmsPostTags::class);
+        $tags = app(CmsPostTags::class);
         $post = CmsPost::create(['title' => 'Public', 'slug' => 'public', 'status' => 'published']);
         $tags->sync($post, ['Công nghệ']);
         $draft = CmsPost::create(['title' => 'Draft', 'slug' => 'draft', 'status' => 'draft']);
@@ -99,7 +105,7 @@ class News88ThemeTest extends TestCase
     {
         SiteProfile::create(['website_key' => 'website-main', 'site_name' => 'News', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
         app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88')->generate('news88-editorial');
-        $block = \App\Models\LandingPageBlock::where('block_type', 'news88_video_posts')->firstOrFail();
+        $block = LandingPageBlock::where('block_type', 'news88_video_posts')->firstOrFail();
         foreach ([4, 1] as $limit) {
             $block->update(['settings' => ['source' => 'cms_posts', 'limit' => $limit, 'featured_only' => false]]);
             $response = $this->get('/vi')->assertOk();
@@ -110,23 +116,23 @@ class News88ThemeTest extends TestCase
 
     public function test_demo_generation_respects_unpublished_english_on_new_websites(): void
     {
-        $context = app(\App\Support\SiteContext::class);
+        $context = app(SiteContext::class);
         $previousSite = $context->site();
         $previousKey = $context->websiteKey();
         $context->set(null, 'news88-new-site');
         try {
             SiteProfile::create(['website_key' => 'news88-new-site', 'site_name' => 'New site', 'website_type' => 'news', 'active_theme_key' => 'NEWS88']);
-            \App\Models\WebsiteLocale::query()->where('website_key', 'news88-new-site')->where('locale', 'en')
+            WebsiteLocale::query()->where('website_key', 'news88-new-site')->where('locale', 'en')
                 ->update(['is_enabled_for_editing' => true, 'is_published' => false]);
-            app(\App\Support\Localization\LocaleContext::class)->flush('news88-new-site');
+            app(LocaleContext::class)->flush('news88-new-site');
             $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('NEWS88');
             $result = $provider->generate('news88-editorial');
             $this->assertSame(22, $result['counts']['posts']);
             $this->assertDatabaseHas('content_translations', ['website_key' => 'news88-new-site', 'resource_type' => 'cms_post', 'locale' => 'en', 'translation_status' => 'ready']);
             $this->assertDatabaseMissing('content_translations', ['website_key' => 'news88-new-site', 'locale' => 'en', 'translation_status' => 'published']);
-            $this->assertFalse(app(\App\Support\Localization\LocaleContext::class)->isPublic('en', 'news88-new-site'));
-            \App\Models\WebsiteLocale::query()->where('website_key', 'news88-new-site')->where('locale', 'en')->update(['is_enabled_for_editing' => false]);
-            app(\App\Support\Localization\LocaleContext::class)->flush('news88-new-site');
+            $this->assertFalse(app(LocaleContext::class)->isPublic('en', 'news88-new-site'));
+            WebsiteLocale::query()->where('website_key', 'news88-new-site')->where('locale', 'en')->update(['is_enabled_for_editing' => false]);
+            app(LocaleContext::class)->flush('news88-new-site');
             $this->assertSame(22, $provider->generate('news88-editorial')['counts']['posts']);
         } finally {
             $context->set($previousSite, $previousKey);
@@ -145,7 +151,7 @@ class News88ThemeTest extends TestCase
         $this->assertSame(10, substr_count($matches[1], '<article>'));
         $this->assertStringContainsString('Recent 10', $matches[1]);
         $this->assertStringNotContainsString('Recent 11', $matches[1]);
-        $tags = app(\App\Support\CmsPostTags::class);
+        $tags = app(CmsPostTags::class);
         $tags->sync(CmsPost::where('slug', 'recent-1')->firstOrFail(), array_map(fn ($n) => 'Popular '.$n, range(1, 12)));
         $response = $this->get('/vi/n/current')->assertOk();
         preg_match('/<section class="n88-sidebar-tags"(.*?)<\/section>/s', $response->getContent(), $matches);
@@ -210,7 +216,7 @@ class News88ThemeTest extends TestCase
             ->assertSee('search-title')->assertSee('search-excerpt')->assertSee('search-body')
             ->assertDontSee('Needle draft')
             ->assertSee('value="Needle"', false)->assertSee('Kết quả tìm kiếm cho');
-        $this->assertSame(1, preg_match('/<div class="n88-list">(.*?)<div class="n88-pagination">/s', $response->getContent(), $matches));
+        $this->assertSame(1, preg_match('/<section class="tnl-grid"[^>]*>(.*?)<\/section>/s', $response->getContent(), $matches));
         $this->assertStringNotContainsString('Unrelated article', $matches[1]);
         $this->get('/vi/c?q=NoMatchingKeyword')->assertOk()->assertSee('Không tìm thấy bài viết phù hợp.');
     }

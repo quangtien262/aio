@@ -169,7 +169,8 @@
             .xd-hero-card h1{font-size:32px}
             .xd-projects{padding:0 9px}
         }
-    </style>
+    .xd-footer-grid>*{min-width:0}.xd-newsletter{max-width:100%}.xd-newsletter input{width:0}.xd-newsletter button{flex-shrink:0}
+</style>
 
 
 

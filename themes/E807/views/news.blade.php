@@ -1,4 +1,4 @@
-@php($pageTitle='Tin tức') @include('theme-e807::partials.listing',['entries'=>$entries??[]])
-
-
-
+@extends('theme-e807::layout')
+@section('content')
+@include('themes.common.news-listing')
+@endsection

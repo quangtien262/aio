@@ -1,1 +1,3 @@
-@extends('theme-foot409::layout') @section('title','Tin tức') @section('content') @include('theme-foot409::partials.listing',['title'=>'Tin tức','summary'=>'Câu chuyện ẩm thực và những thông tin mới.']) @endsection
+@extends('theme-foot409::layout') @section('title','Tin tức') @section('content')
+@include('themes.common.news-listing')
+@endsection

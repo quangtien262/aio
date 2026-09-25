@@ -1,0 +1,105 @@
+{
+  "categories": [
+    {
+      "name": "Mẹo chăm sóc nhà cửa",
+      "slug": "ec906-cham-soc-nha-cua",
+      "description": "Sắp xếp, vệ sinh và bảo quản đồ dùng trong gia đình."
+    },
+    {
+      "name": "Góc bếp tiện dụng",
+      "slug": "ec906-goc-bep-tien-dung",
+      "description": "Lựa chọn dụng cụ và tổ chức không gian bếp hằng ngày."
+    },
+    {
+      "name": "Mua sắm thông minh",
+      "slug": "ec906-mua-sam-thong-minh",
+      "description": "Lập kế hoạch mua sắm và đọc thông tin sản phẩm trước khi lựa chọn."
+    }
+  ],
+  "posts": [
+    {
+      "category": 0,
+      "title": "Lịch dọn nhà 15 phút cho từng ngày trong tuần",
+      "excerpt": "Chia việc nhà thành những phần nhỏ để dễ duy trì không gian gọn gàng.",
+      "image": "home-care.png",
+      "body": "<p>Chia việc nhà thành những phần nhỏ để dễ duy trì không gian gọn gàng.</p><h2>Chọn một khu vực mỗi ngày</h2><p>Dành từng buổi cho bàn làm việc, kệ giày hoặc góc sinh hoạt. Hoàn thành một khu vực nhỏ trước khi chuyển sang việc khác.</p><h2>Chuẩn bị dụng cụ theo nhóm</h2><p>Để khăn lau, bàn chải và túi rác trong một giỏ riêng. Dùng khăn riêng cho bếp và phòng tắm để tránh lẫn bẩn.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 0,
+      "title": "Cách đọc nhãn nước lau sàn trước khi mua",
+      "excerpt": "Kiểm tra bề mặt sử dụng, hướng dẫn pha và thông tin bảo quản trên bao bì.",
+      "image": "home-care.png",
+      "body": "<p>Kiểm tra bề mặt sử dụng, hướng dẫn pha và thông tin bảo quản trên bao bì.</p><h2>Đối chiếu với bề mặt sàn</h2><p>Gạch men, gỗ và đá có yêu cầu chăm sóc khác nhau. Chọn sản phẩm có hướng dẫn phù hợp với loại sàn của gia đình.</p><h2>Làm theo hướng dẫn sử dụng</h2><p>Pha theo lượng ghi trên nhãn và thử ở một góc khuất trước. Không tự trộn các chất tẩy rửa; cất sản phẩm trong bao bì gốc, ngoài tầm với của trẻ.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 0,
+      "title": "Sắp xếp góc giặt gọn gàng trong không gian nhỏ",
+      "excerpt": "Một vài thay đổi về vị trí đồ dùng giúp việc giặt giũ thuận tiện hơn.",
+      "image": "home-care.png",
+      "body": "<p>Một vài thay đổi về vị trí đồ dùng giúp việc giặt giũ thuận tiện hơn.</p><h2>Phân chia đồ dùng theo tần suất</h2><p>Đặt sản phẩm dùng thường xuyên ở vị trí dễ lấy. Tách đồ giặt, kẹp phơi và khăn lau vào các hộp có nhãn.</p><h2>Giữ khu vực khô và thoáng</h2><p>Lau khô mặt kệ sau khi sử dụng và đóng kín nắp chai. Giữ nguyên nhãn để các thành viên có thể đọc đúng hướng dẫn.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 0,
+      "title": "Phân loại quần áo trước khi giặt",
+      "excerpt": "Sắp xếp đồ giặt theo màu sắc và hướng dẫn chăm sóc trên nhãn vải.",
+      "image": "home-care.png",
+      "body": "<p>Sắp xếp đồ giặt theo màu sắc và hướng dẫn chăm sóc trên nhãn vải.</p><h2>Đọc ký hiệu chăm sóc</h2><p>Kiểm tra nhiệt độ giặt, yêu cầu giặt tay và cách phơi trên nhãn. Các chất liệu mỏng nên được phân loại riêng.</p><h2>Kiểm tra trước khi cho vào máy</h2><p>Lấy đồ khỏi túi áo quần, đóng khóa kéo và dùng túi giặt khi phù hợp. Không cho quá nhiều đồ so với hướng dẫn của máy.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 1,
+      "title": "Bộ dụng cụ cơ bản cho người mới làm bánh",
+      "excerpt": "Bắt đầu từ những món thường dùng trước khi mua thêm phụ kiện chuyên dụng.",
+      "image": "kitchen-tools.png",
+      "body": "<p>Bắt đầu từ những món thường dùng trước khi mua thêm phụ kiện chuyên dụng.</p><h2>Ưu tiên dụng cụ đo lường</h2><p>Cân bếp, ca đong và thìa đo giúp thực hiện công thức nhất quán. Chọn kích thước phù hợp với lượng bánh thường làm.</p><h2>Chọn khuôn theo lò nướng</h2><p>Đo khoang lò trước khi chọn khuôn. Đọc thông tin về nhiệt độ sử dụng và cách vệ sinh của từng loại vật liệu.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 1,
+      "title": "Cách chọn hộp đựng phù hợp cho tủ bếp",
+      "excerpt": "Chọn hộp theo kích thước ngăn tủ và loại đồ cần sắp xếp.",
+      "image": "kitchen-tools.png",
+      "body": "<p>Chọn hộp theo kích thước ngăn tủ và loại đồ cần sắp xếp.</p><h2>Đo trước khi mua</h2><p>Ghi lại chiều rộng, sâu và cao của kệ. Hộp cùng kích thước dễ xếp chồng nhưng cần chừa khoảng để mở nắp.</p><h2>Dán nhãn để dễ tìm</h2><p>Ghi tên và ngày mở gói với nguyên liệu đã chuyển hộp. Giữ lại thông tin hạn dùng, hướng dẫn bảo quản từ bao bì ban đầu.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 1,
+      "title": "Vệ sinh và bảo quản khuôn silicone",
+      "excerpt": "Chăm sóc dụng cụ theo hướng dẫn của nhà sản xuất để sử dụng thuận tiện.",
+      "image": "kitchen-tools.png",
+      "body": "<p>Chăm sóc dụng cụ theo hướng dẫn của nhà sản xuất để sử dụng thuận tiện.</p><h2>Làm sạch sau mỗi lần dùng</h2><p>Đợi khuôn nguội trước khi rửa và kiểm tra các góc nhỏ. Chọn cách rửa phù hợp với hướng dẫn đi kèm sản phẩm.</p><h2>Cất khi đã khô</h2><p>Để khuôn khô trước khi xếp vào tủ. Tránh đặt vật sắc cạnh hoặc đồ nặng làm biến dạng khuôn trong thời gian dài.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 1,
+      "title": "Tổ chức mặt bếp để nấu ăn thuận tiện hơn",
+      "excerpt": "Giữ những vật dụng thiết yếu trong tầm tay và dành khoảng trống cho sơ chế.",
+      "image": "kitchen-tools.png",
+      "body": "<p>Giữ những vật dụng thiết yếu trong tầm tay và dành khoảng trống cho sơ chế.</p><h2>Chia khu vực sử dụng</h2><p>Đặt dụng cụ sơ chế, nấu và phục vụ theo từng nhóm. Giữ các vật dụng ít dùng trong ngăn tủ để mặt bếp thoáng hơn.</p><h2>Dọn lại sau mỗi bữa</h2><p>Trả dụng cụ về vị trí cũ và lau khô bề mặt sau khi nấu. Kiểm tra lại những món đang chiếm chỗ nhưng hiếm khi dùng.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 2,
+      "title": "Lập danh sách mua sắm cho gia đình theo tuần",
+      "excerpt": "Kiểm tra đồ đang có trước khi lên kế hoạch bổ sung sản phẩm thiết yếu.",
+      "image": "hero-minimart.png",
+      "body": "<p>Kiểm tra đồ đang có trước khi lên kế hoạch bổ sung sản phẩm thiết yếu.</p><h2>Bắt đầu từ nhu cầu thực tế</h2><p>Ghi lại đồ đã hết hoặc sắp dùng hết. Chia danh sách thành nhóm nhà bếp, giặt giũ và đồ dùng cá nhân để dễ kiểm tra.</p><h2>Đặt mức chi dự kiến</h2><p>Ước tính chi phí cho từng nhóm và ưu tiên món cần dùng. Chỉ thêm sản phẩm khuyến mãi khi phù hợp với nhu cầu và không gian lưu trữ.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 2,
+      "title": "So sánh giá sản phẩm theo dung tích",
+      "excerpt": "Giá mỗi chai chưa phản ánh đầy đủ chi phí giữa những quy cách khác nhau.",
+      "image": "home-care.png",
+      "body": "<p>Giá mỗi chai chưa phản ánh đầy đủ chi phí giữa những quy cách khác nhau.</p><h2>Quy về cùng đơn vị</h2><p>So sánh giá trên cùng một lít hoặc cùng khối lượng. Ghi nhận số lượng và dung tích thực tế của gói bán kèm.</p><h2>Tính cả cách sử dụng</h2><p>Đọc lượng dùng được khuyến nghị trên bao bì. Cân nhắc nhu cầu của gia đình, thời gian sử dụng và chỗ bảo quản trước khi chọn chai lớn.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 2,
+      "title": "Những thông tin cần kiểm tra khi mua đồ dùng cho bé",
+      "excerpt": "Đọc kỹ nhãn, hướng dẫn và quy cách trước khi quyết định mua sắm.",
+      "image": "baby-care.png",
+      "body": "<p>Đọc kỹ nhãn, hướng dẫn và quy cách trước khi quyết định mua sắm.</p><h2>Kiểm tra thông tin sản phẩm</h2><p>Xem độ tuổi phù hợp, vật liệu, kích thước và hướng dẫn vệ sinh. Giữ lại bao bì hoặc tài liệu để tra cứu khi cần.</p><h2>Mua theo nhu cầu đang có</h2><p>Kiểm tra số lượng đồ đang dùng và chọn lượng mua phù hợp. Đọc điều kiện đổi trả trước khi mua nhiều sản phẩm cùng loại.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    },
+    {
+      "category": 2,
+      "title": "Sắp xếp đồ mua mới theo hạn sử dụng",
+      "excerpt": "Đặt món cần dùng trước ở vị trí dễ nhìn để giảm quên đồ trong tủ.",
+      "image": "nutrition.png",
+      "body": "<p>Đặt món cần dùng trước ở vị trí dễ nhìn để giảm quên đồ trong tủ.</p><h2>Kiểm tra khi nhận hàng</h2><p>Đối chiếu tên, số lượng, tình trạng bao bì và hạn dùng với đơn đặt. Liên hệ nơi bán nếu thông tin hoặc tình trạng hàng chưa phù hợp.</p><h2>Bảo quản theo nhãn</h2><p>Tuân thủ điều kiện bảo quản của từng sản phẩm. Xếp những món có hạn gần hơn ra phía trước và ghi ngày mở gói khi cần.</p><h2>Trước khi lựa chọn sản phẩm</h2><p>Đối chiếu thông tin trên nhãn với nhu cầu sử dụng của gia đình. Nội dung và hình ảnh trong bộ dữ liệu này dùng để minh họa cho website demo.</p>"
+    }
+  ]
+}

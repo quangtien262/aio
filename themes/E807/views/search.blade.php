@@ -1,4 +1,4 @@
-@php($pageTitle='Kết quả tìm kiếm') @include('theme-e807::partials.listing',['entries'=>$entries??[]])
-
-
-
+@extends('theme-e807::layout')
+@section('content')
+@include('themes.common.catalog-listing', ['catalogMode' => 'search'])
+@endsection

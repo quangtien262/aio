@@ -1,2 +1,4 @@
-@php($pageTitle = app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TOOL750', app()->getLocale(), 'news', 'Tin tức'))
-@include('theme-tool750::partials.listing', ['entries' => $entries ?? $posts ?? []])
+@extends('theme-tool750::layout')
+@section('content')
+@include('themes.common.news-listing')
+@endsection

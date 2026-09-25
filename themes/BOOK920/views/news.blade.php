@@ -1,4 +1,4 @@
 @extends('theme-book920::layout')
 @section('content')
-@include('theme-book920::partials.listing', ['detailRoute' => 'site.blog.show'])
+@include('themes.common.news-listing')
 @endsection

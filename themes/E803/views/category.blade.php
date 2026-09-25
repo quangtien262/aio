@@ -1,1 +1,4 @@
-@php($pageTitle=data_get($category??null,'name','Sản phẩm')) @include('theme-e803::partials.listing',['entries'=>$entries??[]])
+@extends('theme-e803::layout')
+@section('content')
+@include('themes.common.catalog-listing', ['catalogMode' => 'category'])
+@endsection

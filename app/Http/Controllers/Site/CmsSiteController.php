@@ -1014,7 +1014,7 @@ class CmsSiteController
             'newest', 'default' => $productsQuery->latest('created_at'),
         };
 
-        $products = $productsQuery->take(24)->get();
+        $products = $productsQuery->paginate(24)->withQueryString();
 
         return $this->renderThemeCatalogView('category', $activeTheme, [
             'siteProfile' => $siteProfile,
@@ -1024,6 +1024,8 @@ class CmsSiteController
             'category' => $category,
             'sidebarCategories' => $sidebarCategories,
             'catalogTreeCategories' => $this->resolveCatalogCategoryTreeItems($category, $websiteKey),
+            'pagination' => $products,
+            'resultCount' => $products->total(),
             'products' => $products->map(fn (CatalogProduct $product): array => $this->mapProductCard($product, (string) ($activeTheme['key'] ?? 'SHOP601')))->all(),
             'childCategories' => $category->children->map(fn (CatalogCategory $child): array => [
                 'name' => $child->name,

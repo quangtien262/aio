@@ -6,10 +6,12 @@ use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
+use App\Models\CmsCategory;
 use App\Models\CmsPost;
 use App\Models\LandingPage;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
+use App\Support\SiteContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -81,6 +83,41 @@ class Ec906ThemeTest extends TestCase
 
         $page = LandingPage::query()->where('theme_key', 'EC906')->where('is_home', true)->firstOrFail();
         $this->assertCount(9, $page->blocks);
+    }
+
+    public function test_news_seed_is_complete_repeatable_and_scoped_to_the_current_website(): void
+    {
+        $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('EC906');
+        $context = app(SiteContext::class);
+        $context->set(null, 'other-demo');
+        $provider->generate('ec906-ega-minimart');
+        $foreignPost = CmsPost::firstOrFail();
+        $context->set(null, 'website-main');
+        $manual = CmsPost::create(['title' => 'Bài viết biên tập riêng', 'slug' => 'manual-news', 'status' => 'published', 'body' => '<p>Nội dung riêng.</p>']);
+        foreach (range(1, 2) as $run) {
+            $result = $provider->generate('ec906-ega-minimart');
+            $this->assertSame(12, $result['counts']['posts']);
+            $this->assertSame(3, $result['counts']['post_categories']);
+            $this->assertSame(12, $result['counts']['media']);
+            $this->assertSame(13, CmsPost::count());
+            $this->assertTrue(CmsPost::whereKey($manual->id)->exists());
+            $this->assertTrue(CmsPost::forWebsite('other-demo')->whereKey($foreignPost->id)->exists());
+        }
+        $posts = CmsPost::where('slug', 'like', 'ec906-%')->with('featuredMedia')->orderByDesc('publish_at')->get();
+        foreach ($posts as $post) {
+            $this->assertSame('published', $post->status);
+            $this->assertTrue($post->publish_at->isPast());
+            $this->assertFileExists(public_path(ltrim($post->featuredMedia->file_url, '/')));
+            $this->assertGreaterThanOrEqual(3, substr_count($post->body, '<h2>'));
+            $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))->assertOk()->assertSee($post->title);
+        }
+        $response = $this->get('/vi/c')->assertOk()->assertSee($posts->first()->title)->assertSee('page=2', false);
+        foreach (CmsCategory::where('slug', 'like', 'ec906-%')->get() as $category) {
+            $this->get('/vi/c/'.$category->slug)->assertOk()->assertSee($category->name);
+        }
+        if ($path = getenv('EC906_NEWS_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
     }
 
     public function test_ec906_demo_preserves_an_existing_custom_logo(): void

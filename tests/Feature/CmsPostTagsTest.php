@@ -12,6 +12,7 @@ use App\Support\Localization\LocalizedContentRepository;
 use App\Support\Localization\WebsiteLocaleManager;
 use App\Support\SiteContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class CmsPostTagsTest extends TestCase
@@ -49,9 +50,9 @@ class CmsPostTagsTest extends TestCase
     {
         $migration = require base_path('modules/Cms/database/migrations/2026_09_17_000001_create_cms_tags.php');
         foreach ([false, true] as $dropTags) {
-            \Illuminate\Support\Facades\Schema::dropIfExists('cms_post_tag');
+            Schema::dropIfExists('cms_post_tag');
             if ($dropTags) {
-                \Illuminate\Support\Facades\Schema::dropIfExists('cms_tags');
+                Schema::dropIfExists('cms_tags');
             }
             try {
                 $id = $this->postJson('/admin/api/cms/posts', ['title' => 'Without tags '.(int) $dropTags, 'status' => 'published', 'tags' => []])
@@ -72,7 +73,7 @@ class CmsPostTagsTest extends TestCase
 
     public function test_tag_page_is_paginated_and_excludes_drafts_future_and_other_websites(): void
     {
-        for ($i = 0; $i < 12; $i++) {
+        for ($i = 0; $i < 31; $i++) {
             $post = CmsPost::create(['title' => 'Public '.$i, 'slug' => 'public-'.$i, 'status' => 'published', 'publish_at' => now()->subDay()]);
             app(CmsPostTags::class)->sync($post, ['Du lịch']);
         }
@@ -83,8 +84,8 @@ class CmsPostTagsTest extends TestCase
         }
         $url = '/vi/tags/'.$tag->slug;
         $response = $this->get($url)->assertOk()->assertSee('Bài viết về: Du lịch')->assertDontSee('Hidden sentinel');
-        $this->assertSame(12, $response->viewData('listingItems')->total());
-        $this->assertCount(10, $response->viewData('listingItems')->items());
+        $this->assertSame(31, $response->viewData('listingItems')->total());
+        $this->assertCount(30, $response->viewData('listingItems')->items());
         $this->get($url.'?page=2')->assertOk()->assertSee('<link rel="canonical" href="'.url($url).'?page=2">', false);
         $this->get('/vi/n/public-0')->assertOk()->assertSee('rel="tag"', false)->assertSee($url, false);
         $this->get('/vi/tags/missing')->assertNotFound();

@@ -253,52 +253,7 @@
     </style>
 @endpush
 
-@push('head')
-@include('themes.common.news-listing-styles')
-@endpush
 
 @section('content')
-<main class="xd-page-main xd-news-listing">
-            <div class="xd-container">
-                    <section class="xd-cms-hero">
-                        <div>
-                            <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.ce975e011ecbb71f', 'Tin tức') }}</span>
-                            <h1>{{ $pageTitle ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.ce975e011ecbb71f', 'Tin tức')) }}</h1>
-                            <p>{{ $pageDescription ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.90348e872dd156d8', 'Danh sách bài viết, tin tức và kinh nghiệm xây dựng mới nhất.')) }}</p>
-                        </div>
-                        <div class="xd-cms-stats">
-                            <strong>{{ method_exists($listingItems, 'total') ? $listingItems->total() : collect($listingItems ?? [])->count() }}</strong>
-                            <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.f9c3799e30969e36', 'Bài viết đã xuất bản') }}</span>
-                        </div>
-                    </section>
-
-                    <section class="xd-services-list">
-                        @forelse ($listingItems as $post)
-                            @php
-                                $postUrl = route('site.blog.show', ['slug' => $post->slug]);
-                                $image = $post->featuredMedia?->url ?: $post->featuredMedia?->file_url;
-                                $summary = $post->excerpt ?: \Illuminate\Support\Str::limit(strip_tags((string) ($post->body ?? '')), 150);
-                            @endphp
-                            <article class="xd-service-card">
-                                <a class="xd-service-image" href="{{ $postUrl }}" aria-label="{{ $post->title }}">
-                                    <img src="{{ $image ?: 'https://picsum.photos/seed/xd321-post-'.($post->id ?? 'default').'/960/720' }}" alt="{{ $post->title }}">
-                                </a>
-                                <div class="xd-service-body">
-                                    <h2><a href="{{ $postUrl }}">{{ $post->title }}</a></h2>
-                                    <p>{{ $summary }}</p>
-                                    <a class="xd-text-link" href="{{ $postUrl }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.bf79719822fd8cf6', 'Đọc tiếp') }}</a>
-                                </div>
-                            </article>
-                        @empty
-                            <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.ee86e87a1ce110f0', 'Chưa có bài viết nào được xuất bản.') }}</p>
-                        @endforelse
-                    </section>
-
-                    @if (method_exists($listingItems, 'links'))
-                        <div style="margin-top:32px">
-                            {{ $listingItems->links() }}
-                        </div>
-                    @endif
-            </div>
-</main>
+@include('themes.common.news-listing')
 @endsection

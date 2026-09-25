@@ -26,6 +26,7 @@ use InvalidArgumentException;
 class Ec906DemoContentProvider implements ThemeDemoContentProvider
 {
     private const THEME_KEY = 'EC906';
+
     private const PRESET_KEY = 'ec906-ega-minimart';
 
     public function __construct(
@@ -33,8 +34,15 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
         private readonly SiteContext $siteContext,
     ) {}
 
-    public function themeKey(): string { return self::THEME_KEY; }
-    public function defaultPreset(): string { return self::PRESET_KEY; }
+    public function themeKey(): string
+    {
+        return self::THEME_KEY;
+    }
+
+    public function defaultPreset(): string
+    {
+        return self::PRESET_KEY;
+    }
 
     public function preset(): array
     {
@@ -139,19 +147,16 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
                 $this->record($banner);
             }
 
-            $postCategory = CmsCategory::query()->create([
-                'name' => 'Cẩm nang gia đình EGA',
-                'slug' => 'ec906-cam-nang-gia-dinh',
-                'description' => 'Mẹo chăm sóc sức khỏe và không gian sống.',
-            ]);
-            $this->record($postCategory);
-            $postDefinitions = [
-                ['Các loại nước chống lão hóa hiệu quả nên uống mỗi ngày', 'Những thức uống giàu dưỡng chất giúp cơ thể khỏe mạnh và tươi trẻ.', 'nutrition.png'],
-                ['Trái cây mùa đông giúp giảm cân hiệu quả', 'Lựa chọn thực phẩm theo mùa để cân bằng dinh dưỡng cho gia đình.', 'nutrition.png'],
-                ['Cách chọn rau củ quả sạch, tươi ngon và an toàn', 'Những dấu hiệu đơn giản giúp bạn chọn thực phẩm chất lượng.', 'home-care.png'],
-                ['10 mẹo giúp người bận rộn giữ nhà luôn sạch sẽ', 'Các thói quen nhỏ giúp không gian sống luôn thoáng sạch.', 'home-care.png'],
-            ];
-            foreach ($postDefinitions as $index => [$title, $excerpt, $image]) {
+            $news = json_decode(file_get_contents(resource_path('demo/ec906-news.json')), true, 512, JSON_THROW_ON_ERROR);
+            $postCategories = [];
+            foreach ($news['categories'] as $definition) {
+                $postCategory = CmsCategory::query()->create($definition);
+                $this->record($postCategory);
+                $postCategories[] = $postCategory;
+            }
+            $postDefinitions = $news['posts'];
+            foreach ($postDefinitions as $index => $definition) {
+                ['title' => $title, 'excerpt' => $excerpt, 'image' => $image] = $definition;
                 $media = CmsMedia::query()->create([
                     'title' => $title,
                     'file_path' => '',
@@ -162,12 +167,12 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
                 ]);
                 $this->record($media);
                 $post = CmsPost::query()->create([
-                    'category_id' => $postCategory->id,
+                    'category_id' => $postCategories[$definition['category']]->id,
                     'title' => $title,
                     'slug' => Str::slug('ec906-'.$title),
                     'status' => 'published',
                     'excerpt' => $excerpt,
-                    'body' => '<p>'.$excerpt.'</p><p>EGA Mini Mart tổng hợp những kinh nghiệm hữu ích để việc chăm sóc gia đình trở nên nhẹ nhàng hơn.</p>',
+                    'body' => $definition['body'],
                     'featured_media_id' => $media->id,
                     'publish_at' => now()->subDays($index + 1),
                     'is_highlight' => $index === 0,
@@ -182,7 +187,7 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
                 'items' => [
                     ['label' => 'Giới thiệu', 'url' => $home.'#gioi-thieu'],
                     ['label' => 'Khuyến mãi', 'url' => $home.'#flash-sale'],
-                    ['label' => 'Tin tức', 'url' => $home.'#tin-tuc'],
+                    ['label' => 'Tin tức', 'url' => route('site.blog.index')],
                     ['label' => 'Kiểm tra đơn hàng', 'url' => route('site.catalog.search')],
                     ['label' => 'Liên hệ', 'url' => route('site.contact')],
                     ['label' => 'Hướng dẫn thiết lập', 'url' => route('site.contact')],
@@ -194,7 +199,9 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
                 ['slug' => 'contact'],
                 ['title' => 'Liên hệ EGA Mini Mart', 'status' => 'published', 'excerpt' => 'Tư vấn sản phẩm và hỗ trợ đơn hàng.', 'body' => '<p>Đội ngũ EGA Mini Mart luôn sẵn sàng hỗ trợ bạn.</p>', 'publish_at' => now()],
             );
-            if ($contactPage->wasRecentlyCreated) $this->record($contactPage);
+            if ($contactPage->wasRecentlyCreated) {
+                $this->record($contactPage);
+            }
 
             $profile = SiteProfile::query()->firstOrNew();
             $profile->forceFill([
@@ -212,7 +219,9 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
 
             $existing = LandingPage::query()->where('website_key', $websiteKey)->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $landing = $this->landingPageBuilder->resolveHome($websiteKey, self::THEME_KEY, true);
-            if ($landing && ! $existing) $this->record($landing);
+            if ($landing && ! $existing) {
+                $this->record($landing);
+            }
 
             return [
                 'preset' => $this->preset(),
@@ -220,7 +229,7 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
                     'categories' => count($categoryDefinitions),
                     'products' => count($productDefinitions),
                     'banners' => 2,
-                    'post_categories' => 1,
+                    'post_categories' => count($postCategories),
                     'posts' => count($postDefinitions),
                     'media' => count($postDefinitions),
                     'pages' => $contactPage->wasRecentlyCreated ? 1 : 0,
@@ -254,7 +263,9 @@ class Ec906DemoContentProvider implements ThemeDemoContentProvider
             [CmsMenu::class, 'menus'],
             [SiteBanner::class, 'banners'],
         ] as [$model, $key]) {
-            if ($modelIds = $ids($model)) $counts[$key] = $model::query()->whereKey($modelIds)->delete();
+            if ($modelIds = $ids($model)) {
+                $counts[$key] = $model::query()->whereKey($modelIds)->delete();
+            }
         }
         ThemeDemoRecord::query()->where('theme_key', self::THEME_KEY)->where('preset_key', self::PRESET_KEY)->delete();
 

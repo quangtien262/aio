@@ -114,7 +114,10 @@
                 </nav>
             </header>
 
-            <main class="site-main">
+            @if(($contentType ?? '') === 'posts')
+@include('themes.common.news-listing')
+@else
+<main class="site-main">
                 @if (!empty($isPreview))
                     <div class="site-preview-banner">Đây là chế độ preview unpublished chỉ dành cho admin.</div>
                 @endif
@@ -313,6 +316,7 @@
                     @endif
                 @endif
             </main>
+@endif
 
             <footer class="site-footer">{{ $siteProfile?->site_name ?? 'AIO Website' }} © {{ now()->year }}</footer>
         </div>

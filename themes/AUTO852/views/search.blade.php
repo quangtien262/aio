@@ -1,2 +1,4 @@
-@php($pageTitle = app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('AUTO852', app()->getLocale(), 'search', 'Tìm kiếm'))
-@include('theme-auto852::partials.listing', ['entries' => $entries ?? $products ?? []])
+@extends('theme-auto852::layout')
+@section('content')
+@include('themes.common.catalog-listing', ['catalogMode' => 'search'])
+@endsection

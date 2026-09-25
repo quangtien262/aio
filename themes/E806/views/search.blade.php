@@ -1,3 +1,4 @@
-@php($pageTitle='Kết quả tìm kiếm') @include('theme-e806::partials.listing',['entries'=>$entries??[]])
-
-
+@extends('theme-e806::layout')
+@section('content')
+@include('themes.common.catalog-listing', ['catalogMode' => 'search'])
+@endsection

@@ -1,1 +1,3 @@
-@php $entries=collect($entries??[]); @endphp @extends('theme-shop605::layout') @section('title',data_get($category??null,'name','Sản phẩm')) @section('content')<main><section class="s605-inner-hero"><div class="s605-container"><p>OH!UNDER</p><h1>{{ data_get($category??null,'name','Sản phẩm') }}</h1></div></section><section class="s605-section"><div class="s605-container s605-products">@forelse($entries as $item)@include('theme-shop605::partials.product-card',['item'=>$item])@empty<p>Chưa có sản phẩm.</p>@endforelse</div></section></main>@endsection
+@php $entries=collect($entries??[]); @endphp @extends('theme-shop605::layout') @section('title',data_get($category??null,'name','Sản phẩm')) @section('content')
+@include('themes.common.catalog-listing', ['catalogMode' => 'category'])
+@endsection
