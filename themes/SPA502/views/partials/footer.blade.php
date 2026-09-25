@@ -27,7 +27,7 @@
 
 <footer id="footer" class="spa502-footer">
     <div class="spa502-container spa502-footer__grid">
-        <section>
+        <section>@include('themes.common.footer-logo')
             <h3>@themeT('SPA502.footer.locations')</h3>
             <span class="spa502-footer__rule"></span>
             <p>Địa chỉ: {{ $supportAddress }}</p>

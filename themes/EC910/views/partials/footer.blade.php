@@ -6,7 +6,7 @@
     $location = trim((string) ($branding['support_location'] ?? ''));
 @endphp
 <footer class="ec10-footer">
-    <div class="ec10-container ec10-footer-brand"><span class="ec10-brand-mark"><i class="fa-regular fa-clock"></i>DOLA <b>WATCH</b></span><p>Đồng hồ chính hãng, dịch vụ tận tâm và bảo hành minh bạch.</p><div><a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i class="fa-brands fa-youtube"></i></a><a href="#"><i class="fa-brands fa-google"></i></a><a href="#"><i class="fa-solid fa-comment"></i></a></div></div>
+    <div class="ec10-container ec10-footer-brand">@include('themes.common.footer-logo')<p>Đồng hồ chính hãng, dịch vụ tận tâm và bảo hành minh bạch.</p><div><a href="#"><i class="fa-brands fa-facebook-f"></i></a><a href="#"><i class="fa-brands fa-youtube"></i></a><a href="#"><i class="fa-brands fa-google"></i></a><a href="#"><i class="fa-solid fa-comment"></i></a></div></div>
     <div class="ec10-container ec10-footer-grid">
         <section><h3>THÔNG TIN CHUNG</h3><p><b>Địa chỉ:</b> {{ $location }}</p><p><b>Điện thoại:</b> {{ $hotline }}</p><p><b>Email:</b> {{ $email }}</p><h3>HÌNH THỨC THANH TOÁN</h3><span class="ec10-pay">TIỀN MẶT · CHUYỂN KHOẢN · VISA</span></section>
         <section><h3>CHÍNH SÁCH</h3><a href="#">Chính sách thành viên</a><a href="#">Chính sách thanh toán</a><a href="#">Hướng dẫn mua hàng</a><a href="#">Bảo mật thông tin cá nhân</a></section>

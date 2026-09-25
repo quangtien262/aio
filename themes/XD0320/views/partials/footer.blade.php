@@ -18,9 +18,7 @@
             </form>
         </section>
         <section class="foot-footer__brand">
-            <span class="foot-brand__monogram">F</span>
-            <strong>{{ $companyName }}</strong>
-            <small>@themeT('xd0320.brand.tagline')</small>
+            @include('themes.common.footer-logo')
         </section>
         <section class="foot-footer__social">
             <p class="foot-footer__eyebrow">@themeT('xd0320.footer.follow')</p>

@@ -7,7 +7,7 @@
     $mapsUrl = 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($address);
 @endphp
 <footer class="b702-footer"><div class="b702-container b702-footer-grid">
-    <div class="b702-contact-list">
+    <div class="b702-contact-list">@include('themes.common.footer-logo')
         @if($address)<a href="{{ $mapsUrl }}" target="_blank" rel="noopener"><i class="fa-solid fa-location-dot"></i><span><b>Địa chỉ</b>{{ $address }}</span></a>@endif
         @if($email)<a href="mailto:{{ $email }}"><i class="fa-regular fa-envelope"></i><span><b>Email</b>{{ $email }}</span></a>@endif
         @if($hotline)<a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone"></i><span><b>Liên hệ với chúng tôi</b>{{ $hotline }}</span></a>@endif

@@ -1,0 +1,5 @@
+@include('themes.common.news-detail-styles')
+<div class="tna-article tna-article-supplement" data-article-theme="{{ data_get($activeTheme ?? [], 'key') }}"><div class="tna-article-sidebar">
+        @if(collect($latestPosts ?? [])->isNotEmpty())<section class="tna-article-latest"><h2>{{ __('news-detail.latest') }}</h2>@foreach($latestPosts as $item)<a class="tna-article-latest-item" href="{{ route('site.blog.show', ['slug' => $item->slug]) }}">@if(data_get($item, 'featuredMedia.file_url'))<img loading="lazy" src="{{ $item->featuredMedia->file_url }}" alt="">@endif<div><h3>{{ $item->title }}</h3>@if($item->publish_at)<time datetime="{{ $item->publish_at->toAtomString() }}">{{ $item->publish_at->format('d/m/Y') }}</time>@endif</div></a>@endforeach<a class="tna-article-all" href="{{ route('site.blog.index') }}">{{ __('news-detail.all') }} →</a></section>@endif
+</div></div>
+<style>.tna-article-supplement{padding:0;background:transparent}.tna-article-supplement .tna-article-sidebar>section{margin:0 0 24px}</style>

@@ -143,7 +143,7 @@
         <footer class="footer">
             <div class="wrap footer-inner">
                 <div class="footer-grid">
-                    <section>
+                    <section>@include('themes.common.footer-logo')
                         <h4>{{ data_get($branding, 'company_name', 'SER0101') }}</h4>
                         <p>{{ $t('cms.footer_summary', 'Theme service-first cho nhà xe, shuttle và logistics nhẹ.') }}</p>
                         @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'ser-footer-boc-status'])

@@ -11,5 +11,20 @@
     },
     "navigation": {
         "expand": "Mở menu con"
+    },
+    "article": {
+        "news": "Tin tức",
+        "home": "Trang chủ",
+        "latest": "Tin mới nhất",
+        "related": "Có thể bạn quan tâm",
+        "toc": "Trong bài viết này",
+        "minutes": "phút đọc",
+        "share": "Sao chép liên kết",
+        "copied": "Đã sao chép liên kết",
+        "failed": "Hãy sao chép đường dẫn bên dưới",
+        "all": "Xem tất cả tin",
+        "browse": "Khám phá sản phẩm gia đình",
+        "browse_text": "Tìm những sản phẩm phù hợp với nhu cầu chăm sóc tổ ấm của bạn.",
+        "read": "Đọc bài viết"
     }
 }

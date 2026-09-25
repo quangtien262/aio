@@ -15,7 +15,7 @@
         </div>
         <div class="ser102-footer__grid">
             <section class="ser102-footer__brand">
-                <a class="ser102-brand is-footer" href="{{ route('site.home') }}"><span class="ser102-brand__mark"><i class="fa-solid fa-car-side"></i></span><span><strong>{{ $companyName }}</strong><small>@themeT('SER102.brand.tagline')</small></span></a>
+                @include('themes.common.footer-logo')
                 <p>@themeT('SER102.footer.intro')</p>
                 <a href="mailto:{{ $email }}"><i class="fa-regular fa-envelope"></i> {{ $email }}</a>
                 <span><i class="fa-solid fa-location-dot"></i> {{ $address }}</span>

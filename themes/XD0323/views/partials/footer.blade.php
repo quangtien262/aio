@@ -23,7 +23,7 @@
                 </form>
             </section>
             <section class="xd323-footer__main">
-                <div class="xd323-footer__contact">
+                <div class="xd323-footer__contact">@include('themes.common.footer-logo')
                     <p><i class="fa-solid fa-location-dot"></i><span><b>Địa chỉ:</b>{{ $address }}</span></p>
                     <p><i class="fa-solid fa-phone-volume"></i><span><b>Điện thoại:</b><a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}">{{ $hotline }}</a></span></p>
                     <p><i class="fa-solid fa-envelope"></i><span><b>Email:</b><a href="mailto:{{ $email }}">{{ $email }}</a></span></p>

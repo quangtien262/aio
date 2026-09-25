@@ -24,7 +24,7 @@
 
 <footer id="footer" class="bz501-footer">
     <div class="bz501-container bz501-footer__grid">
-        <section>
+        <section>@include('themes.common.footer-logo')
             <h3>@themeT('BZ501.footer.locations')</h3>
             <div class="bz501-footer__rule"></div>
             <p><i class="fa-solid fa-location-dot"></i><strong>{{ $companyName }}</strong></p>

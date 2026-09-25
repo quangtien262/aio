@@ -10,7 +10,7 @@
 <footer id="footer" class="xd324-footer">
     <div class="xd324-container">
         <div class="xd324-footer__top">
-            <a class="xd324-footer__logo" href="{{ route('site.home') }}">{{ $companyName }}</a>
+            @include('themes.common.footer-logo')
             <div class="xd324-footer__social">
                 <strong>{{ $themeText('XD0324.footer.connect') }}</strong>
                 <a href="#footer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>

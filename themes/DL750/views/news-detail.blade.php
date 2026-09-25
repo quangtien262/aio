@@ -47,6 +47,7 @@
                     </footer>
                 </div>
                 <aside class="dl-article-sidebar">
+                    @include('themes.common.article-latest')
                     <nav class="dl-article-toc" data-dl-article-toc hidden aria-label="@themeT('article.toc', 'Trong bài viết này')">
                         <p class="dl-article-kicker">@themeT('article.guide', 'Dẫn lối nội dung')</p>
                         <h2>@themeT('article.toc', 'Trong bài viết này')</h2>

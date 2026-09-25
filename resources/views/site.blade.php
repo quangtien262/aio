@@ -168,7 +168,7 @@
                 </div>
             </section>
         </main>
-        <footer style="padding:24px 32px;background:#16302b;color:#fff">
+        <footer style="padding:24px 32px;background:#16302b;color:#fff">@include('themes.common.footer-logo')<br>
             <strong>{{ $companyName }}</strong>
             <p style="color:#fff">{{ $address }}</p>
             <p style="color:#fff">

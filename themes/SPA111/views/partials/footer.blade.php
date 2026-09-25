@@ -2,7 +2,7 @@
 <footer class="sp11-footer xd-landing-block" data-landing-block-id="{{ data_get($footerBlock ?? [], 'id') }}" data-block-type="spa111_footer">
     <div class="sp11-container sp11-footer-grid">
         <div class="sp11-footer-brand">
-            <a class="sp11-logo" href="#top"><span class="sp11-logo-mark"><i class="fa-solid fa-leaf"></i><b>B</b></span><span><strong>Bean <em>Spa</em></strong><small>ĐẸP TRÊN CẢ ƯỚC MƠ</small></span></a>
+            @include('themes.common.footer-logo')
             <p>Mang đến các liệu trình chăm sóc tinh tế <b>an toàn và chuyên sâu</b> giúp bạn thư giãn trọn vẹn và <b>tái tạo năng lượng</b> từ bên trong.</p>
             <p><i class="fa-solid fa-location-dot"></i> {{ data_get($branding, 'support_location', '') }}</p>
             <p><i class="fa-solid fa-phone-volume"></i> {{ data_get($branding, 'support_hotline', '') }}</p>

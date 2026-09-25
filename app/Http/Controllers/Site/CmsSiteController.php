@@ -20,6 +20,8 @@ use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
 use App\Models\CmsSidePromo;
+use App\Models\CmsTag;
+use App\Models\CmsTopic;
 use App\Models\ContactInquiry;
 use App\Models\Customer;
 use App\Models\CustomerFavorite;
@@ -28,6 +30,7 @@ use App\Models\Order;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
 use App\Support\BusinessContentTranslationService;
+use App\Support\CmsPostTags;
 use App\Support\FrontendLocalization;
 use App\Support\FrontendRouteUrl;
 use App\Support\InventoryAvailabilityResolver;
@@ -47,6 +50,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -368,7 +372,7 @@ class CmsSiteController
 
     public function topicsIndex(Request $request): View
     {
-        abort_unless(\App\Models\CmsTopic::available(), 404);
+        abort_unless(CmsTopic::available(), 404);
 
         return $this->newsDirectory($request, true);
     }
@@ -385,10 +389,9 @@ class CmsSiteController
         $theme = $this->resolveActiveTheme($profile);
         $locale = $this->currentLocale();
         $resource = $topics ? 'cms_topic' : 'cms_category';
-        $query = $topics ? \App\Models\CmsTopic::query()->where('is_active', true) : CmsCategory::query();
+        $query = $topics ? CmsTopic::query()->where('is_active', true) : CmsCategory::query();
         $this->applyWebsiteScope($query, $websiteKey);
-        $entries = $query->orderBy('name')->get()->filter(fn ($item) =>
-            $this->localizedContent->isPublishedForLocale($item, $resource, $locale, $websiteKey)
+        $entries = $query->orderBy('name')->get()->filter(fn ($item) => $this->localizedContent->isPublishedForLocale($item, $resource, $locale, $websiteKey)
         )->map(function ($item) use ($resource, $locale, $websiteKey) {
             $localized = $this->localizedContent->localize($item, $resource, $locale, $websiteKey);
 
@@ -397,7 +400,7 @@ class CmsSiteController
                 'url' => $resource === 'cms_topic' ? FrontendRouteUrl::topic($localized->slug, $locale) : FrontendRouteUrl::blogCategory($localized->slug, $locale)];
         })->filter(fn ($item) => $item['url'] !== null)->values();
         $page = max(1, (int) $request->query('page', 1));
-        $items = new \Illuminate\Pagination\LengthAwarePaginator($entries->forPage($page, 30)->values(), $entries->count(), 30, $page, [
+        $items = new LengthAwarePaginator($entries->forPage($page, 30)->values(), $entries->count(), 30, $page, [
             'path' => $request->url(), 'query' => $request->except('page'),
         ]);
         $menus = $this->resolveMenus($websiteKey);
@@ -413,7 +416,7 @@ class CmsSiteController
 
     public function postsByTopic(Request $request): View|RedirectResponse
     {
-        abort_unless(\App\Models\CmsTopic::available(), 404);
+        abort_unless(CmsTopic::available(), 404);
         $profile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($profile);
         $locale = $this->currentLocale();
@@ -424,7 +427,7 @@ class CmsSiteController
             return redirect()->to(FrontendRouteUrl::topic($topic->slug, $resolution['resolved_locale']), $resolution['redirect_to'] !== null ? 301 : 302);
         }
 
-        $posts = app(\App\Support\CmsPostTags::class)->publishedPosts($topic, $locale)
+        $posts = app(CmsPostTags::class)->publishedPosts($topic, $locale)
             ->with(['category', 'featuredMedia'])->latest('publish_at')->orderByDesc('id')->paginate($this->postsPerPage($this->resolveActiveTheme($profile)))->withQueryString();
         $title = $topic->name;
         $canonical = FrontendRouteUrl::topic($topic->slug, $locale);
@@ -450,7 +453,7 @@ class CmsSiteController
 
     public function postsByTag(Request $request): View|RedirectResponse
     {
-        abort_unless(\App\Support\CmsPostTags::available(), 404);
+        abort_unless(CmsPostTags::available(), 404);
         $profile = $this->currentSiteProfile();
         $websiteKey = $this->resolveWebsiteKey($profile);
         $locale = $this->currentLocale();
@@ -461,7 +464,7 @@ class CmsSiteController
             return redirect()->to(FrontendRouteUrl::tag($tag->slug, $resolution['resolved_locale']), $resolution['redirect_to'] !== null ? 301 : 302);
         }
 
-        $posts = app(\App\Support\CmsPostTags::class)->publishedPosts($tag, $locale)
+        $posts = app(CmsPostTags::class)->publishedPosts($tag, $locale)
             ->with(['category', 'featuredMedia'])->latest('publish_at')->orderByDesc('id')->paginate($this->postsPerPage($this->resolveActiveTheme($profile)))->withQueryString();
         $title = __('storefront.tags.posts_about', ['tag' => $tag->name]);
         $canonical = FrontendRouteUrl::tag($tag->slug, $locale);
@@ -1694,10 +1697,11 @@ class CmsSiteController
         }
 
         if ($entry instanceof CmsPost) {
-            $extra['postTags'] = \App\Support\CmsPostTags::available() ? $entry->tags
+            $extra['postTags'] = CmsPostTags::available() ? $entry->tags
                 ->filter(fn ($tag): bool => $this->localizedContent->isPublishedForLocale($tag, 'cms_tag', $this->currentLocale(), $websiteKey))
                 ->map(function ($tag) use ($websiteKey): array {
                     $tag = $this->localizedContent->localize($tag, 'cms_tag', $this->currentLocale(), $websiteKey);
+
                     return ['name' => $tag->name, 'url' => FrontendRouteUrl::tag($tag->slug, $this->currentLocale())];
                 })->values()->all() : [];
             $entry = $this->localizePostModel($entry, $websiteKey);
@@ -1736,8 +1740,8 @@ class CmsSiteController
 
             if ($isNews88) {
                 $extra['sidebarTags'] = $extra['postTags'] ?? [];
-                if ($extra['sidebarTags'] === [] && \App\Support\CmsPostTags::available()) {
-                    $extra['sidebarTags'] = \App\Models\CmsTag::query()->where('website_key', $websiteKey)
+                if ($extra['sidebarTags'] === [] && CmsPostTags::available()) {
+                    $extra['sidebarTags'] = CmsTag::query()->where('website_key', $websiteKey)
                         ->withCount(['posts' => fn (EloquentBuilder $query) => $query
                             ->where('website_key', $websiteKey)->where('status', 'published')
                             ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))])
@@ -1745,6 +1749,7 @@ class CmsSiteController
                         ->filter(fn ($tag) => $this->localizedContent->isPublishedForLocale($tag, 'cms_tag', $this->currentLocale(), $websiteKey))
                         ->take(10)->map(function ($tag) use ($websiteKey): array {
                             $tag = $this->localizedContent->localize($tag, 'cms_tag', $this->currentLocale(), $websiteKey);
+
                             return ['name' => $tag->name, 'url' => FrontendRouteUrl::tag($tag->slug, $this->currentLocale())];
                         })->values()->all();
                 }
@@ -1778,6 +1783,21 @@ class CmsSiteController
 
         if ($contentType === 'service' && $entry instanceof CmsService && ! array_key_exists('latestServices', $extra)) {
             $extra['latestServices'] = $this->resolveLatestServices($siteProfile, $entry, 15);
+        }
+
+        if ($contentType === 'post' && $entry instanceof CmsPost && strtoupper((string) data_get($activeTheme, 'key')) !== 'NEWS88') {
+            $suggestions = CmsPost::query()->with(['category', 'featuredMedia'])
+                ->where('website_key', $websiteKey)->where('status', 'published')->whereKeyNot($entry->id)
+                ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()));
+            $published = fn (CmsPost $item) => $this->localizedContent->isPublishedForLocale($item, 'cms_post', $this->currentLocale(), $websiteKey);
+            $extra['latestPosts'] = (clone $suggestions)->latest('publish_at')->orderByDesc('id')->lazy(50)->filter($published)->take(5)
+                ->map(fn (CmsPost $item) => $this->localizePostModel($item, $websiteKey))->collect();
+            $related = (clone $suggestions)->whereNotIn('id', $extra['latestPosts']->pluck('id'));
+            if ($entry->category_id !== null) {
+                $related->orderByRaw('CASE WHEN category_id = ? THEN 0 ELSE 1 END', [$entry->category_id]);
+            }
+            $extra['relatedPosts'] = $related->latest('publish_at')->orderByDesc('id')->lazy(50)->filter($published)->take(3)
+                ->map(fn (CmsPost $item) => $this->localizePostModel($item, $websiteKey))->collect();
         }
 
         return view($viewName, array_merge([
@@ -1951,48 +1971,16 @@ class CmsSiteController
     {
         $websiteKey = (string) ($post->website_key ?: $this->resolveWebsiteKey($siteProfile));
 
-        if (! $preferSameCategory) {
-            $latestQuery = CmsPost::query()
-                ->with(['category', 'featuredMedia'])
-                ->where('status', 'published')
-                ->whereKeyNot($post->id)
-                ->latest('publish_at');
-            $this->applyWebsiteScope($latestQuery, $websiteKey);
-
-            return $latestQuery->take($limit)->get()
-                ->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))
-                ->values();
+        $query = CmsPost::query()->with(['category', 'featuredMedia'])
+            ->where('website_key', $websiteKey)->where('status', 'published')->whereKeyNot($post->id)
+            ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()));
+        if ($preferSameCategory && $post->category_id !== null) {
+            $query->orderByRaw('CASE WHEN category_id = ? THEN 0 ELSE 1 END', [$post->category_id]);
         }
 
-        $sameCategoryQuery = CmsPost::query()
-            ->with(['category', 'featuredMedia'])
-            ->where('status', 'published')
-            ->whereKeyNot($post->id)
-            ->latest('publish_at');
-        $this->applyWebsiteScope($sameCategoryQuery, $websiteKey);
-
-        if ($post->category_id !== null) {
-            $sameCategoryQuery->where('category_id', $post->category_id);
-        }
-
-        $sameCategory = $sameCategoryQuery->take($limit)->get();
-
-        if ($sameCategory->count() >= $limit) {
-            return $sameCategory->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey));
-        }
-
-        $fallbackQuery = CmsPost::query()
-            ->with(['category', 'featuredMedia'])
-            ->where('status', 'published')
-            ->whereKeyNot($post->id)
-            ->whereNotIn('id', $sameCategory->pluck('id'))
-            ->latest('publish_at');
-        $this->applyWebsiteScope($fallbackQuery, $websiteKey);
-
-        return $sameCategory
-            ->concat($fallbackQuery->take($limit - $sameCategory->count())->get())
-            ->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))
-            ->values();
+        return $query->latest('publish_at')->orderByDesc('id')->lazy(50)
+            ->filter(fn (CmsPost $item) => $this->localizedContent->isPublishedForLocale($item, 'cms_post', $this->currentLocale(), $websiteKey))
+            ->take($limit)->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))->collect()->values();
     }
 
     private function resolveLatestServices(?SiteProfile $siteProfile, ?CmsService $currentService = null, int $limit = 15): Collection

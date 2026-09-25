@@ -18,9 +18,7 @@
             </form>
         </section>
         <section class="foot-footer__brand">
-            <span class="foot-brand__monogram">N</span>
-            <strong>{{ $companyName }}</strong>
-            <small>@themeT('xd0322.brand.tagline')</small>
+
         </section>
         <section class="foot-footer__social">
             <p class="foot-footer__eyebrow">@themeT('xd0322.footer.follow')</p>
@@ -29,7 +27,7 @@
     </div>
     <div class="foot-footer__divider"></div>
     <div class="foot-container foot-footer__grid">
-        <section><h3>{{ $companyName }}</h3><p>{{ $address }}</p><p><a href="mailto:{{ $email }}">{{ $email }}</a></p><p><a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}">{{ $hotline }}</a></p></section>
+        <section>@include('themes.common.footer-logo')<p>{{ $address }}</p><p><a href="mailto:{{ $email }}">{{ $email }}</a></p><p><a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}">{{ $hotline }}</a></p></section>
         <section><h3>@themeT('xd0322.footer.services')</h3><ul><li><a href="#dich-vu">@themeT('xd0322.footer.private_dining')</a></li><li><a href="#dich-vu">@themeT('xd0322.footer.events')</a></li><li><a href="#san-pham">@themeT('xd0322.footer.menu')</a></li></ul></section>
         <section><h3>@themeT('xd0322.footer.explore')</h3><ul><li><a href="#gioi-thieu">@themeT('xd0322.nav.story')</a></li><li><a href="#tin-tuc">@themeT('xd0322.nav.news')</a></li><li><a href="#doi-ngu">@themeT('xd0322.nav.team')</a></li></ul></section>
         <section><h3>@themeT('xd0322.footer.reservation')</h3><p>@themeT('xd0322.footer.reservation_text')</p><a class="foot-button foot-button--light" href="#dich-vu">@themeT('xd0322.footer.contact')</a></section>

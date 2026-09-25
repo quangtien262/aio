@@ -7,7 +7,7 @@
 <footer class="ec11-footer">
     <div class="ec11-container ec11-footer-grid">
         <section>
-            <a class="ec11-logo ec11-logo-footer" href="#top"><span class="ec11-logo-mark"><i class="fa-solid fa-microchip"></i><b>DIGI</b><strong>TECH</strong></span></a>
+            @include('themes.common.footer-logo')
             <p><i class="fa-regular fa-paper-plane"></i> {{ $address }}</p>
             <p><i class="fa-solid fa-phone"></i> {{ $phone }}</p>
             <p><i class="fa-regular fa-envelope"></i> {{ $email }}</p>

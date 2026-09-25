@@ -4,6 +4,7 @@
 <footer class="bds-footer">
     <div class="bds-container bds-footer-grid">
         <div>
+            @include('themes.common.footer-logo')
             <h3>@themeT('footer.about_title', 'Về chúng tôi')</h3>
             <p>@themeT('footer.about_text', 'Delta Platinum kết nối khách hàng với những bất động sản phù hợp để an cư, cho thuê và đầu tư dài hạn.')</p>
         </div>

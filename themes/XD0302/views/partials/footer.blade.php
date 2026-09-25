@@ -6,7 +6,7 @@
 <footer class="xd2-footer">
     <div class="xd2-container xd2-footer__grid">
         <div>
-            <a class="xd2-logo xd2-logo--footer" href="{{ route('site.home') }}"><span class="xd2-logo__mark">SP</span><span>{{ $companyName ?? 'Soler Panel' }}<small>Energy Company</small></span></a>
+            @include('themes.common.footer-logo')
             <h3>Địa chỉ</h3><p>{{ $supportAddress ?? '' }}</p>
             <h3>Nhận email</h3><p>{{ $supportEmail ?? '' }}</p>
             <h3>Số điện thoại</h3><p>{{ $hotline ?? '' }}</p>

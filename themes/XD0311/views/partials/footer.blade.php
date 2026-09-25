@@ -12,3 +12,5 @@
         </div>
     </div>
 </footer>
+
+<style>footer .xd5-brand img{filter:none!important}</style>

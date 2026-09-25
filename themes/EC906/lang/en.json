@@ -11,5 +11,20 @@
     },
     "navigation": {
         "expand": "Open submenu"
+    },
+    "article": {
+        "news": "News",
+        "home": "Home",
+        "latest": "Latest articles",
+        "related": "You may also like",
+        "toc": "In this article",
+        "minutes": "min read",
+        "share": "Copy link",
+        "copied": "Link copied",
+        "failed": "Copy the link below",
+        "all": "View all articles",
+        "browse": "Explore household products",
+        "browse_text": "Find products that suit your household needs.",
+        "read": "Read article"
     }
 }

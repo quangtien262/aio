@@ -19,4 +19,5 @@
 @media(max-width:1050px){.dr-nav{top:120px}.dr-tools>a{display:inline-flex!important;font-size:12px}}
 @media(max-width:850px){.dr-header__utility-inner{min-height:42px}.dr-header__welcome,.dr-tool-link span,.dr-tools__divider{display:none}.dr-tools{margin-left:auto;gap:11px}.dr-tool-link svg{width:20px;height:20px}.dr-tools>a.dr-account-link{font-size:11px}.dr-nav{top:124px}}
 @media(max-width:720px){.dr-header__utility-inner{min-height:42px}.dr-header__welcome,.dr-tool-link span,.dr-tools__divider{display:none}.dr-tools{margin-left:auto;gap:11px}.dr-tools>a{display:inline-flex!important}.dr-tool-link svg{width:20px;height:20px}.dr-account-link{font-size:11px}.dr-nav{top:112px}}
+.dr-footer__brand img{width:auto;max-width:100%;height:auto;max-height:64px;object-fit:contain;object-position:left center}.dr-footer__brand a{display:block;max-width:180px}
 </style>

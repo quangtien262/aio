@@ -120,6 +120,38 @@ class Ec906ThemeTest extends TestCase
         }
     }
 
+    public function test_article_recommendations_exclude_current_unpublished_future_and_foreign_posts(): void
+    {
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('EC906')->generate('ec906-ega-minimart');
+        $post = CmsPost::orderByDesc('publish_at')->firstOrFail();
+        foreach (['draft', 'future', 'foreign'] as $kind) {
+            CmsPost::create([
+                'website_key' => $kind === 'foreign' ? 'other-demo' : 'website-main',
+                'title' => 'Excluded '.$kind, 'slug' => 'excluded-'.$kind,
+                'status' => $kind === 'draft' ? 'draft' : 'published',
+                'publish_at' => $kind === 'future' ? now()->addDay() : now(),
+                'body' => '<p>Excluded</p>',
+            ]);
+        }
+        $response = $this->get('/vi/n/'.$post->slug)->assertOk()
+            ->assertSee('Tin mới nhất')->assertSee('Có thể bạn quan tâm')
+            ->assertSee('data-ec96-toc', false)->assertSee('data-ec96-copy', false)
+            ->assertDontSee('Excluded draft')->assertDontSee('Excluded future')->assertDontSee('Excluded foreign');
+        $latest = $response->viewData('latestPosts');
+        $related = $response->viewData('relatedPosts');
+        $this->assertCount(5, $latest);
+        $this->assertCount(3, $related);
+        $this->assertFalse($latest->contains('id', $post->id));
+        $this->assertFalse($related->contains('id', $post->id));
+        $this->assertEmpty($latest->pluck('id')->intersect($related->pluck('id'))->all());
+        if ($path = getenv('EC906_ARTICLE_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+        CmsPost::where('id', '!=', $post->id)->delete();
+        $this->get('/vi/n/'.$post->slug)->assertOk()->assertViewHas('latestPosts', fn ($items) => $items->isEmpty())
+            ->assertViewHas('relatedPosts', fn ($items) => $items->isEmpty());
+    }
+
     public function test_ec906_demo_preserves_an_existing_custom_logo(): void
     {
         SiteProfile::query()->create([

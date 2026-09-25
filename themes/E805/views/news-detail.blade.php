@@ -1,1 +1,4 @@
-@php($pageTitle=data_get($post??null,'title','Tin tức')) @php($content=data_get($post??null,'body')) @include('theme-e805::partials.content')
+@extends('theme-e805::layout')
+@section('content')
+@include('themes.common.news-detail')
+@endsection

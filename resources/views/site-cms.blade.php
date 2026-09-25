@@ -116,6 +116,8 @@
 
             @if(($contentType ?? '') === 'posts')
 @include('themes.common.news-listing')
+@elseif(($contentType ?? '') === 'post')
+@include('themes.common.news-detail')
 @else
 <main class="site-main">
                 @if (!empty($isPreview))
@@ -318,7 +320,7 @@
             </main>
 @endif
 
-            <footer class="site-footer">{{ $siteProfile?->site_name ?? 'AIO Website' }} © {{ now()->year }}</footer>
+            <footer class="site-footer">@include('themes.common.footer-logo')<br>{{ $siteProfile?->site_name ?? 'AIO Website' }} © {{ now()->year }}</footer>
         </div>
         <script>
             document.addEventListener('DOMContentLoaded', () => {

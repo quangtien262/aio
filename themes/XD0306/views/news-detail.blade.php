@@ -253,21 +253,7 @@
     </style>
 @endpush
 
+
 @section('content')
-<main class="xd-page-main">
-            <div class="xd-container">
-                    <section class="xd-detail-card">
-                        <div class="xd-detail-body">
-                            <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0306', app()->getLocale(), 'legacy_inline.6b36109704ab6b5c', 'Tin tức') }}</span>
-                            <h1>{{ $entry->title }}</h1>
-                            @if (!empty($entry->excerpt))
-                                <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
-                            @endif
-                            <div class="xd-rich-content">
-                                {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
-                            </div>
-                        </div>
-                    </section>
-            </div>
-</main>
+@include('themes.common.news-detail')
 @endsection

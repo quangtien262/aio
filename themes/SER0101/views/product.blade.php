@@ -369,7 +369,7 @@
 </main>
 
         <footer class="footer">
-            <div class="wrap footer-inner">
+            <div class="wrap footer-inner">@include('themes.common.footer-logo')
                 <span>{{ data_get($branding, 'company_name', 'SER0101') }}</span>
                 @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'ser-footer-boc-status'])
                 <span>{{ $contactHotline }}</span>

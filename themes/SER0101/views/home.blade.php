@@ -858,7 +858,7 @@
         <footer class="footer">
             <div class="wrap footer-inner">
                 <div class="footer-grid">
-                    <section class="footer-card">
+                    <section class="footer-card">@include('themes.common.footer-logo')
                         <div class="footer-card-head">
                             <h4>{{ data_get($branding, 'company_name', 'SER0101') }}</h4>
                             @if ($canQuickEditThemeBlocks)
