@@ -37,4 +37,24 @@
 @media(max-width:1100px){.ec96-content .ec96-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:800px){.ec96-content .ec96-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
 @media(max-width:380px){.ec96-content .ec96-product-grid{grid-template-columns:minmax(0,1fr)}}
+
+.ec96-nav>div{height:auto;min-height:62px}
+.ec96-nav-list,.ec96-submenu{list-style:none;margin:0;padding:0}
+.ec96-nav>.ec96-container>.ec96-nav-list{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:clamp(12px,3vw,48px)}
+.ec96-nav-item{position:relative;min-width:0}
+.ec96-nav-row{display:flex;align-items:center;gap:4px}
+.ec96-nav-row>a{flex:1;min-width:0;padding:16px 8px;overflow-wrap:anywhere;text-decoration:none}
+.ec96-submenu-toggle{flex:none;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.ec96-submenu-toggle[aria-expanded="true"]>span{transform:rotate(180deg)}
+.ec96-submenu-toggle:hover{background:#ffffff26}
+.ec96-nav-row>a:focus-visible,.ec96-submenu-toggle:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.ec96-submenu{padding:6px 0 6px 14px;border-left:1px solid var(--ec96-line);margin-left:12px}
+.ec96-submenu[hidden]{display:none}
+.ec96-nav>.ec96-container>.ec96-nav-list>.ec96-nav-item>.ec96-submenu{position:absolute;z-index:30;top:100%;left:0;width:280px;max-width:calc(100vw - 28px);max-height:calc(100dvh - 190px);overflow-y:auto;overscroll-behavior:contain;margin:0;padding:10px;background:#fff;color:#26392e;border:1px solid var(--ec96-line);border-radius:0 0 10px 10px;box-shadow:0 12px 28px #12342426}
+.ec96-nav>.ec96-container>.ec96-nav-list>.ec96-nav-item:last-child>.ec96-submenu{left:auto;right:0}
+.ec96-submenu .ec96-nav-row>a{font-weight:500;font-size:14px;padding:10px 8px}
+.ec96-submenu .ec96-nav-row:hover{background:#edf7f0;color:var(--ec96-green)}
+.ec96-category-mobile-nav .ec96-nav-row>a{padding:12px 8px}
+.ec96-category-mobile-nav .ec96-submenu-toggle:hover{background:#edf7f0}
+@media(max-width:800px){.ec96-category-mobile-nav .ec96-submenu{position:static;width:auto;max-height:none}.ec96-category-mobile-nav .ec96-nav-row{border-bottom:1px solid var(--ec96-line)}}
 </style>

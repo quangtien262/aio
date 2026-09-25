@@ -19,15 +19,15 @@
             <a class="ec96-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i><em>{{ (int) data_get($cart ?? [], 'count', 0) }}</em><span>Giỏ hàng</span></a>
         </div>
     </div>
-    <nav class="ec96-nav" data-ec96-nav><div class="ec96-container">
-        @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
+    <nav class="ec96-nav" data-ec96-nav data-ec96-navigation aria-label="@themeT('category_menu.navigation', 'Điều hướng website')"><div class="ec96-container">
+        <ul class="ec96-nav-list">@include('theme-ec906::partials.navigation-items', ['navigationItems' => $nav, 'navigationPrefix' => 'ec96-desktop-nav'])</ul>
     </div></nav>
     <div class="ec96-category-panel" id="ec96-category-panel" data-ec96-categories hidden>
         <nav aria-label="@themeT('category_menu.title', 'Danh mục sản phẩm')">
             <a class="ec96-category-all" href="{{ route('site.catalog.search') }}">@themeT('category_menu.all', 'Tất cả sản phẩm') <span aria-hidden="true">→</span></a>
             @include('theme-ec906::partials.category-menu', ['categoryMenuItems' => $productMenu])
         </nav>
-        @if($nav->isNotEmpty())<nav class="ec96-category-mobile-nav" aria-label="@themeT('category_menu.navigation', 'Điều hướng website')">@foreach($nav as $item)<a href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] }}</a>@endforeach</nav>@endif
+        @if($nav->isNotEmpty())<nav class="ec96-category-mobile-nav" data-ec96-navigation aria-label="@themeT('category_menu.navigation', 'Điều hướng website')"><ul class="ec96-nav-list">@include('theme-ec906::partials.navigation-items', ['navigationItems' => $nav, 'navigationPrefix' => 'ec96-mobile-nav'])</ul></nav>@endif
     </div>
 </header>
 @include('partials.storefront-language-switcher')
