@@ -1,5 +1,8 @@
 <script>
 (() => {
+    const categoryMenu = document.querySelector('[data-f405-category-menu]');
+    document.addEventListener('click', (event) => { if (categoryMenu?.open && !categoryMenu.contains(event.target)) categoryMenu.open = false; });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && categoryMenu?.open) { categoryMenu.open = false; categoryMenu.querySelector('summary')?.focus(); } });
     const toggle = document.querySelector('[data-f405-menu-toggle]');
     const nav = document.querySelector('[data-f405-nav]');
     toggle?.addEventListener('click', () => { const open = !nav?.classList.contains('is-open'); nav?.classList.toggle('is-open', open); toggle.setAttribute('aria-expanded', String(open)); });

@@ -344,7 +344,10 @@
     "products": [
       "Rau theo mùa",
       "Giỏ nông sản",
-      "Thực phẩm tươi"
+      "Thực phẩm tươi",
+      "Gà tươi",
+      "Sò điệp",
+      "Salad rau xanh"
     ],
     "images": [
       "/theme-demo/dn351/category-vegetables.jpg",
@@ -353,11 +356,70 @@
     ],
     "product_images": [
       "/theme-demo/dn351/category-vegetables.jpg",
-      "/theme-demo/xd-shared/farm-2.jpg",
-      "/theme-demo/xd-shared/farm-3.jpg"
+      "/theme-demo/dn351/hero-market.jpg",
+      "/theme-demo/ec903/vegan-brunch.webp",
+      "/theme-demo/dn351/product-chicken.jpg",
+      "/theme-demo/dn351/product-scallops.jpg",
+      "/theme-demo/ec903/vegan-buffet.webp"
     ],
     "logo": "/theme-demo/complete/logo-foot405.svg",
-    "website_type": "ecommerce"
+    "website_type": "ecommerce",
+    "catalog_categories": [
+      {
+        "name": "Rau củ tươi",
+        "slug": "rau-cu-tuoi",
+        "description": "Rau củ cho bữa ăn hằng ngày.",
+        "image_url": "/theme-demo/dn351/category-vegetables.jpg",
+        "products": [
+          "Rau theo mùa"
+        ]
+      },
+      {
+        "name": "Giỏ nông sản",
+        "slug": "gio-nong-san",
+        "description": "Giỏ nông sản đa dạng cho gia đình.",
+        "image_url": "/theme-demo/dn351/hero-market.jpg",
+        "products": [
+          "Giỏ nông sản"
+        ]
+      },
+      {
+        "name": "Thực phẩm theo mùa",
+        "slug": "thuc-pham-theo-mua",
+        "description": "Lựa chọn thực phẩm theo mùa.",
+        "image_url": "/theme-demo/ec903/vegan-brunch.webp",
+        "products": [
+          "Thực phẩm tươi"
+        ]
+      },
+      {
+        "name": "Thịt và gia cầm",
+        "slug": "thit-va-gia-cam",
+        "description": "Thịt và gia cầm cho bữa cơm nhà.",
+        "image_url": "/theme-demo/dn351/product-chicken.jpg",
+        "products": [
+          "Gà tươi"
+        ]
+      },
+      {
+        "name": "Hải sản",
+        "slug": "hai-san",
+        "description": "Hải sản cho thực đơn thêm phong phú.",
+        "image_url": "/theme-demo/dn351/product-scallops.jpg",
+        "products": [
+          "Sò điệp"
+        ]
+      },
+      {
+        "name": "Salad và món chay",
+        "slug": "salad-va-mon-chay",
+        "description": "Salad và món chay từ rau củ.",
+        "image_url": "/theme-demo/ec903/vegan-buffet.webp",
+        "products": [
+          "Salad rau xanh"
+        ]
+      }
+    ]
   },
   "FOOT406": {
     "brand": "Fresh Drinks",

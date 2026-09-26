@@ -61,7 +61,7 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
 
     private function create(string $type, array $data): Model
     {
-        if (in_array($this->key, ['FOOT403', 'FOOT404'], true) && $type === CatalogCategory::class) {
+        if (in_array($this->key, ['FOOT403', 'FOOT404', 'FOOT405'], true) && $type === CatalogCategory::class) {
             $existing = CatalogCategory::where('slug', $data['slug'])->first();
             if ($existing) {
                 return $existing;
