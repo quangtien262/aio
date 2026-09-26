@@ -24,6 +24,7 @@
     }
 @endphp
 <header class="xd324-header" data-xd324-header>
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="xd324-container xd324-header__inner">
         <a class="xd324-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if ($logoUrl !== '')
@@ -47,7 +48,8 @@
             @endguest
             <a class="xd324-badge" href="#yeu-thich" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><span>0</span></a>
             <a class="xd324-badge xd324-badge--cart" href="{{ route('site.cart.index') }}" aria-label="{{ $themeText('XD0324.header.cart') }}"><i class="fa-solid fa-cart-shopping"></i><span>0</span></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

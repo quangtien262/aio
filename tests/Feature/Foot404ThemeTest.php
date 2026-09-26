@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -13,6 +14,45 @@ use Tests\TestCase;
 class Foot404ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_demo_seeds_six_catalog_categories_with_images_and_products(): void
+    {
+        $generator = app(ThemeDemoContentGenerator::class);
+        $generator->generate('FOOT404', 'foot404-complete');
+        $generator->generate('FOOT404', 'foot404-complete');
+        $categories = CatalogCategory::orderBy('sort_order')->get();
+        $this->assertCount(6, $categories);
+        $this->assertSame(6, CatalogProduct::count());
+        $response = $this->get('/vi')->assertOk()->assertDontSee('Sản phẩm và thiết bị');
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
+        $xpath = new \DOMXPath($dom);
+        $links = $xpath->query('//section[@id="danh-muc"]//a');
+        $this->assertSame(6, $links->length);
+        $menuLinks = $xpath->query('//details[@data-f404-category-menu]//ul/li/a');
+        $this->assertSame(6, $menuLinks->length);
+        $this->assertSame(0, $xpath->query('//a[contains(@class,"f404-category-button") and @href="#danh-muc"]')->length);
+        if ($path = getenv('FOOT404_MENU_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+        foreach ($categories as $index => $category) {
+            $this->assertFileExists(public_path($category->image_url));
+            $this->assertSame(1, $category->products()->count());
+            $this->assertStringContainsString($category->name, $links->item($index)->textContent);
+            $this->assertStringContainsString($category->name, $menuLinks->item($index)->textContent);
+            $this->assertSame($category->image_url, $links->item($index)->getElementsByTagName('img')->item(0)->getAttribute('src'));
+            $url = $links->item($index)->getAttribute('href');
+            $this->assertStringContainsString($category->slug, $url);
+            $this->get($url)->assertOk()->assertSee($category->products()->first()->name);
+        }
+    }
+
+    public function test_category_menu_handles_an_empty_catalog_on_inner_pages(): void
+    {
+        SiteProfile::create(['site_name' => 'Empty store', 'website_type' => 'ecommerce', 'active_theme_key' => 'FOOT404']);
+        $this->get('/vi/tim-kiem')->assertOk()->assertSee('data-f404-category-menu', false)
+            ->assertSee('Danh mục đang được cập nhật.')->assertSee(route('site.catalog.search', ['locale' => 'vi']), false);
+    }
 
     public function test_foot404_is_registered_with_the_expected_homepage_blocks(): void
     {

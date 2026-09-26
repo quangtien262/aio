@@ -1,1 +1,4 @@
-@include('theme-shop605::checkout-success')
+@extends('theme-shop606::layout')
+@section('content')
+@include('themes.common.checkout-success')
+@endsection

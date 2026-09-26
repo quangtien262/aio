@@ -58,8 +58,9 @@
                 <a class="spa502-badge" href="#" aria-label="@themeT('SPA502.header.wishlist')"><i class="fa-regular fa-heart"></i><span>{{ $wishlistCount }}</span></a>
                 <a class="spa502-badge" href="#" aria-label="@themeT('SPA502.header.compare')"><i class="fa-solid fa-rotate"></i><span>{{ $compareCount }}</span></a>
                 <a class="spa502-badge" href="{{ route('site.cart.index') }}" aria-label="@themeT('SPA502.header.cart')"><i class="fa-solid fa-basket-shopping"></i><span>{{ $cartCount }}</span></a>
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

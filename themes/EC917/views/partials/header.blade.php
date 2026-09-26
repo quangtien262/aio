@@ -19,7 +19,8 @@
             <button data-xd-auth-open="login" aria-label="@themeT('EC917.account', 'Tài khoản')"><i class="fa-regular fa-user"></i></button>
             <a class="ec17-cart" href="{{ route('site.cart.index') }}" aria-label="@themeT('EC917.cart', 'Giỏ hàng')"><i class="fa-solid fa-cart-shopping"></i><em>{{ $cartCount }}</em></a>
             <button class="ec17-menu-toggle" data-ec17-menu aria-label="Mở menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

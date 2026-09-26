@@ -95,7 +95,7 @@
             </span>
         </a>
 
-        <div class="ser-shell-header-actions">
+        <div class="ser-shell-header-actions">@include('partials.storefront-language-switcher')
             <form class="ser-shell-search" method="GET" action="{{ route('site.catalog.search') }}">
                 <input type="search" name="q" placeholder="{{ $t('common.search_placeholder', 'Tìm gói dịch vụ, tuyến đường, loại xe') }}" data-ser-product-search data-suggest-url="{{ route('site.catalog.search.suggestions') }}">
                 <button type="submit">{{ $t('common.search_button', 'Tìm') }}</button>
@@ -667,4 +667,5 @@
         renderCart(initialSummary);
     })();
 </script>
-@include('partials.storefront-language-switcher')
+
+<style>.ser-shell-header .sf-language-switcher__menu{inset-inline-start:0;inset-inline-end:auto}</style>

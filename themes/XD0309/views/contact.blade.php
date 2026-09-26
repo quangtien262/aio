@@ -255,6 +255,8 @@
 @endpush
 
 @section('content')
+@include('themes.common.contact-styles')
+<style>.xd-contact-page,.xd-contact-page *{box-sizing:border-box;min-width:0}.xd-contact-form input,.xd-contact-form textarea{max-width:100%}</style>
 <main class="xd-page-main">
             <div class="xd-container">
                     <section class="xd-cms-hero">

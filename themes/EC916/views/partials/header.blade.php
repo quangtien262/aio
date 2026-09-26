@@ -18,7 +18,9 @@
         <button class="ec16-account" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span><b>@themeT('EC916.login', 'Đăng nhập')</b><small>@themeT('EC916.account', 'Tài khoản và đơn hàng')</small></span></button>
         <a class="ec16-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><em>{{ $cartCount }}</em></a>
         <button class="ec16-menu-toggle" data-ec16-menu aria-label="Mở menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
-    </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
     <div class="ec16-benefits"><div class="ec16-container"><span><i class="fa-solid fa-truck-fast"></i> Miễn phí giao hàng</span><span><i class="fa-solid fa-rotate-left"></i> Dễ dàng đổi trả</span><span><i class="fa-solid fa-money-bill-wave"></i> Thanh toán linh hoạt</span></div></div>
     <nav data-ec16-nav>
         <div class="ec16-container">
@@ -26,4 +28,3 @@
         </div>
     </nav>
 </header>
-@include('partials.storefront-language-switcher')

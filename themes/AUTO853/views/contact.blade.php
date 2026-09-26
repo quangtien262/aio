@@ -1,1 +1,5 @@
-@extends('theme-auto853::layout') @section('title',$pageTitle??'Liên hệ') @section('content')@include('theme-auto853::partials.content-shell')@endsection
+@extends('theme-auto853::layout')
+@section('title', __('theme_contact_page.title'))
+@section('content')
+@include('themes.common.contact')
+@endsection

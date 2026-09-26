@@ -16,6 +16,7 @@
         @if($canEditLanding ?? false)
             @include('theme-foot403::partials.inline-editor-styles')
         @endif
+    @stack('head')
 </x-storefront-head>
 <body>
 <div class="dr-page" id="top">

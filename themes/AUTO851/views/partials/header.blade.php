@@ -11,4 +11,6 @@
 <form class="a851-search" action="{{ route('site.catalog.search', ['locale' => app()->getLocale()]) }}"><input name="q" placeholder="Tìm kiếm sản phẩm"><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
 @guest('customer')<button class="a851-icon" type="button" data-xd-auth-open="login" aria-label="Đăng nhập"><i class="fa-regular fa-user"></i></button>@else<a class="a851-icon" href="{{ route('customer.account', ['locale' => app()->getLocale()]) }}"><i class="fa-regular fa-user"></i></a>@endguest
 <a class="a851-icon" href="{{ route('site.cart.index', ['locale' => app()->getLocale()]) }}"><i class="fa-solid fa-basket-shopping"></i><em>{{ (int) ($cartCount ?? 0) }}</em></a>
-</div></header><div class="a851-language">@include('partials.storefront-language-switcher')</div>
+
+            @include('partials.storefront-language-switcher')
+        </div></header>

@@ -40,7 +40,8 @@
             @endauth
             <a class="ser102-cart" href="{{ route('site.cart.index') }}" aria-label="@themeT('SER102.header.cart')"><i class="fa-solid fa-cart-shopping"></i><span>{{ $cartCount }}</span></a>
             <button class="ser102-booking-button" type="button" data-ser102-booking-open><i class="fa-regular fa-calendar-check"></i><span>@themeT('SER102.header.booking')</span></button>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

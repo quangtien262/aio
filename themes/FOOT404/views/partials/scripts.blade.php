@@ -1,5 +1,15 @@
 <script>
 (() => {
+    const categories = document.querySelector('[data-f404-category-menu]');
+    document.addEventListener('click', (event) => {
+        if (categories?.open && !categories.contains(event.target)) categories.open = false;
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && categories?.open) {
+            categories.open = false;
+            categories.querySelector('summary')?.focus();
+        }
+    });
     const toggle = document.querySelector('[data-f404-menu-toggle]');
     const nav = document.querySelector('[data-f404-nav]');
     toggle?.addEventListener('click', () => {

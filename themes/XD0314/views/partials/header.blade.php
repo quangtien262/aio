@@ -20,7 +20,9 @@
                 <a href="#footer" aria-label="Twitter">t</a>
                 <a href="#footer" aria-label="Youtube">▶</a>
                 <a href="#footer" aria-label="Pinterest">p</a>
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
 
@@ -51,4 +53,3 @@
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

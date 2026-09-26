@@ -29,7 +29,8 @@
             @endguest
             <a class="fg18-search" href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"></a>
             <button class="fg18-menu" type="button" data-fg18-menu aria-expanded="false" aria-label="Menu">=</button>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

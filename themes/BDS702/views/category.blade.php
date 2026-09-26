@@ -1,1 +1,4 @@
-@include('theme-bds701::category')
+@extends('theme-bds702::layout')
+@section('content')
+@include('themes.common.catalog-listing', ['catalogMode' => 'category'])
+@endsection

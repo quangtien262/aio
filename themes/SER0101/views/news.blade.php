@@ -140,28 +140,7 @@
     <body>
         @include('theme-ser0101::partials.shell-header', ['branding' => $branding, 'topMenu' => $topMenu, 'productMenu' => $productMenu, 'cartSummary' => $shell['cart_summary'] ?? ['count' => 0, 'subtotal' => 0], 'customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'presetSwitcher' => $presetSwitcher, 'contactHotline' => $contactHotline, 'contactEmail' => $contactEmail, 'contactLocation' => $contactLocation, 'postLoginRedirect' => $postLoginRedirect, 't' => $t])
         @include('themes.common.news-listing')
-        <footer class="footer">
-            <div class="wrap footer-inner">
-                <div class="footer-grid">
-                    <section>@include('themes.common.footer-logo')
-                        <h4>{{ data_get($branding, 'company_name', 'SER0101') }}</h4>
-                        <p>{{ $t('cms.footer_summary', 'Theme service-first cho nhà xe, shuttle và logistics nhẹ.') }}</p>
-                        @include('partials.boc-footer-status', ['branding' => $branding ?? [], 'class' => 'ser-footer-boc-status'])
-                    </section>
-                    <section>
-                        <h4>{{ $t('cms.footer_contact_title', 'Liên hệ') }}</h4>
-                        <p>{{ $contactHotline }}</p>
-                        <p>{{ $contactEmail }}</p>
-                        <p>{{ $contactLocation }}</p>
-                    </section>
-                    <section>
-                        <h4>{{ $t('cms.footer_nav_title', 'Điều hướng') }}</h4>
-                        <a href="{{ route('site.home') }}">{{ $t('common.home', 'Trang chủ') }}</a><br>
-                        <a href="{{ route('site.blog.index') }}">{{ $t('menu.default.blog', 'Cẩm nang') }}</a>
-                    </section>
-                </div>
-            </div>
-        </footer>
+        @include('theme-ser0101::partials.shell-footer')
         @include('theme-ser0101::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
     </body>
 </html>

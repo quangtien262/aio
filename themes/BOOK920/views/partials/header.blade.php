@@ -6,6 +6,7 @@
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="book20-header">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="book20-topbar">
         <div class="book20-container"><span><i class="fa-solid fa-phone"></i> {{ data_get($branding, 'support_hotline', '') }}</span><span><i class="fa-regular fa-envelope"></i> {{ data_get($branding, 'support_email', '') }}</span><form action="{{ route('site.catalog.search') }}"><input name="q" placeholder="Nhập từ khóa..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form></div>
     </div>
@@ -17,7 +18,8 @@
         <nav data-book20-nav>
             @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}" @if(parse_url(data_get($item, 'url', ''), PHP_URL_PATH) === request()->getPathInfo()) aria-current="page" @endif>{{ data_get($item, 'label') }}</a>@endforeach
         </nav>
-        <div class="book20-actions"><button data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-basket-shopping"></i><em>{{ $cartCount }}</em></a></div>
+        <div class="book20-actions"><button data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-basket-shopping"></i><em>{{ $cartCount }}</em></a>
+            @include('partials.storefront-language-switcher')
+        </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

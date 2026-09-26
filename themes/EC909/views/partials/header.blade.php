@@ -14,7 +14,8 @@
         <a class="ec99-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@endif</a>
         <button type="button" data-ec99-menu aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
         <nav data-ec99-nav>@foreach($nav as $index => $item)<a class="{{ $index === 0 ? 'is-active' : '' }}" href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach</nav>
-        <div class="ec99-actions"><button type="button" data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></a><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><b>{{ data_get($cartSummary ?? [], 'count', 0) }}</b></a></div>
+        <div class="ec99-actions"><button type="button" data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></a><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><b>{{ data_get($cartSummary ?? [], 'count', 0) }}</b></a>
+            @include('partials.storefront-language-switcher')
+        </div>
     </div></div>
 </header>
-@include('partials.storefront-language-switcher')

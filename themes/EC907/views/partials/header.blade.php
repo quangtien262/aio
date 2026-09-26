@@ -7,10 +7,11 @@
     <div class="ec97-container ec97-head-top">
         <a class="ec97-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@endif</a>
         <form class="ec97-search" action="{{ route('site.catalog.search') }}"><label>Danh mục sản phẩm <i class="fa-solid fa-angle-down"></i></label><input name="q" placeholder="Tìm theo tên sản phẩm..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
-        <div class="ec97-account">@guest('customer')<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>Tài khoản<b>Đăng nhập</b></span></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>Tài khoản<b>{{ auth('customer')->user()?->name }}</b></span></a>@endguest<a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i><em>{{ (int)data_get($cart??[],'count',0) }}</em><span>Giỏ hàng</span></a></div>
+        <div class="ec97-account">@guest('customer')<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>Tài khoản<b>Đăng nhập</b></span></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>Tài khoản<b>{{ auth('customer')->user()?->name }}</b></span></a>@endguest<a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i><em>{{ (int)data_get($cart??[],'count',0) }}</em><span>Giỏ hàng</span></a>
+            @include('partials.storefront-language-switcher')
+        </div>
     </div>
     <nav class="ec97-nav"><div class="ec97-container"><button type="button" data-ec97-menu><i class="fa-solid fa-bars"></i> Danh mục sản phẩm</button><div data-ec97-nav>
         @foreach($nav as $item)<a href="{{ data_get($item,'url') }}" target="{{ data_get($item,'target','_self') }}">{{ data_get($item,'label') }}</a>@endforeach
     </div><a href="{{ route('site.contact') }}"><i class="fa-solid fa-store"></i> Hệ thống cửa hàng</a><a href="tel:{{ preg_replace('/\s+/','',$hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: <b>{{ $hotline }}</b></a></div></nav>
 </header>
-@include('partials.storefront-language-switcher')

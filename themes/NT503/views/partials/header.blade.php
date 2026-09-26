@@ -34,6 +34,8 @@
                 <a href="{{ route('customer.account') }}" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></a>
             @endguest
             <a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><b>0</b></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
         <button class="n503-mobile-toggle" type="button" data-n503-menu aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
     </div>
@@ -47,4 +49,3 @@
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

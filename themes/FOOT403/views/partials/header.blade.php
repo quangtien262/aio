@@ -32,7 +32,9 @@
                 @else
                     <a class="dr-account-link" href="{{ route('customer.account') }}">Tài khoản</a>
                 @endguest
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
     <div class="dr-container dr-header__inner">
@@ -42,4 +44,3 @@
         <button class="dr-book" type="button" data-dr-order-open>Đặt bàn</button>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

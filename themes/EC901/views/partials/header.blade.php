@@ -27,7 +27,8 @@
             <a href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></a>
             @guest('customer')<button type="button" data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button>@else<a href="{{ route('customer.account') }}" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></a>@endguest
             <a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-bag-shopping"></i><em>0</em></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

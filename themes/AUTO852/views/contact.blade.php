@@ -1,3 +1,5 @@
-@php($pageTitle = app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('AUTO852', app()->getLocale(), 'contact', 'Liên hệ'))
-@php($content = data_get($page ?? null, 'content', data_get($page ?? null, 'body', '<p>'.__('Hãy gửi nhu cầu để đội ngũ kỹ thuật tư vấn giải pháp phù hợp.').'</p>')))
-@include('theme-auto852::partials.content')
+@extends('theme-auto852::layout')
+@section('title', __('theme_contact_page.title'))
+@section('content')
+@include('themes.common.contact')
+@endsection

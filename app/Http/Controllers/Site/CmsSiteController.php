@@ -1429,6 +1429,11 @@ class CmsSiteController
                 'cart_summary' => $cartSummary,
             ]),
             'checkoutMode' => $request->boolean('checkout'),
+            'lines' => collect($cartSummary['items'] ?? [])->map(fn (array $item): array => array_merge($item, [
+                'name' => $item['title'] ?? '',
+                'line_total' => (float) ($item['price'] ?? 0) * (int) ($item['quantity'] ?? 0),
+            ])),
+            'total' => $cartSummary['subtotal'] ?? 0,
         ]);
     }
 
@@ -3286,12 +3291,23 @@ class CmsSiteController
             }
         }
 
-        foreach (['theme-shop601'] as $fallbackNamespace) {
-            $fallbackView = "{$fallbackNamespace}::{$viewKey}";
+        $contentView = match ($viewKey) {
+            'product' => 'themes.common.product-detail',
+            'category', 'search' => 'themes.common.catalog-listing',
+            'cart', 'checkout', 'checkout-success' => 'themes.common.'.$viewKey,
+            default => null,
+        };
+        if ($contentView !== null) {
+            $data['catalogContentView'] = $contentView;
+            $data['catalogMode'] = $viewKey;
+            $data['contentType'] = 'catalog';
+            $data['catalogLayout'] = "theme-{$themeKey}::layout";
 
-            if ($viewFactory->exists($fallbackView)) {
-                return view($fallbackView, $data);
+            if (! $viewFactory->exists($data['catalogLayout'])) {
+                $data['catalogLayout'] = 'layouts.site';
             }
+
+            return view('themes.common.catalog-fallback', $data);
         }
 
         abort(404);

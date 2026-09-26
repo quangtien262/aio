@@ -330,6 +330,7 @@
                 </aside>
             </section>
         </main>
+        @include('theme-ser0101::partials.shell-footer')
         @include('theme-ser0101::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
         <script>
             (() => {

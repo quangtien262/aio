@@ -32,7 +32,8 @@
             </span>
             <a class="rx13-appointment" href="#footer">Đặt lịch tư vấn <span>→</span></a>
             <button class="rx13-menu" type="button" data-rx13-menu aria-expanded="false" aria-label="Menu">=</button>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

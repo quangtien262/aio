@@ -11,6 +11,8 @@
                 <a href="{{ route('customer.account') }}">Tài khoản</a>
             @endguest
             <a class="xd12-quote-small" href="#lien-he">Báo giá miễn phí</a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
     <div class="xd5-container xd12-navigation">
@@ -30,4 +32,3 @@
         <a class="xd12-quote" href="#lien-he">Nhận báo giá</a>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

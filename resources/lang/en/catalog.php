@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'quantity' => 'Quantity',
+    'add_to_cart' => 'Add to cart',
     'related' => 'Related products',
     'latest' => 'New arrivals',
     'related_intro' => 'Discover more selections for you.',

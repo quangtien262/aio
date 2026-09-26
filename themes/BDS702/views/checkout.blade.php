@@ -1,1 +1,4 @@
-@include('theme-bds701::checkout')
+@extends('theme-bds702::layout')
+@section('content')
+@include('themes.common.checkout')
+@endsection

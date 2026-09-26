@@ -20,7 +20,8 @@
             @guest('customer')<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-circle-user"></i></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-circle-user"></i></a>@endguest
             <a class="ec15-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><em>{{ (int) data_get($cart ?? [], 'count', 0) }}</em></a>
             <button class="ec15-menu-toggle" type="button" data-ec15-menu><i class="fa-solid fa-bars"></i></button>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

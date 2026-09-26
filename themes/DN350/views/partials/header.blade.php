@@ -18,13 +18,16 @@
     }
 @endphp
 <header class="dn350-header" data-dn350-header>
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="dn350-top">
         <div class="dn350-container">
             <div class="dn350-top__contact">
                 <a href="tel:{{ preg_replace('/[^0-9+]/', '', $hotline) }}"><i class="fa-solid fa-phone"></i>{{ $hotline }}</a>
                 <a href="mailto:{{ $email }}"><i class="fa-regular fa-envelope"></i>{{ $email }}</a>
             </div>
-            <div class="dn350-top__social"><span>Kết nối với chúng tôi:</span><i class="fa-brands fa-facebook-f"></i><i class="fa-brands fa-twitter"></i><i class="fa-brands fa-youtube"></i><i class="fa-brands fa-tiktok"></i><i class="fa-brands fa-instagram"></i></div>
+            <div class="dn350-top__social"><span>Kết nối với chúng tôi:</span><i class="fa-brands fa-facebook-f"></i><i class="fa-brands fa-twitter"></i><i class="fa-brands fa-youtube"></i><i class="fa-brands fa-tiktok"></i><i class="fa-brands fa-instagram"></i>
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
     <div class="dn350-nav">
@@ -48,4 +51,3 @@
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

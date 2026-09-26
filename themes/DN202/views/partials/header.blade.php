@@ -28,7 +28,9 @@
                 <form action="{{ route('site.catalog.search') }}"><input name="q" placeholder="{{ $t('header.search') }}"><button aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button></form>
                 <button type="button" data-d202-auth-open><i class="fa-regular fa-circle-user"></i> {{ $t('header.account') }}</button>
                 <a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i> {{ $t('header.cart') }}</a>
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
     <div class="d202-brandbar d202-container">
@@ -50,4 +52,3 @@
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

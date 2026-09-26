@@ -11,7 +11,9 @@
         <form action="{{ route('site.catalog.search') }}" method="get"><input name="q" placeholder="@themeT('search.placeholder', 'Tìm kiếm sản phẩm...')"><button aria-label="@themeT('search.label', 'Tìm kiếm')"><i class="fa-solid fa-magnifying-glass"></i></button></form>
         <a class="ec94-support" href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone-volume"></i><span>Tư vấn hỗ trợ<b>{{ $hotline }}</b></span></a>
         <button class="ec94-login" type="button" data-auth-open="login"><i class="fa-regular fa-circle-user"></i><span>Xin chào!<b>Đăng nhập</b></span></button>
-        <div class="ec94-actions"><a href="#"><i class="fa-regular fa-heart"></i><b>0</b></a><a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><b>0</b></a><a href="#"><i class="fa-solid fa-shuffle"></i><b>0</b></a></div>
+        <div class="ec94-actions"><a href="#"><i class="fa-regular fa-heart"></i><b>0</b></a><a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><b>0</b></a><a href="#"><i class="fa-solid fa-shuffle"></i><b>0</b></a>
+            @include('partials.storefront-language-switcher')
+        </div>
     </div></div>
     <nav class="ec94-nav"><div class="ec94-container">
         <button class="ec94-category-button" type="button" data-ec94-mega><i class="fa-solid fa-bars"></i> Danh mục sản phẩm</button>
@@ -23,4 +25,3 @@
         </aside><div><h3>Giảm giá cực hot 🔥</h3><p>Hàng loạt sản phẩm công nghệ, thời trang và gia dụng đang có giá tốt.</p><div><section><b>ĐIỆN THOẠI</b><a href="#dien-thoai">NovaPhone X</a><a href="#dien-thoai">NovaPhone Mini</a><a href="#dien-thoai">Điện thoại phổ thông</a></section><section><b>THIẾT BỊ SỐ</b><a href="#do-cong-nghe">Tai nghe</a><a href="#do-cong-nghe">Máy ảnh</a><a href="#do-cong-nghe">Laptop</a></section><section><b>ĐỜI SỐNG</b><a href="#thoi-trang">Thời trang</a><a href="#goi-y">Nhà cửa</a><a href="#goi-y">Phụ kiện</a></section></div></div></section>
     </div></nav>
 </header>
-@include('partials.storefront-language-switcher')

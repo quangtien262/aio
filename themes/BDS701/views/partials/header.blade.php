@@ -31,7 +31,9 @@
                         <button type="submit">@themeT('auth.logout', 'Đăng xuất')</button>
                     </form>
                 @endguest
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
     <div class="bds-container bds-nav">
@@ -45,4 +47,3 @@
         </nav>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

@@ -1,4 +1,5 @@
 @extends('theme-dl750::layout')
+@section('title', __('theme_contact_page.title'))
 @section('content')
-    @include('theme-dl750::partials.content')
+@include('themes.common.contact')
 @endsection

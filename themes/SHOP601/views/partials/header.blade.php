@@ -10,13 +10,16 @@
     ]);
 @endphp
 <header class="s601-header">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="s601-header-top"><div class="s601-container s601-header-top__inner">
         <a class="s601-logo" href="{{ route('site.home') }}">
             @if($logo)
                 <img src="{{ $logo }}" alt="{{ $name }}">@endif
         </a>
         <form class="s601-search" action="{{ route('site.catalog.search') }}" method="GET"><input name="q" type="search" placeholder="{{ $t('SHOP601.header.search') }}"><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
-        <div class="s601-head-actions"><a href="#footer"><i class="fa-solid fa-location-dot"></i><span>{{ $t('SHOP601.header.stores') }}</span></a>@guest('customer')<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>{{ $t('SHOP601.header.account') }}<b>{{ $t('SHOP601.header.login') }}</b></span></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>{{ $t('SHOP601.header.account') }}</span></a>@endguest<a href="#danh-gia" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><em>0</em></a><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><em>0</em></a></div>
+        <div class="s601-head-actions"><a href="#footer"><i class="fa-solid fa-location-dot"></i><span>{{ $t('SHOP601.header.stores') }}</span></a>@guest('customer')<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>{{ $t('SHOP601.header.account') }}<b>{{ $t('SHOP601.header.login') }}</b></span></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>{{ $t('SHOP601.header.account') }}</span></a>@endguest<a href="#danh-gia" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><em>0</em></a><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><em>0</em></a>
+            @include('partials.storefront-language-switcher')
+        </div>
     </div></div>
     <div class="s601-navrow"><div class="s601-container s601-navrow__inner">
         <button class="s601-menu-toggle" type="button" data-s601-menu-toggle><i class="fa-solid fa-bars"></i><span>{{ $t('SHOP601.header.categories') }}</span></button>
@@ -24,4 +27,3 @@
         <div class="s601-promos"><span>• {{ $t('SHOP601.header.live') }}</span><b>🎁 {{ $t('SHOP601.header.promotion') }}</b></div>
     </div></div>
 </header>
-@include('partials.storefront-language-switcher')

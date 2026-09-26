@@ -9,8 +9,11 @@
 @endphp
 
 <header class="ec13-header" id="top">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="ec13-topbar">
-        <div class="ec13-container"><span><i class="fa-solid fa-bolt"></i> Công nghệ chính hãng, giá tốt mỗi ngày</span><div><a href="{{ route('site.blog.index') }}">Tin công nghệ</a><a href="{{ route('site.contact') }}">Tra cứu bảo hành</a><a href="{{ route('site.contact') }}">Hệ thống cửa hàng</a></div></div>
+        <div class="ec13-container"><span><i class="fa-solid fa-bolt"></i> Công nghệ chính hãng, giá tốt mỗi ngày</span><div><a href="{{ route('site.blog.index') }}">Tin công nghệ</a><a href="{{ route('site.contact') }}">Tra cứu bảo hành</a><a href="{{ route('site.contact') }}">Hệ thống cửa hàng</a></div>
+            @include('partials.storefront-language-switcher')
+        </div>
     </div>
     <div class="ec13-main-header">
         <div class="ec13-container ec13-head-main">
@@ -42,4 +45,3 @@
         </div>
     </nav>
 </header>
-@include('partials.storefront-language-switcher')

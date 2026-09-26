@@ -19,6 +19,7 @@
     }
 @endphp
 <header class="n504-header">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="n504-summer"><div class="n504-container"><span><i class="fa-solid fa-gift"></i> Ưu đãi chào hè</span><span>Giảm đến <strong>15%</strong> cho đơn hàng từ 3 triệu</span><span><i class="fa-solid fa-truck"></i> Miễn phí giao hàng toàn quốc</span><a href="#khuyen-mai">Xem ngay <i class="fa-solid fa-arrow-right"></i></a></div></div>
     <div class="n504-container n504-head-main">
         <a class="n504-logo" href="{{ route('site.home') }}">
@@ -34,9 +35,10 @@
             <button type="button" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><b>0</b></button>
             @guest('customer')<button type="button" data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button>@else<a href="{{ route('customer.account') }}" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></a>@endguest
             <a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><b>0</b></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
         <button class="n504-mobile-toggle" type="button" data-n504-menu aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
     </div>
     <div class="n504-nav-bar"><div class="n504-container"><nav data-n504-nav>@foreach($nav as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>@endforeach</nav></div></div>
 </header>
-@include('partials.storefront-language-switcher')

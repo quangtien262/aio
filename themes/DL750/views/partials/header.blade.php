@@ -17,7 +17,8 @@
     <div class="dl-nav-bar"><div class="dl-wrap">
         <button class="dl-menu" data-dl-menu aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
         <nav data-dl-nav>@forelse($nav as $item)<a href="{{ data_get($item, 'url') }}">{{ data_get($item, 'label') }}</a>@empty<a href="{{ $homeUrl }}">Trang chủ</a><a href="{{ route('site.home', ['locale' => app()->getLocale()]) }}#gioi-thieu">Giới thiệu</a><a href="{{ route('site.home', ['locale' => app()->getLocale()]) }}#san-pham">Sản phẩm</a><a href="{{ route('site.home', ['locale' => app()->getLocale()]) }}#dich-vu">Dịch vụ</a><a href="{{ route('site.home', ['locale' => app()->getLocale()]) }}#tin-tuc">Tin tức</a><a href="#lien-he">Liên hệ</a>@endforelse</nav>
-        <div class="dl-actions">@guest('customer')<button data-xd-auth-open="login" aria-label="Đăng nhập"><i class="fa-regular fa-user"></i></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i></a>@endguest<a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i></a><a class="dl-book" href="#lien-he"><i class="fa-solid fa-phone-volume"></i>Đặt ngay</a></div>
+        <div class="dl-actions">@guest('customer')<button data-xd-auth-open="login" aria-label="Đăng nhập"><i class="fa-regular fa-user"></i></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i></a>@endguest<a href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i></a><a class="dl-book" href="#lien-he"><i class="fa-solid fa-phone-volume"></i>Đặt ngay</a>
+            @include('partials.storefront-language-switcher')
+        </div>
     </div></div>
 </header>
-<div class="dl-language">@include('partials.storefront-language-switcher')</div>

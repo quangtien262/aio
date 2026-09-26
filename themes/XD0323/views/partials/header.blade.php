@@ -78,8 +78,9 @@
                 @endguest
                 <a href="#yeu-thich" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><span>0</span></a>
                 <a href="{{ route('site.cart.index') }}" aria-label="{{ $themeText('XD0323.header.cart') }}"><i class="fa-solid fa-cart-shopping"></i><span>0</span></a>
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

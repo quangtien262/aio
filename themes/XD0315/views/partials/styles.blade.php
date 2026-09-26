@@ -180,3 +180,7 @@
         .af15-story-card { grid-template-columns: 1fr; }
     }
 </style>
+
+<style>
+.af15-site-header__inner{grid-template-columns:150px minmax(0,1fr)}.af15-nav-shell{min-width:0;flex-wrap:wrap;padding-block:12px}.af15-nav{min-width:0;flex-wrap:wrap;white-space:normal;gap:18px}@media(max-width:1100px){.af15-site-header__inner{grid-template-columns:96px minmax(0,1fr)}}@media(max-width:680px){.af15-site-header__inner{grid-template-columns:72px minmax(0,1fr)}}
+</style>

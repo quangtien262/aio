@@ -52,7 +52,9 @@
                     <a href="{{ route('customer.account', ['locale' => app()->getLocale()]) }}" aria-label="@themeT('auth.account', 'Tài khoản')"><i class="fa-regular fa-user"></i></a>
                 @endguest
                 <a class="t750-cart" href="{{ route('site.cart.index', ['locale' => app()->getLocale()]) }}" aria-label="@themeT('cart', 'Giỏ hàng')"><i class="fa-solid fa-bag-shopping"></i><span>{{ (int) ($cartCount ?? 0) }}</span></a>
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
     <div class="t750-search-panel" data-t750-search-panel>
@@ -62,4 +64,3 @@
         </form>
     </div>
 </header>
-<div class="t750-language">@include('partials.storefront-language-switcher')</div>

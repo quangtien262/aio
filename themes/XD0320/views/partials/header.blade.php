@@ -20,6 +20,7 @@
     }
 @endphp
 <header class="foot-header">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="foot-header__masthead">
         <div class="foot-container foot-header__masthead-inner">
             <a class="foot-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
@@ -38,7 +39,9 @@
                 @else
                     <a href="{{ route('customer.account') }}">@themeT('xd0320.header.account')</a>
                 @endguest
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
     <div class="foot-container foot-navigation-wrap">
@@ -50,4 +53,3 @@
         </nav>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

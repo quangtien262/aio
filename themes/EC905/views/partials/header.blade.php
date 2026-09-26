@@ -6,7 +6,9 @@
     $menuItems = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec95-header">
-    <div class="ec95-topbar"><div class="ec95-container"><span>Thỏa mãn nhu cầu người dùng · Giao hàng toàn quốc</span><nav><a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: {{ $hotline }}</a><a href="#du-an">Hệ thống cửa hàng</a><a href="{{ route('site.contact') }}">Tuyển dụng</a></nav></div></div>
+    <div class="ec95-topbar"><div class="ec95-container"><span>Thỏa mãn nhu cầu người dùng · Giao hàng toàn quốc</span><nav><a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: {{ $hotline }}</a><a href="#du-an">Hệ thống cửa hàng</a><a href="{{ route('site.contact') }}">Tuyển dụng</a></nav>
+            @include('partials.storefront-language-switcher')
+        </div></div>
     <div class="ec95-head-main"><div class="ec95-container">
         <a class="ec95-logo" href="{{ route('site.home') }}">@if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name') }}">@endif</a>
         <form action="{{ route('site.catalog.search') }}" method="get"><input name="q" placeholder="Tìm kiếm sản phẩm..."><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
@@ -19,4 +21,3 @@
         @foreach($menuItems as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
     </div></nav>
 </header>
-@include('partials.storefront-language-switcher')

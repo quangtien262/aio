@@ -43,8 +43,9 @@
                     <button type="button" data-xd-auth-open="login" aria-label="@themeT('DN351.header.login', 'Đăng nhập')"><i class="fa-regular fa-user"></i></button>
                 @endguest @endguest
                 <a class="dn351-cart" href="{{ route('site.cart.index') }}" aria-label="@themeT('DN351.header.cart', 'Giỏ hàng')"><i class="fa-solid fa-cart-shopping"></i><b>{{ collect($cartItems ?? [])->sum('quantity') ?: 0 }}</b></a>
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

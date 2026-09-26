@@ -69,7 +69,8 @@
             @if (auth('admin')->check())
                 <a class="bz501-admin-link" href="{{ route('admin.index') }}" target="_blank" rel="noopener">Admin</a>
             @endif
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

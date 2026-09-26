@@ -9,10 +9,13 @@
 @endphp
 
 <header class="ec14-header" id="top">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="ec14-topbar">
         <div class="ec14-container">
             <span><i class="fa-solid fa-bell"></i> Mua quà thủ công – Tặng gói quà tinh tế</span>
             <div><a href="tel:{{ preg_replace('/\s+/', '', $hotline) }}"><i class="fa-solid fa-phone"></i> {{ $hotline }}</a><a href="{{ route('site.contact') }}"><i class="fa-solid fa-location-dot"></i> Cửa hàng</a></div>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
     <div class="ec14-main-header">
@@ -46,4 +49,3 @@
         </div>
     </nav>
 </header>
-@include('partials.storefront-language-switcher')

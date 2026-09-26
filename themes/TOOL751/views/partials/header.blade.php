@@ -17,7 +17,9 @@
         <div class="t751-contact"><i class="fa-solid fa-phone-volume"></i><span><small>@themeT('contact', 'Hỗ trợ mua hàng')</small><b>{{ $hotline ?: '1900 6750' }}</b></span></div>
         <div class="t751-contact t751-warranty"><i class="fa-solid fa-phone-volume"></i><span><small>{{ __('Hỗ trợ bảo hành') }}</small><b>{{ $hotline ?: '1900 6750' }}</b></span></div>
         <a class="t751-cart" href="{{ route('site.cart.index', ['locale' => app()->getLocale()]) }}"><i class="fa-solid fa-cart-shopping"></i><span><b>@themeT('cart', 'Giỏ hàng')</b><small>({{ (int) ($cartCount ?? 0) }}) {{ __('sản phẩm') }}</small></span></a>
-    </div></div>
+
+            @include('partials.storefront-language-switcher')
+        </div></div>
     <div class="t751-navbar"><div class="t751-container">
         <button type="button" class="t751-categories" data-t751-menu><i class="fa-solid fa-bars"></i>{{ __('Danh mục sản phẩm') }}</button>
         <nav data-t751-nav>
@@ -29,4 +31,3 @@
         @guest('customer')<button class="t751-account" type="button" data-xd-auth-open="login" aria-label="@themeT('auth.login', 'Đăng nhập')"><i class="fa-regular fa-user"></i></button>@else<a class="t751-account" href="{{ route('customer.account', ['locale' => app()->getLocale()]) }}"><i class="fa-regular fa-user"></i></a>@endguest
     </div></div>
 </header>
-<div class="t751-language">@include('partials.storefront-language-switcher')</div>

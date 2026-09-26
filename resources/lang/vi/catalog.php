@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'quantity' => 'Số lượng',
+    'add_to_cart' => 'Thêm vào giỏ hàng',
     'related' => 'Sản phẩm liên quan',
     'latest' => 'Sản phẩm mới',
     'related_intro' => 'Khám phá thêm những lựa chọn phù hợp dành cho bạn.',

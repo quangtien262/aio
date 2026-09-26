@@ -33,12 +33,12 @@
         </style>
 </x-storefront-head>
 <body>
-        @include('partials.storefront-language-switcher')
+
 <header class="aio-doc-header"><div class="aio-doc-container aio-doc-header-inner">
     <a class="aio-doc-logo" href="{{ route('site.home') }}">@if(filled(data_get($documentBranding,'logo_url')))<img src="{{ data_get($documentBranding,'logo_url') }}" alt="{{ data_get($documentBranding,'company_name',$documentThemeKey) }}">@else<span>{{ data_get($documentBranding,'company_name',$documentThemeKey) }}</span>@endif</a>
     <nav class="aio-doc-nav">@foreach($documentMenu as $item)<a href="{{ $item['url'] ?? '#' }}" target="{{ $item['target'] ?? '_self' }}">{{ $item['label'] }}</a>@endforeach</nav>
     <div class="aio-doc-actions">@if(!empty($customerAuth['is_authenticated']))<a href="{{ $customerAuth['account_url'] ?? route('customer.account') }}">Tài khoản</a>@else<button class="aio-doc-button" type="button" data-open-auth-modal="login">Đăng nhập</button>@endif</div>
-</div></header>
+@include('partials.storefront-language-switcher')</div></header>
 <main class="aio-doc-container">@include('partials.configurable-landing-blocks')</main>
 <footer class="aio-doc-footer"><div class="aio-doc-container aio-doc-footer-grid"><div><strong>{{ data_get($documentBranding,'company_name',$documentThemeKey) }}</strong><p>{{ data_get($documentBranding,'slogan','Nền tảng website và landing page linh hoạt.') }}</p></div><div><strong>{{ data_get($documentBranding,'support_hotline','1900 6760') }}</strong><p>{{ data_get($documentBranding,'support_email','support@example.com') }}</p></div></div></footer>
 @includeIf($documentViewNamespace.'::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])

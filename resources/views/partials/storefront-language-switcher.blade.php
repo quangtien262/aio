@@ -31,10 +31,17 @@
 @if($storefrontLocales->count() > 1)
     @once
         <style>
-            .sf-language-switcher{position:fixed;z-index:1200;inset-block-start:max(10px,env(safe-area-inset-top));inset-inline-end:max(10px,env(safe-area-inset-right));font:600 13px/1.2 "Segoe UI",Roboto,Arial,sans-serif;color:#172033;text-align:start}
+            .sf-language-mobile-slot{display:none;box-sizing:border-box}
+            @media(max-width:1024px){
+                header:has(>.sf-language-mobile-slot){flex-wrap:wrap;height:auto;overflow:visible}
+                header>.sf-language-mobile-slot{display:flex;justify-content:flex-end;flex:0 0 100%;grid-column:1/-1;width:100%;padding:6px 16px;position:relative;z-index:45}
+                header:has(>.sf-language-mobile-slot) [data-storefront-language-switcher]{display:none}
+                header>.sf-language-mobile-slot [data-storefront-language-switcher]{display:inline-flex}
+            }
+            .sf-language-switcher{position:relative;z-index:40;display:inline-flex;align-items:center;flex:0 0 auto;width:max-content;max-width:100%;margin:0;padding:0;background:transparent;font:600 13px/1.2 "Segoe UI",Roboto,Arial,sans-serif;color:#172033;text-align:start}
             .sf-language-switcher *{box-sizing:border-box}
             .sf-language-switcher details{position:relative}
-            .sf-language-switcher summary{display:flex;align-items:center;gap:7px;min-height:38px;padding:7px 10px;border:1px solid rgba(23,32,51,.16);border-radius:999px;background:rgba(255,255,255,.94);color:#172033;box-shadow:0 8px 24px rgba(15,23,42,.16);backdrop-filter:blur(14px);cursor:pointer;list-style:none;user-select:none}
+            .sf-language-switcher summary{display:flex;align-items:center;gap:7px;min-height:38px;padding:7px 10px;border:1px solid rgba(23,32,51,.16);border-radius:999px;background:rgba(255,255,255,.94);color:#172033;box-shadow:none;cursor:pointer;list-style:none;user-select:none}
             .sf-language-switcher summary::-webkit-details-marker{display:none}
             .sf-language-switcher summary:focus-visible{outline:3px solid rgba(37,99,235,.28);outline-offset:2px}
             .sf-language-switcher__icon{display:block;width:28px;height:20px;flex:0 0 28px;border-radius:4px;object-fit:cover}
@@ -47,12 +54,13 @@
             .sf-language-switcher__menu-label{min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:650}
             .sf-language-switcher__check{width:15px;height:15px;opacity:0}
             .sf-language-switcher__menu a.is-active .sf-language-switcher__check{opacity:1}
-            @media(max-width:640px){.sf-language-switcher{inset-block-start:max(66px,calc(env(safe-area-inset-top) + 8px));inset-inline-end:max(8px,env(safe-area-inset-right))}.sf-language-switcher summary{min-height:36px;padding:6px 9px}.sf-language-switcher__menu{max-width:calc(100vw - 16px)}}
+            @media(max-width:640px){.sf-language-switcher summary{min-height:36px;padding:6px 9px}.sf-language-switcher__menu{max-width:calc(100vw - 16px)}}
             @media(prefers-reduced-motion:reduce){.sf-language-switcher__chevron{transition:none}}
         </style>
     @endonce
 
-    <nav
+    <div
+        role="navigation"
         class="sf-language-switcher"
         data-storefront-language-switcher
         data-current-locale="{{ $storefrontCurrentLocale }}"
@@ -104,5 +112,5 @@
                 @endforeach
             </div>
         </details>
-    </nav>
+    </div>
 @endif

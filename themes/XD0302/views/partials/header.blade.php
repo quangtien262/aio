@@ -1,4 +1,5 @@
 <header class="xd2-header">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="xd2-utility">
         <div class="xd2-container xd2-utility__inner">
             <div><a href="tel:{{ $phoneHref ?? '' }}">{{ $hotline ?? '' }}</a><a href="mailto:{{ $supportEmail ?? '' }}">{{ $supportEmail ?? '' }}</a></div>
@@ -13,7 +14,9 @@
                     <div class="xd2-auth-actions" aria-label="Tài khoản khách hàng">
                         <button type="button" data-xd-auth-open="login">Đăng nhập</button>
                         <button type="button" class="is-register" data-xd-auth-open="register">Đăng ký</button>
-                    </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
                 @endauth
             </div>
         </div>
@@ -45,4 +48,3 @@
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

@@ -27,11 +27,12 @@
         @endguest
         <a class="ec12-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-cart-shopping"></i><em>{{ (int) data_get($cart ?? [], 'count', 0) }}</em><span>@themeT('EC912.cart', 'Giỏ hàng')</span></a>
         <button class="ec12-menu-toggle" type="button" data-ec12-menu aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
-    </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
     <nav class="ec12-nav"><div class="ec12-container" data-ec12-nav>
         @foreach($nav as $item)
             <a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>
         @endforeach
     </div></nav>
 </header>
-@include('partials.storefront-language-switcher')

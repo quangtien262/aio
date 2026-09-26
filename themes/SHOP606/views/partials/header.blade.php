@@ -10,8 +10,9 @@
         <a class="s606-brand" href="{{ route('site.home') }}">@if($logo)<img src="{{ $logo }}" alt="{{ $name }}">@else<span>{{ $name }}</span>@endif</a>
         <button class="s606-menu-button" type="button" data-s606-menu aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
         <nav data-s606-nav>@forelse($nav as $item)<a href="{{ data_get($item, 'url', '#') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@empty<a href="{{ route('site.home') }}">Trang chủ</a><a href="#san-pham">Sản phẩm</a><a href="#khuyen-mai">Khuyến mãi</a><a href="#tin-tuc">Tin tức</a><a href="#bo-suu-tap">Bộ sưu tập</a>@endforelse</nav>
-        <div class="s606-actions"><span class="s606-live"><i></i>LIVE</span><button type="button" data-s606-search aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button><button type="button" data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><b>0</b></a></div>
+        <div class="s606-actions"><span class="s606-live"><i></i>LIVE</span><button type="button" data-s606-search aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button><button type="button" data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><b>0</b></a>
+            @include('partials.storefront-language-switcher')
+        </div>
     </div>
     <form class="s606-search" action="{{ route('site.catalog.search') }}" data-s606-search-form><input name="q" placeholder="Tìm kiếm sản phẩm"><button aria-label="Tìm"><i class="fa-solid fa-arrow-right"></i></button></form>
 </header>
-@include('partials.storefront-language-switcher')

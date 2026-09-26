@@ -1,1 +1,4 @@
-@include('theme-shop605::category')
+@extends('theme-shop606::layout')
+@section('content')
+@include('themes.common.catalog-listing', ['catalogMode' => 'category'])
+@endsection

@@ -8,6 +8,7 @@
     $cartCount = (int) data_get($shell, 'cart_summary.count', data_get($cartSummary ?? [], 'count', 0));
 @endphp
 <header class="f405-header" data-f405-header>
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="f405-container f405-header__main">
         <a class="f405-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span><i class="fa-solid fa-leaf"></i></span><strong>{{ $siteName }}</strong>@endif</a>
         <form class="f405-search" action="{{ route('site.catalog.search') }}" method="get"><span>@themeT('FOOT405.product_categories', 'Danh mục sản phẩm') <i class="fa-solid fa-angle-down"></i></span><input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('FOOT405.search_placeholder', 'Nhập từ khóa tìm kiếm...')"><button type="submit" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>

@@ -24,11 +24,12 @@
             <div class="xd11-auth-actions" aria-label="Tài khoản">
                 <button type="button" data-xd-auth-open="login">Đăng nhập</button>
                 <button type="button" data-xd-auth-open="register">Đăng ký</button>
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         @else
             <a class="xd11-account-link" href="{{ route('customer.account') }}">Tài khoản</a>
         @endguest
         <a class="xd5-hotline" href="tel:{{ $phoneHref }}">{{ $hotline }}</a>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

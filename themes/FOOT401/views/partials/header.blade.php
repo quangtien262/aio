@@ -34,7 +34,9 @@
                 @else
                     <a href="{{ route('customer.account') }}">@themeT('foot401.header.account')</a>
                 @endguest
-            </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
         </div>
     </div>
     <div class="foot-container foot-navigation-wrap">
@@ -46,4 +48,3 @@
         </nav>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

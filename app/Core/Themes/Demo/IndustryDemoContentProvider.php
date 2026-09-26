@@ -61,6 +61,12 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
 
     private function create(string $type, array $data): Model
     {
+        if (in_array($this->key, ['FOOT403', 'FOOT404'], true) && $type === CatalogCategory::class) {
+            $existing = CatalogCategory::where('slug', $data['slug'])->first();
+            if ($existing) {
+                return $existing;
+            }
+        }
         // Older imports or manual menus may have the same unique identity but no demo marker.
         // Reuse them without changing their items or taking ownership of user content.
         $model = $type === CmsMenu::class
@@ -197,8 +203,16 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 ThemeDemoRecord::create(['theme_key' => $this->key, 'preset_key' => $presetKey, 'model_type' => LandingPage::class, 'model_id' => $page->id]);
                 $this->prepareBlocks($page);
             }
+            if ($page && $existing && $this->key === 'FOOT403') {
+                foreach ($page->blocks()->where('block_type', 'featured_categories')->get() as $block) {
+                    $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'catalog_categories', 'order' => 'sort_order'])]);
+                }
+                foreach ($page->blocks()->where('block_type', 'bizmax_latest_posts')->get() as $block) {
+                    $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'cms_posts', 'featured_only' => false])]);
+                }
+            }
 
-            return ['preset' => $this->preset(), 'purged' => $purged, 'counts' => ['services' => 4, 'products' => 3, 'projects' => 3, 'posts' => 3, 'pages' => 3, 'media' => 3, 'menus' => 1, 'banners' => 2, 'team_members' => 3, 'testimonials' => 3, 'partners' => 6, 'landing_pages' => $page && ! $existing ? 1 : 0]];
+            return ['preset' => $this->preset(), 'purged' => $purged, 'counts' => ['categories' => count($categories), 'services' => 4, 'products' => count($this->brief['products']), 'projects' => 3, 'posts' => 3, 'pages' => 3, 'media' => 3, 'menus' => 1, 'banners' => 2, 'team_members' => 3, 'testimonials' => 3, 'partners' => 6, 'landing_pages' => $page && ! $existing ? 1 : 0]];
         });
     }
 
@@ -224,6 +238,14 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 return $value;
             };
             $settings = $replace((array) $block->settings);
+            if ($this->key === 'FOOT403' && $block->block_type === 'featured_categories') {
+                $settings['source'] = 'catalog_categories';
+                $settings['order'] = 'sort_order';
+            }
+            if ($this->key === 'FOOT403' && $block->block_type === 'bizmax_latest_posts') {
+                $settings['source'] = 'cms_posts';
+                $settings['featured_only'] = false;
+            }
             if ($block->block_type === 'hero_slider') {
                 $settings['source'] = 'site_banners';
                 $settings['placement'] = strtolower($this->key).'-hero-slider';

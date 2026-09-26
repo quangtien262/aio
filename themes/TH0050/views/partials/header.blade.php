@@ -24,15 +24,17 @@
     }
 @endphp
 <header class="th5-header" data-th5-header>
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="th5-topbar"><div class="th5-container"><span><i class="fa-solid fa-bell"></i> @themeT('TH0050.header.promotion')</span>@if($th5Hotline !== '')<a href="tel:{{ $th5Phone }}"><i class="fa-regular fa-comments"></i><small>@themeT('TH0050.header.hotline')</small><strong>{{ $th5Hotline }}</strong></a>@endif</div></div>
     <div class="th5-head-main"><div class="th5-container th5-head-main__inner">
         <a class="th5-logo" href="{{ route('site.home') }}" aria-label="{{ $th5Company }}">
             @if($th5Logo !== '')<img src="{{ $th5Logo }}" alt="{{ $th5Company }}">@endif
         </a>
         <form class="th5-search" action="{{ route('site.catalog.search') }}"><input name="q" value="{{ request('q') }}" placeholder="@themeT('TH0050.header.search')"><button aria-label="@themeT('TH0050.header.search')"><i class="fa-solid fa-magnifying-glass"></i></button></form>
-        <div class="th5-head-actions"><a href="tel:{{ $th5Phone }}"><i class="fa-solid fa-location-dot"></i><span>Cửa hàng</span></a>@auth('customer')<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>@themeT('TH0050.header.account')</span></a>@else<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>@themeT('TH0050.header.account')</span></button>@endauth<a class="th5-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><b>{{ $th5CartCount }}</b><span>@themeT('TH0050.header.cart')</span></a></div>
+        <div class="th5-head-actions"><a href="tel:{{ $th5Phone }}"><i class="fa-solid fa-location-dot"></i><span>Cửa hàng</span></a>@auth('customer')<a href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>@themeT('TH0050.header.account')</span></a>@else<button type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>@themeT('TH0050.header.account')</span></button>@endauth<a class="th5-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><b>{{ $th5CartCount }}</b><span>@themeT('TH0050.header.cart')</span></a>
+            @include('partials.storefront-language-switcher')
+        </div>
         <button class="th5-menu-toggle" type="button" data-th5-menu-toggle aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
     </div></div>
     <div class="th5-nav-wrap"><div class="th5-container"><a class="th5-category-link" href="{{ route('site.catalog.search') }}"><i class="fa-solid fa-border-all"></i> Danh mục sản phẩm</a><nav class="th5-nav" data-th5-menu>@foreach($th5Menu as $item)<a href="{{ $item['url'] ?? $item['href'] ?? '#' }}">{{ $item['label'] ?? $item['title'] }}</a>@endforeach</nav><a class="th5-hot-deal" href="#uu-dai"><i class="fa-solid fa-gift"></i> Hot deal</a></div></div>
 </header>
-@include('partials.storefront-language-switcher')

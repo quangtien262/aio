@@ -25,8 +25,9 @@
             <button type="button" data-e800-search-open aria-label="{{ $t('E800.header.search') }}"><i class="fa-solid fa-magnifying-glass"></i></button>
             @guest('customer')<button type="button" data-xd-auth-open="login" aria-label="{{ $t('E800.header.account') }}"><i class="fa-regular fa-user"></i></button>@else<a href="{{ route('customer.account') }}" aria-label="{{ $t('E800.header.account') }}"><i class="fa-regular fa-user"></i></a>@endguest
             <a class="e800-cart" href="{{ route('site.cart.index') }}" aria-label="{{ $t('E800.header.cart') }}"><i class="fa-solid fa-cart-shopping"></i><em>{{ (int) data_get($shell, 'cart_count', 0) }}</em></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
     <form class="e800-search-panel" action="{{ route('site.catalog.search') }}" method="GET" data-e800-search hidden><div class="e800-container"><input name="q" type="search" placeholder="{{ $t('E800.header.search') }}..." autofocus><button aria-label="{{ $t('E800.header.search') }}"><i class="fa-solid fa-arrow-right"></i></button></div></form>
 </header>
-@include('partials.storefront-language-switcher')

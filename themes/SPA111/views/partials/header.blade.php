@@ -14,6 +14,7 @@
     </div>
 </div>
 <header class="sp11-header" id="top">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="sp11-container sp11-header-row">
         <a class="sp11-logo" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
             @if($logo)
@@ -29,7 +30,8 @@
             <a href="{{ route('customer.account') }}" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><b>0</b></a>
             <a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><b>{{ $cartCount }}</b></a>
             <a class="sp11-book" href="{{ route('site.contact') }}">Đặt Lịch <i class="fa-regular fa-calendar-days"></i></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

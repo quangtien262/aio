@@ -1,1 +1,5 @@
-@extends('theme-e801::layout') @section('title',$pageTitle??'Liên hệ') @section('content')@include('theme-e801::partials.content-shell')@endsection
+@extends('theme-e801::layout')
+@section('title', __('theme_contact_page.title'))
+@section('content')
+@include('themes.common.contact')
+@endsection

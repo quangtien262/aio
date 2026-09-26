@@ -33,6 +33,8 @@
             @guest('customer')<button type="button" data-xd-auth-open="login" aria-label="Tài khoản"><i class="fa-regular fa-circle-user"></i></button>@else<a href="{{ route('customer.account') }}"><i class="fa-regular fa-circle-user"></i></a>@endguest
             <a href="{{ route('site.catalog.search') }}" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><em>0</em></a>
             <a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-bag-shopping"></i><em>0</em></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
     <div class="ec10-nav-wrap">
@@ -42,4 +44,3 @@
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

@@ -31,6 +31,8 @@ if($nav->isEmpty())$nav=collect([
             @else<a href="{{ route('customer.account') }}" aria-label="{{ auth('customer')->user()?->name }}"><i class="fa-regular fa-user"></i></a>@endguest
             <a href="{{ route('customer.account') }}" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><em>0</em></a>
             <a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-bag-shopping"></i><em>{{ (int)data_get($cart??[],'count',0) }}</em></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
     <form class="s604-search-panel" data-s604-search-panel action="{{ route('site.catalog.search') }}" method="GET">
@@ -38,4 +40,3 @@ if($nav->isEmpty())$nav=collect([
         <button aria-label="Tìm"><i class="fa-solid fa-arrow-right"></i></button>
     </form>
 </header>
-@include('partials.storefront-language-switcher')

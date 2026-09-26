@@ -210,7 +210,36 @@
       "/theme-demo/foot409/hero-fried-chicken.png"
     ],
     "logo": "/theme-demo/complete/logo-foot403.svg",
-    "website_type": "service"
+    "website_type": "service",
+    "catalog_categories": [
+      {
+        "name": "Combo gia đình",
+        "slug": "combo-gia-dinh",
+        "description": "Các phần ăn kết hợp để cả gia đình cùng thưởng thức.",
+        "image_url": "/theme-demo/foot409/promo-pizza.png",
+        "products": [
+          "Combo gia đình"
+        ]
+      },
+      {
+        "name": "Pizza",
+        "slug": "pizza",
+        "description": "Pizza nóng giòn với nhiều lựa chọn nhân và phô mai.",
+        "image_url": "/theme-demo/foot409/promo-pizza.png",
+        "products": [
+          "Pizza"
+        ]
+      },
+      {
+        "name": "Burger",
+        "slug": "burger",
+        "description": "Burger đậm vị, tiện lợi cho bữa ăn nhanh.",
+        "image_url": "/theme-demo/foot409/promo-burger.png",
+        "products": [
+          "Burger"
+        ]
+      }
+    ]
   },
   "FOOT404": {
     "brand": "Pure Commerce",
@@ -225,7 +254,10 @@
     "products": [
       "Rau xanh",
       "Giỏ thực phẩm",
-      "Thực phẩm theo mùa"
+      "Thực phẩm theo mùa",
+      "Gà tươi",
+      "Sò điệp",
+      "Bánh tráng miệng"
     ],
     "images": [
       "/theme-demo/dn351/category-vegetables.jpg",
@@ -234,11 +266,70 @@
     ],
     "product_images": [
       "/theme-demo/dn351/category-vegetables.jpg",
-      "/theme-demo/xd-shared/farm-2.jpg",
-      "/theme-demo/xd-shared/farm-3.jpg"
+      "/theme-demo/dn351/hero-market.jpg",
+      "/theme-demo/ec903/vegan-brunch.webp",
+      "/theme-demo/dn351/product-chicken.jpg",
+      "/theme-demo/dn351/product-scallops.jpg",
+      "/theme-demo/ec903/food-dessert.webp"
     ],
     "logo": "/theme-demo/complete/logo-foot404.svg",
-    "website_type": "ecommerce"
+    "website_type": "ecommerce",
+    "catalog_categories": [
+      {
+        "name": "Rau củ tươi",
+        "slug": "rau-cu-tuoi",
+        "description": "Rau xanh và rau củ cho bữa ăn hằng ngày.",
+        "image_url": "/theme-demo/dn351/category-vegetables.jpg",
+        "products": [
+          "Rau xanh"
+        ]
+      },
+      {
+        "name": "Giỏ thực phẩm",
+        "slug": "gio-thuc-pham",
+        "description": "Giỏ thực phẩm tuyển chọn dành cho gia đình và làm quà.",
+        "image_url": "/theme-demo/dn351/hero-market.jpg",
+        "products": [
+          "Giỏ thực phẩm"
+        ]
+      },
+      {
+        "name": "Thực phẩm theo mùa",
+        "slug": "thuc-pham-theo-mua",
+        "description": "Lựa chọn thực phẩm theo mùa cho thực đơn đa dạng.",
+        "image_url": "/theme-demo/ec903/vegan-brunch.webp",
+        "products": [
+          "Thực phẩm theo mùa"
+        ]
+      },
+      {
+        "name": "Thịt và gia cầm",
+        "slug": "thit-va-gia-cam",
+        "description": "Thịt và gia cầm cho các món ăn gia đình.",
+        "image_url": "/theme-demo/dn351/category-meat.jpg",
+        "products": [
+          "Gà tươi"
+        ]
+      },
+      {
+        "name": "Hải sản",
+        "slug": "hai-san",
+        "description": "Hải sản cho các món hấp, nướng và lẩu.",
+        "image_url": "/theme-demo/dn351/category-seafood.jpg",
+        "products": [
+          "Sò điệp"
+        ]
+      },
+      {
+        "name": "Bánh và tráng miệng",
+        "slug": "banh-va-trang-mieng",
+        "description": "Bánh và món ngọt cho bữa tiệc nhỏ.",
+        "image_url": "/theme-demo/ec903/food-dessert.webp",
+        "products": [
+          "Bánh tráng miệng"
+        ]
+      }
+    ]
   },
   "FOOT405": {
     "brand": "Fresh Market",

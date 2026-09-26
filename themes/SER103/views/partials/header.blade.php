@@ -37,7 +37,8 @@
             <button class="ser103-booking-button" type="button" data-ser103-booking-open>
                 <span>@themeT('SER103.header.booking')</span><i class="fa-solid fa-arrow-right-long"></i>
             </button>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

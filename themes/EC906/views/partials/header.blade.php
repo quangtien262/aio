@@ -17,6 +17,8 @@
             <a href="{{ route('site.catalog.search') }}" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></a>
             @guest('customer')<button type="button" data-xd-auth-open="login" aria-label="Đăng nhập"><i class="fa-regular fa-user"></i></button>@else<a href="{{ route('customer.account') }}" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></a>@endguest
             <a class="ec96-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i><em>{{ (int) data_get($cart ?? [], 'count', 0) }}</em><span>Giỏ hàng</span></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
     <nav class="ec96-nav" data-ec96-nav data-ec96-navigation aria-label="@themeT('category_menu.navigation', 'Điều hướng website')"><div class="ec96-container">
@@ -30,4 +32,3 @@
         @if($nav->isNotEmpty())<nav class="ec96-category-mobile-nav" data-ec96-navigation aria-label="@themeT('category_menu.navigation', 'Điều hướng website')"><ul class="ec96-nav-list">@include('theme-ec906::partials.navigation-items', ['navigationItems' => $nav, 'navigationPrefix' => 'ec96-mobile-nav'])</ul></nav>@endif
     </div>
 </header>
-@include('partials.storefront-language-switcher')

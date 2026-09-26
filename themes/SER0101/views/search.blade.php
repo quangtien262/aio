@@ -139,6 +139,7 @@
         @include('themes.common.catalog-listing', ['catalogMode' => 'search'])
 
         @include('theme-ser0101::partials.product-search-autocomplete')
+        @include('theme-ser0101::partials.shell-footer')
         @include('theme-ser0101::partials.engagement-modals', ['customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'postLoginRedirect' => $postLoginRedirect])
     </body>
 </html>

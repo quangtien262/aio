@@ -1,3 +1,5 @@
-@php($pageTitle = app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TOOL750', app()->getLocale(), 'contact', 'Liên hệ'))
-@php($content = data_get($page ?? null, 'content', data_get($page ?? null, 'body', '<p>'.__('Hãy gửi nhu cầu để đội ngũ kỹ thuật tư vấn giải pháp phù hợp.').'</p>')))
-@include('theme-tool750::partials.content')
+@extends('theme-tool750::layout')
+@section('title', __('theme_contact_page.title'))
+@section('content')
+@include('themes.common.contact')
+@endsection

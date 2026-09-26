@@ -20,5 +20,6 @@
     @guest('customer')<button class="a852-icon" type="button" data-xd-auth-open="login" aria-label="Đăng nhập"><i class="fa-regular fa-user"></i></button>@else<a class="a852-icon" href="{{ route('customer.account', ['locale' => app()->getLocale()]) }}"><i class="fa-regular fa-user"></i></a>@endguest
     <a class="a852-icon" href="{{ route('site.cart.index', ['locale' => app()->getLocale()]) }}"><i class="fa-solid fa-cart-shopping"></i><em>{{ (int) ($cartCount ?? 0) }}</em></a>
     <a class="a852-book" href="#bang-gia"><i class="fa-regular fa-calendar-check"></i> Đặt lịch hẹn</a>
-</div></header>
-<div class="a852-language">@include('partials.storefront-language-switcher')</div>
+
+            @include('partials.storefront-language-switcher')
+        </div></header>

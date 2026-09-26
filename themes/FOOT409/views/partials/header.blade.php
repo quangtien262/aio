@@ -7,6 +7,7 @@
     $cartCount=(int)data_get($shell,'cart_summary.count',data_get($cartSummary??[],'count',0));
 @endphp
 <header class="f409-header">
+<div class="sf-language-mobile-slot">@include('partials.storefront-language-switcher')</div>
     <div class="f409-container f409-header__inner">
         <a class="f409-logo" href="{{ route('site.home') }}">
             @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span><i class="fa-solid fa-utensils"></i></span><strong>{{ $siteName }}</strong>@endif

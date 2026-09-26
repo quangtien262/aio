@@ -8,7 +8,9 @@
         <a class="xd3-contact-item" href="tel:{{ $phoneHref }}"><b>Gọi chúng tôi</b><span>{{ $hotline }}</span></a>
         <a class="xd3-contact-item" href="mailto:{{ $supportEmail }}"><b>Email</b><span>{{ $supportEmail }}</span></a>
         @guest('customer')
-            <div class="xd3-auth-actions"><button type="button" data-xd-auth-open="login">Đăng nhập</button><button type="button" data-xd-auth-open="register">Đăng ký</button></div>
+            <div class="xd3-auth-actions"><button type="button" data-xd-auth-open="login">Đăng nhập</button><button type="button" data-xd-auth-open="register">Đăng ký</button>
+            @include('partials.storefront-language-switcher')
+        </div>
         @endguest
     </div>
     <div class="xd3-nav-wrap"><div class="xd3-container xd3-nav-shell">
@@ -22,4 +24,3 @@
         <form class="xd3-search" method="GET" action="{{ route('site.catalog.search') }}"><input type="search" name="q" placeholder="Nhập từ khóa..." aria-label="Tìm kiếm"><button type="submit" aria-label="Tìm kiếm">⌕</button></form>
     </div></div>
 </header>
-@include('partials.storefront-language-switcher')

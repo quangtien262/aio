@@ -1,1 +1,5 @@
-@extends('theme-foot408::layout') @section('title','Liên hệ') @section('content')<main><section class="f408-inner-hero"><div class="f408-container"><h1>Liên hệ</h1><p>Đội ngũ của chúng tôi luôn sẵn sàng hỗ trợ bạn.</p></div></section><section class="f408-content"><div class="f408-container">{!! data_get($pageModel??$page??null,'body','<p>Vui lòng sử dụng thông tin liên hệ ở chân trang.</p>') !!}</div></section></main>@endsection
+@extends('theme-foot408::layout')
+@section('title', __('theme_contact_page.title'))
+@section('content')
+@include('themes.common.contact')
+@endsection

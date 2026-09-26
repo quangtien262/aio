@@ -4,7 +4,9 @@
     $logo=trim((string)data_get($branding,'logo_url',''));$hotline=data_get($branding,'support_hotline','');$nav=collect(data_get($shell,'top_menu',[]))->filter(fn($item)=>is_array($item)&&filled(data_get($item,'label')))->values();
 @endphp
 <header class="ec98-header" id="top">
-    <div class="ec98-welcome"><div class="ec98-container"><span>Chào mừng bạn đến với Ego fitness</span><nav><a href="tel:{{ preg_replace('/\s+/','',$hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: {{ $hotline }}</a><a href="{{ route('site.contact') }}">Hệ thống cửa hàng</a><a href="{{ route('site.contact') }}">Tuyển dụng</a></nav></div></div>
+    <div class="ec98-welcome"><div class="ec98-container"><span>Chào mừng bạn đến với Ego fitness</span><nav><a href="tel:{{ preg_replace('/\s+/','',$hotline) }}"><i class="fa-solid fa-phone"></i> Hotline: {{ $hotline }}</a><a href="{{ route('site.contact') }}">Hệ thống cửa hàng</a><a href="{{ route('site.contact') }}">Tuyển dụng</a></nav>
+            @include('partials.storefront-language-switcher')
+        </div></div>
     <div class="ec98-container ec98-head-main">
         <a class="ec98-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }}">@if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@endif</a>
         <form class="ec98-search" action="{{ route('site.catalog.search') }}"><input name="q" placeholder="Tìm kiếm sản phẩm" aria-label="Tìm kiếm sản phẩm"><button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button></form>
@@ -16,4 +18,3 @@
         @foreach($nav as $index=>$item)<a class="{{ $index===0?'is-active':'' }}" href="{{ data_get($item,'url') }}" target="{{ data_get($item,'target','_self') }}">{{ data_get($item,'label') }}</a>@endforeach
     </div></div></nav>
 </header>
-@include('partials.storefront-language-switcher')

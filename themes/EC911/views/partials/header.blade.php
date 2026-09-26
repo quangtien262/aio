@@ -23,7 +23,9 @@
             <a class="ec11-head-action" href="{{ route('customer.account') }}"><i class="fa-regular fa-user"></i><span>Tài khoản<b>{{ auth('customer')->user()?->name }}</b></span></a>
         @endguest
         <a class="ec11-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-basket-shopping"></i><em>{{ (int) data_get($cart ?? [], 'count', 0) }}</em>Giỏ hàng</a>
-    </div>
+
+            @include('partials.storefront-language-switcher')
+        </div>
     <nav class="ec11-nav"><div class="ec11-container">
         <button type="button" data-ec11-menu><i class="fa-solid fa-bars"></i> DANH MỤC SẢN PHẨM</button>
         <div data-ec11-nav>
@@ -31,4 +33,3 @@
         </div>
     </div></nav>
 </header>
-@include('partials.storefront-language-switcher')

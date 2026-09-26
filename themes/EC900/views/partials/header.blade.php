@@ -40,6 +40,8 @@
             @endguest
             <a href="#san-pham-dac-quyen" aria-label="Yêu thích"><i class="fa-regular fa-heart"></i><em>0</em></a>
             <a href="{{ route('site.cart.index') }}" aria-label="Giỏ hàng"><i class="fa-solid fa-cart-shopping"></i><em>0</em></a>
+
+            @include('partials.storefront-language-switcher')
         </div>
     </div>
     <div class="ec9-nav-wrap">
@@ -50,4 +52,3 @@
         </div>
     </div>
 </header>
-@include('partials.storefront-language-switcher')

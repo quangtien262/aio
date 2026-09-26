@@ -1,3 +1,5 @@
-@php($pageTitle='Liên hệ') @php($content='<p>Liên hệ showroom để được tư vấn mẫu xe và lịch lái thử phù hợp.</p>') @include('theme-e806::partials.content')
-
-
+@extends('theme-e806::layout')
+@section('title', __('theme_contact_page.title'))
+@section('content')
+@include('themes.common.contact')
+@endsection

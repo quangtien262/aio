@@ -93,7 +93,7 @@
             </style>
 </x-storefront-head>
     <body>
-        @include('partials.storefront-language-switcher')
+
         <div class="site-shell">
             <header class="site-header">
                 <div class="site-brand">
@@ -112,9 +112,12 @@
                         <a class="site-admin-entry" href="#admin-login">Đăng nhập quản trị</a>
                     @endauth
                 </nav>
-            </header>
+            @include('partials.storefront-language-switcher')
+</header>
 
-            @if(($contentType ?? '') === 'posts')
+            @if(($contentType ?? '') === 'contact')
+@include('themes.common.contact')
+@elseif(($contentType ?? '') === 'posts')
 @include('themes.common.news-listing')
 @elseif(($contentType ?? '') === 'post')
 @include('themes.common.news-detail')
