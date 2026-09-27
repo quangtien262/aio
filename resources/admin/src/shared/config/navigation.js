@@ -36,6 +36,13 @@ export const adminNavigation = [
         permission: 'theme.view',
     },
     {
+        key: 'site-mappings',
+        label: 'Cấu hình domain',
+        section: 'workspace',
+        route: '/site-mappings',
+        permission: 'theme.view',
+    },
+    {
         key: 'access-control',
         label: 'Vai trò & quyền',
         section: 'security',

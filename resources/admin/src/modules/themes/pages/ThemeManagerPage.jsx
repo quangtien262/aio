@@ -19,7 +19,6 @@ const { Paragraph, Text } = Typography;
 const ThemeGrid = lazy(() => import('../components/ThemeGrid'));
 const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDetailsPanel'));
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
-const SiteDomainMappingPanel = lazy(() => import('../components/SiteDomainMappingPanel'));
 const THEME_PAGE_SIZES = [12, 24, 48];
 const DEFAULT_THEME_PAGE_SIZE = THEME_PAGE_SIZES[0];
 
@@ -35,7 +34,6 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
     const [searchParams, setSearchParams] = useSearchParams();
     const [previewThemeKey, setPreviewThemeKey] = useState(null);
     const [activateThemeKey, setActivateThemeKey] = useState(null);
-    const [activePanel, setActivePanel] = useState('themes');
     const themeActionController = useThemeActionOverlayController();
 
     useEffect(() => {
@@ -197,31 +195,20 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                     canManageThemeActions={canGenerateDemoData}
                     frontendLocale={frontendLocale}
                     defaultFrontendLocale={defaultFrontendLocale}
-                    onOpenThemeManager={() => setActivePanel('themes')}
+                    onOpenThemeManager={() => navigate('../themes')}
                     onOpenLocale={themeActionController.openLocale}
                     onOpenPalette={themeActionController.openPalette}
                     onOpenThemeTranslations={themeActionController.openThemeTranslations}
                     onOpenFrontendTranslations={themeActionController.openFrontendTranslations}
                     onOpenDemoCreate={themeActionController.openDemoCreate}
-                    onOpenSiteMappings={() => setActivePanel('site-mappings')}
+                    onOpenSiteMappings={() => navigate('../site-mappings')}
                     onOpenSetup={() => navigate('../setup')}
                     onOpenRebuild={themeActionController.openRebuild}
                     onOpenDelete={themeActionController.openDelete}
-                    isThemeManagerActive={activePanel === 'themes'}
-                    isSiteMappingsActive={activePanel === 'site-mappings'}
+                    isThemeManagerActive
                 />
             </aside>
-            <div style={{ flex: 1 }}>
-                {activePanel === 'site-mappings' ? (
-                    <Suspense fallback={<Card loading title="Domain demo" />}>
-                        <SiteDomainMappingPanel
-                            callAdminApi={callAdminApi}
-                            runAdminAction={runAdminAction}
-                            canManage={canGenerateDemoData}
-                            themes={themes}
-                        />
-                    </Suspense>
-                ) : (
+            <div style={{ flex: 1, minWidth: 0 }}>
                 <Card title="Quản lý các mẫu giao diện website" bordered={false} style={{ marginBottom: 16 }}>
             <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label" strong>Theme Activation</Text>
@@ -237,7 +224,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                             <img src={activeThemeFromList.preview_urls?.thumbnail || activeThemeFromList.avatar_url || undefined} alt={activeThemeFromList.name} />
                         </div>
 
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
                                 <div>
                                     <div style={{ fontWeight: 700, fontSize: 16 }}>{activeThemeFromList.name}</div>
@@ -365,7 +352,6 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                 onClose={themeActionController.closeOverlay}
             />
                 </Card>
-                )}
             </div>
         </div>
     );

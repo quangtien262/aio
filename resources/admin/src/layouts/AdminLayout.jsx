@@ -43,6 +43,7 @@ const AdminAccountsRoutePage = lazy(() => import('../pages/routes/AdminAccountsR
 const AuditLogsRoutePage = lazy(() => import('../pages/routes/AuditLogsRoutePage'));
 const ModulesRoutePage = lazy(() => import('../pages/routes/ModulesRoutePage'));
 const ThemesRoutePage = lazy(() => import('../pages/routes/ThemesRoutePage'));
+const SiteMappingsRoutePage = lazy(() => import('../pages/routes/SiteMappingsRoutePage'));
 const SetupRoutePage = lazy(() => import('../pages/routes/SetupRoutePage'));
 
 const { Header, Content } = Layout;
@@ -988,6 +989,7 @@ export default function AdminLayout() {
                                         <Route path="audit-logs" element={hasPermission('admin.audit.view') ? renderLazyRouteElement(AuditLogsRoutePage, { canAccess: true, callAdminApi }, 'Nhật ký bảo mật') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall'), demoData: hasPermission('store.module.upgrade') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'App Store') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), canGenerateDemoData: hasPermission('theme.customize'), callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }, 'Themes') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="site-mappings" element={hasPermission('theme.view') ? renderLazyRouteElement(SiteMappingsRoutePage, { canAccess: true, canManage: hasPermission('theme.customize'), callAdminApi, runAdminAction }, 'Cấu hình domain') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="setup" element={hasPermission('setup.view') ? renderLazyRouteElement(SetupRoutePage, { canAccess: true, canComplete: hasPermission('setup.complete'), canViewThemeManager: hasPermission('theme.view'), canManageThemeActions: hasPermission('theme.customize'), callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }, 'Setup') : <Navigate to={defaultRoute} replace />} />
                                         {renderModuleRoutes()}
                                         <Route path="*" element={<Navigate to={defaultRoute} replace />} />
