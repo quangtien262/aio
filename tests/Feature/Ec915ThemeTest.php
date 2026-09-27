@@ -12,11 +12,34 @@ use App\Models\LandingPage;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class Ec915ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_question_modal_saves_contact_without_creating_a_quote_order(): void
+    {
+        Mail::fake();
+        app(ThemeDemoContentGenerator::class)->generate('EC915', 'ec915-nd-interior');
+        $home = $this->get('/vi')->assertOk()->assertSee('data-ec915-question-open', false)->assertSee('id="ec915-question-dialog"', false);
+        if ($path = getenv('EC915_QUESTION_PREVIEW')) {
+            file_put_contents($path, $home->getContent());
+        }
+        $this->postJson('/vi/contact', ['source' => 'contact', 'email' => 'invalid', 'message' => 'short'])
+            ->assertUnprocessable()->assertJsonValidationErrors(['name', 'email', 'message']);
+        $this->assertDatabaseCount('contact_inquiries', 0);
+        $this->postJson('/vi/contact', [
+            'source' => 'contact', 'name' => 'Khách nội thất', 'email' => 'customer@example.test',
+            'subject' => 'Kích thước sofa', 'message' => 'Sofa có phù hợp phòng khách rộng 20m2 không?',
+        ])->assertOk();
+        $this->assertDatabaseHas('contact_inquiries', [
+            'website_key' => 'website-main', 'source' => 'contact', 'status' => 'new',
+            'subject' => 'Kích thước sofa', 'message' => 'Sofa có phù hợp phòng khách rộng 20m2 không?',
+        ]);
+        $this->assertDatabaseCount('orders', 0);
+    }
 
     public function test_news_seed_is_repeatable_and_renders_three_featured_articles(): void
     {
@@ -124,7 +147,10 @@ class Ec915ThemeTest extends TestCase
         $post = CmsPost::query()->firstOrFail();
 
         $this->get(route('site.catalog.category', ['locale' => 'vi', 'slug' => $category->slug]))->assertOk();
-        $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))->assertOk();
+        $productResponse = $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))->assertOk();
+        if ($path = getenv('EC915_PRODUCT_PREVIEW')) {
+            file_put_contents($path, $productResponse->getContent());
+        }
         $this->get(route('site.catalog.search', ['locale' => 'vi', 'q' => 'sofa']))->assertOk();
         $this->get(route('site.cart.index', ['locale' => 'vi']))->assertOk();
         $this->get(route('site.blog.index', ['locale' => 'vi']))->assertOk();
