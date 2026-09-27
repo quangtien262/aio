@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'eyebrow' => 'GIẢI ĐÁP CÙNG BẠN',
+    'title' => 'Bạn cần chúng tôi hỗ trợ?',
+    'intro' => 'Hãy chia sẻ câu hỏi về thiết kế, sản phẩm hoặc thi công nội thất. Đội ngũ tư vấn sẽ phản hồi qua thông tin bạn cung cấp.',
+    'step1' => 'Tiếp nhận câu hỏi',
+    'step2' => 'Tìm hiểu nhu cầu',
+    'step3' => 'Phản hồi và tư vấn',
+    'form_title' => 'Gửi câu hỏi',
+    'required' => 'Các trường có dấu * là bắt buộc.',
+    'name' => 'Họ và tên',
+    'email' => 'Email',
+    'phone' => 'Số điện thoại',
+    'service' => 'Chủ đề cần hỗ trợ',
+    'message' => 'Câu hỏi của bạn',
+    'placeholder' => 'Nhập câu hỏi hoặc mô tả vấn đề bạn cần hỗ trợ…',
+    'privacy' => 'Thông tin được dùng để liên hệ và giải đáp câu hỏi của bạn.',
+    'send' => 'Gửi câu hỏi',
+    'sending' => 'Đang gửi câu hỏi…',
+    'success_title' => 'Đã nhận câu hỏi của bạn!',
+    'success' => 'Câu hỏi đã được lưu. Đội ngũ tư vấn sẽ liên hệ qua thông tin bạn cung cấp.',
+    'close' => 'Đóng',
+    'error' => 'Chưa thể xác nhận gửi thành công. Vui lòng kiểm tra kết nối và thử lại sau.',
+    'invalid' => 'Vui lòng kiểm tra lại thông tin bên dưới.',
+];

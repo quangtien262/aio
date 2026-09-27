@@ -28,6 +28,7 @@
     @include('theme-ec915::partials.footer')
 </div>
 @include('theme-xd0323::partials.auth-modal')
+@include('theme-ec915::partials.question-modal')
 @include('theme-xd0323::partials.inline-editor', ['canEditLanding' => $canEditLanding, 'editorLocales' => $editorLocales])
 @include('theme-ec915::partials.scripts')
 @if($canEditLanding)

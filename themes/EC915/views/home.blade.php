@@ -50,7 +50,7 @@
     </section>
 
     <section class="ec15-section ec15-faq xd-landing-block" data-landing-block-id="{{ data_get($faq, 'id') }}" data-block-type="ec915_faq" data-ec15-reveal>
-        <div class="ec15-container ec15-faq-layout"><div data-ec15-motion="left"><span class="ec15-eyebrow">FAQ'S</span><h2>{{ data_get($faq, 'data.title', 'Câu hỏi thường gặp?') }}</h2><p>{{ data_get($faq, 'data.summary') }}</p><a href="{{ route('site.contact') }}">Gửi câu hỏi</a></div><div class="ec15-accordion" data-ec15-motion="right">@foreach($items($faq) as $index => $item)<article class="{{ $index === 0 ? 'is-open' : '' }}" data-ec15-accordion><button><i>?</i><b>{{ data_get($item, 'title') }}</b><span class="fa-solid fa-chevron-down"></span></button><p>{{ data_get($item, 'summary') }}</p></article>@endforeach</div></div>
+        <div class="ec15-container ec15-faq-layout"><div data-ec15-motion="left"><span class="ec15-eyebrow">FAQ'S</span><h2>{{ data_get($faq, 'data.title', 'Câu hỏi thường gặp?') }}</h2><p>{{ data_get($faq, 'data.summary') }}</p><button type="button" class="ec15-question-open" data-ec915-question-open aria-haspopup="dialog" aria-controls="ec915-question-dialog">{{ __('ec915_question.send') }}</button></div><div class="ec15-accordion" data-ec15-motion="right">@foreach($items($faq) as $index => $item)<article class="{{ $index === 0 ? 'is-open' : '' }}" data-ec15-accordion><button><i>?</i><b>{{ data_get($item, 'title') }}</b><span class="fa-solid fa-chevron-down"></span></button><p>{{ data_get($item, 'summary') }}</p></article>@endforeach</div></div>
     </section>
 
     <section class="ec15-section ec15-testimonials xd-landing-block" data-landing-block-id="{{ data_get($testimonials, 'id') }}" data-block-type="ec915_testimonials" data-ec15-reveal>

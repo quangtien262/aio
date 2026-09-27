@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'eyebrow' => 'HERE TO HELP',
+    'title' => 'How can we help you?',
+    'intro' => 'Ask about interior design, products or installation. Our team will reply using the contact details you provide.',
+    'step1' => 'Receive your question',
+    'step2' => 'Understand your needs',
+    'step3' => 'Reply with advice',
+    'form_title' => 'Ask a question',
+    'required' => 'Fields marked * are required.',
+    'name' => 'Full name',
+    'email' => 'Email',
+    'phone' => 'Phone number',
+    'service' => 'Topic',
+    'message' => 'Your question',
+    'placeholder' => 'Tell us what you would like to know…',
+    'privacy' => 'Your details are used to contact you about this question.',
+    'send' => 'Send question',
+    'sending' => 'Sending your question…',
+    'success_title' => 'Question received!',
+    'success' => 'Your question has been saved. Our team will contact you using the details provided.',
+    'close' => 'Close',
+    'error' => 'We could not confirm your submission. Please check your connection and try again later.',
+    'invalid' => 'Please check the information below.',
+];

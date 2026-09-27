@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -16,6 +17,29 @@ use Tests\TestCase;
 class Ec915ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_news_seed_is_repeatable_and_renders_three_featured_articles(): void
+    {
+        $generator = app(ThemeDemoContentGenerator::class);
+        $generator->generate('EC915', 'ec915-nd-interior');
+        $generator->generate('EC915', 'ec915-nd-interior');
+        $posts = CmsPost::with('featuredMedia')->get();
+        $this->assertCount(6, $posts);
+        $this->assertSame(3, $posts->where('is_highlight', true)->count());
+        $home = $this->get('/vi')->assertOk();
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$home->getContent());
+        $this->assertSame(3, (new \DOMXPath($dom))->query('//div[@class="ec15-news-grid"]/article')->length);
+        $listing = $this->get(route('site.blog.index', ['locale' => 'vi']))->assertOk();
+        foreach ($posts as $post) {
+            $listing->assertSee($post->title);
+            $this->assertFileExists(public_path($post->featuredMedia->file_url));
+            $this->assertNotFalse(getimagesize(public_path($post->featuredMedia->file_url)));
+            $this->assertGreaterThanOrEqual(2, substr_count($post->body, '<h2>'));
+            $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))
+                ->assertOk()->assertSee($post->featuredMedia->file_url, false)->assertSee($post->body, false);
+        }
+    }
 
     public function test_ec915_is_registered_with_eleven_ordered_blocks_and_scroll_reveal(): void
     {
@@ -72,7 +96,7 @@ class Ec915ThemeTest extends TestCase
         $this->assertSame(5, data_get($result, 'counts.categories'));
         $this->assertSame(8, data_get($result, 'counts.products'));
         $this->assertSame(2, data_get($result, 'counts.banners'));
-        $this->assertSame(3, data_get($result, 'counts.posts'));
+        $this->assertSame(6, data_get($result, 'counts.posts'));
         $branding = (array) SiteProfile::query()->firstOrFail()->branding;
         $this->assertSame('/storage/branding/custom-interior.svg', data_get($branding, 'logo_url'));
         $this->assertSame('0909 888 777', data_get($branding, 'support_hotline'));

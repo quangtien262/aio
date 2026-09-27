@@ -10,11 +10,6 @@
         <a class="ec16-logo" href="{{ route('site.home') }}">
             @if($logo)<img src="{{ $logo }}" alt="{{ data_get($siteProfile ?? [], 'site_name', 'Bách Hóa Xanh Plus') }}">@endif
         </a>
-        <form class="ec16-search" action="{{ route('site.catalog.search') }}" method="get">
-            <select aria-label="Danh mục"><option>Tất cả</option><option>Thực phẩm</option><option>Công nghệ</option><option>Làm đẹp</option></select>
-            <input name="q" placeholder="@themeT('EC916.search_placeholder', 'Bạn muốn mua gì?')">
-            <button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </form>
         <button class="ec16-account" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span><b>@themeT('EC916.login', 'Đăng nhập')</b><small>@themeT('EC916.account', 'Tài khoản và đơn hàng')</small></span></button>
         <a class="ec16-cart" href="{{ route('site.cart.index') }}"><i class="fa-solid fa-bag-shopping"></i><em>{{ $cartCount }}</em></a>
         <button class="ec16-menu-toggle" data-ec16-menu aria-label="Mở menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>

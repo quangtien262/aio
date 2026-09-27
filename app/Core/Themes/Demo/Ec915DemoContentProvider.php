@@ -26,6 +26,7 @@ use InvalidArgumentException;
 class Ec915DemoContentProvider implements ThemeDemoContentProvider
 {
     private const THEME_KEY = 'EC915';
+
     private const PRESET_KEY = 'ec915-nd-interior';
 
     public function __construct(
@@ -141,12 +142,21 @@ class Ec915DemoContentProvider implements ThemeDemoContentProvider
             $this->record($postCategory);
 
             $posts = [
-                ['Modern Luxury – sự kết hợp giữa giá trị lịch sử và cuộc sống hiện đại', 'Tìm điểm cân bằng giữa đường nét sang trọng, vật liệu tự nhiên và tiện nghi đương đại.', 'room-living-room.webp'],
-                ['5 nguyên tắc bố trí văn phòng giúp tăng cảm hứng làm việc', 'Ánh sáng, tỷ lệ và lưu thông là ba nền tảng tạo nên một nơi làm việc hiệu quả.', 'room-office.webp'],
-                ['Không gian bếp mở: kết nối gia đình bằng thiết kế', 'Một căn bếp được quy hoạch tốt có thể trở thành trung tâm cảm xúc của ngôi nhà.', 'room-dining-room.webp'],
+                ['Modern Luxury – sự kết hợp giữa giá trị lịch sử và cuộc sống hiện đại', 'Tìm điểm cân bằng giữa đường nét sang trọng, vật liệu tự nhiên và tiện nghi đương đại.', 'room-living-room.webp',
+                    '<h2>Bắt đầu từ bảng màu nền</h2><p>Chọn màu kem, nâu gỗ hoặc xám ấm làm nền để các món đồ có đường nét nổi bật không cạnh tranh với nhau. Thử mẫu màu dưới ánh sáng ban ngày và ánh đèn trước khi quyết định.</p><h2>Tạo điểm nhấn có chọn lọc</h2><p>Một chiếc ghế da hoặc bàn đá có thể làm điểm nhấn cho phòng khách. Giữ lối đi thoáng, đo kích thước đồ nội thất và ưu tiên sự thoải mái khi sử dụng hằng ngày.</p>'],
+                ['5 nguyên tắc bố trí văn phòng giúp tăng cảm hứng làm việc', 'Ánh sáng, tỷ lệ và lưu thông là ba nền tảng tạo nên một nơi làm việc hiệu quả.', 'room-office.webp',
+                    '<h2>Sắp xếp theo thói quen làm việc</h2><p>Đặt bàn ở vị trí ít bị gián đoạn, bố trí vật dụng thường dùng trong tầm với và dành một khu riêng cho tài liệu. Chừa khoảng trống để kéo ghế và di chuyển thuận tiện.</p><h2>Hoàn thiện năm yếu tố cơ bản</h2><p>Kết hợp ánh sáng tự nhiên, đèn bàn, ghế có thể điều chỉnh, nơi lưu trữ gọn gàng và cách đi dây an toàn. Kiểm tra độ chói trên màn hình trước khi cố định vị trí bàn.</p>'],
+                ['Không gian bếp mở: kết nối gia đình bằng thiết kế', 'Một căn bếp được quy hoạch tốt có thể trở thành nơi sinh hoạt chung của ngôi nhà.', 'room-dining-room.webp',
+                    '<h2>Phân chia công năng rõ ràng</h2><p>Sắp xếp khu sơ chế, nấu nướng và bàn ăn theo trình tự sử dụng. Tránh để ghế ăn hoặc cánh tủ mở ra chắn lối đi chính giữa bếp và phòng khách.</p><h2>Đồng bộ vật liệu và ánh sáng</h2><p>Dùng một vài màu chủ đạo xuyên suốt các khu vực. Chọn bề mặt dễ vệ sinh quanh nơi nấu và bổ sung ánh sáng riêng cho bàn ăn để tạo cảm giác ấm cúng.</p>'],
+                ['Phòng ngủ nhỏ: chọn nội thất để không gian thoáng hơn', 'Gợi ý lựa chọn giường, tủ và ánh sáng theo diện tích thực tế.', 'room-bedroom.webp',
+                    '<h2>Đo trước khi chọn giường</h2><p>Đánh dấu kích thước giường trên mặt sàn, kiểm tra khoảng mở cửa và lối đi hai bên. Một chiếc giường vừa vặn sẽ hữu ích hơn mẫu lớn khiến phòng khó di chuyển.</p><h2>Tận dụng nơi lưu trữ</h2><p>Cân nhắc ngăn kéo dưới giường hoặc tủ cao phù hợp chiều cao phòng. Dùng rèm sáng màu và đèn đầu giường gọn để giảm số đồ đặt trên sàn.</p>'],
+                ['Chọn sofa cho phòng khách: cân bằng kích thước và chất liệu', 'Những điểm cần đối chiếu trước khi chọn sofa cho gia đình.', 'product-sofa-ivory.webp',
+                    '<h2>Kiểm tra kích thước và đường vận chuyển</h2><p>Đo phòng khách, cửa ra vào, hành lang và thang máy trước khi đặt mua. Thử vị trí sofa bằng băng đánh dấu để đánh giá lối đi và khoảng cách tới bàn trà.</p><h2>Chọn chất liệu theo cách sử dụng</h2><p>Gia đình có trẻ nhỏ nên tìm hiểu khả năng vệ sinh và hướng dẫn chăm sóc của từng loại vải. Ngồi thử để kiểm tra độ sâu, độ cao và cảm giác tựa lưng.</p>'],
+                ['Ánh sáng trang trí: tạo điểm nhấn cho bàn ăn', 'Phối hợp đèn thả với ánh sáng chung để bàn ăn dễ sử dụng và hài hòa.', 'product-lamp-black.webp',
+                    '<h2>Chọn tỷ lệ phù hợp</h2><p>Đối chiếu kích thước chao đèn với mặt bàn và chiều cao trần. Kiểm tra góc nhìn khi ngồi để đèn không che khuất người đối diện hoặc gây chói mắt.</p><h2>Phối hợp nhiều nguồn sáng</h2><p>Đèn thả có thể kết hợp đèn trần hoặc đèn hắt để căn phòng không quá tối ở các góc. Nhờ đơn vị lắp đặt kiểm tra khả năng chịu tải và đường điện trước khi thi công.</p>'],
             ];
 
-            foreach ($posts as $index => [$title, $excerpt, $image]) {
+            foreach ($posts as $index => [$title, $excerpt, $image, $body]) {
                 $media = CmsMedia::query()->create([
                     'title' => $title,
                     'file_path' => '',
@@ -162,10 +172,10 @@ class Ec915DemoContentProvider implements ThemeDemoContentProvider
                     'slug' => Str::slug('ec915-'.$title),
                     'status' => 'published',
                     'excerpt' => $excerpt,
-                    'body' => '<p>'.$excerpt.'</p><p>ND Interior chia sẻ những góc nhìn thực tiễn để mỗi quyết định thiết kế đều tạo ra giá trị dài lâu.</p>',
+                    'body' => '<p>'.e($excerpt).'</p>'.$body,
                     'featured_media_id' => $media->id,
                     'publish_at' => now()->subDays($index + 1),
-                    'is_highlight' => $index === 0,
+                    'is_highlight' => $index < 3,
                 ]);
                 $this->record($post);
             }
