@@ -7,15 +7,64 @@ use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
 use App\Models\CmsPost;
 use App\Models\CmsService;
+use App\Models\ContactInquiry;
 use App\Models\LandingPage;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class Dn350ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_seeded_article_images_resolve_to_existing_public_assets(): void
+    {
+        $generator = app(ThemeDemoContentGenerator::class);
+        $generator->generate('DN350', 'dn350-cleaning');
+        $generator->generate('DN350', 'dn350-cleaning');
+        $posts = CmsPost::with('featuredMedia')->get();
+        $this->assertCount(3, $posts);
+        $home = $this->get('/vi')->assertOk();
+        $listing = $this->get(route('site.blog.index', ['locale' => 'vi']))->assertOk();
+        foreach ($posts as $post) {
+            $media = $post->featuredMedia;
+            $this->assertNotNull($media);
+            $this->assertEmpty($media->file_path);
+            $this->assertStringStartsWith('/theme-demo/dn350/', $media->file_url);
+            $this->assertFileExists(public_path($media->file_url));
+            $this->assertNotFalse(getimagesize(public_path($media->file_url)));
+            $home->assertSee($media->file_url, false);
+            $listing->assertSee($media->file_url, false);
+            $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))
+                ->assertOk()->assertSee($media->file_url, false);
+        }
+        $home->assertDontSee('/storage/theme-demo/dn350/', false);
+    }
+
+    public function test_quote_modal_validates_and_saves_requests_to_database(): void
+    {
+        Mail::fake();
+        SiteProfile::create(['site_name' => 'DN350', 'active_theme_key' => 'DN350', 'website_type' => 'service']);
+        $this->get('/vi')->assertOk()->assertSee('data-dn350-quote-open', false)->assertSee('id="dn350-quote-dialog"', false);
+        $this->postJson('/vi/contact', ['source' => 'quote_modal', 'name' => '', 'email' => 'invalid', 'message' => 'short'])
+            ->assertUnprocessable()->assertJsonValidationErrors(['name', 'email', 'message']);
+        $this->assertDatabaseCount('contact_inquiries', 0);
+        $this->assertDatabaseCount('orders', 0);
+        $this->postJson('/vi/contact', [
+            'source' => 'quote_modal', 'name' => 'Khách DN350', 'email' => 'customer@example.test',
+            'phone' => '0909123456', 'subject' => 'Vệ sinh văn phòng', 'route_summary' => 'Hà Nội',
+            'message' => 'Cần vệ sinh văn phòng 200m2 vào cuối tuần.',
+        ])->assertOk();
+        $inquiry = ContactInquiry::firstOrFail();
+        $this->assertSame('website-main', $inquiry->website_key);
+        $this->assertSame('quote_modal', $inquiry->source);
+        $this->assertSame('Vệ sinh văn phòng', $inquiry->subject);
+        $this->assertSame('Hà Nội', $inquiry->route_summary);
+        $this->assertSame('new', $inquiry->status);
+        $this->assertNotNull($inquiry->order_id);
+    }
 
     public function test_dn350_is_registered_with_nine_home_blocks(): void
     {
@@ -63,6 +112,9 @@ class Dn350ThemeTest extends TestCase
 
         $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
         $html = $response->getContent();
+        if ($path = getenv('DN350_HEADER_PREVIEW')) {
+            file_put_contents($path, $html);
+        }
 
         $response
             ->assertSee('https://cdn.example.com/dn350-custom-logo.svg', false)

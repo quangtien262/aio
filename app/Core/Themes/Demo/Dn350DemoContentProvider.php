@@ -119,7 +119,8 @@ class Dn350DemoContentProvider implements ThemeDemoContentProvider
             foreach ($posts as $index => [$title, $excerpt, $image]) {
                 $media = CmsMedia::query()->create([
                     'title' => $title,
-                    'file_path' => 'theme-demo/dn350/'.$image,
+                    // Bundled public assets are URLs, not files on the uploads disk.
+                    'file_path' => '',
                     'file_url' => '/theme-demo/dn350/'.$image,
                     'mime_type' => 'image/webp',
                     'size' => 0,

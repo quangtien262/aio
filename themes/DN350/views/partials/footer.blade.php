@@ -21,7 +21,6 @@
         </section>
         <section><h3>@themeT('DN350.footer.categories', 'Danh mục')</h3><a href="{{ route('site.services.index') }}">Dịch vụ tại nhà</a><a href="{{ route('site.services.index') }}">Dành cho doanh nghiệp</a><a href="{{ route('site.blog.index') }}">Tin tức vệ sinh</a><div class="dn350-social"><a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a><a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a><a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a></div></section>
         <section><h3>@themeT('DN350.footer.gallery', 'Thư viện ảnh')</h3><div class="dn350-footer__gallery">@foreach($gallery as $image)<img src="{{ $image }}" alt="Dịch vụ vệ sinh {{ $loop->iteration }}">@endforeach</div></section>
-        <section><h3>Bản đồ</h3><a class="dn350-map" href="{{ route('site.contact') }}"><span><i class="fa-solid fa-location-dot"></i></span><strong>Prinash Cleaning</strong><small>{{ $address }}</small></a></section>
     </div>
     <div class="dn350-footer__copy"><div class="dn350-container">© {{ now()->year }} {{ $siteName }}. @themeT('DN350.footer.rights', 'Bảo lưu mọi quyền.')</div></div>
 </footer>

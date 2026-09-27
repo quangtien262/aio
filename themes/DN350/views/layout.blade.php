@@ -23,6 +23,7 @@
     @include('theme-dn350::partials.footer')
 </div>
 @include('theme-dn350::partials.auth-modal')
+@include('theme-dn350::partials.quote-modal')
 @if ($canEditLanding ?? false)
     @include('theme-xd0302::partials.inline-editor')
 @endif

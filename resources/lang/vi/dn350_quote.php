@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'eyebrow' => 'TƯ VẤN & BÁO GIÁ',
+    'title' => 'Giải pháp phù hợp với bạn',
+    'intro' => 'Chia sẻ nhu cầu của bạn. Đội ngũ tư vấn sẽ liên hệ để trao đổi phạm vi công việc và báo giá phù hợp.',
+    'step1' => 'Tiếp nhận nhu cầu',
+    'step2' => 'Trao đổi phương án',
+    'step3' => 'Gửi báo giá chi tiết',
+    'form_title' => 'Yêu cầu báo giá',
+    'required' => 'Các trường có dấu * là bắt buộc.',
+    'name' => 'Họ và tên',
+    'email' => 'Email',
+    'phone' => 'Số điện thoại',
+    'service' => 'Dịch vụ quan tâm',
+    'address' => 'Địa điểm thực hiện',
+    'message' => 'Nội dung yêu cầu',
+    'placeholder' => 'Mô tả công việc, diện tích và thời gian dự kiến để chúng tôi tư vấn chính xác hơn…',
+    'privacy' => 'Thông tin được dùng để liên hệ và tư vấn cho yêu cầu của bạn.',
+    'send' => 'Gửi yêu cầu báo giá',
+    'sending' => 'Đang gửi yêu cầu…',
+    'success_title' => 'Đã tiếp nhận yêu cầu!',
+    'success' => 'Yêu cầu báo giá đã được lưu. Chúng tôi sẽ liên hệ qua thông tin bạn đã cung cấp.',
+    'close' => 'Đóng',
+    'error' => 'Chưa thể xác nhận gửi thành công. Vui lòng kiểm tra kết nối và thử lại sau.',
+    'invalid' => 'Vui lòng kiểm tra lại thông tin bên dưới.',
+];
