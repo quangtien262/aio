@@ -6,9 +6,9 @@
   "website_type": "ecommerce",
   "parent": null,
   "preview": {
-    "thumbnail": "preview-dn351.png",
-    "cover": "cover-dn351.png",
-    "avatar": "avatar.png"
+    "thumbnail": "dn351.png",
+    "cover": "dn351.png",
+    "avatar": "dn351.png"
   },
   "blocks": [
     "hero-slider",

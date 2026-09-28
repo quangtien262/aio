@@ -23,20 +23,6 @@
         <div class="dn351-container">
             <a href="mailto:{{ $email }}"><i class="fa-regular fa-envelope"></i>{{ $email }}</a>
             <a href="tel:{{ preg_replace('/[^0-9+]/', '', $hotline) }}"><i class="fa-solid fa-phone"></i>{{ $hotline }}</a>
-        </div>
-    </div>
-    <div class="dn351-navbar">
-        <div class="dn351-container dn351-navbar__inner">
-            <a class="dn351-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
-                @if($logo !== '')
-                    <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
-            </a>
-            <button class="dn351-menu-toggle" type="button" data-dn351-menu aria-expanded="false" aria-controls="dn351-menu"><i class="fa-solid fa-bars"></i></button>
-            <nav id="dn351-menu" class="dn351-menu" data-dn351-nav>
-                @foreach($menuItems as $item)
-                    @include('theme-dn351::partials.menu-item', ['item' => $item, 'level' => 0])
-                @endforeach
-            </nav>
             <div class="dn351-tools">
                 <a href="{{ route('site.catalog.search') }}" aria-label="@themeT('DN351.header.search', 'Tìm kiếm')"><i class="fa-solid fa-magnifying-glass"></i><span>@themeT('DN351.header.search', 'Tìm kiếm')</span></a>
                 @guest('admin') @guest('customer')
@@ -46,6 +32,21 @@
 
             @include('partials.storefront-language-switcher')
         </div>
+        </div>
+    </div>
+    <div class="dn351-navbar">
+        <div class="dn351-container dn351-navbar__inner">
+            <a class="dn351-logo" href="{{ route('site.home') }}" aria-label="{{ $siteName }} - Trang chủ">
+                @if($logo !== '')
+                    <img src="{{ $logo }}" alt="{{ $siteName }}">@endif
+            </a>
+            <button class="dn351-menu-toggle" type="button" aria-label="Mở menu" data-dn351-menu aria-expanded="false" aria-controls="dn351-menu"><i class="fa-solid fa-bars"></i></button>
+            <nav id="dn351-menu" class="dn351-menu" data-dn351-nav>
+                @foreach($menuItems as $item)
+                    @include('theme-dn351::partials.menu-item', ['item' => $item, 'level' => 0])
+                @endforeach
+            </nav>
+
         </div>
     </div>
 </header>

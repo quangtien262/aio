@@ -11,7 +11,7 @@ export default function ThemeGrid({ themes = [], selectedThemeKey, onSelectTheme
     if (!Array.isArray(themes)) return null;
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
+        <div className="theme-manager-grid">
             {themes.map((theme) => (
                 <div
                     key={theme.key}

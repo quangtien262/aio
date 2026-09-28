@@ -79,6 +79,9 @@ class Dn351ThemeTest extends TestCase
 
         $response = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
         $html = $response->getContent();
+        if ($path = getenv('DN351_HEADER_PREVIEW')) {
+            file_put_contents($path, $html);
+        }
         $response
             ->assertSee('/storage/branding/custom-meatlers.svg', false)
             ->assertSee('Nhà cung cấp trái cây tươi tốt nhất thị trường')

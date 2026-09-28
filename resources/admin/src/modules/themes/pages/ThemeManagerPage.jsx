@@ -19,7 +19,7 @@ const { Paragraph, Text } = Typography;
 const ThemeGrid = lazy(() => import('../components/ThemeGrid'));
 const ThemePreviewDetailsPanel = lazy(() => import('../components/ThemePreviewDetailsPanel'));
 const ThemeActivateDialog = lazy(() => import('../components/ThemeActivateDialog'));
-const THEME_PAGE_SIZES = [12, 24, 48];
+const THEME_PAGE_SIZES = [6];
 const DEFAULT_THEME_PAGE_SIZE = THEME_PAGE_SIZES[0];
 
 function positiveInteger(value, fallback) {
@@ -283,7 +283,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                                 current={themePage}
                                 pageSize={themePageSize}
                                 total={filteredThemes.length}
-                                showSizeChanger
+                                showSizeChanger={false}
                                 pageSizeOptions={THEME_PAGE_SIZES}
                                 showTotal={(total, range) => `${range[0]}-${range[1]} / ${total} theme`}
                                 onChange={(page, pageSize) => updateThemeListParams({
