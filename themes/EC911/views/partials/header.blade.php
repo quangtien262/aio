@@ -5,6 +5,7 @@
     $logo = data_get($branding, 'logo_url');
     $siteName = data_get($profile, 'site_name', 'DIGITECH');
     $hotline = data_get($branding, 'support_hotline', '');
+    $productMenu = collect(data_get($shell, 'product_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec11-header" id="top">
@@ -27,8 +28,19 @@
             @include('partials.storefront-language-switcher')
         </div>
     <nav class="ec11-nav"><div class="ec11-container">
-        <button type="button" data-ec11-menu><i class="fa-solid fa-bars"></i> DANH MỤC SẢN PHẨM</button>
-        <div data-ec11-nav>
+        <details class="ec11-category-menu" data-ec11-category-menu>
+            <summary><i class="fa-solid fa-bars" aria-hidden="true"></i> Danh mục sản phẩm <span aria-hidden="true">⌄</span></summary>
+            <div class="ec11-category-panel">
+                <a class="ec11-category-all" href="{{ route('site.catalog.search') }}">Tất cả sản phẩm →</a>
+                @if($productMenu->isNotEmpty())
+                    <ul>@include('theme-ec911::partials.category-items', ['categoryItems' => $productMenu])</ul>
+                @else
+                    <p>Danh mục đang được cập nhật.</p>
+                @endif
+            </div>
+        </details>
+        <button type="button" class="ec11-nav-toggle" data-ec11-menu aria-label="Mở menu điều hướng" aria-controls="ec11-navigation" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i> Menu</button>
+        <div id="ec11-navigation" data-ec11-nav>
             @foreach($nav as $item)<a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>@endforeach
         </div>
     </div></nav>

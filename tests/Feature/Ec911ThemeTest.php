@@ -32,6 +32,7 @@ class Ec911ThemeTest extends TestCase
         $dom = new \DOMDocument;
         @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
         $xpath = new \DOMXPath($dom);
+        $this->assertSame(5, $xpath->query('//details[@data-ec11-category-menu]//ul/li/a')->length);
         $this->assertSame(5, $xpath->query('//section[@id="flash-sale"]//article')->length);
         $this->assertSame(5, $xpath->query('//section[@id="may-anh"]//article')->length);
         $this->assertSame(4, $xpath->query('//section[@id="tin-tuc"]//article')->length);
@@ -42,6 +43,21 @@ class Ec911ThemeTest extends TestCase
         foreach (CatalogProduct::all() as $product) {
             $this->assertFileExists(public_path($product->image_url));
         }
+    }
+
+    public function test_category_dropdown_supports_empty_catalog_and_nested_items_on_search(): void
+    {
+        SiteProfile::create(['site_name' => 'DIGITECH', 'website_type' => 'ecommerce', 'active_theme_key' => 'EC911']);
+        $this->get('/vi/tim-kiem')->assertOk()->assertSee('Danh mục đang được cập nhật.');
+        $parent = CatalogCategory::create(['name' => 'Máy ảnh', 'slug' => 'may-anh', 'is_active' => true]);
+        CatalogCategory::create(['name' => 'Mirrorless', 'slug' => 'mirrorless', 'parent_id' => $parent->id, 'is_active' => true]);
+        $response = $this->get('/vi/tim-kiem')->assertOk();
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
+        $links = (new \DOMXPath($dom))->query('//details[@data-ec11-category-menu]//ul/li/ul/li/a');
+        $this->assertSame(1, $links->length);
+        $this->assertSame('Mirrorless', trim($links->item(0)->textContent));
+        $this->get($links->item(0)->getAttribute('href'))->assertOk();
     }
 
     public function test_ec911_is_registered_with_ten_editable_home_blocks(): void
