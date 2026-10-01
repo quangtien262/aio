@@ -4305,17 +4305,17 @@ class LandingPageBuilder
             ['title' => 'Hotline: 0399162342', 'summary' => 'Hỗ trợ 24/7', 'icon' => 'fa-headset'],
         ];
         $categories = [
-            ['title' => 'iPhone', 'image' => '/theme-demo/ec912/phone-graphite.webp', 'url' => '#iphone'],
-            ['title' => 'Mac', 'image' => '/theme-demo/ec912/laptop-silver.webp', 'url' => '#iphone'],
-            ['title' => 'iPad', 'image' => '/theme-demo/ec912/tablet-blue.webp', 'url' => '#iphone'],
-            ['title' => 'Watch', 'image' => '/theme-demo/ec912/watch-white.webp', 'url' => '#iphone'],
-            ['title' => 'Âm thanh', 'image' => '/theme-demo/ec912/earbuds-white.webp', 'url' => '#iphone'],
-            ['title' => 'Phụ kiện', 'image' => '/theme-demo/ec912/charger-wireless.webp', 'url' => '#iphone'],
+            ['title' => 'iPhone', 'image' => '/theme-demo/ec912/phone-graphite.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-iphone'])],
+            ['title' => 'Mac', 'image' => '/theme-demo/ec912/laptop-silver.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-mac'])],
+            ['title' => 'iPad', 'image' => '/theme-demo/ec912/tablet-blue.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-ipad'])],
+            ['title' => 'Watch', 'image' => '/theme-demo/ec912/watch-white.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-watch'])],
+            ['title' => 'Âm thanh', 'image' => '/theme-demo/ec912/earbuds-white.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-am-thanh'])],
+            ['title' => 'Phụ kiện', 'image' => '/theme-demo/ec912/charger-wireless.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-phu-kien'])],
         ];
         $promotions = [
-            ['title' => 'Apple Watch Series', 'summary' => 'Đặt hàng ngay', 'image' => '/theme-demo/ec912/promo-accessories.webp', 'url' => '#iphone'],
-            ['title' => 'AirPods Pro', 'summary' => 'Âm thanh sống động', 'image' => '/theme-demo/ec912/promo-computing.webp', 'url' => '#iphone'],
-            ['title' => 'iPhone chính hãng', 'summary' => 'Đặt gạch ngay', 'image' => '/theme-demo/ec912/promo-phone.webp', 'url' => '#iphone'],
+            ['title' => 'Apple Watch Series', 'summary' => 'Đặt hàng ngay', 'image' => '/theme-demo/ec912/promo-accessories.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-watch'])],
+            ['title' => 'AirPods Pro', 'summary' => 'Âm thanh sống động', 'image' => '/theme-demo/ec912/promo-computing.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-am-thanh'])],
+            ['title' => 'iPhone chính hãng', 'summary' => 'Đặt gạch ngay', 'image' => '/theme-demo/ec912/promo-phone.webp', 'url' => route('site.catalog.search', ['category' => 'ec912-iphone'])],
         ];
         $gallery = [
             ['title' => 'Khách hàng Sudes Phone', 'image' => '/theme-demo/ec912/story-review.webp'],

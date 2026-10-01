@@ -96,17 +96,34 @@ class Ec912DemoContentProvider implements ThemeDemoContentProvider
                 ['iPhone 14 Pro Max 256GB - Chính hãng VN/A', 29690000, 37990000, 'phone-graphite.webp'],
             ];
 
-            foreach ($products as $index => [$name, $price, $originalPrice, $image]) {
+            $products = array_map(fn (array $product): array => [...$product, 0], $products);
+            $products = array_merge($products, [
+                ['MacBook Air 13 inch - Bạc', 24990000, 27990000, 'laptop-silver.webp', 1],
+                ['MacBook Air 15 inch - Bạc', 29990000, 32990000, 'laptop-silver.webp', 1],
+                ['iPad Air 64GB - Xanh', 14990000, 16990000, 'tablet-blue.webp', 2],
+                ['Apple Watch - Dây trắng', 8990000, 9990000, 'watch-white.webp', 3],
+                ['AirPods - Hộp sạc trắng', 3990000, 4490000, 'earbuds-white.webp', 4],
+                ['Đế sạc không dây', 990000, 1290000, 'charger-wireless.webp', 5],
+            ]);
+            $summaries = [
+                'Điện thoại cho liên lạc, chụp ảnh và giải trí hằng ngày.',
+                'Máy tính gọn nhẹ cho học tập và công việc di động.',
+                'Máy tính bảng cho ghi chú, đọc tài liệu và sáng tạo.',
+                'Đồng hồ thông minh cho thông báo và theo dõi vận động.',
+                'Tai nghe không dây cho nghe nhạc và cuộc gọi.',
+                'Phụ kiện sạc giúp bàn làm việc gọn gàng hơn.',
+            ];
+            foreach ($products as $index => [$name, $price, $originalPrice, $image, $categoryIndex]) {
                 $product = CatalogProduct::query()->create([
-                    'catalog_category_id' => $categories[0]->id,
+                    'catalog_category_id' => $categories[$categoryIndex]->id,
                     'name' => $name,
                     'slug' => Str::slug('ec912-'.$name),
-                    'sku' => 'EC912-IPHONE-'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT),
+                    'sku' => 'EC912-'.($categoryIndex === 0 ? 'IPHONE' : strtoupper(Str::slug($categories[$categoryIndex]->name))).'-'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT),
                     'price' => $price,
                     'original_price' => $originalPrice,
                     'stock' => 80,
-                    'short_description' => 'Sản phẩm chính hãng VN/A, hỗ trợ trả góp 0% và bảo hành rõ ràng.',
-                    'detail_content' => '<p>Sản phẩm Apple chính hãng được kiểm tra chất lượng, công khai giá bán và chính sách bảo hành.</p>',
+                    'short_description' => $summaries[$categoryIndex],
+                    'detail_content' => '<h2>Trải nghiệm sử dụng</h2><p>'.$summaries[$categoryIndex].'</p><h2>Lựa chọn phù hợp</h2><p>Đối chiếu dung lượng, kích thước và khả năng tương thích với thiết bị đang dùng trước khi lựa chọn.</p><h2>Thông tin mua hàng</h2><p>Sản phẩm và giá trong bộ dữ liệu này dùng để minh họa website demo. Liên hệ cửa hàng để xác nhận cấu hình, phụ kiện, tồn kho và điều kiện bảo hành thực tế.</p>',
                     'image_url' => '/theme-demo/ec912/'.$image,
                     'is_featured' => $index < 4,
                     'is_highlight' => true,
@@ -142,10 +159,10 @@ class Ec912DemoContentProvider implements ThemeDemoContentProvider
             ]);
             $this->record($postCategory);
             $posts = [
-                ['Thú thật: iPhone đã đúng khi không đụng đến tính năng này?', 'Góc nhìn thực tế về thiết kế và trải nghiệm dùng iPhone.', 'story-phone.webp'],
-                ['Apple in tiền định thế nào: cá kiếm từ cả điện thoại cũ?', 'Cập nhật xu hướng kinh doanh và vòng đời sản phẩm Apple.', 'story-tablet.webp'],
-                ['Đây là mẫu iPhone chính hãng phá giá chưa từng có tại Việt Nam', 'Những thay đổi đáng chú ý về giá bán và ưu đãi.', 'story-review.webp'],
-                ['Người giàu cũng khóc: iPhone mới lộ giá bán cao đến khó tin', 'Tổng hợp thông tin thị trường điện thoại cao cấp.', 'story-charging.webp'],
+                ['Chọn dung lượng iPhone phù hợp với nhu cầu', 'Cân nhắc ảnh, video và ứng dụng để lựa chọn dung lượng lưu trữ.', 'story-phone.webp'],
+                ['iPad hay MacBook cho học tập và làm việc?', 'So sánh cách sử dụng, tính di động và phụ kiện cần thiết.', 'story-tablet.webp'],
+                ['Những điều cần kiểm tra khi nhận điện thoại', 'Kiểm tra ngoại hình, cấu hình và chứng từ trước khi sử dụng.', 'story-review.webp'],
+                ['Sắp xếp góc sạc gọn gàng cho nhiều thiết bị', 'Chọn phụ kiện tương thích và bố trí dây sạc thuận tiện.', 'story-charging.webp'],
             ];
 
             foreach ($posts as $index => [$title, $excerpt, $image]) {
@@ -164,10 +181,10 @@ class Ec912DemoContentProvider implements ThemeDemoContentProvider
                     'slug' => Str::slug('ec912-'.$title),
                     'status' => 'published',
                     'excerpt' => $excerpt,
-                    'body' => '<p>'.$excerpt.'</p><p>Sudes Phone tổng hợp thông tin hữu ích giúp khách hàng lựa chọn thiết bị phù hợp.</p>',
+                    'body' => '<h2>Nhu cầu sử dụng</h2><p>'.$excerpt.'</p><p>Liệt kê các tác vụ thường xuyên và những thiết bị bạn đang dùng. Việc này giúp xác định đâu là tính năng cần thiết trước khi so sánh sản phẩm.</p><h2>Kiểm tra trước khi chọn</h2><p>Đọc thông số của đúng phiên bản, đối chiếu khả năng tương thích và trải nghiệm trực tiếp nếu có thể. Kiểm tra phụ kiện đi kèm, điều kiện bảo hành và tổng chi phí.</p><h2>Trao đổi với cửa hàng</h2><p>Chuẩn bị câu hỏi về cấu hình, tồn kho và hỗ trợ sau mua. Đây là bài viết minh họa cho website demo, không phải thông báo ưu đãi hay chính sách bán hàng.</p>',
                     'featured_media_id' => $media->id,
                     'publish_at' => now()->subDays($index + 1),
-                    'is_highlight' => $index === 0,
+                    'is_highlight' => true,
                 ]);
                 $this->record($post);
             }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -16,6 +17,42 @@ use Tests\TestCase;
 class Ec912ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_seeded_home_renders_database_content_and_regeneration_does_not_duplicate_it(): void
+    {
+        $generator = app(ThemeDemoContentGenerator::class);
+        $generator->generate('EC912', 'ec912-sudes-phone');
+        $generator->generate('EC912', 'ec912-sudes-phone');
+        $this->assertSame(14, CatalogProduct::count());
+        $this->assertSame(6, CatalogCategory::count());
+        $this->assertSame(4, CmsPost::count());
+        $response = $this->get('/vi')->assertOk()->assertDontSee('Đã bán')->assertDontSee('BH 24 tháng');
+        if ($path = getenv('EC912_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
+        $xpath = new \DOMXPath($dom);
+        $this->assertSame(4, $xpath->query('//section[@id="hot-sale"]//article')->length);
+        $this->assertSame(8, $xpath->query('//section[@id="iphone"]//article')->length);
+        $this->assertSame(4, $xpath->query('//section[@id="tin-tuc"]//article')->length);
+        $links = $xpath->query('//div[@class="ec12-category-grid"]/a');
+        $this->assertSame(6, $links->length);
+        foreach ($links as $link) {
+            $this->assertStringNotContainsString('#iphone', $link->getAttribute('href'));
+            $this->get($link->getAttribute('href'))->assertOk();
+        }
+        foreach (CatalogCategory::all() as $category) {
+            $this->assertGreaterThan(0, $category->products()->count());
+        }
+        foreach (CatalogProduct::all() as $product) {
+            $this->assertFileExists(public_path($product->image_url));
+        }
+        foreach (CmsPost::all() as $post) {
+            $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))
+                ->assertOk()->assertSee('Kiểm tra trước khi chọn');
+        }
+    }
 
     public function test_ec912_is_registered_with_nine_ordered_home_blocks(): void
     {
@@ -58,7 +95,7 @@ class Ec912ThemeTest extends TestCase
         $result = $provider->generate('ec912-sudes-phone');
 
         $this->assertSame(6, data_get($result, 'counts.categories'));
-        $this->assertSame(8, data_get($result, 'counts.products'));
+        $this->assertSame(14, data_get($result, 'counts.products'));
         $this->assertSame(2, data_get($result, 'counts.banners'));
 
         $branding = (array) SiteProfile::query()->firstOrFail()->branding;
