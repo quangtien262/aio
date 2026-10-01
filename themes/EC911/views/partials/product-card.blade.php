@@ -9,5 +9,4 @@
     <h3><a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'title', data_get($item, 'name')) }}</a></h3>
     <strong>{{ number_format($price, 0, ',', '.') }}₫</strong>
     @if($original > $price)<del>{{ number_format($original, 0, ',', '.') }}₫</del>@endif
-    @if($flash ?? false)<div class="ec11-sold"><i style="width:{{ min(92, 38 + ($loop->iteration * 9)) }}%"></i></div><small>{{ 120 + $loop->iteration * 19 }} sản phẩm đã bán</small>@endif
 </article>

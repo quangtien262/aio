@@ -1040,6 +1040,10 @@ class LandingPageBuilder
             'ec913_best_sellers',
             'ec913_laptop_showcase',
             'ec913_technology_news',
+            'ec911_category_rail',
+            'ec911_flash_sale',
+            'ec911_camera_products',
+            'ec911_news',
             'ec912_hot_sale',
             'ec912_featured_categories',
             'ec912_iphone_products',
@@ -1049,8 +1053,8 @@ class LandingPageBuilder
             'dn351_product_grid',
         ], true)) {
             $defaultSource = match ($block->block_type) {
-                'dn351_category_rail', 'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories', 'foot404_categories', 'foot405_categories', 'foot406_categories', 'foot409_categories' => 'catalog_categories',
-                'ec917_inspiration', 'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news', 'foot406_latest_posts', 'foot407_media_posts', 'foot407_knowledge_posts', 'foot408_blog_posts', 'foot409_blog_posts' => 'cms_posts',
+                'ec911_category_rail', 'dn351_category_rail', 'ec914_category_rail', 'ec913_category_grid', 'ec912_featured_categories', 'foot404_categories', 'foot405_categories', 'foot406_categories', 'foot409_categories' => 'catalog_categories',
+                'ec911_news', 'ec917_inspiration', 'ec915_latest_posts', 'ec914_latest_posts', 'ec913_technology_news', 'ec912_technology_news', 'foot406_latest_posts', 'foot407_media_posts', 'foot407_knowledge_posts', 'foot408_blog_posts', 'foot409_blog_posts' => 'cms_posts',
                 default => 'cms_products',
             };
 

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
 use App\Models\CatalogCategory;
@@ -17,6 +18,31 @@ use Tests\TestCase;
 class Ec911ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_seeded_home_has_real_categories_products_and_news_after_regeneration(): void
+    {
+        $generator = app(ThemeDemoContentGenerator::class);
+        $generator->generate('EC911', 'ec911-digitech');
+        $generator->generate('EC911', 'ec911-digitech');
+        $this->assertSame(12, CatalogProduct::count());
+        $response = $this->get('/vi')->assertOk();
+        if ($path = getenv('EC911_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
+        $xpath = new \DOMXPath($dom);
+        $this->assertSame(5, $xpath->query('//section[@id="flash-sale"]//article')->length);
+        $this->assertSame(5, $xpath->query('//section[@id="may-anh"]//article')->length);
+        $this->assertSame(4, $xpath->query('//section[@id="tin-tuc"]//article')->length);
+        foreach (CatalogCategory::all() as $category) {
+            $this->assertGreaterThan(0, $category->products()->count());
+            $response->assertSee($category->name);
+        }
+        foreach (CatalogProduct::all() as $product) {
+            $this->assertFileExists(public_path($product->image_url));
+        }
+    }
 
     public function test_ec911_is_registered_with_ten_editable_home_blocks(): void
     {
@@ -39,7 +65,7 @@ class Ec911ThemeTest extends TestCase
         $this->assertNotNull($provider);
         $result = $provider->generate('ec911-digitech');
         $this->assertSame(5, data_get($result, 'counts.categories'));
-        $this->assertSame(10, data_get($result, 'counts.products'));
+        $this->assertSame(12, data_get($result, 'counts.products'));
         $this->assertSame(2, data_get($result, 'counts.banners'));
 
         $this->get(route('site.home', ['locale' => 'vi']))->assertOk()
@@ -59,7 +85,7 @@ class Ec911ThemeTest extends TestCase
         $this->get(route('site.cart.index', ['locale' => 'vi']))->assertOk();
         $this->get(route('site.blog.index', ['locale' => 'vi']))->assertOk();
         $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))->assertOk();
-        $this->get(route('site.contact', ['locale' => 'vi']))->assertOk()->assertSee('Liên hệ DIGITECH');
+        $this->get(route('site.contact', ['locale' => 'vi']))->assertOk()->assertSee('Đội ngũ DIGITECH luôn sẵn sàng hỗ trợ bạn.');
         $this->assertCount(10, LandingPage::query()->where('theme_key', 'EC911')->where('is_home', true)->firstOrFail()->blocks);
     }
 

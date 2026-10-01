@@ -46,10 +46,10 @@
     <h2>{{ data_get($flash, 'data.title', 'Flash sale') }}</h2><div class="ec11-products">@foreach($items($flash) as $item)@include('theme-ec911::partials.product-card', ['item' => $item, 'flash' => true])@endforeach</div>
 </div></section>
 <section id="may-anh" class="ec11-product-section xd-landing-block" data-landing-block-id="{{ data_get($cameras, 'id') }}" data-block-type="ec911_camera_products"><div class="ec11-container">
-    <header><h2>{{ data_get($cameras, 'data.title', 'MÁY ẢNH') }}</h2><nav><a>Máy ảnh DSLR</a><a>Máy ảnh Mirrorless</a><a>Máy ảnh Compact</a><a>Máy ảnh Film</a><a href="{{ route('site.catalog.search') }}">Xem tất cả</a></nav></header>
+    <header><h2>{{ data_get($cameras, 'data.title') ?: 'Máy ảnh & máy quay' }}</h2><nav>@foreach($items($categories) as $category)<a href="{{ data_get($category, 'url') }}">{{ data_get($category, 'title') }}</a>@endforeach<a href="{{ route('site.catalog.search') }}">Xem tất cả</a></nav></header>
     <div class="ec11-products">@foreach($items($cameras) as $item)@include('theme-ec911::partials.product-card', ['item' => $item])@endforeach</div>
 </div></section>
-<section class="ec11-campaign xd-landing-block" data-landing-block-id="{{ data_get($campaign, 'id') }}" data-block-type="ec911_campaign_banner"><div class="ec11-container"><a href="{{ data_get($campaign, 'settings.link_url', '#may-anh') }}"><img src="{{ data_get($campaign, 'settings.image', '/theme-demo/ec911/campaign-cameras.png') }}" alt="Top camera thịnh hành"><div><b>TOP CAMERA THỊNH HÀNH</b><span>SỐNG TRỌN ĐAM MÊ NHIẾP ẢNH</span></div></a></div></section>
+<section class="ec11-campaign xd-landing-block" data-landing-block-id="{{ data_get($campaign, 'id') }}" data-block-type="ec911_campaign_banner"><div class="ec11-container"><a href="{{ data_get($campaign, 'settings.link_url', '#may-anh') }}"><img src="{{ data_get($campaign, 'settings.image', '/theme-demo/ec911/campaign-cameras.png') }}" alt="Top camera thịnh hành"></a></div></section>
 <section class="ec11-brand-cards xd-landing-block" data-landing-block-id="{{ data_get($brands, 'id') }}" data-block-type="ec911_brand_cards"><div class="ec11-container">
     @foreach($items($brands) as $item)<a href="{{ data_get($item, 'url', '#may-anh') }}"><img src="{{ data_get($item, 'image', '/theme-demo/ec911/camera-pro.png') }}" alt="{{ data_get($item, 'title') }}"><strong>{{ data_get($item, 'title') }}</strong></a>@endforeach
 </div></section>
