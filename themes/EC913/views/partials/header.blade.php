@@ -38,6 +38,7 @@
     </div>
     <nav class="ec13-nav">
         <div class="ec13-container" data-ec13-nav>
+            @unless(request()->routeIs('site.home'))
             <div class="ec13-category-dropdown">
                 <button class="ec13-nav-category" type="button" data-ec13-mega-toggle aria-expanded="false" aria-controls="ec13-category-panel"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i> Danh mục <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
                 <div id="ec13-category-panel" class="ec13-category-panel" hidden>
@@ -46,6 +47,7 @@
                     </ul>
                 </div>
             </div>
+            @endunless
             @foreach($nav as $item)
                 <a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>
             @endforeach
