@@ -250,23 +250,55 @@
         .xd-contact-errors ul{margin:6px 0 0;padding-left:18px}
         @media (max-width:1180px){.xd-cms-hero,.xd-detail,.xd-contact-page{grid-template-columns:1fr}}
         @media (max-width:640px){.xd-cart-link{width:42px;height:42px;border-radius:999px}.xd-cart-link svg{width:19px;height:19px}.xd-page-main{padding:38px 0 56px}.xd-cms-hero{padding:30px 22px;margin-bottom:26px}.xd-cms-hero h1{font-size:36px}.xd-cms-hero p{font-size:16px}.xd-service-card{border-radius:18px;overflow:hidden}.xd-service-image{height:215px}.xd-service-body{padding:26px 22px}.xd-service-card h2,.xd-service-card h3{font-size:19px}.xd-detail-body{padding:28px 22px}.xd-detail-body h1{font-size:34px}.xd-detail-summary,.xd-rich-content{font-size:16px}.xd-contact-panel,.xd-contact-form-card{padding:28px 22px}.xd-contact-panel h2,.xd-contact-form-card h2{font-size:28px}.xd-contact-method{grid-template-columns:44px minmax(0,1fr);padding:14px}.xd-contact-icon{width:44px;height:44px;font-size:18px}.xd-contact-method a,.xd-contact-method span{font-size:15px}.xd-contact-submit{width:100%}}
+
+        .xd20-project-page{padding:40px 0 64px;background:#f5f5f4;color:#202325}
+        .xd20-project-page .xd-container{width:min(1240px,calc(100% - 48px));margin-inline:auto}
+        .xd20-project-page .xd-cms-hero{display:flex;align-items:center;justify-content:space-between;gap:28px;margin:0 0 28px;padding:0 0 28px;border-bottom:1px solid #dfe1e2}
+        .xd20-project-page .xd-kicker{display:block;color:#c82716;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+        .xd20-project-page h1{font-size:clamp(28px,3vw,42px);line-height:1.2;margin:0;font-weight:800;color:#202325}
+        .xd20-project-page .xd-cms-hero p{font-size:15px;line-height:1.6;color:#62686d;margin:12px 0 0}
+        .xd20-project-page .xd-cms-stats{display:flex;align-items:center;gap:12px;flex-shrink:0;padding:14px 20px;border-left:3px solid #eb2916;background:#fff}
+        .xd20-project-page .xd-cms-stats strong{font-size:28px;color:#202325}
+        .xd20-project-page .xd-cms-stats span{font-size:12px;color:#62686d;max-width:100px;line-height:1.5}
+        .xd20-project-page .xd-services-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+        .xd20-project-page .xd-service-card{display:flex;flex-direction:column;min-width:0;background:#fff;border:1px solid #e2e3e4;border-radius:8px;overflow:hidden;transition:box-shadow .2s,border-color .2s}
+        .xd20-project-page .xd-service-card:hover{border-color:#c7cace;box-shadow:0 8px 24px #2023250d}
+        .xd20-project-page .xd-service-image{display:block;aspect-ratio:16/9;overflow:hidden;background:#e8e9e9}
+        .xd20-project-page .xd-service-image img{display:block;width:100%;height:100%;object-fit:cover}
+        .xd20-project-page .xd-service-body{display:flex;flex:1;flex-direction:column;padding:22px}
+        .xd20-project-page h2{font-size:21px;line-height:1.4;margin:0 0 10px;font-weight:700}
+        .xd20-project-page h2 a{color:#202325;text-decoration:none}
+        .xd20-project-page h2 a:hover{color:#c82716}
+        .xd20-project-page .xd-service-body p{font-size:14px;line-height:1.7;color:#62686d;margin:0 0 20px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+        .xd20-project-page .xd-text-link{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:14px;border-top:1px solid #eceeed;color:#b72516;font-size:13px;font-weight:700;text-decoration:none}
+        .xd20-project-page .xd-text-link:after{content:'↗';font-size:20px}
+        .xd20-project-page a:focus-visible{outline:3px solid #eb2916;outline-offset:-3px}
+        @media(max-width:900px){.xd20-project-page .xd-services-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:600px){.xd20-project-page{padding:28px 0 40px}.xd20-project-page .xd-container{width:calc(100% - 32px)}.xd20-project-page .xd-cms-hero{align-items:flex-start;flex-direction:column;gap:16px}.xd20-project-page .xd-cms-stats{padding:8px 14px}.xd20-project-page .xd-cms-stats strong{font-size:22px}.xd20-project-page .xd-cms-stats span{max-width:none}.xd20-project-page .xd-services-list{grid-template-columns:1fr;gap:20px}.xd20-project-page .xd-service-body{padding:20px}}
+
+.xd20-project-page .xd-service-image{height:auto}.xd20-project-page .xd-service-card{box-shadow:none;transform:none}.xd20-project-page h2{text-transform:none;letter-spacing:normal}.xd20-project-page .xd-cms-hero{background:transparent;box-shadow:none;border-width:0 0 1px}.xd20-project-page .xd-project-count{font-size:13px;color:#62686d;white-space:nowrap}.xd20-project-page .xd-empty{grid-column:1/-1;padding:32px;background:#fff;border:1px solid #e2e3e4;border-radius:8px;color:#62686d}
     </style>
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+<main class="xd-page-main {{ isset($listingItems) ? 'xd20-project-page' : '' }}">
             <div class="xd-container">
                     @if (isset($listingItems))
-                    <h1>{{ $pageTitle ?? 'Dự án' }}</h1>
+                    <header class="xd-cms-hero">
+                        <h1>{{ $pageTitle ?? (app()->getLocale() === 'vi' ? 'Dự án' : 'Projects') }}</h1>
+                        <span class="xd-project-count">{{ $listingItems->count() }} {{ app()->getLocale() === 'vi' ? 'dự án đang hiển thị' : 'projects displayed' }}</span>
+                    </header>
                     <section class="xd-services-list">
-                        @foreach ($listingItems as $project)
+                        @forelse ($listingItems as $project)
                             <article class="xd-service-card">
                                 @if ($project->featuredImage?->image_url)
                                     <a class="xd-service-image" href="{{ route('site.projects.show', ['slug' => $project->slug]) }}"><img src="{{ $project->featuredImage->image_url }}" alt="{{ $project->title }}" loading="lazy"></a>
                                 @endif
                                 <div class="xd-service-body"><h2><a href="{{ route('site.projects.show', ['slug' => $project->slug]) }}">{{ $project->title }}</a></h2><p>{{ $project->summary }}</p></div>
                             </article>
-                        @endforeach
+                        @empty
+                            <p class="xd-empty">{{ app()->getLocale() === 'vi' ? 'Chưa có dự án được xuất bản.' : 'No projects published yet.' }}</p>
+                        @endforelse
                     </section>
                     @if (method_exists($listingItems, 'links')){{ $listingItems->links() }}@endif
                     @else

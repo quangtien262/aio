@@ -74,6 +74,15 @@ class Tool751ThemeTest extends TestCase
             ->assertSee('data-block-type="tool751_category_products"', false)
             ->assertDontSee('support@htvietnam.vn')
             ->assertDontSee('266 Đội Cấn');
+        $response = $this->get(route('site.catalog.category', ['locale' => 'vi', 'slug' => $category->slug]))->assertOk();
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($response->getContent());
+        $xpath = new \DOMXPath($dom);
+        $this->assertSame(1, $xpath->query('//details[@data-t751-category-menu]')->length);
+        $links = $xpath->query('//details[@data-t751-category-menu]//a');
+        $this->assertGreaterThanOrEqual(2, $links->length);
+        $this->assertSame(route('site.catalog.category', ['locale' => 'vi', 'slug' => $category->slug]), $links->item(1)->getAttribute('href'));
+
     }
 
     public function test_tool751_demo_provider_is_registered_and_repeatable(): void

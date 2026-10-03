@@ -21,6 +21,14 @@ class Ec913ThemeTest extends TestCase
     public function test_product_detail_handles_gallery_stock_and_contact_pricing(): void
     {
         app(ThemeDemoContentGenerator::class)->generate('EC913', 'ec913-novatech-mall');
+        if ($path = getenv('EC913_CATALOG_PREVIEW')) {
+            $catalog = $this->get('/vi/danh-muc/ec913-dien-thoai-tablet')->assertOk();
+            file_put_contents($path, $catalog->getContent());
+        }
+        if ($path = getenv('EC913_CONTACT_PREVIEW')) {
+            $contact = $this->get('/vi/contact')->assertOk();
+            file_put_contents($path, $contact->getContent());
+        }
         $product = CatalogProduct::where('slug', 'ec913-novabook-air-14')->firstOrFail();
         $product->images()->create(['image_url' => '/theme-demo/ec913/phone-blue.webp', 'sort_order' => 0]);
         $url = route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]);

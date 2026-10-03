@@ -4,11 +4,6 @@
         ->whenEmpty(fn () => collect(data_get($visaBlock, 'dynamic_items', [])))
         ->take(4)
         ->values();
-    $blogBlock = collect($blocks ?? [])->firstWhere('block_type', 'bizmax_latest_posts');
-    $videoItems = collect(data_get($blogBlock, 'data.content.items', []))
-        ->whenEmpty(fn () => collect(data_get($blogBlock, 'dynamic_items', [])))
-        ->take(4)
-        ->values();
 @endphp
 
 <footer id="footer" class="rx13-footer">
@@ -40,20 +35,7 @@
                 @endforeach
             </ul>
         </section>
-        <section>
-            <h3>Video nổi bật</h3>
-            <div class="rx13-footer-videos">
-                @foreach ($videoItems as $item)
-                    @php $image = $item['image'] ?? $item['image_url'] ?? $item['thumbnail'] ?? ''; @endphp
-                    <a href="{{ $item['url'] ?? $item['href'] ?? '#blog' }}">
-                        @if (filled($image))
-                            <img src="{{ $image }}" alt="{{ $item['alt'] ?? $item['title'] ?? 'Video' }}">
-                        @endif
-                        <span>></span>
-                    </a>
-                @endforeach
-            </div>
-        </section>
+
         <section>
             <h3>Đăng ký nhận tin</h3>
             <p>Đăng ký nhận bản tin hằng tuần để cập nhật các thông tin visa mới nhất.</p>

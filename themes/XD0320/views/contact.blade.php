@@ -186,76 +186,13 @@
 
 @push('head')
     <style>
-        .xd-page-main{padding:76px 0 90px}
-        .xd-cms-hero{display:grid;grid-template-columns:minmax(0,.75fr) minmax(340px,.45fr);gap:48px;align-items:end;margin-bottom:54px;padding:56px;border:1px solid var(--line);background:#fff;box-shadow:0 20px 55px rgba(28,45,60,.08)}
-        .xd-kicker{position:relative;display:inline-block;margin:0 0 14px 18px;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
-        .xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}
-        .xd-cms-hero h1{margin:0;color:var(--ink);font-size:clamp(42px,5vw,72px);line-height:1.08;letter-spacing:-.055em}
-        .xd-cms-hero p{margin:18px 0 0;color:var(--muted);font-size:20px;font-weight:550}
-        .xd-cms-stats{display:grid;gap:12px;color:#fff;background:var(--ink);padding:26px 30px}
-        .xd-cms-stats strong{font-size:46px;line-height:1}
-        .xd-cms-stats span{color:rgba(255,255,255,.75);font-weight:800;text-transform:uppercase}
-        .xd-services-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px}
-        .xd-service-card{background:#fff;box-shadow:0 5px 20px rgba(16,29,40,.08);transition:.25s}
-        .xd-service-card:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
-        .xd-service-image{display:block;height:300px;overflow:hidden;background:#eef2ef}
-        .xd-service-image img{width:100%;height:100%;object-fit:cover;transition:.4s}
-        .xd-service-card:hover img{transform:scale(1.05)}
-        .xd-service-body{padding:36px 38px 40px}
-        .xd-service-card h2,.xd-service-card h3{margin:0 0 14px;font-size:22px;line-height:1.32;letter-spacing:.015em;text-transform:uppercase}
-        .xd-service-card p{margin:0 0 26px;color:var(--muted);font-size:17px}
-        .xd-text-link{color:var(--lime-dark);font-weight:900;text-transform:uppercase}
-        .xd-detail{display:grid;grid-template-columns:minmax(0,.85fr) minmax(300px,.35fr);gap:44px}
-        .xd-detail-card,.xd-side-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.06)}
-        .xd-detail-card{overflow:hidden}
-        .xd-detail-image{width:100%;max-height:520px;object-fit:cover}
-        .xd-detail-body{padding:44px 52px}
-        .xd-detail-body h1{margin:0 0 18px;font-size:clamp(38px,4vw,62px);line-height:1.1;letter-spacing:-.05em}
-        .xd-detail-summary{margin:0 0 28px;color:var(--muted);font-size:20px}
-        .xd-rich-content{color:#465461;font-size:18px}
-        .xd-rich-content :first-child{margin-top:0}
-        .xd-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:28px}
-        .xd-gallery figure{margin:0}
-        .xd-gallery img{width:100%;height:210px;object-fit:cover}
-        .xd-gallery figcaption{margin-top:8px;color:var(--muted);font-size:14px}
-        .xd-side-card{padding:28px}
-        .xd-side-card h3{margin:0 0 18px;font-size:24px}
-        .xd-side-card a{display:block;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-weight:750}
-        .xd-side-card a:hover{color:var(--lime-dark)}
-        .xd-contact-page{display:grid;grid-template-columns:minmax(0,.9fr) minmax(420px,.72fr);gap:34px;align-items:stretch}
-        .xd-contact-panel,.xd-contact-form-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.06)}
-        .xd-contact-panel{padding:44px 48px;background:linear-gradient(135deg,#fff 0%,#f7faee 100%)}
-        .xd-contact-panel h2,.xd-contact-form-card h2{margin:0 0 18px;font-size:34px;line-height:1.15;letter-spacing:-.04em}
-        .xd-contact-panel p{margin:0 0 26px;color:var(--muted);font-size:18px;font-weight:600}
-        .xd-contact-methods{display:grid;gap:16px;margin:0;padding:0;list-style:none}
-        .xd-contact-method{display:grid;grid-template-columns:54px minmax(0,1fr);gap:16px;align-items:center;padding:18px;border:1px solid rgba(38,56,74,.1);background:#fff}
-        .xd-contact-icon{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;background:#bdd400;color:#fff}
-        .xd-contact-icon svg{width:25px;height:25px;display:block;stroke:#fff;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
-        .xd-contact-method small{display:block;color:var(--lime-dark);font-size:12px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
-        .xd-contact-method a,.xd-contact-method span{color:var(--ink);font-size:18px;font-weight:850;overflow-wrap:anywhere}
-        .xd-contact-note{margin-top:24px;padding:20px 22px;background:var(--ink);color:#fff}
-        .xd-contact-note strong{display:block;margin-bottom:6px;color:var(--lime)}
-        .xd-contact-note span{color:rgba(255,255,255,.78);font-weight:650}
-        .xd-contact-form-card{padding:44px 48px}
-        .xd-contact-form{display:grid;gap:16px}
-        .xd-contact-field{display:grid;gap:8px}
-        .xd-contact-field label{font-size:13px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}
-        .xd-contact-field input,.xd-contact-field textarea{width:100%;border:1px solid var(--line);border-radius:0;background:#fbfcfa;color:var(--ink);font:inherit;font-weight:650;outline:0;transition:.2s}
-        .xd-contact-field input{height:56px;padding:0 18px}
-        .xd-contact-field textarea{min-height:150px;padding:16px 18px;resize:vertical}
-        .xd-contact-field input:focus,.xd-contact-field textarea:focus{border-color:var(--lime);box-shadow:0 0 0 4px rgba(189,212,0,.14)}
-        .xd-contact-submit{display:inline-flex;align-items:center;justify-content:center;width:max-content;min-height:58px;padding:0 30px;border:0;background:var(--lime);color:#fff;box-shadow:0 15px 30px rgba(189,212,0,.28);font:inherit;font-weight:950;text-transform:uppercase;cursor:pointer}
-        .xd-contact-submit:hover{transform:translateY(-1px)}
-        .xd-contact-alert{margin:0 0 18px;padding:14px 16px;border:1px solid rgba(143,169,0,.25);background:#f7fae5;color:var(--lime-dark);font-weight:850}
-        .xd-contact-errors{margin:0 0 18px;padding:14px 16px;border:1px solid rgba(180,35,24,.22);background:#fff4f2;color:#b42318;font-weight:800}
-        .xd-contact-errors ul{margin:6px 0 0;padding-left:18px}
-        @media (max-width:1180px){.xd-cms-hero,.xd-detail,.xd-contact-page{grid-template-columns:1fr}}
-        @media (max-width:640px){.xd-cart-link{width:42px;height:42px;border-radius:999px}.xd-cart-link svg{width:19px;height:19px}.xd-page-main{padding:38px 0 56px}.xd-cms-hero{padding:30px 22px;margin-bottom:26px}.xd-cms-hero h1{font-size:36px}.xd-cms-hero p{font-size:16px}.xd-service-card{border-radius:18px;overflow:hidden}.xd-service-image{height:215px}.xd-service-body{padding:26px 22px}.xd-service-card h2,.xd-service-card h3{font-size:19px}.xd-detail-body{padding:28px 22px}.xd-detail-body h1{font-size:34px}.xd-detail-summary,.xd-rich-content{font-size:16px}.xd-contact-panel,.xd-contact-form-card{padding:28px 22px}.xd-contact-panel h2,.xd-contact-form-card h2{font-size:28px}.xd-contact-method{grid-template-columns:44px minmax(0,1fr);padding:14px}.xd-contact-icon{width:44px;height:44px;font-size:18px}.xd-contact-method a,.xd-contact-method span{font-size:15px}.xd-contact-submit{width:100%}}
+.xd20-contact{padding:36px 0 64px;background:#f5f5f4;color:#202325}.xd20-contact .xd-container{width:min(1240px,calc(100% - 48px));margin:auto}.xd20-contact .xd-cms-hero{padding:0 0 26px;margin:0 0 28px;border-bottom:1px solid #dfe1e2}.xd20-contact .xd-kicker{display:block;color:#c82716;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:0 0 12px}.xd20-contact .xd-cms-hero .xd-kicker{display:none}.xd20-contact h1{margin:0;font-size:clamp(28px,3vw,42px);line-height:1.2}.xd20-contact .xd-cms-hero p{margin:12px 0 0;font-size:15px;line-height:1.7;color:#62686d;max-width:760px}.xd20-contact .xd-contact-page{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:28px;align-items:start}.xd20-contact .xd-contact-panel,.xd20-contact .xd-contact-form-card{padding:30px;border-radius:8px;min-width:0}.xd20-contact .xd-contact-panel{background:#202325;color:#fff}.xd20-contact .xd-contact-panel .xd-kicker{color:#ff9489}.xd20-contact h2{font-size:25px;line-height:1.35;margin:0 0 16px}.xd20-contact .xd-contact-panel p{font-size:14px;line-height:1.8;color:#cbd0d3;margin:0 0 24px}.xd20-contact .xd-contact-methods{list-style:none;padding:0;margin:0}.xd20-contact .xd-contact-method{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;align-items:center;padding:18px 0;border-top:1px solid #ffffff24}.xd20-contact .xd-contact-icon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:6px;background:#ffffff0d;color:#ff9489}.xd20-contact .xd-contact-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.xd20-contact .xd-contact-method small{display:block;color:#b8bec3;font-size:12px;margin-bottom:5px}.xd20-contact .xd-contact-method a,.xd20-contact .xd-contact-method div>span{color:#fff;font-size:15px;line-height:1.6;font-weight:500;text-decoration:none;overflow-wrap:anywhere}.xd20-contact .xd-contact-method a:hover{text-decoration:underline}.xd20-contact .xd-contact-note{border-top:1px solid #ffffff24;padding-top:20px;margin-top:4px;font-size:13px;line-height:1.7}.xd20-contact .xd-contact-note strong{display:block;margin-bottom:8px;font-weight:600}.xd20-contact .xd-contact-note span{color:#b8bec3}.xd20-contact .xd-contact-form-card{background:#fff;border:1px solid #e2e3e4}.xd20-contact .xd-contact-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.xd20-contact .xd-contact-field{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:13px;font-weight:600}.xd20-contact .xd-contact-field:nth-of-type(n+3){grid-column:1/-1}.xd20-contact input:not([type=hidden]),.xd20-contact textarea{box-sizing:border-box;width:100%;border:1px solid #cdd2d5;border-radius:5px;background:#fff;color:#202325;font:inherit;font-size:15px;font-weight:400;padding:11px 13px;outline:none}.xd20-contact input:not([type=hidden]){height:46px}.xd20-contact textarea{min-height:140px;resize:vertical;line-height:1.6}.xd20-contact input:focus,.xd20-contact textarea:focus{border-color:#c82716;box-shadow:0 0 0 3px #eb29161a}.xd20-contact .xd-contact-submit{grid-column:1/-1;justify-self:start;min-height:46px;padding:12px 26px;border:0;border-radius:5px;background:#c82716;color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}.xd20-contact .xd-contact-submit:hover{background:#aa2012}.xd20-contact .xd-contact-submit:focus-visible,.xd20-contact a:focus-visible{outline:3px solid #eb2916;outline-offset:3px}.xd20-contact .xd-contact-alert,.xd20-contact .xd-contact-errors{padding:14px 16px;margin:0 0 20px;border-radius:5px;font-size:14px;line-height:1.6}.xd20-contact .xd-contact-alert{background:#edf8f1;color:#175536}.xd20-contact .xd-contact-errors{background:#fff0ed;color:#a32317}.xd20-contact .xd-contact-errors ul{padding-left:20px;margin:8px 0 0}
+@media(max-width:900px){.xd20-contact .xd-contact-page{grid-template-columns:1fr}}@media(max-width:600px){.xd20-contact{padding:24px 0 40px}.xd20-contact .xd-container{width:calc(100% - 32px)}.xd20-contact .xd-contact-panel,.xd20-contact .xd-contact-form-card{padding:22px}.xd20-contact .xd-contact-form{grid-template-columns:1fr}.xd20-contact .xd-contact-submit{width:100%}.xd20-contact h2{font-size:23px}}
     </style>
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+<main class="xd-page-main xd20-contact">
             <div class="xd-container">
                     <section class="xd-cms-hero">
                         <div>
@@ -267,10 +204,7 @@
                                 <p>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0320', app()->getLocale(), 'legacy_inline.31d615a8a0d9d930', 'Gửi nhu cầu tư vấn, thiết kế hoặc thi công. Đội ngũ XD0320 sẽ phản hồi trong thời gian sớm nhất.') }}</p>
                             @endif
                         </div>
-                        <div class="xd-cms-stats">
-                            <strong>24h</strong>
-                            <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0320', app()->getLocale(), 'legacy_inline.1e963876e7fe12c9', 'Thời gian phản hồi') }}</span>
-                        </div>
+
                     </section>
 
                     <section class="xd-contact-page">
@@ -346,7 +280,7 @@
                                 </label>
                                 <label class="xd-contact-field">
                                     <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0320', app()->getLocale(), 'legacy_inline.84b329c821a5b27e', 'Số điện thoại') }}</span>
-                                    <input name="phone" value="{{ old('phone') }}" autocomplete="tel">
+                                    <input type="tel" name="phone" value="{{ old('phone') }}" autocomplete="tel">
                                 </label>
                                 <label class="xd-contact-field">
                                     <span>Email</span>

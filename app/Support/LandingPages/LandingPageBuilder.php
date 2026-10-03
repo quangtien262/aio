@@ -1964,10 +1964,12 @@ class LandingPageBuilder
         $query = CmsService::query()
             ->with('images')
             ->where('status', 'published');
-        $this->orderByHighlight($query, 'cms_services');
-        $query
-            ->orderBy('sort_order')
-            ->latest('updated_at');
+        if (($settings['order'] ?? '') === 'latest') {
+            $query->latest('created_at')->latest('id');
+        } else {
+            $this->orderByHighlight($query, 'cms_services');
+            $query->orderBy('sort_order')->latest('updated_at');
+        }
         $this->applyHighlightFilter($query, 'cms_services', $settings);
         if (! empty($settings['category_id']) && Schema::hasColumn('cms_services', 'cms_service_category_id')) {
             $query->where('cms_service_category_id', (int) $settings['category_id']);
@@ -6828,7 +6830,7 @@ class LandingPageBuilder
                 'description' => 'Bốn thẻ lợi ích đầu trang.',
                 'preview_image' => '/theme-previews/XD0313/benefits.png',
                 'anchor_id' => 'uu-diem',
-                'settings' => ['limit' => 4],
+                'settings' => ['source' => 'custom', 'limit' => 4],
                 'data' => [
                     'vi' => [
                         'title' => 'Ưu điểm',
@@ -6836,10 +6838,10 @@ class LandingPageBuilder
                         'description' => '',
                         'button_label' => '',
                         'content' => ['items' => [
-                            ['title' => 'Hồ sơ đơn giản', 'summary' => 'Hồ sơ được rà soát rõ ràng, hướng dẫn đầy đủ và phù hợp với từng mục tiêu xin visa.', 'icon' => '01'],
-                            ['title' => 'Xử lý nhanh chóng', 'summary' => 'Liên hệ RouteX để nhận tư vấn miễn phí, chuyên sâu và lộ trình xử lý phù hợp.', 'icon' => '02'],
+                            ['title' => 'Hướng dẫn hồ sơ rõ ràng', 'summary' => 'Hồ sơ được rà soát rõ ràng, hướng dẫn đầy đủ và phù hợp với từng mục tiêu xin visa.', 'icon' => '01'],
+                            ['title' => 'Lộ trình phù hợp', 'summary' => 'Liên hệ RouteX để nhận tư vấn miễn phí, chuyên sâu và lộ trình xử lý phù hợp.', 'icon' => '02'],
                             ['title' => 'Tư vấn tận tâm', 'summary' => 'RouteX là đối tác tin cậy, cung cấp dịch vụ tư vấn và hỗ trợ visa chuyên nghiệp.', 'icon' => '03'],
-                            ['title' => 'Bảo mật tuyệt đối', 'summary' => 'Mọi dữ liệu khách hàng đều được bảo mật, đảm bảo sự an tâm và tin tưởng.', 'icon' => '04'],
+                            ['title' => 'Theo dõi từng bước', 'summary' => 'Hướng dẫn các mốc chuẩn bị, lịch hẹn và những việc cần bổ sung trong quá trình xử lý hồ sơ.', 'icon' => '04'],
                         ]],
                     ],
                     'en' => ['title' => 'Benefits', 'subtitle' => '', 'description' => '', 'button_label' => '', 'content' => ['items' => []]],
@@ -7467,8 +7469,8 @@ class LandingPageBuilder
         $projects['label'] = 'Dự án đa nguồn';
         $projects['description'] = 'Carousel ngang lấy từ tin tức, sản phẩm, dịch vụ, dự án hoặc nhập tay.';
         $projects['anchor_id'] = 'du-an';
-        $projects['dynamic'] = false;
-        $projects['settings'] = ['source' => 'custom', 'limit' => 8, 'featured_only' => true];
+        $projects['dynamic'] = true;
+        $projects['settings'] = ['source' => 'cms_projects', 'limit' => 8, 'featured_only' => false];
         $projects['data']['vi'] = ['title' => 'Một số dự án đã thực hiện cho khách hàng', 'subtitle' => 'Dự án tiêu biểu', 'description' => 'Các dự án chuyên ngành tiêu biểu đã giúp XD0320 khẳng định vị thế và năng lực triển khai.', 'button_label' => 'Tất cả dự án', 'content' => ['items' => [
             ['title' => 'Nhà máy sản xuất tự động', 'summary' => 'Tích hợp dây chuyền và hệ thống điều khiển vận hành.', 'image' => 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?auto=format&fit=crop&w=1100&q=85'],
             ['title' => 'Trung tâm gia công cơ khí', 'summary' => 'Nâng cấp thiết bị và tối ưu quy trình kiểm soát chất lượng.', 'image' => 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1100&q=85'],
@@ -7501,7 +7503,13 @@ class LandingPageBuilder
             ['name' => 'VietWorks'],
         ]]];
 
-        return [$hero, $quality, $about, $feature, $projects, $team, $partners];
+        $services = collect($this->xd0305DefaultBlocks())->firstWhere('block_type', 'business_service_grid');
+        $services['label'] = 'Dịch vụ mới nhất';
+        $services['settings'] = ['source' => 'cms_services', 'limit' => 6, 'featured_only' => false, 'order' => 'latest'];
+        $services['data']['vi'] = ['title' => 'Dịch vụ kỹ thuật công nghiệp', 'subtitle' => 'Dịch vụ mới nhất', 'description' => '', 'content' => ['items' => []]];
+        $services['data']['en'] = ['title' => 'Industrial engineering services', 'subtitle' => 'Latest services', 'description' => '', 'content' => ['items' => []]];
+
+        return [$hero, $quality, $about, $feature, $services, $projects, $team, $partners];
     }
 
     private function xd0322DefaultBlocks(): array

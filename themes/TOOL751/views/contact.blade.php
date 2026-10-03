@@ -2,4 +2,5 @@
 @section('title', __('theme_contact_page.title'))
 @section('content')
 @include('themes.common.contact')
+@include('theme-tool751::partials.contact-styles')
 @endsection

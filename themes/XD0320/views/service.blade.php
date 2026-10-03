@@ -186,75 +186,14 @@
 
 @push('head')
     <style>
-        .xd-page-main{padding:76px 0 90px}
-        .xd-cms-hero{display:grid;grid-template-columns:minmax(0,.75fr) minmax(340px,.45fr);gap:48px;align-items:end;margin-bottom:54px;padding:56px;border:1px solid var(--line);background:#fff;box-shadow:0 20px 55px rgba(28,45,60,.08)}
-        .xd-kicker{position:relative;display:inline-block;margin:0 0 14px 18px;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
-        .xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}
-        .xd-cms-hero h1{margin:0;color:var(--ink);font-size:clamp(42px,5vw,72px);line-height:1.08;letter-spacing:-.055em}
-        .xd-cms-hero p{margin:18px 0 0;color:var(--muted);font-size:20px;font-weight:550}
-        .xd-cms-stats{display:grid;gap:12px;color:#fff;background:var(--ink);padding:26px 30px}
-        .xd-cms-stats strong{font-size:46px;line-height:1}
-        .xd-cms-stats span{color:rgba(255,255,255,.75);font-weight:800;text-transform:uppercase}
-        .xd-services-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px}
-        .xd-service-card{background:#fff;box-shadow:0 5px 20px rgba(16,29,40,.08);transition:.25s}
-        .xd-service-card:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
-        .xd-service-image{display:block;height:300px;overflow:hidden;background:#eef2ef}
-        .xd-service-image img{width:100%;height:100%;object-fit:cover;transition:.4s}
-        .xd-service-card:hover img{transform:scale(1.05)}
-        .xd-service-body{padding:36px 38px 40px}
-        .xd-service-card h2,.xd-service-card h3{margin:0 0 14px;font-size:22px;line-height:1.32;letter-spacing:.015em;text-transform:uppercase}
-        .xd-service-card p{margin:0 0 26px;color:var(--muted);font-size:17px}
-        .xd-text-link{color:var(--lime-dark);font-weight:900;text-transform:uppercase}
-        .xd-detail{display:grid;grid-template-columns:minmax(0,.85fr) minmax(300px,.35fr);gap:44px}
-        .xd-detail-card,.xd-side-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.06)}
-        .xd-detail-card{overflow:hidden}
-        .xd-detail-image{width:100%;max-height:520px;object-fit:cover}
-        .xd-detail-body{padding:44px 52px}
-        .xd-detail-body h1{margin:0 0 18px;font-size:clamp(38px,4vw,62px);line-height:1.1;letter-spacing:-.05em}
-        .xd-detail-summary{margin:0 0 28px;color:var(--muted);font-size:20px}
-        .xd-rich-content{color:#465461;font-size:18px}
-        .xd-rich-content :first-child{margin-top:0}
-        .xd-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:28px}
-        .xd-gallery figure{margin:0}
-        .xd-gallery img{width:100%;height:210px;object-fit:cover}
-        .xd-gallery figcaption{margin-top:8px;color:var(--muted);font-size:14px}
-        .xd-side-card{padding:28px}
-        .xd-side-card h3{margin:0 0 18px;font-size:24px}
-        .xd-side-card a{display:block;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-weight:750}
-        .xd-side-card a:hover{color:var(--lime-dark)}
-        .xd-contact-page{display:grid;grid-template-columns:minmax(0,.9fr) minmax(420px,.72fr);gap:34px;align-items:stretch}
-        .xd-contact-panel,.xd-contact-form-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.06)}
-        .xd-contact-panel{padding:44px 48px;background:linear-gradient(135deg,#fff 0%,#f7faee 100%)}
-        .xd-contact-panel h2,.xd-contact-form-card h2{margin:0 0 18px;font-size:34px;line-height:1.15;letter-spacing:-.04em}
-        .xd-contact-panel p{margin:0 0 26px;color:var(--muted);font-size:18px;font-weight:600}
-        .xd-contact-methods{display:grid;gap:16px;margin:0;padding:0;list-style:none}
-        .xd-contact-method{display:grid;grid-template-columns:54px minmax(0,1fr);gap:16px;align-items:center;padding:18px;border:1px solid rgba(38,56,74,.1);background:#fff}
-        .xd-contact-icon{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;background:var(--ink);color:#fff;font-size:22px;font-weight:900}
-        .xd-contact-method small{display:block;color:var(--lime-dark);font-size:12px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
-        .xd-contact-method a,.xd-contact-method span{color:var(--ink);font-size:18px;font-weight:850;overflow-wrap:anywhere}
-        .xd-contact-note{margin-top:24px;padding:20px 22px;background:var(--ink);color:#fff}
-        .xd-contact-note strong{display:block;margin-bottom:6px;color:var(--lime)}
-        .xd-contact-note span{color:rgba(255,255,255,.78);font-weight:650}
-        .xd-contact-form-card{padding:44px 48px}
-        .xd-contact-form{display:grid;gap:16px}
-        .xd-contact-field{display:grid;gap:8px}
-        .xd-contact-field label{font-size:13px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}
-        .xd-contact-field input,.xd-contact-field textarea{width:100%;border:1px solid var(--line);border-radius:0;background:#fbfcfa;color:var(--ink);font:inherit;font-weight:650;outline:0;transition:.2s}
-        .xd-contact-field input{height:56px;padding:0 18px}
-        .xd-contact-field textarea{min-height:150px;padding:16px 18px;resize:vertical}
-        .xd-contact-field input:focus,.xd-contact-field textarea:focus{border-color:var(--lime);box-shadow:0 0 0 4px rgba(189,212,0,.14)}
-        .xd-contact-submit{display:inline-flex;align-items:center;justify-content:center;width:max-content;min-height:58px;padding:0 30px;border:0;background:var(--lime);color:#fff;box-shadow:0 15px 30px rgba(189,212,0,.28);font:inherit;font-weight:950;text-transform:uppercase;cursor:pointer}
-        .xd-contact-submit:hover{transform:translateY(-1px)}
-        .xd-contact-alert{margin:0 0 18px;padding:14px 16px;border:1px solid rgba(143,169,0,.25);background:#f7fae5;color:var(--lime-dark);font-weight:850}
-        .xd-contact-errors{margin:0 0 18px;padding:14px 16px;border:1px solid rgba(180,35,24,.22);background:#fff4f2;color:#b42318;font-weight:800}
-        .xd-contact-errors ul{margin:6px 0 0;padding-left:18px}
-        @media (max-width:1180px){.xd-cms-hero,.xd-detail,.xd-contact-page{grid-template-columns:1fr}}
-        @media (max-width:640px){.xd-cart-link{width:42px;height:42px;border-radius:999px}.xd-cart-link svg{width:19px;height:19px}.xd-page-main{padding:38px 0 56px}.xd-cms-hero{padding:30px 22px;margin-bottom:26px}.xd-cms-hero h1{font-size:36px}.xd-cms-hero p{font-size:16px}.xd-service-card{border-radius:18px;overflow:hidden}.xd-service-image{height:215px}.xd-service-body{padding:26px 22px}.xd-service-card h2,.xd-service-card h3{font-size:19px}.xd-detail-body{padding:28px 22px}.xd-detail-body h1{font-size:34px}.xd-detail-summary,.xd-rich-content{font-size:16px}.xd-contact-panel,.xd-contact-form-card{padding:28px 22px}.xd-contact-panel h2,.xd-contact-form-card h2{font-size:28px}.xd-contact-method{grid-template-columns:44px minmax(0,1fr);padding:14px}.xd-contact-icon{width:44px;height:44px;font-size:18px}.xd-contact-method a,.xd-contact-method span{font-size:15px}.xd-contact-submit{width:100%}}
+.xd20-service-detail{background:#f5f5f4;color:#202325;padding:36px 0 64px}.xd20-service-detail .xd-container{width:min(1240px,calc(100% - 48px));margin:auto}.xd20-service-detail .xd-detail{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}.xd20-service-detail .xd-detail-card{min-width:0;background:#fff;border:1px solid #e2e3e4;border-radius:8px;overflow:hidden}.xd20-service-detail .xd-detail-body{padding:28px 32px}.xd20-service-detail .xd-kicker{display:block;margin-bottom:12px;color:#c82716;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em}.xd20-service-detail h1{font-size:clamp(28px,3vw,40px);line-height:1.2;margin:0 0 16px;color:#202325}.xd20-service-detail .xd-detail-summary{color:#62686d;font-size:16px;line-height:1.7;margin:0}.xd20-service-detail .xd-detail-image{display:block;width:100%;max-height:360px;object-fit:cover}.xd20-service-detail .xd-rich-content{font-size:16px;line-height:1.8;color:#424b51;overflow-wrap:anywhere}.xd20-service-detail .xd-rich-content h2{font-size:24px;line-height:1.4;color:#202325;margin:24px 0 12px}.xd20-service-detail .xd-rich-content h3{font-size:20px}.xd20-service-detail .xd-rich-content p{margin:0 0 16px}.xd20-service-detail .xd-rich-content img,.xd20-service-detail .xd-rich-content iframe{max-width:100%}.xd20-service-detail .xd-rich-content table{display:block;max-width:100%;overflow:auto}.xd20-service-detail .xd-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:24px}.xd20-service-detail .xd-gallery figure{margin:0}.xd20-service-detail .xd-gallery img{width:100%;height:auto;border-radius:4px}.xd20-service-detail .xd-gallery figcaption{font-size:13px;color:#62686d;margin-top:8px}
+.xd20-latest-services{background:#fff;border:1px solid #e2e3e4;border-radius:8px;padding:24px}.xd20-latest-services h2{font-size:22px;margin:0 0 8px;padding-bottom:16px;border-bottom:2px solid #eb2916;color:#202325}.xd20-latest-service{display:flex;gap:12px;align-items:center;padding:16px 0;border-bottom:1px solid #eceeed;text-decoration:none;color:#202325}.xd20-latest-service:last-child{border-bottom:0;padding-bottom:0}.xd20-latest-service img{width:72px;height:64px;object-fit:cover;border-radius:4px;flex-shrink:0}.xd20-latest-service span{font-size:15px;font-weight:700;line-height:1.5}.xd20-latest-service:hover{color:#c82716}.xd20-service-detail a:focus-visible{outline:3px solid #eb2916;outline-offset:3px}
+@media(max-width:900px){.xd20-service-detail .xd-detail{grid-template-columns:1fr}.xd20-latest-services{max-width:none}}@media(max-width:600px){.xd20-service-detail{padding:24px 0 40px}.xd20-service-detail .xd-container{width:calc(100% - 32px)}.xd20-service-detail .xd-detail-body{padding:22px}.xd20-service-detail .xd-detail-image{max-height:240px}.xd20-service-detail .xd-gallery{grid-template-columns:1fr}.xd20-latest-services{padding:22px}}
     </style>
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+<main class="xd-page-main xd20-service-detail">
             <div class="xd-container">
                     @php
                         $featuredImage = $entry->featuredImage?->image_url;
@@ -262,15 +201,17 @@
                     @endphp
                     <section class="xd-detail">
                         <article class="xd-detail-card">
-                            @if ($featuredImage)
-                                <img class="xd-detail-image" src="{{ $featuredImage }}" alt="{{ $featuredAlt }}">
-                            @endif
                             <div class="xd-detail-body">
                                 <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0320', app()->getLocale(), 'legacy_inline.c88c165a29889115', 'Dịch vụ') }}</span>
                                 <h1>{{ $entry->title }}</h1>
                                 @if (!empty($entry->excerpt))
                                     <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
                                 @endif
+                            </div>
+                            @if ($featuredImage)
+                                <img class="xd-detail-image" src="{{ $featuredImage }}" alt="{{ $featuredAlt }}">
+                            @endif
+                            <div class="xd-detail-body">
                                 <div class="xd-rich-content">
                                     {!! $entry->body ?: '<p>Nội dung đang được cập nhật.</p>' !!}
                                 </div>
@@ -289,13 +230,19 @@
                                 @endif
                             </div>
                         </article>
-                        <aside class="xd-side-card">
-                            <h3>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0320', app()->getLocale(), 'legacy_inline.f83250cd1d652333', 'Liên kết nhanh') }}</h3>
-                            <a href="{{ route('site.services.index') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0320', app()->getLocale(), 'legacy_inline.44cd126d3a55a78b', 'Tất cả dịch vụ') }}</a>
-                            @foreach ($navItems->take(5) as $item)
-                                <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
+                        @if(collect($latestServices ?? [])->isNotEmpty())
+                        <aside class="xd20-latest-services" aria-labelledby="xd20-latest-title">
+                            <h2 id="xd20-latest-title">{{ app()->getLocale() === 'vi' ? 'Dịch vụ mới nhất' : 'Latest services' }}</h2>
+                            @foreach(collect($latestServices)->take(5) as $latestService)
+                            <a class="xd20-latest-service" href="{{ route('site.services.show', ['slug' => $latestService->slug]) }}">
+                                @if($latestService->featuredImage?->image_url)
+                                <img loading="lazy" src="{{ $latestService->featuredImage->image_url }}" alt="">
+                                @endif
+                                <span>{{ $latestService->title }}</span>
+                            </a>
                             @endforeach
                         </aside>
+                        @endif
                     </section>
             </div>
 </main>

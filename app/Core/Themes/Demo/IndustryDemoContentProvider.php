@@ -151,10 +151,10 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 $this->create(CatalogProductImage::class, ['catalog_product_id' => $product->id, 'image_url' => $product->image_url, 'alt_text' => 'Ảnh minh họa '.$sector, 'sort_order' => 0]);
             }
             $news = $this->create(CmsCategory::class, ['name' => 'Kinh nghiệm và kiến thức', 'slug' => $this->slug('tin-tuc'), 'description' => 'Góc chia sẻ về '.$sector]);
-            $postTitles = ['Những điều cần chuẩn bị trước khi sử dụng dịch vụ '.$sector, 'Cách đánh giá một phương án '.$sector.' phù hợp', 'Checklist bàn giao và theo dõi chất lượng'];
+            $postTitles = $this->brief['post_titles'] ?? ['Những điều cần chuẩn bị trước khi sử dụng dịch vụ '.$sector, 'Cách đánh giá một phương án '.$sector.' phù hợp', 'Checklist bàn giao và theo dõi chất lượng'];
             foreach ($postTitles as $i => $title) {
                 $summary = 'Gợi ý từ '.$brand.' giúp bạn xác định nhu cầu, so sánh phạm vi công việc và trao đổi rõ yêu cầu về '.$sector.'.';
-                $this->create(CmsPost::class, $published + ['category_id' => $news->id, 'title' => $title, 'slug' => $this->slug($title), 'excerpt' => $summary, 'body' => $this->body($title, $summary), 'featured_media_id' => $media[$i]->id, 'meta_title' => $title, 'meta_description' => $summary, 'is_highlight' => true]);
+                $this->create(CmsPost::class, $published + ['category_id' => $news->id, 'title' => $title, 'slug' => $this->slug($title), 'excerpt' => $summary, 'body' => $this->body($title, $summary), 'featured_media_id' => $media[$i % count($media)]->id, 'meta_title' => $title, 'meta_description' => $summary, 'is_highlight' => true]);
             }
             $projectDefinitions = $this->brief['projects'] ?? array_map(fn ($serviceTitle) => [
                 'title' => $serviceTitle.' — phương án minh họa',
@@ -169,7 +169,7 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
             $about = null;
             foreach (['Giới thiệu', 'Quy trình hợp tác', 'Chính sách dịch vụ'] as $i => $title) {
                 $summary = $brand.' đồng hành cùng khách hàng trong lĩnh vực '.$sector.', từ xác định nhu cầu đến triển khai và hỗ trợ sau bàn giao.';
-                $page = $this->create(CmsPage::class, $published + ['title' => $title.' '.$brand, 'slug' => $this->slug($title), 'excerpt' => $summary, 'body' => $this->body($title.' '.$brand, $summary), 'featured_media_id' => $media[$i]->id, 'meta_title' => $title.' | '.$brand]);
+                $page = $this->create(CmsPage::class, $published + ['title' => $title.' '.$brand, 'slug' => $this->slug($title), 'excerpt' => $summary, 'body' => $this->body($title.' '.$brand, $summary), 'featured_media_id' => $media[$i % count($media)]->id, 'meta_title' => $title.' | '.$brand]);
                 $about ??= $page;
             }
             foreach (['Tư vấn khách hàng', 'Điều phối triển khai', 'Kiểm soát chất lượng'] as $i => $role) {
@@ -215,6 +215,22 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 ThemeDemoRecord::create(['theme_key' => $this->key, 'preset_key' => $presetKey, 'model_type' => LandingPage::class, 'model_id' => $page->id]);
                 $this->prepareBlocks($page);
             }
+            if ($page && $this->key === 'XD0320') {
+                foreach ($page->blocks()->where('block_type', 'content_mosaic')->get() as $block) {
+                    $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'cms_projects', 'featured_only' => false])]);
+                }
+                if (! $page->blocks()->where('block_type', 'business_service_grid')->exists()) {
+                    $builder->createBlock($page, 'business_service_grid');
+                }
+            }
+            if ($page && $this->key === 'XD0313') {
+                foreach ($page->blocks()->where('block_type', 'testimonials')->get() as $block) {
+                    $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'cms_testimonials', 'limit' => 6])]);
+                }
+                foreach ($page->blocks()->where('block_type', 'featured_categories')->get() as $block) {
+                    $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'custom', 'limit' => 4])]);
+                }
+            }
             if ($page && $existing && $this->key === 'FOOT403') {
                 foreach ($page->blocks()->where('block_type', 'featured_categories')->get() as $block) {
                     $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'catalog_categories', 'order' => 'sort_order'])]);
@@ -224,7 +240,7 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 }
             }
 
-            return ['preset' => $this->preset(), 'purged' => $purged, 'counts' => ['categories' => count($categories), 'services' => count($this->brief['services']), 'products' => count($this->brief['products']), 'projects' => count($projectDefinitions), 'posts' => 3, 'pages' => 3, 'media' => 3, 'menus' => 1, 'banners' => 2, 'team_members' => 3, 'testimonials' => count($testimonialDefinitions), 'partners' => 6, 'landing_pages' => $page && ! $existing ? 1 : 0]];
+            return ['preset' => $this->preset(), 'purged' => $purged, 'counts' => ['categories' => count($categories), 'services' => count($this->brief['services']), 'products' => count($this->brief['products']), 'projects' => count($projectDefinitions), 'posts' => count($postTitles), 'pages' => 3, 'media' => 3, 'menus' => 1, 'banners' => 2, 'team_members' => 3, 'testimonials' => count($testimonialDefinitions), 'partners' => 6, 'landing_pages' => $page && ! $existing ? 1 : 0]];
         });
     }
 

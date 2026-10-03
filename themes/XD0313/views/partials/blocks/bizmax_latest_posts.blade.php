@@ -18,19 +18,15 @@
                     $summary = $item['summary'] ?? $item['description'] ?? $item['excerpt'] ?? '';
                     $image = $item['image'] ?? $item['image_url'] ?? $item['thumbnail'] ?? '';
                     $date = $item['date'] ?? $item['published_at'] ?? '06/08/2025';
-                    $views = $item['views'] ?? (138 + $loop->index * 54);
+                    $views = $item['views'] ?? null;
                 @endphp
                 <article class="rx13-post">
                     @if (filled($image))
                         <img src="{{ $image }}" alt="{{ $item['alt'] ?? $title }}">
                     @endif
                     <div class="rx13-post__body">
-                        <h3>{{ $title }}</h3>
-                        <div class="rx13-meta"><span>{{ $date }}</span><span>{{ $views }}</span></div>
-                        @if (filled($summary))
-                            <p>{{ \Illuminate\Support\Str::limit(strip_tags($summary), 120) }}</p>
-                        @endif
-                        <a class="rx13-button" href="{{ $item['url'] ?? $item['href'] ?? '#blog' }}">Xem chi tiết <span>→</span></a>
+                        <h3><a href="{{ $item['url'] ?? $item['href'] ?? '#blog' }}">{{ $title }}</a></h3>
+                        <div class="rx13-meta"><span>{{ $date }}</span>@if($views !== null)<span>{{ $views }}</span>@endif</div>
                     </div>
                 </article>
             @endforeach

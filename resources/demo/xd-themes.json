@@ -321,6 +321,50 @@
       null,
       null,
       null
+    ],
+    "testimonials": [
+      {
+        "name": "Anh Hải",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Các bước chuẩn bị được giải thích rõ, giúp tôi dễ sắp xếp giấy tờ trước buổi tư vấn.",
+        "image_url": "/theme-demo/xd-shared/person-1.jpg"
+      },
+      {
+        "name": "Chị Mai",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Danh sách giấy tờ được chia theo từng mục, thuận tiện để kiểm tra và bổ sung.",
+        "image_url": "/theme-demo/xd-shared/person-2.jpg"
+      },
+      {
+        "name": "Anh Dũng",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Tôi được trao đổi kỹ về lịch trình và những thông tin cần chuẩn bị cho chuyến công tác.",
+        "image_url": "/theme-demo/xd-shared/person-3.jpg"
+      },
+      {
+        "name": "Chị Linh",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Đội ngũ lắng nghe nhu cầu và hướng dẫn cách sắp xếp hồ sơ gọn gàng.",
+        "image_url": "/theme-demo/xd-shared/person-1.jpg"
+      },
+      {
+        "name": "Anh Tuấn",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Các mốc công việc được thống nhất trước, giúp tôi chủ động theo dõi tiến độ chuẩn bị.",
+        "image_url": "/theme-demo/xd-shared/person-2.jpg"
+      },
+      {
+        "name": "Chị Hương",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Buổi tư vấn giúp gia đình hiểu rõ hơn những bước cần làm trước chuyến đi.",
+        "image_url": "/theme-demo/xd-shared/person-3.jpg"
+      }
+    ],
+    "post_titles": [
+      "Những điều cần chuẩn bị trước khi sử dụng dịch vụ tư vấn hồ sơ và hành trình",
+      "Cách đánh giá một phương án tư vấn hồ sơ và hành trình phù hợp",
+      "Checklist bàn giao và theo dõi chất lượng",
+      "Sắp xếp giấy tờ và lịch trình trước buổi tư vấn"
     ]
   },
   "XD0314": {
@@ -412,7 +456,9 @@
       "Bảo trì dây chuyền",
       "Gia công cơ khí",
       "Lắp đặt thiết bị",
-      "Tư vấn vận hành"
+      "Tư vấn vận hành",
+      "Tích hợp hệ thống tự động hóa",
+      "Kiểm tra và hiệu chuẩn thiết bị"
     ],
     "products": [
       "Máy khoan công nghiệp",
@@ -429,6 +475,24 @@
       "/themes/TOOL750/images/product-drill.png",
       "/themes/TOOL750/images/product-measure.png",
       null
+    ],
+    "projects": [
+      {
+        "title": "Nhà máy sản xuất tự động",
+        "summary": "Dự án minh họa: Tích hợp dây chuyền và điều khiển vận hành."
+      },
+      {
+        "title": "Trung tâm gia công cơ khí",
+        "summary": "Dự án minh họa: Nâng cấp thiết bị và kiểm soát chất lượng."
+      },
+      {
+        "title": "Hệ thống năng lượng nhà xưởng",
+        "summary": "Dự án minh họa: Tối ưu cấp năng lượng an toàn."
+      },
+      {
+        "title": "Kho vận công nghiệp thông minh",
+        "summary": "Dự án minh họa: Tổ chức luồng hàng và theo dõi kho."
+      }
     ]
   },
   "XD0322": {

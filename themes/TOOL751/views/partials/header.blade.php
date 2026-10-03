@@ -7,6 +7,7 @@
     $hotline = trim((string) data_get($branding, 'support_hotline', ''));
     $location = trim((string) data_get($branding, 'support_location', ''));
     $nav = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
+    $productMenu = collect(data_get($shell, 'product_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="t751-header">
     <div class="t751-info"><div class="t751-container">
@@ -21,7 +22,17 @@
             @include('partials.storefront-language-switcher')
         </div></div>
     <div class="t751-navbar"><div class="t751-container">
-        <button type="button" class="t751-categories" data-t751-menu><i class="fa-solid fa-bars"></i>{{ __('Danh mục sản phẩm') }}</button>
+        <details class="t751-category-menu" data-t751-category-menu>
+            <summary class="t751-categories"><i class="fa-solid fa-bars" aria-hidden="true"></i><span>{{ __('Danh mục sản phẩm') }}</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <div class="t751-category-panel"><a href="{{ route('site.catalog.search') }}">{{ __('Tất cả sản phẩm') }}</a>
+                @if($productMenu->isNotEmpty())
+                    <ul>@include('theme-tool751::partials.category-items', ['categoryItems' => $productMenu])</ul>
+                @else
+                    <p>{{ __('Danh mục đang được cập nhật.') }}</p>
+                @endif
+            </div>
+        </details>
+        <button type="button" class="t751-mobile-nav" data-t751-menu aria-expanded="false" aria-label="{{ __('Menu điều hướng') }}">Menu</button>
         <nav data-t751-nav>
             @forelse($nav as $item)<a href="{{ data_get($item, 'url', '#') }}">{{ data_get($item, 'label') }}</a>@empty
                 <a href="{{ $homeUrl }}">@themeT('home', 'Trang chủ')</a><a href="#gioi-thieu">@themeT('about', 'Giới thiệu')</a><a href="#san-pham">@themeT('products', 'Sản phẩm')</a><a href="#tin-tuc">@themeT('news', 'Tin tức')</a><a href="{{ route('site.contact', ['locale' => app()->getLocale()]) }}">@themeT('contact', 'Liên hệ')</a>
