@@ -6,6 +6,7 @@
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'NovaTech Mall'))) ?: 'NovaTech Mall';
     $hotline = trim((string) data_get($branding, 'support_hotline', ''));
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
+    $categoryItems = collect(data_get($shell, 'product_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->all();
 @endphp
 
 <header class="ec13-header" id="top">
@@ -37,7 +38,14 @@
     </div>
     <nav class="ec13-nav">
         <div class="ec13-container" data-ec13-nav>
-            <button class="ec13-nav-category" type="button" data-ec13-mega-toggle><i class="fa-solid fa-bars-staggered"></i> Danh mục <i class="fa-solid fa-chevron-down"></i></button>
+            <div class="ec13-category-dropdown">
+                <button class="ec13-nav-category" type="button" data-ec13-mega-toggle aria-expanded="false" aria-controls="ec13-category-panel"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i> Danh mục <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+                <div id="ec13-category-panel" class="ec13-category-panel" hidden>
+                    <ul><li><a href="{{ route('site.catalog.search') }}">{{ app()->getLocale() === 'vi' ? 'Tất cả sản phẩm' : 'All products' }}</a></li>
+                        @include('theme-ec913::partials.category-items')
+                    </ul>
+                </div>
+            </div>
             @foreach($nav as $item)
                 <a href="{{ data_get($item, 'url') }}" target="{{ data_get($item, 'target', '_self') }}">{{ data_get($item, 'label') }}</a>
             @endforeach

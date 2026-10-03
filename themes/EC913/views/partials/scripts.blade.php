@@ -14,8 +14,23 @@
     menuButton?.addEventListener('click', () => nav?.classList.toggle('is-open'));
 
     const megaButton = document.querySelector('[data-ec13-mega-toggle]');
-    const categoryMenu = document.querySelector('[data-ec13-category-menu]');
-    megaButton?.addEventListener('click', () => categoryMenu?.classList.toggle('is-open'));
+    const categoryPanel = document.getElementById('ec13-category-panel');
+    const categoryDropdown = megaButton?.closest('.ec13-category-dropdown');
+    const setCategoryOpen = open => {
+        if (!megaButton || !categoryPanel) return;
+        megaButton.setAttribute('aria-expanded', String(open));
+        categoryPanel.hidden = !open;
+    };
+    megaButton?.addEventListener('click', () => setCategoryOpen(megaButton.getAttribute('aria-expanded') !== 'true'));
+    document.addEventListener('click', event => {
+        if (!categoryDropdown?.contains(event.target)) setCategoryOpen(false);
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && megaButton?.getAttribute('aria-expanded') === 'true') {
+            setCategoryOpen(false);
+            megaButton.focus();
+        }
+    });
 
     const slider = document.querySelector('[data-ec13-slider]');
     if (slider) {
