@@ -218,13 +218,20 @@ class MainWebsiteTemplateSynchronizer
         $existingMedia = DB::connection(self::CONNECTION)
             ->table(self::MEDIA_TABLE)
             ->where('template_id', $templateId)
-            ->where('media_type', 'thumbnail')
+            ->whereIn('media_type', ['preview', 'thumbnail'])
+            ->orderByRaw("CASE WHEN media_type = 'preview' THEN 0 ELSE 1 END")
             ->orderByDesc('is_primary')
             ->orderBy('id')
             ->first();
+        // HT uses preview media for the representative image. Retire legacy
+        // thumbnail flags so an older row cannot win the primary-image lookup.
+        DB::connection(self::CONNECTION)->table(self::MEDIA_TABLE)
+            ->where('template_id', $templateId)
+            ->whereIn('media_type', ['preview', 'thumbnail'])
+            ->update(['is_primary' => 0]);
         $values = [
             'template_id' => $templateId,
-            'media_type' => 'thumbnail',
+            'media_type' => 'preview',
             'file_path' => $thumbnailPath,
             'alt_text' => $themeCode.' thumbnail',
             'sort_order' => 0,

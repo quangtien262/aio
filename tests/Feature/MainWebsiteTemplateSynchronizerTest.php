@@ -94,6 +94,22 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
         $this->assertSame(2, DB::connection('ht')->table('website_templates')->count());
     }
 
+    public function test_thumbnail_sync_updates_ht_preview_and_retires_legacy_primary_thumbnail(): void
+    {
+        $db = DB::connection('ht');
+        $id = $db->table('website_templates')->insertGetId(['name' => 'SHOP606', 'slug' => 'SHOP606', 'theme_code' => 'SHOP606']);
+        $previewId = $db->table('website_template_media')->insertGetId(['template_id' => $id, 'media_type' => 'preview', 'file_path' => 'old.png', 'is_primary' => 1]);
+        $legacyId = $db->table('website_template_media')->insertGetId(['template_id' => $id, 'media_type' => 'thumbnail', 'file_path' => 'legacy.png', 'is_primary' => 1]);
+        $sync = app(MainWebsiteTemplateSynchronizer::class);
+        $theme = ['key' => 'SHOP606', 'preview' => ['thumbnail' => 'new.png']];
+        $sync->syncThumbnails([$theme]);
+        $sync->syncThumbnails([$theme]);
+        $this->assertDatabaseHas('website_template_media', ['id' => $previewId, 'media_type' => 'preview', 'file_path' => 'https://demo.htvietnam.vn/theme-previews/SHOP606/new.png', 'is_primary' => 1], 'ht');
+        $this->assertDatabaseHas('website_template_media', ['id' => $legacyId, 'file_path' => 'legacy.png', 'is_primary' => 0], 'ht');
+        $this->assertSame(2, $db->table('website_template_media')->count());
+        $this->assertSame(1, $db->table('website_template_media')->where('is_primary', 1)->count());
+    }
+
     public function test_thumbnail_update_rolls_back_when_media_write_fails(): void
     {
         $id = DB::connection('ht')->table('website_templates')->insertGetId(['name' => 'Original', 'slug' => 'EC910', 'theme_code' => 'EC910']);
@@ -151,7 +167,7 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
             ->value('id');
         $this->assertDatabaseHas('website_template_media', [
             'template_id' => $templateId,
-            'media_type' => 'thumbnail',
+            'media_type' => 'preview',
             'file_path' => 'https://aio.test/theme-previews/EC910/thumbnail-ec910.png',
             'alt_text' => 'EC910 thumbnail',
             'sort_order' => 0,
@@ -218,7 +234,7 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
         $this->assertSame(1, DB::connection('ht')->table('website_template_media')->count());
         $this->assertDatabaseHas('website_template_media', [
             'template_id' => $templateId,
-            'media_type' => 'thumbnail',
+            'media_type' => 'preview',
             'file_path' => 'https://aio.test/theme-previews/EC910/ec910-new.png',
             'alt_text' => 'EC910 thumbnail',
             'sort_order' => 0,
