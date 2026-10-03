@@ -16,7 +16,6 @@
             @if($logo)<img src="{{ $logo }}" alt="{{ $siteName }}">@else<span>F404</span><small>{{ $siteName }}</small>@endif
         </a>
         <form class="f404-search" action="{{ route('site.catalog.search') }}" method="get">
-            <span>@themeT('FOOT404.product_categories', 'Danh mục sản phẩm')</span>
             <input type="search" name="q" value="{{ request('q') }}" placeholder="@themeT('FOOT404.search_placeholder', 'Tìm kiếm sản phẩm...')">
             <button type="submit" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
@@ -33,7 +32,7 @@
     <div class="f404-header__navwrap">
         <div class="f404-container f404-header__navrow">
             <details class="f404-category-menu" data-f404-category-menu>
-                <summary class="f404-category-button"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i> @themeT('FOOT404.product_categories', 'Danh mục sản phẩm') <span aria-hidden="true">⌄</span></summary>
+                <summary class="f404-category-button"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i> @themeT('FOOT404.product_categories', 'Danh mục sản phẩm') <svg class="f404-category-chevron" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></summary>
                 <nav class="f404-category-panel" aria-label="@themeT('FOOT404.product_categories', 'Danh mục sản phẩm')">
                     <a class="f404-category-all" href="{{ route('site.catalog.search') }}">@themeT('FOOT404.all_products', 'Tất cả sản phẩm') →</a>
                     @if($productMenu->isNotEmpty())

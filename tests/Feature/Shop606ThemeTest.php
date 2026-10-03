@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -14,6 +15,39 @@ use Tests\TestCase;
 class Shop606ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_new_arrivals_demo_renders_eight_products_and_real_category_links(): void
+    {
+        $generator = app(ThemeDemoContentGenerator::class);
+        $preset = $generator->presetsForTheme('SHOP606')[0]['key'];
+        $generator->generate('SHOP606', $preset);
+        $generator->generate('SHOP606', $preset);
+        $this->assertSame(8, CatalogProduct::count());
+        $this->assertSame(4, CatalogCategory::count());
+        $response = $this->get('/vi')->assertOk();
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($response->getContent());
+        $xpath = new \DOMXPath($dom);
+        $this->assertSame(4, $xpath->query('//section[@id="bo-suu-tap"]//div[contains(@class,"s606-collection-grid")]/a')->length);
+        $this->assertSame(0, $xpath->query('//article[@class="s606-card"]/div/small')->length);
+        $this->assertSame(0, $xpath->query('//section[@id="tin-tuc"]//article/p')->length);
+        if ($path = getenv('SHOP606_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+        $cards = $xpath->query('//section[@id="san-pham"]//article');
+        $this->assertSame(8, $cards->length);
+        foreach ($cards as $card) {
+            $src = $xpath->query('.//img', $card)->item(0)->getAttribute('src');
+            $this->assertFileExists(public_path(parse_url($src, PHP_URL_PATH)));
+            $this->get($xpath->query('.//a', $card)->item(0)->getAttribute('href'))->assertOk();
+            $this->assertStringNotContainsString('☆', $card->textContent);
+        }
+        $links = $xpath->query('//nav[@class="s606-arrivals-categories"]/a');
+        $this->assertSame(4, $links->length);
+        foreach ($links as $link) {
+            $this->get($link->getAttribute('href'))->assertOk();
+        }
+    }
 
     public function test_shop606_is_registered_with_expected_homepage_blocks(): void
     {

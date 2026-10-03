@@ -7,8 +7,8 @@
   "requires_modules": ["catalog", "cms"],
   "parent": null,
   "preview": {
-    "thumbnail": "preview-tool750.png",
-    "cover": "cover-tool750.png"
+    "thumbnail": "tool750.png",
+    "cover": "tool750.png"
   },
   "blocks": [
     "tool750-hero",

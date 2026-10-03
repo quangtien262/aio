@@ -147,7 +147,7 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
             }
             foreach ($this->brief['products'] as $i => $title) {
                 $summary = $title.' phục vụ nhu cầu '.$sector.'. Hình ảnh minh họa lĩnh vực; liên hệ để xác nhận mẫu, quy cách và giá thực tế.';
-                $product = $this->create(CatalogProduct::class, ['catalog_category_id' => $productCategoryIds[$title] ?? $categories[0]->id, 'name' => $title, 'slug' => $this->slug($title), 'sku' => $this->key.'-DEMO-'.($i + 1), 'price' => 250000 * ($i + 1), 'stock' => 20, 'short_description' => $summary, 'detail_content' => $this->body($title, $summary), 'image_url' => $this->brief['product_images'][$i] ?? $this->image($i), 'is_active' => true, 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $i]);
+                $product = $this->create(CatalogProduct::class, ['catalog_category_id' => $productCategoryIds[$title] ?? $categories[0]->id, 'name' => $title, 'slug' => $this->slug($title), 'sku' => $this->key.'-DEMO-'.($i + 1), 'price' => $this->brief['product_prices'][$title] ?? 250000 * ($i + 1), 'stock' => 20, 'short_description' => $summary, 'detail_content' => $this->body($title, $summary), 'image_url' => $this->brief['product_images'][$i] ?? $this->image($i), 'is_active' => true, 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $i]);
                 $this->create(CatalogProductImage::class, ['catalog_product_id' => $product->id, 'image_url' => $product->image_url, 'alt_text' => 'Ảnh minh họa '.$sector, 'sort_order' => 0]);
             }
             $news = $this->create(CmsCategory::class, ['name' => 'Kinh nghiệm và kiến thức', 'slug' => $this->slug('tin-tuc'), 'description' => 'Góc chia sẻ về '.$sector]);
@@ -156,11 +156,15 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 $summary = 'Gợi ý từ '.$brand.' giúp bạn xác định nhu cầu, so sánh phạm vi công việc và trao đổi rõ yêu cầu về '.$sector.'.';
                 $this->create(CmsPost::class, $published + ['category_id' => $news->id, 'title' => $title, 'slug' => $this->slug($title), 'excerpt' => $summary, 'body' => $this->body($title, $summary), 'featured_media_id' => $media[$i]->id, 'meta_title' => $title, 'meta_description' => $summary, 'is_highlight' => true]);
             }
-            foreach (array_slice($this->brief['services'], 0, 3) as $i => $serviceTitle) {
-                $title = $serviceTitle.' — phương án minh họa';
-                $summary = 'Hồ sơ mẫu mô tả cách '.$brand.' tiếp nhận yêu cầu, tổ chức thực hiện và bàn giao hạng mục '.mb_strtolower($serviceTitle).'.';
-                $project = $this->create(CmsProject::class, $published + ['title' => $title, 'slug' => $this->slug($title), 'summary' => $summary, 'content' => $this->body($title, $summary), 'is_featured' => true, 'sort_order' => $i]);
-                $this->create(CmsProjectImage::class, ['cms_project_id' => $project->id, 'image_url' => $this->image($i), 'alt_text' => $title, 'is_featured' => true, 'sort_order' => 0]);
+            $projectDefinitions = $this->brief['projects'] ?? array_map(fn ($serviceTitle) => [
+                'title' => $serviceTitle.' — phương án minh họa',
+                'summary' => 'Hồ sơ mẫu mô tả cách '.$brand.' tiếp nhận yêu cầu, tổ chức thực hiện và bàn giao hạng mục '.mb_strtolower($serviceTitle).'.',
+            ], array_slice($this->brief['services'], 0, 3));
+            foreach ($projectDefinitions as $i => $definition) {
+                $title = $definition['title'];
+                $summary = $definition['summary'];
+                $project = $this->create(CmsProject::class, $published + ['title' => $title, 'slug' => $this->slug($title), 'summary' => $summary, 'content' => $this->body($title, $summary), 'is_featured' => true, 'is_highlight' => true, 'sort_order' => $i]);
+                $this->create(CmsProjectImage::class, ['cms_project_id' => $project->id, 'image_url' => $definition['image'] ?? $this->image($i), 'alt_text' => $title, 'is_featured' => true, 'sort_order' => 0]);
             }
             $about = null;
             foreach (['Giới thiệu', 'Quy trình hợp tác', 'Chính sách dịch vụ'] as $i => $title) {
@@ -172,7 +176,15 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 $name = ['Nguyễn Minh Anh', 'Trần Hoàng Nam', 'Lê Thu Hà'][$i];
                 $member = $this->create(CmsTeamMember::class, $published + ['name' => $name, 'slug' => $this->slug($name), 'role' => $role, 'summary' => 'Nhân sự minh họa phụ trách '.mb_strtolower($role).' tại '.$brand, 'bio' => '<p>Đồng hành trong quá trình tiếp nhận yêu cầu, triển khai và bàn giao.</p>', 'is_featured' => true, 'sort_order' => $i]);
                 $this->create(CmsTeamMemberImage::class, ['cms_team_member_id' => $member->id, 'image_url' => '/theme-demo/xd-shared/person-'.($i + 1).'.jpg', 'alt_text' => 'Chân dung minh họa', 'is_featured' => true, 'sort_order' => 0]);
-                $this->create(CmsTestimonial::class, $published + ['name' => ['Anh Hải', 'Chị Mai', 'Anh Dũng'][$i], 'role' => 'Đánh giá minh họa', 'quote' => ['Phạm vi công việc và các bước thực hiện được trao đổi rõ ràng.', 'Đội ngũ chủ động cập nhật tiến độ và hướng dẫn khi bàn giao.', 'Thông tin tư vấn giúp chúng tôi lựa chọn phương án phù hợp nhu cầu.'][$i], 'image_url' => '/theme-demo/xd-shared/person-'.($i + 1).'.jpg', 'image_alt' => 'Chân dung minh họa', 'is_featured' => true, 'sort_order' => $i]);
+            }
+            $testimonialDefinitions = $this->brief['testimonials'] ?? array_map(fn ($i) => [
+                'name' => ['Anh Hải', 'Chị Mai', 'Anh Dũng'][$i],
+                'role' => 'Đánh giá minh họa',
+                'quote' => ['Phạm vi công việc và các bước thực hiện được trao đổi rõ ràng.', 'Đội ngũ chủ động cập nhật tiến độ và hướng dẫn khi bàn giao.', 'Thông tin tư vấn giúp chúng tôi lựa chọn phương án phù hợp nhu cầu.'][$i],
+                'image_url' => '/theme-demo/xd-shared/person-'.($i + 1).'.jpg',
+            ], range(0, 2));
+            foreach ($testimonialDefinitions as $i => $testimonial) {
+                $this->create(CmsTestimonial::class, $published + $testimonial + ['image_alt' => 'Chân dung minh họa', 'is_featured' => true, 'sort_order' => $i]);
             }
             for ($i = 0; $i < 6; $i++) {
                 $this->create(CmsPartner::class, $published + ['title' => 'Đối tác mẫu '.($i + 1), 'slug' => $this->slug('doi-tac-'.($i + 1)), 'description' => 'Đối tác minh họa, thay bằng thông tin được xác nhận khi vận hành.', 'image_url' => '/theme-demo/xd-shared/partner-'.($i + 1).'.svg', 'image_alt' => 'Đối tác mẫu '.($i + 1), 'link_url' => route('site.contact', [], false), 'is_featured' => true, 'sort_order' => $i]);
@@ -212,7 +224,7 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 }
             }
 
-            return ['preset' => $this->preset(), 'purged' => $purged, 'counts' => ['categories' => count($categories), 'services' => 4, 'products' => count($this->brief['products']), 'projects' => 3, 'posts' => 3, 'pages' => 3, 'media' => 3, 'menus' => 1, 'banners' => 2, 'team_members' => 3, 'testimonials' => 3, 'partners' => 6, 'landing_pages' => $page && ! $existing ? 1 : 0]];
+            return ['preset' => $this->preset(), 'purged' => $purged, 'counts' => ['categories' => count($categories), 'services' => count($this->brief['services']), 'products' => count($this->brief['products']), 'projects' => count($projectDefinitions), 'posts' => 3, 'pages' => 3, 'media' => 3, 'menus' => 1, 'banners' => 2, 'team_members' => 3, 'testimonials' => count($testimonialDefinitions), 'partners' => 6, 'landing_pages' => $page && ! $existing ? 1 : 0]];
         });
     }
 

@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'eyebrow' => 'HERE TO HELP',
+    'title' => 'How can we help you?',
+    'intro' => 'Ask about products, sizing or outfit styling. Our team will reply using the contact details you provide.',
+    'step1' => 'Receive your consultation request',
+    'step2' => 'Understand your needs',
+    'step3' => 'Reply with advice',
+    'form_title' => 'Ask a consultation request',
+    'required' => 'Fields marked * are required.',
+    'name' => 'Full name',
+    'email' => 'Email',
+    'phone' => 'Phone number',
+    'service' => 'Topic',
+    'message' => 'Your consultation request',
+    'placeholder' => 'Tell us what you would like to know…',
+    'privacy' => 'Your details are used to contact you about this consultation request.',
+    'send' => 'Send consultation request',
+    'sending' => 'Sending your consultation request…',
+    'success_title' => 'Request received!',
+    'success' => 'Your consultation request has been saved. Our team will contact you using the details provided.',
+    'close' => 'Close',
+    'error' => 'We could not confirm your submission. Please check your connection and try again later.',
+    'invalid' => 'Please check the information below.',
+];

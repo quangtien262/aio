@@ -347,7 +347,10 @@
       "Thực phẩm tươi",
       "Gà tươi",
       "Sò điệp",
-      "Salad rau xanh"
+      "Salad rau xanh",
+      "Gà rán giòn cay (4 miếng)",
+      "Burger Zinger (1 phần)",
+      "Burger gà quay Flava"
     ],
     "images": [
       "/theme-demo/dn351/category-vegetables.jpg",
@@ -360,7 +363,10 @@
       "/theme-demo/ec903/vegan-brunch.webp",
       "/theme-demo/dn351/product-chicken.jpg",
       "/theme-demo/dn351/product-scallops.jpg",
-      "/theme-demo/ec903/vegan-buffet.webp"
+      "/theme-demo/ec903/vegan-buffet.webp",
+      "/theme-demo/foot409/hero-fried-chicken.png",
+      "/theme-demo/foot409/promo-burger.png",
+      "/theme-demo/foot409/promo-combo.png"
     ],
     "logo": "/theme-demo/complete/logo-foot405.svg",
     "website_type": "ecommerce",
@@ -398,7 +404,10 @@
         "description": "Thịt và gia cầm cho bữa cơm nhà.",
         "image_url": "/theme-demo/dn351/product-chicken.jpg",
         "products": [
-          "Gà tươi"
+          "Gà tươi",
+          "Gà rán giòn cay (4 miếng)",
+          "Burger Zinger (1 phần)",
+          "Burger gà quay Flava"
         ]
       },
       {
@@ -419,7 +428,12 @@
           "Salad rau xanh"
         ]
       }
-    ]
+    ],
+    "product_prices": {
+      "Gà rán giòn cay (4 miếng)": 129000,
+      "Burger Zinger (1 phần)": 51000,
+      "Burger gà quay Flava": 47000
+    }
   },
   "FOOT406": {
     "brand": "Fresh Drinks",
@@ -506,14 +520,115 @@
     "website_type": "ecommerce"
   },
   "NT501": {
+    "catalog_categories": [
+      {
+        "name": "Ghế nội thất",
+        "slug": "ghe-noi-that",
+        "description": "Ghế thư giãn và ghế dùng hằng ngày cho không gian sống.",
+        "image_url": "/theme-demo/dn302/dn302-living-room.png",
+        "products": [
+          "Ghế nội thất"
+        ]
+      },
+      {
+        "name": "Bàn làm việc",
+        "slug": "ban-lam-viec",
+        "description": "Bàn cho góc làm việc gọn gàng, phù hợp diện tích căn phòng.",
+        "image_url": "/theme-demo/dn302/dn302-villa.png",
+        "products": [
+          "Bàn làm việc"
+        ]
+      },
+      {
+        "name": "Đèn trang trí",
+        "slug": "den-trang-tri",
+        "description": "Ánh sáng tạo điểm nhấn và cảm giác ấm áp cho ngôi nhà.",
+        "image_url": "/theme-demo/xd-shared/architecture-1.jpg",
+        "products": [
+          "Đèn trang trí"
+        ]
+      }
+    ],
+    "testimonials": [
+      {
+        "name": "Anh Hải",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Bản vẽ bố trí giúp gia đình hình dung rõ khu sinh hoạt chung và lối đi trước khi thống nhất phương án.",
+        "image_url": "/theme-demo/xd-shared/person-1.jpg"
+      },
+      {
+        "name": "Chị Mai",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Mẫu vật liệu và màu sắc được đặt cạnh nhau để chúng tôi dễ lựa chọn cho căn hộ.",
+        "image_url": "/theme-demo/xd-shared/person-2.jpg"
+      },
+      {
+        "name": "Anh Dũng",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Từng hạng mục và lịch thực hiện được trao đổi cụ thể, thuận tiện theo dõi trong quá trình thi công.",
+        "image_url": "/theme-demo/xd-shared/person-3.jpg"
+      },
+      {
+        "name": "Chị Linh",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Giải pháp lưu trữ được cân nhắc theo thói quen sử dụng, giúp không gian nhỏ gọn gàng hơn.",
+        "image_url": "/theme-demo/xd-shared/person-1.jpg"
+      },
+      {
+        "name": "Anh Tuấn",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Các điểm cần điều chỉnh được ghi nhận sau buổi khảo sát và thể hiện rõ trong phương án tiếp theo.",
+        "image_url": "/theme-demo/xd-shared/person-2.jpg"
+      },
+      {
+        "name": "Chị Hương",
+        "role": "Khách hàng mẫu · Đánh giá minh họa",
+        "quote": "Khi bàn giao, chúng tôi được hướng dẫn cách vệ sinh bề mặt và bảo quản đồ nội thất.",
+        "image_url": "/theme-demo/xd-shared/person-3.jpg"
+      }
+    ],
     "brand": "Interior Studio",
     "sector": "thiết kế nội thất",
     "preset": "nt501-complete",
+    "projects": [
+      {
+        "title": "Căn hộ tối giản 75 m²",
+        "summary": "Phương án mẫu bố trí phòng khách liên thông bếp, kết hợp hệ tủ âm và gam màu trung tính.",
+        "image": "/theme-demo/dn302/dn302-living-room.png"
+      },
+      {
+        "title": "Biệt thự sân vườn",
+        "summary": "Phương án mẫu kết nối không gian sinh hoạt với sân vườn, sử dụng gỗ tự nhiên và ánh sáng dịu.",
+        "image": "/theme-demo/dn302/dn302-villa.png"
+      },
+      {
+        "title": "Nhà phố hiện đại",
+        "summary": "Phương án mẫu tối ưu lối đi và khoảng sáng cho nhà phố, cân bằng công năng với sự riêng tư.",
+        "image": "/theme-demo/xd-shared/architecture-1.jpg"
+      },
+      {
+        "title": "Góc làm việc tại nhà",
+        "summary": "Phương án mẫu bố trí bàn làm việc, kệ lưu trữ và ánh sáng phù hợp trong diện tích nhỏ.",
+        "image": "/theme-demo/dn302/dn302-living-room.png"
+      },
+      {
+        "title": "Phòng ngủ ấm áp",
+        "summary": "Phương án mẫu kết hợp vật liệu mềm, ánh sáng gián tiếp và tủ lưu trữ gọn gàng.",
+        "image": "/theme-demo/dn302/dn302-villa.png"
+      },
+      {
+        "title": "Không gian tiếp khách",
+        "summary": "Phương án mẫu lựa chọn sofa, bàn trà và đèn trang trí để tạo khu vực tiếp khách hài hòa.",
+        "image": "/theme-demo/xd-shared/architecture-1.jpg"
+      }
+    ],
     "services": [
       "Tư vấn không gian",
       "Thiết kế nội thất",
       "Thi công hoàn thiện",
-      "Bảo trì nội thất"
+      "Bảo trì nội thất",
+      "Cải tạo không gian sống",
+      "Tư vấn vật liệu và ánh sáng"
     ],
     "products": [
       "Ghế nội thất",
@@ -572,9 +687,14 @@
       "Chăm sóc khách hàng"
     ],
     "products": [
-      "Áo sơ mi",
-      "Áo dệt kim",
-      "Đầm thanh lịch"
+      "Áo polo xanh rêu",
+      "Áo dệt kim kem",
+      "Bộ váy thanh lịch",
+      "Đầm dạo phố",
+      "Túi cói dáng tote",
+      "Túi cói tròn",
+      "Chân váy xếp ly",
+      "Áo khoác hồng pastel"
     ],
     "images": [
       "/theme-demo/shop603/product-men-green.png",
@@ -584,10 +704,67 @@
     "product_images": [
       "/theme-demo/shop603/product-men-green.png",
       "/theme-demo/shop603/product-women-knit.png",
+      "/theme-demo/shop603/product-women-rose.png",
+      "/theme-demo/ec916/product-dress.webp",
+      "/theme-demo/ec914/product-bag-tote.webp",
+      "/theme-demo/ec914/product-bag-round.webp",
+      "/theme-demo/shop603/product-women-knit.png",
       "/theme-demo/shop603/product-women-rose.png"
     ],
     "logo": "/theme-demo/complete/logo-shop606.svg",
-    "website_type": "ecommerce"
+    "website_type": "ecommerce",
+    "product_prices": {
+      "Áo polo xanh rêu": 390000,
+      "Áo dệt kim kem": 490000,
+      "Bộ váy thanh lịch": 890000,
+      "Đầm dạo phố": 690000,
+      "Túi cói dáng tote": 350000,
+      "Túi cói tròn": 320000,
+      "Chân váy xếp ly": 450000,
+      "Áo khoác hồng pastel": 590000
+    },
+    "catalog_categories": [
+      {
+        "name": "Áo thường ngày",
+        "slug": "ao-ao-khoac",
+        "description": "Thiết kế dễ phối cho mỗi ngày.",
+        "image_url": "/theme-demo/shop603/product-men-green.png",
+        "products": [
+          "Áo polo xanh rêu",
+          "Áo dệt kim kem"
+        ]
+      },
+      {
+        "name": "Đầm & chân váy",
+        "slug": "dam-chan-vay",
+        "description": "Phong cách nhẹ nhàng, thanh lịch.",
+        "image_url": "/theme-demo/shop603/product-women-rose.png",
+        "products": [
+          "Bộ váy thanh lịch",
+          "Đầm dạo phố",
+          "Chân váy xếp ly"
+        ]
+      },
+      {
+        "name": "Túi xách",
+        "slug": "tui-xach",
+        "description": "Phụ kiện hoàn thiện trang phục.",
+        "image_url": "/theme-demo/ec914/product-bag-tote.webp",
+        "products": [
+          "Túi cói dáng tote",
+          "Túi cói tròn"
+        ]
+      },
+      {
+        "name": "Áo khoác",
+        "slug": "ao-khoac",
+        "description": "Điểm nhấn thanh lịch cho trang phục.",
+        "image_url": "/theme-demo/shop603/product-women-rose.png",
+        "products": [
+          "Áo khoác hồng pastel"
+        ]
+      }
+    ]
   },
   "SPA502": {
     "brand": "Cosmetics Spa",

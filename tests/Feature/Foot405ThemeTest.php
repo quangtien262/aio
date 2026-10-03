@@ -23,10 +23,23 @@ class Foot405ThemeTest extends TestCase
 
         $categories = CatalogCategory::orderBy('sort_order')->get();
         $this->assertCount(6, $categories);
-        $this->assertSame(6, CatalogProduct::count());
+        $this->assertSame(9, CatalogProduct::count());
         $response = $this->get('/vi')->assertOk()->assertDontSee('Sản phẩm và thiết bị');
         $dom = new \DOMDocument;
         @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
+        $xpath = new \DOMXPath($dom);
+        $this->assertSame(3, $xpath->query('//section[@id="bo-suu-tap"]//h2')->length);
+        $this->assertSame(9, $xpath->query('//section[@id="bo-suu-tap"]//article')->length);
+        $response->assertSee('Gợi ý cho bạn')->assertSee('Gà rán giòn cay (4 miếng)');
+        $suggestions = $xpath->query('//section[@id="bo-suu-tap"]/div/div[3]//article/h3 | //section[@id="bo-suu-tap"]/div/div[3]//article/div/h3');
+        $this->assertSame(3, $suggestions->length);
+        foreach (CatalogProduct::orderBy('sort_order')->skip(6)->take(3)->get() as $product) {
+            $this->assertFileExists(public_path($product->image_url));
+            $this->get(route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]))->assertOk();
+        }
+        if ($path = getenv('FOOT405_HOME_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
         $links = (new \DOMXPath($dom))->query('//div[@class="f405-categories"]/a');
         $this->assertSame(6, $links->length);
         $menuLinks = (new \DOMXPath($dom))->query('//details[@data-f405-category-menu]//ul/li/a');
@@ -37,7 +50,7 @@ class Foot405ThemeTest extends TestCase
         }
         foreach ($categories as $index => $category) {
             $this->assertFileExists(public_path($category->image_url));
-            $this->assertSame(1, $category->products()->count());
+            $this->assertSame($category->slug === 'foot405-thit-va-gia-cam' ? 4 : 1, $category->products()->count());
             $this->assertStringContainsString($category->name, $links->item($index)->textContent);
             $this->assertStringContainsString($category->name, $menuLinks->item($index)->textContent);
             $this->assertSame($category->image_url, $links->item($index)->getElementsByTagName('img')->item(0)->getAttribute('src'));
@@ -74,7 +87,7 @@ class Foot405ThemeTest extends TestCase
         $this->assertSame(6, CatalogCategory::count());
         $this->assertSame('Nội dung do cửa hàng nhập', $category->fresh()->description);
         $this->assertSame('Rau của cửa hàng', $category->fresh()->name);
-        $this->assertSame(1, $category->products()->count());
+        $this->assertSame($category->slug === 'foot405-thit-va-gia-cam' ? 4 : 1, $category->products()->count());
     }
 
     public function test_foot405_is_registered_with_the_expected_homepage_blocks(): void

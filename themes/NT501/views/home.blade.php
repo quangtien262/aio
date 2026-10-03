@@ -52,12 +52,29 @@
 
     <section id="dich-vu" class="nt-section nt-services"><div class="nt-container"><div class="nt-section-head"><p class="nt-eyebrow">{{ data_get($services, 'data.subtitle', 'Dịch vụ của chúng tôi') }}</p><h2>{{ data_get($services, 'data.title', 'Đồng hành từ ý tưởng đến hoàn thiện') }}</h2></div><div class="nt-service-grid">@forelse($serviceItems as $item)<article class="nt-service-card"><img src="{{ data_get($item, 'image', 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=800&q=85') }}" alt="{{ data_get($item, 'title', '') }}"><div><h3>{{ data_get($item, 'title', 'Dịch vụ nội thất') }}</h3><p>{{ $limit(data_get($item, 'summary', data_get($item, 'description', '')), 145) }}</p><a href="{{ data_get($item, 'url', '#') }}">Tìm hiểu thêm</a></div></article>@empty <p>Đang cập nhật dịch vụ.</p>@endforelse</div></div></section>
 
-    @php($featuredTestimonial = $testimonialItems[0] ?? [])
-    <section class="nt-testimonial"><div class="nt-testimonial__copy"><div><p class="nt-eyebrow">{{ data_get($testimonials, 'data.subtitle', 'Cảm nhận khách hàng') }}</p><h2>{{ data_get($testimonials, 'data.title', 'Điều khách hàng nói về chúng tôi') }}</h2><blockquote>“{{ data_get($featuredTestimonial, 'quote', data_get($featuredTestimonial, 'summary', 'Đội ngũ tận tâm, thiết kế chi tiết và quy trình thi công rất chuyên nghiệp.')) }}”</blockquote><strong>{{ data_get($featuredTestimonial, 'name', data_get($featuredTestimonial, 'title', 'Khách hàng NT501')) }}</strong><small>{{ data_get($featuredTestimonial, 'role', 'Chủ nhà') }}</small></div></div><div class="nt-testimonial__media"><img src="{{ data_get($featuredTestimonial, 'image', 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1400&q=85') }}" alt="Khách hàng NT501"></div></section>
+    <section class="nt-feedback" aria-labelledby="nt-feedback-title">
+        <div class="nt-container">
+            <header class="nt-feedback-heading"><p class="nt-eyebrow">{{ data_get($testimonials, 'data.subtitle', 'Cảm nhận khách hàng') }}</p><h2 id="nt-feedback-title">{{ data_get($testimonials, 'data.title', 'Chia sẻ từ khách hàng') }}</h2></header>
+            <div class="nt-feedback-grid">
+                @forelse($testimonialItems as $testimonial)
+                    <figure class="nt-feedback-card">
+                        <span class="nt-feedback-quote" aria-hidden="true">“</span>
+                        <blockquote>{{ data_get($testimonial, 'quote', data_get($testimonial, 'summary', '')) }}</blockquote>
+                        <figcaption>
+                            @if(data_get($testimonial, 'image'))<img src="{{ data_get($testimonial, 'image') }}" alt="" loading="lazy">@endif
+                            <div><strong>{{ data_get($testimonial, 'name', data_get($testimonial, 'title')) }}</strong><small>{{ data_get($testimonial, 'role') }}</small></div>
+                        </figcaption>
+                    </figure>
+                @empty
+                    <p class="nt-feedback-empty">Chia sẻ từ khách hàng đang được cập nhật.</p>
+                @endforelse
+            </div>
+        </div>
+    </section>
 
     <section id="tin-tuc" class="nt-section nt-blog"><div class="nt-container"><div class="nt-section-head"><p class="nt-eyebrow">{{ data_get($posts, 'data.subtitle', 'Tin tức và cập nhật') }}</p><h2>{{ data_get($posts, 'data.title', 'Bài viết gần đây') }}</h2></div><div class="nt-blog__grid">@forelse($postItems as $item)<article><a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image', 'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=900&q=85') }}" alt="{{ data_get($item, 'title', '') }}"><div><h3>{{ data_get($item, 'title', 'Cảm hứng thiết kế nội thất') }}</h3><small>{{ data_get($item, 'published_at', data_get($item, 'meta', 'NT501 Interior Studio')) }}</small><p>{{ $limit(data_get($item, 'summary', data_get($item, 'description', '')), 115) }}</p></div></a></article>@empty <p>Đang cập nhật bài viết.</p>@endforelse</div></div></section>
 
     <section class="nt-partners nt-section"><div class="nt-container"><p class="nt-eyebrow">Đối tác của chúng tôi</p><div>@forelse($partnerItems as $item)<a href="{{ data_get($item, 'url', '#') }}"><img src="{{ data_get($item, 'image', data_get($item, 'logo', 'https://placehold.co/220x100/f5f1e8/38342c?text=Partner')) }}" alt="{{ data_get($item, 'title', 'Partner') }}"></a>@empty <span>NT501</span><span>ARCHITECT</span><span>INTERIOR</span><span>BUILD</span>@endforelse</div></div></section>
-    <section class="nt-section nt-stats"><div class="nt-container"><div>@forelse($statItems as $item)<article><strong>{{ data_get($item, 'value', data_get($item, 'title', '10+')) }}</strong><span>{{ data_get($item, 'summary', data_get($item, 'description', 'Năm kinh nghiệm')) }}</span></article>@empty <article><strong>10+</strong><span>Năm làm việc</span></article><article><strong>20</strong><span>Chuyên gia nội thất</span></article><article><strong>1000</strong><span>Dự án tiềm năng</span></article>@endforelse</div></div></section>
+    <section class="nt-section nt-stats"><div class="nt-container"><div>@forelse($statItems as $item)<article><strong>{{ data_get($item, 'value', data_get($item, 'title', '')) }}</strong><span>{{ data_get($item, 'summary', data_get($item, 'description', '')) }}</span></article>@empty <article><span>Danh mục nội thất đang được cập nhật.</span></article>@endforelse</div></div></section>
 </main>
 @endsection

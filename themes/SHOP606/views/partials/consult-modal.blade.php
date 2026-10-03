@@ -1,0 +1,91 @@
+<dialog id="s606-question-dialog" class="s606-q" aria-labelledby="s606-q-title">
+    <button type="button" class="s606-q-close" data-quote-close aria-label="{{ __('shop606_consult.close') }}">×</button>
+    <div class="s606-q-grid">
+        <aside class="s606-q-intro">
+            <span class="s606-q-eyebrow">{{ __('shop606_consult.eyebrow') }}</span>
+            <h2>{{ __('shop606_consult.title') }}</h2>
+            <p>{{ __('shop606_consult.intro') }}</p>
+            <ol>@foreach(['step1', 'step2', 'step3'] as $step)<li>{{ __('shop606_consult.'.$step) }}</li>@endforeach</ol>
+        </aside>
+        <section class="s606-q-main">
+            <h2 id="s606-q-title">{{ __('shop606_consult.form_title') }}</h2>
+            <p class="s606-q-note">{{ __('shop606_consult.required') }}</p>
+            <form action="{{ route('site.contact.submit') }}" method="post" data-quote-form>
+                @csrf
+                <input type="hidden" name="source" value="contact">
+                <div class="s606-q-fields">
+                    @foreach(['name' => ['name', 'text', 120, 'name'], 'email' => ['email', 'email', 150, 'email'], 'phone' => ['phone', 'tel', 30, 'tel'], 'subject' => ['service', 'text', 150, 'off']] as $field => $options)
+                        <label class="{{ $field === 'route_summary' ? 's606-q-wide' : '' }}">{{ __('shop606_consult.'.$options[0]) }}{{ in_array($field, ['name', 'email']) ? ' *' : '' }}
+                            <input name="{{ $field }}" type="{{ $options[1] }}" maxlength="{{ $options[2] }}" autocomplete="{{ $options[3] }}" @required(in_array($field, ['name', 'email'])) aria-describedby="s606-q-error-{{ $field }}">
+                            <small class="s606-q-error" id="s606-q-error-{{ $field }}" data-error-for="{{ $field }}"></small>
+                        </label>
+                    @endforeach
+                    <label class="s606-q-wide">{{ __('shop606_consult.message') }} *
+                        <textarea name="message" rows="3" required minlength="10" maxlength="5000" placeholder="{{ __('shop606_consult.placeholder') }}" aria-describedby="s606-q-error-message"></textarea>
+                        <small class="s606-q-error" id="s606-q-error-message" data-error-for="message"></small>
+                    </label>
+                </div>
+                <p class="s606-q-feedback" role="alert" hidden></p>
+                <p class="s606-q-note">{{ __('shop606_consult.privacy') }}</p>
+                <button class="s606-q-submit" type="submit">{{ __('shop606_consult.send') }} <span aria-hidden="true">→</span></button>
+            </form>
+            <div class="s606-q-success" tabindex="-1" role="status" hidden>
+                <span aria-hidden="true">✓</span><h3>{{ __('shop606_consult.success_title') }}</h3><p>{{ __('shop606_consult.success') }}</p>
+                <button type="button" class="s606-q-submit" data-quote-close>{{ __('shop606_consult.close') }}</button>
+            </div>
+        </section>
+    </div>
+</dialog>
+<style>
+.s606-question-open{border:0;border-radius:4px;padding:15px 26px;background:#493b2d;color:#fff;font:700 14px var(--theme-font-body);text-transform:uppercase;cursor:pointer}.s606-q{width:min(920px,calc(100% - 32px));max-height:calc(100dvh - 32px);padding:0;border:0;border-radius:22px;overflow:auto;color:#171a2c;background:#fff;font-family:var(--theme-font-body);box-shadow:0 30px 100px #0005}.s606-q *{box-sizing:border-box}.s606-q::backdrop{background:#24201dbc;backdrop-filter:blur(5px)}.s606-q-grid{display:grid;grid-template-columns:.8fr 1.3fr}.s606-q-intro{padding:44px 32px;background:radial-gradient(circle at 0 100%,#594035,#24201d 75%);color:#fff}.s606-q-eyebrow{color:#edc3a7;font-size:11px;font-weight:800;letter-spacing:.14em}.s606-q-intro h2{font:700 32px/1.25 var(--theme-font-body);margin:22px 0}.s606-q-intro p{font-size:14px;line-height:1.8;color:#cbd2e2}.s606-q-intro ol{padding:0;list-style:none;counter-reset:quote;margin:34px 0 0}.s606-q-intro li{counter-increment:quote;display:flex;align-items:center;gap:12px;margin:20px 0;font-size:14px}.s606-q-intro li:before{content:counter(quote);display:grid;place-items:center;width:28px;height:28px;flex-shrink:0;border:1px solid #edc3a770;border-radius:50%;color:#edc3a7}.s606-q-main{padding:38px 32px}.s606-q-main h2{font:750 25px/1.3 var(--theme-font-body);margin:0 28px 8px 0}.s606-q-note{font-size:12px;line-height:1.6;color:#667085;margin:8px 0 18px}.s606-q-close{position:absolute;right:12px;top:12px;border:0;width:34px;height:34px;border-radius:50%;background:#edf0f5;color:#171a2c;font-size:25px;cursor:pointer}.s606-q-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}.s606-q-fields label{display:grid;gap:6px;font-size:12px;font-weight:700;min-width:0}.s606-q-wide{grid-column:1/-1}.s606-q-fields input,.s606-q-fields textarea{width:100%;min-width:0;border:1px solid #dce1e9;border-radius:9px;padding:11px 12px;font:14px/1.5 var(--theme-font-body);background:#fbfcfe;color:#171a2c}.s606-q-fields textarea{resize:vertical}.s606-q-fields input:focus,.s606-q-fields textarea:focus{outline:2px solid #bb7d5870;border-color:#99603f;outline-offset:1px}.s606-q-submit{width:100%;display:flex;justify-content:center;gap:14px;padding:14px 20px;border:0;border-radius:10px;background:#bb7d58;color:#fff;font:750 14px var(--theme-font-body);cursor:pointer}.s606-q-submit:disabled{opacity:.65;cursor:wait}.s606-q-error{color:#b42318;font-weight:500}.s606-q-error:empty{display:none}.s606-q [aria-invalid=true]{border-color:#b42318}.s606-q-feedback{padding:10px;background:#fff1f0;color:#b42318;border-radius:8px;font-size:13px}.s606-q-success{text-align:center;padding:38px 0}.s606-q-success>span{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:50%;background:#e6f6ed;color:#18794e;font-size:32px}.s606-q-success p{color:#667085;line-height:1.7}.s606-q [hidden]{display:none!important}body.s606-quote-open{overflow:hidden}
+@media(max-width:700px){.s606-q-grid{grid-template-columns:1fr}.s606-q-intro{padding:26px 24px}.s606-q-intro h2{font-size:24px;margin:12px 24px 8px 0}.s606-q-intro p{margin:0}.s606-q-intro ol{display:none}.s606-q-main{padding:24px}.s606-q-close{background:#ffffffea}.s606-q-fields{grid-template-columns:1fr}.s606-q{border-radius:16px}}
+</style>
+<script>
+(() => {
+    const dialog = document.getElementById('s606-question-dialog');
+    const form = dialog.querySelector('form');
+    const submit = form.querySelector('[type=submit]');
+    const feedback = dialog.querySelector('.s606-q-feedback');
+    const success = dialog.querySelector('.s606-q-success');
+    const initialLabel = submit.innerHTML;
+    let busy = false, opener;
+    const clearErrors = () => {
+        feedback.hidden = true;
+        form.querySelectorAll('[data-error-for]').forEach(el => el.textContent = '');
+        form.querySelectorAll('[aria-invalid]').forEach(el => el.removeAttribute('aria-invalid'));
+    };
+    document.querySelectorAll('[data-s606-consult-open]').forEach(button => button.addEventListener('click', event => {
+        event.preventDefault();
+        opener = button;
+        if (success.hidden === false) { success.hidden = true; form.hidden = false; }
+        dialog.showModal();
+        document.body.classList.add('s606-quote-open');
+    }));
+    dialog.querySelectorAll('[data-quote-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.addEventListener('click', event => { const r = dialog.getBoundingClientRect(); if (event.target === dialog && (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom)) dialog.close(); });
+    dialog.addEventListener('close', () => { document.body.classList.remove('s606-quote-open'); opener?.focus(); });
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (busy || !form.reportValidity()) return;
+        busy = true; submit.disabled = true; clearErrors();
+        submit.textContent = @json(__('shop606_consult.sending'));
+        try {
+            const response = await fetch(form.action, {method:'POST', body:new FormData(form), headers:{Accept:'application/json'}, credentials:'same-origin'});
+            const data = await response.json();
+            if (!response.ok) {
+                feedback.textContent = response.status === 422 ? @json(__('shop606_consult.invalid')) : @json(__('shop606_consult.error'));
+                feedback.hidden = false;
+                for (const [name, messages] of Object.entries(data.errors || {})) {
+                    const field = form.elements.namedItem(name);
+                    const error = [...form.querySelectorAll('[data-error-for]')].find(el => el.dataset.errorFor === name);
+                    if (field && error) { field.setAttribute('aria-invalid','true'); error.textContent = messages[0]; }
+                }
+                form.querySelector('[aria-invalid=true]')?.focus();
+                return;
+            }
+            form.reset(); form.hidden = true; success.hidden = false; success.focus();
+        } catch (_) { feedback.textContent = @json(__('shop606_consult.error')); feedback.hidden = false; }
+        finally { busy = false; submit.disabled = false; submit.innerHTML = initialLabel; }
+    });
+})();
+</script>
