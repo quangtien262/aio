@@ -1,5 +1,14 @@
 <script>
 (() => {
+    document.querySelectorAll('[data-ec13-product-thumb]').forEach(button => {
+        button.addEventListener('click', () => {
+            const image = document.querySelector('[data-ec13-product-image]');
+            if (!image) return;
+            image.src = button.dataset.ec13ProductThumb;
+            document.querySelectorAll('[data-ec13-product-thumb]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+        });
+    });
+
     const menuButton = document.querySelector('[data-ec13-menu]');
     const nav = document.querySelector('[data-ec13-nav]');
     menuButton?.addEventListener('click', () => nav?.classList.toggle('is-open'));

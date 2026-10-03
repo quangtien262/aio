@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -16,6 +17,23 @@ use Tests\TestCase;
 class Ec913ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_product_detail_handles_gallery_stock_and_contact_pricing(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('EC913', 'ec913-novatech-mall');
+        $product = CatalogProduct::where('slug', 'ec913-novabook-air-14')->firstOrFail();
+        $product->images()->create(['image_url' => '/theme-demo/ec913/phone-blue.webp', 'sort_order' => 0]);
+        $url = route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]);
+        $response = $this->get($url)->assertOk()->assertSee('Thông tin sản phẩm')->assertSee($product->sku)
+            ->assertSee('data-ec13-product-thumb', false)->assertSee('name="quantity"', false)->assertSee('Chakra+Petch', false);
+        if ($path = getenv('EC913_PRODUCT_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+        $product->update(['stock' => 0]);
+        $this->get($url)->assertOk()->assertSee('Tạm hết hàng')->assertDontSee('name="quantity"', false);
+        $product->update(['stock' => 10, 'price' => 0]);
+        $this->get($url)->assertOk()->assertSee('Liên hệ tư vấn sản phẩm')->assertDontSee('name="quantity"', false);
+    }
 
     public function test_ec913_is_registered_with_eight_ordered_home_blocks(): void
     {

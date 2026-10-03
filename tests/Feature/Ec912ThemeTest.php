@@ -54,6 +54,23 @@ class Ec912ThemeTest extends TestCase
         }
     }
 
+    public function test_product_detail_handles_gallery_stock_and_contact_pricing(): void
+    {
+        app(ThemeDemoContentGenerator::class)->generate('EC912', 'ec912-sudes-phone');
+        $product = CatalogProduct::firstOrFail();
+        $product->images()->create(['image_url' => '/theme-demo/ec912/phone-blue.webp', 'sort_order' => 0]);
+        $url = route('site.catalog.product', ['locale' => 'vi', 'slug' => $product->slug]);
+        $response = $this->get($url)->assertOk()->assertSee('Thông tin sản phẩm')->assertSee($product->sku)
+            ->assertSee('data-ec12-product-thumb', false)->assertSee('name="quantity"', false)->assertSee('Chakra+Petch', false);
+        if ($path = getenv('EC912_PRODUCT_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+        $product->update(['stock' => 0]);
+        $this->get($url)->assertOk()->assertSee('Tạm hết hàng')->assertDontSee('name="quantity"', false);
+        $product->update(['stock' => 10, 'price' => 0]);
+        $this->get($url)->assertOk()->assertSee('Liên hệ tư vấn sản phẩm')->assertDontSee('name="quantity"', false);
+    }
+
     public function test_ec912_is_registered_with_nine_ordered_home_blocks(): void
     {
         $theme = app(ThemeRegistry::class)->all()->firstWhere('key', 'EC912');
