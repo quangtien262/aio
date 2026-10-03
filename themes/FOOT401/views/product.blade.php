@@ -185,8 +185,8 @@
         <meta name="keywords" content="{{ $seoKeywords }}">
     @endif
     <style>
-        .xd-page-main{padding:46px 0 88px;background:var(--bg)}
-        .xd-breadcrumb{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:28px;color:var(--muted);font-size:14px;font-weight:750}.xd-breadcrumb a:hover{color:var(--lime-dark)}
+        .foot-product-page{--bg:#faf9f6;--ink:#242923;--muted:#66665f;--line:#e8e4db;--lime:#89651e;--lime-dark:#6e5015;padding:96px 0 88px;background:var(--bg);color:var(--ink)}.foot-product-page>.xd-container{width:min(1180px,calc(100% - 48px));margin-inline:auto}
+        .foot-product-page .xd-breadcrumb{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:24px;color:#77766e;font-size:13px;font-weight:500;line-height:1.7;overflow-wrap:anywhere}.foot-product-page .xd-breadcrumb a{color:#75602f;text-decoration:none}.foot-product-page .xd-breadcrumb a:hover{color:#493b1c;text-decoration:underline}.foot-product-page .xd-breadcrumb [aria-current]{color:#30352f;font-weight:600}.foot-product-page .xd-breadcrumb a:focus-visible{outline:2px solid #89651e;outline-offset:4px}
         .xd-product-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,.75fr);gap:42px;align-items:start}.xd-gallery-panel,.xd-info-panel,.xd-panel{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.07)}
         .xd-gallery-stage{height:min(680px,60vw);min-height:420px;background:#eef2ef;overflow:hidden}.xd-gallery-stage img{width:100%;height:100%;object-fit:cover}.xd-thumbs{display:flex;gap:12px;overflow:auto;padding:14px}.xd-thumb{flex:0 0 92px;width:92px;height:74px;padding:0;border:2px solid transparent;background:#eef2ef;cursor:pointer}.xd-thumb.is-active{border-color:var(--lime)}.xd-thumb img{width:100%;height:100%;object-fit:cover}
         .xd-info-panel{padding:44px}.xd-kicker{position:relative;display:inline-block;margin:0 0 14px 18px;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}.xd-info-panel h1{margin:0 0 18px;font-size:clamp(38px,4vw,64px);line-height:1.06;letter-spacing:-.055em}.xd-summary{margin:0 0 24px;color:var(--muted);font-size:19px;font-weight:600}
@@ -196,12 +196,12 @@
         .xd-list{margin:0;padding:0;list-style:none;display:grid;gap:12px}.xd-list li{position:relative;padding-left:24px;color:#465461;font-weight:650}.xd-list li:before{content:"";position:absolute;left:0;top:.65em;width:9px;height:9px;background:var(--lime)}.xd-side-stack{display:grid;gap:18px}.xd-cart-message{margin-bottom:24px;border-left:5px solid var(--lime);font-weight:850}.xd-cart-message.is-error{border-left-color:#dc3545;background:#fff8f8;color:#9b1c31}.xd-out-of-stock{display:grid;gap:14px;margin-top:6px}.xd-stock-alert{padding:16px 18px;border:1px solid #f1c9cf;background:#fff8f8;color:#9b1c31;font-weight:850}
         .xd-section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-top:64px}.xd-section-head h2{margin:0;font-size:40px;line-height:1.1;letter-spacing:-.04em}.xd-related{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;margin-top:42px}.xd-related-card{background:#fff;border:1px solid var(--line);box-shadow:0 12px 34px rgba(16,29,40,.06);overflow:hidden}.xd-related-card img{width:100%;height:220px;object-fit:cover}.xd-related-card div{padding:18px}.xd-related-card h3{margin:0 0 10px;font-size:17px;line-height:1.35;text-transform:uppercase}.xd-related-price{color:#9a6a3e;font-size:20px;font-weight:950}
         @media (max-width:1180px){.xd-product-hero,.xd-content-grid{grid-template-columns:1fr}.xd-related{grid-template-columns:repeat(2,minmax(0,1fr))}}
-        @media (max-width:640px){.xd-page-main{padding:28px 0 54px}.xd-gallery-stage{height:360px;min-height:0}.xd-info-panel,.xd-panel{padding:24px}.xd-info-panel h1{font-size:34px}.xd-price{font-size:32px}.xd-cta-row{display:grid}.xd-btn{width:100%}.xd-related{grid-template-columns:1fr}}
+        @media (max-width:640px){.foot-product-page{padding:28px 0 54px}.foot-product-page>.xd-container{width:calc(100% - 28px)}.xd-gallery-stage{height:360px;min-height:0}.xd-info-panel,.xd-panel{padding:24px}.xd-info-panel h1{font-size:34px}.xd-price{font-size:32px}.xd-cta-row{display:grid}.xd-btn{width:100%}.xd-related{grid-template-columns:1fr}}
     </style>
 @endpush
 
 @section('content')
-        <main class="xd-page-main">
+        <main class="xd-page-main foot-product-page">
             <div class="xd-container">
                 @if (session('cart_success'))
                     <div class="xd-panel xd-cart-message">{{ session('cart_success') }}</div>
@@ -221,7 +221,7 @@
                         <a href="{{ route('site.catalog.category', ['slug' => $productModel->category->slug]) }}">{{ $productModel->category->name }}</a>
                     @endif
                     <span>/</span>
-                    <span>{{ $product['title'] }}</span>
+                    <span aria-current="page">{{ $product['title'] }}</span>
                 </nav>
 
                 <section class="xd-product-hero">

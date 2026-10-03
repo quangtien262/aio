@@ -130,7 +130,11 @@
             @include('theme-foot401::partials.edit-block-button', ['block' => $teamBlock])
             <div class="foot-container">
                 <header class="foot-section-heading"><p>{{ data_get($teamBlock, 'data.subtitle', 'Những con người tạo nên trải nghiệm') }}</p><h2>{{ data_get($teamBlock, 'data.title', 'Đội ngũ của chúng tôi') }}</h2><span></span></header>
-                <div class="foot-team-grid">
+                <div class="foot-team-controls" data-foot-team-controls hidden>
+                    <button type="button" data-foot-team-prev aria-controls="foot-team-track" aria-label="Thành viên trước">←</button>
+                    <button type="button" data-foot-team-next aria-controls="foot-team-track" aria-label="Thành viên tiếp theo">→</button>
+                </div>
+                <div class="foot-team-grid" id="foot-team-track" tabindex="0" role="region" aria-label="Đội ngũ của chúng tôi" aria-roledescription="carousel">
                     @forelse ($teamItems as $member)
                         <article class="foot-team-card"><img src="{{ data_get($member, 'image', 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=700&q=85') }}" alt="{{ data_get($member, 'name', data_get($member, 'title', 'Thành viên')) }}"><div><p>{{ data_get($member, 'role', data_get($member, 'position', 'Đầu bếp')) }}</p><h3>{{ data_get($member, 'name', data_get($member, 'title', 'Thành viên FOOT401')) }}</h3></div></article>
                     @empty

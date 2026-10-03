@@ -5,7 +5,6 @@
     $logo = trim((string) data_get($branding, 'logo_url', ''));
     $siteName = trim((string) data_get($profile, 'site_name', data_get($branding, 'company_name', 'Sudes Phone'))) ?: 'Sudes Phone';
     $hotline = trim((string) data_get($branding, 'support_hotline', ''));
-    $location = trim((string) data_get($branding, 'support_location', ''));
     $nav = collect(data_get($shell, 'top_menu', []))->filter(fn ($item) => is_array($item) && filled(data_get($item, 'label')))->values();
 @endphp
 <header class="ec12-header" id="top">
@@ -18,7 +17,6 @@
             <input name="q" placeholder="{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('EC912', app()->getLocale(), 'EC912.search_placeholder', 'Tìm sản phẩm...') }}" aria-label="Tìm sản phẩm">
             <button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
-        <a class="ec12-head-action ec12-store" href="{{ route('site.contact') }}"><i class="fa-solid fa-location-dot"></i><span>@themeT('EC912.store_system', 'Hệ thống cửa hàng')<b>{{ $location }}</b></span></a>
         <a class="ec12-head-action" href="tel:{{ preg_replace('/\s+/', '', $hotline) }}"><i class="fa-solid fa-phone-volume"></i><span>@themeT('EC912.purchase_hotline', 'Gọi mua hàng')<b>{{ $hotline }}</b></span></a>
         @guest('customer')
             <button class="ec12-head-action" type="button" data-xd-auth-open="login"><i class="fa-regular fa-user"></i><span>@themeT('EC912.account', 'Tài khoản')<b>@themeT('EC912.login', 'Đăng nhập')</b></span></button>

@@ -16,7 +16,7 @@
         <div class="f405-actions"><div class="f405-language">@include('partials.storefront-language-switcher')</div><button type="button" data-xd-auth-open="login" aria-label="@themeT('FOOT405.account', 'Tài khoản')"><i class="fa-regular fa-user"></i></button><a href="{{ route('site.cart.index') }}" class="f405-cart" aria-label="@themeT('FOOT405.cart', 'Giỏ hàng')"><i class="fa-solid fa-basket-shopping"></i><em>{{ $cartCount }}</em></a><button class="f405-menu-toggle" type="button" data-f405-menu-toggle aria-label="Mở menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button></div>
     </div>
     <div class="f405-navwrap"><div class="f405-container f405-navrow"><details class="f405-category-menu" data-f405-category-menu>
-                <summary class="f405-category-button"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i> @themeT('FOOT405.product_categories', 'Danh mục sản phẩm') <span aria-hidden="true">⌄</span></summary>
+                <summary class="f405-category-button"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i> @themeT('FOOT405.product_categories', 'Danh mục sản phẩm') <svg class="f405-category-chevron" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></summary>
                 <nav class="f405-category-panel" aria-label="@themeT('FOOT405.product_categories', 'Danh mục sản phẩm')">
                     <a class="f405-category-all" href="{{ route('site.catalog.search') }}">@themeT('FOOT405.all_products', 'Tất cả sản phẩm') →</a>
                     @if($productMenu->isNotEmpty())

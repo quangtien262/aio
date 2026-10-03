@@ -250,25 +250,45 @@
         .xd-contact-errors ul{margin:6px 0 0;padding-left:18px}
         @media (max-width:1180px){.xd-cms-hero,.xd-detail,.xd-contact-page{grid-template-columns:1fr}}
         @media (max-width:640px){.xd-cart-link{width:42px;height:42px;border-radius:999px}.xd-cart-link svg{width:19px;height:19px}.xd-page-main{padding:38px 0 56px}.xd-cms-hero{padding:30px 22px;margin-bottom:26px}.xd-cms-hero h1{font-size:36px}.xd-cms-hero p{font-size:16px}.xd-service-card{border-radius:18px;overflow:hidden}.xd-service-image{height:215px}.xd-service-body{padding:26px 22px}.xd-service-card h2,.xd-service-card h3{font-size:19px}.xd-detail-body{padding:28px 22px}.xd-detail-body h1{font-size:34px}.xd-detail-summary,.xd-rich-content{font-size:16px}.xd-contact-panel,.xd-contact-form-card{padding:28px 22px}.xd-contact-panel h2,.xd-contact-form-card h2{font-size:28px}.xd-contact-method{grid-template-columns:44px minmax(0,1fr);padding:14px}.xd-contact-icon{width:44px;height:44px;font-size:18px}.xd-contact-method a,.xd-contact-method span{font-size:15px}.xd-contact-submit{width:100%}}
+
+        .foot-projects-page{padding:96px 0 64px;background:#faf9f6;color:#242923}.foot-projects-page>.xd-container{width:min(1180px,calc(100% - 48px));margin-inline:auto}.foot-project-breadcrumb{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:#77766d;margin-bottom:30px}.foot-projects-page a{color:inherit;text-decoration:none}.foot-project-breadcrumb a{color:#806326}.foot-project-intro{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:38px;padding-bottom:30px;border-bottom:1px solid #e4dfd3}.foot-project-eyebrow{margin:0 0 12px;color:#87631e;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}.foot-project-intro h1{font-size:clamp(36px,4vw,52px);margin:0;line-height:1.15}.foot-project-intro>p{max-width:460px;margin:0;color:#6d6b63;line-height:1.8;font-size:15px}.foot-project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}.foot-project-card{display:flex;flex-direction:column;min-width:0;background:#fff;border:1px solid #e8e3d8;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px #322b1d06}.foot-project-image{display:block;aspect-ratio:3/2;background:#eee9df;overflow:hidden}.foot-project-image img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .3s}.foot-project-card:hover .foot-project-image img{transform:scale(1.035)}.foot-project-placeholder{display:grid;place-items:center;height:100%;padding:30px;text-align:center;color:#82734f;font:italic 22px var(--foot-serif)}.foot-project-body{display:flex;flex-direction:column;flex:1;padding:24px}.foot-project-body h2{font-size:23px;line-height:1.35;margin:0 0 14px;overflow-wrap:anywhere}.foot-project-body p{margin:0 0 24px;font-size:14px;color:#6b6b62;line-height:1.75}.foot-project-body .foot-project-link{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:auto;padding-top:16px;border-top:1px solid #eee9df;font-size:13px;font-weight:700;color:#806326}.foot-project-link span{font-size:22px}.foot-projects-page a:hover{color:#9a7123}.foot-projects-page a:focus-visible{outline:2px solid #89651e;outline-offset:4px}.foot-project-contact{display:flex;align-items:center;justify-content:space-between;gap:28px;margin-top:48px;padding:32px;background:#eeeadf;border-radius:12px}.foot-project-contact h2{font-size:26px;margin:0 0 10px}.foot-project-contact p{margin:0;color:#6b6b62;font-size:14px;line-height:1.7}.foot-project-contact>a{flex-shrink:0;padding:14px 20px;border-radius:6px;background:#242923;color:#fff;font-size:13px;font-weight:700}.foot-project-contact>a:hover{background:#3b4239;color:#fff}.foot-project-contact>a span{margin-left:12px}.foot-project-empty{grid-column:1/-1;padding:48px 24px;background:#fff;border:1px solid #e8e3d8;border-radius:12px;text-align:center}.foot-project-pagination:not(:empty){margin-top:28px}
+        @media(max-width:900px){.foot-project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.foot-project-intro{gap:24px}.foot-project-contact{align-items:flex-start;flex-direction:column}}
+        @media(max-width:640px){.foot-projects-page{padding:28px 0 40px}.foot-projects-page>.xd-container{width:calc(100% - 28px)}.foot-project-intro{grid-template-columns:1fr;gap:18px;margin-bottom:26px}.foot-project-grid{grid-template-columns:1fr;gap:22px}.foot-project-body{padding:22px}.foot-project-contact{padding:24px;margin-top:32px}.foot-project-contact h2{font-size:24px}}
+        @media(prefers-reduced-motion:reduce){.foot-project-image img{transition:none}.foot-project-card:hover .foot-project-image img{transform:none}}
     </style>
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+<main class="xd-page-main {{ isset($listingItems) ? 'foot-projects-page' : '' }}">
             <div class="xd-container">
                     @if (isset($listingItems))
-                    <h1>{{ $pageTitle ?? 'Dự án' }}</h1>
-                    <section class="xd-services-list">
-                        @foreach ($listingItems as $project)
-                            <article class="xd-service-card">
-                                @if ($project->featuredImage?->image_url)
-                                    <a class="xd-service-image" href="{{ route('site.projects.show', ['slug' => $project->slug]) }}"><img src="{{ $project->featuredImage->image_url }}" alt="{{ $project->title }}" loading="lazy"></a>
-                                @endif
-                                <div class="xd-service-body"><h2><a href="{{ route('site.projects.show', ['slug' => $project->slug]) }}">{{ $project->title }}</a></h2><p>{{ $project->summary }}</p></div>
+                    <nav class="foot-project-breadcrumb" aria-label="Đường dẫn"><a href="{{ route('site.home') }}">Trang chủ</a><span aria-hidden="true">/</span><span aria-current="page">{{ $pageTitle ?? 'Dự án' }}</span></nav>
+                    <header class="foot-project-intro">
+                        <div><p class="foot-project-eyebrow">Không gian & trải nghiệm</p><h1>{{ $pageTitle ?? 'Dự án' }}</h1></div>
+                        <p>Khám phá những ý tưởng và phương án tổ chức, từ buổi gặp mặt thân mật đến những dịp đặc biệt.</p>
+                    </header>
+                    <section class="foot-project-grid" aria-label="Danh sách dự án">
+                        @forelse ($listingItems as $project)
+                            <article class="foot-project-card">
+                                <a class="foot-project-image" href="{{ route('site.projects.show', ['slug' => $project->slug]) }}" aria-label="{{ $project->title }}">
+                                    @if ($project->featuredImage?->image_url)
+                                        <img src="{{ $project->featuredImage->image_url }}" alt="{{ $project->title }}" loading="lazy">
+                                    @else
+                                        <span class="foot-project-placeholder">Không gian cho những trải nghiệm mới</span>
+                                    @endif
+                                </a>
+                                <div class="foot-project-body">
+                                    <h2><a href="{{ route('site.projects.show', ['slug' => $project->slug]) }}">{{ $project->title }}</a></h2>
+                                    @if($project->summary)<p>{{ $project->summary }}</p>@endif
+                                    <a class="foot-project-link" href="{{ route('site.projects.show', ['slug' => $project->slug]) }}">Khám phá dự án <span aria-hidden="true">↗</span></a>
+                                </div>
                             </article>
-                        @endforeach
+                        @empty
+                            <div class="foot-project-empty"><h2>Dự án đang được cập nhật</h2><p>Liên hệ với chúng tôi để trao đổi ý tưởng cho dịp đặc biệt của bạn.</p><a href="{{ route('site.contact') }}">Liên hệ tư vấn →</a></div>
+                        @endforelse
                     </section>
-                    @if (method_exists($listingItems, 'links')){{ $listingItems->links() }}@endif
+                    @if (method_exists($listingItems, 'links'))<div class="foot-project-pagination">{{ $listingItems->links() }}</div>@endif
+                    <aside class="foot-project-contact"><div><h2>Cùng lên ý tưởng cho dịp đặc biệt</h2><p>Chia sẻ mong muốn để chúng tôi tư vấn phương án phù hợp.</p></div><a href="{{ route('site.contact') }}">Trao đổi với chúng tôi <span aria-hidden="true">→</span></a></aside>
                     @else
                     <section class="xd-detail-card">
                         <div class="xd-detail-body">
