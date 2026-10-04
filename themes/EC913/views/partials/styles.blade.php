@@ -50,4 +50,9 @@ body{font-family:var(--theme-font-body,"Segoe UI",sans-serif)}h1,h2,h3,h4,h5,h6{
 
 .ec13-nav .ec13-container{overflow:visible}.ec13-category-dropdown{position:relative;flex-shrink:0}.ec13-category-dropdown>.ec13-nav-category{display:flex;align-items:center;gap:10px;min-height:58px;width:100%}.ec13-category-dropdown>.ec13-nav-category .fa-chevron-down{margin-left:auto}.ec13-category-panel{position:absolute;top:100%;left:0;width:280px;max-width:calc(100vw - 32px);max-height:65vh;overflow:auto;background:#fff;border:1px solid #dfe7db;border-radius:0 0 8px 8px;box-shadow:0 12px 30px #18361626;z-index:150}.ec13-category-panel[hidden]{display:none}.ec13-category-panel ul{list-style:none;padding:6px 0;margin:0}.ec13-nav .ec13-category-panel a{display:block;width:auto;min-height:0;padding:11px 18px;color:#26342b;font-size:14px;font-weight:500;line-height:1.5;white-space:normal;text-decoration:none}.ec13-nav .ec13-category-panel a:hover,.ec13-nav .ec13-category-panel a:focus-visible{background:#eef5eb;color:var(--ec13-green-dark,#357525)}.ec13-category-panel ul ul{padding:0 0 0 16px}.ec13-nav-category[aria-expanded=true] .fa-chevron-down{transform:rotate(180deg)}
 @media(max-width:900px){.ec13-category-dropdown{width:100%}.ec13-category-panel{position:static;width:100%;max-width:none;box-shadow:none}.ec13-nav .ec13-container{overflow-y:auto;max-height:80vh}}
+
+/* Share the header container width with category and search content. */
+.ec13-page .ec13-container,.ec13-page .xd-catalog-page .xdc-container{width:min(1440px,calc(100% - 40px));margin-inline:auto}
+@media(max-width:820px){.ec13-page .ec13-container,.ec13-page .xd-catalog-page .xdc-container{width:min(720px,calc(100% - 28px))}}
+@media(max-width:520px){.ec13-page .ec13-container,.ec13-page .xd-catalog-page .xdc-container{width:calc(100% - 20px)}}
 </style>

@@ -1,1 +1,3 @@
-@include('theme-shop605::news')
+@extends('theme-shop606::layout') @section('title','Tin tức') @section('content')
+@include('themes.common.news-listing')
+@endsection

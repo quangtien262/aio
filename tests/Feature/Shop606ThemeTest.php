@@ -7,6 +7,8 @@ use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
 use App\Models\CmsPost;
+use App\Models\CmsProject;
+use App\Models\CmsService;
 use App\Models\SiteProfile;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,6 +24,26 @@ class Shop606ThemeTest extends TestCase
         $preset = $generator->presetsForTheme('SHOP606')[0]['key'];
         $generator->generate('SHOP606', $preset);
         $generator->generate('SHOP606', $preset);
+        if ($path = getenv('SHOP606_PRODUCT_PREVIEW')) {
+            $previewProduct = CatalogProduct::where('slug', 'shop606-ao-det-kim-kem')->firstOrFail();
+            file_put_contents($path, $this->get(route('site.catalog.product', ['slug' => $previewProduct->slug]))->assertOk()->getContent());
+        }
+        $servicesPage = $this->get('/vi/s')->assertOk()->assertSee('s606-page')->assertDontSee('s605-page')->assertDontSee('OH!UNDER');
+        foreach (CmsService::all() as $service) {
+            $servicesPage->assertSee($service->title);
+            $this->get(route('site.services.show', ['slug' => $service->slug]))->assertOk()->assertSee('s606-service-detail')->assertDontSee('s605-page')->assertSee($service->title);
+        }
+        $this->get(route('site.blog.index'))->assertOk()->assertSee('s606-page')->assertDontSee('s605-page');
+        foreach (CmsPost::all() as $post) {
+            $this->get(route('site.blog.show', ['slug' => $post->slug]))->assertOk()->assertSee($post->title)->assertSee('s606-page')->assertDontSee('s605-page');
+        }
+        $this->get(route('site.projects.index'))->assertOk()->assertSee('s606-page')->assertDontSee('s605-page');
+        foreach (CmsProject::all() as $project) {
+            $this->get(route('site.projects.show', ['slug' => $project->slug]))->assertOk()->assertSee($project->title)->assertSee('s606-page')->assertDontSee('s605-page');
+        }
+        if ($path = getenv('SHOP606_CONTACT_PREVIEW')) {
+            file_put_contents($path, $this->get(route('site.contact'))->assertOk()->getContent());
+        }
         $this->assertSame(8, CatalogProduct::count());
         $this->assertSame(4, CatalogCategory::count());
         $response = $this->get('/vi')->assertOk();

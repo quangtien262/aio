@@ -1,1 +1,19 @@
-@include('theme-shop605::services')
+@extends('theme-shop606::layout')
+@section('title', $pageTitle ?? (app()->getLocale() === 'vi' ? 'Dịch vụ' : 'Services'))
+@section('content')
+@include('theme-shop606::partials.service-styles')
+<main class="s606-service-page"><div class="s606-service-wrap">
+    <header class="s606-service-heading"><h1>{{ $pageTitle ?? (app()->getLocale() === 'vi' ? 'Dịch vụ' : 'Services') }}</h1>@if(!empty($pageDescription))<p>{{ $pageDescription }}</p>@endif</header>
+    <div class="s606-service-grid">
+        @forelse($listingItems ?? [] as $item)
+        <article class="s606-service-card">
+            @if($item->featuredImage?->image_url)<a href="{{ route('site.services.show', ['slug' => $item->slug]) }}"><img loading="lazy" src="{{ $item->featuredImage->image_url }}" alt="{{ $item->featuredImage->alt_text ?: $item->title }}"></a>@endif
+            <div><h2><a href="{{ route('site.services.show', ['slug' => $item->slug]) }}">{{ $item->title }}</a></h2>@if($item->summary)<p>{{ $item->summary }}</p>@endif</div>
+        </article>
+        @empty
+        <p>{{ app()->getLocale() === 'vi' ? 'Chưa có dịch vụ được xuất bản.' : 'No services published yet.' }}</p>
+        @endforelse
+    </div>
+    @if(isset($listingItems) && method_exists($listingItems, 'links')){{ $listingItems->links() }}@endif
+</div></main>
+@endsection

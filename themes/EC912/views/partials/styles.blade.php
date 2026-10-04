@@ -11,4 +11,11 @@ body{font-family:var(--theme-font-body,"Segoe UI",sans-serif)}h1,h2,h3,h4,h5,h6{
 @media(max-width:900px){.ec12-product-detail{grid-template-columns:1fr;gap:26px}.ec12-product-detail .ec12-product-stage img{height:360px}.ec12-product-stage{min-height:0}}
 @media(max-width:580px){.ec12-breadcrumb{padding:16px 0;font-size:11px}.ec12-product-detail{padding:18px;border-radius:12px}.ec12-product-detail .ec12-product-stage img{height:280px;padding:16px}.ec12-product-pricing{padding:16px}.ec12-product-pricing strong{font-size:26px}.ec12-product-description{padding:22px 18px}.ec12-product-description>h2{font-size:23px}.ec12-purchase button{padding:12px;font-size:13px}}
 .ec12-search{min-width:200px}.ec12-search input{min-width:0}.ec12-store{max-width:240px;white-space:normal}.ec12-store span{min-width:0}.ec12-store b{font-size:12px;line-height:1.5}
+
+/* Neutral catalog heading for EC912's black and red palette. */
+.ec12-page .xd-catalog-page .xdc-hero{background:#fafafa;border-bottom:1px solid #e3e3e6;color:var(--ec12-text)}
+.ec12-page .xd-catalog-page .xdc-hero h1{color:var(--ec12-dark)}
+.ec12-page .xd-catalog-page .xdc-hero .xdc-eyebrow{color:var(--ec12-red)}
+.ec12-page .xd-catalog-page .xdc-hero p,.ec12-page .xd-catalog-page .xdc-breadcrumb{color:#64646d}
+.ec12-page .xd-catalog-page .xdc-breadcrumb a:hover{color:var(--ec12-red)}
 </style>

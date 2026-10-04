@@ -23,6 +23,9 @@ class Ec912ThemeTest extends TestCase
         $generator = app(ThemeDemoContentGenerator::class);
         $generator->generate('EC912', 'ec912-sudes-phone');
         $generator->generate('EC912', 'ec912-sudes-phone');
+        if ($path = getenv('EC912_CATALOG_PREVIEW')) {
+            file_put_contents($path, $this->get('/vi/tim-kiem')->assertOk()->getContent());
+        }
         $this->assertSame(14, CatalogProduct::count());
         $this->assertSame(6, CatalogCategory::count());
         $this->assertSame(4, CmsPost::count());

@@ -10,8 +10,8 @@
   ],
   "parent": null,
   "preview": {
-    "thumbnail": "preview-shop606.svg",
-    "cover": "cover-shop606.svg"
+    "thumbnail": "shop606.png",
+    "cover": "shop606.png"
   },
   "blocks": [
     "hero-slider",
