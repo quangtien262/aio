@@ -26,8 +26,8 @@ class Auto850ThemeTest extends TestCase
         $theme = app(ThemeRegistry::class)->all()->firstWhere('key', 'AUTO850');
         $this->assertNotNull($theme);
         $this->assertSame('ecommerce', $theme['website_type']);
-        $this->assertFileExists(public_path('theme-previews/AUTO850/preview-auto850.png'));
-        $this->assertFileExists(public_path('theme-previews/AUTO850/cover-auto850.png'));
+        $this->assertFileExists(public_path('theme-previews/AUTO850/'.$theme['preview']['thumbnail']));
+        $this->assertFileExists(public_path('theme-previews/AUTO850/'.$theme['preview']['cover']));
         $builder = app(LandingPageBuilder::class);
         $this->assertTrue($builder->supportsTheme('AUTO850'));
         $this->assertSame([

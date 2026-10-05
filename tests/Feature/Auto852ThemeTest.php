@@ -23,7 +23,7 @@ class Auto852ThemeTest extends TestCase
     {
         $theme = app(ThemeRegistry::class)->all()->firstWhere('key', 'AUTO852');
         $this->assertNotNull($theme); $this->assertSame('ecommerce', $theme['website_type']);
-        $this->assertFileExists(public_path('theme-previews/AUTO852/preview-auto852.png')); $this->assertFileExists(public_path('theme-previews/AUTO852/cover-auto852.png'));
+        $this->assertFileExists(public_path('theme-previews/AUTO852/'.$theme['preview']['thumbnail'])); $this->assertFileExists(public_path('theme-previews/AUTO852/'.$theme['preview']['cover']));
         foreach (['hero-detailing', 'product-banner', 'service-1', 'service-6', 'product-1', 'product-10'] as $asset) { $this->assertFileExists(public_path('themes/AUTO852/images/'.$asset.'.png')); }
         $builder = app(LandingPageBuilder::class); $this->assertTrue($builder->supportsTheme('AUTO852'));
         $this->assertSame(['auto852_hero', 'auto852_services', 'auto852_process', 'auto852_promotions', 'auto852_pricing', 'auto852_product_banner', 'auto852_products', 'auto852_news'], collect($builder->availableBlocks('AUTO852'))->pluck('block_type')->all());

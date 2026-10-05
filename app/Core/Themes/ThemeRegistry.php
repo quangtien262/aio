@@ -112,6 +112,10 @@ class ThemeRegistry
 
         $candidates = glob($absoluteDir.DIRECTORY_SEPARATOR.'avatar.*');
 
+        if (empty($candidates) && File::exists($absoluteDir.DIRECTORY_SEPARATOR.'avatar-optimized.webp')) {
+            $candidates = [$absoluteDir.DIRECTORY_SEPARATOR.'avatar-optimized.webp'];
+        }
+
         if (! empty($candidates)) {
             $fileName = basename($candidates[0]);
 

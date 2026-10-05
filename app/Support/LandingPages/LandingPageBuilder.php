@@ -2328,7 +2328,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function auto850DefaultBlocks(): array
     {
-        $preview = '/theme-previews/AUTO850/preview-auto850.png';
+        $preview = '/theme-previews/AUTO850/preview-auto850-optimized.webp';
         $asset = fn (string $name): string => '/themes/AUTO850/images/'.$name.'.png';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter([
             'title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button,
@@ -2377,7 +2377,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function auto851DefaultBlocks(): array
     {
-        $preview = '/theme-previews/AUTO851/preview-auto851.png';
+        $preview = '/theme-previews/AUTO851/preview-auto851-optimized.webp';
         $asset = fn (string $name): string => '/themes/AUTO851/images/'.$name.'.png';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter(['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button], fn ($value) => $value !== null);
         $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
@@ -2412,7 +2412,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function auto852DefaultBlocks(): array
     {
-        $preview = '/theme-previews/AUTO852/preview-auto852.png';
+        $preview = '/theme-previews/AUTO852/preview-auto852-optimized.webp';
         $asset = fn (string $name): string => '/themes/AUTO852/images/'.$name.'.png';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter(['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button], fn ($value) => $value !== null);
         $withItems = fn (array $base, array $items): array => array_merge($base, ['content' => ['items' => $items]]);
@@ -2473,7 +2473,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function auto853DefaultBlocks(): array
     {
-        $preview = '/theme-previews/AUTO853/preview-auto853.png';
+        $preview = '/theme-previews/AUTO853/preview-auto853-optimized.webp';
         $asset = fn (string $name): string => '/themes/AUTO853/images/'.$name.'.png';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter([
             'title' => $title,
@@ -4697,7 +4697,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function e806DefaultBlocks(): array
     {
-        $preview = '/theme-previews/E806/preview-e806.png';
+        $preview = '/theme-previews/E806/preview-e806-optimized.webp';
         $hero = '/themes/E806/images/hero-appliances.png';
         $tech = '/themes/E806/images/tech-campaign.png';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null): array => array_filter(['title' => $title, 'subtitle' => $subtitle, 'description' => $description], fn ($value) => $value !== null);
@@ -4723,7 +4723,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function e805DefaultBlocks(): array
     {
-        $preview='/theme-previews/E805/preview-e805.png';$hero='/themes/E805/images/hero-retail.png';$tech='/themes/E805/images/tech-sale.png';$heading=fn(?string $title=null,?string $description=null):array=>array_filter(['title'=>$title,'description'=>$description],fn($v)=>$v!==null);$with=fn(array $x):array=>['content'=>['items'=>$x]];$source=fn(int $n,array $opts=['cms_products'=>'Sản phẩm','custom'=>'Tự nhập']):array=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$opts],'limit'=>['type'=>'number','label'=>'Số mục','default'=>$n],'category_id'=>['type'=>'select','label'=>'Danh mục'],'featured_only'=>['type'=>'boolean','label'=>'Chỉ lấy mục nổi bật']];
+        $preview='/theme-previews/E805/preview-e805-optimized.webp';$hero='/themes/E805/images/hero-retail.png';$tech='/themes/E805/images/tech-sale.png';$heading=fn(?string $title=null,?string $description=null):array=>array_filter(['title'=>$title,'description'=>$description],fn($v)=>$v!==null);$with=fn(array $x):array=>['content'=>['items'=>$x]];$source=fn(int $n,array $opts=['cms_products'=>'Sản phẩm','custom'=>'Tự nhập']):array=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$opts],'limit'=>['type'=>'number','label'=>'Số mục','default'=>$n],'category_id'=>['type'=>'select','label'=>'Danh mục'],'featured_only'=>['type'=>'boolean','label'=>'Chỉ lấy mục nổi bật']];
         $names=['Điện thoại Nova Note 21','Điện thoại Mini 12 New','Nova Pro Max Ocean','Điện thoại Sunny XR','Điện thoại Lite 10T 5G','Laptop AirBook 14','Tai nghe Pulse Gaming','Máy ảnh Vision Mirrorless','Nồi chiên AirChef 6L','Máy chơi game JoyBox','Nhẫn Aurora Gold','Áo len Cloudy Day'];$products=collect($names)->map(fn($x,$i)=>['title'=>$x,'image'=>$i%2?$hero:$tech,'price'=>2900000+$i*1350000,'original_price'=>$i%3!==1?3900000+$i*1550000:null,'url'=>'#'])->all();
         $catData=[['Điện thoại - Máy tính bảng','fa-solid fa-mobile-screen'],['Phụ kiện - Thiết bị số','fa-solid fa-headphones'],['Máy ảnh - Quay phim','fa-solid fa-camera'],['Điện gia dụng - Nhà bếp','fa-solid fa-blender'],['Laptop - Thiết bị IT','fa-solid fa-laptop'],['Máy chơi game - Trò chơi','fa-solid fa-gamepad'],['Trang sức - Sành điệu','fa-solid fa-gem'],['Thời trang - Làm đẹp','fa-solid fa-shirt'],['Nhà cửa đời sống','fa-solid fa-couch'],['Sách - Thú vui','fa-solid fa-book']];$cats=collect($catData)->map(fn($x)=>['title'=>$x[0],'icon'=>$x[1],'url'=>'#san-pham'])->all();$news=collect(['Thiết bị gập thế hệ mới sẽ có giá dễ tiếp cận hơn','Món ngon cuối tuần: cách nấu nhanh mà đậm vị','Chương trình thành viên nhận thêm ưu đãi dữ liệu','Màn hình thông minh đang giảm giá mạnh'])->map(fn($x,$i)=>['title'=>$x,'summary'=>'Cập nhật thông tin mua sắm, đời sống và chương trình khuyến mãi mới nhất.','image'=>$i%2?$hero:$tech,'url'=>'#'])->all();
         $block=fn($type,$label,$count,$data,$posts=false)=>['block_type'=>$type,'label'=>$label,'description'=>$label.' của theme E805.','preview_image'=>$preview,'anchor_id'=>str_replace('_','-',$type),'dynamic'=>true,'settings'=>['source'=>$posts?'cms_posts':'cms_products','limit'=>$count],'settings_schema'=>$source($count,$posts?['cms_posts'=>'Tin tức','custom'=>'Tự nhập']:['cms_products'=>'Sản phẩm','custom'=>'Tự nhập']),'data'=>['vi'=>array_merge($heading($label),$with($data)),'en'=>$heading($label)]];
@@ -4737,7 +4737,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function e804DefaultBlocks(): array
     {
-        $preview='/theme-previews/E804/preview-e804.png';$hero='/themes/E804/images/hero-marketplace.png';$campaign='/themes/E804/images/campaign-marketplace.png';
+        $preview='/theme-previews/E804/preview-e804-optimized.webp';$hero='/themes/E804/images/hero-marketplace.png';$campaign='/themes/E804/images/campaign-marketplace.png';
         $heading=fn(?string $title=null,?string $description=null):array=>array_filter(['title'=>$title,'description'=>$description],fn($v)=>$v!==null);$withItems=fn(array $x):array=>['content'=>['items'=>$x]];$source=fn(int $limit,array $opts=['cms_products'=>'Sản phẩm','custom'=>'Tự nhập']):array=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$opts],'limit'=>['type'=>'number','label'=>'Số mục hiển thị','default'=>$limit],'category_id'=>['type'=>'select','label'=>'Danh mục lọc'],'featured_only'=>['type'=>'boolean','label'=>'Chỉ lấy mục nổi bật']];
         $names=['Tai nghe AirComfort W820','Điện thoại Nova Max 256GB','Dầu gội thảo mộc PureMen','Chuột không dây Silent B170','Nồi chiên AirChef 6L','Serum cấp ẩm Aqua B5','Tã quần BabySoft Premium','Sữa dinh dưỡng NutriCare','Balo Urban Daily','Giày thể thao Cloud Walk','Máy xay MiniMix Pro','Đèn bàn Lumi Flex','Bánh hạt dinh dưỡng Granola','Robot hút bụi HomeBot','Đồng hồ Active Fit','Kem chống nắng Daily Shield','Bộ nồi Inox HomeCook','Gấu bông Teddy Joy'];
         $products=collect($names)->map(fn($name,$i)=>['title'=>$name,'summary'=>'Hàng tuyển chọn · Giao nhanh','image'=>$i%2?$hero:$campaign,'price'=>150000+$i*175000,'original_price'=>$i%3!==2?250000+$i*230000:null,'sold'=>62+$i*7,'progress'=>35+($i*7)%60,'url'=>'#'])->all();
@@ -4754,7 +4754,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function e803DefaultBlocks(): array
     {
-        $preview='/theme-previews/E803/preview-e803.png';$hero='/themes/E803/images/hero-gaming.png';$campaign='/themes/E803/images/campaign-tech.png';
+        $preview='/theme-previews/E803/preview-e803-optimized.webp';$hero='/themes/E803/images/hero-gaming.png';$campaign='/themes/E803/images/campaign-tech.png';
         $heading=fn(?string $title=null,?string $subtitle=null,?string $description=null):array=>array_filter(['title'=>$title,'subtitle'=>$subtitle,'description'=>$description],fn($v)=>$v!==null);$withItems=fn(array $x):array=>['content'=>['items'=>$x]];$source=fn(int $limit,array $opts=['cms_products'=>'Sản phẩm','custom'=>'Tự nhập']):array=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$opts],'limit'=>['type'=>'number','label'=>'Số mục hiển thị','default'=>$limit],'category_id'=>['type'=>'select','label'=>'Danh mục lọc'],'featured_only'=>['type'=>'boolean','label'=>'Chỉ lấy mục nổi bật']];
         $names=['Mainboard E803 B860M Gaming WiFi','Mainboard E803 Pro Z790 DDR5','CPU Nova Core 7 Creator','Chuột Gaming Pulse X1','Chuột Gaming Nova Air Pro','Bàn phím cơ Horizon 75','Màn hình Vision 27 QHD','Card đồ họa E803 RTX Studio','Card đồ họa E803 Creator 16G','RAM Aurora DDR5 32GB','SSD Swift NVMe 2TB','Tai nghe Sonic Pro 7.1','Webcam Stream 4K','Case E803 Panorama RGB','Tản nhiệt Frost Core 360'];
         $products=collect($names)->map(fn($name,$i)=>['title'=>$name,'summary'=>'Hiệu năng cao · Bảo hành chính hãng','image'=>$i%2?$hero:$campaign,'price'=>790000+$i*730000,'original_price'=>$i%3!==2?1190000+$i*790000:null,'url'=>'#'])->all();
@@ -4780,7 +4780,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function e802DefaultBlocks(): array
     {
-        $preview='/theme-previews/E802/preview-e802.png';$hero='/themes/E802/images/hero-moto.png';$sport='/themes/E802/images/sport-banner.png';
+        $preview='/theme-previews/E802/preview-e802-optimized.webp';$hero='/themes/E802/images/hero-moto.png';$sport='/themes/E802/images/sport-banner.png';
         $heading=fn(?string $title=null,?string $subtitle=null,?string $description=null):array=>array_filter(['title'=>$title,'subtitle'=>$subtitle,'description'=>$description],fn($v)=>$v!==null);$withItems=fn(array $x):array=>['content'=>['items'=>$x]];$source=fn(int $limit,array $opts=['cms_products'=>'Sản phẩm','custom'=>'Tự nhập']):array=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$opts],'limit'=>['type'=>'number','label'=>'Số mục hiển thị','default'=>$limit],'category_id'=>['type'=>'select','label'=>'Danh mục lọc'],'featured_only'=>['type'=>'boolean','label'=>'Chỉ lấy mục nổi bật']];
         $names=['Galaxy Urban 50','Angela Classic 50','Nova Galaxy 125','Jupiter City FI','MT Sport 15','Exciter VVA 155','Future City 125','Wave Alpha 110','Winner Street X','Vario Urban 160','Janus Elegance','Passing Mini 50'];
         $products=collect($names)->map(fn($name,$i)=>['title'=>$name,'image'=>$i%2?$hero:$sport,'price'=>18480000+$i*4250000,'original_price'=>$i%3===0?20480000+$i*4250000:null,'url'=>'#'])->all();
@@ -4807,7 +4807,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function e801DefaultBlocks(): array
     {
-        $preview='/theme-previews/E801/preview-e801.png';$hero='/themes/E801/images/hero-summer.png';$road='/themes/E801/images/road-banner.png';
+        $preview='/theme-previews/E801/preview-e801-optimized.webp';$hero='/themes/E801/images/hero-summer.png';$road='/themes/E801/images/road-banner.png';
         $heading=fn(?string $title=null,?string $subtitle=null,?string $description=null,?string $button=null):array=>array_filter(['title'=>$title,'subtitle'=>$subtitle,'description'=>$description,'button_label'=>$button],fn($value)=>$value!==null);
         $withItems=fn(array $items):array=>['content'=>['items'=>$items]];
         $source=fn(int $limit,array $options=['cms_products'=>'Sản phẩm','custom'=>'Tự nhập']):array=>['source'=>['type'=>'select','label'=>'Nguồn dữ liệu','options'=>$options],'limit'=>['type'=>'number','label'=>'Số mục hiển thị','default'=>$limit],'category_id'=>['type'=>'select','label'=>'Danh mục lọc'],'featured_only'=>['type'=>'boolean','label'=>'Chỉ lấy mục nổi bật']];
@@ -4830,7 +4830,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function e800DefaultBlocks(): array
     {
-        $preview = '/theme-previews/E800/preview-e800.png';
+        $preview = '/theme-previews/E800/preview-e800-optimized.webp';
         $hero = '/themes/E800/images/hero-e800.png';
         $look = '/themes/E800/images/shop-the-look.png';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter(['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button], fn ($value) => $value !== null);
@@ -5610,7 +5610,7 @@ class LandingPageBuilder
                 'block_type' => 'hero_slider',
                 'label' => 'Hero slider HaluFin',
                 'description' => 'Header, slide ảnh lớn và lời giới thiệu chính ở đầu trang.',
-                'preview_image' => '/theme-previews/BZ501/preview-bz501.png',
+                'preview_image' => '/theme-previews/BZ501/preview-bz501-optimized.webp',
                 'anchor_id' => 'trang-chu',
                 'dynamic' => true,
                 'settings' => ['source' => 'site_banners', 'placement' => 'bz501-hero-slider', 'limit' => 3, 'autoplay_ms' => 6500],
@@ -5643,7 +5643,7 @@ class LandingPageBuilder
                 'block_type' => 'featured_categories',
                 'label' => 'Thẻ cam kết dịch vụ',
                 'description' => 'Danh sách item chất lượng dịch vụ hoặc danh mục dịch vụ, hiển thị dạng trượt ngang.',
-                'preview_image' => '/theme-previews/BZ501/preview-bz501.png',
+                'preview_image' => '/theme-previews/BZ501/preview-bz501-optimized.webp',
                 'anchor_id' => 'cam-ket',
                 'dynamic' => true,
                 'settings' => ['source' => 'custom', 'limit' => 6],
@@ -5693,7 +5693,7 @@ class LandingPageBuilder
                 'block_type' => 'featured_services',
                 'label' => 'Dịch vụ nổi bật',
                 'description' => 'Card dịch vụ có thể lấy từ nhiều nguồn dữ liệu hoặc nhập thủ công.',
-                'preview_image' => '/theme-previews/BZ501/preview-bz501.png',
+                'preview_image' => '/theme-previews/BZ501/preview-bz501-optimized.webp',
                 'anchor_id' => 'dich-vu',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_services', 'limit' => 3, 'featured_only' => true],
@@ -5741,7 +5741,7 @@ class LandingPageBuilder
                 'block_type' => 'content_mosaic',
                 'label' => 'Nghiên cứu / trường hợp',
                 'description' => 'Slider ngang có thể lấy từ sản phẩm, tin tức, dịch vụ, dự án hoặc các danh mục.',
-                'preview_image' => '/theme-previews/BZ501/preview-bz501.png',
+                'preview_image' => '/theme-previews/BZ501/preview-bz501-optimized.webp',
                 'anchor_id' => 'nghien-cuu',
                 'dynamic' => true,
                 'settings' => ['source' => 'cms_projects', 'limit' => 5, 'featured_only' => true],
@@ -6015,7 +6015,7 @@ class LandingPageBuilder
 
     private function dn302DefaultBlocks(): array
     {
-        $preview = '/theme-previews/DN302/preview-dn302.png';
+        $preview = '/theme-previews/DN302/preview-dn302-optimized.webp';
         $living = '/theme-demo/dn302/dn302-living-room.png';
         $villa = '/theme-demo/dn302/dn302-villa.png';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => ['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button];
@@ -7671,7 +7671,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function nt504DefaultBlocks(): array
     {
-        $preview = '/theme-previews/NT504/nt504.png';
+        $preview = '/theme-previews/NT504/nt504-optimized.webp';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => [
             'title' => $title,
             'subtitle' => $subtitle,
@@ -9599,7 +9599,7 @@ class LandingPageBuilder
     /** @return array<int, array<string, mixed>> */
     private function e807DefaultBlocks(): array
     {
-        $preview = '/theme-previews/E807/preview-e807.png';
+        $preview = '/theme-previews/E807/preview-e807-optimized.webp';
         $hero = '/themes/E807/images/hero-tools.png';
         $collection = '/themes/E807/images/tool-collection.png';
         $heading = fn (?string $title = null, ?string $subtitle = null, ?string $description = null, ?string $button = null): array => array_filter(['title' => $title, 'subtitle' => $subtitle, 'description' => $description, 'button_label' => $button], fn ($value) => $value !== null);

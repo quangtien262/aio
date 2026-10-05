@@ -8,7 +8,7 @@
   "preview": {
     "thumbnail": "dn351-optimized.webp",
     "cover": "dn351-optimized.webp",
-    "avatar": "dn351.png"
+    "avatar": "dn351-optimized.webp"
   },
   "blocks": [
     "hero-slider",

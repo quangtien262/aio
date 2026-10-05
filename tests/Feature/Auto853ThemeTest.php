@@ -22,8 +22,8 @@ class Auto853ThemeTest extends TestCase
 
         $this->assertNotNull($theme);
         $this->assertSame('ecommerce', $theme['website_type']);
-        $this->assertFileExists(public_path('theme-previews/AUTO853/preview-auto853.png'));
-        $this->assertFileExists(public_path('theme-previews/AUTO853/cover-auto853.png'));
+        $this->assertFileExists(public_path('theme-previews/AUTO853/'.$theme['preview']['thumbnail']));
+        $this->assertFileExists(public_path('theme-previews/AUTO853/'.$theme['preview']['cover']));
 
         foreach (['hero-mountain', 'bike-1', 'bike-12', 'story-1', 'story-6', 'promo-accessories', 'promo-trail'] as $asset) {
             $this->assertFileExists(public_path('themes/AUTO853/images/'.$asset.'.png'));

@@ -25,6 +25,20 @@ Route::get('/', function () {
 	return redirect()->route('site.home', ['locale' => $locale]);
 })->name('site.entry');
 
+// Stored preview URLs may still use the original screenshot filename.
+Route::get('/theme-previews/{theme}/{file}', function (string $theme, string $file) {
+    $directory = 'theme-previews/'.$theme.'/';
+    $optimized = pathinfo($file, PATHINFO_FILENAME).'-optimized.webp';
+
+    abort_if(is_file(public_path($directory.$file)), 404);
+    abort_unless(is_file(public_path($directory.$optimized)), 404);
+
+    return redirect('/'.$directory.$optimized, 301);
+})->where([
+    'theme' => '[A-Za-z0-9_-]+',
+    'file' => '[A-Za-z0-9][A-Za-z0-9._-]*\.(png|jpe?g|webp)',
+])->name('site.theme-preview.legacy');
+
 Route::get('/sitemap.xml', SitemapController::class)->name('site.sitemap');
 Route::get('/sitemaps/{name}.xml', [SitemapController::class, 'part'])
     ->where('name', '(pages|posts|products|services|projects|categories|tags|topics)-[1-9][0-9]*')->name('site.sitemap.part');

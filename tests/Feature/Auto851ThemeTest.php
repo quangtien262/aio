@@ -22,7 +22,7 @@ class Auto851ThemeTest extends TestCase
     {
         $theme = app(ThemeRegistry::class)->all()->firstWhere('key', 'AUTO851');
         $this->assertNotNull($theme); $this->assertSame('ecommerce', $theme['website_type']);
-        $this->assertFileExists(public_path('theme-previews/AUTO851/preview-auto851.png')); $this->assertFileExists(public_path('theme-previews/AUTO851/cover-auto851.png'));
+        $this->assertFileExists(public_path('theme-previews/AUTO851/'.$theme['preview']['thumbnail'])); $this->assertFileExists(public_path('theme-previews/AUTO851/'.$theme['preview']['cover']));
         $builder = app(LandingPageBuilder::class); $this->assertTrue($builder->supportsTheme('AUTO851'));
         $this->assertSame(['auto851_hero', 'auto851_model_rail', 'auto851_buy_sell', 'auto851_featured_cars', 'auto851_accessories', 'auto851_testimonials', 'auto851_faq', 'auto851_news', 'auto851_newsletter'], collect($builder->availableBlocks('AUTO851'))->pluck('block_type')->all());
     }
