@@ -94,18 +94,43 @@ class MainWebsiteTemplateSynchronizerTest extends TestCase
         $this->assertSame(2, DB::connection('ht')->table('website_templates')->count());
     }
 
-    public function test_thumbnail_sync_updates_ht_preview_and_retires_legacy_primary_thumbnail(): void
+    public function test_thumbnail_sync_overwrites_existing_previews_and_thumbnails(): void
     {
         $db = DB::connection('ht');
         $id = $db->table('website_templates')->insertGetId(['name' => 'SHOP606', 'slug' => 'SHOP606', 'theme_code' => 'SHOP606']);
         $previewId = $db->table('website_template_media')->insertGetId(['template_id' => $id, 'media_type' => 'preview', 'file_path' => 'old.png', 'is_primary' => 1]);
         $legacyId = $db->table('website_template_media')->insertGetId(['template_id' => $id, 'media_type' => 'thumbnail', 'file_path' => 'legacy.png', 'is_primary' => 1]);
+        $secondaryId = $db->table('website_template_media')->insertGetId(['template_id' => $id, 'media_type' => 'preview', 'file_path' => 'secondary.png']);
+        $galleryId = $db->table('website_template_media')->insertGetId(['template_id' => $id, 'media_type' => 'gallery', 'file_path' => 'gallery.png']);
         $sync = app(MainWebsiteTemplateSynchronizer::class);
         $theme = ['key' => 'SHOP606', 'preview' => ['thumbnail' => 'new.png']];
         $sync->syncThumbnails([$theme]);
+        $theme['preview']['thumbnail'] = 'new-optimized.webp';
         $sync->syncThumbnails([$theme]);
-        $this->assertDatabaseHas('website_template_media', ['id' => $previewId, 'media_type' => 'preview', 'file_path' => 'https://demo.htvietnam.vn/theme-previews/SHOP606/new.png', 'is_primary' => 1], 'ht');
-        $this->assertDatabaseHas('website_template_media', ['id' => $legacyId, 'file_path' => 'legacy.png', 'is_primary' => 0], 'ht');
+        $path = 'https://demo.htvietnam.vn/theme-previews/SHOP606/new-optimized.webp';
+        $this->assertDatabaseHas('website_templates', ['id' => $id, 'preview_theme' => 'new-optimized.webp'], 'ht');
+        $this->assertDatabaseHas('website_template_media', ['id' => $previewId, 'media_type' => 'preview', 'file_path' => $path, 'is_primary' => 1], 'ht');
+        $this->assertDatabaseHas('website_template_media', ['id' => $legacyId, 'media_type' => 'thumbnail', 'file_path' => $path, 'is_primary' => 0], 'ht');
+        $this->assertDatabaseHas('website_template_media', ['id' => $secondaryId, 'file_path' => $path, 'is_primary' => 0], 'ht');
+        $this->assertDatabaseHas('website_template_media', ['id' => $galleryId, 'file_path' => 'gallery.png'], 'ht');
+        $this->assertSame(4, $db->table('website_template_media')->count());
+        $this->assertSame(1, $db->table('website_template_media')->where('is_primary', 1)->count());
+    }
+
+    public function test_thumbnail_only_templates_keep_their_thumbnail_when_a_preview_is_added(): void
+    {
+        $db = DB::connection('ht');
+        $id = $db->table('website_templates')->insertGetId(['name' => 'AUTO850', 'slug' => 'AUTO850', 'theme_code' => 'AUTO850']);
+        $thumbnailId = $db->table('website_template_media')->insertGetId(['template_id' => $id, 'media_type' => 'thumbnail', 'file_path' => 'old.png', 'is_primary' => 1]);
+        $theme = ['key' => 'AUTO850', 'preview' => ['thumbnail' => 'preview-auto850-optimized.webp']];
+        $sync = app(MainWebsiteTemplateSynchronizer::class);
+
+        $this->assertSame(['updated' => 1, 'skipped' => []], $sync->syncThumbnails([$theme]));
+        $this->assertSame(['updated' => 1, 'skipped' => []], $sync->syncThumbnails([$theme]));
+
+        $path = 'https://demo.htvietnam.vn/theme-previews/AUTO850/preview-auto850-optimized.webp';
+        $this->assertDatabaseHas('website_template_media', ['id' => $thumbnailId, 'media_type' => 'thumbnail', 'file_path' => $path, 'is_primary' => 0], 'ht');
+        $this->assertDatabaseHas('website_template_media', ['template_id' => $id, 'media_type' => 'preview', 'file_path' => $path, 'is_primary' => 1], 'ht');
         $this->assertSame(2, $db->table('website_template_media')->count());
         $this->assertSame(1, $db->table('website_template_media')->where('is_primary', 1)->count());
     }

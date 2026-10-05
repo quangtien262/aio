@@ -519,7 +519,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                 onCancel={() => setThumbnailSyncOpen(false)}
                 footer={thumbnailSyncResult ? <Button onClick={() => setThumbnailSyncOpen(false)}>Đóng</Button> : undefined}>
                 <Paragraph>Cập nhật link thumbnail lên database htvietnam.vn cho theme của {selectedCount} domain đã chọn. Theme trùng nhau chỉ cập nhật một lần.</Paragraph>
-                <Paragraph>Chỉ cập nhật ảnh đại diện của bản ghi đang tồn tại; giữ nguyên tên, giá và nội dung. Link ảnh dùng domain công khai demo.htvietnam.vn.</Paragraph>
+                <Paragraph>Ghi đè ảnh đại diện bằng thumbnail hiện tại của theme, kể cả bản ghi đã có ảnh; giữ nguyên tên, giá và nội dung. Link ảnh dùng domain công khai demo.htvietnam.vn.</Paragraph>
                 {thumbnailSyncResult ? <Alert showIcon type={thumbnailSyncResult.error ? 'error' : 'success'}
                     message={thumbnailSyncResult.error || `Đã cập nhật ${thumbnailSyncResult.updated} theme.`}
                     description={thumbnailSyncResult.skipped?.length ? `Bỏ qua do thiếu thumbnail hoặc bản ghi trên htvietnam.vn: ${thumbnailSyncResult.skipped.join(', ')}` : null} /> : null}
