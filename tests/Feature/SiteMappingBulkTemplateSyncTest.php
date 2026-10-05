@@ -34,6 +34,26 @@ class SiteMappingBulkTemplateSyncTest extends TestCase
         $this->postJson('/admin/api/site-mappings/bulk/main-website-thumbnails', ['ids' => [1]])->assertUnauthorized();
     }
 
+    public function test_thumbnail_errors_identify_every_missing_theme_and_domain_before_syncing(): void
+    {
+        $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');
+        $sites = collect(['EC910', 'MISSING_ONE', 'MISSING_TWO', null])->map(fn ($theme, $index) => Site::query()->create([
+            'domain' => 'site-'.$index.'.demo.test',
+            'website_key' => 'site-'.$index,
+            'theme_key' => $theme,
+            'status' => 'active',
+        ]));
+        $this->mock(MainWebsiteTemplateSynchronizer::class)->shouldNotReceive('syncThumbnails');
+
+        $message = 'Theme "MISSING_ONE" không tồn tại (domain "site-1.demo.test"). '
+            .'Theme "MISSING_TWO" không tồn tại (domain "site-2.demo.test"). '
+            .'Domain "site-3.demo.test" chưa được gán theme.';
+        $this->postJson('/admin/api/site-mappings/bulk/main-website-thumbnails', ['ids' => $sites->pluck('id')->all()])
+            ->assertUnprocessable()
+            ->assertJsonPath('message', $message)
+            ->assertJsonPath('errors.theme_key.0', $message);
+    }
+
     public function test_bulk_domain_creation_syncs_main_website_only_for_ht_vietnam_demo_domain(): void
     {
         $this->actingAs(Admin::factory()->create(['id' => 1, 'is_system_owner' => true]), 'admin');

@@ -195,14 +195,30 @@ class SiteMappingController
             'ids' => ['required', 'array', 'min:1', 'max:200'],
             'ids.*' => ['required', 'integer', 'distinct', Rule::exists('sites', 'id')],
         ]);
-        $themes = Site::query()->whereIn('id', $validated['ids'])->get()->map(function (Site $site) use ($registry): array {
+        $availableThemes = $registry->all()->keyBy('key');
+        $themes = collect();
+        $errors = [];
+        foreach (Site::query()->whereIn('id', $validated['ids'])->get() as $site) {
             $key = $this->siteThemeKey($site);
-            abort_if($key === null, 422, 'Domain chưa được gán theme.');
+            $domain = $site->domain ?: $site->website_key;
+            if ($key === null) {
+                $errors[] = sprintf('Domain "%s" chưa được gán theme.', $domain);
 
-            return $this->resolveTheme($registry, $key);
-        })->unique('key')->values()->all();
+                continue;
+            }
+            $theme = $availableThemes->get($key);
+            if ($theme === null) {
+                $errors[] = sprintf('Theme "%s" không tồn tại (domain "%s").', $key, $domain);
 
-        return response()->json(['data' => $synchronizer->syncThumbnails($themes)]);
+                continue;
+            }
+            $themes->push($theme);
+        }
+        if ($errors !== []) {
+            throw ValidationException::withMessages(['theme_key' => implode(' ', $errors)]);
+        }
+
+        return response()->json(['data' => $synchronizer->syncThumbnails($themes->unique('key')->values()->all())]);
     }
 
     public function bulkStatus(Request $request): JsonResponse
@@ -476,7 +492,7 @@ class SiteMappingController
 
         if ($theme === null) {
             throw ValidationException::withMessages([
-                'theme_key' => 'Theme không tồn tại.',
+                'theme_key' => sprintf('Theme "%s" không tồn tại.', $themeKey),
             ]);
         }
 
