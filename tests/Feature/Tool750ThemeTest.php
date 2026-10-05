@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
@@ -17,6 +18,35 @@ use Tests\TestCase;
 class Tool750ThemeTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_phone_accessory_preset_is_repeatable_and_can_switch_back(): void
+    {
+        $generator = app(ThemeDemoContentGenerator::class);
+        $this->assertContains('tool750-phone-accessories', array_column($generator->presetsForTheme('TOOL750'), 'key'));
+        SiteProfile::query()->create(['site_name' => 'Existing', 'active_theme_key' => 'TOOL750', 'website_type' => 'ecommerce', 'branding' => ['logo_url' => '/custom-logo.svg']]);
+        $custom = CatalogProduct::query()->create(['name' => 'Customer product', 'slug' => 'customer-product', 'sku' => 'CUSTOM', 'price' => 100, 'stock' => 1, 'is_active' => true]);
+        for ($i = 0; $i < 2; $i++) {
+            $generator->generate('TOOL750', 'tool750-phone-accessories');
+            $this->assertSame(12, CatalogProduct::query()->where('sku', 'like', 'T750-PHONE-%')->count());
+            $this->assertSame(7, CatalogCategory::query()->where('slug', 'like', 'tool750-%')->count());
+            $this->assertNotNull($custom->fresh());
+        }
+        foreach (CatalogProduct::query()->where('sku', 'like', 'T750-PHONE-%')->get() as $product) {
+            $this->assertFileExists(public_path($product->image_url));
+            $this->assertNotFalse(getimagesize(public_path($product->image_url)));
+        }
+        $response = $this->get(route('site.home', ['locale' => 'vi']));
+        $response->assertOk()->assertSee('Kết nối tiện lợi mỗi ngày')->assertSee('Củ sạc nhanh USB-C 20W')->assertDontSee('Máy khoan')->assertDontSee('/themes/TOOL750/images/hero-tools.png', false);
+        if ($path = getenv('TOOL750_PHONE_PREVIEW')) {
+            file_put_contents($path, $response->getContent());
+        }
+        $this->assertSame('/custom-logo.svg', SiteProfile::query()->first()->branding['logo_url']);
+        $generator->generate('TOOL750', 'tool750-industrial');
+        $this->assertSame(0, CatalogProduct::query()->where('sku', 'like', 'T750-PHONE-%')->count());
+        $this->assertSame(12, CatalogProduct::query()->where('sku', 'like', 'T750-%')->count());
+        $this->assertNotNull($custom->fresh());
+        $this->assertSame('TOOL750 Cơ Khí Việt', SiteProfile::query()->first()->branding['company_name']);
+    }
 
     public function test_tool750_is_registered_with_complete_block_library(): void
     {

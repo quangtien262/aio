@@ -5,8 +5,8 @@
   "description": "Theme nhà hàng cao cấp tông xanh rêu và vàng đồng, có thực đơn, tin tức, cảm nhận và đặt bàn nhanh.",
   "website_type": "service",
   "preview": {
-    "thumbnail": "foot403.png",
-    "cover": "foot403.png"
+    "thumbnail": "foot403-optimized.webp",
+    "cover": "foot403-optimized.webp"
   },
   "blocks": [
     "hero-slider",

@@ -7,8 +7,8 @@
   "requires_modules": ["real-estate"],
   "parent": null,
   "preview": {
-    "thumbnail": "701.png",
-    "cover": "701.png",
+    "thumbnail": "701-optimized.webp",
+    "cover": "701-optimized.webp",
     "avatar": "701-avatar.png"
   },
   "blocks": [

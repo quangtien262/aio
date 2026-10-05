@@ -6,8 +6,8 @@
   "website_type": "service",
   "parent": null,
   "preview": {
-    "thumbnail": "dn350.png",
-    "cover": "dn350.png",
+    "thumbnail": "dn350-optimized.webp",
+    "cover": "dn350-optimized.webp",
     "avatar": "dn350.png"
   },
   "blocks": [

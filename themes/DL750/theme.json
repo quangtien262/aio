@@ -10,8 +10,8 @@
   ],
   "parent": null,
   "preview": {
-    "thumbnail": "preview-dl750.png",
-    "cover": "preview-dl750.png"
+    "thumbnail": "preview-dl750-optimized.webp",
+    "cover": "preview-dl750-optimized.webp"
   },
   "blocks": [
     "hero-slider",

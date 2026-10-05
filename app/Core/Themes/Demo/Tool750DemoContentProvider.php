@@ -54,13 +54,18 @@ class Tool750DemoContentProvider implements ThemeDemoContentProvider
         ];
     }
 
+    public function presets(): array
+    {
+        return [$this->preset(), ['key' => 'tool750-phone-accessories', 'label' => 'TOOL750 Phụ kiện điện thoại', 'description' => 'Bộ demo sạc, tai nghe và loa di động với sản phẩm, bài viết và banner đồng bộ.']];
+    }
+
     public function generate(string $presetKey): array
     {
-        if ($presetKey !== self::PRESET_KEY) {
+        if (! in_array($presetKey, [self::PRESET_KEY, 'tool750-phone-accessories'], true)) {
             throw new InvalidArgumentException('Preset demo không hợp lệ cho TOOL750.');
         }
 
-        return DB::transaction(function (): array {
+        return DB::transaction(function () use ($presetKey): array {
             $purged = $this->delete();
             $websiteKey = $this->siteContext->websiteKey();
             $categories = [];
@@ -224,6 +229,11 @@ class Tool750DemoContentProvider implements ThemeDemoContentProvider
 
             $profile = SiteProfile::query()->firstOrNew();
             $branding = (array) $profile->branding;
+            foreach (['company_name' => 'TOOL750 Mobile', 'company_description' => 'Phụ kiện điện thoại cho cuộc sống kết nối.', 'slogan' => 'Kết nối tiện lợi mỗi ngày', 'support_location' => 'Trung tâm phụ kiện điện thoại Hà Nội'] as $key => $demoValue) {
+                if (($branding[$key] ?? null) === $demoValue) {
+                    unset($branding[$key]);
+                }
+            }
             $branding += [
                 'company_name' => 'TOOL750 Cơ Khí Việt',
                 'company_description' => 'Thiết bị cơ khí chính hãng cho xưởng máy, công trình và người thợ hiện đại.',
@@ -249,8 +259,12 @@ class Tool750DemoContentProvider implements ThemeDemoContentProvider
                 $this->record($landing);
             }
 
+            if ($presetKey === 'tool750-phone-accessories') {
+                Tool750PhoneDemoPreset::apply();
+            }
+
             return [
-                'preset' => $this->preset(),
+                'preset' => collect($this->presets())->firstWhere('key', $presetKey),
                 'counts' => [
                     'categories' => count($categoryDefinitions),
                     'products' => count($productDefinitions),
@@ -272,7 +286,7 @@ class Tool750DemoContentProvider implements ThemeDemoContentProvider
     {
         $records = ThemeDemoRecord::query()
             ->where('theme_key', self::THEME_KEY)
-            ->where('preset_key', self::PRESET_KEY)
+            ->whereIn('preset_key', [self::PRESET_KEY, 'tool750-phone-accessories'])
             ->get();
         $ids = fn (string $type): array => $records->where('model_type', $type)->pluck('model_id')->all();
         $counts = ['categories' => 0, 'products' => 0, 'post_categories' => 0, 'posts' => 0, 'media' => 0, 'testimonials' => 0, 'partners' => 0, 'pages' => 0, 'menus' => 0, 'landing_pages' => 0];
@@ -297,13 +311,15 @@ class Tool750DemoContentProvider implements ThemeDemoContentProvider
             [CmsMenu::class, 'menus'],
         ] as [$model, $key]) {
             if ($modelIds = $ids($model)) {
-                $counts[$key] = $model::query()->whereKey($modelIds)->delete();
+                foreach ($model::query()->whereKey($modelIds)->get() as $record) {
+                    $counts[$key] += (int) $record->delete();
+                }
             }
         }
 
         ThemeDemoRecord::query()
             ->where('theme_key', self::THEME_KEY)
-            ->where('preset_key', self::PRESET_KEY)
+            ->whereIn('preset_key', [self::PRESET_KEY, 'tool750-phone-accessories'])
             ->delete();
 
         return $counts;

@@ -6,8 +6,8 @@
   "website_type": "service",
   "parent": null,
   "preview": {
-    "thumbnail": "xd0303.png",
-    "cover": "xd0303.png"
+    "thumbnail": "xd0303-optimized.webp",
+    "cover": "xd0303-optimized.webp"
   },
   "blocks": [
     "hero-slider",

@@ -6,8 +6,8 @@
   "website_type": "ecommerce",
   "parent": null,
   "preview": {
-    "thumbnail": "CA050.png",
-    "cover": "CA050-avata.png"
+    "thumbnail": "CA050-optimized.webp",
+    "cover": "CA050-avata-optimized.webp"
   },
   "blocks": [
     "hero-slider",

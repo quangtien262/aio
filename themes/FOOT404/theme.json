@@ -6,8 +6,8 @@
   "website_type": "ecommerce",
   "parent": null,
   "preview": {
-    "thumbnail": "foot404.png",
-    "cover": "foot404.png"
+    "thumbnail": "foot404-optimized.webp",
+    "cover": "foot404-optimized.webp"
   },
   "blocks": [
     "hero-mosaic",

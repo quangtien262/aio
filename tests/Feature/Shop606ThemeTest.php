@@ -6,6 +6,7 @@ use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
+use App\Models\CmsPage;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
 use App\Models\CmsService;
@@ -44,6 +45,10 @@ class Shop606ThemeTest extends TestCase
         if ($path = getenv('SHOP606_CONTACT_PREVIEW')) {
             file_put_contents($path, $this->get(route('site.contact'))->assertOk()->getContent());
         }
+        $about = CmsPage::where('slug', 'shop606-gioi-thieu')->firstOrFail();
+        $this->get(route('site.pages.show', ['slug' => $about->slug]))
+            ->assertOk()->assertSee($about->title)->assertSee('s606-page')
+            ->assertDontSee('s605-page')->assertDontSee('OH!UNDER');
         $this->assertSame(8, CatalogProduct::count());
         $this->assertSame(4, CatalogCategory::count());
         $response = $this->get('/vi')->assertOk();
