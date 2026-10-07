@@ -164,6 +164,8 @@
     $isServiceDetail = ($contentType ?? null) === 'service';
     $isPostListing = ($contentType ?? null) === 'posts';
     $entrySlug = (string) ($entry->slug ?? '');
+    $isAboutPage = ($contentType ?? null) === 'page'
+        && in_array((string) ($entry->getRawOriginal('slug') ?: $entrySlug), ['nt501-gioi-thieu', 'gioi-thieu', 'about', 'about-us'], true);
     $isContactPage = ! $isServiceListing
         && ! $isServiceDetail
         && ! $isPostListing
@@ -254,6 +256,9 @@
 @endpush
 
 @section('content')
+@if($isAboutPage)
+    @include('theme-nt501::partials.about-page')
+@else
 <main class="xd-page-main">
             <div class="xd-container">
                     @if (isset($listingItems))
@@ -285,4 +290,5 @@
                     @endif
             </div>
 </main>
+@endif
 @endsection

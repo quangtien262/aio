@@ -253,18 +253,29 @@
     </style>
 @endpush
 
+@push('head')
+<style>
+body:has(.nt-services-page){margin:0}body:has(.nt-services-page) a,body:has(.nt-services-page) a:hover,body:has(.nt-services-page) a:focus,body:has(.nt-services-page) a:active{text-decoration:none}
+.nt-services-page{padding:42px 0 80px;background:#fff;color:var(--nt-ink)}.nt-services-page .xd-cms-hero{grid-template-columns:minmax(0,1fr) 250px;gap:70px;align-items:center;padding:48px 56px;margin-bottom:48px;background:var(--nt-paper);border:1px solid #e9e3d8;box-shadow:none;border-radius:6px}.nt-services-breadcrumb{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#776f61;margin-bottom:30px}.nt-services-page a{color:inherit}.nt-services-page a:focus-visible{outline:2px solid var(--nt-gold);outline-offset:5px}.nt-services-page .xd-kicker{margin:0 0 18px;color:#8a682d;font-size:11px;font-weight:700;letter-spacing:.16em}.nt-services-page .xd-kicker:before{display:none}.nt-services-page .xd-cms-hero h1{font-family:var(--nt-serif);font-size:clamp(42px,4vw,64px);line-height:1.1;letter-spacing:-.03em;color:var(--nt-dark)}.nt-services-page .xd-cms-hero p{max-width:640px;margin-top:22px;font-size:16px;font-weight:400;line-height:1.85;color:#6b6459}.nt-services-page .xd-cms-stats{background:var(--nt-dark);padding:32px;color:#fff;gap:12px;border-radius:4px}.nt-services-page .xd-cms-stats strong{font-family:var(--nt-serif);font-size:64px;font-weight:500;color:#e5c58b}.nt-services-page .xd-cms-stats>span{font-size:10px;letter-spacing:.1em;line-height:1.8;color:#ded7ca;font-weight:600}.nt-services-page .nt-services-consult{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #655e50;margin-top:14px;padding-top:22px;font-size:13px;color:#fff}.nt-services-page .nt-services-consult span{font-size:20px;color:#e5c58b}.nt-services-page .xd-services-list{gap:28px}.nt-services-page .xd-service-card{border:1px solid #eee9e0;border-radius:5px;overflow:hidden;box-shadow:0 8px 24px rgba(48,46,39,.04)}.nt-services-page .xd-service-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(48,46,39,.1)}.nt-services-page .xd-service-image{height:auto;aspect-ratio:1.55;background:var(--nt-paper)}.nt-services-page .xd-service-image img{display:block}.nt-services-page .xd-service-body{padding:26px 28px 30px}.nt-services-page .xd-service-body h2{font-family:var(--nt-serif);font-size:23px;line-height:1.35;text-transform:none;letter-spacing:-.015em;color:var(--nt-dark);margin-bottom:14px}.nt-services-page .xd-service-body h2 a:hover{color:#8a682d}.nt-services-page .xd-service-body p{font-size:14px;line-height:1.8;color:#746d61;margin:0}
+@media(max-width:900px){.nt-services-page .xd-cms-hero{gap:30px;padding:32px;grid-template-columns:minmax(0,1fr) 220px}.nt-services-page .xd-services-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.nt-services-page{padding-top:24px}.nt-services-page .xd-cms-hero{grid-template-columns:1fr;padding:28px 24px;gap:26px;margin-bottom:28px}.nt-services-page .xd-cms-stats{grid-template-columns:auto 1fr;align-items:center;padding:24px;gap:12px 22px}.nt-services-page .xd-cms-stats strong{font-size:48px}.nt-services-page .nt-services-consult{grid-column:1/-1;margin-top:0;padding-top:16px}.nt-services-page .xd-cms-hero p{font-size:14px}.nt-services-page .xd-services-list{grid-template-columns:1fr;gap:24px}.nt-services-breadcrumb{margin-bottom:26px}body:has(.nt-services-page) .foot-header__masthead-inner{gap:12px;flex-wrap:wrap}body:has(.nt-services-page) .foot-brand img{max-width:130px}body:has(.nt-services-page) .foot-header__account{gap:6px;flex-wrap:wrap}body:has(.nt-services-page) .foot-header__account button{font-size:11px;white-space:nowrap}}
+@media(prefers-reduced-motion:reduce){.nt-services-page .xd-service-card,.nt-services-page .xd-service-image img{transition:none}}
+</style>
+@endpush
 @section('content')
-<main class="xd-page-main">
-            <div class="xd-container">
+<main class="xd-page-main nt-services-page">
+            <div class="xd-container nt-container">
                     <section class="xd-cms-hero">
                         <div>
-                            <span class="xd-kicker">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'legacy_inline.fd23932f6b5c3ca3', 'Dịch vụ') }}</span>
+                            <nav class="nt-services-breadcrumb" aria-label="{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'services.breadcrumb', 'Điều hướng trang') }}"><a href="{{ route('site.home') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'service_detail.home', 'Trang chủ') }}</a><span aria-hidden="true">/</span><span>{{ $pageTitle ?? 'Dịch vụ' }}</span></nav>
+                            <span class="xd-kicker">{{ $branding['company_name'] ?? 'Interior Studio' }}</span>
                             <h1>{{ $pageTitle ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'legacy_inline.fd23932f6b5c3ca3', 'Dịch vụ')) }}</h1>
-                            <p>{{ $pageDescription ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'legacy_inline.9d21accc9c7ed220', 'Danh sách dịch vụ thiết kế và thi công nổi bật.')) }}</p>
+                            <p>{{ filled($pageDescription ?? null) && $pageDescription !== 'Danh sách dịch vụ đã xuất bản.' ? $pageDescription : app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'services.intro', 'Từ ý tưởng đến không gian sống hoàn thiện. Khám phá giải pháp thiết kế, thi công và chăm sóc nội thất phù hợp với nhu cầu của bạn.') }}</p>
                         </div>
                         <div class="xd-cms-stats">
-                            <strong>{{ collect($listingItems ?? [])->count() }}</strong>
+                            <strong>{{ str_pad((string) count($listingItems ?? []), 2, '0', STR_PAD_LEFT) }}</strong>
                             <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'legacy_inline.fcb6000d2218c980', 'Dịch vụ đang hiển thị') }}</span>
+                            <a class="nt-services-consult" href="{{ route('site.contact') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'service_detail.appointment', 'Đặt lịch tư vấn') }} <span aria-hidden="true">↗</span></a>
                         </div>
                     </section>
 
@@ -278,13 +289,12 @@
                             <article class="xd-service-card">
                                 <a class="xd-service-image" href="{{ $serviceUrl }}" aria-label="{{ $service->title }}">
                                     @if ($image)
-                                        <img src="{{ $image }}" alt="{{ $alt }}">
+                                        <img src="{{ $image }}" alt="{{ $alt }}" loading="lazy">
                                     @endif
                                 </a>
                                 <div class="xd-service-body">
                                     <h2><a href="{{ $serviceUrl }}">{{ $service->title }}</a></h2>
                                     <p>{{ $service->summary ?: \Illuminate\Support\Str::limit(strip_tags($service->content ?? ''), 150) }}</p>
-                                    <a class="xd-text-link" href="{{ $serviceUrl }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'legacy_inline.13a531395b8188fb', 'Tìm hiểu ngay') }}</a>
                                 </div>
                             </article>
                         @empty

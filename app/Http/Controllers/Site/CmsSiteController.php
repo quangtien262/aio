@@ -1716,6 +1716,16 @@ class CmsSiteController
             $entry = $this->localizeServiceModel($entry, $websiteKey);
         }
 
+        if ($contentType === 'service' && strtoupper((string) data_get($activeTheme, 'key')) === 'NT501') {
+            $extra['latestPosts'] = CmsPost::query()->forWebsite($websiteKey)
+                ->with(['category', 'featuredMedia'])->where('status', 'published')
+                ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
+                ->latest('publish_at')->orderByDesc('id')->lazy(50)
+                ->filter(fn (CmsPost $post) => $this->localizedContent->isPublishedForLocale($post, 'cms_post', $this->currentLocale(), $websiteKey))
+                ->take(10)->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey))
+                ->collect()->values();
+        }
+
         if ($entry instanceof CmsProject) {
             $entry = $this->localizeProjectModel($entry, $websiteKey);
         }
