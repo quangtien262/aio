@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
+use App\Mail\ContactInquiryMail;
 use App\Models\SiteProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -19,10 +20,14 @@ class ThemeContactPageTest extends TestCase
             $theme = basename(dirname($file));
             $profile->update(['active_theme_key' => $theme]);
             $response = $this->get('/vi/contact')->assertOk();
+            $response->assertSee('js/contact-validation.js', false)->assertSee('css/contact-validation.css', false);
             $dom = new \DOMDocument;
             @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
             $xpath = new \DOMXPath($dom);
             $forms = $xpath->query('//form[@action="'.route('site.contact.submit', ['locale' => 'vi']).'"]');
+            $scripts = $xpath->query('//script[@data-contact-validation]');
+            $this->assertSame(1, $scripts->length, $theme);
+            $this->assertSame(route('site.contact.submit', ['locale' => 'vi']), $scripts->item(0)->getAttribute('data-endpoint'), $theme);
             $this->assertGreaterThan(0, $forms->length, $theme);
             foreach (['name', 'email', 'message', '_token'] as $field) {
                 $this->assertGreaterThan(0, $xpath->query('.//*[@name="'.$field.'"]', $forms->item(0))->length, "$theme: $field");
@@ -52,5 +57,22 @@ class ThemeContactPageTest extends TestCase
             ->assertRedirect($url)->assertSessionHas('contact_status');
         $this->get($url)->assertOk()->assertSee('Đã gửi yêu cầu liên hệ.')->assertSee('role="status"', false);
         $this->assertDatabaseHas('contact_inquiries', ['email' => 'contact@example.test', 'source' => 'contact']);
+    }
+
+    public function test_ajax_contact_submission_returns_errors_without_saving_and_success_without_redirecting(): void
+    {
+        Mail::fake();
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('FOOT404')->generate('foot404-complete');
+        $url = route('site.contact.submit', ['locale' => 'vi']);
+        $this->postJson($url, ['source' => 'contact', 'name' => 'Khách AJAX', 'email' => 'invalid', 'message' => 'ngắn'])
+            ->assertUnprocessable()->assertJsonValidationErrors(['email', 'message']);
+        $this->assertDatabaseCount('contact_inquiries', 0);
+        Mail::assertNothingQueued();
+        $this->postJson($url, ['source' => 'contact', 'name' => 'Khách AJAX', 'email' => 'ajax@example.test', 'message' => 'Tôi muốn nhận tư vấn qua biểu mẫu AJAX.'])
+            ->assertOk()->assertJsonPath('message', 'Yêu cầu liên hệ đã được gửi thành công.')
+            ->assertJsonPath('data.email', 'ajax@example.test')->assertHeaderMissing('Location');
+        $this->assertDatabaseCount('contact_inquiries', 1);
+        $this->assertDatabaseHas('contact_inquiries', ['email' => 'ajax@example.test', 'source' => 'contact', 'locale' => 'vi']);
+        Mail::assertQueued(ContactInquiryMail::class, 1);
     }
 }

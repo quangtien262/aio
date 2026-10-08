@@ -4,3 +4,4 @@
 @foreach (($hreflangUrls ?? []) as $language => $href)
     <link rel="alternate" hreflang="{{ $language }}" href="{{ $href }}">
 @endforeach
+@include('partials.contact-validation')

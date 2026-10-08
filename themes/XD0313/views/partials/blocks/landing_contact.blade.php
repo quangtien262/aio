@@ -48,7 +48,7 @@
                         @foreach(['name' => [__('theme_contact_page.name'), 'text', 'name', 120, true], 'phone' => [__('theme_contact_page.phone_number'), 'tel', 'tel', 30, false], 'email' => [__('theme_contact_page.email'), 'email', 'email', 150, true], 'subject' => [__('theme_contact_page.subject'), 'text', 'off', 150, false]] as $field => [$label, $type, $autocomplete, $max, $required])
                             <div>
                                 <label for="{{ $contactId }}-{{ $field }}">{{ $label }}@if($required)<span aria-hidden="true"> *</span>@endif</label>
-                                <input id="{{ $contactId }}-{{ $field }}" name="{{ $field }}" type="{{ $type }}" autocomplete="{{ $autocomplete }}" maxlength="{{ $max }}" value="{{ old($field) }}" @required($required) @if($contactErrors->has($field) && old('source') === 'contact') aria-invalid="true" @endif>
+                                <input id="{{ $contactId }}-{{ $field }}" name="{{ $field }}" type="{{ $type }}" autocomplete="{{ $autocomplete }}" maxlength="{{ $max }}" value="{{ old($field, $field === 'subject' ? ($contactSubject ?? '') : '') }}" @required($required) @if($contactErrors->has($field) && old('source') === 'contact') aria-invalid="true" @endif>
                             </div>
                         @endforeach
                         <div class="rx13-contact__wide">

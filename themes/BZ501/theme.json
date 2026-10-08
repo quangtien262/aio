@@ -7,7 +7,7 @@
   "parent": null,
   "preview": {
     "thumbnail": "preview-bz501-optimized.webp",
-    "cover": "avatar-optimized.webp"
+    "cover": "preview-bz501-optimized.webp"
   },
   "blocks": [
     "hero-slider",

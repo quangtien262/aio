@@ -926,8 +926,8 @@ class CmsSiteController
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => $source === 'quote_modal'
-                    ? 'Yêu cầu báo giá đã được gửi và lưu thành công.'
-                    : 'Yêu cầu liên hệ đã được gửi thành công.',
+                    ? __('contact_validation.quote_success')
+                    : __('contact_validation.success'),
                 'data' => [
                     'email' => $payload['email'],
                     'subject' => $payload['subject'],
@@ -1716,13 +1716,23 @@ class CmsSiteController
             $entry = $this->localizeServiceModel($entry, $websiteKey);
         }
 
-        if ($contentType === 'service' && strtoupper((string) data_get($activeTheme, 'key')) === 'NT501') {
+        if ($contentType === 'service' && in_array(strtoupper((string) data_get($activeTheme, 'key')), ['NT501', 'XD0313'], true)) {
             $extra['latestPosts'] = CmsPost::query()->forWebsite($websiteKey)
                 ->with(['category', 'featuredMedia'])->where('status', 'published')
                 ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
                 ->latest('publish_at')->orderByDesc('id')->lazy(50)
                 ->filter(fn (CmsPost $post) => $this->localizedContent->isPublishedForLocale($post, 'cms_post', $this->currentLocale(), $websiteKey))
                 ->take(10)->map(fn (CmsPost $post): CmsPost => $this->localizePostModel($post, $websiteKey))
+                ->collect()->values();
+        }
+
+        if ($contentType === 'service' && strtoupper((string) data_get($activeTheme, 'key')) === 'XD0313') {
+            $extra['latestServices'] = CmsService::query()->forWebsite($websiteKey)
+                ->where('status', 'published')
+                ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
+                ->orderBy('sort_order')->orderBy('id')->lazy(50)
+                ->filter(fn (CmsService $service) => $this->localizedContent->isPublishedForLocale($service, 'cms_service', $this->currentLocale(), $websiteKey))
+                ->take(10)->map(fn (CmsService $service): CmsService => $this->localizeServiceModel($service, $websiteKey))
                 ->collect()->values();
         }
 

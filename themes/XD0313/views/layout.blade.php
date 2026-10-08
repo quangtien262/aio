@@ -26,6 +26,7 @@
 >
     @include('theme-xd0313::partials.styles')
     @include('theme-xd0313::partials.contact-styles')
+    @include('theme-xd0313::partials.page-layout-styles')
 </x-storefront-head>
 <body>
     <div id="top" class="rx13-page">

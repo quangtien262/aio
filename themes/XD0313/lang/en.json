@@ -61,5 +61,22 @@
     "XD0313.contact.title": "Start your next journey",
     "XD0313.contact.subtitle": "Get in touch",
     "XD0313.contact.description": "Tell us about your plans and needs. Our team will contact you to discuss a suitable approach.",
-    "XD0313.contact.form_title": "Request a consultation"
+    "XD0313.contact.form_title": "Request a consultation",
+    "XD0313.service.home": "Home",
+    "XD0313.service.products": "Products",
+    "XD0313.service.breadcrumb": "Breadcrumb",
+    "XD0313.service.services": "Services",
+    "XD0313.service.consult": "Request a consultation",
+    "XD0313.service.updating": "Content is being updated.",
+    "XD0313.service.gallery": "Service gallery",
+    "XD0313.service.next_title": "Let's discuss your plans",
+    "XD0313.service.next_description": "Share your plans so our team can guide you through the next steps.",
+    "XD0313.service.sidebar": "Services and latest news",
+    "XD0313.service.service_list": "Our services",
+    "XD0313.service.all_services": "View all services",
+    "XD0313.service.help_title": "Need some guidance?",
+    "XD0313.service.help_description": "Contact us directly or leave a message to discuss your plans.",
+    "XD0313.service.send": "Send a consultation request",
+    "XD0313.service.latest_news": "Latest news",
+    "XD0313.service.all_news": "View all news"
 }
