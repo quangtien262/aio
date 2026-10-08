@@ -18,7 +18,8 @@
     "logistics-feature-panel",
     "process-steps",
     "testimonials",
-    "bizmax-latest-posts"
+    "bizmax-latest-posts",
+    "landing-contact"
   ],
   "supports": {
     "dark_mode": false,

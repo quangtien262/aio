@@ -53,6 +53,9 @@
     .rx13-hero__content h1 { margin: 0; color: #fff; font-size: clamp(34px, 5vw, 40px); font-weight: 900; line-height: 1.18; letter-spacing: -.04em; }
     .rx13-hero__content p { margin: 32px 0 38px; color: rgba(255,255,255,.88); font-size: 21px; font-weight: 700; line-height: 1.6; }
     .rx13-hero__actions { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .rx13-hero__actions .rx13-button { background: var(--rx13-deep); color: #fff; }
+    .rx13-hero__actions .rx13-button:hover { background: var(--rx13-green); color: var(--rx13-deep); }
+    .rx13-hero__actions .rx13-button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
     .rx13-play { display: inline-grid; width: 58px; height: 58px; place-items: center; border-radius: 50%; background: var(--rx13-green); color: #fff; font-weight: 900; }
     .rx13-hero__watch { display: inline-flex; align-items: center; gap: 12px; color: #fff; font-size: 20px; font-weight: 900; }
     .rx13-hero__dots { position: absolute; z-index: 4; left: 50%; bottom: 36px; display: flex; gap: 10px; transform: translateX(-50%); }
@@ -60,10 +63,11 @@
     .rx13-hero__dots button.is-active { background: var(--rx13-green); box-shadow: 0 0 0 3px rgba(255,255,255,.65); }
 
     .rx13-benefits__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
-    .rx13-benefit { min-height: 300px; padding: 32px; border: 1px solid var(--rx13-line); border-radius: 22px; background: rgba(255,255,255,.18); }
-    .rx13-benefit__icon { display: grid; width: 118px; height: 118px; place-items: center; margin-bottom: 28px; border-radius: 50%; background: var(--rx13-green); color: #fff; font-size: 42px; font-weight: 900; }
-    .rx13-benefit h3 { margin: 0 0 18px; color: var(--rx13-deep); font-size: 25px; line-height: 1.25; }
-    .rx13-benefit p { margin: 0; color: #28382e; font-size: 18px; line-height: 1.55; }
+    .rx13-benefit { padding: 24px; border: 1px solid var(--rx13-line); border-radius: 18px; background: rgba(255,255,255,.18); }
+    .rx13-benefit__heading { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .rx13-benefit__icon { display: grid; flex: 0 0 42px; height: 42px; place-items: center; border-radius: 50%; background: var(--rx13-green); color: var(--rx13-deep); font-size: 17px; font-weight: 900; }
+    .rx13-benefit h3 { min-width: 0; margin: 0; color: var(--rx13-deep); font-size: 20px; line-height: 1.3; }
+    .rx13-benefit p { margin: 0; color: #28382e; font-size: 16px; line-height: 1.65; }
 
     .rx13-about__grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1fr); gap: clamp(48px, 5vw, 80px); align-items: center; }
     .rx13-about__media {

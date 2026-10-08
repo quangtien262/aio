@@ -13,7 +13,8 @@
     :is-preview="$isPreview ?? false"
 >
     @include('themes.common.fonts.chakra-manrope')
-        @include('theme-nt501::partials.styles')
+    @include('theme-nt501::partials.styles')
+    @include('theme-nt501::partials.header-styles')
 </x-storefront-head>
 <body>
     <div id="top" class="nt-page">

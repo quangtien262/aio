@@ -30,6 +30,22 @@ class Nt502DemoContentProvider implements ThemeDemoContentProvider
 
     private const PRESET_KEY = 'nt502-dola-furniture';
 
+    public const CATEGORIES = [['Ghế', '/theme-demo/ec915/product-chair-leather.webp'], ['Bàn ăn', '/theme-demo/ec915/product-dining-set.webp'], ['Giường ngủ', '/theme-demo/ec915/room-bedroom.webp'], ['Đèn', '/theme-demo/ec915/product-lamp-black.webp'], ['Kệ và tủ', '/theme-demo/ec915/product-sideboard-walnut.webp']];
+
+    public const PRODUCTS = [['Ghế Sofa Gỗ Cao Su Tự Nhiên', 1990000, 2300000, 0, '/theme-demo/ec915/product-sofa-ivory.webp'], ['Bàn Sofa - Bàn Cafe Gỗ', 1790000, 2000000, 1, '/theme-demo/ec915/product-table-stone.webp'], ['Bộ bàn ăn gỗ hiện đại', 3490000, 3900000, 1, '/theme-demo/ec915/product-dining-set.webp'], ['Tủ Đầu Giường Gỗ', 1190000, 1390000, 4, '/theme-demo/ec915/product-sideboard-walnut.webp'], ['Tủ Kệ Tivi Gỗ', 2490000, 3000000, 4, '/theme-demo/ec915/product-sideboard-walnut.webp'], ['Tủ Quần Áo Gỗ', 4490000, 5000000, 4, '/theme-demo/ec915/product-sideboard-walnut.webp'], ['Giường Ngủ Gỗ', 4990000, 5500000, 2, '/theme-demo/ec915/product-bed-upholstered.webp'], ['Đèn bàn phòng ngủ', 890000, 990000, 3, '/theme-demo/ec915/product-lamp-black.webp'], ['Bàn Trang Điểm Gỗ Đa Năng', 3990000, 4500000, 1, '/theme-demo/ec915/product-desk-oak.webp'], ['Kệ Giày Ba Ngăn', 2790000, 3100000, 4, '/theme-demo/ec915/product-sideboard-walnut.webp']];
+
+    public const BANNERS = [['Nội thất phòng khách', 'Giảm đến 50% khi đặt hàng qua web', '/theme-demo/ec915/room-living-room.webp'], ['Không gian sống hiện đại', 'Nội thất bền đẹp cho mọi gia đình', '/theme-demo/ec915/hero-interior.webp']];
+
+    public const TESTIMONIALS = [['Ngọc Tuyến', 'Đầu bếp', 'Nội thất đẹp, chắc chắn và tạo cảm giác rất ấm cúng cho gia đình.'], ['Minh Anh', 'Kiến trúc sư', 'Thiết kế tinh tế, giao hàng nhanh và đội ngũ tư vấn tận tâm.']];
+
+    public const NEWS = [
+        ['Phòng ngủ Mây cổ điển, trầm ấm', 'Gợi ý thiết kế phòng ngủ mang lại cảm giác thư giãn.', '/theme-demo/ec915/room-bedroom.webp'],
+        ['Không gian tỏa sáng với hàng trang trí mới', 'Những món đồ trang trí tạo điểm nhấn cho ngôi nhà.', '/theme-demo/ec915/room-dining-room.webp'],
+        ['Giường ngủ hiện đại và thoải mái', 'Cách lựa chọn giường phù hợp với diện tích phòng.', '/theme-demo/ec915/product-bed-upholstered.webp'],
+        ['Các cách bảo quản sofa da luôn đẹp', 'Mẹo vệ sinh và bảo quản sofa bền lâu.', '/theme-demo/ec915/room-living-room.webp'],
+        ['Chọn bàn ăn phù hợp cho căn hộ nhỏ', 'Ưu tiên kích thước vừa vặn, lối đi thông thoáng và vật liệu dễ vệ sinh khi chọn bàn ăn cho căn hộ.', '/theme-demo/ec915/product-dining-set.webp'],
+    ];
+
     public function __construct(private readonly LandingPageBuilder $builder, private readonly SiteContext $siteContext) {}
 
     public function themeKey(): string
@@ -56,30 +72,30 @@ class Nt502DemoContentProvider implements ThemeDemoContentProvider
         return DB::transaction(function (): array {
             $purged = $this->delete();
             $websiteKey = $this->siteContext->websiteKey();
-            $categoryData = [['Ghế', '/theme-demo/ec915/product-chair-leather.webp'], ['Bàn ăn', '/theme-demo/ec915/product-dining-set.webp'], ['Giường ngủ', '/theme-demo/ec915/room-bedroom.webp'], ['Đèn', '/theme-demo/ec915/product-lamp-black.webp'], ['Kệ và tủ', '/theme-demo/ec915/product-sideboard-walnut.webp']];
+            $categoryData = self::CATEGORIES;
             $categories = [];
             foreach ($categoryData as $index => [$name,$photo]) {
                 $model = CatalogCategory::query()->create(['name' => $name, 'slug' => Str::slug('nt502-'.$name), 'description' => 'Nội thất '.$name.' hiện đại cho không gian sống.', 'image_url' => $photo, 'sort_order' => $index, 'is_active' => true]);
                 $this->record($model);
                 $categories[] = $model;
             }
-            $products = [['Ghế Sofa Gỗ Cao Su Tự Nhiên', 1990000, 2300000, 0, '/theme-demo/ec915/product-sofa-ivory.webp'], ['Bàn Sofa - Bàn Cafe Gỗ', 1790000, 2000000, 1, '/theme-demo/ec915/product-table-stone.webp'], ['Bộ bàn ăn gỗ hiện đại', 3490000, 3900000, 1, '/theme-demo/ec915/product-dining-set.webp'], ['Tủ Đầu Giường Gỗ', 1190000, 1390000, 4, '/theme-demo/ec915/product-sideboard-walnut.webp'], ['Tủ Kệ Tivi Gỗ', 2490000, 3000000, 4, '/theme-demo/ec915/product-sideboard-walnut.webp'], ['Tủ Quần Áo Gỗ', 4490000, 5000000, 4, '/theme-demo/ec915/product-sideboard-walnut.webp'], ['Giường Ngủ Gỗ', 4990000, 5500000, 2, '/theme-demo/ec915/product-bed-upholstered.webp'], ['Đèn bàn phòng ngủ', 890000, 990000, 3, '/theme-demo/ec915/product-lamp-black.webp'], ['Bàn Trang Điểm Gỗ Đa Năng', 3990000, 4500000, 1, '/theme-demo/ec915/product-desk-oak.webp'], ['Kệ Giày Ba Ngăn', 2790000, 3100000, 4, '/theme-demo/ec915/product-sideboard-walnut.webp']];
+            $products = self::PRODUCTS;
             foreach ($products as $index => [$name,$price,$old,$category,$photo]) {
                 $model = CatalogProduct::query()->create(['catalog_category_id' => $categories[$category]->id, 'name' => $name, 'slug' => Str::slug('nt502-'.$name), 'sku' => 'NT502-'.str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT), 'price' => $price, 'original_price' => $old, 'stock' => 30, 'short_description' => 'DOLA FURNITURE', 'detail_content' => '<p>Sản phẩm nội thất thiết kế hiện đại, vật liệu bền đẹp và hoàn thiện chỉn chu.</p>', 'image_url' => $photo, 'is_featured' => $index < 5, 'is_highlight' => $index < 5, 'sort_order' => $index, 'is_active' => true]);
                 $this->record($model);
             }
-            foreach ([['Nội thất phòng khách', 'Giảm đến 50% khi đặt hàng qua web', '/theme-demo/ec915/room-living-room.webp'], ['Không gian sống hiện đại', 'Nội thất bền đẹp cho mọi gia đình', '/theme-demo/ec915/hero-interior.webp']] as $index => [$title,$summary,$photo]) {
+            foreach (self::BANNERS as $index => [$title,$summary,$photo]) {
                 $model = SiteBanner::query()->create(['theme_key' => self::THEME_KEY, 'placement' => 'nt502-hero-slider', 'title' => $title, 'subtitle' => $summary, 'image_url' => $photo, 'link_url' => '#phong-khach', 'badge' => 'DOLA FURNITURE', 'metadata' => ['summary' => $summary, 'button_label' => 'Xem ngay'], 'sort_order' => $index, 'is_active' => true]);
                 $this->record($model);
             }
-            foreach ([['Ngọc Tuyến', 'Đầu bếp', 'Nội thất đẹp, chắc chắn và tạo cảm giác rất ấm cúng cho gia đình.'], ['Minh Anh', 'Kiến trúc sư', 'Thiết kế tinh tế, giao hàng nhanh và đội ngũ tư vấn tận tâm.']] as $index => [$name,$role,$quote]) {
+            foreach (self::TESTIMONIALS as $index => [$name,$role,$quote]) {
                 $model = CmsTestimonial::query()->create(['name' => $name, 'role' => $role, 'company' => 'Dola Furniture customer', 'quote' => $quote, 'image_url' => $index ? '/theme-demo/xd-shared/person-2.jpg' : '/theme-demo/xd-shared/person-1.jpg', 'status' => 'published', 'publish_at' => now(), 'is_featured' => true, 'sort_order' => $index]);
                 $this->record($model);
             }
             $postCategory = CmsCategory::query()->create(['name' => 'Cẩm nang nội thất', 'slug' => 'nt502-cam-nang-noi-that', 'description' => 'Kinh nghiệm trang trí và chăm sóc nội thất.']);
             $this->record($postCategory);
-            foreach ([['Phòng ngủ Mây cổ điển, trầm ấm', 'Gợi ý thiết kế phòng ngủ mang lại cảm giác thư giãn.'], ['Không gian tỏa sáng với hàng trang trí mới', 'Những món đồ trang trí tạo điểm nhấn cho ngôi nhà.'], ['Giường ngủ hiện đại và thoải mái', 'Cách lựa chọn giường phù hợp với diện tích phòng.'], ['Các cách bảo quản sofa da luôn đẹp', 'Mẹo vệ sinh và bảo quản sofa bền lâu.']] as $index => [$title,$excerpt]) {
-                $media = CmsMedia::query()->create(['title' => $title, 'alt_text' => $title, 'file_path' => '', 'file_url' => ['/theme-demo/ec915/room-bedroom.webp', '/theme-demo/ec915/room-dining-room.webp', '/theme-demo/ec915/product-bed-upholstered.webp', '/theme-demo/ec915/room-living-room.webp'][$index], 'mime_type' => 'image/webp']);
+            foreach (self::NEWS as $index => [$title,$excerpt,$photo]) {
+                $media = CmsMedia::query()->create(['title' => $title, 'alt_text' => $title, 'file_path' => '', 'file_url' => $photo, 'mime_type' => 'image/webp']);
                 $this->record($media);
                 $model = CmsPost::query()->create(['featured_media_id' => $media->id, 'category_id' => $postCategory->id, 'title' => $title, 'slug' => Str::slug('nt502-'.$title), 'status' => 'published', 'excerpt' => $excerpt, 'body' => '<p>'.$excerpt.'</p>', 'publish_at' => now()->subDays($index + 1), 'is_highlight' => true]);
                 $this->record($model);
@@ -99,7 +115,7 @@ class Nt502DemoContentProvider implements ThemeDemoContentProvider
                 $this->record($landing);
             }
 
-            return ['preset' => $this->preset(), 'counts' => ['categories' => 5, 'products' => 10, 'banners' => 2, 'testimonials' => 2, 'post_categories' => 1, 'posts' => 4, 'pages' => $page->wasRecentlyCreated ? 1 : 0, 'menus' => 1, 'landing_pages' => ! $existing && $landing ? 1 : 0], 'purged' => $purged];
+            return ['preset' => $this->preset(), 'counts' => ['categories' => 5, 'products' => 10, 'banners' => 2, 'testimonials' => 2, 'post_categories' => 1, 'posts' => count(self::NEWS), 'pages' => $page->wasRecentlyCreated ? 1 : 0, 'menus' => 1, 'landing_pages' => ! $existing && $landing ? 1 : 0], 'purged' => $purged];
         });
     }
 

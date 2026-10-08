@@ -1,259 +1,113 @@
 @php
-    $shell = $themeShellData ?? $themeHomeData ?? [];
-    $branding = (array) data_get($shell, 'branding', data_get($siteProfile ?? [], 'branding', []));
-    $logoUrl = trim((string) ($branding['logo_url'] ?? ''));
-    $logoAlt = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', 'Arkit')));
-    $hotline = trim((string) ($branding['support_hotline'] ?? ''));
-    $phoneHref = preg_replace('/\D+/', '', $hotline) ?: $hotline;
-    $email = trim((string) ($branding['support_email'] ?? ''));
-    $address = trim((string) ($branding['support_location'] ?? ''));
-
-    $localizeMenuUrl = static fn (?string $href): string => \App\Support\FrontendRouteUrl::localized($href);
-
-    $repairXdLabel = static function (string $label): string {
-        $label = trim($label);
-
-        return strtr($label, [
-            'Trang chủ' => 'Trang chủ',
-            'TRANG CHÁ»§' => 'TRANG CHỦ',
-            'trang chủ' => 'trang chủ',
-            'Sản phẩm' => 'Sản phẩm',
-            'Sáº£N PHÁº©M' => 'SẢN PHẨM',
-            'SÁº£N PHÁº©M' => 'SẢN PHẨM',
-            'sản phẩm' => 'sản phẩm',
-            'sản phẩm' => 'sản phẩm',
-            'Sản phẩm' => 'Sản phẩm',
-            'Tài khoản' => 'Tài khoản',
-            'TÃ I KHOáº£N' => 'TÀI KHOẢN',
-        ]);
-    };
-
-    $normalizeNavItem = function (array $item) use (&$normalizeNavItem, $localizeMenuUrl, $repairXdLabel): array {
-        $href = (string) ($item['url'] ?? $item['href'] ?? '#');
-
-        return [
-            'label' => $repairXdLabel((string) ($item['label'] ?? $item['title'] ?? 'Menu')),
-            'href' => $localizeMenuUrl($href),
-            'target' => $item['target'] ?? '_self',
-            'active' => false,
-            'children' => collect($item['children'] ?? [])
-                ->filter(fn ($child): bool => is_array($child) && filled($child['label'] ?? $child['title'] ?? null))
-                ->map(fn (array $child): array => $normalizeNavItem($child))
-                ->values()
-                ->all(),
-        ];
-    };
-
-    $navItems = collect(data_get($shell, 'top_menu', data_get($menus ?? [], 'primary-navigation', data_get($menus ?? [], 'primary', []))))
-        ->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
-        ->map(fn (array $item): array => $normalizeNavItem($item))
-        ->values();
-
-    $homeUrl = route('site.home');
-    if (! $navItems->contains(fn (array $item): bool => in_array(mb_strtolower(trim($item['label'])), ['trang chủ', 'home'], true) || rtrim($item['href'], '/') === rtrim($homeUrl, '/'))) {
-        $navItems->prepend([
-            'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'legacy_inline.95a078fb35ea9444', 'Trang chủ'),
-            'href' => $homeUrl,
-            'target' => '_self',
-            'active' => request()->routeIs('site.home'),
-            'children' => [],
-        ]);
-    }
-
-    $hasProductItem = $navItems->contains(function (array $item): bool {
-        return in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['sản phẩm', 'san pham', 'products', 'product'], true);
-    });
-
-    if (false && ! $hasProductItem && \Illuminate\Support\Facades\Schema::hasTable('catalog_categories') && \Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
-        $productCategories = \App\Models\CatalogCategory::query()
-            ->with(['children' => fn ($query) => $query
-                ->where('is_active', true)
-                ->withCount(['products' => fn ($productQuery) => $productQuery->where('is_active', true)])
-                ->orderBy('sort_order')
-                ->orderBy('name')])
-            ->withCount(['products' => fn ($query) => $query->where('is_active', true)])
-            ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get()
-            ->filter(fn ($category): bool => (int) $category->products_count > 0 || $category->children->contains(fn ($child): bool => (int) $child->products_count > 0))
-            ->take(8)
-            ->values();
-
-        if ($productCategories->isNotEmpty()) {
-            $productMenuItem = [
-                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'legacy_inline.76ffae1228bd585e', 'Sản phẩm'),
-                'href' => route('site.catalog.search'),
-                'target' => '_self',
-                'active' => request()->routeIs('site.catalog.*'),
-                'children' => $productCategories
-                    ->map(fn ($category): array => [
-                        'label' => (string) $category->name,
-                        'href' => route('site.catalog.category', ['slug' => $category->slug]),
-                        'target' => '_self',
-                        'active' => false,
-                        'children' => $category->children
-                            ->filter(fn ($child): bool => (int) $child->products_count > 0)
-                            ->take(8)
-                            ->map(fn ($child): array => [
-                                'label' => (string) $child->name,
-                                'href' => route('site.catalog.category', ['slug' => $child->slug]),
-                                'target' => '_self',
-                                'active' => false,
-                                'children' => [],
-                            ])
-                            ->values()
-                            ->all(),
-                    ])
-                    ->values()
-                    ->all(),
-            ];
-
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
-            $navArray = $navItems->values()->all();
-            array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
-            $navItems = collect($navArray);
-        }
-    }
-
-    $productNavigationItems = collect(data_get($menus ?? [], 'product-navigation', []))
-        ->filter(fn ($item): bool => is_array($item) && filled($item['label'] ?? $item['title'] ?? null))
-        ->map(fn (array $item): array => $normalizeNavItem($item))
-        ->values();
-
-    if ($productNavigationItems->isNotEmpty()) {
-        if ($hasProductItem) {
-            $navItems = $navItems
-                ->map(function (array $item) use ($productNavigationItems): array {
-                    $label = mb_strtolower(trim((string) ($item['label'] ?? '')));
-
-                    if (in_array($label, ['sản phẩm', 'san pham', 'products', 'product'], true) && empty($item['children'])) {
-                        $item['children'] = $productNavigationItems->all();
-                    }
-
-                    return $item;
-                })
-                ->values();
-        } else {
-            $productMenuItem = [
-                'label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'legacy_inline.76ffae1228bd585e', 'Sản phẩm'),
-                'href' => route('site.catalog.search'),
-                'target' => '_self',
-                'active' => request()->routeIs('site.catalog.*'),
-                'children' => $productNavigationItems->all(),
-            ];
-
-            $homeIndex = $navItems->search(fn (array $item): bool => in_array(mb_strtolower(trim((string) ($item['label'] ?? ''))), ['trang chủ', 'home'], true));
-            $navArray = $navItems->values()->all();
-            array_splice($navArray, $homeIndex === false ? 0 : $homeIndex + 1, 0, [$productMenuItem]);
-            $navItems = collect($navArray);
-        }
-    }
-
-    $currentUrl = rtrim(url()->current(), '/');
-    $navItems = $navItems->map(function (array $item) use ($currentUrl): array {
-        $href = (string) ($item['href'] ?? '#');
-        $absoluteHref = str_starts_with($href, 'http') ? rtrim($href, '/') : rtrim(url($href), '/');
-        $item['active'] = $href !== '#' && $absoluteHref === $currentUrl;
-
-        return $item;
-    })->values();
-
-    $isServiceListing = ($contentType ?? null) === 'services';
-    $isServiceDetail = ($contentType ?? null) === 'service';
-    $isPostListing = ($contentType ?? null) === 'posts';
-    $entrySlug = (string) ($entry->slug ?? '');
-    $isContactPage = ! $isServiceListing
-        && ! $isServiceDetail
-        && ! $isPostListing
-        && in_array($entrySlug, ['lien-he', 'contact'], true);
-    $title = $pageTitle ?? ($entry->title ?? data_get($siteProfile, 'site_name', 'Arkit'));
-    $description = $pageDescription ?? ($entry->excerpt ?? '');
     $canEditLanding = false;
-    $footerNewsletterSource = 'theme-footer-nt501-cms';
+    $newsText = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'nt501.news.'.$key);
+    $newsCommon = fn (string $key): string => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('NT501', app()->getLocale(), 'news_listing.'.$key, __('news-listing.'.$key));
+    $newsItems = $listingItems ?? collect();
+    $articles = method_exists($newsItems, 'getCollection') ? $newsItems->getCollection() : collect($newsItems);
+    $search = (string) data_get($postFilters ?? [], 'q', '');
+    $categorySlug = (string) data_get($postFilters ?? [], 'category', '');
+    $categories = collect($postCategories ?? []);
+    $currentCategory = $categories->firstWhere('slug', $categorySlug);
+    $isNewsIndex = request()->routeIs('site.blog.index') && $categorySlug === '';
+    $title = $topic->name ?? ($currentCategory?->name ?? ($pageTitle ?? $newsCommon('news')));
+    $intro = $topic->description ?? ($currentCategory?->description ?: $newsText('intro'));
+    $showFront = $search === '' && (! method_exists($newsItems, 'currentPage') || $newsItems->currentPage() === 1);
+    $lead = $showFront ? $articles->first() : null;
+    $briefs = $lead ? $articles->slice(1, 2) : collect();
+    $remaining = $lead ? $articles->slice(3) : $articles;
 @endphp
 
 @extends('theme-nt501::layout')
 
-@section('title', $title)
-
-@if (!empty($description))
-    @push('head')
-        <meta name="description" content="{{ $description }}">
-    @endpush
-@endif
+@section('title', $pageTitle ?? $title)
+@section('meta_description', $pageDescription ?? $intro)
 
 @push('head')
-    <style>
-        .xd-page-main{padding:76px 0 90px}
-        .xd-cms-hero{display:grid;grid-template-columns:minmax(0,.75fr) minmax(340px,.45fr);gap:48px;align-items:end;margin-bottom:54px;padding:56px;border:1px solid var(--line);background:#fff;box-shadow:0 20px 55px rgba(28,45,60,.08)}
-        .xd-kicker{position:relative;display:inline-block;margin:0 0 14px 18px;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
-        .xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}
-        .xd-cms-hero h1{margin:0;color:var(--ink);font-size:clamp(42px,5vw,72px);line-height:1.08;letter-spacing:-.055em}
-        .xd-cms-hero p{margin:18px 0 0;color:var(--muted);font-size:20px;font-weight:550}
-        .xd-cms-stats{display:grid;gap:12px;color:#fff;background:var(--ink);padding:26px 30px}
-        .xd-cms-stats strong{font-size:46px;line-height:1}
-        .xd-cms-stats span{color:rgba(255,255,255,.75);font-weight:800;text-transform:uppercase}
-        .xd-services-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px}
-        .xd-service-card{background:#fff;box-shadow:0 5px 20px rgba(16,29,40,.08);transition:.25s}
-        .xd-service-card:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
-        .xd-service-image{display:block;height:300px;overflow:hidden;background:#eef2ef}
-        .xd-service-image img{width:100%;height:100%;object-fit:cover;transition:.4s}
-        .xd-service-card:hover img{transform:scale(1.05)}
-        .xd-service-body{padding:36px 38px 40px}
-        .xd-service-card h2,.xd-service-card h3{margin:0 0 14px;font-size:22px;line-height:1.32;letter-spacing:.015em;text-transform:uppercase}
-        .xd-service-card p{margin:0 0 26px;color:var(--muted);font-size:17px}
-        .xd-text-link{color:var(--lime-dark);font-weight:900;text-transform:uppercase}
-        .xd-detail{display:grid;grid-template-columns:minmax(0,.85fr) minmax(300px,.35fr);gap:44px}
-        .xd-detail-card,.xd-side-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.06)}
-        .xd-detail-card{overflow:hidden}
-        .xd-detail-image{width:100%;max-height:520px;object-fit:cover}
-        .xd-detail-body{padding:44px 52px}
-        .xd-detail-body h1{margin:0 0 18px;font-size:clamp(38px,4vw,62px);line-height:1.1;letter-spacing:-.05em}
-        .xd-detail-summary{margin:0 0 28px;color:var(--muted);font-size:20px}
-        .xd-rich-content{color:#465461;font-size:18px}
-        .xd-rich-content :first-child{margin-top:0}
-        .xd-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:28px}
-        .xd-gallery figure{margin:0}
-        .xd-gallery img{width:100%;height:210px;object-fit:cover}
-        .xd-gallery figcaption{margin-top:8px;color:var(--muted);font-size:14px}
-        .xd-side-card{padding:28px}
-        .xd-side-card h3{margin:0 0 18px;font-size:24px}
-        .xd-side-card a{display:block;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-weight:750}
-        .xd-side-card a:hover{color:var(--lime-dark)}
-        .xd-contact-page{display:grid;grid-template-columns:minmax(0,.9fr) minmax(420px,.72fr);gap:34px;align-items:stretch}
-        .xd-contact-panel,.xd-contact-form-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.06)}
-        .xd-contact-panel{padding:44px 48px;background:linear-gradient(135deg,#fff 0%,#f7faee 100%)}
-        .xd-contact-panel h2,.xd-contact-form-card h2{margin:0 0 18px;font-size:34px;line-height:1.15;letter-spacing:-.04em}
-        .xd-contact-panel p{margin:0 0 26px;color:var(--muted);font-size:18px;font-weight:600}
-        .xd-contact-methods{display:grid;gap:16px;margin:0;padding:0;list-style:none}
-        .xd-contact-method{display:grid;grid-template-columns:54px minmax(0,1fr);gap:16px;align-items:center;padding:18px;border:1px solid rgba(38,56,74,.1);background:#fff}
-        .xd-contact-icon{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;background:var(--ink);color:#fff;font-size:22px;font-weight:900}
-        .xd-contact-method small{display:block;color:var(--lime-dark);font-size:12px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
-        .xd-contact-method a,.xd-contact-method span{color:var(--ink);font-size:18px;font-weight:850;overflow-wrap:anywhere}
-        .xd-contact-note{margin-top:24px;padding:20px 22px;background:var(--ink);color:#fff}
-        .xd-contact-note strong{display:block;margin-bottom:6px;color:var(--lime)}
-        .xd-contact-note span{color:rgba(255,255,255,.78);font-weight:650}
-        .xd-contact-form-card{padding:44px 48px}
-        .xd-contact-form{display:grid;gap:16px}
-        .xd-contact-field{display:grid;gap:8px}
-        .xd-contact-field label{font-size:13px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}
-        .xd-contact-field input,.xd-contact-field textarea{width:100%;border:1px solid var(--line);border-radius:0;background:#fbfcfa;color:var(--ink);font:inherit;font-weight:650;outline:0;transition:.2s}
-        .xd-contact-field input{height:56px;padding:0 18px}
-        .xd-contact-field textarea{min-height:150px;padding:16px 18px;resize:vertical}
-        .xd-contact-field input:focus,.xd-contact-field textarea:focus{border-color:var(--lime);box-shadow:0 0 0 4px rgba(189,212,0,.14)}
-        .xd-contact-submit{display:inline-flex;align-items:center;justify-content:center;width:max-content;min-height:58px;padding:0 30px;border:0;background:var(--lime);color:#fff;box-shadow:0 15px 30px rgba(189,212,0,.28);font:inherit;font-weight:950;text-transform:uppercase;cursor:pointer}
-        .xd-contact-submit:hover{transform:translateY(-1px)}
-        .xd-contact-alert{margin:0 0 18px;padding:14px 16px;border:1px solid rgba(143,169,0,.25);background:#f7fae5;color:var(--lime-dark);font-weight:850}
-        .xd-contact-errors{margin:0 0 18px;padding:14px 16px;border:1px solid rgba(180,35,24,.22);background:#fff4f2;color:#b42318;font-weight:800}
-        .xd-contact-errors ul{margin:6px 0 0;padding-left:18px}
-        @media (max-width:1180px){.xd-cms-hero,.xd-detail,.xd-contact-page{grid-template-columns:1fr}}
-        @media (max-width:640px){.xd-cart-link{width:42px;height:42px;border-radius:999px}.xd-cart-link svg{width:19px;height:19px}.xd-page-main{padding:38px 0 56px}.xd-cms-hero{padding:30px 22px;margin-bottom:26px}.xd-cms-hero h1{font-size:36px}.xd-cms-hero p{font-size:16px}.xd-service-card{border-radius:18px;overflow:hidden}.xd-service-image{height:215px}.xd-service-body{padding:26px 22px}.xd-service-card h2,.xd-service-card h3{font-size:19px}.xd-detail-body{padding:28px 22px}.xd-detail-body h1{font-size:34px}.xd-detail-summary,.xd-rich-content{font-size:16px}.xd-contact-panel,.xd-contact-form-card{padding:28px 22px}.xd-contact-panel h2,.xd-contact-form-card h2{font-size:28px}.xd-contact-method{grid-template-columns:44px minmax(0,1fr);padding:14px}.xd-contact-icon{width:44px;height:44px;font-size:18px}.xd-contact-method a,.xd-contact-method span{font-size:15px}.xd-contact-submit{width:100%}}
-    </style>
+    @include('theme-nt501::partials.news-styles')
 @endpush
 
-
 @section('content')
-@include('themes.common.news-listing')
+    <main class="theme-news-listing" data-news-theme="NT501">
+        <div class="nt-news-container">
+            <nav class="nt-news-breadcrumb" aria-label="@themeT('nt501.projects.breadcrumb')">
+                <a href="{{ route('site.home') }}">{{ $newsCommon('home') }}</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('site.blog.index') }}" @if ($isNewsIndex) aria-current="page" @endif>{{ $newsCommon('news') }}</a>
+                @if ($currentCategory || isset($topic))
+                    <span aria-hidden="true">/</span><span aria-current="page">{{ $title }}</span>
+                @endif
+            </nav>
+
+            <header class="nt-news-masthead">
+                <div>
+                    <p class="nt-news-kicker">{{ $newsText('journal') }}</p>
+                    <h1>{{ $title }}</h1>
+                    <p class="nt-news-intro">{{ strip_tags((string) $intro) }}</p>
+                </div>
+                @if (isset($postFilters))
+                    <form class="nt-news-search" method="get" action="{{ route('site.blog.index') }}" role="search">
+                        @if ($categorySlug !== '')<input type="hidden" name="category" value="{{ $categorySlug }}">@endif
+                        <label class="nt-news-sr-only" for="nt-news-query">{{ $newsText('search_label') }}</label>
+                        <input type="search" id="nt-news-query" name="q" value="{{ $search }}" placeholder="{{ $newsText('search_placeholder') }}">
+                        <button type="submit" aria-label="{{ $newsText('search_label') }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>
+                    </form>
+                @endif
+            </header>
+
+            <nav class="nt-news-sections" aria-label="{{ $newsText('categories_label') }}">
+                <a href="{{ route('site.blog.index', $search !== '' ? ['q' => $search] : []) }}" @if ($isNewsIndex) aria-current="page" @endif>{{ $newsText('all_categories') }}</a>
+                @foreach ($categories as $category)
+                    <a href="{{ route('site.blog.category', array_merge(['slug' => $category->slug], $search !== '' ? ['q' => $search] : [])) }}" @if ($categorySlug === $category->slug) aria-current="page" @endif>{{ $category->name }}</a>
+                @endforeach
+            </nav>
+
+            @if ($search !== '')
+                <p class="nt-news-query">{{ $newsCommon('search_results') }}: <strong>“{{ $search }}”</strong> <a href="{{ $categorySlug !== '' ? route('site.blog.category', ['slug' => $categorySlug]) : route('site.blog.index') }}">{{ $newsText('clear_search') }} <span aria-hidden="true">×</span></a></p>
+            @endif
+
+            @if (filled($topic->image_url ?? null))
+                <img class="nt-news-topic-image" src="{{ $topic->image_url }}" alt="{{ $topic->name }}">
+            @endif
+
+            @if ($lead)
+                <div class="nt-news-front {{ $briefs->isEmpty() ? 'nt-news-front--single' : '' }}">
+                    <section class="nt-news-lead" aria-label="{{ $newsText('spotlight') }}">
+                        <p class="nt-news-section-label">{{ $newsText('spotlight') }}</p>
+                        @include('theme-nt501::partials.news-story', ['post' => $lead, 'variant' => 'lead'])
+                    </section>
+                    @if ($briefs->isNotEmpty())
+                        <section class="nt-news-briefs" aria-labelledby="nt-news-latest">
+                            <h2 id="nt-news-latest" class="nt-news-section-label">{{ $newsText('latest') }}</h2>
+                            @foreach ($briefs as $post)
+                                @include('theme-nt501::partials.news-story', ['post' => $post, 'variant' => 'brief'])
+                            @endforeach
+                        </section>
+                    @endif
+                </div>
+            @endif
+
+            @if ($remaining->isNotEmpty())
+                <section class="nt-news-feed" aria-label="{{ $newsCommon('news') }}">
+                    <div class="nt-news-feed-heading"><h2>{{ $newsText($lead ? 'more_stories' : 'latest') }}</h2><span>{{ $remaining->count() }} {{ $newsCommon('articles') }}</span></div>
+                    @foreach ($remaining as $post)
+                        @include('theme-nt501::partials.news-story', ['post' => $post, 'variant' => 'row'])
+                    @endforeach
+                </section>
+            @elseif ($articles->isEmpty())
+                <section class="nt-news-empty">
+                    <h2>{{ $newsCommon($search !== '' ? 'no_results' : 'empty') }}</h2>
+                    <p>{{ $newsCommon('empty_hint') }}</p>
+                    <a href="{{ route('site.blog.index') }}">{{ $newsCommon('all') }} <span aria-hidden="true">→</span></a>
+                </section>
+            @endif
+
+            @if (method_exists($newsItems, 'hasPages') && $newsItems->hasPages())
+                <nav class="nt-news-pagination" aria-label="{{ $newsCommon('pagination') }}">
+                    @if ($newsItems->previousPageUrl())<a href="{{ $newsItems->previousPageUrl() }}" rel="prev">← {{ $newsCommon('previous') }}</a>@endif
+                    <span>{{ $newsItems->currentPage() }} / {{ $newsItems->lastPage() }}</span>
+                    @if ($newsItems->nextPageUrl())<a href="{{ $newsItems->nextPageUrl() }}" rel="next">{{ $newsCommon('next') }} →</a>@endif
+                </nav>
+            @endif
+        </div>
+    </main>
 @endsection

@@ -12,8 +12,10 @@
         <div class="rx13-benefits__grid">
             @foreach ($items as $item)
                 <article class="rx13-benefit">
-                    <span class="rx13-benefit__icon">{{ $item['icon'] ?? $loop->iteration }}</span>
-                    <h3>{{ $item['title'] }}</h3>
+                    <div class="rx13-benefit__heading">
+                        <span class="rx13-benefit__icon">{{ $item['icon'] ?? $loop->iteration }}</span>
+                        <h3>{{ $item['title'] }}</h3>
+                    </div>
                     @if (filled($item['summary'] ?? $item['description'] ?? null))
                         <p>{{ $item['summary'] ?? $item['description'] }}</p>
                     @endif

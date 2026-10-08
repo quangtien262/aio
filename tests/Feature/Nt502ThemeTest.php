@@ -42,6 +42,7 @@ class Nt502ThemeTest extends TestCase
         $this->assertNotNull($provider);
         $result = $provider->generate('nt502-dola-furniture');
         $this->assertSame(10, data_get($result, 'counts.products'));
+        $this->assertSame(5, data_get($result, 'counts.posts'));
         $this->assertDatabaseHas('site_banners', ['theme_key' => 'NT502', 'placement' => 'nt502-hero-slider']);
         $this->assertDatabaseHas('landing_pages', ['theme_key' => 'NT502', 'slug' => 'home', 'is_home' => true]);
         $latestPost = CmsPost::query()->latest('publish_at')->firstOrFail();
@@ -66,7 +67,7 @@ class Nt502ThemeTest extends TestCase
         $provider->generate('nt502-dola-furniture');
         $this->assertSame(10, CatalogProduct::count());
         $this->assertSame(5, CatalogCategory::count());
-        $this->assertSame(4, CmsMedia::count());
+        $this->assertSame(5, CmsMedia::count());
         foreach (CmsPost::with('featuredMedia')->get() as $post) {
             $this->assertNotNull($post->featuredMedia);
         }
@@ -74,6 +75,7 @@ class Nt502ThemeTest extends TestCase
         $dom = new \DOMDocument;
         @$dom->loadHTML($response->getContent());
         $xpath = new \DOMXPath($dom);
+        $this->assertSame(5, $xpath->query('//section[@id="tin-tuc"]//div[@class="n502-news"]//a')->length);
         $sources = [];
         foreach ($xpath->query('//main//img') as $image) {
             $sources[] = $image->getAttribute('src');

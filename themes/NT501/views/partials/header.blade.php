@@ -20,12 +20,29 @@
     }
 @endphp
 <header class="foot-header">
+    <div class="foot-header__navigation">
+        <div class="foot-container foot-navigation-wrap">
+            <button type="button" class="foot-mobile-toggle" data-foot-menu-toggle aria-expanded="false" aria-controls="nt-primary-navigation" aria-label="@themeT('nt501.header.open_menu')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                Menu
+            </button>
+            <nav id="nt-primary-navigation" class="foot-navigation" data-foot-menu aria-label="@themeT('nt501.header.primary_nav')">
+                @foreach ($navItems as $item)
+                    <a href="{{ $item['href'] }}" @if (rtrim($item['href'], '/') === rtrim(url()->current(), '/')) aria-current="page" @endif>{{ $item['label'] }}</a>
+                @endforeach
+            </nav>
+        </div>
+    </div>
     <div class="foot-header__masthead">
         <div class="foot-container foot-header__masthead-inner">
             <a class="foot-brand" href="{{ route('site.home') }}" aria-label="{{ $companyName }}">
                 @if ($logoUrl !== '')
-                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">@endif
+                    <img src="{{ $logoUrl }}" alt="{{ $companyName }}">
+                @else
+                    <strong>{{ $companyName }}</strong>
+                @endif
             </a>
+            <p class="foot-header__tagline">@themeT('nt501.brand.tagline')</p>
             <div class="foot-header__account">
                 @guest('customer')
                     <button type="button" data-xd-auth-open="login">@themeT('nt501.header.login')</button>
@@ -35,16 +52,8 @@
                     <a href="{{ route('customer.account') }}">@themeT('nt501.header.account')</a>
                 @endguest
 
-            @include('partials.storefront-language-switcher')
+                @include('partials.storefront-language-switcher')
+            </div>
         </div>
-        </div>
-    </div>
-    <div class="foot-container foot-navigation-wrap">
-        <button type="button" class="foot-mobile-toggle" data-foot-menu-toggle aria-expanded="false" aria-label="@themeT('nt501.header.open_menu')">Menu</button>
-        <nav class="foot-navigation" data-foot-menu aria-label="@themeT('nt501.header.primary_nav')">
-            @foreach ($navItems as $item)
-                <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
-            @endforeach
-        </nav>
     </div>
 </header>

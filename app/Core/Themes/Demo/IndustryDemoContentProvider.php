@@ -224,6 +224,9 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 }
             }
             if ($page && $this->key === 'XD0313') {
+                if (! $page->blocks()->where('block_type', 'landing_contact')->exists()) {
+                    $builder->createBlock($page, 'landing_contact');
+                }
                 foreach ($page->blocks()->where('block_type', 'testimonials')->get() as $block) {
                     $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'cms_testimonials', 'limit' => 6])]);
                 }

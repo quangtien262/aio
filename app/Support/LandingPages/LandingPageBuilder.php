@@ -7037,6 +7037,18 @@ class LandingPageBuilder
                     'en' => ['title' => 'Some of our articles', 'subtitle' => 'Recent blog', 'description' => '', 'button_label' => 'View details', 'content' => ['items' => []]],
                 ],
             ],
+            [
+                'block_type' => 'landing_contact',
+                'label' => 'Gửi liên hệ',
+                'description' => 'Thông tin liên hệ và biểu mẫu tư vấn RouteX.',
+                'preview_image' => '/theme-previews/XD0313/cover-XD0313.svg',
+                'anchor_id' => 'lien-he',
+                'settings' => [],
+                'data' => [
+                    'vi' => ['title' => 'Bắt đầu hành trình của bạn', 'subtitle' => 'Gửi liên hệ', 'description' => 'Hãy chia sẻ kế hoạch và nhu cầu của bạn. Đội ngũ tư vấn sẽ liên hệ để trao đổi phương án phù hợp.', 'button_label' => 'Gửi liên hệ', 'content' => ['form_title' => 'Gửi yêu cầu tư vấn']],
+                    'en' => ['title' => 'Start your next journey', 'subtitle' => 'Get in touch', 'description' => 'Tell us about your plans and needs. Our team will contact you to discuss a suitable approach.', 'button_label' => 'Send message', 'content' => ['form_title' => 'Request a consultation']],
+                ],
+            ],
         ];
     }
 

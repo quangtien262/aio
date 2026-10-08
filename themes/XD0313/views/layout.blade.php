@@ -25,6 +25,7 @@
     :is-preview="$isPreview ?? false"
 >
     @include('theme-xd0313::partials.styles')
+    @include('theme-xd0313::partials.contact-styles')
 </x-storefront-head>
 <body>
     <div id="top" class="rx13-page">

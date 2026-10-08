@@ -38,6 +38,9 @@
         });
 
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.querySelector('[data-rx13-contact-feedback]')?.scrollIntoView({
+            block: 'center', behavior: reduceMotion ? 'instant' : 'smooth',
+        });
         const revealSelectors = [
             '.rx13-benefit',
             '.rx13-about__media',
