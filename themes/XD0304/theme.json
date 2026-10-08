@@ -15,7 +15,8 @@
     "solutions-split-list",
     "logistics-feature-panel",
     "collection-gallery",
-    "partner-logos"
+    "partner-logos",
+    "landing-contact"
   ],
   "supports": {
     "dark_mode": false,

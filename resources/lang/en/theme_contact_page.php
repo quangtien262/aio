@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'consultation_title' => 'Consultation and quotation',
+    'close' => 'Close',
     'title' => 'Contact',
     'home' => 'Home',
     'heading' => 'Get in touch',

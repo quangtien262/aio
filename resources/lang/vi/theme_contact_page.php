@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'consultation_title' => 'Tư vấn và báo giá',
+    'close' => 'Đóng',
     'title' => 'Liên hệ',
     'home' => 'Trang chủ',
     'heading' => 'Kết nối với chúng tôi',

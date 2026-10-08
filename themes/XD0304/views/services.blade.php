@@ -186,7 +186,12 @@
 
 @push('head')
     <style>
-        .xd-page-main{padding:76px 0 90px}
+        .xd-page-main{padding:56px 0 80px}
+        .xd4-services-page{--ink:var(--xd4-ink);--muted:var(--xd4-muted);--lime:var(--xd4-green);--lime-dark:#557a1b;--line:#e0e5dc}
+        .xd4-services-page>.xd-container{width:min(1240px,calc(100% - 64px));margin-inline:auto}
+        .xd4-services-page .xd-service-card{min-width:0}
+        @media(max-width:1000px){.xd4-services-page .xd-services-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}}
+        @media(max-width:640px){.xd4-services-page>.xd-container{width:calc(100% - 32px)}.xd4-services-page .xd-services-list{grid-template-columns:minmax(0,1fr);gap:24px}}
         .xd-cms-hero{display:grid;grid-template-columns:minmax(0,.75fr) minmax(340px,.45fr);gap:48px;align-items:end;margin-bottom:54px;padding:56px;border:1px solid var(--line);background:#fff;box-shadow:0 20px 55px rgba(28,45,60,.08)}
         .xd-kicker{position:relative;display:inline-block;margin:0 0 14px 18px;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
         .xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}
@@ -254,7 +259,7 @@
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+<main class="xd-page-main xd4-services-page">
             <div class="xd-container">
                     <section class="xd-cms-hero">
                         <div>

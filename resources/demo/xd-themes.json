@@ -535,7 +535,12 @@
     "products": [
       "Rau xanh theo mùa",
       "Cà chua tươi",
-      "Giỏ nông sản"
+      "Giỏ nông sản",
+      "Bắp ngọt hữu cơ",
+      "Cà rốt tươi",
+      "Chuối chín tự nhiên",
+      "Gạo sạch tuyển chọn",
+      "Rau thơm tổng hợp"
     ],
     "image_group": "farm",
     "photos": [
@@ -545,8 +550,97 @@
     ],
     "product_images": [
       "/theme-demo/dn351/category-vegetables.jpg",
-      null,
+      "/theme-demo/dn351/category-vegetables.jpg",
+      "/theme-demo/dn351/category-vegetables.jpg",
+      "/theme-demo/dn351/category-vegetables.jpg",
+      "/theme-demo/dn351/category-vegetables.jpg",
+      "/theme-demo/xd-shared/farm-3.jpg",
+      "/theme-demo/xd-shared/farm-2.jpg",
       "/theme-demo/dn351/category-vegetables.jpg"
+    ],
+    "product_prices": {
+      "Rau xanh theo mùa": 45000,
+      "Cà chua tươi": 35000,
+      "Giỏ nông sản": 185000,
+      "Bắp ngọt hữu cơ": 46000,
+      "Cà rốt tươi": 39000,
+      "Chuối chín tự nhiên": 32000,
+      "Gạo sạch tuyển chọn": 68000,
+      "Rau thơm tổng hợp": 25000
+    },
+    "catalog_categories": [
+      {
+        "name": "Rau lá hữu cơ",
+        "slug": "rau-la",
+        "image_url": "/theme-demo/dn351/category-vegetables.jpg",
+        "products": [
+          "Rau xanh theo mùa"
+        ]
+      },
+      {
+        "name": "Củ quả tươi",
+        "slug": "cu-qua",
+        "image_url": "/theme-demo/dn351/category-vegetables.jpg",
+        "products": [
+          "Cà chua tươi",
+          "Bắp ngọt hữu cơ",
+          "Cà rốt tươi"
+        ]
+      },
+      {
+        "name": "Trái cây theo mùa",
+        "slug": "trai-cay",
+        "image_url": "/theme-demo/xd-shared/farm-3.jpg",
+        "products": [
+          "Chuối chín tự nhiên"
+        ]
+      },
+      {
+        "name": "Gạo và ngũ cốc",
+        "slug": "ngu-coc",
+        "image_url": "/theme-demo/xd-shared/farm-2.jpg",
+        "products": [
+          "Gạo sạch tuyển chọn"
+        ]
+      },
+      {
+        "name": "Rau gia vị",
+        "slug": "rau-gia-vi",
+        "image_url": "/theme-demo/dn351/category-vegetables.jpg",
+        "products": [
+          "Rau thơm tổng hợp"
+        ]
+      },
+      {
+        "name": "Giỏ nông sản",
+        "slug": "gio-nong-san",
+        "image_url": "/theme-demo/dn351/category-vegetables.jpg",
+        "products": [
+          "Giỏ nông sản"
+        ]
+      }
+    ],
+    "team_members": [
+      {
+        "name": "Trần Hoàng Nam",
+        "role": "Tư vấn canh tác",
+        "image_url": "/theme-demo/xd-shared/person-1.jpg"
+      },
+      {
+        "name": "Nguyễn Minh Anh",
+        "role": "Điều phối nông trại",
+        "image_url": "/theme-demo/xd-shared/person-2.jpg"
+      },
+      {
+        "name": "Lê Minh Tuấn",
+        "role": "Kiểm soát chất lượng",
+        "image_url": "/theme-demo/xd-shared/person-3.jpg"
+      },
+      {
+        "name": "Nguyễn Thanh An",
+        "role": "Chăm sóc khách hàng",
+        "image_url": "/theme-demo/dn351/testimonial-customer.jpg"
+      }
     ]
   },
   "XD0324": {

@@ -24,17 +24,21 @@
     :hreflang-urls="$hreflangUrls ?? []"
     :is-preview="$isPreview ?? false"
 >
+    @include('themes.common.fonts.chakra-manrope')
     @include('theme-xd0304::partials.styles')
+    @include('theme-xd0304::partials.contact-styles')
 </x-storefront-head>
-<body>
+<body class="{{ request()->routeIs('site.home') ? 'xd4-is-home' : 'xd4-is-inner' }}">
     <div id="top" class="xd4-page">
         @include('theme-xd0304::partials.header')
         @yield('content')
         @include('theme-xd0304::partials.footer')
     </div>
+    @include('theme-xd0304::partials.consultation-modal')
     @include('theme-xd0304::partials.auth-modal')
     @include('theme-xd0304::partials.inline-editor')
     @include('theme-xd0304::partials.shell-scripts')
+    @include('theme-xd0304::partials.scripts')
     @stack('scripts')
 </body>
 </html>

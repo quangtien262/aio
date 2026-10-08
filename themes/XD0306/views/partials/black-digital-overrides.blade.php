@@ -20,4 +20,12 @@ body{background:var(--xd6-black);color:var(--xd6-white);font-family:"Segoe UI",A
 @media(max-width:900px){.xd5-services{grid-template-columns:1fr 1fr}.xd6-gallery__card,.xd6-gallery__card:nth-child(n){grid-column:span 6}.xd6-faq__layout{grid-template-columns:1fr}.xd5-posts{grid-template-columns:1fr 1fr}.xd5-post:first-child{grid-column:1/-1}}
 @media(max-width:620px){:root{--wide:min(100% - 32px,1320px)}.xd5-header{position:relative;background:#09090b}.xd5-nav-wrap{min-height:76px;flex-wrap:wrap}.xd5-brand:after{font-size:16px}.xd5-hero,.xd5-hero-copy{min-height:650px}.xd5-hero-copy{padding-bottom:70px}.xd5-hero h1{font-size:40px}.xd5-section{padding:78px 0}.xd5-services,.xd5-posts{grid-template-columns:1fr}.xd5-post:first-child{grid-column:auto}.xd5-service{min-height:400px}.xd5-about{gap:55px}.xd5-about-media{min-height:440px}.xd5-about-media img{width:100%;height:420px}.xd6-gallery__card,.xd6-gallery__card:nth-child(n){grid-column:1/-1;min-height:290px}.xd5-footer-top{align-items:start}.xd5-footer-grid{gap:38px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}[data-xd-reveal]{opacity:1;transform:none;transition:none}.xd5-hero__slide img{transition:none}}
+/* White detail cards need their own palette inside the dark theme. */
+.xd5-page .xd-detail-card,.xd5-page .xd-side-card{--ink:#202126;--muted:#5c6069;color:#202126}
+.xd5-page .xd-detail-body h1{color:#202126}
+.xd5-page .xd-detail-body .xd-kicker{color:#b82b23}
+.xd5-page .xd-detail-summary,.xd5-page .xd-side-card a{color:#5c6069}
+.xd6-is-inner .xd5-header{position:relative;top:auto;background:var(--xd6-black);border-bottom:1px solid var(--xd6-line)}
+.xd6-is-inner .xd5-nav-wrap{flex-wrap:wrap}
+.xd6-is-inner .xd5-nav-wrap nav{min-width:0;flex-wrap:wrap}
 </style>

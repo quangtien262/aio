@@ -9,7 +9,7 @@
     $contactErrors = session('errors', new \Illuminate\Support\ViewErrorBag);
 @endphp
 @include('themes.common.contact-styles')
-<main class="tc-contact-page">
+<main class="tc-contact-page" data-contact-theme="{{ data_get($activeTheme ?? [], 'key') }}">
 <div class="tc-contact-container">
     <nav class="tc-contact-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('site.home', ['locale' => app()->getLocale()]) }}">{{ __('theme_contact_page.home') }}</a><span>/</span><span aria-current="page">{{ __('theme_contact_page.title') }}</span></nav>
     <div class="tc-contact-heading"><span>{{ $company }}</span><h1>{{ __('theme_contact_page.heading') }}</h1><p>{{ __('theme_contact_page.intro') }}</p></div>

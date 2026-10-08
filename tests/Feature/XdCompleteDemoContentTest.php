@@ -10,6 +10,7 @@ use App\Models\CmsMenu;
 use App\Models\CmsPost;
 use App\Models\CmsProject;
 use App\Models\CmsService;
+use App\Models\LandingPageBlock;
 use App\Models\ThemeDemoRecord;
 use App\Support\LegacyTextEncoding;
 use App\Support\SiteContext;
@@ -36,7 +37,7 @@ class XdCompleteDemoContentTest extends TestCase
         foreach ([1, 2] as $run) {
             $result = $generator->generate($key, $preset);
             $this->assertSame(4, $result['counts']['services']);
-            $this->assertSame(3, CatalogProduct::count());
+            $this->assertSame(count(XdCompleteDemoContentProvider::definitions()[$key]['products']), CatalogProduct::count());
             $this->assertSame(3, CmsPost::count());
             $this->assertSame(3, CmsProject::count());
             $this->assertSame(5, CmsService::count());
@@ -91,7 +92,7 @@ class XdCompleteDemoContentTest extends TestCase
         foreach ([1, 2] as $run) {
             app(ThemeDemoContentGenerator::class)->generate('XD0305', $provider->defaultPreset());
             foreach (['bizmax_about' => 'image_primary', 'bizmax_benefit_panel' => 'image'] as $type => $field) {
-                $block = \App\Models\LandingPageBlock::where('block_type', $type)->firstOrFail();
+                $block = LandingPageBlock::where('block_type', $type)->firstOrFail();
                 $this->assertNotEmpty($block->data);
                 foreach ($block->data as $data) {
                     $content = json_decode($data->content, true);

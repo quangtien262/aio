@@ -44,7 +44,3 @@
     @endforeach
 </main>
 @endsection
-
-@push('scripts')
-    @include('theme-xd0304::partials.scripts')
-@endpush

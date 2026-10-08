@@ -82,7 +82,9 @@
                 <a class="aio-landing-edit" href="{{ route('admin.index', ['any' => 'cms/landing-pages']) }}">Cấu hình khối</a>
             @endif
 
-            @if ($type === 'hero_slider')
+            @if ($landingThemeKey === 'SER0101' && (bool) data_get($landingPage ?? [], 'is_home', false))
+                @include('theme-ser0101::partials.home-block', ['blockItems' => $items])
+            @elseif ($type === 'hero_slider')
                 <div class="aio-landing-block-inner">
                     <span class="aio-landing-kicker">{{ data_get($heroItem, 'kicker', $data['subtitle'] ?? $landingThemeKey) }}</span>
                     <h1 class="aio-landing-title">{{ data_get($heroItem, 'title', $data['title'] ?? 'Landing page') }}</h1>

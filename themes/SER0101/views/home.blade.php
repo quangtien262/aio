@@ -585,13 +585,14 @@
                 .ser-hero-carousel .carousel-item { min-height: 420px; height: 420px; }
                 .route-table th, .route-table td { padding: 14px 16px; }
             }
+            @include('theme-ser0101::partials.home-styles')
         </style>
         @include('partials.localized-seo')
 </head>
     <body>
         @include('theme-ser0101::partials.shell-header', ['branding' => $branding, 'topMenu' => $topMenu, 'productMenu' => $productMenu, 'cartSummary' => $cartSummary, 'customerAuth' => $customerAuth, 'newsletterState' => $newsletterState, 'presetSwitcher' => $presetSwitcher, 'contactHotline' => $contactHotline, 'contactEmail' => $contactEmail, 'contactLocation' => $contactLocation, 'postLoginRedirect' => $postLoginRedirect, 't' => $t])
 
-        <main class="wrap">
+        <main class="wrap ser-home">
             @if (isset($landingBlocks) && is_array($landingPage ?? null))
                 @include('partials.configurable-landing-blocks')
             @else

@@ -827,6 +827,11 @@
         align-items: stretch;
     }
 
+    .ser-shell-search {
+        flex: 0 0 auto;
+        max-width: none;
+    }
+
 
     .ser-cart-drawer {
         width: 100vw;

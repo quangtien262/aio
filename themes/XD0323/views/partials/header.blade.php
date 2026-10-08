@@ -56,7 +56,7 @@
                 <span>{{ $themeText('XD0323.header.call_us') }}</span>
                 <a href="tel:{{ preg_replace('/\D+/', '', $hotline) }}">{{ $hotline }}</a>
             </div>
-            <a class="xd323-shop-btn" href="{{ route('site.catalog.search') }}">{{ $themeText('XD0323.header.shop') }} <i class="fa-solid fa-arrow-right"></i></a>
+            <a class="xd323-shop-btn" href="{{ route('site.contact', ['locale' => $locale]) }}">{{ $themeText('XD0323.header.shop') }} <i class="fa-solid fa-arrow-right"></i></a>
             <button type="button" class="xd323-menu-toggle" data-foot-menu-toggle aria-expanded="false" aria-label="{{ $themeText('XD0323.header.open_menu') }}"><i class="fa-solid fa-bars"></i></button>
         </div>
     </div>

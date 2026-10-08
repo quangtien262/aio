@@ -172,10 +172,16 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 $page = $this->create(CmsPage::class, $published + ['title' => $title.' '.$brand, 'slug' => $this->slug($title), 'excerpt' => $summary, 'body' => $this->body($title.' '.$brand, $summary), 'featured_media_id' => $media[$i % count($media)]->id, 'meta_title' => $title.' | '.$brand]);
                 $about ??= $page;
             }
-            foreach (['Tư vấn khách hàng', 'Điều phối triển khai', 'Kiểm soát chất lượng'] as $i => $role) {
-                $name = ['Nguyễn Minh Anh', 'Trần Hoàng Nam', 'Lê Thu Hà'][$i];
+            $teamDefinitions = $this->brief['team_members'] ?? array_map(fn ($i) => [
+                'name' => ['Nguyễn Minh Anh', 'Trần Hoàng Nam', 'Lê Thu Hà'][$i],
+                'role' => ['Tư vấn khách hàng', 'Điều phối triển khai', 'Kiểm soát chất lượng'][$i],
+                'image_url' => '/theme-demo/xd-shared/person-'.($i + 1).'.jpg',
+            ], range(0, 2));
+            foreach ($teamDefinitions as $i => $definition) {
+                $name = $definition['name'];
+                $role = $definition['role'];
                 $member = $this->create(CmsTeamMember::class, $published + ['name' => $name, 'slug' => $this->slug($name), 'role' => $role, 'summary' => 'Nhân sự minh họa phụ trách '.mb_strtolower($role).' tại '.$brand, 'bio' => '<p>Đồng hành trong quá trình tiếp nhận yêu cầu, triển khai và bàn giao.</p>', 'is_featured' => true, 'sort_order' => $i]);
-                $this->create(CmsTeamMemberImage::class, ['cms_team_member_id' => $member->id, 'image_url' => '/theme-demo/xd-shared/person-'.($i + 1).'.jpg', 'alt_text' => 'Chân dung minh họa', 'is_featured' => true, 'sort_order' => 0]);
+                $this->create(CmsTeamMemberImage::class, ['cms_team_member_id' => $member->id, 'image_url' => $definition['image_url'], 'alt_text' => 'Chân dung minh họa', 'is_featured' => true, 'sort_order' => 0]);
             }
             $testimonialDefinitions = $this->brief['testimonials'] ?? array_map(fn ($i) => [
                 'name' => ['Anh Hải', 'Chị Mai', 'Anh Dũng'][$i],
@@ -215,12 +221,28 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 ThemeDemoRecord::create(['theme_key' => $this->key, 'preset_key' => $presetKey, 'model_type' => LandingPage::class, 'model_id' => $page->id]);
                 $this->prepareBlocks($page);
             }
+            if ($page && $this->key === 'XD0304' && ! $page->blocks()->where('block_type', 'landing_contact')->exists()) {
+                $builder->createBlock($page, 'landing_contact');
+            }
             if ($page && $this->key === 'XD0320') {
+                if (! $page->blocks()->where('block_type', 'landing_contact')->exists()) {
+                    $builder->createBlock($page, 'landing_contact');
+                }
                 foreach ($page->blocks()->where('block_type', 'content_mosaic')->get() as $block) {
                     $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'cms_projects', 'featured_only' => false])]);
                 }
                 if (! $page->blocks()->where('block_type', 'business_service_grid')->exists()) {
                     $builder->createBlock($page, 'business_service_grid');
+                }
+            }
+            if ($page && $this->key === 'XD0323') {
+                foreach ($page->blocks()->whereIn('block_type', ['featured_categories', 'business_service_grid', 'team_members'])->get() as $block) {
+                    $defaults = match ($block->block_type) {
+                        'featured_categories' => ['source' => 'catalog_categories', 'limit' => 6, 'order' => 'sort_order'],
+                        'business_service_grid' => ['source' => 'cms_products', 'limit' => 8, 'featured_only' => true],
+                        'team_members' => ['source' => 'cms_team_members', 'limit' => 4, 'featured_only' => true],
+                    };
+                    $block->update(['settings' => array_merge((array) $block->settings, $defaults)]);
                 }
             }
             if ($page && $this->key === 'XD0313') {
@@ -243,7 +265,7 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 }
             }
 
-            return ['preset' => $this->preset(), 'purged' => $purged, 'counts' => ['categories' => count($categories), 'services' => count($this->brief['services']), 'products' => count($this->brief['products']), 'projects' => count($projectDefinitions), 'posts' => count($postTitles), 'pages' => 3, 'media' => 3, 'menus' => 1, 'banners' => 2, 'team_members' => 3, 'testimonials' => count($testimonialDefinitions), 'partners' => 6, 'landing_pages' => $page && ! $existing ? 1 : 0]];
+            return ['preset' => $this->preset(), 'purged' => $purged, 'counts' => ['categories' => count($categories), 'services' => count($this->brief['services']), 'products' => count($this->brief['products']), 'projects' => count($projectDefinitions), 'posts' => count($postTitles), 'pages' => 3, 'media' => 3, 'menus' => 1, 'banners' => 2, 'team_members' => count($teamDefinitions), 'testimonials' => count($testimonialDefinitions), 'partners' => 6, 'landing_pages' => $page && ! $existing ? 1 : 0]];
         });
     }
 
@@ -285,10 +307,13 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
             $block->update(['media' => $replace((array) $block->media), 'settings' => $settings]);
             foreach ($block->data as $data) {
                 $content = json_decode($data->content ?? '{}', true);
+                if ($this->key === 'XD0304' && $block->block_type === 'logistics_feature_panel' && blank($content['image'] ?? null)) {
+                    $content['image'] = $this->image(0);
+                }
                 if ($this->key === 'XD0305') {
                     $imageDefaults = match ($block->block_type) {
-                        'bizmax_about' => ['image_primary' => $this->image(0), 'image_secondary' => $this->image(1)],
-                        'bizmax_benefit_panel' => ['image' => $this->image(1)],
+                        'bizmax_about' => ['image_primary' => $this->image(1), 'image_secondary' => $this->image(0)],
+                        'bizmax_benefit_panel' => ['image' => $this->image(2)],
                         default => [],
                     };
                     foreach ($imageDefaults as $field => $image) {
@@ -306,6 +331,7 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 $updates = ['content' => json_encode($replace($content ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)];
                 if ($data->locale === 'vi') {
                     $updates['title'] = match (true) {
+                        $this->key === 'XD0323' && $block->block_type === 'business_service_grid' => 'Nông sản nổi bật',
                         str_contains($block->block_type, 'about') => 'Về '.$this->brief['brand'],
                         str_contains($block->block_type, 'service') => 'Dịch vụ '.$this->brief['sector'],
                         str_contains($block->block_type, 'team') => 'Đội ngũ đồng hành',
@@ -316,8 +342,16 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                         str_contains($block->block_type, 'contact') => 'Trao đổi nhu cầu của bạn',
                         default => app(LegacyTextEncoding::class)->repair($data->title ?? ''),
                     };
-                    $updates['subtitle'] = $this->brief['brand'];
+                    $updates['subtitle'] = match (true) {
+                        $this->key === 'XD0306' && $block->block_type === 'faq_showcase' => 'Giải đáp cùng bạn',
+                        $this->key === 'XD0306' && $block->block_type === 'collection_gallery' => 'Dự án tiêu biểu',
+                        default => $this->brief['brand'],
+                    };
                     $updates['description'] = 'Giải pháp '.$this->brief['sector'].' được xây dựng từ nhu cầu thực tế, phạm vi rõ ràng và sự phối hợp trong từng bước triển khai.';
+                }
+                if ($this->key === 'XD0306' && $block->block_type === 'faq_showcase' && $data->locale === 'vi') {
+                    $updates['title'] = 'Câu hỏi thường gặp';
+                    $updates['description'] = 'Những thông tin cần biết trước khi bắt đầu dự án thiết kế và truyền thông số.';
                 }
                 $data->update($updates);
             }

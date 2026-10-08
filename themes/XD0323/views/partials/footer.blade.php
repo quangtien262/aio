@@ -13,8 +13,7 @@
     <div class="xd323-footer__shade">
         <div class="xd323-container xd323-footer__grid">
             <section class="xd323-newsletter">
-                <i class="fa-regular fa-envelope-open"></i>
-                <h2>{{ $themeText('XD0323.footer.newsletter_title') }}</h2>
+                <div class="xd323-newsletter__heading"><i class="fa-regular fa-envelope-open" aria-hidden="true"></i><h2>{{ $themeText('XD0323.footer.newsletter_title') }}</h2></div>
                 <p>{{ $themeText('XD0323.footer.newsletter_text') }}</p>
                 <form method="POST" action="{{ $newsletterUrl }}">
                     @csrf

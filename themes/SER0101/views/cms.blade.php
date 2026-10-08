@@ -149,7 +149,11 @@
                 </div>
             @endif
 
-            @if (isset($listingItems) && ($contentType ?? null) !== 'posts')
+            @if (isset($listingItems) && ($contentType ?? null) === 'services')
+                @include('theme-ser0101::partials.content-listing')
+            @elseif (isset($listingItems) && ($contentType ?? null) === 'projects')
+                @include('theme-ser0101::partials.content-listing', ['isProjectListing' => true])
+            @elseif (isset($listingItems) && ($contentType ?? null) !== 'posts')
                 <section class="panel">
                     <h1>{{ $pageTitle }}</h1>
                     <div class="post-grid">

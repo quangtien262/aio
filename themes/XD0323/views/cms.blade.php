@@ -254,7 +254,7 @@
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+<main @class(['xd-page-main', 'xd323-project-index' => isset($listingItems), 'xd323-content-page' => !isset($listingItems)])>
             <div class="xd-container">
                     @if (isset($listingItems))
                     <h1>{{ $pageTitle ?? 'Dự án' }}</h1>

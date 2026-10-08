@@ -20,6 +20,9 @@
 @extends('theme-dn302::layout')
 @section('title', $title.' | '.$company)
 @section('content')
+<style>
+.dn-contact-page [data-dn-reveal]{opacity:1!important;transform:none!important}
+</style>
 <main class="dn-contact-page">
     <section class="dn-contact-page-hero">
         <div class="dn-container dn-contact-page-hero__inner">

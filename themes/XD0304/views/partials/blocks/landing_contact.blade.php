@@ -1,2 +1,21 @@
-@php $benefits = collect(data_get($content, 'benefits', [])); @endphp
-<section id="{{ $anchor }}" class="xd2-contact xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="landing_contact"><div class="xd2-container"><div class="xd2-contact__panel">{!! $editButton !!}<div><p class="xd2-kicker">{{ $data['subtitle'] ?? '' }}</p><h2>{{ $data['title'] ?? '' }}</h2><p>{{ $data['description'] ?? '' }}</p><ul>@foreach ($benefits as $benefit)<li>{{ $benefit }}</li>@endforeach</ul><p class="xd2-contact__phone">Gọi ngay chúng tôi <strong>{{ data_get($content, 'phone', $hotline ?? '1900 9477') }}</strong></p></div><form method="POST" action="{{ route('site.contact.submit') }}">@csrf<input type="hidden" name="source" value="xd0304-landing"><h2>{{ data_get($content, 'form_title', 'Đặt lịch hẹn') }}</h2><input name="name" required placeholder="* Họ và tên" value="{{ old('name') }}"><input type="email" name="email" required placeholder="* Email" value="{{ old('email') }}"><input name="phone" placeholder="* Số điện thoại" value="{{ old('phone') }}"><textarea name="message" required placeholder="* Nội dung">{{ old('message') }}</textarea><button class="xd2-button" type="submit">{{ $data['button_label'] ?? 'Gửi đi' }} →</button></form></div></div></section>
+@php($contactFormId = 'xd4-contact-'.($block['id'] ?? 'home'))
+<section id="{{ $anchor }}" class="xd4-section xd4-contact" data-block-type="landing_contact">
+    <div class="xd4-container xd4-contact__grid">
+        <div class="xd4-contact__copy">
+            <p class="xd4-eyebrow">{{ $data['subtitle'] ?? __('theme_contact_page.title') }}</p>
+            <h2>{{ $data['title'] ?? __('theme_contact_page.title') }}</h2>
+            @if(filled($data['description'] ?? null))<p>{{ $data['description'] }}</p>@endif
+            <dl class="xd4-contact__info">
+                @if(filled($hotline))<div><dt>{{ __('theme_contact_page.phone_number') }}</dt><dd><a href="tel:{{ $phoneHref }}">{{ $hotline }}</a></dd></div>@endif
+                @if(filled($supportEmail))<div><dt>{{ __('theme_contact_page.email') }}</dt><dd><a href="mailto:{{ $supportEmail }}">{{ $supportEmail }}</a></dd></div>@endif
+                @if(filled($supportAddress))<div><dt>{{ __('theme_contact_page.address') }}</dt><dd>{{ $supportAddress }}</dd></div>@endif
+            </dl>
+        </div>
+        <div class="xd4-contact__card">
+            <h3>{{ $content['form_title'] ?? __('theme_contact_page.message_heading') }}</h3>
+            <p class="xd4-contact__hint">{{ __('theme_contact_page.required_hint') }}</p>
+            @if(session('contact_status'))<p class="xd4-contact__notice" role="status">{{ session('contact_status') }}</p>@endif
+            @include('theme-xd0304::partials.contact-form')
+        </div>
+    </div>
+</section>

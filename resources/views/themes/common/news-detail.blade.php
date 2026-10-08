@@ -23,6 +23,23 @@
         @if(collect($relatedPosts ?? [])->isNotEmpty())<section class="tna-article-related"><h2>{{ __('news-detail.related') }}</h2><div class="tna-article-related-grid">@foreach($relatedPosts as $item)<a class="tna-article-card" href="{{ route('site.blog.show', ['slug' => $item->slug]) }}">@if(data_get($item, 'featuredMedia.file_url'))<img loading="lazy" src="{{ $item->featuredMedia->file_url }}" alt="{{ $item->title }}">@endif<div><h3>{{ $item->title }}</h3><span>{{ __('news-detail.read') }} →</span></div></a>@endforeach</div></section>@endif
     </div><aside class="tna-article-sidebar">
         @if(collect($latestPosts ?? [])->isNotEmpty())<section class="tna-article-latest"><h2>{{ __('news-detail.latest') }}</h2>@foreach($latestPosts as $item)<a class="tna-article-latest-item" href="{{ route('site.blog.show', ['slug' => $item->slug]) }}">@if(data_get($item, 'featuredMedia.file_url'))<img loading="lazy" src="{{ $item->featuredMedia->file_url }}" alt="">@endif<div><h3>{{ $item->title }}</h3>@if($item->publish_at)<time datetime="{{ $item->publish_at->toAtomString() }}">{{ $item->publish_at->format('d/m/Y') }}</time>@endif</div></a>@endforeach<a class="tna-article-all" href="{{ route('site.blog.index') }}">{{ __('news-detail.all') }} →</a></section>@endif
+        @foreach([
+            ['items' => $articleLatestProducts ?? [], 'heading' => 'latest_products', 'all' => 'all_products', 'url' => route('site.catalog.search'), 'kind' => 'products'],
+            ['items' => $articleServices ?? [], 'heading' => 'services', 'all' => 'all_services', 'url' => route('site.services.index'), 'kind' => 'services'],
+        ] as $group)
+            @if(collect($group['items'])->isNotEmpty())
+                <section class="tna-article-latest" data-article-sidebar="{{ $group['kind'] }}">
+                    <h2>{{ __('news-detail.'.$group['heading']) }}</h2>
+                    @foreach($group['items'] as $item)
+                        <a class="tna-article-latest-item" href="{{ $item['url'] }}">
+                            @if($item['image'])<img loading="lazy" src="{{ $item['image'] }}" alt="">@endif
+                            <div><h3>{{ $item['title'] }}</h3></div>
+                        </a>
+                    @endforeach
+                    <a class="tna-article-all" href="{{ $group['url'] }}">{{ __('news-detail.'.$group['all']) }} →</a>
+                </section>
+            @endif
+        @endforeach
         <section class="tna-article-promo"><h2>{{ __('news-detail.browse') }}</h2><p>{{ __('news-detail.browse_text') }}</p><a href="{{ route('site.catalog.search') }}">{{ __('news-detail.browse') }} →</a></section>
     </aside></div>
 </div></main>

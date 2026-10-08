@@ -16,7 +16,8 @@
     "logistics-feature-panel",
     "content-mosaic",
     "team-members",
-    "partner-logos"
+    "partner-logos",
+    "landing-contact"
   ],
   "supports": {
     "dark_mode": false,
