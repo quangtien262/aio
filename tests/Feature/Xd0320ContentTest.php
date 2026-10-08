@@ -6,6 +6,7 @@ use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Models\CmsProject;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
+use App\Models\LandingPageBlock;
 use App\Models\SiteProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,9 +20,15 @@ class Xd0320ContentTest extends TestCase
         $generator = app(ThemeDemoContentGenerator::class);
         $preset = $generator->presetsForTheme('XD0320')[0]['key'];
         $generator->generate('XD0320', $preset);
+        $projectBlock = LandingPageBlock::where('block_type', 'content_mosaic')->firstOrFail();
+        $this->assertSame('cms_projects', $projectBlock->settings['source']);
+        $projectBlock->update(['settings' => array_merge($projectBlock->settings, ['source' => 'cms_posts'])]);
         $generator->generate('XD0320', $preset);
+        $this->assertSame('cms_projects', LandingPageBlock::where('block_type', 'content_mosaic')->firstOrFail()->settings['source']);
         $this->assertSame(6, CmsService::count());
         $this->assertSame(4, CmsProject::count());
+        $project = CmsProject::firstOrFail();
+        $project->update(['title' => 'Dự án được cập nhật từ quản trị']);
         $category = CmsServiceCategory::where('slug', 'xd0320-dich-vu')->firstOrFail();
         $listing = $this->get(route('site.services.category', ['slug' => $category->slug]))->assertOk();
         $listing->assertSee('xd20-service-page')->assertSee(CmsService::first()->title);
@@ -55,6 +62,7 @@ class Xd0320ContentTest extends TestCase
         $dom = new \DOMDocument;
         @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
         $xpath = new \DOMXPath($dom);
+        $this->assertStringContainsString($project->title, $xpath->query('//section[@id="du-an"]')->item(0)->textContent);
         foreach (['dich-vu' => 6, 'du-an' => 4] as $id => $count) {
             $cards = $xpath->query('//section[@id="'.$id.'"]//article');
             $this->assertSame($count, $cards->length);
