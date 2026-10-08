@@ -3,7 +3,7 @@
     .rx13-contact__shell { display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 52px; align-items: start; padding: 52px; border-radius: 32px; background: var(--rx13-deep); }
     .rx13-contact__copy { padding: 12px 0; color: #fff; }
     .rx13-contact__eyebrow { margin: 0 0 18px; color: var(--rx13-green); font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-    .rx13-contact__copy h2 { max-width: 480px; margin: 0; color: #fff; font-size: clamp(30px,3.4vw,44px); font-weight: 800; line-height: 1.15; letter-spacing: -.025em; text-wrap: balance; }
+    .rx13-contact__copy h2 { max-width: 480px; margin: 0; color: #fff; font-size: clamp(30px,3.4vw,33px); font-weight: 800; line-height: 1.15; letter-spacing: -.025em; text-wrap: balance; }
     .rx13-contact__intro { max-width: 470px; margin: 22px 0 32px; color: #d5e6df; font-size: 16px; line-height: 1.75; }
     .rx13-contact__details { display: grid; gap: 20px; margin: 0; padding-top: 24px; border-top: 1px solid #ffffff26; }
     .rx13-contact__details dt { margin-bottom: 6px; color: #bad3c8; font-size: 12px; }

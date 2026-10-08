@@ -49,8 +49,8 @@
     .rx13-hero__slide.is-active { opacity: 1; }
     .rx13-hero__image { position: absolute; right: 7%; bottom: 0; z-index: 2; width: min(42vw, 660px); height: 92%; object-fit: contain; object-position: bottom center; }
     .rx13-hero__orb { position: absolute; right: 15%; bottom: 0; width: 500px; height: 500px; border-radius: 50%; background: var(--rx13-green); }
-    .rx13-hero__content { position: absolute; z-index: 3; left: 4.3%; top: 50%; width: min(760px, 48%); transform: translateY(-50%); color: #fff; }
-    .rx13-hero__content h1 { margin: 0; color: #fff; font-size: clamp(34px, 5vw, 40px); font-weight: 900; line-height: 1.18; letter-spacing: -.04em; }
+    .rx13-hero__content { position: absolute; z-index: 3; left: 4.3%; top: 50%; width: min(760px, 43%); transform: translateY(-50%); color: #fff; }
+    .rx13-hero__content h1 { margin: 0; color: #fff; font-size: clamp(34px, 5vw, 35px); font-weight: 900; line-height: 1.18; letter-spacing: -.04em; }
     .rx13-hero__content p { margin: 32px 0 38px; color: rgba(255,255,255,.88); font-size: 21px; font-weight: 700; line-height: 1.6; }
     .rx13-hero__actions { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
     .rx13-hero__actions .rx13-button { background: var(--rx13-deep); color: #fff; }
@@ -207,7 +207,7 @@
         .rx13-hero { padding: 12px 16px 28px; }
         .rx13-hero__viewport { min-height: 680px; border-radius: 28px; }
         .rx13-hero__content { left: 24px; right: 24px; top: 28px; width: auto; transform: none; }
-        .rx13-hero__content h1 { font-size: 42px; }
+        .rx13-hero__content h1 { font-size: 35px; }
         .rx13-hero__image { width: 84%; right: 0; height: 52%; }
         .rx13-hero__orb { width: 330px; height: 330px; right: -40px; }
         .rx13-benefits__grid, .rx13-about-cards, .rx13-services__grid, .rx13-stats, .rx13-posts__grid, .rx13-footer__grid { grid-template-columns: 1fr; }
