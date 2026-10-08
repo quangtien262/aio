@@ -8,6 +8,7 @@ return [
     'invalid' => 'Vui lòng kiểm tra lại :field.',
     'sending' => 'Đang gửi…',
     'success' => 'Yêu cầu liên hệ đã được gửi thành công.',
+    'newsletter_success' => 'Đã đăng ký nhận bản tin thành công.',
     'quote_success' => 'Yêu cầu báo giá đã được gửi và lưu thành công.',
     'failed' => 'Chưa thể gửi yêu cầu. Vui lòng thử lại sau.',
     'validation_failed' => 'Vui lòng kiểm tra các thông tin được đánh dấu bên dưới.',

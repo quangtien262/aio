@@ -18,7 +18,7 @@
         <div class="xd5-footer-grid">
             <div><p>{{ $xd5SupportAddress }}</p><p>{{ $xd5CompanyDescription }}</p></div>
             <div><h3>Khám phá</h3><ul>@foreach($navItems ?? [] as $item)<li><a href="{{ $item['href'] ?? '#' }}">{{ $item['label'] ?? 'Liên kết' }}</a></li>@endforeach</ul></div>
-            <div><h3>Đăng ký nhận tin</h3><form><input type="email" placeholder="Địa chỉ email"><button>Gửi</button></form></div>
+            <div><h3>Đăng ký nhận tin</h3><form method="POST" action="{{ route('site.newsletter.subscribe', ['locale' => app()->getLocale()]) }}">@csrf<input type="hidden" name="source" value="xd0307-footer"><input type="email" placeholder="Địa chỉ email" name="email" required maxlength="255"><button>Gửi</button></form></div>
         </div>
     </div>
 </footer>

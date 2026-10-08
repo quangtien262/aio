@@ -22,7 +22,7 @@
         </section>
         <section><h3>Hỗ trợ khách hàng</h3><a href="{{ route('site.contact') }}">Câu hỏi thường gặp</a><a href="{{ route('site.home') }}#cua-hang">Hệ thống cửa hàng</a><a href="{{ route('site.catalog.search') }}">Tìm kiếm</a><a href="{{ route('site.contact') }}">Liên hệ</a><a href="{{ route('site.blog.index') }}">Tin tức</a></section>
         <section><h3>Chính sách</h3><a href="#">Chính sách đổi trả</a><a href="#">Chính sách bảo mật</a><a href="#">Điều khoản dịch vụ</a><h3>Tổng đài hỗ trợ</h3>@if($hotline)<p>Gọi mua hàng: <b>{{ $hotline }}</b></p>@endif</section>
-        <section><h3>Đăng ký nhận ưu đãi</h3><p>Nhận khuyến mãi đặc biệt và món mới ngay khi ra mắt.</p><form class="f409-newsletter"><input type="email" placeholder="Email của bạn..."><button type="button">Đăng ký</button></form><h3>Phương thức thanh toán</h3><div class="f409-payments"><b>VISA</b><b>Mastercard</b><b>MoMo</b><b>ZaloPay</b></div></section>
+        <section><h3>Đăng ký nhận ưu đãi</h3><p>Nhận khuyến mãi đặc biệt và món mới ngay khi ra mắt.</p><form class="f409-newsletter" method="POST" action="{{ route('site.newsletter.subscribe', ['locale' => app()->getLocale()]) }}">@csrf<input type="hidden" name="source" value="foot409-footer"><input type="email" placeholder="Email của bạn..." name="email" required maxlength="255"><button type="button">Đăng ký</button></form><h3>Phương thức thanh toán</h3><div class="f409-payments"><b>VISA</b><b>Mastercard</b><b>MoMo</b><b>ZaloPay</b></div></section>
     </div>
     <div class="f409-copyright">{{ $copyright!==''?$copyright:'© '.now()->year.' '.$siteName.'. All rights reserved.' }}</div>
 </footer>

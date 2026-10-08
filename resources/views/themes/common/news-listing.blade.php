@@ -6,6 +6,9 @@
     $newsSearching = filled(data_get($postFilters ?? [], 'q'));
 @endphp
 @include('themes.common.news-listing-styles')
+@if($newsTheme === 'BZ501')
+    @include('theme-bz501::partials.news-listing-styles')
+@endif
 <main class="theme-news-listing" data-news-theme="{{ $newsTheme }}">
     <div class="tnl-container">
         <nav class="tnl-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('site.home') }}">{{ $newsText('home') }}</a><span aria-hidden="true">/</span><a href="{{ route('site.blog.index') }}">{{ $newsText('news') }}</a></nav>

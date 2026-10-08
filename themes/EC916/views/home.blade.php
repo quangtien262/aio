@@ -51,7 +51,7 @@
     </section>
 
     <section class="ec16-newsletter xd-landing-block" data-landing-block-id="{{ data_get($newsletter, 'id') }}" data-block-type="ec916_newsletter" data-ec16-reveal>
-        <div class="ec16-container" data-ec16-motion="scale"><div><h2>{{ data_get($newsletter, 'data.title', 'Đăng ký nhận thông tin ưu đãi và khuyến mãi') }}</h2><p>{{ data_get($newsletter, 'data.summary', 'Thông tin của bạn được bảo mật và có thể hủy đăng ký bất cứ lúc nào.') }}</p></div><form><input type="email" placeholder="Nhập địa chỉ Email..."><button aria-label="Đăng ký"><i class="fa-solid fa-paper-plane"></i></button></form></div>
+        <div class="ec16-container" data-ec16-motion="scale"><div><h2>{{ data_get($newsletter, 'data.title', 'Đăng ký nhận thông tin ưu đãi và khuyến mãi') }}</h2><p>{{ data_get($newsletter, 'data.summary', 'Thông tin của bạn được bảo mật và có thể hủy đăng ký bất cứ lúc nào.') }}</p></div><form method="POST" action="{{ route('site.newsletter.subscribe', ['locale' => app()->getLocale()]) }}">@csrf<input type="hidden" name="source" value="ec916-home"><input name="email" required maxlength="255" type="email" placeholder="Nhập địa chỉ Email..."><button aria-label="Đăng ký"><i class="fa-solid fa-paper-plane"></i></button></form></div>
     </section>
     <section hidden class="xd-landing-block" data-landing-block-id="{{ data_get($footer, 'id') }}" data-block-type="ec916_footer"></section>
 </main>

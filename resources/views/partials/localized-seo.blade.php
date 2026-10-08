@@ -5,3 +5,4 @@
     <link rel="alternate" hreflang="{{ $language }}" href="{{ $href }}">
 @endforeach
 @include('partials.contact-validation')
+@include('partials.auth-client')

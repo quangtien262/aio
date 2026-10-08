@@ -20,7 +20,7 @@ body { font-family:Arial,Helvetica,sans-serif; }
 .xd5-hero, .xd5-hero-copy { min-height:760px; }
 .xd5-hero-copy { justify-content:center; text-align:center; }
 .xd5-hero-copy > div { margin-top:110px; }
-.xd5-hero h1 { font-size:clamp(38px,4.5vw,58px); text-transform:uppercase; }
+.xd5-hero h1 { font-size:clamp(38px,4.5vw,35px); text-transform:uppercase; }
 .xd5-veil { background:linear-gradient(90deg,#08101ddd,#08101d44 70%,#08101d80); }
 .xd5-btn { background:var(--gold); color:#121c28; border-radius:4px; }
 .xd5-section { padding:88px 0; }

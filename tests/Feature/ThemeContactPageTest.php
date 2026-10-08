@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Mail\ContactInquiryMail;
 use App\Models\SiteProfile;
+use App\Models\WebsiteLocale;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -21,6 +22,7 @@ class ThemeContactPageTest extends TestCase
             $profile->update(['active_theme_key' => $theme]);
             $response = $this->get('/vi/contact')->assertOk();
             $response->assertSee('js/contact-validation.js', false)->assertSee('css/contact-validation.css', false);
+            $response->assertSee('js/auth-client.js', false)->assertSee('css/auth-client.css', false);
             $dom = new \DOMDocument;
             @$dom->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
             $xpath = new \DOMXPath($dom);
@@ -28,6 +30,16 @@ class ThemeContactPageTest extends TestCase
             $scripts = $xpath->query('//script[@data-contact-validation]');
             $this->assertSame(1, $scripts->length, $theme);
             $this->assertSame(route('site.contact.submit', ['locale' => 'vi']), $scripts->item(0)->getAttribute('data-endpoint'), $theme);
+            $this->assertSame(route('site.newsletter.subscribe', ['locale' => 'vi']), $scripts->item(0)->getAttribute('data-newsletter-endpoint'), $theme);
+            foreach ($xpath->query('//form[.//input[@type="email"] and not(.//textarea) and not(.//input[@type="password"]) and not(.//input[@name="name"])]') as $newsletter) {
+                if ($newsletter->hasAttribute('data-ser-newsletter-form')) {
+                    continue;
+                }
+                $this->assertSame(parse_url(route('site.newsletter.subscribe', ['locale' => 'vi']), PHP_URL_PATH), parse_url($newsletter->getAttribute('action'), PHP_URL_PATH), "$theme newsletter");
+                $this->assertSame('post', strtolower($newsletter->getAttribute('method')), "$theme newsletter method");
+                $this->assertGreaterThan(0, $xpath->query('.//input[@name="email"]', $newsletter)->length, "$theme newsletter email");
+                $this->assertGreaterThan(0, $xpath->query('.//input[@name="_token"]', $newsletter)->length, "$theme newsletter CSRF");
+            }
             $this->assertGreaterThan(0, $forms->length, $theme);
             foreach (['name', 'email', 'message', '_token'] as $field) {
                 $this->assertGreaterThan(0, $xpath->query('.//*[@name="'.$field.'"]', $forms->item(0))->length, "$theme: $field");
@@ -74,5 +86,9 @@ class ThemeContactPageTest extends TestCase
         $this->assertDatabaseCount('contact_inquiries', 1);
         $this->assertDatabaseHas('contact_inquiries', ['email' => 'ajax@example.test', 'source' => 'contact', 'locale' => 'vi']);
         Mail::assertQueued(ContactInquiryMail::class, 1);
+        WebsiteLocale::where('locale', 'en')->update(['is_published' => true, 'is_enabled_for_editing' => true]);
+        $this->postJson(route('site.contact.submit', ['locale' => 'en']), ['source' => 'contact', 'name' => 'English visitor', 'email' => 'ajax-en@example.test', 'message' => 'I would like to request a consultation.'])
+            ->assertOk()->assertJsonPath('message', 'Your contact request has been sent successfully.');
+        $this->assertDatabaseHas('contact_inquiries', ['email' => 'ajax-en@example.test', 'locale' => 'en']);
     }
 }

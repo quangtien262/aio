@@ -184,7 +184,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
     const openDemoData = (item) => {
         const presets = demoPresetsByTheme[item.theme_key] ?? [];
         setDemoSite(item);
-        demoForm.setFieldsValue({ preset: presets[0]?.key, reset_all: false });
+        demoForm.setFieldsValue({ preset: presets[0]?.key, reset_all: true });
     };
 
     const createDemoData = async () => {
@@ -606,7 +606,7 @@ export default function SiteDomainMappingPanel({ callAdminApi, runAdminAction, c
                             }))}
                         />
                     </Form.Item>
-                    <Form.Item name="reset_all" valuePropName="checked" initialValue={false}>
+                    <Form.Item name="reset_all" valuePropName="checked" initialValue={true}>
                         <Checkbox>
                             Tạo mới &amp; xóa data cũ
                         </Checkbox>

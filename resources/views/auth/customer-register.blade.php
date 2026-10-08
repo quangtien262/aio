@@ -21,6 +21,7 @@
             .links { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; font-size: 14px; }
             a, p { color: #56736c; text-decoration: none; }
         </style>
+        @include('partials.auth-client')
     </head>
     <body>
         <main class="shell">

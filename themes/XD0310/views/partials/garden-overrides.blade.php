@@ -128,7 +128,7 @@
         max-width: 660px;
         margin-block: 18px;
         color: var(--xd10-white);
-        font-size: clamp(46px, 6vw, 78px);
+        font-size: clamp(40px, 6vw, 35px);
         font-weight: 700;
         letter-spacing: -.055em;
         line-height: .98;
@@ -442,7 +442,7 @@
         .xd5-hero,
         .xd5-hero-copy { min-height: 620px; }
         .xd5-hero-copy > div { margin-top: 0; padding-left: 20px; }
-        .xd5-hero h1 { font-size: clamp(40px, 12vw, 56px); }
+        .xd5-hero h1 { font-size: clamp(40px, 12vw, 35px); }
         .xd5-section,
         .xd-section { padding-block: 72px; }
         .xd5-title,

@@ -36,7 +36,7 @@ class NewsletterSubscriptionController
             ],
         );
 
-        $message = 'Đã đăng ký nhận bản tin thành công.';
+        $message = __('contact_validation.newsletter_success');
 
         if ($request->expectsJson()) {
             return response()->json([

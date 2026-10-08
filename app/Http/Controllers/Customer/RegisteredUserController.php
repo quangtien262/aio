@@ -66,7 +66,7 @@ class RegisteredUserController
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Đăng ký tài khoản thành công.',
+                'message' => __('auth_ui.register_success'),
                 'data' => [
                     'redirect_to' => $redirectTo,
                 ],

@@ -12,6 +12,6 @@
         <section><h3>CHÍNH SÁCH</h3><a href="#">Chính sách thành viên</a><a href="#">Chính sách thanh toán</a><a href="#">Hướng dẫn mua hàng</a><a href="#">Bảo mật thông tin cá nhân</a></section>
         <section><h3>HƯỚNG DẪN</h3><a href="#">Hướng dẫn mua hàng</a><a href="#">Hướng dẫn thanh toán</a><a href="#">Đăng ký thành viên</a><a href="#">Hỗ trợ khách hàng</a><a href="#">Câu hỏi thường gặp</a></section>
         <section><h3>DANH MỤC</h3><a href="#thuong-hieu">Thương hiệu nổi bật</a><a href="#dong-ho-nam">Đồng hồ nam</a><a href="{{ route('site.catalog.search') }}">Đồng hồ nữ</a></section>
-        <section><h3>ĐĂNG KÝ NHẬN TIN</h3><p>Đăng ký để nhận ngay nhiều ưu đãi hấp dẫn</p><form><input type="email" placeholder="Nhập địa chỉ email"><button type="button">ĐĂNG KÝ</button></form><h3>LIÊN KẾT SÀN</h3><span class="ec10-market">Shopee · Lazada · Tiki</span></section>
+        <section><h3>ĐĂNG KÝ NHẬN TIN</h3><p>Đăng ký để nhận ngay nhiều ưu đãi hấp dẫn</p><form method="POST" action="{{ route('site.newsletter.subscribe', ['locale' => app()->getLocale()]) }}">@csrf<input type="hidden" name="source" value="ec910-footer"><input type="email" placeholder="Nhập địa chỉ email" name="email" required maxlength="255"><button type="button">ĐĂNG KÝ</button></form><h3>LIÊN KẾT SÀN</h3><span class="ec10-market">Shopee · Lazada · Tiki</span></section>
     </div>
 </footer>

@@ -85,7 +85,10 @@
                 <p>{{ data_get($about, 'data.description') }}</p>
                 <div class="bz501-about__points">
                     @foreach(data_get($about, 'data.content.items', []) as $item)
-                        <strong><i class="fa-solid fa-circle-check"></i>{{ data_get($item, 'title') }}</strong>
+                        @php($pointTitle = is_string($item) ? trim($item) : trim((string) data_get($item, 'title', '')))
+                        @if($pointTitle !== '')
+                            <strong><i class="fa-solid fa-circle-check"></i>{{ $pointTitle }}</strong>
+                        @endif
                     @endforeach
                 </div>
                 <div class="bz501-signature">

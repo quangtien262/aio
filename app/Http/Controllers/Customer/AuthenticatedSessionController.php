@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Customer;
 use App\Models\Admin;
 use App\Models\SiteProfile;
 use App\Support\AuditLogger;
+use App\Support\FrontendLocalization;
 use App\Support\Totp;
-use Illuminate\Support\Arr;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
@@ -21,9 +22,7 @@ class AuthenticatedSessionController
     public function __construct(
         private readonly AuditLogger $auditLogger,
         private readonly Totp $totp,
-    )
-    {
-    }
+    ) {}
 
     private const REDIRECT_QUERY_KEYS_TO_DROP = [
         'loginSegment',
@@ -93,7 +92,7 @@ class AuthenticatedSessionController
 
                 return $this->failedResponse(
                     $request,
-                    'Thông tin đăng nhập không chính xác hoặc tài khoản không khả dụng.',
+                    __('auth_ui.invalid_credentials'),
                     $errorField,
                 );
             }
@@ -104,7 +103,7 @@ class AuthenticatedSessionController
 
                 return $this->failedResponse(
                     $request,
-                    'Vui lòng nhập mã xác thực hai lớp hợp lệ.',
+                    __('auth_ui.two_factor'),
                     'two_factor_code',
                 );
             }
@@ -119,13 +118,13 @@ class AuthenticatedSessionController
 
             $this->auditLogger->record('auth.admin.login', $admin, null, ['remember' => $remember], $admin);
 
-            return $this->successfulResponse($request, route('admin.index'), 'Đăng nhập admin thành công.', 'admin');
+            return $this->successfulResponse($request, route('admin.index'), __('auth_ui.admin_success'), 'admin');
         }
 
         if (! Auth::guard('customer')->attempt($customerCredentials, $remember)) {
             return $this->failedResponse(
                 $request,
-                'Thông tin đăng nhập không chính xác hoặc tài khoản không khả dụng.',
+                __('auth_ui.invalid_credentials'),
                 $errorField,
             );
         }
@@ -137,7 +136,7 @@ class AuthenticatedSessionController
             route('customer.account'),
         );
 
-        return $this->successfulResponse($request, $redirectTo, 'Đăng nhập thành công.', 'customer');
+        return $this->successfulResponse($request, $redirectTo, __('auth_ui.login_success'), 'customer');
     }
 
     protected function successfulResponse(Request $request, string $redirectTo, string $message, string $guard): RedirectResponse|JsonResponse
@@ -186,7 +185,7 @@ class AuthenticatedSessionController
         /** @var Redirector $redirector */
         $redirector = app('redirect');
 
-        return $redirector->to('/'.\App\Support\FrontendLocalization::resolveLocale($locale));
+        return $redirector->to('/'.FrontendLocalization::resolveLocale($locale));
     }
 
     private function normalizeRedirectTarget(?string $redirectTo, string $fallback): string

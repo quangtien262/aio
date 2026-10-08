@@ -6,6 +6,7 @@
     const messages = JSON.parse(script.dataset.messages);
     const labels = JSON.parse(script.dataset.labels);
     const endpoint = new URL(script.dataset.endpoint, location.href);
+    const newsletterEndpoint = new URL(script.dataset.newsletterEndpoint, location.href);
     const forms = new WeakMap();
     const errors = new WeakMap();
     const limits = {name: 120, email: 150, phone: 30, subject: 150, route_summary: 255, message: 5000};
@@ -26,11 +27,19 @@
             || Boolean(form.closest('[data-block-type*="contact"], section[id="lien-he"], section[id="contact"], [class*="contact"]'));
     }
 
+    function isNewsletterForm(form) {
+        if (!(form instanceof HTMLFormElement)) return false;
+        const action = new URL(form.action, location.href);
+        return action.origin === newsletterEndpoint.origin && action.pathname === newsletterEndpoint.pathname
+            && controls(form).some((field) => field.name === 'email');
+    }
+
     function initialize(form) {
-        if (forms.has(form) || !isContactForm(form)) return;
-        forms.set(form, {attempted: false, touched: new WeakSet(), pending: false});
+        if (forms.has(form) || (!isNewsletterForm(form) && !isContactForm(form))) return;
+        forms.set(form, {attempted: false, touched: new WeakSet(), pending: false, newsletter: isNewsletterForm(form)});
         form.noValidate = true;
         form.setAttribute('data-contact-validation-form', '');
+        if (isNewsletterForm(form)) form.setAttribute('data-newsletter-form', '');
     }
 
     function scan(root) {
@@ -61,7 +70,7 @@
         if (required && (!value || field.validity.valueMissing)) return message('required', {field: fieldLabel(field)});
         if (!value) return '';
         if (key === 'email' && (!/^[^\s@]+@[^\s@]+$/.test(value) || field.validity.typeMismatch)) return message('email');
-        const maximum = Math.min(limits[key] ?? Infinity, field.maxLength >= 0 ? field.maxLength : Infinity);
+        const maximum = Math.min(key === 'email' && forms.get(field.form)?.newsletter ? 255 : limits[key] ?? Infinity, field.maxLength >= 0 ? field.maxLength : Infinity);
         if (length > maximum) return message('max', {max: maximum});
         const minimum = Math.max(key === 'message' ? 10 : 0, field.minLength > 0 ? field.minLength : 0);
         if (length < minimum) return message('min', {min: minimum});
@@ -126,7 +135,8 @@
         if (!notice) {
             notice = document.createElement('div');
             notice.setAttribute('data-contact-feedback', '');
-            form.prepend(notice);
+            if (forms.get(form)?.newsletter) form.append(notice);
+            else form.prepend(notice);
         }
         notice.hidden = !text;
         notice.dataset.status = status;
@@ -136,6 +146,7 @@
     }
 
     function canSendAjax(form) {
+        if (isNewsletterForm(form)) return form.method.toLowerCase() === 'post';
         const action = new URL(form.action, location.href);
         return form.method.toLowerCase() === 'post' && action.origin === endpoint.origin && action.pathname === endpoint.pathname
             && form.elements.namedItem('source')?.value !== 'quote_modal'
@@ -183,6 +194,7 @@
                 return;
             }
             form.reset();
+            if (state.newsletter) fields.forEach((field) => { if (field.name === 'email') field.value = ''; });
             fields.forEach((field) => showError(field, ''));
             state.attempted = false;
             state.touched = new WeakSet();

@@ -50,3 +50,9 @@
     cursor: wait;
     opacity: .7;
 }
+[data-newsletter-form] { flex-wrap: wrap; }
+[data-newsletter-form] [data-contact-feedback] {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 12px 0 0;
+}

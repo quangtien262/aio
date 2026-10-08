@@ -8,6 +8,7 @@ return [
     'invalid' => 'Please check :field.',
     'sending' => 'Sending…',
     'success' => 'Your contact request has been sent successfully.',
+    'newsletter_success' => 'You have successfully subscribed to our newsletter.',
     'quote_success' => 'Your quote request has been sent and saved successfully.',
     'failed' => 'Unable to send your request. Please try again later.',
     'validation_failed' => 'Please check the highlighted information below.',

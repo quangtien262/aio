@@ -23,7 +23,7 @@
             </div>
             <div>
                 <h3>Đăng ký nhận tin</h3>
-                <form><input type="email" placeholder="Địa chỉ email"><button>Gửi</button></form>
+                <form method="POST" action="{{ route('site.newsletter.subscribe', ['locale' => app()->getLocale()]) }}">@csrf<input type="hidden" name="source" value="xd0309-footer"><input type="email" placeholder="Địa chỉ email" name="email" required maxlength="255"><button>Gửi</button></form>
             </div>
         </div>
     </div>

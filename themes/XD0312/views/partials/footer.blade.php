@@ -30,7 +30,7 @@
             <section>
                 <h3>Nhận bản tin</h3>
                 <p>Nhận thông tin mới nhất về vận chuyển và kho bãi.</p>
-                <form><input type="email" placeholder="Địa chỉ email"><button type="submit">Đăng ký</button></form>
+                <form method="POST" action="{{ route('site.newsletter.subscribe', ['locale' => app()->getLocale()]) }}">@csrf<input type="hidden" name="source" value="xd0312-footer"><input type="email" placeholder="Địa chỉ email" name="email" required maxlength="255"><button type="submit">Đăng ký</button></form>
             </section>
         </div>
     </div>

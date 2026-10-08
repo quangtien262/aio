@@ -123,6 +123,7 @@
             }
             @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
         </style>
+        @include('partials.auth-client')
     </head>
     <body>
         <main class="auth-shell">

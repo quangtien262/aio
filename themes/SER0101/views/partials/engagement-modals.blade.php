@@ -39,7 +39,7 @@
         <section class="ser-modal-panel" data-ser-modal-panel="login" hidden>
             <h3>{{ $themeText('modal.login_title', 'Đăng nhập để tiếp tục') }}</h3>
             <p>{{ $themeText('modal.login_summary', 'Dùng tài khoản admin hoặc khách hàng để tiếp tục thao tác phù hợp với quyền truy cập của bạn.') }}</p>
-            <form data-ser-auth-form="login" novalidate>
+            <form method="POST" action="{{ route('customer.auth.store', ['locale' => app()->getLocale()]) }}" data-ser-auth-form="login" novalidate>@csrf
                 <input type="hidden" name="redirect_to" value="{{ $postLoginRedirect }}">
                 <label class="ser-modal-field">
                     <span>{{ $themeText('modal.login_identity', 'Email khách hàng / Username admin') }}</span>
@@ -59,7 +59,7 @@
         <section class="ser-modal-panel" data-ser-modal-panel="register" hidden>
             <h3>{{ $themeText('modal.register_title', 'Đăng ký tài khoản') }}</h3>
             <p>{{ $themeText('modal.register_summary', 'Tạo tài khoản để gửi thông tin và lưu yêu cầu trên mọi theme.') }}</p>
-            <form data-ser-auth-form="register" novalidate>
+            <form method="POST" action="{{ route('customer.auth.register.store', ['locale' => app()->getLocale()]) }}" data-ser-auth-form="register" novalidate>@csrf
                 <input type="hidden" name="redirect_to" value="{{ $postLoginRedirect }}">
                 <label class="ser-modal-field">
                     <span>{{ $themeText('modal.full_name', 'Họ và tên') }}</span>

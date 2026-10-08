@@ -39,10 +39,10 @@
         <section>
             <h3>Đăng ký nhận tin</h3>
             <p>Đăng ký nhận bản tin hằng tuần để cập nhật các thông tin visa mới nhất.</p>
-            <form class="rx13-newsletter" method="POST" action="{{ route('site.contact.submit') }}">
+            <form class="rx13-newsletter" method="POST" action="{{ route('site.newsletter.subscribe', ['locale' => app()->getLocale()]) }}">
                 @csrf
                 <input type="hidden" name="source" value="XD0313-newsletter">
-                <input type="email" name="email" placeholder="Địa chỉ email" required>
+                <input type="email" name="email" placeholder="Địa chỉ email" required maxlength="255">
                 <button type="submit">Đăng ký</button>
             </form>
         </section>
