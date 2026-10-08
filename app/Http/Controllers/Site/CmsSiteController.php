@@ -1810,6 +1810,24 @@ class CmsSiteController
             $extra['latestServices'] = $this->resolveLatestServices($siteProfile, $entry, 15);
         }
 
+        if ($contentType === 'service' && strtoupper((string) data_get($activeTheme, 'key')) === 'XD0306') {
+            $extra = array_merge($extra, $this->resolveArticleCatalogSidebar($websiteKey, 10, $entry));
+            $extra['serviceSidebarPosts'] = CmsPost::query()->with('featuredMedia')
+                ->where('website_key', $websiteKey)->where('status', 'published')
+                ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
+                ->latest('publish_at')->orderByDesc('id')->lazy(50)
+                ->filter(fn (CmsPost $item): bool => $this->localizedContent->isPublishedForLocale($item, 'cms_post', $this->currentLocale(), $websiteKey))
+                ->take(10)->map(function (CmsPost $item) use ($websiteKey): array {
+                    $item = $this->localizePostModel($item, $websiteKey);
+
+                    return [
+                        'title' => $item->title,
+                        'url' => FrontendRouteUrl::post($item->slug, $this->currentLocale()),
+                        'image' => $item->featuredMedia?->file_url,
+                    ];
+                })->collect()->values();
+        }
+
         if ($contentType === 'post' && $entry instanceof CmsPost && strtoupper((string) data_get($activeTheme, 'key')) !== 'NEWS88') {
             $suggestions = CmsPost::query()->with(['category', 'featuredMedia'])
                 ->where('website_key', $websiteKey)->where('status', 'published')->whereKeyNot($entry->id)
@@ -2012,13 +2030,13 @@ class CmsSiteController
             ->take($limit)->map(fn (CmsPost $item): CmsPost => $this->localizePostModel($item, $websiteKey))->collect()->values();
     }
 
-    private function resolveArticleCatalogSidebar(string $websiteKey): array
+    private function resolveArticleCatalogSidebar(string $websiteKey, int $productLimit = 5, ?CmsService $currentService = null): array
     {
         $products = CatalogProduct::query()->with('images')
             ->where('website_key', $websiteKey)->where('is_active', true)
             ->latest('created_at')->orderByDesc('id')->lazy(50)
             ->filter(fn (CatalogProduct $item): bool => $this->localizedContent->isPublishedForLocale($item, 'catalog_product', $this->currentLocale(), $websiteKey))
-            ->take(5)->map(function (CatalogProduct $item) use ($websiteKey): array {
+            ->take($productLimit)->map(function (CatalogProduct $item) use ($websiteKey): array {
                 $item = $this->localizeProductModel($item, $websiteKey);
 
                 return [
@@ -2030,6 +2048,7 @@ class CmsSiteController
 
         $services = CmsService::query()->with('featuredImage')
             ->where('website_key', $websiteKey)->where('status', 'published')
+            ->when($currentService, fn (EloquentBuilder $query) => $query->whereKeyNot($currentService->getKey()))
             ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
             ->latest('publish_at')->orderByDesc('id')->lazy(50)
             ->filter(fn (CmsService $item): bool => $this->localizedContent->isPublishedForLocale($item, 'cms_service', $this->currentLocale(), $websiteKey))

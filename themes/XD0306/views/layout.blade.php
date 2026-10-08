@@ -24,4 +24,4 @@
 >
     @include('theme-xd0306::partials.styles')@include('theme-xd0306::partials.black-digital-overrides')
     @include('theme-xd0306::partials.gallery-faq-styles')
-</x-storefront-head><body class="{{ request()->routeIs('site.home') ? 'xd6-is-home' : 'xd6-is-inner' }}"><div id="top" class="xd5-page">@include('theme-xd0306::partials.header')@yield('content')@include('theme-xd0306::partials.footer')</div>@include('theme-xd0306::partials.auth-modal')@include('theme-xd0306::partials.inline-editor')@include('theme-xd0306::partials.shell-scripts')@stack('scripts')</body></html>
+</x-storefront-head><body class="{{ request()->routeIs('site.home') ? 'xd6-is-home' : 'xd6-is-inner' }}"><div id="top" class="xd5-page">@include('theme-xd0306::partials.header')@yield('content')@include('theme-xd0306::partials.footer')</div>@include('theme-xd0306::partials.consultation-modal')@include('theme-xd0306::partials.auth-modal')@include('theme-xd0306::partials.inline-editor')@include('theme-xd0306::partials.shell-scripts')@stack('scripts')</body></html>

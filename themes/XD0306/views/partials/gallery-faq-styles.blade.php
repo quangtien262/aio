@@ -15,7 +15,10 @@
 .xd6-faq .xd6-eyebrow{color:#ff7a71}.xd6-faq .xd6-section-title{color:#f7f5f2}.xd6-faq__intro{margin:18px 0 30px;color:#b9b9c0;font-size:15px;line-height:1.8;max-width:580px}
 .xd6-faq__items{display:grid;gap:12px}.xd6-faq__items details{background:#1b1b20;border:1px solid #333339;border-radius:8px;overflow:hidden}.xd6-faq__items details[open]{border-color:#75433e}
 .xd6-faq__items summary{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 22px;min-height:68px;list-style:none;cursor:pointer;color:#f7f5f2}.xd6-faq__items summary::-webkit-details-marker{display:none}.xd6-faq__items summary strong{font-size:16px;font-weight:600;line-height:1.5;color:#f7f5f2}
-.xd6-faq__items summary span{display:grid;place-items:center;flex:0 0 28px;height:28px;border-radius:50%;background:#ff3b301a;color:#ff7a71}.xd6-faq__items summary span:before{content:'+';font-size:22px}.xd6-faq__items details[open] summary span:before{content:'−'}
+.xd6-faq__items summary span{position:relative;display:block;flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:#ff3b301a;color:#ff7a71}
+.xd6-faq__items summary span:before,.xd6-faq__items summary span:after{content:'';position:absolute;top:50%;left:50%;width:12px;height:2px;background:currentColor;transform:translate(-50%,-50%);border-radius:1px}
+.xd6-faq__items summary span:after{transform:translate(-50%,-50%) rotate(90deg)}
+.xd6-faq__items details[open] summary span:after{display:none}
 .xd6-faq__items summary:focus-visible{outline:2px solid #ff7a71;outline-offset:-4px}.xd6-faq__items p{margin:0;padding:0 22px 22px;color:#c3c3ca;font-size:14px;line-height:1.9}
 .xd6-faq__media{overflow:hidden;border:1px solid #333339;border-radius:10px;margin-top:6px;background:#1b1b20}.xd6-faq__media img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}.xd6-faq__media a{display:flex;justify-content:space-between;gap:20px;padding:22px;color:#f7f5f2;font-size:15px;font-weight:600}.xd6-faq__media a span{color:#ff7a71}
 @media(max-width:900px){.xd6-gallery-section .xd6-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.xd6-gallery-section__head{grid-template-columns:1fr;gap:18px}.xd6-faq__grid{grid-template-columns:minmax(0,1fr);gap:32px}.xd6-faq__media img{aspect-ratio:16/9}}

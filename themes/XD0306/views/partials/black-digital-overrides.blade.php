@@ -28,4 +28,12 @@ body{background:var(--xd6-black);color:var(--xd6-white);font-family:"Segoe UI",A
 .xd6-is-inner .xd5-header{position:relative;top:auto;background:var(--xd6-black);border-bottom:1px solid var(--xd6-line)}
 .xd6-is-inner .xd5-nav-wrap{flex-wrap:wrap}
 .xd6-is-inner .xd5-nav-wrap nav{min-width:0;flex-wrap:wrap}
+.xd5-page .xd6-content-page{padding:48px 0 80px}
+.xd6-content-page>.xd-container{width:min(1040px,calc(100% - 64px));margin-inline:auto}
+.xd6-content-page .xd-detail-card{border-radius:10px;overflow:hidden}
+.xd6-content-page .xd-detail-body{padding:44px 48px}
+.xd6-content-page .xd-detail-body h1{font-size:clamp(30px,3.5vw,44px);line-height:1.2;letter-spacing:-.025em}
+.xd6-content-page .xd-detail-summary,.xd6-content-page .xd-rich-content{font-size:16px;line-height:1.9;overflow-wrap:anywhere}
+.xd6-content-page .xd-rich-content img,.xd6-content-page .xd-rich-content iframe{max-width:100%}
+@media(max-width:600px){.xd5-page .xd6-content-page{padding:32px 0 48px}.xd6-content-page>.xd-container{width:calc(100% - 32px)}.xd6-content-page .xd-detail-body{padding:28px 20px}.xd6-content-page .xd-detail-body h1{font-size:30px}}
 </style>

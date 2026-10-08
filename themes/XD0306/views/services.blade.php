@@ -254,7 +254,8 @@
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+@include('theme-xd0306::partials.services-page-styles')
+<main class="xd-page-main xd6-services-page">
             <div class="xd-container">
                     <section class="xd-cms-hero">
                         <div>
@@ -284,7 +285,6 @@
                                 <div class="xd-service-body">
                                     <h2><a href="{{ $serviceUrl }}">{{ $service->title }}</a></h2>
                                     <p>{{ $service->summary ?: \Illuminate\Support\Str::limit(strip_tags($service->content ?? ''), 150) }}</p>
-                                    <a class="xd-text-link" href="{{ $serviceUrl }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0306', app()->getLocale(), 'legacy_inline.32919a31e26bbb86', 'Tìm hiểu ngay') }}</a>
                                 </div>
                             </article>
                         @empty
