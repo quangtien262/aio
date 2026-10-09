@@ -254,13 +254,21 @@
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+@include('theme-xd0323::partials.service-sidebar-styles')
+@php
+    $serviceSidebarGroups = collect([
+        ['kind' => 'products', 'heading' => __('news-detail.latest_products'), 'items' => collect($articleLatestProducts ?? [])->take(10)],
+        ['kind' => 'services', 'heading' => __('news-detail.services'), 'items' => collect($articleServices ?? [])->take(10)],
+        ['kind' => 'news', 'heading' => __('news-detail.latest'), 'items' => collect($serviceSidebarPosts ?? [])->take(10)],
+    ])->filter(fn ($group) => $group['items']->isNotEmpty());
+@endphp
+<main class="xd-page-main xd323-service-detail">
             <div class="xd-container">
                     @php
                         $featuredImage = $entry->featuredImage?->image_url;
                         $featuredAlt = $entry->featuredImage?->alt_text ?: $entry->title;
                     @endphp
-                    <section class="xd-detail">
+                    <section @class(['xd-detail', 'xd323-service-detail--without-sidebar' => $serviceSidebarGroups->isEmpty()])>
                         <article class="xd-detail-card">
                             @if ($featuredImage)
                                 <img class="xd-detail-image" src="{{ $featuredImage }}" alt="{{ $featuredAlt }}">
@@ -289,13 +297,21 @@
                                 @endif
                             </div>
                         </article>
-                        <aside class="xd-side-card">
-                            <h3>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.2f39772870302c8f', 'Liên kết nhanh') }}</h3>
-                            <a href="{{ route('site.services.index') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0323', app()->getLocale(), 'legacy_inline.1c743c8950074ced', 'Tất cả dịch vụ') }}</a>
-                            @foreach ($navItems->take(5) as $item)
-                                <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
-                            @endforeach
-                        </aside>
+                        @if($serviceSidebarGroups->isNotEmpty())
+                            <aside class="xd323-service-sidebar">
+                                @foreach($serviceSidebarGroups as $group)
+                                    <section class="xd323-service-sidebar__group" data-service-sidebar="{{ $group['kind'] }}">
+                                        <h2>{{ $group['heading'] }}</h2>
+                                        @foreach($group['items'] as $item)
+                                            <a class="xd323-service-sidebar__item" href="{{ $item['url'] }}">
+                                                @if(!empty($item['image']))<img src="{{ $item['image'] }}" alt="" loading="lazy">@endif
+                                                <span>{{ $item['title'] }}</span>
+                                            </a>
+                                        @endforeach
+                                    </section>
+                                @endforeach
+                            </aside>
+                        @endif
                     </section>
             </div>
 </main>

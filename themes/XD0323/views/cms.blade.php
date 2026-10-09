@@ -254,7 +254,10 @@
 @endpush
 
 @section('content')
-<main @class(['xd-page-main', 'xd323-project-index' => isset($listingItems), 'xd323-content-page' => !isset($listingItems)])>
+@if(($contentType ?? '') === 'project' && !isset($listingItems))
+    @include('theme-xd0323::partials.project-detail-styles')
+@endif
+<main @class(['xd-page-main', 'xd323-project-index' => isset($listingItems), 'xd323-content-page' => !isset($listingItems), 'xd323-project-detail' => ($contentType ?? '') === 'project' && !isset($listingItems)])>
             <div class="xd-container">
                     @if (isset($listingItems))
                     <h1>{{ $pageTitle ?? 'Dự án' }}</h1>
@@ -270,6 +273,10 @@
                     </section>
                     @if (method_exists($listingItems, 'links')){{ $listingItems->links() }}@endif
                     @else
+                    @if(($contentType ?? '') === 'project')
+                        @include('theme-xd0323::partials.project-detail')
+                        @include('theme-xd0323::partials.project-collections')
+                    @else
                     <section class="xd-detail-card">
                         <div class="xd-detail-body">
                             <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
@@ -282,6 +289,7 @@
                             </div>
                         </div>
                     </section>
+                    @endif
                     @endif
             </div>
 </main>

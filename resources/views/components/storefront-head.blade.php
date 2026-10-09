@@ -74,5 +74,6 @@
 
     {{ $slot }}
     @stack('head')
+    @include('themes.common.content-alignment-styles', ['layoutThemeKey' => $themeKey])
     @include('partials.localized-seo')
 </head>

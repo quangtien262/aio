@@ -2,4 +2,5 @@
 @section('title', __('theme_contact_page.title'))
 @section('content')
 @include('themes.common.contact')
+@include('theme-bz501::partials.contact-page-styles')
 @endsection

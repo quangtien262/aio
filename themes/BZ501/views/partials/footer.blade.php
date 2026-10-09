@@ -68,7 +68,6 @@
     </div>
 
     <div class="bz501-footer__bottom">
-        <button type="button" class="bz501-float bz501-float--bell" aria-label="Notification"><i class="fa-solid fa-bell"></i></button>
         <p>&copy; @themeT('BZ501.footer.rights')</p>
         <a class="bz501-float bz501-float--top" href="#top"><i class="fa-solid fa-angles-up"></i><span>Top</span></a>
         <a class="bz501-float bz501-float--chat" href="#footer" aria-label="Chat"><i class="fa-brands fa-facebook-messenger"></i></a>

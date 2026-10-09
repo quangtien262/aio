@@ -24,6 +24,61 @@
             ['label' => app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('BZ501', app()->getLocale(), 'BZ501.nav.contact'), 'href' => '#footer', 'children' => []],
         ]);
     }
+    $menuLocales = \App\Support\FrontendLocalization::supportedLocales();
+    $menuPath = static function (string $url) use ($menuLocales): string {
+        $segments = explode('/', trim((string) parse_url($url, PHP_URL_PATH), '/'));
+        if (in_array($segments[0] ?? '', $menuLocales, true)) {
+            array_shift($segments);
+        }
+
+        return trim(implode('/', $segments), '/');
+    };
+    $currentMenuPath = $menuPath(request()->getPathInfo());
+    $menuFamilies = [
+        array_merge(\App\Support\FrontendLocalization::segmentValues('search'), \App\Support\FrontendLocalization::segmentValues('category'), \App\Support\FrontendLocalization::segmentValues('product')),
+        ['s', 'ser'],
+        ['pj', 'prj'],
+        ['c', 'n', 'news-categories', 'topics', 'tags'],
+    ];
+    $menuMatchScore = function (array $item) use (&$menuMatchScore, $menuPath, $currentMenuPath, $menuFamilies): int {
+        $href = trim((string) ($item['href'] ?? $item['url'] ?? ''));
+        $score = 0;
+        $host = parse_url($href, PHP_URL_HOST);
+        if ($href !== '' && !str_starts_with($href, '#') && !parse_url($href, PHP_URL_FRAGMENT)
+            && (!$host || $host === request()->getHost())) {
+            $path = $menuPath($href);
+            if ($path === $currentMenuPath) {
+                $score = 1000 + strlen($path);
+            } elseif ($path !== '' && str_starts_with($currentMenuPath, $path.'/')) {
+                $score = 500 + strlen($path);
+            } else {
+                $menuSegment = explode('/', $path)[0];
+                $currentSegment = explode('/', $currentMenuPath)[0];
+                foreach ($menuFamilies as $family) {
+                    if (in_array($menuSegment, $family, true) && in_array($currentSegment, $family, true)) {
+                        $score = 100;
+                        break;
+                    }
+                }
+            }
+        }
+        foreach ($item['children'] ?? [] as $child) {
+            if (is_array($child)) {
+                $score = max($score, $menuMatchScore($child));
+            }
+        }
+
+        return $score;
+    };
+    $activeMenuIndex = null;
+    $bestMenuScore = 0;
+    foreach ($navItems as $index => $item) {
+        $score = $menuMatchScore($item);
+        if ($score > $bestMenuScore) {
+            $bestMenuScore = $score;
+            $activeMenuIndex = $index;
+        }
+    }
 @endphp
 
 <header class="bz501-header">
@@ -53,8 +108,8 @@
         </button>
 
         <nav class="bz501-navigation" data-bz501-menu aria-label="@themeT('BZ501.header.primary_nav')">
-            @foreach ($navItems as $item)
-                <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
+            @foreach ($navItems as $index => $item)
+                <a href="{{ $item['href'] }}" @class(['is-active' => $index === $activeMenuIndex]) @if($index === $activeMenuIndex) aria-current="page" @endif>{{ $item['label'] }}</a>
             @endforeach
         </nav>
 
