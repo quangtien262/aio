@@ -201,7 +201,8 @@
 @endpush
 
 @section('content')
-        <main class="xd-page-main">
+@include('theme-xd0305::partials.product-page-styles')
+        <main class="xd-page-main xd305-product-page">
             <div class="xd-container">
                 @if (session('cart_success'))
                     <div class="xd-panel xd-cart-message">{{ session('cart_success') }}</div>

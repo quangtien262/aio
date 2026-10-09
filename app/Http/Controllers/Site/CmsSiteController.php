@@ -1810,7 +1810,7 @@ class CmsSiteController
             $extra['latestServices'] = $this->resolveLatestServices($siteProfile, $entry, 15);
         }
 
-        if ($contentType === 'service' && strtoupper((string) data_get($activeTheme, 'key')) === 'XD0306') {
+        if ($contentType === 'service' && in_array(strtoupper((string) data_get($activeTheme, 'key')), ['XD0305', 'XD0306'], true)) {
             $extra = array_merge($extra, $this->resolveArticleCatalogSidebar($websiteKey, 10, $entry));
             $extra['serviceSidebarPosts'] = CmsPost::query()->with('featuredMedia')
                 ->where('website_key', $websiteKey)->where('status', 'published')
