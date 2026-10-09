@@ -6,6 +6,10 @@
     $xd5SupportEmail = trim((string) ($supportEmail ?? $email ?? $xd5Branding['support_email'] ?? ''));
     $xd5Hotline = trim((string) ($hotline ?? $xd5Branding['support_hotline'] ?? ''));
     $xd5LogoUrl = trim((string) ($logoUrl ?? $xd5Branding['logo_url'] ?? ''));
+    $xd5Encoding = app(\App\Support\LegacyTextEncoding::class);
+    $xd5CompanyName = $xd5Encoding->repair($xd5CompanyName);
+    $xd5CompanyDescription = $xd5Encoding->repair($xd5CompanyDescription);
+    $xd5SupportAddress = $xd5Encoding->repair($xd5SupportAddress);
 @endphp
 
 <footer id="footer" class="xd5-footer">

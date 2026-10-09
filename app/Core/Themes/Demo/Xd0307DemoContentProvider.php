@@ -17,9 +17,11 @@ use App\Models\LandingPageBlockData;
 use App\Models\LandingPageData;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
+use App\Models\SiteThemeProfile;
 use App\Models\ThemeDemoRecord;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\SiteContext;
+use App\Support\LegacyTextEncoding;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -125,7 +127,16 @@ class Xd0307DemoContentProvider implements ThemeDemoContentProvider
 
             $extraCounts = app(Xd0307DemoCatalog::class)->seed($postCategory);
             $profile = SiteProfile::query()->firstOrNew();
-            $profile->forceFill(['site_name' => 'Klean Services', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge((array) $profile->branding, ['company_name' => 'Klean Services', 'company_description' => 'Dịch vụ làm sạch tận tâm, an toàn và linh hoạt cho nhà ở, văn phòng.', 'support_hotline' => '1900 9477', 'support_email' => 'hello@klean.vn', 'support_location' => 'Hà Nội và TP.HCM'])])->save();
+            // Theme branding takes precedence over generated global branding, including legacy demo values.
+            $encoding = app(LegacyTextEncoding::class);
+            $themeProfile = SiteThemeProfile::query()->forWebsite(app(SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->first();
+            if ($themeProfile) {
+                $repairedBranding = $encoding->value((array) $themeProfile->branding);
+                if ($repairedBranding !== $themeProfile->branding) {
+                    $themeProfile->update(['branding' => $repairedBranding]);
+                }
+            }
+            $profile->forceFill(['site_name' => 'Klean Services', 'website_type' => 'service', 'active_theme_key' => self::THEME_KEY, 'branding' => array_merge($encoding->value((array) $profile->branding), ['company_name' => 'Klean Services', 'company_description' => 'Dịch vụ làm sạch tận tâm, an toàn và linh hoạt cho nhà ở, văn phòng.', 'support_hotline' => '1900 9477', 'support_email' => 'hello@klean.vn', 'support_location' => 'Hà Nội và TP.HCM'])])->save();
 
             $existingPage = LandingPage::query()->where('website_key', app(SiteContext::class)->websiteKey())->where('theme_key', self::THEME_KEY)->where('is_home', true)->first();
             $page = $this->landingPageBuilder->resolveHome(app(SiteContext::class)->websiteKey(), self::THEME_KEY, true);

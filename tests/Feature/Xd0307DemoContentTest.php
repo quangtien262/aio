@@ -86,4 +86,30 @@ class Xd0307DemoContentTest extends TestCase
         $this->artisan('themes:repair-encoding', ['domain' => 'xd0307.test', '--write' => true])->assertSuccessful();
         $this->assertDatabaseHas('site_profiles', ['id' => $profile->id, 'site_name' => $text]);
     }
+
+    public function test_generation_repairs_persisted_theme_branding_without_overwriting_custom_details(): void
+    {
+        $description = 'Giải pháp vận tải và hậu cần linh hoạt, kết nối doanh nghiệp với mọi hành trình.';
+        $broken = fn (string $text) => mb_convert_encoding(mb_convert_encoding($text, 'UTF-8', 'Windows-1252'), 'UTF-8', 'Windows-1252');
+        $branding = ['company_name' => $broken('Logistics Việt'), 'company_description' => $broken($description), 'support_location' => $broken('Hà Nội'), 'support_hotline' => '0399162342', 'logo_url' => '/theme-demo/service/brand-mark.svg'];
+        SiteProfile::create(['site_name' => 'Klean', 'active_theme_key' => 'XD0307', 'branding' => $branding]);
+        $themeProfile = \App\Models\SiteThemeProfile::create(['theme_key' => 'XD0307', 'branding' => $branding]);
+        $otherWebsite = \App\Models\SiteThemeProfile::create(['website_key' => 'other-website', 'theme_key' => 'XD0307', 'branding' => $branding]);
+        $otherTheme = \App\Models\SiteThemeProfile::create(['theme_key' => 'XD0305', 'branding' => $branding]);
+        foreach (range(1, 2) as $run) {
+            app(\App\Core\Themes\ThemeDemoContentGenerator::class)->generate('XD0307', 'xd0307-cleaning-services');
+            $expected = array_merge($branding, ['company_name' => 'Logistics Việt', 'company_description' => $description, 'support_location' => 'Hà Nội']);
+            $this->assertSame($expected, $themeProfile->fresh()->branding);
+            $this->assertSame($branding, $otherWebsite->fresh()->branding);
+            $this->assertSame($branding, $otherTheme->fresh()->branding);
+            $response = $this->get('/vi')->assertOk()->assertSee($description)->assertDontSee($broken($description));
+            if (getenv('XD0307_ENCODING_PREVIEW')) {
+                file_put_contents(storage_path('framework/testing/xd0307-encoding-fixed.html'), $response->getContent());
+            }
+        }
+        // Existing sites display correctly even before regeneration, without writing during page rendering.
+        $themeProfile->refresh()->update(['branding' => $branding]);
+        $this->get('/vi')->assertOk()->assertSee($description);
+        $this->assertSame($branding, $themeProfile->fresh()->branding);
+    }
 }
