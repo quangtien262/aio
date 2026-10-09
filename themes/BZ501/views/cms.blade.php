@@ -17,4 +17,8 @@
     <section class="bz501-subpage">
         <article class="bz501-container bz501-detail-body">{!! filled($body) ? $body : '<p>Nội dung đang được cập nhật.</p>' !!}</article>
     </section>
+
+@if(($contentType ?? '') === 'page')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection

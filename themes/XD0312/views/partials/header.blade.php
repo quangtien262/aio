@@ -10,7 +10,7 @@
             @else
                 <a href="{{ route('customer.account') }}">Tài khoản</a>
             @endguest
-            <a class="xd12-quote-small" href="#lien-he">Báo giá miễn phí</a>
+            <a class="xd12-quote-small" href="{{ route('site.contact') }}" data-xd12-quote-open aria-haspopup="dialog" aria-controls="xd12-quote-dialog">Báo giá miễn phí</a>
 
             @include('partials.storefront-language-switcher')
         </div>
@@ -29,6 +29,6 @@
                 <a href="{{ $item['href'] ?? '#' }}">{{ $item['label'] ?? 'Menu' }}</a>
             @endforeach
         </nav>
-        <a class="xd12-quote" href="#lien-he">Nhận báo giá</a>
+        <a class="xd12-quote" href="{{ route('site.contact') }}" data-xd12-quote-open aria-haspopup="dialog" aria-controls="xd12-quote-dialog">Nhận báo giá</a>
     </div>
 </header>

@@ -283,8 +283,12 @@
                             </div>
                         </div>
                     </section>
-                    @if(($contentType ?? '') === 'page')@include('theme-xd0305::partials.content-collections')@endif
+
                     @endif
             </div>
 </main>
+
+@if(($contentType ?? '') === 'page')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection

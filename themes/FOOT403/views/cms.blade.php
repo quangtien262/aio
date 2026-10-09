@@ -14,4 +14,8 @@
 @if(($contentType ?? '') === 'service')
 @include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
 @endif
+
+@if(($contentType ?? '') === 'page')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection

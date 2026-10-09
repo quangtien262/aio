@@ -120,7 +120,7 @@
                     </aside>
                 </div>
 
-                @if ($latest->isNotEmpty())
+                @if (($contentType ?? '') !== 'page' && $latest->isNotEmpty())
                     <section class="dn-page-latest" aria-labelledby="dn-page-latest-title">
                         <header class="dn-page-section-head">
                             <div><p>Góc chuyên môn</p><h2 id="dn-page-latest-title">Bài viết mới nhất</h2></div>
@@ -145,4 +145,8 @@
             </div>
         </section>
     </main>
+
+@if(($contentType ?? '') === 'page')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection

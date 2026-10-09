@@ -178,4 +178,5 @@
 
 @section('content')
     @include('themes.common.contact')
+    @include('theme-xd0310::partials.contact-styles')
 @endsection

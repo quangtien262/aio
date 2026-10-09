@@ -23,4 +23,4 @@
     :is-preview="$isPreview ?? false"
 >
     @include('theme-xd0312::partials.styles')@include('theme-xd0312::partials.bizgrow-overrides')
-</x-storefront-head><body><div id="top" class="xd5-page">@include('theme-xd0312::partials.header')@yield('content')@include('theme-xd0312::partials.footer')</div>@include('theme-xd0312::partials.auth-modal')@include('theme-xd0312::partials.inline-editor')@include('theme-xd0312::partials.shell-scripts')@stack('scripts')</body></html>
+</x-storefront-head><body><div id="top" class="xd5-page">@include('theme-xd0312::partials.header')@yield('content')@include('theme-xd0312::partials.footer')</div>@include('theme-xd0312::partials.quote-modal')@include('theme-xd0312::partials.auth-modal')@include('theme-xd0312::partials.inline-editor')@include('theme-xd0312::partials.shell-scripts')@stack('scripts')</body></html>

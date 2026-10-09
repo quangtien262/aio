@@ -21,7 +21,7 @@
         </style>
 @endonce
 @if($recommendationGroups->isNotEmpty())
-    <div class="detail-recommendations {{ ($recommendationLayout ?? 'sidebar') === 'sections' ? 'detail-recommendations--sections' : '' }}">
+    <div @if(($contentType ?? '') === 'page') id="page-recommendations" @endif class="detail-recommendations {{ ($recommendationLayout ?? 'sidebar') === 'sections' ? 'detail-recommendations--sections' : '' }}">
         @foreach($recommendationGroups as $group)
             <section class="detail-recommendations__group" data-detail-recommendations="{{ $group['kind'] }}" {{ ($contentType ?? '') === 'post' ? 'data-article-sidebar' : 'data-service-sidebar' }}="{{ $group['kind'] }}">
                 <h2>{{ $group['heading'] }}</h2>

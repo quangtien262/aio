@@ -23,4 +23,4 @@
     :is-preview="$isPreview ?? false"
 >
     @include('theme-xd0309::partials.styles')@include('theme-xd0309::partials.antek-overrides')
-</x-storefront-head><body><div id="top" class="xd5-page">@include('theme-xd0309::partials.header')@yield('content')@include('theme-xd0309::partials.footer')</div>@include('theme-xd0309::partials.auth-modal')@include('theme-xd0309::partials.inline-editor')@include('theme-xd0309::partials.shell-scripts')@stack('scripts')</body></html>
+</x-storefront-head><body><div id="top" class="xd5-page{{ request()->routeIs('site.home') ? '' : ' xd9-inner-page' }}">@include('theme-xd0309::partials.header')@yield('content')@include('theme-xd0309::partials.footer')</div>@include('theme-xd0309::partials.auth-modal')@include('theme-xd0309::partials.inline-editor')@include('theme-xd0309::partials.shell-scripts')@stack('scripts')</body></html>

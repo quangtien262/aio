@@ -2,7 +2,7 @@
 <section id="{{ $anchor }}" class="xd5-section">
     <div class="xd5-container xd5-about">
         <div class="xd5-about-media">
-            <img src="{{ $c['image_primary'] ?? 'https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=1000&q=85' }}" alt="">
+            <img src="{{ filled($c['image_primary'] ?? null) ? $c['image_primary'] : '/theme-demo/xd-shared/safety-1.jpg' }}" alt="{{ $data['title'] ?? '' }}" loading="lazy">
             <div class="xd5-about-badge"><b>{{ $c['years'] ?? '40+' }}</b><br>{{ $c['years_label'] ?? '' }}</div>
         </div>
         <div>

@@ -1,4 +1,5 @@
 <section id="{{ $anchor }}" class="xd5-section xd5-contact">
+    <img class="xd9-contact-background" src="{{ filled($content['background_image'] ?? null) ? $content['background_image'] : '/theme-demo/xd-shared/safety-2.jpg' }}" alt="" aria-hidden="true" loading="lazy">
     <div class="xd5-container xd5-contact-grid">
         <div>
             <p class="xd5-eyebrow">{{ $data['subtitle'] ?? '' }}</p>

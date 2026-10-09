@@ -316,23 +316,7 @@
                             <div class="body-copy">{!! $entry->body ?? $entry->content ?? '' !!}</div>
                         </article>
 
-                        @if (($contentType ?? null) === 'page' && $latestPostItems->isNotEmpty())
-                            <section class="grid">
-                                <div class="panel"><h2>{{ $t('cms.latest_posts_title', 'Bài viết mới') }}</h2></div>
-                                <div class="post-grid">
-                                    @foreach ($latestPostItems as $post)
-                                        <article class="post-card">
-                                            <img src="{{ $post->featuredMedia?->url ?: 'https://picsum.photos/seed/ser0101-page-post/960/720' }}" alt="{{ $post->title }}">
-                                            <div class="post-card-body">
-                                                <div class="meta">{{ $post->publish_at?->format('d/m/Y') }}</div>
-                                                <h4><a href="{{ route('site.blog.show', ['slug' => $post->slug]) }}">{{ $post->title }}</a></h4>
-                                                <p>{{ $post->excerpt ?: mb_strimwidth(strip_tags((string) $post->body), 0, 160, '...') }}</p>
-                                            </div>
-                                        </article>
-                                    @endforeach
-                                </div>
-                            </section>
-                        @endif
+
 
                         @if (($contentType ?? null) === 'post' && $relatedPostItems->isNotEmpty())
                             <section class="grid">
@@ -369,7 +353,7 @@
                 </section>
             @endif
         </main>
-@if(($contentType ?? '') === 'service')
+@if(in_array($contentType ?? '', ['service', 'page'], true))
 @include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
 @endif
         @include('theme-ser0101::partials.shell-footer')

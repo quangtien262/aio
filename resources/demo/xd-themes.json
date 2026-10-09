@@ -165,11 +165,21 @@
     "brand": "Comgo Education",
     "sector": "tư vấn du học",
     "preset": "xd0308-study-abroad",
+    "testimonials": [
+      {"name": "Minh Anh", "role": "Học viên · phản hồi minh họa", "quote": "Danh sách trường được giải thích theo ngành học và ngân sách, giúp mình xác định hướng đi rõ ràng hơn.", "image_url": "/theme-demo/xd-shared/person-2.jpg"},
+      {"name": "Hoàng Nam", "role": "Học viên · phản hồi minh họa", "quote": "Checklist hồ sơ và các mốc thời gian rất dễ theo dõi. Mình biết cần chuẩn bị giấy tờ nào ở từng bước.", "image_url": "/theme-demo/xd-shared/person-1.jpg"},
+      {"name": "Thu Hà", "role": "Phụ huynh · phản hồi minh họa", "quote": "Gia đình được trao đổi cụ thể về học phí, sinh hoạt phí và kế hoạch học tập trước khi chọn phương án phù hợp.", "image_url": "/theme-demo/xd-shared/person-2.jpg"},
+      {"name": "Đức Huy", "role": "Học viên · phản hồi minh họa", "quote": "Những buổi góp ý bài luận giúp mình trình bày mục tiêu học tập mạch lạc và giữ được câu chuyện riêng của bản thân.", "image_url": "/theme-demo/xd-shared/person-3.jpg"},
+      {"name": "Ngọc Mai", "role": "Học viên · phản hồi minh họa", "quote": "Thông tin học bổng được chọn lọc theo hồ sơ của mình. Điều kiện ứng tuyển và hạn nộp được hướng dẫn rõ ràng.", "image_url": "/theme-demo/xd-shared/person-2.jpg"},
+      {"name": "Quang Minh", "role": "Phụ huynh · phản hồi minh họa", "quote": "Đội ngũ chủ động cập nhật tiến độ và giải đáp các câu hỏi của gia đình trong quá trình chuẩn bị hồ sơ.", "image_url": "/theme-demo/xd-shared/person-1.jpg"}
+    ],
     "services": [
       "Tư vấn chọn trường",
       "Chuẩn bị hồ sơ",
       "Hỗ trợ thủ tục visa",
-      "Tìm hiểu học bổng"
+      "Tìm hiểu học bổng",
+      "Định hướng ngành học",
+      "Chuẩn bị trước khi lên đường"
     ],
     "products": [
       "Sổ kế hoạch học tập",

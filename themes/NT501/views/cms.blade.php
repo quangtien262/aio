@@ -291,4 +291,8 @@
             </div>
 </main>
 @endif
+
+@if(($contentType ?? '') === 'page')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection

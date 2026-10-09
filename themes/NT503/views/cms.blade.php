@@ -8,4 +8,8 @@
         'cover' => data_get($detail, 'featuredMedia.image_url', data_get($detail, 'cover_image_url')),
         'body' => data_get($detail, 'body'),
     ])
+
+@if(($contentType ?? '') === 'page')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection

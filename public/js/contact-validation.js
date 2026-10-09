@@ -17,7 +17,7 @@
         && !['hidden', 'submit', 'button', 'reset', 'image'].includes(field.type));
 
     function isContactForm(form) {
-        if (!(form instanceof HTMLFormElement)) return false;
+        if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-contact-validation-custom')) return false;
         const fields = controls(form);
         // Email-only newsletter forms must keep their existing behavior.
         if (!fields.some((field) => field.name === 'name' || field.tagName === 'TEXTAREA')) return false;

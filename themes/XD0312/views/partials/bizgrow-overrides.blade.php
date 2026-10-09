@@ -196,11 +196,14 @@
         max-width: 820px;
         margin-block: 12px 18px;
         color: var(--xd12-ink);
-        font-size: clamp(36px, 4.3vw, 58px);
+        font-size: clamp(28px, 3vw, 42px);
         font-weight: 800;
         letter-spacing: -.045em;
         line-height: 1.08;
+        text-transform: uppercase;
     }
+    .xd5-page main > section h2 { text-transform: uppercase; }
+    .xd5-benefits .xd5-title { font-size: clamp(26px, 2.4vw, 34px); line-height: 1.25; letter-spacing: -.02em; }
     .xd5-section p { color: var(--xd12-muted); }
 
     .xd5-services {
@@ -500,14 +503,15 @@
             padding: 8px 0 18px;
         }
         .xd12-navigation nav.is-open { display: flex; }
-        .xd12-quote { display: none; }
+        .xd12-quote { display: block; order: 2; flex-basis: 100%; text-align: center; margin-bottom: 12px; }
         .xd5-hero,
         .xd5-hero-copy { min-height: 620px; }
         .xd5-hero-copy > div { margin-top: 0; }
         .xd5-hero h1 { font-size: clamp(40px, 12vw, 35px); }
         .xd5-section,
         .xd3-process { padding-block: 72px; }
-        .xd5-title { font-size: 38px; }
+        .xd5-title { font-size: 32px; }
+        .xd5-benefits .xd5-title { font-size: 26px; }
         .xd5-services,
         .xd5-team,
         .xd5-benefit-list,

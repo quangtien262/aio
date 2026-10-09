@@ -6,4 +6,8 @@
 <header class="s606-service-heading"><h1>{{ $entry->title }}</h1>@if($entry->excerpt)<p>{{ $entry->excerpt }}</p>@endif</header>
 <div class="s606-service-prose">{!! $entry->body ?? $entry->content !!}</div>
 </article></div></main>
+
+@if(($contentType ?? '') === 'page')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection

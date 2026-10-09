@@ -101,7 +101,6 @@ body:has(.tna-article[data-article-theme="XD0304"]) .xd4-header{position:relativ
 body:has(.tna-article[data-article-theme="XD0305"]) .xd5-header{position:relative;top:auto;background:#202326}
 body:has(.tna-article[data-article-theme="XD0306"]) .xd5-header{position:relative;top:auto;background:#202326}
 body:has(.tna-article[data-article-theme="XD0308"]) .xd4-header{position:relative;top:auto;background:var(--xd4-ink,#202326)}
-body:has(.tna-article[data-article-theme="XD0309"]) .xd5-header{position:relative;top:auto;background:#202326}
 body:has(.tna-article[data-article-theme="XD0310"]) .xd5-header{position:relative;top:auto;background:#202326}
 body:has(.tna-article[data-article-theme="XD0312"]) .xd12-header{position:relative;top:auto;background:#fff}
 body:has(.tna-article[data-article-theme="XD0315"]) .af15-site-header{position:relative;top:auto;background:#202326}

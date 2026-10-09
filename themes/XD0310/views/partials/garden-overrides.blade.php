@@ -299,24 +299,20 @@
     .xd-row-nav,
     .xd-row-dots { display: none; }
 
-    .xd5-testimonial { background: var(--xd10-sand); }
-    .xd5-testimonial-grid { grid-template-columns: 1.1fr repeat(3, minmax(0, 1fr)); gap: 18px; }
-    .xd5-quote {
-        position: relative;
-        border-radius: 26px 26px 8px 26px;
-        padding: 34px;
-        box-shadow: none;
-    }
-    .xd5-quote::before {
-        display: block;
-        margin-bottom: 18px;
-        color: var(--xd10-green);
-        content: "“";
-        font-family: Georgia, serif;
-        font-size: 64px;
-        line-height: .5;
-    }
-    .xd5-quote b { display: block; margin-top: 22px; color: var(--xd10-green-dark); }
+    .xd5-testimonial { padding-block: 68px; background: var(--xd10-sand); }
+    .xd5-testimonial-copy { display: flex; align-items: end; justify-content: space-between; gap: 40px; padding: 0; margin-bottom: 28px; }
+    .xd5-testimonial-copy > div { max-width: 660px; }
+    .xd5-testimonial-copy .xd5-title { margin-bottom: 0; font-size: clamp(26px, 2.5vw, 36px); line-height: 1.22; letter-spacing: -.025em; }
+    .xd5-testimonial-copy .xd10-testimonial-intro { max-width: 330px; margin: 0; font-size: 15px; }
+    .xd5-testimonial-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
+    .xd5-quote { display: flex; flex-direction: column; min-width: 0; border: 1px solid rgba(22, 62, 44, .09); border-radius: 18px; padding: 26px; background: var(--xd10-white); box-shadow: 0 8px 24px rgba(33, 49, 39, .035); }
+    .xd10-quote-mark { height: 28px; color: var(--xd10-green); font: 54px/1 Georgia, serif; }
+    .xd5-quote blockquote { margin: 14px 0 22px; color: var(--xd10-ink); font-size: 16px; line-height: 1.65; }
+    .xd10-quote-author { display: flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--xd10-green-soft); }
+    .xd5-quote .xd10-quote-author img,
+    .xd10-author-initial { flex: 0 0 38px; width: 38px; height: 38px; border-radius: 50%; }
+    .xd10-author-initial { display: grid; place-items: center; background: var(--xd10-green-soft); color: var(--xd10-green-dark); font-weight: 700; }
+    .xd5-quote b { display: block; margin: 0; color: var(--xd10-green-dark); font-size: 14px; }
 
     .xd5-team-head { max-width: 760px; margin-inline: auto; text-align: center; }
     .xd5-team { gap: 22px; }
@@ -419,6 +415,8 @@
         .xd5-benefit-grid,
         .xd5-contact-grid { grid-template-columns: 1fr; }
         .xd5-testimonial-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .xd5-testimonial-copy { align-items: start; flex-direction: column; gap: 16px; }
+        .xd5-testimonial-copy .xd10-testimonial-intro { max-width: 560px; }
         .xd-projects { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
@@ -459,6 +457,9 @@
         .xd5-benefit-grid > img { height: 390px; border-radius: 8px 70px 8px 8px; }
         .xd-project-card,
         .xd-project-card:nth-child(even) { height: 390px; margin-top: 0; }
+        .xd5-testimonial { padding-block: 48px; }
+        .xd5-testimonial-copy .xd5-title { font-size: 28px; }
+        .xd5-quote { padding: 22px; }
         .xd5-contact-card { padding: 30px 22px; }
         .xd5-footer-top { align-items: start; }
     }

@@ -25,6 +25,7 @@ use App\Models\LandingPageBlockData;
 use App\Models\LandingPageData;
 use App\Models\SiteBanner;
 use App\Models\SiteProfile;
+use App\Models\SiteThemeProfile;
 use App\Models\ThemeDemoRecord;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\LegacyTextEncoding;
@@ -214,6 +215,15 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                 $profile->branding = array_merge((array) $profile->branding, ['logo_url' => $this->brief['logo'] ?? '/theme-demo/xd-shared/logo-'.strtolower($this->key).'.svg']);
             }
             $profile->forceFill(['site_name' => $brand, 'active_theme_key' => $this->key, 'website_type' => $this->brief['website_type'] ?? 'service', 'branding' => array_merge((array) $profile->branding, ['company_name' => $brand, 'company_description' => 'Giải pháp '.$sector.' với quy trình minh bạch và hỗ trợ tận tâm.', 'support_email' => 'contact@example.com', 'support_location' => 'Hà Nội và TP.HCM', 'demo_preset_key' => $presetKey])])->save();
+            if ($this->key === 'XD0309') {
+                $themeProfile = SiteThemeProfile::where('theme_key', $this->key)->first();
+                if ($themeProfile) {
+                    $themeProfile->update(['branding' => array_merge(app(LegacyTextEncoding::class)->value((array) $themeProfile->branding), [
+                        'company_name' => $brand,
+                        'company_description' => 'Giải pháp an toàn công nghiệp với quy trình minh bạch và hỗ trợ tận tâm.',
+                    ])]);
+                }
+            }
             $builder = app(LandingPageBuilder::class);
             $existing = LandingPage::where('theme_key', $this->key)->where('is_home', true)->first();
             $page = $builder->resolveHome(app(SiteContext::class)->websiteKey(), $this->key, true);
@@ -223,6 +233,40 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
             }
             if ($page && $this->key === 'XD0304' && ! $page->blocks()->where('block_type', 'landing_contact')->exists()) {
                 $builder->createBlock($page, 'landing_contact');
+            }
+            if ($page && $this->key === 'XD0308') {
+                foreach ($page->blocks()->whereIn('block_type', ['testimonials', 'featured_services'])->get() as $block) {
+                    $source = $block->block_type === 'testimonials' ? 'cms_testimonials' : 'cms_services';
+                    $block->update(['settings' => array_merge((array) $block->settings, ['source' => $source, 'limit' => 6])]);
+                }
+            }
+            if ($page && $this->key === 'XD0309') {
+                foreach ($page->blocks()->with('data')->whereIn('block_type', ['bizmax_about', 'bizmax_benefit_panel', 'bizmax_contact', 'bizmax_latest_posts'])->get() as $block) {
+                    if ($block->block_type === 'bizmax_latest_posts') {
+                        $block->update(['settings' => array_merge((array) $block->settings, ['source' => 'cms_posts', 'limit' => 10])]);
+                    }
+                    foreach ($block->data as $data) {
+                        $content = app(LegacyTextEncoding::class)->value(json_decode($data->content ?? '{}', true) ?? []);
+                        $images = match ($block->block_type) {
+                            'bizmax_about' => ['image_primary' => $this->image(0), 'image_secondary' => $this->image(2)],
+                            'bizmax_benefit_panel' => ['image' => $this->image(2)],
+                            'bizmax_contact' => ['background_image' => $this->image(1)],
+                            default => [],
+                        };
+                        $data->update(['content' => json_encode(array_merge($content, $images), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+                    }
+                }
+            }
+            if ($page && in_array($this->key, ['XD0310', 'XD0312'], true)) {
+                foreach ($page->blocks()->with('data')->whereIn('block_type', ['bizmax_about', 'bizmax_benefit_panel'])->get() as $block) {
+                    $images = $block->block_type === 'bizmax_about'
+                        ? ['image_primary' => $this->image($this->key === 'XD0312' ? 0 : 1), 'image_secondary' => $this->image($this->key === 'XD0312' ? 2 : 0)]
+                        : ['image' => $this->image($this->key === 'XD0312' ? 2 : 0)];
+                    foreach ($block->data as $data) {
+                        $content = json_decode($data->content ?? '{}', true) ?? [];
+                        $data->update(['content' => json_encode(array_merge($content, $images), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+                    }
+                }
             }
             if ($page && $this->key === 'XD0320') {
                 if (! $page->blocks()->where('block_type', 'landing_contact')->exists()) {
@@ -347,7 +391,9 @@ class IndustryDemoContentProvider implements ThemeDemoContentProvider
                         $this->key === 'XD0306' && $block->block_type === 'collection_gallery' => 'Dự án tiêu biểu',
                         default => $this->brief['brand'],
                     };
-                    $updates['description'] = 'Giải pháp '.$this->brief['sector'].' được xây dựng từ nhu cầu thực tế, phạm vi rõ ràng và sự phối hợp trong từng bước triển khai.';
+                    $updates['description'] = $this->key === 'XD0308' && $block->block_type === 'content_mosaic'
+                        ? 'Từ chọn trường đến hồ sơ, visa và học bổng, tìm sự hỗ trợ phù hợp cho từng bước trong hành trình của bạn.'
+                        : 'Giải pháp '.$this->brief['sector'].' được xây dựng từ nhu cầu thực tế, phạm vi rõ ràng và sự phối hợp trong từng bước triển khai.';
                 }
                 if ($this->key === 'XD0306' && $block->block_type === 'faq_showcase' && $data->locale === 'vi') {
                     $updates['title'] = 'Câu hỏi thường gặp';

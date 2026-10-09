@@ -320,7 +320,7 @@
                         </section>
                     @endif
                 @endif
-            @if(($contentType ?? '') === 'service')
+            @if(in_array($contentType ?? '', ['service', 'page'], true))
 @include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
 @endif
 </main>

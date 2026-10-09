@@ -1,1 +1,5 @@
-@extends('theme-shop603::layout') @section('title',data_get($page??null,'title','Alena')) @section('content') @include('theme-shop603::partials.content-shell',['title'=>data_get($page??null,'title'),'summary'=>data_get($page??null,'excerpt'),'cover'=>data_get($page??null,'cover_image_url'),'body'=>data_get($page??null,'body')]) @endsection
+@extends('theme-shop603::layout') @section('title',data_get($page??null,'title','Alena')) @section('content') @include('theme-shop603::partials.content-shell',['title'=>data_get($page??null,'title'),'summary'=>data_get($page??null,'excerpt'),'cover'=>data_get($page??null,'cover_image_url'),'body'=>data_get($page??null,'body')])
+@if(($contentType ?? '') === 'page')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
+@endsection

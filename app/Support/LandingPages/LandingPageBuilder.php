@@ -8704,10 +8704,15 @@ class LandingPageBuilder
         $blocks[2]['data']['vi'] = ['title' => 'Quy trình đăng ký du học', 'subtitle' => 'Chúng tôi làm việc như thế nào', 'description' => 'Sáu bước rõ ràng để chuẩn bị một hành trình học tập quốc tế vững vàng.', 'button_label' => '', 'content' => ['steps' => []]];
         $blocks[3]['data']['vi']['title'] = 'Cung cấp các dịch vụ mới nhất';
         $blocks[3]['data']['vi']['subtitle'] = 'Dịch vụ';
+        $blocks[3]['settings']['limit'] = 6;
         $blocks[4]['anchor_id'] = 'quoc-gia';
         $blocks[4]['settings']['source'] = 'cms_services';
-        $blocks[4]['data']['vi']['title'] = 'Quốc gia được yêu thích nhất cho người nhập cư';
+        $blocks[4]['data']['vi']['title'] = 'Khám phá lộ trình du học của bạn';
         $blocks[4]['data']['vi']['subtitle'] = 'Tư vấn du học';
+        $blocks[4]['data']['vi']['description'] = 'Từ chọn trường đến hồ sơ, visa và học bổng, tìm sự hỗ trợ phù hợp cho từng bước trong hành trình của bạn.';
+        $blocks[4]['data']['vi']['button_label'] = 'Khám phá thêm';
+        $blocks[4]['data']['en']['title'] = 'Explore your study abroad journey';
+        $blocks[5]['settings']['limit'] = 6;
         $blocks[5]['data']['vi']['title'] = 'Nhận xét từ khách hàng';
         $blocks[5]['data']['vi']['subtitle'] = 'Lời chứng thực';
         $blocks[6]['data']['vi']['title'] = 'Yêu cầu một cuộc gọi lại';

@@ -7,26 +7,16 @@
 
     $mosaicTitle = trim((string) ($data['title'] ?? ''));
     $mosaicSubtitle = trim((string) ($data['subtitle'] ?? ''));
-    $titleParts = preg_split('/\s+/', $mosaicTitle, 3) ?: [];
-    $firstTitlePart = implode(' ', array_slice($titleParts, 0, 2));
-    $accentTitlePart = $titleParts[2] ?? '';
 @endphp
 
+@if ($mosaicItems->isNotEmpty())
 <section id="{{ $anchor }}" class="xd-section xd-content-mosaic xd-landing-block" data-landing-block-id="{{ $block['id'] }}" data-block-type="{{ $block['block_type'] }}">
     {!! $editButton !!}
     <div class="xd-container">
-        <div class="xd-mosaic-head">
-            @if ($mosaicTitle !== '')
-                <h2>
-                    <span>{{ $firstTitlePart !== '' ? $firstTitlePart : $mosaicTitle }}</span>
-                    @if ($accentTitlePart !== '')
-                        <em>{{ $accentTitlePart }}</em>
-                    @endif
-                </h2>
-            @endif
-            @if ($mosaicSubtitle !== '')
-                <p>{{ $mosaicSubtitle }}</p>
-            @endif
+        <div class="xd8-discovery-head">
+            @if ($mosaicSubtitle !== '')<p class="xd8-kicker">{{ $mosaicSubtitle }}</p>@endif
+            @if ($mosaicTitle !== '')<h2>{{ $mosaicTitle }}</h2>@endif
+            @if (filled($data['description'] ?? null))<p class="xd8-discovery-intro">{{ $data['description'] }}</p>@endif
         </div>
 
         <div class="xd-mosaic-grid">
@@ -36,22 +26,23 @@
                     $itemSummary = (string) ($item['summary'] ?? $item['excerpt'] ?? $item['description'] ?? $item['tag'] ?? '');
                     $itemUrl = (string) ($item['url'] ?? $item['href'] ?? '#');
                     $itemImage = (string) ($item['image'] ?? $item['image_url'] ?? $item['thumbnail'] ?? '');
-                    $renderImageCard = filled($itemImage) && $loop->iteration % 2 === 1;
                 @endphp
-
-                @if ($renderImageCard)
-                    <a class="xd-mosaic-card xd-mosaic-image" href="{{ $itemUrl }}">
-                        <img src="{{ $itemImage }}" alt="{{ $item['alt'] ?? $itemTitle }}">
-                    </a>
-                @else
-                    <a class="xd-mosaic-card xd-mosaic-copy" href="{{ $itemUrl }}">
-                        <strong>{{ $itemTitle }}</strong>
-                        @if ($itemSummary !== '')
-                            <span>{{ \Illuminate\Support\Str::limit(strip_tags($itemSummary), 120) }}</span>
+                <a class="xd8-discovery-card" href="{{ $itemUrl }}">
+                    <div class="xd8-discovery-media">
+                        @if (filled($itemImage))
+                            <img src="{{ $itemImage }}" alt="{{ $item['alt'] ?? $itemTitle }}" loading="lazy">
+                        @else
+                            <span class="xd8-discovery-placeholder" aria-hidden="true">↗</span>
                         @endif
-                    </a>
-                @endif
+                    </div>
+                    <div class="xd8-discovery-body">
+                        <h3>{{ $itemTitle }}</h3>
+                        @if ($itemSummary !== '')<p>{{ \Illuminate\Support\Str::limit(strip_tags($itemSummary), 115) }}</p>@endif
+                        <span class="xd8-discovery-link">{{ $data['button_label'] ?? 'Khám phá thêm' }} <span aria-hidden="true">↗</span></span>
+                    </div>
+                </a>
             @endforeach
         </div>
     </div>
 </section>
+@endif

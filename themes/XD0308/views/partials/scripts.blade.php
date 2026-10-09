@@ -1,10 +1,23 @@
 <script>
 (() => {
-    const menuToggle = document.querySelector('[data-xd4-menu-toggle]');
-    const menu = document.querySelector('[data-xd4-nav]');
-    menuToggle?.addEventListener('click', () => {
-        const isOpen = menu?.classList.toggle('is-open');
-        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    document.querySelectorAll('[data-xd8-slider]').forEach((slider) => {
+        const track = slider.querySelector('[data-xd8-track]');
+        const previous = slider.querySelector('[data-xd8-prev]');
+        const next = slider.querySelector('[data-xd8-next]');
+        if (!track || !previous || !next) return;
+        const update = () => {
+            previous.disabled = track.scrollLeft <= 1;
+            next.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 1;
+        };
+        const move = (direction) => track.scrollBy({
+            left: direction * (track.firstElementChild.getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap || 0)),
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+        });
+        previous.addEventListener('click', () => move(-1));
+        next.addEventListener('click', () => move(1));
+        track.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
     });
 
     document.querySelectorAll('[data-xd4-hero]').forEach((hero) => {
@@ -20,7 +33,7 @@
         window.setInterval(() => show(active + 1), Math.max(2500, Number(hero.dataset.autoplay || 6000)));
     });
 
-    const revealTargets = [...document.querySelectorAll('main > section:not(.xd4-hero), .xd3-step, .xd2-service-grid > article, .xd-mosaic-card, .xd-testimonial, .xd4-footer__grid > *')];
+    const revealTargets = [...document.querySelectorAll('main > section:not(.xd4-hero), .xd3-step, .xd8-discovery-card, .xd4-footer__grid > *')];
     revealTargets.forEach((element, index) => {
         element.dataset.xdReveal = '';
         element.style.setProperty('--reveal-delay', `${Math.min(index % 4, 3) * 80}ms`);
