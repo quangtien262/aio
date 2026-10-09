@@ -34,7 +34,7 @@
 <header class="xd323-header">
     <div class="xd323-topbar">
         <div class="xd323-container xd323-topbar__inner">
-            <strong>{{ $themeText('XD0323.brand.tagline') }}</strong>
+            <span>{{ $themeText('XD0323.brand.tagline') }}</span>
             <div class="xd323-topbar__contact">
                 <a href="mailto:{{ $email }}"><i class="fa-solid fa-envelope"></i>{{ $email }}</a>
                 <a href="#footer"><i class="fa-solid fa-location-dot"></i>{{ $address }}</a>

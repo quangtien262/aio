@@ -30,9 +30,10 @@ body:has(.ser-home) .ser-shared-footer p,body:has(.ser-home) .ser-shared-footer 
 .ser-home .aio-landing-hero .aio-landing-action{background:var(--ser-accent);color:var(--ser-night)}
 .ser-home-secondary{color:#fff;font-size:14px;font-weight:700;display:inline-flex;gap:18px;align-items:center}
 .ser-home [data-block-type="process_steps"]{background:var(--ser-mist)}
-.ser-home .aio-landing-step{position:relative;padding-top:22px}
-.ser-home .aio-landing-step::before{font-size:18px;line-height:42px;width:42px;border-radius:10px;background:var(--ser-navy);color:#fff;text-align:center;margin:0 22px}
-.ser-home .aio-landing-step .aio-landing-card-body{padding-top:16px}
+.ser-home .aio-landing-step{position:relative;padding:0}
+.ser-home .aio-landing-step::before{content:none;display:none}
+.ser-home .aio-landing-step h3{display:flex;align-items:center;gap:12px}
+.ser-home .aio-landing-step h3::before{counter-increment:aio-step;content:counter(aio-step,decimal-leading-zero);flex:0 0 42px;font-size:18px;font-weight:900;line-height:42px;border-radius:10px;background:var(--ser-navy);color:#fff;text-align:center}
 .ser-home [data-block-type="collection_gallery"] .aio-landing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .ser-home [data-block-type="service_pricing"] .aio-landing-card-body{padding:28px}
 .ser-home [data-block-type="service_pricing"] .aio-landing-grid,.ser-home [data-block-type="latest_posts"] .aio-landing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}

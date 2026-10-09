@@ -23,4 +23,5 @@
     :is-preview="$isPreview ?? false"
 >
     @include('theme-xd0305::partials.styles')
-</x-storefront-head><body><div id="top" class="xd5-page">@include('theme-xd0305::partials.header')@yield('content')@include('theme-xd0305::partials.footer')</div>@include('theme-xd0305::partials.auth-modal')@include('theme-xd0305::partials.inline-editor')@include('theme-xd0305::partials.shell-scripts')@stack('scripts')</body></html>
+    @include('theme-xd0305::partials.inner-header-styles')
+</x-storefront-head><body class="{{ request()->routeIs('site.home') ? 'xd5-is-home' : 'xd5-is-inner' }}"><div id="top" class="xd5-page">@include('theme-xd0305::partials.header')@yield('content')@include('theme-xd0305::partials.footer')</div>@include('theme-xd0305::partials.auth-modal')@include('theme-xd0305::partials.inline-editor')@include('theme-xd0305::partials.shell-scripts')@stack('scripts')</body></html>

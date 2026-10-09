@@ -153,6 +153,7 @@
 }
 
 .ser-shell-nav {
+    text-transform: uppercase;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 249, 247, 0.98));
     border-top: 1px solid rgba(214, 226, 222, 0.7);
 }
@@ -160,6 +161,10 @@
 .ser-shell-nav-inner {
     padding: 14px 0 16px;
     gap: 18px;
+}
+
+.ser-shell-nav .ser-shell-cta {
+    text-transform: uppercase;
 }
 
 .ser-shell-menu,
