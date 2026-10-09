@@ -24,4 +24,5 @@
             <article class="ser102-detail-body">{!! filled($body) ? $body : '<p>Nội dung đang được cập nhật.</p>' !!}</article>
         </div>
     </section>
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
 @endsection

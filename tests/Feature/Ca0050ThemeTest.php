@@ -2,15 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Core\Cms\CmsMenuResolver;
 use App\Core\Themes\Demo\ThemeDemoContentProviderRegistry;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
-use App\Models\CmsPost;
 use App\Models\CmsCategory;
+use App\Models\CmsMenu;
+use App\Models\CmsPage;
+use App\Models\CmsPost;
+use App\Models\CmsService;
+use App\Models\CmsServiceCategory;
 use App\Models\LandingPage;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class Ca0050ThemeTest extends TestCase
@@ -19,21 +25,21 @@ class Ca0050ThemeTest extends TestCase
 
     public function test_demo_menu_links_to_owned_pages_and_services_and_can_be_regenerated(): void
     {
-        $customPage = \App\Models\CmsPage::create(['title' => 'Trang riêng', 'slug' => 'gioi-thieu', 'status' => 'published', 'body' => 'Nội dung cần giữ.']);
+        $customPage = CmsPage::create(['title' => 'Trang riêng', 'slug' => 'gioi-thieu', 'status' => 'published', 'body' => 'Nội dung cần giữ.']);
         $provider = app(ThemeDemoContentProviderRegistry::class)->forTheme('CA0050');
         foreach (range(1, 2) as $run) {
             $result = $provider->generate('ca0050-sudes-aquarium');
             $this->assertSame(3, $result['counts']['services']);
-            $menu = \App\Models\CmsMenu::where('name', 'CA0050 Main Menu')->firstOrFail();
+            $menu = CmsMenu::where('name', 'CA0050 Main Menu')->firstOrFail();
             $this->assertSame(['home', 'page', 'catalog-index', 'service-category', 'post-category', 'contact'], array_column($menu->items, 'link_type'));
-            $about = \App\Models\CmsPage::findOrFail($menu->items[1]['link_value']);
+            $about = CmsPage::findOrFail($menu->items[1]['link_value']);
             $this->assertSame('ca0050-gioi-thieu', $about->slug);
             $this->get(route('site.pages.show', ['locale' => 'vi', 'slug' => $about->slug]))->assertOk()->assertSee('Không gian xanh từ thế giới dưới nước');
-            $category = \App\Models\CmsServiceCategory::findOrFail($menu->items[3]['link_value']);
+            $category = CmsServiceCategory::findOrFail($menu->items[3]['link_value']);
             $this->get(route('site.services.category', ['locale' => 'vi', 'slug' => $category->slug]))->assertOk()->assertSee('Chăm sóc bể cá định kỳ');
-            $this->assertSame(3, \App\Models\CmsService::where('slug', 'like', 'ca0050-%')->count());
-            app()->forgetInstance(\App\Core\Cms\CmsMenuResolver::class);
-            $links = app(\App\Core\Cms\CmsMenuResolver::class)->all(null, 'vi', 'CA0050')['primary-navigation'];
+            $this->assertSame(3, CmsService::where('slug', 'like', 'ca0050-%')->count());
+            app()->forgetInstance(CmsMenuResolver::class);
+            $links = app(CmsMenuResolver::class)->all(null, 'vi', 'CA0050')['primary-navigation'];
             $this->assertCount(6, $links);
             foreach ($links as $link) {
                 $this->assertNotEmpty($link['url']);
@@ -46,7 +52,7 @@ class Ca0050ThemeTest extends TestCase
         $provider->delete();
         $this->assertDatabaseHas('cms_pages', ['id' => $customPage->id, 'body' => 'Nội dung cần giữ.']);
         $this->assertDatabaseMissing('cms_pages', ['slug' => 'ca0050-gioi-thieu']);
-        $this->assertSame(0, \App\Models\CmsService::where('slug', 'like', 'ca0050-%')->count());
+        $this->assertSame(0, CmsService::where('slug', 'like', 'ca0050-%')->count());
     }
 
     public function test_inner_pages_use_the_actual_catalog_and_cms_data(): void
@@ -55,10 +61,10 @@ class Ca0050ThemeTest extends TestCase
         $product = CatalogProduct::query()->firstOrFail();
         $this->get(route('site.catalog.search', ['locale' => 'vi']))->assertOk()->assertSee($product->name)->assertSee('ca50-catalog-grid', false);
         $this->get(route('site.catalog.search', ['locale' => 'vi', 'q' => 'no-match-xyz']))->assertOk()->assertSee('Chưa tìm thấy sản phẩm phù hợp')->assertDontSee($product->name);
-        $page = \App\Models\CmsPage::create(['title' => 'Giới thiệu cửa hàng', 'slug' => 'about-test', 'status' => 'published', 'body' => '<p>Nội dung giới thiệu thực tế.</p>', 'publish_at' => now()]);
+        $page = CmsPage::create(['title' => 'Giới thiệu cửa hàng', 'slug' => 'about-test', 'status' => 'published', 'body' => '<p>Nội dung giới thiệu thực tế.</p>', 'publish_at' => now()]);
         $this->get(route('site.pages.show', ['locale' => 'vi', 'slug' => $page->slug]))->assertOk()->assertSee($page->title)->assertSee('Nội dung giới thiệu thực tế.');
         foreach (['Chăm sóc bể cá', 'Thiết kế hồ cá'] as $i => $title) {
-            $service = \App\Models\CmsService::create(['title' => $title, 'slug' => 'service-'.$i, 'status' => 'published', 'summary' => 'Tư vấn theo nhu cầu.', 'content' => '<p>Chi tiết dịch vụ thực tế.</p>', 'publish_at' => now()]);
+            $service = CmsService::create(['title' => $title, 'slug' => 'service-'.$i, 'status' => 'published', 'summary' => 'Tư vấn theo nhu cầu.', 'content' => '<p>Chi tiết dịch vụ thực tế.</p>', 'publish_at' => now()]);
         }
         $this->get(route('site.services.index', ['locale' => 'vi']))->assertOk()->assertSee('Chăm sóc bể cá')->assertSee('Thiết kế hồ cá')->assertSee('ca50-service-card', false);
         $this->get(route('site.services.show', ['locale' => 'vi', 'slug' => $service->slug]))->assertOk()->assertSee($service->title)->assertSee('Chi tiết dịch vụ thực tế.');
@@ -67,11 +73,11 @@ class Ca0050ThemeTest extends TestCase
     public function test_contact_form_preserves_errors_and_displays_submission_confirmation(): void
     {
         config(['session.serialization' => 'php']);
-        \Illuminate\Support\Facades\Mail::fake();
+        Mail::fake();
         app(ThemeDemoContentProviderRegistry::class)->forTheme('CA0050')->generate('ca0050-sudes-aquarium');
         $url = route('site.contact', ['locale' => 'vi']);
         $submit = route('site.contact.submit', ['locale' => 'vi']);
-        $this->get($url)->assertOk()->assertSee('Kết nối với chúng tôi')->assertSee('ca50-contact-name', false);
+        $this->get($url)->assertOk()->assertSee('Kết nối với chúng tôi')->assertSee('tc-contact-name', false);
         $this->from($url)->post($submit, ['name' => 'Khách thử', 'email' => 'invalid', 'message' => 'ngắn'])
             ->assertSessionHasErrors(['email', 'message']);
 

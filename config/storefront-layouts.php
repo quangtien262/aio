@@ -42,6 +42,7 @@ return [
         ],
     ],
     'BDS702' => [
+        'content_container' => '.bds-container',
         'container' => '.b702-container',
         'width' => 'min(1420px,calc(100% - 48px))',
         'breakpoints' => [
@@ -60,7 +61,7 @@ return [
         'width' => 'var(--bz-container)',
     ],
     'CA0050' => [
-        'content_container' => '.ca50-wrap',
+        'content_container' => '.ca50-wrap, .ca50-inner-container, .ca50-detail-container, .ca50-contact-container, .ca50-container',
         'container' => '.ca50-header-inner',
         'width' => 'min(var(--ca-width),calc(100% - 100px))',
         'breakpoints' => [
@@ -91,6 +92,7 @@ return [
         ],
     ],
     'DN350' => [
+        'content_container' => '.dn-container',
         'container' => '.dn350-container',
         'width' => 'min(1760px,calc(100% - 64px))',
         'breakpoints' => [
@@ -98,6 +100,7 @@ return [
         ],
     ],
     'DN351' => [
+        'content_container' => '.dn-container',
         'container' => '.dn351-container',
         'width' => 'min(1760px,calc(100% - 64px))',
         'breakpoints' => [
@@ -211,6 +214,7 @@ return [
         ],
     ],
     'EC906' => [
+        'content_container' => '.ec96-container, .ec96-article-wrap',
         'container' => '.ec96-container',
         'width' => 'min(1820px,calc(100% - 64px))',
         'breakpoints' => [
@@ -235,6 +239,7 @@ return [
         ],
     ],
     'EC909' => [
+        'content_container' => '.ec99-container',
         'container' => '.ec99-shell',
         'width' => 'min(2020px,calc(100% - 28px))',
         'breakpoints' => [
@@ -250,6 +255,7 @@ return [
         ],
     ],
     'EC911' => [
+        'content_container' => '.ec97-container',
         'container' => '.ec11-container',
         'width' => 'min(calc(100% - 48px),var(--ec11-container))',
         'breakpoints' => [
@@ -354,6 +360,7 @@ return [
         ],
     ],
     'NEWS88' => [
+        'content_container' => '.n88-article',
         'container' => '.n88-container',
         'width' => 'min(1360px,calc(100% - 48px))',
         'breakpoints' => [
@@ -361,10 +368,11 @@ return [
         ],
     ],
     'NT501' => [
+        'content_container' => '.nt-container, .nt-project-container, .nt-news-container',
         'container' => '.foot-container',
-        'width' => 'var(--nt-shell-width)',
+        'width' => 'min(1180px,calc(100% - 48px))',
         'breakpoints' => [
-            '(max-width:600px)' => 'var(--nt-shell-width)',
+            '(max-width:600px)' => 'calc(100% - 32px)',
         ],
     ],
     'NT502' => [
@@ -452,7 +460,7 @@ return [
         ],
     ],
     'SHOP606' => [
-        'content_container' => '.s606-container',
+        'content_container' => '.s606-container, .s606-service-wrap',
         'container' => '.s606-header-inner',
         'width' => 'min(1640px,calc(100% - 48px))',
         'breakpoints' => [
@@ -520,6 +528,7 @@ return [
         'width' => 'var(--wide)',
     ],
     'XD0306' => [
+        'content_container' => '.xd6-projects-container',
         'container' => '.xd5-container',
         'width' => 'var(--wide)',
     ],
@@ -548,6 +557,7 @@ return [
         'width' => 'var(--wide)',
     ],
     'XD0313' => [
+        'content_container' => '.rx13-header__inner, .rx13-container',
         'container' => '.rx13-container',
         'width' => 'min(1480px, calc(100% - 48px))',
         'breakpoints' => [
@@ -562,6 +572,7 @@ return [
         ],
     ],
     'XD0315' => [
+        'content_container' => '.af15-site-header__inner, .af15-container',
         'container' => '.af15-container',
         'width' => 'min(1420px, calc(100% - 48px))',
         'breakpoints' => [
@@ -592,9 +603,9 @@ return [
     ],
     'XD0323' => [
         'container' => '.xd323-container',
-        'width' => 'var(--xd323-container-width)',
+        'width' => 'min(1560px,calc(100% - 48px))',
         'breakpoints' => [
-            '(max-width:760px)' => 'var(--xd323-container-width)',
+            '(max-width:760px)' => 'min(680px,calc(100% - 28px))',
         ],
     ],
     'XD0324' => [
@@ -605,6 +616,7 @@ return [
         ],
     ],
     'XD0325' => [
+        'content_container' => '.xd-content-shell > .xd-container',
         'container' => '.x325-container',
         'width' => 'min(1580px,calc(100% - 56px))',
         'breakpoints' => [
@@ -619,7 +631,9 @@ return [
         ],
     ],
     'CORPORATE-STARTER' => [
-        'container' => 'header',
-        'width' => 'calc(100% - 64px)',
+        'content_container' => '.wrap, .site-main, .site-header',
+        'container' => '.wrap',
+        'width' => 'min(1180px,calc(100% - 24px))',
+        'breakpoints' => ['(max-width:680px)' => 'calc(100% - 16px)'],
     ],
 ];

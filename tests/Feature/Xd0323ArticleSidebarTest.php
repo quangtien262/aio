@@ -31,7 +31,7 @@ class Xd0323ArticleSidebarTest extends TestCase
         $response = $this->get('/vi/n/sidebar-article')->assertOk();
         $products = $response->viewData('articleLatestProducts');
         $services = $response->viewData('articleServices');
-        $this->assertCount(5, $products);
+        $this->assertCount(10, $products);
         $this->assertCount(10, $services);
         $this->assertSame('Product 11', $products->first()['title']);
         $this->assertSame('Service 11', $services->first()['title']);
@@ -43,7 +43,7 @@ class Xd0323ArticleSidebarTest extends TestCase
         }
 
         $profile->update(['active_theme_key' => 'XD0320']);
-        $this->get('/vi/n/sidebar-article')->assertOk()->assertDontSee('data-article-sidebar="products"', false)->assertDontSee('data-article-sidebar="services"', false);
+        $this->get('/vi/n/sidebar-article')->assertOk()->assertSee('data-article-sidebar="products"', false)->assertSee('data-article-sidebar="services"', false);
     }
 
     public function test_each_empty_group_is_hidden_independently(): void

@@ -7,4 +7,7 @@
         {!! $content ?? data_get($entry ?? null, 'content', data_get($entry ?? null, 'body', app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('TOOL750', app()->getLocale(), 'empty', 'Nội dung đang được cập nhật.'))) !!}
     </div></article>
 </main>
+@if(($contentType ?? '') === 'service')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection

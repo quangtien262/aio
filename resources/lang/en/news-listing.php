@@ -7,6 +7,7 @@ return [
     'news' => 'News',
     'intro' => 'News, insights and useful stories.',
     'articles' => 'Articles',
+    'more_articles' => 'More articles',
     'read_more' => 'Read more',
     'empty' => 'No articles yet',
     'empty_hint' => 'New stories will appear here.',

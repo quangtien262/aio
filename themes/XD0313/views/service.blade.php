@@ -120,6 +120,7 @@
         'contactSubject' => $entry->title,
     ])
 </main>
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections', 'recommendationKinds' => ['products']])
 @endsection
 
 @push('scripts')

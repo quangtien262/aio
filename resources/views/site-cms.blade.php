@@ -320,7 +320,10 @@
                         </section>
                     @endif
                 @endif
-            </main>
+            @if(($contentType ?? '') === 'service')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
+</main>
 @endif
 
             <footer class="site-footer">@include('themes.common.footer-logo')<br>{{ $siteProfile?->site_name ?? 'AIO Website' }} © {{ now()->year }}</footer>

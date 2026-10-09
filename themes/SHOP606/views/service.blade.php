@@ -10,4 +10,5 @@
         <div class="s606-service-prose">{!! $entry->body ?: $entry->content !!}</div>
     </article>
 </div></main>
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
 @endsection

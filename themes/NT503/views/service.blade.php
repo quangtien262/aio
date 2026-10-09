@@ -8,4 +8,5 @@
         'cover' => data_get($detail, 'featuredImage.image_url', data_get($detail, 'cover_image_url')),
         'body' => data_get($detail, 'body', data_get($detail, 'content')),
     ])
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
 @endsection

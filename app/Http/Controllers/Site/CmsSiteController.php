@@ -1807,15 +1807,16 @@ class CmsSiteController
         }
 
         if ($contentType === 'service' && $entry instanceof CmsService && ! array_key_exists('latestServices', $extra)) {
-            $extra['latestServices'] = $this->resolveLatestServices($siteProfile, $entry, 15);
+            $extra['latestServices'] = $this->resolveLatestServices($siteProfile, $entry, 10);
         }
 
-        if (($contentType === 'service' && in_array(strtoupper((string) data_get($activeTheme, 'key')), ['XD0305', 'XD0306', 'XD0323'], true))
+        if (in_array($contentType, ['service', 'post'], true)
             || ($contentType === 'page' && in_array(strtoupper((string) data_get($activeTheme, 'key')), ['XD0305', 'NT502'], true))
             || ($contentType === 'project' && strtoupper((string) data_get($activeTheme, 'key')) === 'XD0323')) {
             $extra = array_merge($extra, $this->resolveArticleCatalogSidebar($websiteKey, 10, $entry instanceof CmsService ? $entry : null));
             $extra['serviceSidebarPosts'] = CmsPost::query()->with('featuredMedia')
                 ->where('website_key', $websiteKey)->where('status', 'published')
+                ->when($entry instanceof CmsPost, fn (EloquentBuilder $query) => $query->whereKeyNot($entry->getKey()))
                 ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
                 ->latest('publish_at')->orderByDesc('id')->lazy(50)
                 ->filter(fn (CmsPost $item): bool => $this->localizedContent->isPublishedForLocale($item, 'cms_post', $this->currentLocale(), $websiteKey))
@@ -1835,7 +1836,7 @@ class CmsSiteController
                 ->where('website_key', $websiteKey)->where('status', 'published')->whereKeyNot($entry->id)
                 ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()));
             $published = fn (CmsPost $item) => $this->localizedContent->isPublishedForLocale($item, 'cms_post', $this->currentLocale(), $websiteKey);
-            $extra['latestPosts'] = (clone $suggestions)->latest('publish_at')->orderByDesc('id')->lazy(50)->filter($published)->take(5)
+            $extra['latestPosts'] = (clone $suggestions)->latest('publish_at')->orderByDesc('id')->lazy(50)->filter($published)->take(10)
                 ->map(fn (CmsPost $item) => $this->localizePostModel($item, $websiteKey))->collect();
             $related = (clone $suggestions)->whereNotIn('id', $extra['latestPosts']->pluck('id'));
             if ($entry->category_id !== null) {
@@ -1843,10 +1844,6 @@ class CmsSiteController
             }
             $extra['relatedPosts'] = $related->latest('publish_at')->orderByDesc('id')->lazy(50)->filter($published)->take(3)
                 ->map(fn (CmsPost $item) => $this->localizePostModel($item, $websiteKey))->collect();
-        }
-
-        if ($contentType === 'post' && strtoupper((string) data_get($activeTheme, 'key')) === 'XD0323') {
-            $extra = array_merge($extra, $this->resolveArticleCatalogSidebar($websiteKey));
         }
 
         return view($viewName, array_merge([
@@ -2074,6 +2071,7 @@ class CmsSiteController
         $query = CmsService::query()
             ->with('featuredImage')
             ->where('status', 'published')
+            ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
             ->latest('publish_at')
             ->latest('updated_at');
         $this->applyWebsiteScope($query, $websiteKey);
@@ -2083,8 +2081,10 @@ class CmsSiteController
         }
 
         return $query
+            ->lazy(50)
+            ->filter(fn (CmsService $service): bool => $this->localizedContent->isPublishedForLocale($service, 'cms_service', $this->currentLocale(), $websiteKey))
             ->take($limit)
-            ->get()
+            ->collect()
             ->map(fn (CmsService $service): CmsService => $this->localizeServiceModel($service, $websiteKey))
             ->values();
     }

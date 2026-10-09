@@ -34,8 +34,8 @@ class News88ThemeTest extends TestCase
         foreach (['/vi/c', '/vi/c/listing-category'] as $url) {
             foreach ([1 => 30, 2 => 1] as $page => $expected) {
                 $html = $this->get($url.'?page='.$page)->assertOk()->getContent();
-                $this->assertSame(1, preg_match('/<section class="tnl-grid"[^>]*>(.*?)<\/section>/s', $html, $matches));
-                $this->assertSame($expected, substr_count($matches[1], '<article class="tnl-card">'));
+                $this->assertSame(1, preg_match('/<main class="theme-news-listing"[^>]*>(.*?)<\/main>/s', $html, $matches));
+                $this->assertSame($expected, preg_match_all('/<article[^>]+data-news-item=/', $matches[1]));
                 $this->assertStringNotContainsString('CARD_EXCERPT_SHOULD_BE_HIDDEN', $matches[1]);
             }
         }
@@ -147,8 +147,8 @@ class News88ThemeTest extends TestCase
             CmsPost::create(['title' => 'Recent '.$number, 'slug' => 'recent-'.$number, 'status' => 'published', 'publish_at' => now()->subDays($number)]);
         }
         $response = $this->get('/vi/n/current')->assertOk()->assertDontSee('id="n88-sidebar-tags-title"', false);
-        preg_match('/<div class="n88-article-latest">(.*?)<\/aside>/s', $response->getContent(), $matches);
-        $this->assertSame(10, substr_count($matches[1], '<article>'));
+        $this->assertSame(1, preg_match('/<section class="detail-recommendations__group" data-detail-recommendations="news"[^>]*>(.*?)<\/section>/s', $response->getContent(), $matches));
+        $this->assertSame(10, substr_count($matches[1], 'class="detail-recommendations__item"'));
         $this->assertStringContainsString('Recent 10', $matches[1]);
         $this->assertStringNotContainsString('Recent 11', $matches[1]);
         $tags = app(CmsPostTags::class);
@@ -216,7 +216,7 @@ class News88ThemeTest extends TestCase
             ->assertSee('search-title')->assertSee('search-excerpt')->assertSee('search-body')
             ->assertDontSee('Needle draft')
             ->assertSee('value="Needle"', false)->assertSee('Kết quả tìm kiếm cho');
-        $this->assertSame(1, preg_match('/<section class="tnl-grid"[^>]*>(.*?)<\/section>/s', $response->getContent(), $matches));
+        $this->assertSame(1, preg_match('/<main class="theme-news-listing"[^>]*>(.*?)<\/main>/s', $response->getContent(), $matches));
         $this->assertStringNotContainsString('Unrelated article', $matches[1]);
         $this->get('/vi/c?q=NoMatchingKeyword')->assertOk()->assertSee('Không tìm thấy bài viết phù hợp.');
     }

@@ -7,6 +7,7 @@ return [
     'news' => 'Tin tức',
     'intro' => 'Cập nhật tin tức, kiến thức và những chia sẻ hữu ích.',
     'articles' => 'Bài viết',
+    'more_articles' => 'Bài viết mới',
     'read_more' => 'Đọc tiếp',
     'empty' => 'Chưa có bài viết nào',
     'empty_hint' => 'Nội dung mới sẽ được cập nhật tại đây.',

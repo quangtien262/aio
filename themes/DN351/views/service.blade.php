@@ -152,6 +152,7 @@
             </div>
         </section>
     </main>
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
 @endsection
 
 @push('scripts')

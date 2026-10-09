@@ -1,26 +1,33 @@
 @php
     $branding = (array) data_get($siteProfile ?? [], 'branding', data_get($themeShellData ?? [], 'branding', []));
-    $company = trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', '')));
+    $company = app(\App\Support\LegacyTextEncoding::class)->repair(trim((string) ($branding['company_name'] ?? data_get($siteProfile ?? [], 'site_name', ''))));
     $phone = trim((string) ($branding['support_hotline'] ?? ''));
     $email = trim((string) ($branding['support_email'] ?? ''));
-    $address = trim((string) ($branding['support_location'] ?? ''));
+    $address = app(\App\Support\LegacyTextEncoding::class)->repair(trim((string) ($branding['support_location'] ?? '')));
     $contactBody = data_get($entry ?? $pageModel ?? $page ?? null, 'body', '');
     $pageTitle = __('theme_contact_page.title').($company ? ' | '.$company : '');
     $contactErrors = session('errors', new \Illuminate\Support\ViewErrorBag);
 @endphp
 @include('themes.common.contact-styles')
+@if(data_get($activeTheme ?? [], 'key') === 'SER0101')
+    @include('themes.common.content-alignment-styles', ['layoutThemeKey' => 'SER0101'])
+@endif
 <main class="tc-contact-page" data-contact-theme="{{ data_get($activeTheme ?? [], 'key') }}">
 <div class="tc-contact-container">
     <nav class="tc-contact-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('site.home', ['locale' => app()->getLocale()]) }}">{{ __('theme_contact_page.home') }}</a><span>/</span><span aria-current="page">{{ __('theme_contact_page.title') }}</span></nav>
-    <div class="tc-contact-heading"><span>{{ $company }}</span><h1>{{ __('theme_contact_page.heading') }}</h1><p>{{ __('theme_contact_page.intro') }}</p></div>
-    @if(filled(strip_tags((string) $contactBody)))<div class="tc-contact-copy">{!! $contactBody !!}</div>@endif
     <div class="tc-contact-layout">
+        <div class="tc-contact-overview">
+            <header class="tc-contact-heading"><span>{{ $company }}</span><h1>{{ __('theme_contact_page.heading') }}</h1><p>{{ $contactIntro ?? __('theme_contact_page.intro') }}</p></header>
+            @if(filled(strip_tags((string) $contactBody)))<div class="tc-contact-copy">{!! $contactBody !!}</div>@endif
+        @if($phone || $email || $address)
         <aside class="tc-contact-info" aria-labelledby="tc-contact-info-title">
             <h2 id="tc-contact-info-title">{{ __('theme_contact_page.information') }}</h2><p>{{ __('theme_contact_page.direct_intro') }}</p>
             @if($phone)<div class="tc-contact-item"><span class="tc-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3h4l2 5-3 2c2 4 3 5 7 7l2-3 5 2v4c-10 3-22-9-17-17Z"/></svg></span><div><h3>{{ __('theme_contact_page.phone') }}</h3><a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone) }}">{{ $phone }}</a></div></div>@endif
             @if($email)<div class="tc-contact-item"><span class="tc-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5h18v14H3Z M3 5l9 7 9-7"/></svg></span><div><h3>{{ __('theme_contact_page.email') }}</h3><a href="mailto:{{ $email }}">{{ $email }}</a></div></div>@endif
             @if($address)<div class="tc-contact-item"><span class="tc-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-8 8-14a8 8 0 0 0-16 0c0 6 8 14 8 14Z M12 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6"/></svg></span><div><h3>{{ __('theme_contact_page.address') }}</h3><p>{{ $address }}</p><a class="tc-contact-directions" href="https://www.google.com/maps/search/?api=1&amp;query={{ rawurlencode($address) }}" target="_blank" rel="noopener noreferrer">{{ __('theme_contact_page.directions') }} ↗</a></div></div>@endif
         </aside>
+        @endif
+        </div>
         <section class="tc-contact-form-card" aria-labelledby="tc-contact-form-title">
             <h2 id="tc-contact-form-title">{{ __('theme_contact_page.message_heading') }}</h2><p>{{ __('theme_contact_page.required_hint') }}</p>
             @if(session('contact_status'))<div class="tc-contact-notice" role="status">{{ session('contact_status') }}</div>@endif

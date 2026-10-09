@@ -299,35 +299,7 @@
                                 @endif
                             </div>
                         </article>
-                        <aside class="xd-side-card">
-                            <h3>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.f83250cd1d652333', 'Liên kết nhanh') }}</h3>
-                            <a href="{{ route('site.services.index') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.44cd126d3a55a78b', 'Tất cả dịch vụ') }}</a>
-                            @foreach ($navItems->take(5) as $item)
-                                <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
-                            @endforeach
-
-                            @if (!empty($latestServices) && $latestServices->count() > 0)
-                                <div class="xd-latest-services">
-                                    <h4>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0301', app()->getLocale(), 'legacy_inline.0e16ca70307dacb8', 'Dịch vụ mới nhất') }}</h4>
-                                    @foreach ($latestServices->take(15) as $service)
-                                        @php
-                                            $serviceImage = $service->featuredImage?->image_url;
-                                            $serviceAlt = $service->featuredImage?->alt_text ?: $service->title;
-                                        @endphp
-                                        <a class="xd-latest-service-link" href="{{ route('site.services.show', ['slug' => $service->slug]) }}">
-                                            <span class="xd-latest-service-thumb">
-                                                @if ($serviceImage)
-                                                    <img src="{{ $serviceImage }}" alt="{{ $serviceAlt }}" loading="lazy">
-                                                @else
-                                                    <span class="xd-latest-service-placeholder">+</span>
-                                                @endif
-                                            </span>
-                                            <span class="xd-latest-service-title">{{ $service->title }}</span>
-                                        </a>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </aside>
+                        @include('themes.common.detail-recommendations')
                     </section>
             </div>
 </main>

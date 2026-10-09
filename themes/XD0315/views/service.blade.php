@@ -289,13 +289,7 @@
                                 @endif
                             </div>
                         </article>
-                        <aside class="xd-side-card">
-                            <h3>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.d026809a2e96bf27', 'Liên kết nhanh') }}</h3>
-                            <a href="{{ route('site.services.index') }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD0315', app()->getLocale(), 'legacy_inline.1732748917910f72', 'Tất cả dịch vụ') }}</a>
-                            @foreach ($navItems->take(5) as $item)
-                                <a href="{{ $item['href'] }}">{{ $item['label'] }}</a>
-                            @endforeach
-                        </aside>
+                        @include('themes.common.detail-recommendations')
                     </section>
             </div>
 </main>

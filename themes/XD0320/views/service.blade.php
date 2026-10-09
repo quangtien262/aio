@@ -246,4 +246,5 @@
                     </section>
             </div>
 </main>
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
 @endsection

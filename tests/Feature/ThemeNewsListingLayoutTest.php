@@ -28,6 +28,14 @@ class ThemeNewsListingLayoutTest extends TestCase
             foreach (['index' => '/vi/c', 'category' => '/vi/c/'.$category->slug, 'empty' => '/vi/c?q=does-not-exist'] as $mode => $url) {
                 $response = $this->get($url)->assertOk()->assertSee('class="theme-news-listing"', false)->assertDontSee('Hidden draft');
                 if ($mode !== 'empty') {
+                    if ($theme !== 'NT501') {
+                        $document = new \DOMDocument;
+                        @$document->loadHTML($response->getContent());
+                        $xpath = new \DOMXPath($document);
+                        $this->assertSame(1, (int) $xpath->evaluate('count(//article[@data-news-item="lead"])'), $theme);
+                        $this->assertSame(2, (int) $xpath->evaluate('count(//article[@data-news-item="secondary"])'), $theme);
+                        $this->assertSame($response->viewData('listingItems')->count(), (int) $xpath->evaluate('count(//article[@data-news-item])'), $theme);
+                    }
                     $response->assertSee('Kiến thức và kinh nghiệm dành cho bạn 1')->assertSee('/vi/n/layout-post-1', false)->assertSee('page=2', false)->assertSee('/theme-demo/xd-shared/travel-2.jpg', false);
                 } else {
                     $response->assertSee('Không tìm thấy bài viết phù hợp.');

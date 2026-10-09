@@ -30,15 +30,7 @@
         </article>
 
         <aside class="n88-article-sidebar" aria-label="@themeT('NEWS88.latest_articles', 'Bài viết mới nhất')">
-            <header><span>@themeT('NEWS88.updated', 'Mới cập nhật')</span><h2>@themeT('NEWS88.latest_articles', 'Bài viết mới nhất')</h2></header>
-            <div class="n88-article-latest">
-                @foreach($latest as $item)
-                    <article>
-                        <a class="n88-latest-thumb" href="{{ $postUrl($item) }}">@if($postImage($item))<img src="{{ $postImage($item) }}" alt="{{ data_get($item, 'title') }}" loading="lazy">@else<i class="fa-regular fa-newspaper"></i>@endif</a>
-                        <div><small>{{ data_get($item, 'publish_at')?->format('d/m/Y') }}</small><h3><a href="{{ $postUrl($item) }}">{{ data_get($item, 'title') }}</a></h3></div>
-                    </article>
-                @endforeach
-            </div>
+            @include('themes.common.detail-recommendations')
             @if(!empty($sidebarTags))
                 <section class="n88-sidebar-tags" aria-labelledby="n88-sidebar-tags-title">
                     <h2 id="n88-sidebar-tags-title">{{ __('storefront.tags.label') }}</h2>

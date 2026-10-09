@@ -24,7 +24,7 @@
         </article>
         @if(collect($relatedPosts ?? [])->isNotEmpty())<section class="ec96-article-related"><h2>@themeT('article.related', 'Có thể bạn quan tâm')</h2><div class="ec96-article-related-grid">@foreach($relatedPosts as $item)<a class="ec96-article-card" href="{{ route('site.blog.show', ['slug' => $item->slug]) }}">@if(data_get($item, 'featuredMedia.file_url'))<img loading="lazy" src="{{ $item->featuredMedia->file_url }}" alt="{{ $item->title }}">@endif<div><h3>{{ $item->title }}</h3><span>@themeT('article.read', 'Đọc bài viết') →</span></div></a>@endforeach</div></section>@endif
     </div><aside class="ec96-article-sidebar">
-        @if(collect($latestPosts ?? [])->isNotEmpty())<section class="ec96-article-latest"><h2>@themeT('article.latest', 'Tin mới nhất')</h2>@foreach($latestPosts as $item)<a class="ec96-article-latest-item" href="{{ route('site.blog.show', ['slug' => $item->slug]) }}">@if(data_get($item, 'featuredMedia.file_url'))<img loading="lazy" src="{{ $item->featuredMedia->file_url }}" alt="">@endif<div><h3>{{ $item->title }}</h3>@if($item->publish_at)<time datetime="{{ $item->publish_at->toAtomString() }}">{{ $item->publish_at->format('d/m/Y') }}</time>@endif</div></a>@endforeach<a class="ec96-article-all" href="{{ route('site.blog.index') }}">@themeT('article.all', 'Xem tất cả tin') →</a></section>@endif
+        @include('themes.common.detail-recommendations')
         <section class="ec96-article-promo"><h2>@themeT('article.browse', 'Khám phá sản phẩm gia đình')</h2><p>@themeT('article.browse_text', 'Tìm những sản phẩm phù hợp với nhu cầu chăm sóc tổ ấm của bạn.')</p><a href="{{ route('site.catalog.search') }}">@themeT('article.browse', 'Khám phá sản phẩm gia đình') →</a></section>
     </aside></div>
 </div></main>

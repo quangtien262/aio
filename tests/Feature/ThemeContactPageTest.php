@@ -41,6 +41,10 @@ class ThemeContactPageTest extends TestCase
                 $this->assertGreaterThan(0, $xpath->query('.//input[@name="_token"]', $newsletter)->length, "$theme newsletter CSRF");
             }
             $this->assertGreaterThan(0, $forms->length, $theme);
+            if (! in_array($theme, ['BOOK920', 'DN302', 'DN350', 'DN351'], true)) {
+                $this->assertSame(1, $xpath->query('//main[contains(@class,"tc-contact-page")]//div[@class="tc-contact-overview"]/header/h1')->length, "$theme contact heading");
+                $this->assertSame(1, $xpath->query('//div[@class="tc-contact-overview"]/aside[@aria-labelledby="tc-contact-info-title"]')->length, "$theme contact information");
+            }
             foreach (['name', 'email', 'message', '_token'] as $field) {
                 $this->assertGreaterThan(0, $xpath->query('.//*[@name="'.$field.'"]', $forms->item(0))->length, "$theme: $field");
             }
@@ -51,6 +55,16 @@ class ThemeContactPageTest extends TestCase
                 file_put_contents($folder.'/'.$theme.'.html', $response->getContent());
             }
         }
+    }
+
+    public function test_contact_page_repairs_legacy_branding_and_omits_missing_contact_details(): void
+    {
+        $profile = SiteProfile::create(['site_name' => 'Contact audit', 'website_type' => 'services', 'active_theme_key' => 'XD0307', 'branding' => ['company_name' => 'Logistics Viá»‡t', 'support_location' => 'Hà Ná»™i']]);
+        $this->get('/vi/contact')->assertOk()->assertSee('Logistics Việt')->assertSee('Hà Nội')
+            ->assertDontSee('href="tel:', false)->assertDontSee('href="mailto:', false);
+        $profile->update(['branding' => []]);
+        $this->get('/vi/contact')->assertOk()->assertSee('tc-contact-name', false)
+            ->assertDontSee('maps/search', false)->assertDontSee('id="tc-contact-info-title"', false);
     }
 
     public function test_contact_form_preserves_errors_and_displays_submission_confirmation(): void

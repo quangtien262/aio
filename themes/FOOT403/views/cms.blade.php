@@ -11,4 +11,7 @@
     @else
         <section class="dr-section dr-cms"><div class="dr-container"><h1>{{ $cmsTitle }}</h1><div>{!! $cmsBody !!}</div></div></section>
     @endif
+@if(($contentType ?? '') === 'service')
+@include('themes.common.detail-recommendations', ['recommendationLayout' => 'sections'])
+@endif
 @endsection
