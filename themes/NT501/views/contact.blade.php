@@ -178,4 +178,5 @@
 
 @section('content')
     @include('themes.common.contact')
+    @include('theme-nt501::partials.contact-page-styles')
 @endsection

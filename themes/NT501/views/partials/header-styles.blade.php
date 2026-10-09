@@ -1,6 +1,7 @@
 <style>
 body{margin:0}
-.foot-header .foot-container{width:min(1180px,calc(100% - 48px));margin-inline:auto;box-sizing:border-box}
+.nt-page{--nt-shell-width:min(1180px,calc(100% - 48px))}
+.foot-header .foot-container{width:var(--nt-shell-width);margin-inline:auto;box-sizing:border-box}
 .foot-header__navigation{background:#fff;border-bottom:1px solid #e9e5dc}
 .foot-header .foot-navigation{min-height:52px;gap:24px}
 .foot-header .foot-navigation a{padding:17px 4px;font:700 13px/18px var(--nt-sans);position:relative;white-space:nowrap;transition:color .2s}
@@ -21,7 +22,8 @@ body{margin:0}
     .foot-header__tagline{display:none}
 }
 @media(max-width:600px){
-    .foot-header .foot-container{width:calc(100% - 32px)}
+    .nt-page{--nt-shell-width:calc(100% - 32px)}
+    .foot-header .foot-container{width:var(--nt-shell-width)}
     .foot-header .foot-navigation-wrap{padding:8px 0}
     .foot-header .foot-mobile-toggle{display:flex;align-items:center;justify-content:center;gap:9px;min-height:36px;padding:8px 12px;border:1px solid #e5e0d6;border-radius:4px;font:600 12px var(--nt-sans)}
     .foot-header .foot-navigation{min-height:0;gap:0;padding-top:6px}
@@ -34,4 +36,6 @@ body{margin:0}
     .foot-header .foot-header__account button,.foot-header .foot-header__account>a{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.foot-header .foot-navigation a{transition:none}}
+.nt-page .xd-page-main>.xd-container{width:var(--nt-shell-width);margin-inline:auto;min-width:0;box-sizing:border-box}
+.nt-page .xd-page-main .xd-detail-body{padding-inline:0}
 </style>

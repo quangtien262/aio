@@ -1810,8 +1810,9 @@ class CmsSiteController
             $extra['latestServices'] = $this->resolveLatestServices($siteProfile, $entry, 15);
         }
 
-        if ($contentType === 'service' && in_array(strtoupper((string) data_get($activeTheme, 'key')), ['XD0305', 'XD0306'], true)) {
-            $extra = array_merge($extra, $this->resolveArticleCatalogSidebar($websiteKey, 10, $entry));
+        if (($contentType === 'service' && in_array(strtoupper((string) data_get($activeTheme, 'key')), ['XD0305', 'XD0306'], true))
+            || ($contentType === 'page' && in_array(strtoupper((string) data_get($activeTheme, 'key')), ['XD0305', 'NT502'], true))) {
+            $extra = array_merge($extra, $this->resolveArticleCatalogSidebar($websiteKey, 10, $entry instanceof CmsService ? $entry : null));
             $extra['serviceSidebarPosts'] = CmsPost::query()->with('featuredMedia')
                 ->where('website_key', $websiteKey)->where('status', 'published')
                 ->where(fn (EloquentBuilder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()))

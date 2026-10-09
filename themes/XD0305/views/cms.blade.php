@@ -254,7 +254,8 @@
 @endpush
 
 @section('content')
-<main class="xd-page-main">
+@if(($contentType ?? '') === 'page')@include('theme-xd0305::partials.content-page-styles')@endif
+<main @class(['xd-page-main', 'xd305-content-page' => ($contentType ?? '') === 'page'])>
             <div class="xd-container">
                     @if (isset($listingItems))
                     <h1>{{ $pageTitle ?? 'Dự án' }}</h1>
@@ -272,7 +273,7 @@
                     @else
                     <section class="xd-detail-card">
                         <div class="xd-detail-body">
-                            <span class="xd-kicker">{{ strtoupper($contentType ?? 'PAGE') }}</span>
+                            <span class="xd-kicker">{{ ($contentType ?? '') === 'page' ? __('storefront.menu.about') : strtoupper($contentType ?? 'PAGE') }}</span>
                             <h1>{{ $entry->title }}</h1>
                             @if (!empty($entry->excerpt))
                                 <p class="xd-detail-summary">{{ $entry->excerpt }}</p>
@@ -282,6 +283,7 @@
                             </div>
                         </div>
                     </section>
+                    @if(($contentType ?? '') === 'page')@include('theme-xd0305::partials.content-collections')@endif
                     @endif
             </div>
 </main>

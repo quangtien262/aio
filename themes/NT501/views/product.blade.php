@@ -201,6 +201,7 @@
 @endpush
 
 @section('content')
+    @include('theme-nt501::partials.product-alignment-styles')
         <main class="xd-page-main">
             <div class="xd-container">
                 @if (session('cart_success'))
