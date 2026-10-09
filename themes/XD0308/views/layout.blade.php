@@ -28,7 +28,7 @@
         @include('theme-xd0308::partials.comgo-overrides')
 </x-storefront-head>
 <body>
-    <div id="top" class="xd4-page">
+    <div id="top" class="xd4-page{{ request()->routeIs('site.home') ? '' : ' xd8-inner-page' }}">
         @include('theme-xd0308::partials.header')
         @yield('content')
         @include('theme-xd0308::partials.footer')

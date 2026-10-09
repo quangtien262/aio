@@ -8,7 +8,7 @@
             @foreach ($navItems ?? [] as $item)<a href="{{ $item['href'] ?? '#' }}">{{ $item['label'] ?? 'Menu' }}</a>@endforeach
         </nav>
         <form class="xd4-search" method="GET" action="{{ route('site.catalog.search') }}"><input type="search" name="q" placeholder="Tìm kiếm" aria-label="Tìm kiếm"><button type="submit" aria-label="Tìm kiếm">⌕</button></form>
-        <a class="xd4-quote" href="#lien-he">Đăng ký tư vấn <span>→</span></a>
+        <a class="xd4-quote" href="{{ request()->routeIs('site.home') ? '#lien-he' : route('site.contact') }}">Đăng ký tư vấn <span>→</span></a>
 
             @include('partials.storefront-language-switcher')
         </div>
