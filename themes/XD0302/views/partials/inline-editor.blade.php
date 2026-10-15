@@ -39,6 +39,7 @@
                                     <button type="button" data-xd-media-upload-trigger>Upload ảnh giới thiệu</button>
                                     <small data-xd-media-upload-status></small>
                                 </div>
+                                <img data-xd-media-preview alt="Xem trước ảnh của khối" hidden style="max-width:100%;max-height:160px;object-fit:contain;border-radius:10px">
                             </div>
                         </div>
                     </section>

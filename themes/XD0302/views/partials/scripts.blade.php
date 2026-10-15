@@ -338,11 +338,13 @@
             const syncMediaEditorVisibility = (block) => {
                 if (!mediaEditor) return;
                 const blockType = block?.block_type || '';
-                mediaEditor.hidden = !['about_experience', 'featured_categories', 'landing_contact'].includes(blockType);
+                const hasBlockImage = Object.prototype.hasOwnProperty.call(normalizeContentObject(block?.media), 'image');
+                mediaEditor.hidden = !hasBlockImage && !['about_experience', 'featured_categories', 'landing_contact'].includes(blockType);
                 if (mediaEditor.hidden) return;
 
                 const isContact = blockType === 'landing_contact';
                 const isFeaturedCategories = blockType === 'featured_categories';
+                const isAbout = blockType === 'about_experience';
                 const title = mediaEditor.querySelector('[data-xd-media-title]');
                 const note = mediaEditor.querySelector('[data-xd-media-note]');
                 const label = mediaEditor.querySelector('[data-xd-media-label]');
@@ -350,18 +352,29 @@
                 const uploadTrigger = mediaEditor.querySelector('[data-xd-media-upload-trigger]');
                 const imageLabel = isContact
                     ? 'Ảnh nền liên hệ'
-                    : (isFeaturedCategories ? 'Ảnh danh mục nổi bật' : 'Ảnh giới thiệu');
+                    : (isFeaturedCategories ? 'Ảnh danh mục nổi bật' : (isAbout ? 'Ảnh giới thiệu' : 'Ảnh của khối'));
                 if (title) title.textContent = isContact
                     ? 'Ảnh nền khu vực liên hệ'
-                    : (isFeaturedCategories ? 'Ảnh khối danh mục nổi bật' : 'Ảnh tổng hợp khối giới thiệu');
+                    : (isFeaturedCategories ? 'Ảnh khối danh mục nổi bật' : (isAbout ? 'Ảnh tổng hợp khối giới thiệu' : 'Hình ảnh của khối'));
                 if (note) note.textContent = isContact
                     ? 'Ảnh hiển thị bên trái form liên hệ. Có thể nhập liên kết hoặc upload ảnh mới.'
                     : (isFeaturedCategories
                         ? 'Ảnh lớn hiển thị bên trái danh sách danh mục. Có thể nhập liên kết hoặc upload ảnh mới.'
-                        : 'Cột trái dùng duy nhất một ảnh hoàn chỉnh, bao gồm cả hình ảnh và nội dung kinh nghiệm nếu cần.');
+                        : (isAbout
+                            ? 'Cột trái dùng duy nhất một ảnh hoàn chỉnh, bao gồm cả hình ảnh và nội dung kinh nghiệm nếu cần.'
+                            : 'Nhập liên kết hoặc upload ảnh mới để thay ảnh của khối. Ảnh được dùng chung cho các ngôn ngữ.'));
                 if (label) label.textContent = imageLabel;
                 if (imageInput) imageInput.setAttribute('aria-label', imageLabel);
                 if (uploadTrigger) uploadTrigger.textContent = `Upload ${imageLabel.toLowerCase()}`;
+            };
+            const syncMediaPreview = () => {
+                const preview = mediaEditor?.querySelector('[data-xd-media-preview]');
+                if (!preview) return;
+                const imageUrl = mediaFields.find((input) => input.dataset.xdMediaField === 'image')?.value.trim() || '';
+                preview.hidden = imageUrl === '';
+                preview.style.display = imageUrl ? 'block' : 'none';
+                if (imageUrl) preview.src = imageUrl;
+                else preview.removeAttribute('src');
             };
             const loadMediaFields = (block) => {
                 const media = normalizeContentObject(block?.media);
@@ -369,16 +382,19 @@
                     const key = input.dataset.xdMediaField;
                     input.value = media[key] ?? '';
                 });
+                mediaEditor?.querySelectorAll('[data-xd-media-upload-status]').forEach((status) => { status.textContent = ''; });
+                syncMediaPreview();
             };
             const mergeMediaFields = (media = {}) => {
                 if (!mediaEditor || mediaEditor.hidden) return media;
 
                 const next = {...normalizeContentObject(media)};
-                delete next.image_secondary;
+                if (activeBlock?.block_type === 'about_experience') delete next.image_secondary;
                 mediaFields.forEach((input) => {
                     const key = input.dataset.xdMediaField;
                     const value = input.value.trim();
-                    if (value !== '') next[key] = value;
+                    // Keep the image slot editable when its URL is cleared.
+                    if (value !== '' || key === 'image') next[key] = value;
                     else delete next[key];
                 });
 
@@ -993,6 +1009,7 @@
             });
             document.querySelectorAll('[data-xd-item-close]').forEach((button) => button.addEventListener('click', closeItemModal));
             localeTabs.forEach((button) => button.addEventListener('click', () => switchEditorLocale(button.dataset.xdLocaleTab || activeEditorLocale)));
+            mediaFields.forEach((input) => input.addEventListener('input', syncMediaPreview));
             document.querySelectorAll('[data-xd-media-upload]').forEach((fileInput) => {
                 const row = fileInput.closest('[data-xd-media-row]');
                 const targetInput = mediaFields.find((input) => input.dataset.xdMediaField === fileInput.dataset.xdMediaUpload);
