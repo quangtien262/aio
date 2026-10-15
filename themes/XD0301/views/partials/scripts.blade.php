@@ -816,8 +816,8 @@
                 editor.hidden = false;
             };
             document.addEventListener('click', (event) => {
-                const button = event.target.closest('[data-xd-edit-block]');
-                if (button) openBlockEditor(button.dataset.xdEditBlock);
+                const button = event.target.closest('[data-xd-edit-block], [data-landing-block-edit]');
+                if (button) openBlockEditor(button.dataset.xdEditBlock || button.dataset.landingBlockEdit);
             });
             document.documentElement.dataset.xdEditorReady = '1';
 
