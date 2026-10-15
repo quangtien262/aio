@@ -87,7 +87,7 @@ export default function CmsPartnerFormModal({
 
     return (
         <Drawer
-            title={editingPartner?.id ? 'Cap nhat doi tac CMS' : 'Tao doi tac CMS'}
+            title={editingPartner?.id ? 'Cập nhật đối tác' : 'Tạo đối tác'}
             open={open}
             onClose={handleCancel}
             width={860}
@@ -95,7 +95,7 @@ export default function CmsPartnerFormModal({
             className="cms-page-drawer"
             extra={(
                 <Space>
-                    <Button onClick={handleCancel}>Huy</Button>
+                    <Button onClick={handleCancel}>Hủy</Button>
                     <Button type="primary" disabled={!canManage || (!editingPartner?.id && translationMode)} onClick={handleSubmit}>
                         {!editingPartner?.id && translationMode ? 'Lưu tại ngôn ngữ gốc' : (translationMode ? 'Lưu bản dịch' : 'Lưu đối tác')}
                     </Button>
@@ -108,7 +108,7 @@ export default function CmsPartnerFormModal({
                 sourceLocale={sourceLocale}
                 editingRecord={editingPartner}
                 entityLabel="đối tác"
-                translationDescription="Tên, slug, mô tả, alt text của logo và trạng thái xuất bản được lưu riêng cho ngôn ngữ này. Logo, liên kết, thứ tự và thiết lập nổi bật tiếp tục dùng từ bản gốc."
+                translationDescription="Tên, slug, mô tả đối tác, mô tả ảnh và trạng thái xuất bản được lưu riêng cho ngôn ngữ này. Logo, liên kết, thứ tự và thiết lập nổi bật tiếp tục dùng từ bản gốc."
                 sourceDescription="Đây là ngôn ngữ gốc. Logo, liên kết, thứ tự và thiết lập nổi bật được quản lý tại đây."
                 isDirty={() => form.isFieldsTouched()}
                 getCurrentValues={() => form.getFieldsValue(true)}
@@ -116,15 +116,15 @@ export default function CmsPartnerFormModal({
             />
             <Form form={form} layout="vertical" initialValues={{ ...defaultValues, ...(editingPartner ?? {}) }}>
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    <Card size="small" title="Thong tin doi tac">
+                    <Card size="small" title="Thông tin đối tác">
                         <Row gutter={16}>
                             <Col xs={24} md={14}>
-                                <Form.Item name="title" label="Ten doi tac" rules={[{ required: true, message: 'Nhap ten doi tac' }]}>
+                                <Form.Item name="title" label="Tên đối tác" rules={[{ required: true, message: 'Nhập tên đối tác' }]}>
                                     <Input placeholder="HOABINH" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={10}>
-                                <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhap slug doi tac' }]}>
+                                <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug đối tác' }]}>
                                     <Input placeholder="hoa-binh" onChange={handleSlugChange} />
                                 </Form.Item>
                             </Col>
@@ -136,36 +136,36 @@ export default function CmsPartnerFormModal({
                                         optionType="button"
                                         buttonStyle="solid"
                                         options={[
-                                            { label: 'Ban nhap', value: 'draft' },
-                                            { label: 'Da xuat ban', value: 'published' },
+                                            { label: 'Bản nháp', value: 'draft' },
+                                            { label: 'Đã xuất bản', value: 'published' },
                                         ]}
                                     />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
-                                <Form.Item name="sort_order" label="Thu tu">
+                                <Form.Item name="sort_order" label="Thứ tự">
                                     <InputNumber disabled={translationMode} min={0} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} md={8}>
-                                <Form.Item name="is_featured" label="Doi tac noi bat" valuePropName="checked">
+                                <Form.Item name="is_featured" label="Đối tác nổi bật" valuePropName="checked">
                                     <Switch disabled={translationMode} />
                                 </Form.Item>
                             </Col>
                         </Row>
-                        <Form.Item name="description" label="Mo ta">
-                            <Input.TextArea rows={3} placeholder="Mo ta ngan ve doi tac." />
+                        <Form.Item name="description" label="Mô tả">
+                            <Input.TextArea rows={3} placeholder="Mô tả ngắn về đối tác." />
                         </Form.Item>
-                        <Form.Item name="link_url" label="Link click">
-                            <Input disabled={translationMode} placeholder="https://example.com hoac /vi/doi-tac" />
+                        <Form.Item name="link_url" label="Liên kết">
+                            <Input disabled={translationMode} placeholder="https://example.com hoặc /vi/doi-tac" />
                         </Form.Item>
                     </Card>
 
-                    <Card size="small" title="Logo / hinh anh">
+                    <Card size="small" title="Logo / hình ảnh">
                         <Form.Item name="image_url" hidden>
                             <Input />
                         </Form.Item>
-                        <Form.Item label="Logo / hinh anh" style={{ marginBottom: 16 }}>
+                        <Form.Item label="Logo / hình ảnh" style={{ marginBottom: 16 }}>
                             <MultiMediaPicker
                                 open={open}
                                 value={imageUrl ? [imageUrl] : []}
@@ -175,21 +175,21 @@ export default function CmsPartnerFormModal({
                                 canManage={canManage && !translationMode}
                                 callAdminApi={callAdminApi}
                                 mediaOptions={mediaOptions}
-                                recordTitle={titleValue || 'Partner logo'}
-                                previewTitle="Logo doi tac"
-                                uploadButtonLabel="Upload logo / hinh anh"
-                                uploadHint="Upload hoac chon tu thu vien media. Neu chon nhieu anh, anh dau tien se duoc dung lam logo."
-                                libraryModalTitle="Chon logo doi tac tu thu vien"
+                                recordTitle={titleValue || 'Logo đối tác'}
+                                previewTitle="Logo đối tác"
+                                uploadButtonLabel="Tải lên logo / hình ảnh"
+                                uploadHint="Tải ảnh lên hoặc chọn từ thư viện. Nếu chọn nhiều ảnh, ảnh đầu tiên sẽ được dùng làm logo."
+                                libraryModalTitle="Chọn logo đối tác từ thư viện"
                                 urlPlaceholder="https://cdn.example.com/logo.png"
-                                uploadSuccessMessage="Da them logo doi tac."
-                                urlSuccessMessage="Da luu URL vao thu vien media va them logo."
-                                uploadErrorMessage="Upload logo doi tac khong thanh cong."
-                                urlErrorMessage="Khong the luu logo tu URL."
-                                emptyValueMessage="Nhap URL hinh anh truoc khi luu."
+                                uploadSuccessMessage="Đã thêm logo đối tác."
+                                urlSuccessMessage="Đã lưu URL vào thư viện và thêm logo."
+                                uploadErrorMessage="Tải logo đối tác không thành công."
+                                urlErrorMessage="Không thể lưu logo từ URL."
+                                emptyValueMessage="Nhập URL hình ảnh trước khi lưu."
                             />
                         </Form.Item>
-                        <Form.Item name="image_alt" label="Alt text">
-                            <Input placeholder="Logo doi tac" />
+                        <Form.Item name="image_alt" label="Mô tả ảnh">
+                            <Input placeholder="Logo đối tác" />
                         </Form.Item>
                     </Card>
                 </Space>

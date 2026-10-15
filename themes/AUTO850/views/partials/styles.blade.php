@@ -15,4 +15,15 @@
 
 
 .a850-product-recommendations .a850-product-image{height:auto;min-height:0}.a850-product-page .a850-product-card{min-width:0}
+
+.a850-about-tabs article{transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.a850-about-tabs i{transition:color .2s ease,transform .2s ease}
+@media(hover:hover){
+    .a850-about-tabs article:hover{background:var(--a850-red);color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)}
+    .a850-about-tabs article:hover i{color:#fff;transform:scale(1.12)}
+}
+@media(prefers-reduced-motion:reduce){
+    .a850-about-tabs article,.a850-about-tabs i{transition:none}
+    .a850-about-tabs article:hover i{transform:none}
+}
 </style>

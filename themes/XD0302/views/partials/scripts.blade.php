@@ -242,6 +242,7 @@
                 cms_menus: 'Menu website',
                 cms_team_members: 'Đội ngũ',
                 cms_testimonials: 'Đánh giá',
+                cms_partners: 'Đối tác',
             };
             const sourceManageUrls = {
                 cms_services: @json(route('admin.index', ['any' => 'cms/services'])),
@@ -257,6 +258,7 @@
                 cms_menus: @json(route('admin.index', ['any' => 'cms/menus'])),
                 cms_team_members: @json(route('admin.index', ['any' => 'cms/team'])),
                 cms_testimonials: @json(route('admin.index', ['any' => 'cms/testimonials'])),
+                cms_partners: @json(route('admin.index', ['any' => 'cms/partners'])),
             };
             const defaultBlockLimits = {
                 hero_slider: 3,
@@ -486,6 +488,7 @@
                     const source = currentSourceValue();
                     const url = sourceManageUrls[source] || '';
                     manageSourceLink.hidden = customMode || url === '';
+                    manageSourceLink.style.display = manageSourceLink.hidden ? 'none' : '';
                     manageSourceLink.href = url || '#';
                     manageSourceLink.textContent = `Quản lý ${sourceLabels[source] || 'nội dung'}`;
                 }
@@ -599,6 +602,12 @@
                 return 'items';
             };
             const editorItemFields = (blockType) => {
+                if (blockType === 'auto850_about') {
+                    return [
+                        ['title', 'Tiêu đề'],
+                        ['summary', 'Mô tả', 'textarea'],
+                    ];
+                }
                 if (blockType === 'hero_slider') {
                     return [
                         ['kicker', 'Nhãn nhỏ'],
@@ -715,7 +724,7 @@
                 const summary = item.summary || item.answer || item.description || item.quote || item.role || item.company || item.url || item.link_url || 'Chưa có mô tả.';
                 const image = item.image || item.image_url || item.thumbnail || item.logo || item.avatar || '';
                 const imageAlt = item.alt || title;
-                const thumb = image
+                const thumb = blockType === 'auto850_about' ? '' : image
                     ? `<span class="xd-editor-item-thumb"><img src="${escapeHtml(image)}" alt="${escapeHtml(imageAlt)}"></span>`
                     : '<span class="xd-editor-item-thumb is-empty">No img</span>';
                 row.innerHTML = `
@@ -732,6 +741,9 @@
                         <button type="button" class="xd-editor-remove" data-xd-remove-item>Xóa</button>
                     </div>` : ''}
                 `;
+                if (blockType === 'auto850_about') {
+                    row.querySelector('.xd-editor-item-main').style.gridTemplateColumns = 'minmax(0,1fr)';
+                }
                 if (canEditItem) {
                     row.querySelector('[data-xd-edit-item]')?.addEventListener('click', () => {
                         const currentIndex = Array.from(itemList.querySelectorAll('[data-xd-item-row]')).indexOf(row);
@@ -845,7 +857,7 @@
                         company: item?.company ?? item?.role ?? '',
                     }));
                 }
-                const canEditList = ['hero_slider', 'about_experience', 'featured_categories', 'content_mosaic', 'content_showcase', 'latest_posts', 'featured_services', 'featured_service_list', 'completed_projects_list', 'project_gallery', 'faq_showcase', 'team_members', 'testimonials', 'testimonial_showcase', 'partner_logos'].includes(blockType);
+                const canEditList = ['hero_slider', 'about_experience', 'auto850_about', 'featured_categories', 'content_mosaic', 'content_showcase', 'latest_posts', 'featured_services', 'featured_service_list', 'completed_projects_list', 'project_gallery', 'faq_showcase', 'team_members', 'testimonials', 'testimonial_showcase', 'partner_logos'].includes(blockType);
 
                 itemList.innerHTML = '';
                 if (!canEditList) {
@@ -862,8 +874,10 @@
                 syncSourceModeUi();
                 if (itemsTitle) itemsTitle.textContent = blockType === 'about_experience'
                     ? (aboutUsesValueButtons ? 'Danh sách nút giá trị' : 'Danh sách tab giới thiệu')
-                    : 'Danh sách nội dung';
-                itemHelp.textContent = blockType === 'about_experience' && aboutUsesValueButtons
+                    : (blockType === 'auto850_about' ? 'Các điểm nổi bật' : 'Danh sách nội dung');
+                itemHelp.textContent = blockType === 'auto850_about'
+                    ? 'Chỉnh tiêu đề và mô tả của từng mục trong khối giới thiệu.'
+                    : blockType === 'about_experience' && aboutUsesValueButtons
                     ? 'Mỗi mục là một nút gồm tên hiển thị và liên kết khi click.'
                     : blockType === 'about_experience'
                     ? 'Mỗi mục là một tab. Có thể thêm, sửa hoặc xóa tab cho từng ngôn ngữ.'

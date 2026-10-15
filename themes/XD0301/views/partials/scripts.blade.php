@@ -221,6 +221,7 @@
                 cms_projects: 'Dự án',
                 cms_team_members: 'Đội ngũ',
                 cms_testimonials: 'Đánh giá',
+                cms_partners: 'Đối tác',
             };
             const sourceManageUrls = {
                 cms_services: @json(route('admin.index', ['any' => 'cms/services'])),
@@ -235,6 +236,7 @@
                 cms_projects: @json(route('admin.index', ['any' => 'cms/projects'])),
                 cms_team_members: @json(route('admin.index', ['any' => 'cms/team'])),
                 cms_testimonials: @json(route('admin.index', ['any' => 'cms/testimonials'])),
+                cms_partners: @json(route('admin.index', ['any' => 'cms/partners'])),
             };
             const defaultBlockLimits = {
                 hero_slider: 3,
@@ -351,7 +353,7 @@
             const normalizeSourceOptions = (options = []) => options
                 .map((option) => typeof option === 'string' ? {value: option, label: sourceLabels[option] || option} : {
                     value: option.value || option.key || '',
-                    label: option.label || sourceLabels[option.value || option.key] || option.value || option.key || '',
+                    label: sourceLabels[option.value || option.key] || option.label || option.value || option.key || '',
                 })
                 .filter((option) => option.value !== '');
             const renderCategorySelect = (source, selectedValue = '') => {
