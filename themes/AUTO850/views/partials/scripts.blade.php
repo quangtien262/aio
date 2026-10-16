@@ -2,6 +2,20 @@
 (() => {
     const nav = document.querySelector('[data-a850-nav]');
     document.querySelector('[data-a850-menu]')?.addEventListener('click', () => nav?.classList.toggle('is-open'));
+    document.querySelectorAll('.a850-about-tabs').forEach((group) => {
+        const items = Array.from(group.querySelectorAll('.a850-about-item'));
+        const activate = (selected) => items.forEach((item) => {
+            const active = item === selected;
+            item.classList.toggle('is-active', active);
+            item.setAttribute('aria-pressed', String(active));
+        });
+
+        items.forEach((item) => {
+            item.addEventListener('mouseenter', () => activate(item));
+            item.addEventListener('click', () => activate(item));
+            item.addEventListener('focus', () => activate(item));
+        });
+    });
     document.querySelectorAll('[data-a850-countdown]').forEach((countdown) => {
         let seconds = Math.max(1, Number(countdown.dataset.a850Countdown || 48)) * 3600;
         const render = () => {
