@@ -62,6 +62,13 @@ class LandingAdminEditorCoverageTest extends TestCase
             if (! str_contains($content, 'updateUrlTemplate')) {
                 $failures[] = "{$themeKey}: thiếu script mở/lưu editor";
             }
+            if (str_contains($content, '<aside class="aio-landing-editor-toolbar"')) {
+                foreach (['data-reorder-url=', 'data-sort-block-id=', 'data-landing-admin-sort', 'landing-blocks-reordered'] as $marker) {
+                    if (! str_contains($content, $marker)) {
+                        $failures[] = "{$themeKey}: thiếu thành phần sắp xếp {$marker}";
+                    }
+                }
+            }
         }
 
         $this->assertSame([], $failures, implode(PHP_EOL, $failures));

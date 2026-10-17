@@ -38,7 +38,7 @@
                     heroLink.textContent = copy[index]?.button_label || heroLink.textContent;
                 }
             };
-            const restart = () => { window.clearInterval(timer); timer = window.setInterval(() => show(index + 1), Number(@json(data_get($hero, 'settings.autoplay_ms', 5200)))); };
+            const restart = () => { window.clearInterval(timer); timer = window.setInterval(() => show(index + 1), Number(@json(data_get($hero ?? [], 'settings.autoplay_ms', 5200)))); };
             document.querySelector('[data-slide-prev]')?.addEventListener('click', () => { show(index - 1); restart(); });
             document.querySelector('[data-slide-next]')?.addEventListener('click', () => { show(index + 1); restart(); });
             dots.forEach((dot) => dot.addEventListener('click', () => { show(Number(dot.dataset.slideDot || 0)); restart(); }));
