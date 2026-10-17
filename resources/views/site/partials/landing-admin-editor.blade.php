@@ -24,6 +24,24 @@
             </div>
         </details>
     </aside>
+    <script>
+        (() => {
+            const menu = document.querySelector('.aio-landing-editor-toolbar details');
+            if (!menu) return;
+
+            const storageKey = 'aio.landing-editor-toolbar.open';
+            try {
+                const savedState = localStorage.getItem(storageKey);
+                if (savedState !== null) menu.open = savedState === 'true';
+            } catch (_) {}
+
+            menu.addEventListener('toggle', () => {
+                try {
+                    localStorage.setItem(storageKey, String(menu.open));
+                } catch (_) {}
+            });
+        })();
+    </script>
 @endunless
 
 @unless($hasEditor)
