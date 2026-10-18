@@ -61,7 +61,10 @@
     .aio-landing-editor-toolbar-content{display:grid;gap:6px;margin-top:9px}
     .aio-landing-editor-toolbar button{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:9px;min-height:38px;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:7px 10px;background:#dc2626;color:#fff;font:700 12px/1.25 system-ui,sans-serif;cursor:pointer;text-align:left}
     .aio-landing-editor-toolbar button:hover{background:#b91c1c}.aio-landing-editor-toolbar button span{display:block;min-width:0;width:100%;overflow:hidden;color:#fee2e2;font-weight:500;text-align:left;text-overflow:ellipsis;white-space:nowrap}
-    .aio-landing-editor-row{display:grid;grid-template-columns:24px minmax(0,1fr);gap:4px}.aio-landing-editor-row.is-dragging{opacity:.6;outline:2px dashed #fff;border-radius:10px}
+    .aio-landing-editor-toolbar-content{position:relative}
+    .aio-landing-editor-row{display:grid;grid-template-columns:24px minmax(0,1fr);gap:4px}.aio-landing-editor-row.is-dragging{background:rgba(255,255,255,.07);outline:2px dashed #94a3b8;outline-offset:-2px;border-radius:10px}.aio-landing-editor-row.is-dragging>*{visibility:hidden}
+    .aio-landing-editor-toolbar.is-sorting{user-select:none;cursor:grabbing;overflow-anchor:none}
+    .aio-landing-editor-toolbar.aio-landing-editor-ghost{position:fixed;right:auto;z-index:10000;display:grid;grid-template-columns:24px minmax(0,1fr);gap:4px;max-height:none;overflow:visible;margin:0;padding:0;border:0;border-radius:10px;background:#1e293b;backdrop-filter:none;box-shadow:0 10px 24px rgba(0,0,0,.4);pointer-events:none;will-change:transform}
     .aio-landing-editor-toolbar .aio-landing-editor-drag{display:block;min-height:38px;padding:0;border:0;background:transparent;color:#cbd5e1;font-size:22px;text-align:center;cursor:grab;touch-action:none;user-select:none}
     .aio-landing-editor-toolbar .aio-landing-editor-drag:active{cursor:grabbing}.aio-landing-editor-toolbar button:focus-visible{outline:2px solid #fff;outline-offset:1px}.aio-landing-editor-toolbar button:disabled{opacity:.6;cursor:wait}
     .aio-landing-editor-sort-status{margin:8px 4px 0;font-size:12px;color:#e2e8f0}.aio-landing-editor-sort-status:empty{display:none}
