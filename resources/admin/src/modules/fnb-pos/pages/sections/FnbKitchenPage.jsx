@@ -2,6 +2,7 @@ import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined';
 import ClockCircleOutlined from '@ant-design/icons/ClockCircleOutlined';
 import PlayCircleOutlined from '@ant-design/icons/PlayCircleOutlined';
 import ReloadOutlined from '@ant-design/icons/ReloadOutlined';
+import FullscreenOutlined from '@ant-design/icons/FullscreenOutlined';
 import Alert from 'antd/es/alert';
 import Badge from 'antd/es/badge';
 import Button from 'antd/es/button';
@@ -12,14 +13,14 @@ import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createIdempotencyKey } from '../../api/fnbApi';
 import FnbPageHeader from '../../components/FnbPageHeader';
 import { FnbResourceError } from '../../components/FnbResourceState';
 import FnbStatusTag from '../../components/FnbStatusTag';
 import useFnbResource from '../../hooks/useFnbResource';
 import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
-import { asArray, formatDuration, formatQuantity } from '../../utils/fnbFormat';
+import { asArray, formatDuration, formatQuantity, parseServerDate } from '../../utils/fnbFormat';
 
 const { Text, Title } = Typography;
 
@@ -53,6 +54,13 @@ export default function FnbKitchenPage() {
     const [stationId, setStationId] = useState('');
     const [pendingLine, setPendingLine] = useState(null);
     const cursorState = useRef({ scope: '', cursor: 0 });
+    const boardRef = useRef(null);
+    const [fullscreen, setFullscreen] = useState(false);
+    useEffect(() => {
+        const changed = () => setFullscreen(document.fullscreenElement === boardRef.current);
+        document.addEventListener('fullscreenchange', changed);
+        return () => document.removeEventListener('fullscreenchange', changed);
+    }, []);
     const loadKitchen = useCallback(async () => {
         const scope = `${outletId}:${stationId || 'all'}`;
         if (cursorState.current.scope !== scope) {
@@ -117,12 +125,17 @@ export default function FnbKitchenPage() {
     }
 
     return (
-        <div className="fnb-page-stack fnb-kds-page">
+        <div ref={boardRef} className={`fnb-page-stack fnb-kds-page ${fullscreen ? 'is-fullscreen' : ''}`}>
             <FnbPageHeader
                 eyebrow="Màn hình chế biến"
                 title="Bar / Bếp"
                 description="Tự cập nhật mỗi giây. Thao tác chỉ thay đổi trạng thái chế biến, không hiển thị giá hay thông tin thanh toán."
-                actions={<Button icon={<ReloadOutlined />} loading={resource.refreshing} onClick={() => resource.reload({ silent: true })}>Đồng bộ</Button>}
+                actions={<Space wrap><Button icon={<FullscreenOutlined />} onClick={async () => {
+                    try {
+                        if (document.fullscreenElement) await document.exitFullscreen();
+                        else await boardRef.current?.requestFullscreen?.();
+                    } catch { /* Browser may deny fullscreen; the board remains usable. */ }
+                }}>{fullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}</Button><Button icon={<ReloadOutlined />} loading={resource.refreshing} onClick={() => resource.reload({ silent: true })}>Đồng bộ</Button></Space>}
             />
 
             {resource.error ? <Alert type="warning" showIcon message="Mất kết nối tạm thời" description={`${resource.error.message} Dữ liệu đang thấy là lần đồng bộ gần nhất.`} /> : null}
@@ -138,16 +151,20 @@ export default function FnbKitchenPage() {
                         options={stations.map((station) => ({ value: station.id, label: station.name }))}
                         style={{ minWidth: 190 }}
                     />
-                    <Badge status={resource.refreshing ? 'processing' : 'success'} text={resource.refreshing ? 'Đang đồng bộ' : 'Đã kết nối'} />
+                    <Badge status={resource.error ? 'error' : resource.refreshing ? 'processing' : 'success'} text={resource.error ? 'Mất kết nối' : resource.refreshing ? 'Đang đồng bộ' : 'Đã kết nối'} />
+                    {resource.updatedAt ? <Text type="secondary">Cập nhật lúc {new Date(resource.updatedAt).toLocaleTimeString('vi-VN')}</Text> : null}
                 </div>
             </Card>
 
             {visibleTickets.length ? (
                 <div className="fnb-kds-board">
-                    {visibleTickets.map((ticket) => (
+                    {visibleTickets.map((ticket) => {
+                        const station = stations.find((item) => String(item.id) === String(ticket.prep_station_id ?? ticket.station_id));
+                        const overdue = Date.now() - parseServerDate(ticket.fired_at ?? ticket.created_at).getTime() > Number(station?.sla_seconds ?? 600) * 1000;
+                        return (
                         <Card
                             key={ticket.public_id ?? ticket.id}
-                            className={`fnb-kds-ticket ${Number(ticket.priority) > 0 ? 'is-priority' : ''}`}
+                            className={`fnb-kds-ticket ${Number(ticket.priority) > 0 || overdue ? 'is-priority' : ''}`}
                             title={<Space><Title level={5} style={{ margin: 0 }}>{ticket.ticket_no ?? `Phiếu #${ticket.id}`}</Title>{Number(ticket.priority) > 0 ? <Tag color="red">Ưu tiên</Tag> : null}</Space>}
                             extra={<Space direction="vertical" size={0} align="end"><Text strong>{ticket.table_name ?? ticket.session_label ?? ticket.order_no ?? (ticket.order_id ? `Order #${ticket.order_id}` : 'Phiếu chế biến')}</Text><Text type="secondary"><ClockCircleOutlined /> {formatDuration(ticket.fired_at ?? ticket.created_at)}</Text></Space>}
                         >
@@ -185,7 +202,7 @@ export default function FnbKitchenPage() {
                                 })}
                             </Space>
                         </Card>
-                    ))}
+                    ); })}
                 </div>
             ) : <Card className="fnb-panel"><Empty description="Không có món ở trạng thái đang chọn" /></Card>}
         </div>

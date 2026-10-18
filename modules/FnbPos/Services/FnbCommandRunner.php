@@ -168,7 +168,7 @@ final class FnbCommandRunner
 
         $installation = DB::table('module_installations')
             ->where('key', 'fnb-pos')
-            ->lockForUpdate()
+            ->sharedLock()
             ->first();
         if ($installation === null || $installation->status !== 'enabled') {
             throw new FnbConflictException('F&B module is not enabled.');
@@ -176,7 +176,7 @@ final class FnbCommandRunner
         if (DB::table('module_lifecycle_operations')
             ->where('module_key', 'fnb-pos')
             ->where('active_slot', 'active')
-            ->lockForUpdate()
+            ->sharedLock()
             ->exists()) {
             throw new FnbConflictException('F&B module lifecycle operation is in progress.');
         }
@@ -199,12 +199,20 @@ final class FnbCommandRunner
 
         $settings = DB::table('fnb_site_settings')
             ->where('website_key', $context->websiteKey)
-            ->lockForUpdate()
+            ->sharedLock()
             ->first();
 
         if ($operation === 'onboard' && $context->outletId === 0) {
             if ($settings !== null && $settings->operational_state === 'draining') {
                 throw new FnbConflictException('F&B module is draining for an upgrade.');
+            }
+
+            return;
+        }
+
+        if ($context->outletId === 0 && in_array($operation, ['chain.outlet.save', 'chain.brand.save', 'chain.region.save', 'chain.hq.assign', 'chain.hq.revoke', 'chain.menu.create', 'chain.menu.publish', 'chain.menu.rollback', 'chain.pricebook.save'], true)) {
+            if ($settings === null || ! $settings->is_active || $settings->operational_state !== 'active') {
+                throw new FnbConflictException('F&B website is not active.');
             }
 
             return;
@@ -223,7 +231,7 @@ final class FnbCommandRunner
             ->where('website_key', $context->websiteKey)
             ->where('id', $context->outletId)
             ->where('status', 'active')
-            ->lockForUpdate()
+            ->sharedLock()
             ->first();
         if ($outlet === null) {
             throw new FnbNotFoundException('Active outlet was not found in the current website scope.');

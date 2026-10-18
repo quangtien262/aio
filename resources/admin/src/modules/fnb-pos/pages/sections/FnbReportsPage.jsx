@@ -11,6 +11,7 @@ import Input from 'antd/es/input';
 import Progress from 'antd/es/progress';
 import Row from 'antd/es/row';
 import Segmented from 'antd/es/segmented';
+import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Statistic from 'antd/es/statistic';
 import Table from 'antd/es/table';
@@ -23,29 +24,31 @@ import { FnbResourceError } from '../../components/FnbResourceState';
 import FnbStatusTag from '../../components/FnbStatusTag';
 import useFnbResource from '../../hooks/useFnbResource';
 import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
-import { asArray, formatDateTime, formatMinorMoney, formatQuantity } from '../../utils/fnbFormat';
+import { asArray, calendarDate, formatDateTime, formatMinorMoney, formatQuantity } from '../../utils/fnbFormat';
 
 const { Text } = Typography;
 
-const today = () => {
-    const date = new Date();
-    const offset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() - offset).toISOString().slice(0, 10);
-};
-
-const firstOfMonth = () => `${today().slice(0, 8)}01`;
 
 export default function FnbReportsPage() {
     const { message } = App.useApp();
-    const { api, outletId, terminalId, selectedOutlet, can, runCommand } = useFnbWorkspace();
+    const { api, baseApi, bootstrap, outletId, terminalId, selectedOutlet, can, runCommand } = useFnbWorkspace();
     const defaultType = can('fnb.report.financial.view') ? 'financial' : 'operations';
-    const [filters, setFilters] = useState({ from: firstOfMonth(), to: today(), report_type: defaultType });
+    const [filters, setFilters] = useState(() => {
+        const today = calendarDate(selectedOutlet?.timezone);
+        return { from: `${today.slice(0, 8)}01`, to: today, report_type: defaultType };
+    });
+    const [reportScope, setReportScope] = useState('terminal');
+    const [regionId, setRegionId] = useState('');
     const [exporting, setExporting] = useState(false);
     const [downloadingId, setDownloadingId] = useState(null);
     const [form] = Form.useForm();
-    const loadReport = useCallback(() => api.report({ ...filters, terminal_id: terminalId || undefined }), [api, filters, terminalId]);
+    const loadReport = useCallback(() => reportScope === 'terminal'
+        ? api.report({ ...filters, terminal_id: terminalId || undefined })
+        : baseApi.chainReport({ ...filters, scope: reportScope, outlet_id: reportScope === 'outlet' ? outletId : undefined, region_id: reportScope === 'region' ? regionId : undefined }), [api, baseApi, filters, terminalId, outletId, reportScope, regionId]);
+    const loadChain = useCallback(() => baseApi.chain(), [baseApi]);
+    const chainResource = useFnbResource({ enabled: can('fnb.chain.view'), loader: loadChain, deps: [baseApi] });
     const loadExports = useCallback(() => api.reportExports(), [api]);
-    const reportResource = useFnbResource({ enabled: Boolean(outletId), loader: loadReport, deps: [outletId, filters, terminalId] });
+    const reportResource = useFnbResource({ enabled: Boolean(outletId && (reportScope !== 'region' || regionId)), loader: loadReport, deps: [outletId, filters, terminalId, reportScope, regionId] });
     const exportsResource = useFnbResource({ enabled: Boolean(outletId && can('fnb.report.export')), loader: loadExports, deps: [outletId], pollMs: 5000 });
     const report = reportResource.data ?? {};
     const totals = report.totals ?? {};
@@ -108,13 +111,22 @@ export default function FnbReportsPage() {
     return (
         <div className="fnb-page-stack">
             <FnbPageHeader
-                eyebrow="Số liệu theo điểm bán"
+                eyebrow={reportScope === 'terminal' ? 'Số liệu theo quầy đang chọn' : reportScope === 'outlet' ? 'Toàn bộ quầy trong điểm bán' : reportScope === 'region' ? 'Tổng hợp theo vùng' : 'Tổng hợp toàn chuỗi'}
                 title="Báo cáo vận hành"
                 description="Khoảng ngày được diễn giải theo múi giờ điểm bán; số tiền lấy nguyên trạng từ máy chủ."
                 actions={<Button icon={<ReloadOutlined />} loading={reportResource.refreshing} onClick={reloadAll}>Làm mới</Button>}
             />
 
             <Card className="fnb-panel">
+                <Space wrap style={{ marginBottom: 16 }}>
+                    <Select aria-label="Phạm vi báo cáo" value={reportScope} onChange={setReportScope} style={{ minWidth: 200 }} options={[
+                        { value: 'terminal', label: 'Quầy đang chọn' },
+                        ...(selectedOutlet?.can_report_all_terminals ? [{ value: 'outlet', label: 'Toàn điểm bán' }] : []),
+                        ...(can('fnb.chain.view') ? [{ value: 'region', label: 'Theo vùng' }, { value: 'chain', label: 'Toàn chuỗi' }] : []),
+                    ]} />
+                    {reportScope === 'region' ? <Select aria-label="Vùng báo cáo" placeholder="Chọn vùng" value={regionId || undefined} onChange={setRegionId} style={{ minWidth: 200 }} options={asArray(chainResource.data?.regions ?? bootstrap.regions).map((region) => ({ value: region.id, label: region.name }))} /> : null}
+                    {reportScope === 'outlet' ? <Tag>{selectedOutlet?.name}</Tag> : null}
+                </Space>
                 <Form form={form} layout="inline" initialValues={filters} onFinish={submit} className="fnb-report-filter">
                     <Form.Item label="Từ ngày" name="from" rules={[{ required: true }]}><Input type="date" /></Form.Item>
                     <Form.Item label="Đến ngày" name="to" rules={[{ required: true }]}><Input type="date" /></Form.Item>
@@ -144,6 +156,17 @@ export default function FnbReportsPage() {
                 </>}
             </section>
 
+            {asArray(report.outlets).length ? <Card className="fnb-panel" title="So sánh điểm bán"><Table rowKey="id" scroll={{ x: 800 }} dataSource={report.outlets} columns={[
+                { title: 'Điểm bán', dataIndex: 'name' },
+                { title: 'Số bill', render: (_, outlet) => outlet.totals?.checks ?? 0 },
+                ...(financial ? [
+                    { title: 'Doanh số bill đã đóng', render: (_, outlet) => formatMinorMoney(outlet.totals?.closed_sales_minor, currency), align: 'right' },
+                    { title: 'Đã thu', render: (_, outlet) => formatMinorMoney(outlet.totals?.gross_collected_minor, currency), align: 'right' },
+                    { title: 'Đã hoàn', render: (_, outlet) => formatMinorMoney(outlet.totals?.refund_disbursed_minor, currency), align: 'right' },
+                    { title: 'Thực thu', render: (_, outlet) => formatMinorMoney(outlet.totals?.net_collected_minor, currency), align: 'right' },
+                ] : []),
+            ]} /></Card> : null}
+
             <Row gutter={[16, 16]}>
                 <Col xs={24} xl={financial ? 14 : 24}>
                     <Card className="fnb-panel" title="Món bán nổi bật">
@@ -170,7 +193,7 @@ export default function FnbReportsPage() {
                 </Col> : null}
             </Row>
 
-            {can('fnb.report.export') ? (
+            {can('fnb.report.export') && reportScope === 'terminal' ? (
                 <Card
                     className="fnb-panel"
                     title="Xuất báo cáo"
@@ -184,8 +207,8 @@ export default function FnbReportsPage() {
                         columns={[
                             { title: 'Loại', dataIndex: 'report_type', render: (value) => value === 'financial' ? 'Tài chính' : 'Vận hành' },
                             { title: 'Định dạng', dataIndex: 'format', render: (value) => <Tag>{String(value ?? '').toUpperCase()}</Tag> },
-                            { title: 'Tạo lúc', dataIndex: 'queued_at', render: formatDateTime },
-                            { title: 'Hoàn tất', dataIndex: 'completed_at', render: formatDateTime },
+                            { title: 'Tạo lúc', dataIndex: 'queued_at', render: (value) => formatDateTime(value, { timeZone: selectedOutlet?.timezone }) },
+                            { title: 'Hoàn tất', dataIndex: 'completed_at', render: (value) => formatDateTime(value, { timeZone: selectedOutlet?.timezone }) },
                             { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },
                             { title: '', render: (_, record) => record.status === 'completed' ? <Button size="small" icon={<DownloadOutlined />} loading={downloadingId === record.id} onClick={() => downloadExport(record)}>Tải file</Button> : null },
                         ]}

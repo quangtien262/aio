@@ -7,14 +7,33 @@ use Illuminate\Support\Facades\DB;
 
 class AuditChainVerifier
 {
-    /** @return array{valid:bool,count:int,last_sequence:int,last_hash:?string,error:?string} */
+    /** @return array{valid:bool,count:int,last_sequence:int,last_hash:?string,error:?string,chains:array} */
     public function verify(): array
+    {
+        $keys = DB::table('audit_log_chain_heads')->pluck('chain_key')
+            ->merge(AuditLog::query()->distinct()->pluck('chain_key'))->unique()->sort()->values();
+        $chains = [];
+        $count = 0;
+        foreach ($keys as $key) {
+            $result = $this->verifyChain((string) $key);
+            $chains[$key] = $result;
+            $count += $result['count'];
+            if (! $result['valid']) {
+                return array_replace($result, ['count' => $count, 'chain_key' => $key, 'chains' => $chains]);
+            }
+        }
+
+        return ['valid' => true, 'count' => $count, 'last_sequence' => $chains['default']['last_sequence'] ?? 0,
+            'last_hash' => $chains['default']['last_hash'] ?? null, 'error' => null, 'chains' => $chains];
+    }
+
+    private function verifyChain(string $chainKey): array
     {
         $expectedSequence = 1;
         $previousHash = null;
         $count = 0;
 
-        foreach (AuditLog::query()->orderBy('sequence')->cursor() as $log) {
+        foreach (AuditLog::query()->where('chain_key', $chainKey)->orderBy('sequence')->cursor() as $log) {
             if ((int) $log->sequence !== $expectedSequence) {
                 return $this->failure($count, $expectedSequence - 1, $previousHash, "Thiếu hoặc trùng sequence {$expectedSequence}.");
             }
@@ -24,6 +43,7 @@ class AuditChainVerifier
             }
 
             $payload = $this->canonicalize([
+                ...($chainKey === 'default' ? [] : ['chain_key' => $chainKey]),
                 'sequence' => $expectedSequence,
                 'previous_hash' => $previousHash,
                 'actor_admin_id' => $log->actor_admin_id,
@@ -53,7 +73,7 @@ class AuditChainVerifier
             $count++;
         }
 
-        $head = DB::table('audit_log_chain_heads')->where('chain_key', 'default')->first();
+        $head = DB::table('audit_log_chain_heads')->where('chain_key', $chainKey)->first();
         if ($head === null || (int) $head->last_sequence !== $count || ($head->last_hash ?: null) !== $previousHash) {
             return $this->failure($count, $expectedSequence - 1, $previousHash, 'Chain head không khớp với nhật ký cuối cùng.');
         }

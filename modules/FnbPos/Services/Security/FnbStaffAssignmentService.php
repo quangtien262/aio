@@ -50,6 +50,9 @@ final class FnbStaffAssignmentService
         ?int $expectedMembershipVersion = null,
         array $terminalIds = [],
     ): array {
+        if ($this->access->chainScopesEnabled()) {
+            return app(FnbScopedStaffService::class)->assign($actor, $websiteKey, $outletId, $target, $presetRoleKey, $expectedBindingVersion, $expectedMembershipVersion, $terminalIds);
+        }
         $this->requireTransaction();
         $actor = Admin::query()->whereKey($actor->id)->lockForUpdate()->firstOrFail();
         $this->access->authorize($actor, $websiteKey, $outletId, 'fnb.staff.assign');
@@ -165,6 +168,9 @@ final class FnbStaffAssignmentService
         int $expectedBindingVersion,
         int $expectedMembershipVersion,
     ): array {
+        if ($this->access->chainScopesEnabled()) {
+            return app(FnbScopedStaffService::class)->revoke($actor, $websiteKey, $outletId, $target, $expectedBindingVersion, $expectedMembershipVersion);
+        }
         $this->requireTransaction();
         $actor = Admin::query()->whereKey($actor->id)->lockForUpdate()->firstOrFail();
         $this->access->authorize($actor, $websiteKey, $outletId, 'fnb.staff.assign');

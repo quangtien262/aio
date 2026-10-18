@@ -31,6 +31,7 @@ class FnbRecipeService
         ])->validate();
 
         return $this->commands->run($ctx, 'recipe.publish', $data, $key, function () use ($ctx, $data): array {
+            app(FnbMasterDataLock::class)->acquire($ctx->websiteKey);
             $variant = DB::table('fnb_item_variants')->where('website_key', $ctx->websiteKey)->where('id', $data['variant_id'])->lockForUpdate()->first();
             abort_unless($variant, 404);
             $recipes = DB::table('fnb_recipes')->where('website_key', $ctx->websiteKey)->where('code', $data['code']);

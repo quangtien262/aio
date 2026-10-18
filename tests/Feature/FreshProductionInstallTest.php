@@ -142,8 +142,8 @@ class FreshProductionInstallTest extends TestCase
         $this->assertTrue($this->hasTable($database, 'fnb_orders'));
         $this->assertTrue($this->hasTable($database, 'fnb_checks'));
         $this->assertSame('enabled', $database->query("select status from module_installations where key = 'fnb-pos'")->fetchColumn());
-        $this->assertSame(53, (int) $database->query("select count(*) from permissions where module_key = 'fnb-pos' and is_active = 1")->fetchColumn());
-        $this->assertSame(8, (int) $database->query("select count(*) from module_role_definitions where module_key = 'fnb-pos'")->fetchColumn());
+        $this->assertSame(58, (int) $database->query("select count(*) from permissions where module_key = 'fnb-pos' and is_active = 1")->fetchColumn());
+        $this->assertSame(9, (int) $database->query("select count(*) from module_role_definitions where module_key = 'fnb-pos'")->fetchColumn());
     }
 
     public function test_production_core_migrations_can_be_refreshed_repeatedly(): void

@@ -27,6 +27,8 @@ final class FnbAuditLogger
         ?array $after = null,
         array $outletIds = [],
     ): AuditLog {
+        $outletIds = array_values(array_unique(array_map('intval', $outletIds)));
+        sort($outletIds, SORT_NUMERIC);
         $scopes = $outletIds === []
             ? [['type' => 'website', 'value' => $websiteKey]]
             : collect($outletIds)
@@ -35,7 +37,7 @@ final class FnbAuditLogger
                 ->values()
                 ->all();
 
-        return DB::transaction(function () use ($action, $websiteKey, $actor, $target, $before, $after, $scopes): AuditLog {
+        return DB::transaction(function () use ($action, $websiteKey, $actor, $target, $before, $after, $scopes, $outletIds): AuditLog {
             // The exact scope tuple is part of the core hash-chain payload.
             $after = array_replace($after ?? [], ['audit_scope' => $scopes]);
             $log = $this->audit->record(
@@ -46,6 +48,7 @@ final class FnbAuditLogger
                 $actor,
                 'fnb-pos',
                 $websiteKey,
+                'fnb:'.substr(hash('sha256', $websiteKey.':'.implode(',', $outletIds)), 0, 40),
             );
 
             if (Schema::hasTable('fnb_audit_scopes')) {

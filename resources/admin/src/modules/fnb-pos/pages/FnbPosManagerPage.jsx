@@ -11,6 +11,7 @@ import FnbConflictDrawer from '../components/FnbConflictDrawer';
 import FnbCriticalActionDrawer from '../components/FnbCriticalActionDrawer';
 import { FnbResourceError } from '../components/FnbResourceState';
 import FnbWorkspaceShell from '../components/FnbWorkspaceShell';
+import FnbPendingCommands from '../components/FnbPendingCommands';
 import useFnbResource from '../hooks/useFnbResource';
 import { FnbWorkspaceContext } from '../state/FnbWorkspaceContext';
 import '../styles/fnb-pos.css';
@@ -24,6 +25,8 @@ const ShiftsPage = lazy(() => import('./sections/FnbShiftsPage'));
 const ReportsPage = lazy(() => import('./sections/FnbReportsPage'));
 const StaffPage = lazy(() => import('./sections/FnbStaffPage'));
 const SettingsPage = lazy(() => import('./sections/FnbSettingsPage'));
+const ChainPage = lazy(() => import('./sections/FnbChainPage'));
+const IntegrationsPage = lazy(() => import('./sections/FnbIntegrationsPage'));
 
 // AdminApp's BrowserRouter already owns the /admin basename.
 const BASE_ROUTE = '/modules/fnb-pos';
@@ -37,6 +40,8 @@ const sections = [
     { key: 'shifts', label: 'Ca & két', permissions: ['fnb.shift.view'] },
     { key: 'reports', label: 'Báo cáo', permissions: ['fnb.report.operations.view', 'fnb.report.financial.view'] },
     { key: 'staff', label: 'Nhân viên', permissions: ['fnb.staff.view'] },
+    { key: 'chain', label: 'Điều hành chuỗi', permissions: ['fnb.chain.view'], allowWithoutOutlet: true },
+    { key: 'integrations', label: 'Tích hợp & đồng bộ', permissions: ['fnb.chain.manage'] },
     { key: 'settings', label: 'Thiết lập', permissions: ['fnb.settings.view'] },
 ];
 
@@ -50,6 +55,8 @@ const sectionComponents = {
     reports: ReportsPage,
     staff: StaffPage,
     settings: SettingsPage,
+    chain: ChainPage,
+    integrations: IntegrationsPage,
 };
 
 const storedValue = (key) => {
@@ -76,13 +83,12 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
     const { message } = App.useApp();
     const location = useLocation();
     const navigate = useNavigate();
-    const [outletId, setOutletId] = useState(() => storedValue('aio.fnb.outlet'));
-    const [terminalId, setTerminalId] = useState(() => storedValue('aio.fnb.terminal'));
+    const [outletId, setOutletId] = useState('');
+    const [selectionReadyKey, setSelectionReadyKey] = useState(null);
+    const [terminalId, setTerminalId] = useState('');
     const [criticalRequest, setCriticalRequest] = useState(null);
     const [conflict, setConflict] = useState(null);
     const baseApi = useMemo(() => createFnbApi(callAdminApi), [callAdminApi]);
-    const api = useMemo(() => createFnbApi(callAdminApi, { outletId, terminalId }), [callAdminApi, outletId, terminalId]);
-    const can = useCallback((permission) => currentPermissions.includes(permission), [currentPermissions]);
     const bootstrapResource = useFnbResource({
         loader: baseApi.bootstrap,
         deps: [baseApi],
@@ -96,38 +102,30 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
             ? bootstrap.terminals.filter((item) => !outletId || String(item.outlet_id) === String(outletId))
             : []);
     const onboardingComplete = Boolean(bootstrap.onboarding?.completed ?? outlets.length);
+    const identity = bootstrap.website_key && (bootstrap.actor_id ?? bootstrap.actor?.id) ? `${bootstrap.website_key}:${bootstrap.actor_id ?? bootstrap.actor.id}` : '';
+    const selectionKey = `aio.fnb.selection:${identity || 'local'}`;
+    const api = useMemo(() => createFnbApi(callAdminApi, { outletId, terminalId, identity }), [callAdminApi, outletId, terminalId, identity]);
+    const hqApi = useMemo(() => createFnbApi(callAdminApi, { identity }), [callAdminApi, identity]);
+    const effectivePermissions = selectedOutlet?.effective_permissions ?? currentPermissions;
+    const can = useCallback((permission) => effectivePermissions.includes(permission) || (bootstrap.hq_permissions ?? []).includes(permission), [effectivePermissions, bootstrap.hq_permissions]);
 
     useEffect(() => {
-        if (!outlets.length) {
-            if (outletId) {
-                setOutletId('');
-                setTerminalId('');
-            }
-            return;
-        }
-
-        if (!selectedOutlet) {
-            const firstOutletId = String(outlets[0].id ?? outlets[0].public_id);
-            setOutletId(firstOutletId);
-            persistValue('aio.fnb.outlet', firstOutletId);
-        }
-    }, [outletId, outlets, selectedOutlet]);
-
-    useEffect(() => {
-        if (!terminals.length) {
-            if (terminalId) {
-                setTerminalId('');
-                persistValue('aio.fnb.terminal', '');
-            }
-            return;
-        }
-
-        if (!terminals.some((item) => String(item.id ?? item.public_id) === String(terminalId))) {
-            const firstTerminalId = String(terminals[0].id ?? terminals[0].public_id);
-            setTerminalId(firstTerminalId);
-            persistValue('aio.fnb.terminal', firstTerminalId);
-        }
-    }, [terminalId, terminals]);
+        if (!bootstrapResource.data || bootstrapResource.loading || bootstrapResource.error) return;
+        const first = outlets[0];
+        const savedOutletId = selectionReadyKey === selectionKey ? outletId : storedValue(`${selectionKey}:outlet`);
+        const outlet = outlets.find((item) => String(item.id ?? item.public_id) === String(savedOutletId)) ?? first;
+        const nextOutlet = outlet ? String(outlet.id ?? outlet.public_id) : '';
+        const allowedTerminals = Array.isArray(outlet?.terminals) ? outlet.terminals : [];
+        const savedTerminalId = selectionReadyKey === selectionKey ? terminalId : storedValue(`${selectionKey}:terminal`);
+        const terminal = allowedTerminals.find((item) => String(item.id ?? item.public_id) === String(savedTerminalId))
+            ?? allowedTerminals.find((item) => item.type === 'pos') ?? allowedTerminals[0];
+        const nextTerminal = terminal ? String(terminal.id ?? terminal.public_id) : '';
+        if (nextOutlet !== outletId) setOutletId(nextOutlet);
+        if (nextTerminal !== terminalId) setTerminalId(nextTerminal);
+        if (selectionReadyKey !== selectionKey) setSelectionReadyKey(selectionKey);
+        persistValue(`${selectionKey}:outlet`, nextOutlet);
+        persistValue(`${selectionKey}:terminal`, nextTerminal);
+    }, [bootstrapResource.data, bootstrapResource.loading, bootstrapResource.error, outlets, outletId, terminalId, selectionKey, selectionReadyKey]);
 
     const visibleSections = useMemo(() => sections.filter((item) => (
         item.permissions.some(can)
@@ -141,25 +139,30 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
         .filter(Boolean)[0];
     const defaultSection = !onboardingComplete && visibleSections.some((item) => item.key === 'onboarding')
         ? 'onboarding'
-        : (visibleSections.find((item) => item.key === 'dashboard')?.key ?? visibleSections[0]?.key ?? 'dashboard');
+        : (visibleSections.find((item) => item.key === 'dashboard')?.key
+            ?? (onboardingComplete && visibleSections.some((item) => item.key === 'chain') ? 'chain' : visibleSections[0]?.key) ?? 'dashboard');
     const activeSection = visibleSections.some((item) => item.key === requestedSection) ? requestedSection : defaultSection;
 
     useEffect(() => {
-        if (!bootstrapResource.loading && requestedSection !== activeSection) {
+        if (!bootstrapResource.loading && selectionReadyKey === selectionKey && requestedSection !== activeSection) {
             navigate(`${BASE_ROUTE}/${activeSection}`, { replace: true });
         }
-    }, [activeSection, bootstrapResource.loading, navigate, requestedSection]);
+    }, [activeSection, bootstrapResource.loading, navigate, requestedSection, selectionReadyKey, selectionKey]);
 
     const handleOutletChange = (value) => {
         setOutletId(value);
         setTerminalId('');
-        persistValue('aio.fnb.outlet', value);
-        persistValue('aio.fnb.terminal', '');
+        persistValue(`${selectionKey}:outlet`, value);
+        persistValue(`${selectionKey}:terminal`, '');
+        setCriticalRequest(null);
+        setConflict(null);
     };
 
     const handleTerminalChange = (value) => {
         setTerminalId(value);
-        persistValue('aio.fnb.terminal', value);
+        persistValue(`${selectionKey}:terminal`, value);
+        setCriticalRequest(null);
+        setConflict(null);
     };
 
     const runCommand = useCallback(async ({
@@ -173,6 +176,7 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
         payloadHash,
         policyKey,
         reason,
+        authApi,
     }) => {
         const request = {
             execute,
@@ -185,13 +189,18 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
             payloadHash,
             policyKey,
             reason,
+            authApi,
             reauthIdempotencyKey: createIdempotencyKey('reauth'),
             approvalIdempotencyKey: createIdempotencyKey('approval'),
             approvalClaimIdempotencyKey: createIdempotencyKey('approval-claim'),
         };
 
+        let committedResult;
+        let committed = false;
         try {
             const result = await execute({});
+            committedResult = result;
+            committed = true;
 
             if (onSuccess) {
                 await onSuccess(result);
@@ -202,6 +211,10 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
 
             return result;
         } catch (error) {
+            if (committed) {
+                message.warning('Thao tác đã được ghi nhận nhưng màn hình chưa đồng bộ được. Hãy đồng bộ dữ liệu trước khi tiếp tục.');
+                return committedResult;
+            }
             if (error.status === 423 || error.code === 'FNB_REAUTH_REQUIRED' || error.code === 'FNB_APPROVAL_REQUIRED') {
                 setCriticalRequest({ ...request, error });
                 return null;
@@ -222,7 +235,8 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
         setCriticalRequest(null);
 
         if (request?.onSuccess) {
-            await request.onSuccess(result);
+            try { await request.onSuccess(result); }
+            catch { message.warning('Thao tác đã được ghi nhận nhưng màn hình chưa đồng bộ được. Hãy đồng bộ dữ liệu trước khi tiếp tục.'); return; }
         }
         if (request?.successMessage) {
             message.success(request.successMessage);
@@ -240,7 +254,8 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
 
     const contextValue = useMemo(() => ({
         api,
-        baseApi,
+        baseApi: hqApi,
+        identity,
         bootstrap,
         reloadBootstrap: bootstrapResource.reload,
         outletId,
@@ -251,9 +266,9 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
         can,
         runCommand,
         navigateSection: (key) => navigate(`${BASE_ROUTE}/${key}`),
-    }), [api, baseApi, bootstrap, bootstrapResource.reload, can, currentPermissions, navigate, outletId, selectedOutlet, terminalId, terminals, runCommand]);
+    }), [api, hqApi, identity, bootstrap, bootstrapResource.reload, can, currentPermissions, navigate, outletId, selectedOutlet, terminalId, terminals, runCommand]);
 
-    if (bootstrapResource.loading) {
+    if (bootstrapResource.loading || (bootstrapResource.data && selectionReadyKey !== selectionKey)) {
         return <Card><Skeleton active paragraph={{ rows: 8 }} /></Card>;
     }
 
@@ -298,13 +313,14 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
                     />
                 ) : null}
                 <Suspense fallback={<Card><Skeleton active paragraph={{ rows: 10 }} /></Card>}>
-                    <ActivePage />
+                    <FnbPendingCommands identity={identity} outletId={outletId} terminalId={terminalId} includeHq={['chain', 'integrations'].includes(activeSection)} />
+                    <ActivePage key={`${identity}:${outletId}:${terminalId}:${activeSection}`} />
                 </Suspense>
             </FnbWorkspaceShell>
 
             <FnbCriticalActionDrawer
                 request={criticalRequest}
-                api={api}
+                api={criticalRequest?.authApi ?? api}
                 onClose={() => setCriticalRequest(null)}
                 onCompleted={finishCriticalAction}
                 onConflict={(error, handler) => {

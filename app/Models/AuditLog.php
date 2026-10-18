@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'sequence', 'actor_admin_id', 'action', 'module_key', 'website_key', 'target_type',
+    'chain_key', 'sequence', 'actor_admin_id', 'action', 'module_key', 'website_key', 'target_type',
     'target_id', 'before', 'after', 'ip_address', 'user_agent', 'request_id',
     'previous_hash', 'entry_hash',
 ])]

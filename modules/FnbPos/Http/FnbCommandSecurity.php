@@ -14,6 +14,20 @@ use Modules\FnbPos\Services\Security\FnbReauthService;
 class FnbCommandSecurity
 {
     public const POLICIES = [
+        'chain.menu.create' => ['policy' => 'chain.menu.change', 'executor' => 'fnb.menu.master.manage', 'approvers' => []],
+        'chain.menu.publish' => ['policy' => 'chain.menu.change', 'executor' => 'fnb.menu.master.manage', 'approvers' => []],
+        'chain.menu.rollback' => ['policy' => 'chain.menu.change', 'executor' => 'fnb.menu.master.manage', 'approvers' => []],
+        'chain.pricebook.save' => ['policy' => 'chain.menu.change', 'executor' => 'fnb.menu.master.manage', 'approvers' => []],
+        'bank.account.save' => ['policy' => 'settings.change', 'executor' => 'fnb.settings.manage', 'approvers' => []],
+        'integration.mapping.save' => ['policy' => 'settings.change', 'executor' => 'fnb.settings.manage', 'approvers' => []],
+        'integration.item.save' => ['policy' => 'settings.change', 'executor' => 'fnb.settings.manage', 'approvers' => []],
+        'integration.reconcile' => ['policy' => 'settings.change', 'executor' => 'fnb.settings.manage', 'approvers' => []],
+        'chain.brand.save' => ['policy' => 'chain.change', 'executor' => 'fnb.chain.manage', 'approvers' => []],
+        'chain.region.save' => ['policy' => 'chain.change', 'executor' => 'fnb.chain.manage', 'approvers' => []],
+        'chain.outlet.save' => ['policy' => 'chain.change', 'executor' => 'fnb.chain.manage', 'approvers' => []],
+        'chain.hq.revoke' => ['policy' => 'chain.staff.change', 'executor' => 'fnb.chain.staff.manage', 'approvers' => []],
+        'chain.hq.assign' => ['policy' => 'chain.staff.change', 'executor' => 'fnb.chain.staff.manage', 'approvers' => []],
+        'check.close_zero_charge' => ['policy' => 'check.close_zero_charge', 'executor' => 'fnb.payment.collect', 'approvers' => []],
         'onboard' => ['policy' => 'outlet.change', 'executor' => 'fnb.outlet.manage', 'approvers' => []],
         'line.void' => ['policy' => 'order.void', 'executor' => 'fnb.order.void', 'approvers' => ['fnb.order.void.approve']],
         'check.void' => ['policy' => 'order.void', 'executor' => 'fnb.order.void', 'approvers' => ['fnb.order.void.approve']],
@@ -47,7 +61,7 @@ class FnbCommandSecurity
         $permission = (string) $request->route('fnb_permission');
 
         return function (string $operation, array $authorizationPayload, FnbContext $ctx) use ($request, $action, $subject, $hash, $actor, $permission, $payload): void {
-            $actor = Admin::query()->whereKey($actor->id)->lockForUpdate()->firstOrFail();
+            $actor = Admin::query()->whereKey($actor->id)->sharedLock()->firstOrFail();
             if ($ctx->outletId > 0) {
                 $this->access->authorize($actor, $ctx->websiteKey, $ctx->outletId, $permission);
                 $this->access->authorizeTerminal($actor, $ctx->websiteKey, $ctx->outletId, $ctx->terminalId, $permission);
@@ -61,7 +75,11 @@ class FnbCommandSecurity
                     $this->access->authorize($actor, $ctx->websiteKey, $ctx->outletId, 'fnb.payment.refund');
                 }
             } else {
-                abort_unless($this->access->canBootstrapWebsite($actor, $ctx->websiteKey, $permission), 403);
+                if (str_starts_with($action, 'chain.')) {
+                    $this->access->authorizeHq($actor, $ctx->websiteKey, $permission);
+                } else {
+                    abort_unless($this->access->canBootstrapWebsite($actor, $ctx->websiteKey, $permission), 403);
+                }
             }
             $policy = self::POLICIES[$action] ?? null;
             if ($policy === null) {

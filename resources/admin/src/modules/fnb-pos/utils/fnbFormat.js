@@ -46,12 +46,27 @@ export const formatQuantity = (value) => {
     return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 6 }).format(quantity);
 };
 
+// Query-builder timestamps use UTC without an offset. Never let the browser
+// interpret those SQL strings as the operating device's local clock.
+export const parseServerDate = (value) => {
+    if (value instanceof Date) return value;
+    const text = String(value ?? '');
+    const naive = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?$/.test(text);
+    return new Date(naive ? `${text.replace(' ', 'T')}Z` : value);
+};
+
+export const calendarDate = (timeZone, now = new Date()) => {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timeZone || undefined, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+    const part = (type) => parts.find((item) => item.type === type)?.value;
+    return `${part('year')}-${part('month')}-${part('day')}`;
+};
+
 export const formatDateTime = (value, options = {}) => {
     if (!value) {
         return '—';
     }
 
-    const date = new Date(value);
+    const date = parseServerDate(value);
 
     if (Number.isNaN(date.getTime())) {
         return String(value);
@@ -60,6 +75,7 @@ export const formatDateTime = (value, options = {}) => {
     return new Intl.DateTimeFormat('vi-VN', {
         dateStyle: options.dateStyle ?? 'short',
         timeStyle: options.timeStyle ?? 'short',
+        timeZone: options.timeZone ?? options.timezone ?? options.timezone_snapshot ?? undefined,
     }).format(date);
 };
 
@@ -68,7 +84,7 @@ export const formatDuration = (startedAt, now = Date.now()) => {
         return '—';
     }
 
-    const started = new Date(startedAt).getTime();
+    const started = parseServerDate(startedAt).getTime();
 
     if (!Number.isFinite(started)) {
         return '—';
@@ -102,8 +118,19 @@ export const statusLabel = (status) => ({
     in_progress: 'Đang thực hiện',
     paid: 'Đã thanh toán',
     partially_paid: 'Thanh toán một phần',
+    settling: 'Chờ thanh toán',
     unpaid: 'Chưa thanh toán',
     voided: 'Đã hủy',
+    void: 'Đã hủy',
+    cancelled: 'Đã hủy',
+    revoked: 'Đã thu hồi',
+    approved: 'Đã duyệt',
+    rejected: 'Đã từ chối',
+    expired: 'Đã hết hạn',
+    reserved: 'Đang giữ',
+    reconciling: 'Đang đối soát',
+    delivered: 'Đã đồng bộ',
+    dead_letter: 'Đã dừng — cần xử lý',
     compensation_pending: 'Đang bồi hoàn',
     cancelled_compensated: 'Đã hủy và hoàn tiền',
     finalized: 'Đã chốt',
@@ -126,6 +153,14 @@ export const statusColor = (status) => ({
     open: 'green',
     reconciled: 'green',
     succeeded: 'green',
+    approved: 'green',
+    delivered: 'green',
+    rejected: 'red',
+    dead_letter: 'red',
+    reserved: 'gold',
+    reconciling: 'orange',
+    expired: 'default',
+    revoked: 'default',
     served: 'green',
     completed: 'green',
     paid: 'green',

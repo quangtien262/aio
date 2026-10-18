@@ -756,8 +756,8 @@ final class FnbOrderService
         $tickets = DB::table('fnb_kitchen_tickets')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)
             ->when($stationId, fn ($query) => $query->where('prep_station_id', $stationId))
             ->whereNotIn('status_rollup', ['completed', 'all_voided', 'all_compensated', 'cancelled_mixed'])
-            ->orderByDesc('priority')->orderBy('fired_at')->limit(300)->get()
-            ->map(fn (object $ticket): array => $this->ticketResource($context, (int) $ticket->id))->all();
+            ->orderByDesc('priority')->orderBy('fired_at')->limit(300)->get();
+        $tickets = $this->ticketResources($context, $tickets->all());
 
         return ['resource' => [
             'cursor' => $nextCursor,
@@ -791,11 +791,16 @@ final class FnbOrderService
             if (! in_array($line->status, ['draft', 'waiting', 'preparing', 'ready'], true)) {
                 throw new FnbConflictException('This line cannot use the normal void path.', ['status' => $line->status]);
             }
-            $hasCheck = DB::table('fnb_check_lines')->where('order_line_id', $line->id)->exists();
+            $hasCheck = DB::table('fnb_check_lines as allocation')
+                ->join('fnb_checks as checks', 'checks.id', '=', 'allocation.check_id')
+                ->where('allocation.website_key', $context->websiteKey)->where('allocation.outlet_id', $context->outletId)
+                ->where('allocation.order_line_id', $line->id)->where('checks.status', '!=', 'void')->exists();
             if ($hasCheck) {
                 $hasProtectedPayment = DB::table('fnb_check_lines as line')
+                    ->join('fnb_checks as checks', 'checks.id', '=', 'line.check_id')
                     ->join('fnb_payments as payment', 'payment.check_id', '=', 'line.check_id')
                     ->where('line.order_line_id', $line->id)
+                    ->where('checks.status', '!=', 'void')
                     ->whereIn('payment.status', ['reserved', 'processing', 'uncertain', 'reconciling', 'succeeded'])
                     ->exists();
                 if ($hasProtectedPayment) {
@@ -1088,22 +1093,47 @@ final class FnbOrderService
     private function ticketResource(FnbContext $context, int $ticketId): array
     {
         $ticket = DB::table('fnb_kitchen_tickets')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)->where('id', $ticketId)->firstOrFail();
-        $resource = $this->decode($ticket);
+
+        return $this->ticketResources($context, [$ticket])[0];
+    }
+
+    /** @param list<object> $tickets @return list<array<string,mixed>> */
+    private function ticketResources(FnbContext $context, array $tickets): array
+    {
+        if ($tickets === []) {
+            return [];
+        }
         // Deliberately project only KDS-safe snapshots: no customer, price,
         // discounts, payments or recipe cost fields are selected here.
-        $resource['lines'] = DB::table('fnb_kitchen_ticket_lines as kitchen_line')
+        $lines = DB::table('fnb_kitchen_ticket_lines as kitchen_line')
             ->join('fnb_order_lines as order_line', 'order_line.id', '=', 'kitchen_line.order_line_id')
             ->where('kitchen_line.website_key', $context->websiteKey)->where('kitchen_line.outlet_id', $context->outletId)
-            ->where('kitchen_line.ticket_id', $ticketId)->orderBy('kitchen_line.id')
+            ->whereIn('kitchen_line.ticket_id', array_map(fn (object $ticket): int => (int) $ticket->id, $tickets))->orderBy('kitchen_line.id')
             ->get([
-                'kitchen_line.id', 'kitchen_line.order_line_id', 'kitchen_line.attempt_no', 'kitchen_line.quantity',
+                'kitchen_line.id', 'kitchen_line.ticket_id', 'kitchen_line.order_line_id', 'kitchen_line.attempt_no', 'kitchen_line.quantity',
                 'kitchen_line.served_quantity', 'kitchen_line.voided_quantity', 'kitchen_line.compensated_quantity',
                 'kitchen_line.status_rollup', 'kitchen_line.note', 'kitchen_line.waiting_at', 'kitchen_line.preparing_at',
                 'kitchen_line.ready_at', 'kitchen_line.served_at', 'kitchen_line.version',
                 'order_line.item_code_snapshot', 'order_line.item_name_snapshot', 'order_line.variant_code_snapshot', 'order_line.variant_name_snapshot',
-            ])->map(fn (object $line): array => $this->decode($line))->all();
+            ]);
+        $modifiers = DB::table('fnb_order_line_modifiers')->where('website_key', $context->websiteKey)
+            ->where('outlet_id', $context->outletId)->whereIn('order_line_id', $lines->pluck('order_line_id'))->orderBy('id')
+            ->get(['order_line_id', 'group_code_snapshot', 'group_name_snapshot', 'option_code_snapshot', 'option_name_snapshot', 'quantity'])
+            ->groupBy('order_line_id');
+        $lines = $lines->map(function (object $line) use ($modifiers): array {
+            $resource = $this->decode($line);
+            $resource['modifiers'] = ($modifiers[$line->order_line_id] ?? collect())->map(function (object $modifier): array {
+                $value = (array) $modifier;
+                unset($value['order_line_id']);
+                $value['name_snapshot'] = $value['option_name_snapshot'];
 
-        return $resource;
+                return $value;
+            })->all();
+
+            return $resource;
+        })->groupBy('ticket_id');
+
+        return array_map(fn (object $ticket): array => $this->decode($ticket) + ['lines' => ($lines[$ticket->id] ?? collect())->values()->all()], $tickets);
     }
 
     private function locked(string $table, FnbContext $context, int $id): object

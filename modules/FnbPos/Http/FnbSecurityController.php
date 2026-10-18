@@ -105,21 +105,40 @@ class FnbSecurityController
         $ctx = $this->api->context($request, 'fnb.staff.view');
         $items = DB::table('fnb_outlet_staff as memberships')
             ->join('admins', 'admins.id', '=', 'memberships.admin_id')
-            ->leftJoin('fnb_staff_role_bindings as bindings', function ($join): void {
+            ->leftJoin(($this->access->chainScopesEnabled() ? 'fnb_staff_role_scopes' : 'fnb_staff_role_bindings').' as bindings', function ($join): void {
                 $join->on('bindings.admin_id', '=', 'memberships.admin_id')->on('bindings.website_key', '=', 'memberships.website_key');
+                if ($this->access->chainScopesEnabled()) {
+                    $join->where('bindings.scope_type', 'outlet')->on('bindings.scope_key', '=', 'memberships.outlet_id');
+                }
             })->leftJoin('roles', 'roles.id', '=', 'bindings.preset_role_id')
             ->where('memberships.website_key', $ctx->websiteKey)->where('memberships.outlet_id', $ctx->outletId)
             ->where('memberships.is_active', true)->orderBy('admins.name')
-            ->get(['memberships.id', 'admins.name', 'roles.key as role_key', 'roles.name as role_name', 'memberships.expires_at', 'memberships.version', 'bindings.version as binding_version']);
+            ->get(['memberships.id', 'admins.id as admin_id', 'admins.name', 'admins.username', 'admins.email', 'roles.key as role_key', 'roles.name as role_name', 'memberships.expires_at', 'memberships.version', 'bindings.version as binding_version']);
         $actor = $request->user('admin');
-        $permissions = $actor->permissions($ctx->websiteKey);
+        $permissions = $this->access->permissionsForOutlet($actor, $ctx->websiteKey, $ctx->outletId);
         $presets = [];
-        if ($actor->hasPermission('fnb.staff.assign', $ctx->websiteKey)) {
+        if (in_array('fnb.staff.assign', $permissions, true)) {
             $roleIds = DB::table('module_role_definitions')->where('module_key', 'fnb-pos')->pluck('role_id');
             $presets = Role::query()->whereIn('id', $roleIds)->where('status', 'active')->with('permissions')->get()
-                ->filter(fn ($role) => array_diff($role->permissions->where('is_active', true)->pluck('key')->all(), $permissions) === [])
+                ->filter(fn ($role) => ! in_array($role->key, ['fnb-owner', 'fnb-hq-manager'], true) && ($role->key !== 'fnb-manager' || in_array('fnb.chain.manage', $this->access->hqPermissions($actor, $ctx->websiteKey), true)) && array_diff($role->permissions->where('is_active', true)->pluck('key')->all(), $permissions) === [])
                 ->map(fn ($role) => $role->only(['key', 'name', 'description']))->values()->all();
         }
+
+        $canAssign = in_array('fnb.staff.assign', $permissions, true);
+        $canManageHq = in_array('fnb.chain.staff.manage', $this->access->hqPermissions($actor, $ctx->websiteKey), true);
+        $hqAdminIds = $this->access->chainScopesEnabled() ? DB::table('fnb_staff_role_scopes')->where('website_key', $ctx->websiteKey)->where('scope_type', 'hq')->where('status', 'active')->pluck('admin_id')->all() : [];
+        $terminalRestrictions = DB::table('fnb_outlet_staff_terminals')->where('website_key', $ctx->websiteKey)->where('outlet_id', $ctx->outletId)->whereIn('outlet_staff_id', $items->pluck('id'))->get(['outlet_staff_id', 'terminal_id'])->groupBy('outlet_staff_id');
+        $items = $items->map(function ($row) use ($canAssign, $canManageHq, $hqAdminIds, $terminalRestrictions): array {
+            $value = (array) $row;
+            $value['terminal_ids'] = ($terminalRestrictions[$row->id] ?? collect())->pluck('terminal_id')->map(fn ($id) => (int) $id)->all();
+            $value['protected_account'] = (int) $row->admin_id === Admin::SYSTEM_OWNER_ID || ($row->binding_version === null) || (! $canManageHq && in_array($row->admin_id, $hqAdminIds));
+            if ($canAssign && ! $value['protected_account']) {
+                $value['identifier'] = $row->username ?: $row->email;
+            }
+            unset($value['admin_id'], $value['username'], $value['email']);
+
+            return $value;
+        });
 
         return response()->json(['data' => ['items' => $items, 'role_presets' => $presets]]);
     }

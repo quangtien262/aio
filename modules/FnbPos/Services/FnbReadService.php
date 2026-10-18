@@ -56,13 +56,18 @@ class FnbReadService
                 'id', 'public_id', 'payment_id', 'check_id', 'refund_no', 'status', 'amount_minor', 'reason', 'requested_at', 'processed_at', 'cancelled_at',
             ])->groupBy('payment_id')
             : collect();
+        $refundQuantities = $canSeePayment ? DB::table('fnb_refund_allocations')->where('fnb_refund_allocations.website_key', $ctx->websiteKey)->where('fnb_refund_allocations.outlet_id', $ctx->outletId)
+            ->join('fnb_refunds as r', 'r.id', '=', 'fnb_refund_allocations.refund_id')
+            ->whereIn('r.check_id', $checks->pluck('id'))->whereIn('r.status', ['requested', 'reserved', 'processing', 'uncertain', 'reconciling', 'attention', 'succeeded'])
+            ->where('allocation_kind', 'line')->whereNotNull('check_line_id')
+            ->selectRaw('check_line_id, SUM(quantity) AS refunded_quantity')->groupBy('check_line_id')->pluck('refunded_quantity', 'check_line_id') : collect();
         $orders = $orders->map(function ($order) use ($lines, $lineModifiers): array {
             return $this->decode($order) + ['lines' => ($lines[$order->id] ?? collect())->map(fn ($line) => $this->decode($line) + [
                 'modifiers' => ($lineModifiers[$line->id] ?? collect())->all(),
                 'modifier_option_ids' => ($lineModifiers[$line->id] ?? collect())->pluck('modifier_option_id')->all(),
             ])->all()];
         })->groupBy('session_id');
-        $checks = $checks->map(function ($check) use ($checkLines, $payments, $refunds, $financials, $canSeePayment): array {
+        $checks = $checks->map(function ($check) use ($checkLines, $payments, $refunds, $financials, $canSeePayment, $refundQuantities): array {
             $financial = isset($financials[$check->id]) ? (array) $financials[$check->id] : [];
             unset($financial['id'], $financial['website_key'], $financial['outlet_id'], $financial['check_id']);
             $checkPayments = $payments[$check->id] ?? collect();
@@ -78,8 +83,8 @@ class FnbReadService
             ] : [];
 
             return $this->decode($check) + $paymentProjection + [
-                'lines' => ($checkLines[$check->id] ?? collect())->map(fn ($line) => $this->decode($line))->all(),
-                'payments' => $checkPayments->map(fn ($payment) => $this->decode($payment) + ['refunds' => ($refunds[$payment->id] ?? collect())->all()])->all(),
+                'lines' => ($checkLines[$check->id] ?? collect())->map(fn ($line) => $this->decode($line) + ['refundable_quantity' => bccomp((string) $line->allocated_quantity, (string) ($refundQuantities[$line->id] ?? '0'), 6) > 0 ? bcsub((string) $line->allocated_quantity, (string) ($refundQuantities[$line->id] ?? '0'), 6) : '0.000000'])->all(),
+                'payments' => $checkPayments->map(fn ($payment) => $this->decode($payment) + ['refundable_minor' => max(0, (int) $payment->amount_minor - (int) ($refunds[$payment->id] ?? collect())->whereIn('status', ['requested', 'reserved', 'processing', 'uncertain', 'reconciling', 'attention', 'succeeded'])->sum('amount_minor')), 'refunds' => ($refunds[$payment->id] ?? collect())->all()])->all(),
             ];
         })->groupBy('session_id');
         $catalog = $this->service->catalog($ctx);

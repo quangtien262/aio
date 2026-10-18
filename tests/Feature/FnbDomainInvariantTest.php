@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Modules\FnbPos\Domain\FnbConflictException;
 use Modules\FnbPos\Domain\FnbContext;
 use Modules\FnbPos\Domain\FnbValidationException;
+use Modules\FnbPos\Services\FnbReadService;
 use Modules\FnbPos\Services\FnbService;
 use Tests\TestCase;
 
@@ -152,6 +153,11 @@ final class FnbDomainInvariantTest extends TestCase
         ], (string) Str::uuid());
         $this->assertSame(400, $refund['resource']['check']['projection']['refunded_total_minor']);
         $this->assertSame(600, $refund['resource']['check']['projection']['net_collected_total_minor']);
+        $pos = app(FnbReadService::class)->read($this->ctx, 'pos', [], Admin::findOrFail(1));
+        $visibleCheck = collect($pos['active_sessions'])->flatMap(fn ($value) => $value['checks'])->firstWhere('id', $first['id']);
+        $this->assertSame('0.600000', $visibleCheck['lines'][0]['refundable_quantity']);
+        $visiblePayment = collect($visibleCheck['payments'])->firstWhere('id', $firstPayment['resource']['payment']['id']);
+        $this->assertSame(0, $visiblePayment['refundable_minor']);
         $this->assertDatabaseHas('fnb_order_financial_projections', [
             'order_id' => $order['id'], 'gross_paid_total_minor' => 1_000, 'refunded_total_minor' => 400,
         ]);

@@ -33,7 +33,7 @@ class FnbApiController
         $website = $this->site->websiteKey();
         abort_unless($this->access->canBootstrapWebsite($request->user('admin'), $website), 403);
         $ids = $this->access->accessibleOutletIds($request->user('admin'), $website, 'fnb.outlet.view');
-        $outlets = DB::table('fnb_outlets')->where('website_key', $website)
+        $outlets = DB::table('fnb_outlets')->where('website_key', $website)->where('status', 'active')
             ->when($ids !== null, fn ($q) => $q->whereIn('id', $ids))->orderBy('id')->get();
         $installation = ModuleInstallation::query()->where('key', 'fnb-pos')->firstOrFail();
         $terminals = DB::table('fnb_terminals')->where('website_key', $website)
@@ -43,14 +43,17 @@ class FnbApiController
             $ids = $this->access->accessibleTerminalIds($request->user('admin'), $website, (int) $outlet->id, 'fnb.outlet.view');
             $allowed = ($terminals[$outlet->id] ?? collect())->filter(fn ($terminal) => $ids === null || in_array((int) $terminal->id, $ids, true));
 
-            return (array) $outlet + ['terminals' => $allowed->values()->all()];
+            return (array) $outlet + ['terminals' => $allowed->values()->all(), 'can_report_all_terminals' => $ids === null, 'effective_permissions' => $this->access->permissionsForOutlet($request->user('admin'), $website, (int) $outlet->id)];
         });
 
         return response()->json(['data' => [
+            'website_key' => $website,
+            'actor_id' => (int) $request->user('admin')->id,
+            'hq_permissions' => $this->access->hqPermissions($request->user('admin'), $website),
             'operational_state' => DB::table('fnb_site_settings')->where('website_key', $website)->value('operational_state') ?? 'unconfigured',
             'installed_version' => $installation->version,
             'feature_flags' => [],
-            'onboarding' => ['completed' => $outlets->isNotEmpty(), 'steps' => ['outlet', 'terminal', 'menu', 'shift']],
+            'onboarding' => ['completed' => DB::table('fnb_outlets')->where('website_key', $website)->exists(), 'steps' => ['outlet', 'terminal', 'menu', 'shift']],
             'outlets' => $outletPayload,
             'integrations' => $this->access->canBootstrapWebsite($request->user('admin'), $website, 'fnb.integration.view') ? $integrations->summary() : [],
         ]]);
@@ -72,6 +75,31 @@ class FnbApiController
         return $this->response($result);
     }
 
+    public function commandStatus(Request $request): JsonResponse
+    {
+        if (! $request->header('X-FNB-Outlet') && ! $request->input('outlet_id')) {
+            $website = $this->site->websiteKey();
+            $this->access->authorizeHq($request->user('admin'), $website, 'fnb.chain.view');
+            $ctx = new FnbContext($website, 0, (int) $request->user('admin')->id);
+        } else {
+            $ctx = $this->context($request, 'fnb.outlet.view');
+        }
+        $data = $request->validate(['key' => ['required', 'string', 'min:8', 'max:120'], 'operation' => ['nullable', 'string', 'max:100']]);
+        $rows = DB::table('fnb_idempotency_requests')->where('website_key', $ctx->websiteKey)->where('outlet_id', $ctx->outletId)
+            ->where('actor_id', $ctx->actorId)->where('terminal_id', $ctx->terminalId)->where('idempotency_key', $data['key'])
+            ->when($data['operation'] ?? null, fn ($q, $operation) => $q->where('operation', $operation))
+            ->orderByDesc('id')->limit(2)->get(['operation', 'state', 'resource_type', 'resource_id', 'completed_at']);
+        abort_if($rows->count() > 1, 409, 'Mã này thuộc nhiều thao tác; cần chỉ rõ operation để kiểm tra kết quả.');
+        $row = $rows->first();
+        if ($row?->state !== 'completed') {
+            $row = null;
+        }
+
+        return response()->json(['data' => $row ? ['status' => 'committed', 'resource_type' => $row->resource_type,
+            'resource_id' => $row->resource_id, 'completed_at' => $row->completed_at] : ['status' => 'unknown']])
+            ->header('Cache-Control', 'no-store');
+    }
+
     public function command(Request $request): JsonResponse
     {
         $name = (string) $request->route('fnb_command');
@@ -80,6 +108,9 @@ class FnbApiController
         $key = (string) $request->header('Idempotency-Key', '');
         validator(['key' => $key], ['key' => ['required', 'string', 'min:8', 'max:120', 'regex:/^[A-Za-z0-9_.:\\-]+$/']])->validate();
         $ctx = $this->context($request, $permission, $name === 'onboard', $this->security->authorization($request, $name, $input));
+        if ($name === 'item.save') {
+            $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, 'fnb.menu.master.manage');
+        }
         $id = (int) $request->route('resource');
         $version = fn (): int => $this->version($input);
         $result = match ($name) {
@@ -107,6 +138,7 @@ class FnbApiController
             'kitchen.transition' => $this->service->transitionKitchenLine($ctx, $id, $this->choice($input, 'status', ['preparing', 'ready', 'served']), $key, $version()),
             'check.create' => $this->service->createCheck($ctx, $id, $this->array($input, 'allocations'), $key, $version()),
             'check.finalize' => $this->service->finalizeCheck($ctx, $id, $key, $version()),
+            'check.close_zero_charge' => $this->service->closeZeroChargeCheck($ctx, $id, $this->integer($input, 'shift_id', 1), $this->reason($input), $key, $version()),
             'check.reopen' => $this->service->reopenCheck($ctx, $id, $this->reason($input), $key, $version()),
             'check.void' => $this->service->voidCheck($ctx, $id, $this->reason($input), $key, $version()),
             'check.plan' => $this->service->setSettlementPlan($ctx, $id, $this->choice($input, 'mode', ['single_cash', 'single_non_cash', 'mixed']), $key, $version()),
@@ -128,6 +160,9 @@ class FnbApiController
         $key = (string) $request->header('Idempotency-Key', '');
         validator(['key' => $key], ['key' => ['required', 'string', 'min:8', 'max:120']])->validate();
         $ctx = $this->context($request, $permission, false, $this->security->authorization($request, $kind.'.save', $input));
+        if (in_array($kind, ['category', 'modifier_group', 'modifier_option', 'ingredient'], true)) {
+            $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, $kind === 'ingredient' ? 'fnb.recipe.master.manage' : 'fnb.menu.master.manage');
+        }
         $id = $request->route('resource') ? (int) $request->route('resource') : null;
         if ($kind === 'outlet') {
             $id = $ctx->outletId;
@@ -142,6 +177,7 @@ class FnbApiController
         $key = (string) $request->header('Idempotency-Key', '');
         validator(['key' => $key], ['key' => ['required', 'string', 'min:8', 'max:120']])->validate();
         $ctx = $this->context($request, 'fnb.recipe.manage', false, $this->security->authorization($request, 'recipe.publish', $input));
+        $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, 'fnb.recipe.master.manage');
 
         return $this->response($recipes->publish($ctx, $input, $key));
     }
@@ -207,7 +243,12 @@ class FnbApiController
             $this->access->authorize($request->user('admin'), $ctx->websiteKey, $ctx->outletId, 'fnb.menu.manage');
         }
 
-        return $this->service->catalog($ctx, $request->only(['query', 'status']) + ['include_inactive' => $request->boolean('include_inactive')]);
+        $draft = $request->boolean('draft') || $request->boolean('include_inactive');
+        if ($draft) {
+            $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, 'fnb.menu.master.manage');
+        }
+
+        return $this->service->catalog($ctx, $request->only(['query', 'status']) + ['include_inactive' => $request->boolean('include_inactive'), 'draft' => $draft]);
     }
 
     private function customers(Request $request, FnbContext $ctx): array

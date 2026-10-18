@@ -30,6 +30,8 @@ const iconMap = {
     reports: <BarChartOutlined />,
     staff: <TeamOutlined />,
     settings: <SettingOutlined />,
+    chain: <AppstoreOutlined />,
+    integrations: <SettingOutlined />,
 };
 
 function Navigation({ items, activeKey, onSelect }) {
@@ -42,6 +44,7 @@ function Navigation({ items, activeKey, onSelect }) {
                     className={`fnb-workspace-nav-item${activeKey === item.key ? ' is-active' : ''}`}
                     onClick={() => onSelect(item.key)}
                     data-testid={`fnb-nav-${item.key}`}
+                    aria-current={activeKey === item.key ? 'page' : undefined}
                 >
                     <span className="fnb-workspace-nav-icon">{iconMap[item.key]}</span>
                     <span>{item.label}</span>

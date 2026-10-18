@@ -1,81 +1,74 @@
 # F&B POS — Tiến độ triển khai thực tế
 
-Cập nhật: **2026-09-05**. Baseline: [Product Specification](fnb-pos-product-spec.md). Hợp đồng hiện hành: [Runtime/API contract](../api/fnb-pos-runtime-contract.md). Cài đặt và vận hành: [Runbook](fnb-pos-runbook.md).
+Cập nhật: **2026-10-18**. Baseline: [Product Specification](fnb-pos-product-spec.md). Hợp đồng: [Runtime/API contract](../api/fnb-pos-runtime-contract.md). Vận hành: [Runbook](fnb-pos-runbook.md).
 
 ## Kết luận
 
-Đã tạo package **`fnb-pos@0.1.0-dev.1`**, cài/bật qua App Store, cùng backend và giao diện quản trị cho luồng bán hàng cafe online-first. Đây là **bản phát triển nội bộ**, không phải tuyên bố đã hoàn thành toàn bộ M0–M8, đạt parity KiotViet, đạt Pilot `0.1.0` hay Production RC `0.1.2`.
+Source hiện dùng **`fnb-pos@0.2.0-dev.1`**, mở rộng từ POS một cửa hàng sang quản trị chuỗi: thương hiệu/vùng/cửa hàng, phân quyền HQ và từng outlet, phát hành thực đơn bất biến, bảng giá POS, báo cáo tổng hợp và adapter Kho/Kế toán cục bộ có kiểm quyền. Mục tiêu thiết kế là chuỗi 10–50 cửa hàng; **chưa có bằng chứng tải/soak chứng minh quy mô này đã được nghiệm thu**.
 
-Sếp đã duyệt triển khai toàn bộ roadmap. Tính năng được phát triển theo thứ tự phụ thuộc; những quyết định chính sách, adapter và bằng chứng vận hành còn thiếu không được tự ghi là đã nghiệm thu.
+Đây vẫn là bản phát triển nội bộ. Version biểu thị hợp đồng/schema mới, không thay thế nghiệm thu toàn bộ M0–M8, Pilot hay Production RC. Các gate chính sách, contention, thiết bị và vận hành còn thiếu vẫn phải hoàn thành.
 
 ## Đã có trong source
 
 | Nhóm | Chức năng đã triển khai | Ranh giới hiện tại |
 | --- | --- | --- |
-| App Store | Manifest không hard-dependency; 9 package migrations/73 bảng `fnb_*`; install/enable/disable; giữ dữ liệu; chặn uninstall lịch sử giao dịch | Bundled code, chưa remote package/hot-load frontend |
-| Platform lifecycle | Durable operation, advisory ownership, drain/recovery, security map theo installed version; 3 bảng core-neutral | Chưa có đầy đủ multi-process crash/soak matrix cho mọi cặp lifecycle |
-| Quyền & nhân viên | 53 permission, 8 preset exact; website role + outlet/terminal membership; candidate grant; chống nâng quyền qua API core; re-auth một lần; phê duyệt hai người | Chưa custom role hay role khác nhau theo outlet; các thao tác critical đang dùng chính sách hai người nghiêm ngặt, chưa cấu hình threshold/một người |
-| Khởi tạo | Website/outlet, terminal, Bar, khu vực/5 bàn, tiền mặt/chuyển khoản; menu mẫu tùy chọn; replay không nhân dữ liệu | Chưa timed UAT 30 phút hay import menu hàng loạt |
-| Menu/công thức | Nhóm món, nhiều size, topping, min/max lựa chọn, trạng thái hết món, routing trạm; nguyên liệu/UOM; recipe revision bất biến, loss và modifier consumption | Chưa workflow publish/menu price-book hoàn chỉnh, combo hay lịch giá/kênh |
-| POS | Quầy/tại bàn/mang đi; session gọi nhiều đợt; thêm/sửa/xóa dòng nháp, submit, chuyển bàn, hủy có duyệt; optimistic version và replay | Giảm giá cố định trên giá net trước thuế, chỉ order nháp; sau giảm giá khóa chỉnh cấu trúc dòng; chưa generic override hay reopen order |
-| KDS | Ticket theo station, waiting/preparing/ready/served, cursor/event ledger, hủy và waste, quantity sau partial compensation | Attempt 1; chưa remake; chưa chứng minh SLA dưới tải thực tế |
-| Bill/thanh toán | Chia bill theo món/số lượng; finalize, settlement plan; mixed tender; tiền khách đưa/tiền thừa; cash rounding; refund phân bổ có cap; check reopen/void có guard | Manual tender do người vận hành xác nhận; không có xác minh ngân hàng/provider tự động |
-| Hủy món đã trả tiền | Refund theo từng tender + từng thành phần tiền; full/partial quantity; giữ check nguồn; reverse sale consumption và ghi waste khi đã pha; retry không nhân ledger | Chỉ synchronous manual tender; prior refund không tương thích bị chặn để đối soát; chưa asynchronous uncertain/attention/resolve/cancel workflow |
-| Ca/két | Business day, mở/đóng/đối soát ca, số tiền đầu ca, cash in/out, expected/count/variance, payment/refund processing shift | Chưa measured overnight/soak và mọi trường hợp provider pending |
-| Khách hàng | Lookup che số điện thoại; create/attach; profile update có version; lịch sử bill đã đóng theo outlet với cursor và snapshot cũ | API profile/history đã có; chưa đủ màn CRM và merge có lineage; không xóa lịch sử giao dịch |
-| Báo cáo | Tách tiền thu/hoàn theo ngày xử lý và doanh số bill đã đóng; top món, tender, ca/két, lọc ngày/ca/terminal; operations response không chứa tiền | Chưa đầy đủ báo cáo kênh/giờ/discount/void/compensation và rebuild/soak reconciliation |
-| Phiếu & export | Receipt snapshot/checksum, browser print và operator confirm; CSV private, checksum, hết hạn, chống formula injection, worker/recovery | Phiếu bán hàng không phải hóa đơn thuế; chưa chứng minh máy in nhận giấy; chưa purge theo retention được duyệt |
-| Giao diện | Onboarding, tổng quan, POS, Bar/Bếp, thực đơn, ca/két, báo cáo, nhân viên, thiết lập; conflict và critical-action drawer | Chưa đủ E2E hai người/hai trình duyệt và toàn bộ màn quản trị nâng cao |
-| Tích hợp | Core capability checker dùng chung; readiness rõ ràng; immutable outbox và theoretical consumption | Mọi adapter stock/accounting/workforce vẫn pending; không có posting giả hoặc gọi Minvoice trực tiếp |
+| App Store/lifecycle | Package không hard-dependency; 11 migration `fnb_*`; install/upgrade/enable/disable; giữ lịch sử và chặn uninstall; exact security map theo installed version | Bundled code; chưa remote package/hot-load; crash/upgrade/soak matrix còn cần kiểm chứng |
+| Chuỗi | Thương hiệu, vùng, provision thêm cửa hàng/terminal/Bar/bàn/phương thức thanh toán; version và re-auth cho thay đổi | Scope trong một website; chưa franchise/central kitchen hoặc SLA tải 50 cửa hàng |
+| Quyền & audit | 58 permission, 9 exact preset ở `0.2.0-dev.1`; HQ + role theo outlet; giữ terminal membership; chặn mất HQ owner cuối; audit theo website/outlet | Chưa custom role; nhiều thao tác tiền vẫn cần chính sách duyệt nghiêm ngặt; cần UAT phân quyền thực tế |
+| Menu/công thức | Master data HQ; size/topping/min-max/hết món/routing; recipe revision; snapshot publication và rollback theo outlet; bảng giá VND POS với khoảng hiệu lực | Chưa combo, promotion engine, menu import hàng loạt, multi-channel hoặc lịch lặp nâng cao |
+| POS | Quầy/tại bàn/mang đi, gọi nhiều đợt, sửa dòng nháp, submit/chuyển bàn, optimistic version và idempotency | Discount cố định net trước thuế trên draft; khóa cấu trúc sau discount; chưa generic override/reopen/merge |
+| KDS | Ticket theo trạm, waiting/preparing/ready/served, event/cursor, modifier snapshot; tải ticket/lines/modifiers theo batch; hủy/waste/partial compensation; timestamp UTC hiển thị theo timezone outlet | Attempt 1; chưa remake; đã smoke hai tab, SLA và journey hai người đầy đủ chưa nghiệm thu |
+| Bill/thanh toán | Quantity split, finalize/plan/mixed tender/change/rounding/refund cap; zero-charge close có audit và consumption, không tạo payment giả | Manual confirmation; QR TPBank là payload chuyển khoản VND, không phải kết nối ngân hàng hoặc bằng chứng đã nhận tiền |
+| Money invariant | Đóng session/ca kiểm toàn quantity không hủy đã vào bill closed có settlement paid; bill void không khóa hủy món; order projection xử lý cash rounding/quantity bill miễn phí | Multi-process MySQL races, overnight và soak vẫn là gate riêng |
+| Compensation | Refund theo tender/component, giữ bill nguồn, reverse sale và waste khi đã pha; ledger retry không nhân | Manual synchronous; chưa provider-async uncertain/attention/group cancel |
+| Khách hàng | Lookup che điện thoại, create/update/attach, snapshot và lịch sử bill theo outlet | Chưa CRM đầy đủ, merge lineage, loyalty hoặc retention/erasure đã duyệt |
+| Báo cáo | Cash-flow theo ngày xử lý, closed sales, món/tender/ca; tổng hợp outlet/vùng/chuỗi cùng tiền tệ, operation projection không chứa tiền | Chưa báo cáo đầy đủ theo giờ/kênh/khuyến mãi và rebuild/soak reconciliation |
+| Receipt/export | Snapshot/checksum, browser print + xác nhận operator, CSV private/expiry/escape formula, queue/recovery | Không phải hóa đơn thuế; chưa chứng minh máy in nhận giấy hoặc retention purge |
+| Kho cục bộ | Adapter `inventory.documents.write.v1`: từng consumption sale/reversal/waste, chứng từ thật trong cùng DB transaction; giữ lineage/factor/kho/giá vốn; replay không nhân chứng từ | Chỉ item không batch/serial; quantity sau đổi đơn vị phải biểu diễn chính xác ở 3 decimals và trong giới hạn v1; chưa Inventory v2 hoặc kiểm kê/điều chuyển chuỗi nâng cao |
+| Kế toán cục bộ | Mapping size → mặt hàng/pháp nhân; tạo một internal draft tổng tiền khớp bill VND, giữ vector tiền/số lượng nguồn, yêu cầu phân loại thuế | Không auto-approve/post/phát hành thuế; chưa ngoại tệ, refund credit-note tự động, HRM/Payroll hoặc Minvoice trực tiếp |
+| Delivery worker | Lease, backoff, dead-letter, reconcile và opt-in automation gắn admin/auth-version; kiểm lại module/capability/quyền/mapping mỗi delivery | Chưa external-provider dispatcher; readiness không tự tuyên bố production-ready khi chỉ có mapping |
 
-Nguồn chính: `modules/FnbPos/`, `routes/fnb.php`, `resources/admin/src/modules/fnb-pos/`; phần core bổ sung nằm tại `app/Core/Modules/` và additive migration `2026_09_05_000001_create_module_lifecycle_security_tables.php`.
+Nguồn: `modules/FnbPos/`, `routes/fnb.php`, `routes/fnb-chain.php`, `resources/admin/src/modules/fnb-pos/`; core bổ sung có lifecycle/security và audit-chain partition. Shared scope locks giảm tuần tự hóa toàn chuỗi; aggregate locks/idempotency vẫn giữ, nhưng kết luận về throughput cần benchmark MySQL.
 
 ## Trạng thái milestone
 
-| Milestone | Trạng thái | Điều kiện còn thiếu trước khi nghiệm thu |
+| Milestone | Hiện trạng | Gate còn thiếu |
 | --- | --- | --- |
-| M0 | Baseline được duyệt phát triển | Finance/Legal xác nhận tax/service charge/rounding; PII/retention/legal hold; policy một người và backup |
-| M1 | Nền tảng đã có và có regression | Lifecycle contention/crash-resume matrix, upgrade skipped versions khi có release thực, operational drill |
-| M2 | Nghiệp vụ cốt lõi đã có | Hoàn thiện publish/price-book, UI customer/recipe nâng cao, import và menu 500 món/load, timed onboarding |
-| M3 | Các command POS và UI cốt lõi đã có | Multi-process MySQL concurrent edit/replay/transfer, kiểm thử conflict UX nhiều thiết bị |
-| M4 | KDS và ledger đã có | Two-browser journey, event backlog/restart/refresh/load, SLA đo được, responsive/fullscreen UAT |
-| M5 | Money/shift/report backend và UI chính đã có | Đầy đủ approval policy, service charge/override, async compensation/reconciliation, các báo cáo còn thiếu, full journey + soak/latency |
-| M5.1 | Chưa triển khai | Combo nâng cao, merge session có lineage, lịch/kênh giá, bulk waste; chỉ sau Pilot ổn định |
-| M6 | Có một phần seam, chưa có RC | Mapping/adapter Inventory v2/Accounting, dispatcher/dead-letter/reconcile, observability, retention, backup/restore và support drill |
-| M7 | Chưa triển khai | QR self-order, booking, loyalty, multi-outlet RBAC, remake, workforce, provider/print agent, offline, delivery theo contract riêng |
-| M8 | Chưa triển khai | Central kitchen/forecast, SLA/capacity analytics, payout/risk analytics, mobile/sync nâng cao; cần telemetry/business case |
+| M0 | Baseline phát triển được duyệt | Finance/Legal xác nhận tax/service charge/rounding; PII/retention/legal hold; backup và support ownership |
+| M1 | Lifecycle/versioned security và upgrade có regression | MySQL lifecycle contention/crash-reclaim/skipped-version matrix và operational drill |
+| M2–M4 | POS/KDS/menu/công thức và publication/price book đã có source | Import, timed onboarding, tải 500 món, conflict UX nhiều thiết bị và KDS SLA |
+| M5 | Money/shift/report/compensation core và zero-charge invariants có regression | Taxable service charge/override, async provider, full two-person browser journey và soak/reconciliation |
+| M5.1/M7 | Đã có một phần multi-outlet/HQ/menu rollout | Combo/merge/promotion, QR self-order, booking, loyalty, remake, workforce, offline/delivery còn thiếu |
+| M6 | Có adapter Kho v1/Kế toán draft cục bộ và dispatcher opt-in | Inventory v2, external-provider uncertain reconciliation, production-like MySQL, observability/backup/restore/retention/support drill |
+| M8 | Chưa triển khai | Central kitchen/forecast, analytics năng lực/payout/risk và mobile/sync cần business case/telemetry |
 
-Không tăng version để biểu thị milestone đã đạt khi mới có một phần source. Không tạo bảng rỗng hoặc endpoint giả cho tính năng M5.1/P1/P2.
+Các phần triển khai sớm của milestone sau không có nghĩa các milestone trước đã nghiệm thu.
 
-## Quyết định kỹ thuật cho bản prerelease
+## Invariant vận hành
 
-- POS floor/session/order là không gian cộng tác **trong cùng outlet**, phục vụ gọi nhiều đợt/chuyển bàn/thu ngân tiếp nhận. Đây không phải chế độ floor riêng tư theo terminal. Header terminal vẫn phải thuộc phân công; mutation tiền/ca kiểm processing terminal. Danh sách ca và báo cáo theo terminal đang chọn; report/export không được đổi terminal qua query trái context.
-- Quyền để mở projection nhạy cảm kiểm bằng exact F&B preset + outlet/terminal, không dựa riêng vào quyền core/global legacy. Provider reference, token/hash, recipe/buyer snapshot và idempotency evidence không được trả trong operational hoặc conflict response.
-- `gross_collected_minor - refund_disbursed_minor = net_collected_minor` là cash-flow của kỳ xử lý; `closed_sales_minor` là sale snapshot. Không gọi tiền nhận được là doanh thu kế toán/thuế. Hoàn ngày sau hiện trong ngày xử lý hoàn; average bill dùng sale/check đã đóng.
-- Đơn vị tiền là integer minor; quantity là decimal tối đa 6 chữ số; các test số học không thay thế xác nhận chính sách thuế. Toàn bộ dữ liệu test là synthetic.
-- Nguyên liệu ở F&B là **tiêu hao lý thuyết**, chưa phải chứng từ giảm tồn Inventory hoặc chi phí AccountingTax. Readiness luôn nói rõ pending khi adapter chưa sẵn sàng.
-- Bản này không cam kết offline. Mất mạng phải thông báo và giữ idempotency identity để retry đúng command, không tạo payment/order mới do mất response.
+- Website là ranh giới chuỗi/brand context; outlet là ranh giới tác nghiệp. Floor/session/order cộng tác trong cùng outlet; mutation tiền kiểm processing shift/terminal. HQ role không tự cấp quyền module Kho/Kế toán.
+- Tiền là integer minor; quantity tối đa 6 decimals. Cash-flow không đồng nhất doanh thu kế toán/thuế; refund ngày sau thuộc ngày xử lý hoàn. Cash rounding thuộc bill, không tạo “nợ” giả ở order đã phân bổ đầy đủ.
+- Menu publication/bill/recipe snapshot giữ lịch sử. KDS chỉ trả snapshot món/size/topping/note/quantity; không trả giá, PII, tender hoặc recipe cost.
+- Consumption là ledger lý thuyết cho đến khi delivery `delivered` và consumption `posted` cùng tham chiếu chứng từ Kho. Adapter absent/off/mapping thiếu không rollback bill POS.
+- Accounting draft giữ **gross bill**, chưa xử lý refund thành credit-note tự động. Draft giữ `requires_tax_classification=true`, chưa phải kê khai thuế, bút toán đã post hoặc hóa đơn điện tử.
+- Automation mặc định tắt. Bật lại cần quyền HQ/F&B + quyền module đích, re-auth và explicit opt-in; thay item mapping sẽ tạm dừng automation. Admin inactive, mất quyền, đổi auth-version, mapping/module off sẽ chặn worker.
+- Không cam kết full offline. Giữ command/idempotency identity khi mất response; không tạo giao dịch tiền mới để thử lại.
 
-## Bằng chứng kiểm thử
+## Bằng chứng hiện hành và giới hạn
 
-- Targeted backend: API từ onboarding → gọi món → KDS → bill/payment → receipt/export → đóng ca; partial/full compensation; immutable recipe và menu snapshot; customer isolation/history; exact preset và approval evidence; signed monetary vectors và CSV projection.
-- Fresh-production SQLite: core migrate không tự cài F&B; cài/bật qua lifecycle mới đưa package vào hoạt động với exact permission/role map.
-- MySQL 8.0.43 isolated upgrade-path smoke: install/enable/disable/re-enable, **170 foreign keys**, **53 permission**; mixed payment 40.000 tiền mặt + 18.000 chuyển khoản, refund 29.000, compensation 29.000 qua 2 tender; sale 30/reversal 15/waste 15; két trở về tiền đầu ca; receipt checksum qua JSON MySQL. Database scratch được xóa trong `finally`, không sao chép dữ liệu người dùng.
-- Frontend production build **pass, 4.562 modules**; chỉ còn cảnh báo chunk lớn không chặn của bundle toàn hệ thống. Browser fixture smoke **1/1 pass**: login/permission/navigation, onboarding/cấu hình, tạo nhóm món + món nhiều size, mở ngày/ca/session và thêm/sửa/xóa dòng nháp. Ảnh QA: `test-results/fnb-pos-pilot.png`. Smoke chưa thanh toán/receipt/export hoặc hoàn tiền hai người trên trình duyệt, không thay thế full two-browser money journey.
-- Full PHPUnit: **514 tests, 11.076 assertions pass**, PHP 8.3.30, 5 phút 43 giây, 158 MB. Sau các sửa nhỏ cuối ở HTTP projection/permission, gate `FnbAuthorizationHttpTest + FnbPosApiTest + FnbSecurityFoundationTest` tiếp tục **19 tests, 377 assertions pass**; không cộng hai bộ số vì có test trùng nhau.
-- Pint pass; kiểm tra whitespace của thay đổi trong phạm vi pass. Whitespace sẵn có của `docs/theme.txt` không thuộc thay đổi này và được giữ nguyên.
-
-Giới hạn môi trường đã xác minh: fresh MySQL core hiện vướng migration lịch sử `2026_07_17_000003_make_cms_media_file_path_nullable.php` vì giả định `cms_media` tồn tại. Smoke F&B MySQL dùng schema core của deployment hiện hữu nhưng **không copy dòng dữ liệu**. Không sửa migration lịch sử đã áp dụng để che lỗi; fresh MySQL deployment cần xử lý riêng trước phát hành.
-
-## Trạng thái workspace/local
-
-Chỉ additive **core lifecycle/security migration** đã chạy trên database local của Sếp. F&B **chưa được cài, bật hoặc onboarding** trên database này; module được cài thử trong database cô lập. Không ghi giao dịch quán thật, không gửi provider payment, email, hóa đơn điện tử hoặc deploy. Chưa commit/push. Thay đổi có sẵn của Sếp ở `docs/theme.txt` được giữ nguyên.
-
-Test server loopback đã dừng; SQLite browser fixture được xóa sau QA và có thể dựng lại bằng support script. Cache PHPUnit và trạng thái Playwright có sẵn được giữ ngoài thay đổi bàn giao. Ảnh QA giữ lại làm artifact kiểm chứng, không chứa tài khoản hoặc dữ liệu quán thật.
+- Gate tổng phạm vi thay đổi 2026-10-18: `tests/Feature/Fnb* + tests/Feature/AuditChain* + tests/Unit/Fnb*`: **83 tests / 3.385 assertions pass**, PHP 8.5.5, SQLite in-memory, 15,961 giây. Bao phủ chain/role/upgrade, immutable menu/pricebook, TPBank QR manual, 50-outlet report query budget, recovery key ambiguity, stock sale/reversal/waste/cost/replay, lease/dead-letter/automation fairness, accounting exact draft, session/shift/zero-charge/rounding và audit partition/legacy/tamper.
+- `FreshProductionInstallTest` hai method fresh lifecycle tới schema mới và refresh core lặp: **2 tests / 61 assertions pass**. Đây là SQLite subprocess, không phải fresh MySQL.
+- `node --test tests/UnitJavaScript/fnb-command-unit.test.js`: **14 tests pass**; build Vite pass. Có mô phỏng thu một phần đã commit nhưng mất response rồi refresh: client kiểm key cũ, không gửi mutation tiền thứ hai; unknown chỉ thay version có thể replay đúng body/key cũ, còn intent đổi vẫn giữ pending. Journal chỉ giữ hash và optimistic-version metadata số, không lưu amount/reference/reason hoặc payload. PHP lint 60 file thay đổi pass; Pint và whitespace pass.
+- Smoke giao diện trên SQLite riêng: onboarding → thêm món giả lập → POS gửi order → tab KDS thứ hai preparing/ready/served → tạo/finalize bill → thu tiền mặt giả lập → bill closed/receipt snapshot; HQ tạo outlet thứ hai qua re-auth; báo cáo chuỗi hiển thị đúng 30.000 VND ở outlet thứ nhất, 0 ở outlet thứ hai. QR TPBank hiển thị được với tài khoản synthetic; sau tạo QR vẫn chỉ có một payment tiền mặt trước đó, bill QR giữ `finalized`, intent `pending` và audit hợp lệ. Timestamp phiên sau sửa hiển thị 14:55 giờ Việt Nam thay vì UTC 07:55. Chưa chạy fault-injection browser spec hoặc in giấy USB.
+- Full PHPUnit: **887 tests / 26.133 assertions; 30 errors, 51 failures**, 414,508 giây; không có failure/error trong các class F&B/audit. Log `/tmp/aio-fnb-full-suite.log`, JUnit `/tmp/aio-fnb-full-suite.xml`. Bốn method lỗi Admin/CMS/DL750/DN302 đã tái hiện trên HEAD sạch `2a36d207` (landing route mặc định, CMS-only thiếu `catalog_products`, category array bị đọc như object, bộ dữ liệu DN302 không hợp lệ). Các lỗi còn lại thuộc CMS/theme/landing chưa phân loại hết; không suy rộng bằng chứng bốn method thành toàn bộ lỗi broad suite đều có sẵn. Full-suite vẫn là gate chưa xanh.
+- Bằng chứng lịch sử **2026-09-05** của `0.1.0-dev.1`: full PHPUnit 514 tests/11.076 assertions; MySQL 8.0.43 upgrade-path smoke 170 FK/53 permission với mixed tender/refund/compensation/receipt; một browser fixture smoke. Đây không phải bằng chứng MySQL/E2E cho schema và adapter `0.2.0-dev.1` hiện tại.
+- CMS migration từng bị nêu là chặn fresh MySQL hiện đã có guard trong source; vẫn cần chạy fresh-production/MySQL hiện hành trước tuyên bố đã giải quyết runtime.
+- Không có bằng chứng kết nối TPBank, xác minh tiền ngân hàng, provider certification, giấy in thực tế hoặc tải chuỗi 10–50 cửa hàng. Không phát hành hóa đơn thuế hay gửi provider payment trong các test nêu trên.
 
 ## Thứ tự tiếp tục
 
-1. Chốt M0 policy với owner nghiệp vụ; hoàn thiện các khoảng trống M2–M5 nêu trên, không bỏ test để đẩy version.
-2. Chạy critical journey hai người/hai trình duyệt và MySQL contention/soak theo acceptance dataset; đo baseline 10 terminal, 100 bàn, 500 item, 5.000 bill/ngày.
-3. Chỉ sau Pilot ổn định mới phát triển cumulative parity `0.1.1`; ký adapter readiness để mở mapping/integration `0.1.2`.
-4. Lựa chọn từng workstream P1/P2 có contract và exit gate cụ thể; không suy diễn provider, pháp lý, offline conflict policy hoặc thiết bị được hỗ trợ.
+1. Hoàn tất release gates M0 và acceptance dataset; rà soát chứng từ Kho/Kế toán trong quán pilot với owner nghiệp vụ.
+2. Chạy MySQL competing-process/lease-crash/lifecycle/concurrent quantity/payment/refund matrix cho code hiện hành; hướng dẫn tại `tests/Support/fnb-mysql-gates.md`. Mục tiêu nghiệm thu dự kiến: 50 outlet × (2 POS + 1 KDS) = 150 thiết bị, 100 bill/giờ/outlet = 5.000 bill/giờ toàn chuỗi, kiểm thêm 2× peak và soak; đây là giả định tải để đo, chưa phải capacity đã chứng minh. Harness domain hiện có một worker/outlet, không thay thế tải HTTP/150 thiết bị.
+3. Chạy journey hai người/hai trình duyệt: gọi món/topping → Bar → split/mixed/zero bill → receipt → refund/compensation → đóng ca → reconcile stock/draft và kiểm mất mạng/retry.
+4. Diễn tập backup/restore, worker/scheduler monitoring, disable/upgrade/recovery; chỉ bật automation sau đối soát thủ công và cấp grant cho tài khoản có owner vận hành rõ ràng.
+5. Triển khai riêng các contract chưa có: Inventory v2, accounting refund adjustments, provider ngân hàng/print, QR self-order/offline/loyalty/central kitchen. Không dùng version hoặc UI đã có để thay nghiệm thu.

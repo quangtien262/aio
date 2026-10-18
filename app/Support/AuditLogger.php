@@ -30,7 +30,11 @@ class AuditLogger
         ?Admin $actor = null,
         ?string $moduleKey = null,
         ?string $websiteKey = null,
+        string $chainKey = 'default',
     ): AuditLog {
+        if (! preg_match('/^[a-zA-Z0-9:_-]{1,50}$/', $chainKey)) {
+            throw new \InvalidArgumentException('Invalid audit chain identity.');
+        }
         /** @var Request|null $request */
         $request = app()->bound('request') ? request() : null;
         $targetType = $target instanceof Model ? $target::class : (is_string($target) ? $target : null);
@@ -51,22 +55,22 @@ class AuditLogger
             'created_at' => now(),
         ];
 
-        return DB::transaction(function () use ($values): AuditLog {
+        return DB::transaction(function () use ($values, $chainKey): AuditLog {
             $head = DB::table('audit_log_chain_heads')
-                ->where('chain_key', 'default')
+                ->where('chain_key', $chainKey)
                 ->lockForUpdate()
                 ->first();
 
             if ($head === null) {
                 DB::table('audit_log_chain_heads')->insertOrIgnore([
-                    'chain_key' => 'default',
+                    'chain_key' => $chainKey,
                     'last_sequence' => 0,
                     'last_hash' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
                 $head = DB::table('audit_log_chain_heads')
-                    ->where('chain_key', 'default')
+                    ->where('chain_key', $chainKey)
                     ->lockForUpdate()
                     ->first();
             }
@@ -74,6 +78,7 @@ class AuditLogger
             $sequence = (int) $head->last_sequence + 1;
             $previousHash = $head->last_hash;
             $hashPayload = $this->canonicalize([
+                ...($chainKey === 'default' ? [] : ['chain_key' => $chainKey]),
                 'sequence' => $sequence,
                 'previous_hash' => $previousHash,
                 ...$values,
@@ -86,12 +91,13 @@ class AuditLogger
 
             $log = AuditLog::query()->create([
                 ...$values,
+                'chain_key' => $chainKey,
                 'sequence' => $sequence,
                 'previous_hash' => $previousHash,
                 'entry_hash' => $entryHash,
             ]);
 
-            DB::table('audit_log_chain_heads')->where('chain_key', 'default')->update([
+            DB::table('audit_log_chain_heads')->where('chain_key', $chainKey)->update([
                 'last_sequence' => $sequence,
                 'last_hash' => $entryHash,
                 'updated_at' => now(),

@@ -3,13 +3,27 @@
 use Illuminate\Support\Facades\Route;
 use Modules\FnbPos\Http\FnbApiController;
 use Modules\FnbPos\Http\FnbApiErrors;
+use Modules\FnbPos\Http\FnbBankController;
+use Modules\FnbPos\Http\FnbChainReportController;
 use Modules\FnbPos\Http\FnbCustomerController;
+use Modules\FnbPos\Http\FnbIntegrationController;
 use Modules\FnbPos\Http\FnbReceiptController;
 use Modules\FnbPos\Http\FnbReportExportController;
 use Modules\FnbPos\Http\FnbSecurityController;
 
+require __DIR__.'/fnb-chain.php';
+
 Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.enabled:fnb-pos'])->group(function (): void {
+    Route::get('chain/reports', FnbChainReportController::class)->name('chain.reports');
+    Route::get('chain/integrations', [FnbIntegrationController::class, 'handle'])->name('chain.integrations');
+    Route::put('chain/integrations/mapping', [FnbIntegrationController::class, 'handle'])->defaults('integration_action', 'integration.mapping.save')->defaults('fnb_permission', 'fnb.settings.manage');
+    Route::put('chain/integrations/items', [FnbIntegrationController::class, 'handle'])->defaults('integration_action', 'integration.item.save')->defaults('fnb_permission', 'fnb.settings.manage');
+    Route::post('chain/integrations/reconcile', [FnbIntegrationController::class, 'handle'])->defaults('integration_action', 'integration.reconcile')->defaults('fnb_permission', 'fnb.settings.manage');
+    Route::get('outlets/{outlet}/bank-account', [FnbBankController::class, 'account'])->name('bank.account.show');
+    Route::put('outlets/{outlet}/bank-account', [FnbBankController::class, 'account'])->defaults('fnb_permission', 'fnb.settings.manage')->name('bank.account.save');
+    Route::post('checks/{resource}/bank-intents', [FnbBankController::class, 'intent'])->defaults('fnb_permission', 'fnb.payment.collect')->name('bank.intent');
     Route::get('bootstrap', [FnbApiController::class, 'bootstrap'])->name('bootstrap');
+    Route::get('command-status', [FnbApiController::class, 'commandStatus'])->name('command-status');
 
     foreach ([
         ['outlets/{outlet}/dashboard', 'dashboard', 'fnb.dashboard.view'],
@@ -51,6 +65,7 @@ Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.ena
         ['kitchen/lines/{resource}/transition', 'kitchen.transition', 'fnb.kitchen.update'],
         ['sessions/{resource}/checks', 'check.create', 'fnb.order.split'],
         ['checks/{resource}/finalize', 'check.finalize', 'fnb.payment.collect'],
+        ['checks/{resource}/close-zero-charge', 'check.close_zero_charge', 'fnb.payment.collect'],
         ['checks/{resource}/reopen', 'check.reopen', 'fnb.order.reopen'],
         ['checks/{resource}/void', 'check.void', 'fnb.order.void'],
         ['checks/{resource}/settlement-plan', 'check.plan', 'fnb.payment.collect'],

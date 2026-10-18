@@ -45,6 +45,10 @@ final class FnbPricingService
                 'variants.*', 'items.code as item_code', 'items.name as item_name',
                 'items.tax_category', 'items.tax_rate_bps', 'items.tax_inclusive', 'items.item_type',
             ])->first();
+        $releasedVariant = app(FnbMenuReleaseService::class)->variant($context, $variantId);
+        if ($releasedVariant !== null) {
+            $variant = (object) $releasedVariant;
+        }
         if ($variant === null) {
             throw new FnbNotFoundException('Active menu variant was not found.');
         }
@@ -124,7 +128,25 @@ final class FnbPricingService
         ];
     }
 
-    private function outletPrice(FnbContext $context, int $variantId, int $fallback): int
+    /** @return array<int,int> Resolve all effective prices in one query for POS catalogues. */
+    public function outletPrices(FnbContext $context): array
+    {
+        $rows = DB::table('fnb_price_book_outlets as assignments')
+            ->join('fnb_price_books as books', fn ($join) => $join->on('books.website_key', '=', 'assignments.website_key')->on('books.id', '=', 'assignments.price_book_id'))
+            ->join('fnb_price_book_variant_prices as prices', fn ($join) => $join->on('prices.website_key', '=', 'books.website_key')->on('prices.price_book_id', '=', 'books.id'))
+            ->where('assignments.website_key', $context->websiteKey)->where('assignments.outlet_id', $context->outletId)->where('assignments.channel', 'pos')->where('books.status', 'active')
+            ->where(fn ($q) => $q->whereNull('books.valid_from')->orWhere('books.valid_from', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('books.valid_to')->orWhere('books.valid_to', '>=', now()))
+            ->orderByDesc('assignments.priority')->orderByDesc('books.id')->get(['prices.variant_id', 'prices.amount_minor']);
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row->variant_id] ??= (int) $row->amount_minor;
+        }
+
+        return $result;
+    }
+
+    public function outletPrice(FnbContext $context, int $variantId, int $fallback): int
     {
         $price = DB::table('fnb_price_book_outlets as assignments')
             ->join('fnb_price_books as books', function ($join): void {
@@ -138,7 +160,6 @@ final class FnbPricingService
             ->where('assignments.website_key', $context->websiteKey)
             ->where('assignments.outlet_id', $context->outletId)
             ->where('assignments.channel', 'pos')
-            ->whereNotNull('assignments.default_slot')
             ->where('books.status', 'active')
             ->where(fn ($query) => $query->whereNull('books.valid_from')->orWhere('books.valid_from', '<=', now()))
             ->where(fn ($query) => $query->whereNull('books.valid_to')->orWhere('books.valid_to', '>=', now()))
@@ -151,6 +172,10 @@ final class FnbPricingService
     /** @param list<int> $optionIds @return list<array<string,mixed>> */
     private function resolveModifiers(FnbContext $context, int $itemId, array $optionIds): array
     {
+        $release = app(FnbMenuReleaseService::class)->releasedCatalog($context);
+        if ($release !== null) {
+            return $this->releasedModifiers($context, $release, $itemId, $optionIds);
+        }
         $optionIds = array_values(array_unique(array_map('intval', $optionIds)));
         $limits = DB::table('fnb_item_modifier_groups as links')
             ->join('fnb_modifier_groups as groups', function ($join): void {
@@ -219,6 +244,32 @@ final class FnbPricingService
         })->values()->all();
     }
 
+    private function releasedModifiers(FnbContext $context, array $release, int $itemId, array $optionIds): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $optionIds)));
+        $result = [];
+        $found = [];
+        $item = collect($release['items'])->first(fn ($item) => (int) $item['id'] === $itemId);
+        foreach ($item['modifier_groups'] ?? [] as $group) {
+            $selected = array_values(array_filter($group['options'], fn ($option) => in_array((int) $option['id'], $ids, true)));
+            if (count($selected) < (int) $group['min_select'] || count($selected) > (int) $group['max_select']) {
+                throw new FnbValidationException('Modifier selection count is outside its group limits.');
+            }
+            foreach ($selected as $option) {
+                $found[] = (int) $option['id'];
+                $recipe = $this->boundRecipeSnapshot($context, 'modifier', (int) $option['id']);
+                $result[] = ['modifier_group_id' => (int) $group['id'], 'modifier_option_id' => (int) $option['id'], 'group_code_snapshot' => $group['code'], 'group_name_snapshot' => $group['name'],
+                    'option_code_snapshot' => $option['code'], 'option_name_snapshot' => $option['name'], 'quantity' => '1.000000', 'unit_price_delta_minor' => (int) $option['base_price_delta_minor'],
+                    'recipe_snapshot' => $recipe['snapshot'] === null ? null : json_encode($recipe['snapshot'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR), 'recipe_snapshot_hash' => $recipe['hash']];
+            }
+        }
+        if (array_diff($ids, $found) !== []) {
+            throw new FnbValidationException('A modifier does not belong to this released menu item.');
+        }
+
+        return $result;
+    }
+
     /** @return array{recipe_id:?int,snapshot:?array<string,mixed>,hash:?string} */
     private function recipeSnapshot(FnbContext $context, int $variantId): array
     {
@@ -236,7 +287,9 @@ final class FnbPricingService
             })
             ->where('binding.website_key', $context->websiteKey)
             ->where('binding.'.$column, $subjectId)
-            ->whereNotNull('binding.current_slot')
+            ->when(($release = app(FnbMenuReleaseService::class)->releasedCatalog($context)) === null,
+                fn ($q) => $q->whereNotNull('binding.current_slot'),
+                fn ($q) => $q->where('binding.recipe_id', (int) ($release['_recipe_bindings'][$bindingType][(string) $subjectId]['recipe_id'] ?? 0)))
             ->where('recipe.status', 'published')
             ->select('recipe.*', 'binding.multiplier as binding_multiplier')
             ->first();

@@ -25,10 +25,16 @@ final class FnbHealthCommand extends Command
                 'uncertain_refunds' => DB::table('fnb_refunds')->whereIn('status', ['processing', 'uncertain', 'reconciling'])->count(),
                 'pending_compensations' => DB::table('fnb_fulfillment_compensations')->whereNotNull('active_slot')->count(),
                 'outbox_pending' => DB::table('fnb_outbox_deliveries')->whereIn('status', ['pending', 'failed', 'uncertain'])->count(),
+                'outbox_dead_letter' => DB::table('fnb_outbox_deliveries')->where('status', 'dead_letter')->count(),
+                'outbox_processing' => DB::table('fnb_outbox_deliveries')->where('status', 'processing')->count(),
                 'stock_bridge_pending' => DB::table('fnb_stock_consumptions')->whereIn('status', ['pending', 'failed', 'attention'])->count(),
                 'exports_queued' => DB::table('fnb_report_exports')->where('status', 'queued')->count(),
                 'exports_failed' => DB::table('fnb_report_exports')->where('status', 'failed')->count(),
             ];
+            if (Schema::hasColumn('fnb_outbox_deliveries', 'lease_expires_at')) {
+                $health['outbox_expired_leases'] = DB::table('fnb_outbox_deliveries')->where('status', 'processing')
+                    ->where('lease_expires_at', '<=', now())->count();
+            }
         }
         if ($this->option('json')) {
             $this->line(json_encode($health, JSON_THROW_ON_ERROR));

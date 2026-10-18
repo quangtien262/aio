@@ -1,4 +1,5 @@
 import { adminApi } from '../../../shared/config/routes';
+import { prepareCommand, finishCommand } from '../state/fnbCommandJournal';
 
 const FNB_BASE = adminApi('fnb');
 
@@ -68,20 +69,31 @@ export function createFnbApi(callAdminApi, scope = {}) {
     const read = async (path, params = {}) => request(appendQuery(path, params));
 
     const command = async (path, payload = {}, options = {}) => {
-        const idempotencyKey = options.idempotencyKey ?? createIdempotencyKey(options.scope ?? path);
+        const proposedKey = options.idempotencyKey ?? createIdempotencyKey(options.scope ?? path);
+        const method = options.method ?? 'POST';
+        // Reauthentication secrets and short-lived security tokens never enter the journal.
+        const journaled = scope.identity && !(payload instanceof FormData) && !/^(reauth\/|approvals|.*staff-candidates\/)/.test(path);
+        const journalOutlet = scope.outletId ?? (path.startsWith('chain/integrations') ? payload?.outlet_id : undefined);
+        const prepared = journaled ? await prepareCommand({ identity: scope.identity, outletId: journalOutlet, terminalId: scope.terminalId, path, method, payload, idempotencyKey: proposedKey },
+            (pending) => createFnbApi(callAdminApi, { identity: scope.identity, outletId: pending.outletId, terminalId: pending.terminalId }).read('command-status', { key: pending.idempotencyKey })) : { entry: null, payload };
+        const { entry } = prepared;
+        const idempotencyKey = entry?.idempotencyKey ?? proposedKey;
         const headers = {
             'Idempotency-Key': idempotencyKey,
             ...(options.reauthProof ? { 'X-FNB-Reauth-Proof': options.reauthProof } : {}),
             ...(options.approvalToken ? { 'X-FNB-Approval-Token': options.approvalToken } : {}),
             ...(options.headers ?? {}),
         };
-        const body = payload instanceof FormData ? payload : JSON.stringify(payload ?? {});
+        const body = prepared.payload instanceof FormData ? prepared.payload : JSON.stringify(prepared.payload ?? {});
 
-        return request(path, {
-            method: options.method ?? 'POST',
-            body,
-            headers,
-        });
+        try {
+            const result = await request(path, { method, body, headers });
+            await finishCommand(entry);
+            return result;
+        } catch (error) {
+            await finishCommand(entry, error);
+            throw error;
+        }
     };
 
     const download = (path) => callAdminApi(`${FNB_BASE}/${String(path).replace(/^\/+/, '')}`, {
@@ -117,5 +129,10 @@ export function createFnbApi(callAdminApi, scope = {}) {
         downloadExport: (id) => download(`reports/exports/${normalizeSegment(id)}/download`),
         settings: () => read(outletPath('settings')),
         staff: () => read(outletPath('staff')),
+        chainReport: (filters) => read('chain/reports', filters),
+        chain: () => read('chain/bootstrap'),
+        integrationOperations: () => read('chain/integrations'),
+        commandStatus: (entry) => createFnbApi(callAdminApi, { identity: scope.identity, outletId: entry.outletId, terminalId: entry.terminalId }).read('command-status', { key: entry.idempotencyKey }),
+        forScope: (overrides) => createFnbApi(callAdminApi, { ...scope, ...overrides }),
     };
 }

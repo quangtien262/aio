@@ -3,6 +3,8 @@
 use App\Jobs\AccountingTax\DispatchPendingEinvoiceTransmissions;
 use App\Jobs\AccountingTax\PruneExpiredAccountingExports;
 use App\Jobs\AccountingTax\ScheduleMsmiInboundSyncs;
+use App\Models\SiteProfile;
+use App\Support\SitemapService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -32,9 +34,13 @@ Schedule::command('fnb:recover-exports --limit=100')
     ->everyFiveMinutes()
     ->withoutOverlapping(10);
 
+Schedule::command('fnb:dispatch-integrations --limit=50')
+    ->everyMinute()
+    ->withoutOverlapping(5);
+
 Artisan::command('sitemap:refresh', function () {
-    $sitemaps = app(\App\Support\SitemapService::class);
-    foreach (\App\Models\SiteProfile::withoutGlobalScopes()->distinct()->pluck('website_key') as $website) {
+    $sitemaps = app(SitemapService::class);
+    foreach (SiteProfile::withoutGlobalScopes()->distinct()->pluck('website_key') as $website) {
         $snapshot = $sitemaps->snapshot($website ?: 'website-main', true);
         $this->line(($website ?: 'website-main').': '.$snapshot['total'].' URLs');
     }

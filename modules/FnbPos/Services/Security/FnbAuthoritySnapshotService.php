@@ -5,6 +5,7 @@ namespace Modules\FnbPos\Services\Security;
 use App\Models\Admin;
 use App\Models\ModuleInstallation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 final class FnbAuthoritySnapshotService
 {
@@ -67,6 +68,8 @@ final class FnbAuthoritySnapshotService
             'assignments' => $assignments,
             'binding' => $binding === null ? null : (array) $binding,
             'membership' => $membership === null ? null : (array) $membership,
+            'role_scopes' => Schema::hasTable('fnb_staff_role_scopes')
+                ? DB::table('fnb_staff_role_scopes')->where('website_key', $websiteKey)->where('admin_id', $actor->id)->orderBy('id')->get()->map(fn ($row) => (array) $row)->all() : [],
         ];
         sort($payload['permissions']);
 

@@ -1,4 +1,4 @@
-# F&B POS runtime contract (`0.1.0-dev`)
+# F&B POS runtime contract (`0.2.0-dev.1`)
 
 This document is the integration boundary between the F&B domain, HTTP controllers and the React shell. It is intentionally explicit about scope: controllers authorize permissions, while every service command revalidates aggregate scope, state, version and monetary invariants.
 
@@ -76,6 +76,7 @@ final class FnbService
     public function voidCheck(FnbContext $ctx, int $checkId, string $reason, string $idempotencyKey, int $expectedVersion): array;
     public function setSettlementPlan(FnbContext $ctx, int $checkId, string $mode, string $idempotencyKey, int $expectedVersion): array;
     public function collectPayment(FnbContext $ctx, int $checkId, int $shiftId, array $input, string $idempotencyKey, int $expectedVersion): array;
+    public function closeZeroChargeCheck(FnbContext $ctx, int $checkId, int $shiftId, string $reason, string $idempotencyKey, int $expectedVersion): array;
     public function cancelPayment(FnbContext $ctx, int $paymentId, string $reason, string $idempotencyKey): array;
     public function refundPayment(FnbContext $ctx, int $paymentId, int $shiftId, array $input, string $idempotencyKey): array;
     /** Internal compensation-only allocation vector; never bind directly to HTTP input. */
@@ -174,6 +175,7 @@ Key runtime routes beyond basic POS commands:
 | `PUT /customers/{id}`, `POST /sessions/{session}/customer` | Optimistic customer update/attach |
 | `PUT|DELETE /order-lines/{line}`, `POST /orders/{order}/discount` | Draft replacement/removal and fixed pre-tax discount |
 | `POST /checks/{check}/reopen`, `POST /checks/{check}/void` | Structural guards; planned/attempted check cannot reopen |
+| `POST /checks/{check}/close-zero-charge` | Finalized zero-plan closure with `shift_id`, `reason`, `expected_version`; re-authenticated, no synthetic payment |
 | `POST /check-lines/{line}/compensations` | Paid-but-unfulfilled compensation with dual approval policy |
 | `POST /checks/{check}/receipts`, `GET|POST /print-jobs/...` | Immutable receipt snapshot and print acknowledgement |
 | `POST /reports/exports`, `GET /reports/exports/{export}/download` | Private asynchronous CSV export |
@@ -190,7 +192,7 @@ Report filters are `from`, `to`, optional `business_day_id`, `shift_id`, and `te
 
 `fnb_outbox_events`: `event_id`, website/outlet scope, `aggregate_type`, `aggregate_id`, `aggregate_version`, `event_type`, `schema_version`, immutable `payload`, `occurred_at`.
 
-`fnb_outbox_deliveries`: event/destination pair, stable semantic `idempotency_key`, `status` (`pending|processing|succeeded|failed|uncertain`), attempts, lease fields, external reference and scrubbed error. Destination availability is never required to commit the local POS transaction.
+`fnb_outbox_deliveries`: event/destination pair, stable semantic `idempotency_key`, `status` (`pending|processing|delivered|failed|dead_letter|superseded`; legacy `succeeded|uncertain` are retained), attempts, availability/lease/token fields, external reference and scrubbed error. Destination availability is never required to commit the local POS transaction.
 
 ## Explicit development gaps
 
@@ -199,6 +201,78 @@ Report filters are `from`, `to`, optional `business_day_id`, `shift_id`, and `te
 - Compensation is synchronous for local/manual tenders. Provider-asynchronous refund, cancel/retry and uncertain-state reconciliation still require provider adapters and production failure tests.
 - The core report reconciles closed sales, processing-period cash flow, tender mix, item totals and shift variance. Channel/hour plus explicit discount, void and compensation breakdowns remain to complete the full Pilot reporting matrix.
 - Customer create/search/update/attach/history are available; customer-profile merge and survivor mapping are not yet implemented.
-- Database constraints, optimistic versions and row locks are present, and the isolated real-MySQL workflow gate passes. True competing-process race/soak tests and production accounting/inventory/provider delivery adapters remain required gates.
+- Local Inventory v1 and Accounting draft adapters exist under the explicit contract below. Inventory v2, accounting refund credit notes, provider delivery/reconciliation and current-release MySQL competing-process/soak gates remain incomplete.
 
-This contract is a development contract. The isolated MySQL gate currently passes all 170 F&B foreign keys plus a real mixed-tender/refund/multi-tender-compensation/stock/receipt-checksum workflow. Contention races and asynchronous provider reconciliation gates remain required before a production-ready version declaration.
+This is a development contract. The recorded `0.1.0-dev.1` MySQL smoke covered 170 foreign keys and a manual mixed-tender/refund/compensation/stock/receipt workflow. It does not certify the `0.2.0-dev.1` schema, local adapters, true contention races, real bank/provider integration or production throughput.
+
+
+## Chain and local integration additions (`0.2.0-dev.1`)
+
+The package targets a multi-outlet chain within one website. HQ scope is explicit; a website role alone does not widen an outlet assignment. Existing `0.1.x` security definitions remain versioned for upgrade/backfill. Operational money calls retain their outlet/terminal authority. Native Inventory/Accounting permissions are additional requirements, not inherited from an F&B preset.
+
+Chain routes below are relative to `/admin/api/fnb/chain`:
+
+| Route | Boundary |
+| --- | --- |
+| `GET /bootstrap`, `POST|PUT /brands`, `/regions`, `/outlets` | HQ website scope; provisioning adds an outlet with terminal/station/table/payment defaults; updates require versions |
+| `POST /staff`, `DELETE /staff/{resource}` | HQ preset assignment/revocation with re-auth; protects the last HQ owner |
+| `POST /menus`, `GET /menu` | HQ menu master data |
+| `POST /menu/publications`, `POST /menu/publications/{resource}/rollback` | Immutable menu/recipe-binding revision and selected outlet assignment; rollback references an existing publication |
+| `POST /price-books` | VND POS variant prices, selected outlets and optional offset-qualified validity timestamps |
+| `GET /audit` | Authorized HQ audit scope; no cross-website widening |
+| `GET /integrations` | Mapping, source/destination options, backlog, status totals; `configured` does not establish production readiness |
+| `PUT /integrations/mapping`, `PUT /integrations/items` | Re-authenticated destination/item configuration with optimistic version |
+| `POST /integrations/reconcile` | Re-authenticated durable preparation, followed by independently atomic local deliveries |
+
+`closeSession` and `closeShift` reject unbilled/partially billed effective quantities even when fulfillment is completed. Voided quantity is excluded; compensated quantity retains its closed source check. Closed checks must carry matching paid settlement evidence. Order payment status is based on complete closed quantity allocations, so cash rounding and a partial zero-value allocation cannot create false paid/unpaid states.
+
+KDS current tickets include `lines[].modifiers[]` with `group_code_snapshot`, `group_name_snapshot`, `option_code_snapshot`, `option_name_snapshot`, `quantity`, and compatibility alias `name_snapshot`. This survives cursor advancement and catalogue edits; fired events are not the only source of modifier display. Snapshot queries are batched, and exclude modifier prices/costs/recipes/PII.
+
+### Mapping and reconciliation payloads
+
+Destination configuration:
+
+```json
+{
+  "destination": "inventory",
+  "enabled": true,
+  "automatic": false,
+  "config": { "warehouse_id": 1 },
+  "expected_version": 2
+}
+```
+
+For Accounting use `destination=accounting-tax` and `config.organization_id`. Both source outlet and organization must use VND; no foreign minor-unit scale or exchange rate is inferred. `expected_version` is required when a mapping already exists. Disabling a mapping clears the standing automation grant and is allowed while the destination module is off.
+
+Item configuration:
+
+```json
+{
+  "destination": "inventory",
+  "source_type": "ingredient",
+  "source_id": 12,
+  "destination_id": 31,
+  "unit": "kg",
+  "factor": "0.001000",
+  "expected_version": 1
+}
+```
+
+Inventory mapping requires an active untracked item whose unit matches `unit`, and native issue **and** receipt permissions. Accounting uses `source_type=variant`, factor 1 and an active item belonging to the authorized configured organization. Changing an item mapping pauses destination automation and increments its version, requiring review and fresh explicit opt-in.
+
+Reconcile payload: `{ "destination": "inventory|accounting-tax", "retry_dead_letter": false }`. `outlet_id`/`X-FNB-Outlet` select the authorized outlet; they never grant scope. The HTTP response is `{data:{delivered,failed},meta:{replayed}}`. Preparation runs under `FnbCommandRunner`, so re-auth proof consumption and explicit dead-letter reset are transactional/idempotent. Delivery failures do not undo already committed POS sales or other successful deliveries.
+
+### Local adapter invariants
+
+- Inventory delivery identity is one `fnb.stock_consumption.recorded` outbox event per consumption ID, including `sale`, `reversal`, and `waste`. It is derived from the durable source ledger even when no check-close event exists. At most 500 missing events/deliveries are prepared and 100 due deliveries processed per reconciliation.
+- A delivery claim has a token, two-minute lease and durable attempt count. Retry backoff starts at five seconds, doubles and caps at one hour; ten unsuccessful attempts produce `dead_letter`. Expired leases recover, including a final-attempt crash. An explicit `retry_dead_letter=true` resets poison attempts once under its command identity; automatic execution never does this.
+- Stock posting, source `posted` state/reference, immutable `fnb_integration_stock_lines` lineage/cost and delivery `delivered` acknowledgement share the same database transaction. Deterministic document identity and source row locks make retries harmless despite Inventory v1 lacking its own integration idempotency contract. No external network call is performed.
+- Stock quantities must be nonnegative, fit `decimal(14,3)` exactly after applying the mapping factor, and use no batch/serial tracking. No lossy rounding is permitted. Reversals and linked waste use original item/factor/warehouse/cost lineage; a missing original posting blocks them. Current permissions, active warehouse/items and module capability are rechecked during posting.
+- Stored consumption checksums are verified using canonical hashes or recognized legacy raw/JSON-key-order encodings. A mismatch is rejected, not silently migrated to a new checksum.
+- Accounting delivery creates one `internal_invoice` **draft** per closed check. Each mapped source line is represented by its exact gross value with quantity 1; original quantity, name and subtotal/discount/tax/service/rounding vector remain in client metadata. This avoids silently rounding six-place POS quantity into Accounting's four-place quantity/two-place unit-price model. Lines use `tax_category=not_declared` and `requires_tax_classification=true`; total must match source `grand_total_minor`. There is no auto-approval, posting, tax eligibility or invoice issuance. Accounting refund credit notes remain manual release work.
+
+### Standing automation grant
+
+`automatic=true` is an explicit configuration request, not a default. The mapping records `authorized_by` and `authorized_auth_version`. `fnb:dispatch-integrations --limit=50` runs each minute with overlap prevention and dispatches unique `ReconcileFnbIntegration` jobs on queue `fnb` only for enabled opted-in mappings. Workers recheck the actor's active state/auth-version, HQ/outlet/native permissions, module/lifecycle capability, mapping and source evidence for every delivery. Revocation, password/auth-version change, mapping disable or item-mapping edit prevents further side effects. Dispatch rotates by `last_dispatched_at` to avoid starving later outlet mappings under the batch limit. Identity/authority revocation pauses the grant and records `automatic_paused_reason`; destination outages retain pending work. The two-minute unique window/job lease is not a substitute for delivery row locking/idempotency.
+
+TPBank QR configuration and VND transfer intent payloads are operator-assisted only. `provider_connected=false` and manual confirmation remain the truth; QR generation does not establish a real bank connection, incoming payment confirmation or hardware certification. Receipt printing remains operator-confirmed browser printing.

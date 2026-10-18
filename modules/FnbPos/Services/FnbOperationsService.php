@@ -171,6 +171,8 @@ final class FnbOperationsService
             if (array_sum($blockers) > 0) {
                 throw new FnbConflictException('Shift still has active transactions.', ['blockers' => $blockers]);
             }
+            $this->assertOrdersSettled($context, DB::table('fnb_orders')->where('website_key', $context->websiteKey)
+                ->where('outlet_id', $context->outletId)->where('shift_id', $shift->id)->pluck('id')->all());
 
             $methods = DB::table('fnb_payment_methods')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)->get()->keyBy('id');
             $counted = collect($countedTenders)->keyBy(fn (array $row): int => (int) $row['payment_method_id']);
@@ -494,6 +496,8 @@ final class FnbOperationsService
             if (DB::table('fnb_checks')->where('session_id', $session->id)->whereNotIn('status', ['closed', 'void'])->exists()) {
                 throw new FnbConflictException('Every check must be closed or void before closing the session.');
             }
+            $this->assertOrdersSettled($context, DB::table('fnb_orders')->where('website_key', $context->websiteKey)
+                ->where('outlet_id', $context->outletId)->where('session_id', $session->id)->pluck('id')->all());
 
             $version = (int) $session->version + 1;
             DB::table('fnb_service_sessions')->where('id', $session->id)->update([
@@ -510,6 +514,47 @@ final class FnbOperationsService
 
             return $this->envelope('service_session', (int) $session->id, $version, $this->sessionResource($context, $session->id), [$event]);
         });
+    }
+
+    /** Every non-voided quantity, including compensated quantities, retains its closed source bill. */
+    private function assertOrdersSettled(FnbContext $context, array $orderIds): void
+    {
+        if ($orderIds === []) {
+            return;
+        }
+        $lines = DB::table('fnb_order_lines')->where('website_key', $context->websiteKey)
+            ->where('outlet_id', $context->outletId)->whereIn('order_id', $orderIds)
+            ->orderBy('id')->lockForUpdate()->get(['id', 'ordered_quantity', 'voided_quantity']);
+        $allocations = DB::table('fnb_check_lines as lines')
+            ->join('fnb_checks as checks', function ($join): void {
+                $join->on('checks.website_key', '=', 'lines.website_key')->on('checks.outlet_id', '=', 'lines.outlet_id')->on('checks.id', '=', 'lines.check_id');
+            })
+            ->leftJoin('fnb_check_financial_projections as financials', function ($join): void {
+                $join->on('financials.website_key', '=', 'checks.website_key')->on('financials.outlet_id', '=', 'checks.outlet_id')->on('financials.check_id', '=', 'checks.id');
+            })
+            ->where('lines.website_key', $context->websiteKey)->where('lines.outlet_id', $context->outletId)
+            ->whereIn('lines.order_id', $orderIds)->where('checks.status', 'closed')
+            ->orderBy('lines.id')->lockForUpdate()->get([
+                'lines.order_line_id', 'lines.allocated_quantity', 'checks.settlement_total_minor', 'checks.settlement_hash',
+                'financials.payment_status', 'financials.gross_paid_total_minor',
+            ]);
+        $allocated = [];
+        foreach ($allocations as $allocation) {
+            if ($allocation->payment_status !== 'paid' || $allocation->settlement_total_minor === null
+                || $allocation->settlement_hash === null || (int) $allocation->gross_paid_total_minor !== (int) $allocation->settlement_total_minor) {
+                throw new FnbConflictException('Closed check settlement evidence is incomplete.');
+            }
+            $lineId = (int) $allocation->order_line_id;
+            $allocated[$lineId] = bcadd($allocated[$lineId] ?? '0', (string) $allocation->allocated_quantity, 6);
+        }
+        foreach ($lines as $line) {
+            $effective = bcsub((string) $line->ordered_quantity, (string) $line->voided_quantity, 6);
+            if (bccomp($effective, '0', 6) < 0 || bccomp($effective, $allocated[$line->id] ?? '0', 6) !== 0) {
+                throw new FnbConflictException('Every non-voided order quantity must belong to a settled check before closing.', [
+                    'order_line_id' => (int) $line->id,
+                ]);
+            }
+        }
     }
 
     private function transitionSession(FnbContext $context, int $sessionId, string $toStatus, string $idempotencyKey, int $expectedVersion): array

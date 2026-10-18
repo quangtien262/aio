@@ -50,10 +50,10 @@ class FnbSecurityFoundationTest extends TestCase
 
     public function test_exact_version_catalog_presets_and_critical_registry_are_synchronized(): void
     {
-        $definition = app(FnbVersionedSecurity::class)->definition('0.1.0-dev.1');
+        $definition = app(FnbVersionedSecurity::class)->definition('0.2.0-dev.1');
 
-        $this->assertCount(53, $definition->permissions);
-        $this->assertCount(8, $definition->roles);
+        $this->assertCount(58, $definition->permissions);
+        $this->assertCount(9, $definition->roles);
         $this->assertSame(
             array_keys($definition->permissions),
             Permission::query()->where('module_key', 'fnb-pos')->orderBy('id')->pluck('key')->all(),
@@ -70,8 +70,8 @@ class FnbSecurityFoundationTest extends TestCase
             $this->assertSame($permissions, $actual, $roleKey);
             $this->assertTrue($role->is_system);
             $this->assertFalse($role->is_assignable);
-            $this->assertSame('0.1.0-dev.1', $ownership->version);
-            $this->assertSame('0.1.0-dev.1', $ownership->introduced_version);
+            $this->assertSame('0.2.0-dev.1', $ownership->version);
+            $this->assertSame('0.2.0-dev.1', $ownership->introduced_version);
             $this->assertSame('fnb_dedicated', $ownership->assignment_channel);
             $this->assertSame('deny', $ownership->custom_role_policy);
         }
@@ -682,7 +682,7 @@ class FnbSecurityFoundationTest extends TestCase
 
         app(ModuleManager::class)->enable('fnb-pos');
         $this->assertSame('active', DB::table('fnb_site_settings')->value('operational_state'));
-        $this->assertSame(53, Permission::query()->where('module_key', 'fnb-pos')->where('is_active', true)->count());
+        $this->assertSame(58, Permission::query()->where('module_key', 'fnb-pos')->where('is_active', true)->count());
         $this->assertFalse(ModuleLifecycleOperation::query()->where('module_key', 'fnb-pos')->where('active_slot', 'active')->exists());
 
         $commitWindow = $coordinator->begin('fnb-pos', 'disable', '0.1.0-dev.1', '0.1.0-dev.1', $this->owner->id);

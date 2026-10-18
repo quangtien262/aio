@@ -1,7 +1,7 @@
 {
   "name": "Quản lý quán Cafe",
   "key": "fnb-pos",
-  "version": "0.1.0-dev.1",
+  "version": "0.2.0-dev.1",
   "security_provider": "Modules\\FnbPos\\Security\\FnbVersionedSecurity",
   "lifecycle_state_provider": "Modules\\FnbPos\\Services\\Security\\FnbOperationalStateManager",
   "description": "Bán hàng tại quầy và tại bàn, pha chế, thanh toán, quản lý ca và báo cáo cho quán cafe/trà sữa.",
@@ -76,7 +76,12 @@
     "fnb.integration.view",
     "fnb.audit.view",
     "fnb.settings.view",
-    "fnb.settings.manage"
+    "fnb.settings.manage",
+    "fnb.chain.view",
+    "fnb.chain.manage",
+    "fnb.chain.staff.manage",
+    "fnb.menu.master.manage",
+    "fnb.recipe.master.manage"
   ],
   "hooks": [
     "Modules\\FnbPos\\Hooks\\FnbLifecycleHook"
@@ -108,6 +113,13 @@
     "uninstall": false
   },
   "changelog": [
+    {
+      "version": "0.2.0-dev.1",
+      "date": "2026-10-18",
+      "notes": [
+        "Quản lý chuỗi, phân quyền theo cửa hàng và trụ sở; nâng cấp additive giữ lịch sử."
+      ]
+    },
     {
       "version": "0.1.0-dev.1",
       "date": "2026-09-05",

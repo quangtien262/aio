@@ -18,6 +18,9 @@ class FnbConfigurationService
     {
         return $this->commands->run($ctx, $kind.'.save', ['id' => $id, 'input' => $input], $key, function () use ($ctx, $kind, $id, $input): array {
             [$table, $scoped, $rules] = $this->definition($kind);
+            if (! $scoped && $kind !== 'outlet') {
+                app(FnbMasterDataLock::class)->acquire($ctx->websiteKey);
+            }
             $data = validator($input, $rules)->validate();
             $query = DB::table($table)->where('website_key', $ctx->websiteKey);
             if ($scoped) {

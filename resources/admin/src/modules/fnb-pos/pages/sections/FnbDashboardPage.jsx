@@ -83,7 +83,7 @@ export default function FnbDashboardPage() {
                             columns={[
                                 { title: 'Phiên', render: (_, record) => <Text strong>{record.session_no ?? record.code ?? `#${record.id}`}</Text> },
                                 { title: 'Khu vực', render: (_, record) => record.table?.name ?? record.service_type_label ?? record.service_type ?? 'Tại quầy' },
-                                { title: 'Mở lúc', dataIndex: 'opened_at', render: formatDateTime },
+                                { title: 'Mở lúc', dataIndex: 'opened_at', render: (value, record) => formatDateTime(value, { timeZone: record.timezone_snapshot ?? selectedOutlet?.timezone }) },
                                 { title: 'Tổng tiền', render: (_, record) => formatMinorMoney(record.grand_total_minor ?? record.total_minor, currency) },
                                 { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },
                             ]}

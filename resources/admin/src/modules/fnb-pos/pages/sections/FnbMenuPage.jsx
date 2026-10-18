@@ -85,7 +85,7 @@ function MenuItemDrawer({ open, item, catalog, form, saving, onClose, onSubmit }
                         </Form.Item>
                     </Col>
                     <Col span={24}>
-                        <Form.Item name="category_ids" label="Nhóm món">
+                        <Form.Item name="category_ids" label="Nhóm món" rules={[{ required: true, type: 'array', min: 1, message: 'Chọn nhóm để đưa món vào thực đơn phát hành.' }]}>
                             <Select mode="multiple" allowClear showSearch optionFilterProp="label" options={asArray(catalog.categories).map((category) => ({ value: category.id, label: category.name }))} placeholder="Chọn một hoặc nhiều nhóm món" />
                         </Form.Item>
                     </Col>
@@ -265,7 +265,7 @@ function IngredientDrawer({ open, ingredient, form, saving, onClose, onSubmit })
 }
 
 export default function FnbMenuPage() {
-    const { api, outletId, selectedOutlet, can, runCommand } = useFnbWorkspace();
+    const { api, outletId, selectedOutlet, can, runCommand, navigateSection } = useFnbWorkspace();
     const [activeTab, setActiveTab] = useState('items');
     const [drawer, setDrawer] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -274,7 +274,7 @@ export default function FnbMenuPage() {
     const [recipeForm] = Form.useForm();
     const [categoryForm] = Form.useForm();
     const [ingredientForm] = Form.useForm();
-    const loadCatalog = useCallback(() => api.catalog({ include_inactive: true }), [api]);
+    const loadCatalog = useCallback(() => api.catalog({ include_inactive: can('fnb.menu.manage'), draft: can('fnb.menu.master.manage') ? 1 : undefined }), [api, can]);
     const loadRecipes = useCallback(() => api.recipes(), [api]);
     const catalogResource = useFnbResource({ enabled: Boolean(outletId), loader: loadCatalog, deps: [outletId] });
     const recipeResource = useFnbResource({ enabled: Boolean(outletId && can('fnb.recipe.view')), loader: loadRecipes, deps: [outletId] });
@@ -529,6 +529,8 @@ export default function FnbMenuPage() {
                 description="Giữ một nguồn giá và định lượng chuẩn; giao dịch cũ luôn dùng snapshot đã khóa."
                 actions={<Button icon={<ReloadOutlined />} loading={catalogResource.refreshing} onClick={() => Promise.all([catalogResource.reload({ silent: true }), can('fnb.recipe.view') ? recipeResource.reload({ silent: true }) : null])}>Làm mới</Button>}
             />
+
+            {can('fnb.menu.master.manage') ? <Alert type="info" showIcon message="Bạn đang chỉnh bản soạn của thực đơn" description="Phát hành sau khi kiểm tra để áp dụng thay đổi cho các điểm bán đã chọn. Order đã chốt vẫn giữ nguyên nội dung và giá cũ." action={<Button onClick={() => navigateSection('chain')}>Phát hành cho điểm bán</Button>} /> : null}
 
             <Card className="fnb-panel">
                 <Tabs

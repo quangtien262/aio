@@ -6,16 +6,24 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
     const [loading, setLoading] = useState(Boolean(enabled));
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
+    const [updatedAt, setUpdatedAt] = useState(null);
     const requestSequence = useRef(0);
     const hasData = useRef(false);
     const inFlight = useRef(null);
 
-    const load = useCallback(({ silent = false } = {}) => {
+    const load = useCallback(({ silent = false, force = false } = {}) => {
         if (!enabled) {
             setLoading(false);
             return Promise.resolve(null);
         }
         if (inFlight.current) {
+            // A mutation invalidates reads started before it committed. Wait for
+            // that read, then start a new one instead of returning its snapshot.
+            if (force) {
+                const waitingSequence = requestSequence.current;
+                const refresh = () => waitingSequence === requestSequence.current ? load({ silent }) : null;
+                return inFlight.current.then(refresh, refresh);
+            }
             return inFlight.current;
         }
 
@@ -37,6 +45,7 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
                     setData(result?.data ?? result ?? null);
                     hasData.current = true;
                     setMeta(result?.meta ?? {});
+                    setUpdatedAt(new Date().toISOString());
                 }
 
                 return result;
@@ -70,34 +79,50 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
         setError(null);
         setLoading(Boolean(enabled));
         setRefreshing(false);
+        setUpdatedAt(null);
     }, [enabled, ...deps]);
 
     useEffect(() => {
         let active = true;
-
-        load().catch(() => undefined);
-
+        let timer;
+        let failures = 0;
+        let polling = false;
         if (!pollMs || !enabled) {
+            load().catch(() => undefined);
             return () => {
                 active = false;
                 requestSequence.current += 1;
                 inFlight.current = null;
             };
         }
-
-        const timer = window.setInterval(() => {
-            if (active && document.visibilityState !== 'hidden') {
-                load({ silent: true }).catch(() => undefined);
+        const tick = async (silent = true) => {
+            if (!active || polling) return;
+            polling = true;
+            if (!silent || document.visibilityState !== 'hidden') {
+                try { await load({ silent }); failures = 0; }
+                catch { failures += 1; }
             }
-        }, pollMs);
+            polling = false;
+            if (active) timer = window.setTimeout(tick, Math.min(30000, pollMs * (2 ** Math.min(failures, 5))));
+        };
+        const visible = () => {
+            if (document.visibilityState === 'hidden') return;
+            window.clearTimeout(timer);
+            tick();
+        };
+        tick(false);
+        document.addEventListener('visibilitychange', visible);
 
         return () => {
             active = false;
-            window.clearInterval(timer);
+            window.clearTimeout(timer);
+            document.removeEventListener('visibilitychange', visible);
             requestSequence.current += 1;
             inFlight.current = null;
         };
     }, [enabled, load, pollMs]);
+
+    const reload = useCallback((options = {}) => load({ ...options, force: true }), [load]);
 
     return {
         data,
@@ -105,7 +130,8 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
         loading,
         refreshing,
         error,
-        reload: load,
+        reload,
+        updatedAt,
         setData: (nextData) => {
             hasData.current = true;
             setData(nextData);

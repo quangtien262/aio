@@ -541,6 +541,67 @@ final class FnbSettlementService
         });
     }
 
+    public function closeZeroChargeCheck(FnbContext $context, int $checkId, int $shiftId, string $reason, string $idempotencyKey, int $expectedVersion): array
+    {
+        $reason = trim($reason);
+        if (mb_strlen($reason) < 3 || mb_strlen($reason) > 500) {
+            throw new FnbValidationException('A zero-charge closure reason between 3 and 500 characters is required.');
+        }
+
+        return $this->commands->run($context, 'check.close_zero_charge', compact('checkId', 'shiftId', 'reason', 'expectedVersion'), $idempotencyKey, function () use ($context, $checkId, $shiftId, $reason, $idempotencyKey, $expectedVersion): array {
+            $check = $this->locked('fnb_checks', $context, $checkId);
+            $this->assertVersion('check', $check, $expectedVersion);
+            if ($check->status !== 'finalized' || $check->settlement_mode === null || $check->settlement_hash === null
+                || $check->settlement_total_minor === null || (int) $check->settlement_total_minor !== 0) {
+                throw new FnbConflictException('Zero-charge closure requires a finalized check with a zero settlement plan.');
+            }
+            $this->assertCheckEquation($check);
+            if ((int) $check->grand_total_minor + (int) $check->cash_rounding_minor !== 0
+                || DB::table('fnb_payments')->where('check_id', $check->id)->exists()) {
+                throw new FnbConflictException('A zero-charge check cannot have payment history or a nonzero settlement balance.');
+            }
+            $shift = $this->locked('fnb_shifts', $context, $shiftId);
+            $day = $this->locked('fnb_business_days', $context, (int) $check->business_day_id);
+            if ($context->terminalId === null || $shift->status !== 'open' || $day->status !== 'open'
+                || (int) $shift->business_day_id !== (int) $check->business_day_id
+                || (int) $shift->terminal_id !== $context->terminalId || $shift->currency !== $check->currency) {
+                throw new FnbConflictException('Zero-charge closure requires a matching open shift, day, currency and terminal.');
+            }
+            $projection = DB::table('fnb_check_financial_projections')->where('check_id', $check->id)->lockForUpdate()->firstOrFail();
+            if ((int) $projection->gross_paid_total_minor !== 0 || (int) $projection->refunded_total_minor !== 0
+                || (int) $projection->net_collected_total_minor !== 0) {
+                throw new FnbConflictException('Zero-charge financial projection must contain no money movements.');
+            }
+            DB::table('fnb_check_adjustments')->insert([
+                'website_key' => $context->websiteKey, 'outlet_id' => $context->outletId, 'check_id' => $check->id,
+                'kind' => 'zero_charge_close', 'amount_minor' => 0,
+                'policy_snapshot' => json_encode([
+                    'settlement_hash' => $check->settlement_hash, 'shift_id' => $shiftId,
+                    'approval_id' => $context->authorizationEvidence->approvalId(),
+                    'approver_id' => $context->authorizationEvidence->approverId(),
+                ], JSON_THROW_ON_ERROR),
+                'reason' => $reason, 'actor_id' => $context->actorId,
+                'idempotency_key' => $idempotencyKey, 'occurred_at' => now(),
+            ]);
+            $version = (int) $check->version + 1;
+            DB::table('fnb_checks')->where('id', $check->id)->update([
+                'status' => 'closed', 'paid_at' => now(), 'closed_at' => now(), 'closed_by' => $context->actorId,
+                'version' => $version, 'updated_at' => now(),
+            ]);
+            DB::table('fnb_check_financial_projections')->where('id', $projection->id)->update([
+                'payment_status' => 'paid', 'version' => (int) $projection->version + 1, 'updated_at' => now(),
+            ]);
+            $this->recordSaleConsumption($context, $check, $version);
+            $this->rebuildOrderProjections($context, $checkId, 0);
+            $event = $this->outbox->emit($context, 'check', $checkId, $version, 'fnb.check.closed', [
+                'check_id' => $checkId, 'settlement_total_minor' => 0, 'currency' => $check->currency,
+                'closure_kind' => 'zero_charge', 'shift_id' => $shiftId, 'reason' => $reason,
+            ]);
+
+            return $this->envelope('check', $checkId, $version, $this->checkResource($context, $checkId), [$event]);
+        });
+    }
+
     public function cancelPayment(FnbContext $context, int $paymentId, string $reason, string $idempotencyKey): array
     {
         $reason = trim($reason);
@@ -1128,10 +1189,19 @@ final class FnbSettlementService
                 ->where('outlet_id', $context->outletId)->where('order_id', $orderId)->pluck('check_id')->unique();
             $gross = 0;
             $refund = 0;
+            $closedQuantities = [];
             foreach ($checkIds as $relatedCheckId) {
                 $lineRows = DB::table('fnb_check_lines')->where('website_key', $context->websiteKey)
                     ->where('outlet_id', $context->outletId)->where('check_id', $relatedCheckId)
-                    ->get(['id', 'order_id', 'allocated_total_minor']);
+                    ->get(['id', 'order_id', 'order_line_id', 'allocated_quantity', 'allocated_total_minor']);
+                $isClosed = DB::table('fnb_checks')->where('website_key', $context->websiteKey)
+                    ->where('outlet_id', $context->outletId)->where('id', $relatedCheckId)->where('status', 'closed')->exists();
+                if ($isClosed) {
+                    foreach ($lineRows->where('order_id', $orderId) as $lineRow) {
+                        $lineId = (int) $lineRow->order_line_id;
+                        $closedQuantities[$lineId] = bcadd($closedQuantities[$lineId] ?? '0', (string) $lineRow->allocated_quantity, 6);
+                    }
+                }
                 $weights = $lineRows->groupBy('order_id')->map(
                     fn ($rows): int => max(0, (int) $rows->sum('allocated_total_minor')),
                 )->all();
@@ -1177,15 +1247,24 @@ final class FnbSettlementService
             if ($projection === null) {
                 continue;
             }
-            $orderTotal = (int) DB::table('fnb_orders')->where('website_key', $context->websiteKey)
-                ->where('outlet_id', $context->outletId)->where('id', $orderId)->value('grand_total_minor');
+            // Cash rounding belongs to the check. Collected money can be lower
+            // or higher than order price; only fully closed quantity allocations
+            // prove that the order has been settled (including free items).
+            $sourceLines = DB::table('fnb_order_lines')->where('website_key', $context->websiteKey)
+                ->where('outlet_id', $context->outletId)->where('order_id', $orderId)
+                ->get(['id', 'ordered_quantity', 'voided_quantity']);
+            $fullySettled = $sourceLines->isNotEmpty() && $sourceLines->every(function (object $line) use ($closedQuantities): bool {
+                $effective = bcsub((string) $line->ordered_quantity, (string) $line->voided_quantity, 6);
+
+                return bccomp($effective, '0', 6) >= 0 && bccomp($effective, $closedQuantities[$line->id] ?? '0', 6) === 0;
+            });
             $gross = max(0, $gross);
             $refund = max(0, min($refund, $gross));
             DB::table('fnb_order_financial_projections')->where('id', $projection->id)->update([
                 'gross_paid_total_minor' => $gross,
                 'refunded_total_minor' => $refund,
                 'net_collected_total_minor' => $gross - $refund,
-                'payment_status' => $gross >= $orderTotal ? 'paid' : ($gross > 0 ? 'partially_paid' : 'unpaid'),
+                'payment_status' => $fullySettled ? 'paid' : ($gross > 0 ? 'partially_paid' : 'unpaid'),
                 'refund_status' => $refund >= $gross && $gross > 0 ? 'refunded' : ($refund > 0 ? 'partially_refunded' : 'none'),
                 'source_watermark' => max((int) $projection->source_watermark, $watermark),
                 'version' => (int) $projection->version + 1,

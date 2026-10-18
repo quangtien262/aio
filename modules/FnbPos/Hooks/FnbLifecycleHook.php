@@ -7,6 +7,7 @@ use App\Core\Modules\Support\ModuleLifecycleContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
+use Modules\FnbPos\Services\Security\FnbChainScopeBackfill;
 
 class FnbLifecycleHook implements ModuleLifecycleHook
 {
@@ -20,7 +21,10 @@ class FnbLifecycleHook implements ModuleLifecycleHook
 
     public function preUpgrade(ModuleLifecycleContext $context): void {}
 
-    public function postUpgrade(ModuleLifecycleContext $context): void {}
+    public function postUpgrade(ModuleLifecycleContext $context): void
+    {
+        app(FnbChainScopeBackfill::class)->run();
+    }
 
     public function preDisable(ModuleLifecycleContext $context): void
     {

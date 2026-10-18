@@ -236,6 +236,33 @@ final class FnbSetupService
     public function catalog(FnbContext $context, array $filters = []): array
     {
         $this->assertOutlet($context);
+        $released = empty($filters['draft']) ? app(FnbMenuReleaseService::class)->releasedCatalog($context) : null;
+        if ($released !== null) {
+            $ids = array_column($released['items'], 'id');
+            $outletPrices = app(FnbPricingService::class)->outletPrices($context);
+            $states = DB::table('fnb_outlet_item_states')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)->whereIn('item_id', $ids)->get()->keyBy('item_id');
+            $routes = DB::table('fnb_item_station_routes')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)->whereIn('item_id', $ids)->get()->groupBy('item_id');
+            $released['items'] = array_map(function ($item) use ($states, $routes, $outletPrices) {
+                $state = $states[$item['id']] ?? null;
+                $item['available'] = $state === null || (bool) $state->is_available || ($state->sold_out_until !== null && now()->greaterThanOrEqualTo($state->sold_out_until));
+                $item['availability_version'] = (int) ($state->version ?? 1);
+                $item['sold_out_until'] = $state->sold_out_until ?? null;
+                $item['station_routes'] = ($routes[$item['id']] ?? collect())->map(fn ($row) => (array) $row)->all();
+                $item['variants'] = array_map(function ($variant) use ($outletPrices) {
+                    $variant['base_price_minor'] = $outletPrices[(int) $variant['id']] ?? (int) $variant['base_price_minor'];
+
+                    return $variant;
+                }, $item['variants']);
+
+                return $item;
+            }, $released['items']);
+            unset($released['_recipe_bindings']);
+
+            return ['resource' => $released + ['outlet' => $this->record('fnb_outlets', $context->outletId),
+                'menus' => DB::table('fnb_menus')->where('website_key', $context->websiteKey)->whereNull('archived_at')->get()->map(fn ($row) => $this->decode($row))->all(),
+                'stations' => DB::table('fnb_prep_stations')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)->where('status', 'active')->get()->map(fn ($row) => $this->decode($row))->all(),
+                'payment_methods' => DB::table('fnb_payment_methods')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)->where('status', 'active')->get()->map(fn ($row) => $this->decode($row))->all()]];
+        }
         $includeInactive = filter_var($filters['include_inactive'] ?? false, FILTER_VALIDATE_BOOL);
         $items = DB::table('fnb_menu_items')
             ->where('website_key', $context->websiteKey)
@@ -252,6 +279,14 @@ final class FnbSetupService
         $variants = DB::table('fnb_item_variants')->where('website_key', $context->websiteKey)
             ->whereIn('item_id', $ids)->when(! $includeInactive, fn ($query) => $query->where('status', 'active'))
             ->orderBy('sort_order')->get()->groupBy('item_id');
+        if (empty($filters['draft'])) {
+            $effectivePrices = app(FnbPricingService::class)->outletPrices($context);
+            foreach ($variants as $group) {
+                foreach ($group as $variant) {
+                    $variant->base_price_minor = $effectivePrices[(int) $variant->id] ?? $variant->base_price_minor;
+                }
+            }
+        }
         $availability = DB::table('fnb_outlet_item_states')->where('website_key', $context->websiteKey)
             ->where('outlet_id', $context->outletId)->whereIn('item_id', $ids)->get()->keyBy('item_id');
         $routes = DB::table('fnb_item_station_routes')->where('website_key', $context->websiteKey)
@@ -381,6 +416,7 @@ final class FnbSetupService
         }
 
         return $this->commands->run($context, 'catalog.item.save', $data + ['expected_version' => $expectedVersion, 'replace_variants' => $replaceVariants], $idempotencyKey, function () use ($context, $data, $itemId, $expectedVersion, $replaceVariants, $replaceCategories, $defaultIndex): array {
+            app(FnbMasterDataLock::class)->acquire($context->websiteKey);
             $now = now();
             $existing = $itemId === null ? null : DB::table('fnb_menu_items')
                 ->where('website_key', $context->websiteKey)->where('id', $itemId)->lockForUpdate()->first();

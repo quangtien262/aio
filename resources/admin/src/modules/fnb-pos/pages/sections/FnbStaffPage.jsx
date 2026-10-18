@@ -19,7 +19,7 @@ import Table from 'antd/es/table';
 import Tabs from 'antd/es/tabs';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { createIdempotencyKey } from '../../api/fnbApi';
 import FnbPageHeader from '../../components/FnbPageHeader';
 import { FnbResourceError } from '../../components/FnbResourceState';
@@ -51,7 +51,7 @@ function AssignmentDrawer({ open, form, candidate, roles, terminals, resolving, 
                 <Form.Item label="Tài khoản quản trị" required>
                     <Space.Compact style={{ width: '100%' }}>
                         <Form.Item name="identifier" noStyle rules={[{ required: true, min: 3, message: 'Nhập email hoặc tên đăng nhập.' }]}>
-                            <Input placeholder="email@congty.vn hoặc username" onChange={() => candidate && onResolve(null)} />
+                            <Input placeholder="email@congty.vn hoặc username" onChange={() => onResolve(null)} />
                         </Form.Item>
                         <Button icon={<SearchOutlined />} loading={resolving} onClick={() => onResolve(form.getFieldValue('identifier'))}>Kiểm tra</Button>
                     </Space.Compact>
@@ -76,8 +76,11 @@ export default function FnbStaffPage() {
     const { api, outletId, can, runCommand } = useFnbWorkspace();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [candidate, setCandidate] = useState(null);
+    const candidateSequence = useRef(0);
     const [resolving, setResolving] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [rejectingApproval, setRejectingApproval] = useState(null);
+    const [rejectForm] = Form.useForm();
     const [form] = Form.useForm();
     const loadStaff = useCallback(() => api.staff(), [api]);
     const loadSettings = useCallback(() => api.settings(), [api]);
@@ -92,8 +95,10 @@ export default function FnbStaffPage() {
     const reload = () => Promise.all([staffResource.reload({ silent: true }), approvalsResource.reload({ silent: true })]);
 
     const resolveCandidate = async (identifier) => {
+        const sequence = ++candidateSequence.current;
         if (identifier === null) {
             setCandidate(null);
+            setResolving(false);
             return;
         }
         try {
@@ -104,13 +109,18 @@ export default function FnbStaffPage() {
         setResolving(true);
         try {
             const result = await api.command(api.outletPath('staff-candidates/resolve'), { identifier: String(identifier).trim() }, { idempotencyKey: createIdempotencyKey('staff-resolve') });
+            if (sequence !== candidateSequence.current) return;
             const resolved = result.data?.candidate ?? null;
             setCandidate(resolved);
+            if (resolved) form.setFieldsValue({
+                ...(resolved.role_key ? { role_key: resolved.role_key } : {}),
+                terminal_ids: resolved.terminal_ids ?? [],
+            });
             if (!resolved) message.warning(result.data?.message ?? 'Không tìm thấy tài khoản có thể phân công.');
         } catch (error) {
-            message.error(error.message || 'Không kiểm tra được tài khoản.');
+            if (sequence === candidateSequence.current) message.error(error.message || 'Không kiểm tra được tài khoản.');
         } finally {
-            setResolving(false);
+            if (sequence === candidateSequence.current) setResolving(false);
         }
     };
 
@@ -124,6 +134,8 @@ export default function FnbStaffPage() {
                     candidate_token: candidate.candidate_token,
                     role_key: values.role_key,
                     terminal_ids: values.terminal_ids ?? [],
+                    ...(candidate.expected_binding_version ? { expected_binding_version: candidate.expected_binding_version } : {}),
+                    ...(candidate.expected_membership_version ? { expected_membership_version: candidate.expected_membership_version } : {}),
                 }, { idempotencyKey: key, ...auth }),
                 successMessage: 'Đã phân công nhân viên.',
                 onSuccess: async () => { setDrawerOpen(false); setCandidate(null); form.resetFields(); await reload(); },
@@ -151,6 +163,15 @@ export default function FnbStaffPage() {
         });
     };
 
+    const editAssignment = async (record) => {
+        candidateSequence.current += 1;
+        setCandidate(null);
+        form.resetFields();
+        form.setFieldsValue({ identifier: record.identifier, role_key: record.role_key, terminal_ids: record.terminal_ids ?? [] });
+        setDrawerOpen(true);
+        await resolveCandidate(record.identifier);
+    };
+
     const approve = async (approval) => {
         const key = createIdempotencyKey('approval-approve');
         await runCommand({
@@ -163,6 +184,17 @@ export default function FnbStaffPage() {
             onSuccess: () => approvalsResource.reload({ silent: true }),
             onConflict: approvalsResource.reload,
         });
+    };
+
+    const reject = async (values) => {
+        const approval = rejectingApproval;
+        const idempotencyKey = createIdempotencyKey('approval-reject');
+        setSaving(true);
+        try {
+            await runCommand({ execute: (auth) => api.command(`approvals/${approval.id}/reject`, { expected_version: approval.version, reason: values.reason }, { idempotencyKey, ...auth }),
+                title: 'Từ chối yêu cầu', reason: values.reason, successMessage: 'Đã từ chối yêu cầu.',
+                onSuccess: async () => { setRejectingApproval(null); await approvalsResource.reload(); }, onConflict: approvalsResource.reload });
+        } finally { setSaving(false); }
     };
 
     if (staffResource.error && !staffResource.data) {
@@ -183,7 +215,11 @@ export default function FnbStaffPage() {
                 { title: 'Nhân viên', dataIndex: 'name', render: (value) => <Text strong>{value}</Text> },
                 { title: 'Vai trò', render: (_, record) => <Space direction="vertical" size={0}><Text>{record.role_name ?? 'Chưa gán vai trò'}</Text><Text type="secondary">{record.role_key}</Text></Space> },
                 { title: 'Hiệu lực đến', dataIndex: 'expires_at', render: (value) => value ? formatDateTime(value) : 'Không giới hạn' },
-                { title: '', render: (_, record) => can('fnb.staff.assign') ? <Popconfirm title="Thu hồi quyền tại điểm bán?" description="Tài khoản vẫn tồn tại trong hệ thống, chỉ mất phân công F&B tại quán này." onConfirm={() => revoke(record)}><Button danger size="small" icon={<StopOutlined />}>Thu hồi</Button></Popconfirm> : null },
+                { title: 'Trạng thái', render: (_, record) => record.protected_account ? <Tag>Tài khoản được bảo vệ</Tag> : <FnbStatusTag status={record.status ?? 'active'} /> },
+                { title: '', render: (_, record) => can('fnb.staff.assign') && !record.protected_account ? <Space wrap>
+                    {record.identifier ? <Button size="small" onClick={() => editAssignment(record)}>{record.status === 'revoked' ? 'Cấp lại' : 'Đổi vai trò'}</Button> : null}
+                    {record.status !== 'revoked' ? <Popconfirm title="Thu hồi quyền tại điểm bán?" description="Tài khoản vẫn tồn tại trong hệ thống, chỉ mất phân công F&B tại quán này." onConfirm={() => revoke(record)}><Button danger size="small" icon={<StopOutlined />}>Thu hồi</Button></Popconfirm> : null}
+                </Space> : null },
             ]}
         />
     </>;
@@ -201,7 +237,7 @@ export default function FnbStaffPage() {
                 { title: 'Quyền phê duyệt', render: (_, record) => asArray(record.required_permissions).map((permission) => <Tag key={permission}>{permission}</Tag>) },
                 { title: 'Hết hạn', dataIndex: 'expires_at', render: formatDateTime },
                 { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },
-                { title: '', fixed: 'right', render: (_, record) => record.status === 'pending' ? <Button type="primary" size="small" icon={<CheckOutlined />} onClick={() => approve(record)}>Phê duyệt</Button> : null },
+                { title: '', fixed: 'right', render: (_, record) => record.status === 'pending' ? <Space wrap><Button type="primary" size="small" icon={<CheckOutlined />} onClick={() => approve(record)}>Phê duyệt</Button><Button danger size="small" onClick={() => { rejectForm.resetFields(); setRejectingApproval(record); }}>Từ chối</Button></Space> : null },
             ]}
         /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có yêu cầu chờ bạn xử lý" />}
     </>;
@@ -220,7 +256,10 @@ export default function FnbStaffPage() {
                     { key: 'approvals', label: <Space><SafetyCertificateOutlined /> Phê duyệt</Space>, children: approvalTab },
                 ]} />
             </Card>
-            <AssignmentDrawer open={drawerOpen} form={form} candidate={candidate} roles={roles} terminals={terminals} resolving={resolving} saving={saving} onResolve={resolveCandidate} onClose={() => setDrawerOpen(false)} onSubmit={assign} />
+            <AssignmentDrawer open={drawerOpen} form={form} candidate={candidate} roles={roles} terminals={terminals} resolving={resolving} saving={saving} onResolve={resolveCandidate} onClose={() => { resolveCandidate(null); setDrawerOpen(false); }} onSubmit={assign} />
+            <Drawer open={Boolean(rejectingApproval)} title="Từ chối yêu cầu" width="min(560px, 96vw)" destroyOnHidden onClose={saving ? undefined : () => setRejectingApproval(null)} extra={<Button danger type="primary" loading={saving} onClick={() => rejectForm.submit()}>Từ chối</Button>}>
+                <Form form={rejectForm} layout="vertical" onFinish={reject}><Form.Item name="reason" label="Lý do từ chối" rules={[{ required: true, min: 3, message: 'Nhập lý do từ 3 ký tự.' }]}><Input.TextArea maxLength={500} rows={4} /></Form.Item></Form>
+            </Drawer>
         </div>
     );
 }

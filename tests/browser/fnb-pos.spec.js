@@ -29,7 +29,7 @@ async function completeReauthentication(page) {
 }
 
 test('F&B Pilot can onboard, configure a multi-size menu item and open POS', async ({ page }) => {
-    test.setTimeout(90_000);
+    test.setTimeout(180_000);
     const configuredBaseUrl = test.info().project.use.baseURL;
     const targetHost = configuredBaseUrl ? new URL(configuredBaseUrl).hostname : '';
     expect(['127.0.0.1', 'localhost'], 'F&B fixture test refuses to mutate a non-local target.').toContain(targetHost);
@@ -120,6 +120,19 @@ test('F&B Pilot can onboard, configure a multi-size menu item and open POS', asy
     await expect(itemRow.getByText('Vừa', { exact: false })).toBeVisible();
     await expect(itemRow.getByText('Lớn', { exact: false })).toBeVisible();
 
+    await openFnbSection(page, 'chain');
+    await page.getByRole('tab', { name: 'Thực đơn & bảng giá', exact: true }).click();
+    await page.getByRole('button', { name: 'Phát hành thực đơn', exact: true }).click();
+    const publicationDrawer = page.getByRole('dialog', { name: 'Phát hành thực đơn', exact: true });
+    await publicationDrawer.getByLabel('Thực đơn', { exact: true }).press('ArrowDown');
+    await publicationDrawer.getByLabel('Thực đơn', { exact: true }).press('Enter');
+    await publicationDrawer.getByLabel('Điểm bán áp dụng', { exact: true }).press('ArrowDown');
+    await publicationDrawer.getByLabel('Điểm bán áp dụng', { exact: true }).press('Enter');
+    await publicationDrawer.getByLabel('Điểm bán áp dụng', { exact: true }).press('Escape');
+    await publicationDrawer.getByRole('button', { name: 'Phát hành', exact: true }).click();
+    await completeReauthentication(page);
+    await expect(publicationDrawer).toBeHidden();
+
     const initialBusinessDayRead = page.waitForResponse((response) => response.url().includes('/admin/api/fnb/outlets/') && response.url().includes('/business-days/current') && response.status() === 200);
     await openFnbSection(page, 'shifts');
     await initialBusinessDayRead;
@@ -177,6 +190,48 @@ test('F&B Pilot can onboard, configure a multi-size menu item and open POS', asy
     await orderLine.getByRole('button', { name: 'Xóa món nháp' }).click();
     await page.getByRole('button', { name: 'Xóa', exact: true }).click();
     await expect(orderLine).toHaveCount(0);
+
+    // Exercise the real UI contract through Bar and a committed payment whose
+    // first response is deliberately lost. The retry must reuse the same key.
+    await productTile.click();
+    await page.getByRole('dialog', { name: `Thêm ${itemName}` }).getByRole('button', { name: 'Thêm vào order' }).click();
+    await page.getByRole('button', { name: 'Gửi Bar / Bếp', exact: true }).click();
+    const kitchenPage = await page.context().newPage();
+    await kitchenPage.goto('/admin/modules/fnb-pos/kitchen');
+    const ticket = kitchenPage.locator('.fnb-kds-ticket').filter({ hasText: itemName });
+    await expect(ticket).toBeVisible();
+    await ticket.getByRole('button', { name: 'Bắt đầu pha', exact: true }).click();
+    await expect(ticket.getByRole('button', { name: 'Báo xong', exact: true })).toBeVisible();
+    await ticket.getByRole('button', { name: 'Báo xong', exact: true }).click();
+    await ticket.getByRole('button', { name: 'Đã giao món', exact: true }).click();
+    await expect(ticket).toHaveCount(0);
+    await kitchenPage.close();
+    await page.getByRole('button', { name: 'Đồng bộ', exact: true }).click();
+    await page.getByRole('button', { name: 'Thanh toán / tách bill', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Tạo / tách bill' }).getByRole('button', { name: 'Chốt các dòng đã chọn' }).click();
+    const paymentDrawer = page.getByRole('dialog', { name: 'Thu tiền', exact: true });
+    await expect(paymentDrawer).toBeVisible();
+    const keys = [];
+    await page.route('**/admin/api/fnb/checks/*/payments', async (route) => {
+        keys.push(route.request().headers()['idempotency-key']);
+        if (keys.length === 1) {
+            const committed = await route.fetch();
+            expect(committed.ok()).toBeTruthy();
+            await route.abort('failed');
+        } else await route.continue();
+    });
+    await paymentDrawer.getByRole('button', { name: 'Xác nhận thu tiền', exact: true }).click();
+    await expect(page.getByText(/thao tác chưa xác nhận kết quả/)).toBeVisible();
+    await paymentDrawer.getByRole('button', { name: 'Xác nhận thu tiền', exact: true }).click();
+    await expect(paymentDrawer).toBeHidden();
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toBe(keys[1]);
+    await page.unroute('**/admin/api/fnb/checks/*/payments');
+    await expect(page.locator('.fnb-check-list').getByText('Đã đóng', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'In phiếu bán hàng', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: /Phiếu bán hàng/ })).toBeVisible();
+    await expect(page.locator('.fnb-receipt-sheet')).toContainText(itemName);
+    await page.screenshot({ path: 'test-results/fnb-pos-payment-recovery.png', fullPage: true });
 
     expect(apiFailures, `F&B API failures:\n${apiFailures.join('\n')}`).toEqual([]);
     expect(pageErrors, `Browser page errors:\n${pageErrors.join('\n')}`).toEqual([]);

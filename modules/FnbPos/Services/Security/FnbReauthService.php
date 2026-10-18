@@ -191,6 +191,11 @@ final class FnbReauthService
 
         foreach ($permissions as $permission) {
             if ($outletId === 0) {
+                if (str_starts_with($action, 'chain.')) {
+                    $this->access->authorizeHq($actor, $websiteKey, $permission);
+
+                    continue;
+                }
                 if (! $this->access->canBootstrapWebsite($actor, $websiteKey, $permission)) {
                     throw new AuthorizationException('Không có quyền F&B tại website hiện tại.');
                 }
@@ -210,7 +215,7 @@ final class FnbReauthService
         if ($websiteKey === '' || ! preg_match('/\A[a-f0-9]{64}\z/i', $payloadHash)) {
             throw ValidationException::withMessages(['payload_hash' => ['Payload hash phải là SHA-256 hợp lệ.']]);
         }
-        if ($outletId === 0 && ! ($action === 'onboard' && $subjectId === 'new')) {
+        if ($outletId === 0 && ! ($action === 'onboard' && $subjectId === 'new') && ! in_array($action, ['chain.brand.save', 'chain.region.save', 'chain.outlet.save', 'chain.hq.assign', 'chain.hq.revoke', 'chain.menu.create', 'chain.menu.publish', 'chain.menu.rollback', 'chain.pricebook.save'], true)) {
             throw new AuthorizationException('Pre-outlet scope chỉ dành cho onboarding mới.');
         }
         if ($outletId < 0 || $subjectId === '') {

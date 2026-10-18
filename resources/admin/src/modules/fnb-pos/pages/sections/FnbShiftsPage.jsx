@@ -25,15 +25,10 @@ import { FnbResourceError } from '../../components/FnbResourceState';
 import FnbStatusTag from '../../components/FnbStatusTag';
 import useFnbResource from '../../hooks/useFnbResource';
 import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
-import { asArray, formatDateTime, formatMinorMoney } from '../../utils/fnbFormat';
+import { asArray, calendarDate, formatDateTime, formatMinorMoney } from '../../utils/fnbFormat';
 
 const { Text } = Typography;
 
-const localDate = () => {
-    const date = new Date();
-    const offset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() - offset).toISOString().slice(0, 10);
-};
 
 function ShiftActionDrawer({ action, form, paymentMethods, saving, onClose, onSubmit }) {
     const titles = {
@@ -127,7 +122,7 @@ export default function FnbShiftsPage() {
     const openAction = (type, record = null) => {
         form.resetFields();
         const initial = type === 'openDay'
-            ? { business_date: localDate() }
+            ? { business_date: calendarDate(selectedOutlet?.timezone) }
             : type === 'openShift'
                 ? { opening_float_minor: 0 }
                 : type === 'cash'
@@ -233,7 +228,7 @@ export default function FnbShiftsPage() {
                         {businessDay ? (
                             <Space direction="vertical" size={5}>
                                 <Text strong>{businessDay.business_date}</Text>
-                                <Text type="secondary">Mở lúc {formatDateTime(businessDay.opened_at)}</Text>
+                                <Text type="secondary">Mở lúc {formatDateTime(businessDay.opened_at, { timeZone: selectedOutlet?.timezone })}</Text>
                                 {can('fnb.shift.close') ? <Popconfirm title="Đóng ngày kinh doanh?" description="Mọi ca và phiên phục vụ phải đóng trước." onConfirm={closeBusinessDay}><Button danger size="small" disabled={hasAnyOpenShift}>Đóng ngày</Button></Popconfirm> : null}
                             </Space>
                         ) : can('fnb.shift.open') ? <Button type="primary" className="fnb-touch-button" onClick={() => openAction('openDay')}>Mở ngày hôm nay</Button> : <Text type="secondary">Chưa mở ngày kinh doanh.</Text>}
@@ -243,7 +238,7 @@ export default function FnbShiftsPage() {
                     <Card className="fnb-panel" title="Ca tại quầy" extra={currentShift ? <FnbStatusTag status={currentShift.status} /> : null}>
                         {currentShift ? (
                             <Space direction="vertical" size={9} style={{ width: '100%' }}>
-                                <Text strong>Ca #{currentShift.id} · mở {formatDateTime(currentShift.opened_at)}</Text>
+                                <Text strong>Ca #{currentShift.id} · mở {formatDateTime(currentShift.opened_at, { timeZone: currentShift.timezone_snapshot ?? selectedOutlet?.timezone })}</Text>
                                 <Statistic title="Tiền đầu ca" value={currentShift.opening_float_minor} formatter={(value) => formatMinorMoney(value, currency)} />
                                 <Space wrap>
                                     {can('fnb.cash.adjust') ? <Button icon={<DollarOutlined />} onClick={() => openAction('cash', currentShift)}>Thu / chi</Button> : null}
@@ -263,8 +258,8 @@ export default function FnbShiftsPage() {
                     scroll={{ x: 900 }}
                     columns={[
                         { title: 'Ca', render: (_, record) => <Space direction="vertical" size={0}><Text strong>#{record.id}</Text><Text type="secondary">Quầy #{record.terminal_id}</Text></Space> },
-                        { title: 'Mở ca', dataIndex: 'opened_at', render: formatDateTime },
-                        { title: 'Đóng ca', dataIndex: 'closed_at', render: formatDateTime },
+                        { title: 'Mở ca', dataIndex: 'opened_at', render: (value, record) => formatDateTime(value, { timeZone: record.timezone_snapshot ?? selectedOutlet?.timezone }) },
+                        { title: 'Đóng ca', dataIndex: 'closed_at', render: (value, record) => formatDateTime(value, { timeZone: record.timezone_snapshot ?? selectedOutlet?.timezone }) },
                         { title: 'Tiền đầu ca', dataIndex: 'opening_float_minor', render: (value, record) => formatMinorMoney(value, record.currency ?? currency) },
                         { title: 'Chênh lệch', dataIndex: 'variance_minor', render: (value, record) => value === null || value === undefined ? '—' : <Tag color={Number(value) === 0 ? 'green' : 'orange'}>{formatMinorMoney(value, record.currency ?? currency)}</Tag> },
                         { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },

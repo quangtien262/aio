@@ -38,11 +38,11 @@ final class FnbOutletAccessService
             throw new AuthorizationException('Điểm bán không thuộc website hiện tại hoặc không còn hoạt động.');
         }
 
-        if ($this->isCoreOwner($actor)) {
+        if ($this->isCoreOwner($actor) || in_array($permission, $this->hqPermissions($actor, $websiteKey), true)) {
             return;
         }
 
-        $binding = $this->validBinding($actor, $websiteKey, $permission);
+        $binding = $this->validBinding($actor, $websiteKey, $permission, $outletId);
         if ($binding === null) {
             throw new AuthorizationException('Quyền F&B không đến từ preset website hợp lệ.');
         }
@@ -84,7 +84,7 @@ final class FnbOutletAccessService
             throw new AuthorizationException('Thiết bị không thuộc điểm bán hoặc không còn hoạt động.');
         }
 
-        if ($this->isCoreOwner($actor)) {
+        if ($this->isCoreOwner($actor) || in_array($permission, $this->hqPermissions($actor, $websiteKey), true)) {
             return;
         }
 
@@ -119,11 +119,11 @@ final class FnbOutletAccessService
     {
         $this->assertActorAndPermission($actor, $permission, $websiteKey);
 
-        if ($this->isCoreOwner($actor)) {
+        if ($this->isCoreOwner($actor) || in_array($permission, $this->hqPermissions($actor, $websiteKey), true)) {
             return null;
         }
 
-        $binding = $this->validBinding($actor, $websiteKey, $permission);
+        $binding = $this->validBinding($actor, $websiteKey, $permission, $outletId);
         if ($binding === null) {
             return [];
         }
@@ -170,7 +170,7 @@ final class FnbOutletAccessService
     {
         $this->assertActorAndPermission($actor, $permission, $websiteKey);
 
-        if ($this->isCoreOwner($actor)) {
+        if ($this->isCoreOwner($actor) || in_array($permission, $this->hqPermissions($actor, $websiteKey), true)) {
             return null;
         }
 
@@ -194,7 +194,8 @@ final class FnbOutletAccessService
             ->map(fn (mixed $id): int => (int) $id)
             ->unique()
             ->values()
-            ->all();
+            ->filter(fn (int $id): bool => $this->validBinding($actor, $websiteKey, $permission, $id) !== null)
+            ->values()->all();
     }
 
     public function canBootstrapWebsite(
@@ -229,8 +230,22 @@ final class FnbOutletAccessService
             ->exists();
     }
 
-    public function validBinding(Admin $actor, string $websiteKey, string $permission): ?object
+    public function validBinding(Admin $actor, string $websiteKey, string $permission, ?int $outletId = null): ?object
     {
+        if ($this->chainScopesEnabled()) {
+            $scopes = DB::table('fnb_staff_role_scopes')->where('website_key', $websiteKey)->where('admin_id', $actor->id)
+                ->where('status', 'active')->whereNull('revoked_at')
+                ->when($outletId !== null, fn ($q) => $q->where(fn ($scope) => $scope->where('scope_type', 'hq')->orWhere(fn ($outlet) => $outlet->where('scope_type', 'outlet')->where('scope_key', $outletId))))
+                ->orderBy('id')->get();
+            foreach ($scopes as $scope) {
+                if (in_array($permission, $this->scopePermissions($actor, $websiteKey, $scope), true)) {
+                    return $scope;
+                }
+            }
+
+            return null;
+        }
+
         if (! Schema::hasTable('fnb_staff_role_bindings') || ! Schema::hasTable('module_role_definitions')) {
             return null;
         }
@@ -317,6 +332,128 @@ final class FnbOutletAccessService
         }
 
         return in_array($permission, $expectedPermissionKeys, true) ? $binding : null;
+    }
+
+    public function chainScopesEnabled(): bool
+    {
+        return Schema::hasTable('fnb_staff_role_scopes')
+            && version_compare((string) ModuleInstallation::query()->where('key', 'fnb-pos')->value('version'), '0.2.0-dev.1', '>=');
+    }
+
+    public function authorizeHq(Admin $actor, string $websiteKey, string $permission): void
+    {
+        $this->assertActorAndPermission($actor, $permission, $websiteKey);
+        if (! in_array($permission, $this->hqPermissions($actor, $websiteKey), true)) {
+            throw new AuthorizationException('Thao tác này cần quyền trụ sở tại website hiện tại.');
+        }
+    }
+
+    /** @return list<string> */
+    public function hqPermissions(Admin $actor, string $websiteKey): array
+    {
+        if (! $actor->isAvailable() || ! $actor->canAccessWebsite($websiteKey)) {
+            return [];
+        }
+        if ($this->isCoreOwner($actor)) {
+            $version = ModuleInstallation::query()->where('key', 'fnb-pos')->value('version');
+            try {
+                return $this->security->definition((string) $version)->permissionKeys();
+            } catch (RuntimeException) {
+                return [];
+            }
+        }
+        if (! $this->chainScopesEnabled()) {
+            return [];
+        }
+        $permissions = [];
+        foreach (DB::table('fnb_staff_role_scopes')->where('website_key', $websiteKey)->where('admin_id', $actor->id)
+            ->where('scope_type', 'hq')->where('scope_key', 0)->where('status', 'active')->whereNull('revoked_at')->get() as $scope) {
+            $permissions = array_merge($permissions, $this->scopePermissions($actor, $websiteKey, $scope));
+        }
+
+        return array_values(array_unique($permissions));
+    }
+
+    /** @return list<string> */
+    public function permissionsForOutlet(Admin $actor, string $websiteKey, int $outletId): array
+    {
+        $permissions = $this->hqPermissions($actor, $websiteKey);
+        if ($this->chainScopesEnabled()) {
+            $member = DB::table('fnb_outlet_staff')->where('website_key', $websiteKey)->where('admin_id', $actor->id)
+                ->where('outlet_id', $outletId)->where('is_active', true)->whereNull('revoked_at')
+                ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->exists();
+            if ($member) {
+                foreach (DB::table('fnb_staff_role_scopes')->where('website_key', $websiteKey)->where('admin_id', $actor->id)
+                    ->where('scope_type', 'outlet')->where('scope_key', $outletId)->where('status', 'active')->whereNull('revoked_at')->get() as $scope) {
+                    $permissions = array_merge($permissions, $this->scopePermissions($actor, $websiteKey, $scope));
+                }
+            }
+        } else {
+            foreach ($this->security->definition((string) ModuleInstallation::where('key', 'fnb-pos')->value('version'))->permissionKeys() as $permission) {
+                try {
+                    $this->authorize($actor, $websiteKey, $outletId, $permission);
+                    $permissions[] = $permission;
+                } catch (AuthorizationException) {
+                }
+            }
+        }
+
+        return array_values(array_unique($permissions));
+    }
+
+    /** Exact immutable map plus live website assignment; never trust the union cached in the admin shell. */
+    public function scopePermissions(Admin $actor, string $websiteKey, object $scope): array
+    {
+        if (! in_array($scope->scope_type, ['hq', 'outlet'], true) || ($scope->scope_type === 'hq' && (int) $scope->scope_key !== 0) || ($scope->scope_type === 'outlet' && (int) $scope->scope_key < 1)) {
+            return [];
+        }
+        $installation = ModuleInstallation::query()->where('key', 'fnb-pos')->first();
+        if ($installation === null || $installation->status !== 'enabled' || ! $actor->isAvailable() || ! $actor->canAccessWebsite($websiteKey)) {
+            return [];
+        }
+        if ($scope->scope_type === 'outlet' && ! DB::table('fnb_outlet_staff')->where('website_key', $websiteKey)->where('outlet_id', $scope->scope_key)->where('admin_id', $actor->id)->where('is_active', true)->whereNull('revoked_at')->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->exists()) {
+            return [];
+        }
+        $assignment = DB::table('admin_role_assignments')->where('id', $scope->core_assignment_id)->where('admin_id', $actor->id)
+            ->where('role_id', $scope->preset_role_id)->where('scope_type', 'website')->where('scope_value', $websiteKey)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->exists();
+        if (! $assignment) {
+            return [];
+        }
+        $role = Role::query()->whereKey($scope->preset_role_id)->where('status', 'active')->where('is_system', true)->where('is_assignable', false)->first();
+        if ($role === null) {
+            return [];
+        }
+        $definition = ModuleRoleDefinition::query()->where('module_key', 'fnb-pos')->where('role_id', $role->id)->where('version', $installation->version)->where('is_active', true)->first();
+        try {
+            $immutable = $this->security->definition((string) $installation->version);
+        } catch (RuntimeException) {
+            return [];
+        }
+        $expected = $immutable->roles[$role->key]['permissions'] ?? null;
+        if ($definition === null || $expected === null || $definition->role_key !== $role->key
+            || ! hash_equals((string) $definition->definition_hash, $immutable->roleDefinitionHash($role->key))) {
+            return [];
+        }
+        if ($scope->scope_type === 'hq' && ! in_array($role->key, ['fnb-owner', 'fnb-hq-manager'], true)) {
+            return [];
+        }
+        $actual = $role->permissions()->get(['permissions.key', 'permissions.module_key', 'permissions.is_active', 'permissions.risk_level']);
+        $keys = $actual->pluck('key')->all();
+        $stored = $definition->permission_keys ?? [];
+        sort($keys);
+        sort($stored);
+        sort($expected);
+        if ($keys !== $expected || $stored !== $expected || $definition->custom_role_policy !== $immutable->customRolePolicy || $definition->assignment_channel !== $immutable->assignmentChannel) {
+            return [];
+        }
+        foreach ($actual as $permission) {
+            if ($permission->module_key !== 'fnb-pos' || ! $permission->is_active || $permission->risk_level !== ($immutable->permissions[$permission->key]['risk_level'] ?? null)) {
+                return [];
+            }
+        }
+
+        return $expected;
     }
 
     /** @throws AuthorizationException */
