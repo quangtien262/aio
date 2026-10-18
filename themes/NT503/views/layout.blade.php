@@ -2,7 +2,7 @@
     $canEditLanding = auth('admin')->check()
         && request('mod') === 'admin'
         && is_array($landingPage ?? null);
-    $nt503EditorBlocks = collect($landingBlocks ?? [])
+    $nt503EditorBlocks = collect($landingEditorBlocks ?? $landingBlocks ?? [])
         ->filter(fn (array $block): bool => filled($block['id'] ?? null))
         ->values();
     $editorLocales = collect(\App\Support\FrontendLocalization::localeOptions())

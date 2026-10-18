@@ -171,7 +171,7 @@
 
             const canEdit = @json($canEditLanding ?? false);
             if (!canEdit) return;
-            const blocks = @json($blockPayload ?? []);
+            const blocks = @json(array_replace($blockPayload ?? [], collect($landingEditorBlocks ?? [])->keyBy('id')->all()));
             const editorLocales = @json($editorLocales ?? []);
             const editorOptions = @json($landingEditorOptions ?? []);
             const updateUrlTemplate = @json($blockUpdateUrlTemplate ?? '');

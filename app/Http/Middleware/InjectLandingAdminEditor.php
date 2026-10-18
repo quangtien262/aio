@@ -55,7 +55,9 @@ class InjectLandingAdminEditor
             FrontendLocalization::defaultLocale(),
             $request->user('admin') !== null && $request->query('mod') === 'admin',
         );
-        $blocks = collect($viewData['landingBlocks'] ?? [])
+        $blocks = collect(($request->user('admin') !== null && $request->query('mod') === 'admin')
+            ? ($viewData['landingEditorBlocks'] ?? [])
+            : ($viewData['landingBlocks'] ?? []))
             ->filter(fn (array $block): bool => filled($block['id'] ?? null))
             ->values();
 

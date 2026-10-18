@@ -17,10 +17,10 @@
             </summary>
             <div class="aio-landing-editor-toolbar-content" data-reorder-url="{{ route('admin.api.landing.pages.blocks.reorder', ['landingPage' => data_get(collect($landingBlocks)->first(), 'landing_page_id')]) }}">
                 @foreach($landingBlocks as $block)
-                    <div class="aio-landing-editor-row" data-sort-block-id="{{ data_get($block, 'id') }}">
+                    <div class="aio-landing-editor-row {{ data_get($block, 'is_visible', true) ? '' : 'is-hidden' }}" data-sort-block-id="{{ data_get($block, 'id') }}">
                         <button type="button" class="aio-landing-editor-drag" aria-label="Sắp xếp {{ data_get($block, 'data.title', data_get($block, 'block_type')) }}" title="Kéo để sắp xếp hoặc dùng phím ↑ / ↓">⠿</button>
                         <button type="button" data-xd-edit-block="{{ data_get($block, 'id') }}">
-                            Sửa khối <span>{{ data_get($block, 'data.title', data_get($block, 'label', data_get($block, 'block_type'))) }}</span>
+                            Sửa khối <span>{{ data_get($block, 'data.title', data_get($block, 'label', data_get($block, 'block_type'))) }}@unless(data_get($block, 'is_visible', true))<small class="aio-landing-editor-hidden-label">Đang ẩn</small>@endunless</span>
                         </button>
                     </div>
                 @endforeach
@@ -61,6 +61,7 @@
     .aio-landing-editor-toolbar-content{display:grid;gap:6px;margin-top:9px}
     .aio-landing-editor-toolbar button{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:9px;min-height:38px;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:7px 10px;background:#dc2626;color:#fff;font:700 12px/1.25 system-ui,sans-serif;cursor:pointer;text-align:left}
     .aio-landing-editor-toolbar button:hover{background:#b91c1c}.aio-landing-editor-toolbar button span{display:block;min-width:0;width:100%;overflow:hidden;color:#fee2e2;font-weight:500;text-align:left;text-overflow:ellipsis;white-space:nowrap}
+    .aio-landing-editor-row.is-hidden button:not(.aio-landing-editor-drag){background:#334155;border-color:#94a3b8;border-style:dashed}.aio-landing-editor-row.is-hidden button:not(.aio-landing-editor-drag):hover{background:#475569}.aio-landing-editor-row.is-hidden button span{color:#e2e8f0}.aio-landing-editor-hidden-label{display:block;font-size:10px;font-weight:600;color:#cbd5e1}
     .aio-landing-editor-toolbar-content{position:relative}
     .aio-landing-editor-row{display:grid;grid-template-columns:24px minmax(0,1fr);gap:4px}.aio-landing-editor-row.is-dragging{background:rgba(255,255,255,.07);outline:2px dashed #94a3b8;outline-offset:-2px;border-radius:10px}.aio-landing-editor-row.is-dragging>*{visibility:hidden}
     .aio-landing-editor-toolbar.is-sorting{user-select:none;cursor:grabbing;overflow-anchor:none}

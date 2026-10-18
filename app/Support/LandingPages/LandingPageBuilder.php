@@ -142,8 +142,9 @@ class LandingPageBuilder
     ): array {
         $pageData = $this->localizedPageData($page, $locale, $fallbackLocale, true);
 
-        $blocks = $page->blocks
-            ->filter(fn (LandingPageBlock $block): bool => $block->is_visible && $block->block_type !== 'footer_contact')
+        $editableBlocks = $page->blocks
+            ->filter(fn (LandingPageBlock $block): bool => $block->block_type !== 'footer_contact'
+                && ($includeEditableLocales || $block->is_visible))
             ->map(fn (LandingPageBlock $block): array => $this->serializeBlock(
                 $block,
                 $locale,
@@ -154,10 +155,12 @@ class LandingPageBuilder
             ))
             ->values()
             ->all();
+        $blocks = array_values(array_filter($editableBlocks, fn (array $block): bool => (bool) $block['is_visible']));
 
         return [
             'landingPage' => $this->serializePage($page, $pageData),
             'landingBlocks' => $blocks,
+            'landingEditorBlocks' => $includeEditableLocales ? $editableBlocks : [],
             'landingMenuItems' => $this->landingMenuItems(
                 $blocks,
                 $this->landingMenuBaseUrl($page, $locale),
