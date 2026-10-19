@@ -746,8 +746,45 @@ final class FnbOrderService
         });
     }
 
-    public function pollKitchen(FnbContext $context, int $cursor = 0, ?int $stationId = null, int $limit = 200): array
+    /** Complete all outstanding kitchen lines of one order atomically, across preparation stations. */
+    public function completeKitchenOrder(FnbContext $context, int $orderId, array $expectedTicketVersions, string $idempotencyKey): array
     {
+        validator(['versions' => $expectedTicketVersions], ['versions' => ['required', 'array', 'min:1'], 'versions.*' => ['required', 'integer', 'min:1']])->validate();
+        return $this->commands->run($context, 'kitchen.order.complete', compact('orderId', 'expectedTicketVersions'), $idempotencyKey, function () use ($context, $orderId, $expectedTicketVersions, $idempotencyKey): array {
+            $order = $this->locked('fnb_orders', $context, $orderId);
+            if ($order->lifecycle_status !== 'active') throw new FnbConflictException('Chỉ hoàn thành nhanh đơn đã gửi Bar / Bếp và còn món chờ xử lý.');
+            $lines = DB::table('fnb_kitchen_ticket_lines')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)
+                ->where('order_id', $orderId)->whereIn('status_rollup', ['waiting', 'preparing', 'ready'])->orderBy('ticket_id')->orderBy('id')->lockForUpdate()->get();
+            $ticketIds = $lines->pluck('ticket_id')->map(fn ($id) => (int) $id)->unique()->sort()->values()->all();
+            $expectedIds = array_map('intval', array_keys($expectedTicketVersions));
+            sort($expectedIds);
+            if (! $ticketIds || $ticketIds !== $expectedIds) throw new FnbConflictException('Danh sách món trong đơn đã thay đổi. Hãy cập nhật và kiểm tra lại trước khi hoàn thành.');
+            $versions = [];
+            foreach ($ticketIds as $ticketId) {
+                $ticket = $this->locked('fnb_kitchen_tickets', $context, $ticketId);
+                $this->assertVersion('kitchen_ticket', $ticket, (int) $expectedTicketVersions[$ticketId]);
+                $versions[$ticketId] = (int) $ticket->version;
+            }
+            $nextStatuses = ['waiting' => 'preparing', 'preparing' => 'ready', 'ready' => 'served'];
+            foreach ($lines as $line) {
+                $status = $line->status_rollup;
+                while (isset($nextStatuses[$status])) {
+                    $next = $nextStatuses[$status];
+                    $result = $this->transitionKitchenLine($context, (int) $line->id, $next,
+                        'complete:'.hash('sha256', $idempotencyKey.':'.$line->id.':'.$next), $versions[$line->ticket_id]);
+                    $versions[$line->ticket_id] = (int) $result['resource']['ticket']['version'];
+                    $status = $next;
+                }
+            }
+            $completed = $this->record('fnb_orders', $orderId);
+            if ($completed['lifecycle_status'] !== 'completed') throw new FnbConflictException('Đơn còn món chưa thể hoàn tất. Hãy kiểm tra lại chi tiết đơn.');
+            return ['resource' => $completed, 'meta' => ['resource_type' => 'order', 'resource_id' => $orderId, 'version' => $completed['version']]];
+        });
+    }
+
+    public function pollKitchen(FnbContext $context, int $cursor = 0, ?int $stationId = null, int $limit = 200, string $view = 'active'): array
+    {
+        validator(['view' => $view], ['view' => ['in:active,completed']])->validate();
         if ($context->outletId < 1 || ! DB::table('fnb_outlets')->where('website_key', $context->websiteKey)->where('id', $context->outletId)->exists()) {
             throw new FnbNotFoundException('Outlet was not found.');
         }
@@ -765,8 +802,15 @@ final class FnbOrderService
         $nextCursor = $rows->isEmpty() ? max(0, $cursor) : (int) $rows->last()->sequence;
         $tickets = DB::table('fnb_kitchen_tickets')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)
             ->when($stationId, fn ($query) => $query->where('prep_station_id', $stationId))
-            ->whereNotIn('status_rollup', ['completed', 'all_voided', 'all_compensated', 'cancelled_mixed'])
-            ->orderByDesc('priority')->orderBy('fired_at')->limit(300)->get();
+            ->when($view === 'completed', fn ($query) => $query->whereExists(function ($lines): void {
+                $lines->selectRaw('1')->from('fnb_kitchen_ticket_lines')
+                    ->whereColumn('fnb_kitchen_ticket_lines.ticket_id', 'fnb_kitchen_tickets.id')
+                    ->whereColumn('fnb_kitchen_ticket_lines.website_key', 'fnb_kitchen_tickets.website_key')
+                    ->whereColumn('fnb_kitchen_ticket_lines.outlet_id', 'fnb_kitchen_tickets.outlet_id')
+                    ->where('fnb_kitchen_ticket_lines.status_rollup', 'served');
+            }), fn ($query) => $query->whereNotIn('status_rollup', ['completed', 'all_voided', 'all_compensated', 'cancelled_mixed']))
+            ->when($view === 'completed', fn ($query) => $query->orderByDesc('updated_at')->orderByDesc('id'), fn ($query) => $query->orderByDesc('priority')->orderBy('fired_at'))
+            ->limit(300)->get();
         $tickets = $this->ticketResources($context, $tickets->all());
 
         return ['resource' => [

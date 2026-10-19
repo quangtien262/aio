@@ -305,3 +305,11 @@ For `kind = size | topping`:
 - `POST menu/{kind}-definitions/{id}/archive`: remove from the selectable catalog with required `expected_version`.
 
 Commands require `Idempotency-Key`, `fnb.menu.manage` and HQ `fnb.menu.master.manage`; definitions are isolated by website. Names are unique after whitespace/case normalization; codes are unique ignoring case within each kind, including archived entries. The additive migration imports existing variant/option names without changing their source records or prices.
+
+### Complete service for an entire order
+
+`POST kitchen/orders/{order}/complete` requires `fnb.kitchen.update`, an `Idempotency-Key` and `expected_ticket_versions` keyed by every outstanding kitchen ticket ID for that order. It confirms delivery of all remaining items across stations. The POS completion drawer and kitchen board show a confirmation before sending this command; station/status filters do not limit its scope.
+
+The server validates outlet ownership, active order state, exact outstanding ticket set and versions, then advances each outstanding line through the existing transition and quantity-ledger checks within one transaction. Stale/missing tickets or an invalid ledger roll back all changes. Replays do not increase served quantities again. Previously served, voided and compensated lines are preserved. Payment and table release remain separate actions.
+
+`GET outlets/{outlet}/kitchen/tickets?view=completed` returns the latest 300 website/outlet-scoped tickets containing served lines, including partially served tickets. The default `view=active` retains the live work queue behavior. `station_id` also applies to history; the kitchen UI displays only served lines in the Hoàn thành tab, with their `served_at` timestamps and without transition/bulk-completion actions.

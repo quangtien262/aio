@@ -18,9 +18,10 @@ import { createIdempotencyKey } from '../../api/fnbApi';
 import FnbPageHeader from '../../components/FnbPageHeader';
 import { FnbResourceError } from '../../components/FnbResourceState';
 import FnbKitchenProgress from '../../components/FnbKitchenProgress';
+import FnbCompleteOrderButton from '../../components/FnbCompleteOrderButton';
 import useFnbResource from '../../hooks/useFnbResource';
 import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
-import { asArray, formatDuration, formatQuantity, parseServerDate } from '../../utils/fnbFormat';
+import { asArray, formatDateTime, formatDuration, formatQuantity, parseServerDate } from '../../utils/fnbFormat';
 
 const { Text, Title } = Typography;
 
@@ -29,6 +30,7 @@ const statusOptions = [
     { value: 'waiting', label: 'Chờ pha chế' },
     { value: 'preparing', label: 'Đang pha' },
     { value: 'ready', label: 'Chờ phục vụ' },
+    { value: 'served', label: 'Hoàn thành' },
 ];
 
 const lineStatus = (line) => line.status_rollup ?? line.status ?? 'waiting';
@@ -51,6 +53,7 @@ function nextAction(status) {
 export default function FnbKitchenPage() {
     const { api, outletId, can, runCommand } = useFnbWorkspace();
     const [statusFilter, setStatusFilter] = useState('active');
+    const kitchenView = statusFilter === 'served' ? 'completed' : 'active';
     const [stationId, setStationId] = useState('');
     const [pendingLine, setPendingLine] = useState(null);
     const cursorState = useRef({ scope: '', cursor: 0 });
@@ -62,23 +65,23 @@ export default function FnbKitchenPage() {
         return () => document.removeEventListener('fullscreenchange', changed);
     }, []);
     const loadKitchen = useCallback(async () => {
-        const scope = `${outletId}:${stationId || 'all'}`;
+        const scope = `${outletId}:${stationId || 'all'}:${kitchenView}`;
         if (cursorState.current.scope !== scope) {
             cursorState.current = { scope, cursor: 0 };
         }
         const requestCursor = cursorState.current.cursor;
-        const result = await api.kitchen({ cursor: requestCursor, station_id: stationId || undefined, limit: 200 });
+        const result = await api.kitchen({ cursor: requestCursor, limit: 200, view: kitchenView });
         const nextCursor = Number(result?.data?.cursor);
         if (cursorState.current.scope === scope && Number.isSafeInteger(nextCursor) && nextCursor >= requestCursor) {
             cursorState.current.cursor = nextCursor;
         }
 
         return result;
-    }, [api, outletId, stationId]);
+    }, [api, outletId, stationId, kitchenView]);
     const resource = useFnbResource({
         enabled: Boolean(outletId),
         loader: loadKitchen,
-        deps: [outletId, stationId],
+        deps: [outletId, stationId, kitchenView],
         pollMs: 1000,
         backgroundPolling: true,
     });
@@ -100,9 +103,10 @@ export default function FnbKitchenPage() {
         displayLines: ticketLines(ticket).filter((line) => statusFilter === 'active'
             ? ['waiting', 'preparing', 'ready'].includes(lineStatus(line))
             : lineStatus(line) === statusFilter),
-    })).filter((ticket) => ticket.displayLines.length > 0);
+    })).filter((ticket) => ticket.displayLines.length > 0 && (!stationId || String(ticket.prep_station_id ?? ticket.station_id) === String(stationId)));
 
     const transition = async (ticket, line, action) => {
+        if (pendingLine !== null) return;
         const idempotencyKey = createIdempotencyKey(`kds-${action.status}`);
         setPendingLine(line.id);
         try {
@@ -121,6 +125,18 @@ export default function FnbKitchenPage() {
         }
     };
 
+    const completeOrder = async (orderId, versions) => {
+        if (pendingLine !== null) return;
+        setPendingLine(`order-${orderId}`);
+        try {
+            await runCommand({
+                execute: (auth) => api.command(`kitchen/orders/${orderId}/complete`, { expected_ticket_versions: versions }, { idempotencyKey: createIdempotencyKey('kds-complete-order'), ...auth }),
+                successMessage: 'Đã hoàn thành tất cả món trong đơn.',
+                onSuccess: () => resource.reload({ silent: true }), onConflict: resource.reload,
+            });
+        } finally { setPendingLine(null); }
+    };
+
     if (resource.error && !resource.data) {
         return <FnbResourceError error={resource.error} onRetry={resource.reload} title="Không tải được màn hình Bar / Bếp" />;
     }
@@ -130,8 +146,7 @@ export default function FnbKitchenPage() {
             <FnbPageHeader
                 eyebrow="Màn hình chế biến"
                 title="Bar / Bếp"
-                description="Tự cập nhật mỗi giây. Thao tác chỉ thay đổi trạng thái chế biến, không hiển thị giá hay thông tin thanh toán."
-                actions={<Space wrap><Button icon={<FullscreenOutlined />} onClick={async () => {
+                actions={<Space wrap>{resource.updatedAt ? <Text type="secondary" className="fnb-kds-updated-time">Cập nhật lúc {new Date(resource.updatedAt).toLocaleTimeString('vi-VN')}</Text> : null}<Button icon={<FullscreenOutlined />} onClick={async () => {
                     try {
                         if (document.fullscreenElement) await document.exitFullscreen();
                         else await boardRef.current?.requestFullscreen?.();
@@ -153,15 +168,15 @@ export default function FnbKitchenPage() {
                         style={{ minWidth: 190 }}
                     />
                     <Badge status={resource.error ? 'error' : resource.refreshing ? 'processing' : 'success'} text={resource.error ? 'Mất kết nối' : resource.refreshing ? 'Đang đồng bộ' : 'Đã kết nối'} />
-                    {resource.updatedAt ? <Text type="secondary">Cập nhật lúc {new Date(resource.updatedAt).toLocaleTimeString('vi-VN')}</Text> : null}
                 </div>
             </Card>
 
+            {kitchenView === 'completed' && tickets.length >= 300 ? <Text type="secondary">Hiển thị tối đa 300 phiếu có món đã giao gần nhất.</Text> : null}
             {visibleTickets.length ? (
                 <div className="fnb-kds-board">
                     {visibleTickets.map((ticket) => {
                         const station = stations.find((item) => String(item.id) === String(ticket.prep_station_id ?? ticket.station_id));
-                        const overdue = Date.now() - parseServerDate(ticket.fired_at ?? ticket.created_at).getTime() > Number(station?.sla_seconds ?? 600) * 1000;
+                        const overdue = kitchenView === 'active' && Date.now() - parseServerDate(ticket.fired_at ?? ticket.created_at).getTime() > Number(station?.sla_seconds ?? 600) * 1000;
                         return (
                         <Card
                             key={ticket.public_id ?? ticket.id}
@@ -169,6 +184,7 @@ export default function FnbKitchenPage() {
                             title={<Space><Title level={5} style={{ margin: 0 }}>{ticket.ticket_no ?? `Phiếu #${ticket.id}`}</Title>{Number(ticket.priority) > 0 ? <Tag color="red">Ưu tiên</Tag> : null}</Space>}
                             extra={<Space direction="vertical" size={0} align="end"><Text strong>{ticket.table_name ?? ticket.session_label ?? ticket.order_no ?? (ticket.order_id ? `Order #${ticket.order_id}` : 'Phiếu chế biến')}</Text><Text type="secondary"><ClockCircleOutlined /> {formatDuration(ticket.fired_at ?? ticket.created_at)}</Text></Space>}
                         >
+                            <div className="fnb-kds-order-actions">{kitchenView === 'active' ? <FnbCompleteOrderButton orderId={ticket.order_id} tickets={tickets} disabled={pendingLine !== null || Boolean(resource.error)} loading={pendingLine === `order-${ticket.order_id}`} onComplete={(versions) => completeOrder(ticket.order_id, versions)} /> : null}</div>
                             <Space direction="vertical" size={12} style={{ width: '100%' }}>
                                 {ticket.displayLines.map((line) => {
                                     const status = lineStatus(line);
@@ -191,6 +207,7 @@ export default function FnbKitchenPage() {
                                                     type={action.status === 'ready' ? 'primary' : 'default'}
                                                     icon={action.icon}
                                                     loading={pendingLine === line.id}
+                                                    disabled={pendingLine !== null || Boolean(resource.error)}
                                                     onClick={() => transition(ticket, line, action)}
                                                     className="fnb-touch-button"
                                                 >
@@ -198,6 +215,7 @@ export default function FnbKitchenPage() {
                                                 </Button>
                                             ) : null}
                                             <FnbKitchenProgress status={status} />
+                                            {status === 'served' && line.served_at ? <Text type="secondary" className="fnb-kds-completed-time">Đã giao lúc {formatDateTime(line.served_at)}</Text> : null}
                                         </div>
                                     );
                                 })}

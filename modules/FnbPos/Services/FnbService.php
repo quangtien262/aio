@@ -128,9 +128,14 @@ final class FnbService
         return $this->orders->voidOrderLine($ctx, $orderLineId, $reason, $idempotencyKey, $expectedOrderVersion);
     }
 
-    public function pollKitchen(FnbContext $ctx, int $cursor = 0, ?int $stationId = null, int $limit = 200): array
+    public function pollKitchen(FnbContext $ctx, int $cursor = 0, ?int $stationId = null, int $limit = 200, string $view = 'active'): array
     {
-        return $this->orders->pollKitchen($ctx, $cursor, $stationId, $limit);
+        return $this->orders->pollKitchen($ctx, $cursor, $stationId, $limit, $view);
+    }
+
+    public function completeKitchenOrder(FnbContext $ctx, int $orderId, array $expectedTicketVersions, string $key): array
+    {
+        return $this->orders->completeKitchenOrder($ctx, $orderId, $expectedTicketVersions, $key);
     }
 
     public function transitionKitchenLine(FnbContext $ctx, int $ticketLineId, string $toStatus, string $idempotencyKey, int $expectedTicketVersion): array

@@ -1195,3 +1195,11 @@
     white-space: nowrap;
     border: 0;
 }
+
+.fnb-kds-order-actions { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+.fnb-kds-order-actions:empty { display: none; }
+.fnb-completion-order-heading { flex-wrap: wrap; gap: 10px; }
+
+.fnb-kds-completed-time { grid-column: 1 / -1; font-size: 12px; }
+
+.fnb-kds-updated-time { font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }

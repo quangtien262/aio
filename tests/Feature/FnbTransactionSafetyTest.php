@@ -59,6 +59,113 @@ final class FnbTransactionSafetyTest extends TestCase
         return $this->fnb->submitOrder($this->ctx, $order['id'], (string) Str::uuid(), $order['version'])['resource'];
     }
 
+    private function orderForBulkCompletion(bool $sameStation = false): array
+    {
+        $station = (array) DB::table('fnb_prep_stations')->first();
+        unset($station['id']);
+        $station['code'] = 'SECOND';
+        $station['name'] = 'Bếp';
+        $secondStation = DB::table('fnb_prep_stations')->insertGetId($station);
+        $order = $this->fnb->createOrder($this->ctx, $this->session['id'], $this->shift['id'], [], (string) Str::uuid(), $this->session['version'])['resource'];
+        foreach ([(int) DB::table('fnb_prep_stations')->value('id'), $sameStation ? (int) DB::table('fnb_prep_stations')->value('id') : $secondStation] as $index => $stationId) {
+            $item = $this->fnb->saveCatalogItem($this->ctx, ['code' => 'BULK-'.$index, 'name' => 'Món '.$index, 'station_id' => $stationId, 'variant' => ['code' => 'DEFAULT', 'name' => 'Mặc định', 'base_price_minor' => 30000]], (string) Str::uuid())['resource'];
+            $order = $this->fnb->addOrderLine($this->ctx, $order['id'], ['variant_id' => $item['variants'][0]['id'], 'quantity' => '2'], (string) Str::uuid(), $order['version'])['resource'];
+        }
+        return $this->fnb->submitOrder($this->ctx, $order['id'], (string) Str::uuid(), $order['version'])['resource'];
+    }
+
+    public function test_complete_order_serves_all_stations_atomically_and_replays_without_duplicate_quantities(): void
+    {
+        $order = $this->orderForBulkCompletion();
+        $tickets = DB::table('fnb_kitchen_tickets')->where('order_id', $order['id'])->get();
+        $this->assertCount(2, $tickets);
+        $line = DB::table('fnb_kitchen_ticket_lines')->where('ticket_id', $tickets[0]->id)->first();
+        $this->fnb->transitionKitchenLine($this->ctx, $line->id, 'preparing', (string) Str::uuid(), 1);
+        $versions = DB::table('fnb_kitchen_tickets')->where('order_id', $order['id'])->pluck('version', 'id')->all();
+        $key = (string) Str::uuid();
+        $owner = Admin::findOrFail(Admin::SYSTEM_OWNER_ID);
+        $owner->forceFill(['must_change_password' => false])->save();
+        $this->actingAs($owner, 'admin')->withSession(['admin_auth_version' => $owner->auth_version]);
+        $result = $this->withHeaders(['X-FNB-Outlet' => (string) $this->ctx->outletId, 'X-FNB-Terminal' => (string) $this->ctx->terminalId, 'Idempotency-Key' => $key])
+            ->postJson('/admin/api/fnb/kitchen/orders/'.$order['id'].'/complete', ['expected_ticket_versions' => $versions])->assertOk()->json('data');
+        $this->assertSame('completed', $result['lifecycle_status']);
+        $this->assertSame('fulfilled', $result['fulfillment_status']);
+        $this->assertTrue($this->fnb->completeKitchenOrder($this->ctx, $order['id'], $versions, $key)['replayed']);
+        foreach (DB::table('fnb_order_lines')->where('order_id', $order['id'])->get() as $row) {
+            $this->assertSame('served', $row->status);
+            $this->assertSame(0, bccomp('2', (string) $row->fulfilled_quantity, 6));
+        }
+        foreach (DB::table('fnb_kitchen_ticket_lines')->where('order_id', $order['id'])->get() as $row) {
+            $this->assertSame('served', $row->status_rollup);
+            $this->assertSame(0, bccomp('2', (string) $row->served_quantity, 6));
+        }
+    }
+
+    public function test_bulk_completion_rejects_missing_stale_and_foreign_versions_and_rolls_back_all_lines(): void
+    {
+        $order = $this->orderForBulkCompletion();
+        $versions = DB::table('fnb_kitchen_tickets')->where('order_id', $order['id'])->pluck('version', 'id')->all();
+        $bad = $versions;
+        $bad[array_key_first($bad)] = 99;
+        foreach ([array_slice($versions, 0, 1, true), $bad, $versions + [999999 => 1]] as $input) {
+            try {
+                $this->fnb->completeKitchenOrder($this->ctx, $order['id'], $input, (string) Str::uuid());
+                $this->fail('Stale or incomplete ticket versions must fail.');
+            } catch (FnbConflictException) {
+                $this->assertSame(0, DB::table('fnb_kitchen_ticket_lines')->where('order_id', $order['id'])->where('status_rollup', 'served')->count());
+            }
+        }
+        $last = DB::table('fnb_order_lines')->where('order_id', $order['id'])->orderByDesc('id')->first();
+        DB::table('fnb_order_lines')->where('id', $last->id)->update(['fulfilled_quantity' => 10]);
+        try {
+            $this->fnb->completeKitchenOrder($this->ctx, $order['id'], $versions, (string) Str::uuid());
+            $this->fail('Inconsistent quantity ledgers must roll back every line.');
+        } catch (FnbConflictException) {
+            $this->assertSame(['waiting'], DB::table('fnb_kitchen_ticket_lines')->where('order_id', $order['id'])->pluck('status_rollup')->unique()->values()->all());
+            $this->assertSame($versions, DB::table('fnb_kitchen_tickets')->where('order_id', $order['id'])->pluck('version', 'id')->all());
+        }
+    }
+
+    public function test_bulk_completion_http_requires_kitchen_update_permission(): void
+    {
+        $order = $this->orderForBulkCompletion();
+        $staff = Admin::factory()->create(['must_change_password' => false])->fresh();
+        $this->actingAs($staff, 'admin')->withSession(['admin_auth_version' => $staff->auth_version]);
+        $versions = DB::table('fnb_kitchen_tickets')->where('order_id', $order['id'])->pluck('version', 'id')->all();
+        $this->withHeaders(['X-FNB-Outlet' => (string) $this->ctx->outletId, 'X-FNB-Terminal' => (string) $this->ctx->terminalId, 'Idempotency-Key' => (string) Str::uuid()])
+            ->postJson('/admin/api/fnb/kitchen/orders/'.$order['id'].'/complete', ['expected_ticket_versions' => $versions])->assertForbidden();
+        $this->assertSame(['waiting'], DB::table('fnb_kitchen_ticket_lines')->where('order_id', $order['id'])->pluck('status_rollup')->unique()->values()->all());
+    }
+
+    public function test_kitchen_completed_history_includes_partially_served_and_fully_completed_tickets(): void
+    {
+        $order = $this->orderForBulkCompletion(true);
+        $this->assertEmpty($this->fnb->pollKitchen($this->ctx, view: 'completed')['resource']['tickets']);
+        $line = DB::table('fnb_kitchen_ticket_lines')->where('order_id', $order['id'])->first();
+        foreach (['preparing', 'ready', 'served'] as $status) {
+            $this->fnb->transitionKitchenLine($this->ctx, $line->id, $status, (string) Str::uuid(), $this->version('fnb_kitchen_tickets', $line->ticket_id));
+        }
+        $history = $this->fnb->pollKitchen($this->ctx, view: 'completed')['resource']['tickets'];
+        $this->assertCount(1, $history);
+        $this->assertCount(1, $this->fnb->pollKitchen($this->ctx)['resource']['tickets']);
+        $served = collect($history[0]['lines'])->firstWhere('status_rollup', 'served');
+        $this->assertNotNull($served['served_at']);
+        $this->assertSame($line->id, $served['id']);
+        $stationId = DB::table('fnb_kitchen_tickets')->where('id', $line->ticket_id)->value('prep_station_id');
+        $otherStationId = DB::table('fnb_prep_stations')->where('id', '!=', $stationId)->value('id');
+        $this->assertCount(1, $this->fnb->pollKitchen($this->ctx, stationId: $stationId, view: 'completed')['resource']['tickets']);
+        $this->assertEmpty($this->fnb->pollKitchen($this->ctx, stationId: $otherStationId, view: 'completed')['resource']['tickets']);
+        $this->fnb->completeKitchenOrder($this->ctx, $order['id'], [$line->ticket_id => $this->version('fnb_kitchen_tickets', $line->ticket_id)], (string) Str::uuid());
+        $this->assertEmpty($this->fnb->pollKitchen($this->ctx)['resource']['tickets']);
+        $this->assertCount(1, $this->fnb->pollKitchen($this->ctx, view: 'completed')['resource']['tickets']);
+        $owner = Admin::findOrFail(Admin::SYSTEM_OWNER_ID);
+        $owner->forceFill(['must_change_password' => false])->save();
+        $this->actingAs($owner, 'admin')->withSession(['admin_auth_version' => $owner->auth_version]);
+        $this->withHeaders(['X-FNB-Terminal' => (string) $this->ctx->terminalId])
+            ->getJson('/admin/api/fnb/outlets/'.$this->ctx->outletId.'/kitchen/tickets?view=completed')->assertOk()->assertJsonCount(1, 'data.tickets');
+        $this->getJson('/admin/api/fnb/outlets/'.$this->ctx->outletId.'/kitchen/tickets?view=wrong')->assertUnprocessable();
+    }
+
     private function check(): array
     {
         return $this->fnb->createCheck($this->ctx, $this->session['id'], [], (string) Str::uuid(), (int) DB::table('fnb_service_sessions')->where('id', $this->session['id'])->value('version'))['resource'];

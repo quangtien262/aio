@@ -67,7 +67,7 @@ class FnbApiController
         $ctx = $this->context($request, $permission);
         $result = match ($name) {
             'menu' => $this->catalog($request, $ctx),
-            'kitchen' => $this->service->pollKitchen($ctx, max(0, $request->integer('cursor')), $request->filled('station_id') ? $request->integer('station_id') : null),
+            'kitchen' => $this->service->pollKitchen($ctx, max(0, $request->integer('cursor')), $request->filled('station_id') ? $request->integer('station_id') : null, 200, (string) $request->input('view', 'active')),
             'report' => $this->report($request, $ctx),
             'customers' => $this->customers($request, $ctx),
             default => ['resource' => $reads->read($ctx, $name, $request->query(), $request->user('admin'))],
@@ -136,6 +136,7 @@ class FnbApiController
             'order.submit' => $this->service->submitOrder($ctx, $id, $key, $version()),
             'order.discount' => $this->service->applyOrderDiscount($ctx, $id, $input, $key, $version()),
             'line.void' => $this->service->voidOrderLine($ctx, $id, $this->reason($input), $key, $version()),
+            'kitchen.order.complete' => $this->service->completeKitchenOrder($ctx, $id, $this->array($input, 'expected_ticket_versions'), $key),
             'kitchen.transition' => $this->service->transitionKitchenLine($ctx, $id, $this->choice($input, 'status', ['preparing', 'ready', 'served']), $key, $version()),
             'check.create' => $this->service->createCheck($ctx, $id, $this->array($input, 'allocations'), $key, $version()),
             'check.finalize' => $this->service->finalizeCheck($ctx, $id, $key, $version()),

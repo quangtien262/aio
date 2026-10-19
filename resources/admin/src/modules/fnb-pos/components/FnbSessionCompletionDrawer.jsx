@@ -14,6 +14,7 @@ import { asArray, formatQuantity } from '../utils/fnbFormat';
 import { kitchenLineAction, pendingSessionOrders } from '../utils/fnbSessionCompletion';
 import FnbStatusTag from './FnbStatusTag';
 import FnbKitchenProgress from './FnbKitchenProgress';
+import FnbCompleteOrderButton from './FnbCompleteOrderButton';
 
 const { Text } = Typography;
 
@@ -41,6 +42,10 @@ export default function FnbSessionCompletionDrawer({ open, session, title, refre
         onSuccess: refresh,
         onConflict: refresh,
     }));
+    const completeOrder = (order, versions) => perform(`complete-${order.id}`, () => runCommand({
+        execute: (auth) => api.command(`kitchen/orders/${order.id}/complete`, { expected_ticket_versions: versions }, { idempotencyKey: createIdempotencyKey('pos-complete-order'), ...auth }),
+        successMessage: 'Đã hoàn thành tất cả món trong đơn.', onSuccess: refresh, onConflict: refresh,
+    }));
     const tickets = asArray(kitchen.data?.tickets);
 
     return <Drawer open={open} width="min(650px, 100vw)" title={`Hoàn tất phục vụ · ${title}`} push={false}
@@ -53,7 +58,7 @@ export default function FnbSessionCompletionDrawer({ open, session, title, refre
         {kitchen.error ? <Alert type="warning" showIcon message="Chưa tải được trạng thái Bar / Bếp. Hãy cập nhật trước khi đổi trạng thái món." /> : null}
         {!can('fnb.kitchen.view') || !can('fnb.kitchen.update') ? <Alert type="info" showIcon message="Cần nhân viên có quyền Bar / Bếp xác nhận trạng thái món." /> : null}
         {groups.map(({ order, lines, draft }) => <section className="fnb-completion-order" key={order.id}>
-            <div className="fnb-completion-order-heading"><Text strong>{order.order_no ?? `Order #${order.id}`}</Text><FnbStatusTag status={draft ? 'draft' : 'active'} /></div>
+            <div className="fnb-completion-order-heading"><Text strong>{order.order_no ?? `Order #${order.id}`}</Text><Space wrap><FnbStatusTag status={draft ? 'draft' : 'active'} />{!draft ? <FnbCompleteOrderButton orderId={order.id} tickets={tickets} disabled={busy || refreshing || kitchen.loading || Boolean(kitchen.error) || Boolean(error)} loading={pending === `complete-${order.id}`} onComplete={(versions) => completeOrder(order, versions)} /> : null}</Space></div>
             {lines.map((line) => {
                 const ticket = tickets.find((candidate) => asArray(candidate.lines).some((item) => String(item.order_line_id) === String(line.id) && kitchenLineAction(item.status_rollup ?? item.status)));
                 const ticketLine = asArray(ticket?.lines).find((item) => String(item.order_line_id) === String(line.id) && kitchenLineAction(item.status_rollup ?? item.status));

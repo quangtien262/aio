@@ -62,6 +62,7 @@ Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.ena
         ['orders/{resource}/submit', 'order.submit', 'fnb.order.submit'],
         ['orders/{resource}/discount', 'order.discount', 'fnb.discount.apply'],
         ['order-lines/{resource}/void', 'line.void', 'fnb.order.void'],
+        ['kitchen/orders/{resource}/complete', 'kitchen.order.complete', 'fnb.kitchen.update'],
         ['kitchen/lines/{resource}/transition', 'kitchen.transition', 'fnb.kitchen.update'],
         ['sessions/{resource}/checks', 'check.create', 'fnb.order.split'],
         ['checks/{resource}/finalize', 'check.finalize', 'fnb.payment.collect'],
