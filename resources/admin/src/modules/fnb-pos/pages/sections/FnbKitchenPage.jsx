@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createIdempotencyKey } from '../../api/fnbApi';
 import FnbPageHeader from '../../components/FnbPageHeader';
 import { FnbResourceError } from '../../components/FnbResourceState';
-import FnbStatusTag from '../../components/FnbStatusTag';
+import FnbKitchenProgress from '../../components/FnbKitchenProgress';
 import useFnbResource from '../../hooks/useFnbResource';
 import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
 import { asArray, formatDuration, formatQuantity, parseServerDate } from '../../utils/fnbFormat';
@@ -80,6 +80,7 @@ export default function FnbKitchenPage() {
         loader: loadKitchen,
         deps: [outletId, stationId],
         pollMs: 1000,
+        backgroundPolling: true,
     });
     const kitchen = resource.data ?? {};
     const tickets = asArray(kitchen.tickets);
@@ -184,7 +185,6 @@ export default function FnbKitchenPage() {
                                                 {line.variant_name_snapshot && line.variant_name_snapshot !== 'Mặc định' ? <Text type="secondary">Size: {line.variant_name_snapshot}</Text> : null}
                                                 {modifiers.length ? <Text type="secondary">{modifiers.map((item) => item.name_snapshot ?? item.name).join(', ')}</Text> : null}
                                                 {line.note ? <div className="fnb-kds-note">Ghi chú: {line.note}</div> : null}
-                                                <FnbStatusTag status={status} />
                                             </div>
                                             {action && can('fnb.kitchen.update') ? (
                                                 <Button
@@ -197,6 +197,7 @@ export default function FnbKitchenPage() {
                                                     {action.label}
                                                 </Button>
                                             ) : null}
+                                            <FnbKitchenProgress status={status} />
                                         </div>
                                     );
                                 })}

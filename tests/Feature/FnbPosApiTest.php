@@ -57,7 +57,7 @@ class FnbPosApiTest extends TestCase
             'variant' => ['code' => 'DEFAULT', 'name' => 'Mặc định', 'base_price_minor' => 29000],
             'station_id' => $station, 'modifier_groups' => [],
         ])->assertOk();
-        $this->command('outlets/'.$this->outlet.'/business-days/open', ['business_date' => now()->toDateString()])->assertOk();
+        $this->command('outlets/'.$this->outlet.'/business-days/open', ['business_date' => now('Asia/Ho_Chi_Minh')->toDateString()])->assertOk();
         $day = (int) DB::table('fnb_business_days')->value('id');
         $this->command('outlets/'.$this->outlet.'/shifts/open', ['business_day_id' => $day, 'opening_float_minor' => 100000])->assertOk();
         $shift = (int) DB::table('fnb_shifts')->value('id');
@@ -180,7 +180,7 @@ class FnbPosApiTest extends TestCase
         $this->command('recipes/publish', ['code' => 'COMP', 'name' => 'Định lượng', 'variant_id' => $variant,
             'expected_recipe_version' => 0, 'yield_quantity' => '1', 'yield_unit' => 'cup',
             'lines' => [['ingredient_id' => $ingredient, 'quantity' => '15', 'unit' => 'g']]])->assertOk();
-        $fnb->openBusinessDay($ctx, now()->toDateString(), 'comp-day');
+        $fnb->openBusinessDay($ctx, now('Asia/Ho_Chi_Minh')->toDateString(), 'comp-day');
         $day = (int) DB::table('fnb_business_days')->value('id');
         $fnb->openShift($ctx, $day, 100000, 'comp-shift');
         $shift = (int) DB::table('fnb_shifts')->value('id');
@@ -227,6 +227,31 @@ class FnbPosApiTest extends TestCase
             $this->assertDatabaseHas('fnb_order_lines', ['status' => 'served', 'fulfilled_quantity' => 0.75, 'compensated_quantity' => 0.25]);
             $this->assertDatabaseHas('fnb_kitchen_ticket_lines', ['served_quantity' => 0.75, 'compensated_quantity' => 0.25]);
         }
+    }
+
+    public function test_pos_distinguishes_open_business_day_from_terminal_shift_and_reads_new_shift_immediately(): void
+    {
+        $this->onboard();
+        $path = '/admin/api/fnb/outlets/'.$this->outlet;
+        $this->getJson($path.'/pos')->assertOk()->assertJsonPath('data.business_day', null)->assertJsonPath('data.shift', null);
+        $day = $this->command('outlets/'.$this->outlet.'/business-days/open', ['business_date' => now('Asia/Ho_Chi_Minh')->toDateString()])->assertOk()->json('data');
+        $this->getJson($path.'/pos')->assertOk()->assertJsonPath('data.business_day.id', $day['id'])->assertJsonPath('data.shift', null);
+        $key = (string) Str::uuid();
+        $payload = ['business_day_id' => $day['id'], 'opening_float_minor' => 0];
+        $shift = $this->command('outlets/'.$this->outlet.'/shifts/open', $payload, $key)->assertOk()->json('data');
+        $this->command('outlets/'.$this->outlet.'/shifts/open', $payload, $key)->assertOk()->assertJsonPath('meta.replayed', true);
+        $this->getJson($path.'/shifts')->assertOk()->assertJsonPath('data.items.0.id', $shift['id']);
+        $pos = $this->getJson($path.'/pos')->assertOk()->assertJsonPath('data.business_day.id', $day['id'])
+            ->assertJsonPath('data.shift.id', $shift['id'])->assertJsonPath('data.shift.terminal_id', $this->terminal);
+        $this->assertStringContainsString('no-store', $pos->headers->get('Cache-Control'));
+        $other = (array) DB::table('fnb_terminals')->where('id', $this->terminal)->first();
+        unset($other['id']);
+        $other['code'] = 'SECOND';
+        $other['public_id'] = (string) Str::uuid();
+        $otherId = DB::table('fnb_terminals')->insertGetId($other);
+        $this->withHeader('X-FNB-Terminal', (string) $otherId)->getJson($path.'/pos')->assertOk()->assertJsonPath('data.shift', null);
+        $this->withHeader('X-FNB-Terminal', (string) $this->terminal)->getJson($path.'/pos')->assertOk()->assertJsonPath('data.shift.id', $shift['id']);
+        $this->assertDatabaseCount('fnb_shifts', 1);
     }
 
     private function onboard(): void

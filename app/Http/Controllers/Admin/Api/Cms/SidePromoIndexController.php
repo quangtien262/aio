@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Admin\Api\Cms;
 use App\Models\CatalogCategory;
 use App\Models\CmsCategory;
 use App\Models\CmsPage;
-use App\Support\FrontendRouteUrl;
 use App\Models\CmsSidePromo;
+use App\Support\FrontendRouteUrl;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Schema;
 
 class SidePromoIndexController
 {
@@ -47,7 +48,7 @@ class SidePromoIndexController
                         ])
                         ->values()
                         ->all(),
-                    'productCategories' => CatalogCategory::query()
+                    'productCategories' => Schema::hasTable('catalog_categories') ? CatalogCategory::query()
                         ->orderBy('sort_order')
                         ->orderBy('name')
                         ->get()
@@ -57,7 +58,7 @@ class SidePromoIndexController
                             'url' => FrontendRouteUrl::categoryPath($category->slug),
                         ])
                         ->values()
-                        ->all(),
+                        ->all() : [],
                     'postCategories' => CmsCategory::query()
                         ->orderBy('name')
                         ->get()

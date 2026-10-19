@@ -1,12 +1,12 @@
 # F&B POS development runbook
 
-Package: `fnb-pos@0.2.0-dev.1`. This is a development release, not a Production RC declaration. See [implementation status](fnb-pos-implementation-status.md) and the [runtime/API contract](../api/fnb-pos-runtime-contract.md).
+Package: `fnb-pos@0.2.0-dev.2`. This is a development release, not a Production RC declaration. See [implementation status](fnb-pos-implementation-status.md) and the [runtime/API contract](../api/fnb-pos-runtime-contract.md).
 
 ## Install and upgrade
 
 1. Back up the deployment and record the application/module revisions before upgrading.
 2. Apply additive core migrations through the normal process, including lifecycle/security and the audit-chain partition migration. Core migration does not install F&B. Preserve the old audit chain; do not rewrite existing hashes to force verification to pass. After partitioned events exist, the audit migration deliberately refuses rollback; keep a partition-aware logger/verifier when rolling application code back. Do not deploy an older global-sequence verifier against partitioned history.
-3. Install/upgrade/enable through App Store. The package owns its `fnb_*` migrations and exact installed-version security map. `0.2.0-dev.1` adds chain scopes and integration/bank configuration; legacy outlet memberships are backfilled into chain scopes idempotently.
+3. Install/upgrade/enable through App Store. The package owns its `fnb_*` migrations and exact installed-version security map. `0.2.0-dev.1` adds chain scopes and integration/bank configuration; legacy outlet memberships are backfilled into chain scopes idempotently. `0.2.0-dev.2` adds `fnb_units` and seeds standard units for existing websites; installing/upgrading through ModuleManager is required before using unit CRUD. It keeps the previous permission/role sets and immutable recipe snapshots.
 4. Select the intended website. Reauthenticate for onboarding/HQ configuration, create the first cafe preset, then add brands/regions/outlets from chain management. Configure station routing, menu/recipes, terminals, tables, methods and existing admin accounts. F&B does not create global identities or grant Inventory/Accounting permissions implicitly.
 5. Publish a menu revision to selected outlets. Keep a small canary outlet set for operational validation; rollback selects an existing immutable publication. Local sold-out state and station routes remain per outlet. Price books currently target VND POS; use timestamps with explicit offsets for scheduled validity.
 6. Open the business day and terminal shift before order/payment operations. Closed session/shift must have all non-voided quantities in settled closed bills, including free/compensated quantities with their source lineage.

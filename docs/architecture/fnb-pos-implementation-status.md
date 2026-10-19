@@ -72,3 +72,9 @@ Các phần triển khai sớm của milestone sau không có nghĩa các milest
 3. Chạy journey hai người/hai trình duyệt: gọi món/topping → Bar → split/mixed/zero bill → receipt → refund/compensation → đóng ca → reconcile stock/draft và kiểm mất mạng/retry.
 4. Diễn tập backup/restore, worker/scheduler monitoring, disable/upgrade/recovery; chỉ bật automation sau đối soát thủ công và cấp grant cho tài khoản có owner vận hành rõ ràng.
 5. Triển khai riêng các contract chưa có: Inventory v2, accounting refund adjustments, provider ngân hàng/print, QR self-order/offline/loyalty/central kitchen. Không dùng version hoặc UI đã có để thay nghiệm thu.
+
+## Menu and unit management follow-up — 2026-10-18
+
+`0.2.0-dev.2` adds an additive unit registry and reuses the `0.2.0-dev.1` permission/role set through a new immutable version definition. Ingredient codes are optional; the ingredient base-unit select and recipe-line select use the same registry. The settings icon opens unit CRUD without discarding an unfinished ingredient form. Standard/referenced unit conversion definitions are protected; unused custom units can be archived. Category, topping and ingredient lists open from three buttons; topping options use an editable table.
+
+Validation: 86 F&B feature/unit tests, 3,627 assertions, passed on isolated SQLite; Vite build passed. Browser checks on isolated fixtures covered topping table save/remove, generated group/ingredient codes, unit creation with a 500 ml factor, updated ingredient selection and preservation of the unfinished form. The local MySQL module upgrade from `0.2.0-dev.1` to `0.2.0-dev.2` completed with unchanged ingredient/recipe/order row counts. These checks do not replace the chain-load or provider release gates above.

@@ -64,6 +64,130 @@ final class FnbTransactionSafetyTest extends TestCase
         return $this->fnb->createCheck($this->ctx, $this->session['id'], [], (string) Str::uuid(), (int) DB::table('fnb_service_sessions')->where('id', $this->session['id'])->value('version'))['resource'];
     }
 
+    public function test_order_add_and_edit_accept_only_positive_whole_item_quantities(): void
+    {
+        $item = $this->fnb->saveCatalogItem($this->ctx, [
+            'code' => 'WHOLE', 'name' => 'Cafe Nâu',
+            'station_id' => (int) DB::table('fnb_prep_stations')->where('outlet_id', $this->ctx->outletId)->value('id'),
+            'variant' => ['code' => 'DEFAULT', 'name' => 'Mặc định', 'base_price_minor' => 30000],
+        ], (string) Str::uuid())['resource'];
+        $order = $this->fnb->createOrder($this->ctx, $this->session['id'], $this->shift['id'], [], (string) Str::uuid(), $this->session['version'])['resource'];
+        $input = ['variant_id' => $item['variants'][0]['id'], 'quantity' => '1'];
+        foreach (['0', '-1', '0.5', '1.25'] as $quantity) {
+            try {
+                $this->fnb->addOrderLine($this->ctx, $order['id'], array_replace($input, ['quantity' => $quantity]), (string) Str::uuid(), $order['version']);
+                $this->fail('A fractional or nonpositive item quantity must be rejected.');
+            } catch (\Illuminate\Validation\ValidationException $exception) {
+                $this->assertArrayHasKey('quantity', $exception->errors());
+            }
+        }
+        $order = $this->fnb->addOrderLine($this->ctx, $order['id'], $input, (string) Str::uuid(), $order['version'])['resource'];
+        $lineId = $order['lines'][0]['id'];
+        try {
+            $this->fnb->updateDraftOrderLine($this->ctx, $lineId, array_replace($input, ['quantity' => '2.5']), (string) Str::uuid(), $order['version']);
+            $this->fail('Editing must reject a fractional item quantity.');
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $this->assertArrayHasKey('quantity', $exception->errors());
+        }
+        $order = $this->fnb->updateDraftOrderLine($this->ctx, $lineId, array_replace($input, ['quantity' => '2.000000']), (string) Str::uuid(), $order['version'])['resource'];
+        $this->assertEquals(2, $order['lines'][0]['ordered_quantity']);
+        $this->assertEquals(60000, $order['grand_total_minor']);
+        $this->assertDatabaseCount('fnb_order_lines', 1);
+    }
+
+    public function test_empty_open_session_releases_its_table_once_and_allows_a_new_guest(): void
+    {
+        $areaId = DB::table('fnb_service_areas')->insertGetId([
+            'website_key' => $this->ctx->websiteKey, 'outlet_id' => $this->ctx->outletId,
+            'code' => 'RETURN', 'name' => 'Khu trả bàn', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $tableId = DB::table('fnb_dining_tables')->insertGetId([
+            'website_key' => $this->ctx->websiteKey, 'outlet_id' => $this->ctx->outletId,
+            'service_area_id' => $areaId,
+            'code' => 'RETURN-1', 'name' => 'Bàn trả', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $input = ['business_day_id' => $this->session['business_day_id'], 'service_type' => 'dine_in', 'table_id' => $tableId];
+        $session = $this->fnb->openSession($this->ctx, $input, (string) Str::uuid())['resource'];
+        $this->assertConflict(fn () => $this->fnb->closeSession($this->ctx, $session['id'], (string) Str::uuid(), $session['version'] - 1));
+        $this->assertDatabaseHas('fnb_service_session_tables', ['session_id' => $session['id'], 'active_slot' => 'active']);
+        $key = (string) Str::uuid();
+        $closed = $this->fnb->closeSession($this->ctx, $session['id'], $key, $session['version']);
+        $this->assertSame('closed', $closed['resource']['status']);
+        $this->assertDatabaseHas('fnb_service_session_tables', ['session_id' => $session['id'], 'active_slot' => null]);
+        $this->assertNotNull(DB::table('fnb_service_session_tables')->where('session_id', $session['id'])->value('left_at'));
+        $this->assertTrue($this->fnb->closeSession($this->ctx, $session['id'], $key, $session['version'])['replayed']);
+        $newSession = $this->fnb->openSession($this->ctx, $input, (string) Str::uuid())['resource'];
+        $this->assertNotSame($session['id'], $newSession['id']);
+        $this->assertDatabaseHas('fnb_service_session_tables', ['session_id' => $newSession['id'], 'table_id' => $tableId, 'active_slot' => 'active']);
+        $this->assertDatabaseCount('fnb_checks', 0);
+    }
+
+    public function test_direct_return_of_open_session_cannot_bypass_active_or_unbilled_orders(): void
+    {
+        $order = $this->order(30000);
+        $this->assertConflict(fn () => $this->fnb->closeSession($this->ctx, $this->session['id'], (string) Str::uuid(), $this->version('fnb_service_sessions', $this->session['id'])));
+        $this->serve($order);
+        $this->assertConflict(fn () => $this->fnb->closeSession($this->ctx, $this->session['id'], (string) Str::uuid(), $this->version('fnb_service_sessions', $this->session['id'])));
+        $this->assertDatabaseHas('fnb_service_sessions', ['id' => $this->session['id'], 'status' => 'open']);
+    }
+
+    public function test_paid_and_served_session_can_close_directly_without_requesting_settlement(): void
+    {
+        $order = $this->order(30000);
+        $this->serve($order);
+        $check = $this->plan($this->check());
+        $this->assertConflict(fn () => $this->fnb->closeSession($this->ctx, $this->session['id'], (string) Str::uuid(), $this->version('fnb_service_sessions', $this->session['id'])));
+        $cash = DB::table('fnb_payment_methods')->where('outlet_id', $this->ctx->outletId)->where('kind', 'cash')->value('id');
+        $this->fnb->collectPayment($this->ctx, $check['id'], $this->shift['id'], ['payment_method_id' => $cash, 'amount_minor' => 30000], (string) Str::uuid(), $check['version']);
+        $closed = $this->fnb->closeSession($this->ctx, $this->session['id'], (string) Str::uuid(), $this->version('fnb_service_sessions', $this->session['id']))['resource'];
+        $this->assertSame('closed', $closed['status']);
+        $this->assertDatabaseHas('fnb_checks', ['id' => $check['id'], 'status' => 'closed']);
+        $this->assertDatabaseHas('fnb_payments', ['check_id' => $check['id'], 'status' => 'succeeded', 'amount_minor' => 30000]);
+    }
+
+    public function test_paid_settling_session_accepts_a_new_order_round_without_changing_the_paid_bill(): void
+    {
+        $original = $this->order(30000);
+        $this->serve($original);
+        $check = $this->plan($this->check());
+        $cash = DB::table('fnb_payment_methods')->where('outlet_id', $this->ctx->outletId)->where('kind', 'cash')->value('id');
+        $this->fnb->collectPayment($this->ctx, $check['id'], $this->shift['id'], ['payment_method_id' => $cash, 'amount_minor' => 30000], (string) Str::uuid(), $check['version']);
+        $session = $this->fnb->settleSession($this->ctx, $this->session['id'], (string) Str::uuid(), $this->version('fnb_service_sessions', $this->session['id']))['resource'];
+        $snapshots = [];
+        foreach (['fnb_checks', 'fnb_check_lines', 'fnb_payments', 'fnb_order_lines'] as $table) {
+            $snapshots[$table] = DB::table($table)->orderBy('id')->get()->map(fn ($row) => (array) $row)->all();
+        }
+
+        $key = (string) Str::uuid();
+        $result = $this->fnb->createOrder($this->ctx, $session['id'], $this->shift['id'], [], $key, $session['version']);
+        $new = $result['resource'];
+        $this->assertNotSame($original['id'], $new['id']);
+        $this->assertDatabaseHas('fnb_service_sessions', ['id' => $session['id'], 'status' => 'open', 'settling_at' => null, 'version' => $session['version'] + 1]);
+        $this->assertTrue($this->fnb->createOrder($this->ctx, $session['id'], $this->shift['id'], [], $key, $session['version'])['replayed']);
+        $this->assertDatabaseCount('fnb_orders', 2);
+        $this->assertSame(1, DB::table('fnb_outbox_events')->where('event_type', 'fnb.service_session.resumed')->count());
+        $this->assertConflict(fn () => $this->fnb->createOrder($this->ctx, $session['id'], $this->shift['id'], [], (string) Str::uuid(), $session['version']));
+        foreach ($snapshots as $table => $snapshot) {
+            $this->assertSame($snapshot, DB::table($table)->orderBy('id')->get()->map(fn ($row) => (array) $row)->all());
+        }
+
+        $new = $this->fnb->addOrderLine($this->ctx, $new['id'], ['variant_id' => $original['lines'][0]['variant_id'], 'quantity' => '2'], (string) Str::uuid(), $new['version'])['resource'];
+        $this->fnb->submitOrder($this->ctx, $new['id'], (string) Str::uuid(), $new['version']);
+        $nextBill = $this->fnb->createCheck($this->ctx, $session['id'], [], (string) Str::uuid(), $this->version('fnb_service_sessions', $session['id']))['resource'];
+        $this->assertEquals(60000, $nextBill['grand_total_minor']);
+        $this->assertCount(1, $nextBill['lines']);
+        $this->assertSame($new['lines'][0]['id'], $nextBill['lines'][0]['order_line_id']);
+        $this->assertDatabaseHas('fnb_checks', ['id' => $check['id'], 'status' => 'closed', 'grand_total_minor' => 30000]);
+        $this->assertDatabaseCount('fnb_payments', 1);
+    }
+
+    public function test_closed_session_still_cannot_accept_an_additional_order(): void
+    {
+        $closed = $this->fnb->closeSession($this->ctx, $this->session['id'], (string) Str::uuid(), $this->session['version'])['resource'];
+        $this->assertConflict(fn () => $this->fnb->createOrder($this->ctx, $closed['id'], $this->shift['id'], [], (string) Str::uuid(), $closed['version']));
+        $this->assertDatabaseCount('fnb_orders', 0);
+    }
+
     public function test_completed_unbilled_orders_block_session_and_shift_closure(): void
     {
         $order = $this->order(30000);

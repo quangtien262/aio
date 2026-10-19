@@ -487,14 +487,14 @@ final class FnbOperationsService
         return $this->commands->run($context, 'session.close', compact('sessionId', 'expectedVersion'), $idempotencyKey, function () use ($context, $sessionId, $expectedVersion): array {
             $session = $this->locked('fnb_service_sessions', $context, $sessionId);
             $this->assertVersion('service_session', $session, $expectedVersion);
-            if ($session->status !== 'settling') {
-                throw new FnbConflictException('Only a settling session can close.');
+            if (! in_array($session->status, ['open', 'settling'], true)) {
+                throw new FnbConflictException('Chỉ có thể trả bàn của phiên đang phục vụ hoặc đang tính tiền.');
             }
             if (DB::table('fnb_orders')->where('session_id', $session->id)->whereIn('lifecycle_status', ['draft', 'active'])->exists()) {
-                throw new FnbConflictException('Session still has an active order.');
+                throw new FnbConflictException('Chưa thể trả bàn: còn order nháp hoặc món chưa hoàn tất phục vụ.');
             }
             if (DB::table('fnb_checks')->where('session_id', $session->id)->whereNotIn('status', ['closed', 'void'])->exists()) {
-                throw new FnbConflictException('Every check must be closed or void before closing the session.');
+                throw new FnbConflictException('Chưa thể trả bàn: cần hoàn tất thanh toán hoặc hủy các bill còn mở.');
             }
             $this->assertOrdersSettled($context, DB::table('fnb_orders')->where('website_key', $context->websiteKey)
                 ->where('outlet_id', $context->outletId)->where('session_id', $session->id)->pluck('id')->all());

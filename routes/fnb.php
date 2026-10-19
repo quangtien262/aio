@@ -91,6 +91,8 @@ Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.ena
         ->defaults('fnb_permission', 'fnb.customer.update')->whereNumber('resource')->name('customer.update');
     Route::post('sessions/{resource}/customer', [FnbCustomerController::class, 'command'])->defaults('fnb_customer_action', 'attach')
         ->defaults('fnb_permission', 'fnb.customer.attach')->whereNumber('resource')->name('customer.attach');
+    Route::post('units/{resource}/archive', [FnbApiController::class, 'archiveUnit'])->defaults('fnb_permission', 'fnb.recipe.manage')->whereNumber('resource')->name('units.archive');
+    Route::post('menu/categories/reorder', [FnbApiController::class, 'reorderCategories'])->defaults('fnb_permission', 'fnb.menu.manage')->name('categories.reorder');
     Route::post('recipes/publish', [FnbApiController::class, 'publishRecipe'])->defaults('fnb_permission', 'fnb.recipe.manage')->name('recipe.publish');
     Route::post('check-lines/{resource}/compensations', [FnbApiController::class, 'compensate'])
         ->defaults('fnb_permission', 'fnb.order.void')->whereNumber('resource')->name('fulfillment.compensate');
@@ -111,11 +113,18 @@ Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.ena
         ['menu/modifier-groups', 'modifier_group', 'fnb.menu.manage'],
         ['menu/modifier-options', 'modifier_option', 'fnb.menu.manage'],
         ['ingredients', 'ingredient', 'fnb.recipe.manage'],
+        ['units', 'unit', 'fnb.recipe.manage'],
     ] as [$path, $kind, $permission]) {
         Route::post($path, [FnbApiController::class, 'configure'])->defaults('fnb_kind', $kind)
             ->defaults('fnb_permission', $permission)->whereNumber('outlet')->name('config.'.$kind.'.create');
         Route::put($path.'/{resource}', [FnbApiController::class, 'configure'])->defaults('fnb_kind', $kind)
             ->defaults('fnb_permission', $permission)->whereNumber(['outlet', 'resource'])->name('config.'.$kind.'.update');
+    }
+    foreach (['size', 'topping'] as $kind) {
+        $path = 'menu/'.$kind.'-definitions';
+        Route::post($path, [FnbApiController::class, 'menuChoice'])->defaults('fnb_choice_kind', $kind)->defaults('fnb_permission', 'fnb.menu.manage')->name('choices.'.$kind.'.create');
+        Route::put($path.'/{resource}', [FnbApiController::class, 'menuChoice'])->defaults('fnb_choice_kind', $kind)->defaults('fnb_permission', 'fnb.menu.manage')->whereNumber('resource')->name('choices.'.$kind.'.update');
+        Route::post($path.'/{resource}/archive', [FnbApiController::class, 'menuChoice'])->defaults('fnb_choice_kind', $kind)->defaults('fnb_choice_archive', true)->defaults('fnb_permission', 'fnb.menu.manage')->whereNumber('resource')->name('choices.'.$kind.'.archive');
     }
     Route::put('outlets/{outlet}', [FnbApiController::class, 'configure'])->defaults('fnb_kind', 'outlet')
         ->defaults('fnb_permission', 'fnb.outlet.manage')->whereNumber('outlet')->name('config.outlet.update');

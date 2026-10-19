@@ -10,6 +10,7 @@ import Drawer from 'antd/es/drawer';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
+import Modal from 'antd/es/modal';
 import Popconfirm from 'antd/es/popconfirm';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
@@ -30,7 +31,7 @@ import { asArray, calendarDate, formatDateTime, formatMinorMoney } from '../../u
 const { Text } = Typography;
 
 
-function ShiftActionDrawer({ action, form, paymentMethods, saving, onClose, onSubmit }) {
+function ShiftActionDialog({ action, form, paymentMethods, saving, onClose, onSubmit }) {
     const titles = {
         openDay: 'Mở ngày kinh doanh',
         openShift: 'Mở ca tại quầy này',
@@ -38,16 +39,33 @@ function ShiftActionDrawer({ action, form, paymentMethods, saving, onClose, onSu
         closeShift: 'Kiểm đếm và đóng ca',
     };
 
+    const isOpeningShift = action?.type === 'openShift';
+    const Dialog = isOpeningShift ? Modal : Drawer;
+    const dialogProps = isOpeningShift ? {
+        width: 480,
+        centered: true,
+        onCancel: saving ? undefined : onClose,
+        onOk: () => form.submit(),
+        okText: 'Xác nhận',
+        cancelText: 'Hủy',
+        confirmLoading: saving,
+        cancelButtonProps: { disabled: saving },
+        maskClosable: !saving,
+    } : {
+        width: 'min(600px, 96vw)',
+        onClose: saving ? undefined : onClose,
+        extra: <Button type="primary" loading={saving} onClick={() => form.submit()}>Xác nhận</Button>,
+    };
+
     return (
-        <Drawer
+        <Dialog
+            {...dialogProps}
             open={Boolean(action)}
             title={titles[action?.type] ?? 'Thao tác ca'}
-            width="min(600px, 96vw)"
-            onClose={onClose}
+            closable={!saving}
             destroyOnHidden
-            extra={<Button type="primary" loading={saving} onClick={() => form.submit()}>Xác nhận</Button>}
         >
-            <Form form={form} layout="vertical" onFinish={onSubmit}>
+            <Form disabled={saving} form={form} layout="vertical" onFinish={onSubmit}>
                 {action?.type === 'openDay' ? (
                     <Form.Item name="business_date" label="Ngày kinh doanh" rules={[{ required: true }]}>
                         <Input type="date" />
@@ -90,21 +108,21 @@ function ShiftActionDrawer({ action, form, paymentMethods, saving, onClose, onSu
                     {!paymentMethods.length ? <Alert type="warning" showIcon message="Không đọc được danh sách phương thức thanh toán" description="Tải lại dữ liệu bán hàng trước khi đóng ca." /> : null}
                 </> : null}
             </Form>
-        </Drawer>
+        </Dialog>
     );
 }
 
 export default function FnbShiftsPage() {
-    const { api, outletId, terminalId, selectedTerminal, selectedOutlet, can, runCommand } = useFnbWorkspace();
+    const { api, outletId, terminalId, selectedTerminal, selectedOutlet, can, runCommand, navigateSection } = useFnbWorkspace();
     const [action, setAction] = useState(null);
     const [saving, setSaving] = useState(false);
     const [form] = Form.useForm();
     const loadShifts = useCallback(() => api.shifts(), [api]);
     const loadDay = useCallback(() => api.currentBusinessDay(), [api]);
     const loadPos = useCallback(() => api.pos(), [api]);
-    const shiftsResource = useFnbResource({ enabled: Boolean(outletId), loader: loadShifts, deps: [outletId] });
-    const dayResource = useFnbResource({ enabled: Boolean(outletId), loader: loadDay, deps: [outletId] });
-    const posResource = useFnbResource({ enabled: Boolean(outletId && terminalId && can('fnb.order.view')), loader: loadPos, deps: [outletId, terminalId] });
+    const shiftsResource = useFnbResource({ enabled: Boolean(outletId), loader: loadShifts, deps: [outletId, terminalId], pollMs: 15000 });
+    const dayResource = useFnbResource({ enabled: Boolean(outletId), loader: loadDay, deps: [outletId], pollMs: 15000 });
+    const posResource = useFnbResource({ enabled: Boolean(outletId && terminalId && can('fnb.order.view')), loader: loadPos, deps: [outletId, terminalId], pollMs: 15000 });
     const items = asArray(shiftsResource.data?.items ?? shiftsResource.data?.shifts);
     const businessDay = dayResource.data?.business_day ?? (dayResource.data?.id ? dayResource.data : null);
     const currentShift = posResource.data?.shift ?? items.find((item) => item.status === 'open' && String(item.terminal_id) === String(terminalId));
@@ -171,7 +189,14 @@ export default function FnbShiftsPage() {
                 execute: (auth) => api.command(definition.path, definition.payload, { idempotencyKey: key, ...auth }),
                 successMessage: definition.success,
                 reason: action?.type === 'cash' ? values.reason : undefined,
-                onSuccess: async () => { setAction(null); await reloadAll(); },
+                onSuccess: async () => {
+                    await reloadAll();
+                    if (action?.type === 'openDay' && terminalId && isPosTerminal && !currentShift) {
+                        openAction('openShift');
+                    } else {
+                        setAction(null);
+                    }
+                },
                 onConflict: reloadAll,
             });
         } finally {
@@ -214,7 +239,7 @@ export default function FnbShiftsPage() {
         <div className="fnb-page-stack">
             <FnbPageHeader
                 eyebrow={selectedTerminal?.name ?? 'Quầy hiện tại'}
-                title="Ca làm việc & két tiền"
+                title="QL Ca bán hàng"
                 description="Ngày kinh doanh, tiền đầu ca, thu chi và kiểm đếm cuối ca có dấu vết riêng."
                 actions={<Button icon={<ReloadOutlined />} loading={shiftsResource.refreshing || dayResource.refreshing} onClick={reloadAll}>Làm mới</Button>}
             />
@@ -222,9 +247,16 @@ export default function FnbShiftsPage() {
             {!terminalId || !isPosTerminal ? <Alert type="warning" showIcon message={!terminalId ? 'Chọn quầy POS để mở và đóng ca.' : 'Thiết bị đang chọn không phải quầy POS.'} /> : null}
             {posResource.error ? <Alert type="warning" showIcon message="Không tải được dữ liệu quầy" description={posResource.error.message} /> : null}
 
+            {businessDay && !currentShift && !shiftsResource.loading && !posResource.loading && terminalId && isPosTerminal ? <Alert
+                type="warning" showIcon
+                message={`Ngày kinh doanh đã mở; chưa mở ca bán hàng tại ${selectedTerminal?.name ?? 'quầy đang chọn'}.`}
+                description="Mở ngày kinh doanh chưa tạo ca thu ngân. Hãy nhập tiền đầu ca và xác nhận mở ca để bắt đầu bán hàng."
+                action={can('fnb.shift.open') ? <Button type="primary" onClick={() => openAction('openShift')}>Mở ca bán hàng</Button> : null}
+            /> : null}
+
             <Row gutter={[14, 14]}>
                 <Col xs={24} lg={12}>
-                    <Card className="fnb-panel" title="Ngày kinh doanh" extra={businessDay ? <FnbStatusTag status={businessDay.status ?? 'open'} /> : null}>
+                    <Card className="fnb-panel" title="Ngày kinh doanh" extra={businessDay ? <Tag color="blue">Ngày đã mở</Tag> : null}>
                         {businessDay ? (
                             <Space direction="vertical" size={5}>
                                 <Text strong>{businessDay.business_date}</Text>
@@ -235,17 +267,18 @@ export default function FnbShiftsPage() {
                     </Card>
                 </Col>
                 <Col xs={24} lg={12}>
-                    <Card className="fnb-panel" title="Ca tại quầy" extra={currentShift ? <FnbStatusTag status={currentShift.status} /> : null}>
+                    <Card className="fnb-panel" title={`Ca bán hàng · ${selectedTerminal?.name ?? 'quầy đang chọn'}`} extra={currentShift ? <Tag color="green">Ca đã mở</Tag> : <Tag color="gold">Chưa mở ca</Tag>}>
                         {currentShift ? (
                             <Space direction="vertical" size={9} style={{ width: '100%' }}>
                                 <Text strong>Ca #{currentShift.id} · mở {formatDateTime(currentShift.opened_at, { timeZone: currentShift.timezone_snapshot ?? selectedOutlet?.timezone })}</Text>
                                 <Statistic title="Tiền đầu ca" value={currentShift.opening_float_minor} formatter={(value) => formatMinorMoney(value, currency)} />
                                 <Space wrap>
+                                    {can('fnb.order.view') ? <Button type="primary" onClick={() => navigateSection('pos')}>Vào bán hàng</Button> : null}
                                     {can('fnb.cash.adjust') ? <Button icon={<DollarOutlined />} onClick={() => openAction('cash', currentShift)}>Thu / chi</Button> : null}
                                     {can('fnb.shift.close') ? <Button danger icon={<CloseCircleOutlined />} onClick={() => openAction('closeShift', currentShift)} disabled={!paymentMethods.length}>Đóng ca</Button> : null}
                                 </Space>
                             </Space>
-                        ) : businessDay && can('fnb.shift.open') ? <Button type="primary" className="fnb-touch-button" disabled={!terminalId || !isPosTerminal} onClick={() => openAction('openShift')}>Mở ca</Button> : <Text type="secondary">Cần mở ngày kinh doanh trước.</Text>}
+                        ) : businessDay && can('fnb.shift.open') ? <Button type="primary" className="fnb-touch-button" disabled={!terminalId || !isPosTerminal} onClick={() => openAction('openShift')}>Mở ca bán hàng</Button> : <Text type="secondary">Cần mở ngày kinh doanh trước.</Text>}
                     </Card>
                 </Col>
             </Row>
@@ -268,7 +301,7 @@ export default function FnbShiftsPage() {
                 />
             </Card>
 
-            <ShiftActionDrawer action={action} form={form} paymentMethods={paymentMethods} saving={saving} onClose={() => setAction(null)} onSubmit={submitAction} />
+            <ShiftActionDialog action={action} form={form} paymentMethods={paymentMethods} saving={saving} onClose={() => setAction(null)} onSubmit={submitAction} />
         </div>
     );
 }

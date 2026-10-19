@@ -17,11 +17,11 @@ import { FnbResourceError } from '../../components/FnbResourceState';
 import FnbStatusTag from '../../components/FnbStatusTag';
 import useFnbResource from '../../hooks/useFnbResource';
 import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
-import { asArray, formatDateTime, formatMinorMoney, formatQuantity } from '../../utils/fnbFormat';
+import { asArray, calendarDate, formatDateTime, formatMinorMoney, formatQuantity } from '../../utils/fnbFormat';
 
 const { Text } = Typography;
 
-export default function FnbDashboardPage() {
+export default function FnbDashboardPage({ embedded = false }) {
     const { api, outletId, selectedOutlet, can, navigateSection } = useFnbWorkspace();
     const loadDashboard = useCallback(() => api.dashboard(), [api]);
     const resource = useFnbResource({
@@ -43,12 +43,15 @@ export default function FnbDashboardPage() {
 
     return (
         <div className="fnb-page-stack">
-            <FnbPageHeader
+            {embedded ? <div className="fnb-overview-section-toolbar">
+                <Text strong>Hoạt động hôm nay · {calendarDate(selectedOutlet?.timezone).split('-').reverse().join('/')}</Text>
+                <Button icon={<ReloadOutlined />} loading={resource.refreshing} onClick={() => resource.reload({ silent: true })}>Làm mới</Button>
+            </div> : <FnbPageHeader
                 eyebrow={selectedOutlet?.name ?? 'Điểm bán'}
                 title="Tổng quan vận hành"
                 description="Doanh thu, ca hiện tại và các việc cần chú ý được tính từ dữ liệu máy chủ."
                 actions={<Button icon={<ReloadOutlined />} loading={resource.refreshing} onClick={() => resource.reload({ silent: true })}>Làm mới</Button>}
-            />
+            />}
 
             {resource.error ? <Alert type="warning" showIcon message={resource.error.message} /> : null}
 

@@ -148,6 +148,7 @@ class FnbReadService
 
         return [
             'ingredients' => DB::table('fnb_ingredients')->where('website_key', $ctx->websiteKey)->orderBy('name')->get()->all(),
+            'units' => app(FnbUnitService::class)->catalog($ctx->websiteKey),
             'unit_conversions' => DB::table('fnb_unit_conversions')->where('website_key', $ctx->websiteKey)->orderBy('id')->get()->all(),
             'recipes' => $recipes->map(fn ($recipe) => (array) $recipe + ['lines' => ($lines[$recipe->id] ?? collect())->all(), 'variant_bindings' => ($bindings[$recipe->id] ?? collect())->all()])->all(),
         ];

@@ -29,7 +29,7 @@ import { asArray, calendarDate, formatDateTime, formatMinorMoney, formatQuantity
 const { Text } = Typography;
 
 
-export default function FnbReportsPage() {
+export default function FnbReportsPage({ embedded = false }) {
     const { message } = App.useApp();
     const { api, baseApi, bootstrap, outletId, terminalId, selectedOutlet, can, runCommand } = useFnbWorkspace();
     const defaultType = can('fnb.report.financial.view') ? 'financial' : 'operations';
@@ -110,12 +110,15 @@ export default function FnbReportsPage() {
 
     return (
         <div className="fnb-page-stack">
-            <FnbPageHeader
+            {embedded ? <div className="fnb-overview-section-toolbar">
+                <Text strong>Phân tích theo khoảng ngày</Text>
+                <Button icon={<ReloadOutlined />} loading={reportResource.refreshing} onClick={reloadAll}>Làm mới</Button>
+            </div> : <FnbPageHeader
                 eyebrow={reportScope === 'terminal' ? 'Số liệu theo quầy đang chọn' : reportScope === 'outlet' ? 'Toàn bộ quầy trong điểm bán' : reportScope === 'region' ? 'Tổng hợp theo vùng' : 'Tổng hợp toàn chuỗi'}
                 title="Báo cáo vận hành"
                 description="Khoảng ngày được diễn giải theo múi giờ điểm bán; số tiền lấy nguyên trạng từ máy chủ."
                 actions={<Button icon={<ReloadOutlined />} loading={reportResource.refreshing} onClick={reloadAll}>Làm mới</Button>}
-            />
+            />}
 
             <Card className="fnb-panel">
                 <Space wrap style={{ marginBottom: 16 }}>

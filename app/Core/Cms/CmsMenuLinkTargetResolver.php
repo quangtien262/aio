@@ -12,10 +12,12 @@ use App\Models\CmsProject;
 use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
+use App\Models\CmsTopic;
 use App\Models\ContentTranslation;
 use App\Models\LandingPageData;
 use App\Support\FrontendRouteUrl;
 use App\Support\Localization\LocalizedRouteRegistry;
+use Illuminate\Support\Facades\Schema;
 
 final class CmsMenuLinkTargetResolver
 {
@@ -167,6 +169,10 @@ final class CmsMenuLinkTargetResolver
             $modelClass = $definition['model'];
             $labelField = $definition['slug'];
 
+            if (! Schema::hasTable((new $modelClass)->getTable())) {
+                continue;
+            }
+
             $modelClass::query()
                 ->withoutGlobalScopes()
                 ->where('website_key', $websiteKey)
@@ -210,7 +216,7 @@ final class CmsMenuLinkTargetResolver
         return [
             'catalog_category' => ['model' => CatalogCategory::class, 'slug' => 'slug'],
             'catalog_product' => ['model' => CatalogProduct::class, 'slug' => 'slug'],
-            'cms_topic' => ['model' => \App\Models\CmsTopic::class, 'slug' => 'slug'],
+            'cms_topic' => ['model' => CmsTopic::class, 'slug' => 'slug'],
             'cms_category' => ['model' => CmsCategory::class, 'slug' => 'slug'],
             'cms_post' => ['model' => CmsPost::class, 'slug' => 'slug'],
             'cms_service_category' => ['model' => CmsServiceCategory::class, 'slug' => 'slug'],

@@ -1,15 +1,21 @@
+import ShopOutlined from '@ant-design/icons/ShopOutlined';
+import CoffeeOutlined from '@ant-design/icons/CoffeeOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
+import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import ReloadOutlined from '@ant-design/icons/ReloadOutlined';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
+import Collapse from 'antd/es/collapse';
 import Drawer from 'antd/es/drawer';
 import Empty from 'antd/es/empty';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
+import Modal from 'antd/es/modal';
+import Radio from 'antd/es/radio';
 import Popconfirm from 'antd/es/popconfirm';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
@@ -21,6 +27,9 @@ import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import { useCallback, useMemo, useState } from 'react';
 import { createIdempotencyKey } from '../../api/fnbApi';
+import FnbMenuChoiceManagerModal from '../../components/FnbMenuChoiceManagerModal';
+import FnbUnitManagerModal from '../../components/FnbUnitManagerModal';
+import FnbCategoryList from '../../components/FnbCategoryList';
 import FnbPageHeader from '../../components/FnbPageHeader';
 import { FnbResourceError } from '../../components/FnbResourceState';
 import FnbStatusTag from '../../components/FnbStatusTag';
@@ -38,7 +47,21 @@ function itemPrice(item) {
     return defaultVariant?.price_minor ?? defaultVariant?.base_price_minor ?? null;
 }
 
-function MenuItemDrawer({ open, item, catalog, form, saving, onClose, onSubmit }) {
+function choiceOptions(definitions, current = []) {
+    const byName = new Map(asArray(definitions).map((row) => [row.name, { value: row.name, label: `${row.name} · ${row.code}`, code: row.code }]));
+    current.forEach((row) => { if (row?.name && !byName.has(row.name)) byName.set(row.name, { value: row.name, label: `${row.name} · ${row.code}`, code: row.code }); });
+    return [...byName.values()];
+}
+
+function MenuItemDrawer({ open, item, catalog, form, saving, onClose, onSubmit, onCatalogChanged }) {
+    const { can } = useFnbWorkspace();
+    const manageable = can('fnb.menu.manage') && can('fnb.menu.master.manage');
+    const [sizeManager, setSizeManager] = useState(null);
+    const variants = Form.useWatch('variants', form) ?? [];
+    const sizeOptions = choiceOptions(catalog.size_definitions, variants);
+    const sizeLabel = (row) => <Space size={4}>Size{manageable ? <Button type="text" size="small" icon={<PlusOutlined />} aria-label="Quản lý size" disabled={saving} onClick={() => setSizeManager({ row })} /> : null}</Space>;
+
+    const [additionalOpen, setAdditionalOpen] = useState([]);
     const stationOptions = asArray(catalog.stations).map((station) => ({
         value: station.id,
         label: `${station.name}${station.status === 'inactive' ? ' · tạm ngưng' : ''}`,
@@ -47,161 +70,186 @@ function MenuItemDrawer({ open, item, catalog, form, saving, onClose, onSubmit }
     const defaultStationId = stationOptions.find((station) => !station.disabled)?.value;
     const modifierOptions = asArray(catalog.modifier_groups).map((group) => ({ value: group.id, label: group.name }));
     const itemType = Form.useWatch('item_type', form);
+    const moneyProps = {
+        formatter: (value) => value === undefined || value === null || value === '' ? '' : String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.'),
+        parser: (value) => (value ?? '').replace(/\./g, ''),
+    };
 
     return (
+        <><FnbMenuChoiceManagerModal open={Boolean(sizeManager)} kind="size" definitions={asArray(catalog.size_definitions)} onClose={() => setSizeManager(null)} onSaved={onCatalogChanged} onCreated={(record) => {
+            if (record && Number.isInteger(sizeManager?.row)) {
+                form.setFieldValue(['variants', sizeManager.row, 'name'], record.name);
+                form.setFieldValue(['variants', sizeManager.row, 'code'], record.code);
+                setSizeManager(null);
+            }
+        }} />
         <Drawer
-            title={item ? `Cập nhật món · ${item.name}` : 'Thêm món mới'}
+            title={<span className="fnb-menu-editor-title"><ShopOutlined />{item ? `Cập nhật món · ${item.name}` : 'Thêm món mới'}</span>}
             open={open}
-            width="min(720px, 96vw)"
-            onClose={onClose}
+            width="min(860px, 100vw)"
+            className="fnb-menu-item-editor"
+            onClose={saving ? undefined : onClose}
+            closable={!saving}
+            maskClosable={!saving}
+            keyboard={!saving}
             destroyOnHidden
-            extra={<Button type="primary" loading={saving} onClick={() => form.submit()}>Lưu món</Button>}
+            footer={<div className="fnb-menu-editor-footer"><Button disabled={saving} onClick={onClose}>Hủy</Button><Button type="primary" loading={saving} onClick={() => form.submit()}>Lưu món</Button></div>}
         >
-            <Alert
-                type="info"
-                showIcon
-                message="Giá trên bill luôn do máy chủ quyết định"
-                description="Màn hình gửi mã món, size, topping và số lượng; không tự tính lại thuế hoặc tổng thanh toán."
-                style={{ marginBottom: 18 }}
-            />
-            <Form form={form} layout="vertical" onFinish={onSubmit} initialValues={{ status: 'active', tax_inclusive: true, tax_rate_percent: 0 }}>
-                <Row gutter={16}>
-                    <Col xs={24} md={8}>
-                        <Form.Item name="code" label="Mã món" rules={[{ required: true, message: 'Nhập mã món.' }]}>
-                            <Input maxLength={50} />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={16}>
-                        <Form.Item name="name" label="Tên món" rules={[{ required: true, message: 'Nhập tên món.' }]}>
-                            <Input />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="sku" label="SKU"><Input /></Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="item_type" label="Loại món" rules={[{ required: true }]}>
-                            <Select options={[{ value: 'prepared', label: 'Pha chế' }, { value: 'packaged', label: 'Đóng gói sẵn' }, { value: 'service', label: 'Dịch vụ' }]} />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24}>
-                        <Form.Item name="category_ids" label="Nhóm món" rules={[{ required: true, type: 'array', min: 1, message: 'Chọn nhóm để đưa món vào thực đơn phát hành.' }]}>
-                            <Select mode="multiple" allowClear showSearch optionFilterProp="label" options={asArray(catalog.categories).map((category) => ({ value: category.id, label: category.name }))} placeholder="Chọn một hoặc nhiều nhóm món" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24}>
-                        <Form.Item name="description" label="Mô tả"><Input.TextArea rows={3} /></Form.Item>
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <Form.Item name="tax_rate_percent" label="Thuế suất (%)">
-                            <InputNumber min={0} max={100} precision={2} style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <Form.Item name="tax_inclusive" label="Giá đã gồm thuế" valuePropName="checked"><Switch /></Form.Item>
-                    </Col>
-                    <Col xs={24} md={8}>
-                        <Form.Item name="status" label="Trạng thái"><Select options={[{ value: 'active', label: 'Đang bán' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="tax_category" label="Nhóm thuế"><Select options={[{ value: 'standard', label: 'Thuế suất thông thường' }, { value: 'zero_rated', label: 'Thuế suất 0%' }, { value: 'not_subject', label: 'Không chịu thuế' }, { value: 'exempt', label: 'Miễn thuế' }]} /></Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="image_url" label="Ảnh món (URL)"><Input type="url" /></Form.Item>
-                    </Col>
-                    <Col span={24}>
-                        <Form.Item name="modifier_group_ids" label="Nhóm topping áp dụng">
-                            <Select mode="multiple" allowClear options={modifierOptions} placeholder="Chọn nhóm topping" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24}>
-                        <Form.List name="variants" rules={[{ validator: async (_, variants) => {
-                            if (!variants?.some((variant) => variant?.status !== 'inactive')) throw new Error('Cần ít nhất một size đang bán.');
-                        } }]}>
-                            {(fields, { add, remove }, { errors }) => <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                                <div className="fnb-table-toolbar">
-                                    <Space direction="vertical" size={0}><Text strong>Size / lựa chọn</Text><Text type="secondary">Bỏ một size cũ sẽ chuyển size đó sang tạm ngưng để bảo toàn giao dịch.</Text></Space>
-                                    <Button icon={<PlusOutlined />} onClick={() => add({ code: '', name: '', base_price_minor: 0, status: 'active', station_id: defaultStationId })}>Thêm size</Button>
-                                </div>
-                                {fields.map((field) => <Card key={field.key} size="small">
-                                    <Row gutter={12}>
-                                        <Col xs={24} md={6}><Form.Item {...field} name={[field.name, 'code']} label="Mã size" rules={[{ required: true }, { pattern: /^[A-Za-z0-9_-]+$/, message: 'Chỉ dùng chữ, số, gạch ngang hoặc gạch dưới.' }]}><Input maxLength={60} /></Form.Item></Col>
-                                        <Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'name']} label="Tên size" rules={[{ required: true }]}><Input /></Form.Item></Col>
-                                        <Col xs={24} md={7}><Form.Item {...field} name={[field.name, 'base_price_minor']} label="Giá bán (VND)" rules={[{ required: true }]}><InputNumber min={0} precision={0} controls={false} addonAfter="₫" style={{ width: '100%' }} /></Form.Item></Col>
-                                        <Col xs={24} md={3} style={{ display: 'flex', alignItems: 'center' }}><Button danger type="text" onClick={() => remove(field.name)}>Bỏ</Button></Col>
-                                        <Col xs={24} md={12}><Form.Item {...field} name={[field.name, 'station_id']} label="Trạm pha chế" rules={[{ validator: (_, value) => {
+            <Form disabled={saving} form={form} layout="vertical" onFinish={onSubmit}
+                onFinishFailed={({ errorFields }) => {
+                    if (errorFields.some(({ name }) => ['modifier_group_ids', 'description', 'sku', 'image_url', 'tax_category', 'tax_rate_percent', 'tax_inclusive'].includes(name[0]))) setAdditionalOpen(['additional']);
+                    if (errorFields[0]) window.requestAnimationFrame(() => form.scrollToField(errorFields[0].name, { block: 'center' }));
+                }}
+                initialValues={{ status: 'active', tax_inclusive: true, tax_rate_percent: 0 }}>
+                <section className="fnb-menu-editor-section">
+                    <div className="fnb-menu-editor-section-heading"><span><ShopOutlined /> Thông tin món</span></div>
+                    <Row gutter={[16, 0]}>
+                        <Col xs={24} sm={8}><Form.Item name="code" label="Mã món" rules={[{ required: true, message: 'Nhập mã món.' }]}><Input maxLength={50} placeholder="Ví dụ: CAFE01" /></Form.Item></Col>
+                        <Col xs={24} sm={16}><Form.Item name="name" label="Tên món" rules={[{ required: true, message: 'Nhập tên món.' }]}><Input placeholder="Ví dụ: Cà phê sữa" /></Form.Item></Col>
+                        <Col xs={24} sm={12}><Form.Item name="category_ids" label="Nhóm món" rules={[{ required: true, type: 'array', min: 1, message: 'Chọn nhóm để đưa món vào thực đơn phát hành.' }]}>
+                            <Select mode="multiple" allowClear showSearch optionFilterProp="label" options={asArray(catalog.categories).map((category) => ({ value: category.id, label: category.name }))} placeholder="Chọn nhóm món" />
+                        </Form.Item></Col>
+                        <Col xs={12} sm={6}><Form.Item name="item_type" label="Loại món" rules={[{ required: true }]}><Select options={[{ value: 'prepared', label: 'Pha chế' }, { value: 'packaged', label: 'Đóng gói sẵn' }, { value: 'service', label: 'Dịch vụ' }]} /></Form.Item></Col>
+                        <Col xs={12} sm={6}><Form.Item name="status" label="Trạng thái"><Select options={[{ value: 'active', label: 'Đang bán' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item></Col>
+                    </Row>
+                </section>
+
+                <section className="fnb-menu-editor-section">
+                    <Form.List name="variants" rules={[{ validator: async (_, variants) => {
+                        if (!variants?.some((variant) => variant?.status !== 'inactive')) throw new Error('Cần ít nhất một size đang bán.');
+                    } }]}>
+                        {(fields, { add, remove }, { errors }) => <>
+                            <div className="fnb-menu-editor-section-heading"><span><CoffeeOutlined /> Size & giá bán <span className="fnb-menu-editor-count">{fields.length}</span></span>
+                                <Button icon={<PlusOutlined />} onClick={() => add({ code: '', name: '', base_price_minor: 0, status: 'active', station_id: defaultStationId })}>Thêm size</Button>
+                            </div>
+                            <Text type="secondary" className="fnb-menu-editor-hint">Mỗi size có giá bán và trạm xử lý riêng.</Text>
+                            <div className="fnb-menu-editor-variants">
+                                {fields.map((field, index) => <div key={field.key} className="fnb-menu-editor-variant">
+                                    <div className="fnb-menu-editor-variant-heading"><Text strong>Size {index + 1}</Text><Button danger type="text" size="small" disabled={saving} onClick={() => remove(field.name)}>Bỏ size</Button></div>
+                                    <Row gutter={[12, 0]}>
+                                        <Col xs={24} sm={6}><Form.Item {...field} name={[field.name, 'code']} label="Mã size" rules={[{ required: true, message: 'Nhập mã size.' }, { pattern: /^[A-Za-z0-9_-]+$/, message: 'Chỉ dùng chữ, số, gạch ngang hoặc gạch dưới.' }]}><Input readOnly maxLength={60} placeholder="Tự điền khi chọn size" /></Form.Item></Col>
+                                        <Col xs={14} sm={10}><Form.Item {...field} name={[field.name, 'name']} label={sizeLabel(field.name)} rules={[{ required: true, message: 'Chọn size.' }]}><Select showSearch optionFilterProp="label" placeholder="Chọn size" options={sizeOptions.map((option) => ({ ...option, disabled: variants.some((row, index) => index !== field.name && (row?.name === option.value || row?.code === option.code)) }))} onChange={(value) => form.setFieldValue(['variants', field.name, 'code'], sizeOptions.find((option) => option.value === value)?.code)} /></Form.Item></Col>
+                                        <Col xs={10} sm={8}><Form.Item {...field} name={[field.name, 'base_price_minor']} label="Giá bán" rules={[{ required: true, message: 'Nhập giá bán.' }]}><InputNumber {...moneyProps} min={0} precision={0} controls={false} addonAfter="₫" inputMode="numeric" style={{ width: '100%' }} /></Form.Item></Col>
+                                        <Col xs={24} sm={12}><Form.Item {...field} name={[field.name, 'station_id']} label="Trạm pha chế" rules={[{ validator: (_, value) => {
                                             const status = form.getFieldValue(['variants', field.name, 'status']);
                                             return itemType === 'prepared' && status !== 'inactive' && !value ? Promise.reject(new Error('Chọn trạm pha chế.')) : Promise.resolve();
                                         } }]}><Select allowClear showSearch optionFilterProp="label" options={stationOptions} placeholder="Chọn trạm" /></Form.Item></Col>
-                                        <Col xs={12} md={6}><Form.Item {...field} name={[field.name, 'status']} label="Trạng thái"><Select options={[{ value: 'active', label: 'Đang bán' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item></Col>
-                                        <Col xs={12} md={6}><Form.Item {...field} name={[field.name, 'sort_order']} label="Thứ tự"><InputNumber min={0} precision={0} style={{ width: '100%' }} /></Form.Item></Col>
+                                        <Col xs={14} sm={7}><Form.Item {...field} name={[field.name, 'status']} label="Trạng thái"><Select options={[{ value: 'active', label: 'Đang bán' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item></Col>
+                                        <Col xs={10} sm={5}><Form.Item {...field} name={[field.name, 'sort_order']} label="Thứ tự"><InputNumber min={0} precision={0} style={{ width: '100%' }} /></Form.Item></Col>
                                         <Form.Item {...field} name={[field.name, 'id']} hidden><Input /></Form.Item>
                                     </Row>
-                                </Card>)}
-                                <Form.ErrorList errors={errors} />
-                            </Space>}
-                        </Form.List>
-                    </Col>
-                    <Col span={24}>
-                        <Form.Item noStyle shouldUpdate={(previous, current) => previous.variants !== current.variants}>
-                            {({ getFieldValue }) => {
-                                const variants = asArray(getFieldValue('variants'));
-                                return <Form.Item name="default_variant_index" label="Size mặc định" rules={[{ required: true, message: 'Chọn size mặc định.' }]}>
-                                    <Select options={variants.map((variant, index) => ({ value: index, label: variant?.name || variant?.code || `Size ${index + 1}`, disabled: variant?.status === 'inactive' }))} />
-                                </Form.Item>;
-                            }}
-                        </Form.Item>
-                    </Col>
-                </Row>
+                                </div>)}
+                            </div>
+                            <Form.ErrorList errors={errors} />
+                        </>}
+                    </Form.List>
+                    <Form.Item noStyle shouldUpdate={(previous, current) => previous.variants !== current.variants}>
+                        {({ getFieldValue }) => {
+                            const variants = asArray(getFieldValue('variants'));
+                            return <Form.Item name="default_variant_index" label={<Space size={4}>Size mặc định{manageable ? <Button type="text" size="small" icon={<PlusOutlined />} aria-label="Quản lý danh mục size" disabled={saving} onClick={() => setSizeManager({})} /> : null}</Space>} extra="Chọn trong các size của món." className="fnb-menu-editor-default" rules={[{ required: true, message: 'Chọn size mặc định.' }]}>
+                                <Select options={variants.map((variant, index) => ({ value: index, label: variant?.name || variant?.code || `Size ${index + 1}`, disabled: variant?.status === 'inactive' }))} />
+                            </Form.Item>;
+                        }}
+                    </Form.Item>
+                </section>
+
+                <Collapse activeKey={additionalOpen} onChange={setAdditionalOpen} className="fnb-menu-editor-additional" items={[{
+                    key: 'additional', forceRender: true,
+                    label: <span><SettingOutlined /> Thiết lập thêm</span>,
+                    extra: <Text type="secondary">Topping, mô tả, ảnh, thuế</Text>,
+                    children: <Row gutter={[16, 0]}>
+                        <Col span={24}><Form.Item name="modifier_group_ids" label="Nhóm topping áp dụng"><Select mode="multiple" allowClear showSearch optionFilterProp="label" options={modifierOptions} placeholder="Chọn nhóm topping (nếu có)" /></Form.Item></Col>
+                        <Col span={24}><Form.Item name="description" label="Mô tả"><Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} placeholder="Giới thiệu ngắn về món" /></Form.Item></Col>
+                        <Col xs={24} sm={8}><Form.Item name="sku" label="SKU"><Input placeholder="Mã quản lý nội bộ" /></Form.Item></Col>
+                        <Col xs={24} sm={16}><Form.Item name="image_url" label="Ảnh món (URL)" rules={[{ type: 'url', message: 'Nhập đường dẫn ảnh hợp lệ.' }]}><Input inputMode="url" placeholder="https://…" /></Form.Item></Col>
+                        <Col xs={24} sm={10}><Form.Item name="tax_category" label="Nhóm thuế"><Select options={[{ value: 'standard', label: 'Thuế suất thông thường' }, { value: 'zero_rated', label: 'Thuế suất 0%' }, { value: 'not_subject', label: 'Không chịu thuế' }, { value: 'exempt', label: 'Miễn thuế' }]} /></Form.Item></Col>
+                        <Col xs={12} sm={7}><Form.Item name="tax_rate_percent" label="Thuế suất"><InputNumber min={0} max={100} precision={2} addonAfter="%" style={{ width: '100%' }} /></Form.Item></Col>
+                        <Col xs={12} sm={7}><Form.Item name="tax_inclusive" label="Giá đã gồm thuế" valuePropName="checked"><Switch /></Form.Item></Col>
+                    </Row>,
+                }]} />
             </Form>
-        </Drawer>
+        </Drawer></>
     );
 }
 
-function ModifierDrawer({ open, group, form, saving, onClose, onSubmit }) {
+function ModifierModal({ open, group, catalog, form, saving, onClose, onSubmit, onCatalogChanged }) {
+    const { can } = useFnbWorkspace();
+    const manageable = can('fnb.menu.manage') && can('fnb.menu.master.manage');
+    const [nameManager, setNameManager] = useState(false);
+    const rows = Form.useWatch('options', form) ?? [];
+    const names = choiceOptions(catalog.topping_definitions, rows);
+
     return (
-        <Drawer
+        <><FnbMenuChoiceManagerModal open={nameManager} kind="topping" definitions={asArray(catalog.topping_definitions)} onClose={() => setNameManager(false)} onSaved={onCatalogChanged} onCreated={(record) => {
+            if (!record) return;
+            const current = asArray(form.getFieldValue('options'));
+            const empty = current.findIndex((row) => !row?.name && !row?.code);
+            if (empty >= 0) {
+                form.setFieldValue(['options', empty, 'name'], record.name);
+                form.setFieldValue(['options', empty, 'code'], record.code);
+            } else form.setFieldValue('options', [...current, { name: record.name, code: record.code, status: 'active', base_price_delta_minor: 0 }]);
+            setNameManager(false);
+        }} />
+        <Modal
             title={group ? `Cập nhật nhóm topping · ${group.name}` : 'Thêm nhóm topping'}
             open={open}
-            width="min(680px, 96vw)"
-            onClose={onClose}
+            width={760}
+            centered
+            onCancel={saving ? undefined : onClose}
+            onOk={() => form.submit()}
+            confirmLoading={saving}
+            okText="Lưu nhóm"
+            cancelText="Hủy"
+            cancelButtonProps={{ disabled: saving }}
+            closable={!saving}
+            maskClosable={!saving}
             destroyOnHidden
-            extra={<Button type="primary" loading={saving} onClick={() => form.submit()}>Lưu nhóm</Button>}
+            styles={{ body: { maxHeight: '65vh', overflowY: 'auto' } }}
         >
-            <Form form={form} layout="vertical" onFinish={onSubmit} initialValues={{ min_select: 0, max_select: 1, free_quantity: 0, status: 'active' }}>
+            <Alert type="info" showIcon message="Topping là lựa chọn thêm đi kèm món"
+                description="Ví dụ: nhóm Topping trà sữa gồm trân châu, thạch và kem. Gắn nhóm vào món để nhân viên chọn khi gọi món; mỗi lựa chọn có giá thêm riêng."
+                style={{ marginBottom: 16 }} />
+            <Form disabled={saving} form={form} layout="vertical" onFinish={onSubmit} initialValues={{ min_select: 0, max_select: 1, free_quantity: 0, status: 'active' }}>
                 <Row gutter={16}>
-                    <Col xs={24} md={9}><Form.Item name="code" label="Mã nhóm" rules={[{ required: true }]}><Input /></Form.Item></Col>
+                    <Col xs={24} md={9}><Form.Item name="code" label="Mã nhóm" normalize={(value) => value.trim()} extra={group ? 'Để trống để giữ mã hiện tại.' : 'Tự tạo theo tên nhóm nếu để trống.'} rules={[{ max: 40, message: 'Mã tối đa 40 ký tự.' }, { pattern: /^[A-Za-z0-9_-]+$/, message: 'Chỉ dùng chữ, số, gạch ngang hoặc gạch dưới.' }]}><Input maxLength={40} placeholder={group ? 'Giữ mã hiện tại' : 'Để trống để tự tạo'} /></Form.Item></Col>
                     <Col xs={24} md={15}><Form.Item name="name" label="Tên nhóm" rules={[{ required: true }]}><Input /></Form.Item></Col>
-                    <Col xs={8}><Form.Item name="min_select" label="Chọn tối thiểu" rules={[{ required: true }]}><InputNumber min={0} precision={0} style={{ width: '100%' }} /></Form.Item></Col>
-                    <Col xs={8}><Form.Item name="max_select" label="Chọn tối đa" rules={[{ required: true }]}><InputNumber min={1} precision={0} style={{ width: '100%' }} /></Form.Item></Col>
-                    <Col xs={8}><Form.Item name="free_quantity" label="Số lượng miễn phí"><InputNumber min={0} precision={0} style={{ width: '100%' }} /></Form.Item></Col>
+                    <Col xs={24} sm={8}><Form.Item name="min_select" label="Số loại chọn tối thiểu" extra="0 = không bắt buộc chọn." rules={[{ required: true }]}><InputNumber min={0} precision={0} addonAfter="loại" style={{ width: '100%' }} /></Form.Item></Col>
+                    <Col xs={24} sm={8}><Form.Item name="max_select" label="Số loại chọn tối đa" extra="Giới hạn cho mỗi món, không phải số tiền." rules={[{ required: true }]}><InputNumber min={1} precision={0} addonAfter="loại" style={{ width: '100%' }} /></Form.Item></Col>
+                    <Col xs={24} sm={8}><Form.Item name="free_quantity" label="Số loại miễn phí" extra="Chưa áp dụng khi tính tiền. Topping miễn phí cần đặt Giá thêm = 0 ₫."><InputNumber disabled min={0} precision={0} addonAfter="loại" style={{ width: '100%' }} /></Form.Item></Col>
                 </Row>
+                <Form.Item name="status" label="Trạng thái"><Radio.Group options={[{ value: 'active', label: 'Đang dùng' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item>
                 <Form.List name="options">
                     {(fields, { add, remove }) => (
                         <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                            <Space style={{ width: '100%', justifyContent: 'space-between' }}><Text strong>Các lựa chọn</Text><Button icon={<PlusOutlined />} onClick={() => add({ status: 'active' })}>Thêm topping</Button></Space>
-                            {fields.map((field) => (
-                                <Card key={field.key} size="small">
-                                    <Row gutter={12}>
-                                        <Col xs={24} md={7}><Form.Item {...field} name={[field.name, 'code']} label="Mã" rules={[{ required: true }]}><Input /></Form.Item></Col>
-                                        <Col xs={24} md={10}><Form.Item {...field} name={[field.name, 'name']} label="Tên" rules={[{ required: true }]}><Input /></Form.Item></Col>
-                                        <Col xs={12} md={5}><Form.Item {...field} name={[field.name, 'base_price_delta_minor']} label="Giá thêm"><InputNumber min={0} precision={0} addonAfter="₫" style={{ width: '100%' }} /></Form.Item></Col>
-                                        <Col xs={8} md={3}><Form.Item {...field} name={[field.name, 'status']} label="Trạng thái"><Select options={[{ value: 'active', label: 'Bán' }, { value: 'inactive', label: 'Ngưng' }]} /></Form.Item></Col>
-                                        <Col xs={4} md={1} style={{ display: 'flex', alignItems: 'center' }}><Button danger type="text" onClick={() => remove(field.name)}>×</Button></Col>
+                            <Space style={{ width: '100%', justifyContent: 'space-between' }}><Text strong>Các lựa chọn</Text><Button icon={<PlusOutlined />} onClick={() => add({ status: 'active', base_price_delta_minor: 0 })}>Thêm topping</Button></Space>
+                            <Table
+                                size="small"
+                                rowKey="key"
+                                pagination={false}
+                                dataSource={fields}
+                                scroll={{ x: 680 }}
+                                locale={{ emptyText: 'Chưa có lựa chọn topping' }}
+                                columns={[
+                                    { title: 'Mã', width: 140, render: (_, field) => <>
+                                        <Form.Item {...field} name={[field.name, 'code']} className="fnb-topping-cell-field" style={{ marginBottom: 0 }} rules={[{ required: true, message: 'Nhập mã topping.' }]}><Input aria-label={`Mã topping ${field.name + 1}`} /></Form.Item>
                                         <Form.Item {...field} name={[field.name, 'id']} hidden><Input /></Form.Item>
                                         <Form.Item {...field} name={[field.name, 'version']} hidden><Input /></Form.Item>
-                                    </Row>
-                                </Card>
-                            ))}
+                                    </> },
+                                    { title: <Space size={4}>Tên{manageable ? <Button type="text" size="small" icon={<PlusOutlined />} aria-label="Thêm nhanh tên topping" disabled={saving} onClick={() => setNameManager(true)} /> : null}</Space>, width: 220, render: (_, field) => <Form.Item {...field} name={[field.name, 'name']} className="fnb-topping-cell-field" style={{ marginBottom: 0 }} rules={[{ required: true, message: 'Nhập tên topping.' }]}><Select aria-label={`Tên topping ${field.name + 1}`} showSearch optionFilterProp="label" placeholder="Chọn topping" options={names.map((option) => ({ ...option, disabled: rows.some((row, index) => index !== field.name && (row?.name === option.value || row?.code === option.code)) }))} onChange={(value) => form.setFieldValue(['options', field.name, 'code'], names.find((option) => option.value === value)?.code)} /></Form.Item> },
+                                    { title: 'Giá thêm', width: 150, render: (_, field) => <Form.Item {...field} name={[field.name, 'base_price_delta_minor']} style={{ marginBottom: 0 }}><InputNumber aria-label={`Giá thêm topping ${field.name + 1}`} min={0} precision={0} controls={false} addonAfter="₫" style={{ width: '100%' }} /></Form.Item> },
+                                    { title: 'Trạng thái', width: 110, render: (_, field) => <Form.Item {...field} name={[field.name, 'status']} style={{ marginBottom: 0 }}><Select aria-label={`Trạng thái topping ${field.name + 1}`} options={[{ value: 'active', label: 'Bán' }, { value: 'inactive', label: 'Ngưng' }]} /></Form.Item> },
+                                    { key: 'remove', width: 44, render: (_, field) => <Button danger type="text" aria-label={`Bỏ topping ${field.name + 1}`} onClick={() => remove(field.name)}>×</Button> },
+                                ]}
+                            />
                         </Space>
                     )}
                 </Form.List>
             </Form>
-        </Drawer>
+        </Modal></>
     );
 }
 
-function RecipeDrawer({ open, recipe, ingredients, variants, form, saving, onClose, onSubmit }) {
+function RecipeDrawer({ open, recipe, ingredients, units, variants, form, saving, onClose, onSubmit }) {
     return (
         <Drawer
             title={recipe ? `Tạo phiên bản mới · ${recipe.name}` : 'Thêm công thức'}
@@ -229,7 +277,7 @@ function RecipeDrawer({ open, recipe, ingredients, variants, form, saving, onClo
                                     <Row gutter={12}>
                                         <Col xs={24} md={11}><Form.Item {...field} name={[field.name, 'ingredient_id']} label="Nguyên liệu" rules={[{ required: true }]}><Select showSearch optionFilterProp="label" options={ingredients.map((item) => ({ value: item.id, label: item.name }))} /></Form.Item></Col>
                                         <Col xs={8} md={5}><Form.Item {...field} name={[field.name, 'quantity']} label="Số lượng" rules={[{ required: true }]}><Input inputMode="decimal" /></Form.Item></Col>
-                                        <Col xs={7} md={4}><Form.Item {...field} name={[field.name, 'unit']} label="Đơn vị" rules={[{ required: true }]}><Select options={['g', 'kg', 'ml', 'l', 'piece'].map((unit) => ({ value: unit, label: unit }))} /></Form.Item></Col>
+                                        <Col xs={7} md={4}><Form.Item {...field} name={[field.name, 'unit']} label="Đơn vị" rules={[{ required: true }]}><Select options={units.map((unit) => ({ value: unit.code, label: `${unit.name} (${unit.code})`, disabled: unit.status !== 'active' }))} /></Form.Item></Col>
                                         <Col xs={6} md={3}><Form.Item {...field} name={[field.name, 'loss_rate']} label="Hao hụt"><Input inputMode="decimal" /></Form.Item></Col>
                                         <Col xs={3} md={1} style={{ display: 'flex', alignItems: 'center' }}><Button danger type="text" onClick={() => remove(field.name)}>×</Button></Col>
                                     </Row>
@@ -243,30 +291,39 @@ function RecipeDrawer({ open, recipe, ingredients, variants, form, saving, onClo
     );
 }
 
-function CategoryDrawer({ open, category, menus, form, saving, onClose, onSubmit }) {
-    return <Drawer title={category ? `Cập nhật nhóm món · ${category.name}` : 'Thêm nhóm món'} open={open} width="min(560px, 96vw)" onClose={onClose} destroyOnHidden extra={<Button type="primary" loading={saving} onClick={() => form.submit()}>Lưu nhóm</Button>}>
-        <Form form={form} layout="vertical" onFinish={onSubmit}>
+function CategoryModal({ open, category, menus, form, saving, onClose, onSubmit }) {
+    return <Modal title={category ? `Cập nhật nhóm món · ${category.name}` : 'Thêm nhóm món'} open={open} width={560} centered onCancel={saving ? undefined : onClose} onOk={() => form.submit()} confirmLoading={saving} okText="Lưu nhóm" cancelText="Hủy" cancelButtonProps={{ disabled: saving }} closable={!saving} maskClosable={!saving} destroyOnHidden>
+        <Form disabled={saving} form={form} layout="vertical" onFinish={onSubmit}>
             <Form.Item name="menu_id" label="Thực đơn" rules={[{ required: true }]}><Select options={menus.map((menu) => ({ value: menu.id, label: menu.name }))} /></Form.Item>
-            <Row gutter={14}><Col xs={24} md={9}><Form.Item name="code" label="Mã" rules={[{ required: true }]}><Input /></Form.Item></Col><Col xs={24} md={15}><Form.Item name="name" label="Tên nhóm" rules={[{ required: true }]}><Input /></Form.Item></Col></Row>
-            <Row gutter={14}><Col xs={12}><Form.Item name="sort_order" label="Thứ tự"><InputNumber min={0} max={9999} precision={0} style={{ width: '100%' }} /></Form.Item></Col><Col xs={12}><Form.Item name="status" label="Trạng thái"><Select options={[{ value: 'active', label: 'Đang dùng' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item></Col></Row>
+            <Row gutter={14}>
+                <Col xs={24} md={9}>
+                    <Form.Item name="code" label="Mã" normalize={(value) => value.trim()} extra={category ? 'Để trống để giữ mã hiện tại.' : 'Tự tạo theo tên nhóm nếu để trống.'} rules={[{ max: 40, message: 'Mã tối đa 40 ký tự.' }, { pattern: /^[A-Za-z0-9_-]+$/, message: 'Chỉ dùng chữ, số, gạch ngang hoặc gạch dưới.' }]}>
+                        <Input maxLength={40} placeholder={category ? 'Giữ mã hiện tại' : 'Để trống để tự tạo'} />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={15}><Form.Item name="name" label="Tên nhóm" rules={[{ required: true, message: 'Nhập tên nhóm.' }]}><Input /></Form.Item></Col>
+            </Row>
+            <Form.Item name="status" label="Trạng thái"><Radio.Group options={[{ value: 'active', label: 'Đang dùng' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item>
         </Form>
-    </Drawer>;
+    </Modal>;
 }
 
-function IngredientDrawer({ open, ingredient, form, saving, onClose, onSubmit }) {
-    return <Drawer title={ingredient ? `Cập nhật nguyên liệu · ${ingredient.name}` : 'Thêm nguyên liệu'} open={open} width="min(560px, 96vw)" onClose={onClose} destroyOnHidden extra={<Button type="primary" loading={saving} onClick={() => form.submit()}>Lưu nguyên liệu</Button>}>
-        <Form form={form} layout="vertical" onFinish={onSubmit}>
-            <Row gutter={14}><Col xs={24} md={9}><Form.Item name="code" label="Mã" rules={[{ required: true }]}><Input /></Form.Item></Col><Col xs={24} md={15}><Form.Item name="name" label="Tên nguyên liệu" rules={[{ required: true }]}><Input /></Form.Item></Col></Row>
-            <Form.Item name="base_unit" label="Đơn vị gốc" rules={[{ required: true }]}><Select disabled={Boolean(ingredient)} options={['g', 'kg', 'ml', 'l', 'piece'].map((unit) => ({ value: unit, label: unit }))} /></Form.Item>
-            <Form.Item name="status" label="Trạng thái"><Select options={[{ value: 'active', label: 'Đang dùng' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item>
+function IngredientModal({ open, ingredient, units, unitsLoading, onUnitsSaved, form, saving, onClose, onSubmit }) {
+    const [unitsOpen, setUnitsOpen] = useState(false);
+    return <><Modal title={ingredient ? `Cập nhật nguyên liệu · ${ingredient.name}` : 'Thêm nguyên liệu'} open={open && !unitsOpen} width={560} centered onCancel={saving ? undefined : onClose} onOk={() => form.submit()} confirmLoading={saving} okText="Lưu nguyên liệu" cancelText="Hủy" cancelButtonProps={{ disabled: saving }} closable={!saving} maskClosable={!saving} destroyOnHidden>
+        <Form disabled={saving} form={form} layout="vertical" onFinish={onSubmit}>
+            <Row gutter={14}><Col xs={24} md={9}><Form.Item name="code" label="Mã" normalize={(value) => value.trim()} extra={ingredient ? 'Để trống để giữ mã hiện tại.' : 'Tự tạo theo tên nếu để trống.'} rules={[{ max: 40, message: 'Mã tối đa 40 ký tự.' }, { pattern: /^[A-Za-z0-9_-]+$/, message: 'Chỉ dùng chữ, số, gạch ngang hoặc gạch dưới.' }]}><Input maxLength={40} placeholder={ingredient ? 'Giữ mã hiện tại' : 'Để trống để tự tạo'} /></Form.Item></Col><Col xs={24} md={15}><Form.Item name="name" label="Tên nguyên liệu" rules={[{ required: true }]}><Input /></Form.Item></Col></Row>
+            <Form.Item name="base_unit" label={<Space size={4}>Đơn vị gốc<Button type="text" size="small" icon={<SettingOutlined />} aria-label="Quản lý đơn vị" disabled={saving || unitsLoading} onClick={() => setUnitsOpen(true)} /></Space>} rules={[{ required: true }]}><Select showSearch optionFilterProp="label" loading={unitsLoading} disabled={Boolean(ingredient)} options={units.map((unit) => ({ value: unit.code, label: `${unit.name} (${unit.code})`, disabled: unit.status !== 'active' }))} /></Form.Item>
+            <Form.Item name="status" label="Trạng thái"><Radio.Group options={[{ value: 'active', label: 'Đang dùng' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item>
             {ingredient ? <Alert type="info" showIcon message="Đơn vị gốc không thể đổi sau khi tạo" description="Hãy tạo nguyên liệu mới nếu cần một loại đơn vị khác." /> : null}
         </Form>
-    </Drawer>;
+    </Modal><FnbUnitManagerModal open={open && unitsOpen} units={units} loading={unitsLoading} onClose={() => setUnitsOpen(false)} onSaved={onUnitsSaved} /></>;
 }
 
 export default function FnbMenuPage() {
     const { api, outletId, selectedOutlet, can, runCommand, navigateSection } = useFnbWorkspace();
     const [activeTab, setActiveTab] = useState('items');
+    const [managerType, setManagerType] = useState(null);
     const [drawer, setDrawer] = useState(null);
     const [saving, setSaving] = useState(false);
     const [itemForm] = Form.useForm();
@@ -308,7 +365,7 @@ export default function FnbMenuPage() {
             tax_inclusive: true,
             tax_rate_percent: 0,
             default_variant_index: 0,
-            variants: [{ code: 'DEFAULT', name: 'Mặc định', base_price_minor: 0, is_default: true, sort_order: 0, status: 'active', station_id: asArray(catalog.stations).find((station) => station.status !== 'inactive')?.id }],
+            variants: [{ code: asArray(catalog.size_definitions).find((row) => row.code === 'DEFAULT')?.code ?? asArray(catalog.size_definitions)[0]?.code ?? '', name: asArray(catalog.size_definitions).find((row) => row.code === 'DEFAULT')?.name ?? asArray(catalog.size_definitions)[0]?.name ?? '', base_price_minor: 0, is_default: true, sort_order: 0, status: 'active', station_id: asArray(catalog.stations).find((station) => station.status !== 'inactive')?.id }],
             category_ids: [],
             modifier_group_ids: [],
         });
@@ -462,10 +519,25 @@ export default function FnbMenuPage() {
         }
     };
 
-    const openCategory = (category = null) => {
+    const openCategory = (category = null, menuId = null) => {
         categoryForm.resetFields();
-        categoryForm.setFieldsValue(category ?? { menu_id: asArray(catalog.menus)[0]?.id, sort_order: 0, status: 'active' });
+        categoryForm.setFieldsValue(category ?? { menu_id: menuId ?? asArray(catalog.menus)[0]?.id, status: 'active' });
         setDrawer({ type: 'category', record: category });
+    };
+
+    const reorderCategories = async (menuId, rows) => {
+        const key = createIdempotencyKey('category-order');
+        await runCommand({
+            execute: (auth) => api.command('menu/categories/reorder', {
+                menu_id: menuId,
+                items: rows.map((row) => ({ id: row.id, expected_version: row.version })),
+            }, { idempotencyKey: key, ...auth }),
+            successMessage: 'Đã lưu thứ tự nhóm món.',
+            onSuccess: async (result) => {
+                catalogResource.setData({ ...catalog, categories: [...asArray(catalog.categories).filter((row) => row.menu_id !== menuId), ...result.data.items] });
+            },
+            onConflict: catalogResource.reload,
+        });
     };
 
     const saveCategory = async (values) => {
@@ -489,7 +561,7 @@ export default function FnbMenuPage() {
 
     const openIngredient = (ingredient = null) => {
         ingredientForm.resetFields();
-        ingredientForm.setFieldsValue(ingredient ?? { base_unit: 'g', status: 'active' });
+        ingredientForm.setFieldsValue(ingredient ?? { base_unit: asArray(recipeData.units).find((unit) => unit.code === 'g' && unit.status === 'active')?.code ?? asArray(recipeData.units).find((unit) => unit.status === 'active')?.code, status: 'active' });
         setDrawer({ type: 'ingredient', record: ingredient });
     };
 
@@ -521,6 +593,44 @@ export default function FnbMenuPage() {
     const modifierGroups = asArray(catalog.modifier_groups);
     const priceBooks = asArray(catalog.price_books);
 
+    const managementSections = [
+        {
+            key: 'categories',
+            label: `Nhóm món (${asArray(catalog.categories).length})`,
+            children: <FnbCategoryList menus={menus} categories={asArray(catalog.categories)} editable={can('fnb.menu.manage') && can('fnb.menu.master.manage')} loading={catalogResource.loading || catalogResource.refreshing} onAdd={(menuId) => openCategory(null, menuId)} onEdit={openCategory} onReorder={reorderCategories} />,
+        },
+        {
+            key: 'modifiers',
+            label: `Nhóm topping (${modifierGroups.length})`,
+            children: <>
+                <div className="fnb-table-toolbar"><Text type="secondary">Gắn nhóm topping vào món; giới hạn chọn tính theo số loại topping cho mỗi món, không phải số tiền.</Text>{can('fnb.menu.manage') && can('fnb.menu.master.manage') ? <Button type="primary" icon={<PlusOutlined />} onClick={() => openModifier()}>Thêm nhóm</Button> : null}</div>
+                {modifierGroups.length ? <Table rowKey="id" dataSource={modifierGroups} columns={[
+                    { title: 'Nhóm', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}</Text></Space> },
+                    { title: 'Quy tắc', render: (_, record) => `Chọn ${record.min_select ?? 0}–${record.max_select ?? 1} loại / món` },
+                    { title: 'Lựa chọn', render: (_, record) => asArray(record.options).map((option) => <Tag key={option.id}>{option.name} · {formatMinorMoney(option.price_delta_minor ?? option.base_price_delta_minor, currency)}</Tag>) },
+                    { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },
+                    { title: '', render: (_, record) => can('fnb.menu.manage') && can('fnb.menu.master.manage') ? <Button size="small" onClick={() => openModifier(record)}>Sửa</Button> : null },
+                ]} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có nhóm topping" />}
+            </>,
+        },
+        {
+            key: 'ingredients',
+            label: `Nguyên liệu (${asArray(recipeData.ingredients).length})`,
+            children: can('fnb.recipe.view') ? <>
+                <div className="fnb-table-toolbar"><Text type="secondary">Đơn vị gốc không đổi sau khi nguyên liệu đã được tạo.</Text>{can('fnb.recipe.manage') && can('fnb.recipe.master.manage') ? <Button type="primary" icon={<PlusOutlined />} onClick={() => openIngredient()}>Thêm nguyên liệu</Button> : null}</div>
+                <Table rowKey="id" loading={recipeResource.loading} dataSource={asArray(recipeData.ingredients)} columns={[
+                    { title: 'Nguyên liệu', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}</Text></Space> },
+                    { title: 'Đơn vị gốc', dataIndex: 'base_unit', render: (value) => <Tag>{asArray(recipeData.units).find((unit) => unit.code === value)?.name ?? value} ({value})</Tag> },
+                    { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },
+                    { title: '', render: (_, record) => can('fnb.recipe.manage') && can('fnb.recipe.master.manage') ? <Button size="small" onClick={() => openIngredient(record)}>Sửa</Button> : null },
+                ]} />
+            </> : <Alert type="info" showIcon message="Bạn chưa có quyền xem nguyên liệu." />,
+        },
+    ];
+    const manager = managementSections.find((section) => section.key === managerType);
+    const editingManagedResource = ['category', 'modifier', 'ingredient'].includes(drawer?.type);
+    const managerResource = managerType === 'ingredients' ? recipeResource : catalogResource;
+
     return (
         <div className="fnb-page-stack">
             <FnbPageHeader
@@ -533,24 +643,13 @@ export default function FnbMenuPage() {
             {can('fnb.menu.master.manage') ? <Alert type="info" showIcon message="Bạn đang chỉnh bản soạn của thực đơn" description="Phát hành sau khi kiểm tra để áp dụng thay đổi cho các điểm bán đã chọn. Order đã chốt vẫn giữ nguyên nội dung và giá cũ." action={<Button onClick={() => navigateSection('chain')}>Phát hành cho điểm bán</Button>} /> : null}
 
             <Card className="fnb-panel">
+                <Space wrap style={{ marginBottom: 20 }} aria-label="Quản lý danh mục thực đơn">
+                    {managementSections.map((section) => <Button key={section.key} onClick={() => setManagerType(section.key)}>{section.label}</Button>)}
+                </Space>
                 <Tabs
                     activeKey={activeTab}
                     onChange={setActiveTab}
                     items={[
-                        {
-                            key: 'categories',
-                            label: `Nhóm món (${asArray(catalog.categories).length})`,
-                            children: <>
-                                <div className="fnb-table-toolbar"><Text type="secondary">Nhóm món giúp tìm nhanh trên POS; thứ tự do máy chủ lưu.</Text>{can('fnb.menu.manage') ? <Button type="primary" icon={<PlusOutlined />} loading={catalogResource.loading} disabled={catalogResource.loading || !menus.length} onClick={() => openCategory()}>Thêm nhóm</Button> : null}</div>
-                                <Table rowKey="id" dataSource={asArray(catalog.categories)} columns={[
-                                    { title: 'Nhóm', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}</Text></Space> },
-                                    { title: 'Thực đơn', render: (_, record) => menus.find((menu) => menu.id === record.menu_id)?.name ?? `#${record.menu_id}` },
-                                    { title: 'Thứ tự', dataIndex: 'sort_order' },
-                                    { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },
-                                    { title: '', render: (_, record) => can('fnb.menu.manage') ? <Button size="small" onClick={() => openCategory(record)}>Sửa</Button> : null },
-                                ]} />
-                            </>,
-                        },
                         {
                             key: 'items',
                             label: `Món & size (${items.length})`,
@@ -574,33 +673,6 @@ export default function FnbMenuPage() {
                                     ]}
                                 />
                             </>,
-                        },
-                        {
-                            key: 'modifiers',
-                            label: `Nhóm topping (${modifierGroups.length})`,
-                            children: <>
-                                <div className="fnb-table-toolbar"><Text type="secondary">Min/max và số lượng miễn phí được máy chủ kiểm tra khi gọi món.</Text>{can('fnb.menu.manage') ? <Button type="primary" icon={<PlusOutlined />} onClick={() => openModifier()}>Thêm nhóm</Button> : null}</div>
-                                {modifierGroups.length ? <Table rowKey="id" dataSource={modifierGroups} columns={[
-                                    { title: 'Nhóm', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}</Text></Space> },
-                                    { title: 'Quy tắc', render: (_, record) => `Chọn ${record.min_select ?? 0}–${record.max_select ?? 1}` },
-                                    { title: 'Lựa chọn', render: (_, record) => asArray(record.options).map((option) => <Tag key={option.id}>{option.name} · {formatMinorMoney(option.price_delta_minor ?? option.base_price_delta_minor, currency)}</Tag>) },
-                                    { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },
-                                    { title: '', render: (_, record) => can('fnb.menu.manage') ? <Button size="small" onClick={() => openModifier(record)}>Sửa</Button> : null },
-                                ]} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có nhóm topping" />}
-                            </>,
-                        },
-                        {
-                            key: 'ingredients',
-                            label: `Nguyên liệu (${asArray(recipeData.ingredients).length})`,
-                            children: can('fnb.recipe.view') ? <>
-                                <div className="fnb-table-toolbar"><Text type="secondary">Đơn vị gốc không đổi sau khi nguyên liệu đã được tạo.</Text>{can('fnb.recipe.manage') ? <Button type="primary" icon={<PlusOutlined />} onClick={() => openIngredient()}>Thêm nguyên liệu</Button> : null}</div>
-                                <Table rowKey="id" loading={recipeResource.loading} dataSource={asArray(recipeData.ingredients)} columns={[
-                                    { title: 'Nguyên liệu', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}</Text></Space> },
-                                    { title: 'Đơn vị gốc', dataIndex: 'base_unit', render: (value) => <Tag>{value}</Tag> },
-                                    { title: 'Trạng thái', dataIndex: 'status', render: (value) => <FnbStatusTag status={value} /> },
-                                    { title: '', render: (_, record) => can('fnb.recipe.manage') ? <Button size="small" onClick={() => openIngredient(record)}>Sửa</Button> : null },
-                                ]} />
-                            </> : <Alert type="info" showIcon message="Bạn chưa có quyền xem nguyên liệu." />,
                         },
                         {
                             key: 'recipes',
@@ -630,11 +702,24 @@ export default function FnbMenuPage() {
                 />
             </Card>
 
-            <MenuItemDrawer open={drawer?.type === 'item'} item={drawer?.record} catalog={catalog} form={itemForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveItem} />
-            <ModifierDrawer open={drawer?.type === 'modifier'} group={drawer?.record} form={modifierForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveModifier} />
-            <RecipeDrawer open={drawer?.type === 'recipe'} recipe={drawer?.record} ingredients={asArray(recipeData.ingredients)} variants={variantOptions} form={recipeForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveRecipe} />
-            <CategoryDrawer open={drawer?.type === 'category'} category={drawer?.record} menus={menus} form={categoryForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveCategory} />
-            <IngredientDrawer open={drawer?.type === 'ingredient'} ingredient={drawer?.record} form={ingredientForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveIngredient} />
+            <Modal
+                title={manager?.label}
+                open={Boolean(manager) && !editingManagedResource}
+                width={1000}
+                centered
+                onCancel={() => setManagerType(null)}
+                footer={<Button onClick={() => setManagerType(null)}>Đóng</Button>}
+                styles={{ body: { maxHeight: '65vh', overflowY: 'auto' } }}
+            >
+                {managerResource.error ? <Alert type="error" showIcon message={managerResource.error.message} action={<Button onClick={() => managerResource.reload()}>Thử lại</Button>} style={{ marginBottom: 16 }} /> : null}
+                {manager?.children}
+            </Modal>
+
+            <MenuItemDrawer onCatalogChanged={() => catalogResource.reload({ silent: true })} open={drawer?.type === 'item'} item={drawer?.record} catalog={catalog} form={itemForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveItem} />
+            <ModifierModal catalog={catalog} onCatalogChanged={() => catalogResource.reload({ silent: true })} open={drawer?.type === 'modifier'} group={drawer?.record} form={modifierForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveModifier} />
+            <RecipeDrawer units={asArray(recipeData.units)} open={drawer?.type === 'recipe'} recipe={drawer?.record} ingredients={asArray(recipeData.ingredients)} variants={variantOptions} form={recipeForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveRecipe} />
+            <CategoryModal open={drawer?.type === 'category'} category={drawer?.record} menus={menus} form={categoryForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveCategory} />
+            <IngredientModal units={asArray(recipeData.units)} unitsLoading={recipeResource.loading || recipeResource.refreshing} onUnitsSaved={() => recipeResource.reload({ silent: true })} open={drawer?.type === 'ingredient'} ingredient={drawer?.record} form={ingredientForm} saving={saving} onClose={() => setDrawer(null)} onSubmit={saveIngredient} />
         </div>
     );
 }

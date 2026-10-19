@@ -317,7 +317,7 @@ class FnbAuthorizationHttpTest extends TestCase
             'modifier_groups' => [],
         ], 'auth-http-item');
         $variantId = (int) $item['resource']['variants'][0]['id'];
-        $day = $fnb->openBusinessDay($context, now()->toDateString(), 'auth-http-day');
+        $day = $fnb->openBusinessDay($context, now('Asia/Ho_Chi_Minh')->toDateString(), 'auth-http-day');
         $shift = $fnb->openShift($context, (int) $day['resource']['id'], 0, 'auth-http-shift');
         $session = $fnb->openSession($context, [
             'business_day_id' => (int) $day['resource']['id'],

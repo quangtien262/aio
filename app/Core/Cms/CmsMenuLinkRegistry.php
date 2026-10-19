@@ -11,6 +11,7 @@ use App\Models\CmsProject;
 use App\Models\CmsProjectCategory;
 use App\Models\CmsService;
 use App\Models\CmsServiceCategory;
+use App\Models\CmsTopic;
 use App\Models\LandingPage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
@@ -43,7 +44,7 @@ final class CmsMenuLinkRegistry
         ],
         'post-topic' => [
             'resource_type' => 'cms_topic',
-            'model' => \App\Models\CmsTopic::class,
+            'model' => CmsTopic::class,
         ],
         'post-category' => [
             'resource_type' => 'cms_category',
@@ -262,6 +263,11 @@ final class CmsMenuLinkRegistry
 
         /** @var Model $model */
         $model = new $modelClass;
+
+        if (! Schema::hasTable($model->getTable())) {
+            return false;
+        }
+
         $query = $modelClass::query()->withoutGlobalScopes()->whereKey($resourceId);
 
         if (Schema::hasColumn($model->getTable(), 'website_key')) {

@@ -35,8 +35,8 @@ final class FnbOrderService
         return $this->commands->run($context, 'order.create', compact('sessionId', 'shiftId', 'note', 'expectedSessionVersion'), $idempotencyKey, function () use ($context, $sessionId, $shiftId, $note, $idempotencyKey, $expectedSessionVersion): array {
             $session = $this->locked('fnb_service_sessions', $context, $sessionId);
             $this->assertVersion('service_session', $session, $expectedSessionVersion);
-            if ($session->status !== 'open') {
-                throw new FnbConflictException('Orders can only be added to an open session.');
+            if (! in_array($session->status, ['open', 'settling'], true)) {
+                throw new FnbConflictException('Chỉ có thể gọi thêm món khi phiên chưa kết thúc hoặc trả bàn.');
             }
             $shift = $this->locked('fnb_shifts', $context, $shiftId);
             if ($shift->status !== 'open'
@@ -86,6 +86,8 @@ final class FnbOrderService
                 'updated_at' => $now,
             ]);
             DB::table('fnb_service_sessions')->where('id', $session->id)->update([
+                'status' => 'open',
+                'settling_at' => null,
                 'version' => (int) $session->version + 1,
                 'updated_at' => $now,
             ]);
@@ -95,8 +97,16 @@ final class FnbOrderService
                 'order_no' => $number['document_no'],
                 'session_id' => (int) $session->id,
             ]);
+            $events = [$event];
+            if ($session->status === 'settling') {
+                $events[] = $this->outbox->emit($context, 'service_session', $session->id, (int) $session->version + 1, 'fnb.service_session.resumed', [
+                    'session_id' => (int) $session->id,
+                    'order_id' => $orderId,
+                    'reason' => 'additional_order',
+                ]);
+            }
 
-            return $this->envelope('order', $orderId, 1, $this->orderResource($context, $orderId), [$event], [
+            return $this->envelope('order', $orderId, 1, $this->orderResource($context, $orderId), $events, [
                 'session_version' => (int) $session->version + 1,
             ]);
         });
@@ -107,11 +117,11 @@ final class FnbOrderService
     {
         $data = validator($input, [
             'variant_id' => ['required', 'integer', 'min:1'],
-            'quantity' => ['required', 'regex:/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/'],
+            'quantity' => ['required', 'regex:/^[1-9]\d*(?:\.0{1,6})?$/'],
             'modifier_option_ids' => ['sometimes', 'array', 'max:30'],
             'modifier_option_ids.*' => ['integer', 'min:1', 'distinct'],
             'note' => ['nullable', 'string', 'max:1000'],
-        ])->validate();
+        ], ['quantity.regex' => 'Số lượng món phải là số nguyên dương.'])->validate();
 
         return $this->commands->run($context, 'order.line.add', $data + compact('orderId', 'expectedVersion'), $idempotencyKey, function () use ($context, $orderId, $data, $idempotencyKey, $expectedVersion): array {
             $order = $this->locked('fnb_orders', $context, $orderId);
@@ -190,11 +200,11 @@ final class FnbOrderService
     {
         $data = validator($input, [
             'variant_id' => ['required', 'integer', 'min:1'],
-            'quantity' => ['required', 'regex:/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/'],
+            'quantity' => ['required', 'regex:/^[1-9]\d*(?:\.0{1,6})?$/'],
             'modifier_option_ids' => ['sometimes', 'array', 'max:30'],
             'modifier_option_ids.*' => ['integer', 'min:1', 'distinct'],
             'note' => ['nullable', 'string', 'max:1000'],
-        ])->validate();
+        ], ['quantity.regex' => 'Số lượng món phải là số nguyên dương.'])->validate();
 
         return $this->commands->run($context, 'order.line.update', $data + compact('orderLineId', 'expectedOrderVersion'), $idempotencyKey, function () use ($context, $orderLineId, $data, $idempotencyKey, $expectedOrderVersion): array {
             $line = $this->locked('fnb_order_lines', $context, $orderLineId);

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export default function useFnbResource({ enabled = true, loader, deps = [], pollMs = 0, keepData = true }) {
+export default function useFnbResource({ enabled = true, loader, deps = [], pollMs = 0, keepData = true, backgroundPolling = false }) {
     const [data, setData] = useState(null);
     const [meta, setMeta] = useState({});
     const [loading, setLoading] = useState(Boolean(enabled));
@@ -11,7 +11,7 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
     const hasData = useRef(false);
     const inFlight = useRef(null);
 
-    const load = useCallback(({ silent = false, force = false } = {}) => {
+    const load = useCallback(({ silent = false, force = false, background = false } = {}) => {
         if (!enabled) {
             setLoading(false);
             return Promise.resolve(null);
@@ -21,7 +21,7 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
             // that read, then start a new one instead of returning its snapshot.
             if (force) {
                 const waitingSequence = requestSequence.current;
-                const refresh = () => waitingSequence === requestSequence.current ? load({ silent }) : null;
+                const refresh = () => waitingSequence === requestSequence.current ? load({ silent, background }) : null;
                 return inFlight.current.then(refresh, refresh);
             }
             return inFlight.current;
@@ -29,12 +29,15 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
 
         const sequence = ++requestSequence.current;
 
-        if (silent || (keepData && hasData.current)) {
-            setRefreshing(true);
-        } else {
-            setLoading(true);
+        // Background polls retain the displayed snapshot and connection state.
+        if (!background || !hasData.current) {
+            if (silent || (keepData && hasData.current)) {
+                setRefreshing(true);
+            } else {
+                setLoading(true);
+            }
         }
-        setError(null);
+        if (!background) setError(null);
 
         let request;
         request = (async () => {
@@ -42,6 +45,7 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
                 const result = await loader();
 
                 if (sequence === requestSequence.current) {
+                    setError(null);
                     setData(result?.data ?? result ?? null);
                     hasData.current = true;
                     setMeta(result?.meta ?? {});
@@ -99,7 +103,7 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
             if (!active || polling) return;
             polling = true;
             if (!silent || document.visibilityState !== 'hidden') {
-                try { await load({ silent }); failures = 0; }
+                try { await load({ silent, background: silent && backgroundPolling }); failures = 0; }
                 catch { failures += 1; }
             }
             polling = false;
@@ -120,7 +124,7 @@ export default function useFnbResource({ enabled = true, loader, deps = [], poll
             requestSequence.current += 1;
             inFlight.current = null;
         };
-    }, [enabled, load, pollMs]);
+    }, [enabled, load, pollMs, backgroundPolling]);
 
     const reload = useCallback((options = {}) => load({ ...options, force: true }), [load]);
 

@@ -1,6 +1,16 @@
-# F&B POS runtime contract (`0.2.0-dev.1`)
+# F&B POS runtime contract (`0.2.0-dev.2`)
 
 This document is the integration boundary between the F&B domain, HTTP controllers and the React shell. It is intentionally explicit about scope: controllers authorize permissions, while every service command revalidates aggregate scope, state, version and monetary invariants.
+
+## Additional orders after payment
+
+`order.create` accepts service sessions in `open` or `settling` state while the business day and bound shift remain open. Creating a new order round atomically resumes a settling session (`open`, clears `settling_at`, increments the session version and emits `fnb.service_session.resumed`). The command remains version checked and idempotent. Closed/cancelled/merged sessions reject new orders. Previously finalized bills, their allocations and payment records remain unchanged; additional quantities are billed separately. POS keeps **Thêm món** enabled in both active session states.
+
+## Return table / end service session
+
+`POST sessions/{id}/close` (`fnb.order.update`) accepts `open` and `settling` sessions. POS exposes **Trả bàn** next to the selected table, with confirmation; counter/takeaway sessions use **Kết thúc phiên**. An empty session can close directly without requesting settlement. Active/draft orders, open bills and quantities without settled payment evidence still block closure. Version checks and idempotency apply; session closure and release of all active table assignments commit atomically. Historical orders and payments remain intact.
+
+POS also offers **Thanh toán & trả bàn** for dine-in sessions. It uses the existing payment workflow, preserves this intent through settlement rounding and bank intent creation, then refreshes the session before attempting the separate idempotent close command. Partial/pending payments and unfinished orders keep the table occupied with an explicit message. A failed close never repeats an acknowledged payment.
 
 ## Scope and errors
 
@@ -276,3 +286,22 @@ Reconcile payload: `{ "destination": "inventory|accounting-tax", "retry_dead_let
 `automatic=true` is an explicit configuration request, not a default. The mapping records `authorized_by` and `authorized_auth_version`. `fnb:dispatch-integrations --limit=50` runs each minute with overlap prevention and dispatches unique `ReconcileFnbIntegration` jobs on queue `fnb` only for enabled opted-in mappings. Workers recheck the actor's active state/auth-version, HQ/outlet/native permissions, module/lifecycle capability, mapping and source evidence for every delivery. Revocation, password/auth-version change, mapping disable or item-mapping edit prevents further side effects. Dispatch rotates by `last_dispatched_at` to avoid starving later outlet mappings under the batch limit. Identity/authority revocation pauses the grant and records `automatic_paused_reason`; destination outages retain pending work. The two-minute unique window/job lease is not a substitute for delivery row locking/idempotency.
 
 TPBank QR configuration and VND transfer intent payloads are operator-assisted only. `provider_connected=false` and manual confirmation remain the truth; QR generation does not establish a real bank connection, incoming payment confirmation or hardware certification. Receipt printing remains operator-confirmed browser printing.
+
+## Ingredient units (`0.2.0-dev.2`)
+
+- `GET outlets/{outlet}/recipes` also returns `units`: website-scoped, non-archived records with `code`, `name`, `dimension` (`mass`, `volume`, `count`), decimal `factor`, `status`, `is_system`, `version`, and computed `in_use`.
+- `POST units` and `PUT units/{id}` use the normal configuration contract. `POST units/{id}/archive` soft-deletes an unused custom unit. All writes require `fnb.recipe.manage` plus HQ `fnb.recipe.master.manage`, `Idempotency-Key`, and `expected_version` on updates/archive. Used/system unit deletion and stale updates return 409. Codes are immutable; dimension/factor become immutable for system or referenced units. Status/name remain editable.
+- Seeded units: `g`, `kg`, `ml`, `l`, `piece`. Factors are relative to g/ml/piece, with up to six fractional digits, greater than zero and at most 1,000,000. Publishing converts quantity using BCMath directly into the ingredient base unit; cross-dimension, inactive source, zero-after-rounding, and overflow results are rejected. Existing recipe snapshots are unchanged. An inactive target unit may remain the immutable base of an existing ingredient.
+- Ingredient and topping-group codes are optional on create, generated from the Vietnamese name with a collision suffix within their website. Blank codes on edit preserve the existing code. Category codes follow the same behavior within their menu. Explicit invalid/duplicate codes return validation errors.
+
+### Shared size and topping names
+
+`GET outlets/{outlet}/menu?draft=1` includes website-scoped `size_definitions` and `topping_definitions` (active definitions only). These are reusable code/name templates. Selecting one copies its code/name to an item variant or group option; price and station remain specific to the item/group. Updating or archiving a template does not change existing assignments, released menus or order snapshots.
+
+For `kind = size | topping`:
+
+- `POST menu/{kind}-definitions`: create with required `name`, optional `code` (generated from name when blank).
+- `PUT menu/{kind}-definitions/{id}`: update with `name`, optional `code` (blank preserves code), and required `expected_version`.
+- `POST menu/{kind}-definitions/{id}/archive`: remove from the selectable catalog with required `expected_version`.
+
+Commands require `Idempotency-Key`, `fnb.menu.manage` and HQ `fnb.menu.master.manage`; definitions are isolated by website. Names are unique after whitespace/case normalization; codes are unique ignoring case within each kind, including archived entries. The additive migration imports existing variant/option names without changing their source records or prices.

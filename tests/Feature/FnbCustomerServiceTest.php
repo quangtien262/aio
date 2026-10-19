@@ -72,6 +72,22 @@ class FnbCustomerServiceTest extends TestCase
         $this->shiftId = (int) $shift['resource']['id'];
     }
 
+    public function test_customer_picker_lists_active_customers_without_a_query_and_filters_short_queries(): void
+    {
+        $alice = $this->createCustomer('CUS-ALICE', 'Alice', '0901234567');
+        $bob = $this->createCustomer('CUS-BOB', 'Bob', '0987654321');
+        $archived = $this->createCustomer('CUS-ARCHIVED', 'Archived', '0911223344');
+        DB::table('fnb_customer_profiles')->where('id', $archived)->update(['status' => 'archived']);
+
+        $items = $this->fnb->searchCustomers($this->context(), '')['resource']['items'];
+        $this->assertSame([$alice, $bob], array_column($items, 'id'));
+        $this->assertSame([$alice], array_column($this->fnb->searchCustomers($this->context(), ' ', 1)['resource']['items'], 'id'));
+        $this->assertSame([$bob], array_column($this->fnb->searchCustomers($this->context(), 'B')['resource']['items'], 'id'));
+        $this->assertSame([$alice], array_column($this->fnb->searchCustomers($this->context(), 'CUS-AL')['resource']['items'], 'id'));
+        $this->assertSame([$bob], array_column($this->fnb->searchCustomers($this->context(), '4321')['resource']['items'], 'id'));
+        $this->assertSame([], $this->fnb->searchCustomers($this->context(), 'No match')['resource']['items']);
+    }
+
     public function test_attach_updates_open_session_and_mutable_checks_but_freezes_after_finalization(): void
     {
         $customerId = $this->createCustomer('CUS-A', 'Alice Original', '0901 234 567');

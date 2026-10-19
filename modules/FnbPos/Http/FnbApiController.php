@@ -17,6 +17,7 @@ use Modules\FnbPos\Services\FnbIntegrationReadiness;
 use Modules\FnbPos\Services\FnbReadService;
 use Modules\FnbPos\Services\FnbRecipeService;
 use Modules\FnbPos\Services\FnbService;
+use Modules\FnbPos\Services\FnbUnitService;
 use Modules\FnbPos\Services\Security\FnbOutletAccessService;
 
 class FnbApiController
@@ -72,7 +73,7 @@ class FnbApiController
             default => ['resource' => $reads->read($ctx, $name, $request->query(), $request->user('admin'))],
         };
 
-        return $this->response($result);
+        return $this->response($result)->header('Cache-Control', 'no-store');
     }
 
     public function commandStatus(Request $request): JsonResponse
@@ -152,6 +153,41 @@ class FnbApiController
         return $this->response($result);
     }
 
+    public function reorderCategories(Request $request, FnbConfigurationService $configuration): JsonResponse
+    {
+        $input = $request->except(['website_key', 'actor_id', 'admin_id', 'approved', 'approved_by', 'reauth_proof', 'approval_token']);
+        $key = (string) $request->header('Idempotency-Key', '');
+        validator(['key' => $key], ['key' => ['required', 'string', 'min:8', 'max:120']])->validate();
+        $ctx = $this->context($request, 'fnb.menu.manage', false, $this->security->authorization($request, 'category.reorder', $input));
+        $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, 'fnb.menu.master.manage');
+
+        return $this->response($configuration->reorderCategories($ctx, $input, $key));
+    }
+
+    public function archiveUnit(Request $request, FnbUnitService $units): JsonResponse
+    {
+        $input = $request->only(['expected_version']);
+        $key = (string) $request->header('Idempotency-Key', '');
+        validator(['key' => $key], ['key' => ['required', 'string', 'min:8', 'max:120']])->validate();
+        $ctx = $this->context($request, 'fnb.recipe.manage', false, $this->security->authorization($request, 'unit.archive', $input));
+        $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, 'fnb.recipe.master.manage');
+
+        return $this->response($units->archive($ctx, (int) $request->route('resource'), $input, $key));
+    }
+
+    public function menuChoice(Request $request, \Modules\FnbPos\Services\FnbMenuChoiceService $choices): JsonResponse
+    {
+        $input = $request->only(['name', 'code', 'expected_version']);
+        $kind = (string) $request->route('fnb_choice_kind');
+        $archive = (bool) $request->route('fnb_choice_archive', false);
+        $key = (string) $request->header('Idempotency-Key', '');
+        validator(['key' => $key], ['key' => ['required', 'string', 'min:8', 'max:120']])->validate();
+        $ctx = $this->context($request, 'fnb.menu.manage', false, $this->security->authorization($request, $kind.'_definition.'.($archive ? 'archive' : 'save'), $input));
+        $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, 'fnb.menu.master.manage');
+        $id = $request->route('resource') ? (int) $request->route('resource') : null;
+        return $this->response($archive ? $choices->archive($ctx, $kind, $id, $input, $key) : $choices->save($ctx, $kind, $id, $input, $key));
+    }
+
     public function configure(Request $request, FnbConfigurationService $configuration): JsonResponse
     {
         $kind = (string) $request->route('fnb_kind');
@@ -160,8 +196,8 @@ class FnbApiController
         $key = (string) $request->header('Idempotency-Key', '');
         validator(['key' => $key], ['key' => ['required', 'string', 'min:8', 'max:120']])->validate();
         $ctx = $this->context($request, $permission, false, $this->security->authorization($request, $kind.'.save', $input));
-        if (in_array($kind, ['category', 'modifier_group', 'modifier_option', 'ingredient'], true)) {
-            $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, $kind === 'ingredient' ? 'fnb.recipe.master.manage' : 'fnb.menu.master.manage');
+        if (in_array($kind, ['category', 'modifier_group', 'modifier_option', 'ingredient', 'unit'], true)) {
+            $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, in_array($kind, ['ingredient', 'unit'], true) ? 'fnb.recipe.master.manage' : 'fnb.menu.master.manage');
         }
         $id = $request->route('resource') ? (int) $request->route('resource') : null;
         if ($kind === 'outlet') {

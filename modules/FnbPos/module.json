@@ -1,7 +1,7 @@
 {
   "name": "Quản lý quán Cafe",
   "key": "fnb-pos",
-  "version": "0.2.0-dev.1",
+  "version": "0.2.0-dev.2",
   "security_provider": "Modules\\FnbPos\\Security\\FnbVersionedSecurity",
   "lifecycle_state_provider": "Modules\\FnbPos\\Services\\Security\\FnbOperationalStateManager",
   "description": "Bán hàng tại quầy và tại bàn, pha chế, thanh toán, quản lý ca và báo cáo cho quán cafe/trà sữa.",
@@ -113,6 +113,13 @@
     "uninstall": false
   },
   "changelog": [
+    {
+      "version": "0.2.0-dev.2",
+      "date": "2026-10-18",
+      "notes": [
+        "Danh mục đơn vị nguyên liệu, quy đổi công thức và quản lý thực đơn bằng modal."
+      ]
+    },
     {
       "version": "0.2.0-dev.1",
       "date": "2026-10-18",

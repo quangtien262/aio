@@ -14,15 +14,15 @@ import FnbWorkspaceShell from '../components/FnbWorkspaceShell';
 import FnbPendingCommands from '../components/FnbPendingCommands';
 import useFnbResource from '../hooks/useFnbResource';
 import { FnbWorkspaceContext } from '../state/FnbWorkspaceContext';
+import { fnbSectionPath, overviewPermissions } from '../utils/fnbOverviewNavigation';
 import '../styles/fnb-pos.css';
 
 const OnboardingPage = lazy(() => import('./sections/FnbOnboardingPage'));
-const DashboardPage = lazy(() => import('./sections/FnbDashboardPage'));
+const OverviewPage = lazy(() => import('./sections/FnbOverviewPage'));
 const PosPage = lazy(() => import('./sections/FnbSalesPage'));
 const KitchenPage = lazy(() => import('./sections/FnbKitchenPage'));
 const MenuPage = lazy(() => import('./sections/FnbMenuPage'));
 const ShiftsPage = lazy(() => import('./sections/FnbShiftsPage'));
-const ReportsPage = lazy(() => import('./sections/FnbReportsPage'));
 const StaffPage = lazy(() => import('./sections/FnbStaffPage'));
 const SettingsPage = lazy(() => import('./sections/FnbSettingsPage'));
 const ChainPage = lazy(() => import('./sections/FnbChainPage'));
@@ -33,12 +33,11 @@ const BASE_ROUTE = '/modules/fnb-pos';
 
 const sections = [
     { key: 'onboarding', label: 'Khởi tạo quán', permissions: ['fnb.outlet.manage'], allowWithoutOutlet: true },
-    { key: 'dashboard', label: 'Tổng quan', permissions: ['fnb.dashboard.view'] },
+    { key: 'dashboard', label: 'Tổng quan', permissions: overviewPermissions },
     { key: 'pos', label: 'Bán hàng', permissions: ['fnb.order.create'] },
     { key: 'kitchen', label: 'Bar / Bếp', permissions: ['fnb.kitchen.view'] },
     { key: 'menu', label: 'Thực đơn', permissions: ['fnb.menu.view'] },
-    { key: 'shifts', label: 'Ca & két', permissions: ['fnb.shift.view'] },
-    { key: 'reports', label: 'Báo cáo', permissions: ['fnb.report.operations.view', 'fnb.report.financial.view'] },
+    { key: 'shifts', label: 'Ca bán hàng', permissions: ['fnb.shift.view'] },
     { key: 'staff', label: 'Nhân viên', permissions: ['fnb.staff.view'] },
     { key: 'chain', label: 'Điều hành chuỗi', permissions: ['fnb.chain.view'], allowWithoutOutlet: true },
     { key: 'integrations', label: 'Tích hợp & đồng bộ', permissions: ['fnb.chain.manage'] },
@@ -47,12 +46,11 @@ const sections = [
 
 const sectionComponents = {
     onboarding: OnboardingPage,
-    dashboard: DashboardPage,
+    dashboard: OverviewPage,
     pos: PosPage,
     kitchen: KitchenPage,
     menu: MenuPage,
     shifts: ShiftsPage,
-    reports: ReportsPage,
     staff: StaffPage,
     settings: SettingsPage,
     chain: ChainPage,
@@ -133,10 +131,11 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
         && (item.key !== 'onboarding' || !onboardingComplete || can('fnb.outlet.manage'))
     )), [can, onboardingComplete, outlets.length]);
 
-    const requestedSection = location.pathname
+    const requestedRoute = location.pathname
         .slice(BASE_ROUTE.length)
         .split('/')
         .filter(Boolean)[0];
+    const requestedSection = requestedRoute === 'reports' ? 'dashboard' : requestedRoute;
     const defaultSection = !onboardingComplete && visibleSections.some((item) => item.key === 'onboarding')
         ? 'onboarding'
         : (visibleSections.find((item) => item.key === 'dashboard')?.key
@@ -144,10 +143,10 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
     const activeSection = visibleSections.some((item) => item.key === requestedSection) ? requestedSection : defaultSection;
 
     useEffect(() => {
-        if (!bootstrapResource.loading && selectionReadyKey === selectionKey && requestedSection !== activeSection) {
-            navigate(`${BASE_ROUTE}/${activeSection}`, { replace: true });
+        if (!bootstrapResource.loading && selectionReadyKey === selectionKey && (requestedSection !== activeSection || requestedRoute === 'reports')) {
+            navigate(fnbSectionPath(requestedRoute === 'reports' && activeSection === 'dashboard' ? 'reports' : activeSection), { replace: true });
         }
-    }, [activeSection, bootstrapResource.loading, navigate, requestedSection, selectionReadyKey, selectionKey]);
+    }, [activeSection, bootstrapResource.loading, navigate, requestedSection, requestedRoute, selectionReadyKey, selectionKey]);
 
     const handleOutletChange = (value) => {
         setOutletId(value);
@@ -265,7 +264,7 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
         currentPermissions,
         can,
         runCommand,
-        navigateSection: (key) => navigate(`${BASE_ROUTE}/${key}`),
+        navigateSection: (key) => navigate(fnbSectionPath(key)),
     }), [api, hqApi, identity, bootstrap, bootstrapResource.reload, can, currentPermissions, navigate, outletId, selectedOutlet, terminalId, terminals, runCommand]);
 
     if (bootstrapResource.loading || (bootstrapResource.data && selectionReadyKey !== selectionKey)) {
@@ -293,7 +292,7 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
             <FnbWorkspaceShell
                 navigation={visibleSections}
                 activeSection={activeSection}
-                onNavigate={(key) => navigate(`${BASE_ROUTE}/${key}`)}
+                onNavigate={(key) => navigate(fnbSectionPath(key))}
                 outlets={outlets}
                 terminals={terminals}
                 outletId={outletId}
@@ -301,7 +300,6 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
                 onOutletChange={handleOutletChange}
                 onTerminalChange={handleTerminalChange}
                 operationalState={bootstrap.operational_state ?? bootstrap.site_settings?.operational_state}
-                installedVersion={bootstrap.installed_version ?? modulePayload?.installed_version}
             >
                 {!onboardingComplete && activeSection !== 'onboarding' ? (
                     <Alert

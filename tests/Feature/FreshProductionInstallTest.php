@@ -204,22 +204,28 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 $profile = App\Models\SiteProfile::query()->firstOrFail();
 $originalTheme = $profile->active_theme_key;
+App\Models\CmsPage::query()->create(['website_key' => 'website-main', 'title' => 'CMS-only page', 'slug' => 'cms-only-regression', 'status' => 'published', 'body' => '<p>Published page.</p>']);
+App\Models\CmsPost::query()->create(['website_key' => 'website-main', 'title' => 'CMS-only post', 'slug' => 'cms-only-regression', 'status' => 'published', 'content' => '<p>Published post.</p>']);
+App\Models\CmsService::query()->create(['website_key' => 'website-main', 'title' => 'CMS-only service', 'slug' => 'cms-only-regression', 'status' => 'published', 'content' => '<p>Published service.</p>']);
+$paths = ['/vi', '/vi/p/cms-only-regression', '/vi/n/cms-only-regression', parse_url(route('site.services.show', ['locale' => 'vi', 'slug' => 'cms-only-regression']), PHP_URL_PATH)];
 foreach (array_unique([$originalTheme, 'SHOP601', 'SER0101', 'AUTO850']) as $theme) {
     if ($theme && ! $app->make(App\Core\Themes\ThemeRegistry::class)->all()->contains('key', $theme)) {
         throw new RuntimeException("Unknown test theme: {$theme}");
     }
     $profile->forceFill(['active_theme_key' => $theme])->save();
-    $app->forgetScopedInstances();
-    $request = Illuminate\Http\Request::create('http://localhost/vi', 'GET');
-    $response = $kernel->handle($request);
-    if ($response->getStatusCode() !== 200) {
-        throw new RuntimeException("{$theme}: HTTP ".$response->getStatusCode());
+    foreach ($paths as $path) {
+        $app->forgetScopedInstances();
+        $request = Illuminate\Http\Request::create('http://localhost'.$path, 'GET');
+        $response = $kernel->handle($request);
+        if ($response->getStatusCode() !== 200) {
+            throw new RuntimeException("{$theme} {$path}: HTTP ".$response->getStatusCode());
+        }
+        if (strlen($response->getContent()) < 100) {
+            throw new RuntimeException("{$theme} {$path}: Empty storefront");
+        }
+        $kernel->terminate($request, $response);
+        echo "{$theme} {$path}: HTTP 200\n";
     }
-    if (strlen($response->getContent()) < 100) {
-        throw new RuntimeException("{$theme}: Empty storefront");
-    }
-    $kernel->terminate($request, $response);
-    echo "{$theme}: HTTP 200\n";
 }
 if (Illuminate\Support\Facades\Schema::hasTable('catalog_products')) {
     throw new RuntimeException('Rendering must not install Catalog implicitly.');

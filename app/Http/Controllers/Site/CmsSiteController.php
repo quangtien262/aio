@@ -2033,19 +2033,22 @@ class CmsSiteController
 
     private function resolveArticleCatalogSidebar(string $websiteKey, int $productLimit = 5, ?CmsService $currentService = null): array
     {
-        $products = CatalogProduct::query()->with('images')
-            ->where('website_key', $websiteKey)->where('is_active', true)
-            ->latest('created_at')->orderByDesc('id')->lazy(50)
-            ->filter(fn (CatalogProduct $item): bool => $this->localizedContent->isPublishedForLocale($item, 'catalog_product', $this->currentLocale(), $websiteKey))
-            ->take($productLimit)->map(function (CatalogProduct $item) use ($websiteKey): array {
-                $item = $this->localizeProductModel($item, $websiteKey);
+        $products = collect();
+        if ($this->catalogSchemaAvailable()) {
+            $products = CatalogProduct::query()->with('images')
+                ->where('website_key', $websiteKey)->where('is_active', true)
+                ->latest('created_at')->orderByDesc('id')->lazy(50)
+                ->filter(fn (CatalogProduct $item): bool => $this->localizedContent->isPublishedForLocale($item, 'catalog_product', $this->currentLocale(), $websiteKey))
+                ->take($productLimit)->map(function (CatalogProduct $item) use ($websiteKey): array {
+                    $item = $this->localizeProductModel($item, $websiteKey);
 
-                return [
-                    'title' => $item->name,
-                    'url' => $this->productUrl($item->slug),
-                    'image' => $item->image_url ?: $item->images->first()?->image_url,
-                ];
-            })->collect()->values();
+                    return [
+                        'title' => $item->name,
+                        'url' => $this->productUrl($item->slug),
+                        'image' => $item->image_url ?: $item->images->first()?->image_url,
+                    ];
+                })->collect()->values();
+        }
 
         $services = CmsService::query()->with('featuredImage')
             ->where('website_key', $websiteKey)->where('status', 'published')

@@ -63,6 +63,9 @@ final class FnbSetupService
                 throw new FnbConflictException('This website has already completed F&B onboarding.');
             }
 
+            FnbUnitService::seedDefaults($context->websiteKey);
+            FnbMenuChoiceService::seedDefaults($context->websiteKey);
+
             DB::table('fnb_site_settings')->where('website_key', $context->websiteKey)->update([
                 'is_active' => true,
                 'operational_state' => 'active',
@@ -333,10 +336,12 @@ final class FnbSetupService
             'outlet' => $this->record('fnb_outlets', $context->outletId),
             'menus' => DB::table('fnb_menus')->where('website_key', $context->websiteKey)->whereNull('archived_at')->orderBy('name')->get()->map(fn ($row) => $this->decode($row))->all(),
             'categories' => DB::table('fnb_menu_categories')->where('website_key', $context->websiteKey)
-                ->when(! $includeInactive, fn ($query) => $query->where('status', 'active'))->orderBy('sort_order')->get()->map(fn ($row) => $this->decode($row))->all(),
+                ->when(! $includeInactive, fn ($query) => $query->where('status', 'active'))->orderBy('sort_order')->orderBy('id')->get()->map(fn ($row) => $this->decode($row))->all(),
             'items' => $itemResources,
             'stations' => DB::table('fnb_prep_stations')->where('website_key', $context->websiteKey)->where('outlet_id', $context->outletId)
                 ->when(! $includeInactive, fn ($query) => $query->where('status', 'active'))->orderBy('sort_order')->get()->map(fn ($row) => $this->decode($row))->all(),
+            'size_definitions' => app(FnbMenuChoiceService::class)->catalog($context->websiteKey, 'size'),
+            'topping_definitions' => app(FnbMenuChoiceService::class)->catalog($context->websiteKey, 'topping'),
             'modifier_groups' => $groups->values()->map(fn (object $group): array => $this->decode($group) + [
                 'options' => ($options[$group->id] ?? collect())->map(fn (object $option): array => $this->decode($option))->all(),
             ])->all(),
@@ -638,17 +643,14 @@ final class FnbSetupService
     {
         $this->assertOutlet($context);
         $query = trim($query);
-        if (mb_strlen($query) < 2) {
-            return ['resource' => ['items' => []]];
-        }
         $phone = preg_replace('/\D+/', '', $query);
         $escaped = addcslashes($query, '%_');
         $customers = DB::table('fnb_customer_profiles')->where('website_key', $context->websiteKey)
             ->where('status', 'active')
-            ->where(fn ($builder) => $builder
+            ->when($query !== '', fn ($builder) => $builder->where(fn ($builder) => $builder
                 ->where('code', 'like', $escaped.'%')
                 ->orWhere('name', 'like', '%'.$escaped.'%')
-                ->when($phone !== '', fn ($inner) => $inner->orWhere('phone_normalized', 'like', '%'.$phone)))
+                ->when($phone !== '', fn ($inner) => $inner->orWhere('phone_normalized', 'like', '%'.$phone))))
             ->orderBy('name')->limit(max(1, min($limit, 50)))
             ->get(['id', 'public_id', 'code', 'name', 'phone_normalized', 'email', 'status', 'version']);
 

@@ -582,13 +582,16 @@ export default function AdminLayout() {
 
     const effectiveSectionKey = isMobile ? (mobileSectionKey ?? activeTopSectionKey) : activeTopSectionKey;
 
+    const isAdminHome = location.pathname.replace(/\/+$/, '') === normalizeRoute('/dashboard');
+
     const sideMenuItems = useMemo(() => {
         const scopedItems = currentNavigationItem?.source === 'module'
             ? visibleNavigationMenuItems.filter((item) => item.source === 'module' && item.moduleKey === currentNavigationItem.moduleKey)
             : visibleNavigationMenuItems.filter((item) => item.section === effectiveSectionKey && item.source !== 'module');
 
-        return buildWorkspaceMenuItems(scopedItems);
-    }, [currentNavigationItem, effectiveSectionKey, visibleNavigationMenuItems]);
+        const homeRoutes = [normalizeRoute('/dashboard'), normalizeRoute('/modules')];
+        return buildWorkspaceMenuItems(scopedItems.filter((item) => isAdminHome || item.source === 'module' || !homeRoutes.includes(item.route)));
+    }, [currentNavigationItem, effectiveSectionKey, visibleNavigationMenuItems, isAdminHome, normalizeRoute]);
 
     const selectedMenuKey = useMemo(() => {
         return currentNavigationItem?.key ?? null;
@@ -602,8 +605,9 @@ export default function AdminLayout() {
     }, [activeTopSection, currentNavigationItem]);
 
     const shouldShowBreadcrumb = useMemo(() => {
-        return !isMobile && currentNavigationItem?.key !== 'dashboard';
-    }, [currentNavigationItem, isMobile]);
+        const appStoreParent = currentNavigationItem?.route === normalizeRoute('/modules') && location.pathname.startsWith(`${normalizeRoute('/modules')}/`);
+        return !isMobile && currentNavigationItem?.key !== 'dashboard' && !appStoreParent;
+    }, [currentNavigationItem, isMobile, location.pathname, normalizeRoute]);
 
     const shellLoadingTitle = useMemo(() => {
         const normalizedPath = location.pathname.startsWith(ADMIN_BASE_PATH)
@@ -916,7 +920,7 @@ export default function AdminLayout() {
                 callAdminApi={callAdminApi}
             />
 
-            {!isMobile ? (
+            {!isMobile && desktopWorkspaceMenuItems.length > 0 ? (
                 <Header className="admin-sub-header">
                     <Menu
                         mode="horizontal"

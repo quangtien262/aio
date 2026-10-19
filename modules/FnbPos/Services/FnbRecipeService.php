@@ -4,7 +4,6 @@ namespace Modules\FnbPos\Services;
 
 use App\Models\Admin;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Modules\FnbPos\Domain\FnbConflictException;
 use Modules\FnbPos\Domain\FnbContext;
 use Modules\FnbPos\Services\Security\FnbAuditLogger;
@@ -26,7 +25,7 @@ class FnbRecipeService
             'lines' => ['required', 'array', 'min:1', 'max:100'],
             'lines.*.ingredient_id' => ['required', 'integer', 'min:1', 'distinct'],
             'lines.*.quantity' => ['required', 'numeric', 'gt:0', 'max:1000000', 'regex:/^\d+(\.\d{1,6})?$/'],
-            'lines.*.unit' => ['required', Rule::in(['g', 'kg', 'ml', 'l', 'piece'])],
+            'lines.*.unit' => ['required', 'string', 'max:30'],
             'lines.*.loss_rate' => ['sometimes', 'numeric', 'min:0', 'max:0.9999', 'regex:/^\d+(\.\d{1,4})?$/'],
         ])->validate();
 
@@ -43,11 +42,11 @@ class FnbRecipeService
             foreach ($data['lines'] as $index => $line) {
                 $ingredient = DB::table('fnb_ingredients')->where('website_key', $ctx->websiteKey)->where('id', $line['ingredient_id'])->where('status', 'active')->first();
                 abort_unless($ingredient, 404);
-                $factor = $this->conversion((string) $line['unit'], $ingredient->base_unit);
+                $baseQuantity = app(FnbUnitService::class)->convertQuantity($ctx->websiteKey, (string) $line['quantity'], (string) $line['unit'], $ingredient->base_unit);
                 $lines[] = [
                     'website_key' => $ctx->websiteKey, 'ingredient_id' => $ingredient->id,
                     'quantity' => (string) $line['quantity'], 'unit' => $line['unit'],
-                    'base_quantity' => bcmul((string) $line['quantity'], $factor, 6),
+                    'base_quantity' => $baseQuantity,
                     'loss_rate' => (string) ($line['loss_rate'] ?? '0'), 'sort_order' => $index,
                     'created_at' => now(), 'updated_at' => now(),
                 ];
@@ -71,18 +70,5 @@ class FnbRecipeService
 
             return ['resource' => (array) DB::table('fnb_recipes')->where('id', $id)->first() + ['lines' => $lines]];
         });
-    }
-
-    private function conversion(string $from, string $to): string
-    {
-        if ($from === $to) {
-            return '1';
-        }
-
-        return match ($from.':'.$to) {
-            'kg:g', 'l:ml' => '1000',
-            'g:kg', 'ml:l' => '0.001',
-            default => throw new FnbConflictException('Không thể đổi đơn vị giữa khối lượng, thể tích và số lượng.'),
-        };
     }
 }
