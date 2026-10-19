@@ -373,9 +373,10 @@ function CheckAllocationDrawer({ open, form, rows, saving, onClose, onSubmit }) 
                                     <Form.Item {...field} name={[field.name, 'selected']} valuePropName="checked" style={{ marginBottom: 0 }}><Checkbox /></Form.Item>
                                     <div><Text strong>{row?.line.item_name_snapshot ?? row?.line.item_name}</Text><div><Text type="secondary">{row?.order.order_no} · còn có thể phân bổ {formatQuantity(row?.remaining)}</Text></div></div>
                                     <Form.Item {...field} name={[field.name, 'quantity']} rules={[{ required: true, message: 'Nhập số lượng.' }, { validator: (_, value) => {
+                                        if (!Number.isInteger(value)) return Promise.reject(new Error('Số lượng phải là số nguyên.'));
                                         const quantity = decimalMicros(value);
                                         return quantity > 0n && quantity <= (row?.remainingMicros ?? 0n) ? Promise.resolve() : Promise.reject(new Error('Số lượng vượt phần còn lại.'));
-                                    } }]} style={{ marginBottom: 0 }}><Input inputMode="decimal" style={{ width: 120 }} /></Form.Item>
+                                    } }]} style={{ marginBottom: 0 }}><InputNumber min={1} max={Math.floor(Number(row?.remaining ?? 0))} step={1} precision={0} inputMode="numeric" controls={false} style={{ width: 120 }} /></Form.Item>
                                     <Form.Item {...field} name={[field.name, 'order_line_id']} hidden><Input /></Form.Item>
                                 </div>
                             </Card>;
@@ -1037,7 +1038,7 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
             return;
         }
         checkForm.resetFields();
-        checkForm.setFieldsValue({ allocations: allocationRows.map((row) => ({ selected: true, order_line_id: row.line.id, quantity: row.remaining })) });
+        checkForm.setFieldsValue({ allocations: allocationRows.map((row) => ({ selected: true, order_line_id: row.line.id, quantity: Math.floor(Number(row.remaining)) })) });
         setCheckDrawerOpen(true);
     };
 

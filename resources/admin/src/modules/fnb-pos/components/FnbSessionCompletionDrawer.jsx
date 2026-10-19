@@ -13,6 +13,7 @@ import { useFnbWorkspace } from '../state/FnbWorkspaceContext';
 import { asArray, formatQuantity } from '../utils/fnbFormat';
 import { kitchenLineAction, pendingSessionOrders } from '../utils/fnbSessionCompletion';
 import FnbStatusTag from './FnbStatusTag';
+import FnbKitchenProgress from './FnbKitchenProgress';
 
 const { Text } = Typography;
 
@@ -61,10 +62,10 @@ export default function FnbSessionCompletionDrawer({ open, session, title, refre
                 return <div className="fnb-completion-line" key={line.id}>
                     <div><Text strong>{formatQuantity(line.ordered_quantity ?? line.quantity)}× {line.item_name_snapshot ?? line.item_name}</Text>
                         {line.variant_name_snapshot || line.note ? <div><Text type="secondary">{[line.variant_name_snapshot, line.note].filter(Boolean).join(' · ')}</Text></div> : null}
-                        <FnbStatusTag status={status} />
                     </div>
                     {action && ticketLine && can('fnb.kitchen.update') ? <Button type={action.status === 'served' ? 'primary' : 'default'} disabled={busy || refreshing || kitchen.loading || Boolean(kitchen.error)} loading={pending === `line-${ticketLine.id}`} onClick={() => transition(ticket, ticketLine, action)}>{action.label}</Button> : null}
                     {action && !ticketLine && can('fnb.kitchen.view') && !kitchen.loading ? <Text type="secondary">Cập nhật Bar / Bếp để kiểm tra</Text> : null}
+                    <div className="fnb-completion-line-progress"><FnbKitchenProgress status={status} /></div>
                 </div>;
             })}
             {!lines.length ? <Text type="secondary">Order chưa kết thúc. Cập nhật lại hoặc kiểm tra chi tiết order.</Text> : null}
