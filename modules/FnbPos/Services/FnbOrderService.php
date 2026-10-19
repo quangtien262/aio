@@ -1187,7 +1187,32 @@ final class FnbOrderService
             return $resource;
         })->groupBy('ticket_id');
 
-        return array_map(fn (object $ticket): array => $this->decode($ticket) + ['lines' => ($lines[$ticket->id] ?? collect())->values()->all()], $tickets);
+        $orderMetadata = DB::table('fnb_orders as orders')
+            ->join('fnb_service_sessions as sessions', 'sessions.id', '=', 'orders.session_id')
+            ->leftJoin('fnb_service_session_tables as assignments', function ($join): void {
+                $join->on('assignments.session_id', '=', 'sessions.id')->on('assignments.website_key', '=', 'sessions.website_key')->on('assignments.outlet_id', '=', 'sessions.outlet_id');
+            })
+            ->leftJoin('fnb_dining_tables as tables', function ($join): void {
+                $join->on('tables.id', '=', 'assignments.table_id')->on('tables.website_key', '=', 'assignments.website_key')->on('tables.outlet_id', '=', 'assignments.outlet_id');
+            })
+            ->where('orders.website_key', $context->websiteKey)->where('orders.outlet_id', $context->outletId)
+            ->where('sessions.website_key', $context->websiteKey)->where('sessions.outlet_id', $context->outletId)
+            ->whereIn('orders.id', array_column($tickets, 'order_id'))->orderByDesc('assignments.id')
+            ->get(['orders.id', 'orders.order_no', 'orders.session_id', 'sessions.service_type', 'assignments.left_at', 'tables.name as table_name'])->groupBy('id');
+
+        return array_map(function (object $ticket) use ($orderMetadata, $lines): array {
+            $assignments = $orderMetadata[$ticket->order_id] ?? collect();
+            $order = $assignments->first();
+            $activeTables = $assignments->whereNull('left_at');
+            $tableName = ($activeTables->isNotEmpty() ? $activeTables : $assignments->take(1))->pluck('table_name')->filter()->unique()->implode(', ');
+            $sessionLabel = match ($order?->service_type) {
+                'takeaway' => 'Mang đi #'.$order->session_id,
+                'counter' => 'Tại quầy #'.$order->session_id,
+                default => null,
+            };
+            return $this->decode($ticket) + ['order_no' => $order?->order_no, 'table_name' => $tableName ?: null,
+                'session_label' => $sessionLabel, 'lines' => ($lines[$ticket->id] ?? collect())->values()->all()];
+        }, $tickets);
     }
 
     private function locked(string $table, FnbContext $context, int $id): object

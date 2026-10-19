@@ -19,6 +19,10 @@ Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.ena
     Route::put('chain/integrations/mapping', [FnbIntegrationController::class, 'handle'])->defaults('integration_action', 'integration.mapping.save')->defaults('fnb_permission', 'fnb.settings.manage');
     Route::put('chain/integrations/items', [FnbIntegrationController::class, 'handle'])->defaults('integration_action', 'integration.item.save')->defaults('fnb_permission', 'fnb.settings.manage');
     Route::post('chain/integrations/reconcile', [FnbIntegrationController::class, 'handle'])->defaults('integration_action', 'integration.reconcile')->defaults('fnb_permission', 'fnb.settings.manage');
+    Route::get('outlets/{outlet}/bank-accounts/payment-options', [FnbBankController::class, 'accounts'])->defaults('fnb_bank_payment_options', true)->name('bank.accounts.payment-options');
+    Route::get('outlets/{outlet}/bank-accounts', [FnbBankController::class, 'accounts'])->name('bank.accounts.index');
+    Route::post('outlets/{outlet}/bank-accounts', [FnbBankController::class, 'accounts'])->defaults('fnb_permission', 'fnb.settings.manage')->name('bank.accounts.create');
+    Route::put('outlets/{outlet}/bank-accounts/{resource}', [FnbBankController::class, 'accounts'])->defaults('fnb_permission', 'fnb.settings.manage')->whereNumber('resource')->name('bank.accounts.update');
     Route::get('outlets/{outlet}/bank-account', [FnbBankController::class, 'account'])->name('bank.account.show');
     Route::put('outlets/{outlet}/bank-account', [FnbBankController::class, 'account'])->defaults('fnb_permission', 'fnb.settings.manage')->name('bank.account.save');
     Route::post('checks/{resource}/bank-intents', [FnbBankController::class, 'intent'])->defaults('fnb_permission', 'fnb.payment.collect')->name('bank.intent');

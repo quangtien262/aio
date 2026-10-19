@@ -568,8 +568,12 @@
 
 .fnb-order-command-stack {
     display: grid;
-    gap: 7px;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 8px;
 }
+
+.fnb-order-command-stack > .ant-btn { padding-inline: 10px; }
 
 .fnb-check-list {
     margin-top: 14px;
@@ -1196,10 +1200,48 @@
     border: 0;
 }
 
-.fnb-kds-order-actions { display: flex; justify-content: flex-end; margin-bottom: 14px; }
-.fnb-kds-order-actions:empty { display: none; }
 .fnb-completion-order-heading { flex-wrap: wrap; gap: 10px; }
 
 .fnb-kds-completed-time { grid-column: 1 / -1; font-size: 12px; }
 
 .fnb-kds-updated-time { font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.fnb-kds-ticket .ant-card-head-wrapper { gap: 12px; }
+.fnb-kds-ticket .ant-card-head-title { padding: 14px 0; white-space: normal; }
+.fnb-kds-ticket .ant-card-extra { flex-shrink: 0; padding: 14px 0; }
+.fnb-kds-ticket-heading { min-width: 0; }
+.fnb-kds-ticket-meta { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 4px; font-size: 12px; line-height: 1.5; font-weight: 400; overflow-wrap: anywhere; }
+.fnb-kds-ticket-meta .ant-typography { font-size: inherit; }
+
+.fnb-kds-line-action.ant-btn { height: 32px; min-height: 32px; padding-inline: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+
+.fnb-check-allocation-quantity { display: inline-block; white-space: nowrap; min-width: 48px; text-align: right; font-variant-numeric: tabular-nums; }
+
+.fnb-payment-drawer .ant-drawer-body { padding: 20px; background: #f5f8f7; }
+.fnb-payment-summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 18px 20px; margin-bottom: 18px; border: 1px solid #d7e8e1; border-radius: 14px; background: #edf7f2; }
+.fnb-payment-summary h2.ant-typography { color: #075748; margin: 3px 0 0; font-size: 30px; }
+.fnb-payment-drawer .ant-form { padding: 18px; border: 1px solid #dce7e3; border-radius: 14px; background: white; }
+.fnb-payment-drawer .ant-form-item { margin-bottom: 16px; }
+.fnb-payment-drawer .ant-form-item-label { padding-bottom: 6px; }
+.fnb-payment-radio { display: flex; flex-wrap: wrap; gap: 8px; }
+.fnb-payment-radio .ant-radio-button-wrapper { border-radius: 8px !important; border-inline-start-width: 1px; font-size: 13px; padding-inline: 12px; }
+.fnb-payment-radio .ant-radio-button-wrapper::before { display: none; }
+.fnb-payment-money-fields { display: flex; gap: 14px; flex-wrap: wrap; }
+.fnb-payment-money-fields > .ant-form-item { flex: 1 1 170px; }
+.fnb-payment-footer { display: flex; justify-content: flex-end; gap: 10px; }
+.fnb-transfer-panel { padding: 16px; border: 1px solid #dce7e3; border-radius: 12px; margin-bottom: 16px; background: #fbfdfc; }
+.fnb-transfer-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.fnb-bank-account-radio { display: flex; flex-direction: column; gap: 10px; }
+.fnb-transfer-details { display: flex; align-items: center; gap: 16px; }
+.fnb-transfer-details > .ant-qrcode { flex-shrink: 0; background: white; }
+.fnb-transfer-copy { display: flex; flex-direction: column; min-width: 0; gap: 5px; font-size: 13px; overflow-wrap: anywhere; }
+.fnb-transfer-qr-empty { display: grid; place-items: center; min-height: 140px; }
+.fnb-transfer-notice, .fnb-payment-note { display: block; font-size: 12px; line-height: 1.6; }
+.fnb-transfer-notice { margin-top: 12px; }
+@media(max-width: 575px) {
+    .fnb-payment-drawer .ant-drawer-body { padding: 12px; }
+    .fnb-payment-drawer .ant-form { padding: 14px; }
+    .fnb-transfer-details { flex-direction: column; align-items: center; }
+    .fnb-transfer-copy { width: 100%; }
+    .fnb-payment-footer > .ant-btn-primary { flex: 1; }
+}

@@ -181,10 +181,12 @@ export default function FnbKitchenPage() {
                         <Card
                             key={ticket.public_id ?? ticket.id}
                             className={`fnb-kds-ticket ${Number(ticket.priority) > 0 || overdue ? 'is-priority' : ''}`}
-                            title={<Space><Title level={5} style={{ margin: 0 }}>{ticket.ticket_no ?? `Phiếu #${ticket.id}`}</Title>{Number(ticket.priority) > 0 ? <Tag color="red">Ưu tiên</Tag> : null}</Space>}
-                            extra={<Space direction="vertical" size={0} align="end"><Text strong>{ticket.table_name ?? ticket.session_label ?? ticket.order_no ?? (ticket.order_id ? `Order #${ticket.order_id}` : 'Phiếu chế biến')}</Text><Text type="secondary"><ClockCircleOutlined /> {formatDuration(ticket.fired_at ?? ticket.created_at)}</Text></Space>}
+                            title={<div className="fnb-kds-ticket-heading">
+                                <Space wrap><Title level={5} style={{ margin: 0 }}>{ticket.table_name ?? ticket.session_label ?? ticket.ticket_no ?? `Phiếu #${ticket.id}`}</Title>{Number(ticket.priority) > 0 ? <Tag color="red">Ưu tiên</Tag> : null}</Space>
+                                <div className="fnb-kds-ticket-meta"><Text type="secondary">{ticket.order_no ?? `Order #${ticket.order_id}`}</Text><Text type="secondary"><ClockCircleOutlined /> {formatDuration(ticket.fired_at ?? ticket.created_at)}</Text></div>
+                            </div>}
+                            extra={kitchenView === 'active' ? <FnbCompleteOrderButton orderId={ticket.order_id} tickets={tickets} disabled={pendingLine !== null || Boolean(resource.error)} loading={pendingLine === `order-${ticket.order_id}`} onComplete={(versions) => completeOrder(ticket.order_id, versions)} /> : null}
                         >
-                            <div className="fnb-kds-order-actions">{kitchenView === 'active' ? <FnbCompleteOrderButton orderId={ticket.order_id} tickets={tickets} disabled={pendingLine !== null || Boolean(resource.error)} loading={pendingLine === `order-${ticket.order_id}`} onComplete={(versions) => completeOrder(ticket.order_id, versions)} /> : null}</div>
                             <Space direction="vertical" size={12} style={{ width: '100%' }}>
                                 {ticket.displayLines.map((line) => {
                                     const status = lineStatus(line);
@@ -209,7 +211,7 @@ export default function FnbKitchenPage() {
                                                     loading={pendingLine === line.id}
                                                     disabled={pendingLine !== null || Boolean(resource.error)}
                                                     onClick={() => transition(ticket, line, action)}
-                                                    className="fnb-touch-button"
+                                                    className="fnb-kds-line-action"
                                                 >
                                                     {action.label}
                                                 </Button>

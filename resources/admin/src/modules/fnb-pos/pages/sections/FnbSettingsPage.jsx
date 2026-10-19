@@ -36,14 +36,15 @@ const configMeta = {
     table: { title: 'bàn', permission: 'fnb.floor.manage', path: 'tables' },
     station: { title: 'trạm chế biến', permission: 'fnb.floor.manage', path: 'stations' },
     payment_method: { title: 'phương thức thanh toán', permission: 'fnb.settings.manage', path: 'payment-methods' },
-    bank_account: { title: 'tài khoản TPBank', permission: 'fnb.settings.manage', path: 'bank-account' },
+    bank_account: { title: 'tài khoản ngân hàng', permission: 'fnb.settings.manage', path: 'bank-account' },
 };
 
-function ConfigDrawer({ editor, form, areas, saving, onClose, onSubmit }) {
+function ConfigDrawer({ editor, form, areas, banks, saving, onClose, onSubmit }) {
     const kind = editor?.kind;
     const record = editor?.record;
     const meta = configMeta[kind];
     const commonFields = kind && !['outlet', 'bank_account'].includes(kind);
+    const bankEnabled = Form.useWatch('enabled', form);
 
     return (
         <Drawer
@@ -61,10 +62,11 @@ function ConfigDrawer({ editor, form, areas, saving, onClose, onSubmit }) {
                     <Form.Item name="address" label="Địa chỉ"><Input.TextArea rows={3} maxLength={1000} /></Form.Item>
                 </> : null}
                 {kind === 'bank_account' ? <>
-                    <Alert type="info" showIcon message="Tài khoản nhận tiền TPBank của điểm bán" description="QR theo bill được tạo tại màn thu tiền. Thu ngân vẫn cần kiểm tra báo có trước khi xác nhận." style={{ marginBottom: 16 }} />
+                    <Form.Item name="bank_code" label="Ngân hàng" rules={[{ required: true, message: 'Chọn ngân hàng.' }]}><Select showSearch optionFilterProp="label" options={banks.map((bank) => ({ value: bank.code, label: `${bank.name} · ${bank.code}` }))} placeholder="Chọn ngân hàng nhận tiền" /></Form.Item>
                     <Form.Item name="account_number" label="Số tài khoản" extra={record ? `Để trống để giữ tài khoản ${record.account_number_masked ?? 'đã lưu'}.` : null} rules={[{ required: !record }, { pattern: /^[0-9]{6,30}$/, message: 'Nhập số tài khoản hợp lệ.' }]}><Input inputMode="numeric" autoComplete="off" /></Form.Item>
                     <Form.Item name="account_name" label="Tên chủ tài khoản" rules={[{ required: true }]}><Input autoComplete="off" /></Form.Item>
-                    <Form.Item name="enabled" label="Bật QR chuyển khoản" valuePropName="checked"><Switch /></Form.Item>
+                    <Form.Item name="enabled" label="Bật nhận chuyển khoản" valuePropName="checked"><Switch onChange={(enabled) => { if (!enabled) form.setFieldValue('is_default', false); }} /></Form.Item>
+                    <Form.Item name="is_default" label="Tài khoản mặc định" valuePropName="checked" extra="Được chọn sẵn khi thu tiền chuyển khoản. Tài khoản cần bật nhận chuyển khoản."><Switch disabled={!bankEnabled} /></Form.Item>
                 </> : null}
                 {commonFields ? <Row gutter={14}>
                     <Col xs={24} md={9}><Form.Item name="code" label="Mã" rules={[{ required: true }, { pattern: /^[A-Za-z0-9_-]+$/, message: 'Chỉ dùng chữ, số, gạch ngang hoặc gạch dưới.' }]}><Input maxLength={40} /></Form.Item></Col>
@@ -81,7 +83,7 @@ function ConfigDrawer({ editor, form, areas, saving, onClose, onSubmit }) {
                 {kind === 'station' ? <Form.Item name="sla_seconds" label="Mục tiêu hoàn tất (giây)"><InputNumber min={10} max={86400} precision={0} style={{ width: '100%' }} /></Form.Item> : null}
                 {kind === 'payment_method' ? <>
                     <Form.Item name="kind" label="Loại thanh toán" rules={[{ required: true }]}><Select disabled={Boolean(record)} options={[{ value: 'cash', label: 'Tiền mặt' }, { value: 'transfer', label: 'Chuyển khoản' }, { value: 'card', label: 'Thẻ' }]} /></Form.Item>
-                    <Form.Item name="requires_reference" label="Bắt buộc mã tham chiếu" valuePropName="checked"><Switch /></Form.Item>
+                    <Form.Item name="requires_reference" label="Bắt buộc mã giao dịch khi nhập thủ công" valuePropName="checked"><Switch /></Form.Item>
                     {record ? <Alert type="info" showIcon message="Loại thanh toán không thể đổi sau khi đã sử dụng" description="Nếu cần loại khác, hãy ngừng phương thức cũ và tạo phương thức mới." /> : null}
                 </> : null}
                 {commonFields && kind !== 'table' ? <Form.Item name="status" label="Trạng thái"><Select options={[{ value: 'active', label: 'Đang hoạt động' }, { value: 'inactive', label: 'Tạm ngưng' }]} /></Form.Item> : null}
@@ -114,7 +116,7 @@ export default function FnbSettingsPage() {
     const [form] = Form.useForm();
     const loadSettings = useCallback(() => api.settings(), [api]);
     const resource = useFnbResource({ enabled: Boolean(outletId), loader: loadSettings, deps: [outletId] });
-    const loadBank = useCallback(() => api.read(api.outletPath('bank-account')), [api]);
+    const loadBank = useCallback(() => api.read(api.outletPath('bank-accounts')), [api]);
     const bankResource = useFnbResource({ enabled: Boolean(outletId && can('fnb.settings.view') && can('fnb.chain.manage')), loader: loadBank, deps: [outletId] });
     const settings = resource.data ?? {};
     const outlet = settings.outlet ?? selectedOutlet ?? {};
@@ -130,7 +132,9 @@ export default function FnbSettingsPage() {
             sla_seconds: kind === 'station' ? 600 : undefined,
             kind: kind === 'payment_method' ? 'cash' : undefined,
             requires_reference: false,
-            enabled: false,
+            enabled: kind === 'bank_account',
+            bank_code: kind === 'bank_account' ? 'TPB' : undefined,
+            is_default: kind === 'bank_account' && !asArray(bankResource.data?.accounts).some((account) => account.is_default),
         };
         form.setFieldsValue(record ? { ...record } : defaults);
         setEditor({ kind, record });
@@ -149,13 +153,13 @@ export default function FnbSettingsPage() {
                 expected_versions: { [`${kind}:${record.public_id ?? record.id}`]: record.version },
             } : {}),
         };
-        const path = kind === 'bank_account' ? api.outletPath('bank-account') : kind === 'outlet'
+        const path = kind === 'bank_account' ? api.outletPath(`bank-accounts${record ? `/${record.id}` : ''}`) : kind === 'outlet'
             ? api.outletPath()
             : api.outletPath(`${meta.path}${record ? `/${record.id}` : ''}`);
         setSaving(true);
         try {
             await runCommand({
-                execute: (auth) => api.command(path, payload, { method: record || kind === 'bank_account' ? 'PUT' : 'POST', idempotencyKey: key, ...auth }),
+                execute: (auth) => api.command(path, payload, { method: record ? 'PUT' : 'POST', idempotencyKey: key, ...auth }),
                 successMessage: `Đã lưu ${meta.title}.`,
                 onSuccess: async () => {
                     setEditor(null);
@@ -232,20 +236,21 @@ export default function FnbSettingsPage() {
                     { key: 'tables', label: `Bàn (${asArray(settings.tables).length})`, children: <ConfigTable kind="table" rows={asArray(settings.tables)} columns={columns.table} canEdit={can('fnb.floor.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
                     { key: 'stations', label: `Trạm Bar (${asArray(settings.stations).length})`, children: <ConfigTable kind="station" rows={asArray(settings.stations)} columns={columns.station} canEdit={can('fnb.floor.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
                     { key: 'payments', label: `Thanh toán (${asArray(settings.payment_methods).length})`, children: <ConfigTable kind="payment_method" rows={asArray(settings.payment_methods)} columns={columns.payment_method} canEdit={can('fnb.settings.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
-                    { key: 'bank', label: 'TPBank & in phiếu', children: <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    { key: 'bank', label: 'Ngân hàng & in phiếu', children: <Space direction="vertical" size={16} style={{ width: '100%' }}>
                         {bankResource.error ? <Alert type="warning" message={bankResource.error.message} /> : null}
-                        <Descriptions items={[
-                            { key: 'bank', label: 'Ngân hàng', children: 'TPBank' },
-                            { key: 'number', label: 'Số tài khoản', children: bankResource.data?.account_number_masked ?? 'Chưa cấu hình' },
-                            { key: 'name', label: 'Chủ tài khoản', children: bankResource.data?.account_name ?? '—' },
-                            { key: 'enabled', label: 'QR theo bill', children: bankResource.data?.enabled ? 'Đã bật' : 'Chưa bật' },
+                        <div className="fnb-table-toolbar"><Text type="secondary">Lưu tài khoản nhận tiền và chọn tài khoản mặc định cho QR chuyển khoản.</Text>{can('fnb.settings.manage') && can('fnb.chain.manage') ? <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('bank_account')}>Thêm tài khoản</Button> : null}</div>
+                        <Table size="small" rowKey="id" loading={bankResource.loading} dataSource={asArray(bankResource.data?.accounts)} scroll={{ x: 620 }} pagination={false} columns={[
+                            { title: 'Ngân hàng', render: (_, account) => <Space wrap><Text strong>{account.bank_name}</Text>{account.is_default ? <Tag color="green">Mặc định</Tag> : null}</Space> },
+                            { title: 'Số tài khoản', dataIndex: 'account_number_masked' },
+                            { title: 'Chủ tài khoản', dataIndex: 'account_name' },
+                            { title: 'Trạng thái', render: (_, account) => <Tag color={account.enabled ? 'green' : undefined}>{account.enabled ? 'Đang dùng' : 'Tạm ngưng'}</Tag> },
+                            { title: '', render: (_, account) => can('fnb.settings.manage') && can('fnb.chain.manage') ? <Button size="small" icon={<EditOutlined />} onClick={() => openEditor('bank_account', account)}>Sửa</Button> : null },
                         ]} />
-                        {can('fnb.settings.manage') && can('fnb.chain.manage') ? <Button onClick={() => openEditor('bank_account', bankResource.data?.version ? bankResource.data : null)}>Cấu hình TPBank</Button> : null}
                         <Alert type="info" showIcon message="In phiếu bằng máy in USB" description="Cài máy in USB trên máy tính, chọn khổ giấy 80 mm trong hộp thoại in của trình duyệt. Sau khi kiểm tra phiếu ra giấy, thu ngân chọn “Xác nhận đã in”. Có thể in lại từ bill đã chốt." />
                     </Space> },
                 ]} />
             </Card>
-            <ConfigDrawer editor={editor} form={form} areas={areas} saving={saving} onClose={() => setEditor(null)} onSubmit={save} />
+            <ConfigDrawer banks={asArray(bankResource.data?.banks)} editor={editor} form={form} areas={areas} saving={saving} onClose={() => setEditor(null)} onSubmit={save} />
         </div>
     );
 }

@@ -147,6 +147,9 @@ final class FnbTransactionSafetyTest extends TestCase
         }
         $history = $this->fnb->pollKitchen($this->ctx, view: 'completed')['resource']['tickets'];
         $this->assertCount(1, $history);
+        $this->assertSame('Tại quầy #'.$this->session['id'], $history[0]['session_label']);
+        $this->assertNull($history[0]['table_name']);
+        $this->assertSame($order['order_no'], $history[0]['order_no']);
         $this->assertCount(1, $this->fnb->pollKitchen($this->ctx)['resource']['tickets']);
         $served = collect($history[0]['lines'])->firstWhere('status_rollup', 'served');
         $this->assertNotNull($served['served_at']);
@@ -164,6 +167,26 @@ final class FnbTransactionSafetyTest extends TestCase
         $this->withHeaders(['X-FNB-Terminal' => (string) $this->ctx->terminalId])
             ->getJson('/admin/api/fnb/outlets/'.$this->ctx->outletId.'/kitchen/tickets?view=completed')->assertOk()->assertJsonCount(1, 'data.tickets');
         $this->getJson('/admin/api/fnb/outlets/'.$this->ctx->outletId.'/kitchen/tickets?view=wrong')->assertUnprocessable();
+    }
+
+    public function test_kitchen_headers_include_current_table_and_retain_last_table_for_history(): void
+    {
+        $scope = ['website_key' => $this->ctx->websiteKey, 'outlet_id' => $this->ctx->outletId, 'created_at' => now(), 'updated_at' => now()];
+        $area = DB::table('fnb_service_areas')->insertGetId($scope + ['code' => 'MAIN', 'name' => 'Khu vực chính']);
+        $firstTable = DB::table('fnb_dining_tables')->insertGetId($scope + ['service_area_id' => $area, 'code' => 'T1', 'name' => 'Bàn 1']);
+        $secondTable = DB::table('fnb_dining_tables')->insertGetId($scope + ['service_area_id' => $area, 'code' => 'T2', 'name' => 'Bàn 2']);
+        $this->session = $this->fnb->openSession($this->ctx, ['business_day_id' => $this->session['business_day_id'], 'service_type' => 'dine_in', 'table_id' => $firstTable, 'guest_count' => 1], (string) Str::uuid())['resource'];
+        $order = $this->orderForBulkCompletion();
+        $ticket = $this->fnb->pollKitchen($this->ctx)['resource']['tickets'][0];
+        $this->assertSame('Bàn 1', $ticket['table_name']);
+        $this->assertSame($order['order_no'], $ticket['order_no']);
+        $this->assertArrayNotHasKey('customer_snapshot', $ticket);
+        $this->fnb->transferSession($this->ctx, $this->session['id'], $secondTable, (string) Str::uuid(), $this->version('fnb_service_sessions', $this->session['id']));
+        $this->assertSame('Bàn 2', $this->fnb->pollKitchen($this->ctx)['resource']['tickets'][0]['table_name']);
+        $versions = DB::table('fnb_kitchen_tickets')->where('order_id', $order['id'])->pluck('version', 'id')->all();
+        $this->fnb->completeKitchenOrder($this->ctx, $order['id'], $versions, (string) Str::uuid());
+        DB::table('fnb_service_session_tables')->where('session_id', $this->session['id'])->update(['left_at' => now(), 'active_slot' => null]);
+        $this->assertSame('Bàn 2', $this->fnb->pollKitchen($this->ctx, view: 'completed')['resource']['tickets'][0]['table_name']);
     }
 
     private function check(): array

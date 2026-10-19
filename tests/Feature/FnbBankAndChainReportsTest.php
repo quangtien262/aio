@@ -50,7 +50,7 @@ class FnbBankAndChainReportsTest extends TestCase
         $this->session = $this->fnb->openSession($this->ctx, ['business_day_id' => $day['id'], 'service_type' => 'counter', 'guest_count' => 1], (string) Str::uuid())['resource'];
     }
 
-    private function check(): array
+    private function check(bool $plan = true): array
     {
         $item = $this->fnb->saveCatalogItem($this->ctx, ['code' => 'COFFEE', 'name' => 'Coffee', 'station_id' => (int) DB::table('fnb_prep_stations')->value('id'),
             'variant' => ['code' => 'S', 'name' => 'Small', 'base_price_minor' => 30000]], (string) Str::uuid())['resource'];
@@ -61,7 +61,7 @@ class FnbBankAndChainReportsTest extends TestCase
         $check = $this->fnb->createCheck($this->ctx, $this->session['id'], [], (string) Str::uuid(), $version)['resource'];
         $check = $this->fnb->finalizeCheck($this->ctx, $check['id'], (string) Str::uuid(), $check['version'])['resource'];
 
-        return $this->fnb->setSettlementPlan($this->ctx, $check['id'], 'single_non_cash', (string) Str::uuid(), $check['version'])['resource'];
+        return $plan ? $this->fnb->setSettlementPlan($this->ctx, $check['id'], 'single_non_cash', (string) Str::uuid(), $check['version'])['resource'] : $check;
     }
 
     public function test_tpb_qr_is_encrypted_scoped_idempotent_and_never_confirms_money(): void
@@ -83,6 +83,68 @@ class FnbBankAndChainReportsTest extends TestCase
         $this->assertDatabaseCount('fnb_payments', 0);
         $this->assertSame('finalized', DB::table('fnb_checks')->where('id', $check['id'])->value('status'));
         $this->assertTrue(app(AuditChainVerifier::class)->verify()['valid']);
+    }
+
+    public function test_multiple_bank_accounts_have_one_default_and_use_the_selected_bank_bin(): void
+    {
+        $bank = app(FnbBankService::class);
+        $first = $bank->saveAccount($this->ctx, ['bank_code' => 'TPB', 'account_number' => '12345678901', 'account_name' => 'TEST TPB', 'enabled' => true], 'bank-first', create: true)['resource'];
+        $this->assertTrue($first['is_default']);
+        $second = $bank->saveAccount($this->ctx, ['bank_code' => 'VCB', 'account_number' => '98765432100', 'account_name' => 'TEST VCB', 'enabled' => true, 'is_default' => true], 'bank-second', create: true)['resource'];
+        $this->assertTrue($second['is_default']);
+        $this->assertSame($second['id'], $bank->account($this->ctx)['id']);
+        $this->assertSame(1, DB::table('fnb_bank_accounts')->where('default_slot', 'default')->count());
+        $this->assertSame(2, (int) DB::table('fnb_bank_accounts')->where('id', $first['id'])->value('version'));
+        $check = $this->check();
+        $intent = $bank->intent($this->ctx, $check['id'], ['amount_minor' => 30000], 'vcb-intent')['resource'];
+        $this->assertSame('VCB', $intent['bank_code']);
+        $this->assertSame($second['id'], $intent['account_id']);
+        $this->assertStringContainsString('970436', $intent['qr_payload']);
+        $this->assertStringContainsString('98765432100', $intent['qr_payload']);
+        $selected = $bank->intent($this->ctx, $check['id'], ['amount_minor' => 30000, 'account_id' => $first['id']], 'tpb-selected')['resource'];
+        $this->assertSame('TPB', $selected['bank_code']);
+        $this->assertStringContainsString('970423', $selected['qr_payload']);
+        $bank->saveAccount($this->ctx, ['account_name' => 'TEST VCB NEW', 'account_number' => '', 'enabled' => false, 'expected_version' => $second['version']], 'disable-vcb', $second['id']);
+        $this->assertSame($first['id'], $bank->account($this->ctx)['id']);
+        $this->assertSame($intent, $bank->intent($this->ctx, $check['id'], ['amount_minor' => 30000], 'vcb-intent')['resource']);
+        $this->assertDatabaseCount('fnb_payments', 0);
+    }
+
+    public function test_qr_preview_keeps_settlement_mode_unlocked_and_rejects_unavailable_accounts(): void
+    {
+        $bank = app(FnbBankService::class);
+        $account = $bank->saveAccount($this->ctx, ['bank_code' => 'MB', 'account_number' => '12345678901', 'account_name' => 'TEST MB', 'enabled' => true], 'mb-account', create: true)['resource'];
+        $check = $this->check(false);
+        $intent = $bank->intent($this->ctx, $check['id'], ['amount_minor' => 30000, 'account_id' => $account['id']], 'preview-intent')['resource'];
+        $this->assertSame('MB', $intent['bank_code']);
+        $this->assertStringContainsString('970422', $intent['qr_payload']);
+        $this->assertNull(DB::table('fnb_checks')->where('id', $check['id'])->value('settlement_mode'));
+        $this->assertSame($check['version'], (int) DB::table('fnb_checks')->where('id', $check['id'])->value('version'));
+        $cash = $this->fnb->setSettlementPlan($this->ctx, $check['id'], 'single_cash', (string) Str::uuid(), $check['version']);
+        $this->assertSame('single_cash', $cash['resource']['settlement_mode']);
+        $this->assertDatabaseCount('fnb_payments', 0);
+        $this->expectException(\Modules\FnbPos\Domain\FnbConflictException::class);
+        $bank->intent($this->ctx, $check['id'], ['amount_minor' => 30000], 'no-qr-cash-plan');
+    }
+
+    public function test_bank_account_http_crud_is_versioned_and_payment_options_are_masked(): void
+    {
+        $owner = $this->owner->fresh();
+        $owner->forceFill(['must_change_password' => false])->save();
+        $this->actingAs($owner, 'admin')->withSession(['admin_auth_version' => $owner->auth_version])->withHeaders(['X-FNB-Terminal' => (string) $this->ctx->terminalId]);
+        $path = '/admin/api/fnb/outlets/'.$this->ctx->outletId.'/bank-accounts';
+        // Sensitive configuration still requires the existing reauthentication challenge.
+        $this->withHeader('Idempotency-Key', 'bank-http-create')->postJson($path, ['bank_code' => 'VCB', 'account_number' => '12345678901', 'account_name' => 'TEST BANK', 'enabled' => true])->assertStatus(423);
+        $bank = app(FnbBankService::class);
+        $account = $bank->saveAccount($this->ctx, ['bank_code' => 'VCB', 'account_number' => '12345678901', 'account_name' => 'TEST BANK', 'enabled' => true], 'bank-create-options', create: true)['resource'];
+        $this->getJson($path)->assertOk()->assertJsonCount(1, 'data.accounts');
+        $options = $this->getJson($path.'/payment-options')->assertOk();
+        $this->assertStringNotContainsString('12345678901', $options->getContent());
+        $options->assertJsonPath('data.accounts.0.is_default', true)->assertJsonPath('data.accounts.0.bank_name', 'Vietcombank');
+        try {
+            $bank->saveAccount($this->ctx, ['account_name' => 'TEST NEW', 'enabled' => true, 'expected_version' => 99], 'stale-bank', $account['id']);
+            $this->fail('Stale account version must fail.');
+        } catch (\Modules\FnbPos\Domain\FnbConflictException) { $this->assertSame('TEST BANK', $bank->account($this->ctx)['account_name']); }
     }
 
     public function test_chain_report_matches_outlet_cash_flow_and_does_not_mix_foreign_outlets(): void

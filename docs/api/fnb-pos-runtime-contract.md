@@ -313,3 +313,18 @@ Commands require `Idempotency-Key`, `fnb.menu.manage` and HQ `fnb.menu.master.ma
 The server validates outlet ownership, active order state, exact outstanding ticket set and versions, then advances each outstanding line through the existing transition and quantity-ledger checks within one transaction. Stale/missing tickets or an invalid ledger roll back all changes. Replays do not increase served quantities again. Previously served, voided and compensated lines are preserved. Payment and table release remain separate actions.
 
 `GET outlets/{outlet}/kitchen/tickets?view=completed` returns the latest 300 website/outlet-scoped tickets containing served lines, including partially served tickets. The default `view=active` retains the live work queue behavior. `station_id` also applies to history; the kitchen UI displays only served lines in the Hoàn thành tab, with their `served_at` timestamps and without transition/bulk-completion actions.
+
+### Multiple receiving banks and payment QR
+
+Migration `000014_expand_fnb_bank_accounts` preserves encrypted legacy TPBank accounts, removes the one-account-per-outlet restriction and adds a unique default slot. Account changes are serialized by the outlet lock; changing a default bumps the displaced account version. At most one enabled account is default; the first enabled account is selected automatically when needed. Accounts can be disabled without deleting past payment intents. The migration is forward-only to avoid silently discarding multiple accounts on downgrade.
+
+- `GET outlets/{outlet}/bank-accounts`: HQ configuration list with masked numbers plus the supported bank directory.
+- `POST outlets/{outlet}/bank-accounts`: add `bank_code`, `account_number`, `account_name`, `enabled`, optional `is_default`.
+- `PUT outlets/{outlet}/bank-accounts/{id}`: edit with `expected_version`; blank account number preserves it. Changing bank requires re-entering the account number.
+- `GET outlets/{outlet}/bank-accounts/payment-options`: enabled masked accounts for cashiers with `fnb.payment.collect`, without granting configuration access.
+- Existing singleton `bank-account` endpoints remain compatible and operate on the default account.
+- `POST checks/{check}/bank-intents`: accepts `amount_minor` and optional `account_id`; defaults to the enabled default account. The response includes `check_id`, `account_id`, bank identity, number, owner, reference, expiry and local VietQR payload.
+
+Configuration retains HQ `fnb.chain.manage`, outlet settings permissions, reauthentication, version checks and idempotency. The account-number and owner-name columns in the bank configuration table remain encrypted. Bank code/BIN directory was verified against [VietQR's public bank directory](https://api.vietqr.io/v2/banks) on 2026-10-19; only transfer-supported entries are offered. QR generation uses the existing local TLV/CRC encoder with the chosen bank BIN and sends no account details to an external image service.
+
+A QR preview may be created for a finalized VND check before choosing a settlement plan; this does not lock its plan, reserve funds or credit a payment. Cash-only plans and amounts above the outstanding balance are rejected. The cashier must verify receipt before explicitly collecting payment. The UI invalidates previews when check, method, amount or bank changes and rejects late responses from earlier requests. Reference input is hidden in the QR flow and auto-filled with its transfer reference; required manual transaction IDs remain available for methods configured to require them.
