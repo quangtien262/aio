@@ -101,16 +101,13 @@ export default function DashboardPage({ overview }) {
                             >
                                 <div className="dashboard-module-card-top">
                                     <div className="dashboard-module-card-head">
-                                        <div className="dashboard-module-icon-wrap">
-                                            <div className="dashboard-module-icon">
-                                                <IconComponent />
-                                            </div>
-                                        </div>
-
                                         <div className="dashboard-module-copy">
                                             <div className="dashboard-module-title-row">
-                                                <Title level={4} style={{ margin: 0 }}>{moduleCard.name}</Title>
                                                 <span className="dashboard-module-kicker">{workspaceLabel}</span>
+                                                <div className="dashboard-module-title-with-icon">
+                                                    <span className="dashboard-module-icon"><IconComponent /></span>
+                                                    <Title level={4} style={{ margin: 0 }}>{moduleCard.name}</Title>
+                                                </div>
                                             </div>
 
                                             <Paragraph className="dashboard-module-description" ellipsis={{ rows: 2, expandable: false }}>

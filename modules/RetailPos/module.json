@@ -2,7 +2,7 @@
   "name": "Quản lý siêu thị & tạp hóa",
   "key": "retail-pos",
   "lifecycle_state_provider": "Modules\\RetailPos\\Services\\RetailRuntimeState",
-  "version": "0.1.0-dev.1",
+  "version": "0.1.0-dev.2",
   "description": "Vận hành bán lẻ nhiều chi nhánh, POS, hàng hóa, ca tiền, điều chuyển và đổi trả trên Inventory.",
   "website_type": [
     "backoffice",
@@ -23,7 +23,8 @@
     "accounting-tax",
     "minvoice-connector",
     "hrm",
-    "payroll"
+    "payroll",
+    "customers"
   ],
   "provides": {
     "retail.sales.read.v1": {
@@ -156,6 +157,13 @@
     }
   ],
   "changelog": [
+    {
+      "version": "0.1.0-dev.2",
+      "date": "2026-10-20",
+      "notes": [
+        "Optional shared Customers binding with immutable sale buyer snapshots and explicit Accounting party synchronization."
+      ]
+    },
     {
       "version": "0.1.0-dev.1",
       "date": "2026-10-20",

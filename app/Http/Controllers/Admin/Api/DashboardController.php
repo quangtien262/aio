@@ -23,9 +23,9 @@ class DashboardController
         $permissions = $request->user('admin')?->permissions() ?? [];
         $activeModules = $moduleRegistry->all()
             ->where('status', 'enabled')
-            ->map(function (array $module) use ($permissions): array {
+            ->map(function (array $module) use ($permissions, $moduleRegistry): array {
                 $menus = collect($module['menus'] ?? [])
-                    ->filter(fn (array $menu): bool => empty($menu['permission']) || in_array($menu['permission'], $permissions, true))
+                    ->filter(fn (array $menu): bool => $moduleRegistry->menuMatchesPermissions($menu, $permissions))
                     ->values()
                     ->all();
 

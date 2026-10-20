@@ -1,7 +1,7 @@
 {
   "name": "Quản lý quán Cafe",
   "key": "fnb-pos",
-  "version": "0.2.0-dev.2",
+  "version": "0.2.0-dev.3",
   "security_provider": "Modules\\FnbPos\\Security\\FnbVersionedSecurity",
   "lifecycle_state_provider": "Modules\\FnbPos\\Services\\Security\\FnbOperationalStateManager",
   "description": "Bán hàng tại quầy và tại bàn, pha chế, thanh toán, quản lý ca và báo cáo cho quán cafe/trà sữa.",
@@ -15,6 +15,7 @@
   ],
   "dependencies": [],
   "optional_dependencies": [
+    "customers",
     "catalog",
     "cms",
     "inventory",
@@ -96,7 +97,7 @@
       "permission": "fnb.outlet.view"
     }
   ],
-  "provides": {},
+  "provides": {"fnb.customers.shared.v1": {"introduced_version": "0.2.0-dev.3"}},
   "package": {
     "migrations": [
       "database/migrations"
@@ -113,6 +114,7 @@
     "uninstall": false
   },
   "changelog": [
+    {"version":"0.2.0-dev.3","date":"2026-10-20","notes":["Tích hợp Customers tùy chọn với UUID chung, giữ snapshot người mua và lịch sử hồ sơ cũ."]},
     {
       "version": "0.2.0-dev.2",
       "date": "2026-10-18",

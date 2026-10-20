@@ -240,7 +240,7 @@ class FnbChainManagementTest extends TestCase
         DB::transaction(fn () => app(FnbStaffAssignmentService::class)->assign($this->owner, 'website-main', $this->outlet, $manager, 'fnb-manager'));
         $this->assertDatabaseCount('fnb_staff_role_scopes', 0);
         app(ModuleManager::class)->upgrade('fnb-pos');
-        $this->assertSame('0.2.0-dev.2', ModuleInstallation::where('key', 'fnb-pos')->value('version'));
+        $this->assertSame('0.2.0-dev.3', ModuleInstallation::where('key', 'fnb-pos')->value('version'));
         $this->assertDatabaseHas('fnb_staff_role_scopes', ['admin_id' => $manager->id, 'scope_type' => 'outlet', 'scope_key' => $this->outlet]);
         app(FnbOutletAccessService::class)->authorize($manager->fresh(), 'website-main', $this->outlet, 'fnb.order.create');
         $this->assertNotContains('fnb.menu.manage', app(FnbOutletAccessService::class)->permissionsForOutlet($manager->fresh(), 'website-main', $this->outlet));

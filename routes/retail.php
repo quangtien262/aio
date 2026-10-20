@@ -5,10 +5,11 @@ use Modules\RetailPos\Http\RetailController;
 use Modules\RetailPos\Http\RetailIntegrationController;
 
 Route::prefix('retail')->name('retail.')->middleware('module.enabled:retail-pos')->group(function (): void {
+    Route::get('customers/{resource}/history', [RetailController::class, 'customerHistory'])->middleware('admin.permission:retail.customer.view');
     Route::get('integrations', [RetailIntegrationController::class, 'show'])->middleware('admin.permission:retail.integration.manage');
     Route::put('integrations/mapping', [RetailIntegrationController::class, 'mapping'])->middleware('admin.permission:retail.integration.manage');
     Route::post('integrations/reconcile', [RetailIntegrationController::class, 'reconcile'])->middleware('admin.permission:retail.integration.manage');
-    foreach (['bootstrap' => 'view', 'branches' => 'view', 'settings' => 'settings.manage', 'products' => 'product.view', 'dashboard' => 'report.view', 'reports' => 'report.view', 'sales' => 'sale.view', 'shifts' => 'shift.manage', 'returns' => 'return.manage', 'customers' => 'customer.view', 'inventory' => 'inventory.view', 'terminals' => 'view', 'transfers' => 'transfer.manage', 'stocktakes' => 'stocktake.manage', 'commands/{resource}' => 'view'] as $path => $permission) {
+    foreach (['bootstrap' => 'view', 'branches' => 'view', 'settings' => 'settings.manage', 'products' => 'product.view', 'dashboard' => 'report.view', 'reports' => 'report.view', 'sales' => 'sale.view', 'shifts' => 'shift.manage', 'returns' => 'return.manage', 'customer-context' => 'customer.view', 'customers' => 'customer.view', 'inventory' => 'inventory.view', 'terminals' => 'view', 'transfers' => 'transfer.manage', 'stocktakes' => 'stocktake.manage', 'commands/{resource}' => 'view'] as $path => $permission) {
         Route::get($path, [RetailController::class, 'read'])->defaults('retail_read', str_starts_with($path, 'commands/') ? 'command' : $path)->middleware('admin.permission:retail.'.$permission);
     }
     foreach ([

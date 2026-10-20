@@ -50,7 +50,7 @@ class FnbSecurityFoundationTest extends TestCase
 
     public function test_exact_version_catalog_presets_and_critical_registry_are_synchronized(): void
     {
-        $definition = app(FnbVersionedSecurity::class)->definition('0.2.0-dev.2');
+        $definition = app(FnbVersionedSecurity::class)->definition('0.2.0-dev.3');
 
         $this->assertCount(58, $definition->permissions);
         $this->assertCount(9, $definition->roles);
@@ -70,8 +70,8 @@ class FnbSecurityFoundationTest extends TestCase
             $this->assertSame($permissions, $actual, $roleKey);
             $this->assertTrue($role->is_system);
             $this->assertFalse($role->is_assignable);
-            $this->assertSame('0.2.0-dev.2', $ownership->version);
-            $this->assertSame('0.2.0-dev.2', $ownership->introduced_version);
+            $this->assertSame('0.2.0-dev.3', $ownership->version);
+            $this->assertSame('0.2.0-dev.3', $ownership->introduced_version);
             $this->assertSame('fnb_dedicated', $ownership->assignment_channel);
             $this->assertSame('deny', $ownership->custom_role_policy);
         }

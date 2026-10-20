@@ -3,6 +3,7 @@
 namespace Modules\FnbPos\Services;
 
 use DateTimeZone;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -438,10 +439,14 @@ final class FnbSetupService
             $images = array_key_exists('gallery_images', $data) ? $data['gallery_images'] : (json_decode((string) ($existing->gallery_images ?? '[]'), true) ?: []);
             $cover = array_key_exists('image_url', $data) ? $data['image_url'] : (array_key_exists('gallery_images', $data) ? ($images[0] ?? null) : ($existing->image_url ?? null));
             if ($cover && ! in_array($cover, $images, true)) {
-                if (array_key_exists('gallery_images', $data)) throw new FnbValidationException('Ảnh đại diện phải nằm trong danh sách ảnh của món.');
+                if (array_key_exists('gallery_images', $data)) {
+                    throw new FnbValidationException('Ảnh đại diện phải nằm trong danh sách ảnh của món.');
+                }
                 array_unshift($images, $cover);
             }
-            if (count($images) > 12) throw new FnbValidationException('Mỗi món có tối đa 12 ảnh.');
+            if (count($images) > 12) {
+                throw new FnbValidationException('Mỗi món có tối đa 12 ảnh.');
+            }
             $cover = $cover ?: ($images[0] ?? null);
 
             $itemValues = [
@@ -654,6 +659,11 @@ final class FnbSetupService
 
     public function searchCustomers(FnbContext $context, string $query, int $limit = 20): array
     {
+        $directory = app(FnbCustomerDirectory::class);
+        $directory->authorize($context, 'fnb.customer.lookup');
+        if ($directory->shared($context)) {
+            return ['resource' => ['items' => $directory->lookup($context, $query, $limit)]];
+        }
         $this->assertOutlet($context);
         $query = trim($query);
         $phone = preg_replace('/\D+/', '', $query);
@@ -667,18 +677,44 @@ final class FnbSetupService
             ->orderBy('name')->limit(max(1, min($limit, 50)))
             ->get(['id', 'public_id', 'code', 'name', 'phone_normalized', 'email', 'status', 'version']);
 
-        return ['resource' => ['items' => $customers->map(fn ($row) => $this->decode($row))->all()]];
+        $full = true;
+        try {
+            $directory->authorize($context, 'fnb.customer.view');
+        } catch (AuthorizationException) {
+            $full = false;
+        }
+
+        return ['resource' => ['items' => $customers->map(function ($row) use ($full): array {
+            $profile = $this->decode($row);
+            if (! $full) {
+                unset($profile['email']);
+                $phone = $profile['phone_normalized'] ?? '';
+                $profile['phone_normalized'] = $phone ? '***'.substr($phone, -4) : null;
+            }
+
+            return $profile;
+        })->all()]];
     }
 
     /** @param array<string,mixed> $input */
     public function createCustomer(FnbContext $context, array $input, string $idempotencyKey): array
     {
+        $directory = app(FnbCustomerDirectory::class);
+        if ($directory->shared($context)) {
+            $directory->assertAccess($context, 'create');
+        }
         if (isset($input['code']) && is_string($input['code'])) {
             $input['code'] = trim($input['code']);
-            if ($input['code'] === '') $input['code'] = null;
+            if ($input['code'] === '') {
+                $input['code'] = null;
+            }
         }
-        if (isset($input['name']) && is_string($input['name'])) $input['name'] = trim($input['name']);
-        if (isset($input['email']) && is_string($input['email'])) $input['email'] = trim($input['email']);
+        if (isset($input['name']) && is_string($input['name'])) {
+            $input['name'] = trim($input['name']);
+        }
+        if (isset($input['email']) && is_string($input['email'])) {
+            $input['email'] = trim($input['email']);
+        }
         $data = validator($input, [
             'code' => ['nullable', 'string', 'max:40'],
             'name' => ['required', 'string', 'max:255'],
@@ -698,7 +734,12 @@ final class FnbSetupService
         }
         $payload = $data + ['phone_normalized' => $phone];
 
-        return $this->commands->run($context, 'customer.create', $payload, $idempotencyKey, function () use ($context, $data, $phone): array {
+        return $this->commands->run($context, 'customer.create', $payload, $idempotencyKey, function () use ($context, $data, $phone, $directory, $idempotencyKey): array {
+            if ($directory->shared($context, lock: true)) {
+                $profile = $directory->create($context, $data, $idempotencyKey);
+
+                return ['resource' => $profile, 'meta' => ['resource_type' => 'shared_customer', 'resource_id' => $profile['public_id'], 'version' => $profile['version']]];
+            }
             if ($phone !== null && DB::table('fnb_customer_profiles')->where('website_key', $context->websiteKey)->where('phone_normalized', $phone)->exists()) {
                 throw new FnbConflictException('A customer with this phone already exists.');
             }

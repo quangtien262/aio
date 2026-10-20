@@ -48,6 +48,20 @@ final class FnbCommandRunner
 
         return DB::transaction(function () use ($context, $operation, $payload, $key, $mutation, $requestHash): array {
             $this->lockAndValidateScope($context, $operation);
+            if (str_starts_with($operation, 'customer.')) {
+                $directory = app(FnbCustomerDirectory::class);
+                if ($operation === 'customer.create' && array_intersect_key($payload, array_flip(['birthday', 'notes', 'privacy_consent', 'marketing_consent'])) !== []) {
+                    $directory->authorize($context, 'fnb.customer.update');
+                }
+                if ($directory->shared($context, lock: true)) {
+                    $directory->assertAccess($context, substr($operation, strlen('customer.')));
+                }
+            } elseif ($operation === 'session.open' && (! empty($payload['customer_profile_id']) || ! empty($payload['shared_customer_id']))) {
+                $directory = app(FnbCustomerDirectory::class);
+                if ($directory->shared($context, lock: true)) {
+                    $directory->assertAccess($context, 'attach');
+                }
+            }
 
             $ownerToken = (string) Str::uuid();
             $now = now();

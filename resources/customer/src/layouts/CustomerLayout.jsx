@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import SharedCustomerProfiles from '../components/SharedCustomerProfiles';
 import BankOutlined from '@ant-design/icons/BankOutlined';
 import EnvironmentOutlined from '@ant-design/icons/EnvironmentOutlined';
 import HeartOutlined from '@ant-design/icons/HeartOutlined';
@@ -536,7 +537,8 @@ export default function CustomerLayout({ apiBase = '/account/api', homeUrl = '/'
         { key: 'favorites', icon: <HeartOutlined />, label: 'Sản phẩm yêu thích', path: '/favorites' },
         { key: 'services', icon: <ToolOutlined />, label: 'Dịch vụ quan tâm', path: '/services' },
         { key: 'profile', icon: <UserOutlined />, label: 'Hồ sơ & bảo mật', path: '/profile' },
-    ], []);
+        ...(data?.shared_customers_enabled ? [{ key: 'shared-profiles', icon: <UserOutlined />, label: 'Hồ sơ khách hàng', path: '/shared-profiles' }] : []),
+    ], [data?.shared_customers_enabled]);
 
     const activeMenuKey = useMemo(() => {
         const found = menuItems.find((item) => item.path !== '/' && location.pathname.startsWith(item.path));
@@ -726,6 +728,7 @@ export default function CustomerLayout({ apiBase = '/account/api', homeUrl = '/'
                         <Route path="/favorites" element={<FavoritesPage favorites={data.favorites ?? []} onRemoveFavorite={handleRemoveFavorite} pendingFavoriteId={pendingFavoriteId} />} />
                         <Route path="/services" element={<ServicesPage interests={data.service_interests ?? []} services={data.available_services ?? []} onCreate={handleCreateServiceInterest} onDelete={handleDeleteServiceInterest} saving={saving} />} />
                         <Route path="/profile" element={<ProfilePage customer={data.customer} newsletter={data.newsletter} onSaveProfile={handleSaveProfile} onSavePassword={handleSavePassword} saving={saving} />} />
+                        <Route path="/shared-profiles" element={<SharedCustomerProfiles apiBase={apiBase} enabled={data.shared_customers_enabled} />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </Content>

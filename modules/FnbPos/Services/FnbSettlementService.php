@@ -127,6 +127,7 @@ final class FnbSettlementService
                 'business_day_id' => $session->business_day_id,
                 'session_id' => $session->id,
                 'customer_profile_id' => $session->customer_profile_id,
+                ...(! empty($session->shared_customer_id) ? ['shared_customer_id' => $session->shared_customer_id] : []),
                 'sequence_no' => $number['sequence_no'],
                 'check_no' => $number['document_no'],
                 'status' => 'open',

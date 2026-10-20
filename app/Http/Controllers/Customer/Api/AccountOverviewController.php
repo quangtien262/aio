@@ -63,6 +63,7 @@ class AccountOverviewController
 
         return response()->json([
             'data' => [
+                'shared_customers_enabled'=>app(\App\Core\Modules\ModuleCapabilityChecker::class)->has('customers','customers.profiles.read.v1'),
                 'customer' => [
                     'id' => $customer?->id,
                     'name' => $customer?->name,

@@ -8,6 +8,7 @@ import ReloadOutlined from '@ant-design/icons/ReloadOutlined';
 import TeamOutlined from '@ant-design/icons/TeamOutlined';
 import UndoOutlined from '@ant-design/icons/UndoOutlined';
 import Avatar from 'antd/es/avatar';
+import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Checkbox from 'antd/es/checkbox';
@@ -109,11 +110,14 @@ export default function FnbCustomersPage() {
     useEffect(() => { setEditor(null); setDetailsId(null); setStatusConfirmation(null); setPage(1); }, [outletId, terminalId]);
     const loader = useCallback(() => api.read(api.outletPath('customer-profiles'), { query, status, page, per_page: perPage }), [api, query, status, page, perPage]);
     const resource = useFnbResource({ loader, deps: [outletId, terminalId, query, status, page, perPage] });
+    const integrationLoader = useCallback(() => api.read(api.outletPath('customers-integration')), [api]);
+    const integration = useFnbResource({ loader: integrationLoader, deps: [outletId, terminalId] });
+    const sharedBlocked = integration.data?.mode === 'shared' && !integration.data?.ready;
     const reload = () => resource.reload();
     const openEditor = (record = null) => {
         setDetailsId(null);
         form.resetFields();
-        form.setFieldsValue(record ? { ...record, phone: record.phone_normalized, privacy_consent: Boolean(record.privacy_consented_at), marketing_consent: Boolean(record.marketing_consented_at) } : { privacy_consent: true, marketing_consent: true });
+        form.setFieldsValue(record ? { ...record, phone: record.phone_normalized, privacy_consent: Boolean(record.privacy_consented_at), marketing_consent: Boolean(record.marketing_consented_at) } : { privacy_consent: false, marketing_consent: false });
         setEditor({ record });
     };
     const save = async (values) => {
@@ -144,8 +148,12 @@ export default function FnbCustomersPage() {
     return <div className="fnb-page-stack fnb-customers-page">
         <FnbPageHeader eyebrow="CHĂM SÓC KHÁCH HÀNG" title="Khách hàng" description="Quản lý hồ sơ và lịch sử mua hàng, dùng chung với màn hình bán hàng." actions={<>
             <Button icon={<ReloadOutlined />} loading={resource.refreshing} onClick={reload}>Làm mới</Button>
-            {can('fnb.customer.create') ? <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khách hàng</Button> : null}
+            {can('fnb.customer.create') ? <Button type="primary" disabled={sharedBlocked} icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khách hàng</Button> : null}
         </>} />
+        {integration.error ? <FnbResourceError error={integration.error} onRetry={integration.reload} /> : <Alert showIcon type={sharedBlocked ? 'error' : integration.data?.mode === 'shared' ? 'success' : 'info'}
+            message={integration.data?.mode === 'shared' ? 'Hồ sơ dùng chung từ Customers' : 'Hồ sơ khách hàng riêng của quán'}
+            description={sharedBlocked ? integration.data?.reason || 'Customers đang dừng. Không thể chuyển về hồ sơ riêng để ghi thay thế.' : integration.data?.mode === 'shared' ? 'Thông tin chung được quản lý tại Customers; ghi chú phục vụ và sự đồng ý với quán được giữ riêng tại F&B.' : 'Cài đặt và cấu hình Customers để dùng chung hồ sơ giữa các ứng dụng. Dữ liệu và lịch sử hiện tại vẫn được giữ.'}
+            action={<Button href="/admin/modules/customers" size="small">{integration.data?.available ? 'Quản lý Customers' : 'Cài đặt Customers'}</Button>} />}
         <Card>
             <div className="fnb-customer-toolbar"><Input.Search allowClear maxLength={120} value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Tìm tên, mã, điện thoại hoặc email" aria-label="Tìm khách hàng" />
                 <Segmented value={status} onChange={(value) => { setStatus(value); setPage(1); }} options={[{ value: 'active', label: 'Đang hoạt động' }, { value: 'archived', label: 'Đã xóa' }, { value: 'all', label: 'Tất cả' }]} />
@@ -204,7 +212,7 @@ export default function FnbCustomersPage() {
                     <Col xs={24} sm={12}><Form.Item name="email" label="Email" rules={[{ type: 'email', message: 'Nhập email hợp lệ.' }]}><Input type="email" maxLength={255} placeholder="email@example.com" /></Form.Item></Col>
                     {canUpdate ? <>
                         <Col span={24}><Form.Item name="notes" label="Ghi chú"><Input.TextArea autoSize={{ minRows: 2, maxRows: 3 }} maxLength={2000} placeholder="Sở thích, yêu cầu phục vụ…" /></Form.Item></Col>
-                        <Col span={24}><div className="fnb-customer-consents"><Form.Item name="privacy_consent" valuePropName="checked"><Checkbox>Khách đồng ý lưu thông tin cá nhân</Checkbox></Form.Item><Form.Item name="marketing_consent" valuePropName="checked"><Checkbox>Khách đồng ý nhận ưu đãi</Checkbox></Form.Item></div></Col>
+                        <Col span={24}><div className="fnb-customer-consents"><Form.Item name="privacy_consent" valuePropName="checked"><Checkbox>Khách đồng ý lưu thông tin tại quán hiện tại</Checkbox></Form.Item><Form.Item name="marketing_consent" valuePropName="checked"><Checkbox>Khách đồng ý nhận ưu đãi từ quán hiện tại</Checkbox></Form.Item></div></Col>
                     </> : null}
                 </Row>
             </Form>

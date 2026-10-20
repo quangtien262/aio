@@ -23,6 +23,7 @@ const AccountingTaxManagerPage = lazy(() => import('../../modules/accounting-tax
 const MinvoiceManagerPage = lazy(() => import('../../modules/accounting-tax/pages/MinvoiceManagerPage'));
 const FnbPosManagerPage = lazy(() => import('../../modules/fnb-pos/pages/FnbPosManagerPage'));
 const RetailPosManagerPage = lazy(() => import('../../modules/retail-pos/pages/RetailPosManagerPage'));
+const CustomersManagerPage = lazy(() => import('../../modules/customers/pages/CustomersManagerPage'));
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentAdmin, currentPermissions }) {
     const resourceEndpointMap = {
@@ -205,6 +206,10 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
                 <RetailPosManagerPage moduleMenu={moduleMenu} modulePayload={modulePayload} callAdminApi={callAdminApi} runAdminAction={runAdminAction} currentAdmin={currentAdmin} currentPermissions={currentPermissions} />
             </Suspense>
         );
+    }
+
+    if (modulePayload.key === 'customers') {
+        return <Suspense fallback={<Card loading title={moduleMenu?.label ?? 'Khách hàng'} />}><CustomersManagerPage moduleMenu={moduleMenu} callAdminApi={callAdminApi} currentAdmin={currentAdmin} currentPermissions={currentPermissions} /></Suspense>;
     }
 
     if (loading) {

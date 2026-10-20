@@ -13,7 +13,9 @@ use Illuminate\Validation\Rule;
 use Modules\FnbPos\Domain\FnbContext;
 use Modules\FnbPos\Services\FnbCompensationService;
 use Modules\FnbPos\Services\FnbConfigurationService;
+use Modules\FnbPos\Services\FnbCustomerDirectory;
 use Modules\FnbPos\Services\FnbIntegrationReadiness;
+use Modules\FnbPos\Services\FnbMenuChoiceService;
 use Modules\FnbPos\Services\FnbReadService;
 use Modules\FnbPos\Services\FnbRecipeService;
 use Modules\FnbPos\Services\FnbService;
@@ -44,7 +46,8 @@ class FnbApiController
             $ids = $this->access->accessibleTerminalIds($request->user('admin'), $website, (int) $outlet->id, 'fnb.outlet.view');
             $allowed = ($terminals[$outlet->id] ?? collect())->filter(fn ($terminal) => $ids === null || in_array((int) $terminal->id, $ids, true));
 
-            return (array) $outlet + ['terminals' => $allowed->values()->all(), 'can_report_all_terminals' => $ids === null, 'effective_permissions' => $this->access->permissionsForOutlet($request->user('admin'), $website, (int) $outlet->id)];
+            return (array) $outlet + ['terminals' => $allowed->values()->all(), 'can_report_all_terminals' => $ids === null, 'effective_permissions' => $this->access->permissionsForOutlet($request->user('admin'), $website, (int) $outlet->id),
+                'customers' => app(FnbCustomerDirectory::class)->status(new FnbContext($website, (int) $outlet->id, (int) $request->user('admin')->id))];
         });
 
         return response()->json(['data' => [
@@ -178,7 +181,7 @@ class FnbApiController
         return $this->response($units->archive($ctx, (int) $request->route('resource'), $input, $key));
     }
 
-    public function menuChoice(Request $request, \Modules\FnbPos\Services\FnbMenuChoiceService $choices): JsonResponse
+    public function menuChoice(Request $request, FnbMenuChoiceService $choices): JsonResponse
     {
         $input = $request->only(['name', 'code', 'expected_version']);
         $kind = (string) $request->route('fnb_choice_kind');
@@ -188,6 +191,7 @@ class FnbApiController
         $ctx = $this->context($request, 'fnb.menu.manage', false, $this->security->authorization($request, $kind.'_definition.'.($archive ? 'archive' : 'save'), $input));
         $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, 'fnb.menu.master.manage');
         $id = $request->route('resource') ? (int) $request->route('resource') : null;
+
         return $this->response($archive ? $choices->archive($ctx, $kind, $id, $input, $key) : $choices->save($ctx, $kind, $id, $input, $key));
     }
 

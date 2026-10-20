@@ -76,6 +76,13 @@ Route::prefix('{locale}')
 				->name('customer.api.')
 				->group(function (): void {
 					Route::get('/overview', AccountOverviewController::class)->name('overview');
+					Route::prefix('shared-customers')->middleware(['module.enabled:customers','throttle:30,1'])->group(function():void{
+						Route::get('/',[\Modules\Customers\Http\CustomerPortalController::class,'profiles']);
+						Route::post('/accept',[\Modules\Customers\Http\CustomerPortalController::class,'accept']);
+						Route::get('/{profile}',[\Modules\Customers\Http\CustomerPortalController::class,'show']);
+						Route::put('/{profile}',[\Modules\Customers\Http\CustomerPortalController::class,'update']);
+						Route::post('/{profile}/consents',[\Modules\Customers\Http\CustomerPortalController::class,'consent']);
+					});
 					Route::put('/profile', ProfileUpdateController::class)->name('profile.update');
 					Route::put('/password', PasswordUpdateController::class)->name('password.update');
 					Route::post('/addresses', [AddressManagementController::class, 'store'])->name('addresses.store');

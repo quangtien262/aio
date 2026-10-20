@@ -19,8 +19,9 @@ class RetailController
         $data = match ($kind) {
             'bootstrap','branches' => $kind === 'bootstrap' ? $this->retail->bootstrap($actor) : $this->retail->bootstrap($actor)['branches'],
             'products' => $this->retail->products($actor, (string) $request->query('branch_id'), substr((string) $request->query('query', ''), 0, 150), $request->boolean('include_catalog')),
+            'customer-context' => $this->retail->customerContext($actor, (string) $request->query('branch_id')),
             'command' => $this->retail->commandStatus($actor, (string) $request->route('resource')),
-            'settings' => ['installed_version' => '0.1.0-dev.1', 'currency' => 'VND', 'stock_authority' => 'inventory', 'offline' => ['enabled' => false, 'reason' => 'Gateway chưa được nghiệm thu'], 'payment_provider_connected' => false],
+            'settings' => ['installed_version' => '0.1.0-dev.2', 'currency' => 'VND', 'stock_authority' => 'inventory', 'offline' => ['enabled' => false, 'reason' => 'Gateway chưa được nghiệm thu'], 'payment_provider_connected' => false],
             'transfers','stocktakes' => $this->warehouseReads($request, $kind),
             default => $this->retail->read($actor, $kind, (string) $request->query('branch_id'), $request->query()),
         };
@@ -50,14 +51,21 @@ class RetailController
             'sale.cancel' => $this->retail->cancelSale($live, $id, $data),
             'sale.return' => $this->retail->returnSale($live, $id, $data, $key),
             'return.refund' => $this->retail->refund($live, $id, $data),
-            'customer.create' => $this->retail->saveCustomer($live, $data),
-            'customer.update' => $this->retail->saveCustomer($live, $data, $id),
+            'customer.create' => $this->retail->saveCustomer($live, $data, null, $key),
+            'customer.update' => $this->retail->saveCustomer($live, $data, $id, $key),
             'membership.save' => $this->membership($request, $data),
             'transfer.create','transfer.dispatch','transfer.receive','stocktake.create','stocktake.post' => $this->warehouseCommand($request, $operation, $id, $data, $key),
             default => abort(404),
         });
 
         return response()->json(['data' => $this->retail->sanitize($actor, $result), 'meta' => ['idempotency_key' => $key]]);
+    }
+
+    public function customerHistory(Request $request, string $resource): JsonResponse
+    {
+        $actor = $request->user('admin');
+
+        return response()->json(['data' => $this->retail->sanitize($actor, $this->retail->customerHistory($actor, (string) $request->query('branch_id'), $resource))])->header('Cache-Control', 'no-store');
     }
 
     private function membership(Request $request, array $data): array

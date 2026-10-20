@@ -7,6 +7,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Modules\FnbPos\Domain\FnbConflictException;
 use Modules\FnbPos\Domain\FnbContext;
@@ -51,11 +52,11 @@ final class FnbCustomerService
     public function attachToSession(
         FnbContext $context,
         int $sessionId,
-        int $customerProfileId,
+        int|string $customerProfileId,
         string $idempotencyKey,
         int $expectedSessionVersion,
     ): array {
-        if ($sessionId < 1 || $customerProfileId < 1 || $expectedSessionVersion < 1) {
+        if ($sessionId < 1 || (! Str::isUuid((string) $customerProfileId) && (! ctype_digit((string) $customerProfileId) || (int) $customerProfileId < 1)) || $expectedSessionVersion < 1) {
             throw new FnbValidationException('A valid session, customer and expected session version are required.');
         }
 
@@ -64,6 +65,10 @@ final class FnbCustomerService
             'customer_profile_id' => $customerProfileId,
             'expected_version' => $expectedSessionVersion,
         ];
+        $directory = app(FnbCustomerDirectory::class);
+        if ($directory->shared($context)) {
+            $directory->assertAccess($context, 'attach');
+        }
 
         return $this->commands->run($context, 'customer.attach', $payload, $idempotencyKey, function () use ($context, $sessionId, $customerProfileId, $expectedSessionVersion): array {
             $this->authorize($context, 'fnb.customer.attach', true);
@@ -85,14 +90,27 @@ final class FnbCustomerService
                 ]);
             }
 
-            $customer = DB::table('fnb_customer_profiles')
-                ->where('website_key', $context->websiteKey)
-                ->where('id', $customerProfileId)
-                ->where('status', 'active')
-                ->lockForUpdate()
-                ->first();
-            if ($customer === null) {
-                throw new FnbNotFoundException('Active customer profile was not found in the current website.');
+            $directory = app(FnbCustomerDirectory::class);
+            $shared = $directory->shared($context, lock: true);
+            $sharedId = null;
+            $localId = null;
+            if ($shared) {
+                $snapshot = $directory->snapshot($context, $customerProfileId);
+                $sharedId = $snapshot['shared_customer_id'];
+                $customer = (object) $snapshot;
+            } else {
+                abort_unless(ctype_digit((string) $customerProfileId), 404);
+                $customer = DB::table('fnb_customer_profiles')
+                    ->where('website_key', $context->websiteKey)
+                    ->where('id', $customerProfileId)
+                    ->where('status', 'active')
+                    ->lockForUpdate()
+                    ->first();
+                if ($customer === null) {
+                    throw new FnbNotFoundException('Active customer profile was not found in the current website.');
+                }
+                $localId = (int) $customer->id;
+                $snapshot = $this->customerSnapshot($customer);
             }
 
             /** @var Collection<int,object> $checks */
@@ -114,12 +132,12 @@ final class FnbCustomerService
                 throw new FnbConflictException('Customer identity is frozen after payment processing starts.');
             }
 
-            $snapshot = $this->customerSnapshot($customer);
             $encodedSnapshot = json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
             $now = now();
             $sessionVersion = (int) $session->version + 1;
             $this->outletScope('fnb_service_sessions', $context)->where('id', $sessionId)->update([
-                'customer_profile_id' => $customerProfileId,
+                'customer_profile_id' => $localId,
+                ...($sharedId ? ['shared_customer_id' => $sharedId] : []),
                 'customer_snapshot' => $encodedSnapshot,
                 'version' => $sessionVersion,
                 'updated_at' => $now,
@@ -139,7 +157,8 @@ final class FnbCustomerService
                     ->whereNull('finalized_at')
                     ->where('version', $check->version)
                     ->update([
-                        'customer_profile_id' => $customerProfileId,
+                        'customer_profile_id' => $localId,
+                        ...($sharedId ? ['shared_customer_id' => $sharedId] : []),
                         'buyer_snapshot' => $encodedSnapshot,
                         'version' => $version,
                         'updated_at' => $now,
@@ -159,12 +178,14 @@ final class FnbCustomerService
                 'session_version' => $sessionVersion,
                 'check_versions' => $checkVersions,
             ];
-            $this->customerEvent($context, $customerProfileId, 'attached_to_session', [
-                'session.customer_profile_id',
-                'session.customer_snapshot',
-            ], $evidence, $now);
+            if ($localId !== null) {
+                $this->customerEvent($context, $localId, 'attached_to_session', [
+                    'session.customer_profile_id',
+                    'session.customer_snapshot',
+                ], $evidence, $now);
+            }
             $previousCustomerId = $session->customer_profile_id === null ? null : (int) $session->customer_profile_id;
-            if ($previousCustomerId !== null && $previousCustomerId !== $customerProfileId) {
+            if ($previousCustomerId !== null && $previousCustomerId !== $localId) {
                 $this->customerEvent($context, $previousCustomerId, 'detached_from_session', [
                     'session.customer_profile_id',
                     'session.customer_snapshot',
@@ -174,7 +195,8 @@ final class FnbCustomerService
             return [
                 'resource' => [
                     ...$this->safeSessionSnapshot((object) array_replace((array) $session, [
-                        'customer_profile_id' => $customerProfileId,
+                        'customer_profile_id' => $localId,
+                        'shared_customer_id' => $sharedId,
                         'version' => $sessionVersion,
                     ])),
                     'customer' => $this->attachCustomerProjection($customer),
@@ -196,11 +218,24 @@ final class FnbCustomerService
      */
     public function updateProfile(
         FnbContext $context,
-        int $customerProfileId,
+        int|string $customerProfileId,
         array $input,
         string $idempotencyKey,
         int $expectedVersion,
     ): array {
+        $directory = app(FnbCustomerDirectory::class);
+        if ($directory->shared($context)) {
+            $directory->assertAccess($context, 'update');
+            $payload = $input + ['customer_profile_id' => (string) $customerProfileId, 'expected_version' => $expectedVersion];
+
+            return $this->commands->run($context, 'customer.update', $payload, $idempotencyKey, function () use ($directory, $context, $customerProfileId, $input, $idempotencyKey, $expectedVersion): array {
+                $directory->shared($context, lock: true);
+                $profile = $directory->update($context, $customerProfileId, array_replace($input, ['expected_version' => $expectedVersion]), $idempotencyKey);
+
+                return ['resource' => $profile, 'meta' => ['resource_type' => 'shared_customer', 'resource_id' => $profile['public_id'], 'version' => $profile['version']]];
+            });
+        }
+        abort_unless(ctype_digit((string) $customerProfileId), 404);
         if ($customerProfileId < 1 || $expectedVersion < 1) {
             throw new FnbValidationException('A valid customer and expected version are required.');
         }
@@ -223,6 +258,7 @@ final class FnbCustomerService
         $payload = $data + ['customer_profile_id' => $customerProfileId, 'expected_version' => $expectedVersion];
 
         return $this->commands->run($context, 'customer.update', $payload, $idempotencyKey, function () use ($context, $customerProfileId, $data, $expectedVersion): array {
+            abort_if(app(FnbCustomerDirectory::class)->shared($context, lock: true), 409, 'Nguồn hồ sơ khách hàng đã đổi; tải lại trước khi cập nhật.');
             $this->authorize($context, 'fnb.customer.update', true);
 
             $profile = DB::table('fnb_customer_profiles')
@@ -327,8 +363,13 @@ final class FnbCustomerService
     }
 
     /** @return array{resource:array<string,mixed>} */
-    public function profile(FnbContext $context, int $customerProfileId): array
+    public function profile(FnbContext $context, int|string $customerProfileId): array
     {
+        $directory = app(FnbCustomerDirectory::class);
+        if ($directory->shared($context)) {
+            return ['resource' => $directory->profile($context, $customerProfileId)];
+        }
+        abort_unless(ctype_digit((string) $customerProfileId), 404);
         if ($customerProfileId < 1) {
             throw new FnbValidationException('A valid customer is required.');
         }
@@ -348,6 +389,10 @@ final class FnbCustomerService
     /** Full customer management listing; POS lookup keeps its smaller projection. */
     public function listing(FnbContext $context, array $filters): array
     {
+        $directory = app(FnbCustomerDirectory::class);
+        if ($directory->shared($context)) {
+            return $directory->listing($context, $filters);
+        }
         $this->authorize($context, 'fnb.customer.view');
         $data = validator($filters, [
             'query' => ['nullable', 'string', 'max:120'],
@@ -358,7 +403,9 @@ final class FnbCustomerService
         $page = (int) ($data['page'] ?? 1);
         $perPage = (int) ($data['per_page'] ?? 20);
         $query = DB::table('fnb_customer_profiles')->where('website_key', $context->websiteKey);
-        if (($data['status'] ?? 'active') !== 'all') $query->where('status', $data['status'] ?? 'active');
+        if (($data['status'] ?? 'active') !== 'all') {
+            $query->where('status', $data['status'] ?? 'active');
+        }
         $term = trim($data['query'] ?? '');
         if ($term !== '') {
             $escaped = '%'.addcslashes($term, '%_').'%';
@@ -381,16 +428,23 @@ final class FnbCustomerService
      */
     public function purchaseHistory(
         FnbContext $context,
-        int $customerProfileId,
+        int|string $customerProfileId,
         int $limit = 25,
         ?int $beforeCheckId = null,
     ): array {
-        if ($customerProfileId < 1 || $limit < 1 || $limit > 100 || ($beforeCheckId !== null && $beforeCheckId < 1)) {
+        $directory = app(FnbCustomerDirectory::class);
+        $sharedId = $directory->shared($context) ? $directory->resolve($context, $customerProfileId) : null;
+        $legacyIds = $sharedId ? $directory->legacyIds($context, $sharedId) : [(string) $customerProfileId];
+        $sharedIds = $sharedId ? $directory->profileIds($context, $sharedId) : [];
+        if ($sharedId) {
+            $directory->profile($context, $sharedId);
+        }
+        if ((! $sharedId && (! ctype_digit((string) $customerProfileId) || (int) $customerProfileId < 1)) || $limit < 1 || $limit > 100 || ($beforeCheckId !== null && $beforeCheckId < 1)) {
             throw new FnbValidationException('Invalid customer history pagination.');
         }
         $this->authorize($context, 'fnb.customer.view');
 
-        if (! DB::table('fnb_customer_profiles')
+        if (! $sharedId && ! DB::table('fnb_customer_profiles')
             ->where('website_key', $context->websiteKey)
             ->where('id', $customerProfileId)
             ->exists()) {
@@ -398,7 +452,12 @@ final class FnbCustomerService
         }
 
         $query = $this->outletScope('fnb_checks', $context)
-            ->where('customer_profile_id', $customerProfileId)
+            ->where(function (Builder $query) use ($sharedIds, $legacyIds): void {
+                $query->whereIn('customer_profile_id', $legacyIds);
+                if ($sharedIds !== []) {
+                    $query->orWhereIn('shared_customer_id', $sharedIds);
+                }
+            })
             ->where('status', 'closed')
             ->whereNotNull('closed_at');
         if ($beforeCheckId !== null) {
@@ -542,13 +601,13 @@ final class FnbCustomerService
         $phone = (string) ($customer->phone_normalized ?? '');
 
         return [
-            'id' => (int) $customer->id,
+            'id' => Str::isUuid((string) $customer->id) ? $customer->id : (int) $customer->id,
             'public_id' => $customer->public_id,
             'code' => $customer->code,
             'name' => $customer->name,
             'phone_masked' => $phone === '' ? null : '***'.substr($phone, -4),
-            'status' => $customer->status,
-            'version' => (int) $customer->version,
+            'status' => $customer->status ?? 'active',
+            'version' => (int) ($customer->version ?? 1),
         ];
     }
 
@@ -560,6 +619,7 @@ final class FnbCustomerService
             'public_id' => $session->public_id,
             'status' => $session->status,
             'customer_profile_id' => $session->customer_profile_id === null ? null : (int) $session->customer_profile_id,
+            'shared_customer_id' => $session->shared_customer_id ?? null,
             'version' => (int) $session->version,
         ];
     }

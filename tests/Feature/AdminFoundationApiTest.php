@@ -473,8 +473,9 @@ class AdminFoundationApiTest extends TestCase
         $this->getJson('/admin/api/me')
             ->assertOk()
             ->assertJsonPath('data.email', 'admin@aio.local')
-            ->assertJsonPath('data.module_navigation.0.key', 'cms-pages')
-            ->assertJsonPath('data.module_navigation.0.route', '/admin/cms/pages');
+            ->assertJsonPath('data.module_navigation', fn (array $items): bool => collect($items)->contains(
+                fn (array $item): bool => $item['key'] === 'cms-pages' && $item['route'] === '/admin/cms/pages',
+            ));
 
         $this->get('/admin/cms')
             ->assertOk()

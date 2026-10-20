@@ -354,7 +354,8 @@ final class FnbOperationsService
             'source_channel' => ['sometimes', 'in:pos,waiter'],
             'table_id' => ['nullable', 'integer', 'min:1'],
             'guest_count' => ['sometimes', 'integer', 'min:1', 'max:200'],
-            'customer_profile_id' => ['nullable', 'integer', 'min:1'],
+            'customer_profile_id' => ['nullable', 'regex:/^(?:[1-9][0-9]*|[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$/'],
+            'shared_customer_id' => ['nullable', 'uuid'],
         ])->validate();
         if ($data['service_type'] === 'dine_in' && empty($data['table_id'])) {
             throw new FnbValidationException('Dine-in sessions require a table.');
@@ -367,11 +368,20 @@ final class FnbOperationsService
             }
 
             $customer = null;
-            if (isset($data['customer_profile_id'])) {
-                $customer = DB::table('fnb_customer_profiles')->where('website_key', $context->websiteKey)
-                    ->where('id', $data['customer_profile_id'])->where('status', 'active')->lockForUpdate()->first();
-                if ($customer === null) {
-                    throw new FnbNotFoundException('Customer profile was not found.');
+            $sharedSnapshot = null;
+            $customerId = $data['shared_customer_id'] ?? $data['customer_profile_id'] ?? null;
+            if ($customerId !== null) {
+                abort_if(isset($data['customer_profile_id'], $data['shared_customer_id']), 422, 'Chỉ chọn một định danh khách hàng.');
+                $directory = app(FnbCustomerDirectory::class);
+                if ($directory->shared($context, lock: true)) {
+                    $sharedSnapshot = $directory->snapshot($context, $customerId);
+                } else {
+                    abort_unless(ctype_digit((string) $customerId) && ! isset($data['shared_customer_id']), 404);
+                    $customer = DB::table('fnb_customer_profiles')->where('website_key', $context->websiteKey)
+                        ->where('id', $customerId)->where('status', 'active')->lockForUpdate()->first();
+                    if ($customer === null) {
+                        throw new FnbNotFoundException('Customer profile was not found.');
+                    }
                 }
             }
             $table = null;
@@ -398,14 +408,15 @@ final class FnbOperationsService
                 'service_type' => $data['service_type'],
                 'source_channel' => $data['source_channel'] ?? 'pos',
                 'customer_profile_id' => $customer?->id,
+                ...($sharedSnapshot ? ['shared_customer_id' => $sharedSnapshot['shared_customer_id']] : []),
                 'status' => 'open',
                 'guest_count' => $data['guest_count'] ?? 1,
-                'customer_snapshot' => $customer ? json_encode([
+                'customer_snapshot' => $sharedSnapshot ? json_encode($sharedSnapshot, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) : ($customer ? json_encode([
                     'customer_profile_id' => (int) $customer->id,
                     'code' => $customer->code,
                     'name' => $customer->name,
                     'phone_normalized' => $customer->phone_normalized,
-                ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) : null,
+                ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) : null),
                 'opened_at' => $now,
                 'opened_by' => $context->actorId,
                 'version' => 1,

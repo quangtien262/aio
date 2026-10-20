@@ -138,6 +138,7 @@ Route::prefix('admin')
                 require __DIR__.'/retail.php';
                 require base_path('modules/Merchandise/routes.php');
                 require base_path('modules/Purchasing/routes.php');
+                require base_path('modules/Customers/routes.php');
 
                 Route::get('/me', AdminCurrentProfileController::class)
                     ->name('me');

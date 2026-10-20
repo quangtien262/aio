@@ -770,3 +770,42 @@ Validation chốt ngày 2026-08-17:
   các nhóm tập trung đã chạy lại sau khi freeze. Có các failure baseline đã xác minh ở
   CMS menu/theme và F&B migration `down`; không suy ra toàn bộ failure là baseline.
   Chưa nghiệm thu G4/G5, tải nhiều chi nhánh, thiết bị, mất WAN và khôi phục thảm họa.
+
+
+## 17. Handoff Customers dùng chung ngày 2026-10-20
+
+- Module `customers` `0.1.0` sở hữu master person/company, contact/address, book grants,
+  consent, custom fields, source mappings và account links. Đọc
+  [kiến trúc](architecture/customers-module.md) cùng
+  [runtime contract](api/customers-runtime-contract.md) trước khi sửa/tích hợp.
+- `App\Models\Customer` vẫn là tài khoản đăng nhập website Core; không gộp master bằng
+  email/phone và không ép khách tại quầy có password. Company customer khác pháp nhân
+  Accounting; công nợ/hoá đơn/loyalty/campaign không chuyển ownership vào Customers.
+- Customer book là partition nội bộ gắn website. Core RBAC kết hợp book role và native
+  consumer membership; không thêm tenant/branch scope hoặc mở organization scope kế toán.
+- Consumer binding mặc định legacy; preview/commit/cutover tường minh mới dùng shared.
+  Shared mode thiếu Customers/readiness phải fail closed, không fallback dữ liệu cũ.
+  Giao dịch khách lẻ Retail/FNB không gắn hồ sơ vẫn hoạt động; quote có shared customer
+  kiểm readiness trước thanh toán. Migration tối đa 500 nguồn mới/lượt, source hash đổi
+  khi còn legacy chặn cutover; phone/email trùng chỉ cảnh báo, không tự merge.
+  Retail binding theo chain, runtime context branch UUID; FNB binding website, context outlet.
+- Retail lên `0.1.0-dev.2`, thêm shared_customer_id/buyer_snapshot và Accounting source-link
+  journal; FNB `0.2.0-dev.3` thêm shared IDs/adapter. Upgrade qua lifecycle, giữ legacy IDs,
+  transaction snapshots và mappings. Local DB `aio` đã cài/bật Customers `0.1.0`, nâng hai
+  consumer; ba profile FNB đã migrate sau dry-run valid. Hash legacy profiles/check
+  snapshots và số tài khoản login giữ nguyên. Retail hiện 0 chain, không cần cutover.
+- Snapshot buyer trên sale/bill giữ nguyên sau sửa master hoặc merge. History dùng cả
+  source mapping và merged aliases, chỉ theo quyền native hiện hành. Accounting sync là
+  explicit link, cần đúng legal mapping/quyền organization, không ghi đè master đã chỉnh sửa.
+- Event CustomerChanged chỉ có định danh/version/changed fields; outbox retry yêu cầu
+  listener deduplicate, không bảo đảm exactly-once hay tự cấp quyền đọc PII.
+- Export CSV private qua queue có expiry/checksum/reauthorization; scheduler có
+  customers:dispatch-events và customers:prune-exports. Account-link invitation gắn account
+  đích, token một lần và mật khẩu hiện tại; không tự gửi email/SMS.
+- Bộ lọc riêng lưu server theo actor/book; custom fields required kiểm trên mọi lần ghi,
+  searchable không nhạy cảm có index prefix, không biến field nhạy cảm thành search public.
+- Release tập trung 22 file: 206 tests/2.623 assertions pass; MySQL standalone 6 gates/42
+  assertions pass, scratch database/export đã dọn và xác minh; JS 54/54 + build pass.
+  Không phải toàn AIO suite. UI SQLite riêng đã thử create/contact/search/saved filter/
+  details/activity/export ready/merge preview, không console error. Chưa nghiệm thu
+  production capacity, backup/restore diện rộng hay production pilot.

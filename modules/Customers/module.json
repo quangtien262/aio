@@ -1,0 +1,112 @@
+{
+  "name": "Quản lý khách hàng",
+  "key": "customers",
+  "version": "0.1.0",
+  "description": "Hồ sơ khách hàng dùng chung, liên hệ, phân quyền chia sẻ, consent và tích hợp nhiều ứng dụng.",
+  "website_type": [
+    "backoffice",
+    "ecommerce",
+    "corporate",
+    "service",
+    "news",
+    "landingpage"
+  ],
+  "dependencies": [],
+  "optional_dependencies": [],
+  "provides": {
+    "customers.profiles.read.v1": {
+      "introduced_version": "0.1.0"
+    },
+    "customers.profiles.manage.v1": {
+      "introduced_version": "0.1.0"
+    },
+    "customers.lookup.v1": {
+      "introduced_version": "0.1.0"
+    },
+    "customers.consumers.v1": {
+      "introduced_version": "0.1.0"
+    },
+    "customers.consents.v1": {
+      "introduced_version": "0.1.0"
+    },
+    "customers.extensions.v1": {
+      "introduced_version": "0.1.0"
+    }
+  },
+  "permissions": [
+    "customers.view",
+    "customers.lookup",
+    "customers.create",
+    "customers.update",
+    "customers.sensitive",
+    "customers.archive",
+    "customers.merge",
+    "customers.import",
+    "customers.export",
+    "customers.consent.manage",
+    "customers.settings",
+    "customers.account.link"
+  ],
+  "hooks": [
+    "Modules\\Customers\\Hooks\\CustomerLifecycleHook"
+  ],
+  "lifecycle_state_provider": "Modules\\Customers\\Services\\CustomerRuntimeState",
+  "menus": [
+    {
+      "key": "customers-directory",
+      "label": "Danh bạ",
+      "description": "Hồ sơ khách hàng dùng chung",
+      "icon": "team",
+      "route": "/admin/modules/customers",
+      "permission": "customers.view"
+    },
+    {
+      "key": "customers-duplicates",
+      "label": "Hồ sơ trùng",
+      "description": "Kiểm tra và hợp nhất hồ sơ trùng có kiểm soát",
+      "icon": "copy",
+      "route": "/admin/modules/customers/duplicates",
+      "permission": "customers.view",
+      "permissions_any": ["customers.merge"]
+    },
+    {
+      "key": "customers-data",
+      "label": "Nhập & xuất",
+      "description": "Nhập CSV và xuất dữ liệu theo quyền được cấp",
+      "icon": "swap",
+      "route": "/admin/modules/customers/data",
+      "permission": "customers.view",
+      "permissions_any": ["customers.import", "customers.export"]
+    },
+    {
+      "key": "customers-settings",
+      "label": "Thiết lập",
+      "description": "Phân quyền danh bạ, trường mở rộng và kết nối ứng dụng",
+      "icon": "setting",
+      "route": "/admin/modules/customers/settings",
+      "permission": "customers.view",
+      "permissions_any": ["customers.settings"]
+    }
+  ],
+  "package": {
+    "migrations": [
+      "database/migrations"
+    ]
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": false
+  },
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-10-20",
+      "notes": [
+        "Hồ sơ dùng chung theo nhóm dữ liệu, liên hệ, consent, trường mở rộng, nhập/xuất và chuyển đổi theo consumer."
+      ]
+    }
+  ]
+}

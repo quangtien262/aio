@@ -87,7 +87,7 @@ class ModuleRegistry
             ->where('status', 'enabled')
             ->flatMap(function (array $module) use ($permissions): array {
                 return collect($module['menus'] ?? [])
-                    ->filter(fn (array $menu): bool => empty($menu['permission']) || in_array($menu['permission'], $permissions, true))
+                    ->filter(fn (array $menu): bool => $this->menuMatchesPermissions($menu, $permissions))
                     ->map(fn (array $menu): array => [
                         ...$menu,
                         'module_key' => $module['key'],
@@ -98,6 +98,33 @@ class ModuleRegistry
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * Menu visibility only: destination APIs must still authorize each action.
+     * A declared permissions_any list adds an OR requirement to permission.
+     */
+    public function menuMatchesPermissions(array $menu, array $permissions): bool
+    {
+        if (! empty($menu['permission']) && ! in_array($menu['permission'], $permissions, true)) {
+            return false;
+        }
+
+        if (! array_key_exists('permissions_any', $menu)) {
+            return true;
+        }
+
+        if (! is_array($menu['permissions_any'])) {
+            return false;
+        }
+
+        foreach ($menu['permissions_any'] as $permission) {
+            if (is_string($permission) && $permission !== '' && in_array($permission, $permissions, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function enrichModule(array $module, Collection $modules): array
@@ -266,6 +293,11 @@ class ModuleRegistry
                     'icon' => $menu['icon'] ?? 'appstore',
                     'route' => $menu['route'] ?? "/admin/modules/{$moduleKey}",
                     'permission' => $menu['permission'] ?? null,
+                    ...(array_key_exists('permissions_any', $menu) ? [
+                        'permissions_any' => is_array($menu['permissions_any'])
+                            ? array_values(array_unique(array_filter($menu['permissions_any'], fn (mixed $permission): bool => is_string($permission) && $permission !== '')))
+                            : [],
+                    ] : []),
                     'hidden' => (bool) ($menu['hidden'] ?? false),
                 ];
             })

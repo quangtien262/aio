@@ -93,12 +93,13 @@ Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.ena
 
     Route::post('reauth/proofs', [FnbSecurityController::class, 'reauth'])->name('reauth');
     Route::get('outlets/{outlet}/customer-profiles', [FnbCustomerController::class, 'index'])->defaults('fnb_permission', 'fnb.customer.view')->name('customer.index');
+    Route::get('outlets/{outlet}/customers-integration', [FnbCustomerController::class, 'integration'])->defaults('fnb_permission', 'fnb.outlet.view')->whereNumber('outlet')->name('customer.integration');
     Route::delete('customers/{resource}', [FnbCustomerController::class, 'command'])->defaults('fnb_customer_action', 'archive')
-        ->defaults('fnb_permission', 'fnb.customer.update')->whereNumber('resource')->name('customer.archive');
-    Route::get('customers/{resource}', [FnbCustomerController::class, 'show'])->defaults('fnb_permission', 'fnb.customer.view')->whereNumber('resource')->name('customer.show');
-    Route::get('customers/{resource}/history', [FnbCustomerController::class, 'show'])->defaults('fnb_history', true)->defaults('fnb_permission', 'fnb.customer.view')->whereNumber('resource')->name('customer.history');
+        ->defaults('fnb_permission', 'fnb.customer.update')->where('resource', '[0-9a-fA-F-]+')->name('customer.archive');
+    Route::get('customers/{resource}', [FnbCustomerController::class, 'show'])->defaults('fnb_permission', 'fnb.customer.view')->where('resource', '[0-9a-fA-F-]+')->name('customer.show');
+    Route::get('customers/{resource}/history', [FnbCustomerController::class, 'show'])->defaults('fnb_history', true)->defaults('fnb_permission', 'fnb.customer.view')->where('resource', '[0-9a-fA-F-]+')->name('customer.history');
     Route::put('customers/{resource}', [FnbCustomerController::class, 'command'])->defaults('fnb_customer_action', 'update')
-        ->defaults('fnb_permission', 'fnb.customer.update')->whereNumber('resource')->name('customer.update');
+        ->defaults('fnb_permission', 'fnb.customer.update')->where('resource', '[0-9a-fA-F-]+')->name('customer.update');
     Route::post('sessions/{resource}/customer', [FnbCustomerController::class, 'command'])->defaults('fnb_customer_action', 'attach')
         ->defaults('fnb_permission', 'fnb.customer.attach')->whereNumber('resource')->name('customer.attach');
     Route::post('units/{resource}/archive', [FnbApiController::class, 'archiveUnit'])->defaults('fnb_permission', 'fnb.recipe.manage')->whereNumber('resource')->name('units.archive');

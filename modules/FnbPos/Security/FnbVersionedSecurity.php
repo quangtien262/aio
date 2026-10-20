@@ -8,6 +8,7 @@ use Modules\FnbPos\Security\Versions\V0_1_0;
 use Modules\FnbPos\Security\Versions\V0_1_0Dev1;
 use Modules\FnbPos\Security\Versions\V0_2_0Dev1;
 use Modules\FnbPos\Security\Versions\V0_2_0Dev2;
+use Modules\FnbPos\Security\Versions\V0_2_0Dev3;
 use RuntimeException;
 
 final class FnbVersionedSecurity implements VersionedModuleSecurityProvider
@@ -15,6 +16,7 @@ final class FnbVersionedSecurity implements VersionedModuleSecurityProvider
     public function definition(string $version): ModuleSecurityDefinition
     {
         return match ($version) {
+            '0.2.0-dev.3' => V0_2_0Dev3::definition(),
             '0.2.0-dev.2' => V0_2_0Dev2::definition(),
             '0.2.0-dev.1' => V0_2_0Dev1::definition(),
             '0.1.0-dev.1' => V0_1_0Dev1::definition(),

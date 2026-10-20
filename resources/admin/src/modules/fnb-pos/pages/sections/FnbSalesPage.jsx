@@ -43,6 +43,7 @@ import FnbStatusTag from '../../components/FnbStatusTag';
 import FnbSessionCompletionDrawer from '../../components/FnbSessionCompletionDrawer';
 import useFnbResource from '../../hooks/useFnbResource';
 import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
+import CustomerPicker from '../../../customers/components/CustomerPicker';
 import { isZeroCharge, paymentDefaults, preparePaymentParts, refundAllocations, serverAmountDue } from '../../utils/fnbPayment';
 import { asArray, compactIdentifier, formatDateTime, formatMinorMoney, formatQuantity } from '../../utils/fnbFormat';
 import { sessionDisplayStatus } from '../../utils/fnbSessionStatus';
@@ -123,6 +124,20 @@ function TransferTablePicker({ id, value, onChange, tables, areas, disabled }) {
 }
 
 function OpenSessionModal({ open, form, areas, tables, occupiedTableIds, customers, customerSearching, canLookupCustomer, canCreateCustomer, canUpdateCustomer, saving, onCustomerSearch, onCustomerChange, onCreateCustomer, onClose, onSubmit }) {
+    const { api, outletId, terminalId, selectedOutlet } = useFnbWorkspace();
+    const directory = selectedOutlet?.customers;
+    const shared = directory?.mode === 'shared';
+    const optionFor = (customer) => ({ value: customer.id, label: `${customer.name}${customer.code ? ` · ${customer.code}` : ''}${customer.phone_normalized ? ` · ${customer.phone_normalized}` : ''}`, name: customer.name, code: customer.code, phone: customer.phone_normalized });
+    const loadShared = async (query) => {
+        const result = await api.read(api.outletPath('customers'), { query });
+        return asArray(result.data?.items).map(optionFor);
+    };
+    const createShared = async (values) => {
+        let created;
+        await onCreateCustomer(values, (customer) => { created = optionFor(customer); });
+        if (!created) throw new Error('Chưa xác nhận tạo khách hàng; kiểm tra trạng thái lệnh trước khi thử lại.');
+        return created;
+    };
     const [quickCreateOpen, setQuickCreateOpen] = useState(false);
     const [customerSaving, setCustomerSaving] = useState(false);
     const [customerForm] = Form.useForm();
@@ -185,8 +200,8 @@ function OpenSessionModal({ open, form, areas, tables, occupiedTableIds, custome
                     </Form.Item>
                 </div>
                 {canLookupCustomer ? <>
-                    <Form.Item name="customer_profile_id" extra="Để trống nếu phục vụ khách lẻ." label={<span className="fnb-session-customer-label"><span>Khách hàng <span className="fnb-session-optional">(tùy chọn)</span></span>{canCreateCustomer ? <Button type="link" size="small" icon={<PlusOutlined />} aria-label="Thêm nhanh khách hàng" disabled={saving || customerSaving} onClick={() => { customerForm.resetFields(); setQuickCreateOpen(true); }}>Thêm mới</Button> : null}</span>}>
-                        <Select
+                    <Form.Item name="customer_profile_id" extra="Để trống nếu phục vụ khách lẻ." label={<span className="fnb-session-customer-label"><span>Khách hàng <span className="fnb-session-optional">(tùy chọn)</span></span>{canCreateCustomer && !shared ? <Button type="link" size="small" icon={<PlusOutlined />} aria-label="Thêm nhanh khách hàng" disabled={saving || customerSaving} onClick={() => { customerForm.resetFields(); setQuickCreateOpen(true); }}>Thêm mới</Button> : null}</span>}>
+                        {shared ? <CustomerPicker key={`${outletId}:${terminalId}:${directory?.book_id}`} disabled={saving || !directory?.ready} loadOptions={loadShared} createCustomer={canCreateCustomer ? createShared : undefined} onChange={onCustomerChange} /> : <Select
                             allowClear
                             showSearch
                             filterOption={false}
@@ -196,7 +211,7 @@ function OpenSessionModal({ open, form, areas, tables, occupiedTableIds, custome
                             notFoundContent={customerSearching ? <Spin size="small" /> : 'Không có khách hàng phù hợp'}
                             options={customers.map((customer) => ({ value: customer.id, label: `${customer.name}${customer.code ? ` · ${customer.code}` : ''}${customer.phone_normalized ? ` · ${customer.phone_normalized}` : ''}` }))}
                             placeholder="Nhập tên, mã hoặc số điện thoại"
-                        />
+                        />}
                     </Form.Item>
 
                 </> : null}
@@ -529,19 +544,20 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
     const [customerSearching, setCustomerSearching] = useState(false);
     const customerSearchSequence = useRef(0);
     const customerSearchTimer = useRef(null);
+    const [sessionForm] = Form.useForm();
     useEffect(() => {
         setCustomers([]);
         setSessionCustomer(null);
         setCustomerSearching(false);
+        sessionForm.setFieldValue('customer_profile_id', undefined);
         return () => {
             customerSearchSequence.current += 1;
             window.clearTimeout(customerSearchTimer.current);
         };
-    }, [outletId, terminalId]);
+    }, [outletId, terminalId, selectedOutlet?.customers?.mode, selectedOutlet?.customers?.book_id, sessionForm]);
     const [saving, setSaving] = useState(false);
     const [receiptJob, setReceiptJob] = useState(null);
     const [receiptLoading, setReceiptLoading] = useState(false);
-    const [sessionForm] = Form.useForm();
     const [itemForm] = Form.useForm();
     const [paymentForm] = Form.useForm();
     const [checkForm] = Form.useForm();
@@ -641,6 +657,7 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
             execute: (auth) => api.command('customers', {
                 name: values.name.trim(),
                 phone: values.phone?.trim() || null,
+                email: values.email?.trim() || null,
                 ...(can('fnb.customer.update') ? { privacy_consent: Boolean(values.privacy_consent), marketing_consent: false } : {}),
             }, { idempotencyKey: key, ...auth }),
             successMessage: 'Đã thêm khách hàng.',
@@ -1446,7 +1463,7 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
                 onSubmitOrder={submitOrder}
                 onRelease={() => updateSessionState('close')}
             />
-            <OpenSessionModal open={openSession} form={sessionForm} areas={areas} tables={tables} occupiedTableIds={occupiedTableIds} customers={customerChoices} onCustomerChange={(id) => setSessionCustomer(customerChoices.find((customer) => String(customer.id) === String(id)) ?? null)} onCreateCustomer={quickCreateCustomer} customerSearching={customerSearching} canLookupCustomer={can('fnb.customer.lookup')} canCreateCustomer={can('fnb.customer.create')} canUpdateCustomer={can('fnb.customer.update')} saving={saving} onCustomerSearch={searchCustomers} onClose={() => setOpenSession(null)} onSubmit={createSession} />
+            <OpenSessionModal open={openSession} form={sessionForm} areas={areas} tables={tables} occupiedTableIds={occupiedTableIds} customers={customerChoices} onCustomerChange={(id, option) => setSessionCustomer(customerChoices.find((customer) => String(customer.id) === String(id)) ?? (option ? { id: option.value, name: option.name, code: option.code, phone_normalized: option.phone } : null))} onCreateCustomer={quickCreateCustomer} customerSearching={customerSearching} canLookupCustomer={can('fnb.customer.lookup')} canCreateCustomer={can('fnb.customer.create')} canUpdateCustomer={can('fnb.customer.update')} saving={saving} onCustomerSearch={searchCustomers} onClose={() => setOpenSession(null)} onSubmit={createSession} />
             <AddItemModal item={addItem} editing={Boolean(editingLine)} form={itemForm} currency={currency} saving={saving} onClose={() => { setAddItem(null); setEditingLine(null); }} onSubmit={saveLine} />
             <FnbPaymentModal open={paymentAction} form={paymentForm} methods={methods} currency={currency} saving={saving} operational={operational} onClose={() => setPaymentAction(null)} onSubmit={collectPayment} />
             <CheckAllocationDrawer open={checkDrawerOpen} form={checkForm} rows={allocationRows} saving={saving} onClose={() => setCheckDrawerOpen(false)} onSubmit={createAllocatedCheck} />

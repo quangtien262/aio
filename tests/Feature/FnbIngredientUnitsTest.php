@@ -151,7 +151,7 @@ class FnbIngredientUnitsTest extends TestCase
         app(ModuleManager::class)->upgrade('fnb-pos');
         $this->assertDatabaseCount('fnb_units', 5);
         $this->assertDatabaseHas('fnb_ingredients', ['id' => $ingredient['id'], 'base_unit' => 'ml', 'code' => 'sua']);
-        $this->assertSame('0.2.0-dev.2', ModuleInstallation::where('key', 'fnb-pos')->value('version'));
+        $this->assertSame('0.2.0-dev.3', ModuleInstallation::where('key', 'fnb-pos')->value('version'));
     }
 
     private function command(string $path, array $payload, ?string $key = null): TestResponse

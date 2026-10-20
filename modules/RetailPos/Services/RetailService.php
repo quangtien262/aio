@@ -11,6 +11,7 @@ use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Customers\Services\ConsumerCustomerService;
 use Modules\Inventory\Services\InventoryV2Service;
 use Modules\Merchandise\Services\MerchandiseService;
 use Modules\RetailPos\Domain\RetailNumbers as N;
@@ -244,11 +245,28 @@ class RetailService
             $lines[] = ['sku_id' => $sku->id, 'inventory_item_id' => $this->inventory->ensureItem((int) $sku->id), 'sku' => $sku->sku, 'name' => $sku->name, 'unit' => $sku->base_unit, 'quantity' => $qty, 'price_minor' => $assort->price_minor, 'price_version' => $assort->version, 'gross_minor' => $amount, 'total_minor' => $amount];
         }
         $customer = null;
-        if (! empty($data['customer_id'])) {
-            $customer = $this->find('retail_customers', $data['customer_id']);
-            abort_unless($customer->chain_id === $b->chain_id && $customer->status === 'active', 404);
+        $sharedCustomer = null;
+        $snapshot = null;
+        $customerContext = $this->customerContext($actor, $b->public_id, true);
+        if ($customerContext['mode'] === 'shared') {
+            $selected = $data['shared_customer_id'] ?? $data['customer_id'] ?? null;
+            if ($selected) {
+                abort_unless($customerContext['ready'], 503, 'Customers dùng chung chưa sẵn sàng; không chuyển về dữ liệu cũ.');
+                app(RetailCustomersProvider::class)->authorize($actor, app(SiteContext::class)->websiteKey(), $b->public_id, 'attach');
+                $profile = app(ConsumerCustomerService::class)->snapshot($actor, 'retail-pos', $b->public_id, (string) $selected);
+                $sharedCustomer = $profile['public_id'] ?? $profile['id'];
+                $snapshot = $this->buyerSnapshot($profile, 'customers');
+            }
+        } else {
+            abort_if(! empty($data['shared_customer_id']), 422, 'Chi nhánh chưa chuyển sang Customers dùng chung.');
+            if (! empty($data['customer_id'])) {
+                app(RetailCustomersProvider::class)->authorize($actor, app(SiteContext::class)->websiteKey(), $b->public_id, 'attach');
+                $customer = $this->find('retail_customers', $data['customer_id']);
+                abort_unless($customer->chain_id === $b->chain_id && $customer->status === 'active', 404);
+                $snapshot = $this->buyerSnapshot((array) $customer, 'retail-pos');
+            }
         }
-        $sale = $this->insert('retail_sales', ['branch_id' => $b->id, 'legal_entity_id' => $b->legal_entity_id, 'terminal_id' => $terminal->id, 'shift_id' => $shift->id, 'customer_id' => $customer?->id, 'actor_id' => $actor->id, 'subtotal_minor' => $total, 'total_minor' => $total]);
+        $sale = $this->insert('retail_sales', ['branch_id' => $b->id, 'legal_entity_id' => $b->legal_entity_id, 'terminal_id' => $terminal->id, 'shift_id' => $shift->id, 'customer_id' => $customer?->id, 'shared_customer_id' => $sharedCustomer, 'buyer_snapshot' => $snapshot ? json_encode($snapshot, JSON_THROW_ON_ERROR) : null, 'actor_id' => $actor->id, 'subtotal_minor' => $total, 'total_minor' => $total]);
         foreach ($lines as $line) {
             $this->insert('retail_sale_lines', $line + ['sale_id' => $sale->id]);
         }
@@ -275,6 +293,14 @@ class RetailService
             abort_unless($sku && $sku->is_active && (int) $sku->catalog_id === (int) $catalog && $assortment && $assortment->is_active
                 && (int) $assortment->version === (int) $line->price_version && (string) $assortment->price_minor === (string) $line->price_minor,
                 409, 'Bảng giá hoặc danh mục bán đã đổi; hủy giỏ hiện tại và tạo lại để xác nhận giá mới.');
+        }
+        if ($sale->shared_customer_id) {
+            $context = $this->customerContext($actor, $b->public_id, true);
+            abort_unless($context['mode'] === 'shared' && $context['ready'], 503, 'Customers dùng chung chưa sẵn sàng.');
+            app(RetailCustomersProvider::class)->authorize($actor, app(SiteContext::class)->websiteKey(), $b->public_id, 'attach');
+            app(ConsumerCustomerService::class)->assertAccess($actor, 'retail-pos', $b->public_id, 'attach');
+            $profile = app(ConsumerCustomerService::class)->profile($actor, 'retail-pos', $b->public_id, $sale->shared_customer_id);
+            abort_unless(($profile['status'] ?? null) === 'active', 422, 'Khách hàng đã lưu trữ.');
         }
         $discount = N::money($data['discount_minor'] ?? '0');
         abort_if($discount > $sale->subtotal_minor, 422, 'Giảm giá vượt tổng đơn.');
@@ -412,9 +438,18 @@ class RetailService
         return $this->present($this->find('retail_returns', $id));
     }
 
-    public function saveCustomer(Admin $actor, array $data, ?string $id = null): array
+    public function saveCustomer(Admin $actor, array $data, ?string $id = null, ?string $key = null): array
     {
         $b = $this->branch($actor, (string) ($data['branch_id'] ?? ''), 'retail.customer.manage', true);
+        $context = $this->customerContext($actor, $branchId = $b->public_id, true);
+        if ($context['mode'] === 'shared') {
+            abort_unless($context['ready'], 503, 'Customers dùng chung chưa sẵn sàng; không ghi dữ liệu cũ.');
+            abort_unless($key, 422, 'Cần Idempotency-Key.');
+            $customers = app(ConsumerCustomerService::class);
+            $customerKey = 'retail-customer:'.hash('sha256', $key);
+
+            return $id ? $customers->update($actor, 'retail-pos', $branchId, $id, $data, $customerKey) : $customers->create($actor, 'retail-pos', $branchId, $data, $customerKey);
+        }
         $valid = validator($data, ['name' => ['required', 'string', 'max:150'], 'phone' => ['nullable', 'string', 'max:30'], 'email' => ['nullable', 'email', 'max:150'], 'status' => ['nullable', 'in:active,archived']])->validate();
         if ($id) {
             $r = $this->find('retail_customers', $id, true);
@@ -434,6 +469,11 @@ class RetailService
             'sales' => 'retail.sale.view','shifts' => 'retail.shift.manage','returns' => 'retail.return.manage','customers' => 'retail.customer.view','reports','dashboard' => 'retail.report.view','inventory' => 'retail.inventory.view',default => 'retail.view'
         };
         $b = $this->branch($actor, $branchId, $permission);
+        if ($kind === 'customers' && ($context = $this->customerContext($actor, $branchId))['mode'] === 'shared') {
+            abort_unless($context['ready'], 503, 'Customers dùng chung chưa sẵn sàng; không đọc dữ liệu cũ.');
+
+            return app(ConsumerCustomerService::class)->lookup($actor, 'retail-pos', $branchId, (string) ($filters['query'] ?? ''), 100);
+        }
         if ($kind === 'inventory') {
             return $this->products($actor, $branchId, (string) ($filters['query'] ?? ''));
         }
@@ -452,9 +492,64 @@ class RetailService
         };
         $q = DB::table($table)->where($kind === 'customers' ? 'chain_id' : 'branch_id', $kind === 'customers' ? $b->chain_id : $b->id)->orderByDesc('id')->limit(100);
 
+        if ($kind === 'customers' && trim((string) ($filters['query'] ?? '')) !== '') {
+            $query = mb_substr(trim((string) $filters['query']), 0, 150);
+            $q->where(fn ($filter) => $filter->where('name', 'like', '%'.$query.'%')->orWhere('phone', 'like', '%'.$query.'%')->orWhere('email', 'like', '%'.$query.'%'));
+        }
+
         return $q->get()->map(fn ($r) => match ($kind) {
             'sales' => $this->salePayload($r),'shifts' => $this->shiftPayload($r),default => $this->present($r)
         })->all();
+    }
+
+    public function customerContext(Admin $actor, string $branchId, bool $lock = false): array
+    {
+        // Customer-less sales keep working without granting customer-directory access.
+        $this->branch($actor, $branchId, $actor->hasPermission('retail.view') ? 'retail.view' : 'retail.sale.create');
+        if (! class_exists(ConsumerCustomerService::class)) {
+            return ['mode' => 'legacy', 'available' => false, 'ready' => true, 'book_id' => null];
+        }
+
+        $context = app(ConsumerCustomerService::class)->status($actor, 'retail-pos', $branchId, $lock);
+        if ($context['mode'] === 'legacy') {
+            $context['ready'] = true;
+            $context['reason'] = null;
+        }
+
+        return $context;
+    }
+
+    public function customerHistory(Admin $actor, string $branchId, string $customerId): array
+    {
+        $branch = $this->branch($actor, $branchId, 'retail.customer.view');
+        $this->permission($actor, 'retail.sale.view');
+        $context = $this->customerContext($actor, $branchId);
+        $legacyIds = [$customerId];
+        $sharedIds = [];
+        if ($context['mode'] === 'shared') {
+            abort_unless($context['ready'], 503, 'Customers dùng chung chưa sẵn sàng.');
+            $customers = app(ConsumerCustomerService::class);
+            $profile = $customers->profile($actor, 'retail-pos', $branchId, $customerId);
+            $sharedIds = $customers->profileIds($actor, 'retail-pos', $branchId, $customerId);
+            $legacyIds = $customers->legacyIds($actor, 'retail-pos', $branchId, $customerId);
+        } else {
+            $customer = $this->find('retail_customers', $customerId);
+            abort_unless((int) $customer->chain_id === (int) $branch->chain_id, 404);
+        }
+        $legacyDatabaseIds = DB::table('retail_customers')->where('chain_id', $branch->chain_id)->whereIn('public_id', $legacyIds)->pluck('id');
+        $sales = DB::table('retail_sales')->where('branch_id', $branch->id)->where('status', 'completed')->where(function ($q) use ($legacyDatabaseIds, $sharedIds): void {
+            $q->whereIn('customer_id', $legacyDatabaseIds);
+            if ($sharedIds !== []) {
+                $q->orWhereIn('shared_customer_id', $sharedIds);
+            }
+        })->orderByDesc('id')->limit(100)->get();
+
+        return ['branch_id' => $branchId, 'customer_id' => $customerId, 'scope' => 'branch', 'items' => $sales->map(fn ($sale) => $this->salePayload($sale))->all()];
+    }
+
+    private function buyerSnapshot(array $profile, string $source): array
+    {
+        return ['source_module' => $source, 'id' => $profile['public_id'] ?? $profile['id'], 'type' => $profile['type'] ?? 'person', 'code' => $profile['code'] ?? null, 'name' => $profile['name'], 'phone' => $profile['phone'] ?? null, 'email' => $profile['email'] ?? null, 'version' => (int) ($profile['version'] ?? 1)];
     }
 
     public function commandStatus(Admin $actor, string $key): array
@@ -542,7 +637,7 @@ class RetailService
 
     private function salePayload(object $r): array
     {
-        return array_replace($this->present($r), ['branch_id' => DB::table('retail_branches')->where('id', $r->branch_id)->value('public_id'), 'quote_expires_at' => $this->quoteExpiresAt($r)->utc()->toIso8601String(), 'lines' => DB::table('retail_sale_lines')->where('sale_id', $r->id)->get()->map(fn ($l) => $this->present($l))->all(), 'tenders' => DB::table('retail_tenders')->where('sale_id', $r->id)->get()->map(fn ($t) => $this->present($t))->all()]);
+        return array_replace($this->present($r), ['buyer_snapshot' => $r->buyer_snapshot ? json_decode($r->buyer_snapshot, true, flags: JSON_THROW_ON_ERROR) : null, 'branch_id' => DB::table('retail_branches')->where('id', $r->branch_id)->value('public_id'), 'quote_expires_at' => $this->quoteExpiresAt($r)->utc()->toIso8601String(), 'lines' => DB::table('retail_sale_lines')->where('sale_id', $r->id)->get()->map(fn ($l) => $this->present($l))->all(), 'tenders' => DB::table('retail_tenders')->where('sale_id', $r->id)->get()->map(fn ($t) => $this->present($t))->all()]);
     }
 
     private function quoteExpiresAt(object $sale): CarbonImmutable
@@ -592,6 +687,9 @@ class RetailService
         }
         $canViewCost ??= $actor->hasPermission('retail.report.cost.view');
         foreach ($value as $key => &$item) {
+            if ($key === 'buyer_snapshot' && is_array($item) && ! $actor->hasPermission('retail.customer.view')) {
+                unset($item['phone'], $item['email']);
+            }
             if (! $canViewCost && in_array($key, ['cost', 'unit_cost', 'total_cost', 'stock_allocations'], true)) {
                 unset($value[$key]);
 
@@ -625,7 +723,7 @@ class RetailService
             $this->hq($actor, $this->find('retail_chains', $data['chain_id']));
         }
         $table = match (explode('.', $operation)[0]) {
-            'sale' => 'retail_sales','shift' => 'retail_shifts','return' => 'retail_returns','customer' => 'retail_customers',default => null
+            'sale' => 'retail_sales','shift' => 'retail_shifts','return' => 'retail_returns',default => null
         };
         $row = null;
         $resourceBranch = null;
@@ -676,8 +774,15 @@ class RetailService
             abort_unless($resourceBranch, 404);
             $this->hq($actor, DB::table('retail_chains')->where('id', $resourceBranch->chain_id)->first());
         }
-        if ($operation === 'customer.update' && $row) {
-            abort_unless(isset($branches['branch_id']) && (int) $row->chain_id === (int) $branches['branch_id']->chain_id, 404);
+        if ($operation === 'customer.update' && isset($branches['branch_id'])) {
+            $context = $this->customerContext($actor, $branches['branch_id']->public_id);
+            if ($context['mode'] === 'shared') {
+                abort_unless($context['ready'], 503);
+                app(ConsumerCustomerService::class)->profile($actor, 'retail-pos', $branches['branch_id']->public_id, (string) $intent['resource']);
+            } else {
+                $customer = $this->find('retail_customers', (string) $intent['resource']);
+                abort_unless((int) $customer->chain_id === (int) $branches['branch_id']->chain_id, 404);
+            }
         }
         if (str_starts_with($operation, 'transfer.')) {
             $this->permission($actor, 'inventory.transfer.manage');

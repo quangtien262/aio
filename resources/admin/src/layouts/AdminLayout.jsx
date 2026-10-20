@@ -2,6 +2,7 @@ import { ADMIN_BASE_PATH, STOREFRONT_ROUTES, adminApi, adminPath } from '../shar
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import AppstoreOutlined from '@ant-design/icons/AppstoreOutlined';
 import BgColorsOutlined from '@ant-design/icons/BgColorsOutlined';
+import CopyOutlined from '@ant-design/icons/CopyOutlined';
 import DashboardOutlined from '@ant-design/icons/DashboardOutlined';
 import PictureOutlined from '@ant-design/icons/PictureOutlined';
 import ProfileOutlined from '@ant-design/icons/ProfileOutlined';
@@ -9,6 +10,7 @@ import ReadOutlined from '@ant-design/icons/ReadOutlined';
 import SafetyCertificateOutlined from '@ant-design/icons/SafetyCertificateOutlined';
 import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import TagsOutlined from '@ant-design/icons/TagsOutlined';
+import SwapOutlined from '@ant-design/icons/SwapOutlined';
 import TeamOutlined from '@ant-design/icons/TeamOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import Alert from 'antd/es/alert';
@@ -401,7 +403,8 @@ export default function AdminLayout() {
 
                 return true;
             })
-            .filter((item) => !item.permission || hasPermission(item.permission));
+            .filter((item) => !item.permission || hasPermission(item.permission))
+            .filter((item) => !Object.hasOwn(item, 'permissions_any') || (Array.isArray(item.permissions_any) && item.permissions_any.some((permission) => typeof permission === 'string' && hasPermission(permission))));
     }, [currentAdmin, hasPermission]);
 
     const defaultRoute = normalizeRoute(navigationItems[0]?.route ?? '/dashboard');
@@ -422,6 +425,10 @@ export default function AdminLayout() {
             profile: <ProfileOutlined />,
             read: <ReadOutlined />,
             tags: <TagsOutlined />,
+            team: <TeamOutlined />,
+            copy: <CopyOutlined />,
+            swap: <SwapOutlined />,
+            setting: <SettingOutlined />,
         };
 
         return iconMap[iconKey] ?? iconMap[itemKey] ?? <AppstoreOutlined />;
