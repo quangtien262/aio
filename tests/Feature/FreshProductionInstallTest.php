@@ -169,7 +169,7 @@ class FreshProductionInstallTest extends TestCase
         $this->assertProcessSucceeded($stepRefresh, 'Partial module refresh');
         $this->assertStringNotContainsString('Migration not found', $stepRefresh->getOutput());
         $this->assertContains('fnb_check_day_hot_idx', $this->indexes($this->database(), 'fnb_checks'));
-        $this->assertSame(10, $this->tableCount($this->database(), 'module_installations'));
+        $this->assertSame(11, $this->tableCount($this->database(), 'module_installations'));
 
         $refresh = $this->artisanProcess(['migrate:refresh', '--force', '--no-interaction']);
         $this->assertProcessSucceeded($refresh, 'Refresh with installed modules');
@@ -266,6 +266,8 @@ $modules->install('cms');
 $modules->enable('cms');
 $modules->install('catalog');
 $modules->enable('catalog');
+$modules->install('merchandise');
+$modules->enable('merchandise');
 $modules->install('inventory');
 $modules->enable('inventory');
 $modules->install('accounting-tax');

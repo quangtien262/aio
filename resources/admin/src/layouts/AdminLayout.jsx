@@ -582,16 +582,13 @@ export default function AdminLayout() {
 
     const effectiveSectionKey = isMobile ? (mobileSectionKey ?? activeTopSectionKey) : activeTopSectionKey;
 
-    const isAdminHome = location.pathname.replace(/\/+$/, '') === normalizeRoute('/dashboard');
-
     const sideMenuItems = useMemo(() => {
         const scopedItems = currentNavigationItem?.source === 'module'
             ? visibleNavigationMenuItems.filter((item) => item.source === 'module' && item.moduleKey === currentNavigationItem.moduleKey)
             : visibleNavigationMenuItems.filter((item) => item.section === effectiveSectionKey && item.source !== 'module');
 
-        const homeRoutes = [normalizeRoute('/dashboard'), normalizeRoute('/modules')];
-        return buildWorkspaceMenuItems(scopedItems.filter((item) => isAdminHome || item.source === 'module' || !homeRoutes.includes(item.route)));
-    }, [currentNavigationItem, effectiveSectionKey, visibleNavigationMenuItems, isAdminHome, normalizeRoute]);
+        return buildWorkspaceMenuItems(scopedItems);
+    }, [currentNavigationItem, effectiveSectionKey, visibleNavigationMenuItems]);
 
     const selectedMenuKey = useMemo(() => {
         return currentNavigationItem?.key ?? null;

@@ -4,6 +4,7 @@ import EditOutlined from '@ant-design/icons/EditOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import ReloadOutlined from '@ant-design/icons/ReloadOutlined';
+import PictureOutlined from '@ant-design/icons/PictureOutlined';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
@@ -14,6 +15,7 @@ import Empty from 'antd/es/empty';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import InputNumber from 'antd/es/input-number';
+import Image from 'antd/es/image';
 import Modal from 'antd/es/modal';
 import Radio from 'antd/es/radio';
 import Popconfirm from 'antd/es/popconfirm';
@@ -31,6 +33,7 @@ import FnbMenuChoiceManagerModal from '../../components/FnbMenuChoiceManagerModa
 import FnbUnitManagerModal from '../../components/FnbUnitManagerModal';
 import FnbCategoryList from '../../components/FnbCategoryList';
 import FnbPageHeader from '../../components/FnbPageHeader';
+import FnbItemImages from '../../components/FnbItemImages';
 import { FnbResourceError } from '../../components/FnbResourceState';
 import FnbStatusTag from '../../components/FnbStatusTag';
 import useFnbResource from '../../hooks/useFnbResource';
@@ -38,6 +41,14 @@ import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
 import { asArray, formatMinorMoney, formatQuantity } from '../../utils/fnbFormat';
 
 const { Text } = Typography;
+
+function MenuItemCover({ item }) {
+    const [failedUrl, setFailedUrl] = useState(null);
+    const url = item.image_url || asArray(item.gallery_images)[0];
+    return url && failedUrl !== url
+        ? <Image className="fnb-menu-cover-thumb" src={url} alt={`Ảnh đại diện ${item.name}`} width={52} height={52} loading="lazy" preview={{ mask: 'Xem ảnh' }} onError={() => setFailedUrl(url)} />
+        : <span className="fnb-menu-cover-placeholder" role="img" aria-label={`Chưa có ảnh đại diện ${item.name}`} title="Chưa có ảnh đại diện"><PictureOutlined /></span>;
+}
 
 function itemPrice(item) {
     const variants = asArray(item.variants);
@@ -57,6 +68,8 @@ function MenuItemDrawer({ open, item, catalog, form, saving, onClose, onSubmit, 
     const { can } = useFnbWorkspace();
     const manageable = can('fnb.menu.manage') && can('fnb.menu.master.manage');
     const [sizeManager, setSizeManager] = useState(null);
+    const [uploadingImages, setUploadingImages] = useState(false);
+    const busy = saving || uploadingImages;
     const variants = Form.useWatch('variants', form) ?? [];
     const sizeOptions = choiceOptions(catalog.size_definitions, variants);
     const sizeLabel = (row) => <Space size={4}>Size{manageable ? <Button type="text" size="small" icon={<PlusOutlined />} aria-label="Quản lý size" disabled={saving} onClick={() => setSizeManager({ row })} /> : null}</Space>;
@@ -88,16 +101,16 @@ function MenuItemDrawer({ open, item, catalog, form, saving, onClose, onSubmit, 
             open={open}
             width="min(860px, 100vw)"
             className="fnb-menu-item-editor"
-            onClose={saving ? undefined : onClose}
-            closable={!saving}
-            maskClosable={!saving}
-            keyboard={!saving}
+            onClose={busy ? undefined : onClose}
+            closable={!busy}
+            maskClosable={!busy}
+            keyboard={!busy}
             destroyOnHidden
-            footer={<div className="fnb-menu-editor-footer"><Button disabled={saving} onClick={onClose}>Hủy</Button><Button type="primary" loading={saving} onClick={() => form.submit()}>Lưu món</Button></div>}
+            footer={<div className="fnb-menu-editor-footer"><Button disabled={busy} onClick={onClose}>Hủy</Button><Button type="primary" loading={saving} disabled={uploadingImages} onClick={() => form.submit()}>Lưu món</Button></div>}
         >
-            <Form disabled={saving} form={form} layout="vertical" onFinish={onSubmit}
+            <Form disabled={saving} form={form} layout="vertical" onFinish={(values) => { if (!uploadingImages) onSubmit(values); }}
                 onFinishFailed={({ errorFields }) => {
-                    if (errorFields.some(({ name }) => ['modifier_group_ids', 'description', 'sku', 'image_url', 'tax_category', 'tax_rate_percent', 'tax_inclusive'].includes(name[0]))) setAdditionalOpen(['additional']);
+                    if (errorFields.some(({ name }) => ['modifier_group_ids', 'description', 'sku', 'tax_category', 'tax_rate_percent', 'tax_inclusive'].includes(name[0]))) setAdditionalOpen(['additional']);
                     if (errorFields[0]) window.requestAnimationFrame(() => form.scrollToField(errorFields[0].name, { block: 'center' }));
                 }}
                 initialValues={{ status: 'active', tax_inclusive: true, tax_rate_percent: 0 }}>
@@ -153,15 +166,19 @@ function MenuItemDrawer({ open, item, catalog, form, saving, onClose, onSubmit, 
                     </Form.Item>
                 </section>
 
+                <section className="fnb-menu-editor-section">
+                    <div className="fnb-menu-editor-section-heading"><span><PictureOutlined /> Hình ảnh món</span></div>
+                    <Form.Item name="images" style={{ marginBottom: 0 }}><FnbItemImages disabled={saving} onUploadingChange={setUploadingImages} /></Form.Item>
+                </section>
+
                 <Collapse activeKey={additionalOpen} onChange={setAdditionalOpen} className="fnb-menu-editor-additional" items={[{
                     key: 'additional', forceRender: true,
                     label: <span><SettingOutlined /> Thiết lập thêm</span>,
-                    extra: <Text type="secondary">Topping, mô tả, ảnh, thuế</Text>,
+                    extra: <Text type="secondary">Topping, mô tả, thuế</Text>,
                     children: <Row gutter={[16, 0]}>
                         <Col span={24}><Form.Item name="modifier_group_ids" label="Nhóm topping áp dụng"><Select mode="multiple" allowClear showSearch optionFilterProp="label" options={modifierOptions} placeholder="Chọn nhóm topping (nếu có)" /></Form.Item></Col>
                         <Col span={24}><Form.Item name="description" label="Mô tả"><Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} placeholder="Giới thiệu ngắn về món" /></Form.Item></Col>
                         <Col xs={24} sm={8}><Form.Item name="sku" label="SKU"><Input placeholder="Mã quản lý nội bộ" /></Form.Item></Col>
-                        <Col xs={24} sm={16}><Form.Item name="image_url" label="Ảnh món (URL)" rules={[{ type: 'url', message: 'Nhập đường dẫn ảnh hợp lệ.' }]}><Input inputMode="url" placeholder="https://…" /></Form.Item></Col>
                         <Col xs={24} sm={10}><Form.Item name="tax_category" label="Nhóm thuế"><Select options={[{ value: 'standard', label: 'Thuế suất thông thường' }, { value: 'zero_rated', label: 'Thuế suất 0%' }, { value: 'not_subject', label: 'Không chịu thuế' }, { value: 'exempt', label: 'Miễn thuế' }]} /></Form.Item></Col>
                         <Col xs={12} sm={7}><Form.Item name="tax_rate_percent" label="Thuế suất"><InputNumber min={0} max={100} precision={2} addonAfter="%" style={{ width: '100%' }} /></Form.Item></Col>
                         <Col xs={12} sm={7}><Form.Item name="tax_inclusive" label="Giá đã gồm thuế" valuePropName="checked"><Switch /></Form.Item></Col>
@@ -353,6 +370,7 @@ export default function FnbMenuPage() {
         itemForm.resetFields();
         itemForm.setFieldsValue(item ? {
             ...item,
+            images: { urls: asArray(item.gallery_images).length ? item.gallery_images : item.image_url ? [item.image_url] : [], cover: item.image_url },
             variants,
             default_variant_index: defaultVariantIndex,
             tax_rate_percent: Number(item.tax_rate_bps ?? 0) / 100,
@@ -368,6 +386,7 @@ export default function FnbMenuPage() {
             variants: [{ code: asArray(catalog.size_definitions).find((row) => row.code === 'DEFAULT')?.code ?? asArray(catalog.size_definitions)[0]?.code ?? '', name: asArray(catalog.size_definitions).find((row) => row.code === 'DEFAULT')?.name ?? asArray(catalog.size_definitions)[0]?.name ?? '', base_price_minor: 0, is_default: true, sort_order: 0, status: 'active', station_id: asArray(catalog.stations).find((station) => station.status !== 'inactive')?.id }],
             category_ids: [],
             modifier_group_ids: [],
+            images: { urls: [], cover: null },
         });
         setDrawer({ type: 'item', record: item });
     };
@@ -386,7 +405,8 @@ export default function FnbMenuPage() {
             tax_category: values.tax_category ?? record?.tax_category ?? 'standard',
             tax_rate_bps: Math.round(Number(values.tax_rate_percent ?? 0) * 100),
             tax_inclusive: Boolean(values.tax_inclusive),
-            image_url: values.image_url || null,
+            image_url: values.images?.cover || values.images?.urls?.[0] || null,
+            gallery_images: asArray(values.images?.urls),
             status: values.status,
             category_ids: asArray(values.category_ids),
             modifier_group_ids: values.modifier_group_ids ?? [],
@@ -659,8 +679,9 @@ export default function FnbMenuPage() {
                                     rowKey={(record) => record.public_id ?? record.id}
                                     loading={catalogResource.loading}
                                     dataSource={items}
-                                    scroll={{ x: 860 }}
+                                    scroll={{ x: 940 }}
                                     columns={[
+                                        { title: 'Ảnh', key: 'cover', width: 84, align: 'center', render: (_, record) => <MenuItemCover item={record} /> },
                                         { title: 'Món', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}{record.sku ? ` · ${record.sku}` : ''}</Text></Space> },
                                         { title: 'Size', render: (_, record) => asArray(record.variants).map((variant) => <Tag color={variant.status === 'inactive' ? 'default' : variant.is_default ? 'green' : undefined} key={variant.id}>{variant.name}{variant.is_default ? ' · mặc định' : ''}</Tag>) },
                                         { title: 'Giá từ', render: (_, record) => formatMinorMoney(itemPrice(record), currency) },

@@ -9,6 +9,7 @@ import Space from 'antd/es/space';
 import Spin from 'antd/es/spin';
 import Steps from 'antd/es/steps';
 import Typography from 'antd/es/typography';
+import { approvalPermissionLabel, criticalActionLabel, criticalPolicyLabel } from '../utils/criticalActionLabels';
 
 const { Paragraph, Text } = Typography;
 
@@ -203,7 +204,7 @@ export default function FnbCriticalActionDrawer({ request, api, onClose, onCompl
                     type="warning"
                     showIcon
                     message={request.title ?? 'Thao tác cần xác minh danh tính'}
-                    description="Hệ thống sẽ dùng lại đúng payload và mã chống trùng ban đầu sau khi xác thực."
+                    description="Xác nhận danh tính của bạn để tiếp tục thao tác này."
                 />
 
                 {error ? (
@@ -216,9 +217,9 @@ export default function FnbCriticalActionDrawer({ request, api, onClose, onCompl
                 ) : null}
 
                 <Descriptions size="small" column={1} bordered items={[
-                    { key: 'action', label: 'Thao tác', children: descriptor.action || 'Theo chính sách điểm bán' },
-                    { key: 'policy', label: 'Chính sách', children: descriptor.policy_key || 'Máy chủ quyết định' },
-                    ...(requiredPermissions.length ? [{ key: 'permissions', label: 'Quyền duyệt', children: requiredPermissions.join(', ') }] : []),
+                    { key: 'action', label: 'Thao tác', children: criticalActionLabel(descriptor.action) },
+                    { key: 'policy', label: 'Nhóm thay đổi', children: criticalPolicyLabel(descriptor.policy_key) },
+                    ...(requiredPermissions.length ? [{ key: 'permissions', label: 'Quyền duyệt', children: [...new Set(requiredPermissions.map(approvalPermissionLabel))].join(', ') }] : []),
                 ]} />
 
                 {stage === 'reauth' ? (

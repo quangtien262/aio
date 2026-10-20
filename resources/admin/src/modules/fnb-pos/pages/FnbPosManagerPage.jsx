@@ -23,10 +23,12 @@ const PosPage = lazy(() => import('./sections/FnbSalesPage'));
 const KitchenPage = lazy(() => import('./sections/FnbKitchenPage'));
 const MenuPage = lazy(() => import('./sections/FnbMenuPage'));
 const ShiftsPage = lazy(() => import('./sections/FnbShiftsPage'));
+const CustomersPage = lazy(() => import('./sections/FnbCustomersPage'));
 const StaffPage = lazy(() => import('./sections/FnbStaffPage'));
 const SettingsPage = lazy(() => import('./sections/FnbSettingsPage'));
 const ChainPage = lazy(() => import('./sections/FnbChainPage'));
 const IntegrationsPage = lazy(() => import('./sections/FnbIntegrationsPage'));
+const GuidePage = lazy(() => import('./sections/FnbGuidePage'));
 
 // AdminApp's BrowserRouter already owns the /admin basename.
 const BASE_ROUTE = '/modules/fnb-pos';
@@ -38,10 +40,12 @@ const sections = [
     { key: 'kitchen', label: 'Bar / Bếp', permissions: ['fnb.kitchen.view'] },
     { key: 'menu', label: 'Thực đơn', permissions: ['fnb.menu.view'] },
     { key: 'shifts', label: 'Ca bán hàng', permissions: ['fnb.shift.view'] },
+    { key: 'customers', label: 'Khách hàng', permissions: ['fnb.customer.view'] },
     { key: 'staff', label: 'Nhân viên', permissions: ['fnb.staff.view'] },
     { key: 'chain', label: 'Điều hành chuỗi', permissions: ['fnb.chain.view'], allowWithoutOutlet: true },
     { key: 'integrations', label: 'Tích hợp & đồng bộ', permissions: ['fnb.chain.manage'] },
     { key: 'settings', label: 'Thiết lập', permissions: ['fnb.settings.view'] },
+    { key: 'guide', label: 'Hướng dẫn sử dụng', permissions: [], allowWithoutOutlet: true },
 ];
 
 const sectionComponents = {
@@ -51,10 +55,12 @@ const sectionComponents = {
     kitchen: KitchenPage,
     menu: MenuPage,
     shifts: ShiftsPage,
+    customers: CustomersPage,
     staff: StaffPage,
     settings: SettingsPage,
     chain: ChainPage,
     integrations: IntegrationsPage,
+    guide: GuidePage,
 };
 
 const storedValue = (key) => {
@@ -126,7 +132,7 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
     }, [bootstrapResource.data, bootstrapResource.loading, bootstrapResource.error, outlets, outletId, terminalId, selectionKey, selectionReadyKey]);
 
     const visibleSections = useMemo(() => sections.filter((item) => (
-        item.permissions.some(can)
+        (!item.permissions.length || item.permissions.some(can))
         && (item.allowWithoutOutlet || outlets.length > 0)
         && (item.key !== 'onboarding' || !onboardingComplete || can('fnb.outlet.manage'))
     )), [can, onboardingComplete, outlets.length]);

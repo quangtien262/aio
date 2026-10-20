@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Core\Modules\Support\ModuleMigrationPaths;
 use App\Core\Themes\Demo\Auto850DemoContentProvider;
 use App\Core\Themes\Demo\Auto851DemoContentProvider;
 use App\Core\Themes\Demo\Auto852DemoContentProvider;
@@ -245,11 +246,7 @@ class AppServiceProvider extends ServiceProvider
         // a normal `artisan migrate`. Tests keep the aggregate schema for the
         // broad fixture suite; lifecycle boundaries have dedicated tests.
         if ($this->app->runningUnitTests()) {
-            $migrationPaths = collect(File::directories(base_path('modules')))
-                ->map(fn (string $modulePath): string => $modulePath.DIRECTORY_SEPARATOR.'database'.DIRECTORY_SEPARATOR.'migrations')
-                ->filter(fn (string $path): bool => File::isDirectory($path))
-                ->values()
-                ->all();
+            $migrationPaths = ModuleMigrationPaths::all();
 
             if ($migrationPaths !== []) {
                 $this->loadMigrationsFrom($migrationPaths);

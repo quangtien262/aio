@@ -144,7 +144,9 @@ class FnbApiController
             'check.reopen' => $this->service->reopenCheck($ctx, $id, $this->reason($input), $key, $version()),
             'check.void' => $this->service->voidCheck($ctx, $id, $this->reason($input), $key, $version()),
             'check.plan' => $this->service->setSettlementPlan($ctx, $id, $this->choice($input, 'mode', ['single_cash', 'single_non_cash', 'mixed']), $key, $version()),
-            'payment.collect' => $this->service->collectPayment($ctx, $id, $this->integer($input, 'shift_id', 1), $input, $key, $version()),
+            'payment.collect' => array_key_exists('payments', $input)
+                ? $this->service->collectPayments($ctx, $id, $this->integer($input, 'shift_id', 1), $input, $key, $version())
+                : $this->service->collectPayment($ctx, $id, $this->integer($input, 'shift_id', 1), $input, $key, $version()),
             'payment.cancel' => $this->service->cancelPayment($ctx, $id, $this->reason($input), $key),
             'payment.refund' => $this->service->refundPayment($ctx, $id, $this->integer($input, 'shift_id', 1), $input, $key),
             'refund.cancel' => $this->service->cancelRefund($ctx, $id, $this->reason($input), $key),

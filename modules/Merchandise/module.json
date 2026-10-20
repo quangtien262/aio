@@ -1,0 +1,19 @@
+{
+  "name": "Danh mục hàng hóa dùng chung",
+  "key": "merchandise",
+  "version": "0.1.0",
+  "description": "Danh mục SKU, mã vạch và quy cách dùng chung cho Retail, Kho và Mua hàng.",
+  "website_type": ["backoffice", "ecommerce", "corporate", "service", "news", "landingpage"],
+  "dependencies": [],
+  "provides": {
+    "merchandise.skus.read.v1": {"introduced_version": "0.1.0"},
+    "merchandise.skus.manage.v1": {"introduced_version": "0.1.0"}
+  },
+  "permissions": ["merchandise.view", "merchandise.manage", "merchandise.import"],
+  "hooks": ["Modules\\Merchandise\\Hooks\\MerchandiseLifecycleHook"],
+  "lifecycle_state_provider": "Modules\\Merchandise\\Services\\MerchandiseRuntimeState",
+  "menus": [],
+  "package": {"migrations": ["database/migrations"]},
+  "lifecycle": {"install": true, "enable": true, "disable": true, "upgrade": true, "uninstall": false},
+  "changelog": [{"version": "0.1.0", "date": "2026-10-20", "notes": ["Master hàng hóa dùng chung, barcode và quy đổi chính xác; import có kiểm tra trước khi ghi."]}]
+}

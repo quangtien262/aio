@@ -18,6 +18,7 @@ import Button from 'antd/es/button';
 import Checkbox from 'antd/es/checkbox';
 import Modal from 'antd/es/modal';
 import Space from 'antd/es/space';
+import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import { toAppTerminology } from '../utils/appTerminology';
@@ -62,19 +63,52 @@ function DetailMetric({ label, value, icon }) {
     );
 }
 
-function DetailTags({ values, emptyText = 'Không có' }) {
+function RelatedApps({ values, modules, onOpenModule, disabled, emptyText = 'Không có' }) {
     if (!values?.length) {
         return <Text type="secondary">{emptyText}</Text>;
     }
 
-    return (
-        <Space size={[6, 6]} wrap>
-            {values.map((value) => <Tag key={value}>{value}</Tag>)}
-        </Space>
-    );
+    const rows = values.map((key) => {
+        const moduleCard = modules.find((item) => item.key === key);
+        return { key, name: moduleCard?.name ?? key, moduleCard };
+    });
+    const columns = [
+        {
+            title: 'Tên App',
+            dataIndex: 'name',
+            render: (name, row) => row.moduleCard ? (
+                <Button
+                    className="module-detail-relation-link"
+                    type="link"
+                    size="small"
+                    disabled={disabled}
+                    onClick={() => onOpenModule?.(row.moduleCard)}
+                    title={`Xem chi tiết App: ${name}`}
+                >
+                    {name}
+                </Button>
+            ) : <Text>{name}</Text>,
+        },
+        {
+            title: 'Trạng thái',
+            key: 'status',
+            width: '40%',
+            render: (_, { moduleCard }) => {
+                if (!moduleCard) return <Text type="secondary">Không có thông tin</Text>;
+                const statusLabel = !moduleCard.is_installed
+                    ? 'Chưa cài đặt'
+                    : ['enabled', 'disabled', 'upgrade_pending'].includes(moduleCard.status)
+                        ? `Đã cài · ${statusLabelMap[moduleCard.status]}`
+                        : 'Đã cài đặt';
+                return <Tag color={statusColorMap[moduleCard.status] ?? 'default'}>{statusLabel}</Tag>;
+            },
+        },
+    ];
+
+    return <Table className="module-detail-relation-table" columns={columns} dataSource={rows} rowKey="key" pagination={false} size="small" tableLayout="fixed" />;
 }
 
-export default function ModuleLifecycleActionPanel({ moduleCard, permissions, onAction, onOpenChangelog, pendingAction = null }) {
+export default function ModuleLifecycleActionPanel({ moduleCard, modules = [], onOpenModule, permissions, onAction, onOpenChangelog, pendingAction = null }) {
     const canInstall = permissions?.install ?? false;
     const canEnable = permissions?.enable ?? false;
     const canDisable = permissions?.disable ?? false;
@@ -195,11 +229,11 @@ export default function ModuleLifecycleActionPanel({ moduleCard, permissions, on
                     <div className="module-detail-relations">
                         <div>
                             <Text strong>App cần thiết</Text>
-                            <DetailTags values={dependencyNames} />
+                            <RelatedApps values={dependencyNames} modules={modules} onOpenModule={onOpenModule} disabled={Boolean(pendingAction)} />
                         </div>
                         <div>
                             <Text strong>App đang phụ thuộc vào App này</Text>
-                            <DetailTags values={dependentNames} />
+                            <RelatedApps values={dependentNames} modules={modules} onOpenModule={onOpenModule} disabled={Boolean(pendingAction)} />
                         </div>
                     </div>
                 </section>

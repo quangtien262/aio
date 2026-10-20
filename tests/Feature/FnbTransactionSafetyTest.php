@@ -194,6 +194,110 @@ final class FnbTransactionSafetyTest extends TestCase
         return $this->fnb->createCheck($this->ctx, $this->session['id'], [], (string) Str::uuid(), (int) DB::table('fnb_service_sessions')->where('id', $this->session['id'])->value('version'))['resource'];
     }
 
+    public function test_mixed_payment_batch_records_all_tenders_once_and_replays_after_check_closes(): void
+    {
+        $this->order(110000);
+        $check = $this->plan($this->check());
+        $cash = (int) DB::table('fnb_payment_methods')->where('kind', 'cash')->value('id');
+        $transfer = (int) DB::table('fnb_payment_methods')->where('kind', 'transfer')->value('id');
+        $input = ['payments' => [
+            ['payment_method_id' => $cash, 'amount_minor' => 50000, 'tendered_minor' => 100000],
+            ['payment_method_id' => $transfer, 'amount_minor' => 60000, 'reference' => 'TEST-TRANSFER'],
+        ]];
+        $key = 'mixed-batch-test';
+        $response = $this->withHeaders(['X-FNB-Outlet' => $this->ctx->outletId, 'X-FNB-Terminal' => $this->ctx->terminalId, 'Idempotency-Key' => $key])
+            ->postJson('/admin/api/fnb/checks/'.$check['id'].'/payments', $input + ['shift_id' => $this->shift['id'], 'expected_version' => $check['version']]);
+        $response->assertOk()->assertJsonPath('data.check.status', 'closed')->assertJsonCount(2, 'data.payments');
+        $replay = $this->fnb->collectPayments($this->ctx, $check['id'], $this->shift['id'], $input, $key, $check['version']);
+        $this->assertTrue($replay['replayed']);
+        $this->assertDatabaseCount('fnb_payments', 2);
+        $this->assertDatabaseCount('fnb_payment_attempts', 2);
+        $this->assertSame(110000, (int) DB::table('fnb_check_financial_projections')->where('check_id', $check['id'])->value('gross_paid_total_minor'));
+        $this->assertSame(150000, (int) DB::table('fnb_shifts')->where('id', $this->shift['id'])->value('expected_cash_minor'));
+        $this->assertSame(50000, (int) DB::table('fnb_payments')->where('payment_method_id', $cash)->value('change_minor'));
+    }
+
+    public function test_mixed_batch_rolls_back_earlier_cash_when_later_transfer_is_invalid(): void
+    {
+        $this->order(110000);
+        $check = $this->plan($this->check());
+        $cash = (int) DB::table('fnb_payment_methods')->where('kind', 'cash')->value('id');
+        $transfer = (int) DB::table('fnb_payment_methods')->where('kind', 'transfer')->value('id');
+        $events = DB::table('fnb_outbox_events')->count();
+        try {
+            $this->fnb->collectPayments($this->ctx, $check['id'], $this->shift['id'], ['payments' => [
+                ['payment_method_id' => $cash, 'amount_minor' => 50000],
+                ['payment_method_id' => $transfer, 'amount_minor' => 60000],
+            ]], 'invalid-mixed-batch', $check['version']);
+            $this->fail('A missing transfer reference must roll back the full batch.');
+        } catch (\Modules\FnbPos\Domain\FnbValidationException) {
+            $this->assertDatabaseCount('fnb_payments', 0);
+            $this->assertDatabaseCount('fnb_payment_attempts', 0);
+            $this->assertSame($events, DB::table('fnb_outbox_events')->count());
+            $this->assertSame(100000, (int) DB::table('fnb_shifts')->where('id', $this->shift['id'])->value('expected_cash_minor'));
+            $this->assertSame($check['version'], $this->version('fnb_checks', $check['id']));
+            $this->assertSame(0, (int) DB::table('fnb_check_financial_projections')->where('check_id', $check['id'])->value('gross_paid_total_minor'));
+        }
+    }
+
+    public function test_three_tenders_close_a_partially_paid_bill_and_changed_batch_cannot_reuse_a_key(): void
+    {
+        $this->order(110000);
+        $check = $this->plan($this->check());
+        $cash = (int) DB::table('fnb_payment_methods')->where('kind', 'cash')->value('id');
+        $transfer = (array) DB::table('fnb_payment_methods')->where('kind', 'transfer')->firstOrFail();
+        $card = $transfer;
+        unset($card['id']);
+        $card['code'] = 'CARD-TEST';
+        $card['kind'] = 'card';
+        $card['name'] = 'Synthetic card';
+        $cardId = DB::table('fnb_payment_methods')->insertGetId($card);
+        $first = $this->fnb->collectPayment($this->ctx, $check['id'], $this->shift['id'], ['payment_method_id' => $cash, 'amount_minor' => 10000], 'prior-partial-cash', $check['version']);
+        $check = $first['resource']['check'];
+        $input = ['payments' => [
+            ['payment_method_id' => $cash, 'amount_minor' => 20000],
+            ['payment_method_id' => $transfer['id'], 'amount_minor' => 50000, 'reference' => 'TRANSFER-TEST'],
+            ['payment_method_id' => $cardId, 'amount_minor' => 30000, 'reference' => 'CARD-TEST'],
+        ]];
+        $result = $this->fnb->collectPayments($this->ctx, $check['id'], $this->shift['id'], $input, 'three-tender-batch', $check['version']);
+        $this->assertSame('closed', $result['resource']['check']['status']);
+        $this->assertCount(3, $result['resource']['payments']);
+        $this->assertSame(110000, (int) DB::table('fnb_payments')->sum('amount_minor'));
+        $input['payments'][0]['amount_minor'] = 21000;
+        $input['payments'][2]['amount_minor'] = 29000;
+        try {
+            $this->fnb->collectPayments($this->ctx, $check['id'], $this->shift['id'], $input, 'three-tender-batch', $check['version']);
+            $this->fail('An altered payment split cannot reuse a committed key.');
+        } catch (FnbConflictException) { $this->assertDatabaseCount('fnb_payments', 4); }
+    }
+
+    public function test_batch_rejects_unbalanced_amounts_duplicates_stale_versions_and_single_tender_plans(): void
+    {
+        $this->order(110000);
+        $check = $this->plan($this->check());
+        $cash = (int) DB::table('fnb_payment_methods')->where('kind', 'cash')->value('id');
+        $transfer = (int) DB::table('fnb_payment_methods')->where('kind', 'transfer')->value('id');
+        foreach ([109999, 110001] as $amount) {
+            try {
+                $this->fnb->collectPayments($this->ctx, $check['id'], $this->shift['id'], ['payments' => [['payment_method_id' => $cash, 'amount_minor' => $amount]]], 'unbalanced-'.$amount, $check['version']);
+                $this->fail('An unbalanced batch must fail.');
+            } catch (FnbConflictException) { $this->assertDatabaseCount('fnb_payments', 0); }
+        }
+        try {
+            $this->fnb->collectPayments($this->ctx, $check['id'], $this->shift['id'], ['payments' => [['payment_method_id' => $cash, 'amount_minor' => 50000], ['payment_method_id' => $cash, 'amount_minor' => 60000]]], 'duplicate-method', $check['version']);
+            $this->fail('Duplicate methods must fail.');
+        } catch (\Illuminate\Validation\ValidationException) { $this->assertDatabaseCount('fnb_payments', 0); }
+        try {
+            $this->fnb->collectPayments($this->ctx, $check['id'], $this->shift['id'], ['payments' => [['payment_method_id' => $cash, 'amount_minor' => 110000]]], 'stale-batch', $check['version'] - 1);
+            $this->fail('Stale versions must fail.');
+        } catch (FnbConflictException) { $this->assertDatabaseCount('fnb_payments', 0); }
+        DB::table('fnb_checks')->where('id', $check['id'])->update(['settlement_mode' => 'single_non_cash']);
+        try {
+            $this->fnb->collectPayments($this->ctx, $check['id'], $this->shift['id'], ['payments' => [['payment_method_id' => $cash, 'amount_minor' => 50000], ['payment_method_id' => $transfer, 'amount_minor' => 60000, 'reference' => 'TEST']]], 'locked-single', $check['version']);
+            $this->fail('A locked single-tender bill must reject a batch with multiple methods.');
+        } catch (FnbConflictException) { $this->assertDatabaseCount('fnb_payments', 0); }
+    }
+
     public function test_order_add_and_edit_accept_only_positive_whole_item_quantities(): void
     {
         $item = $this->fnb->saveCatalogItem($this->ctx, [

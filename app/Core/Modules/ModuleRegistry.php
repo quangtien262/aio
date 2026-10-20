@@ -291,6 +291,7 @@ class ModuleRegistry
     {
         return [
             'migrations' => array_values($package['migrations'] ?? ['database/migrations']),
+            'historical_migrations' => array_values($package['historical_migrations'] ?? []),
             'seeders' => array_values($package['seeders'] ?? []),
             'config' => array_values($package['config'] ?? []),
             'assets' => array_values($package['assets'] ?? ['public']),

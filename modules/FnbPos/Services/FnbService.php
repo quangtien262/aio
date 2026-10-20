@@ -173,6 +173,11 @@ final class FnbService
         return app(FnbSettlementService::class)->collectPayment($ctx, $checkId, $shiftId, $input, $idempotencyKey, $expectedVersion);
     }
 
+    public function collectPayments(FnbContext $ctx, int $checkId, int $shiftId, array $input, string $idempotencyKey, int $expectedVersion): array
+    {
+        return app(FnbSettlementService::class)->collectPayments($ctx, $checkId, $shiftId, $input, $idempotencyKey, $expectedVersion);
+    }
+
     public function closeZeroChargeCheck(FnbContext $ctx, int $checkId, int $shiftId, string $reason, string $idempotencyKey, int $expectedVersion): array
     {
         return app(FnbSettlementService::class)->closeZeroChargeCheck($ctx, $checkId, $shiftId, $reason, $idempotencyKey, $expectedVersion);

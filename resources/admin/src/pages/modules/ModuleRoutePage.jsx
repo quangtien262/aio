@@ -22,6 +22,7 @@ const RealEstateManagerPage = lazy(() => import('../../modules/real-estate/pages
 const AccountingTaxManagerPage = lazy(() => import('../../modules/accounting-tax/pages/AccountingTaxManagerPage'));
 const MinvoiceManagerPage = lazy(() => import('../../modules/accounting-tax/pages/MinvoiceManagerPage'));
 const FnbPosManagerPage = lazy(() => import('../../modules/fnb-pos/pages/FnbPosManagerPage'));
+const RetailPosManagerPage = lazy(() => import('../../modules/retail-pos/pages/RetailPosManagerPage'));
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentAdmin, currentPermissions }) {
     const resourceEndpointMap = {
@@ -194,6 +195,14 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
                     currentAdmin={currentAdmin}
                     currentPermissions={currentPermissions}
                 />
+            </Suspense>
+        );
+    }
+
+    if (modulePayload.key === 'retail-pos') {
+        return (
+            <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
+                <RetailPosManagerPage moduleMenu={moduleMenu} modulePayload={modulePayload} callAdminApi={callAdminApi} runAdminAction={runAdminAction} currentAdmin={currentAdmin} currentPermissions={currentPermissions} />
             </Suspense>
         );
     }

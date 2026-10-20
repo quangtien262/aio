@@ -84,7 +84,9 @@ export default function ModuleStoreTable({ modules, onOpenDetails, onOpenChangel
         {
             title: 'Phụ thuộc',
             key: 'dependencies',
-            render: (_, moduleCard) => (moduleCard.dependencies ?? []).join(', ') || 'Không có',
+            render: (_, moduleCard) => (moduleCard.dependencies ?? [])
+                .map((key) => modules.find((item) => item.key === key)?.name ?? key)
+                .join(', ') || 'Không có',
         },
         {
             title: 'Nâng cấp',

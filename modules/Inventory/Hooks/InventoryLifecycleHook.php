@@ -8,12 +8,12 @@ use App\Models\InvLocation;
 use App\Models\InvWarehouse;
 use App\Models\Permission;
 use App\Models\Role;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class InventoryLifecycleHook implements ModuleLifecycleHook
 {
-    public function preInstall(ModuleLifecycleContext $context): void
-    {
-    }
+    public function preInstall(ModuleLifecycleContext $context): void {}
 
     public function postInstall(ModuleLifecycleContext $context): void
     {
@@ -21,9 +21,7 @@ class InventoryLifecycleHook implements ModuleLifecycleHook
         $this->ensureDefaultWarehouse();
     }
 
-    public function preEnable(ModuleLifecycleContext $context): void
-    {
-    }
+    public function preEnable(ModuleLifecycleContext $context): void {}
 
     public function postEnable(ModuleLifecycleContext $context): void
     {
@@ -33,14 +31,14 @@ class InventoryLifecycleHook implements ModuleLifecycleHook
 
     public function preDisable(ModuleLifecycleContext $context): void
     {
+        $this->ensureDrained();
     }
 
-    public function postDisable(ModuleLifecycleContext $context): void
-    {
-    }
+    public function postDisable(ModuleLifecycleContext $context): void {}
 
     public function preUpgrade(ModuleLifecycleContext $context): void
     {
+        $this->ensureDrained();
     }
 
     public function postUpgrade(ModuleLifecycleContext $context): void
@@ -51,6 +49,10 @@ class InventoryLifecycleHook implements ModuleLifecycleHook
 
     public function preUninstall(ModuleLifecycleContext $context): void
     {
+        $this->ensureDrained();
+        if (DB::table('inv_stock_movements')->exists()) {
+            throw new \RuntimeException('Không thể gỡ Inventory khi đã có lịch sử tồn kho.');
+        }
     }
 
     public function postUninstall(ModuleLifecycleContext $context): void
@@ -87,6 +89,15 @@ class InventoryLifecycleHook implements ModuleLifecycleHook
             ->all();
 
         $role->permissions()->syncWithoutDetaching($permissionIds);
+    }
+
+    private function ensureDrained(): void
+    {
+        foreach (['inv_reservations' => ['active'], 'inv_transfers' => ['dispatched', 'partially_received'], 'inv_stocktakes' => ['counting']] as $table => $statuses) {
+            if (Schema::hasTable($table) && DB::table($table)->whereIn('status', $statuses)->exists()) {
+                throw new \RuntimeException('Cần đối soát giữ hàng, điều chuyển và kiểm kê trước khi tắt Inventory.');
+            }
+        }
     }
 
     private function ensureDefaultWarehouse(): void

@@ -1,16 +1,48 @@
 {
   "name": "Quản lý kho",
   "key": "inventory",
-  "version": "0.2.0",
+  "lifecycle_state_provider": "Modules\\Inventory\\Services\\InventoryRuntimeState",
+  "version": "0.3.0",
   "description": "Quản lý nhiều kho, vị trí, hàng hóa, tồn kho, lô/serial và giao dịch nhập, xuất, chuyển kho.",
-  "website_type": ["backoffice", "ecommerce", "corporate", "landingpage"],
-  "dependencies": ["cms", "catalog"],
+  "website_type": [
+    "backoffice",
+    "ecommerce",
+    "corporate",
+    "landingpage"
+  ],
+  "dependencies": [
+    "merchandise"
+  ],
   "provides": {
     "inventory.stock.read.v1": {
       "description": "Read inventory availability and costing snapshots."
     },
     "inventory.documents.write.v1": {
       "description": "Create inventory receipt or issue document proposals from accounting flows."
+    },
+    "inventory.availability.read.v2": {
+      "description": "Transactional decimal Inventory contract for multi-branch Retail.",
+      "introduced_version": "0.3.0"
+    },
+    "inventory.reservations.manage.v2": {
+      "description": "Transactional decimal Inventory contract for multi-branch Retail.",
+      "introduced_version": "0.3.0"
+    },
+    "inventory.movements.post.v2": {
+      "description": "Transactional decimal Inventory contract for multi-branch Retail.",
+      "introduced_version": "0.3.0"
+    },
+    "inventory.transfers.manage.v2": {
+      "description": "Transactional decimal Inventory contract for multi-branch Retail.",
+      "introduced_version": "0.3.0"
+    },
+    "inventory.stocktakes.manage.v2": {
+      "description": "Transactional decimal Inventory contract for multi-branch Retail.",
+      "introduced_version": "0.3.0"
+    },
+    "inventory.offline.escrow.v1": {
+      "description": "Transactional decimal Inventory contract for multi-branch Retail.",
+      "introduced_version": "0.3.0"
     }
   },
   "permissions": [
@@ -124,6 +156,13 @@
   ],
   "changelog": [
     {
+      "version": "0.3.0",
+      "date": "2026-10-20",
+      "notes": [
+        "Shared Merchandise master, standalone versioned schema, decimal reservations, transfers, stocktake and offline escrow."
+      ]
+    },
+    {
       "version": "0.2.0",
       "date": "2026-07-09",
       "notes": [
@@ -141,10 +180,15 @@
     }
   ],
   "package": {
-    "migrations": ["database/migrations"],
+    "migrations": [
+      "database/migrations/v2"
+    ],
     "seeders": [],
     "config": [],
-    "assets": []
+    "assets": [],
+    "historical_migrations": [
+      "database/migrations"
+    ]
   },
   "lifecycle": {
     "install": true,
@@ -152,5 +196,9 @@
     "disable": true,
     "upgrade": true,
     "uninstall": true
-  }
+  },
+  "optional_dependencies": [
+    "cms",
+    "catalog"
+  ]
 }

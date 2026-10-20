@@ -7,6 +7,7 @@ use Modules\FnbPos\Http\FnbBankController;
 use Modules\FnbPos\Http\FnbChainReportController;
 use Modules\FnbPos\Http\FnbCustomerController;
 use Modules\FnbPos\Http\FnbIntegrationController;
+use Modules\FnbPos\Http\FnbMenuImageController;
 use Modules\FnbPos\Http\FnbReceiptController;
 use Modules\FnbPos\Http\FnbReportExportController;
 use Modules\FnbPos\Http\FnbSecurityController;
@@ -14,6 +15,7 @@ use Modules\FnbPos\Http\FnbSecurityController;
 require __DIR__.'/fnb-chain.php';
 
 Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.enabled:fnb-pos'])->group(function (): void {
+    Route::post('menu/images', FnbMenuImageController::class)->defaults('fnb_permission', 'fnb.menu.manage')->name('menu.images.upload');
     Route::get('chain/reports', FnbChainReportController::class)->name('chain.reports');
     Route::get('chain/integrations', [FnbIntegrationController::class, 'handle'])->name('chain.integrations');
     Route::put('chain/integrations/mapping', [FnbIntegrationController::class, 'handle'])->defaults('integration_action', 'integration.mapping.save')->defaults('fnb_permission', 'fnb.settings.manage');
@@ -90,6 +92,9 @@ Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.ena
         ->defaults('fnb_command', 'line.remove')->defaults('fnb_permission', 'fnb.order.update')->whereNumber('resource')->name('line.remove');
 
     Route::post('reauth/proofs', [FnbSecurityController::class, 'reauth'])->name('reauth');
+    Route::get('outlets/{outlet}/customer-profiles', [FnbCustomerController::class, 'index'])->defaults('fnb_permission', 'fnb.customer.view')->name('customer.index');
+    Route::delete('customers/{resource}', [FnbCustomerController::class, 'command'])->defaults('fnb_customer_action', 'archive')
+        ->defaults('fnb_permission', 'fnb.customer.update')->whereNumber('resource')->name('customer.archive');
     Route::get('customers/{resource}', [FnbCustomerController::class, 'show'])->defaults('fnb_permission', 'fnb.customer.view')->whereNumber('resource')->name('customer.show');
     Route::get('customers/{resource}/history', [FnbCustomerController::class, 'show'])->defaults('fnb_history', true)->defaults('fnb_permission', 'fnb.customer.view')->whereNumber('resource')->name('customer.history');
     Route::put('customers/{resource}', [FnbCustomerController::class, 'command'])->defaults('fnb_customer_action', 'update')

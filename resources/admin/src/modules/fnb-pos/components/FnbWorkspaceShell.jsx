@@ -1,4 +1,5 @@
 import AppstoreOutlined from '@ant-design/icons/AppstoreOutlined';
+import ReadOutlined from '@ant-design/icons/ReadOutlined';
 import CoffeeOutlined from '@ant-design/icons/CoffeeOutlined';
 import DownOutlined from '@ant-design/icons/DownOutlined';
 import DashboardOutlined from '@ant-design/icons/DashboardOutlined';
@@ -28,13 +29,15 @@ const iconMap = {
     kitchen: <CoffeeOutlined />,
     menu: <MenuOutlined />,
     shifts: <WalletOutlined />,
+    customers: <TeamOutlined />,
     staff: <TeamOutlined />,
     settings: <SettingOutlined />,
     chain: <AppstoreOutlined />,
     integrations: <SettingOutlined />,
+    guide: <ReadOutlined />,
 };
 
-const configurationKeys = new Set(['onboarding', 'staff', 'chain', 'settings', 'integrations']);
+const configurationKeys = new Set(['onboarding', 'staff', 'chain', 'settings', 'integrations', 'guide']);
 
 function Navigation({ items, activeKey, onSelect, mobile = false }) {
     const configurationItems = items.filter((item) => configurationKeys.has(item.key));

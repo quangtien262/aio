@@ -928,6 +928,32 @@ a {
     font-weight: 700;
 }
 
+.module-detail-modal .ant-modal-content {
+    background: #f3f7f6;
+}
+
+.module-detail-modal .ant-modal-header {
+    background: transparent;
+}
+
+.module-detail-modal .ant-modal-body {
+    max-height: calc(100dvh - 150px);
+    overflow-y: auto;
+}
+
+.module-detail-modal .module-detail-shell {
+    padding: 16px 4px 4px;
+}
+
+.module-detail-modal-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-right: 28px;
+    color: #102a25;
+}
+
 .module-detail-shell {
     display: grid;
     gap: 16px;
@@ -1101,11 +1127,12 @@ a {
 
 .module-detail-relations {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
 }
 
 .module-detail-relations > div {
+    min-width: 0;
     min-height: 88px;
     display: grid;
     align-content: start;
@@ -1120,6 +1147,33 @@ a {
     min-height: 36px;
     border-radius: 9px;
     font-weight: 600;
+}
+
+.module-detail-relation-link.ant-btn {
+    max-width: 100%;
+    height: auto;
+    padding: 2px 0;
+    font-weight: 600;
+    text-align: left;
+    white-space: normal;
+    justify-content: flex-start;
+}
+
+.module-detail-relation-table .ant-table-thead > tr > th {
+    background: #f0f5f3;
+    color: #637a74;
+    font-size: 12px;
+}
+
+.module-detail-relation-table .ant-tag {
+    max-width: 100%;
+    margin-inline-end: 0;
+    white-space: normal;
+}
+
+.module-detail-relation-link.ant-btn > span {
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .module-detail-blockers {
@@ -1537,9 +1591,9 @@ a {
 
 .dashboard-module-title-row {
     display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 6px;
     margin-bottom: 6px;
 }
 

@@ -351,6 +351,50 @@ final class FnbSettlementService
         });
     }
 
+    /** Record all operator-confirmed tenders together, or roll back all of them. */
+    public function collectPayments(FnbContext $context, int $checkId, int $shiftId, array $input, string $idempotencyKey, int $expectedVersion): array
+    {
+        $data = validator($input, [
+            'payments' => ['required', 'array', 'min:1', 'max:10'],
+            'payments.*' => ['required', 'array'],
+            'payments.*.payment_method_id' => ['required', 'integer', 'min:1', 'distinct'],
+            'payments.*.amount_minor' => ['required', 'integer', 'min:1', 'max:9000000000000'],
+            'payments.*.tendered_minor' => ['nullable', 'integer', 'min:0', 'max:9000000000000'],
+            'payments.*.reference' => ['nullable', 'string', 'max:160'],
+        ])->validate();
+        if (! array_is_list($data['payments'])) {
+            throw new FnbValidationException('Payments must be a list.');
+        }
+
+        return $this->commands->run($context, 'payment.collect_batch', $data + compact('checkId', 'shiftId', 'expectedVersion'), $idempotencyKey, function () use ($context, $checkId, $shiftId, $data, $idempotencyKey, $expectedVersion): array {
+            $check = $this->locked('fnb_checks', $context, $checkId);
+            $this->assertVersion('check', $check, $expectedVersion);
+            $reserved = (int) DB::table('fnb_payments')->where('check_id', $checkId)->whereIn('status', self::PAYMENT_CAP_STATUSES)->lockForUpdate()->sum('amount_minor');
+            $remaining = (int) $check->settlement_total_minor - $reserved;
+            if ($check->status !== 'finalized' || $check->settlement_hash === null || $remaining <= 0
+                || array_sum(array_column($data['payments'], 'amount_minor')) !== $remaining) {
+                throw new FnbConflictException('Tổng các hình thức thanh toán phải bằng số tiền còn cần thu.', ['remaining_minor' => $remaining]);
+            }
+            if (count($data['payments']) > 1 && $check->settlement_mode !== 'mixed') {
+                throw new FnbConflictException('Multiple payment methods require a mixed settlement plan.');
+            }
+            $payments = [];
+            $events = [];
+            $version = $expectedVersion;
+            foreach ($data['payments'] as $index => $payment) {
+                // Stable private keys stay within the same outer transaction.
+                $childKey = 'batch-'.hash('sha256', $idempotencyKey.':'.$index);
+                $result = $this->collectPayment($context, $checkId, $shiftId, $payment, $childKey, $version);
+                $payments[] = $result['resource']['payment'];
+                $version = (int) $result['resource']['check']['version'];
+                $events = array_merge($events, $result['events']);
+            }
+
+            return ['resource' => ['payments' => $payments, 'check' => $this->checkResource($context, $checkId)],
+                'events' => $events, 'meta' => ['resource_type' => 'check', 'resource_id' => $checkId, 'version' => $version]];
+        });
+    }
+
     /** @param array<string,mixed> $input */
     public function collectPayment(FnbContext $context, int $checkId, int $shiftId, array $input, string $idempotencyKey, int $expectedVersion): array
     {

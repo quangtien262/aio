@@ -1,0 +1,35 @@
+.retail-workspace { --retail-ink: #183e35; --retail-muted: #6d7c76; color: var(--retail-ink); }
+.retail-workspace-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 12px; }
+.retail-workspace-header h3 { margin: 5px 0 3px; }
+.retail-eyebrow { font-size: 10px; letter-spacing: .19em; font-weight: 750; color: #16806c; }
+.retail-workspace-tabs { margin-bottom: 18px; }
+.retail-workspace-tabs .ant-tabs-nav { margin-bottom: 0; }
+.retail-muted { color: var(--retail-muted); font-size: 12px; }
+.retail-field-label { color: var(--retail-muted); font-size: 12px; margin-bottom: 6px; }
+.retail-metric { border-top: 3px solid #2b8875; box-shadow: 0 4px 18px rgb(19 68 54 / 4%); }
+.retail-metric .ant-statistic-content { font-size: 25px; color: #173c33; font-weight: 650; }
+.retail-onboarding { padding: 48px 20px; text-align: center; }
+.retail-onboarding > .ant-card-body > .anticon { font-size: 44px; color: #16806c; margin-bottom: 10px; }
+.retail-onboarding p { max-width: 500px; margin: 0 auto 24px; color: var(--retail-muted); }
+.retail-scan-card { margin-bottom: 16px; }
+.retail-scan-hint { margin-top: 10px; line-height: 1.6; }
+.retail-product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.retail-product-card { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; border: 1px solid #dfe9e4; background: white; border-radius: 12px; padding: 16px; text-align: left; cursor: pointer; transition: border-color .15s, box-shadow .15s; min-height: 166px; }
+.retail-product-card:hover { border-color: #1b886e; box-shadow: 0 3px 15px rgb(19 68 54 / 8%); }
+.retail-product-card:focus-visible { outline: 3px solid #93cfbd; outline-offset: 2px; }
+.retail-product-card:disabled { cursor: not-allowed; opacity: .6; }
+.retail-product-initial { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: #edf5f0; color: #227a61; font-size: 18px; font-weight: 650; }
+.retail-product-name { color: #23473a; font-weight: 600; min-height: 36px; line-height: 1.4; }
+.retail-product-card strong { color: #166f59; margin-top: auto; }
+.retail-cart-table { margin-top: 18px; min-height: 200px; }
+.retail-checkout-total { display: flex; align-items: center; justify-content: space-between; padding: 22px 0 14px; gap: 16px; border-top: 1px solid #edf1ee; margin-top: 12px; }
+.retail-checkout-total h2 { margin: 4px 0 0; color: #176f59; }
+.retail-checkout-total .ant-btn { min-width: 148px; height: 48px; }
+.retail-form-line { display: grid; grid-template-columns: minmax(0, 1fr) 130px 35px; gap: 8px; }
+.retail-count-line { display: grid; grid-template-columns: 1fr 130px; align-items: baseline; gap: 12px; }
+.retail-print-receipt { color: #111; font-family: monospace; max-width: 340px; margin: auto; font-size: 12px; }
+.retail-print-receipt h2, .retail-print-receipt > div:not(.retail-receipt-line), .retail-print-receipt p { text-align: center; }
+.retail-receipt-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 10px 0; }
+.retail-receipt-line small { display: block; color: #555; }
+@media print { body * { visibility: hidden !important; } .retail-print-receipt, .retail-print-receipt * { visibility: visible !important; } .retail-print-receipt { position: fixed; left: 0; top: 0; width: 72mm; max-width: 72mm; } }
+@media (max-width: 767px) { .retail-workspace-header { align-items: flex-start; flex-direction: column; } .retail-workspace-header > .ant-space { width: 100%; } .retail-workspace-header .ant-select { min-width: 180px !important; } .retail-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .retail-product-card { padding: 12px; } }

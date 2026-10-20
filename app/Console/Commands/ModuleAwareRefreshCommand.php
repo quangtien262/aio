@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Core\Modules\Support\ModuleMigrationPaths;
 use Illuminate\Database\Console\Migrations\RefreshCommand;
 use Illuminate\Database\Events\DatabaseRefreshed;
 use Illuminate\Database\Migrations\Migrator;
@@ -35,7 +36,7 @@ class ModuleAwareRefreshCommand extends RefreshCommand
                 $paths = array_merge(
                     [$this->laravel->databasePath('migrations')],
                     $migrator->paths(),
-                    glob(base_path('modules/*/database/migrations'), GLOB_ONLYDIR) ?: [],
+                    ModuleMigrationPaths::all(includeHistorical: true),
                 );
                 $names = array_column($migrator->getRepository()->getMigrations($step), 'migration');
 

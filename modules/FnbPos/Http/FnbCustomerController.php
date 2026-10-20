@@ -10,6 +10,14 @@ final class FnbCustomerController
 {
     public function __construct(private readonly FnbApiController $api, private readonly FnbCommandSecurity $security, private readonly FnbCustomerService $customers) {}
 
+    public function index(Request $request): JsonResponse
+    {
+        $ctx = $this->api->context($request, 'fnb.customer.view');
+        $result = $this->customers->listing($ctx, $request->query());
+
+        return response()->json(['data' => $result['resource'], 'meta' => $result['meta']])->header('Cache-Control', 'no-store');
+    }
+
     public function show(Request $request): JsonResponse
     {
         $ctx = $this->api->context($request, 'fnb.customer.view');
@@ -18,7 +26,7 @@ final class FnbCustomerController
             ? $this->customers->purchaseHistory($ctx, $id, min(100, max(1, $request->integer('limit', 25))), $request->filled('before_id') ? $request->integer('before_id') : null)
             : $this->customers->profile($ctx, $id);
 
-        return response()->json(['data' => $result['resource'] ?? $result, 'meta' => $result['meta'] ?? []]);
+        return response()->json(['data' => $result['resource'] ?? $result, 'meta' => $result['meta'] ?? []])->header('Cache-Control', 'no-store');
     }
 
     public function command(Request $request): JsonResponse
@@ -28,11 +36,12 @@ final class FnbCustomerController
         $key = (string) $request->header('Idempotency-Key', '');
         validator(['key' => $key] + $input, ['key' => ['required', 'string', 'min:8', 'max:120'],
             'expected_version' => ['required', 'integer', 'min:1'], 'customer_profile_id' => [$action === 'attach' ? 'required' : 'nullable', 'integer', 'min:1']])->validate();
-        $ctx = $this->api->context($request, 'fnb.customer.'.$action, false, $this->security->authorization($request, 'customer.'.$action, $input));
+        $command = $action === 'attach' ? 'customer.attach' : 'customer.update';
+        $ctx = $this->api->context($request, 'fnb.'.$command, false, $this->security->authorization($request, $command, $input));
         $id = (int) $request->route('resource');
         $result = $action === 'attach'
             ? $this->customers->attachToSession($ctx, $id, (int) $input['customer_profile_id'], $key, (int) $input['expected_version'])
-            : $this->customers->updateProfile($ctx, $id, $input, $key, (int) $input['expected_version']);
+            : $this->customers->updateProfile($ctx, $id, $action === 'archive' ? ['status' => 'archived'] : $input, $key, (int) $input['expected_version']);
 
         return response()->json(['data' => $result['resource'] ?? $result, 'meta' => ['replayed' => (bool) ($result['replayed'] ?? false)] + ($result['meta'] ?? [])]);
     }

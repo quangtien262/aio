@@ -38,6 +38,7 @@ final class FnbCustomerService
     public function __construct(
         private readonly FnbCommandRunner $commands,
         private readonly FnbOutletAccessService $access,
+        private readonly FnbCustomerCodeService $customerCodes,
     ) {}
 
     /**
@@ -238,6 +239,9 @@ final class FnbCustomerService
 
             $now = now();
             $candidate = $this->profileChanges($profile, $data, $now);
+            if (array_key_exists('code', $candidate) && $candidate['code'] === null) {
+                $candidate['code'] = $this->customerCodes->generate($context->websiteKey, $customerProfileId);
+            }
             $changedFields = array_keys(array_filter(
                 $candidate,
                 fn (mixed $value, string $field): bool => $this->different($profile->{$field}, $value),
@@ -339,6 +343,33 @@ final class FnbCustomerService
         }
 
         return ['resource' => $this->profileResource($profile)];
+    }
+
+    /** Full customer management listing; POS lookup keeps its smaller projection. */
+    public function listing(FnbContext $context, array $filters): array
+    {
+        $this->authorize($context, 'fnb.customer.view');
+        $data = validator($filters, [
+            'query' => ['nullable', 'string', 'max:120'],
+            'status' => ['sometimes', Rule::in(['active', 'archived', 'all'])],
+            'page' => ['sometimes', 'integer', 'min:1', 'max:100000'],
+            'per_page' => ['sometimes', 'integer', Rule::in([10, 20, 50, 100])],
+        ])->validate();
+        $page = (int) ($data['page'] ?? 1);
+        $perPage = (int) ($data['per_page'] ?? 20);
+        $query = DB::table('fnb_customer_profiles')->where('website_key', $context->websiteKey);
+        if (($data['status'] ?? 'active') !== 'all') $query->where('status', $data['status'] ?? 'active');
+        $term = trim($data['query'] ?? '');
+        if ($term !== '') {
+            $escaped = '%'.addcslashes($term, '%_').'%';
+            $phone = preg_replace('/\D+/', '', $term);
+            $query->where(fn ($builder) => $builder->where('name', 'like', $escaped)->orWhere('code', 'like', $escaped)
+                ->orWhere('email', 'like', $escaped)->when($phone !== '', fn ($builder) => $builder->orWhere('phone_normalized', 'like', '%'.$phone.'%')));
+        }
+        $total = (clone $query)->count();
+        $items = $query->orderBy('name')->orderBy('id')->forPage($page, $perPage)->get()->map(fn ($row) => $this->profileResource($row))->all();
+
+        return ['resource' => ['items' => $items], 'meta' => ['total' => $total, 'page' => $page, 'per_page' => $perPage]];
     }
 
     /**

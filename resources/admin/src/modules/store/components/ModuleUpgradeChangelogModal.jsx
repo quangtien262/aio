@@ -7,11 +7,12 @@ import { toAppTerminology } from '../utils/appTerminology';
 
 const { Paragraph, Text, Title } = Typography;
 
-export default function ModuleUpgradeChangelogModal({ open, moduleCard, onCancel, onAction, canUpgrade }) {
+export default function ModuleUpgradeChangelogModal({ open, moduleCard, onCancel, onAction, canUpgrade, zIndex }) {
     return (
         <Modal
             title={moduleCard ? `Changelog: ${moduleCard.name}` : 'Changelog'}
             open={open}
+            zIndex={zIndex}
             onCancel={onCancel}
             onOk={moduleCard?.is_installed ? () => onAction?.(moduleCard.key, 'upgrade') : onCancel}
             okText={moduleCard?.is_installed ? 'Nâng cấp ngay' : 'Đóng'}

@@ -27,6 +27,8 @@ class AccountingInventoryWarehouseMappingTest extends TestCase
         $modules = app(ModuleManager::class);
         $modules->install('catalog');
         $modules->enable('catalog');
+        $modules->install('merchandise');
+        $modules->enable('merchandise');
         $modules->install('inventory');
         $modules->enable('inventory');
         $modules->install('accounting-tax');

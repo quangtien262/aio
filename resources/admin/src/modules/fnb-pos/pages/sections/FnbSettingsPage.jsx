@@ -29,6 +29,8 @@ import { asArray } from '../../utils/fnbFormat';
 
 const { Text } = Typography;
 
+const settingsTabLabel = (name, count) => <span className="fnb-settings-tab-label">{name}{count !== undefined ? <span className="fnb-settings-tab-count">{count}</span> : null}</span>;
+
 const configMeta = {
     outlet: { title: 'điểm bán', permission: 'fnb.outlet.manage' },
     terminal: { title: 'thiết bị', permission: 'fnb.terminal.manage', path: 'terminals' },
@@ -230,13 +232,13 @@ export default function FnbSettingsPage() {
                 ]} />
             </Card>
             <Card className="fnb-panel">
-                <Tabs items={[
-                    { key: 'terminals', label: `Thiết bị (${asArray(settings.terminals).length})`, children: <ConfigTable kind="terminal" rows={asArray(settings.terminals)} columns={columns.terminal} canEdit={can('fnb.terminal.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
-                    { key: 'areas', label: `Khu vực (${areas.length})`, children: <ConfigTable kind="area" rows={areas} columns={columns.area} canEdit={can('fnb.floor.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
-                    { key: 'tables', label: `Bàn (${asArray(settings.tables).length})`, children: <ConfigTable kind="table" rows={asArray(settings.tables)} columns={columns.table} canEdit={can('fnb.floor.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
-                    { key: 'stations', label: `Trạm Bar (${asArray(settings.stations).length})`, children: <ConfigTable kind="station" rows={asArray(settings.stations)} columns={columns.station} canEdit={can('fnb.floor.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
-                    { key: 'payments', label: `Thanh toán (${asArray(settings.payment_methods).length})`, children: <ConfigTable kind="payment_method" rows={asArray(settings.payment_methods)} columns={columns.payment_method} canEdit={can('fnb.settings.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
-                    { key: 'bank', label: 'Ngân hàng & in phiếu', children: <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                <Tabs className="fnb-settings-tabs" items={[
+                    { key: 'terminals', label: settingsTabLabel('Thiết bị', asArray(settings.terminals).length), children: <ConfigTable kind="terminal" rows={asArray(settings.terminals)} columns={columns.terminal} canEdit={can('fnb.terminal.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
+                    { key: 'areas', label: settingsTabLabel('Khu vực', areas.length), children: <ConfigTable kind="area" rows={areas} columns={columns.area} canEdit={can('fnb.floor.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
+                    { key: 'tables', label: settingsTabLabel('Bàn', asArray(settings.tables).length), children: <ConfigTable kind="table" rows={asArray(settings.tables)} columns={columns.table} canEdit={can('fnb.floor.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
+                    { key: 'stations', label: settingsTabLabel('Trạm Bar', asArray(settings.stations).length), children: <ConfigTable kind="station" rows={asArray(settings.stations)} columns={columns.station} canEdit={can('fnb.floor.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
+                    { key: 'payments', label: settingsTabLabel('Thanh toán', asArray(settings.payment_methods).length), children: <ConfigTable kind="payment_method" rows={asArray(settings.payment_methods)} columns={columns.payment_method} canEdit={can('fnb.settings.manage')} onCreate={openEditor} onEdit={openEditor} loading={resource.loading} /> },
+                    { key: 'bank', label: settingsTabLabel('Ngân hàng & in phiếu'), children: <Space direction="vertical" size={16} style={{ width: '100%' }}>
                         {bankResource.error ? <Alert type="warning" message={bankResource.error.message} /> : null}
                         <div className="fnb-table-toolbar"><Text type="secondary">Lưu tài khoản nhận tiền và chọn tài khoản mặc định cho QR chuyển khoản.</Text>{can('fnb.settings.manage') && can('fnb.chain.manage') ? <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor('bank_account')}>Thêm tài khoản</Button> : null}</div>
                         <Table size="small" rowKey="id" loading={bankResource.loading} dataSource={asArray(bankResource.data?.accounts)} scroll={{ x: 620 }} pagination={false} columns={[

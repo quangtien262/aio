@@ -1,0 +1,18 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Modules\Purchasing\Http\PurchasingController;
+
+Route::prefix('purchasing')->middleware('module.enabled:purchasing')->group(function (): void {
+    Route::get('commands/{key}', [PurchasingController::class, 'commandStatus'])->middleware('admin.permission:purchasing.view,global');
+    Route::get('suppliers', [PurchasingController::class, 'suppliers'])->middleware('admin.permission:purchasing.view,global');
+    Route::post('suppliers', [PurchasingController::class, 'createSupplier'])->middleware('admin.permission:purchasing.supplier.manage,global');
+    Route::get('orders', [PurchasingController::class, 'orders'])->middleware('admin.permission:purchasing.view,global');
+    Route::get('orders/{order}', [PurchasingController::class, 'show'])->middleware('admin.permission:purchasing.view,global');
+    Route::post('orders', [PurchasingController::class, 'createOrder'])->middleware('admin.permission:purchasing.order.create,global');
+    Route::post('orders/{order}/approve', [PurchasingController::class, 'approve'])->middleware('admin.permission:purchasing.order.approve,global');
+    Route::post('orders/{order}/receive', [PurchasingController::class, 'receive'])->middleware('admin.permission:purchasing.receipt.manage,global');
+    Route::post('orders/{order}/returns', [PurchasingController::class, 'returnGoods'])->middleware('admin.permission:purchasing.return.manage,global');
+    Route::post('orders/{order}/payments', [PurchasingController::class, 'pay'])->middleware('admin.permission:purchasing.payment.manage,global');
+    Route::post('orders/{order}/close', [PurchasingController::class, 'close'])->middleware('admin.permission:purchasing.order.approve,global');
+});

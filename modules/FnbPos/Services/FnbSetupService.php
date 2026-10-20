@@ -17,6 +17,7 @@ final class FnbSetupService
     public function __construct(
         private readonly FnbCommandRunner $commands,
         private readonly FnbOutboxService $outbox,
+        private readonly FnbCustomerCodeService $customerCodes,
     ) {}
 
     /** @param array<string,mixed> $input */
@@ -379,6 +380,8 @@ final class FnbSetupService
             'tax_rate_bps' => ['sometimes', 'integer', 'min:0', 'max:10000'],
             'tax_inclusive' => ['sometimes', 'boolean'],
             'image_url' => ['nullable', 'string', 'max:2000'],
+            'gallery_images' => ['sometimes', 'array', 'max:12'],
+            'gallery_images.*' => ['required', 'string', 'max:2000', 'distinct', 'regex:~^(https?://[^\s]+|/(?:storage|files)/[^\s]+)$~i'],
             'status' => ['sometimes', Rule::in(['active', 'inactive'])],
             'category_id' => ['nullable', 'integer', 'min:1'],
             'category_ids' => ['sometimes', 'array', 'max:50'],
@@ -432,6 +435,15 @@ final class FnbSetupService
                 throw $this->versionConflict('menu_item', $itemId, (int) $existing->version, $existing);
             }
 
+            $images = array_key_exists('gallery_images', $data) ? $data['gallery_images'] : (json_decode((string) ($existing->gallery_images ?? '[]'), true) ?: []);
+            $cover = array_key_exists('image_url', $data) ? $data['image_url'] : (array_key_exists('gallery_images', $data) ? ($images[0] ?? null) : ($existing->image_url ?? null));
+            if ($cover && ! in_array($cover, $images, true)) {
+                if (array_key_exists('gallery_images', $data)) throw new FnbValidationException('Ảnh đại diện phải nằm trong danh sách ảnh của món.');
+                array_unshift($images, $cover);
+            }
+            if (count($images) > 12) throw new FnbValidationException('Mỗi món có tối đa 12 ảnh.');
+            $cover = $cover ?: ($images[0] ?? null);
+
             $itemValues = [
                 'code' => strtoupper($data['code']),
                 'sku' => $data['sku'] ?? null,
@@ -441,7 +453,8 @@ final class FnbSetupService
                 'tax_category' => $data['tax_category'] ?? 'standard',
                 'tax_rate_bps' => $data['tax_rate_bps'] ?? 0,
                 'tax_inclusive' => $data['tax_inclusive'] ?? true,
-                'image_url' => $data['image_url'] ?? null,
+                'image_url' => $cover,
+                'gallery_images' => json_encode(array_values($images), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
                 'status' => $data['status'] ?? 'active',
                 'version' => $existing === null ? 1 : (int) $existing->version + 1,
                 'updated_at' => $now,
@@ -660,6 +673,12 @@ final class FnbSetupService
     /** @param array<string,mixed> $input */
     public function createCustomer(FnbContext $context, array $input, string $idempotencyKey): array
     {
+        if (isset($input['code']) && is_string($input['code'])) {
+            $input['code'] = trim($input['code']);
+            if ($input['code'] === '') $input['code'] = null;
+        }
+        if (isset($input['name']) && is_string($input['name'])) $input['name'] = trim($input['name']);
+        if (isset($input['email']) && is_string($input['email'])) $input['email'] = trim($input['email']);
         $data = validator($input, [
             'code' => ['nullable', 'string', 'max:40'],
             'name' => ['required', 'string', 'max:255'],
@@ -673,6 +692,9 @@ final class FnbSetupService
         $phone = isset($data['phone']) ? preg_replace('/\D+/', '', $data['phone']) : null;
         if ($phone === '') {
             $phone = null;
+        }
+        if ($phone !== null && (strlen($phone) < 7 || strlen($phone) > 15)) {
+            throw new FnbValidationException('Số điện thoại phải có từ 7 đến 15 chữ số.');
         }
         $payload = $data + ['phone_normalized' => $phone];
 
@@ -697,12 +719,17 @@ final class FnbSetupService
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
+            if (($data['code'] ?? null) === null) {
+                DB::table('fnb_customer_profiles')->where('id', $id)->update([
+                    'code' => $this->customerCodes->generate($context->websiteKey, $id),
+                ]);
+            }
             DB::table('fnb_customer_events')->insert([
                 'website_key' => $context->websiteKey,
                 'customer_profile_id' => $id,
                 'event_type' => 'created',
                 'actor_id' => $context->actorId,
-                'changed_fields' => json_encode(array_keys($data), JSON_THROW_ON_ERROR),
+                'changed_fields' => json_encode(array_values(array_unique([...array_keys($data), 'code'])), JSON_THROW_ON_ERROR),
                 'evidence_hash' => hash('sha256', json_encode([$phone, $data['email'] ?? null], JSON_THROW_ON_ERROR)),
                 'occurred_at' => $now,
             ]);
@@ -834,7 +861,7 @@ final class FnbSetupService
     {
         $values = (array) $record;
         foreach ($values as $key => $value) {
-            if (is_string($value) && (str_ends_with($key, '_snapshot') || in_array($key, ['settings', 'service_charge_policy'], true))) {
+            if (is_string($value) && (str_ends_with($key, '_snapshot') || in_array($key, ['settings', 'service_charge_policy', 'gallery_images'], true))) {
                 $values[$key] = json_decode($value, true) ?? $value;
             }
             $numericId = ($key === 'id' || str_ends_with($key, '_id'))
@@ -842,6 +869,10 @@ final class FnbSetupService
             if (str_ends_with($key, '_minor') || $numericId || in_array($key, ['version', 'tax_rate_bps'], true)) {
                 $values[$key] = $value === null ? null : (int) $value;
             }
+        }
+
+        if (array_key_exists('image_url', $values)) {
+            $values['gallery_images'] = ($values['gallery_images'] ?? []) ?: (empty($values['image_url']) ? [] : [$values['image_url']]);
         }
 
         return $values;

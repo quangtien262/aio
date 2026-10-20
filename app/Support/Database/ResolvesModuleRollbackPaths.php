@@ -2,6 +2,8 @@
 
 namespace App\Support\Database;
 
+use App\Core\Modules\Support\ModuleMigrationPaths;
+
 trait ResolvesModuleRollbackPaths
 {
     protected function getMigrationPaths(): array
@@ -17,7 +19,7 @@ trait ResolvesModuleRollbackPaths
 
         return array_values(array_unique(array_merge(
             $paths,
-            glob(base_path('modules/*/database/migrations'), GLOB_ONLYDIR) ?: [],
+            ModuleMigrationPaths::all(includeHistorical: true),
         )));
     }
 }

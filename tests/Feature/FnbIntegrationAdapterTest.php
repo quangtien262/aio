@@ -51,7 +51,7 @@ final class FnbIntegrationAdapterTest extends TestCase
         $this->actor = Admin::query()->findOrFail(Admin::SYSTEM_OWNER_ID);
         $this->actingAs($this->actor, 'admin');
         $modules = app(ModuleManager::class);
-        foreach (['cms', 'catalog', 'inventory', 'accounting-tax', 'fnb-pos'] as $module) {
+        foreach (['cms', 'catalog', 'merchandise', 'inventory', 'accounting-tax', 'fnb-pos'] as $module) {
             if (! DB::table('module_installations')->where('key', $module)->whereIn('status', ['installed', 'enabled', 'disabled'])->exists()) {
                 $modules->install($module);
             }

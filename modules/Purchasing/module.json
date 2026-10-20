@@ -1,0 +1,20 @@
+{
+  "name": "Mua hàng và nhà cung cấp",
+  "key": "purchasing",
+  "version": "0.1.0",
+  "description": "Đơn mua, nhận hàng nhiều lần, trả nhà cung cấp và công nợ vận hành dùng chung.",
+  "website_type": ["backoffice", "ecommerce", "corporate", "service", "news", "landingpage"],
+  "dependencies": ["merchandise", "inventory"],
+  "optional_dependencies": ["accounting-tax"],
+  "provides": {
+    "purchasing.orders.manage.v1": {"introduced_version": "0.1.0"},
+    "purchasing.receipts.manage.v1": {"introduced_version": "0.1.0"}
+  },
+  "permissions": ["purchasing.view", "purchasing.supplier.manage", "purchasing.order.create", "purchasing.order.approve", "purchasing.receipt.manage", "purchasing.return.manage", "purchasing.payment.manage"],
+  "hooks": ["Modules\\Purchasing\\Hooks\\PurchasingLifecycleHook"],
+  "lifecycle_state_provider": "Modules\\Purchasing\\Services\\PurchasingRuntimeState",
+  "menus": [],
+  "package": {"migrations": ["database/migrations"]},
+  "lifecycle": {"install": true, "enable": true, "disable": true, "upgrade": true, "uninstall": false},
+  "changelog": [{"version": "0.1.0", "date": "2026-10-20", "notes": ["Đơn mua có duyệt độc lập, nhận từng phần, trả nhà cung cấp và thanh toán có idempotency."]}]
+}

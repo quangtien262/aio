@@ -103,6 +103,11 @@ Smoke MySQL cần quyền tạo database, tự tạo database tên ngẫu nhiên
 - `docs/architecture/localization-foundation.md`
 - `docs/architecture/localization-rollout-runbook.md`
 - `docs/architecture/accounting-tax-module.md`
+- [Đặc tả Retail POS](docs/architecture/retail-pos-product-spec.md) — thiết kế mục tiêu cho chuỗi siêu thị/cửa hàng tạp hóa.
+- [Kiến trúc và tích hợp Retail POS](docs/architecture/retail-pos-architecture-and-integration.md).
+- [Kế hoạch triển khai Retail POS theo giai đoạn](docs/architecture/retail-pos-implementation-plan.md).
+- [Tiến độ triển khai Retail POS](docs/architecture/retail-pos-implementation-status.md) — chức năng đã kiểm chứng, giới hạn và release gate còn mở.
+- [Contract runtime Retail POS](docs/api/retail-pos-runtime-contract.md) — API, quy trình cài đặt/nâng cấp và kiểm thử.
 - `docs/theme-authoring-guide.md`
 - `docs/landing-page-builder.md`
 

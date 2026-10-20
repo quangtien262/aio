@@ -109,6 +109,9 @@ class FnbChainManagementTest extends TestCase
     public function test_menu_release_freezes_prices_modifiers_and_catalog_until_rollout_or_rollback(): void
     {
         $menus = app(FnbMenuReleaseService::class);
+        $imageItemId = (int) DB::table('fnb_menu_items')->orderBy('id')->value('id');
+        $images = ['https://example.test/menu-a.png', 'https://example.test/menu-b.png'];
+        DB::table('fnb_menu_items')->where('id', $imageItemId)->update(['image_url' => $images[1], 'gallery_images' => json_encode($images)]);
         $menuId = (int) DB::table('fnb_menus')->value('id');
         $publication = $menus->publish($this->hq(), ['menu_id' => $menuId, 'expected_version' => 1, 'outlet_ids' => [$this->outlet]], 'chain-menu-release-1')['resource'];
         $variant = DB::table('fnb_item_variants')->orderBy('id')->first();
@@ -118,6 +121,13 @@ class FnbChainManagementTest extends TestCase
         $this->assertSame($before['original_unit_price_minor'], app(FnbPricingService::class)->priceLine($ctx, $variant->id, '1')['original_unit_price_minor']);
         $published = app(FnbService::class)->catalog($ctx)['resource'];
         $this->assertSame($publication['id'], $published['publication_id']);
+        $publishedImageItem = collect($published['items'])->firstWhere('id', $imageItemId);
+        $this->assertSame($images, $publishedImageItem['gallery_images']);
+        $this->assertSame($images[1], $publishedImageItem['image_url']);
+        DB::table('fnb_menu_items')->where('id', $imageItemId)->update(['image_url' => $images[0], 'gallery_images' => json_encode([$images[0]])]);
+        $frozen = collect(app(FnbService::class)->catalog($ctx)['resource']['items'])->firstWhere('id', $imageItemId);
+        $this->assertSame($images, $frozen['gallery_images']);
+        $this->assertSame($images[1], $frozen['image_url']);
         $menus->publish($this->hq(), ['menu_id' => $menuId, 'expected_version' => 2, 'outlet_ids' => [$this->outlet]], 'chain-menu-release-2');
         $this->assertSame(1000, app(FnbPricingService::class)->priceLine($ctx, $variant->id, '1')['original_unit_price_minor']);
         $menus->rollback($this->hq(), $publication['id'], ['outlet_ids' => [$this->outlet], 'reason' => 'Sai bảng giá'], 'chain-menu-rollback');

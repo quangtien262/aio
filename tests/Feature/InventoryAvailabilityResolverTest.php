@@ -128,6 +128,8 @@ class InventoryAvailabilityResolverTest extends TestCase
 
         $manager->install('catalog');
         $manager->enable('catalog');
+        $manager->install('merchandise');
+        $manager->enable('merchandise');
         $manager->install('inventory');
 
         if ($enableInventory) {

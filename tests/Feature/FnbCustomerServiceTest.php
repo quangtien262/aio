@@ -336,6 +336,124 @@ class FnbCustomerServiceTest extends TestCase
         $this->assertStringNotContainsString('0912000111', json_encode($attached, JSON_THROW_ON_ERROR));
     }
 
+    public function test_customer_management_http_crud_soft_delete_restore_and_history_preservation(): void
+    {
+        $this->withSession(['admin_auth_version' => $this->owner->auth_version])->withHeaders(['X-FNB-Outlet' => $this->outletId, 'X-FNB-Terminal' => $this->terminalId]);
+        $created = $this->withHeader('Idempotency-Key', 'manage-create')->postJson('/admin/api/fnb/customers', [
+            'code' => 'MANAGE', 'name' => 'Original Customer', 'phone' => '0909000111', 'email' => 'buyer@example.test',
+            'birthday' => '1995-01-12', 'notes' => 'Synthetic note', 'privacy_consent' => true, 'marketing_consent' => false,
+        ])->assertOk();
+        $id = (int) $created->json('data.id');
+        $this->getJson('/admin/api/fnb/outlets/'.$this->outletId.'/customer-profiles?query=MANAGE')->assertOk()->assertJsonPath('meta.total', 1)->assertJsonPath('data.items.0.id', $id);
+        $this->getJson('/admin/api/fnb/customers/'.$id)->assertOk()->assertJsonPath('data.birthday', '1995-01-12')->assertJsonPath('data.notes', 'Synthetic note');
+        $sessionId = $this->openSession('manage-history', $id);
+        $buyer = ['customer_profile_id' => $id, 'name' => 'Original Customer'];
+        $checkId = $this->insertCheck($this->outletId, $sessionId, 'closed', $id, $buyer);
+        $updated = $this->withHeader('Idempotency-Key', 'manage-update')->putJson('/admin/api/fnb/customers/'.$id, ['name' => 'Updated Customer', 'phone' => '0909 000 111', 'expected_version' => 1]);
+        $updated->assertOk()->assertJsonPath('data.version', 2)->assertJsonPath('data.phone_normalized', '0909000111');
+        $this->withHeader('Idempotency-Key', 'manage-delete')->deleteJson('/admin/api/fnb/customers/'.$id, ['expected_version' => 2])->assertOk()->assertJsonPath('data.status', 'archived');
+        $this->withHeader('Idempotency-Key', 'manage-delete')->deleteJson('/admin/api/fnb/customers/'.$id, ['expected_version' => 2])->assertOk()->assertJsonPath('meta.replayed', true);
+        $this->getJson('/admin/api/fnb/outlets/'.$this->outletId.'/customers?query=MANAGE')->assertOk()->assertJsonCount(0, 'data.items');
+        $this->getJson('/admin/api/fnb/outlets/'.$this->outletId.'/customer-profiles?status=archived')->assertOk()->assertJsonPath('data.items.0.id', $id);
+        $this->getJson('/admin/api/fnb/customers/'.$id.'/history')->assertOk()->assertJsonPath('data.items.0.id', $checkId)->assertJsonPath('data.items.0.buyer_snapshot.name', 'Original Customer');
+        $this->assertSame($id, (int) DB::table('fnb_service_sessions')->where('id', $sessionId)->value('customer_profile_id'));
+        $this->withHeader('Idempotency-Key', 'manage-stale')->putJson('/admin/api/fnb/customers/'.$id, ['name' => 'Stale overwrite', 'expected_version' => 2])->assertConflict();
+        $this->withHeader('Idempotency-Key', 'manage-restore')->putJson('/admin/api/fnb/customers/'.$id, ['status' => 'active', 'expected_version' => 3])->assertOk()->assertJsonPath('data.version', 4);
+        $this->getJson('/admin/api/fnb/outlets/'.$this->outletId.'/customers?query=MANAGE')->assertOk()->assertJsonPath('data.items.0.id', $id);
+    }
+
+    public function test_management_listing_filters_paginates_and_excludes_other_websites(): void
+    {
+        for ($index = 0; $index < 12; $index++) $this->createCustomer('LIST-'.$index, sprintf('Listing %02d', $index), '090800'.str_pad((string) $index, 4, '0', STR_PAD_LEFT));
+        $foreign = (array) DB::table('fnb_customer_profiles')->orderBy('id')->first();
+        unset($foreign['id']);
+        $foreign['website_key'] = 'other-website';
+        $foreign['public_id'] = (string) Str::uuid();
+        $foreignId = DB::table('fnb_customer_profiles')->insertGetId($foreign);
+        $first = $this->customers->listing($this->context(), ['query' => 'Listing', 'page' => 1, 'per_page' => 10]);
+        $second = $this->customers->listing($this->context(), ['query' => 'Listing', 'page' => 2, 'per_page' => 10]);
+        $this->assertSame(12, $first['meta']['total']);
+        $this->assertCount(10, $first['resource']['items']);
+        $this->assertCount(2, $second['resource']['items']);
+        $this->assertEmpty(array_intersect(array_column($first['resource']['items'], 'id'), array_column($second['resource']['items'], 'id')));
+        $this->assertNotContains($foreignId, array_column($first['resource']['items'], 'id'));
+        $this->assertCount(1, $this->customers->listing($this->context(), ['query' => '0908000011'])['resource']['items']);
+        $this->withSession(['admin_auth_version' => $this->owner->auth_version])->withHeaders(['X-FNB-Outlet' => $this->outletId, 'X-FNB-Terminal' => $this->terminalId]);
+        $this->withHeader('Idempotency-Key', 'foreign-delete')->deleteJson('/admin/api/fnb/customers/'.$foreignId, ['expected_version' => 1])->assertNotFound();
+        $this->getJson('/admin/api/fnb/outlets/'.$this->outletId.'/customer-profiles?status=unknown')->assertUnprocessable();
+        $this->getJson('/admin/api/fnb/outlets/'.$this->outletId.'/customer-profiles?per_page=99999')->assertUnprocessable();
+    }
+
+    public function test_customer_management_requires_full_view_and_update_permissions(): void
+    {
+        $id = $this->createCustomer('PERMISSION', 'Permission Customer', '0907000111');
+        $cashier = Admin::factory()->create(['status' => 'active', 'is_active' => true, 'must_change_password' => false]);
+        DB::transaction(fn () => app(FnbStaffAssignmentService::class)->assign($this->owner, 'website-main', $this->outletId, $cashier, 'fnb-cashier'));
+        $cashier = $cashier->fresh();
+        $this->actingAs($cashier, 'admin')->withSession(['admin_auth_version' => $cashier->auth_version])->withHeaders(['X-FNB-Outlet' => $this->outletId, 'X-FNB-Terminal' => $this->terminalId]);
+        $this->getJson('/admin/api/fnb/outlets/'.$this->outletId.'/customer-profiles')->assertForbidden();
+        $this->getJson('/admin/api/fnb/customers/'.$id)->assertForbidden();
+        $this->withHeader('Idempotency-Key', 'cashier-delete-denied')->deleteJson('/admin/api/fnb/customers/'.$id, ['expected_version' => 1])->assertForbidden();
+        $this->assertDatabaseHas('fnb_customer_profiles', ['id' => $id, 'status' => 'active', 'version' => 1]);
+    }
+
+    public function test_blank_customer_codes_are_generated_and_replays_keep_the_same_code(): void
+    {
+        $codes = [];
+        foreach ([[], ['code' => null], ['code' => '   ']] as $index => $codeInput) {
+            $input = ['name' => 'Auto Customer '.$index] + $codeInput;
+            $result = $this->fnb->createCustomer($this->context(), $input, 'auto-code-'.$index);
+            $customer = $result['resource'];
+            $this->assertMatchesRegularExpression('/^KH[0-9]{6,}$/', $customer['code']);
+            $this->assertDatabaseHas('fnb_customer_profiles', ['id' => $customer['id'], 'code' => $customer['code'], 'version' => 1]);
+            $replayed = $this->fnb->createCustomer($this->context(), $input, 'auto-code-'.$index);
+            $this->assertSame($customer['id'], $replayed['resource']['id']);
+            $this->assertSame($customer['code'], $replayed['resource']['code']);
+            $codes[] = $customer['code'];
+        }
+        $this->assertCount(3, array_unique($codes));
+        foreach ([' VIP-001 ', '0'] as $index => $code) {
+            $result = $this->fnb->createCustomer($this->context(), ['name' => 'Manual Customer', 'code' => $code], 'manual-code-'.$index);
+            $this->assertSame(trim($code), $result['resource']['code']);
+        }
+    }
+
+    public function test_generated_customer_codes_skip_existing_archived_codes_and_work_on_update(): void
+    {
+        $existing = $this->createCustomer('PLACEHOLDER', 'Existing', '0901222333');
+        $nextId = (int) DB::table('fnb_customer_profiles')->max('id') + 1;
+        $reserved = 'KH'.str_pad((string) $nextId, 6, '0', STR_PAD_LEFT);
+        DB::table('fnb_customer_profiles')->where('id', $existing)->update(['code' => $reserved, 'status' => 'archived']);
+        $created = $this->fnb->createCustomer($this->context(), ['name' => 'New customer'], 'collision-code')['resource'];
+        $this->assertSame($reserved.'-1', $created['code']);
+        $this->assertSame($reserved, DB::table('fnb_customer_profiles')->where('id', $existing)->value('code'));
+        $updated = $this->customers->updateProfile($this->context(), (int) $created['id'], ['code' => '   '], 'blank-code-update', 1);
+        $this->assertSame($created['code'], $updated['resource']['code']);
+        $manual = $this->customers->updateProfile($this->context(), $existing, ['code' => null], 'manual-to-auto', 1);
+        $this->assertSame('KH'.str_pad((string) $existing, 6, '0', STR_PAD_LEFT), $manual['resource']['code']);
+    }
+
+    public function test_pos_quick_create_generates_customer_code_for_cashier_and_replays_it(): void
+    {
+        $cashier = Admin::factory()->create(['status' => 'active', 'is_active' => true, 'must_change_password' => false]);
+        DB::transaction(fn () => app(FnbStaffAssignmentService::class)->assign($this->owner, 'website-main', $this->outletId, $cashier, 'fnb-cashier'));
+        $cashier = $cashier->fresh();
+        $this->actingAs($cashier, 'admin')->withSession(['admin_auth_version' => $cashier->auth_version])
+            ->withHeaders(['X-FNB-Outlet' => $this->outletId, 'X-FNB-Terminal' => $this->terminalId, 'Idempotency-Key' => 'pos-quick-create-auto-code']);
+        // Same minimal payload sent by the POS quick-create form: no code or full-profile fields.
+        $payload = ['name' => 'Quick Customer', 'phone' => null];
+        $created = $this->postJson('/admin/api/fnb/customers', $payload)->assertOk();
+        $id = $created->json('data.id');
+        $code = $created->json('data.code');
+        $this->assertMatchesRegularExpression('/^KH[0-9]{6,}$/', $code);
+        $this->assertDatabaseHas('fnb_customer_profiles', ['id' => $id, 'code' => $code, 'website_key' => 'website-main']);
+        $this->postJson('/admin/api/fnb/customers', $payload)->assertOk()
+            ->assertJsonPath('meta.replayed', true)->assertJsonPath('data.id', $id)->assertJsonPath('data.code', $code);
+        $this->getJson('/admin/api/fnb/outlets/'.$this->outletId.'/customers?query='.$code)->assertOk()
+            ->assertJsonPath('data.items.0.id', $id)->assertJsonPath('data.items.0.code', $code);
+        $this->assertSame(1, DB::table('fnb_customer_profiles')->where('id', $id)->count());
+    }
+
     private function context(): FnbContext
     {
         return new FnbContext('website-main', $this->outletId, $this->owner->id, $this->terminalId);

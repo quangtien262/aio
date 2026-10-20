@@ -2,7 +2,7 @@ import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { webcrypto } from 'node:crypto';
 import { beginCommand, finishCommand, pendingCommands, prepareCommand } from '../../resources/admin/src/modules/fnb-pos/state/fnbCommandJournal.js';
-import { isZeroCharge, paymentDefaults, serverAmountDue, tenderedAmount } from '../../resources/admin/src/modules/fnb-pos/utils/fnbPayment.js';
+import { isZeroCharge, paymentDefaults, paymentMethodAllowed, paymentMethodLabel, paymentModeForMethod, preparePaymentParts, rebalancePaymentParts, serverAmountDue, tenderedAmount } from '../../resources/admin/src/modules/fnb-pos/utils/fnbPayment.js';
 
 const storage = new Map();
 globalThis.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) };
@@ -132,12 +132,91 @@ test('partial mixed bill resumes its immutable plan and correct remaining amount
     assert.equal(result.amount_minor, 18000);
 });
 
+test('one payment choice derives the settlement plan and respects an acknowledged plan', () => {
+    const cash = { id: 1, kind: 'cash', name: 'Cash' };
+    const transfer = { id: 2, kind: 'transfer', name: 'Bank' };
+    const card = { id: 3, kind: 'card', name: 'Card' };
+    const methods = [cash, transfer, card];
+    assert.deepEqual(methods.map((method) => paymentMethodLabel(method, methods)), ['Tiền mặt', 'Chuyển khoản', 'Cà thẻ']);
+    assert.deepEqual(methods.map((method) => paymentModeForMethod({}, method)), ['single_cash', 'single_non_cash', 'single_non_cash']);
+    for (const method of methods) assert.equal(paymentMethodAllowed({}, method), true);
+    assert.equal(paymentMethodAllowed({ settlement_mode: 'single_cash' }, transfer), false);
+    assert.equal(paymentMethodAllowed({ settlement_mode: 'single_non_cash' }, cash), false);
+    assert.equal(paymentMethodAllowed({ settlement_mode: 'single_non_cash' }, card), true);
+    for (const method of methods) {
+        assert.equal(paymentMethodAllowed({ settlement_mode: 'mixed' }, method), true);
+        assert.equal(paymentModeForMethod({ settlement_mode: 'mixed' }, method), 'mixed');
+    }
+    assert.equal(paymentMethodLabel(transfer, [...methods, { id: 4, kind: 'transfer', name: 'Other bank' }]), 'Chuyển khoản · Bank');
+});
+
 test('payment uses locked cash rounding and recognizes zero-charge bills', () => {
     assert.equal(serverAmountDue({ grand_total_minor: 12300, settlement_total_minor: 12500 }), 12500);
     assert.equal(serverAmountDue({ settlement_total_minor: 0 }), 0);
     assert.equal(isZeroCharge({ settlement_total_minor: 0 }), true);
     assert.equal(isZeroCharge({ settlement_total_minor: 100, available_to_collect_minor: 0, balance_due_minor: 100 }), false);
     assert.equal(serverAmountDue({ settlement_total_minor: 100, available_to_collect_minor: 0, balance_due_minor: 100 }), 0);
+});
+
+test('combined tenders must balance and never send hidden cash or account fields', () => {
+    const methods = [{ id: 1, kind: 'cash' }, { id: 2, kind: 'transfer', requires_reference: true }, { id: 3, kind: 'card', requires_reference: true }];
+    const check = { grand_total_minor: 110000 };
+    const rows = [{ payment_method_id: 1, amount_minor: 50000, tendered_minor: 100000 }, { payment_method_id: 2, amount_minor: 60000, tendered_minor: 200000, bank_account_id: 99, reference: 'QR-TEST' }];
+    const prepared = preparePaymentParts(check, rows, methods);
+    assert.equal(prepared.settlement_mode, 'mixed');
+    assert.equal(prepared.payments[0].tendered_minor, 100000);
+    assert.equal(prepared.payments[1].tendered_minor, 60000);
+    assert.equal(prepared.payments[1].bank_account_id, undefined);
+    assert.throws(() => preparePaymentParts(check, [rows[0]], methods), /Tổng/);
+    assert.throws(() => preparePaymentParts(check, [rows[0], { ...rows[1], amount_minor: 60001 }], methods), /Tổng/);
+    assert.throws(() => preparePaymentParts(check, [rows[0], { ...rows[1], reference: '' }], methods), /mã giao dịch/);
+    assert.throws(() => preparePaymentParts(check, [rows[0], { ...rows[1], payment_method_id: 1 }], methods), /trùng/);
+    assert.throws(() => preparePaymentParts(check, [{ ...rows[0], tendered_minor: 49999 }, rows[1]], methods), /Khách đưa/);
+    assert.throws(() => preparePaymentParts(check, [{ ...rows[0], amount_minor: 50000.5 }, rows[1]], methods), /số tiền nguyên/);
+    assert.throws(() => preparePaymentParts({ ...check, settlement_mode: 'single_non_cash' }, rows, methods), /không hợp lệ/);
+    assert.equal(preparePaymentParts(check, [{ payment_method_id: 3, amount_minor: 110000, reference: 'CARD-TEST' }], methods).settlement_mode, 'single_non_cash');
+    assert.equal(paymentDefaults(check, methods).payments[0].tendered_minor, 110000);
+});
+
+test('amount edits balance the other tender while preserving manually entered cash and references', () => {
+    const methods = [{ id: 1, kind: 'cash' }, { id: 2, kind: 'transfer' }, { id: 3, kind: 'card' }];
+    const rows = [{ payment_method_id: 1, amount_minor: 65000, tendered_minor: 65000 }, { payment_method_id: 2, amount_minor: 65000, reference: 'QR' }];
+    let next = rebalancePaymentParts(rows, 0, 50000, 130000, methods);
+    assert.deepEqual(next.map((row) => row.amount_minor), [50000, 80000]);
+    assert.equal(next[0].tendered_minor, 50000);
+    assert.equal(next[1].reference, 'QR');
+    assert.equal(rows[0].amount_minor, 65000);
+    next = rebalancePaymentParts(rows, 1, 90000, 130000, methods);
+    assert.deepEqual(next.map((row) => row.amount_minor), [40000, 90000]);
+    assert.equal(next[0].tendered_minor, 40000);
+    next = rebalancePaymentParts([{ ...rows[0], tendered_minor: 100000 }, rows[1]], 1, 90000, 130000, methods);
+    assert.equal(next[0].tendered_minor, 100000);
+    next = rebalancePaymentParts(rows, 0, null, 130000, methods);
+    assert.equal(next[0].amount_minor, null);
+    assert.equal(next[1].amount_minor, 65000);
+    next = rebalancePaymentParts(rows, 0, 140000, 130000, methods);
+    assert.equal(next[1].amount_minor, 65000);
+    const three = [...rows, { payment_method_id: 3, amount_minor: 30000 }];
+    next = rebalancePaymentParts(three, 0, 50000, 130000, methods);
+    assert.deepEqual(next.map((row) => row.amount_minor), [50000, 65000, 15000]);
+    next = rebalancePaymentParts(three, 0, 100000, 130000, methods);
+    assert.deepEqual(next.map((row) => row.amount_minor), [100000, 30000, 0]);
+    assert.equal(next.reduce((total, row) => total + row.amount_minor, 0), 130000);
+});
+
+test('uncertain combined payment protects every tender from changed split retries', async () => {
+    const original = command({ path: 'checks/42/payments', payload: { shift_id: 1, expected_version: 4, payments: [
+        { payment_method_id: 1, amount_minor: 50000 }, { payment_method_id: 2, amount_minor: 60000, reference: 'PRIVATE-TRANSFER' },
+    ] } });
+    const first = await beginCommand(original);
+    await finishCommand(first, { status: 0 });
+    await assert.rejects(prepareCommand({ ...original, payload: { ...original.payload, payments: [
+        { payment_method_id: 1, amount_minor: 40000 }, { payment_method_id: 2, amount_minor: 70000, reference: 'PRIVATE-TRANSFER' },
+    ] } }, async () => ({ data: { status: 'unknown' } })), (error) => error.code === 'FNB_PREVIOUS_COMMAND_UNCERTAIN');
+    const retry = await prepareCommand({ ...original, payload: { ...original.payload, expected_version: 5 } }, async () => ({ data: { status: 'unknown' } }));
+    assert.equal(retry.entry.idempotencyKey, first.idempotencyKey);
+    assert.equal(retry.payload.expected_version, 4);
+    assert.ok(![...storage.values()].join('').includes('PRIVATE-TRANSFER'));
 });
 
 test('noncash payload never leaks a stale hidden cash tendered value', () => {

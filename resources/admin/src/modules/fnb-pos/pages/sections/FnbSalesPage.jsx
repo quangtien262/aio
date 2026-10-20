@@ -29,7 +29,6 @@ import Modal from 'antd/es/modal';
 import Popconfirm from 'antd/es/popconfirm';
 import Segmented from 'antd/es/segmented';
 import Select from 'antd/es/select';
-import QRCode from 'antd/es/qr-code';
 import Radio from 'antd/es/radio';
 import Space from 'antd/es/space';
 import Spin from 'antd/es/spin';
@@ -38,12 +37,13 @@ import Typography from 'antd/es/typography';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createIdempotencyKey } from '../../api/fnbApi';
 import FnbPageHeader from '../../components/FnbPageHeader';
+import FnbPaymentModal from '../../components/FnbPaymentModal';
 import { FnbResourceError } from '../../components/FnbResourceState';
 import FnbStatusTag from '../../components/FnbStatusTag';
 import FnbSessionCompletionDrawer from '../../components/FnbSessionCompletionDrawer';
 import useFnbResource from '../../hooks/useFnbResource';
 import { useFnbWorkspace } from '../../state/FnbWorkspaceContext';
-import { isZeroCharge, paymentDefaults, refundAllocations, serverAmountDue, tenderedAmount } from '../../utils/fnbPayment';
+import { isZeroCharge, paymentDefaults, preparePaymentParts, refundAllocations, serverAmountDue } from '../../utils/fnbPayment';
 import { asArray, compactIdentifier, formatDateTime, formatMinorMoney, formatQuantity } from '../../utils/fnbFormat';
 import { sessionDisplayStatus } from '../../utils/fnbSessionStatus';
 
@@ -203,6 +203,7 @@ function OpenSessionModal({ open, form, areas, tables, occupiedTableIds, custome
             </Form>
         </Modal>
         <Modal title="Thêm nhanh khách hàng" open={Boolean(open) && quickCreateOpen} width={480} centered zIndex={1100} onCancel={customerSaving ? undefined : () => setQuickCreateOpen(false)} closable={!customerSaving} maskClosable={!customerSaving} confirmLoading={customerSaving} onOk={() => customerForm.submit()} okText="Lưu khách hàng" cancelText="Hủy" cancelButtonProps={{ disabled: customerSaving }} destroyOnHidden>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>Mã khách hàng được tự động tạo với tiền tố KH khi lưu.</Text>
             <Form form={customerForm} disabled={customerSaving} layout="vertical" onFinish={submitCustomer}>
                 <Form.Item name="name" label="Tên khách hàng" rules={[{ required: true, whitespace: true, message: 'Nhập tên khách hàng.' }, { max: 255 }]}><Input autoFocus maxLength={255} /></Form.Item>
                 <Form.Item name="phone" label="Số điện thoại"><Input inputMode="tel" maxLength={40} /></Form.Item>
@@ -278,98 +279,6 @@ function AddItemModal({ item, editing = false, form, currency, saving, onClose, 
             </Form>
         </Modal>
     );
-}
-
-function PaymentDrawer({ open, form, methods, currency, saving, operational, bankIntent, bankIntentLoading, onBankIntent, onInvalidateBankIntent, onClose, onSubmit }) {
-    const { api } = useFnbWorkspace();
-    const methodId = Form.useWatch('payment_method_id', form);
-    const selectedMethod = methods.find((method) => String(method.id) === String(methodId));
-    const amount = serverAmountDue(open?.check);
-    const mode = Form.useWatch('settlement_mode', form);
-    const enteredAmount = Form.useWatch('amount_minor', form);
-    const accountId = Form.useWatch('bank_account_id', form);
-    const zeroCharge = isZeroCharge(open?.check);
-    const transfer = !zeroCharge && selectedMethod?.kind === 'transfer';
-    const [manualTransfer, setManualTransfer] = useState(false);
-    const [qrExpired, setQrExpired] = useState(false);
-    const loadAccounts = useCallback(() => api.read(api.outletPath('bank-accounts/payment-options')), [api]);
-    const bankAccountsResource = useFnbResource({ enabled: Boolean(open && transfer), loader: loadAccounts, deps: [open?.check?.id] });
-    const accounts = asArray(bankAccountsResource.data?.accounts);
-    const intentCallback = useRef(onBankIntent);
-    intentCallback.current = onBankIntent;
-    const invalidationCallback = useRef(onInvalidateBankIntent);
-    invalidationCallback.current = onInvalidateBankIntent;
-    const validIntent = bankIntent && !qrExpired && Number(bankIntent.check_id) === Number(open?.check?.id)
-        && Number(bankIntent.account_id) === Number(accountId) && Number(bankIntent.amount_minor) === Number(enteredAmount)
-        && new Date(bankIntent.expires_at).getTime() > Date.now();
-    useEffect(() => {
-        if (!transfer || !accounts.length) return;
-        if (!accounts.some((account) => String(account.id) === String(accountId))) form.setFieldValue('bank_account_id', (accounts.find((account) => account.is_default) ?? accounts[0]).id);
-    }, [bankAccountsResource.data, transfer, accountId, form]);
-    useEffect(() => { setManualTransfer(false); }, [open?.check?.id, methodId, accountId]);
-    useEffect(() => {
-        setQrExpired(false);
-        if (!bankIntent?.expires_at) return;
-        const timer = window.setTimeout(() => setQrExpired(true), Math.max(0, new Date(bankIntent.expires_at).getTime() - Date.now()));
-        return () => window.clearTimeout(timer);
-    }, [bankIntent]);
-    useEffect(() => {
-        invalidationCallback.current();
-        form.setFieldValue('reference', undefined);
-    }, [open?.check?.id, methodId, accountId, enteredAmount, manualTransfer, form]);
-    useEffect(() => {
-        if (!open || !transfer || !accountId || !operational || manualTransfer || !Number.isInteger(Number(enteredAmount)) || Number(enteredAmount) <= 0 || Number(enteredAmount) > Number(amount)) return;
-        form.setFieldValue('reference', undefined);
-        const timer = window.setTimeout(() => intentCallback.current(Number(enteredAmount), accountId), 250);
-        return () => window.clearTimeout(timer);
-    }, [open?.check?.id, transfer, accountId, enteredAmount, amount, operational, manualTransfer, form]);
-    const manualReference = !zeroCharge && Boolean(selectedMethod?.requires_reference)
-        && (!transfer || manualTransfer || (!bankAccountsResource.loading && Boolean(bankAccountsResource.data || bankAccountsResource.error) && !accounts.length));
-    const waitingForQr = transfer && selectedMethod?.requires_reference && !manualReference && !validIntent;
-    const confirmDisabled = !operational || bankIntentLoading || waitingForQr || (!zeroCharge && (amount === null || amount <= 0));
-    const submitLabel = open?.returnTable ? 'Xác nhận thanh toán & trả bàn' : zeroCharge ? 'Đóng bill 0 đồng' : 'Xác nhận thu tiền';
-    return <Drawer open={Boolean(open)} title={open?.returnTable ? 'Thanh toán & trả bàn' : 'Thu tiền'} width="min(620px, 100vw)"
-        className="fnb-payment-drawer" onClose={saving ? undefined : onClose} closable={!saving} maskClosable={!saving} keyboard={!saving} destroyOnHidden
-        footer={<div className="fnb-payment-footer"><Button disabled={saving} onClick={onClose}>Hủy</Button><Button type="primary" loading={saving} disabled={confirmDisabled} onClick={() => form.submit()}>{submitLabel}</Button></div>}>
-        <div className="fnb-payment-summary"><div><Text type="secondary">Cần thanh toán</Text><Title level={2}>{formatMinorMoney(amount, currency)}</Title></div><Text type="secondary">{open?.check?.check_no ?? `Bill #${open?.check?.id ?? ''}`}</Text></div>
-        {open?.returnTable ? <Alert type="info" showIcon message="Tự trả bàn khi đã thu đủ tiền và hoàn tất phục vụ." /> : null}
-        {!zeroCharge && amount === 0 ? <Alert type="warning" showIcon message="Bill không còn số tiền có thể thu thêm. Hãy kiểm tra giao dịch đang xử lý." /> : null}
-        <Form form={form} layout="vertical" disabled={saving} onFinish={onSubmit}>
-                <Form.Item hidden={zeroCharge} name="settlement_mode" label="Cách thanh toán" rules={[{ required: true }]}>
-                    <Radio.Group className="fnb-payment-radio" disabled={Boolean(open?.check?.settlement_mode)} optionType="button" buttonStyle="solid" onChange={(event) => {
-                        const nextMode = event.target.value;
-                        const method = methods.find((candidate) => nextMode === 'single_cash' ? candidate.kind === 'cash' : nextMode === 'single_non_cash' ? candidate.kind !== 'cash' : true);
-                        form.setFieldsValue({ payment_method_id: method?.id, amount_minor: amount, tendered_minor: undefined, reference: undefined });
-                    }} options={[{ value: 'single_cash', label: 'Tiền mặt' }, { value: 'single_non_cash', label: 'Không tiền mặt' }, { value: 'mixed', label: 'Kết hợp' }]} />
-                </Form.Item>
-                <Form.Item hidden={zeroCharge} name="payment_method_id" label="Phương thức" rules={[{ required: true, message: 'Chọn phương thức.' }]}>
-                    <Radio.Group className="fnb-payment-radio" optionType="button" buttonStyle="solid" onChange={(event) => {
-                        const method = methods.find((candidate) => String(candidate.id) === String(event.target.value));
-                        form.setFieldsValue({ tendered_minor: undefined, reference: undefined });
-                        if (form.getFieldValue('settlement_mode') !== 'mixed') form.setFieldValue('settlement_mode', method?.kind === 'cash' ? 'single_cash' : 'single_non_cash');
-                    }} options={methods.filter((method) => mode === 'single_cash' ? method.kind === 'cash' : mode === 'single_non_cash' ? method.kind !== 'cash' : true).map((method) => ({ value: method.id, label: method.name }))} />
-                </Form.Item>
-            <div className="fnb-payment-money-fields">
-                <Form.Item hidden={zeroCharge || mode !== 'mixed'} name="amount_minor" label="Số tiền lần này" rules={[{ required: true, message: 'Nhập số tiền.' }]}><InputNumber min={zeroCharge ? 0 : 1} max={amount ?? undefined} {...moneyInputProps} precision={0} controls={false} addonAfter="₫" style={{ width: '100%' }} /></Form.Item>
-                {!zeroCharge && selectedMethod?.kind === 'cash' ? <Form.Item name="tendered_minor" label="Khách đưa"><InputNumber min={0} {...moneyInputProps} precision={0} controls={false} addonAfter="₫" style={{ width: '100%' }} /></Form.Item> : null}
-            </div>
-            <Form.Item hidden={!manualReference} name="reference" label="Mã giao dịch ngân hàng" extra="Mã do ngân hàng cấp sau khi chuyển tiền, dùng để đối soát." rules={manualReference ? [{ required: true, whitespace: true, message: 'Nhập mã giao dịch.' }] : []}><Input maxLength={160} autoComplete="off" /></Form.Item>
-            {transfer ? <section className="fnb-transfer-panel">
-                <div className="fnb-transfer-panel-heading"><Text strong>Chuyển khoản ngân hàng</Text>{bankIntentLoading ? <Spin size="small" /> : null}</div>
-                {bankAccountsResource.loading ? <Spin /> : null}
-                {bankAccountsResource.error ? <Alert type="warning" message="Chưa tải được tài khoản ngân hàng." action={<Button size="small" onClick={() => bankAccountsResource.reload()}>Thử lại</Button>} /> : null}
-                {!bankAccountsResource.loading && !bankAccountsResource.error && !accounts.length ? <Alert type="info" message="Chưa có tài khoản nhận tiền" description="Thêm tài khoản và chọn mặc định tại Cấu hình → Thiết lập → Ngân hàng & in phiếu." /> : null}
-                <Form.Item hidden={accounts.length < 2} name="bank_account_id" label="Tài khoản nhận tiền"><Radio.Group className="fnb-bank-account-radio" options={accounts.map((account) => ({ value: account.id, label: `${account.bank_name} · ${account.account_number_masked}${account.is_default ? ' · Mặc định' : ''}` }))} /></Form.Item>
-                {accounts.length > 0 && !manualTransfer ? <>
-                    {validIntent ? <div className="fnb-transfer-details"><QRCode value={bankIntent.qr_payload} size={180} bordered={false} /><div className="fnb-transfer-copy"><Text strong>{bankIntent.bank_name ?? bankIntent.bank_code}</Text><Text strong>{formatMinorMoney(bankIntent.amount_minor, currency)}</Text><Text>{bankIntent.account_name}</Text><Text copyable>{bankIntent.account_number}</Text><Text type="secondary">Nội dung chuyển khoản</Text><Text copyable>{bankIntent.reference}</Text><Text type="secondary">Hiệu lực đến {formatDateTime(bankIntent.expires_at, { timeZone: open?.check?.timezone_snapshot })}</Text></div></div> : <div className="fnb-transfer-qr-empty">{bankIntentLoading ? <Text type="secondary">Đang tạo QR…</Text> : <Button disabled={!operational || saving || !enteredAmount || Number(enteredAmount) > Number(amount)} onClick={() => onBankIntent(enteredAmount, accountId)}>{qrExpired ? 'Tạo QR mới' : 'Tạo lại QR chuyển khoản'}</Button>}</div>}
-                    <Text type="secondary" className="fnb-transfer-notice">Kiểm tra tiền đã vào tài khoản trước khi xác nhận thu tiền.</Text>
-                </> : null}
-                {selectedMethod?.requires_reference && accounts.length > 0 ? <Button type="link" size="small" disabled={saving} onClick={() => { setManualTransfer((value) => !value); form.setFieldValue('reference', undefined); }}>{manualTransfer ? 'Quay lại thanh toán QR' : 'Nhập mã giao dịch thay QR'}</Button> : null}
-            </section> : null}
-            <Form.Item hidden={!zeroCharge} name="zero_charge_reason" label="Lý do bill 0 đồng" rules={zeroCharge ? [{ required: true, min: 3, message: 'Nhập lý do từ 3 ký tự.' }] : []}><Input.TextArea maxLength={500} /></Form.Item>
-            <Text type="secondary" className="fnb-payment-note">Nếu giao dịch đang xử lý, hãy kiểm tra kết quả trước khi thu lại.</Text>
-        </Form>
-    </Drawer>;
 }
 
 function CheckAllocationQuantity({ value }) {
@@ -609,9 +518,6 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
     const [addItem, setAddItem] = useState(null);
     const [editingLine, setEditingLine] = useState(null);
     const [paymentAction, setPaymentAction] = useState(null);
-    const [bankIntent, setBankIntent] = useState(null);
-    const [bankIntentLoading, setBankIntentLoading] = useState(false);
-    const bankIntentSequence = useRef(0);
     const [checkDrawerOpen, setCheckDrawerOpen] = useState(false);
     const [reasonAction, setReasonAction] = useState(null);
     const [transferOpen, setTransferOpen] = useState(false);
@@ -1040,7 +946,6 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
                 paymentForm.resetFields();
                 paymentForm.setFieldsValue(paymentDefaults(check, methods));
                 setPaymentAction({ check, returnTable, sessionId: selectedSession.id, selectedSessionId });
-                setBankIntent(null);
                 await reload();
             }
         } finally {
@@ -1084,15 +989,19 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
         if (!pos.business_day || !pos.shift) { message.warning('Cần mở ngày kinh doanh và ca thu ngân trước khi thu tiền.'); return; }
         let check = paymentAction?.check;
         const paymentContext = paymentAction;
+        let parts;
+        try {
+            parts = isZeroCharge(check) ? { settlement_mode: check.settlement_mode ?? 'single_non_cash', payments: [] } : preparePaymentParts(check, values.payments, methods);
+        } catch (exception) { message.warning(exception.message); return; }
         const planKey = createIdempotencyKey('check-plan');
         const paymentKey = createIdempotencyKey('payment');
         setSaving(true);
         try {
             await runCommand({
                 execute: async (auth) => {
-                    if (check.settlement_mode !== values.settlement_mode) {
+                    if (check.settlement_mode !== parts.settlement_mode) {
                         const planned = await api.command(`checks/${check.id}/settlement-plan`, {
-                            mode: values.settlement_mode,
+                            mode: parts.settlement_mode,
                             expected_version: check.version,
                             expected_versions: { [`check:${check.public_id ?? check.id}`]: check.version },
                         }, { idempotencyKey: planKey, ...auth });
@@ -1100,19 +1009,15 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
                         // Preserve the acknowledged plan even if the following
                         // payment response is lost; retries must not plan again.
                         setPaymentAction({ ...paymentContext, check });
-                        if (values.settlement_mode !== 'mixed' && Number(values.amount_minor) !== serverAmountDue(check)) return { data: check, meta: { planOnly: true } };
+                        if (parts.settlement_mode !== 'mixed' && !isZeroCharge(check) && parts.payments[0].amount_minor !== serverAmountDue(check)) return { data: check, meta: { planOnly: true } };
                     }
                     if (isZeroCharge(check)) {
                         return api.command(`checks/${check.id}/close-zero-charge`, { shift_id: pos.shift.id, reason: values.zero_charge_reason, expected_version: check.version }, { idempotencyKey: paymentKey, ...auth });
                     }
                     if (serverAmountDue(check) === 0) throw new Error('Bill không còn số tiền có thể thu thêm. Hãy đồng bộ và kiểm tra giao dịch đang xử lý.');
-                    const method = methods.find((candidate) => String(candidate.id) === String(values.payment_method_id));
                     return api.command(`checks/${check.id}/payments`, {
                         shift_id: pos.shift.id,
-                        payment_method_id: values.payment_method_id,
-                        amount_minor: values.amount_minor,
-                        tendered_minor: tenderedAmount(values, method),
-                        reference: values.reference || null,
+                        payments: parts.payments,
                         expected_version: check.version,
                         expected_versions: { [`check:${check.public_id ?? check.id}`]: check.version },
                     }, { idempotencyKey: paymentKey, ...auth });
@@ -1159,30 +1064,11 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
                         onConflict: reload,
                     });
                 },
-                onConflict: async () => { setPaymentAction(null); setBankIntent(null); await reload(); },
+                onConflict: async () => { setPaymentAction(null); await reload(); },
             });
         } finally {
             setSaving(false);
         }
-    };
-
-    const generateBankIntent = async (amount, accountId) => {
-        if (!pos.business_day || !pos.shift || !paymentAction?.check?.id || !accountId) return;
-        const sequence = ++bankIntentSequence.current;
-        const checkId = paymentAction.check.id;
-        setBankIntent(null);
-        setBankIntentLoading(true);
-        try {
-            await runCommand({
-                execute: (auth) => api.command(`checks/${checkId}/bank-intents`, { amount_minor: Number(amount), account_id: Number(accountId) }, { idempotencyKey: createIdempotencyKey('bank-intent'), ...auth }),
-                onSuccess: (result) => {
-                    if (sequence !== bankIntentSequence.current) return;
-                    setBankIntent(result.data);
-                    paymentForm.setFieldValue('reference', result.data?.reference);
-                },
-                onConflict: reload,
-            });
-        } finally { if (sequence === bankIntentSequence.current) setBankIntentLoading(false); }
     };
 
     const transferSession = async (values) => {
@@ -1562,7 +1448,7 @@ function FnbSalesContent({ fullscreen, onToggleFullscreen }) {
             />
             <OpenSessionModal open={openSession} form={sessionForm} areas={areas} tables={tables} occupiedTableIds={occupiedTableIds} customers={customerChoices} onCustomerChange={(id) => setSessionCustomer(customerChoices.find((customer) => String(customer.id) === String(id)) ?? null)} onCreateCustomer={quickCreateCustomer} customerSearching={customerSearching} canLookupCustomer={can('fnb.customer.lookup')} canCreateCustomer={can('fnb.customer.create')} canUpdateCustomer={can('fnb.customer.update')} saving={saving} onCustomerSearch={searchCustomers} onClose={() => setOpenSession(null)} onSubmit={createSession} />
             <AddItemModal item={addItem} editing={Boolean(editingLine)} form={itemForm} currency={currency} saving={saving} onClose={() => { setAddItem(null); setEditingLine(null); }} onSubmit={saveLine} />
-            <PaymentDrawer open={paymentAction} form={paymentForm} methods={methods} currency={currency} saving={saving} operational={operational} bankIntent={bankIntent} bankIntentLoading={bankIntentLoading} onBankIntent={generateBankIntent} onInvalidateBankIntent={() => { bankIntentSequence.current += 1; setBankIntent(null); setBankIntentLoading(false); }} onClose={() => setPaymentAction(null)} onSubmit={collectPayment} />
+            <FnbPaymentModal open={paymentAction} form={paymentForm} methods={methods} currency={currency} saving={saving} operational={operational} onClose={() => setPaymentAction(null)} onSubmit={collectPayment} />
             <CheckAllocationDrawer open={checkDrawerOpen} form={checkForm} rows={allocationRows} saving={saving} onClose={() => setCheckDrawerOpen(false)} onSubmit={createAllocatedCheck} />
             <ReasonDrawer action={reasonAction} form={reasonForm} currency={currency} selectedRefundLines={selectedRefundLines} onRefundLinesChange={setSelectedRefundLines} saving={saving} onClose={() => setReasonAction(null)} onSubmit={submitReason} />
             <ReceiptDrawer

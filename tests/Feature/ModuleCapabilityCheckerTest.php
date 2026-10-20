@@ -21,6 +21,8 @@ class ModuleCapabilityCheckerTest extends TestCase
         $this->assertFalse($checker->has('inventory', 'inventory.documents.write.v1'));
         $manager->install('catalog');
         $manager->enable('catalog');
+        $manager->install('merchandise');
+        $manager->enable('merchandise');
         $manager->install('inventory');
         $manager->enable('inventory');
         $this->assertTrue($checker->has('inventory', 'inventory.documents.write.v1'));

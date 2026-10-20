@@ -1,0 +1,182 @@
+{
+  "name": "Quản lý siêu thị & tạp hóa",
+  "key": "retail-pos",
+  "lifecycle_state_provider": "Modules\\RetailPos\\Services\\RetailRuntimeState",
+  "version": "0.1.0-dev.1",
+  "description": "Vận hành bán lẻ nhiều chi nhánh, POS, hàng hóa, ca tiền, điều chuyển và đổi trả trên Inventory.",
+  "website_type": [
+    "backoffice",
+    "ecommerce",
+    "corporate",
+    "service",
+    "news",
+    "landingpage"
+  ],
+  "dependencies": [
+    "merchandise",
+    "inventory"
+  ],
+  "optional_dependencies": [
+    "purchasing",
+    "cms",
+    "catalog",
+    "accounting-tax",
+    "minvoice-connector",
+    "hrm",
+    "payroll"
+  ],
+  "provides": {
+    "retail.sales.read.v1": {
+      "introduced_version": "0.1.0-dev.1"
+    },
+    "retail.sales.commit.v1": {
+      "introduced_version": "0.1.0-dev.1"
+    },
+    "retail.returns.manage.v1": {
+      "introduced_version": "0.1.0-dev.1"
+    }
+  },
+  "permissions": [
+    "retail.view",
+    "retail.setup.manage",
+    "retail.branch.manage",
+    "retail.membership.manage",
+    "retail.product.view",
+    "retail.product.manage",
+    "retail.price.manage",
+    "retail.sale.create",
+    "retail.sale.view",
+    "retail.payment.collect",
+    "retail.return.manage",
+    "retail.shift.manage",
+    "retail.report.view",
+    "retail.report.cost.view",
+    "retail.customer.view",
+    "retail.customer.manage",
+    "retail.inventory.view",
+    "retail.transfer.manage",
+    "retail.stocktake.manage",
+    "retail.integration.manage",
+    "retail.settings.manage"
+  ],
+  "hooks": [
+    "Modules\\RetailPos\\Hooks\\RetailLifecycleHook"
+  ],
+  "menus": [
+    {
+      "key": "retail-dashboard",
+      "label": "Tổng quan",
+      "route": "/admin/modules/retail-pos/dashboard",
+      "permission": "retail.report.view",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-pos",
+      "label": "Bán hàng",
+      "route": "/admin/modules/retail-pos/pos",
+      "permission": "retail.sale.create",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-products",
+      "label": "Hàng hóa",
+      "route": "/admin/modules/retail-pos/products",
+      "permission": "retail.product.view",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-branches",
+      "label": "Chi nhánh & quầy",
+      "route": "/admin/modules/retail-pos/branches",
+      "permission": "retail.branch.manage",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-purchasing",
+      "label": "Mua hàng",
+      "route": "/admin/modules/retail-pos/purchasing",
+      "permission": "retail.view",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-inventory",
+      "label": "Tồn kho & nhập hàng",
+      "route": "/admin/modules/retail-pos/inventory",
+      "permission": "retail.inventory.view",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-transfers",
+      "label": "Điều chuyển",
+      "route": "/admin/modules/retail-pos/transfers",
+      "permission": "retail.transfer.manage",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-stocktakes",
+      "label": "Kiểm kê",
+      "route": "/admin/modules/retail-pos/stocktakes",
+      "permission": "retail.stocktake.manage",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-returns",
+      "label": "Đổi trả",
+      "route": "/admin/modules/retail-pos/returns",
+      "permission": "retail.return.manage",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-shifts",
+      "label": "Ca & tiền quầy",
+      "route": "/admin/modules/retail-pos/shifts",
+      "permission": "retail.shift.manage",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-customers",
+      "label": "Khách hàng",
+      "route": "/admin/modules/retail-pos/customers",
+      "permission": "retail.customer.view",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-reports",
+      "label": "Báo cáo",
+      "route": "/admin/modules/retail-pos/reports",
+      "permission": "retail.report.view",
+      "icon": "appstore"
+    },
+    {
+      "key": "retail-settings",
+      "label": "Cấu hình",
+      "route": "/admin/modules/retail-pos/settings",
+      "permission": "retail.settings.manage",
+      "icon": "appstore"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.1.0-dev.1",
+      "date": "2026-10-20",
+      "notes": [
+        "Nền tảng bán lẻ và vận hành nhiều chi nhánh; development release, chưa đạt production pilot."
+      ]
+    }
+  ],
+  "package": {
+    "migrations": [
+      "database/migrations"
+    ],
+    "seeders": [],
+    "config": [],
+    "assets": []
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": false
+  }
+}

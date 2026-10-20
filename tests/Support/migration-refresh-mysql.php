@@ -57,7 +57,7 @@ require getcwd().'/vendor/autoload.php';
 $app = require getcwd().'/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 $manager = app(App\Core\Modules\ModuleManager::class);
-foreach (['catalog', 'inventory', 'accounting-tax', 'minvoice-connector', 'hrm', 'payroll', 'project', 'real-estate', 'fnb-pos'] as $key) {
+foreach (['catalog', 'merchandise', 'inventory', 'accounting-tax', 'minvoice-connector', 'hrm', 'payroll', 'project', 'real-estate', 'fnb-pos'] as $key) {
     $manager->install($key);
     $manager->enable($key);
 }

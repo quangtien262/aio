@@ -8,6 +8,8 @@
 > Xác minh gần nhất: **2026-08-14**, workspace `E:\Project\aio`, database local
 > của `website-main`. Các số liệu audit và trạng thái working tree là snapshot,
 > không phải hằng số.
+> Bổ sung Retail ngày **2026-10-20**: xem mục 16. Đây là kiểm chứng source và môi trường
+> kiểm thử cô lập; không thay thế snapshot installation/database lịch sử bên dưới.
 
 Đây là một base source website AIO (All In One) của HT Việt Nam. Mục tiêu sản phẩm là xây một **hệ sinh thái website + quản trị doanh nghiệp** đủ lớn để bán cho nhiều khách hàng. Mỗi khách hàng khi triển khai thực tế sẽ **clone ra 1 source code riêng**, không dùng chung runtime multi-tenant.
 
@@ -22,6 +24,7 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
    - Tài khoản, đăng nhập, permission, middleware, module lifecycle hoặc dữ liệu admin: `docs/architecture/admin-access-control.md`.
    - Nhân sự/tiền lương: `docs/architecture/hrm-and-payroll-modules.md`.
    - Bất động sản hoặc theme BDS701: `docs/architecture/real-estate-module-and-bds701-theme.md`.
+   - Retail POS, Merchandise, Purchasing hoặc Inventory v2: `docs/architecture/retail-pos-implementation-status.md`, `docs/api/retail-pos-runtime-contract.md`, rồi đặc tả/kiến trúc/kế hoạch Retail tương ứng.
 3. Kiểm tra migration đã chạy bằng `php artisan migrate:status`; không sửa migration production đã chạy để thay đổi hành vi, hãy tạo migration mới.
 4. Kiểm tra `git status --short` trước khi sửa và không ghi đè thay đổi đang có của người dùng/session khác.
 5. Với auth/RBAC, luôn đọc test `AccessControlSecurityTest`, `AuthSplitTest`, `AdminFoundationApiTest` để hiểu invariant đã được khóa.
@@ -723,3 +726,47 @@ Validation chốt ngày 2026-08-17:
 - Admin production build pass; Vite chỉ warning không chặn về hai chunk lớn khoảng 961 kB và
   1,21 MB;
 - Composer validate, Composer audit, Pint và `git diff --check` pass.
+
+## 16. Handoff Retail POS development ngày 2026-10-20
+
+- Đã có source module `retail-pos` `0.1.0-dev.1`, Merchandise và Purchasing dùng chung;
+  Inventory nâng lên `0.3.0`. Retail phụ thuộc Merchandise và Inventory, không phụ thuộc F&B.
+  Chưa cài/nâng cấp các module này vào database nghiệp vụ `aio` trong đợt triển khai này.
+- Đọc [tiến độ](architecture/retail-pos-implementation-status.md) và
+  [contract runtime](api/retail-pos-runtime-contract.md) để biết phạm vi đã kiểm chứng.
+  Các tài liệu product/architecture/plan mô tả mục tiêu lớn hơn phạm vi development.
+- Merchandise sở hữu master SKU, barcode, đóng gói và quy đổi. Retail sở hữu chuỗi,
+  pháp nhân vận hành, membership chi nhánh, danh mục/giá tại chi nhánh, quầy, ca, sale và return.
+  Inventory là nguồn tồn chính thức; không fallback Catalog cho Retail.
+- Inventory v2 sử dụng decimal sáu chữ số, FIFO/FEFO, reservation, lô/hạn, disposition,
+  điều chuyển đang đi, kiểm kê đóng băng và quota escrow trung tâm. Kho v2 chặn writer legacy.
+  Manifest dùng baseline migration mới; đường migration cũ giữ nguyên để rollback tìm đúng file.
+- POS online chốt tồn, tender nội bộ, tiền ca, sale và outbox trong một transaction;
+  `Idempotency-Key`, expected version và kiểm lại quyền hiện hành bảo vệ retry.
+  Báo giá có hạn 300 giây và snapshot phiên bản giá; giá đổi/hết hạn phải hủy rồi tính lại.
+- Quyền Retail kết hợp Core RBAC và membership chain/branch cùng website context.
+  Không thêm branch scope vào core hoặc dùng organization scope kế toán cho quyền Retail.
+  Giá vốn và allocation bị che khi thiếu quyền xem chi phí.
+- Merchandise, Purchasing, Retail và Inventory v2 dùng runtime barrier bền vững theo
+  `OperationalModuleStateProvider`: drain đợi transaction đang giữ shared lock rồi mới
+  kiểm blocker; worker thất bại cần recovery vẫn chặn mutation. Inventory legacy vẫn phải
+  dừng client/job ghi trong cửa sổ bảo trì. Replay kiểm lại cả quyền native/HQ của ý định gốc.
+- Purchasing có PO, maker/checker, nhận từng phần, trả NCC và công nợ tạm theo hàng đã nhận;
+  HTTP quản trị Purchasing hiện yêu cầu native permission global. Chưa có đối chiếu ba bên.
+- Accounting adapter tùy chọn chỉ tạo `internal_invoice` dạng draft, idempotent theo sale nguồn,
+  giữ snapshot metadata và yêu cầu phân loại thuế. Không tự duyệt/ghi sổ/phát hành.
+  Adapter return/refund, dispatch tự động và luồng hóa đơn điện tử Retail chưa hoàn thành.
+- Giao diện `/admin/modules/retail-pos/...` có POS, hàng hóa, kho, chi nhánh, ca, đổi trả,
+  mua hàng, khách hàng, báo cáo và cấu hình. Offline gateway, provider thanh toán và tax engine
+  chưa sẵn sàng; giữ giỏ/retry command không được xem là bán offline.
+- Kiểm chứng cuối: 78 tests/843 assertions tập trung, 21 tests/132 assertions hồi quy liên quan,
+  39 kiểm tra JavaScript và build production pass. Chín gate MySQL thật dùng database ngẫu nhiên
+  đã pass, gồm tranh tồn cuối, retry cùng key, nâng cấp giữ số dư legacy và hai tình huống
+  drain chờ transaction được kiểm chứng bằng hai process riêng.
+- Trình duyệt đã chạy khởi tạo, nhập 24, bán 1, nhận 20.000đ cho bill 15.000đ và trả thừa 5.000đ,
+  đóng/đối soát ca chênh lệch 0; chi nhánh thứ hai dùng cùng SKU với giá/tồn riêng.
+  Server, router đăng nhập thử và DB cô lập đã dọn sau kiểm thử.
+- Full suite chưa được xác nhận xanh. Lần chạy tổng có lỗi/failure và source đang thay đổi;
+  các nhóm tập trung đã chạy lại sau khi freeze. Có các failure baseline đã xác minh ở
+  CMS menu/theme và F&B migration `down`; không suy ra toàn bộ failure là baseline.
+  Chưa nghiệm thu G4/G5, tải nhiều chi nhánh, thiết bị, mất WAN và khôi phục thảm họa.
