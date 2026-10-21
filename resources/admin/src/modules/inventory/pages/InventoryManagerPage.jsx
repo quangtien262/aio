@@ -19,7 +19,10 @@ import Select from 'antd/es/select';
 import Space from 'antd/es/space';
 import Statistic from 'antd/es/statistic';
 import Switch from 'antd/es/switch';
-import Table from 'antd/es/table';
+import AntTable from 'antd/es/table';
+import ConfigProvider from 'antd/es/config-provider';
+import viVN from 'antd/es/locale/vi_VN';
+import '../styles/inventory.css';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
 import message from 'antd/es/message';
@@ -27,20 +30,34 @@ import dayjs from 'dayjs';
 import useAdminRouteResource from '../../../shared/hooks/useAdminRouteResource';
 
 const { Text, Title } = Typography;
+const Table = (props) => <AntTable scroll={{ x: 'max-content' }} locale={{ emptyText: <Empty description="Chưa có dữ liệu." image={Empty.PRESENTED_IMAGE_SIMPLE} /> }} {...props} />;
+const locationTypeLabels = { storage: 'Lưu trữ', receiving: 'Nhận hàng', shipping: 'Xuất hàng', quality: 'Kiểm tra chất lượng' };
+const serialStatusLabels = { in_stock: 'Trong kho', issued: 'Đã xuất', reserved: 'Đã giữ', sold: 'Đã bán' };
+const syncActionLabels = { created: 'Tạo mới', updated: 'Cập nhật', skipped: 'Bỏ qua', failed: 'Lỗi' };
+const barcodeTypeLabels = { item: 'hàng hóa', location: 'vị trí kho', serial: 'số sê-ri' };
 
 const documentTypeOptions = [
-    { label: 'Nhap kho', value: 'receipt' },
-    { label: 'Xuat kho', value: 'issue' },
-    { label: 'Chuyen kho', value: 'transfer' },
-    { label: 'Dieu chinh', value: 'adjustment' },
+    { label: 'Nhập kho', value: 'receipt' },
+    { label: 'Xuất kho', value: 'issue' },
+    { label: 'Chuyển kho', value: 'transfer' },
+    { label: 'Điều chỉnh', value: 'adjustment' },
 ];
 
 const documentTypeLabels = {
-    receipt: 'Nhap kho',
-    issue: 'Xuat kho',
-    transfer: 'Chuyen kho',
-    adjustment: 'Dieu chinh',
+    receipt: 'Nhập kho',
+    issue: 'Xuất kho',
+    transfer: 'Chuyển kho',
+    adjustment: 'Điều chỉnh',
 };
+
+async function validateForm(form) {
+    try {
+        return await form.validateFields();
+    } catch (error) {
+        if (error?.errorFields) return null;
+        throw error;
+    }
+}
 
 function formatDateTime(value) {
     return value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '-';
@@ -164,12 +181,13 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     };
 
     const submitWarehouse = async () => {
-        const values = await warehouseForm.validateFields();
+        const values = await validateForm(warehouseForm);
+        if (!values) return;
         const url = editingWarehouse ? adminApi(`inventory/warehouses/${editingWarehouse.id}`) : adminApi('inventory/warehouses');
         const method = editingWarehouse ? 'PUT' : 'POST';
         const ok = await runAdminAction(
             () => callAdminApi(url, { method, body: JSON.stringify(values) }),
-            editingWarehouse ? 'Da cap nhat kho.' : 'Da tao kho.',
+            editingWarehouse ? 'Đã cập nhật kho.' : 'Đã tạo kho.',
             reload,
         );
 
@@ -181,7 +199,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
     const deleteWarehouse = (warehouse) => runAdminAction(
         () => callAdminApi(adminApi(`inventory/warehouses/${warehouse.id}`), { method: 'DELETE' }),
-        'Da xoa kho.',
+        'Đã xóa kho.',
         reload,
     );
 
@@ -208,12 +226,13 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     };
 
     const submitLocation = async () => {
-        const values = await locationForm.validateFields();
+        const values = await validateForm(locationForm);
+        if (!values) return;
         const url = editingLocation ? adminApi(`inventory/locations/${editingLocation.id}`) : adminApi('inventory/locations');
         const method = editingLocation ? 'PUT' : 'POST';
         const ok = await runAdminAction(
             () => callAdminApi(url, { method, body: JSON.stringify(values) }),
-            editingLocation ? 'Da cap nhat vi tri kho.' : 'Da tao vi tri kho.',
+            editingLocation ? 'Đã cập nhật vị trí kho.' : 'Đã tạo vị trí kho.',
             reload,
         );
 
@@ -225,7 +244,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
     const deleteLocation = (location) => runAdminAction(
         () => callAdminApi(adminApi(`inventory/locations/${location.id}`), { method: 'DELETE' }),
-        'Da xoa vi tri kho.',
+        'Đã xóa vị trí kho.',
         reload,
     );
 
@@ -236,10 +255,11 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     };
 
     const submitItem = async () => {
-        const values = await itemForm.validateFields();
+        const values = await validateForm(itemForm);
+        if (!values) return;
         const ok = await runAdminAction(
             () => callAdminApi(adminApi(`inventory/items/${editingItem.id}`), { method: 'PUT', body: JSON.stringify(values) }),
-            'Da cap nhat cau hinh hang hoa.',
+            'Đã cập nhật cấu hình hàng hóa.',
             reload,
         );
 
@@ -254,10 +274,10 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
             setSyncing(true);
             const payload = await callAdminApi(adminApi('inventory/items/sync-products'), { method: 'POST' });
             setSyncReport(payload.data ?? null);
-            messageApi.success('Da dong bo san pham.');
+            messageApi.success('Đã đồng bộ sản phẩm.');
             await reload();
         } catch (nextError) {
-            messageApi.error(nextError instanceof Error ? nextError.message : 'Khong dong bo duoc san pham.');
+            messageApi.error(nextError instanceof Error ? nextError.message : 'Không đồng bộ được sản phẩm.');
         } finally {
             setSyncing(false);
         }
@@ -273,7 +293,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
             const payload = await callAdminApi(adminApi(`inventory/barcode-lookup?${query.toString()}`));
             setBarcodeResult(payload.data ?? null);
         } catch (nextError) {
-            setBarcodeResult({ type: 'not_found', message: nextError instanceof Error ? nextError.message : 'Khong tim thay.' });
+            setBarcodeResult({ type: 'not_found', message: nextError instanceof Error ? nextError.message : 'Không tìm thấy.' });
         }
     };
 
@@ -290,7 +310,8 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     };
 
     const submitDocument = async () => {
-        const values = await documentForm.validateFields();
+        const values = await validateForm(documentForm);
+        if (!values) return;
         const payload = {
             ...values,
             lines: (values.lines ?? []).map((line) => ({
@@ -303,7 +324,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
         };
         const ok = await runAdminAction(
             () => callAdminApi(adminApi('inventory/documents'), { method: 'POST', body: JSON.stringify(payload) }),
-            'Da tao phieu kho.',
+            'Đã tạo phiếu kho.',
             reload,
         );
 
@@ -316,25 +337,25 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} lg={8}><Card><Statistic title="Kho" value={data?.metrics?.warehouses ?? 0} /></Card></Col>
-                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Hang hoa dang bat" value={data?.metrics?.active_items ?? 0} /></Card></Col>
-                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Tong ton" value={data?.metrics?.total_on_hand ?? 0} precision={0} /></Card></Col>
-                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Sap het hang" value={data?.metrics?.low_stock_items ?? 0} /></Card></Col>
-                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Het hang" value={data?.metrics?.out_of_stock_items ?? 0} /></Card></Col>
-                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Phieu kho" value={data?.metrics?.documents ?? 0} /></Card></Col>
+                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Hàng hóa đang bật" value={data?.metrics?.active_items ?? 0} /></Card></Col>
+                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Tổng tồn" value={data?.metrics?.total_on_hand ?? 0} precision={0} /></Card></Col>
+                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Sắp hết hàng" value={data?.metrics?.low_stock_items ?? 0} /></Card></Col>
+                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Hết hàng" value={data?.metrics?.out_of_stock_items ?? 0} /></Card></Col>
+                <Col xs={24} sm={12} lg={8}><Card><Statistic title="Phiếu kho" value={data?.metrics?.documents ?? 0} /></Card></Col>
             </Row>
 
-            <Card title="Lich su gan day">
+            <Card title="Lịch sử gần đây">
                 <MovementTable items={data?.recent_movements ?? []} />
             </Card>
 
-            <Card title="Barcode / SKU lookup">
+            <Card title="Tra cứu mã vạch / SKU">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
                     <Input.Search
                         value={barcodeCode}
                         onChange={(event) => setBarcodeCode(event.target.value)}
                         onSearch={lookupBarcode}
-                        enterButton="Tim"
-                        placeholder="Quet hoac nhap barcode, SKU, serial"
+                        enterButton="Tìm"
+                        placeholder="Quét hoặc nhập mã vạch, SKU, số sê-ri"
                         style={{ maxWidth: 420 }}
                     />
                     {barcodeResult ? <BarcodeResult result={barcodeResult} /> : null}
@@ -346,7 +367,7 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     const renderWarehouses = () => (
         <Card
             title={`Kho (${data?.total ?? 0})`}
-            extra={permissions.canManageWarehouse ? <Button type="primary" icon={<PlusOutlined />} onClick={openCreateWarehouse}>Them kho</Button> : null}
+            extra={permissions.canManageWarehouse ? <Button type="primary" icon={<PlusOutlined />} onClick={openCreateWarehouse}>Thêm kho</Button> : null}
         >
             <Table
                 rowKey="id"
@@ -354,17 +375,17 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
                 pagination={{ pageSize: 10, hideOnSinglePage: true }}
                 columns={[
                     { title: 'Kho', dataIndex: 'name', key: 'name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}</Text></Space> },
-                    { title: 'Dia chi', dataIndex: 'address', key: 'address', render: (value) => value || '-' },
-                    { title: 'Trang thai', dataIndex: 'is_active', key: 'is_active', render: (_, record) => <Space>{record.is_default ? <Tag color="blue">Mac dinh</Tag> : null}<Tag color={record.is_active ? 'green' : 'default'}>{record.is_active ? 'Dang bat' : 'Tat'}</Tag></Space> },
-                    { title: 'Ton', dataIndex: 'items_count', key: 'items_count', render: (value) => value ?? 0 },
+                    { title: 'Địa chỉ', dataIndex: 'address', key: 'address', render: (value) => value || '-' },
+                    { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', render: (_, record) => <Space wrap>{record.is_default ? <Tag color="blue">Mặc định</Tag> : null}<Tag color={record.is_active ? 'green' : 'default'}>{record.is_active ? 'Đang bật' : 'Tắt'}</Tag></Space> },
+                    { title: 'Tồn', dataIndex: 'items_count', key: 'items_count', render: (value) => value ?? 0 },
                     {
-                        title: 'Tac vu',
+                        title: 'Thao tác',
                         key: 'actions',
                         render: (_, record) => permissions.canManageWarehouse ? (
-                            <Space>
-                                <Button size="small" onClick={() => openEditWarehouse(record)}>Sua</Button>
-                                <Popconfirm title="Xoa kho nay?" onConfirm={() => deleteWarehouse(record)}>
-                                    <Button size="small" danger disabled={(record.items_count ?? 0) > 0}>Xoa</Button>
+                            <Space wrap>
+                                <Button size="small" onClick={() => openEditWarehouse(record)}>Sửa</Button>
+                                <Popconfirm title="Xóa kho này?" onConfirm={() => deleteWarehouse(record)}>
+                                    <Button size="small" danger disabled={(record.items_count ?? 0) > 0}>Xóa</Button>
                                 </Popconfirm>
                             </Space>
                         ) : null,
@@ -376,27 +397,27 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
     const renderLocations = () => (
         <Card
-            title={`Vi tri kho (${data?.total ?? 0})`}
-            extra={permissions.canManageLocation ? <Button type="primary" icon={<PlusOutlined />} onClick={openCreateLocation}>Them vi tri</Button> : null}
+            title={`Vị trí kho (${data?.total ?? 0})`}
+            extra={permissions.canManageLocation ? <Button type="primary" icon={<PlusOutlined />} onClick={openCreateLocation}>Thêm vị trí</Button> : null}
         >
             <Table
                 rowKey="id"
                 dataSource={data?.items ?? []}
                 pagination={{ pageSize: 10 }}
                 columns={[
-                    { title: 'Vi tri', dataIndex: 'name', key: 'name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}</Text></Space> },
+                    { title: 'Vị trí', dataIndex: 'name', key: 'name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.code}</Text></Space> },
                     { title: 'Kho', dataIndex: 'warehouse_name', key: 'warehouse_name' },
-                    { title: 'Barcode', dataIndex: 'barcode', key: 'barcode', render: (value) => value || '-' },
-                    { title: 'Loai', dataIndex: 'type', key: 'type', render: (value) => <Tag>{value}</Tag> },
-                    { title: 'Trang thai', dataIndex: 'is_active', key: 'is_active', render: (_, record) => <Space>{record.is_default ? <Tag color="blue">Mac dinh</Tag> : null}<Tag color={record.is_active ? 'green' : 'default'}>{record.is_active ? 'Dang bat' : 'Tat'}</Tag></Space> },
+                    { title: 'Mã vạch', dataIndex: 'barcode', key: 'barcode', render: (value) => value || '-' },
+                    { title: 'Loại', dataIndex: 'type', key: 'type', render: (value) => <Tag>{locationTypeLabels[value] ?? value}</Tag> },
+                    { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', render: (_, record) => <Space wrap>{record.is_default ? <Tag color="blue">Mặc định</Tag> : null}<Tag color={record.is_active ? 'green' : 'default'}>{record.is_active ? 'Đang bật' : 'Tắt'}</Tag></Space> },
                     {
-                        title: 'Tac vu',
+                        title: 'Thao tác',
                         key: 'actions',
                         render: (_, record) => permissions.canManageLocation ? (
-                            <Space>
-                                <Button size="small" onClick={() => openEditLocation(record)}>Sua</Button>
-                                <Popconfirm title="Xoa vi tri nay?" onConfirm={() => deleteLocation(record)}>
-                                    <Button size="small" danger>Xoa</Button>
+                            <Space wrap>
+                                <Button size="small" onClick={() => openEditLocation(record)}>Sửa</Button>
+                                <Popconfirm title="Xóa vị trí này?" onConfirm={() => deleteLocation(record)}>
+                                    <Button size="small" danger>Xóa</Button>
                                 </Popconfirm>
                             </Space>
                         ) : null,
@@ -408,43 +429,43 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
     const renderItems = () => (
         <Card
-            title={`Hang hoa (${data?.total ?? 0})`}
-            extra={permissions.canSyncItems ? <Button icon={<SyncOutlined spin={syncing} />} loading={syncing} onClick={syncProducts}>Dong bo san pham</Button> : null}
+            title={`Hàng hóa (${data?.total ?? 0})`}
+            extra={permissions.canSyncItems ? <Button icon={<SyncOutlined spin={syncing} />} loading={syncing} onClick={syncProducts}>Đồng bộ sản phẩm</Button> : null}
         >
             <Table
                 rowKey="id"
                 dataSource={data?.items ?? []}
                 pagination={{ pageSize: 10 }}
                 columns={[
-                    { title: 'Hang hoa', dataIndex: 'name', key: 'name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.sku || 'Chua co SKU'}</Text></Space> },
-                    { title: 'Barcode', dataIndex: 'barcode', key: 'barcode', render: (value) => value || '-' },
-                    { title: 'Catalog ID', dataIndex: 'catalog_product_id', key: 'catalog_product_id', render: (value) => value || '-' },
-                    { title: 'Ton tong', dataIndex: 'total_on_hand', key: 'total_on_hand', render: formatQuantity },
-                    { title: 'Min/Max', key: 'reorder', render: (_, record) => `${formatQuantity(record.reorder_min)} / ${formatQuantity(record.reorder_max)}` },
-                    { title: 'Trace', key: 'trace', render: (_, record) => <Space>{record.track_batch ? <Tag color="blue">Batch</Tag> : null}{record.track_serial ? <Tag color="purple">Serial</Tag> : null}</Space> },
-                    { title: 'Gia ban', dataIndex: 'sale_price', key: 'sale_price', render: (value) => Number(value ?? 0).toLocaleString('vi-VN') },
-                    { title: 'Sync gan nhat', dataIndex: 'last_synced_at', key: 'last_synced_at', render: formatDateTime },
-                    { title: 'Trang thai', dataIndex: 'is_active', key: 'is_active', render: (value) => <Tag color={value ? 'green' : 'default'}>{value ? 'Dang bat' : 'Tat'}</Tag> },
-                    { title: 'Tac vu', key: 'actions', render: (_, record) => permissions.canManageItem ? <Button size="small" onClick={() => openEditItem(record)}>Cau hinh</Button> : null },
+                    { title: 'Hàng hóa', dataIndex: 'name', key: 'name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.name}</Text><Text type="secondary">{record.sku || 'Chưa có SKU'}</Text></Space> },
+                    { title: 'Mã vạch', dataIndex: 'barcode', key: 'barcode', render: (value) => value || '-' },
+                    { title: 'ID sản phẩm Catalog', dataIndex: 'catalog_product_id', key: 'catalog_product_id', render: (value) => value || '-' },
+                    { title: 'Tổng tồn', dataIndex: 'total_on_hand', key: 'total_on_hand', render: formatQuantity },
+                    { title: 'Tối thiểu / tối đa', key: 'reorder', render: (_, record) => `${formatQuantity(record.reorder_min)} / ${formatQuantity(record.reorder_max)}` },
+                    { title: 'Truy xuất', key: 'trace', render: (_, record) => <Space wrap>{record.track_batch ? <Tag color="blue">Lô</Tag> : null}{record.track_serial ? <Tag color="purple">Số sê-ri</Tag> : null}</Space> },
+                    { title: 'Giá bán', dataIndex: 'sale_price', key: 'sale_price', render: (value) => Number(value ?? 0).toLocaleString('vi-VN') },
+                    { title: 'Đồng bộ gần nhất', dataIndex: 'last_synced_at', key: 'last_synced_at', render: formatDateTime },
+                    { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', render: (value) => <Tag color={value ? 'green' : 'default'}>{value ? 'Đang bật' : 'Tắt'}</Tag> },
+                    { title: 'Thao tác', key: 'actions', render: (_, record) => permissions.canManageItem ? <Button size="small" onClick={() => openEditItem(record)}>Cấu hình</Button> : null },
                 ]}
             />
         </Card>
     );
 
     const renderReplenishment = () => (
-        <Card title={`Goi y bo sung hang (${data?.total ?? 0})`}>
+        <Card title={`Gợi ý bổ sung hàng (${data?.total ?? 0})`}>
             <Table
                 rowKey="item_id"
                 dataSource={data?.items ?? []}
                 pagination={{ pageSize: 10 }}
                 columns={[
-                    { title: 'Hang hoa', dataIndex: 'item_name', key: 'item_name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.item_name}</Text><Text type="secondary">{record.item_sku || '-'}</Text></Space> },
-                    { title: 'Ton hien tai', dataIndex: 'on_hand', key: 'on_hand', render: formatQuantity },
-                    { title: 'Min', dataIndex: 'reorder_min', key: 'reorder_min', render: formatQuantity },
-                    { title: 'Max', dataIndex: 'reorder_max', key: 'reorder_max', render: formatQuantity },
-                    { title: 'De xuat nhap', dataIndex: 'suggested_quantity', key: 'suggested_quantity', render: (value) => <Text strong>{formatQuantity(value)}</Text> },
-                    { title: 'NCC uu tien', dataIndex: 'preferred_supplier', key: 'preferred_supplier', render: (value) => value || '-' },
-                    { title: 'Trang thai', dataIndex: 'status', key: 'status', render: (value) => <Tag color={value === 'out' ? 'red' : 'orange'}>{value === 'out' ? 'Het hang' : 'Sap het'}</Tag> },
+                    { title: 'Hàng hóa', dataIndex: 'item_name', key: 'item_name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.item_name}</Text><Text type="secondary">{record.item_sku || '-'}</Text></Space> },
+                    { title: 'Tồn hiện tại', dataIndex: 'on_hand', key: 'on_hand', render: formatQuantity },
+                    { title: 'Tối thiểu', dataIndex: 'reorder_min', key: 'reorder_min', render: formatQuantity },
+                    { title: 'Tối đa', dataIndex: 'reorder_max', key: 'reorder_max', render: formatQuantity },
+                    { title: 'Đề xuất nhập', dataIndex: 'suggested_quantity', key: 'suggested_quantity', render: (value) => <Text strong>{formatQuantity(value)}</Text> },
+                    { title: 'Nhà cung cấp ưu tiên', dataIndex: 'preferred_supplier', key: 'preferred_supplier', render: (value) => value || '-' },
+                    { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (value) => <Tag color={value === 'out' ? 'red' : 'orange'}>{value === 'out' ? 'Hết hàng' : 'Sắp hết hàng'}</Tag> },
                 ]}
             />
         </Card>
@@ -452,39 +473,39 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
     const renderBatches = () => (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Card title={`Batch / Lot (${data?.total ?? 0})`}>
+            <Card title={`Lô hàng (${data?.total ?? 0})`}>
                 <Table
                     rowKey="id"
                     dataSource={data?.items ?? []}
                     pagination={{ pageSize: 10 }}
                     columns={[
-                        { title: 'Batch', dataIndex: 'batch_code', key: 'batch_code', render: (value) => <Text strong>{value}</Text> },
-                        { title: 'Hang hoa', dataIndex: 'item_name', key: 'item_name', render: (_, record) => <Space direction="vertical" size={0}><Text>{record.item_name}</Text><Text type="secondary">{record.item_sku || '-'}</Text></Space> },
-                        { title: 'Han dung', dataIndex: 'expires_at', key: 'expires_at', render: (value) => value || '-' },
-                        { title: 'Trang thai', dataIndex: 'is_active', key: 'is_active', render: (value) => <Tag color={value ? 'green' : 'default'}>{value ? 'Dang bat' : 'Tat'}</Tag> },
+                        { title: 'Lô', dataIndex: 'batch_code', key: 'batch_code', render: (value) => <Text strong>{value}</Text> },
+                        { title: 'Hàng hóa', dataIndex: 'item_name', key: 'item_name', render: (_, record) => <Space direction="vertical" size={0}><Text>{record.item_name}</Text><Text type="secondary">{record.item_sku || '-'}</Text></Space> },
+                        { title: 'Hạn dùng', dataIndex: 'expires_at', key: 'expires_at', render: (value) => value || '-' },
+                        { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', render: (value) => <Tag color={value ? 'green' : 'default'}>{value ? 'Đang bật' : 'Tắt'}</Tag> },
                     ]}
                 />
             </Card>
-            <Card title="Serial gan day">
+            <Card title="Số sê-ri gần đây">
                 <SerialNumbersTable callAdminApi={callAdminApi} />
             </Card>
         </Space>
     );
 
     const renderBalances = () => (
-        <Card title={`Ton kho (${data?.total ?? 0})`}>
+        <Card title={`Tồn kho (${data?.total ?? 0})`}>
             <Table
                 rowKey="id"
                 dataSource={data?.items ?? []}
                 pagination={{ pageSize: 10 }}
                 columns={[
                     { title: 'Kho', dataIndex: 'warehouse_name', key: 'warehouse_name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.warehouse_name}</Text><Text type="secondary">{record.warehouse_code}</Text></Space> },
-                    { title: 'Hang hoa', dataIndex: 'item_name', key: 'item_name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.item_name}</Text><Text type="secondary">{record.item_sku || '-'}</Text></Space> },
-                    { title: 'Batch', dataIndex: 'batch_code', key: 'batch_code', render: (value) => value || '-' },
-                    { title: 'Ton thuc te', dataIndex: 'quantity_on_hand', key: 'quantity_on_hand', render: formatQuantity },
-                    { title: 'Da giu', dataIndex: 'quantity_reserved', key: 'quantity_reserved', render: formatQuantity },
-                    { title: 'Co the dung', dataIndex: 'quantity_available', key: 'quantity_available', render: formatQuantity },
-                    { title: 'Cap nhat', dataIndex: 'last_movement_at', key: 'last_movement_at', render: formatDateTime },
+                    { title: 'Hàng hóa', dataIndex: 'item_name', key: 'item_name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.item_name}</Text><Text type="secondary">{record.item_sku || '-'}</Text></Space> },
+                    { title: 'Lô', dataIndex: 'batch_code', key: 'batch_code', render: (value) => value || '-' },
+                    { title: 'Tồn thực tế', dataIndex: 'quantity_on_hand', key: 'quantity_on_hand', render: formatQuantity },
+                    { title: 'Đã giữ', dataIndex: 'quantity_reserved', key: 'quantity_reserved', render: formatQuantity },
+                    { title: 'Có thể dùng', dataIndex: 'quantity_available', key: 'quantity_available', render: formatQuantity },
+                    { title: 'Cập nhật', dataIndex: 'last_movement_at', key: 'last_movement_at', render: formatDateTime },
                 ]}
             />
         </Card>
@@ -492,8 +513,8 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
 
     const renderDocuments = () => (
         <Card
-            title={`Phieu kho (${data?.total ?? 0})`}
-            extra={permissions.canCreateDocument ? <Button type="primary" icon={<PlusOutlined />} onClick={openCreateDocument}>Tao phieu</Button> : null}
+            title={`Phiếu kho (${data?.total ?? 0})`}
+            extra={permissions.canCreateDocument ? <Button type="primary" icon={<PlusOutlined />} onClick={openCreateDocument}>Tạo phiếu</Button> : null}
         >
             <Table
                 rowKey="id"
@@ -507,29 +528,29 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
                             pagination={false}
                             dataSource={record.lines ?? []}
                             columns={[
-                                { title: 'Hang hoa', dataIndex: 'item_name', key: 'item_name' },
+                                { title: 'Hàng hóa', dataIndex: 'item_name', key: 'item_name' },
                                 { title: 'SKU', dataIndex: 'item_sku', key: 'item_sku', render: (value) => value || '-' },
-                                { title: 'Batch', dataIndex: 'batch_code', key: 'batch_code', render: (value) => value || '-' },
-                                { title: 'So luong', dataIndex: 'quantity', key: 'quantity', render: formatQuantity },
-                                { title: 'Don gia von', dataIndex: 'unit_cost', key: 'unit_cost', render: (value) => Number(value ?? 0).toLocaleString('vi-VN') },
+                                { title: 'Lô', dataIndex: 'batch_code', key: 'batch_code', render: (value) => value || '-' },
+                                { title: 'Số lượng', dataIndex: 'quantity', key: 'quantity', render: formatQuantity },
+                                { title: 'Đơn giá vốn', dataIndex: 'unit_cost', key: 'unit_cost', render: (value) => Number(value ?? 0).toLocaleString('vi-VN') },
                             ]}
                         />
                     ),
                 }}
                 columns={[
-                    { title: 'Ma phieu', dataIndex: 'code', key: 'code', render: (value) => <Text strong>{value}</Text> },
-                    { title: 'Loai', dataIndex: 'type', key: 'type', render: (value) => <Tag>{documentTypeLabels[value] ?? value}</Tag> },
-                    { title: 'Kho nguon', dataIndex: 'source_warehouse_name', key: 'source_warehouse_name', render: (value) => value || '-' },
-                    { title: 'Kho dich', dataIndex: 'destination_warehouse_name', key: 'destination_warehouse_name', render: (value) => value || '-' },
-                    { title: 'Tham chieu', dataIndex: 'reference', key: 'reference', render: (value) => value || '-' },
-                    { title: 'Ngay post', dataIndex: 'posted_at', key: 'posted_at', render: formatDateTime },
+                    { title: 'Mã phiếu', dataIndex: 'code', key: 'code', render: (value) => <Text strong>{value}</Text> },
+                    { title: 'Loại', dataIndex: 'type', key: 'type', render: (value) => <Tag>{documentTypeLabels[value] ?? value}</Tag> },
+                    { title: 'Kho nguồn', dataIndex: 'source_warehouse_name', key: 'source_warehouse_name', render: (value) => value || '-' },
+                    { title: 'Kho đích', dataIndex: 'destination_warehouse_name', key: 'destination_warehouse_name', render: (value) => value || '-' },
+                    { title: 'Tham chiếu', dataIndex: 'reference', key: 'reference', render: (value) => value || '-' },
+                    { title: 'Ngày ghi sổ', dataIndex: 'posted_at', key: 'posted_at', render: formatDateTime },
                 ]}
             />
         </Card>
     );
 
     const renderMovements = () => (
-        <Card title={`Lich su kho (${data?.total ?? 0})`}>
+        <Card title={`Lịch sử kho (${data?.total ?? 0})`}>
             <MovementTable items={data?.items ?? []} />
         </Card>
     );
@@ -543,9 +564,9 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
     }
 
     return (
-        <>
+        <ConfigProvider locale={viVN}>
             {messageContextHolder}
-            <Space direction="vertical" size={16} style={{ width: '100%' }}>
+            <Space className="inventory-workspace" direction="vertical" size={16} style={{ width: '100%' }}>
                 <Card>
                     <Space direction="vertical" size={4}>
                         <Text className="card-label">QUẢN LÝ KHO</Text>
@@ -602,13 +623,13 @@ export default function InventoryManagerPage({ moduleMenu, callAdminApi, runAdmi
             />
 
             <SyncReportModal report={syncReport} onClose={() => setSyncReport(null)} />
-        </>
+        </ConfigProvider>
     );
 }
 
 function MovementTable({ items }) {
     if (!items.length) {
-        return <Empty description="Chua co giao dich kho." image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+        return <Empty description="Chưa có giao dịch kho." image={Empty.PRESENTED_IMAGE_SIMPLE} />;
     }
 
     return (
@@ -617,14 +638,14 @@ function MovementTable({ items }) {
             dataSource={items}
             pagination={{ pageSize: 10, hideOnSinglePage: items.length <= 10 }}
             columns={[
-                { title: 'Thoi gian', dataIndex: 'created_at', key: 'created_at', render: formatDateTime },
-                { title: 'Loai', dataIndex: 'type', key: 'type', render: (value) => <Tag>{documentTypeLabels[value] ?? value}</Tag> },
+                { title: 'Thời gian', dataIndex: 'created_at', key: 'created_at', render: formatDateTime },
+                { title: 'Loại', dataIndex: 'type', key: 'type', render: (value) => <Tag>{documentTypeLabels[value] ?? value}</Tag> },
                 { title: 'Kho', dataIndex: 'warehouse_name', key: 'warehouse_name' },
-                { title: 'Hang hoa', dataIndex: 'item_name', key: 'item_name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.item_name}</Text><Text type="secondary">{record.item_sku || '-'}</Text></Space> },
-                { title: 'Batch', dataIndex: 'batch_code', key: 'batch_code', render: (value) => value || '-' },
-                { title: 'Tang/Giam', dataIndex: 'quantity_delta', key: 'quantity_delta', render: (value) => <Text type={Number(value) < 0 ? 'danger' : 'success'}>{formatQuantity(value)}</Text> },
-                { title: 'Ton sau', dataIndex: 'balance_after', key: 'balance_after', render: formatQuantity },
-                { title: 'Ghi chu', dataIndex: 'note', key: 'note', render: (value) => value || '-' },
+                { title: 'Hàng hóa', dataIndex: 'item_name', key: 'item_name', render: (_, record) => <Space direction="vertical" size={0}><Text strong>{record.item_name}</Text><Text type="secondary">{record.item_sku || '-'}</Text></Space> },
+                { title: 'Lô', dataIndex: 'batch_code', key: 'batch_code', render: (value) => value || '-' },
+                { title: 'Tăng/Giảm', dataIndex: 'quantity_delta', key: 'quantity_delta', render: (value) => <Text type={Number(value) < 0 ? 'danger' : 'success'}>{formatQuantity(value)}</Text> },
+                { title: 'Tồn sau', dataIndex: 'balance_after', key: 'balance_after', render: formatQuantity },
+                { title: 'Ghi chú', dataIndex: 'note', key: 'note', render: (value) => value || '-' },
             ]}
         />
     );
@@ -632,14 +653,14 @@ function MovementTable({ items }) {
 
 function BarcodeResult({ result }) {
     if (result.type === 'not_found') {
-        return <Alert type="warning" showIcon message={result.message || 'Khong tim thay.'} />;
+        return <Alert type="warning" showIcon message={result.message || 'Không tìm thấy.'} />;
     }
 
     return (
         <Alert
             type="success"
             showIcon
-            message={`Tim thay ${result.type}`}
+            message={`Tìm thấy ${barcodeTypeLabels[result.type] ?? result.type}`}
             description={result.record?.name || result.record?.serial_number || result.record?.code || result.record?.item_name}
         />
     );
@@ -648,37 +669,37 @@ function BarcodeResult({ result }) {
 function WarehouseDrawer({ open, form, warehouse, onClose, onSubmit }) {
     return (
         <Drawer
-            title={warehouse ? 'Sua kho' : 'Them kho'}
+            title={warehouse ? 'Sửa kho' : 'Thêm kho'}
             open={open}
             onClose={onClose}
             width={520}
             destroyOnHidden
-            extra={<Button type="primary" onClick={onSubmit}>Luu</Button>}
+            extra={<Button type="primary" onClick={onSubmit}>Lưu</Button>}
         >
-            <Form form={form} layout="vertical">
-                <Form.Item name="code" label="Ma kho">
-                    <Input placeholder="Tu dong neu de trong" />
+            <Form form={form} layout="vertical" validateMessages={{ required: 'Vui lòng nhập ${label}.' }}>
+                <Form.Item name="code" label="Mã kho">
+                    <Input placeholder="Tự động nếu để trống" />
                 </Form.Item>
-                <Form.Item name="name" label="Ten kho" rules={[{ required: true, message: 'Nhap ten kho' }]}>
+                <Form.Item name="name" label="Tên kho" rules={[{ required: true, message: 'Nhập tên kho' }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="phone" label="Dien thoai">
+                <Form.Item name="phone" label="Điện thoại">
                     <Input />
                 </Form.Item>
                 <Form.Item name="email" label="Email">
                     <Input />
                 </Form.Item>
-                <Form.Item name="address" label="Dia chi">
+                <Form.Item name="address" label="Địa chỉ">
                     <Input />
                 </Form.Item>
-                <Form.Item name="description" label="Ghi chu">
+                <Form.Item name="description" label="Ghi chú">
                     <Input.TextArea rows={4} />
                 </Form.Item>
-                <Space>
-                    <Form.Item name="is_default" label="Kho mac dinh" valuePropName="checked">
+                <Space wrap>
+                    <Form.Item name="is_default" label="Kho mặc định" valuePropName="checked">
                         <Switch />
                     </Form.Item>
-                    <Form.Item name="is_active" label="Dang bat" valuePropName="checked">
+                    <Form.Item name="is_active" label="Đang bật" valuePropName="checked">
                         <Switch />
                     </Form.Item>
                 </Space>
@@ -690,45 +711,45 @@ function WarehouseDrawer({ open, form, warehouse, onClose, onSubmit }) {
 function LocationDrawer({ open, form, location, warehouseOptions, locationOptions, onClose, onSubmit }) {
     return (
         <Drawer
-            title={location ? 'Sua vi tri kho' : 'Them vi tri kho'}
+            title={location ? 'Sửa vị trí kho' : 'Thêm vị trí kho'}
             open={open}
             onClose={onClose}
             width={560}
             destroyOnHidden
-            extra={<Button type="primary" onClick={onSubmit}>Luu</Button>}
+            extra={<Button type="primary" onClick={onSubmit}>Lưu</Button>}
         >
-            <Form form={form} layout="vertical">
-                <Form.Item name="warehouse_id" label="Kho" rules={[{ required: true, message: 'Chon kho' }]}>
+            <Form form={form} layout="vertical" validateMessages={{ required: 'Vui lòng nhập ${label}.' }}>
+                <Form.Item name="warehouse_id" label="Kho" rules={[{ required: true, message: 'Chọn kho' }]}>
                     <Select options={warehouseOptions} />
                 </Form.Item>
-                <Form.Item name="parent_id" label="Vi tri cha">
+                <Form.Item name="parent_id" label="Vị trí cha">
                     <Select allowClear options={locationOptions.filter((option) => option.value !== location?.id)} />
                 </Form.Item>
-                <Form.Item name="code" label="Ma vi tri" rules={[{ required: true, message: 'Nhap ma vi tri' }]}>
+                <Form.Item name="code" label="Mã vị trí" rules={[{ required: true, message: 'Nhập mã vị trí' }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="name" label="Ten vi tri" rules={[{ required: true, message: 'Nhap ten vi tri' }]}>
+                <Form.Item name="name" label="Tên vị trí" rules={[{ required: true, message: 'Nhập tên vị trí' }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="barcode" label="Barcode">
+                <Form.Item name="barcode" label="Mã vạch">
                     <Input />
                 </Form.Item>
-                <Form.Item name="type" label="Loai vi tri">
+                <Form.Item name="type" label="Loại vị trí">
                     <Select options={[
-                        { value: 'storage', label: 'Storage' },
-                        { value: 'receiving', label: 'Receiving' },
-                        { value: 'shipping', label: 'Shipping' },
-                        { value: 'quality', label: 'Quality' },
+                        { value: 'storage', label: 'Lưu trữ' },
+                        { value: 'receiving', label: 'Nhận hàng' },
+                        { value: 'shipping', label: 'Xuất hàng' },
+                        { value: 'quality', label: 'Kiểm tra chất lượng' },
                     ]} />
                 </Form.Item>
-                <Form.Item name="sort_order" label="Thu tu">
+                <Form.Item name="sort_order" label="Thứ tự">
                     <InputNumber min={0} style={{ width: '100%' }} />
                 </Form.Item>
-                <Space>
-                    <Form.Item name="is_default" label="Mac dinh" valuePropName="checked">
+                <Space wrap>
+                    <Form.Item name="is_default" label="Mặc định" valuePropName="checked">
                         <Switch />
                     </Form.Item>
-                    <Form.Item name="is_active" label="Dang bat" valuePropName="checked">
+                    <Form.Item name="is_active" label="Đang bật" valuePropName="checked">
                         <Switch />
                     </Form.Item>
                 </Space>
@@ -740,47 +761,47 @@ function LocationDrawer({ open, form, location, warehouseOptions, locationOption
 function ItemConfigDrawer({ open, form, item, onClose, onSubmit }) {
     return (
         <Drawer
-            title={item ? `Cau hinh ${item.name}` : 'Cau hinh hang hoa'}
+            title={item ? `Cấu hình ${item.name}` : 'Cấu hình hàng hóa'}
             open={open}
             onClose={onClose}
             width={560}
             destroyOnHidden
-            extra={<Button type="primary" onClick={onSubmit}>Luu</Button>}
+            extra={<Button type="primary" onClick={onSubmit}>Lưu</Button>}
         >
-            <Form form={form} layout="vertical">
-                <Form.Item name="barcode" label="Barcode">
+            <Form form={form} layout="vertical" validateMessages={{ required: 'Vui lòng nhập ${label}.' }}>
+                <Form.Item name="barcode" label="Mã vạch">
                     <Input />
                 </Form.Item>
-                <Form.Item name="unit" label="Don vi tinh">
+                <Form.Item name="unit" label="Đơn vị tính">
                     <Input />
                 </Form.Item>
-                <Form.Item name="costing_method" label="Phuong phap gia von">
-                    <Select options={[{ value: 'fifo', label: 'FIFO' }, { value: 'avg', label: 'Average' }]} />
+                <Form.Item name="costing_method" label="Phương pháp giá vốn">
+                    <Select options={[{ value: 'fifo', label: 'Nhập trước, xuất trước (FIFO)' }, { value: 'avg', label: 'Bình quân' }]} />
                 </Form.Item>
-                <Space>
-                    <Form.Item name="track_batch" label="Track batch" valuePropName="checked">
+                <Space wrap>
+                    <Form.Item name="track_batch" label="Theo dõi lô" valuePropName="checked">
                         <Switch />
                     </Form.Item>
-                    <Form.Item name="track_serial" label="Track serial" valuePropName="checked">
+                    <Form.Item name="track_serial" label="Theo dõi số sê-ri" valuePropName="checked">
                         <Switch />
                     </Form.Item>
-                    <Form.Item name="is_active" label="Dang bat" valuePropName="checked">
+                    <Form.Item name="is_active" label="Đang bật" valuePropName="checked">
                         <Switch />
                     </Form.Item>
                 </Space>
                 <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item name="reorder_min" label="Ton toi thieu">
+                    <Col xs={24} sm={12}>
+                        <Form.Item name="reorder_min" label="Tồn tối thiểu">
                             <InputNumber min={0} style={{ width: '100%' }} />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
-                        <Form.Item name="reorder_max" label="Muc bo sung toi da">
+                    <Col xs={24} sm={12}>
+                        <Form.Item name="reorder_max" label="Mức bổ sung tối đa">
                             <InputNumber min={0} style={{ width: '100%' }} />
                         </Form.Item>
                     </Col>
                 </Row>
-                <Form.Item name="preferred_supplier" label="Nha cung cap uu tien">
+                <Form.Item name="preferred_supplier" label="Nhà cung cấp ưu tiên">
                     <Input />
                 </Form.Item>
             </Form>
@@ -793,38 +814,38 @@ function DocumentDrawer({ open, form, warehouseOptions, locationOptions, itemOpt
 
     return (
         <Drawer
-            title="Tao phieu kho"
+            title="Tạo phiếu kho"
             open={open}
             onClose={onClose}
             width={760}
             destroyOnHidden
-            extra={<Button type="primary" onClick={onSubmit}>Post phieu</Button>}
+            extra={<Button type="primary" onClick={onSubmit}>Ghi sổ phiếu</Button>}
         >
-            <Form form={form} layout="vertical">
+            <Form form={form} layout="vertical" validateMessages={{ required: 'Vui lòng nhập ${label}.' }}>
                 <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item name="type" label="Loai phieu" rules={[{ required: true }]}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item name="type" label="Loại phiếu" rules={[{ required: true }]}>
                             <Select options={documentTypeOptions} />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
-                        <Form.Item name="reference" label="Tham chieu">
-                            <Input placeholder="PO/SO/ghi chu tham chieu" />
+                    <Col xs={24} sm={12}>
+                        <Form.Item name="reference" label="Tham chiếu">
+                            <Input placeholder="Đơn mua/đơn bán/ghi chú tham chiếu" />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
-                        <Form.Item name="source_warehouse_id" label="Kho nguon" rules={type === 'issue' || type === 'transfer' ? [{ required: true, message: 'Chon kho nguon' }] : []}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item name="source_warehouse_id" label="Kho nguồn" rules={type === 'issue' || type === 'transfer' ? [{ required: true, message: 'Chọn kho nguồn' }] : []}>
                             <Select allowClear options={warehouseOptions} disabled={type === 'receipt'} />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
-                        <Form.Item name="destination_warehouse_id" label="Kho dich" rules={type !== 'issue' ? [{ required: true, message: 'Chon kho dich' }] : []}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item name="destination_warehouse_id" label="Kho đích" rules={type !== 'issue' ? [{ required: true, message: 'Chọn kho đích' }] : []}>
                             <Select allowClear options={warehouseOptions} disabled={type === 'issue'} />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Form.Item name="note" label="Ghi chu">
+                <Form.Item name="note" label="Ghi chú">
                     <Input.TextArea rows={3} />
                 </Form.Item>
 
@@ -834,55 +855,55 @@ function DocumentDrawer({ open, form, warehouseOptions, locationOptions, itemOpt
                             {fields.map((field) => (
                                 <Card key={field.key} size="small">
                                     <Row gutter={12}>
-                                        <Col span={10}>
-                                            <Form.Item {...field} name={[field.name, 'item_id']} label="Hang hoa" rules={[{ required: true, message: 'Chon hang hoa' }]}>
+                                        <Col xs={24} sm={10}>
+                                            <Form.Item {...field} name={[field.name, 'item_id']} label="Hàng hóa" rules={[{ required: true, message: 'Chọn hàng hóa' }]}>
                                                 <Select showSearch optionFilterProp="label" options={itemOptions} />
                                             </Form.Item>
                                         </Col>
-                                        <Col span={5}>
-                                            <Form.Item {...field} name={[field.name, 'quantity']} label="So luong" rules={[{ required: true, message: 'Nhap so luong' }]}>
+                                        <Col xs={12} sm={5}>
+                                            <Form.Item {...field} name={[field.name, 'quantity']} label="Số lượng" rules={[{ required: true, message: 'Nhập số lượng' }]}>
                                                 <InputNumber style={{ width: '100%' }} min={type === 'adjustment' ? undefined : 0.001} step={1} />
                                             </Form.Item>
                                         </Col>
-                                        <Col span={5}>
-                                            <Form.Item {...field} name={[field.name, 'unit_cost']} label="Gia von">
+                                        <Col xs={12} sm={5}>
+                                            <Form.Item {...field} name={[field.name, 'unit_cost']} label="Giá vốn">
                                                 <InputNumber style={{ width: '100%' }} min={0} step={1000} />
                                             </Form.Item>
                                         </Col>
-                                        <Col span={4}>
+                                        <Col xs={24} sm={4}>
                                             <Form.Item label=" ">
-                                                <Button danger block onClick={() => remove(field.name)} disabled={fields.length <= 1}>Xoa</Button>
+                                                <Button danger block onClick={() => remove(field.name)} disabled={fields.length <= 1}>Xóa</Button>
                                             </Form.Item>
                                         </Col>
-                                        <Col span={8}>
-                                            <Form.Item {...field} name={[field.name, 'batch_code']} label="Batch/Lot">
+                                        <Col xs={24} sm={8}>
+                                            <Form.Item {...field} name={[field.name, 'batch_code']} label="Mã lô">
                                                 <Input />
                                             </Form.Item>
                                         </Col>
-                                        <Col span={6}>
-                                            <Form.Item {...field} name={[field.name, 'expires_at']} label="Han dung">
+                                        <Col xs={24} sm={6}>
+                                            <Form.Item {...field} name={[field.name, 'expires_at']} label="Hạn dùng">
                                                 <Input placeholder="YYYY-MM-DD" />
                                             </Form.Item>
                                         </Col>
-                                        <Col span={10}>
-                                            <Form.Item {...field} name={[field.name, 'serial_numbers_text']} label="Serial numbers">
-                                                <Input.TextArea rows={1} placeholder="Moi serial cach nhau bang dau phay hoac xuong dong" />
+                                        <Col xs={24} sm={10}>
+                                            <Form.Item {...field} name={[field.name, 'serial_numbers_text']} label="Số sê-ri">
+                                                <Input.TextArea rows={1} placeholder="Các số sê-ri cách nhau bằng dấu phẩy hoặc xuống dòng" />
                                             </Form.Item>
                                         </Col>
-                                        <Col span={12}>
-                                            <Form.Item {...field} name={[field.name, 'source_location_id']} label="Vi tri nguon">
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item {...field} name={[field.name, 'source_location_id']} label="Vị trí nguồn">
                                                 <Select allowClear showSearch optionFilterProp="label" options={locationOptions} disabled={type === 'receipt'} />
                                             </Form.Item>
                                         </Col>
-                                        <Col span={12}>
-                                            <Form.Item {...field} name={[field.name, 'destination_location_id']} label="Vi tri dich">
+                                        <Col xs={24} sm={12}>
+                                            <Form.Item {...field} name={[field.name, 'destination_location_id']} label="Vị trí đích">
                                                 <Select allowClear showSearch optionFilterProp="label" options={locationOptions} disabled={type === 'issue'} />
                                             </Form.Item>
                                         </Col>
                                     </Row>
                                 </Card>
                             ))}
-                            <Button onClick={() => add({ item_id: null, source_location_id: null, destination_location_id: null, batch_code: '', expires_at: '', serial_numbers_text: '', quantity: 1, unit_cost: 0, note: '' })}>Them dong hang</Button>
+                            <Button onClick={() => add({ item_id: null, source_location_id: null, destination_location_id: null, batch_code: '', expires_at: '', serial_numbers_text: '', quantity: 1, unit_cost: 0, note: '' })}>Thêm dòng hàng</Button>
                         </Space>
                     )}
                 </Form.List>
@@ -912,11 +933,11 @@ function SerialNumbersTable({ callAdminApi }) {
             dataSource={data?.items ?? []}
             pagination={{ pageSize: 8 }}
             columns={[
-                { title: 'Serial', dataIndex: 'serial_number', key: 'serial_number', render: (value) => <Text strong>{value}</Text> },
-                { title: 'Hang hoa', dataIndex: 'item_name', key: 'item_name' },
-                { title: 'Batch', dataIndex: 'batch_code', key: 'batch_code', render: (value) => value || '-' },
-                { title: 'Trang thai', dataIndex: 'status', key: 'status', render: (value) => <Tag color={value === 'in_stock' ? 'green' : 'default'}>{value}</Tag> },
-                { title: 'Ngay nhap', dataIndex: 'received_at', key: 'received_at', render: formatDateTime },
+                { title: 'Số sê-ri', dataIndex: 'serial_number', key: 'serial_number', render: (value) => <Text strong>{value}</Text> },
+                { title: 'Hàng hóa', dataIndex: 'item_name', key: 'item_name' },
+                { title: 'Lô', dataIndex: 'batch_code', key: 'batch_code', render: (value) => value || '-' },
+                { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (value) => <Tag color={value === 'in_stock' ? 'green' : 'default'}>{serialStatusLabels[value] ?? value}</Tag> },
+                { title: 'Ngày nhập', dataIndex: 'received_at', key: 'received_at', render: formatDateTime },
             ]}
         />
     );
@@ -924,14 +945,14 @@ function SerialNumbersTable({ callAdminApi }) {
 
 function SyncReportModal({ report, onClose }) {
     return (
-        <Modal title="Bao cao dong bo san pham" open={Boolean(report)} onCancel={onClose} footer={<Button type="primary" onClick={onClose}>Dong</Button>} width={900}>
+        <Modal title="Báo cáo đồng bộ sản phẩm" open={Boolean(report)} onCancel={onClose} footer={<Button type="primary" onClick={onClose}>Đóng</Button>} width={900}>
             {report ? (
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
                     <Descriptions bordered size="small" column={4}>
-                        <Descriptions.Item label="Tao moi">{report.created_count}</Descriptions.Item>
-                        <Descriptions.Item label="Cap nhat">{report.updated_count}</Descriptions.Item>
-                        <Descriptions.Item label="Bo qua">{report.skipped_count}</Descriptions.Item>
-                        <Descriptions.Item label="Loi">{report.failed_count}</Descriptions.Item>
+                        <Descriptions.Item label="Tạo mới">{report.created_count}</Descriptions.Item>
+                        <Descriptions.Item label="Cập nhật">{report.updated_count}</Descriptions.Item>
+                        <Descriptions.Item label="Bỏ qua">{report.skipped_count}</Descriptions.Item>
+                        <Descriptions.Item label="Lỗi">{report.failed_count}</Descriptions.Item>
                     </Descriptions>
                     <Table
                         rowKey="id"
@@ -939,10 +960,10 @@ function SyncReportModal({ report, onClose }) {
                         dataSource={report.lines ?? []}
                         pagination={{ pageSize: 8 }}
                         columns={[
-                            { title: 'San pham', dataIndex: 'name', key: 'name' },
+                            { title: 'Sản phẩm', dataIndex: 'name', key: 'name' },
                             { title: 'SKU', dataIndex: 'sku', key: 'sku', render: (value) => value || '-' },
-                            { title: 'Ket qua', dataIndex: 'action', key: 'action', render: (value) => <Tag color={value === 'failed' ? 'red' : value === 'created' ? 'green' : 'blue'}>{value}</Tag> },
-                            { title: 'Ghi chu', dataIndex: 'message', key: 'message' },
+                            { title: 'Kết quả', dataIndex: 'action', key: 'action', render: (value) => <Tag color={value === 'failed' ? 'red' : value === 'created' ? 'green' : 'blue'}>{syncActionLabels[value] ?? value}</Tag> },
+                            { title: 'Ghi chú', dataIndex: 'message', key: 'message' },
                         ]}
                     />
                 </Space>

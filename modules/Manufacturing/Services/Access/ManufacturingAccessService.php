@@ -243,7 +243,9 @@ class ManufacturingAccessService
         return array_replace($identity, [
             'permissions' => $permissions, 'navigation_permissions' => $navigationPermissions, 'module_navigation' => app(ModuleRegistry::class)->navigationForPermissions($navigationPermissions),
             'company_permissions' => $companyPermissions, 'can_pause' => $actor->isSuperAdmin() && $actor->canAccess('manufacturing.settings', 'global'),
-            'companies' => $companies->map($serialize)->all(), 'factories' => $factories->map($serialize)->all(), 'workshops' => $workshops->map($serialize)->all(), 'lines' => $lines,
+            'companies' => $companies->map(fn ($company) => $serialize($company) + ['can_manage' => in_array('manufacturing.settings', $globalPermissions, true)
+                && ($actor->isSuperAdmin() || $memberships->contains(fn ($grant) => (int) $grant->company_id === (int) $company->id && $grant->factory_id === null && $this->grantAllows($grant, 'manufacturing.settings')))])->all(),
+            'factories' => $factories->map($serialize)->all(), 'workshops' => $workshops->map($serialize)->all(), 'lines' => $lines,
             'shifts' => DB::table('mfg_shifts')->whereIn('factory_id', $factories->pluck('id'))->where('status', 'active')->get()->map($serialize)->all(),
             'memberships' => $memberships->map($serialize)->all(),
             'current_factory_id' => $current?->public_id, 'runtime' => app(ManufacturingRuntimeState::class)->state(),

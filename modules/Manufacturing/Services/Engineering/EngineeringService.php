@@ -6,6 +6,7 @@ use App\Models\Admin;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
+use Modules\Manufacturing\Services\ManufacturingCode;
 use Modules\Manufacturing\Services\ManufacturingData as D;
 use Modules\Merchandise\Services\MerchandiseVariantService;
 
@@ -13,6 +14,8 @@ final class EngineeringService
 {
     public function save(object $company, array $data, ?string $resource): array
     {
+        $existing = $resource ? D::row('mfg_styles', $resource, $company->id, lock: true) : null;
+        $data = ManufacturingCode::fill($data, 'code', 'MH', 'mfg_styles', ['company_id' => $company->id], $existing?->code);
         $v = validator($data, [
             'code' => 'required|string|max:60|regex:/^[A-Za-z0-9._-]+$/', 'name' => 'required|string|max:255',
             'sizes' => 'required|array|min:1|max:30', 'sizes.*' => 'required|string|max:30|distinct',
@@ -43,6 +46,9 @@ final class EngineeringService
         }
         $routing = [];
         foreach ($v['routing'] as $line) {
+            if (ManufacturingCode::missing($line['code'] ?? null)) {
+                $line['code'] = ManufacturingCode::generate('CD');
+            }
             $op = validator($line, ['code' => 'required|string|max:80|regex:/^[A-Za-z0-9._-]+$/', 'name' => 'required|string|max:255'])->validate();
             abort_if(in_array($op['code'], array_column($routing, 'code'), true), 422, 'Mã công đoạn bị trùng.');
             $routing[] = $op + ['smv' => (string) D::decimal($line['smv'] ?? '0', true)];
@@ -50,7 +56,7 @@ final class EngineeringService
         $duplicate = DB::table('mfg_styles')->where('company_id', $company->id)->where('code', $v['code'])
             ->when($resource, fn ($q) => $q->where('public_id', '!=', $resource))->exists();
         abort_if($duplicate, 422, 'Mã hàng đã tồn tại.');
-        $style = $resource ? D::row('mfg_styles', $resource, $company->id, lock: true) : null;
+        $style = $existing;
         $variants = $style ? D::json($style->metadata)['variants'] ?? [] : [];
         $variantService = app(MerchandiseVariantService::class);
         $setId = $style ? (D::json($style->metadata)['variant_set_id'] ?? null) : null;

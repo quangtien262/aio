@@ -35,7 +35,7 @@ class WarehouseManagementController
         });
 
         return response()->json([
-            'message' => 'Da tao kho.',
+            'message' => 'Đã tạo kho.',
             'data' => InventoryDataSerializer::warehouse($warehouse),
         ], 201);
     }
@@ -54,7 +54,7 @@ class WarehouseManagementController
         });
 
         return response()->json([
-            'message' => 'Da cap nhat kho.',
+            'message' => 'Đã cập nhật kho.',
             'data' => InventoryDataSerializer::warehouse($record->fresh()),
         ]);
     }
@@ -63,12 +63,12 @@ class WarehouseManagementController
     {
         $record = InvWarehouse::query()->withCount(['balances'])->findOrFail($warehouse);
 
-        abort_if($record->balances_count > 0, 422, 'Khong the xoa kho da co ton kho.');
+        abort_if($record->balances_count > 0, 422, 'Không thể xóa kho đã có tồn kho.');
 
         $record->delete();
 
         return response()->json([
-            'message' => 'Da xoa kho.',
+            'message' => 'Đã xóa kho.',
         ]);
     }
 

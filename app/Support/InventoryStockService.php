@@ -21,7 +21,7 @@ class InventoryStockService
             'type' => 'receipt',
             'destination_warehouse_id' => $warehouseId,
             'reference' => $reference ?? 'opening-balance',
-            'note' => 'Opening balance from product sync.',
+            'note' => 'Tồn đầu kỳ từ đồng bộ sản phẩm.',
             'lines' => [[
                 'item_id' => $itemId,
                 'quantity' => $quantity,
@@ -78,7 +78,7 @@ class InventoryStockService
             'issue' => $this->applyOutbound($document, $line, (int) $document->source_warehouse_id, $quantity, $adminId),
             'adjustment' => $this->applyAdjustment($document, $line, (int) ($document->destination_warehouse_id ?: $document->source_warehouse_id), $quantity, $adminId),
             'transfer' => $this->postTransfer($document, $line, $quantity, $adminId),
-            default => throw ValidationException::withMessages(['type' => ['Loai phieu kho khong hop le.']]),
+            default => throw ValidationException::withMessages(['type' => ['Loại phiếu kho không hợp lệ.']]),
         };
     }
 
@@ -149,7 +149,7 @@ class InventoryStockService
     private function applyMovement(InvStockDocument $document, InvStockDocumentLine $line, int $warehouseId, ?int $locationId, float $quantityDelta, ?int $adminId): void
     {
         if ($warehouseId <= 0) {
-            throw ValidationException::withMessages(['warehouse' => ['Phieu kho thieu kho nguon hoac kho dich.']]);
+            throw ValidationException::withMessages(['warehouse' => ['Phiếu kho thiếu kho nguồn hoặc kho đích.']]);
         }
 
         $locationKey = $locationId ?: 0;
@@ -179,7 +179,7 @@ class InventoryStockService
 
         if ($nextQuantity < 0) {
             throw ValidationException::withMessages([
-                'quantity' => ['Ton kho khong du de thuc hien phieu nay.'],
+                'quantity' => ['Tồn kho không đủ để thực hiện phiếu này.'],
             ]);
         }
 
@@ -213,13 +213,13 @@ class InventoryStockService
 
         if ($item->track_serial && count($serialNumbers) !== abs((int) $line->quantity)) {
             throw ValidationException::withMessages([
-                'serial_numbers' => ['Hang hoa track serial phai co so serial bang so luong.'],
+                'serial_numbers' => ['Hàng hóa theo dõi số sê-ri phải có số sê-ri bằng số lượng.'],
             ]);
         }
 
         if ($item->track_batch && blank($line->batch_id) && blank($line->batch_code)) {
             throw ValidationException::withMessages([
-                'batch_code' => ['Hang hoa track batch phai co batch/lot.'],
+                'batch_code' => ['Hàng hóa theo dõi lô phải có mã lô.'],
             ]);
         }
     }
@@ -245,7 +245,7 @@ class InventoryStockService
 
         if (! $batch) {
             throw ValidationException::withMessages([
-                'batch_code' => ['Khong tim thay batch/lot de xuat kho.'],
+                'batch_code' => ['Không tìm thấy lô hàng để xuất kho.'],
             ]);
         }
 
@@ -259,7 +259,7 @@ class InventoryStockService
 
             if ($existing && ! ($allowIssuedTransfer && $existing->status === 'issued' && (int) $existing->item_id === (int) $line->item_id)) {
                 throw ValidationException::withMessages([
-                    'serial_numbers' => ["Serial {$serialNumber} da ton tai."],
+                    'serial_numbers' => ["Số sê-ri {$serialNumber} đã tồn tại."],
                 ]);
             }
 
@@ -285,7 +285,7 @@ class InventoryStockService
 
             if (! $serial) {
                 throw ValidationException::withMessages([
-                    'serial_numbers' => ["Serial {$serialNumber} khong co trong kho."],
+                    'serial_numbers' => ["Số sê-ri {$serialNumber} không có trong kho."],
                 ]);
             }
 
@@ -325,7 +325,7 @@ class InventoryStockService
 
         if ($remaining > 0.00001) {
             throw ValidationException::withMessages([
-                'cost_layer' => ['Khong du cost layer de xuat kho. Hay tao phieu nhap/co gia von truoc.'],
+                'cost_layer' => ['Không đủ lớp giá vốn để xuất kho. Hãy tạo phiếu nhập có giá vốn trước.'],
             ]);
         }
 

@@ -8,6 +8,7 @@ use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Services\InventoryProductionService;
 use Modules\Manufacturing\Services\Execution\ExecutionService;
+use Modules\Manufacturing\Services\ManufacturingCode;
 use Modules\Manufacturing\Services\ManufacturingData as D;
 
 final class FulfillmentService
@@ -63,6 +64,7 @@ final class FulfillmentService
 
     public function pack(object $factory, array $data, Admin $actor): array
     {
+        $data = ManufacturingCode::fill($data, 'code', 'TH', 'mfg_cartons', ['company_id' => $factory->company_id]);
         $v = validator($data, ['order_id' => 'required|uuid', 'code' => 'required|string|max:70', 'items' => 'required|array|min:1|max:200'])->validate();
         $order = D::row('mfg_orders', $v['order_id'], $factory->company_id, lock: true);
         abort_unless(in_array($order->status, ['in_progress', 'released', 'partially_shipped'], true), 409, 'Lệnh không ở trạng thái đóng gói.');

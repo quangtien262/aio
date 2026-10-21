@@ -2,21 +2,28 @@
 
 namespace App\Support;
 
+use App\Core\Modules\ModuleCapabilityChecker;
 use App\Models\CatalogProduct;
 use App\Models\InvItem;
 use App\Models\InvSyncRun;
 use App\Models\InvWarehouse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class InventoryProductSyncService
 {
-    public function __construct(private readonly InventoryStockService $stockService)
+    public function __construct(private readonly InventoryStockService $stockService, private readonly ModuleCapabilityChecker $capabilities)
     {
     }
 
     public function sync(?int $adminId = null): InvSyncRun
     {
+        abort_unless($this->capabilities->has('catalog', 'catalog.items.read.v1'), 422,
+            'Chưa thể đồng bộ sản phẩm. Hãy mở App Store, cài đặt và bật ứng dụng Catalog để có nguồn sản phẩm đồng bộ sang kho.');
+        abort_unless(Schema::hasTable('catalog_products'), 422,
+            'Ứng dụng Catalog chưa có bảng dữ liệu sản phẩm. Hãy kiểm tra hoặc nâng cấp Catalog trong App Store trước khi đồng bộ.');
+
         return DB::transaction(function () use ($adminId): InvSyncRun {
             $run = InvSyncRun::query()->create([
                 'source' => 'catalog_products',
@@ -110,7 +117,7 @@ class InventoryProductSyncService
                 'counter' => 'created_count',
                 'action' => 'created',
                 'item' => $item,
-                'message' => 'Da tao hang hoa moi tu san pham Catalog.',
+                'message' => 'Đã tạo hàng hóa mới từ sản phẩm Catalog.',
                 'payload' => $payload,
             ];
         }
@@ -126,7 +133,7 @@ class InventoryProductSyncService
             'counter' => $dirtyPayload === [] ? 'skipped_count' : 'updated_count',
             'action' => $dirtyPayload === [] ? 'skipped' : 'updated',
             'item' => $item,
-            'message' => $dirtyPayload === [] ? 'Khong co thay doi.' : 'Da cap nhat snapshot hang hoa.',
+            'message' => $dirtyPayload === [] ? 'Không có thay đổi.' : 'Đã cập nhật thông tin hàng hóa.',
             'payload' => [
                 'changed_fields' => array_keys($dirtyPayload),
                 'snapshot' => $payload,

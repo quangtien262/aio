@@ -47,7 +47,11 @@ Response list và command đều che cost, amount, unit price và phí khi ngư�
 
 Điều hướng Admin gom các link đã lọc quyền thành 5 mục chính: Tổng quan; Chuẩn bị (Nhu cầu và đơn hàng, Kỹ thuật sản phẩm, Kế hoạch); Sản xuất (Nguyên liệu, Cắt và bó, Sản xuất và bàn giao, Chất lượng, Gia công ngoài); Thành phẩm (Thành phẩm và giao hàng, Giá thành); Thiết lập. Nhóm rỗng tự ẩn; leaf key, route và quyền giữ nguyên. Manifest/API navigation vẫn phẳng để Core tiếp tục resolve route và authorize. Mobile mở sẵn nhóm chứa trang hiện tại; breadcrumb thêm tên nhóm.
 
-Trang Thiết lập dùng `ManufacturingSettings`: tổng quan nhà máy đang chọn và bốn nhóm nội bộ Cơ cấu tổ chức, Nhân sự & quyền, Ca & danh mục, Nhật ký. Danh sách doanh nghiệp/nhà máy dùng dữ liệu được cấp quyền; số phân xưởng/chuyền/ca và sơ đồ cơ cấu lọc theo nhà máy hiện tại. Tạo nguyên liệu, tạo ca và điều khiển pause/resume nằm trong Ca & danh mục. Tất cả thao tác tiếp tục đi qua command drawer và `can()` hiện hữu; đổi nhà máy reset nhóm nội bộ, không giữ dữ liệu/biểu mẫu của phạm vi trước. Nhật ký dùng response settings đã giới hạn phía server, phân trang 10 dòng ở UI; không phải lịch sử toàn hệ thống.
+Trang Thiết lập dùng `ManufacturingSettings` với tiêu đề/ô chọn nhà máy thu gọn và bốn tab Cơ cấu tổ chức, Nhân sự & quyền, Ca & danh mục, Nhật ký. Bỏ banner nhà máy và các thẻ số liệu lặp phía trên tab. Cơ cấu tổ chức dùng một bảng toàn chiều ngang: mỗi doanh nghiệp, nhà máy, phân xưởng và chuyền là một dòng có mã, loại đơn vị, trực thuộc, quy mô/năng lực và thao tác. Thụt dòng giữ thứ bậc; dòng nhà máy đang chọn được nhấn nhẹ. Mặc định bao gồm tất cả đơn vị trong bootstrap được cấp quyền, không lọc theo nhà máy đang chọn; phân trang 25/50/100 dòng phục vụ dữ liệu lớn; có liên kết tới trang chứa nhà máy đang chọn khi dòng đó nằm ở trang khác. Trên điện thoại, ô tìm kiếm giữ hiển thị và bảng cuộn ngang trong vùng riêng. Tìm kiếm không dấu ở mọi cấp, giữ ngữ cảnh nhà máy và cha của đơn vị khớp. Nhóm rỗng và chuyền chưa gắn phân xưởng vẫn có dòng tương ứng. Tạo công ty/nhà máy nằm ở thanh công cụ; sửa doanh nghiệp, chọn nhà máy và tạo phân xưởng/chuyền nằm ngay dòng tương ứng. Chỉ nhà máy đang chọn có thao tác tạo phân xưởng/chuyền; thêm chuyền tại dòng phân xưởng điền sẵn workshop_id. Giữ nguyên command, can(), ngữ cảnh và kiểm quyền phía server. Tạo nguyên liệu, tạo ca và điều khiển pause/resume nằm trong Ca & danh mục. Tất cả thao tác tiếp tục đi qua command drawer và `can()` hiện hữu; đổi nhà máy reset nhóm nội bộ, không giữ dữ liệu/biểu mẫu của phạm vi trước. Nhật ký dùng response settings đã giới hạn phía server, phân trang 10 dòng ở UI; giao dịch trả thêm actor_id và actor_name (tên hiện tại trong admins, left join), hiển thị cột Người tạo và dùng ID tài khoản khi thiếu tên; vẫn chỉ lấy giao dịch của actor hiện hành tại nhà máy được chọn; không phải lịch sử toàn hệ thống. Cột thao tác/sự kiện và giao dịch chờ kiểm tra dùng nhãn tiếng Việt từ cùng bộ định nghĩa command; nhận cả mã operation gốc và event có tiền tố `manufacturing.`. Chỉ đổi nhãn hiển thị, giữ nguyên mã trong API/outbox; mã chưa được nhận diện vẫn hiển thị để có thể đối chiếu.
+
+Mỗi doanh nghiệp có nút “Sửa thông tin” khi bootstrap `companies[].can_manage=true`: Core global `manufacturing.settings` kết hợp native grant toàn công ty (hoặc System Owner/Super Admin). `company.update` nhận UUID công ty ở `resource`, không lấy company scope từ `factory_id`/`data.company_id`; kiểm lại quyền hiện hành kể cả replay. Payload gồm `code`, `name`, tùy chọn `timezone`, bắt buộc `expected_version`. Mã công ty phải duy nhất; stale version trả `409`. Command chỉ cập nhật thông tin native doanh nghiệp, giữ public UUID, settings/catalog ID, legal reference, nhà máy/kho và dữ liệu master ở ứng dụng liên quan. Múi giờ mới là mặc định khi tạo nhà máy mới; UI lấy mặc định từ công ty được chọn và vẫn cho chọn múi giờ khác. Múi giờ của nhà máy hiện có không đổi.
+
+Biểu mẫu sửa doanh nghiệp và tạo nhà máy dùng danh sách chọn múi giờ có tìm kiếm không dấu. Bootstrap `timezones` lấy từ `timezone_identifiers_list()`, cùng danh sách mà validation server chấp nhận. Nhãn thân thiện kèm độ lệch UTC tại thời điểm hiển thị (ví dụ `Việt Nam (UTC+07:00)`); giá trị lưu vẫn là mã múi giờ chuẩn. Giá trị hiện có được giữ nguyên khi mở biểu mẫu.
 
 `readiness.blockers` chứa cảnh báo capability của Inventory, Merchandise và Purchasing. Admin cho click cảnh báo để mở modal hướng dẫn cài/bật/nâng cấp và gọi lại bootstrap bằng “Kiểm tra lại”; lỗi tải không được coi là đã khắc phục. `readiness.can_open_app_store` phản ánh quyền global `store.module.view`, chỉ dùng hiển thị liên kết App Store. API lifecycle tiếp tục kiểm quyền riêng cho từng thao tác và context Core hiện hữu. Mở modal không tự cài hay thay đổi dữ liệu. Cảnh báo runtime paused có hướng dẫn và nút mở biểu mẫu `runtime.resume` theo quyền; sau khi xác nhận thành công, UI tải lại bootstrap. Logo header liên kết về `/admin`, tải lại Core shell để không dùng navigation mặc định của app hiện tại.
 
@@ -58,6 +62,12 @@ Danh sách `orders` của xưởng nhận bàn giao gồm lệnh có bó thực 
 Read mặc định trả `{data: {items,total,page,per_page}}`; báo cáo/settings/MRP có cấu trúc chuyên biệt. Quantity/cost dùng decimal string 6 chữ số ở boundary native; sản lượng chiếc phải nguyên. Không cộng mét, kg và chiếc trong một KPI lượng.
 
 ## 3. Command và retry
+
+`workshop.create` cho phép bỏ `data.code`, gửi `null` hoặc chuỗi trống/khoảng trắng. Server tự cấp mã `PX` cùng số ít nhất 6 chữ số (ví dụ `PX000001`), kiểm trùng trong nhà máy và khóa nhà máy trong transaction cho cả mã nhập tay lẫn tự cấp. Replay giữ mã đã tạo. Mã ca vẫn bắt buộc nhập như trước.
+
+Biểu mẫu Tạo phân xưởng dùng modal giữa màn hình, hai trường xếp dọc và nút Đóng/Ghi nhận ở chân modal. Tạo chuyền cũng dùng modal, bốn trường xếp hai cột trên desktop, một cột trên điện thoại; icon thông tin cạnh mỗi nhãn giải thích ý nghĩa bằng tooltip hỗ trợ hover/focus/click. Năng lực là tổng phút tiêu chuẩn của cả chuyền, được dùng làm năng lực ngày mặc định khi chưa có lịch riêng. `ManufacturingCommandDrawer` dùng chung xử lý form/command, đổi phần chứa của `workshop.create`, `line.create`, `company.update`, `factory.create` và `shift.create`; các biểu mẫu khác vẫn dùng drawer. Sửa doanh nghiệp dùng modal 560 px, ba trường xếp dọc, hướng dẫn múi giờ đặt ngay dưới trường chọn; bỏ khối tên doanh nghiệp lặp lại, giữ expected_version và xử lý lưu/lỗi chung. Tạo nhà máy dùng modal 600 px: công ty và tên nhà máy chiếm cả hàng; mã tùy chọn và múi giờ chia hai cột, xuống một cột trên điện thoại. Tooltip giải thích mã NM tự sinh và múi giờ mặc định theo công ty. Tạo ca làm việc dùng modal 560 px, bốn trường xếp hai cột trên desktop và một cột trên điện thoại, hai trường giờ dùng TimePicker 24 giờ với cột giờ/phút, không yêu cầu gõ chuỗi. Form và API vẫn lưu chuỗi HH:mm, không gửi đối tượng ngày hoặc chuyển đổi UTC; giữ nguyên xử lý lưu/validation. Trong lúc gửi dữ liệu, modal khóa thao tác đóng để giữ nguyên bảo vệ giao dịch.
+
+`line.create` cũng cho phép bỏ mã, `null` hoặc chuỗi trống/khoảng trắng; tự sinh mã `CM000001` với cơ chế khóa nhà máy, tránh trùng trong nhà máy và giữ mã khi replay tương tự phân xưởng. Mã nhập tay vẫn được giữ và kiểm tra hợp lệ/trùng.
 
 `factory.create` cho phép bỏ `data.code`, gửi `null` hoặc chuỗi trống/khoảng trắng. Server tự cấp mã tiền tố `NM` và số ít nhất 6 chữ số (ví dụ `NM000001`), kiểm trùng trong công ty và khóa công ty trong transaction khi tạo. Mã nhập tay vẫn được kiểm định dạng và trùng như trước; replay command giữ nguyên mã đã cấp. Kho của nhà máy có mã tự cấp dùng ID công ty trong mã kho để không vượt giới hạn độ dài khi mã công ty dài.
 
@@ -79,7 +89,7 @@ Mutation trả `{data: {...,id,version,replayed,command_id},meta:{replayed,comma
 
 | Nhóm | Operation |
 | --- | --- |
-| Thiết lập | `company.create`, `factory.create`, `workshop.create`, `line.create`, `shift.create`, `membership.save`, `sku.save`, `runtime.pause`, `runtime.resume` |
+| Thiết lập | `company.create`, `company.update`, `factory.create`, `workshop.create`, `line.create`, `shift.create`, `membership.save`, `sku.save`, `runtime.pause`, `runtime.resume` |
 | Kỹ thuật | `style.save`, `style.approve`, `sample.save`, `sample.approve` |
 | Kế hoạch | `demand.save`, `order.save`, `order.release`, `order.cancel`, `plan.calendar.save`, `plan.commit`, `plan.reschedule` |
 | Vật tư | `material.receive`, `material.inspect`, `material.reserve`, `material.issue`, `material.release`, `material.return`, `material.stocktake` |
@@ -96,6 +106,8 @@ Drawer trong Admin là client contract tham khảo, server luôn kiểm dữ li�
 `style.save`: code/name, arrays sizes/colors, BOM `{material_code,uom,quantity,size?,color?,allowance_percent?}`, routing `{code,name,smv}`. Mỗi edit tạo revision mới; SKU Merchandise của biến thể cũ giữ identity. BOM thuộc catalog công ty, UOM phải khớp master. `sample.save` gắn đúng revision hiện tại; cần PP sample approved trước `style.approve`.
 
 Demand nhận ma trận `{color,size,quantity}`, due date và buyer snapshot. `type` là `order|forecast|replenishment`. Firm order có `forecast_id` tiêu thụ cùng tháng/biến thể/xưởng; forecast allocated cộng firm consumption không vượt forecast gốc. Muốn chuyển forecast đã phân bổ sang đơn thực phải giảm/hủy lệnh nháp forecast trước.
+
+Ma trận màu/kích cỡ trong nhu cầu và lệnh sản xuất dùng bảng nhập gọn (STT, Màu, Kích cỡ, Số lượng, Xóa), giữ Form.List và payload lines cũ. Mỗi ô giữ label cho công cụ hỗ trợ và validation tại ô; thêm/xóa dòng giữ đúng chỉ mục dữ liệu. Trên điện thoại, bảng cuộn ngang trong vùng riêng. Các danh sách BOM, mua hàng và kiểm kê giữ bố cục/cơ chế hiện hành.
 
 Lệnh nháp phân bổ từ demand không vượt số lượng từng biến thể. Release đóng băng BOM, routing, measurement, SKU, buyer và order lines. Đổi master không đổi released snapshot. `engineering-impact` chỉ đọc lệnh/hold/WIP và PO ứng viên theo material; PO ứng viên chưa có source link không được trình bày như phân bổ được xác nhận.
 
@@ -155,3 +167,25 @@ PHPUnit dùng SQLite memory theo `phpunit.xml`; không dùng `php artisan test` 
 Shared versions tối thiểu cho đường mới: Merchandise `0.2.0`, Inventory `0.4.0`, Purchasing `0.2.1` với receipt identity capability. Migrations valuation/identity là forward-only; giữ numeric IDs và posted history. Legacy receipt writer có thể tiếp tục tạo dòng chưa có UUID, native production receipt mới bảo đảm UUID. Backfill issue cost cũ dùng quantity×unit cost khi chưa có exact-cost provenance; không tái tạo được dữ liệu lịch sử đã thiếu.
 
 Late valuation yêu cầu nhận xong roll đang chuyển kho. Warehouse valuation không bao gồm giá trị đang đi đường; realized variance là dữ liệu để adapter kế toán đối soát về sau, chưa là GL posting. Secondary UOM là số đo đối soát, chưa có pricing engine theo đơn vị phụ.
+
+
+### Optional internal identifiers
+
+Manufacturing creation commands accept omitted, `null`, empty, or whitespace-only internal codes. The server assigns them within the existing command transaction; reusing the same idempotency key returns the same resource/code. Nonblank manual codes retain their existing format, uniqueness and scope validation. Invalid non-string values remain invalid.
+
+| Identifier | Prefix | Scope |
+| --- | --- | --- |
+| Company (`company.create.code`) | DN | Global |
+| Factory | NM | Company |
+| Workshop / line / shift | PX / CM / CA | Factory |
+| Material SKU (`sku.save.sku`) | VT | Merchandise catalog |
+| Style / demand / production order | MH / NC / LSX | Company |
+| New routing operation | CD | Routing revision |
+| Cut bundle / carton | BO / TH | Company |
+| Opening / purchase receipt roll | CK | Inventory trace units, globally unique |
+
+NM/PX/CM/CA retain six-digit sequential allocation under the parent lock. Other new identifiers use a prefix plus ULID to avoid a shared counter; database unique indexes remain the concurrency guard. On updates of company, SKU, style, demand and order, a blank identifier preserves the current one. Blank routing codes allocate new operation identifiers in the new revision.
+
+`material.receive.code` is an existing material reference when entered. When blank, the command requires `name` and `uom`, creates a new batch-tracked SKU with quantity precision 6 through the existing authorized `sku.save` path, and posts the opening receipt atomically. It still requires Manufacturing settings and global Merchandise management permissions; failure rolls back both SKU and inventory. Retrying does not create duplicate SKUs or rolls. Entering an existing code does not change that SKU's name or unit.
+
+BOM and procurement `material_code`/`sku_id` remain references to existing catalog entries. Existing operation references and external supplier lot codes are not fabricated. Purchase receipt roll identifiers are allocated for both `roll_code` and nested `rolls[].code` inputs.

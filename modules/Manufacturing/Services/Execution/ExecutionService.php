@@ -8,6 +8,7 @@ use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Services\InventoryProductionService;
 use Modules\Manufacturing\Services\Access\ManufacturingAccessService;
+use Modules\Manufacturing\Services\ManufacturingCode;
 use Modules\Manufacturing\Services\ManufacturingData as D;
 
 final class ExecutionService
@@ -16,6 +17,7 @@ final class ExecutionService
 
     public function cut(object $factory, array $data, Admin $actor, string $key): array
     {
+        $data = ManufacturingCode::fill($data, 'code', 'BO', 'mfg_bundles', ['company_id' => $factory->company_id]);
         $v = validator($data, ['order_id' => 'required|uuid', 'code' => 'required|string|max:80', 'color' => 'required|string',
             'size' => 'required|string', 'quantity' => 'required', 'workshop_id' => 'required|uuid'])->validate();
         $order = D::row('mfg_orders', $v['order_id'], $factory->company_id, $factory->id, true);

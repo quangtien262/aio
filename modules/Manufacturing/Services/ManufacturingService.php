@@ -29,6 +29,7 @@ final class ManufacturingService
         if ($data['must_change_password']) {
             return $data;
         }
+        $data['timezones'] = timezone_identifiers_list();
         $cap = app(ModuleCapabilityChecker::class);
         $data['readiness'] = [
             'can_open_app_store' => $actor->canAccess('store.module.view', 'global'),
@@ -72,11 +73,17 @@ final class ManufacturingService
         $permission = $this->permission($operation);
 
         return app(ManufacturingCommandService::class)->run($actor, $operation, $payload, $key,
-            function (Admin $live) use ($operation, $permission, $payload, $data): array {
+            function (Admin $live) use ($operation, $permission, $payload, $data, $resource): array {
                 $access = app(ManufacturingAccessService::class);
                 $access->permission($live, $permission);
                 if ($operation === 'company.create') {
                     return ['company' => null, 'factory' => null, 'permission' => $permission];
+                }
+                if ($operation === 'company.update') {
+                    abort_unless($resource, 422, 'Cần chọn doanh nghiệp cần sửa.');
+                    $company = $access->company($live, $resource, $permission, true);
+
+                    return ['company' => $company, 'factory' => null, 'permission' => $permission];
                 }
                 if (in_array($operation, ['runtime.pause', 'runtime.resume'], true)) {
                     abort_unless($live->isSuperAdmin(), 403, 'Tạm dừng toàn app cần quyền System Owner hoặc quản trị toàn hệ thống.');
@@ -104,7 +111,7 @@ final class ManufacturingService
                 $company = $scope['company'];
                 $factory = $scope['factory'];
                 $result = match ($operation) {
-                    'company.create', 'factory.create', 'workshop.create', 'line.create', 'shift.create', 'membership.save', 'runtime.pause', 'runtime.resume', 'sku.save' => app(ManufacturingSetupService::class)->dispatch($live, $operation, $scope, $data, $resource),
+                    'company.create', 'company.update', 'factory.create', 'workshop.create', 'line.create', 'shift.create', 'membership.save', 'runtime.pause', 'runtime.resume', 'sku.save' => app(ManufacturingSetupService::class)->dispatch($live, $operation, $scope, $data, $resource),
                     'style.save' => app(EngineeringService::class)->save($company, $data, $resource),
                     'style.approve' => app(EngineeringService::class)->approve($company, (string) $resource, $data, $live),
                     'sample.save' => app(EngineeringService::class)->sample($company, $data, $resource, $live),
@@ -158,7 +165,7 @@ final class ManufacturingService
     private function permission(string $operation): string
     {
         return match ($operation) {
-            'company.create', 'factory.create', 'workshop.create', 'line.create', 'shift.create', 'membership.save', 'runtime.pause', 'runtime.resume', 'sku.save', 'material.receive', 'material.stocktake' => 'manufacturing.settings',
+            'company.create', 'company.update', 'factory.create', 'workshop.create', 'line.create', 'shift.create', 'membership.save', 'runtime.pause', 'runtime.resume', 'sku.save', 'material.receive', 'material.stocktake' => 'manufacturing.settings',
             'style.save', 'style.approve', 'sample.save', 'sample.approve' => 'manufacturing.engineering',
             'demand.save', 'order.save', 'order.release', 'order.cancel', 'plan.calendar.save', 'plan.commit', 'plan.reschedule', 'procurement.create', 'procurement.approve', 'procurement.receive', 'procurement.return' => 'manufacturing.plan',
             'material.inspect', 'quality.inspect', 'quality.rework', 'quality.hold', 'quality.release' => 'manufacturing.quality',

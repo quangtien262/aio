@@ -21,7 +21,7 @@ import ManufacturingDocuments from '../components/ManufacturingDocuments.jsx';
 import ManufacturingWarnings from '../components/ManufacturingWarnings.jsx';
 import ManufacturingSettings from '../components/ManufacturingSettings.jsx';
 import ManufacturingPlanningInsights, { ManufacturingCalendar } from '../components/ManufacturingPlanningInsights.jsx';
-import { commands, sections, sectionForMenu } from '../utils/manufacturingForms.js';
+import { commands, sections, sectionForMenu, manufacturingOperationLabel } from '../utils/manufacturingForms.js';
 import '../styles/manufacturing.css';
 
 const Table = (props) => <AntTable locale={{ emptyText: <Empty description="Chưa có dữ liệu." /> }} {...props} />;
@@ -31,7 +31,7 @@ const statusTag = (value) => value ? <Tag color={['completed', 'approved', 'acce
 const number = (value) => value === undefined || value === null ? '—' : new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 6 }).format(value);
 const textValue = (value) => value === undefined || value === null || value === '' ? '—' : Array.isArray(value) ? value.join(', ') : String(value);
 const metricLabels = { open_orders: 'Lệnh đang mở', wip_quantity: 'Đang sản xuất', quality_hold_quantity: 'Chờ xử lý chất lượng', shipped_quantity: 'Đã giao', material_quantity: 'Nguyên liệu khả dụng', cost_amount: 'Chi phí ghi nhận' };
-const detailLabels = { code: 'Mã', name: 'Tên', status: 'Trạng thái', revision: 'Phiên bản kỹ thuật', version: 'Phiên bản dữ liệu', style_code: 'Mã hàng', style_name: 'Tên mã hàng', type: 'Loại nhu cầu', customer_name: 'Khách hàng / nhãn hàng', color: 'Màu', size: 'Kích cỡ', quantity: 'Số lượng', remaining_quantity: 'Còn lại', available_quantity: 'Khả dụng', good_quantity: 'Đạt', rework_quantity: 'Cần sửa', scrap_quantity: 'Loại bỏ', roll_code: 'Cuộn / kiện', lot_code: 'Lô', shade: 'Ánh màu', width: 'Khổ', uom: 'Đơn vị', unit_cost: 'Đơn giá', total_cost: 'Tổng giá thành', material_cost: 'Chi phí vật tư', labor_cost: 'Chi phí nhân công', overhead_cost: 'Chi phí chung', subcontract_cost: 'Chi phí gia công', output_quantity: 'Thành phẩm đạt', category: 'Khoản mục', amount: 'Số tiền', supplier_name: 'Nhà cung cấp', vendor_name: 'Đối tác gia công', process: 'Công đoạn', operation: 'Công đoạn hiện tại', operation_code: 'Mã công đoạn', planned_start: 'Bắt đầu kế hoạch', planned_end: 'Kết thúc kế hoạch', due_date: 'Hạn giao', reference: 'Tham chiếu', created_at: 'Tạo lúc', shipped_at: 'Ngày giao', notes: 'Ghi chú', reason: 'Lý do' };
+const detailLabels = { code: 'Mã', name: 'Tên', status: 'Trạng thái', revision: 'Phiên bản kỹ thuật', version: 'Phiên bản dữ liệu', style_code: 'Mã hàng', style_name: 'Tên mã hàng', type: 'Loại nhu cầu', customer_name: 'Khách hàng / nhãn hàng', color: 'Màu', size: 'Kích cỡ', quantity: 'Số lượng', remaining_quantity: 'Còn lại', available_quantity: 'Khả dụng', good_quantity: 'Đạt', rework_quantity: 'Cần sửa', scrap_quantity: 'Loại bỏ', material_code: 'Mã vật tư', roll_code: 'Cuộn / kiện', lot_code: 'Lô', shade: 'Ánh màu', width: 'Khổ', uom: 'Đơn vị', unit_cost: 'Đơn giá', total_cost: 'Tổng giá thành', material_cost: 'Chi phí vật tư', labor_cost: 'Chi phí nhân công', overhead_cost: 'Chi phí chung', subcontract_cost: 'Chi phí gia công', output_quantity: 'Thành phẩm đạt', category: 'Khoản mục', amount: 'Số tiền', supplier_name: 'Nhà cung cấp', vendor_name: 'Đối tác gia công', process: 'Công đoạn', operation: 'Công đoạn hiện tại', operation_code: 'Mã công đoạn', planned_start: 'Bắt đầu kế hoạch', planned_end: 'Kết thúc kế hoạch', due_date: 'Hạn giao', reference: 'Tham chiếu', created_at: 'Tạo lúc', shipped_at: 'Ngày giao', notes: 'Ghi chú', reason: 'Lý do' };
 const savedFactory = (actor) => { try { return globalThis.sessionStorage?.getItem(`aio.manufacturing.factory.${actor}`) ?? ''; } catch { return ''; } };
 
 function SimpleRows({ rows, fields }) {
@@ -115,7 +115,9 @@ export default function ManufacturingManagerPage({ moduleMenu, callAdminApi, cur
     }, [api, bootstrap, config.kind, factoryId, page, pageSize, query, section, status]);
     useEffect(() => { load(); return () => { resourceGeneration.current += 1; }; }, [load]);
     const permissions = Array.isArray(bootstrap?.permissions) ? bootstrap.permissions : currentPermissions;
-    const can = (operation) => Boolean(bootstrap && !bootLoading && String(bootstrap.current_factory_id ?? '') === String(factoryId)
+    const can = (operation, record = null) => operation === 'company.update'
+        ? Boolean(bootstrap && !bootLoading && String(bootstrap.current_factory_id ?? '') === String(factoryId) && bootstrap.companies?.some((company) => rowId(company) === rowId(record) && company.can_manage === true))
+        : Boolean(bootstrap && !bootLoading && String(bootstrap.current_factory_id ?? '') === String(factoryId)
         && permissions.includes(commands[operation]?.permission)
         && (!operation.startsWith('runtime.') || bootstrap.can_pause)
         && (operation !== 'subcontract.dispatch' || permissions.includes('manufacturing.cost.manage'))
@@ -127,13 +129,13 @@ export default function ManufacturingManagerPage({ moduleMenu, callAdminApi, cur
     }), [bootstrap, factoryId]);
     const paused = Boolean(bootstrap?.runtime?.paused);
     const open = (operation, record = null, extra = {}) => {
-        if (!can(operation)) return;
+        if (!can(operation, record)) return;
         setAction({ operation, record, ...extra });
     };
     const saved = async (response, operation) => {
         message.success('Đã ghi nhận giao dịch.');
         if (operation === 'plan.calendar.save') setCalendarRevision((value) => value + 1);
-        if (['company.create', 'factory.create', 'workshop.create', 'line.create', 'membership.save', 'runtime.pause', 'runtime.resume'].includes(operation)) {
+        if (['company.create', 'company.update', 'factory.create', 'workshop.create', 'line.create', 'membership.save', 'runtime.pause', 'runtime.resume'].includes(operation)) {
             if (operation === 'factory.create' && response?.data?.id) setFactoryId(response.data.id);
             else await loadBootstrap();
         }
@@ -214,7 +216,7 @@ export default function ManufacturingManagerPage({ moduleMenu, callAdminApi, cur
         <header className={`mfg-page-header${section === 'settings' ? ' mfg-settings-header' : ''}`}><div><div className="mfg-kicker">QUẢN LÝ SẢN XUẤT</div><Typography.Title level={3}>{config.title}</Typography.Title><Typography.Paragraph type="secondary">{config.description}</Typography.Paragraph></div><Space wrap><Select aria-label="Nhà máy sản xuất" value={factoryId || undefined} placeholder="Chọn nhà máy" loading={bootLoading} style={{ minWidth: 230 }} options={(bootstrap?.factories ?? []).map((row) => ({ value: rowId(row), label: rowLabel(row) }))} onChange={(value) => { setFactoryId(value); setAction(null); setDetails(null); setData(null); }} /><Button onClick={() => { loadBootstrap(); load(); refreshPending(); }} loading={loading || bootLoading}>Làm mới</Button></Space></header>
         {bootError && <Alert type="error" showIcon message={bootError} action={<Button onClick={loadBootstrap}>Thử lại</Button>} />}
         <ManufacturingWarnings key={contextKey} readiness={bootstrap?.readiness} paused={paused} loading={bootLoading} error={bootError} onCheck={loadBootstrap} onResume={can('runtime.resume') ? () => open('runtime.resume') : undefined} />
-        {pending.length > 0 && <Card size="small" title="Giao dịch cần kiểm tra"><Typography.Paragraph type="secondary">Kết quả lần gửi trước chưa rõ. Kiểm tra trước khi gửi nội dung khác cho cùng thao tác.</Typography.Paragraph><Space direction="vertical" style={{ width: '100%' }}>{pending.map((entry) => <div className="mfg-pending-row" key={entry.key}><span>{commands[entry.operation]?.title ?? entry.operation} · {new Date(entry.created_at).toLocaleString('vi-VN')}</span><Button loading={recovering === entry.key} onClick={() => recover(entry)}>Kiểm tra kết quả</Button></div>)}</Space></Card>}
+        {pending.length > 0 && <Card size="small" title="Giao dịch cần kiểm tra"><Typography.Paragraph type="secondary">Kết quả lần gửi trước chưa rõ. Kiểm tra trước khi gửi nội dung khác cho cùng thao tác.</Typography.Paragraph><Space direction="vertical" style={{ width: '100%' }}>{pending.map((entry) => <div className="mfg-pending-row" key={entry.key}><span>{manufacturingOperationLabel(entry.operation)} · {new Date(entry.created_at).toLocaleString('vi-VN')}</span><Button loading={recovering === entry.key} onClick={() => recover(entry)}>Kiểm tra kết quả</Button></div>)}</Space></Card>}
         {error && <Alert type="error" showIcon message={error} action={<Button onClick={load}>Thử lại</Button>} />}
         {bootLoading && !bootstrap ? <Card loading /> : !factoryId && section !== 'settings' ? <Card><Empty description="Chưa có nhà máy được chọn. Mở Thiết lập để tạo công ty, nhà máy và phân xưởng hoặc chọn một nhà máy đã được cấp quyền." /></Card> : <>
             {section === 'overview' ? <><div className="mfg-metrics">{reportMetrics.map((metric, index) => <Card key={metric.key ?? index} size="small"><Statistic title={metric.label ?? metric.name} value={metric.value ?? 0} suffix={metric.unit} formatter={(value) => number(value)} /></Card>)}</div>{!loading && !reportMetrics.length && !error && <Card><Empty description="Chưa có số liệu sản xuất tại nhà máy này." /></Card>}<Card title="Theo dõi đơn hàng" loading={loading}><SimpleRows rows={data?.recent_orders ?? data?.orders ?? []} fields={[[ 'code', 'Lệnh sản xuất'], ['status', 'Trạng thái'], ['quantity', 'Số lượng'], ['planned_end', 'Kế hoạch kết thúc']]} /></Card><Alert type="info" showIcon message="Số liệu cập nhật từ các giao dịch đã ghi nhận tại nhà máy đang chọn." /></>

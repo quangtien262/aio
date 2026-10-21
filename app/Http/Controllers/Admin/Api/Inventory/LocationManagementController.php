@@ -15,7 +15,7 @@ class LocationManagementController
         $location = InvLocation::query()->create($validated);
 
         return response()->json([
-            'message' => 'Da tao vi tri kho.',
+            'message' => 'Đã tạo vị trí kho.',
             'data' => InventoryDataSerializer::location($location->fresh(['warehouse', 'parent'])),
         ], 201);
     }
@@ -28,7 +28,7 @@ class LocationManagementController
         $record->update($validated);
 
         return response()->json([
-            'message' => 'Da cap nhat vi tri kho.',
+            'message' => 'Đã cập nhật vị trí kho.',
             'data' => InventoryDataSerializer::location($record->fresh(['warehouse', 'parent'])),
         ]);
     }
@@ -39,13 +39,13 @@ class LocationManagementController
             ->withCount(['children', 'balances'])
             ->findOrFail($location);
 
-        abort_if($record->children_count > 0, 422, 'Khong the xoa vi tri dang co vi tri con.');
-        abort_if($record->balances_count > 0, 422, 'Khong the xoa vi tri da co ton kho. Hay tat vi tri thay vi xoa.');
+        abort_if($record->children_count > 0, 422, 'Không thể xóa vị trí đang có vị trí con.');
+        abort_if($record->balances_count > 0, 422, 'Không thể xóa vị trí đã có tồn kho. Hãy tắt vị trí thay vì xóa.');
 
         $record->delete();
 
         return response()->json([
-            'message' => 'Da xoa vi tri kho.',
+            'message' => 'Đã xóa vị trí kho.',
         ]);
     }
 

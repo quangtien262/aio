@@ -160,11 +160,16 @@ class ManufacturingWorkflowTest extends TestCase
         $this->assertSame('partially_received', $received['status']);
         $this->assertSame(1, DB::table('inv_trace_units')->count());
         $this->assertEquals(40, DB::table('purchase_order_lines')->where('id', $line)->value('quantity_received'));
-        $second = $this->command('procurement.receive', ['expected_version' => $received['version'], 'lines' => [['order_line_id' => $line, 'quantity' => '60', 'roll_code' => 'PO-ROLL-B', 'lot_code' => 'DYE-A', 'shade' => 'A', 'width' => '1.5']]], $order['id']);
+        $secondInput = ['expected_version' => $received['version'], 'lines' => [['order_line_id' => $line, 'rolls' => [['code' => '', 'quantity' => '30', 'lot_code' => 'DYE-A'], ['quantity' => '30', 'lot_code' => 'DYE-A']]]]];
+        $second = $this->command('procurement.receive', $secondInput, $order['id'], 'auto-purchase-rolls');
+        $this->command('procurement.receive', $secondInput, $order['id'], 'auto-purchase-rolls');
+        foreach (DB::table('inv_trace_units')->where('code', '!=', 'PO-ROLL-A')->pluck('code') as $code) {
+            $this->assertStringStartsWith('CK', $code);
+        }
         $this->assertSame('received', $second['status']);
         $this->assertSame('100000', $second['financials']['payable_minor']);
-        $this->assertSame(2, DB::table('inv_trace_units')->count());
-        $materials = $this->getJson('/admin/api/manufacturing/materials?factory_id='.$this->factory)->assertOk()->assertJsonPath('data.total', 2)->json('data');
+        $this->assertSame(3, DB::table('inv_trace_units')->count());
+        $materials = $this->getJson('/admin/api/manufacturing/materials?factory_id='.$this->factory)->assertOk()->assertJsonPath('data.total', 3)->json('data');
         $receiptLine = collect($materials['purchase_orders'][0]['receipt_lines'])->firstWhere('roll_code', 'PO-ROLL-A');
         $this->assertTrue(Str::isUuid($receiptLine['id']));
         $returnPayload = ['receipt_line_id' => $receiptLine['id'], 'quantity' => 10, 'reason' => 'Rejected incoming fabric sent back to mill', 'expected_version' => $second['version']];
@@ -520,6 +525,134 @@ class ManufacturingWorkflowTest extends TestCase
         $this->command('material.receive', $input, null, 'workflow-actor-separated-key');
         $this->assertSame(2, DB::table('mfg_commands')->where('command_key', 'workflow-actor-separated-key')->count());
         $this->assertSame(2, DB::table('inv_trace_units')->count());
+    }
+
+    public function test_blank_internal_codes_support_the_complete_production_flow_and_retries(): void
+    {
+        $input = $this->styleInput();
+        unset($input['code']);
+        unset($input['routing'][0]['code']);
+        $style = $this->command('style.save', $input, null, 'auto-style-once');
+        $this->assertStringStartsWith('MH', $style['code']);
+        $this->assertSame($style['code'], $this->command('style.save', $input, null, 'auto-style-once')['code']);
+        $savedStyleCode = $style['code'];
+        $input['code'] = '  ';
+        $input['expected_version'] = $style['version'];
+        $style = $this->command('style.save', $input, $style['id']);
+        $this->assertSame($savedStyleCode, $style['code']);
+        $this->assertSame(1, DB::table('mfg_styles')->count());
+        $routing = D::json(DB::table('mfg_style_revisions')->orderByDesc('id')->value('routing'));
+        $this->assertStringStartsWith('CD', $routing[0]['code']);
+        $sample = $this->command('sample.save', ['style_id' => $style['id'], 'type' => 'pp']);
+        $this->command('sample.approve', ['expected_version' => $sample['version']], $sample['id']);
+        $style = $this->command('style.approve', ['expected_version' => $style['version']], $style['id']);
+        $matrix = [['color' => 'Red', 'size' => 'S', 'quantity' => 2]];
+        $demandInput = ['code' => null, 'style_id' => $style['id'], 'type' => 'order', 'due_date' => '2026-11-20', 'lines' => $matrix];
+        $demand = $this->command('demand.save', $demandInput, null, 'auto-demand-once');
+        $this->assertStringStartsWith('NC', $demand['code']);
+        $this->assertSame($demand['code'], $this->command('demand.save', $demandInput, null, 'auto-demand-once')['code']);
+        $savedCode = $demand['code'];
+        $demand = $this->command('demand.save', $demandInput + ['expected_version' => $demand['version']], $demand['id']);
+        $this->assertSame($savedCode, $demand['code']);
+        $orderInput = ['code' => '', 'demand_id' => $demand['id'], 'workshop_id' => $this->workshop, 'lines' => $matrix];
+        $order = $this->command('order.save', $orderInput, null, 'auto-order-once');
+        $this->assertStringStartsWith('LSX', $order['code']);
+        $this->assertSame($order['code'], $this->command('order.save', $orderInput, null, 'auto-order-once')['code']);
+        $savedCode = $order['code'];
+        $order = $this->command('order.save', $orderInput + ['expected_version' => $order['version']], $order['id']);
+        $this->assertSame($savedCode, $order['code']);
+        $order = $this->command('order.release', ['expected_version' => $order['version']], $order['id']);
+        $roll = $this->acceptedRoll();
+        $cut = ['code' => '  ', 'order_id' => $order['id'], 'workshop_id' => $this->workshop, 'color' => 'Red', 'size' => 'S', 'quantity' => 2,
+            'materials' => [['material_id' => $roll['id'], 'consumed_quantity' => '4']]];
+        $bundle = $this->command('cut.create', $cut, null, 'auto-cut-once');
+        $this->assertStringStartsWith('BO', $bundle['code']);
+        $this->assertSame($bundle['code'], $this->command('cut.create', $cut, null, 'auto-cut-once')['code']);
+        foreach ($routing as $operation) {
+            $bundle = $this->command('operation.record', ['operation_code' => $operation['code'], 'quantity' => 2, 'good_quantity' => 2,
+                'scrap_quantity' => 0, 'expected_version' => $bundle['version']], $bundle['id']);
+        }
+        $this->command('quality.inspect', ['bundle_id' => $bundle['id'], 'quantity' => 2, 'good_quantity' => 2, 'rework_quantity' => 0,
+            'scrap_quantity' => 0, 'expected_version' => $bundle['version']]);
+        $bundle = $this->resource('mfg_bundles', $bundle['id']);
+        $bundle = $this->command('bundle.finish', ['quantity' => 2, 'expected_version' => $bundle['version']], $bundle['id']);
+        $pack = ['order_id' => $order['id'], 'items' => [['bundle_id' => $bundle['id'], 'quantity' => 2]]];
+        $shipment = $this->command('shipment.pack', $pack, null, 'auto-pack-once');
+        $this->assertStringStartsWith('SHP-TH', $shipment['code']);
+        $this->assertSame($shipment['code'], $this->command('shipment.pack', $pack, null, 'auto-pack-once')['code']);
+        $this->assertSame(1, DB::table('mfg_cartons')->count());
+        $this->assertSame(1, DB::table('mfg_bundles')->count());
+    }
+
+    public function test_opening_inventory_generates_material_and_roll_codes_without_duplicate_skus_on_retry(): void
+    {
+        foreach ([[], ['code' => null], ['code' => ''], ['code' => '   ']] as $index => $blank) {
+            $input = $blank + ['name' => 'New fabric '.$index, 'uom' => 'm', 'quantity' => '1.125125', 'unit_cost' => '0.123456', 'reason' => 'Verified opening stock'];
+            $roll = $this->command('material.receive', $input, null, 'auto-material-'.$index);
+            $this->assertStringStartsWith('CK', $roll['code']);
+            $this->assertSame($roll['id'], $this->command('material.receive', $input, null, 'auto-material-'.$index)['id']);
+            $sku = DB::table('inv_trace_units as t')->join('inv_items as i', 'i.id', '=', 't.item_id')->join('merch_skus as s', 's.id', '=', 'i.merchandise_sku_id')->where('t.public_id', $roll['id'])->first(['s.sku', 's.name', 's.base_unit', 's.quantity_scale']);
+            $this->assertStringStartsWith('VT', $sku->sku);
+            $this->assertSame('New fabric '.$index, $sku->name);
+            $this->assertSame('m', $sku->base_unit);
+            $this->assertSame(6, (int) $sku->quantity_scale);
+        }
+        $this->assertSame(5, DB::table('merch_skus')->count());
+        $this->assertSame(4, DB::table('inv_trace_units')->count());
+        $this->command('material.receive', ['code' => 'COTTON', 'roll_code' => 'MANUAL-ROLL', 'quantity' => 2, 'unit_cost' => 1, 'reason' => 'Existing fabric opening']);
+        $this->assertSame(5, DB::table('merch_skus')->count());
+        $this->postCommand('material.receive', ['quantity' => 1, 'unit_cost' => 1, 'reason' => 'Missing name and unit'])->assertUnprocessable();
+        $this->postCommand('material.receive', ['name' => 'Rollback fabric', 'uom' => 'm', 'quantity' => '-1', 'unit_cost' => 1, 'reason' => 'Invalid quantity rollback'])->assertUnprocessable();
+        $this->assertSame(5, DB::table('merch_skus')->count());
+        $this->postCommand('material.receive', ['code' => [], 'quantity' => 1, 'unit_cost' => 1, 'reason' => 'Invalid material identifier'])->assertUnprocessable();
+    }
+
+    public function test_setup_codes_accept_blank_values_and_preserve_manual_and_existing_codes(): void
+    {
+        foreach ([[], ['code' => null], ['code' => ''], ['code' => '   ']] as $index => $blank) {
+            $company = $this->command('company.create', $blank + ['name' => 'Automatic company '.$index], null, 'auto-company-'.$index);
+            $this->assertStringStartsWith('DN', $company['code']);
+            $this->assertSame($company['code'], $this->command('company.create', $blank + ['name' => 'Automatic company '.$index], null, 'auto-company-'.$index)['code']);
+            $shiftInput = $blank + ['name' => 'Automatic shift '.$index, 'starts_at' => '08:00', 'ends_at' => '17:00'];
+            $shift = $this->command('shift.create', $shiftInput, null, 'auto-shift-'.$index);
+            $this->assertMatchesRegularExpression('/^CA[0-9]{6,}$/', $shift['code']);
+            $this->assertSame($shift['code'], $this->command('shift.create', $shiftInput, null, 'auto-shift-'.$index)['code']);
+            $skuInput = ['sku' => $blank['code'] ?? null, 'name' => 'Automatic material '.$index, 'base_unit' => 'm', 'tracking_mode' => 'batch', 'quantity_scale' => 6];
+            $sku = $this->command('sku.save', $skuInput, null, 'auto-sku-'.$index);
+            $this->assertStringStartsWith('VT', $sku['sku']);
+            $this->assertSame($sku['id'], $this->command('sku.save', $skuInput, null, 'auto-sku-'.$index)['id']);
+        }
+        $edited = $this->command('company.update', ['code' => '', 'name' => 'Renamed company', 'expected_version' => $company['version']], $company['id']);
+        $this->assertSame($company['code'], $edited['code']);
+        $editedSku = $this->command('sku.save', ['sku' => '', 'name' => 'Renamed material', 'base_unit' => 'm', 'quantity_scale' => 6, 'tracking_mode' => 'batch', 'expected_version' => $sku['version']], $sku['id']);
+        $this->assertSame($sku['sku'], $editedSku['sku']);
+        $this->assertSame(5, DB::table('mfg_companies')->count());
+        $this->assertSame(4, DB::table('mfg_shifts')->count());
+        $this->assertSame(5, DB::table('merch_skus')->count());
+        $input = ['code' => 'MANUAL-SHIFT', 'name' => 'Manual shift', 'starts_at' => '08:00', 'ends_at' => '17:00'];
+        $this->assertSame('MANUAL-SHIFT', $this->command('shift.create', $input)['code']);
+        $this->postCommand('shift.create', $input)->assertUnprocessable();
+        $this->postCommand('shift.create', array_replace($input, ['code' => []]))->assertUnprocessable();
+        $this->postCommand('company.create', ['code' => 'bad code!', 'name' => 'Invalid'])->assertUnprocessable();
+        $this->postCommand('sku.save', ['sku' => [], 'name' => 'Invalid'])->assertUnprocessable();
+    }
+
+    public function test_blank_material_code_does_not_bypass_catalog_creation_permission(): void
+    {
+        $actor = Admin::factory()->create(['must_change_password' => false]);
+        $role = Role::create(['key' => 'mfg-opening-no-catalog', 'name' => 'Opening without catalog creation', 'status' => 'active']);
+        $role->permissions()->sync(Permission::whereIn('module_key', ['manufacturing', 'inventory'])->pluck('id'));
+        AdminRoleAssignment::create(['admin_id' => $actor->id, 'role_id' => $role->id, 'scope_type' => 'global', 'scope_value' => null]);
+        D::insert('mfg_memberships', ['company_id' => DB::table('mfg_companies')->where('public_id', $this->company)->value('id'),
+            'factory_id' => DB::table('mfg_factories')->where('public_id', $this->factory)->value('id'), 'admin_id' => $actor->id, 'role' => 'manager', 'status' => 'active']);
+        $this->actingAs($actor->fresh(), 'admin')->withSession(['admin_auth_version' => $actor->auth_version]);
+        $input = ['name' => 'Unauthorized new fabric', 'uom' => 'm', 'quantity' => 2, 'unit_cost' => 1, 'reason' => 'Opening stock with no catalog permission'];
+        $this->postCommand('material.receive', $input)->assertForbidden();
+        $this->assertSame(1, DB::table('merch_skus')->count());
+        $this->assertSame(0, DB::table('inv_trace_units')->count());
+        $this->command('material.receive', ['code' => 'COTTON'] + $input);
+        $this->assertSame(1, DB::table('merch_skus')->count());
+        $this->assertSame(1, DB::table('inv_trace_units')->count());
     }
 
     private function cutSingleOrder(int $quantity, ?int $cutQuantity = null): array

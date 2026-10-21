@@ -1,0 +1,48 @@
+import { expect, test } from '@playwright/test';
+
+test.skip(process.env.PLAYWRIGHT_MANUFACTURING_FIXTURE !== '1', 'Chỉ ghi vào fixture Manufacturing cô lập.');
+
+test('opening stock accepts blank material and roll codes and displays the generated material', async ({ page }) => {
+    expect(['localhost', '127.0.0.1']).toContain(new URL(test.info().project.use.baseURL).hostname);
+    expect(process.env.MANUFACTURING_BROWSER_SECRET?.length).toBeGreaterThanOrEqual(32);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.setViewportSize({ width: 1047, height: 853 });
+    await page.goto(`/__manufacturing_fixture/login/${process.env.MANUFACTURING_BROWSER_SECRET}`);
+    await expect(page.getByRole('heading', { name: 'Thiết lập sản xuất', exact: true })).toBeVisible();
+    await page.goto('/admin/modules/manufacturing/materials');
+    await page.getByRole('button', { name: 'Nhập tồn đầu kỳ', exact: true }).click();
+    const form = page.getByRole('dialog', { name: 'Nhập tồn đầu kỳ', exact: true });
+    await expect(form.getByLabel('Mã vật tư', { exact: true })).toHaveValue('');
+    await expect(form.getByLabel('Mã cuộn / kiện', { exact: true })).toHaveValue('');
+    await expect(form.getByLabel('Mã vật tư', { exact: true })).not.toHaveAttribute('aria-required', 'true');
+    const name = `Vải tự tạo ${Date.now()}`;
+    await form.getByLabel('Tên vật tư', { exact: true }).fill(name);
+    await form.getByLabel('Lô nhuộm / sản xuất', { exact: true }).fill('LO-NCC-01');
+    await form.getByLabel('Nhóm ánh màu', { exact: true }).fill('A');
+    await form.getByLabel('Số lượng nhận', { exact: true }).fill('2.5');
+    await form.getByLabel('Đơn vị đo', { exact: true }).fill('m');
+    await form.getByLabel('Đơn giá nhập', { exact: true }).fill('12500');
+    await form.getByLabel('Lý do / tham chiếu số dư đầu kỳ', { exact: true }).fill('Tồn đầu kỳ đã kiểm đếm');
+    await page.screenshot({ path: test.info().outputPath('opening-auto-codes.png'), animations: 'disabled' });
+    const saved = page.waitForResponse((response) => response.request().method() === 'POST' && response.url().endsWith('/commands/material.receive'));
+    await form.getByRole('button', { name: 'Ghi nhận', exact: true }).click();
+    const response = await saved;
+    expect(response.ok()).toBeTruthy();
+    const result = (await response.json()).data;
+    expect(result.code).toMatch(/^CK[0-9A-Z]{26}$/);
+    expect(response.request().postDataJSON().data.code).toBeUndefined();
+    await expect(form).toBeHidden();
+    const row = page.getByRole('row').filter({ hasText: name });
+    await expect(row).toBeVisible();
+    await expect(row).toContainText(result.code);
+    await row.getByRole('button', { name: 'Chi tiết', exact: true }).click();
+    const details = page.getByRole('dialog');
+    await expect(details.getByText('Mã vật tư', { exact: true })).toBeVisible();
+    await expect(details).toContainText(/VT[0-9A-Z]{26}/);
+    await page.keyboard.press('Escape');
+    await expect(details).toBeHidden();
+    await page.reload();
+    await expect(page.getByRole('row').filter({ hasText: name })).toBeVisible();
+    expect(errors).toEqual([]);
+});

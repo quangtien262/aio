@@ -51,6 +51,7 @@ import ChangePasswordModal from '../shared/components/ChangePasswordModal';
 import TwoFactorModal from '../shared/components/TwoFactorModal';
 import { currentWorkspaceNavigationItem, findWorkspaceMenuItem, moduleWorkspaceNavigation } from '../shared/utils/workspaceNavigation';
 import { buildManufacturingNavigation } from '../modules/manufacturing/utils/manufacturingNavigation';
+import ManufacturingSiblingNavigation from '../modules/manufacturing/components/ManufacturingSiblingNavigation';
 
 const ModuleRoutePage = lazy(() => import('../pages/modules/ModuleRoutePage'));
 const DashboardRoutePage = lazy(() => import('../pages/routes/DashboardRoutePage'));
@@ -654,17 +655,21 @@ export default function AdminLayout() {
         return activeWorkspaceNavigation?.selectedKey ?? currentNavigationItem?.key ?? null;
     }, [currentNavigationItem, activeWorkspaceNavigation]);
 
+    const manufacturingMenuGroup = useMemo(() => manufacturingWorkspace
+        ? sideMenuItems.find((item) => item.children && findWorkspaceMenuItem(item.children, selectedMenuKey)) ?? null
+        : null, [manufacturingWorkspace, sideMenuItems, selectedMenuKey]);
+
     const breadcrumbItems = useMemo(() => {
         if (inModule) {
             const selected = findWorkspaceMenuItem(activeWorkspaceNavigation?.items ?? [], selectedMenuKey);
-            const group = manufacturingWorkspace ? sideMenuItems.find((item) => item.children && findWorkspaceMenuItem(item.children, selectedMenuKey)) : null;
+            const group = manufacturingMenuGroup;
             return [{ title: activeModuleSwitcherItem?.label ?? currentNavigationItem.label }, ...(group ? [{ title: group.label }] : []), { title: selected?.label ?? currentNavigationItem.label }];
         }
         return [
             activeTopSection ? { title: activeTopSection.label } : null,
             currentNavigationItem ? { title: currentNavigationItem.label } : null,
         ].filter(Boolean);
-    }, [activeTopSection, currentNavigationItem, inModule, activeWorkspaceNavigation, selectedMenuKey, activeModuleSwitcherItem, manufacturingWorkspace, sideMenuItems]);
+    }, [activeTopSection, currentNavigationItem, inModule, activeWorkspaceNavigation, selectedMenuKey, activeModuleSwitcherItem, manufacturingMenuGroup]);
 
     const shouldShowBreadcrumb = useMemo(() => {
         const appStoreParent = currentNavigationItem?.route === normalizeRoute('/modules') && location.pathname.startsWith(`${normalizeRoute('/modules')}/`);
@@ -994,6 +999,8 @@ export default function AdminLayout() {
                     />
                 </Header>
             ) : null}
+
+            {manufacturingMenuGroup ? <ManufacturingSiblingNavigation group={manufacturingMenuGroup} selectedKey={selectedMenuKey} /> : null}
 
             <Drawer
                 title={inModule ? activeModuleSwitcherItem?.label ?? 'Điều hướng ứng dụng' : 'Điều hướng admin'}

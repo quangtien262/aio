@@ -8,6 +8,7 @@ use Brick\Math\BigDecimal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Inventory\Services\InventoryProductionService;
+use Modules\Manufacturing\Services\ManufacturingCode;
 use Modules\Manufacturing\Services\ManufacturingData as D;
 use Modules\Purchasing\Services\PurchasingProductionService;
 use Modules\Purchasing\Services\PurchasingService;
@@ -23,9 +24,10 @@ final class MaterialService
         }
         if ($operation === 'material.receive') {
             abort_unless($actor->canAccess('manufacturing.settings', 'global'), 403, 'Nhập tồn đầu kỳ cần quyền thiết lập.');
-            $v = validator($data, ['code' => 'required|string|max:80', 'roll_code' => 'required|string|max:100',
+            $data = ManufacturingCode::fill($data, 'roll_code', 'CK', 'inv_trace_units', column: 'code');
+            $v = validator($data, ['code' => 'nullable|string|max:80', 'roll_code' => 'required|string|max:100',
                 'quantity' => 'required', 'unit_cost' => 'required', 'reason' => 'required|string|min:5|max:1000'])->validate();
-            $sku = $this->sku($factory, $v['code']);
+            $sku = $this->receiptSku($factory, $data, $actor);
 
             return $this->inventory->createRoll(['warehouse_id' => $factory->warehouse_id, 'sku_id' => $sku->id,
                 'code' => $v['roll_code'], 'quantity' => (string) D::decimal($v['quantity']), 'unit_cost' => (string) D::decimal($v['unit_cost'], true),
@@ -148,6 +150,11 @@ final class MaterialService
         if ($operation === 'procurement.receive') {
             $lines = [];
             foreach ($data['lines'] ?? [] as $line) {
+                if (isset($line['rolls']) && is_array($line['rolls'])) {
+                    $line['rolls'] = array_map(fn (array $roll) => ManufacturingCode::fill($roll, 'code', 'CK', 'inv_trace_units'), $line['rolls']);
+                } else {
+                    $line = ManufacturingCode::fill($line, 'roll_code', 'CK', 'inv_trace_units', column: 'code');
+                }
                 $lineId = $line['order_line_id'] ?? '';
                 $source = DB::table('purchase_order_lines')->where(is_string($lineId) && Str::isUuid($lineId) ? 'public_id' : 'id', $lineId)->where('order_id', $po->id)->first();
                 abort_unless($source, 422, 'Dòng nhận không thuộc đơn mua.');
@@ -179,6 +186,18 @@ final class MaterialService
         abort_unless($roll, 404, 'Cuộn không thuộc kho đang quản trị.');
 
         return $roll;
+    }
+
+    private function receiptSku(object $factory, array $data, Admin $actor): object
+    {
+        if (! ManufacturingCode::missing($data['code'] ?? null)) {
+            return $this->sku($factory, $data['code']);
+        }
+        $v = validator($data, ['name' => 'required|string|max:255', 'uom' => 'required|string|max:24|regex:/^[A-Za-z0-9._-]+$/'])->validate();
+        $sku = app(\Modules\Manufacturing\Services\Setup\ManufacturingSetupService::class)->dispatch($actor, 'sku.save',
+            ['factory' => $factory], ['name' => $v['name'], 'base_unit' => $v['uom'], 'quantity_scale' => 6, 'tracking_mode' => 'batch']);
+
+        return $this->sku($factory, $sku['sku']);
     }
 
     private function sku(object $factory, int|string $code): object

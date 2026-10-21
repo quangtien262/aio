@@ -5,9 +5,11 @@ namespace Modules\Manufacturing\Services\Setup;
 use App\Models\Admin;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Modules\Inventory\Services\InventoryProductionService;
 use Modules\Inventory\Services\InventoryV2Service;
 use Modules\Manufacturing\Services\Access\ManufacturingAccessService;
+use Modules\Manufacturing\Services\ManufacturingCode;
 use Modules\Manufacturing\Services\ManufacturingData as D;
 use Modules\Manufacturing\Services\Runtime\ManufacturingRuntimeState;
 use Modules\Merchandise\Services\MerchandiseService;
@@ -21,6 +23,7 @@ class ManufacturingSetupService
 
         return match ($operation) {
             'company.create' => $this->company($actor, $data),
+            'company.update' => $this->updateCompany($actor, $scope, $data, $resource),
             'factory.create' => $this->factory($actor, $scope, $data),
             'workshop.create', 'line.create', 'shift.create' => $this->unit($actor, $operation, $scope, $data),
             'membership.save' => $this->membership($actor, $scope, $data, $resource),
@@ -32,6 +35,7 @@ class ManufacturingSetupService
 
     private function company(Admin $actor, array $data): array
     {
+        $data = ManufacturingCode::fill($data, 'code', 'DN', 'mfg_companies');
         $v = validator($data, ['code' => 'required|string|max:40|regex:/^[A-Za-z0-9._-]+$/|unique:mfg_companies,code', 'name' => 'required|string|max:255', 'timezone' => 'sometimes|timezone'])->validate();
         abort_unless($actor->canAccess('merchandise.manage', 'global'), 403, 'Tạo danh mục doanh nghiệp cần quyền Merchandise toàn cục.');
         $public = (string) Str::uuid();
@@ -41,6 +45,23 @@ class ManufacturingSetupService
         D::insert('mfg_memberships', ['company_id' => $id, 'factory_id' => null, 'admin_id' => $actor->id, 'role' => 'manager', 'status' => 'active']);
 
         return D::resource(DB::table('mfg_companies')->find($id));
+    }
+
+    private function updateCompany(Admin $actor, array $scope, array $data, ?string $resource): array
+    {
+        abort_unless($resource, 422, 'Cần chọn doanh nghiệp cần sửa.');
+        $company = app(ManufacturingAccessService::class)->company($actor, $resource, 'manufacturing.settings', true);
+        abort_if(isset($scope['company']) && (int) $scope['company']->id !== (int) $company->id, 403, 'Doanh nghiệp không thuộc phạm vi giao dịch.');
+        $row = D::row('mfg_companies', (int) $company->id, lock: true);
+        $data = ManufacturingCode::fill($data, 'code', 'DN', 'mfg_companies', [], $row->code);
+        $v = validator($data, [
+            'code' => ['required', 'string', 'max:40', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique('mfg_companies', 'code')->ignore($row->id)],
+            'name' => 'required|string|max:255', 'timezone' => 'sometimes|timezone', 'expected_version' => 'required|integer|min:1',
+        ], ['code.unique' => 'Mã công ty đã tồn tại.'])->validate();
+        $version = $v['expected_version'];
+        unset($v['expected_version']);
+
+        return D::resource(D::update('mfg_companies', $row, $v, $version));
     }
 
     private function factory(Admin $actor, array $scope, array $data): array
@@ -82,7 +103,13 @@ class ManufacturingSetupService
     private function unit(Admin $actor, string $operation, array $scope, array $data): array
     {
         $factory = $this->scopedFactory($actor, $scope, $data);
-        $rules = ['code' => 'required|string|max:50|regex:/^[A-Za-z0-9._-]+$/', 'name' => 'required|string|max:255'];
+        if (is_string($data['code'] ?? null)) {
+            $data['code'] = trim($data['code']);
+            if ($data['code'] === '') {
+                $data['code'] = null;
+            }
+        }
+        $rules = ['code' => 'nullable|string|max:50|regex:/^[A-Za-z0-9._-]+$/', 'name' => 'required|string|max:255'];
         if ($operation === 'line.create') {
             $rules += ['workshop_id' => 'nullable|uuid', 'capacity_minutes' => 'sometimes|numeric|min:0'];
         }
@@ -96,6 +123,15 @@ class ManufacturingSetupService
         $table = match ($operation) {
             'workshop.create' => 'mfg_workshops', 'line.create' => 'mfg_lines', 'shift.create' => 'mfg_shifts'
         };
+        // Serialize both manual and automatic unit codes in this factory
+        // within the command transaction; the unique index remains the guard.
+        DB::table('mfg_factories')->where('id', $factory->id)->lockForUpdate()->first(['id']);
+        if (! isset($v['code'])) {
+            $sequence = DB::table($table)->where('factory_id', $factory->id)->count() + 1;
+            do {
+                $v['code'] = (match ($operation) { 'workshop.create' => 'PX', 'line.create' => 'CM', 'shift.create' => 'CA' }).str_pad((string) $sequence++, 6, '0', STR_PAD_LEFT);
+            } while (DB::table($table)->where('factory_id', $factory->id)->where('code', $v['code'])->exists());
+        }
         abort_if(DB::table($table)->where('factory_id', $factory->id)->where('code', $v['code'])->exists(), 422, 'Mã đơn vị đã tồn tại tại nhà máy.');
 
         return D::resource(D::insert($table, $v + ['company_id' => $factory->company_id, 'factory_id' => $factory->id, 'status' => 'active']));
@@ -139,6 +175,8 @@ class ManufacturingSetupService
         $catalogId = (int) D::json($company->settings)['catalog_id'];
         $sku = $resource ? DB::table('merch_skus')->where('public_id', $resource)->where('catalog_id', $catalogId)->first() : null;
         abort_if($resource && ! $sku, 404);
+
+        $data = ManufacturingCode::fill($data, 'sku', 'VT', 'merch_skus', ['catalog_id' => $catalogId], $sku?->sku);
 
         return D::resource(app(MerchandiseService::class)->saveSku($catalogId, $data + ['tracking_mode' => $sku?->tracking_mode ?? 'batch'], $sku?->id));
     }

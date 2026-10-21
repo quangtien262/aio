@@ -7,6 +7,7 @@ use Brick\Math\BigDecimal;
 use Illuminate\Support\Facades\DB;
 use Modules\Manufacturing\Services\Access\ManufacturingAccessService;
 use Modules\Manufacturing\Services\Engineering\EngineeringService;
+use Modules\Manufacturing\Services\ManufacturingCode;
 use Modules\Manufacturing\Services\ManufacturingData as D;
 
 final class PlanningService
@@ -15,13 +16,15 @@ final class PlanningService
 
     public function demand(object $factory, array $data, ?string $resource): array
     {
+        $existing = $resource ? D::row('mfg_demands', $resource, $factory->company_id, $factory->id, true) : null;
+        $data = ManufacturingCode::fill($data, 'code', 'NC', 'mfg_demands', ['company_id' => $factory->company_id], $existing?->code);
         $v = validator($data, ['code' => 'required|string|max:60', 'style_id' => 'required|uuid',
             'type' => 'required|in:order,forecast,replenishment', 'due_date' => 'required|date_format:Y-m-d',
             'customer_name' => 'nullable|string|max:255', 'forecast_id' => 'nullable|uuid', 'lines' => 'required|array|min:1|max:400'])->validate();
         $style = D::row('mfg_styles', $v['style_id'], $factory->company_id);
         $revision = $this->engineering->currentRevision($style);
         abort_unless($revision->status === 'approved', 422, 'Chọn mã hàng có phiên bản kỹ thuật đã duyệt.');
-        $old = $resource ? D::row('mfg_demands', $resource, $factory->company_id, $factory->id, true) : null;
+        $old = $existing;
         if ($old) {
             abort_unless($old->source_type === ($v['type'] === 'order' ? 'customer_order' : $v['type']), 409, 'Không đổi loại nguồn của nhu cầu; tạo nhu cầu mới có liên kết thay thế.');
             abort_if(DB::table('mfg_orders')->where('demand_id', $old->id)->where('status', '!=', 'cancelled')->exists(), 409, 'Nhu cầu đã có lệnh; tạo thay đổi có kiểm soát thay vì sửa trực tiếp.');
@@ -81,6 +84,8 @@ final class PlanningService
 
     public function order(object $factory, array $data, ?string $resource, Admin $actor): array
     {
+        $existing = $resource ? D::row('mfg_orders', $resource, $factory->company_id, $factory->id, true) : null;
+        $data = ManufacturingCode::fill($data, 'code', 'LSX', 'mfg_orders', ['company_id' => $factory->company_id], $existing?->code);
         $v = validator($data, ['code' => 'required|string|max:60', 'demand_id' => 'required|uuid', 'lines' => 'required|array|min:1|max:400',
             'workshop_id' => 'required|uuid', 'line_id' => 'nullable|uuid', 'planned_start' => 'nullable|date_format:Y-m-d', 'planned_end' => 'nullable|date_format:Y-m-d'])->validate();
         $demand = D::row('mfg_demands', $v['demand_id'], $factory->company_id, lock: true);
@@ -91,7 +96,7 @@ final class PlanningService
         $workshop = D::row('mfg_workshops', $v['workshop_id'], $factory->company_id, $factory->id);
         $line = ! empty($v['line_id']) ? D::row('mfg_lines', $v['line_id'], $factory->company_id, $factory->id) : null;
         abort_if($line && (int) $line->workshop_id !== (int) $workshop->id, 422, 'Chuyền không thuộc phân xưởng.');
-        $old = $resource ? D::row('mfg_orders', $resource, $factory->company_id, $factory->id, true) : null;
+        $old = $existing;
         abort_if($old && $old->status !== 'draft', 409, 'Chỉ sửa lệnh nháp.');
         abort_if($old && (D::json($old->metadata)['schedule']['status'] ?? null) === 'committed', 409, 'Kế hoạch đã chốt; dùng điều chỉnh lịch có lý do.');
         if ($old) {

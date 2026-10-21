@@ -72,8 +72,9 @@ class ManufacturingReadService
             $bootstrap['operations'] = [
                 'outbox' => DB::table('mfg_outbox')->where('company_id', $factory->company_id)->where('factory_id', $factory->id)
                     ->latest('id')->limit(100)->get(['event_id', 'event_type', 'aggregate_type', 'aggregate_id', 'aggregate_version', 'destination', 'status', 'attempts', 'available_at', 'delivered_at', 'last_error'])->map(fn ($r) => (array) $r)->all(),
-                'commands' => DB::table('mfg_commands')->where('factory_id', $factory->id)->where('actor_id', $actor->id)
-                    ->latest('id')->limit(100)->get(['public_id', 'operation', 'status', 'created_at', 'updated_at'])->map(fn ($r) => (array) $r)->all(),
+                'commands' => DB::table('mfg_commands as c')->leftJoin('admins as a', 'a.id', '=', 'c.actor_id')
+                    ->where('c.factory_id', $factory->id)->where('c.actor_id', $actor->id)
+                    ->latest('c.id')->limit(100)->get(['c.public_id', 'c.operation', 'c.actor_id', 'a.name as actor_name', 'c.status', 'c.created_at', 'c.updated_at'])->map(fn ($r) => (array) $r)->all(),
             ];
 
             return $bootstrap + ['items' => [], 'total' => 0];

@@ -1,0 +1,6 @@
+.inventory-workspace,
+.inventory-workspace > .ant-space-item { min-width: 0; max-width: 100%; }
+.inventory-workspace .ant-table-thead > tr > th { white-space: nowrap; }
+.inventory-workspace .ant-card-head { flex-wrap: wrap; gap: 8px; }
+.inventory-workspace .ant-card-head-wrapper { flex-wrap: wrap; gap: 8px; width: 100%; }
+.inventory-workspace .ant-card-extra { margin-inline-start: 0; }

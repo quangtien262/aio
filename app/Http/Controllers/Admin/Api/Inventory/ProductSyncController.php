@@ -13,7 +13,7 @@ class ProductSyncController
         $run = $syncService->sync($request->user('admin')?->id);
 
         return response()->json([
-            'message' => 'Da dong bo san pham sang hang hoa kho.',
+            'message' => 'Đã đồng bộ sản phẩm sang hàng hóa kho.',
             'data' => InventoryDataSerializer::syncRun($run),
         ]);
     }

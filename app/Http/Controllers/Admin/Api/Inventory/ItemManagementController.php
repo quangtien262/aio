@@ -27,7 +27,7 @@ class ItemManagementController
         $record->update($validated);
 
         return response()->json([
-            'message' => 'Da cap nhat cau hinh hang hoa.',
+            'message' => 'Đã cập nhật cấu hình hàng hóa.',
             'data' => InventoryDataSerializer::item($record->fresh(['catalogProduct'])->loadSum('balances', 'quantity_on_hand')),
         ]);
     }

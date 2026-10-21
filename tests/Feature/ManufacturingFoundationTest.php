@@ -84,7 +84,7 @@ class ManufacturingFoundationTest extends TestCase
     public function test_readiness_guidance_only_exposes_app_store_to_global_store_viewers(): void
     {
         $this->actingAs($this->owner, 'admin')->getJson('/admin/api/manufacturing/bootstrap')
-            ->assertOk()->assertJsonPath('data.readiness.can_open_app_store', true)
+            ->assertOk()->assertJsonPath('data.readiness.can_open_app_store', true)->assertJsonPath('data.timezones', timezone_identifiers_list())
             ->assertJsonFragment(['code' => 'purchasing', 'message' => 'Cần cài và bật Mua hàng và nhà cung cấp để vận hành mua nguyên liệu FOB.']);
 
         $actor = $this->operator('global');
@@ -92,6 +92,25 @@ class ManufacturingFoundationTest extends TestCase
         $this->actingAs($actor, 'admin')->getJson('/admin/api/manufacturing/bootstrap?factory_id='.$this->factory->public_id)
             ->assertOk()->assertJsonPath('data.readiness.can_open_app_store', false)
             ->assertJsonPath('data.current_website', null);
+    }
+
+    public function test_settings_journal_returns_creator_name_without_expanding_actor_or_factory_scope(): void
+    {
+        $this->actingAs($this->owner, 'admin')->postJson('/admin/api/manufacturing/commands/workshop.create',
+            ['factory_id' => $this->factory->public_id, 'data' => ['name' => 'Workshop with creator']],
+            ['Idempotency-Key' => 'creator-workshop-test'])->assertOk();
+        $entry = (array) DB::table('mfg_commands')->first();
+        unset($entry['id']);
+        $otherActor = Admin::factory()->create(['name' => 'Other creator', 'must_change_password' => false]);
+        $otherFactory = D::insert('mfg_factories', ['company_id' => $this->company->id, 'code' => 'OTHER', 'name' => 'Other factory', 'status' => 'active']);
+        DB::table('mfg_commands')->insert(array_replace($entry, ['public_id' => (string) Str::uuid(), 'actor_id' => $otherActor->id, 'command_key' => 'other-creator-test']));
+        DB::table('mfg_commands')->insert(array_replace($entry, ['public_id' => (string) Str::uuid(), 'factory_id' => $otherFactory->id, 'command_key' => 'other-factory-test']));
+
+        $result = app(ManufacturingReadService::class)->read($this->owner, 'settings', $this->factory->public_id);
+        $this->assertCount(1, $result['operations']['commands']);
+        $this->assertSame($this->owner->id, $result['operations']['commands'][0]['actor_id']);
+        $this->assertSame($this->owner->name, $result['operations']['commands'][0]['actor_name']);
+        $this->assertArrayNotHasKey('email', $result['operations']['commands'][0]);
     }
 
     public function test_command_is_atomic_replays_and_rechecks_membership(): void
@@ -184,6 +203,68 @@ class ManufacturingFoundationTest extends TestCase
         });
     }
 
+    public function test_company_update_preserves_links_replays_and_rejects_stale_or_invalid_data(): void
+    {
+        $setup = app(ManufacturingSetupService::class);
+        [$company, $factory] = DB::transaction(function () use ($setup): array {
+            $company = $setup->dispatch($this->owner, 'company.create', [], ['code' => 'EDIT', 'name' => 'Original company']);
+            $row = DB::table('mfg_companies')->where('public_id', $company['id'])->first();
+
+            return [$company, $setup->dispatch($this->owner, 'factory.create', ['company' => $row], ['code' => 'EDIT-F', 'name' => 'Factory'])];
+        });
+        $catalogId = $company['settings']['catalog_id'];
+        $catalogBefore = (array) DB::table('merch_catalogs')->find($catalogId);
+        $warehouseBefore = (array) DB::table('inv_warehouses')->find($factory['warehouse_id']);
+        $this->actingAs($this->owner, 'admin');
+        $payload = ['factory_id' => $factory['id'], 'resource' => $company['id'], 'data' => [
+            'code' => 'EDIT-NEW', 'name' => 'Updated company', 'timezone' => 'Asia/Bangkok', 'expected_version' => 1,
+            'settings' => ['catalog_id' => 999999], 'status' => 'inactive',
+        ]];
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $payload, ['Idempotency-Key' => 'update-company-once'])
+            ->assertOk()->assertJsonPath('data.name', 'Updated company')->assertJsonPath('data.code', 'EDIT-NEW')->assertJsonPath('data.version', 2);
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $payload, ['Idempotency-Key' => 'update-company-once'])
+            ->assertOk()->assertJsonPath('data.replayed', true)->assertJsonPath('data.version', 2);
+        $row = DB::table('mfg_companies')->where('public_id', $company['id'])->first();
+        $this->assertSame($company['settings'], D::json($row->settings));
+        $this->assertSame('active', $row->status);
+        $this->assertSame('Asia/Bangkok', $row->timezone);
+        $this->assertSame($catalogBefore, (array) DB::table('merch_catalogs')->find($catalogId));
+        $this->assertSame($warehouseBefore, (array) DB::table('inv_warehouses')->find($factory['warehouse_id']));
+        $this->assertDatabaseHas('mfg_factories', ['public_id' => $factory['id'], 'company_id' => $row->id, 'timezone' => 'Asia/Ho_Chi_Minh']);
+        $this->assertSame(1, DB::table('mfg_outbox')->where('event_type', 'manufacturing.company.update')->count());
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $payload, ['Idempotency-Key' => 'update-company-stale'])->assertConflict();
+        $payload['data']['expected_version'] = 2;
+        $payload['data']['code'] = $this->company->code;
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $payload, ['Idempotency-Key' => 'update-company-duplicate'])->assertUnprocessable();
+        $payload['data']['code'] = 'EDIT-NEW';
+        $payload['data']['timezone'] = 'invalid-timezone';
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $payload, ['Idempotency-Key' => 'update-company-invalid'])->assertUnprocessable();
+        $this->assertDatabaseHas('mfg_companies', ['id' => $row->id, 'version' => 2]);
+    }
+
+    public function test_company_update_requires_company_wide_grant_and_rechecks_it_on_replay(): void
+    {
+        $actor = $this->operator('global');
+        $role = Role::query()->where('key', 'manufacturing.manager')->firstOrFail();
+        AdminRoleAssignment::query()->create(['admin_id' => $actor->id, 'role_id' => $role->id, 'scope_type' => 'global', 'scope_value' => null]);
+        DB::table('mfg_memberships')->where('admin_id', $actor->id)->update(['role' => 'manager']);
+        $this->actingAs($actor->fresh(), 'admin');
+        $payload = ['resource' => $this->company->public_id, 'data' => ['code' => $this->company->code, 'name' => 'Company manager edit', 'expected_version' => 1]];
+        $this->getJson('/admin/api/manufacturing/bootstrap')->assertOk()->assertJsonPath('data.companies.0.can_manage', false);
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $payload, ['Idempotency-Key' => 'factory-manager-denied'])->assertForbidden();
+        DB::table('mfg_memberships')->where('admin_id', $actor->id)->update(['factory_id' => null]);
+        $this->actingAs($actor->fresh(), 'admin');
+        $this->getJson('/admin/api/manufacturing/bootstrap')->assertOk()->assertJsonPath('data.companies.0.can_manage', true);
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $payload, ['Idempotency-Key' => 'company-manager-allowed'])->assertOk()->assertJsonPath('data.version', 2);
+        $other = DB::table('mfg_companies')->insertGetId(['public_id' => (string) Str::uuid(), 'code' => 'OTHER-EDIT', 'name' => 'Other', 'status' => 'active', 'created_at' => now(), 'updated_at' => now()]);
+        $foreign = $payload;
+        $foreign['resource'] = DB::table('mfg_companies')->where('id', $other)->value('public_id');
+        $foreign['data']['company_id'] = $this->company->public_id;
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $foreign, ['Idempotency-Key' => 'company-manager-foreign'])->assertForbidden();
+        DB::table('mfg_memberships')->where('admin_id', $actor->id)->update(['status' => 'inactive']);
+        $this->postJson('/admin/api/manufacturing/commands/company.update', $payload, ['Idempotency-Key' => 'company-manager-allowed'])->assertForbidden();
+    }
+
     public function test_factory_commands_generate_optional_codes_and_replay_without_extra_factories_or_warehouses(): void
     {
         $setup = app(ManufacturingSetupService::class);
@@ -214,6 +295,66 @@ class ManufacturingFoundationTest extends TestCase
         $create(['code' => []], 'invalid-factory-0002')->assertUnprocessable();
         $this->assertSame(5, DB::table('mfg_factories')->where('company_id', $companyId)->count());
         $create(['code' => '0'], 'manual-factory-zero')->assertOk()->assertJsonPath('data.code', '0');
+    }
+
+    public function test_workshop_codes_are_optional_unique_per_factory_and_stable_on_replay(): void
+    {
+        $this->actingAs($this->owner, 'admin');
+        $create = fn (array $data, string $key, ?string $factory = null) => $this->postJson('/admin/api/manufacturing/commands/workshop.create',
+            ['factory_id' => $factory ?? $this->factory->public_id, 'data' => ['name' => 'Workshop '.$key] + $data], ['Idempotency-Key' => $key]);
+        $create(['code' => 'PX000002'], 'manual-workshop-0001')->assertOk()->assertJsonPath('data.code', 'PX000002');
+        $codes = [];
+        foreach ([[], ['code' => null], ['code' => ''], ['code' => '   ']] as $index => $input) {
+            $key = 'automatic-workshop-000'.$index;
+            $response = $create($input, $key)->assertOk();
+            $code = $response->json('data.code');
+            $this->assertMatchesRegularExpression('/^PX[0-9]{6,}$/', $code);
+            $this->assertNotSame('PX000002', $code);
+            $codes[] = $code;
+            $create($input, $key)->assertOk()->assertJsonPath('data.code', $code)->assertJsonPath('data.replayed', true);
+        }
+        $this->assertCount(4, array_unique($codes));
+        $this->assertSame(5, DB::table('mfg_workshops')->where('factory_id', $this->factory->id)->count());
+        $create(['code' => 'PX000002'], 'duplicate-workshop-0001')->assertUnprocessable();
+        $create(['code' => 'invalid code!'], 'invalid-workshop-0001')->assertUnprocessable();
+        $create(['code' => []], 'invalid-workshop-0002')->assertUnprocessable();
+        $create(['code' => '0'], 'manual-workshop-zero')->assertOk()->assertJsonPath('data.code', '0');
+        $other = D::insert('mfg_factories', ['company_id' => $this->company->id, 'code' => 'PX-OTHER', 'name' => 'Other factory', 'status' => 'active']);
+        $create([], 'other-factory-workshop', $other->public_id)->assertOk()->assertJsonPath('data.code', 'PX000001');
+        $actor = $this->operator('global');
+        $this->actingAs($actor, 'admin');
+        $create([], 'operator-workshop-denied')->assertForbidden();
+        $this->assertSame(7, DB::table('mfg_workshops')->count());
+    }
+
+    public function test_line_codes_are_optional_unique_per_factory_and_stable_on_replay(): void
+    {
+        $this->actingAs($this->owner, 'admin');
+        $create = fn (array $data, string $key, ?string $factory = null) => $this->postJson('/admin/api/manufacturing/commands/line.create',
+            ['factory_id' => $factory ?? $this->factory->public_id, 'data' => ['name' => 'Line '.$key] + $data], ['Idempotency-Key' => $key]);
+        $create(['code' => 'CM000002'], 'manual-line-0001')->assertOk()->assertJsonPath('data.code', 'CM000002');
+        $codes = [];
+        foreach ([[], ['code' => null], ['code' => ''], ['code' => '   ']] as $index => $input) {
+            $key = 'automatic-line-000'.$index;
+            $response = $create($input, $key)->assertOk();
+            $code = $response->json('data.code');
+            $this->assertMatchesRegularExpression('/^CM[0-9]{6,}$/', $code);
+            $this->assertNotSame('CM000002', $code);
+            $codes[] = $code;
+            $create($input, $key)->assertOk()->assertJsonPath('data.code', $code)->assertJsonPath('data.replayed', true);
+        }
+        $this->assertCount(4, array_unique($codes));
+        $this->assertSame(5, DB::table('mfg_lines')->where('factory_id', $this->factory->id)->count());
+        $create(['code' => 'CM000002'], 'duplicate-line-0001')->assertUnprocessable();
+        $create(['code' => 'invalid code!'], 'invalid-line-0001')->assertUnprocessable();
+        $create(['code' => []], 'invalid-line-0002')->assertUnprocessable();
+        $create(['code' => '0'], 'manual-line-zero')->assertOk()->assertJsonPath('data.code', '0');
+        $other = D::insert('mfg_factories', ['company_id' => $this->company->id, 'code' => 'CM-OTHER', 'name' => 'Other factory', 'status' => 'active']);
+        $create([], 'other-factory-line', $other->public_id)->assertOk()->assertJsonPath('data.code', 'CM000001');
+        $actor = $this->operator('global');
+        $this->actingAs($actor, 'admin');
+        $create([], 'operator-line-denied')->assertForbidden();
+        $this->assertSame(7, DB::table('mfg_lines')->count());
     }
 
     public function test_paginated_reads_scope_parent_and_serialize_uuid_links(): void

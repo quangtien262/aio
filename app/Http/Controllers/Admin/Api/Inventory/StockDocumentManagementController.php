@@ -39,7 +39,7 @@ class StockDocumentManagementController
         $document = $stockService->createDocument($validated, $request->user('admin')?->id);
 
         return response()->json([
-            'message' => 'Da tao va post phieu kho.',
+            'message' => 'Đã tạo và ghi sổ phiếu kho.',
             'data' => InventoryDataSerializer::document($document),
         ], 201);
     }
@@ -48,7 +48,7 @@ class StockDocumentManagementController
     {
         $record = InvStockDocument::query()->findOrFail($document);
 
-        abort(422, 'Phieu kho da post khong ho tro xoa trong phase 1.');
+        abort(422, 'Phiếu kho đã ghi sổ không hỗ trợ xóa.');
     }
 
     private function validateWarehouseRequirements(array $payload): void
@@ -58,15 +58,15 @@ class StockDocumentManagementController
         $destinationWarehouseId = $payload['destination_warehouse_id'] ?? null;
 
         if (in_array($type, ['issue', 'transfer'], true) && ! $sourceWarehouseId) {
-            abort(422, 'Phieu xuat/chuyen kho can kho nguon.');
+            abort(422, 'Phiếu xuất/chuyển kho cần kho nguồn.');
         }
 
         if (in_array($type, ['receipt', 'transfer', 'adjustment'], true) && ! $destinationWarehouseId) {
-            abort(422, 'Phieu nhap/chuyen/dieu chinh can kho dich.');
+            abort(422, 'Phiếu nhập/chuyển/điều chỉnh cần kho đích.');
         }
 
         if ($type === 'transfer' && (int) $sourceWarehouseId === (int) $destinationWarehouseId) {
-            abort(422, 'Kho nguon va kho dich phai khac nhau.');
+            abort(422, 'Kho nguồn và kho đích phải khác nhau.');
         }
     }
 
@@ -80,6 +80,6 @@ class StockDocumentManagementController
             default => null,
         };
 
-        abort_if(! $permission || ! $request->user('admin')?->hasPermission($permission), 403, 'Ban khong co quyen tao loai phieu kho nay.');
+        abort_if(! $permission || ! $request->user('admin')?->hasPermission($permission), 403, 'Bạn không có quyền tạo loại phiếu kho này.');
     }
 }

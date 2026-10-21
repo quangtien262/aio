@@ -127,8 +127,8 @@
     },
     {
       "key": "inventory-batches",
-      "label": "Lô & Serial",
-      "description": "Theo dõi lô hàng, hạn sử dụng và số serial.",
+      "label": "Lô & số sê-ri",
+      "description": "Theo dõi lô hàng, hạn sử dụng và số sê-ri.",
       "badge": "Truy xuất",
       "color": "magenta",
       "icon": "tags",

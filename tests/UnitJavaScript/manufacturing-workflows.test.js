@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { webcrypto } from 'node:crypto';
 import { createManufacturingApi } from '../../resources/admin/src/modules/manufacturing/api/manufacturingApi.js';
-import { commands, commandPayload, sectionForMenu } from '../../resources/admin/src/modules/manufacturing/utils/manufacturingForms.js';
+import { commands, commandPayload, sectionForMenu, manufacturingOperationLabel } from '../../resources/admin/src/modules/manufacturing/utils/manufacturingForms.js';
 
 if (!globalThis.crypto) Object.defineProperty(globalThis, 'crypto', { value: webcrypto });
 const stored = new Map();
@@ -156,4 +156,34 @@ test('document retry derives the same key without storing document content', asy
     await api.uploadDocument('style', 'style-id', file);
     assert.equal(keys[0], keys[1]);
     assert.ok(![...stored.values()].join('').includes('PRIVATE'));
+});
+
+
+test('operation and outbox labels resolve native and prefixed commands', () => {
+    assert.equal(manufacturingOperationLabel('manufacturing.line.create'), 'Tạo chuyền sản xuất');
+    for (const [operation, definition] of Object.entries(commands)) {
+        const label = manufacturingOperationLabel(operation);
+        assert.equal(manufacturingOperationLabel(`manufacturing.${operation}`), label);
+        assert.equal(label, ({ 'line.create': 'Tạo chuyền sản xuất', 'material.stocktake': 'Kiểm kê nguyên phụ liệu' })[operation] ?? definition.title);
+    }
+    assert.equal(manufacturingOperationLabel('manufacturing.material.stocktake'), 'Kiểm kê nguyên phụ liệu');
+    assert.equal(manufacturingOperationLabel(null), '—');
+    assert.equal(manufacturingOperationLabel('manufacturing.future.event'), 'manufacturing.future.event');
+});
+
+
+test('blank create codes are sent for server allocation while existing material references remain explicit', () => {
+    const opening = commandPayload('material.receive', { name: 'Vải mới', code: '  ', roll_code: '', lot_code: 'LOT-A', shade: 'A', quantity: '2.5', uom: 'm', unit_cost: '0.125', reason: 'Kiểm kê đầu kỳ' });
+    assert.equal(opening.code, undefined);
+    assert.equal(opening.roll_code, undefined);
+    assert.equal(opening.name, 'Vải mới');
+    assert.equal(opening.quantity, '2.5');
+    assert.equal(commandPayload('shift.create', { name: 'Ca sáng', starts_at: '08:00', ends_at: '17:00' }).code, undefined);
+    assert.equal(commandPayload('sku.save', { name: 'Vải mới', base_unit: 'm', tracking_mode: 'batch', quantity_scale: 6 }).sku, undefined);
+    const style = { name: 'Áo', colors: ['Đen'], sizes: ['S'], bom: [{ material_code: 'VT-EXISTING', uom: 'm', quantity: 1 }], routing: [{ name: 'May', smv: 5 }] };
+    const saved = commandPayload('style.save', style);
+    assert.equal(saved.code, undefined);
+    assert.equal(saved.routing[0].code, undefined);
+    assert.equal(saved.bom[0].material_code, 'VT-EXISTING');
+    assert.throws(() => commandPayload('style.save', { ...style, bom: [{ uom: 'm', quantity: 1 }] }), /mã vật tư/);
 });

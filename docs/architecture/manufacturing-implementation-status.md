@@ -52,6 +52,12 @@ Bổ sung UI cùng ngày: logo header về `/admin` để khởi tạo lại Cor
 
 Trang Thiết lập được thiết kế lại với tổng quan nhà máy, bốn thẻ số liệu theo phạm vi, bốn nhóm thiết lập nội bộ và sơ đồ phân xưởng–chuyền. Component [ManufacturingSettings](../../resources/admin/src/modules/manufacturing/components/ManufacturingSettings.jsx) và CSS riêng giữ command drawer/quyền hiện hữu. Lượt kiểm tra UI riêng: build, **17 tests JavaScript**, [hành trình Thiết lập](../../tests/browser/manufacturing-settings.spec.js) desktop 1047 px/mobile 390 px và hành trình kỹ thuật/PP/tài liệu của browser Manufacturing đạt trên SQLite cô lập. Có tạo nhà máy mã NM tự động, phân xưởng, chuyền và ca thật trong fixture; mở phân quyền/pause mà không xác nhận pause. Chưa chạy lại toàn PHP suite cho thay đổi giao diện này.
 
+Cơ cấu tổ chức trong `ManufacturingOrganization` dùng bảng phân cấp gọn, mỗi đơn vị một dòng, thay các khung lồng nhiều tầng. Đầu trang Thiết lập bỏ banner nhà máy/thẻ số liệu và thu gọn tiêu đề để bảng xuất hiện ngay trong màn hình đầu. Bảng có cột trực thuộc, số lượng/năng lực, tìm kiếm không dấu và phân trang 25/50/100; giữ mọi đơn vị được cấp quyền trong tập dữ liệu. Nhà máy đang chọn được đánh dấu tại dòng và có nút tạo phân xưởng/chuyền; thêm chuyền tại dòng phân xưởng điền sẵn workshop_id. Các tab nhân sự/ca/nhật ký vẫn dùng nhà máy đang chọn. UI không mở rộng bootstrap hay thay đổi quyền server.
+
+Doanh nghiệp có nút **Sửa thông tin** theo quyền từng công ty. `company.update` sửa mã/tên/múi giờ mặc định với optimistic version, audit/outbox và idempotency; giữ nguyên định danh và liên kết danh mục/kho/nhà máy. Bootstrap công bố `companies[].can_manage`; quản lý riêng một nhà máy không được sửa master công ty. Lượt kiểm tra riêng: Foundation **33 tests / 326 assertions**, **17 tests JavaScript**, build và browser Thiết lập desktop/mobile đạt trên fixture cô lập; browser xác nhận dữ liệu sửa còn sau reload và mặc định múi giờ theo công ty khi tạo nhà máy. Không phải lượt chạy lại toàn AIO suite.
+
+Mã phân xưởng cũng cho phép bỏ trống, tự cấp prefix `PX` theo nhà máy và giữ mã khi replay. Lượt kiểm tra riêng đạt Foundation **34 tests / 364 assertions**, **14 tests JavaScript**, build và browser Thiết lập với mã phân xưởng để trống trên fixture riêng.
+
 ## 4. Gate còn mở
 
 | Phạm vi | Điều kiện còn lại |

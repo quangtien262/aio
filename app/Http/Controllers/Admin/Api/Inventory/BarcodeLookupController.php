@@ -54,6 +54,6 @@ class BarcodeLookupController
             ]);
         }
 
-        abort(404, 'Khong tim thay barcode/SKU/serial.');
+        abort(404, 'Không tìm thấy mã vạch, SKU hoặc số sê-ri.');
     }
 }
