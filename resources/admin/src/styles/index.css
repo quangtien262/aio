@@ -1601,6 +1601,7 @@ a {
 .dashboard-module-title-row h4.ant-typography {
     font-size: 17px;
     line-height: 1.4;
+    text-transform: uppercase;
 }
 
 .dashboard-module-title-with-icon {

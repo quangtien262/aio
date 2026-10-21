@@ -130,6 +130,26 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')
     ->name('admin.')
     ->group(function (): void {
+        Route::get('/manufacturing/login', [\Modules\Manufacturing\Http\ManufacturingLoginController::class, 'show'])
+            ->middleware(['module.enabled:manufacturing', 'throttle:60,1'])->name('manufacturing.login');
+        Route::post('/manufacturing/login', [\Modules\Manufacturing\Http\ManufacturingLoginController::class, 'store'])
+            ->middleware(['module.enabled:manufacturing', 'throttle:login'])->name('manufacturing.login.store');
+        Route::get('/modules/manufacturing/{any?}', \Modules\Manufacturing\Http\ManufacturingShellController::class)
+            ->where('any', '.*')->middleware(['auth:admin', 'admin.active', 'module.enabled:manufacturing'])
+            ->name('manufacturing.shell');
+        // Enterprise production context is authorized natively, never by a website header.
+        Route::prefix('api/manufacturing')->name('api.manufacturing.')
+            ->middleware(['auth:admin', 'admin.active', 'module.enabled:manufacturing'])
+            ->group(function (): void {
+                Route::put('/me/password', [AdminAccountController::class, 'changeOwnPassword'])->name('me.password.update');
+                Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+                Route::post('/me/two-factor/setup', [AdminTwoFactorController::class, 'setup'])->name('me.two-factor.setup');
+                Route::post('/me/two-factor/confirm', [AdminTwoFactorController::class, 'confirm'])->name('me.two-factor.confirm');
+                Route::delete('/me/two-factor', [AdminTwoFactorController::class, 'disable'])->name('me.two-factor.disable');
+                if (is_file(base_path('modules/Manufacturing/routes.php'))) {
+                    require base_path('modules/Manufacturing/routes.php');
+                }
+            });
         Route::middleware(['auth:admin', 'admin.active', 'admin.website'])->group(function (): void {
             Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 

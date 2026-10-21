@@ -24,8 +24,9 @@ const MinvoiceManagerPage = lazy(() => import('../../modules/accounting-tax/page
 const FnbPosManagerPage = lazy(() => import('../../modules/fnb-pos/pages/FnbPosManagerPage'));
 const RetailPosManagerPage = lazy(() => import('../../modules/retail-pos/pages/RetailPosManagerPage'));
 const CustomersManagerPage = lazy(() => import('../../modules/customers/pages/CustomersManagerPage'));
+const ManufacturingManagerPage = lazy(() => import('../../modules/manufacturing/pages/ManufacturingManagerPage'));
 
-export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentAdmin, currentPermissions }) {
+export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentAdmin, currentPermissions, onWorkspaceNavigationChange }) {
     const resourceEndpointMap = {
         catalog: null,
     };
@@ -189,6 +190,7 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
         return (
             <Suspense fallback={<Card loading title={moduleMenu?.label ?? modulePayload.name} />}>
                 <FnbPosManagerPage
+                    onWorkspaceNavigationChange={onWorkspaceNavigationChange}
                     moduleMenu={moduleMenu}
                     modulePayload={modulePayload}
                     callAdminApi={callAdminApi}
@@ -206,6 +208,10 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
                 <RetailPosManagerPage moduleMenu={moduleMenu} modulePayload={modulePayload} callAdminApi={callAdminApi} runAdminAction={runAdminAction} currentAdmin={currentAdmin} currentPermissions={currentPermissions} />
             </Suspense>
         );
+    }
+
+    if (modulePayload.key === 'manufacturing') {
+        return <Suspense fallback={<Card loading title={moduleMenu?.label ?? 'Sản xuất'} />}><ManufacturingManagerPage moduleMenu={moduleMenu} callAdminApi={callAdminApi} currentAdmin={currentAdmin} currentPermissions={currentPermissions} /></Suspense>;
     }
 
     if (modulePayload.key === 'customers') {

@@ -38,7 +38,7 @@ class InventoryLifecycleHook implements ModuleLifecycleHook
 
     public function preUpgrade(ModuleLifecycleContext $context): void
     {
-        $this->ensureDrained();
+        $this->ensureDrained(allowProductionHolds: true);
     }
 
     public function postUpgrade(ModuleLifecycleContext $context): void
@@ -91,10 +91,19 @@ class InventoryLifecycleHook implements ModuleLifecycleHook
         $role->permissions()->syncWithoutDetaching($permissionIds);
     }
 
-    private function ensureDrained(): void
+    private function ensureDrained(bool $allowProductionHolds = false): void
     {
         foreach (['inv_reservations' => ['active'], 'inv_transfers' => ['dispatched', 'partially_received'], 'inv_stocktakes' => ['counting']] as $table => $statuses) {
-            if (Schema::hasTable($table) && DB::table($table)->whereIn('status', $statuses)->exists()) {
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+            $query = DB::table($table)->whereIn('status', $statuses);
+            if ($allowProductionHolds && $table === 'inv_reservations' && Schema::hasColumn($table, 'purpose')) {
+                // Production holds persist through forward-compatible schema upgrades.
+                // Runtime drain already waits for every stock transaction to finish.
+                $query->where('purpose', '!=', 'production');
+            }
+            if ($query->exists()) {
                 throw new \RuntimeException('Cần đối soát giữ hàng, điều chuyển và kiểm kê trước khi tắt Inventory.');
             }
         }

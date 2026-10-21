@@ -9,6 +9,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use Modules\Customers\Services\CustomerOutboxService;
+use Modules\Manufacturing\Services\Commands\ManufacturingOutboxService;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -57,3 +58,8 @@ Artisan::command('customers:prune-exports', function () {
 })->purpose('Remove expired private customer export files');
 Schedule::command('customers:dispatch-events --limit=100')->everyMinute()->withoutOverlapping(5);
 Schedule::command('customers:prune-exports')->hourly()->withoutOverlapping(10);
+
+Artisan::command('mfg:dispatch-events {--limit=100}', function () {
+    $this->line(json_encode(app(ManufacturingOutboxService::class)->dispatch((int) $this->option('limit')), JSON_THROW_ON_ERROR));
+})->purpose('Deliver production outbox to configured internal handlers with inbox deduplication');
+Schedule::command('mfg:dispatch-events --limit=100')->everyMinute()->withoutOverlapping(5);

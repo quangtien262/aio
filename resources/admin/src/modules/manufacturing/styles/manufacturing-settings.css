@@ -1,0 +1,113 @@
+.mfg-settings-workspace { gap: 22px; }
+.mfg-settings-header { background: linear-gradient(105deg, #fff 30%, #eaf5f4); padding: 26px 28px; border-color: #d8e8e7; }
+.mfg-settings-header h3.ant-typography { font-size: 26px; letter-spacing: -.5px; }
+.mfg-settings { display: grid; gap: 20px; color: #173b44; min-width: 0; }
+.mfg-settings-context { display: flex; align-items: center; gap: 16px; padding: 22px 24px; background: #fff; border: 1px solid #e0eae9; border-radius: 14px; }
+.mfg-settings-context-icon { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 13px; background: #eaf5f3; color: #127c76; font-size: 23px; }
+.mfg-settings-context-copy { min-width: 0; flex: 1; }
+.mfg-settings-context-copy>small { font-size: 10px; font-weight: 700; color: #7b9092; letter-spacing: 1.2px; }
+.mfg-settings-context-copy h4 { font-size: 19px; margin: 4px 0 5px; font-weight: 700; overflow-wrap: anywhere; }
+.mfg-settings-context-copy p { font-size: 12px; line-height: 1.6; color: #70868b; margin: 0; overflow-wrap: anywhere; }
+.mfg-settings-health { display: inline-flex; align-items: center; gap: 7px; color: #23795c; background: #edf8f1; border: 1px solid #dcefe3; padding: 6px 11px; border-radius: 20px; font-size: 12px; white-space: nowrap; }
+.mfg-settings-status-dot { display: inline-block; flex-shrink: 0; height: 6px; width: 6px; background: #39a26a; border-radius: 50%; }
+.mfg-settings-health.is-paused { color: #986413; background: #fff8e8; border-color: #f1dfba; }
+.is-paused .mfg-settings-status-dot { background: #d69b30; }
+.mfg-settings-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.mfg-settings-metric { display: flex; align-items: flex-start; gap: 13px; background: #fff; border: 1px solid #e0eae9; border-radius: 12px; padding: 18px; min-width: 0; }
+.mfg-settings-metric>span { display: grid; place-items: center; width: 34px; height: 34px; background: #eef5f7; border-radius: 9px; color: #507c8d; font-size: 17px; flex-shrink: 0; }
+.mfg-settings-metric>div { min-width: 0; }
+.mfg-settings-metric strong { display: block; font-size: 26px; line-height: 1.1; letter-spacing: -.5px; font-weight: 700; }
+.mfg-settings-metric h5 { margin: 7px 0 3px; font-size: 12px; font-weight: 600; }
+.mfg-settings-metric small { font-size: 10px; color: #8a9b9e; line-height: 1.5; }
+.mfg-settings-tabs>.ant-tabs>.ant-tabs-nav { margin-bottom: 20px; }
+.mfg-settings-tabs .ant-tabs-tab { font-size: 13px; padding: 13px 0; }
+.mfg-settings-tabs .ant-tabs-tab+.ant-tabs-tab { margin-left: 26px; }
+.mfg-settings-tabs .ant-tabs-tab .anticon { margin-right: 5px; }
+.mfg-settings-tabs .ant-tabs-tab-active { font-weight: 600; }
+.mfg-settings-scope-note { font-size: 11px; color: #8a9b9e; max-width: 200px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 16px; }
+.mfg-settings-organization { display: grid; grid-template-columns: minmax(270px, .9fr) minmax(0, 1.7fr); gap: 20px; align-items: start; }
+.mfg-settings-entities,.mfg-settings-structure,.mfg-settings-catalog-side,.mfg-settings-logs { display: grid; gap: 18px; min-width: 0; }
+.mfg-settings-card { background: #fff; border: 1px solid #e0eae9; border-radius: 14px; min-width: 0; overflow: hidden; }
+.mfg-settings-card-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding: 19px 20px; border-bottom: 1px solid #edf2f1; }
+.mfg-settings-card-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.mfg-settings-section-icon { color: #68878c; font-size: 18px; }
+.mfg-settings-card-title h4 { margin: 0; font-size: 14px; font-weight: 700; }
+.mfg-settings-card-title p { margin: 5px 0 0; font-size: 11px; color: #8a9b9e; }
+.mfg-settings-card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.mfg-settings-card-actions .ant-btn { font-size: 12px; height: 32px; border-radius: 8px; padding-inline: 10px; }
+.mfg-settings-card-content { padding: 20px; }
+.mfg-settings-company-list { max-height: 270px; overflow-y: auto; }
+.mfg-settings-company { display: grid; gap: 8px; padding: 12px; border-left: 3px solid #e8efee; margin-block: 4px; }
+.mfg-settings-company.is-current { border-color: #14857b; background: #f7fbfa; }
+.mfg-settings-company small { font-size: 11px; color: #789094; }
+.mfg-settings-company strong { font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; font-weight: 600; }
+.mfg-settings-factory-list { display: grid; gap: 8px; max-height: 350px; overflow-y: auto; margin-top: 2px; }
+.mfg-settings-factory-list:has(+*) { margin-top: 12px; }
+.mfg-settings-factory { display: flex; align-items: center; gap: 10px; padding: 12px; width: 100%; cursor: pointer; text-align: left; border: 1px solid transparent; border-radius: 10px; background: #fff; color: #48646a; transition: background .15s,border-color .15s; }
+.mfg-settings-factory:hover { background: #f6f9f8; }
+.mfg-settings-factory.is-selected { background: #edf7f4; border-color: #cae5dc; color: #196859; }
+.mfg-settings-factory:focus-visible { outline: 2px solid #127c86; outline-offset: -2px; }
+.mfg-settings-factory-symbol { font-size: 20px; flex-shrink: 0; }
+.mfg-settings-factory>span:nth-child(2) { min-width: 0; flex: 1; }
+.mfg-settings-factory strong { display: block; font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+.mfg-settings-factory small { display: block; font-size: 10px; color: #8a9b9e; margin-top: 5px; }
+.mfg-settings-selected-dot { width: 6px; height: 6px; border-radius: 50%; background: #19826d; }
+.mfg-settings-workshops { display: grid; gap: 14px; }
+.mfg-settings-workshop { border: 1px solid #e1ebea; border-radius: 11px; overflow: hidden; }
+.mfg-settings-workshop-heading { display: flex; align-items: center; gap: 11px; padding: 14px; background: #f6faf9; }
+.mfg-settings-workshop-icon { display: grid; place-items: center; height: 34px; width: 34px; border-radius: 9px; background: #e5f2ee; color: #237d69; font-size: 17px; flex-shrink: 0; }
+.mfg-settings-workshop-heading>div { flex: 1; min-width: 0; }
+.mfg-settings-workshop-heading h5 { font-size: 13px; margin: 0 0 4px; overflow-wrap: anywhere; }
+.mfg-settings-workshop-heading small { font-size: 10px; color: #8a9b9e; }
+.mfg-settings-count { font-size: 10px; color: #6e8a8b; padding: 4px 7px; border: 1px solid #deebe7; border-radius: 6px; white-space: nowrap; }
+.mfg-settings-line-list { padding: 0 14px; }
+.mfg-settings-line { display: flex; align-items: center; gap: 10px; padding: 13px 0; border-top: 1px solid #edf2f1; }
+.mfg-settings-line:first-child { border-top: 0; }
+.mfg-settings-line-marker { width: 5px; height: 5px; background: #9fb7b1; border-radius: 50%; margin-left: 6px; flex-shrink: 0; }
+.mfg-settings-line>div { flex: 1; min-width: 0; }
+.mfg-settings-line strong { font-size: 12px; font-weight: 500; overflow-wrap: anywhere; }
+.mfg-settings-line small { display: block; margin-top: 3px; color: #91a2a2; font-size: 10px; }
+.mfg-settings-capacity { font-size: 12px; text-align: right; color: #48686c; flex-shrink: 0; }
+.mfg-settings-capacity small { font-size: 9px; }
+.mfg-settings-no-lines { margin: 0; padding: 15px; color: #9aa9aa; font-size: 11px; }
+.mfg-settings-other-lines { margin-top: 15px; }
+.mfg-settings-other-lines h5 { font-size: 12px; margin: 0 0 8px; }
+.mfg-settings-guide { display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px; border-radius: 12px; border: 1px solid #dfeae8; background: #eef5f3; color: #597974; }
+.mfg-settings-guide>.anticon { margin-top: 2px; font-size: 20px; color: #6a9c8e; }
+.mfg-settings-guide strong { font-size: 12px; color: #456961; font-weight: 600; }
+.mfg-settings-guide p { margin: 6px 0 0; font-size: 11px; line-height: 1.8; }
+.mfg-settings-empty { padding: 28px 12px; text-align: center; display: grid; justify-items: center; gap: 10px; }
+.mfg-settings-empty>span { display: grid; place-items: center; height: 52px; width: 52px; border-radius: 14px; background: #f0f6f4; color: #8daaa3; font-size: 26px; margin-bottom: 4px; }
+.mfg-settings-empty strong { font-size: 13px; font-weight: 600; color: #55756f; }
+.mfg-settings-empty p { max-width: 340px; font-size: 12px; line-height: 1.8; color: #94a5a2; margin: 0; }
+.mfg-settings-table-empty { padding: 26px 12px; font-size: 12px; color: #8a9b9e; }
+.mfg-settings .ant-table-thead>tr>th { font-size: 11px; background: #f6f9f8; }
+.mfg-settings .ant-table-cell { font-size: 12px; }
+.mfg-settings-person { display: flex; gap: 10px; align-items: center; }
+.mfg-settings-person>span { height: 32px; width: 32px; display: grid; place-items: center; border-radius: 50%; background: #edf3f7; color: #62859b; flex-shrink: 0; }
+.mfg-settings-person strong { display: block; font-weight: 500; }
+.mfg-settings-person small { display: block; margin-top: 3px; font-size: 10px; color: #8a9b9e; }
+.mfg-settings-catalog { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(280px,1fr); gap: 20px; align-items: start; }
+.mfg-settings-runtime { display: flex; align-items: center; gap: 8px; color: #3b8066; font-size: 12px; margin-bottom: 12px; }
+.mfg-settings-runtime.is-paused { color: #986413; }
+.mfg-settings-muted { font-size: 12px; line-height: 1.8; color: #8a9b9e; margin: 0 0 14px; }
+@media(min-width:1200px) { .mfg-settings-organization { grid-template-columns: minmax(300px,.8fr) minmax(0,1.8fr); } }
+@media(max-width:1100px) { .mfg-settings-scope-note { display: none; } .mfg-settings-metric { padding: 16px 12px; gap: 9px; } .mfg-settings-card-heading { padding: 16px; } .mfg-settings-card-content { padding: 16px; } }
+@media(max-width:760px) {
+    .mfg-settings-organization,.mfg-settings-catalog { grid-template-columns: minmax(0,1fr); }
+    .mfg-settings-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+    .mfg-settings-context { padding: 18px; flex-wrap: wrap; }
+    .mfg-settings-context-copy { flex-basis: calc(100% - 70px); }
+    .mfg-settings-health { margin-left: 64px; }
+    .mfg-settings-tabs .ant-tabs-tab { font-size: 12px; }
+    .mfg-settings-tabs .ant-tabs-tab+.ant-tabs-tab { margin-left: 20px; }
+}
+@media(max-width:430px) {
+    .mfg-settings-header h3.ant-typography { font-size: 23px; }
+    .mfg-settings-metric>span { width: 28px; height: 28px; font-size: 15px; }
+    .mfg-settings-metric strong { font-size: 24px; }
+    .mfg-settings-metric h5 { font-size: 11px; }
+    .mfg-settings-metric small { font-size: 9px; }
+    .mfg-settings-context-copy h4 { font-size: 17px; }
+    .mfg-settings-card-actions { gap: 6px; }
+}

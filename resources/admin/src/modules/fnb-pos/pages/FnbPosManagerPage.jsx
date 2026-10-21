@@ -14,7 +14,8 @@ import FnbWorkspaceShell from '../components/FnbWorkspaceShell';
 import FnbPendingCommands from '../components/FnbPendingCommands';
 import useFnbResource from '../hooks/useFnbResource';
 import { FnbWorkspaceContext } from '../state/FnbWorkspaceContext';
-import { fnbSectionPath, overviewPermissions } from '../utils/fnbOverviewNavigation';
+import { fnbSectionPath, overviewPermissions, overviewViews } from '../utils/fnbOverviewNavigation';
+import { buildFnbWorkspaceNavigation, selectedFnbWorkspaceMenuKey } from '../utils/fnbWorkspaceNavigation';
 import '../styles/fnb-pos.css';
 
 const OnboardingPage = lazy(() => import('./sections/FnbOnboardingPage'));
@@ -83,7 +84,7 @@ const persistValue = (key, value) => {
     }
 };
 
-export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [], modulePayload }) {
+export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [], modulePayload, onWorkspaceNavigationChange }) {
     const { message } = App.useApp();
     const location = useLocation();
     const navigate = useNavigate();
@@ -150,9 +151,23 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
 
     useEffect(() => {
         if (!bootstrapResource.loading && selectionReadyKey === selectionKey && (requestedSection !== activeSection || requestedRoute === 'reports')) {
-            navigate(fnbSectionPath(requestedRoute === 'reports' && activeSection === 'dashboard' ? 'reports' : activeSection), { replace: true });
+            navigate(requestedRoute === 'reports' && activeSection === 'dashboard'
+                ? fnbSectionPath('reports')
+                : { pathname: fnbSectionPath(activeSection), search: activeSection === 'dashboard' ? location.search : '' }, { replace: true });
         }
-    }, [activeSection, bootstrapResource.loading, navigate, requestedSection, requestedRoute, selectionReadyKey, selectionKey]);
+    }, [activeSection, bootstrapResource.loading, navigate, requestedSection, requestedRoute, selectionReadyKey, selectionKey, location.search]);
+
+    const workspaceNavigation = useMemo(() => ({
+        moduleKey: 'fnb-pos', identity,
+        items: buildFnbWorkspaceNavigation(visibleSections, overviewViews(can)),
+        selectedKey: selectedFnbWorkspaceMenuKey(activeSection, location.search, overviewViews(can)),
+    }), [visibleSections, can, activeSection, location.search, identity]);
+    const navigationReady = !bootstrapResource.loading && !bootstrapResource.error && selectionReadyKey === selectionKey && Boolean(identity);
+    useEffect(() => {
+        if (!navigationReady || !onWorkspaceNavigationChange) return undefined;
+        onWorkspaceNavigationChange(workspaceNavigation);
+        return () => onWorkspaceNavigationChange(null);
+    }, [navigationReady, onWorkspaceNavigationChange, workspaceNavigation]);
 
     const handleOutletChange = (value) => {
         setOutletId(value);
@@ -296,9 +311,6 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
     return (
         <FnbWorkspaceContext.Provider value={contextValue}>
             <FnbWorkspaceShell
-                navigation={visibleSections}
-                activeSection={activeSection}
-                onNavigate={(key) => navigate(fnbSectionPath(key))}
                 outlets={outlets}
                 terminals={terminals}
                 outletId={outletId}

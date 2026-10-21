@@ -5,11 +5,12 @@
 > baseline, nhưng luôn đối chiếu source code, migration, test và database hiện
 > tại trước khi kết luận trạng thái runtime.
 >
-> Xác minh gần nhất: **2026-08-14**, workspace `E:\Project\aio`, database local
-> của `website-main`. Các số liệu audit và trạng thái working tree là snapshot,
-> không phải hằng số.
-> Bổ sung Retail ngày **2026-10-20**: xem mục 16. Đây là kiểm chứng source và môi trường
-> kiểm thử cô lập; không thay thế snapshot installation/database lịch sử bên dưới.
+> Checkpoint nền tảng lịch sử: **2026-08-14**, database local của `website-main`.
+> Bổ sung Retail và Customers ngày **2026-10-20**: xem mục 16–17. Customers đã có
+> menu/page riêng và redesign UI; tài liệu chuyên miền đã đối chiếu lại source.
+> Các con số test, dữ liệu local và trạng thái installation là checkpoint có ngày,
+> không phải hằng số hay bằng chứng runtime hiện tại. Đợt cập nhật tài liệu không
+> tự chạy lại rollout/database/tests.
 
 Đây là một base source website AIO (All In One) của HT Việt Nam. Mục tiêu sản phẩm là xây một **hệ sinh thái website + quản trị doanh nghiệp** đủ lớn để bán cho nhiều khách hàng. Mỗi khách hàng khi triển khai thực tế sẽ **clone ra 1 source code riêng**, không dùng chung runtime multi-tenant.
 
@@ -25,6 +26,8 @@ Base source này phải được thiết kế rất kỹ từ đầu để sau n
    - Nhân sự/tiền lương: `docs/architecture/hrm-and-payroll-modules.md`.
    - Bất động sản hoặc theme BDS701: `docs/architecture/real-estate-module-and-bds701-theme.md`.
    - Retail POS, Merchandise, Purchasing hoặc Inventory v2: `docs/architecture/retail-pos-implementation-status.md`, `docs/api/retail-pos-runtime-contract.md`, rồi đặc tả/kiến trúc/kế hoạch Retail tương ứng.
+   - Khách hàng dùng chung, khách hàng tại FNB/Retail, consent, account link hoặc UI Customers: đọc [Customers — điểm bắt đầu cho AI](architecture/customers-module.md) từ mục 0, rồi [runtime contract](api/customers-runtime-contract.md). Source map, giao diện, kiểm thử và giới hạn nằm trong tài liệu chuyên miền; không suy tính năng từ đề xuất trong hội thoại.
+   - Quản lý xưởng may/Manufacturing, roll/WIP, production posting hoặc late cost: đọc [implementation status](architecture/manufacturing-implementation-status.md), [runtime contract](api/manufacturing-runtime-contract.md), rồi [kế hoạch](architecture/manufacturing-implementation-plan.md). Native company/factory context độc lập website; kiểm lại capability shared modules. Source mới chưa đồng nghĩa đã cài vào DB nghiệp vụ hoặc đạt pilot 10 xưởng.
 3. Kiểm tra migration đã chạy bằng `php artisan migrate:status`; không sửa migration production đã chạy để thay đổi hành vi, hãy tạo migration mới.
 4. Kiểm tra `git status --short` trước khi sửa và không ghi đè thay đổi đang có của người dùng/session khác.
 5. Với auth/RBAC, luôn đọc test `AccessControlSecurityTest`, `AuthSplitTest`, `AdminFoundationApiTest` để hiểu invariant đã được khóa.
@@ -50,6 +53,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
 
 - Đây là Laravel monolith; Admin React chạy trong cùng ứng dụng. Business feature đi theo module, storefront đi theo theme.
 - Triển khai khách hàng là single-tenant theo codebase. `website_key` vẫn tồn tại để tách dữ liệu giữa các website/domain demo nội bộ trong cùng workspace.
+- App `customers` là master hồ sơ dùng chung theo website/book, không thay tài khoản đăng nhập Core. FNB/Retail giữ nghiệp vụ và snapshot; chia sẻ qua binding/cutover tường minh, không merge theo phone/email.
 - Theme chỉ render dữ liệu đã được controller/builder resolve. Không đặt business data trong theme và không query translation table trực tiếp từ theme.
 - Đa ngôn ngữ đã có contract hoàn chỉnh về schema, workflow, route, Admin và storefront; phần còn thiếu chủ yếu là chất lượng/số lượng nội dung EN, không phải nền tảng kỹ thuật.
 - Definition of done cho thay đổi có ảnh hưởng public: đúng website context, đúng locale, Admin/API/storefront cùng contract, có migration tiến tới nếu đổi schema, có regression test và build/compile phù hợp.
@@ -106,7 +110,7 @@ Tôi là giám đốc CÔNG TY CP CÔNG NGHỆ VÀ TRUYỀN THÔNG HT VIỆT NAM
   - nếu không khớp admin thì mới fallback sang guard `customer` bằng `email`
   - UI field login trong modal nên được hiểu là `Email khách hàng / Username admin`, không quay lại hardcode thuần `email` cho flow login chung này.
 - Phân quyền hiện dùng **RBAC theo từng module**. Mỗi assignment gắn role và scope ngay trên cùng một dòng trong `admin_role_assignments`.
-- Scope hợp lệ chỉ có `global` và `website`. Không được đưa lại `tenant`, `owner`, `tenant_key`, `owner_key`, `admin_role` hoặc `admin_role_scopes`.
+- Scope Core hiện có `global`, `website` và `organization`; `organization` chỉ dành cho AccountingTax/Minvoice theo mục 15. Customers/FNB/Retail dùng native book/chain/branch/outlet membership trong module, không thêm branch scope vào Core. Không được đưa lại `tenant`, `owner`, `tenant_key`, `owner_key`, `admin_role` hoặc `admin_role_scopes`.
 - API quản trị account, role, assignment, audit log và site mapping là global-only. Permission cùng tên ở website scope không được phép đọc hoặc mutate state toàn cục.
 - Khi tạo/sửa role hoặc assignment, actor không được cấp scope/permission vượt quá ceiling của chính mình. Endpoint legacy `role_ids` không được âm thầm chuyển assignment website thành global.
 - Admin ID `1` là System Owner bất biến. Role `super-admin` là role hệ thống bất biến và luôn có toàn bộ permission active.
@@ -774,10 +778,12 @@ Validation chốt ngày 2026-08-17:
 
 ## 17. Handoff Customers dùng chung ngày 2026-10-20
 
-- Module `customers` `0.1.0` sở hữu master person/company, contact/address, book grants,
-  consent, custom fields, source mappings và account links. Đọc
-  [kiến trúc](architecture/customers-module.md) cùng
-  [runtime contract](api/customers-runtime-contract.md) trước khi sửa/tích hợp.
+- **Điểm bắt đầu:** [kiến trúc Customers](architecture/customers-module.md), mục 0
+  đọc nhanh, mục 9 source map, mục 10 UI/state/CSS, mục 7 kiểm thử/vận hành và mục 8
+  giới hạn; [runtime contract](api/customers-runtime-contract.md) là contract API.
+- Manifest `customers` `0.1.0` sở hữu master person/company, contacts/addresses, book
+  grants, consent, custom fields, source mappings và account links. Manifest, source
+  và installed version là ba thông tin cần đối chiếu, không suy installation từ file mới.
 - `App\Models\Customer` vẫn là tài khoản đăng nhập website Core; không gộp master bằng
   email/phone và không ép khách tại quầy có password. Company customer khác pháp nhân
   Accounting; công nợ/hoá đơn/loyalty/campaign không chuyển ownership vào Customers.
@@ -789,23 +795,50 @@ Validation chốt ngày 2026-08-17:
   kiểm readiness trước thanh toán. Migration tối đa 500 nguồn mới/lượt, source hash đổi
   khi còn legacy chặn cutover; phone/email trùng chỉ cảnh báo, không tự merge.
   Retail binding theo chain, runtime context branch UUID; FNB binding website, context outlet.
+- Interface/config consumer chưa hoàn toàn cắm app mới tự động: resolver cấu hình,
+  binding validation và settings options hiện xử lý riêng FNB/website và Retail/chain.
+  Muốn thêm app phải mở rộng các đường này cùng native authorization và tests.
 - Retail lên `0.1.0-dev.2`, thêm shared_customer_id/buyer_snapshot và Accounting source-link
   journal; FNB `0.2.0-dev.3` thêm shared IDs/adapter. Upgrade qua lifecycle, giữ legacy IDs,
-  transaction snapshots và mappings. Local DB `aio` đã cài/bật Customers `0.1.0`, nâng hai
-  consumer; ba profile FNB đã migrate sau dry-run valid. Hash legacy profiles/check
-  snapshots và số tài khoản login giữ nguyên. Retail hiện 0 chain, không cần cutover.
+  transaction snapshots và mappings. Checkpoint local triển khai 20/10/2026: DB `aio`
+  đã bật Customers, nâng hai consumer và migrate ba profile FNB sau dry-run valid;
+  hash legacy profiles/check snapshots và số tài khoản login giữ nguyên. Retail khi
+  đó 0 chain. Chưa xác minh lại DB trong đợt docs; không seed lại hoặc áp snapshot này
+  cho môi trường khác. Mục này cập nhật version/runtime Customers so với mục 16 cũ.
 - Snapshot buyer trên sale/bill giữ nguyên sau sửa master hoặc merge. History dùng cả
   source mapping và merged aliases, chỉ theo quyền native hiện hành. Accounting sync là
   explicit link, cần đúng legal mapping/quyền organization, không ghi đè master đã chỉnh sửa.
 - Event CustomerChanged chỉ có định danh/version/changed fields; outbox retry yêu cầu
   listener deduplicate, không bảo đảm exactly-once hay tự cấp quyền đọc PII.
-- Export CSV private qua queue có expiry/checksum/reauthorization; scheduler có
-  customers:dispatch-events và customers:prune-exports. Account-link invitation gắn account
-  đích, token một lần và mật khẩu hiện tại; không tự gửi email/SMS.
-- Bộ lọc riêng lưu server theo actor/book; custom fields required kiểm trên mọi lần ghi,
-  searchable không nhạy cảm có index prefix, không biến field nhạy cảm thành search public.
+- **Storage export còn vấn đề:** worker/download/prune dùng disk `local`, nhưng
+  `config/filesystems.php` đặt root tại `public/files`. API có requester authorization,
+  checksum và expiry chưa chứng minh file vật lý private nếu web server phục vụ tĩnh.
+  Cần giải quyết trước production; tests fake/scratch root không chứng minh cấu hình này.
+  Không đổi global disk hoặc xóa artifact/dữ liệu thật chỉ để làm tài liệu.
+- Export CSV sáu cột lấy toàn book, không theo filter UI; worker đọc lúc chạy, chưa là
+  snapshot nhất quán. Queue job timeout 180 giây trong khi database queue mặc định
+  retry_after 90 giây; phải cấu hình/kiểm chứng theo deployment. Scheduler có
+  customers:dispatch-events mỗi phút và customers:prune-exports hàng giờ.
+- Account-link invitation gắn account đích, token một lần và mật khẩu hiện tại;
+  không tự gửi email/SMS, không suy ownership từ phone/email.
+- Bộ lọc riêng lưu server theo actor/book. Required custom fields kiểm tại
+  CustomerProfiles::save (create/update/import/consumer/migration), không phải archive/
+  consent hoặc full backfill giá trị cũ. Searchable không nhạy cảm có index prefix.
+- UI đã redesign: menu chính Danh bạ `/admin/modules/customers`, Hồ sơ trùng
+  `/duplicates`, Nhập & xuất `/data`, Thiết lập `/settings`. Không thêm lại tab cấp app.
+  Manifest menu key + map section trong CustomersManagerPage chọn nội dung. Menu
+  dùng permission AND permissions_any, không cấp quyền API/book. Settings có ba nhóm
+  nội bộ; drawer/form có CSS portal riêng và serializer bảo vệ masked PII.
+- Browser command journal chỉ giữ key/hash/scope, không giữ payload PII/token.
+  Giữ generation/context reset, preview tách khỏi pending write và expected version.
+  Book chưa persist khi reload, export history chỉ có trong state phiên trang.
+- Tổng quan chất lượng dữ liệu và phân nhóm khách hàng động mới là đề xuất;
+  CRM/Loyalty/campaign engines, erasure và unmerge hoàn chỉnh chưa triển khai.
 - Release tập trung 22 file: 206 tests/2.623 assertions pass; MySQL standalone 6 gates/42
   assertions pass, scratch database/export đã dọn và xác minh; JS 54/54 + build pass.
   Không phải toàn AIO suite. UI SQLite riêng đã thử create/contact/search/saved filter/
   details/activity/export ready/merge preview, không console error. Chưa nghiệm thu
   production capacity, backup/restore diện rộng hay production pilot.
+- Sau đó nhóm menu đạt 3 tests/35 assertions; sau redesign UI, 15 tests JS Customers
+  và build pass, xem đủ bốn page cùng search/reset/empty/form validation trên browser.
+  Không cộng các nhóm chồng lặp thành full-suite result; đợt docs không chạy lại test.

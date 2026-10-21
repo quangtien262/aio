@@ -16,7 +16,11 @@ async function loginAsAdmin(page) {
 }
 
 async function openFnbSection(page, section) {
-    await page.getByTestId(`fnb-nav-${section}`).click();
+    const labels = { settings: 'Thiết lập', menu: 'Thực đơn', chain: 'Điều hành chuỗi', shifts: 'Ca bán hàng', pos: 'Bán hàng' };
+    const mobileTrigger = page.getByRole('button', { name: 'Mở điều hướng admin', exact: true });
+    if (await mobileTrigger.isVisible()) await mobileTrigger.click();
+    if (['settings', 'chain'].includes(section)) await page.getByRole('menuitem', { name: 'Cấu hình', exact: true }).click();
+    await page.getByRole('menuitem', { name: labels[section], exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/admin/modules/fnb-pos/${section}(?:$|[?#])`));
 }
 
@@ -69,7 +73,7 @@ test('F&B Pilot can onboard, configure a multi-size menu item and open POS', asy
         await onboardingSubmit.click();
         await completeReauthentication(page);
         await expect(page).toHaveURL(/\/admin\/modules\/fnb-pos\/dashboard/);
-        await expect(page.getByText('Tổng quan vận hành')).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Tổng quan hôm nay', exact: true })).toBeVisible();
     }
 
     await openFnbSection(page, 'settings');

@@ -1,6 +1,14 @@
-# F&B POS runtime contract (`0.2.0-dev.2`)
+# F&B POS runtime contract (`0.2.0-dev.3`)
 
 This document is the integration boundary between the F&B domain, HTTP controllers and the React shell. It is intentionally explicit about scope: controllers authorize permissions, while every service command revalidates aggregate scope, state, version and monetary invariants.
+
+## App navigation (2026-10-20)
+
+The Admin workspace menu is the only app-level navigation bar for F&B. Main destinations are **Tổng quan** (Hôm nay / Báo cáo), **Bán hàng**, **Bar / Bếp**, **Thực đơn**, **Ca bán hàng**, **Khách hàng**, and **Cấu hình** (onboarding, staff, chain, integrations, settings, guide), filtered by live outlet/HQ permissions. `FnbPosManagerPage` publishes the filtered navigation to `AdminLayout` through `onWorkspaceNavigationChange`; registration is scoped to module + website + actor and removed on unmount. It changes presentation, not API authorization. `FnbWorkspaceShell` retains outlet/terminal selectors and operational alerts, without a duplicate desktop menu or mobile drawer. Overview no longer repeats Today/Reports tabs in its content.
+
+Routes retain `/admin/modules/fnb-pos/{section}` and `/dashboard?view=today|reports`; `/reports` remains a legacy alias. Root overview query parameters survive canonicalization. The shell resolves the longest matching route prefix, so `/modules` (App Store) cannot override deeper app routes. While inside an app, the workspace navigation and mobile drawer show that app's menu; platform section switching is hidden, with the home logo/app switcher as appropriate entry points to other workspaces. Outlet/terminal selection and native guards remain unchanged.
+
+Navigation policy lives in `resources/admin/src/modules/fnb-pos/utils/fnbWorkspaceNavigation.js`; generic route matching and registration ownership checks live in `resources/admin/src/shared/utils/workspaceNavigation.js`. Keep navigation registration after bootstrap/selection readiness and never replace native permissions with menu visibility. Regression tests: `tests/UnitJavaScript/fnb-workspace-navigation.test.js`, `tests/UnitJavaScript/workspace-navigation.test.js`, plus existing overview-navigation tests.
 
 ## Additional orders after payment
 

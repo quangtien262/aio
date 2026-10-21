@@ -14,6 +14,19 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 /** Inventory owns stock; callers authorize the delegated branch/warehouse action. */
 final class InventoryV2Service
 {
+    private int $productionWriteDepth = 0;
+
+    /** Internal adapter boundary. Callers authorize the native production action first. */
+    public function productionWrite(callable $callback): mixed
+    {
+        $this->productionWriteDepth++;
+        try {
+            return $callback();
+        } finally {
+            $this->productionWriteDepth--;
+        }
+    }
+
     public function ensureItem(int $skuId): int
     {
         return DB::transaction(function () use ($skuId): int {
@@ -94,13 +107,54 @@ final class InventoryV2Service
         $this->item($itemId, $warehouse, false);
         $sum = BigDecimal::zero();
         foreach ($this->sellableBalances($warehouseId, $itemId)->get() as $balance) {
-            $available = $this->number($balance->quantity_on_hand)->minus($this->number($balance->quantity_reserved));
+            $available = $this->number($balance->quantity_on_hand)->minus((string) $this->number($balance->quantity_reserved));
             if ($available->isPositive()) {
                 $sum = $sum->plus($available);
             }
         }
 
         return (string) $sum->toScale(6);
+    }
+
+    /** Internal production withdrawal: returns to suppliers may include rejected/expired stock. */
+    public function withdrawProductionRoll(array $input, string $key, int $actor): array
+    {
+        abort_unless($this->productionWriteDepth > 0, 403);
+
+        return $this->command('production.withdraw', $key, $actor, $input, function (string $operation) use ($input, $actor): array {
+            $warehouse = $this->warehouse((int) $input['warehouse_id']);
+            abort_unless($warehouse->production_managed, 422);
+            $item = $this->item((int) $input['item_id'], $warehouse);
+            $this->notCounting($warehouse->id);
+            $quantity = $this->itemQuantity($input['quantity'], $item);
+            $remaining = $quantity;
+            $totalCost = BigDecimal::zero();
+            $document = $this->document('issue', $warehouse->id, null, $actor, $operation);
+            $allocations = [];
+            foreach (DB::table('inv_stock_balances')->where('warehouse_id', $warehouse->id)->where('item_id', $item->id)->where('batch_id', $input['batch_id'])->orderBy('id')->lockForUpdate()->get() as $balance) {
+                $available = $this->number($balance->quantity_on_hand)->minus((string) $balance->quantity_reserved);
+                $take = BigDecimal::min($remaining, $available);
+                if (! $take->isPositive()) {
+                    continue;
+                }
+                $cost = $this->consumeCost($warehouse->id, $item->id, $balance->batch_id, $take, $balance->location_id, $operation);
+                $unitCost = $cost->dividedBy($take, 6, RoundingMode::HalfUp);
+                $after = $this->number($balance->quantity_on_hand)->minus($take);
+                DB::table('inv_stock_balances')->where('id', $balance->id)->update(['quantity_on_hand' => (string) $after, 'updated_at' => now()]);
+                $line = $this->line($document, $item->id, $balance->batch_id, $take, $unitCost);
+                $movement = $this->movement($document, $line, $warehouse->id, $item->id, $balance->batch_id, $take->negated(), $after, $unitCost, $actor, 'issue', $operation);
+                DB::table('inv_stock_movements')->where('id', $movement)->update(['location_id' => $balance->location_id]);
+                $totalCost = $totalCost->plus($cost);
+                $allocations[] = ['batch_id' => $balance->batch_id, 'location_id' => $balance->location_id, 'quantity' => (string) $take, 'unit_cost' => (string) $unitCost];
+                $remaining = $remaining->minus($take);
+                if ($remaining->isZero()) {
+                    break;
+                }
+            }
+            abort_unless($remaining->isZero(), 409, 'Không đủ tồn cuộn chưa được giữ để trả.');
+
+            return ['public_id' => $operation, 'operation_id' => $operation, 'document_id' => $document, 'quantity' => (string) $quantity, 'total_cost' => (string) $totalCost->toScale(6, RoundingMode::HalfUp), 'allocations' => $allocations];
+        });
     }
 
     public function reserve(int $warehouseId, int $itemId, string $quantity, string $source, string $key, int $actor, ?int $batchId = null): array
@@ -117,7 +171,7 @@ final class InventoryV2Service
             $remaining = $quantity;
             $allocations = [];
             foreach ($this->sellableBalances($warehouseId, $itemId)->when($batchId !== null, fn (Builder $q) => $q->where('inv_stock_balances.batch_id', $batchId))->lockForUpdate()->get() as $balance) {
-                $available = $this->number($balance->quantity_on_hand)->minus($this->number($balance->quantity_reserved));
+                $available = $this->number($balance->quantity_on_hand)->minus((string) $this->number($balance->quantity_reserved));
                 if (! $available->isPositive()) {
                     continue;
                 }
@@ -160,7 +214,7 @@ final class InventoryV2Service
                 abort_if($this->number($balance->quantity_on_hand)->isLessThan($quantity) || $this->number($balance->quantity_reserved)->isLessThan($quantity), 409, 'Tồn giữ không còn nhất quán.');
                 $batch = $balance->batch_id ? DB::table('inv_batches')->find($balance->batch_id) : null;
                 abort_if($batch && (! $batch->is_active || ($batch->expires_at && substr($batch->expires_at, 0, 10) < now($warehouse->timezone)->toDateString())), 409, 'Lô đã hết hạn hoặc bị khóa.');
-                $cost = $this->consumeCost($warehouse->id, $reservation->item_id, $balance->batch_id, $quantity, $balance->location_id);
+                $cost = $this->consumeCost($warehouse->id, $reservation->item_id, $balance->batch_id, $quantity, $balance->location_id, $operation);
                 $totalCost = $totalCost->plus($cost);
                 $unitCost = $cost->dividedBy($quantity, 6, RoundingMode::HalfUp);
                 $after = $this->number($balance->quantity_on_hand)->minus($quantity);
@@ -172,7 +226,7 @@ final class InventoryV2Service
 
             $allocations = DB::table('inv_stock_document_lines')->where('document_id', $document)->orderBy('id')->get()->map(fn ($line): array => ['batch_id' => $line->batch_id, 'quantity' => (string) $this->number($line->quantity), 'unit_cost' => (string) $this->number($line->unit_cost)])->all();
 
-            return $this->reservation($reservation->id) + ['document_id' => $document, 'total_cost' => (string) $totalCost->toScale(6, RoundingMode::HalfUp), 'unit_cost' => (string) $totalCost->dividedBy($this->number($reservation->quantity), 6, RoundingMode::HalfUp), 'allocations' => $allocations, 'operation_id' => $operation];
+            return $this->reservation($reservation->id) + ['document_id' => $document, 'total_cost' => (string) $totalCost->toScale(6, RoundingMode::HalfUp), 'unit_cost' => (string) $totalCost->dividedBy((string) $this->number($reservation->quantity), 6, RoundingMode::HalfUp), 'allocations' => $allocations, 'operation_id' => $operation];
         });
     }
 
@@ -183,7 +237,7 @@ final class InventoryV2Service
             abort_unless($reservation->status === 'active' && ! $reservation->protected_payment, 409, 'Giữ hàng chưa được phép giải phóng.');
             foreach (DB::table('inv_reservation_allocations')->where('reservation_id', $reservation->id)->orderBy('balance_id')->get() as $allocation) {
                 $balance = DB::table('inv_stock_balances')->where('id', $allocation->balance_id)->lockForUpdate()->first();
-                DB::table('inv_stock_balances')->where('id', $balance->id)->update(['quantity_reserved' => (string) $this->number($balance->quantity_reserved)->minus($allocation->quantity), 'updated_at' => now()]);
+                DB::table('inv_stock_balances')->where('id', $balance->id)->update(['quantity_reserved' => (string) $this->number($balance->quantity_reserved)->minus((string) $allocation->quantity), 'updated_at' => now()]);
             }
             DB::table('inv_reservations')->where('id', $reservation->id)->update(['status' => 'released', 'updated_at' => now()]);
 
@@ -202,7 +256,11 @@ final class InventoryV2Service
     public function expireReservations(int $limit = 100): int
     {
         $count = 0;
-        foreach (DB::table('inv_reservations')->where('status', 'active')->where('protected_payment', false)->where('expires_at', '<', now())->limit(min(1000, max(1, $limit)))->get() as $reservation) {
+        $query = DB::table('inv_reservations')->where('status', 'active')->where('protected_payment', false)->where('expires_at', '<', now());
+        if (Schema::hasColumn('inv_reservations', 'purpose')) {
+            $query->where('purpose', '!=', 'production');
+        }
+        foreach ($query->limit(min(1000, max(1, $limit)))->get() as $reservation) {
             $this->releaseReservation($reservation->public_id, 'expire:'.$reservation->public_id, $reservation->actor_id);
             $count++;
         }
@@ -246,13 +304,13 @@ final class InventoryV2Service
                 abort_unless($line, 404);
                 $quantity = $this->positive($received['quantity']);
                 $after = $this->number($line->received_quantity)->plus($quantity);
-                abort_if($after->isGreaterThan($line->quantity), 422, 'Số nhận vượt số đang vận chuyển.');
-                $this->receive(['warehouse_id' => $transfer->destination_warehouse_id, 'item_id' => $line->item_id, 'batch_id' => $line->batch_id, 'quantity' => (string) $quantity, 'unit_cost' => $line->unit_cost, 'disposition' => $received['disposition'] ?? 'saleable', 'source_id' => 'transfer:'.$transfer->public_id.':'.$line->id], $key.':line:'.$index, $actor);
+                abort_if($after->isGreaterThan((string) $line->quantity), 422, 'Số nhận vượt số đang vận chuyển.');
+                $this->receive(['warehouse_id' => $transfer->destination_warehouse_id, 'item_id' => $line->item_id, 'batch_id' => $line->batch_id, 'quantity' => (string) $quantity, 'unit_cost' => $line->base_unit_cost ?? $line->unit_cost, 'disposition' => $received['disposition'] ?? 'saleable', 'source_id' => 'transfer:'.$transfer->public_id.':'.$line->id], $key.':line:'.$index, $actor);
                 DB::table('inv_transfer_lines')->where('id', $line->id)->update(['received_quantity' => (string) $after]);
             }
             $complete = true;
             foreach (DB::table('inv_transfer_lines')->where('transfer_id', $transfer->id)->get() as $line) {
-                if (! $this->number($line->quantity)->isEqualTo($line->received_quantity)) {
+                if (! $this->number($line->quantity)->isEqualTo((string) $line->received_quantity)) {
                     $complete = false;
                 }
             }
@@ -262,12 +320,17 @@ final class InventoryV2Service
         });
     }
 
-    public function beginStocktake(int $warehouseId, string $key, int $actor): array
+    public function beginStocktake(int $warehouseId, string $key, int $actor, bool $allowProductionHolds = false): array
     {
-        return $this->command('stocktake.begin', $key, $actor, compact('warehouseId'), function () use ($warehouseId, $actor): array {
+        return $this->command('stocktake.begin', $key, $actor, ($allowProductionHolds ? compact('warehouseId', 'allowProductionHolds') : compact('warehouseId')), function () use ($warehouseId, $actor, $allowProductionHolds): array {
             $this->warehouse($warehouseId);
             $this->notCounting($warehouseId);
-            abort_if(DB::table('inv_reservations')->where('warehouse_id', $warehouseId)->where('status', 'active')->exists(), 409, 'Cần xử lý giữ hàng/quota trước kiểm kê.');
+            abort_if($allowProductionHolds && $this->productionWriteDepth < 1, 403);
+            $holds = DB::table('inv_reservations')->where('warehouse_id', $warehouseId)->where('status', 'active');
+            if ($allowProductionHolds) {
+                $holds->where('purpose', '!=', 'production');
+            }
+            abort_if($holds->exists(), 409, 'Cần xử lý giữ hàng/quota trước kiểm kê.');
             $publicId = (string) Str::uuid();
             $id = DB::table('inv_stocktakes')->insertGetId(['public_id' => $publicId, 'warehouse_id' => $warehouseId, 'status' => 'counting', 'maker_id' => $actor, 'version' => 1, 'created_at' => now(), 'updated_at' => now()]);
             foreach (DB::table('inv_stock_balances')->where('warehouse_id', $warehouseId)->orderBy('id')->lockForUpdate()->get() as $balance) {
@@ -294,16 +357,22 @@ final class InventoryV2Service
                 $count = $this->number($indexed[$line->balance_id]['quantity']);
                 abort_if($count->isNegative(), 422);
                 $balance = DB::table('inv_stock_balances')->where('id', $line->balance_id)->lockForUpdate()->first();
-                abort_unless($this->number($balance->quantity_on_hand)->isEqualTo($line->expected_quantity), 409, 'Tồn đã thay đổi trong phạm vi đang khóa.');
-                $delta = $count->minus($line->expected_quantity);
+                abort_unless($this->number($balance->quantity_on_hand)->isEqualTo((string) $line->expected_quantity), 409, 'Tồn đã thay đổi trong phạm vi đang khóa.');
+                abort_if($count->isLessThan((string) $balance->quantity_reserved), 409, 'Số kiểm thấp hơn lượng đã giữ; đối soát giữ hàng trước khi ghi nhận.');
+                $delta = $count->minus((string) $line->expected_quantity);
                 if (! $delta->isZero()) {
                     // Adjustment is a new immutable movement; no balance overwrite without lineage.
-                    $cost = DB::table('inv_cost_layers')->where('warehouse_id', $balance->warehouse_id)->where('item_id', $balance->item_id)->where('batch_id', $balance->batch_id)->where('location_id', $balance->location_id)->orderByDesc('id')->value('unit_cost');
-                    abort_if($cost === null, 422, 'Thiếu giá vốn để xử lý kiểm kê.');
+                    $costLayer = DB::table('inv_cost_layers')->where('warehouse_id', $balance->warehouse_id)->where('item_id', $balance->item_id)->where('batch_id', $balance->batch_id)->where('location_id', $balance->location_id)->orderByDesc('id')->first();
+                    abort_if($costLayer === null, 422, 'Thiếu giá vốn để xử lý kiểm kê.');
+                    $cost = $this->number($costLayer->unit_cost);
+                    if ($this->number($costLayer->quantity_remaining)->isPositive()) {
+                        $cost = $cost->plus(app(InventoryValuationService::class)->remaining($costLayer->id)->dividedBy((string) $costLayer->quantity_remaining, 6, RoundingMode::HalfUp));
+                    }
                     if ($delta->isNegative()) {
-                        $this->consumeCost($balance->warehouse_id, $balance->item_id, $balance->batch_id, $delta->abs(), $balance->location_id);
+                        $actualCost = $this->consumeCost($balance->warehouse_id, $balance->item_id, $balance->batch_id, $delta->abs(), $balance->location_id, $operation);
+                        $cost = $actualCost->dividedBy((string) $delta->abs(), 6, RoundingMode::HalfUp);
                     } else {
-                        DB::table('inv_cost_layers')->insert(['warehouse_id' => $balance->warehouse_id, 'item_id' => $balance->item_id, 'batch_id' => $balance->batch_id, 'location_id' => $balance->location_id, 'quantity_received' => (string) $delta, 'quantity_remaining' => (string) $delta, 'unit_cost' => $cost, 'received_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+                        DB::table('inv_cost_layers')->insert(['warehouse_id' => $balance->warehouse_id, 'item_id' => $balance->item_id, 'batch_id' => $balance->batch_id, 'location_id' => $balance->location_id, 'quantity_received' => (string) $delta, 'quantity_remaining' => (string) $delta, 'unit_cost' => (string) $cost, 'received_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
                     }
                     $doc = $this->document('adjustment', null, $balance->warehouse_id, $actor, $operation.'-'.$line->id);
                     $docLine = $this->line($doc, $balance->item_id, $balance->batch_id, $delta, $this->number($cost));
@@ -342,7 +411,7 @@ final class InventoryV2Service
             abort_unless($escrow->status === 'active' && $escrow->epoch === $epoch && $sequence === $escrow->last_sequence + 1, 409, 'Epoch hoặc sequence không hợp lệ.');
             $quantity = $this->positive($quantity);
             $consumed = $this->number($escrow->consumed_quantity)->plus($quantity);
-            abort_if($consumed->isGreaterThan($escrow->quantity), 409, 'Consumption vượt quota đã cấp.');
+            abort_if($consumed->isGreaterThan((string) $escrow->quantity), 409, 'Consumption vượt quota đã cấp.');
             $parent = DB::table('inv_reservations')->where('id', $escrow->reservation_id)->lockForUpdate()->first();
             $remaining = $quantity;
             $childPublic = (string) Str::uuid();
@@ -362,8 +431,8 @@ final class InventoryV2Service
             }
             abort_unless($remaining->isZero(), 409, 'Quota allocation không nhất quán.');
             $stock = $this->commitReservation($childPublic, $key.':stock', $actor);
-            DB::table('inv_escrows')->where('id', $escrow->id)->update(['consumed_quantity' => (string) $consumed, 'last_sequence' => $sequence, 'status' => $consumed->isEqualTo($escrow->quantity) ? 'consumed' : 'active', 'updated_at' => now()]);
-            DB::table('inv_reservations')->where('id', $parent->id)->update(['quantity' => (string) $this->number($escrow->quantity)->minus($consumed), 'status' => $consumed->isEqualTo($escrow->quantity) ? 'committed' : 'active', 'updated_at' => now()]);
+            DB::table('inv_escrows')->where('id', $escrow->id)->update(['consumed_quantity' => (string) $consumed, 'last_sequence' => $sequence, 'status' => $consumed->isEqualTo((string) $escrow->quantity) ? 'consumed' : 'active', 'updated_at' => now()]);
+            DB::table('inv_reservations')->where('id', $parent->id)->update(['quantity' => (string) $this->number($escrow->quantity)->minus($consumed), 'status' => $consumed->isEqualTo((string) $escrow->quantity) ? 'committed' : 'active', 'updated_at' => now()]);
 
             return (array) DB::table('inv_escrows')->find($escrow->id) + ['stock_operation' => $stock];
         });
@@ -410,6 +479,7 @@ final class InventoryV2Service
         $query = DB::table('inv_warehouses')->where('id', $id)->where('is_active', true)->where('v2_managed', true);
         $warehouse = ($lock ? $query->lockForUpdate() : $query)->first();
         abort_unless($warehouse && $warehouse->catalog_id && $warehouse->legal_entity_ref, 422, 'Kho chưa có ownership Retail hợp lệ.');
+        abort_if($lock && ($warehouse->production_managed ?? false) && $this->productionWriteDepth < 1, 409, 'Kho sản xuất phải ghi qua production contract để giữ trace và cost lineage.');
 
         return $warehouse;
     }
@@ -494,7 +564,7 @@ final class InventoryV2Service
         return (array) DB::table('inv_stocktakes')->find($id) + ['lines' => DB::table('inv_stocktake_lines')->where('stocktake_id', $id)->get()->map(fn ($l) => (array) $l)->all()];
     }
 
-    private function consumeCost(int $warehouse, int $item, ?int $batch, BigDecimal $quantity, ?int $location = null): BigDecimal
+    private function consumeCost(int $warehouse, int $item, ?int $batch, BigDecimal $quantity, ?int $location = null, string $operation = 'inventory.consume'): BigDecimal
     {
         $remaining = $quantity;
         $cost = BigDecimal::zero();
@@ -502,7 +572,9 @@ final class InventoryV2Service
             $available = $this->number($layer->quantity_remaining);
             $take = $available->isLessThan($remaining) ? $available : $remaining;
             DB::table('inv_cost_layers')->where('id', $layer->id)->update(['quantity_remaining' => (string) $available->minus($take), 'updated_at' => now()]);
-            $cost = $cost->plus($take->multipliedBy($this->number($layer->unit_cost)));
+            $value = $take->multipliedBy((string) $this->number($layer->unit_cost))->plus(app(InventoryValuationService::class)->consume($layer, $take, $operation));
+            abort_if($value->isNegative(), 409, 'Điều chỉnh giá trị làm âm giá vốn xuất.');
+            $cost = $cost->plus($value);
             $remaining = $remaining->minus($take);
             if ($remaining->isZero()) {
                 break;

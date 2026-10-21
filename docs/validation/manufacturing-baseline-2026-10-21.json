@@ -1,0 +1,1913 @@
+{
+  "summary": {
+    "head": "09427213d81a163387749d461751287a50917d5e",
+    "current_failed_cases": 79,
+    "head_reproduced_failed_cases": 79,
+    "same_kind_type": 79,
+    "same_assertion_source": 79,
+    "same_reason": 56,
+    "audited_processes": 14,
+    "application_class_leaks": 0,
+    "same_failure_condition": 79,
+    "same_test_source_bytes": 79,
+    "normalization": "Repository path normalization, Tests/tests path casing on macOS, and HTML diagnostic string lengths only; assertions and expected strings retained."
+  },
+  "cases": [
+    {
+      "test": "Tests.Feature.Auto851ThemeTest::test_auto851_product_detail_uses_runtime_product_data",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 54878) contains \"Sản phẩm mới nhất\" [UTF-8](length: 25).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Auto851ThemeTest.php:54",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Sản phẩm mới nhất\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 54723) contains \"Sản phẩm mới nhất\" [UTF-8](length: 25).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Auto851ThemeTest.php:54",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Sản phẩm mới nhất\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Bds702ThemeTest::test_bds702_is_registered_with_the_expected_homepage_blocks",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/BDS702/preview-bds702.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/BDS702/preview-bds702.svg\" exists.",
+        "source": "<repo>/tests/Feature/Bds702ThemeTest.php:22",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/BDS702/preview-bds702.svg\" exists."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/BDS702/preview-bds702.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/BDS702/preview-bds702.svg\" exists.",
+        "source": "<repo>/tests/Feature/Bds702ThemeTest.php:22",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/BDS702/preview-bds702.svg\" exists."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Book920SubpagesTest::test_all_content_and_catalog_pages_render_actual_records",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 92422) contains \"value=\"price_asc\" selected\" [ASCII](length: 26).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Book920SubpagesTest.php:62",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"value=\"price_asc\" selected\" [ASCII](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 92172) contains \"value=\"price_asc\" selected\" [ASCII](length: 26).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Book920SubpagesTest.php:62",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"value=\"price_asc\" selected\" [ASCII](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Book920SubpagesTest::test_search_pagination_preserves_query_and_sort",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 105683) contains \"rel=\"next\"\" [ASCII](length: 10).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Book920SubpagesTest.php:126",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"rel=\"next\"\" [ASCII](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 105313) contains \"rel=\"next\"\" [ASCII](length: 10).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Book920SubpagesTest.php:126",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"rel=\"next\"\" [ASCII](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.CmsTopicsTest::test_public_topic_page_menu_links_and_sitemap",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 78502) contains \"page=2\" [ASCII](length: 6).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/CmsTopicsTest.php:86",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"page=2\" [ASCII](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 78212) contains \"page=2\" [ASCII](length: 6).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/CmsTopicsTest.php:86",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"page=2\" [ASCII](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dl750ThemeTest::test_all_dl750_subpage_views_render_one_shared_shell",
+      "current": {
+        "kind": "error",
+        "type": "Illuminate\\View\\ViewException",
+        "reason": "Illuminate\\View\\ViewException: Attempt to read property \"slug\" on array (View: <repo>/resources/views/themes/common/catalog-listing.blade.php) (View: <repo>/resources/views/themes/common/catalog-listing.blade.php)",
+        "first_message": "Illuminate\\View\\ViewException: Attempt to read property \"slug\" on array (View: <repo>/resources/views/themes/common/catalog-listing.blade.php) (View: <repo>/resources/views/themes/common/catalog-listing.blade.php)",
+        "source": "<repo>/tests/Feature/Dl750ThemeTest.php:186",
+        "condition": "Illuminate\\View\\ViewException: Attempt to read property \"slug\" on array (View: <repo>/resources/views/themes/common/catalog-listing.blade.php) (View: <repo>/resources/views/themes/common/catalog-listing.blade.php)"
+      },
+      "head": {
+        "kind": "error",
+        "type": "Illuminate\\View\\ViewException",
+        "reason": "Illuminate\\View\\ViewException: Attempt to read property \"slug\" on array (View: <repo>/resources/views/themes/common/catalog-listing.blade.php) (View: <repo>/resources/views/themes/common/catalog-listing.blade.php)",
+        "first_message": "Illuminate\\View\\ViewException: Attempt to read property \"slug\" on array (View: <repo>/resources/views/themes/common/catalog-listing.blade.php) (View: <repo>/resources/views/themes/common/catalog-listing.blade.php)",
+        "source": "<repo>/tests/Feature/Dl750ThemeTest.php:186",
+        "condition": "Illuminate\\View\\ViewException: Attempt to read property \"slug\" on array (View: <repo>/resources/views/themes/common/catalog-listing.blade.php) (View: <repo>/resources/views/themes/common/catalog-listing.blade.php)"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn202ThemeTest::test_dn202_demo_content_and_storefront_render",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 70095) contains \"Liên hệ với DN202 Arc\" [UTF-8](length: 26).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Dn202ThemeTest.php:83",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ với DN202 Arc\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 69950) contains \"Liên hệ với DN202 Arc\" [UTF-8](length: 26).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Dn202ThemeTest.php:83",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ với DN202 Arc\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_demo_and_storefront_routes_render",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:68",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:68",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_footer_receives_localized_profile_content_from_backend",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:145",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:145",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_storefront_admin_mode_renders_landing_block_editor",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:226",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:226",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_inline_editor_publishes_saved_english_block_for_public_storefront",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:244",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:244",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_inline_editor_saves_an_unpublished_chinese_locale_as_draft",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:300",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:300",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_product_detail_renders_full_gallery_and_commerce_sections",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:357",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:357",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_service_detail_renders_gallery_process_and_related_services",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:410",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:410",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_post_detail_shows_ten_latest_related_posts",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:467",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:467",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_hero_uses_saved_database_slides_when_dynamic_source_is_empty",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:500",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:500",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_hero_copy_uses_saved_block_title_and_description",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:524",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:524",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_uses_primary_database_menu_with_nested_items",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:542",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:542",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_header_uses_the_published_menu_translation_for_english",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:573",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:573",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_contact_page_does_not_require_a_published_cms_page",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:603",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:603",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_contact_page_localizes_static_copy_and_published_page_content",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:615",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:615",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_service_category_hero_and_entries_use_database_values",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:657",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:657",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_cms_page_hero_and_body_use_the_current_database_entry",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:689",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:689",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_hero_becomes_full_width_when_shared_copy_and_cta_are_empty",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:720",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:720",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_all_block_headings_media_and_custom_items_use_saved_database_values",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:740",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:740",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_about_value_buttons_use_saved_names_and_links",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:775",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:775",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_content_showcase_uses_each_items_image_description_and_link",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:826",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:826",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_feature_items_render_saved_urls_as_clickable_links",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:852",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:852",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_partner_logos_render_as_a_single_row_autoplay_slider",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:881",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:881",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_services_render_four_per_row_in_a_horizontal_slider",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:900",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:900",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn302ThemeTest::test_dn302_home_renders_blocks_by_saved_sort_order_and_visibility",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:919",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302",
+        "source": "<repo>/tests/Feature/Dn302ThemeTest.php:919",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho DN302"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Dn351ThemeTest::test_dn351_assets_motion_and_branding_contract_exist",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/DN351/preview-dn351.png\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/DN351/preview-dn351.png\" exists.",
+        "source": "<repo>/tests/Feature/Dn351ThemeTest.php:165",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/DN351/preview-dn351.png\" exists."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/DN351/preview-dn351.png\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/DN351/preview-dn351.png\" exists.",
+        "source": "<repo>/tests/Feature/Dn351ThemeTest.php:165",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/DN351/preview-dn351.png\" exists."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Ec903ThemeTest::test_ec903_demo_and_storefront_pages_render_successfully",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 76406) contains \"Liên hệ DealVui\" [UTF-8](length: 18).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec903ThemeTest.php:77",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ DealVui\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 76256) contains \"Liên hệ DealVui\" [UTF-8](length: 18).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec903ThemeTest.php:77",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ DealVui\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Ec904ThemeTest::test_ec904_demo_and_storefront_pages_render_successfully",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 71802) contains \"Liên hệ PocoMall\" [UTF-8](length: 19).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec904ThemeTest.php:79",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ PocoMall\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 71642) contains \"Liên hệ PocoMall\" [UTF-8](length: 19).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec904ThemeTest.php:79",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ PocoMall\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Ec905ThemeTest::test_ec905_demo_and_storefront_pages_render_successfully",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 73128) contains \"Liên hệ Ego Home\" [UTF-8](length: 19).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec905ThemeTest.php:78",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ Ego Home\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 72993) contains \"Liên hệ Ego Home\" [UTF-8](length: 19).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec905ThemeTest.php:78",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ Ego Home\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Ec906ThemeTest::test_ec906_demo_and_storefront_pages_render_successfully",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 86259) contains \"Liên hệ EGA Mini Mart\" [UTF-8](length: 24).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec906ThemeTest.php:82",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ EGA Mini Mart\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 86029) contains \"Liên hệ EGA Mini Mart\" [UTF-8](length: 24).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec906ThemeTest.php:82",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ EGA Mini Mart\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Ec906ThemeTest::test_article_recommendations_exclude_current_unpublished_future_and_foreign_posts",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that actual size 10 matches expected size 5.",
+        "first_message": "Failed asserting that actual size 10 matches expected size 5.",
+        "source": "<repo>/tests/Feature/Ec906ThemeTest.php:142",
+        "condition": "Failed asserting that actual size 10 matches expected size 5."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that actual size 10 matches expected size 5.",
+        "first_message": "Failed asserting that actual size 10 matches expected size 5.",
+        "source": "<repo>/tests/Feature/Ec906ThemeTest.php:142",
+        "condition": "Failed asserting that actual size 10 matches expected size 5."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Ec907ThemeTest::test_ec907_demo_and_storefront_pages_render_successfully",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 73254) contains \"Liên hệ EGA Gear\" [UTF-8](length: 19).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec907ThemeTest.php:69",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ EGA Gear\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 73104) contains \"Liên hệ EGA Gear\" [UTF-8](length: 19).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec907ThemeTest.php:69",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ EGA Gear\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Ec908ThemeTest::test_ec908_demo_and_storefront_pages_render_successfully",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 72079) contains \"Liên hệ Ego Fitness\" [UTF-8](length: 22).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec908ThemeTest.php:70",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ Ego Fitness\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 71924) contains \"Liên hệ Ego Fitness\" [UTF-8](length: 22).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec908ThemeTest.php:70",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ Ego Fitness\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Ec909ThemeTest::test_ec909_demo_and_storefront_pages_render_successfully",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 76120) contains \"Liên hệ Euro Sound\" [UTF-8](length: 21).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec909ThemeTest.php:78",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ Euro Sound\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 75970) contains \"Liên hệ Euro Sound\" [UTF-8](length: 21).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Ec909ThemeTest.php:78",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ Euro Sound\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Foot404ThemeTest::test_foot404_is_registered_with_the_expected_homepage_blocks",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT404/preview-foot404.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT404/preview-foot404.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot404ThemeTest.php:63",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT404/preview-foot404.svg\" exists."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT404/preview-foot404.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT404/preview-foot404.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot404ThemeTest.php:63",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT404/preview-foot404.svg\" exists."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Foot405ThemeTest::test_foot405_is_registered_with_the_expected_homepage_blocks",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT405/preview-foot405.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT405/preview-foot405.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot405ThemeTest.php:99",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT405/preview-foot405.svg\" exists."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT405/preview-foot405.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT405/preview-foot405.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot405ThemeTest.php:99",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT405/preview-foot405.svg\" exists."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Foot406ThemeTest::test_foot406_is_registered_with_expected_blocks",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT406/preview-foot406.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT406/preview-foot406.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot406ThemeTest.php:22",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT406/preview-foot406.svg\" exists."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT406/preview-foot406.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT406/preview-foot406.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot406ThemeTest.php:22",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT406/preview-foot406.svg\" exists."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Foot407ThemeTest::test_foot407_is_registered_with_expected_blocks",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT407/cover-foot407.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT407/cover-foot407.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot407ThemeTest.php:20",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT407/cover-foot407.svg\" exists."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT407/cover-foot407.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT407/cover-foot407.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot407ThemeTest.php:20",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT407/cover-foot407.svg\" exists."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Foot408ThemeTest::test_foot408_is_registered_with_expected_blocks",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT408/preview-foot408.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT408/preview-foot408.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot408ThemeTest.php:24",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT408/preview-foot408.svg\" exists."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT408/preview-foot408.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT408/preview-foot408.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot408ThemeTest.php:24",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT408/preview-foot408.svg\" exists."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Foot409ThemeTest::test_foot409_is_registered_with_all_homepage_blocks",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT409/preview-foot409.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT409/preview-foot409.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot409ThemeTest.php:21",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT409/preview-foot409.svg\" exists."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that file \"<repo>/public/theme-previews/FOOT409/preview-foot409.svg\" exists.",
+        "first_message": "Failed asserting that file \"<repo>/public/theme-previews/FOOT409/preview-foot409.svg\" exists.",
+        "source": "<repo>/tests/Feature/Foot409ThemeTest.php:21",
+        "condition": "Failed asserting that file \"<repo>/public/theme-previews/FOOT409/preview-foot409.svg\" exists."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.FreshProductionInstallTest::test_production_refresh_after_module_installation_resets_module_schema",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "  ➜  25▕         throw new RuntimeException('Preserve bank accounts; restore a database backup to roll back this migration.');",
+        "first_message": "Refresh with installed modules failed:",
+        "source": "<repo>/tests/Feature/FreshProductionInstallTest.php:175",
+        "condition": "  ➜  25▕         throw new RuntimeException('Preserve bank accounts; restore a database backup to roll back this migration.');"
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "  ➜  25▕         throw new RuntimeException('Preserve bank accounts; restore a database backup to roll back this migration.');",
+        "first_message": "Refresh with installed modules failed:",
+        "source": "<repo>/tests/Feature/FreshProductionInstallTest.php:175",
+        "condition": "  ➜  25▕         throw new RuntimeException('Preserve bank accounts; restore a database backup to roll back this migration.');"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0304_registers_its_default_demo_content_preset",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that two strings are identical.",
+        "first_message": "Failed asserting that two strings are identical.",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:421",
+        "condition": "Failed asserting that two strings are identical."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that two strings are identical.",
+        "first_message": "Failed asserting that two strings are identical.",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:421",
+        "condition": "Failed asserting that two strings are identical."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0304_homepage_renders_with_its_default_demo_content",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 64414) contains \"Logistics Việt\" [UTF-8](length: 16).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:442",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Logistics Việt\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 64229) contains \"Logistics Việt\" [UTF-8](length: 16).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:442",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Logistics Việt\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0305_business_homepage_and_demo_preset_render",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 66167) contains \"Tư vấn doanh nghiệp\" [UTF-8](length: 24).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:458",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Tư vấn doanh nghiệp\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 66012) contains \"Tư vấn doanh nghiệp\" [UTF-8](length: 24).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:458",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Tư vấn doanh nghiệp\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0306_digital_agency_homepage_and_demo_preset_render",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 77976) contains \"Biến ý tưởng thành thương hiệu có sức ảnh hưởng\" [UTF-8](length: 66).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:475",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Biến ý tưởng thành thương hiệu có sức ảnh hưởng\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 77786) contains \"Biến ý tưởng thành thương hiệu có sức ảnh hưởng\" [UTF-8](length: 66).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:475",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Biến ý tưởng thành thương hiệu có sức ảnh hưởng\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0309_industrial_safety_homepage_and_demo_preset_render",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 62583) contains \"Logistics Việt\" [UTF-8](length: 16).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:533",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Logistics Việt\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 62438) contains \"Logistics Việt\" [UTF-8](length: 16).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:533",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Logistics Việt\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0310_garden_homepage_and_demo_preset_render",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that 3 is identical to 4.",
+        "first_message": "Failed asserting that 3 is identical to 4.",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:554",
+        "condition": "Failed asserting that 3 is identical to 4."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that 3 is identical to 4.",
+        "first_message": "Failed asserting that 3 is identical to 4.",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:554",
+        "condition": "Failed asserting that 3 is identical to 4."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0312_logistics_homepage_and_demo_preset_render",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 84729) contains \"Logistics thông minh cho chuỗi cung ứng hiện đại\" [UTF-8](length: 58).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:580",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Logistics thông minh cho chuỗi cung ứng hiện đại\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 84579) contains \"Logistics thông minh cho chuỗi cung ứng hiện đại\" [UTF-8](length: 58).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:580",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Logistics thông minh cho chuỗi cung ứng hiện đại\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0320_industrial_homepage_uses_custom_content_complete_layout_and_scroll_motion",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that actual size 9 matches expected size 7.",
+        "first_message": "Failed asserting that actual size 9 matches expected size 7.",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:641",
+        "condition": "Failed asserting that actual size 9 matches expected size 7."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that actual size 9 matches expected size 7.",
+        "first_message": "Failed asserting that actual size 9 matches expected size 7.",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:641",
+        "condition": "Failed asserting that actual size 9 matches expected size 7."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.LandingPageBuilderSourceTest::test_xd0311_accounting_homepage_and_demo_preset_render",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 73586) contains \"Kế toán và thuế vững vàng cho doanh nghiệp\" [UTF-8](length: 53).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:729",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Kế toán và thuế vững vàng cho doanh nghiệp\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 73461) contains \"Kế toán và thuế vững vàng cho doanh nghiệp\" [UTF-8](length: 53).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/LandingPageBuilderSourceTest.php:729",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Kế toán và thuế vững vàng cho doanh nghiệp\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Nt502ContentPageCollectionsTest::test_sidebar_limits_each_group_and_filters_unpublished_and_other_websites",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 65569) contains \"data-page-collection=\"products\"\" [ASCII](length: 31).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Nt502ContentPageCollectionsTest.php:49",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"data-page-collection=\"products\"\" [ASCII](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 65319) contains \"data-page-collection=\"products\"\" [ASCII](length: 31).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Nt502ContentPageCollectionsTest.php:49",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"data-page-collection=\"products\"\" [ASCII](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Nt502ContentPageCollectionsTest::test_empty_groups_are_hidden_independently",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 60284) contains \"data-page-collection=\"news\"\" [ASCII](length: 27).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Nt502ContentPageCollectionsTest.php:58",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"data-page-collection=\"news\"\" [ASCII](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 60109) contains \"data-page-collection=\"news\"\" [ASCII](length: 27).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Nt502ContentPageCollectionsTest.php:58",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"data-page-collection=\"news\"\" [ASCII](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Nt504ThemeTest::test_nt504_is_registered_with_expected_landing_blocks",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that two strings are identical.",
+        "first_message": "Failed asserting that two strings are identical.",
+        "source": "<repo>/tests/Feature/Nt504ThemeTest.php:23",
+        "condition": "Failed asserting that two strings are identical."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that two strings are identical.",
+        "first_message": "Failed asserting that two strings are identical.",
+        "source": "<repo>/tests/Feature/Nt504ThemeTest.php:23",
+        "condition": "Failed asserting that two strings are identical."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Shop601ThemeTest::test_shop601_demo_and_homepage_render_successfully",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 79744) contains \"Liên hệ với chúng tôi\" [UTF-8](length: 28).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Shop601ThemeTest.php:71",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ với chúng tôi\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 79569) contains \"Liên hệ với chúng tôi\" [UTF-8](length: 28).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Shop601ThemeTest.php:71",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Liên hệ với chúng tôi\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeBrandingContractTest::test_every_registered_theme_leaves_missing_database_branding_blank",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Empty branding contract failures:",
+        "first_message": "Empty branding contract failures:",
+        "source": "<repo>/tests/Feature/ThemeBrandingContractTest.php:120",
+        "condition": "Empty branding contract failures:"
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Empty branding contract failures:",
+        "first_message": "Empty branding contract failures:",
+        "source": "<repo>/tests/Feature/ThemeBrandingContractTest.php:120",
+        "condition": "Empty branding contract failures:"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeContentTranslationTest::test_admin_can_list_cms_business_content_translation_entries",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:26",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:26",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeContentTranslationTest::test_admin_can_save_cms_business_content_overrides_and_storefront_renders_them",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:60",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:60",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeContentTranslationTest::test_admin_can_filter_and_paginate_group_content_entries_for_non_cms_entities",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:135",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:135",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeContentTranslationTest::test_admin_can_filter_group_content_entries_for_granular_cms_entities",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:179",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:179",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeContentTranslationTest::test_admin_can_save_non_cms_content_overrides_and_storefront_renders_them",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:198",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Expected response status code [200] but received 422.",
+        "first_message": "Expected response status code [200] but received 422.",
+        "source": "<repo>/tests/Feature/ThemeContentTranslationTest.php:198",
+        "condition": "Expected response status code [200] but received 422."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeDemoWebsiteFinalizerTest::test_current_theme_menu_does_not_inherit_labels_from_an_older_theme_menu",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that '<!doctype html>\\n",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/ThemeDemoWebsiteFinalizerTest.php:270",
+        "condition": "Failed asserting that '<!doctype html>\\n"
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that '<!doctype html>\\n",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/ThemeDemoWebsiteFinalizerTest.php:270",
+        "condition": "Failed asserting that '<!doctype html>\\n"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeDocumentHeadContractTest::test_storefront_fallback_documents_use_the_shared_head_component",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 1930) contains \"<x-storefront-head\" [ASCII](length: 18).",
+        "first_message": "<repo>/resources/views/site.blade.php",
+        "source": "<repo>/tests/Feature/ThemeDocumentHeadContractTest.php:54",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"<x-storefront-head\" [ASCII](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 1930) contains \"<x-storefront-head\" [ASCII](length: 18).",
+        "first_message": "<repo>/resources/views/site.blade.php",
+        "source": "<repo>/tests/Feature/ThemeDocumentHeadContractTest.php:54",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"<x-storefront-head\" [ASCII](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.ThemeLocalizationContractTest::test_every_registered_theme_satisfies_the_localization_contract_by_rollout_group",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "xd/XD0301: locale-specific conditionals must use the theme translation catalog.",
+        "first_message": "xd/XD0301: locale-specific conditionals must use the theme translation catalog.",
+        "source": "<repo>/tests/Feature/ThemeLocalizationContractTest.php:54",
+        "condition": "xd/XD0301: locale-specific conditionals must use the theme translation catalog."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "xd/XD0301: locale-specific conditionals must use the theme translation catalog.",
+        "first_message": "xd/XD0301: locale-specific conditionals must use the theme translation catalog.",
+        "source": "<repo>/tests/Feature/ThemeLocalizationContractTest.php:54",
+        "condition": "xd/XD0301: locale-specific conditionals must use the theme translation catalog."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Xd0301DocumentTitleTest::test_home_uses_database_site_name_instead_of_generated_landing_title",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "source": "<repo>/tests/Feature/Xd0301DocumentTitleTest.php:18",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "source": "<repo>/tests/Feature/Xd0301DocumentTitleTest.php:18",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Xd0301DocumentTitleTest::test_custom_landing_meta_title_keeps_seo_precedence",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "source": "<repo>/tests/Feature/Xd0301DocumentTitleTest.php:33",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "source": "<repo>/tests/Feature/Xd0301DocumentTitleTest.php:33",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Xd0301SearchPageTest::test_vietnamese_search_page_renders_without_mojibake",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "source": "<repo>/tests/Feature/Xd0301SearchPageTest.php:15",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301",
+        "source": "<repo>/tests/Feature/Xd0301SearchPageTest.php:15",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0301"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Xd0305AboutPageTest::test_empty_groups_are_hidden_and_article_uses_full_width",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 64755) contains \"data-content-collection=\"services\"\" [ASCII](length: 34).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/Xd0305AboutPageTest.php:60",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"data-content-collection=\"services\"\" [ASCII](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 64540) contains \"data-content-collection=\"services\"\" [ASCII](length: 34).",
+        "first_message": "Failed asserting that '<!doctype html><html lang=\"vi\"><head>\\n",
+        "source": "<repo>/tests/Feature/Xd0305AboutPageTest.php:60",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"data-content-collection=\"services\"\" [ASCII](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Xd0325ThemeTest::test_xd0325_demo_and_storefront_render",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325",
+        "source": "<repo>/tests/Feature/Xd0325ThemeTest.php:42",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325",
+        "source": "<repo>/tests/Feature/Xd0325ThemeTest.php:42",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Xd0325ThemeTest::test_xd0325_renders_accented_vietnamese_scroll_reveal_and_database_logo_in_footer",
+      "current": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325",
+        "source": "<repo>/tests/Feature/Xd0325ThemeTest.php:63",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325"
+      },
+      "head": {
+        "kind": "error",
+        "type": "InvalidArgumentException",
+        "reason": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325",
+        "first_message": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325",
+        "source": "<repo>/tests/Feature/Xd0325ThemeTest.php:63",
+        "condition": "InvalidArgumentException: Bộ dữ liệu không hợp lệ cho XD0325"
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.Xd321ThemeTest::test_xd321_renders_polished_shell_accented_copy_and_scroll_reveal",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 60740) contains \"Nhanh chóng, an toàn cùng XD321 Cargo\" [UTF-8](length: 40).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Xd321ThemeTest.php:29",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Nhanh chóng, an toàn cùng XD321 Cargo\" [UTF-8](length: <diagnostic>)."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "' [UTF-8](length: 60540) contains \"Nhanh chóng, an toàn cùng XD321 Cargo\" [UTF-8](length: 40).",
+        "first_message": "Failed asserting that '<!doctype html>\\n",
+        "source": "<repo>/tests/Feature/Xd321ThemeTest.php:29",
+        "condition": "' [UTF-8](length: <diagnostic>) contains \"Nhanh chóng, an toàn cùng XD321 Cargo\" [UTF-8](length: <diagnostic>)."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": false,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.XdCompleteDemoContentTest::test_complete_demo_is_repeatable_and_links_render with data set #6",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that 6 is identical to 4.",
+        "first_message": "Failed asserting that 6 is identical to 4.",
+        "source": "<repo>/tests/Feature/XdCompleteDemoContentTest.php:39",
+        "condition": "Failed asserting that 6 is identical to 4."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that 6 is identical to 4.",
+        "first_message": "Failed asserting that 6 is identical to 4.",
+        "source": "<repo>/tests/Feature/XdCompleteDemoContentTest.php:39",
+        "condition": "Failed asserting that 6 is identical to 4."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.XdCompleteDemoContentTest::test_complete_demo_is_repeatable_and_links_render with data set #11",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that 4 is identical to 3.",
+        "first_message": "Failed asserting that 4 is identical to 3.",
+        "source": "<repo>/tests/Feature/XdCompleteDemoContentTest.php:41",
+        "condition": "Failed asserting that 4 is identical to 3."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that 4 is identical to 3.",
+        "first_message": "Failed asserting that 4 is identical to 3.",
+        "source": "<repo>/tests/Feature/XdCompleteDemoContentTest.php:41",
+        "condition": "Failed asserting that 4 is identical to 3."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    },
+    {
+      "test": "Tests.Feature.XdCompleteDemoContentTest::test_complete_demo_is_repeatable_and_links_render with data set #15",
+      "current": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that 6 is identical to 4.",
+        "first_message": "Failed asserting that 6 is identical to 4.",
+        "source": "<repo>/tests/Feature/XdCompleteDemoContentTest.php:39",
+        "condition": "Failed asserting that 6 is identical to 4."
+      },
+      "head": {
+        "kind": "failure",
+        "type": "PHPUnit\\Framework\\ExpectationFailedException",
+        "reason": "Failed asserting that 6 is identical to 4.",
+        "first_message": "Failed asserting that 6 is identical to 4.",
+        "source": "<repo>/tests/Feature/XdCompleteDemoContentTest.php:39",
+        "condition": "Failed asserting that 6 is identical to 4."
+      },
+      "same_kind_type": true,
+      "same_assertion_source": true,
+      "same_reason": true,
+      "same_failure_condition": true,
+      "same_test_source_bytes": true
+    }
+  ]
+}

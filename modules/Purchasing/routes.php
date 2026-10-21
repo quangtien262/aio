@@ -2,8 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Purchasing\Http\PurchasingController;
+use Modules\Purchasing\Http\PurchasingProductionController;
 
 Route::prefix('purchasing')->middleware('module.enabled:purchasing')->group(function (): void {
+    Route::get('production/requisitions', [PurchasingProductionController::class, 'requisitions'])->middleware('admin.permission:purchasing.view,global');
+    Route::post('production/{operation}', [PurchasingProductionController::class, 'command'])->whereIn('operation', ['requisitions', 'orders', 'receipts', 'inspect', 'returns']);
     Route::get('commands/{key}', [PurchasingController::class, 'commandStatus'])->middleware('admin.permission:purchasing.view,global');
     Route::get('suppliers', [PurchasingController::class, 'suppliers'])->middleware('admin.permission:purchasing.view,global');
     Route::post('suppliers', [PurchasingController::class, 'createSupplier'])->middleware('admin.permission:purchasing.supplier.manage,global');

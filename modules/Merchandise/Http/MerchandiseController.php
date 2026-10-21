@@ -2,13 +2,40 @@
 
 namespace Modules\Merchandise\Http;
 
+use App\Core\Modules\ModuleCapabilityChecker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Merchandise\Services\MerchandiseService;
+use Modules\Merchandise\Services\MerchandiseVariantService;
 
 class MerchandiseController
 {
+    public function variantSets(string $catalog): JsonResponse
+    {
+        abort_unless(app(ModuleCapabilityChecker::class)->has('merchandise', 'merchandise.variants.read.v1'), 503);
+        $id = $this->catalogId($catalog);
+
+        return response()->json(['data' => DB::table('merch_variant_sets')->where('catalog_id', $id)->orderBy('id')->paginate(50)]);
+    }
+
+    public function createVariantSet(Request $request, string $catalog): JsonResponse
+    {
+        return response()->json(['data' => $this->service->nativeMutation($request->user('admin'), 'merchandise.manage', fn () => app(MerchandiseVariantService::class)->createSet($this->catalogId($catalog), $request->all()))], 201);
+    }
+
+    public function variants(Request $request, string $catalog, string $set): JsonResponse
+    {
+        abort_unless(app(ModuleCapabilityChecker::class)->has('merchandise', 'merchandise.variants.read.v1'), 503);
+        $id = DB::table('merch_variant_sets')->where('catalog_id', $this->catalogId($catalog))->where('public_id', $set)->value('id');
+        abort_unless($id, 404);
+        if ($request->isMethod('get')) {
+            return response()->json(['data' => app(MerchandiseVariantService::class)->set($id)]);
+        }
+
+        return response()->json(['data' => $this->service->nativeMutation($request->user('admin'), 'merchandise.manage', fn () => $request->isMethod('put') ? app(MerchandiseVariantService::class)->extendSet($id, $request->all()) : app(MerchandiseVariantService::class)->saveVariant($id, $request->all()))]);
+    }
+
     public function __construct(private readonly MerchandiseService $service) {}
 
     public function catalogs(): JsonResponse

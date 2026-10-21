@@ -2,7 +2,7 @@
   "name": "Quản lý kho",
   "key": "inventory",
   "lifecycle_state_provider": "Modules\\Inventory\\Services\\InventoryRuntimeState",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Quản lý nhiều kho, vị trí, hàng hóa, tồn kho, lô/serial và giao dịch nhập, xuất, chuyển kho.",
   "website_type": [
     "backoffice",
@@ -43,6 +43,18 @@
     "inventory.offline.escrow.v1": {
       "description": "Transactional decimal Inventory contract for multi-branch Retail.",
       "introduced_version": "0.3.0"
+    },
+    "inventory.trace_units.manage.v1": {
+      "introduced_version": "0.4.0"
+    },
+    "inventory.quality.dispositions.v1": {
+      "introduced_version": "0.4.0"
+    },
+    "inventory.production.reservations.v1": {
+      "introduced_version": "0.4.0"
+    },
+    "inventory.production.post.v1": {
+      "introduced_version": "0.4.0"
     }
   },
   "permissions": [
@@ -155,6 +167,13 @@
     }
   ],
   "changelog": [
+    {
+      "version": "0.4.0",
+      "date": "2026-10-21",
+      "notes": [
+        "Additive company-owned manufacturing contracts; preserve existing consumer semantics."
+      ]
+    },
     {
       "version": "0.3.0",
       "date": "2026-10-20",

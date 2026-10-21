@@ -108,6 +108,10 @@ Smoke MySQL cần quyền tạo database, tự tạo database tên ngẫu nhiên
 - [Kế hoạch triển khai Retail POS theo giai đoạn](docs/architecture/retail-pos-implementation-plan.md).
 - [Tiến độ triển khai Retail POS](docs/architecture/retail-pos-implementation-status.md) — chức năng đã kiểm chứng, giới hạn và release gate còn mở.
 - [Contract runtime Retail POS](docs/api/retail-pos-runtime-contract.md) — API, quy trình cài đặt/nâng cấp và kiểm thử.
+- [Customers — điểm bắt đầu cho AI/người bảo trì](docs/architecture/customers-module.md) — đọc nhanh, ownership, phân quyền, source map, giao diện, vận hành, kiểm thử và việc còn mở.
+- [Contract runtime Customers](docs/api/customers-runtime-contract.md) — API, consumer gateway, retry/version, migration/cutover và giới hạn thực tế; cần đọc lưu ý storage export trước production.
+- [Quản lý xưởng may — trạng thái triển khai](docs/architecture/manufacturing-implementation-status.md) — app FOB online, bằng chứng kiểm thử và gate pilot còn mở.
+- [Contract runtime Quản lý xưởng may](docs/api/manufacturing-runtime-contract.md) — native enterprise context, API, vật tư, sản xuất, giá thành và cài đặt qua lifecycle.
 - `docs/theme-authoring-guide.md`
 - `docs/landing-page-builder.md`
 

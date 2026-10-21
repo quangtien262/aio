@@ -1,0 +1,30 @@
+{
+  "name": "Quản lý xưởng may",
+  "key": "manufacturing",
+  "version": "0.1.0-dev.1",
+  "description": "Kỹ thuật, kế hoạch và điều hành sản xuất may theo doanh nghiệp và phân xưởng.",
+  "website_type": ["backoffice", "corporate", "ecommerce"],
+  "dependencies": ["merchandise", "inventory"],
+  "optional_dependencies": ["purchasing", "customers", "hrm", "payroll", "accounting-tax"],
+  "provides": {"manufacturing.workspace.v1": {"introduced_version": "0.1.0-dev.1"}},
+  "permissions": ["manufacturing.view", "manufacturing.settings", "manufacturing.engineering", "manufacturing.plan", "manufacturing.execute", "manufacturing.quality", "manufacturing.fulfill", "manufacturing.cost.view", "manufacturing.cost.manage", "manufacturing.documents", "manufacturing.integrations"],
+  "hooks": ["Modules\\Manufacturing\\Hooks\\ManufacturingLifecycleHook"],
+  "lifecycle_state_provider": "Modules\\Manufacturing\\Services\\Runtime\\ManufacturingRuntimeState",
+  "menus": [
+    {"key":"manufacturing-overview","label":"Tổng quan","icon":"dashboard","route":"/admin/modules/manufacturing","permission":"manufacturing.view"},
+    {"key":"manufacturing-demands","label":"Nhu cầu và đơn hàng","icon":"profile","route":"/admin/modules/manufacturing/demands","permission":"manufacturing.view"},
+    {"key":"manufacturing-engineering","label":"Kỹ thuật sản phẩm","icon":"experiment","route":"/admin/modules/manufacturing/engineering","permission":"manufacturing.view"},
+    {"key":"manufacturing-planning","label":"Kế hoạch","icon":"calendar","route":"/admin/modules/manufacturing/planning","permission":"manufacturing.view"},
+    {"key":"manufacturing-materials","label":"Nguyên liệu","icon":"database","route":"/admin/modules/manufacturing/materials","permission":"manufacturing.view"},
+    {"key":"manufacturing-cutting","label":"Cắt và bó","icon":"scissor","route":"/admin/modules/manufacturing/cutting","permission":"manufacturing.view"},
+    {"key":"manufacturing-execution","label":"Sản xuất và bàn giao","icon":"swap","route":"/admin/modules/manufacturing/execution","permission":"manufacturing.view"},
+    {"key":"manufacturing-quality","label":"Chất lượng","icon":"check-circle","route":"/admin/modules/manufacturing/quality","permission":"manufacturing.view"},
+    {"key":"manufacturing-subcontracts","label":"Gia công ngoài","icon":"apartment","route":"/admin/modules/manufacturing/subcontracts","permission":"manufacturing.view"},
+    {"key":"manufacturing-fulfillment","label":"Thành phẩm và giao hàng","icon":"shopping","route":"/admin/modules/manufacturing/fulfillment","permission":"manufacturing.view"},
+    {"key":"manufacturing-costing","label":"Giá thành","icon":"bar-chart","route":"/admin/modules/manufacturing/costing","permission":"manufacturing.cost.view"},
+    {"key":"manufacturing-settings","label":"Thiết lập","icon":"setting","route":"/admin/modules/manufacturing/settings","permission":"manufacturing.settings"}
+  ],
+  "package": {"migrations": ["database/migrations"]},
+  "lifecycle": {"install":true,"enable":true,"disable":true,"upgrade":true,"uninstall":false},
+  "changelog": [{"version":"0.1.0-dev.1","date":"2026-10-21","notes":["Nền sản xuất may với native company/factory grants, schema nghiệp vụ, command journal và lifecycle bảo toàn WIP."]}]
+}

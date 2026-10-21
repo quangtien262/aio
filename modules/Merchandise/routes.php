@@ -10,4 +10,9 @@ Route::prefix('merchandise')->middleware('module.enabled:merchandise')->group(fu
     Route::post('catalogs/{catalog}/skus', [MerchandiseController::class, 'saveSku'])->middleware('admin.permission:merchandise.manage,global');
     Route::put('catalogs/{catalog}/skus/{sku}', [MerchandiseController::class, 'saveSku'])->middleware('admin.permission:merchandise.manage,global');
     Route::post('catalogs/{catalog}/import', [MerchandiseController::class, 'import'])->middleware('admin.permission:merchandise.import,global');
+    Route::get('catalogs/{catalog}/variant-sets', [MerchandiseController::class, 'variantSets'])->middleware('admin.permission:merchandise.view,global');
+    Route::post('catalogs/{catalog}/variant-sets', [MerchandiseController::class, 'createVariantSet'])->middleware('admin.permission:merchandise.manage,global');
+    Route::get('catalogs/{catalog}/variant-sets/{set}', [MerchandiseController::class, 'variants'])->middleware('admin.permission:merchandise.view,global');
+    Route::put('catalogs/{catalog}/variant-sets/{set}', [MerchandiseController::class, 'variants'])->middleware('admin.permission:merchandise.manage,global');
+    Route::post('catalogs/{catalog}/variant-sets/{set}/skus', [MerchandiseController::class, 'variants'])->middleware('admin.permission:merchandise.manage,global');
 });

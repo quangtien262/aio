@@ -1078,6 +1078,7 @@
 .fnb-overview-tabs > .ant-tabs-nav .ant-tabs-nav-wrap { flex: initial; }
 .fnb-overview-title > span { color: var(--fnb-brand); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
 .fnb-overview-title h2 { color: var(--fnb-ink); font-size: 23px; line-height: 1.4; margin: 1px 0 0; }
+.fnb-overview-heading { padding: 16px 20px; border: 1px solid var(--fnb-border); border-radius: 12px; background: #fff; }
 
 .fnb-item-modal .ant-modal-content { padding: 22px; border-radius: 18px; }
 .fnb-item-modal .ant-modal-header { margin-bottom: 20px; }

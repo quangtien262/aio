@@ -30,7 +30,7 @@ class EnsureAdminAccountIsActive
         if (
             $admin->must_change_password
             && $request->is('admin/api/*')
-            && ! $request->routeIs('admin.api.me', 'admin.api.me.password.update')
+            && ! $request->routeIs('admin.api.me', 'admin.api.me.password.update', 'admin.api.manufacturing.bootstrap', 'admin.api.manufacturing.me.password.update', 'admin.api.manufacturing.logout')
         ) {
             return response()->json([
                 'message' => 'Bạn phải đổi mật khẩu trước khi tiếp tục.',
@@ -51,6 +51,6 @@ class EnsureAdminAccountIsActive
             return response()->json(['message' => $message], 401);
         }
 
-        return redirect()->route('site.entry')->withErrors(['login' => $message]);
+        return redirect()->route($request->is('admin/modules/manufacturing', 'admin/modules/manufacturing/*') ? 'admin.manufacturing.login' : 'site.entry')->withErrors(['login' => $message]);
     }
 }
