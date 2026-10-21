@@ -62,6 +62,9 @@ class FnbCommandSecurity
 
         return function (string $operation, array $authorizationPayload, FnbContext $ctx) use ($request, $action, $subject, $hash, $actor, $permission, $payload): void {
             $actor = Admin::query()->whereKey($actor->id)->sharedLock()->firstOrFail();
+            if ($action === 'item.archive') {
+                $this->access->authorizeHq($actor, $ctx->websiteKey, 'fnb.menu.master.manage');
+            }
             if ($ctx->outletId > 0) {
                 $this->access->authorize($actor, $ctx->websiteKey, $ctx->outletId, $permission);
                 $this->access->authorizeTerminal($actor, $ctx->websiteKey, $ctx->outletId, $ctx->terminalId, $permission);

@@ -1,16 +1,20 @@
 import ShopOutlined from '@ant-design/icons/ShopOutlined';
 import CoffeeOutlined from '@ant-design/icons/CoffeeOutlined';
+import DownOutlined from '@ant-design/icons/DownOutlined';
+import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import PlusOutlined from '@ant-design/icons/PlusOutlined';
 import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import ReloadOutlined from '@ant-design/icons/ReloadOutlined';
 import PictureOutlined from '@ant-design/icons/PictureOutlined';
 import Alert from 'antd/es/alert';
+import App from 'antd/es/app';
 import Button from 'antd/es/button';
 import Card from 'antd/es/card';
 import Col from 'antd/es/col';
 import Collapse from 'antd/es/collapse';
 import Drawer from 'antd/es/drawer';
+import Dropdown from 'antd/es/dropdown';
 import Empty from 'antd/es/empty';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
@@ -18,7 +22,6 @@ import InputNumber from 'antd/es/input-number';
 import Image from 'antd/es/image';
 import Modal from 'antd/es/modal';
 import Radio from 'antd/es/radio';
-import Popconfirm from 'antd/es/popconfirm';
 import Row from 'antd/es/row';
 import Select from 'antd/es/select';
 import Space from 'antd/es/space';
@@ -27,7 +30,7 @@ import Table from 'antd/es/table';
 import Tabs from 'antd/es/tabs';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createIdempotencyKey } from '../../api/fnbApi';
 import FnbMenuChoiceManagerModal from '../../components/FnbMenuChoiceManagerModal';
 import FnbUnitManagerModal from '../../components/FnbUnitManagerModal';
@@ -338,11 +341,14 @@ function IngredientModal({ open, ingredient, units, unitsLoading, onUnitsSaved, 
 }
 
 export default function FnbMenuPage() {
+    const { modal } = App.useApp();
     const { api, outletId, selectedOutlet, can, runCommand, navigateSection } = useFnbWorkspace();
     const [activeTab, setActiveTab] = useState('items');
     const [managerType, setManagerType] = useState(null);
     const [drawer, setDrawer] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [archivingItems, setArchivingItems] = useState(false);
+    const [selectedItemKeys, setSelectedItemKeys] = useState([]);
     const [itemForm] = Form.useForm();
     const [modifierForm] = Form.useForm();
     const [recipeForm] = Form.useForm();
@@ -608,7 +614,41 @@ export default function FnbMenuPage() {
         return <FnbResourceError error={catalogResource.error} onRetry={catalogResource.reload} title="Không tải được thực đơn" />;
     }
 
-    const items = asArray(catalog.items);
+    const items = useMemo(() => asArray(catalog.items), [catalog.items]);
+    const canArchiveItems = can('fnb.menu.manage') && can('fnb.menu.master.manage');
+    const selectedItems = items.filter((item) => selectedItemKeys.includes(item.public_id ?? item.id));
+    useEffect(() => {
+        const currentKeys = new Set(items.map((item) => item.public_id ?? item.id));
+        setSelectedItemKeys((keys) => keys.filter((key) => currentKeys.has(key)));
+    }, [items]);
+    const confirmArchiveItems = () => {
+        if (!canArchiveItems || archivingItems || !selectedItems.length) return;
+        const payload = { items: selectedItems.map((item) => ({ id: item.id, expected_version: item.version })) };
+        const idempotencyKey = createIdempotencyKey('archive-menu-items');
+        modal.confirm({
+            title: `Xóa ${selectedItems.length} món đã chọn?`,
+            content: 'Các món sẽ được xóa khỏi bản soạn thực đơn. Bill, order và bản thực đơn đã phát hành vẫn được giữ nguyên. Phát hành lại thực đơn để áp dụng cho điểm bán.',
+            okText: 'Xóa đã chọn',
+            cancelText: 'Hủy',
+            okButtonProps: { danger: true },
+            onOk: async () => {
+                setArchivingItems(true);
+                try {
+                    await runCommand({
+                        execute: (auth) => api.command('menu/items/archive', payload, { idempotencyKey, ...auth }),
+                        successMessage: `Đã xóa ${payload.items.length} món khỏi bản soạn.`,
+                        onSuccess: async () => {
+                            setSelectedItemKeys([]);
+                            await catalogResource.reload({ silent: true });
+                        },
+                        onConflict: catalogResource.reload,
+                    });
+                } finally {
+                    setArchivingItems(false);
+                }
+            },
+        });
+    };
     const menus = asArray(catalog.menus);
     const modifierGroups = asArray(catalog.modifier_groups);
     const priceBooks = asArray(catalog.price_books);
@@ -674,11 +714,24 @@ export default function FnbMenuPage() {
                             key: 'items',
                             label: `Món & size (${items.length})`,
                             children: <>
-                                <div className="fnb-table-toolbar"><Text type="secondary">Giá hiển thị theo VND, tổng bill do máy chủ tính.</Text>{can('fnb.menu.manage') ? <Button type="primary" icon={<PlusOutlined />} onClick={() => openItem()}>Thêm món</Button> : null}</div>
+                                <div className="fnb-table-toolbar"><Text type="secondary">Giá hiển thị theo VND, tổng bill do máy chủ tính.</Text>{can('fnb.menu.manage') ? <Button type="primary" icon={<PlusOutlined />} disabled={archivingItems} onClick={() => openItem()}>Thêm món</Button> : null}</div>
+                                {canArchiveItems && selectedItems.length > 0 ? <div className="fnb-table-toolbar">
+                                    <Space wrap>
+                                        <Text>Đã chọn {selectedItems.length} món</Text>
+                                        <Button danger icon={<DeleteOutlined />} loading={archivingItems} disabled={saving || catalogResource.refreshing} onClick={confirmArchiveItems}>Xóa đã chọn</Button>
+                                        <Button type="text" disabled={archivingItems} onClick={() => setSelectedItemKeys([])}>Bỏ chọn</Button>
+                                    </Space>
+                                </div> : null}
                                 <Table
                                     rowKey={(record) => record.public_id ?? record.id}
                                     loading={catalogResource.loading}
                                     dataSource={items}
+                                    rowSelection={canArchiveItems ? {
+                                        selectedRowKeys: selectedItems.map((item) => item.public_id ?? item.id),
+                                        onChange: setSelectedItemKeys,
+                                        selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
+                                        getCheckboxProps: () => ({ disabled: saving || archivingItems || catalogResource.refreshing }),
+                                    } : undefined}
                                     scroll={{ x: 940 }}
                                     columns={[
                                         { title: 'Ảnh', key: 'cover', width: 84, align: 'center', render: (_, record) => <MenuItemCover item={record} /> },
@@ -690,7 +743,26 @@ export default function FnbMenuPage() {
                                             return stationNames.join(', ') || '—';
                                         } },
                                         { title: 'Trạng thái', render: (_, record) => <Space direction="vertical" size={4}><FnbStatusTag status={record.status} />{record.available === false ? <Tag color="red">Hết món</Tag> : null}</Space> },
-                                        { title: 'Thao tác', fixed: 'right', width: 180, render: (_, record) => <Space>{can('fnb.menu.manage') ? <Button size="small" icon={<EditOutlined />} onClick={() => openItem(record)}>Sửa</Button> : null}{can('fnb.menu.availability.update') ? <Popconfirm title={record.available === false ? 'Mở bán lại món này?' : 'Báo hết món tại điểm bán?'} onConfirm={() => setAvailability(record, record.available === false)}><Button size="small" danger={record.available !== false}>{record.available === false ? 'Mở bán' : 'Hết món'}</Button></Popconfirm> : null}</Space> },
+                                        {
+                                            title: 'Thao tác', fixed: 'right', width: 140,
+                                            render: (_, record) => can('fnb.menu.manage') || can('fnb.menu.availability.update') ? <Dropdown trigger={['click']} menu={{
+                                                items: [
+                                                    ...(can('fnb.menu.manage') ? [{ key: 'edit', label: 'Sửa', icon: <EditOutlined /> }] : []),
+                                                    ...(can('fnb.menu.availability.update') ? [{ key: 'availability', label: record.available === false ? 'Mở bán' : 'Hết món', danger: record.available !== false }] : []),
+                                                ],
+                                                onClick: ({ key }) => {
+                                                    if (key === 'edit' && can('fnb.menu.manage')) openItem(record);
+                                                    if (key === 'availability' && can('fnb.menu.availability.update')) modal.confirm({
+                                                        title: record.available === false ? 'Mở bán lại món này?' : 'Báo hết món tại điểm bán?',
+                                                        content: record.name,
+                                                        okText: record.available === false ? 'Mở bán' : 'Hết món',
+                                                        cancelText: 'Hủy',
+                                                        okButtonProps: { danger: record.available !== false },
+                                                        onOk: () => setAvailability(record, record.available === false),
+                                                    });
+                                                },
+                                            }}><Button size="small" disabled={saving || archivingItems} aria-label={`Thao tác món ${record.name}`}>Thao tác <DownOutlined /></Button></Dropdown> : null,
+                                        },
                                     ]}
                                 />
                             </>,

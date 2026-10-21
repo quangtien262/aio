@@ -34,6 +34,8 @@ The management page reuses `POST customers` and `PUT customers/{id}` for create/
 
 ## Scope and errors
 
+`POST menu/items/archive` removes 1–500 selected items from the shared menu draft using soft deletion. It requires outlet `fnb.menu.manage`, HQ `fnb.menu.master.manage`, `Idempotency-Key`, and `{items: [{id, expected_version}]}` with distinct item IDs. The whole batch is atomic: a missing/cross-website item or stale version prevents every deletion. Successful commands increment each item version, emit archive events and record the affected IDs in audit; retries with the same key and body replay the result. Variants, recipes, order/bill history and existing published menu snapshots remain intact. Publish a new menu to apply the draft changes to outlets. The Menu table exposes permission-gated row selection, selected count, clear selection and a confirmed **Xóa đã chọn** action.
+
 ```php
 use Modules\FnbPos\Domain\FnbContext;
 use Modules\FnbPos\Services\FnbService;

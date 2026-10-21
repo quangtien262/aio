@@ -51,6 +51,7 @@ Route::prefix('fnb')->name('fnb.')->middleware([FnbApiErrors::class, 'module.ena
     foreach ([
         ['onboarding/presets/cafe', 'onboard', 'fnb.outlet.manage'],
         ['menu/items', 'item.save', 'fnb.menu.manage'],
+        ['menu/items/archive', 'item.archive', 'fnb.menu.manage'],
         ['outlets/{outlet}/items/{resource}/availability', 'item.availability', 'fnb.menu.availability.update'],
         ['customers', 'customer.create', 'fnb.customer.create'],
         ['outlets/{outlet}/business-days/open', 'day.open', 'fnb.shift.open'],

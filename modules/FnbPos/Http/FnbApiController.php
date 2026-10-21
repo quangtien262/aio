@@ -112,7 +112,7 @@ class FnbApiController
         $key = (string) $request->header('Idempotency-Key', '');
         validator(['key' => $key], ['key' => ['required', 'string', 'min:8', 'max:120', 'regex:/^[A-Za-z0-9_.:\\-]+$/']])->validate();
         $ctx = $this->context($request, $permission, $name === 'onboard', $this->security->authorization($request, $name, $input));
-        if ($name === 'item.save') {
+        if (in_array($name, ['item.save', 'item.archive'], true)) {
             $this->access->authorizeHq($request->user('admin'), $ctx->websiteKey, 'fnb.menu.master.manage');
         }
         $id = (int) $request->route('resource');
@@ -120,6 +120,7 @@ class FnbApiController
         $result = match ($name) {
             'onboard' => $this->service->onboard($ctx, $input, $key),
             'item.save' => $this->service->saveCatalogItem($ctx, $id ? array_replace($input, ['id' => $id]) : $input, $key, isset($input['expected_version']) ? $version() : null),
+            'item.archive' => $this->service->archiveCatalogItems($ctx, $input, $key),
             'item.availability' => $this->service->setAvailability($ctx, $id, $this->boolean($input, 'available'), $input['sold_out_until'] ?? null, $input['reason'] ?? null, $key, $version()),
             'customer.create' => $this->service->createCustomer($ctx, $input, $key),
             'day.open' => $this->service->openBusinessDay($ctx, $this->businessDate($input), $key),

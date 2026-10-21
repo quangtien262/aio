@@ -28,6 +28,11 @@ final class FnbService
         return $this->setup->saveCatalogItem($ctx, $input, $idempotencyKey, $expectedVersion);
     }
 
+    public function archiveCatalogItems(FnbContext $ctx, array $input, string $idempotencyKey): array
+    {
+        return $this->setup->archiveCatalogItems($ctx, $input, $idempotencyKey);
+    }
+
     public function setAvailability(FnbContext $ctx, int $itemId, bool $available, ?string $soldOutUntil, ?string $reason, string $idempotencyKey, int $expectedVersion): array
     {
         return $this->setup->setAvailability($ctx, $itemId, $available, $soldOutUntil, $reason, $idempotencyKey, $expectedVersion);

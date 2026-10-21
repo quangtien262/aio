@@ -2,6 +2,7 @@
 
 namespace Modules\FnbPos\Services;
 
+use App\Models\Admin;
 use DateTimeZone;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,7 @@ use Modules\FnbPos\Domain\FnbContext;
 use Modules\FnbPos\Domain\FnbNotFoundException;
 use Modules\FnbPos\Domain\FnbValidationException;
 use Modules\FnbPos\Domain\MinorMoney;
+use Modules\FnbPos\Services\Security\FnbAuditLogger;
 
 final class FnbSetupService
 {
@@ -609,6 +611,52 @@ final class FnbSetupService
                 'resource' => $this->itemResource($context, $itemId),
                 'events' => [$event],
                 'meta' => ['resource_type' => 'menu_item', 'resource_id' => $itemId, 'version' => $version],
+            ];
+        });
+    }
+
+    public function archiveCatalogItems(FnbContext $context, array $input, string $idempotencyKey): array
+    {
+        $data = validator($input, [
+            'items' => ['required', 'array', 'min:1', 'max:500'],
+            'items.*' => ['required', 'array:id,expected_version'],
+            'items.*.id' => ['required', 'integer', 'min:1', 'distinct'],
+            'items.*.expected_version' => ['required', 'integer', 'min:1'],
+        ])->validate();
+
+        return $this->commands->run($context, 'catalog.items.archive', $data, $idempotencyKey, function () use ($context, $data): array {
+            app(FnbMasterDataLock::class)->acquire($context->websiteKey);
+            $expected = collect($data['items'])->keyBy('id');
+            $items = DB::table('fnb_menu_items')->where('website_key', $context->websiteKey)
+                ->whereIn('id', $expected->keys())->whereNull('archived_at')->orderBy('id')->lockForUpdate()->get();
+            if ($items->count() !== $expected->count()) {
+                throw new FnbNotFoundException('Một số món không còn tồn tại trong bản soạn của website hiện tại.');
+            }
+            foreach ($items as $item) {
+                if ((int) $item->version !== (int) $expected[$item->id]['expected_version']) {
+                    throw $this->versionConflict('menu_item', (int) $item->id, (int) $item->version, $item);
+                }
+            }
+
+            $events = [];
+            $now = now();
+            foreach ($items as $item) {
+                $version = (int) $item->version + 1;
+                DB::table('fnb_menu_items')->where('website_key', $context->websiteKey)->where('id', $item->id)
+                    ->update(['status' => 'inactive', 'archived_at' => $now, 'version' => $version, 'updated_at' => $now]);
+                $events[] = $this->outbox->emit($context, 'menu_item', (int) $item->id, $version, 'fnb.menu_item.archived', [
+                    'item_id' => (int) $item->id, 'version' => $version,
+                ]);
+            }
+            app(FnbAuditLogger::class)->record('fnb.menu_items.archived', $context->websiteKey,
+                Admin::findOrFail($context->actorId), 'fnb_menu_items',
+                after: ['item_ids' => $items->pluck('id')->all(), 'count' => $items->count()],
+                outletIds: [$context->outletId]);
+
+            return [
+                'resource' => ['archived_ids' => $items->pluck('id')->all(), 'count' => $items->count()],
+                'events' => $events,
+                'meta' => ['resource_type' => 'menu_items'],
             ];
         });
     }
