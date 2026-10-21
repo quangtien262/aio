@@ -5,7 +5,8 @@ test.skip(process.env.PLAYWRIGHT_MANUFACTURING_FIXTURE !== '1', 'Chỉ ghi dữ 
 const dialog = (page, name) => page.getByRole('dialog', { name, exact: true });
 const submit = async (drawer) => { await drawer.getByRole('button', { name: 'Ghi nhận', exact: true }).click(); await expect(drawer).toBeHidden(); };
 async function select(drawer, label, option) {
-    await drawer.getByLabel(label, { exact: true }).click();
+    await drawer.getByLabel(label, { exact: true }).focus();
+    await drawer.getByLabel(label, { exact: true }).press('ArrowDown');
     await drawer.page().locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option-content').filter({ hasText: option }).first().click();
 }
 async function tags(drawer, label, values) {
@@ -41,6 +42,7 @@ test('Manufacturing workspace creates real technical data and renders all operat
     await workshop.getByLabel('Mã phân xưởng', { exact: true }).fill('WS1');
     await workshop.getByLabel('Tên phân xưởng', { exact: true }).fill('Phân xưởng 1');
     await submit(workshop);
+    await page.getByRole('tab', { name: /Ca & danh mục/ }).click();
     await page.getByRole('button', { name: 'Tạo mã nguyên liệu', exact: true }).click();
     const sku = dialog(page, 'Tạo mã nguyên phụ liệu');
     await sku.getByLabel('Mã vật tư', { exact: true }).fill(`FABRIC-${suffix}`);

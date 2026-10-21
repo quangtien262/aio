@@ -54,7 +54,9 @@ export default function ManufacturingSettings({ data, bootstrap, factoryId, can,
     const visibleFactories = factories.filter((item) => `${item.code ?? ''} ${item.name ?? ''}`.toLocaleLowerCase('vi').includes(factorySearch.toLocaleLowerCase('vi').trim()));
     const workshopIds = new Set(workshops.map((item) => String(id(item))));
     const otherLines = lines.filter((item) => !workshopIds.has(String(item.workshop_id)));
-    const create = (operation, label, primary = false, initial) => can(operation) ? <Button icon={<PlusOutlined />} type={primary ? 'primary' : 'default'} disabled={paused} onClick={() => onOpen(operation, null, initial ? { initial } : {})}>{label}</Button> : null;
+    const runtimeKnown = Boolean(bootstrap?.runtime);
+    const runtimeLabel = !runtimeKnown ? 'Chưa xác định trạng thái' : paused ? 'Tạm dừng ghi dữ liệu' : 'Đang vận hành';
+    const create = (operation, label, primary = false, initial) => can(operation) ? <Button aria-label={label} icon={<PlusOutlined />} type={primary ? 'primary' : 'default'} disabled={paused} onClick={() => onOpen(operation, null, initial ? { initial } : {})}>{label}</Button> : null;
     const lineList = (items) => <div className="mfg-settings-line-list">{items.map((line) => <div className="mfg-settings-line" key={id(line)}><span className="mfg-settings-line-marker" /><div><strong>{line.name}</strong><small>{line.code}</small></div><span className="mfg-settings-capacity">{format(line.capacity_minutes)}<small>phút / ca</small></span></div>)}</div>;
     const scopeNote = factory ? `Dữ liệu tại ${factory.name}` : 'Chọn nhà máy để xem chi tiết';
 
@@ -104,7 +106,7 @@ export default function ManufacturingSettings({ data, bootstrap, factoryId, can,
                 {Array.isArray(data?.skus) && <DataTable data={data.skus} columns={[{ title: 'Mã vật tư', dataIndex: 'sku' }, { title: 'Tên', dataIndex: 'name' }, { title: 'Đơn vị', dataIndex: 'base_unit' }]} />}
             </Panel>
             <Panel title="Điều khiển vận hành" icon={SafetyCertificateOutlined}>
-                <div className={`mfg-settings-runtime${paused ? ' is-paused' : ''}`}><span className="mfg-settings-status-dot" /><strong>{paused ? 'Đang tạm dừng ghi dữ liệu' : 'Hệ thống đang vận hành'}</strong></div>
+                <div className={`mfg-settings-runtime${paused ? ' is-paused' : ''}${!runtimeKnown ? ' is-unknown' : ''}`}><span className="mfg-settings-status-dot" /><strong>{runtimeLabel}</strong></div>
                 <p className="mfg-settings-muted">Tạm dừng ghi dữ liệu áp dụng cho toàn app khi cần bảo trì hoặc đối chiếu. Các màn hình vẫn cho phép xem dữ liệu.</p>
                 {can(paused ? 'runtime.resume' : 'runtime.pause') && <Button block danger={!paused} type={paused ? 'primary' : 'default'} onClick={() => onOpen(paused ? 'runtime.resume' : 'runtime.pause')}>{paused ? 'Tiếp tục vận hành' : 'Tạm dừng ghi dữ liệu'}</Button>}
             </Panel>
@@ -125,7 +127,7 @@ export default function ManufacturingSettings({ data, bootstrap, factoryId, can,
     </div>;
 
     return <div className="mfg-settings">
-        <div className="mfg-settings-context"><div className="mfg-settings-context-icon"><BuildOutlined /></div><div className="mfg-settings-context-copy"><small>NHÀ MÁY ĐANG QUẢN LÝ</small><h4>{factory?.name ?? 'Chưa chọn nhà máy'}</h4><p>{factory ? [factory.code, company?.name, factory.timezone].filter(Boolean).join(' · ') : 'Tạo công ty và nhà máy để bắt đầu thiết lập hệ thống.'}</p></div><span className={`mfg-settings-health${paused ? ' is-paused' : ''}`}><span className="mfg-settings-status-dot" />{paused ? 'Tạm dừng ghi dữ liệu' : 'Đang vận hành'}</span></div>
+        <div className="mfg-settings-context"><div className="mfg-settings-context-icon"><BuildOutlined /></div><div className="mfg-settings-context-copy"><small>NHÀ MÁY ĐANG QUẢN LÝ</small><h4>{factory?.name ?? 'Chưa chọn nhà máy'}</h4><p>{factory ? [factory.code, company?.name, factory.timezone].filter(Boolean).join(' · ') : 'Tạo công ty và nhà máy để bắt đầu thiết lập hệ thống.'}</p></div><span className={`mfg-settings-health${paused ? ' is-paused' : ''}${!runtimeKnown ? ' is-unknown' : ''}`}><span className="mfg-settings-status-dot" />{runtimeLabel}</span></div>
         <div className="mfg-settings-metrics">{[
             [BuildOutlined, factories.length, 'Nhà máy được cấp', 'Trong phạm vi quản lý'],
             [ApartmentOutlined, factoryId ? workshops.length : '—', 'Phân xưởng', 'Tại nhà máy đang chọn'],

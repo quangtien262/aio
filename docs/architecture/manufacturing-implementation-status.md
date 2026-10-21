@@ -50,6 +50,8 @@ Bổ sung UI cùng ngày: logo header về `/admin` để khởi tạo lại Cor
 
 Điều hướng cùng ngày được gom từ 12 link thành 5 mục chính theo luồng Chuẩn bị → Sản xuất → Thành phẩm, cùng Tổng quan và Thiết lập. Quyền/route giữ nguyên, nhóm trống ẩn, mobile tự mở nhóm đang chọn. **22 tests JavaScript** (Manufacturing, grouping, shared navigation và FNB navigation), build và [browser navigation](../../tests/browser/manufacturing-navigation.spec.js) tại 1047 px + 390 px đạt trên SQLite riêng; không chạy lại toàn PHP suite cho thay đổi menu này.
 
+Trang Thiết lập được thiết kế lại với tổng quan nhà máy, bốn thẻ số liệu theo phạm vi, bốn nhóm thiết lập nội bộ và sơ đồ phân xưởng–chuyền. Component [ManufacturingSettings](../../resources/admin/src/modules/manufacturing/components/ManufacturingSettings.jsx) và CSS riêng giữ command drawer/quyền hiện hữu. Lượt kiểm tra UI riêng: build, **17 tests JavaScript**, [hành trình Thiết lập](../../tests/browser/manufacturing-settings.spec.js) desktop 1047 px/mobile 390 px và hành trình kỹ thuật/PP/tài liệu của browser Manufacturing đạt trên SQLite cô lập. Có tạo nhà máy mã NM tự động, phân xưởng, chuyền và ca thật trong fixture; mở phân quyền/pause mà không xác nhận pause. Chưa chạy lại toàn PHP suite cho thay đổi giao diện này.
+
 ## 4. Gate còn mở
 
 | Phạm vi | Điều kiện còn lại |
