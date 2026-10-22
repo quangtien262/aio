@@ -10,6 +10,8 @@ Route::prefix('purchasing')->middleware('module.enabled:purchasing')->group(func
     Route::get('commands/{key}', [PurchasingController::class, 'commandStatus'])->middleware('admin.permission:purchasing.view,global');
     Route::get('suppliers', [PurchasingController::class, 'suppliers'])->middleware('admin.permission:purchasing.view,global');
     Route::post('suppliers', [PurchasingController::class, 'createSupplier'])->middleware('admin.permission:purchasing.supplier.manage,global');
+    Route::put('suppliers/{supplier}', [PurchasingController::class, 'updateSupplier'])->whereUuid('supplier')->middleware('admin.permission:purchasing.supplier.manage,global');
+    Route::delete('suppliers/{supplier}', [PurchasingController::class, 'archiveSupplier'])->whereUuid('supplier')->middleware('admin.permission:purchasing.supplier.manage,global');
     Route::get('orders', [PurchasingController::class, 'orders'])->middleware('admin.permission:purchasing.view,global');
     Route::get('orders/{order}', [PurchasingController::class, 'show'])->middleware('admin.permission:purchasing.view,global');
     Route::post('orders', [PurchasingController::class, 'createOrder'])->middleware('admin.permission:purchasing.order.create,global');

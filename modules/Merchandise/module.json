@@ -1,7 +1,7 @@
 {
   "name": "Danh mục hàng hóa dùng chung",
   "key": "merchandise",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Danh mục SKU, mã vạch và quy cách dùng chung cho Retail, Kho và Mua hàng.",
   "website_type": [
     "backoffice",
@@ -49,6 +49,20 @@
     "uninstall": false
   },
   "changelog": [
+    {
+      "version": "0.2.2",
+      "date": "2026-10-21",
+      "notes": [
+        "Bỏ cấu hình số lẻ riêng của SKU/đơn vị; giữ số lượng và quy đổi chính xác tối đa sáu chữ số theo nền kho."
+      ]
+    },
+    {
+      "version": "0.2.1",
+      "date": "2026-10-21",
+      "notes": [
+        "Danh mục đơn vị theo catalog; quản lý đơn vị tại form hàng hóa Retail, giữ nguyên mã đơn vị đã sử dụng."
+      ]
+    },
     {
       "version": "0.2.0",
       "date": "2026-10-21",

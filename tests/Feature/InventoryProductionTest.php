@@ -8,7 +8,6 @@ use Brick\Math\RoundingMode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\ValidationException;
 use Modules\Inventory\Services\InventoryProductionService;
 use Modules\Inventory\Services\InventoryV2Service;
 use Modules\Inventory\Services\InventoryValuationService;
@@ -49,8 +48,8 @@ class InventoryProductionTest extends TestCase
         $this->checker = Admin::factory()->create(['must_change_password' => false])->id;
         $merch = app(MerchandiseService::class);
         $this->catalog = $merch->createCatalog(['code' => 'MFG', 'name' => 'Production'])['id'];
-        $raw = $merch->saveSku($this->catalog, ['sku' => 'FABRIC', 'name' => 'Fabric', 'base_unit' => 'm', 'quantity_scale' => 6, 'tracking_mode' => 'batch']);
-        $fg = $merch->saveSku($this->catalog, ['sku' => 'SHIRT-M', 'name' => 'Shirt', 'base_unit' => 'pcs', 'quantity_scale' => 0, 'tracking_mode' => 'batch']);
+        $raw = $merch->saveSku($this->catalog, ['sku' => 'FABRIC', 'name' => 'Fabric', 'base_unit' => 'm', 'tracking_mode' => 'batch']);
+        $fg = $merch->saveSku($this->catalog, ['sku' => 'SHIRT-M', 'name' => 'Shirt', 'base_unit' => 'pcs', 'tracking_mode' => 'batch']);
         $this->stock = app(InventoryV2Service::class);
         $this->production = app(InventoryProductionService::class);
         $this->material = $this->stock->ensureItem($raw['id']);
@@ -180,9 +179,10 @@ class InventoryProductionTest extends TestCase
         $hold = $this->production->reserve(['warehouse_id' => $this->warehouse, 'item_id' => $this->material, 'quantity' => '20', 'order_ref' => 'WO-FAIL'], 'failure-hold', $this->actor);
         $issue = $this->production->issue(['reservation_id' => $hold['public_id'], 'expected_version' => 1, 'quantity' => '20'], 'failure-issue', $this->actor);
         try {
-            $this->production->postOutput(['warehouse_id' => $this->warehouse, 'order_ref' => 'WO-FAIL', 'materials' => [['issue_id' => $issue['public_id'], 'quantity' => '10']], 'outputs' => [['item_id' => $this->finished, 'quantity' => '0.5']]], 'failure-output', $this->actor);
-            $this->fail('Fractional pieces must fail');
-        } catch (ValidationException) {
+            $this->production->postOutput(['warehouse_id' => $this->warehouse, 'order_ref' => 'WO-FAIL', 'materials' => [['issue_id' => $issue['public_id'], 'quantity' => '10']], 'outputs' => [['item_id' => $this->finished, 'quantity' => '0.0000001']]], 'failure-output', $this->actor);
+            $this->fail('Quantity beyond six decimals must fail');
+        } catch (HttpException $error) {
+            $this->assertSame(422, $error->getStatusCode());
         }
         $this->assertEquals(0, DB::table('inv_production_issues')->where('id', $issue['id'])->value('allocated_quantity'));
         $this->assertSame(0, DB::table('inv_production_postings')->count());

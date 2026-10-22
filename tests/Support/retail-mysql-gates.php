@@ -48,7 +48,7 @@ if ($mode !== 'orchestrate') {
             $require(! DB::table('migrations')->where('migration', '2026_07_09_000001_create_inventory_module_tables')->exists(), 'Fresh baseline forged legacy migration history.');
             $actor = Admin::query()->create(['name' => 'Synthetic gate cashier', 'username' => 'gate-cashier', 'email' => 'gate@example.invalid', 'password' => Str::random(32).'Aa1!', 'is_active' => true]);
             $catalog = DB::table('merch_catalogs')->insertGetId(['public_id' => (string) Str::uuid(), 'code' => 'GATE', 'name' => 'Synthetic retail gates', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
-            $sku = DB::table('merch_skus')->insertGetId(['public_id' => (string) Str::uuid(), 'catalog_id' => $catalog, 'sku' => 'GATE-SKU', 'name' => 'Synthetic measured goods', 'base_unit' => 'kg', 'quantity_scale' => 6, 'is_active' => true, 'tracking_mode' => 'none', 'created_at' => now(), 'updated_at' => now()]);
+            $sku = DB::table('merch_skus')->insertGetId(['public_id' => (string) Str::uuid(), 'catalog_id' => $catalog, 'sku' => 'GATE-SKU', 'name' => 'Synthetic measured goods', 'base_unit' => 'kg', 'is_active' => true, 'tracking_mode' => 'none', 'created_at' => now(), 'updated_at' => now()]);
             $warehouse = $inventory->createWarehouse(['code' => 'GATE', 'name' => 'Synthetic gate warehouse', 'catalog_id' => $catalog, 'legal_entity_ref' => 'synthetic-legal-owner', 'timezone' => 'Asia/Ho_Chi_Minh']);
             $item = $inventory->ensureItem($sku);
             $inventory->receive(['warehouse_id' => $warehouse['id'], 'item_id' => $item, 'quantity' => '1', 'unit_cost' => '1.234567'], 'gate-opening', $actor->id);
@@ -155,7 +155,7 @@ if ($mode !== 'orchestrate') {
             };
             $data = ['name' => 'Synthetic MySQL retail chain'];
             $branch = $command('setup', $data, fn ($live) => $retail->setup($live, $data));
-            $data = ['branch_id' => $branch['id'], 'sku' => 'MYSQL-COLA', 'name' => 'Synthetic Cola', 'base_unit' => 'pcs', 'quantity_scale' => 0, 'price_minor' => '15000', 'opening_quantity' => '24', 'unit_cost' => '5000'];
+            $data = ['branch_id' => $branch['id'], 'sku' => 'MYSQL-COLA', 'name' => 'Synthetic Cola', 'base_unit' => 'pcs', 'price_minor' => '15000', 'opening_quantity' => '24', 'unit_cost' => '5000'];
             $product = $command('product.create', $data, fn ($live) => $retail->saveProduct($live, $data));
             $products = $retail->products($actor, $branch['id'], 'MYSQL-COLA');
             $item = $products[0]['inventory_item_id'];
@@ -185,7 +185,7 @@ if ($mode !== 'orchestrate') {
             $reconciled = $command('shift.reconcile', $data, fn ($live) => $retail->closeShift($live, $shift['id'], $data, true), $shift['id']);
             $require($reconciled['status'] === 'reconciled' && (int) $reconciled['variance_minor'] === 0, 'Retail shift did not reconcile.');
             // Two already priced sales compete to purchase one remaining unit.
-            $data = ['branch_id' => $branch['id'], 'sku' => 'MYSQL-LAST', 'name' => 'Synthetic last item', 'base_unit' => 'pcs', 'quantity_scale' => 0, 'price_minor' => '1000', 'opening_quantity' => '1', 'unit_cost' => '500'];
+            $data = ['branch_id' => $branch['id'], 'sku' => 'MYSQL-LAST', 'name' => 'Synthetic last item', 'base_unit' => 'pcs', 'price_minor' => '1000', 'opening_quantity' => '1', 'unit_cost' => '500'];
             $last = $command('product.create', $data, fn ($live) => $retail->saveProduct($live, $data));
             $data = ['branch_id' => $branch['id'], 'terminal_id' => $branch['terminals'][0]['id'], 'opening_minor' => '0'];
             $shift = $command('shift.open', $data, fn ($live) => $retail->openShift($live, $data));

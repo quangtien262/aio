@@ -51,6 +51,7 @@ import ChangePasswordModal from '../shared/components/ChangePasswordModal';
 import TwoFactorModal from '../shared/components/TwoFactorModal';
 import { currentWorkspaceNavigationItem, findWorkspaceMenuItem, moduleWorkspaceNavigation } from '../shared/utils/workspaceNavigation';
 import { buildManufacturingNavigation } from '../modules/manufacturing/utils/manufacturingNavigation';
+import { buildRetailNavigation } from '../modules/retail-pos/utils/retailNavigation';
 import ManufacturingSiblingNavigation from '../modules/manufacturing/components/ManufacturingSiblingNavigation';
 
 const ModuleRoutePage = lazy(() => import('../pages/modules/ModuleRoutePage'));
@@ -124,6 +125,9 @@ function withCmsMenuLabel(item) {
 function buildWorkspaceMenuItems(items, resolveIcon) {
     if (items.length && items.every((item) => item.moduleKey === 'manufacturing')) {
         return buildManufacturingNavigation(items, resolveIcon);
+    }
+    if (items.length && items.every((item) => item.moduleKey === 'retail-pos')) {
+        return buildRetailNavigation(items, resolveIcon);
     }
     const contentItems = cmsContentMenuOrder
         .map(({ key, label }) => {

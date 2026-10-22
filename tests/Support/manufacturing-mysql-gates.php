@@ -172,7 +172,7 @@ try {
     echo "PASS independent-process command deduplication\n";
 
     $catalog = (int) D::json($company->settings)['catalog_id'];
-    $raw = app(MerchandiseService::class)->saveSku($catalog, ['sku' => 'RAW', 'name' => 'Fabric', 'base_unit' => 'm', 'quantity_scale' => 6, 'tracking_mode' => 'batch']);
+    $raw = app(MerchandiseService::class)->saveSku($catalog, ['sku' => 'RAW', 'name' => 'Fabric', 'base_unit' => 'm', 'tracking_mode' => 'batch']);
     $fg = app(MerchandiseService::class)->saveSku($catalog, ['sku' => 'FG', 'name' => 'Garment', 'base_unit' => 'pcs', 'tracking_mode' => 'batch']);
     $roll = app(InventoryProductionService::class)->createRoll(['warehouse_id' => $factory->warehouse_id, 'sku_id' => $raw['id'], 'quantity' => '1', 'unit_cost' => '100', 'code' => 'LAST-METER', 'disposition' => 'saleable'], 'gate-last-meter-receipt', $owner->id);
     $bom = [['sku_id' => $raw['id'], 'quantity' => '1.000000', 'uom' => 'm', 'allowance_percent' => '0.000000']];

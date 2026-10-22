@@ -19,6 +19,7 @@ class RetailController
         $data = match ($kind) {
             'bootstrap','branches' => $kind === 'bootstrap' ? $this->retail->bootstrap($actor) : $this->retail->bootstrap($actor)['branches'],
             'products' => $this->retail->products($actor, (string) $request->query('branch_id'), substr((string) $request->query('query', ''), 0, 150), $request->boolean('include_catalog')),
+            'units' => $this->retail->units($actor, (string) $request->query('branch_id')),
             'customer-context' => $this->retail->customerContext($actor, (string) $request->query('branch_id')),
             'command' => $this->retail->commandStatus($actor, (string) $request->route('resource')),
             'settings' => ['installed_version' => '0.1.0-dev.2', 'currency' => 'VND', 'stock_authority' => 'inventory', 'offline' => ['enabled' => false, 'reason' => 'Gateway chưa được nghiệm thu'], 'payment_provider_connected' => false],
@@ -41,6 +42,9 @@ class RetailController
             'branch.create' => $this->retail->createBranch($live, $data),
             'terminal.create' => $this->retail->createTerminal($live, $data),
             'product.create' => $this->retail->saveProduct($live, $data),
+            'unit.create' => $this->retail->saveUnit($live, $data),
+            'unit.update' => $this->retail->saveUnit($live, $data, $id),
+            'unit.archive' => $this->retail->saveUnit($live, $data, $id, true),
             'assortment.save' => $this->retail->assortment($live, $id !== '' ? array_replace($data, ['sku_id' => $id]) : $data),
             'receipt.create' => $this->retail->receipt($live, $data, $key),
             'shift.open' => $this->retail->openShift($live, $data),

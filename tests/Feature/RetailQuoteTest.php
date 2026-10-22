@@ -152,7 +152,7 @@ class RetailQuoteTest extends TestCase
 
     private function product(string $code): array
     {
-        $this->postCommand('products', ['branch_id' => $this->branch['id'], 'sku' => $code, 'name' => $code, 'base_unit' => 'pcs', 'quantity_scale' => 0, 'price_minor' => '10000', 'opening_quantity' => '10', 'unit_cost' => '5000'])->assertOk();
+        $this->postCommand('products', ['branch_id' => $this->branch['id'], 'sku' => $code, 'name' => $code, 'base_unit' => 'pcs', 'price_minor' => '10000', 'opening_quantity' => '10', 'unit_cost' => '5000'])->assertOk();
 
         return $this->getJson('/admin/api/retail/products?branch_id='.$this->branch['id'].'&query='.$code)->assertOk()->json('data.0');
     }

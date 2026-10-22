@@ -41,7 +41,7 @@ class InventoryV2Test extends TestCase
         $this->actor = Admin::factory()->create()->id;
         $this->checker = Admin::factory()->create()->id;
         $this->catalog = DB::table('merch_catalogs')->insertGetId(['public_id' => (string) Str::uuid(), 'code' => 'TEST', 'name' => 'Test', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
-        $sku = DB::table('merch_skus')->insertGetId(['public_id' => (string) Str::uuid(), 'catalog_id' => $this->catalog, 'sku' => 'RICE', 'name' => 'Gạo', 'base_unit' => 'kg', 'quantity_scale' => 6, 'tracking_mode' => 'none', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
+        $sku = DB::table('merch_skus')->insertGetId(['public_id' => (string) Str::uuid(), 'catalog_id' => $this->catalog, 'sku' => 'RICE', 'name' => 'Gạo', 'base_unit' => 'kg', 'tracking_mode' => 'none', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
         $this->item = $this->inventory->ensureItem($sku);
         $this->warehouse = $this->inventory->createWarehouse(['code' => 'RETAIL', 'name' => 'Retail', 'catalog_id' => $this->catalog, 'legal_entity_ref' => 'legal-one'])['id'];
     }

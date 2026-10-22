@@ -73,7 +73,7 @@ final class InventoryV2Service
             if (isset($input['legal_entity_ref']) || isset($input['owner_ref'])) {
                 abort_unless(($input['legal_entity_ref'] ?? $input['owner_ref']) === $warehouse->legal_entity_ref, 403, 'Sai pháp nhân của kho.');
             }
-            $quantity = $this->itemQuantity($input['quantity'], $item);
+            $quantity = $this->positive($input['quantity']);
             $unitCost = $this->number($input['unit_cost'] ?? '0');
             abort_if($unitCost->isNegative(), 422, 'Giá vốn không được âm.');
             $batch = $this->batch($input, $item);
@@ -126,7 +126,7 @@ final class InventoryV2Service
             abort_unless($warehouse->production_managed, 422);
             $item = $this->item((int) $input['item_id'], $warehouse);
             $this->notCounting($warehouse->id);
-            $quantity = $this->itemQuantity($input['quantity'], $item);
+            $quantity = $this->positive($input['quantity']);
             $remaining = $quantity;
             $totalCost = BigDecimal::zero();
             $document = $this->document('issue', $warehouse->id, null, $actor, $operation);
@@ -167,7 +167,7 @@ final class InventoryV2Service
             $this->notCounting($warehouseId);
             abort_if($item->costing_method !== 'fifo', 422, 'Phương pháp giá vốn chưa được hỗ trợ.');
             abort_if($item->track_serial, 422, 'Hàng serial cần quy trình phân bổ riêng.');
-            $quantity = $this->itemQuantity($quantity, $item);
+            $quantity = $this->positive($quantity);
             $remaining = $quantity;
             $allocations = [];
             foreach ($this->sellableBalances($warehouseId, $itemId)->when($batchId !== null, fn (Builder $q) => $q->where('inv_stock_balances.batch_id', $batchId))->lockForUpdate()->get() as $balance) {
@@ -634,18 +634,5 @@ final class InventoryV2Service
         abort_unless($installation && $installation->status === 'enabled' && version_compare($installation->version, '0.3.0', '>='), 503, 'Inventory v2 chưa được nâng cấp và bật.');
         abort_if(DB::table('module_lifecycle_operations')->where('module_key', 'inventory')->where('active_slot', 'active')->exists(), 503, 'Inventory đang thay đổi vòng đời.');
         abort_unless(DB::table('module_installations')->where('key', 'merchandise')->where('status', 'enabled')->exists(), 503, 'Merchandise chưa sẵn sàng.');
-    }
-
-    private function itemQuantity(mixed $value, object $item): BigDecimal
-    {
-        $number = $this->positive($value);
-        $scale = (int) DB::table('merch_skus')->where('id', $item->merchandise_sku_id)->value('quantity_scale');
-        try {
-            $number->toScale($scale, RoundingMode::Unnecessary);
-        } catch (\Throwable) {
-            throw ValidationException::withMessages(['quantity' => 'Số lượng không phù hợp độ chính xác đơn vị hàng hóa.']);
-        }
-
-        return $number;
     }
 }

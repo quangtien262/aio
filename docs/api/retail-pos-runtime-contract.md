@@ -13,7 +13,7 @@ Các route dưới đây nằm trong **`/admin/api`**, dùng session Admin, midd
 | Retail ID | Các tham số `branch_id`, `chain_id`, `legal_entity_id`, `terminal_id`, `shift_id`, `sku_id`, sale/return/customer trong API Retail dùng **public UUID**. Response có thể kèm `database_id`; không thay UUID bằng số này trong endpoint Retail. |
 | ID nội bộ | Purchasing dùng integer cho `catalog_id`, `warehouse_id`, `supplier_id`, `lines[].sku_id`, `order_line_id`, `receipt_line_id`; URL PO dùng UUID. Packaging, transfer line, stocktake balance và Accounting organization/item cũng dùng integer. Lấy đúng field từ API; không tự suy ID. |
 | Tiền Retail | VND, `*_minor` là số nguyên đồng; gửi **chuỗi số** như `"12500"`, tối đa 14 chữ số tại `RetailNumbers`. Các field tiền nghiệp vụ chính được trả dạng chuỗi; metadata/ID/version/count không mang quy ước này. |
-| Quantity/cost | Gửi decimal string, tối đa 6 chữ số thập phân; quantity còn phải đúng `quantity_scale` của SKU. Không gửi float hoặc số mũ. Inventory quantity/unit cost dùng `decimal(24,6)`. |
+| Quantity/cost | Gửi decimal string, tối đa 6 chữ số thập phân. Không gửi float hoặc số mũ. Inventory quantity/unit cost dùng `decimal(24,6)`. |
 | Làm tròn | Retail quantity × đơn giá làm tròn HalfUp tới đồng; discount được phân bổ có giới hạn theo dòng; return dùng phân bổ cộng dồn theo snapshot và chốt phần cuối. Client không tự tính lại tổng rồi coi là số có thẩm quyền. |
 | Cost | Response Retail ẩn đệ quy cost/unit_cost/total_cost/stock_allocations nếu thiếu `retail.report.cost.view`. Quyền bán không mặc nhiên cho quyền giá vốn. |
 
@@ -68,7 +68,7 @@ Mọi dòng trong bảng là mutation có Idempotency-Key. `{id}` là UUID publi
 | POST `/branches` | `chain_id`, `legal_entity_id`, `code`, `name`, `timezone?` | `retail.branch.manage` + HQ chain; pháp nhân phải được phép. Tạo branch/kho/quầy mới. |
 | POST `/terminals` | `branch_id`, `code`, `name` | `retail.branch.manage` + HQ. |
 | POST `/memberships` | `branch_id`, `admin_id` integer, `preset`, `is_active` | `retail.membership.manage` global. Preset `hq|manager|cashier|stock|finance`; chỉ map Admin hiện có, không gán role core. |
-| POST `/products` | `branch_id`, `sku`, `name`, `base_unit`, `quantity_scale`, `price_minor`, `tracking_mode?`, `requires_expiry?`, `barcode?`, `packagings?`, `barcodes?` | `retail.product.manage` + HQ. Tạo SKU master và assortment branch. Có thể kèm `opening_quantity`, `unit_cost`; nhập đầu kỳ còn cần native `inventory.receipt.manage`. |
+| POST `/products` | `branch_id`, `sku?`, `name`, `base_unit`, `price_minor`, `tracking_mode?`, `requires_expiry?`, `barcode?`, `packagings?`, `barcodes?` | `retail.product.manage` + HQ. Tạo SKU master và assortment branch. Bỏ trống `sku` (thiếu/null/chuỗi trắng) sẽ tự tạo mã `HH` + số tối thiểu 6 chữ số, không trùng trong catalog; replay cùng key giữ nguyên mã. Có thể kèm `opening_quantity`, `unit_cost` là số nguyên không âm; nhập đầu kỳ còn cần native `inventory.receipt.manage`. |
 | POST `/assortments` hoặc PUT `/products/{sku UUID}` | `branch_id`, `sku_id` nếu POST, `price_minor`, `expected_version` khi đã tồn tại | `retail.product.manage` + `retail.price.manage` + HQ. Liệt kê SKU đã có cho branch hoặc đổi giá, tăng version. Chưa có schedule/ACK publication. |
 | POST `/inventory/receipts` | `branch_id`, `sku_id`, `quantity`, `unit_cost`, `batch_code?`, `expires_at?` | `retail.inventory.view` + native `inventory.receipt.manage`; owner/catalog từ branch, không nhận tự do từ client. |
 | POST `/customers` hoặc PUT `/customers/{id}` | `branch_id`, `name`, `phone?`, `email?`, `status?`, `expected_version` khi sửa | `retail.customer.manage`; customer dùng chung chain. Chưa có loyalty/consent workflow đầy đủ. |
@@ -131,11 +131,21 @@ Prefix **`/admin/api/merchandise`**; mọi quyền dưới đây là **global**,
 | GET `/catalogs` | `merchandise.view` | Tối đa 500 catalog. |
 | POST `/catalogs` | `merchandise.manage` | `code`, `name`. Tạo catalog active. |
 | GET `/catalogs/{catalog}/skus` | `merchandise.view` | `query?`; barcode exact trước, tối đa 100 kết quả. |
-| POST `/catalogs/{catalog}/skus` | `merchandise.manage` | `sku`, `name`, `base_unit`, `quantity_scale`, `tracking_mode?`, `requires_expiry?`, packaging/barcode. |
+| POST `/catalogs/{catalog}/skus` | `merchandise.manage` | `sku?`, `name`, `base_unit`, `tracking_mode?`, `requires_expiry?`, packaging/barcode. Bỏ trống mã khi tạo sẽ tự sinh prefix `HH`; update và import vẫn yêu cầu mã. |
 | PUT `/catalogs/{catalog}/skus/{sku}` | `merchandise.manage` | `expected_version` + dữ liệu; base_unit/scale/tracking không đổi sau tạo. |
 | POST `/catalogs/{catalog}/import` | `merchandise.import` | `rows` tối đa 1.000, `commit=false` để preview; `true` commit atomic, chỉ tạo mới. |
 
 Packaging: `{code,name,quantity_multiplier,barcode?,format?}`; barcode rời: `{barcode,format?,packaging_id?}` với packaging_id integer thuộc SKU. Format được hỗ trợ: internal/ean13/ean8/upca; checksum áp dụng chuẩn tương ứng. Packaging đổi tỷ lệ tạo revision mới, không viết lại conversion cũ. API chưa cung cấp parser barcode cân có prefix/giá/lượng nhúng.
+
+Từ Merchandise 0.2.2, cấu hình số lẻ riêng theo SKU/đơn vị đã được bỏ khỏi form, API và schema. Số lượng nghiệp vụ/kho dùng độ chính xác cố định tối đa sáu chữ số; giao dịch cũ giữ nguyên. Form tạo hàng hóa Retail nhập tồn đầu kỳ và giá vốn theo số nguyên.
+
+### Danh mục đơn vị tại Retail (Merchandise 0.2.2)
+
+- `GET /admin/api/retail/units?branch_id={UUID}`: cần `retail.product.manage`, đọc đơn vị theo catalog của chuỗi; trả `public_id`, `code`, `name`, `is_active`, `version`, `in_use`.
+- `POST /admin/api/retail/units`, `PUT /units/{UUID}`, `DELETE /units/{UUID}`: cùng quyền quản lý hàng hóa và HQ của chuỗi, có `branch_id` + `Idempotency-Key`; sửa/xóa cần `expected_version`. Tạo/sửa dùng `code`, `name`, `is_active?`.
+- Mã đơn vị không đổi sau tạo. Đơn vị đã dùng cho SKU chỉ sửa tên; chặn đổi mã hoặc ngừng sử dụng. Xóa đơn vị chưa dùng là ngừng sử dụng, có thể kích hoạt lại qua PUT.
+- Migration mới tạo `merch_units` theo catalog, giữ đơn vị chuẩn và mã đơn vị đang dùng; không đổi `merch_skus.base_unit` hay precision/snapshot giao dịch. Catalog mới được khởi tạo đơn vị chuẩn. Writer Merchandise hiện có vẫn đăng ký mã đơn vị mới để giữ contract cũ.
+- Form hàng hóa có nút cài đặt cạnh danh sách đơn vị. Thêm/sửa dùng modal riêng; tạo đơn vị mới sẽ chọn ngay đơn vị đó trong form hàng hóa, giữ các trường khác.
 
 ## 8. Purchasing API độc lập
 
@@ -145,6 +155,8 @@ Prefix **`/admin/api/purchasing`**; module tùy chọn đối với POS. **Tất
 | --- | --- | --- |
 | GET `/suppliers`, `/orders`, `/orders/{UUID}`, `/commands/{key}` | `view` | Orders có `page`, `per_page` tối đa 100 và meta pagination. |
 | POST `/suppliers` | `supplier.manage` | `code`, `name`, `phone?`, `email?`, `address?`, `payment_terms_days?`. Trả 201. |
+| PUT `/suppliers/{UUID}` | `supplier.manage` | `expected_revision` lấy từ danh sách/response, `code`, `name`, các trường liên hệ/hạn trả và `is_active?`. Xung đột dữ liệu trả 409; giữ cùng Idempotency-Key khi retry. |
+| DELETE `/suppliers/{UUID}` | `supplier.manage` | `expected_revision`. Ngừng sử dụng (`is_active=false`), giữ NCC và liên kết đơn mua; không cho chọn cho đơn mới. Có thể kích hoạt lại bằng PUT. Danh sách trả cả NCC ngừng sử dụng. |
 | POST `/orders` | `order.create` | `supplier_id`, `warehouse_id`, `catalog_id` integer; `lines:[{sku_id,quantity,unit_cost}]`; `expected_at?`, `note?`. Thêm native `inventory.receipt.manage`. Trả 201. |
 | POST `/orders/{UUID}/approve` | `order.approve` | `expected_version`; draft → approved; người duyệt khác người tạo. |
 | POST `/orders/{UUID}/receive` | `receipt.manage` | `expected_version`, `reference?`, `lines:[{order_line_id,quantity,batch_code?,expires_at?}]`; thêm native Inventory receipt. |

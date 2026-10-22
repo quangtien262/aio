@@ -195,7 +195,7 @@ final class MaterialService
         }
         $v = validator($data, ['name' => 'required|string|max:255', 'uom' => 'required|string|max:24|regex:/^[A-Za-z0-9._-]+$/'])->validate();
         $sku = app(\Modules\Manufacturing\Services\Setup\ManufacturingSetupService::class)->dispatch($actor, 'sku.save',
-            ['factory' => $factory], ['name' => $v['name'], 'base_unit' => $v['uom'], 'quantity_scale' => 6, 'tracking_mode' => 'batch']);
+            ['factory' => $factory], ['name' => $v['name'], 'base_unit' => $v['uom'], 'tracking_mode' => 'batch']);
 
         return $this->sku($factory, $sku['sku']);
     }

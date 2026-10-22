@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Core\Modules\ModuleManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Modules\Merchandise\Services\MerchandiseService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -34,6 +35,24 @@ class MerchandiseModuleTest extends TestCase
         $this->assertSame('48.000000', $s->convertQuantity($sku['id'], '2', $case['packaging_id']));
         $this->assertSame('00001234', $s->lookup($c['id'], '00001234')[0]['barcode']);
         $this->assertSame('6.000000', $s->resolveBarcode($c['id'], 'SIX-COLA')['quantity_multiplier']);
+    }
+
+    public function test_removing_quantity_configuration_preserves_existing_skus(): void
+    {
+        $service = app(MerchandiseService::class);
+        $catalog = $service->createCatalog(['code' => 'LEGACY-UNITS', 'name' => 'Danh mục cũ']);
+        $sku = $service->saveSku($catalog['id'], ['sku' => 'CLOTH', 'name' => 'Vải', 'base_unit' => 'm']);
+        $before = (array) DB::table('merch_skus')->find($sku['id']);
+        foreach (['merch_skus', 'merch_units'] as $table) {
+            Schema::table($table, fn ($t) => $t->unsignedTinyInteger('quantity_scale')->default(3));
+        }
+        $migration = require base_path('modules/Merchandise/database/migrations/2026_10_21_030001_remove_quantity_scale_configuration.php');
+        $migration->up();
+        $migration->up();
+        $this->assertSame($before, (array) DB::table('merch_skus')->find($sku['id']));
+        $this->assertFalse(Schema::hasColumn('merch_skus', 'quantity_scale'));
+        $this->assertFalse(Schema::hasColumn('merch_units', 'quantity_scale'));
+        $this->assertSame('0.123456', $service->convertQuantity($sku['id'], '0.123456'));
     }
 
     public function test_barcode_conflict_rolls_back_sku_creation_without_changing_owner(): void
@@ -71,10 +90,11 @@ class MerchandiseModuleTest extends TestCase
     {
         $s = app(MerchandiseService::class);
         $c = $s->createCatalog(['code' => 'C', 'name' => 'C']);
-        $sku = $s->saveSku($c['id'], ['sku' => 'RICE', 'name' => 'Gạo', 'base_unit' => 'kg', 'quantity_scale' => 3]);
+        $sku = $s->saveSku($c['id'], ['sku' => 'RICE', 'name' => 'Gạo', 'base_unit' => 'kg']);
         $this->assertSame('0.375000', $s->convertQuantity($sku['id'], '0.375'));
+        $this->assertSame('0.375100', $s->convertQuantity($sku['id'], '0.3751'));
         $this->expectException(ValidationException::class);
-        $s->convertQuantity($sku['id'], '0.3751');
+        $s->convertQuantity($sku['id'], '0.3751001');
     }
 
     public function test_stale_updates_and_unit_changes_are_rejected(): void

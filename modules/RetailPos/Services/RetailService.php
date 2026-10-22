@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use Modules\Customers\Services\ConsumerCustomerService;
 use Modules\Inventory\Services\InventoryV2Service;
 use Modules\Merchandise\Services\MerchandiseService;
+use Modules\Merchandise\Services\MerchandiseUnitService;
 use Modules\RetailPos\Domain\RetailNumbers as N;
 
 class RetailService
@@ -132,11 +133,32 @@ class RetailService
         })->all();
     }
 
+    public function units(Admin $actor, string $branchId): array
+    {
+        $branch = $this->branch($actor, $branchId, 'retail.product.manage');
+        $catalogId = DB::table('retail_chains')->where('id', $branch->chain_id)->value('catalog_id');
+
+        return app(MerchandiseUnitService::class)->listing((int) $catalogId);
+    }
+
+    public function saveUnit(Admin $actor, array $data, ?string $id = null, bool $archive = false): array
+    {
+        $branch = $this->branch($actor, (string) ($data['branch_id'] ?? ''), 'retail.product.manage', true);
+        $chain = DB::table('retail_chains')->where('id', $branch->chain_id)->first();
+        $this->hq($actor, $chain);
+
+        return app(MerchandiseUnitService::class)->save((int) $chain->catalog_id, $data, $id, $archive);
+    }
+
     public function saveProduct(Admin $actor, array $data): array
     {
         $b = $this->branch($actor, (string) ($data['branch_id'] ?? ''), 'retail.product.manage', true);
         $chain = DB::table('retail_chains')->where('id', $b->chain_id)->first();
         $this->hq($actor, $chain);
+        validator($data, [
+            'opening_quantity' => ['sometimes', 'nullable', 'regex:/^\d{1,15}$/'],
+            'unit_cost' => ['sometimes', 'nullable', 'regex:/^\d{1,15}$/'],
+        ], ['opening_quantity.regex' => 'Số lượng nhập ban đầu phải là số nguyên không âm.', 'unit_cost.regex' => 'Giá vốn mỗi đơn vị phải là số nguyên không âm.'])->validate();
         $price = N::money($data['price_minor'] ?? null);
         if (! empty($data['barcode'])) {
             $data['barcodes'][] = ['barcode' => (string) $data['barcode']];
@@ -233,9 +255,6 @@ class RetailService
             $qty = N::quantity($row['quantity']);
             if (isset($row['packaging_id'])) {
                 $qty = $this->merchandise->convertQuantity((int) $sku->id, $qty, (int) $row['packaging_id']);
-            }
-            if ((int) $sku->quantity_scale < 6 && ! BigDecimal::of($qty)->isEqualTo(BigDecimal::of($qty)->toScale((int) $sku->quantity_scale, RoundingMode::Down))) {
-                N::invalid('quantity');
             }
             $assort = DB::table('retail_assortments')->where('branch_id', $b->id)->where('sku_id', $sku->id)->where('is_active', true)->lockForUpdate()->first();
             abort_unless($assort, 422, 'Hàng chưa được bán tại chi nhánh.');
@@ -705,7 +724,7 @@ class RetailService
     {
         $data = $intent['data'] ?? [];
         $permission = match (explode('.', $operation)[0]) {
-            'setup' => 'retail.setup.manage','branch','terminal' => 'retail.branch.manage','product','assortment' => 'retail.product.manage','receipt' => 'retail.inventory.view',
+            'setup' => 'retail.setup.manage','branch','terminal' => 'retail.branch.manage','product','assortment','unit' => 'retail.product.manage','receipt' => 'retail.inventory.view',
             'sale' => str_ends_with($operation, '.complete') ? 'retail.payment.collect' : (str_ends_with($operation, '.return') ? 'retail.return.manage' : 'retail.sale.create'),
             'return' => 'retail.return.manage','shift' => 'retail.shift.manage','customer' => 'retail.customer.manage','membership' => 'retail.membership.manage','transfer' => 'retail.transfer.manage','stocktake' => 'retail.stocktake.manage','integration' => 'retail.integration.manage',default => 'retail.view',
         };
@@ -737,7 +756,7 @@ class RetailService
         }
         // Re-authorize the original privilege, never rerun its already-committed state machine.
         // Versions, quote expiry, stock, open/closed status and master prices may have changed.
-        if (in_array($operation, ['product.create', 'assortment.save', 'terminal.create'], true)) {
+        if (in_array($operation, ['product.create', 'assortment.save', 'terminal.create', 'unit.create', 'unit.update', 'unit.archive'], true)) {
             $branch = $branches['branch_id'] ?? null;
             abort_unless($branch, 404);
             $this->hq($actor, DB::table('retail_chains')->where('id', $branch->chain_id)->first());

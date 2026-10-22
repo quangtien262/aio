@@ -47,7 +47,7 @@ class RetailAccountingBridgeTest extends TestCase
             $this->postJson('/admin/api/modules/'.$key.'/enable')->assertOk();
         }
         $this->branch = $this->command('setup', ['name' => 'Retail Accounting'])->assertOk()->json('data');
-        $this->sku = $this->command('products', ['branch_id' => $this->branch['id'], 'sku' => 'FRESH', 'name' => 'Tên hàng tại thời điểm bán', 'base_unit' => 'kg', 'quantity_scale' => 6, 'price_minor' => '10001', 'opening_quantity' => '10', 'unit_cost' => '3000'])->assertOk()->json('data');
+        $this->sku = $this->command('products', ['branch_id' => $this->branch['id'], 'sku' => 'FRESH', 'name' => 'Tên hàng tại thời điểm bán', 'base_unit' => 'kg', 'price_minor' => '10001', 'opening_quantity' => '10', 'unit_cost' => '3000'])->assertOk()->json('data');
         $shift = $this->command('shifts', ['branch_id' => $this->branch['id'], 'terminal_id' => $this->branch['terminals'][0]['id'], 'opening_minor' => '0'])->assertOk()->json('data');
         $this->sale = $this->command('sales', ['branch_id' => $this->branch['id'], 'terminal_id' => $this->branch['terminals'][0]['id'], 'shift_id' => $shift['id'], 'lines' => [['sku_id' => $this->sku['id'], 'quantity' => '0.123456']]])->assertOk()->json('data');
         $this->sale = $this->command('sales/'.$this->sale['id'].'/complete', ['expected_version' => 1, 'tenders' => [['method' => 'cash', 'amount_minor' => $this->sale['total_minor']]]])->assertOk()->json('data');

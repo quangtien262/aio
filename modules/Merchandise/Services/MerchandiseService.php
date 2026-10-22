@@ -40,17 +40,27 @@ class MerchandiseService
                 throw $e;
             }
 
+            MerchandiseUnitService::seedCatalog((int) $id);
+
             return (array) DB::table('merch_catalogs')->find($id);
         }, 3);
     }
 
     public function saveSku(int $catalogId, array $data, ?int $skuId = null): array
     {
-        $v = $this->validateSku($data);
-
-        return DB::transaction(function () use ($catalogId, $data, $v, $skuId): array {
+        return DB::transaction(function () use ($catalogId, $data, $skuId): array {
             app(MerchandiseRuntimeState::class)->guard();
             abort_unless(DB::table('merch_catalogs')->where('id', $catalogId)->where('is_active', true)->lockForUpdate()->first(), 404, 'Danh mục không hoạt động.');
+            if ($skuId === null && (! isset($data['sku']) || (is_string($data['sku']) && trim($data['sku']) === ''))) {
+                // The catalog lock serializes code generation with manual SKU creation.
+                $sequence = (int) DB::table('merch_skus')->where('catalog_id', $catalogId)->max('id') + 1;
+                do {
+                    $data['sku'] = 'HH'.str_pad((string) $sequence++, 6, '0', STR_PAD_LEFT);
+                } while (DB::table('merch_skus')->where('catalog_id', $catalogId)->where('sku', $data['sku'])->exists());
+            }
+            $v = $this->validateSku($data);
+            MerchandiseUnitService::register($catalogId, $v['base_unit'], $v['base_unit']);
+            abort_unless(DB::table('merch_units')->where('catalog_id', $catalogId)->where('code', $v['base_unit'])->where('is_active', true)->exists(), 422, 'Đơn vị đã ngừng sử dụng.');
             $existing = $skuId === null ? null : DB::table('merch_skus')->where('catalog_id', $catalogId)->where('id', $skuId)->lockForUpdate()->first();
             abort_if($skuId !== null && ! $existing, 404);
             if ($existing && (int) ($data['expected_version'] ?? 0) !== (int) $existing->version) {
@@ -60,8 +70,8 @@ class MerchandiseService
             if ($duplicate) {
                 throw ValidationException::withMessages(['sku' => 'SKU đã tồn tại trong danh mục.']);
             }
-            if ($existing && ($existing->base_unit !== $v['base_unit'] || (int) $existing->quantity_scale !== $v['quantity_scale'] || $existing->tracking_mode !== $v['tracking_mode'])) {
-                throw ValidationException::withMessages(['base_unit' => 'Đơn vị gốc, precision và tracking đã tạo là bất biến; tạo SKU mới để đổi.']);
+            if ($existing && ($existing->base_unit !== $v['base_unit'] || $existing->tracking_mode !== $v['tracking_mode'])) {
+                throw ValidationException::withMessages(['base_unit' => 'Đơn vị gốc và tracking đã tạo là bất biến; tạo SKU mới để đổi.']);
             }
             $row = $v + ['catalog_id' => $catalogId, 'version' => $existing ? $existing->version + 1 : 1, 'updated_at' => now()];
             if ($existing) {
@@ -128,7 +138,7 @@ class MerchandiseService
             $factor = (string) $pack->quantity_multiplier;
         }
         try {
-            return (string) $qty->multipliedBy($factor)->toScale((int) $sku->quantity_scale, RoundingMode::Unnecessary)->toScale(6);
+            return (string) $qty->multipliedBy($factor)->toScale(6, RoundingMode::Unnecessary);
         } catch (\Throwable) {
             throw ValidationException::withMessages(['quantity' => 'Số lượng vượt độ chính xác của đơn vị gốc.']);
         }
@@ -191,13 +201,13 @@ class MerchandiseService
     {
         $v = Validator::make($data, [
             'sku' => 'required|string|max:80|regex:/^[A-Za-z0-9._-]+$/', 'name' => 'required|string|max:255',
-            'base_unit' => 'sometimes|string|max:24|regex:/^[A-Za-z0-9._-]+$/', 'quantity_scale' => 'sometimes|integer|between:0,6',
+            'base_unit' => 'sometimes|string|max:24|regex:/^[A-Za-z0-9._-]+$/',
             'tracking_mode' => 'sometimes|in:none,batch', 'requires_expiry' => 'sometimes|boolean', 'is_active' => 'sometimes|boolean',
             'barcodes' => 'sometimes|array|max:50', 'packagings' => 'sometimes|array|max:30',
         ])->validate();
         unset($v['barcodes'], $v['packagings']);
 
-        return $v + ['base_unit' => 'pcs', 'quantity_scale' => 0, 'tracking_mode' => 'none', 'requires_expiry' => false, 'is_active' => true];
+        return $v + ['base_unit' => 'pcs', 'tracking_mode' => 'none', 'requires_expiry' => false, 'is_active' => true];
     }
 
     private function savePackaging(int $catalogId, int $skuId, array $pack): void

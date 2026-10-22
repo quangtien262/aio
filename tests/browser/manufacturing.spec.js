@@ -122,7 +122,7 @@ test('Manufacturing production forms complete a real bundle through QC, packing 
     factoryId = factory.id;
     const workshop = await command('workshop.create', { code: 'TERMINAL', name: 'Phân xưởng hoàn tất' });
     const line = await command('line.create', { workshop_id: workshop.id, code: 'LINE1', name: 'Chuyền 1', capacity_minutes: 500 });
-    await command('sku.save', { sku: 'TERMINAL-FABRIC', name: 'Fabric', base_unit: 'm', quantity_scale: 6, tracking_mode: 'batch' });
+    await command('sku.save', { sku: 'TERMINAL-FABRIC', name: 'Fabric', base_unit: 'm', tracking_mode: 'batch' });
     let style = await command('style.save', { code: 'TERMINAL-STYLE', name: 'Terminal shirt', sizes: ['M'], colors: ['Navy'], bom: [{ material_code: 'TERMINAL-FABRIC', uom: 'm', quantity: 2 }], routing: [{ code: 'SEW', name: 'May', smv: 5 }] });
     const sample = await command('sample.save', { style_id: style.id, type: 'pp' });
     await command('sample.approve', { expected_version: sample.version }, sample.id);

@@ -9,6 +9,7 @@ use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Modules\Inventory\Services\InventoryV2Service;
 use Modules\Merchandise\Services\MerchandiseService;
@@ -40,8 +41,44 @@ class PurchasingService
             $v = Validator::make($data, ['code' => 'required|string|max:60|unique:purchase_suppliers,code', 'name' => 'required|string|max:255', 'phone' => 'nullable|string|max:40', 'email' => 'nullable|email|max:255', 'address' => 'nullable|string|max:4000', 'payment_terms_days' => 'sometimes|integer|between:0,365', 'is_active' => 'sometimes|boolean'])->validate();
             $id = DB::table('purchase_suppliers')->insertGetId($v + ['public_id' => (string) Str::uuid(), 'payment_terms_days' => 0, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
 
-            return (array) DB::table('purchase_suppliers')->find($id);
+            return $this->supplierRecord(DB::table('purchase_suppliers')->find($id));
         }, 3);
+    }
+
+    public function supplierRecord(object $supplier): array
+    {
+        $data = (array) $supplier;
+
+        return $data + ['revision' => hash('sha256', json_encode($data, JSON_THROW_ON_ERROR))];
+    }
+
+    public function updateSupplier(string $publicId, array $data, string $key, int $actor): array
+    {
+        return $this->changeSupplier($publicId, $data, $key, $actor, false);
+    }
+
+    public function archiveSupplier(string $publicId, array $data, string $key, int $actor): array
+    {
+        return $this->changeSupplier($publicId, $data, $key, $actor, true);
+    }
+
+    private function changeSupplier(string $publicId, array $data, string $key, int $actor, bool $archive): array
+    {
+        $revision = validator($data, ['expected_revision' => 'required|string|size:64'])->validate()['expected_revision'];
+
+        return $this->command($archive ? 'supplier.archive' : 'supplier.update', $key, $actor, ['supplier' => $publicId, 'data' => $data], function () use ($publicId, $data, $revision, $archive): array {
+            $supplier = DB::table('purchase_suppliers')->where('public_id', $publicId)->lockForUpdate()->first();
+            abort_unless($supplier, 404, 'Không tìm thấy nhà cung cấp.');
+            abort_unless(hash_equals($this->supplierRecord($supplier)['revision'], $revision), 409, 'Nhà cung cấp đã thay đổi. Tải lại danh sách trước khi sửa.');
+            $values = $archive ? ['is_active' => false] : Validator::make($data, [
+                'code' => ['required', 'string', 'max:60', Rule::unique('purchase_suppliers', 'code')->ignore($supplier->id)],
+                'name' => 'required|string|max:255', 'phone' => 'nullable|string|max:40', 'email' => 'nullable|email|max:255',
+                'address' => 'nullable|string|max:4000', 'payment_terms_days' => 'sometimes|integer|between:0,365', 'is_active' => 'sometimes|boolean',
+            ])->validate();
+            DB::table('purchase_suppliers')->where('id', $supplier->id)->update($values + ['updated_at' => now()]);
+
+            return $this->supplierRecord(DB::table('purchase_suppliers')->find($supplier->id));
+        });
     }
 
     public function createOrder(array $data, string $key, int $actor): array
@@ -266,7 +303,7 @@ class PurchasingService
             app(PurchasingRuntimeState::class)->guard();
             abort_unless(app(ModuleCapabilityChecker::class)->enabled('purchasing'), 503, 'Purchasing đang dừng hoặc chưa được bật.');
             $permission = match ($action) {
-                'supplier.create' => 'purchasing.supplier.manage',
+                'supplier.create', 'supplier.update', 'supplier.archive' => 'purchasing.supplier.manage',
                 'order.create' => 'purchasing.order.create',
                 'order.approve', 'order.close' => 'purchasing.order.approve',
                 'order.receive' => 'purchasing.receipt.manage',

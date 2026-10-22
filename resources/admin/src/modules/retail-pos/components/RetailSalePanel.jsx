@@ -17,12 +17,13 @@ import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
 import Typography from 'antd/es/typography';
+import WalletOutlined from '@ant-design/icons/WalletOutlined';
 import CustomerPicker from '../../customers/components/CustomerPicker';
 import { addQuantity, estimateLine, formatDate, formatMoney, formatQuantity, minor, quantityMicros, rows, saleAmount, uuid } from '../utils/retailFormat';
 
 const { Text, Title } = Typography;
 
-export default function RetailSalePanel({ products, api, branch, terminals, shifts, reload, identity, onSearch, loading, canSell, canConfirmTransfer, canViewCustomers, canCreateCustomers, onScopeLock }) {
+export default function RetailSalePanel({ products, api, branch, terminals, shifts, reload, identity, onSearch, loading, canSell, canConfirmTransfer, canViewCustomers, canCreateCustomers, onScopeLock, onManageShifts }) {
     const { message } = App.useApp();
     const scanRef = useRef(null);
     const storageKey = `aio.retail.cart.${identity}.${uuid(branch)}`;
@@ -207,7 +208,7 @@ export default function RetailSalePanel({ products, api, branch, terminals, shif
                 {!products.length && <Card><Empty description="Chưa có hàng phù hợp trong chi nhánh." /></Card>}
             </Col>
             <Col xs={24} xl={12}>
-                <Card title={<Space><span>Giỏ hàng</span><Tag>{cart.length} mặt hàng</Tag></Space>} extra={<Popconfirm title="Xóa các mặt hàng chưa thanh toán?" onConfirm={() => setCart([])}><Button type="text" disabled={!cart.length || Boolean(sale)}>Làm mới</Button></Popconfirm>}>
+                <Card title={<Space><span>Giỏ hàng</span><Tag>{cart.length} mặt hàng</Tag></Space>} extra={<Space>{onManageShifts && <Button icon={<WalletOutlined />} onClick={onManageShifts}>QL ca</Button>}<Popconfirm title="Xóa các mặt hàng chưa thanh toán?" onConfirm={() => setCart([])}><Button type="text" disabled={!cart.length || Boolean(sale)}>Làm mới</Button></Popconfirm></Space>}>
                     <Row gutter={12}>
                         <Col span={12}><div className="retail-field-label">Quầy bán</div><Select value={terminalId} disabled={Boolean(sale) || working} onChange={(value) => { setTerminalId(value); setShiftId(null); }} options={terminals.map((item) => ({ value: uuid(item), label: item.name ?? item.code }))} placeholder="Chọn quầy" style={{ width: '100%' }} /></Col>
                         <Col span={12}><div className="retail-field-label">Ca đang mở</div><Select value={shiftId} disabled={Boolean(sale) || working} onChange={setShiftId} options={activeShifts.map((item) => ({ value: uuid(item), label: item.code ?? `Ca ${uuid(item).slice(-6)}` }))} placeholder="Chưa có ca mở" style={{ width: '100%' }} /></Col>
@@ -215,7 +216,7 @@ export default function RetailSalePanel({ products, api, branch, terminals, shif
                     {canViewCustomers && <div style={{ marginTop: 14 }}><div className="retail-field-label">Khách hàng · {customerContext.mode === 'shared' ? 'Dùng chung' : 'Theo chuỗi'}</div><CustomerPicker key={`${storageKey}.${customerContext.mode}.${customerContext.book_id ?? ''}`} value={sale?.buyer_snapshot?.id ?? customer?.value ?? null} selectedOption={sale?.buyer_snapshot ? { value: sale.buyer_snapshot.id, label: sale.buyer_snapshot.name } : customer} disabled={Boolean(sale) || working || !customerContext.ready} onChange={(value, option) => setCustomer(value ? { ...option, value } : null)} loadOptions={async (query) => { const response = await api.read('customers', { branch_id: uuid(branch), query }); return rows(response.data).map((item) => ({ ...item, value: uuid(item), label: [item.name, item.code, item.phone].filter(Boolean).join(' · ') })); }} createCustomer={canCreateCustomers && customerContext.ready ? async (values) => { const response = await api.command('customers', { ...values, branch_id: uuid(branch) }); return { ...response.data, value: uuid(response.data), label: response.data.name }; } : undefined} /><Text type="secondary">Có thể để trống để bán khách lẻ. Khách hàng được khóa khi tạo bản tính giá.</Text>{!customerContext.ready && <Alert type="warning" showIcon message="Nguồn khách hàng chưa sẵn sàng. Không tự chuyển về dữ liệu cũ." />}</div>}
                     <Table className="retail-cart-table" rowKey="sku_id" columns={cartColumns} dataSource={cart} pagination={false} size="small" locale={{ emptyText: 'Quét hàng để bắt đầu một giao dịch.' }} scroll={{ x: 440 }} />
                     <div className="retail-checkout-total"><div><Text type="secondary">Tạm tính</Text><Title level={2}>{formatMoney(estimate)}</Title></div><Button type="primary" size="large" disabled={!cart.length || !canSell || !shiftId} loading={working} onClick={startPayment}>{sale ? 'Tiếp tục thanh toán' : 'Thanh toán'}</Button></div>
-                    {!shiftId && <Alert type="info" showIcon message="Chưa có ca đang mở" description="Mở ca tại mục Ca & tiền trước khi bắt đầu thu tiền." />}
+                    {!shiftId && <Alert type="info" showIcon message="Chưa có ca đang mở" description={onManageShifts ? 'Chọn QL ca để mở ca bán hàng ngay tại đây.' : 'Liên hệ quản lý để mở ca trước khi thu tiền.'} />}
                 </Card>
             </Col>
         </Row>

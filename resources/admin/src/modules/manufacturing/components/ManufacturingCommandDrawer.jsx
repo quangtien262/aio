@@ -136,7 +136,7 @@ export default function ManufacturingCommandDrawer({ action, onClose, api, boots
         if (action) {
             const record = action.record ?? {};
             const metadata = record.metadata ?? {};
-            form.setFieldsValue({ timezone: 'Asia/Ho_Chi_Minh', type: action.operation === 'sample.save' ? 'pp' : 'order', checkpoint: 'final', scope_type: 'factory', is_working: true, acknowledge_warnings: false, override_frozen: false, role: 'reader', quantity_scale: 6, tracking_mode: 'batch', ...metadata, ...record, ...action.initial });
+            form.setFieldsValue({ timezone: 'Asia/Ho_Chi_Minh', type: action.operation === 'sample.save' ? 'pp' : 'order', checkpoint: 'final', scope_type: 'factory', is_working: true, acknowledge_warnings: false, override_frozen: false, role: 'reader', tracking_mode: 'batch', ...metadata, ...record, ...action.initial });
         }
         return () => { generation.current += 1; };
     }, [action, contextKey, form]);

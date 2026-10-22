@@ -34,6 +34,27 @@ class RetailPosTest extends TestCase
         $this->branch = $this->postCommand('setup', ['name' => 'Chuỗi thử nghiệm'])->assertOk()->json('data');
     }
 
+    public function test_product_sku_is_generated_when_blank_and_replayed_without_creating_duplicates(): void
+    {
+        $this->product('HH000002', '0', '15000');
+        foreach (['missing', '', null, '   '] as $index => $value) {
+            $data = ['branch_id' => $this->branch['id'], 'name' => 'Hàng tự tạo '.$index, 'price_minor' => '15000'];
+            if ($value !== 'missing') {
+                $data['sku'] = $value;
+            }
+            $key = 'auto-sku-product-'.$index;
+            $product = $this->postCommand('products', $data, $key)->assertOk()->json('data');
+            $this->assertMatchesRegularExpression('/^HH\d{6,}$/', $product['sku']);
+            $this->assertNotSame('HH000002', $product['sku']);
+            $this->postCommand('products', $data, $key)->assertOk()->assertJsonPath('data.id', $product['id'])->assertJsonPath('data.sku', $product['sku']);
+            $this->getJson('/admin/api/retail/products?branch_id='.$this->branch['id'].'&query='.$product['sku'])->assertOk()->assertJsonPath('data.0.sku', $product['sku']);
+        }
+        $this->assertDatabaseCount('merch_skus', 5);
+        $this->assertSame(5, DB::table('merch_skus')->distinct()->count('sku'));
+        $this->postCommand('products', ['branch_id' => $this->branch['id'], 'sku' => 'HH000002', 'name' => 'Trùng mã', 'price_minor' => '10000'])->assertUnprocessable();
+        $this->postCommand('products', ['branch_id' => $this->branch['id'], 'sku' => 'INVALID SKU', 'name' => 'Sai mã', 'price_minor' => '10000'])->assertUnprocessable();
+    }
+
     public function test_cash_sale_commits_stock_tender_and_replays_after_lost_response(): void
     {
         $product = $this->product('COLA', '24', '15000');
@@ -50,6 +71,49 @@ class RetailPosTest extends TestCase
         $this->assertDatabaseCount('retail_cash_movements', 1);
         $this->assertSame(90000, (int) DB::table('retail_shifts')->value('expected_minor'));
         $this->assertSame(10000, (int) DB::table('retail_tenders')->value('change_minor'));
+    }
+
+    public function test_product_opening_stock_and_unit_cost_require_integers(): void
+    {
+        $body = ['branch_id' => $this->branch['id'], 'name' => 'Hàng nhập đầu kỳ', 'price_minor' => '10000', 'opening_quantity' => '2', 'unit_cost' => '15000'];
+        $this->postCommand('products', array_replace($body, ['opening_quantity' => '2.5']))->assertUnprocessable();
+        $this->postCommand('products', array_replace($body, ['unit_cost' => '15000.5']))->assertUnprocessable();
+        $this->assertDatabaseCount('merch_skus', 0);
+        $product = $this->postCommand('products', $body)->assertOk()->json('data');
+        $this->assertArrayNotHasKey('quantity_scale', $product);
+        $this->assertSame('2.000000', app(InventoryV2Service::class)->availability($this->branch['warehouse_id'], DB::table('inv_items')->where('merchandise_sku_id', $product['database_id'] ?? DB::table('merch_skus')->where('public_id', $product['id'])->value('id'))->value('id')));
+    }
+
+    public function test_unit_crud_is_versioned_replay_safe_and_protects_used_unit_codes(): void
+    {
+        $base = '/admin/api/retail/units';
+        $initial = $this->getJson($base.'?branch_id='.$this->branch['id'])->assertOk()->json('data');
+        $this->assertSame(['pcs', 'kg', 'l', 'pack'], array_column($initial, 'code'));
+        $body = ['branch_id' => $this->branch['id'], 'code' => 'box', 'name' => 'Hộp'];
+        $unit = $this->postCommand('units', $body, 'unit-create-test')->assertOk()->json('data');
+        $this->postCommand('units', $body, 'unit-create-test')->assertOk()->assertJsonPath('data.public_id', $unit['public_id']);
+        $path = $base.'/'.$unit['public_id'];
+        $edit = $body + ['expected_version' => 1];
+        $edit['name'] = 'Hộp hàng';
+        $this->putJson($path, $edit, ['Idempotency-Key' => 'unit-update-test'])->assertOk()->assertJsonPath('data.version', 2);
+        $this->putJson($path, $edit, ['Idempotency-Key' => 'unit-update-test'])->assertOk();
+        $this->putJson($path, $edit, ['Idempotency-Key' => 'unit-update-stale'])->assertConflict();
+        $this->postCommand('units', $body)->assertUnprocessable();
+        $this->putJson($path, array_replace($edit, ['expected_version' => 2, 'code' => 'case']), ['Idempotency-Key' => 'unit-change-code'])->assertUnprocessable();
+        $remove = ['branch_id' => $this->branch['id'], 'expected_version' => 2];
+        $this->deleteJson($path, $remove, ['Idempotency-Key' => 'unit-archive-test'])->assertOk();
+        $this->deleteJson($path, $remove, ['Idempotency-Key' => 'unit-archive-test'])->assertOk();
+        $this->postCommand('products', ['branch_id' => $this->branch['id'], 'name' => 'Hộp thử', 'base_unit' => 'box', 'price_minor' => '1000'])->assertUnprocessable();
+        $this->putJson($path, array_replace($edit, ['expected_version' => 3, 'is_active' => true]), ['Idempotency-Key' => 'unit-restore-test'])->assertOk();
+        $this->postCommand('products', ['branch_id' => $this->branch['id'], 'name' => 'Hộp thử', 'base_unit' => 'box', 'price_minor' => '1000'])->assertOk();
+        $this->deleteJson($path, array_replace($remove, ['expected_version' => 4]), ['Idempotency-Key' => 'unit-archive-used'])->assertUnprocessable();
+        $this->putJson($path, array_replace($edit, ['expected_version' => 4, 'name' => 'Hộp mới']), ['Idempotency-Key' => 'unit-rename-used'])->assertOk();
+        $listed = $this->getJson($base.'?branch_id='.$this->branch['id'])->assertOk()->json('data');
+        $this->assertTrue(collect($listed)->firstWhere('code', 'box')['in_use']);
+        $other = $this->postCommand('setup', ['name' => 'Chuỗi khác'])->assertOk()->json('data');
+        $this->putJson($path, array_replace($edit, ['branch_id' => $other['id'], 'expected_version' => 5]), ['Idempotency-Key' => 'unit-cross-catalog'])->assertNotFound();
+        $this->postCommand('units', array_replace($body, ['branch_id' => $other['id']]))->assertOk();
+        $this->assertDatabaseCount('merch_units', 10);
     }
 
     public function test_insufficient_stock_rolls_back_every_financial_effect(): void
@@ -143,7 +207,7 @@ class RetailPosTest extends TestCase
 
     private function product(string $sku, string $qty, string $price, int $scale = 0): array
     {
-        $p = $this->postCommand('products', ['branch_id' => $this->branch['id'], 'sku' => $sku, 'name' => $sku, 'base_unit' => $scale ? 'kg' : 'pcs', 'quantity_scale' => $scale, 'price_minor' => $price, 'opening_quantity' => $qty, 'unit_cost' => '5000'])->assertOk()->json('data');
+        $p = $this->postCommand('products', ['branch_id' => $this->branch['id'], 'sku' => $sku, 'name' => $sku, 'base_unit' => $scale ? 'kg' : 'pcs', 'price_minor' => $price, 'opening_quantity' => $qty, 'unit_cost' => '5000'])->assertOk()->json('data');
         $rows = $this->getJson('/admin/api/retail/products?branch_id='.$this->branch['id'].'&query='.$sku)->assertOk()->json('data');
 
         return $rows[0];

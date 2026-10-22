@@ -25,7 +25,7 @@ test('demand matrix table preserves rows, validation and saved variants on deskt
         expect(response.ok(), operation).toBeTruthy();
         return (await response.json()).data;
     };
-    await command('sku.save', { sku: `FABRIC-${suffix}`, name: 'Vải kiểm thử', base_unit: 'm', quantity_scale: 6, tracking_mode: 'batch' });
+    await command('sku.save', { sku: `FABRIC-${suffix}`, name: 'Vải kiểm thử', base_unit: 'm', tracking_mode: 'batch' });
     let style = await command('style.save', { code: `SHIRT-${suffix}`, name: 'Áo sơ mi', sizes: ['S', 'M'], colors: ['Đen', 'Trắng'], bom: [{ material_code: `FABRIC-${suffix}`, uom: 'm', quantity: 1 }], routing: [{ code: 'SEW', name: 'May', smv: 5 }] });
     const sample = await command('sample.save', { style_id: style.id, type: 'pp' });
     await command('sample.approve', { expected_version: sample.version }, sample.id);

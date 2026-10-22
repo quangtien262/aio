@@ -13,12 +13,22 @@ class PurchasingController
 
     public function suppliers(): JsonResponse
     {
-        return response()->json(['data' => DB::table('purchase_suppliers')->orderBy('name')->limit(500)->get()])->header('Cache-Control', 'no-store');
+        return response()->json(['data' => DB::table('purchase_suppliers')->orderBy('name')->limit(500)->get()->map(fn ($supplier) => $this->service->supplierRecord($supplier))])->header('Cache-Control', 'no-store');
     }
 
     public function createSupplier(Request $request): JsonResponse
     {
         return response()->json(['data' => $this->service->nativeMutation($request->user('admin'), fn (): array => $this->service->createSupplier($request->all(), $this->key($request), $request->user('admin')->id))], 201);
+    }
+
+    public function updateSupplier(Request $request, string $supplier): JsonResponse
+    {
+        return response()->json(['data' => $this->service->nativeMutation($request->user('admin'), fn (): array => $this->service->updateSupplier($supplier, $request->all(), $this->key($request), $request->user('admin')->id))]);
+    }
+
+    public function archiveSupplier(Request $request, string $supplier): JsonResponse
+    {
+        return response()->json(['data' => $this->service->nativeMutation($request->user('admin'), fn (): array => $this->service->archiveSupplier($supplier, $request->all(), $this->key($request), $request->user('admin')->id))]);
     }
 
     public function orders(Request $request): JsonResponse

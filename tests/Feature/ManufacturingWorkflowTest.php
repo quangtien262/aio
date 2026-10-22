@@ -43,7 +43,7 @@ class ManufacturingWorkflowTest extends TestCase
         $this->company = $this->command('company.create', ['code' => 'GARMENT', 'name' => 'Garment Pilot'])['id'];
         $this->factory = $this->command('factory.create', ['company_id' => $this->company, 'code' => 'PLANT-A', 'name' => 'Plant A', 'timezone' => 'Asia/Ho_Chi_Minh'])['id'];
         $this->workshop = $this->command('workshop.create', ['code' => 'WORKSHOP-A', 'name' => 'Workshop A'])['id'];
-        $this->command('sku.save', ['sku' => 'COTTON', 'name' => 'Cotton fabric', 'base_unit' => 'm', 'tracking_mode' => 'batch', 'quantity_scale' => 6]);
+        $this->command('sku.save', ['sku' => 'COTTON', 'name' => 'Cotton fabric', 'base_unit' => 'm', 'tracking_mode' => 'batch']);
     }
 
     public function test_full_workflow_preserves_snapshots_reworks_without_duplicate_output_and_posts_inventory(): void
@@ -591,11 +591,10 @@ class ManufacturingWorkflowTest extends TestCase
             $roll = $this->command('material.receive', $input, null, 'auto-material-'.$index);
             $this->assertStringStartsWith('CK', $roll['code']);
             $this->assertSame($roll['id'], $this->command('material.receive', $input, null, 'auto-material-'.$index)['id']);
-            $sku = DB::table('inv_trace_units as t')->join('inv_items as i', 'i.id', '=', 't.item_id')->join('merch_skus as s', 's.id', '=', 'i.merchandise_sku_id')->where('t.public_id', $roll['id'])->first(['s.sku', 's.name', 's.base_unit', 's.quantity_scale']);
+            $sku = DB::table('inv_trace_units as t')->join('inv_items as i', 'i.id', '=', 't.item_id')->join('merch_skus as s', 's.id', '=', 'i.merchandise_sku_id')->where('t.public_id', $roll['id'])->first(['s.sku', 's.name', 's.base_unit']);
             $this->assertStringStartsWith('VT', $sku->sku);
             $this->assertSame('New fabric '.$index, $sku->name);
             $this->assertSame('m', $sku->base_unit);
-            $this->assertSame(6, (int) $sku->quantity_scale);
         }
         $this->assertSame(5, DB::table('merch_skus')->count());
         $this->assertSame(4, DB::table('inv_trace_units')->count());
@@ -617,14 +616,14 @@ class ManufacturingWorkflowTest extends TestCase
             $shift = $this->command('shift.create', $shiftInput, null, 'auto-shift-'.$index);
             $this->assertMatchesRegularExpression('/^CA[0-9]{6,}$/', $shift['code']);
             $this->assertSame($shift['code'], $this->command('shift.create', $shiftInput, null, 'auto-shift-'.$index)['code']);
-            $skuInput = ['sku' => $blank['code'] ?? null, 'name' => 'Automatic material '.$index, 'base_unit' => 'm', 'tracking_mode' => 'batch', 'quantity_scale' => 6];
+            $skuInput = ['sku' => $blank['code'] ?? null, 'name' => 'Automatic material '.$index, 'base_unit' => 'm', 'tracking_mode' => 'batch'];
             $sku = $this->command('sku.save', $skuInput, null, 'auto-sku-'.$index);
             $this->assertStringStartsWith('VT', $sku['sku']);
             $this->assertSame($sku['id'], $this->command('sku.save', $skuInput, null, 'auto-sku-'.$index)['id']);
         }
         $edited = $this->command('company.update', ['code' => '', 'name' => 'Renamed company', 'expected_version' => $company['version']], $company['id']);
         $this->assertSame($company['code'], $edited['code']);
-        $editedSku = $this->command('sku.save', ['sku' => '', 'name' => 'Renamed material', 'base_unit' => 'm', 'quantity_scale' => 6, 'tracking_mode' => 'batch', 'expected_version' => $sku['version']], $sku['id']);
+        $editedSku = $this->command('sku.save', ['sku' => '', 'name' => 'Renamed material', 'base_unit' => 'm', 'tracking_mode' => 'batch', 'expected_version' => $sku['version']], $sku['id']);
         $this->assertSame($sku['sku'], $editedSku['sku']);
         $this->assertSame(5, DB::table('mfg_companies')->count());
         $this->assertSame(4, DB::table('mfg_shifts')->count());

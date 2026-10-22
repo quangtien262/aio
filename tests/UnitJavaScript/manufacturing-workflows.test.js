@@ -179,7 +179,7 @@ test('blank create codes are sent for server allocation while existing material 
     assert.equal(opening.name, 'Vải mới');
     assert.equal(opening.quantity, '2.5');
     assert.equal(commandPayload('shift.create', { name: 'Ca sáng', starts_at: '08:00', ends_at: '17:00' }).code, undefined);
-    assert.equal(commandPayload('sku.save', { name: 'Vải mới', base_unit: 'm', tracking_mode: 'batch', quantity_scale: 6 }).sku, undefined);
+    assert.equal(commandPayload('sku.save', { name: 'Vải mới', base_unit: 'm', tracking_mode: 'batch' }).sku, undefined);
     const style = { name: 'Áo', colors: ['Đen'], sizes: ['S'], bom: [{ material_code: 'VT-EXISTING', uom: 'm', quantity: 1 }], routing: [{ name: 'May', smv: 5 }] };
     const saved = commandPayload('style.save', style);
     assert.equal(saved.code, undefined);

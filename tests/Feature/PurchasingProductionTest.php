@@ -36,7 +36,7 @@ class PurchasingProductionTest extends TestCase
         }
         $merch = app(MerchandiseService::class);
         $catalog = $merch->createCatalog(['code' => 'PRODUCTION', 'name' => 'Production']);
-        $sku = $merch->saveSku($catalog['id'], ['sku' => 'FABRIC', 'name' => 'Fabric', 'base_unit' => 'm', 'quantity_scale' => 6, 'tracking_mode' => 'batch']);
+        $sku = $merch->saveSku($catalog['id'], ['sku' => 'FABRIC', 'name' => 'Fabric', 'base_unit' => 'm', 'tracking_mode' => 'batch']);
         $w = app(InventoryV2Service::class)->createWarehouse(['code' => 'FABRIC', 'name' => 'Fabric warehouse', 'catalog_id' => $catalog['id'], 'legal_entity_ref' => 'company-one']);
         app(InventoryProductionService::class)->enableWarehouse(['warehouse_id' => $w['id']], 'enable-stock-contract', 7);
         $supplier = app(PurchasingService::class)->createSupplier(['code' => 'FABRIC-SUPPLIER', 'name' => 'Supplier']);

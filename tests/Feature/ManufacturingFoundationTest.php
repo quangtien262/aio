@@ -721,7 +721,7 @@ class ManufacturingFoundationTest extends TestCase
         $company = DB::table('mfg_companies')->where('public_id', $company['id'])->first();
         $factory = $setup->dispatch($this->owner, 'factory.create', ['company' => $company], ['code' => 'BATCH', 'name' => 'Batch Factory']);
         $factory = DB::table('mfg_factories')->where('public_id', $factory['id'])->first();
-        $sku = $setup->dispatch($this->owner, 'sku.save', ['company' => $company], ['sku' => 'BATCH-FABRIC', 'name' => 'Batch fabric', 'base_unit' => 'm', 'quantity_scale' => 6]);
+        $sku = $setup->dispatch($this->owner, 'sku.save', ['company' => $company], ['sku' => 'BATCH-FABRIC', 'name' => 'Batch fabric', 'base_unit' => 'm']);
         $skuId = DB::table('merch_skus')->where('public_id', $sku['id'])->value('id');
         $inventory = app(InventoryProductionService::class);
         for ($i = 0; $i < 12; $i++) {
@@ -738,7 +738,7 @@ class ManufacturingFoundationTest extends TestCase
         $this->assertCount(12, $large['items']);
         $this->assertLessThanOrEqual($small + 2, $largeQueries, 'Material read added per-roll queries.');
         $this->assertSame('0.125000', $large['items'][0]['base_total_cost']);
-        $skuKg = $setup->dispatch($this->owner, 'sku.save', ['company' => $company], ['sku' => 'BATCH-KG', 'name' => 'Batch kilograms', 'base_unit' => 'kg', 'quantity_scale' => 6]);
+        $skuKg = $setup->dispatch($this->owner, 'sku.save', ['company' => $company], ['sku' => 'BATCH-KG', 'name' => 'Batch kilograms', 'base_unit' => 'kg']);
         $inventory->createRoll(['warehouse_id' => $factory->warehouse_id, 'sku_id' => DB::table('merch_skus')->where('public_id', $skuKg['id'])->value('id'),
             'code' => 'BATCH-ROLL-KG', 'quantity' => '2', 'unit_cost' => '0.2', 'disposition' => 'saleable'], 'batch-read-roll-kg', $this->owner->id);
         $report = app(ManufacturingReadService::class)->read($this->owner, 'reports', $factory->public_id);
@@ -806,7 +806,7 @@ class ManufacturingFoundationTest extends TestCase
         $company = DB::table('mfg_companies')->where('public_id', $company['id'])->first();
         $factory = $setup->dispatch($this->owner, 'factory.create', ['company' => $company], ['code' => 'RECEIPTS', 'name' => 'Receipt Factory']);
         $factory = DB::table('mfg_factories')->where('public_id', $factory['id'])->first();
-        $sku = $setup->dispatch($this->owner, 'sku.save', ['company' => $company], ['sku' => 'RECEIPT-FABRIC', 'name' => 'Receipt fabric', 'base_unit' => 'm', 'quantity_scale' => 6]);
+        $sku = $setup->dispatch($this->owner, 'sku.save', ['company' => $company], ['sku' => 'RECEIPT-FABRIC', 'name' => 'Receipt fabric', 'base_unit' => 'm']);
         $skuId = DB::table('merch_skus')->where('public_id', $sku['id'])->value('id');
         $itemId = app(InventoryV2Service::class)->ensureItem($skuId);
         $supplierId = DB::table('purchase_suppliers')->insertGetId(['public_id' => (string) Str::uuid(), 'code' => 'SUPPLIER-R', 'name' => 'Receipt supplier', 'phone' => 'private phone']);

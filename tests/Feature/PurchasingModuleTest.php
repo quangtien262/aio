@@ -35,7 +35,7 @@ class PurchasingModuleTest extends TestCase
         $inventory = app(InventoryV2Service::class);
         $purchase = app(PurchasingService::class);
         $catalog = $merch->createCatalog(['code' => 'C', 'name' => 'Chuỗi']);
-        $sku = $merch->saveSku($catalog['id'], ['sku' => 'RICE', 'name' => 'Hàng', 'base_unit' => $scale ? 'kg' : 'pcs', 'quantity_scale' => $scale]);
+        $sku = $merch->saveSku($catalog['id'], ['sku' => 'RICE', 'name' => 'Hàng', 'base_unit' => $scale ? 'kg' : 'pcs']);
         $warehouse = $inventory->createWarehouse(['code' => 'WH', 'name' => 'Kho', 'catalog_id' => $catalog['id'], 'legal_entity_ref' => 'LEGAL-01']);
         $supplier = $purchase->createSupplier(['code' => 'SUP', 'name' => 'Nhà cung cấp']);
         $order = $purchase->createOrder(['catalog_id' => $catalog['id'], 'warehouse_id' => $warehouse['id'], 'supplier_id' => $supplier['id'], 'lines' => [['sku_id' => $sku['id'], 'quantity' => $quantity, 'unit_cost' => $cost]]], 'order-create-001', 7);
@@ -58,6 +58,37 @@ class PurchasingModuleTest extends TestCase
         $o = $p->receiveOrder($o['public_id'], ['expected_version' => 3, 'lines' => [['order_line_id' => $o['lines'][0]['id'], 'quantity' => '7']]], 'order-receive-02', 9);
         $this->assertSame('received', $o['status']);
         $this->assertSame('10000', $o['financials']['payable_minor']);
+    }
+
+    public function test_supplier_http_crud_replays_checks_revision_and_preserves_order_history(): void
+    {
+        [, , $order] = $this->setupOrder();
+        $actor = Admin::query()->findOrFail(7);
+        $actor->forceFill(['must_change_password' => false])->save();
+        $this->actingAs($actor, 'admin')->withSession(['admin_auth_version' => $actor->auth_version]);
+        $supplier = $this->getJson('/admin/api/purchasing/suppliers')->assertOk()->json('data.0');
+        $path = '/admin/api/purchasing/suppliers/'.$supplier['public_id'];
+        $body = ['expected_revision' => $supplier['revision'], 'code' => 'SUP', 'name' => 'Tên mới', 'email' => 'supplier@example.com', 'phone' => '0123456789', 'address' => 'Địa chỉ', 'payment_terms_days' => 30];
+        $updated = $this->putJson($path, $body, ['Idempotency-Key' => 'supplier-update-001'])->assertOk()->assertJsonPath('data.name', 'Tên mới')->json('data');
+        $this->putJson($path, $body, ['Idempotency-Key' => 'supplier-update-001'])->assertOk()->assertJsonPath('data.revision', $updated['revision']);
+        $this->putJson($path, $body, ['Idempotency-Key' => 'supplier-update-stale'])->assertConflict();
+        $this->deleteJson($path, ['expected_revision' => $supplier['revision']], ['Idempotency-Key' => 'supplier-delete-stale'])->assertConflict();
+        $created = $this->postJson('/admin/api/purchasing/suppliers', ['code' => 'SUP2', 'name' => 'Nhà cung cấp khác'], ['Idempotency-Key' => 'supplier-create-002'])->assertCreated()->json('data');
+        $this->putJson($path, array_replace($body, ['expected_revision' => $updated['revision'], 'code' => $created['code']]), ['Idempotency-Key' => 'supplier-duplicate-001'])->assertUnprocessable();
+        $archived = $this->deleteJson($path, ['expected_revision' => $updated['revision']], ['Idempotency-Key' => 'supplier-delete-001'])->assertOk()->json('data');
+        $this->assertFalse((bool) $archived['is_active']);
+        $this->deleteJson($path, ['expected_revision' => $updated['revision']], ['Idempotency-Key' => 'supplier-delete-001'])->assertOk();
+        $this->assertDatabaseHas('purchase_orders', ['id' => $order['id'], 'supplier_id' => $supplier['id']]);
+        $this->assertDatabaseCount('purchase_suppliers', 2);
+        $this->postJson('/admin/api/purchasing/orders', ['supplier_id' => $supplier['id'], 'warehouse_id' => $order['warehouse_id'], 'catalog_id' => $order['catalog_id'], 'lines' => [['sku_id' => $order['lines'][0]['sku_id'], 'quantity' => '1', 'unit_cost' => '1000']]], ['Idempotency-Key' => 'order-inactive-supplier'])->assertUnprocessable();
+        $this->putJson($path, array_replace($body, ['expected_revision' => $archived['revision'], 'is_active' => true]), ['Idempotency-Key' => 'supplier-restore-001'])->assertOk();
+        $this->assertDatabaseHas('purchase_suppliers', ['id' => $supplier['id'], 'is_active' => true]);
+
+        $role = Role::query()->where('key', 'purchase-test')->firstOrFail();
+        $role->permissions()->detach(Permission::query()->where('key', 'purchasing.supplier.manage')->value('id'));
+        $actor->unsetRelation('roleAssignments');
+        $this->putJson($path, $body, ['Idempotency-Key' => 'supplier-update-001'])->assertForbidden();
+        $this->deleteJson($path, ['expected_revision' => $updated['revision']], ['Idempotency-Key' => 'supplier-delete-001'])->assertForbidden();
     }
 
     public function test_maker_cannot_approve_own_purchase_order(): void

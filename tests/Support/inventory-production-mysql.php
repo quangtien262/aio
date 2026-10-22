@@ -79,7 +79,7 @@ try {
     $actor = Admin::query()->create(['name' => 'Synthetic stock gate', 'username' => 'synthetic-stock-gate', 'email' => 'stock-gate@example.invalid', 'password' => Str::random(32).'Aa1!', 'is_active' => true, 'must_change_password' => false]);
     $merch = app(MerchandiseService::class);
     $catalog = $merch->createCatalog(['code' => 'GATE', 'name' => 'Synthetic gate']);
-    $sku = $merch->saveSku($catalog['id'], ['sku' => 'RAW', 'name' => 'Fabric', 'base_unit' => 'm', 'quantity_scale' => 6, 'tracking_mode' => 'batch']);
+    $sku = $merch->saveSku($catalog['id'], ['sku' => 'RAW', 'name' => 'Fabric', 'base_unit' => 'm', 'tracking_mode' => 'batch']);
     $fg = $merch->saveSku($catalog['id'], ['sku' => 'FG', 'name' => 'Finished', 'base_unit' => 'pcs', 'tracking_mode' => 'batch']);
     $rawItem = $stock->ensureItem($sku['id']);
     $fgItem = $stock->ensureItem($fg['id']);
