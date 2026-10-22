@@ -43,6 +43,7 @@ class ModuleRegistry
                     'lifecycle' => $this->normalizeLifecycle($manifest->lifecycle),
                     'security_provider' => $manifest->securityProvider,
                     'lifecycle_state_provider' => $manifest->lifecycleStateProvider,
+                    'test_data_provider' => $manifest->testDataProvider,
                     'status' => $status,
                     'is_installed' => $this->isInstalledStatus($status),
                     'is_enabled' => $status === 'enabled',

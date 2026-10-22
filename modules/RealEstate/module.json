@@ -2,6 +2,7 @@
   "name": "Bất động sản",
   "key": "real-estate",
   "version": "0.1.0",
+  "test_data_provider": "Modules\\RealEstate\\Services\\RealEstateTestDataProvider",
   "description": "Module quản lý loại hình, tin bán/cho thuê, thư viện media và thông tin tìm kiếm bất động sản.",
   "website_type": ["real_estate"],
   "dependencies": ["cms"],

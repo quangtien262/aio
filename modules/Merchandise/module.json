@@ -1,6 +1,7 @@
 {
   "name": "Danh mục hàng hóa dùng chung",
   "key": "merchandise",
+  "test_data_provider": "Modules\\Merchandise\\Services\\MerchandiseTestDataProvider",
   "version": "0.2.2",
   "description": "Danh mục SKU, mã vạch và quy cách dùng chung cho Retail, Kho và Mua hàng.",
   "website_type": [

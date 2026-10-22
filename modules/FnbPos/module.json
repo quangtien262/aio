@@ -1,6 +1,7 @@
 {
   "name": "Quản lý quán Cafe",
   "key": "fnb-pos",
+  "test_data_provider": "Modules\\FnbPos\\Services\\FnbTestDataProvider",
   "version": "0.2.0-dev.3",
   "security_provider": "Modules\\FnbPos\\Security\\FnbVersionedSecurity",
   "lifecycle_state_provider": "Modules\\FnbPos\\Services\\Security\\FnbOperationalStateManager",

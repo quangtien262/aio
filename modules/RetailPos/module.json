@@ -2,6 +2,7 @@
   "name": "Quản lý siêu thị & tạp hóa",
   "key": "retail-pos",
   "lifecycle_state_provider": "Modules\\RetailPos\\Services\\RetailRuntimeState",
+  "test_data_provider": "Modules\\RetailPos\\Services\\RetailTestDataProvider",
   "version": "0.1.0-dev.2",
   "description": "Vận hành bán lẻ nhiều chi nhánh, POS, hàng hóa, ca tiền, điều chuyển và đổi trả trên Inventory.",
   "website_type": [

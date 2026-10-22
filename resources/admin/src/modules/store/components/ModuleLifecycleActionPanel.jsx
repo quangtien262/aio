@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
     AppstoreOutlined,
     CheckCircleFilled,
@@ -15,8 +14,6 @@ import {
 } from '@ant-design/icons';
 import Alert from 'antd/es/alert';
 import Button from 'antd/es/button';
-import Checkbox from 'antd/es/checkbox';
-import Modal from 'antd/es/modal';
 import Space from 'antd/es/space';
 import Table from 'antd/es/table';
 import Tag from 'antd/es/tag';
@@ -108,16 +105,13 @@ function RelatedApps({ values, modules, onOpenModule, disabled, emptyText = 'Kh�
     return <Table className="module-detail-relation-table" columns={columns} dataSource={rows} rowKey="key" pagination={false} size="small" tableLayout="fixed" />;
 }
 
-export default function ModuleLifecycleActionPanel({ moduleCard, modules = [], onOpenModule, permissions, onAction, onOpenChangelog, pendingAction = null }) {
+export default function ModuleLifecycleActionPanel({ moduleCard, modules = [], onOpenModule, permissions, onAction, onOpenChangelog, onOpenTestData, pendingAction = null }) {
     const canInstall = permissions?.install ?? false;
     const canEnable = permissions?.enable ?? false;
     const canDisable = permissions?.disable ?? false;
     const canUpgrade = permissions?.upgrade ?? false;
     const canUninstall = permissions?.uninstall ?? false;
     const canGenerateDemoData = permissions?.demoData ?? false;
-    const [demoModalOpen, setDemoModalOpen] = useState(false);
-    const [removeExistingDemoData, setRemoveExistingDemoData] = useState(true);
-    const [submittingDemoData, setSubmittingDemoData] = useState(false);
 
     if (!moduleCard) {
         return <div className="module-detail-loading">Đang tải thông tin App...</div>;
@@ -132,36 +126,6 @@ export default function ModuleLifecycleActionPanel({ moduleCard, modules = [], o
     const dependencyNames = moduleCard.dependencies ?? [];
     const dependentNames = (moduleCard.dependents ?? []).map((item) => item.key);
     const menuNames = (moduleCard.menus ?? []).map((item) => item.label);
-
-    const openDemoDataModal = () => {
-        setRemoveExistingDemoData(true);
-        setDemoModalOpen(true);
-    };
-
-    const closeDemoDataModal = () => {
-        if (submittingDemoData) {
-            return;
-        }
-
-        setDemoModalOpen(false);
-        setRemoveExistingDemoData(true);
-    };
-
-    const handleGenerateDemoData = async () => {
-        setSubmittingDemoData(true);
-
-        try {
-            const didSucceed = await onAction?.(moduleCard.key, 'demo-data', {
-                remove_existing: removeExistingDemoData,
-            });
-
-            if (didSucceed !== false) {
-                closeDemoDataModal();
-            }
-        } finally {
-            setSubmittingDemoData(false);
-        }
-    };
 
     return (
         <>
@@ -274,9 +238,9 @@ export default function ModuleLifecycleActionPanel({ moduleCard, modules = [], o
                                 Nâng cấp
                             </Button>
                         ) : null}
-                        {moduleCard.key === 'project' && moduleCard.is_installed ? (
-                            <Button disabled={Boolean(pendingAction) || !canGenerateDemoData} onClick={openDemoDataModal}>
-                                Tạo data test
+                        {moduleCard.status === 'enabled' && canGenerateDemoData ? (
+                            <Button disabled={Boolean(pendingAction) || !moduleCard.test_data?.supported || !moduleCard.test_data?.storage_ready} onClick={() => onOpenTestData?.(moduleCard)}>
+                                Tạo data demo
                             </Button>
                         ) : null}
                         <Button disabled={Boolean(pendingAction)} onClick={() => onOpenChangelog?.(moduleCard)}>Nhật ký thay đổi</Button>
@@ -304,37 +268,6 @@ export default function ModuleLifecycleActionPanel({ moduleCard, modules = [], o
                 </section>
             </div>
 
-            <Modal
-                title={moduleCard.key === 'project' ? `Tạo data test: ${moduleCard.name}` : 'Tạo data test'}
-                open={demoModalOpen}
-                onCancel={closeDemoDataModal}
-                onOk={handleGenerateDemoData}
-                okText="Tạo dữ liệu"
-                cancelText="Hủy"
-                confirmLoading={submittingDemoData}
-                okButtonProps={{ disabled: !canGenerateDemoData }}
-                destroyOnHidden
-            >
-                <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    <Alert
-                        type="warning"
-                        showIcon
-                        message="Dữ liệu demo Project có thể ghi đè hoặc tạo thêm batch mới tùy lựa chọn bên dưới. Hãy kiểm tra kỹ trước khi thực hiện."
-                    />
-
-                    <div>
-                        <Text strong>Chế độ tạo data test</Text>
-                        <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                            Bật lựa chọn nếu muốn xóa toàn bộ data demo Project cũ rồi tạo lại hai dự án mẫu chuẩn.
-                            Bỏ chọn nếu muốn giữ nguyên dữ liệu cũ và thêm một batch demo mới.
-                        </Paragraph>
-                    </div>
-
-                    <Checkbox checked={removeExistingDemoData} onChange={(event) => setRemoveExistingDemoData(event.target.checked)}>
-                        Xóa data demo cũ trước khi tạo mới
-                    </Checkbox>
-                </Space>
-            </Modal>
         </>
     );
 }

@@ -46,6 +46,17 @@ abstract class ModuleRuntimeBarrier implements OperationalModuleStateProvider
         abort_if(DB::table('module_lifecycle_operations')->where('module_key', static::MODULE_KEY)->where('active_slot', 'active')->exists(), 503, static::MODULE_KEY.' đang thay đổi vòng đời.');
     }
 
+    /** Exclude native command writers while exact-owned fixtures are removed. */
+    public function lockForTestDataCleanup(): void
+    {
+        if (DB::transactionLevel() < 1) {
+            throw new RuntimeException('Test-data cleanup must run inside a transaction.');
+        }
+        if (Schema::hasTable(static::TABLE)) {
+            DB::table(static::TABLE)->where('module_key', static::MODULE_KEY)->lockForUpdate()->first();
+        }
+    }
+
     public function prepare(ModuleLifecycleLease $lease): void
     {
         if (! in_array($lease->operation, ['upgrade', 'disable', 'uninstall'], true) || ! Schema::hasTable(static::TABLE)) {

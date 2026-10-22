@@ -8,8 +8,9 @@ import Modal from 'antd/es/modal';
 const ModuleStoreCatalog = lazy(() => import('../components/ModuleStoreCatalog'));
 const ModuleLifecycleActionPanel = lazy(() => import('../components/ModuleLifecycleActionPanel'));
 const ModuleUpgradeChangelogModal = lazy(() => import('../components/ModuleUpgradeChangelogModal'));
+const ModuleTestDataManager = lazy(() => import('../components/ModuleTestDataManager'));
 
-export default function ModuleStorePage({ modules, onAction, permissions }) {
+export default function ModuleStorePage({ modules, onAction, permissions, callAdminApi }) {
     const [pendingAction, setPendingAction] = useState(null);
     const actionLock = useRef(false);
     const handleAction = async (...args) => {
@@ -28,6 +29,8 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
     const selectedModuleKey = modulePath[0] ?? null;
     const relatedModuleKey = modulePath.length > 1 ? modulePath.at(-1) : null;
     const [changelogModuleKey, setChangelogModuleKey] = useState(null);
+    const [testDataTarget, setTestDataTarget] = useState(null);
+    const testDataModule = modules.find((moduleCard) => moduleCard.key === testDataTarget) ?? null;
 
     useEffect(() => {
         setModulePath((path) => {
@@ -56,15 +59,17 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                     busy={Boolean(pendingAction)}
                     onOpenDetails={(moduleCard) => { if (!actionLock.current) setModulePath([moduleCard.key]); }}
                     onOpenChangelog={(moduleCard) => { if (!actionLock.current) setChangelogModuleKey(moduleCard.key); }}
+                    canManageTestData={permissions?.demoData ?? false}
+                    onOpenTestData={(moduleCard) => { if (!actionLock.current) setTestDataTarget(moduleCard?.key ?? '__all__'); }}
                 />
             </Suspense>
 
             <Drawer
                 open={Boolean(selectedModuleKey)}
-                onClose={() => { if (!actionLock.current && !relatedModuleKey && !changelogModuleKey) setModulePath([]); }}
+                onClose={() => { if (!actionLock.current && !relatedModuleKey && !changelogModuleKey && !testDataTarget) setModulePath([]); }}
                 closable={!pendingAction}
-                maskClosable={!pendingAction && !relatedModuleKey && !changelogModuleKey}
-                keyboard={!pendingAction && !relatedModuleKey && !changelogModuleKey}
+                maskClosable={!pendingAction && !relatedModuleKey && !changelogModuleKey && !testDataTarget}
+                keyboard={!pendingAction && !relatedModuleKey && !changelogModuleKey && !testDataTarget}
                 width="min(760px, 96vw)"
                 title={selectedModule ? `Chi tiết App: ${selectedModule.name}` : 'Chi tiết App'}
                 className="module-detail-drawer"
@@ -81,6 +86,7 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                             onAction={handleAction}
                             pendingAction={pendingAction}
                             onOpenChangelog={(moduleCard) => setChangelogModuleKey(moduleCard.key)}
+                            onOpenTestData={(moduleCard) => setTestDataTarget(moduleCard.key)}
                         />
                     </Suspense>
                 ) : null}
@@ -106,7 +112,7 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                 onCancel={() => { if (!actionLock.current) setModulePath((path) => path.slice(0, 1)); }}
                 closable={!pendingAction}
                 maskClosable={!pendingAction}
-                keyboard={!pendingAction && !changelogModuleKey}
+                keyboard={!pendingAction && !changelogModuleKey && !testDataTarget}
                 footer={null}
                 width="min(900px, 96vw)"
                 zIndex={1100}
@@ -125,10 +131,15 @@ export default function ModuleStorePage({ modules, onAction, permissions }) {
                             onAction={handleAction}
                             pendingAction={pendingAction}
                             onOpenChangelog={(moduleCard) => setChangelogModuleKey(moduleCard.key)}
+                            onOpenTestData={(moduleCard) => setTestDataTarget(moduleCard.key)}
                         />
                     </Suspense>
                 ) : null}
             </Modal>
+
+            {testDataTarget ? <Suspense fallback={null}>
+                <ModuleTestDataManager key={testDataTarget} moduleCard={testDataModule} callAdminApi={callAdminApi} onAction={handleAction} pendingAction={pendingAction} onClose={() => { if (!actionLock.current) setTestDataTarget(null); }} />
+            </Suspense> : null}
 
             {changelogModuleKey ? (
                 <Suspense fallback={null}>

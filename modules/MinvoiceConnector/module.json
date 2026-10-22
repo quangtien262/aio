@@ -2,6 +2,7 @@
   "name": "Minvoice Connector",
   "key": "minvoice-connector",
   "version": "0.2.0",
+  "test_data_provider": "Modules\\MinvoiceConnector\\Services\\MinvoiceConnectorTestDataProvider",
   "description": "Khung tích hợp Minvoice/mSMI cho hóa đơn điện tử đầu ra và đồng bộ hóa đơn đầu vào.",
   "website_type": ["backoffice", "ecommerce", "corporate", "service"],
   "dependencies": ["accounting-tax"],

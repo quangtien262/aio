@@ -70,6 +70,13 @@ class AccountingInventoryWarehouseService
 
         try {
             return DB::transaction(function () use ($organizationId, $warehouse, $isDefault, $adminId): AcctInventoryWarehouseMapping {
+                // Revalidate under a parent lock before storing this soft reference.
+                $warehouse = InvWarehouse::query()->where('is_active', true)->sharedLock()->find($warehouse->id);
+                if ($warehouse === null) {
+                    throw ValidationException::withMessages([
+                        'warehouse_id' => ['Kho không tồn tại, chưa hoạt động hoặc Inventory chưa sẵn sàng.'],
+                    ]);
+                }
                 $conflict = AcctInventoryWarehouseMapping::query()
                     ->lockForUpdate()
                     ->where('inventory_warehouse_id', $warehouse->id)

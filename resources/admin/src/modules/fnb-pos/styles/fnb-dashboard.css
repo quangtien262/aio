@@ -1,0 +1,130 @@
+.fnb-workspace-compact {
+    border: 1px solid #e0e9e5;
+    border-radius: 16px;
+    background: #f5f8f6;
+}
+.fnb-workspace-compact .fnb-workspace-header {
+    min-height: 80px;
+    padding: 12px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e4ece8;
+}
+.fnb-workspace-compact .fnb-workspace-brand .ant-typography { color: #1d4036; font-size: 18px; }
+.fnb-workspace-compact .fnb-workspace-logo {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    border: 1px solid #d5e9df;
+    border-radius: 11px;
+    background: #eaf5ef;
+    color: #14745a;
+    font-size: 21px;
+}
+.fnb-workspace-compact .fnb-workspace-selectors { width: 400px; }
+.fnb-workspace-compact .fnb-workspace-select-field { padding: 5px 10px 1px; background: #f8faf9; border-color: #dfe8e3; box-shadow: none; }
+.fnb-workspace-compact .fnb-workspace-content { padding: 22px; }
+.fnb-dashboard { display: flex; flex-direction: column; gap: 20px; }
+.fnb-dashboard-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.fnb-dashboard-heading h1 { margin: 0 0 6px; color: #1b3c32; font-size: 25px; font-weight: 700; letter-spacing: -.6px; line-height: 1.35; }
+.fnb-dashboard-heading p { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin: 0; color: #77867e; font-size: 12px; }
+.fnb-dashboard-heading-divider { width: 1px; height: 12px; margin: 0 3px; background: #d7e0da; }
+.fnb-dashboard-heading > .ant-btn { flex-shrink: 0; border-radius: 8px; }
+.fnb-dashboard-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.fnb-dashboard-metric.ant-card { min-width: 0; border: 1px solid #e0e9e3; border-radius: 12px; box-shadow: 0 3px 10px #1d403603; }
+.fnb-dashboard-metric > .ant-card-body { padding: 16px 18px; }
+.fnb-dashboard-metric-label { display: flex; justify-content: space-between; align-items: center; gap: 6px; color: #65796f; font-size: 12px; font-weight: 500; }
+.fnb-dashboard-metric-icon { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; background: #f1f6f3; color: #648574; font-size: 16px; }
+.fnb-dashboard-metric-value { display: block; margin: 5px 0 9px; color: #1c3d30; font-size: clamp(22px, 2.2vw, 30px); font-weight: 700; letter-spacing: -.7px; line-height: 1.3; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.fnb-dashboard-metric-caption { display: block; color: #859188; font-size: 11px; }
+.fnb-dashboard-metric.is-primary { background: #12644f; border-color: #12644f; }
+.fnb-dashboard-metric.is-primary .fnb-dashboard-metric-label { color: #d0e9de; }
+.fnb-dashboard-metric.is-primary .fnb-dashboard-metric-value { color: #fff; }
+.fnb-dashboard-metric.is-primary .fnb-dashboard-metric-icon { color: #e8f5eb; background: #ffffff15; }
+.fnb-dashboard-metric.is-primary .fnb-dashboard-metric-caption { color: #b6d7c7; }
+.fnb-dashboard-columns { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(290px, 1fr); align-items: stretch; gap: 18px; }
+.fnb-dashboard-panel.ant-card { min-width: 0; border: 1px solid #e0e9e3; border-radius: 12px; box-shadow: none; }
+.fnb-dashboard-panel > .ant-card-head { min-height: 54px; padding: 0 20px; border-bottom-color: #edf1ee; }
+.fnb-dashboard-panel .ant-card-head-title { color: #294438; font-size: 14px; font-weight: 650; }
+.fnb-dashboard-panel .ant-card-extra .ant-btn { height: auto; padding: 0; font-size: 12px; color: #187459; }
+.fnb-dashboard-panel > .ant-card-body { padding: 20px; }
+.fnb-dashboard-results { display: flex; flex-direction: column; }
+.fnb-dashboard-results > .ant-card-body { flex: 1; display: flex; flex-direction: column; }
+.fnb-dashboard-financials { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0 0 20px; border-bottom: 1px solid #edf1ee; gap: 12px; }
+.fnb-dashboard-financials > div { display: flex; flex-direction: column; gap: 7px; }
+.fnb-dashboard-financials > div + div { border-left: 1px solid #e8eee9; padding-left: 16px; }
+.fnb-dashboard-financials span { color: #7a8a80; font-size: 11px; }
+.fnb-dashboard-financials strong { color: #294438; font-size: 19px; letter-spacing: -.4px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.fnb-dashboard-items-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 19px 0 8px; }
+.fnb-dashboard-items-heading h2 { margin: 0; font-size: 13px; font-weight: 600; color: #3d574a; }
+.fnb-dashboard-items-heading > span { color: #94a098; font-size: 10px; }
+.fnb-dashboard-items { flex: 1; }
+.fnb-dashboard-item { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 13px 0; font-size: 12px; }
+.fnb-dashboard-item + .fnb-dashboard-item { border-top: 1px solid #f0f3f1; }
+.fnb-dashboard-item > strong { min-width: 0; color: #355343; font-weight: 600; overflow-wrap: anywhere; }
+.fnb-dashboard-item > span { color: #839386; }
+.fnb-dashboard-item-rank { font-size: 11px; font-variant-numeric: tabular-nums; }
+.fnb-dashboard-empty { display: flex; flex: 1; min-height: 185px; padding: 28px 10px; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+.fnb-dashboard-empty-icon { display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; margin-bottom: 12px; border-radius: 16px; background: #f1f6f3; color: #83a18f; font-size: 24px; }
+.fnb-dashboard-empty > strong { color: #5b7364; font-size: 13px; font-weight: 500; }
+.fnb-dashboard-empty > p { margin: 5px 0 0; color: #97a399; font-size: 11px; }
+.fnb-dashboard-panel-note { margin-top: 12px; padding-top: 13px; border-top: 1px solid #edf1ee; color: #8a998e; font-size: 10px; }
+.fnb-dashboard-sidebar { display: flex; flex-direction: column; gap: 16px; }
+.fnb-dashboard-actions > .ant-card-body { padding: 16px; }
+.fnb-dashboard-actions .ant-btn-primary { display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; border-radius: 8px; font-size: 13px; font-weight: 600; background: #16775c; box-shadow: none; }
+.fnb-dashboard-action-list { display: flex; flex-direction: column; }
+.fnb-dashboard-action { display: flex; align-items: center; gap: 11px; width: 100%; padding: 12px 1px; border: 0; border-bottom: 1px solid #edf1ee; background: none; color: #799184; font: inherit; text-align: left; cursor: pointer; border-radius: 6px; }
+.fnb-dashboard-action:last-child { padding-bottom: 0; border-bottom: 0; }
+.fnb-dashboard-action:hover { background: #f5f9f6; color: #137253; }
+.fnb-dashboard-action:focus-visible { outline: 2px solid #168064; outline-offset: 4px; }
+.fnb-dashboard-action-icon { display: flex; align-items: center; justify-content: center; flex: 0 0 33px; height: 33px; border: 1px solid #e5ede7; background: #f8faf8; border-radius: 9px; font-size: 15px; }
+.fnb-dashboard-action-copy { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 3px; }
+.fnb-dashboard-action-copy strong { color: #365342; font-size: 12px; font-weight: 600; }
+.fnb-dashboard-action-copy > span { color: #89988c; font-size: 10px; }
+.fnb-dashboard-action > .anticon { font-size: 11px; }
+.fnb-dashboard-business-day > .ant-card-body { padding: 16px 18px; }
+.fnb-dashboard-business-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; color: #69806f; font-size: 11px; }
+.fnb-dashboard-business-heading .ant-tag { margin: 0; font-size: 10px; line-height: 18px; border-radius: 5px; }
+.fnb-dashboard-business-day strong { display: block; color: #365440; font-size: 17px; }
+.fnb-dashboard-business-day p { margin: 5px 0 0; color: #8b9b90; font-size: 10px; }
+.fnb-dashboard-footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; color: #97a49b; font-size: 10px; }
+.fnb-dashboard-update-dot { width: 5px; height: 5px; background: #7aab94; border-radius: 50%; }
+@media (max-width: 991px) {
+    .fnb-workspace-compact .fnb-workspace-header { grid-template-columns: minmax(0, 1fr) auto; }
+    .fnb-workspace-compact .fnb-workspace-selectors { grid-column: auto; width: 360px; }
+    .fnb-dashboard-metrics { gap: 10px; }
+    .fnb-dashboard-metric > .ant-card-body { padding: 14px; }
+    .fnb-dashboard-metric-label { font-size: 11px; }
+    .fnb-dashboard-metric-caption { font-size: 10px; }
+    .fnb-dashboard-metric-icon { width: 25px; height: 25px; font-size: 14px; }
+    .fnb-dashboard-columns { gap: 14px; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); }
+}
+@media (max-width: 760px) {
+    .fnb-workspace-compact .fnb-workspace-header { grid-template-columns: minmax(0, 1fr); padding: 14px; }
+    .fnb-workspace-compact .fnb-workspace-selectors { width: 100%; }
+    .fnb-workspace-compact .fnb-workspace-content { padding: 18px 14px; }
+    .fnb-dashboard-heading h1 { font-size: 22px; }
+    .fnb-dashboard-heading p { font-size: 11px; }
+    .fnb-dashboard-heading-divider { display: none; }
+    .fnb-dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fnb-dashboard-columns { grid-template-columns: minmax(0, 1fr); }
+    .fnb-dashboard-sidebar { display: grid; grid-template-columns: 1.3fr 1fr; align-items: start; }
+}
+@media (max-width: 480px) {
+    .fnb-dashboard { gap: 16px; }
+    .fnb-dashboard-heading { align-items: flex-start; gap: 8px; }
+    .fnb-dashboard-heading p { max-width: 220px; }
+    .fnb-dashboard-heading p > .anticon { display: none; }
+    .fnb-dashboard-heading > .ant-btn { padding-inline: 10px; font-size: 12px; }
+    .fnb-dashboard-heading h1 { font-size: 20px; }
+    .fnb-dashboard-metric-value { font-size: 25px; }
+    .fnb-dashboard-panel > .ant-card-head { padding: 0 16px; }
+    .fnb-dashboard-panel > .ant-card-body { padding: 16px; }
+    .fnb-dashboard-financials { gap: 8px; }
+    .fnb-dashboard-financials > div + div { padding-left: 9px; }
+    .fnb-dashboard-financials strong { font-size: 16px; }
+    .fnb-dashboard-financials span { font-size: 10px; }
+    .fnb-dashboard-sidebar { display: flex; }
+    .fnb-dashboard-item { grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px; }
+    .fnb-dashboard-item > strong:last-child { grid-column: 2 / -1; text-align: right; }
+    .fnb-dashboard-footer { justify-content: flex-start; }
+}

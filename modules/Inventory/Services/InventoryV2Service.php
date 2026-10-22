@@ -48,6 +48,8 @@ final class InventoryV2Service
         return DB::transaction(function () use ($input): array {
             $this->runtime(lock: true);
             validator($input, ['code' => 'required|string|max:50', 'name' => 'required|string|max:255', 'catalog_id' => 'required|integer|exists:merch_catalogs,id', 'legal_entity_ref' => 'required|string|max:100', 'branch_id' => 'nullable|integer'])->validate();
+            // Keep the soft catalog reference valid if fixture cleanup is running.
+            abort_unless(DB::table('merch_catalogs')->where('id', $input['catalog_id'])->sharedLock()->first(), 422, 'Danh mục hàng hóa không còn tồn tại.');
             $timezone = $input['timezone'] ?? null;
             if (! $timezone && ! empty($input['branch_id']) && Schema::hasTable('retail_branches')) {
                 $timezone = DB::table('retail_branches')->where('id', $input['branch_id'])->value('timezone');

@@ -33,6 +33,7 @@ readonly class ModuleManifest
         public array $lifecycle = [],
         public ?string $securityProvider = null,
         public ?string $lifecycleStateProvider = null,
+        public ?string $testDataProvider = null,
     ) {}
 
     /**
@@ -57,6 +58,7 @@ readonly class ModuleManifest
             lifecycle: $payload['lifecycle'] ?? [],
             securityProvider: $payload['security_provider'] ?? null,
             lifecycleStateProvider: $payload['lifecycle_state_provider'] ?? null,
+            testDataProvider: $payload['test_data_provider'] ?? null,
         );
     }
 }

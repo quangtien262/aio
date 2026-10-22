@@ -2,6 +2,7 @@
   "name": "Catalog",
   "key": "catalog",
   "version": "0.2.1",
+  "test_data_provider": "Modules\\Catalog\\Services\\CatalogTestDataProvider",
   "description": "Module quản lý danh mục sản phẩm và kho dữ liệu thương mại điện tử cho AIO Platform.",
   "website_type": ["ecommerce"],
   "dependencies": ["cms"],

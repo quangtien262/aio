@@ -16,9 +16,10 @@ export default function FnbWorkspaceShell({
     onOutletChange,
     onTerminalChange,
     operationalState,
+    compact = false,
 }) {
     return (
-        <div className="fnb-workspace" data-testid="fnb-workspace">
+        <div className={`fnb-workspace${compact ? ' fnb-workspace-compact' : ''}`} data-testid="fnb-workspace">
             <header className="fnb-workspace-header">
                 <div className="fnb-workspace-brand">
                     <div className="fnb-workspace-logo"><CoffeeOutlined /></div>

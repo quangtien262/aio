@@ -13,6 +13,12 @@ use Throwable;
 
 class ModuleLifecycleCoordinator
 {
+    /** Share the lifecycle exclusion lock with insert-only test-data operations. */
+    public function withModuleLock(string $moduleKey, callable $callback): mixed
+    {
+        return $this->withAdvisoryLock($moduleKey, $callback);
+    }
+
     public function begin(
         string $moduleKey,
         string $operation,

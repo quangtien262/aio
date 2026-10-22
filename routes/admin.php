@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\Api\Catalog\ProductIndexController;
 use App\Http\Controllers\Admin\Api\Catalog\ProductManagementController;
 use App\Http\Controllers\Admin\Api\Cms\CategoryIndexController;
 use App\Http\Controllers\Admin\Api\Cms\CategoryManagementController;
+use App\Http\Controllers\Admin\Api\Cms\CmsDashboardController;
 use App\Http\Controllers\Admin\Api\Cms\FeaturedCategoryIndexController;
 use App\Http\Controllers\Admin\Api\Cms\FeaturedCategoryManagementController;
 use App\Http\Controllers\Admin\Api\Cms\MediaIndexController;
@@ -55,6 +56,7 @@ use App\Http\Controllers\Admin\Api\Cms\TeamMemberIndexController;
 use App\Http\Controllers\Admin\Api\Cms\TeamMemberManagementController;
 use App\Http\Controllers\Admin\Api\Cms\TestimonialIndexController;
 use App\Http\Controllers\Admin\Api\Cms\TestimonialManagementController;
+use App\Http\Controllers\Admin\Api\Cms\TopicManagementController;
 use App\Http\Controllers\Admin\Api\DashboardController;
 use App\Http\Controllers\Admin\Api\Hrm\HrmAttendanceController;
 use App\Http\Controllers\Admin\Api\Hrm\HrmContractController;
@@ -85,6 +87,7 @@ use App\Http\Controllers\Admin\Api\LocalizedContentController;
 use App\Http\Controllers\Admin\Api\LocalizedSlugController;
 use App\Http\Controllers\Admin\Api\ModuleLifecycleController;
 use App\Http\Controllers\Admin\Api\ModuleRegistryController;
+use App\Http\Controllers\Admin\Api\ModuleTestDataController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberIndexController;
 use App\Http\Controllers\Admin\Api\NewsletterSubscriberManagementController;
 use App\Http\Controllers\Admin\Api\OrderIndexController;
@@ -125,16 +128,19 @@ use App\Http\Controllers\Admin\Api\ThemeRegistryController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationIndexController;
 use App\Http\Controllers\Admin\Api\ThemeTranslationManagementController;
 use App\Http\Controllers\Admin\AuthenticatedSessionController;
+use App\Http\Controllers\Site\SitemapController;
 use Illuminate\Support\Facades\Route;
+use Modules\Manufacturing\Http\ManufacturingLoginController;
+use Modules\Manufacturing\Http\ManufacturingShellController;
 
 Route::prefix('admin')
     ->name('admin.')
     ->group(function (): void {
-        Route::get('/manufacturing/login', [\Modules\Manufacturing\Http\ManufacturingLoginController::class, 'show'])
+        Route::get('/manufacturing/login', [ManufacturingLoginController::class, 'show'])
             ->middleware(['module.enabled:manufacturing', 'throttle:60,1'])->name('manufacturing.login');
-        Route::post('/manufacturing/login', [\Modules\Manufacturing\Http\ManufacturingLoginController::class, 'store'])
+        Route::post('/manufacturing/login', [ManufacturingLoginController::class, 'store'])
             ->middleware(['module.enabled:manufacturing', 'throttle:login'])->name('manufacturing.login.store');
-        Route::get('/modules/manufacturing/{any?}', \Modules\Manufacturing\Http\ManufacturingShellController::class)
+        Route::get('/modules/manufacturing/{any?}', ManufacturingShellController::class)
             ->where('any', '.*')->middleware(['auth:admin', 'admin.active', 'module.enabled:manufacturing'])
             ->name('manufacturing.shell');
         // Enterprise production context is authorized natively, never by a website header.
@@ -227,6 +233,14 @@ Route::prefix('admin')
                 Route::get('/modules', ModuleRegistryController::class)
                     ->middleware('admin.permission:store.module.view')
                     ->name('modules');
+                Route::get('/modules/demo-data', [ModuleTestDataController::class, 'index'])
+                    ->middleware('admin.permission:store.module.upgrade,global')->name('modules.demo-data.index');
+                Route::delete('/modules/demo-data', [ModuleTestDataController::class, 'destroy'])
+                    ->middleware('admin.permission:store.module.upgrade,global')->name('modules.demo-data.clear');
+                Route::get('/modules/{key}/demo-data', [ModuleTestDataController::class, 'index'])
+                    ->middleware('admin.permission:store.module.upgrade,global')->name('modules.demo-data.batches');
+                Route::delete('/modules/{key}/demo-data', [ModuleTestDataController::class, 'destroy'])
+                    ->middleware('admin.permission:store.module.upgrade,global')->name('modules.demo-data.destroy');
                 Route::prefix('accounting-tax')->middleware('module.enabled:accounting-tax')->name('accounting-tax.')->group(function (): void {
                     Route::get('/dashboard', AccountingDashboardController::class)
                         ->middleware('admin.permission:accounting.view,organization,organization_id')->name('dashboard');
@@ -650,7 +664,7 @@ Route::prefix('admin')
                 Route::get('/cms/posts', PostIndexController::class)
                     ->middleware('admin.permission:cms.post.view')
                     ->name('cms.posts.index');
-                Route::get('/cms/dashboard', \App\Http\Controllers\Admin\Api\Cms\CmsDashboardController::class)
+                Route::get('/cms/dashboard', CmsDashboardController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.dashboard');
                 Route::post('/cms/posts', [PostManagementController::class, 'store'])
@@ -776,10 +790,10 @@ Route::prefix('admin')
                 Route::delete('/cms/partners/{partner}', [PartnerManagementController::class, 'destroy'])
                     ->middleware('admin.permission:cms.delete')
                     ->name('cms.partners.destroy');
-                Route::get('/cms/topics', [\App\Http\Controllers\Admin\Api\Cms\TopicManagementController::class, 'index'])->middleware('admin.permission:cms.view')->name('cms.topics.index');
-                Route::post('/cms/topics', [\App\Http\Controllers\Admin\Api\Cms\TopicManagementController::class, 'store'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.store');
-                Route::put('/cms/topics/{topic}', [\App\Http\Controllers\Admin\Api\Cms\TopicManagementController::class, 'update'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.update');
-                Route::delete('/cms/topics/{topic}', [\App\Http\Controllers\Admin\Api\Cms\TopicManagementController::class, 'destroy'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.destroy');
+                Route::get('/cms/topics', [TopicManagementController::class, 'index'])->middleware('admin.permission:cms.view')->name('cms.topics.index');
+                Route::post('/cms/topics', [TopicManagementController::class, 'store'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.store');
+                Route::put('/cms/topics/{topic}', [TopicManagementController::class, 'update'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.update');
+                Route::delete('/cms/topics/{topic}', [TopicManagementController::class, 'destroy'])->middleware('admin.permission:cms.category.manage')->name('cms.topics.destroy');
                 Route::get('/cms/categories', CategoryIndexController::class)
                     ->middleware('admin.permission:cms.view')
                     ->name('cms.categories.index');
@@ -984,9 +998,9 @@ Route::prefix('admin')
                 Route::get('/setup', SetupWizardStateController::class)
                     ->middleware('admin.permission:setup.view')
                     ->name('setup');
-                Route::get('/sitemap', [\App\Http\Controllers\Site\SitemapController::class, 'status'])
+                Route::get('/sitemap', [SitemapController::class, 'status'])
                     ->middleware('admin.permission:setup.view')->name('sitemap.status');
-                Route::post('/sitemap/refresh', [\App\Http\Controllers\Site\SitemapController::class, 'refresh'])
+                Route::post('/sitemap/refresh', [SitemapController::class, 'refresh'])
                     ->middleware('admin.permission:setup.complete')->name('sitemap.refresh');
                 Route::put('/setup', SetupProfileController::class)
                     ->middleware('admin.permission:setup.complete')

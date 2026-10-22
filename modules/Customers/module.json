@@ -2,6 +2,7 @@
   "name": "Quản lý khách hàng",
   "key": "customers",
   "version": "0.1.0",
+  "test_data_provider": "Modules\\Customers\\Services\\CustomersTestDataProvider",
   "description": "Hồ sơ khách hàng dùng chung, liên hệ, phân quyền chia sẻ, consent và tích hợp nhiều ứng dụng.",
   "website_type": [
     "backoffice",

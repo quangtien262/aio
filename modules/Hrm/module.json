@@ -2,6 +2,7 @@
   "name": "Quản lý nhân sự",
   "key": "hrm",
   "version": "1.0.0",
+  "test_data_provider": "Modules\\Hrm\\Services\\HrmTestDataProvider",
   "description": "Quản lý cơ cấu tổ chức, hồ sơ nhân sự, hợp đồng, tài khoản đăng nhập, nghỉ phép và cổng thông tin cá nhân.",
   "website_type": ["backoffice", "corporate", "ecommerce", "news", "landingpage"],
   "dependencies": [],

@@ -21,7 +21,7 @@ export default function FnbOverviewPage() {
     }, [active, requested, setSearchParams]);
 
     return <div className="fnb-page-stack fnb-overview-page">
-        <div className="fnb-overview-heading fnb-overview-title"><span>{selectedOutlet?.name ?? 'Điểm bán'}</span><h2>{active === 'reports' ? 'Báo cáo' : 'Tổng quan hôm nay'}</h2></div>
-        {active === 'today' ? <FnbDashboardPage embedded /> : active === 'reports' ? <FnbReportsPage embedded /> : null}
+        {active === 'reports' ? <div className="fnb-overview-heading fnb-overview-title"><span>{selectedOutlet?.name ?? 'Điểm bán'}</span><h2>Báo cáo</h2></div> : null}
+        {active === 'today' ? <FnbDashboardPage /> : active === 'reports' ? <FnbReportsPage embedded /> : null}
     </div>;
 }

@@ -318,6 +318,7 @@ export default function FnbPosManagerPage({ callAdminApi, currentPermissions = [
                 onOutletChange={handleOutletChange}
                 onTerminalChange={handleTerminalChange}
                 operationalState={bootstrap.operational_state ?? bootstrap.site_settings?.operational_state}
+                compact={activeSection === 'dashboard'}
             >
                 {!onboardingComplete && activeSection !== 'onboarding' ? (
                     <Alert

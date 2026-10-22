@@ -1,6 +1,7 @@
 {
   "name": "Mua hàng và nhà cung cấp",
   "key": "purchasing",
+  "test_data_provider": "Modules\\Purchasing\\Services\\PurchasingTestDataProvider",
   "version": "0.2.1",
   "description": "Đơn mua, nhận hàng nhiều lần, trả nhà cung cấp và công nợ vận hành dùng chung.",
   "website_type": [

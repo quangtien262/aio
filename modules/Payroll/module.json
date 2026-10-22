@@ -2,6 +2,7 @@
   "name": "Tiền lương",
   "key": "payroll",
   "version": "1.0.0",
+  "test_data_provider": "Modules\\Payroll\\Services\\PayrollTestDataProvider",
   "description": "Add-on quản lý kỳ lương, phiếu lương, quy trình phê duyệt và công bố cho nhân sự.",
   "website_type": ["backoffice", "corporate", "ecommerce", "news", "landingpage"],
   "dependencies": ["hrm"],

@@ -1,6 +1,7 @@
 {
   "name": "Quản lý xưởng may",
   "key": "manufacturing",
+  "test_data_provider": "Modules\\Manufacturing\\Services\\ManufacturingTestDataProvider",
   "version": "0.1.0-dev.1",
   "description": "Kỹ thuật, kế hoạch và điều hành sản xuất may theo doanh nghiệp và phân xưởng.",
   "website_type": ["backoffice", "corporate", "ecommerce"],

@@ -30,8 +30,8 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
         return <Card loading title="App Store" />;
     }
 
-    if (error) {
-        return <Alert type="error" showIcon message={error} />;
+    if (error && !data) {
+        return <Alert type="error" showIcon message={error} action={<Button onClick={reload}>Thử lại</Button>} />;
     }
 
     const onAction = (moduleKey, action, payload = null) => {
@@ -40,7 +40,8 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
             enable: { url: adminApi(`modules/${moduleKey}/enable`), method: 'POST', success: 'Đã kích hoạt App.' },
             disable: { url: adminApi(`modules/${moduleKey}/disable`), method: 'POST', success: 'Đã tắt App.' },
             upgrade: { url: adminApi(`modules/${moduleKey}/upgrade`), method: 'POST', success: 'Đã nâng cấp App.' },
-            'demo-data': { url: adminApi(`modules/${moduleKey}/demo-data`), method: 'POST', success: 'Đã tạo dữ liệu mẫu cho App.' },
+            'demo-data': { url: adminApi(`modules/${moduleKey}/demo-data`), method: 'POST', success: 'Đã tạo dữ liệu demo cho App.' },
+            'delete-demo-data': { url: adminApi(moduleKey === '__all__' ? 'modules/demo-data' : `modules/${moduleKey}/demo-data`), method: 'DELETE', success: 'Đã xóa dữ liệu demo được đánh dấu.' },
             uninstall: { url: adminApi(`modules/${moduleKey}`), method: 'DELETE', success: 'Đã gỡ App.' },
         };
 
@@ -50,9 +51,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
             return;
         }
 
-        const successMessage = action === 'demo-data'
-            ? (payload?.remove_existing === false ? 'Đã thêm một nhóm dữ liệu mẫu mới cho App.' : 'Đã thay thế dữ liệu mẫu cũ bằng nhóm mới.')
-            : target.success;
+        const successMessage = target.success;
 
         return runAdminAction(async () => {
             await callAdminApi(target.url, {
@@ -63,7 +62,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
             await reload();
             await refreshShell?.();
 
-            if (returnTo && completeStep === 'modules') {
+            if (returnTo && completeStep === 'modules' && !['demo-data', 'delete-demo-data'].includes(action)) {
                 await callAdminApi(adminApi(`setup/steps/${completeStep}`), { method: 'POST' });
                 navigate(`${returnTo}?focusStep=${encodeURIComponent(focusStep || completeStep)}&completedStep=${encodeURIComponent(completeStep)}`);
             }
@@ -72,6 +71,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
+            {error ? <Alert type="warning" showIcon message="Chưa thể cập nhật danh sách ứng dụng" description={error} action={<Button onClick={reload}>Tải lại</Button>} /> : null}
             {returnTo ? (
                 <Card>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
@@ -84,7 +84,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
                 </Card>
             ) : null}
 
-            <ModuleStorePage modules={data} onAction={onAction} permissions={permissions} />
+            <ModuleStorePage modules={data} onAction={onAction} permissions={permissions} callAdminApi={callAdminApi} />
         </Space>
     );
 }

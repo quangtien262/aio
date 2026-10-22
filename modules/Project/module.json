@@ -2,6 +2,7 @@
   "name": "Project",
   "key": "project",
   "version": "0.1.0",
+  "test_data_provider": "Modules\\Project\\Services\\ProjectTestDataProvider",
   "description": "Module quản lý dự án với dự án, công việc, checklist, files, báo cáo và lịch sử hoạt động.",
   "website_type": ["backoffice", "corporate", "ecommerce", "news", "landingpage"],
   "dependencies": [],

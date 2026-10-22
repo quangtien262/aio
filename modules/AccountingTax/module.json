@@ -2,6 +2,7 @@
   "name": "Kế toán & Thuế",
   "key": "accounting-tax",
   "version": "0.2.0",
+  "test_data_provider": "Modules\\AccountingTax\\Services\\AccountingTaxTestDataProvider",
   "description": "Quản lý chứng từ kế toán nội bộ, hóa đơn đầu vào/đầu ra, báo cáo thuế, email và nền tảng tích hợp hóa đơn điện tử.",
   "website_type": ["backoffice", "ecommerce", "corporate", "service"],
   "dependencies": [],

@@ -2,10 +2,14 @@ import { useMemo, useRef, useState } from 'react';
 import AppstoreOutlined from '@ant-design/icons/AppstoreOutlined';
 import ArrowRightOutlined from '@ant-design/icons/ArrowRightOutlined';
 import AuditOutlined from '@ant-design/icons/AuditOutlined';
+import BuildOutlined from '@ant-design/icons/BuildOutlined';
 import CheckCircleFilled from '@ant-design/icons/CheckCircleFilled';
 import DatabaseOutlined from '@ant-design/icons/DatabaseOutlined';
+import DownloadOutlined from '@ant-design/icons/DownloadOutlined';
+import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined';
 import FileTextOutlined from '@ant-design/icons/FileTextOutlined';
 import HomeOutlined from '@ant-design/icons/HomeOutlined';
+import HistoryOutlined from '@ant-design/icons/HistoryOutlined';
 import InboxOutlined from '@ant-design/icons/InboxOutlined';
 import LinkOutlined from '@ant-design/icons/LinkOutlined';
 import ProjectOutlined from '@ant-design/icons/ProjectOutlined';
@@ -19,13 +23,14 @@ import Button from 'antd/es/button';
 import Empty from 'antd/es/empty';
 import Input from 'antd/es/input';
 import Select from 'antd/es/select';
+import Tooltip from 'antd/es/tooltip';
 import { toAppTerminology } from '../utils/appTerminology';
 import '../styles/module-store.css';
 
 const categories = [
     { key: 'all', name: 'Tất cả ứng dụng', icon: AppstoreOutlined },
     { key: 'sales', name: 'Bán hàng & dịch vụ', icon: ShopOutlined },
-    { key: 'operations', name: 'Kho & mua hàng', icon: DatabaseOutlined },
+    { key: 'operations', name: 'Kho & vận hành', icon: DatabaseOutlined },
     { key: 'website', name: 'Website & nội dung', icon: FileTextOutlined },
     { key: 'finance', name: 'Tài chính & kế toán', icon: WalletOutlined },
     { key: 'people', name: 'Nhân sự & cộng tác', icon: TeamOutlined },
@@ -39,6 +44,7 @@ const presentations = {
     inventory: { category: 'operations', icon: DatabaseOutlined, color: '#31799b', background: '#e6f2f8', rank: 4 },
     merchandise: { category: 'operations', icon: InboxOutlined, color: '#bc7140', background: '#fbecdf', rank: 5 },
     purchasing: { category: 'operations', icon: ShoppingCartOutlined, color: '#388a75', background: '#e8f5ef', rank: 6 },
+    manufacturing: { category: 'operations', icon: BuildOutlined, color: '#7960af', background: '#f0ebfa', rank: 6 },
     'accounting-tax': { category: 'finance', icon: AuditOutlined, color: '#597142', background: '#eef3e3', rank: 7 },
     'minvoice-connector': { category: 'finance', icon: LinkOutlined, color: '#6288b2', background: '#edf3fc', rank: 8 },
     hrm: { category: 'people', icon: TeamOutlined, color: '#358a8c', background: '#e5f5f3', rank: 9 },
@@ -71,7 +77,7 @@ function AppIcon({ moduleCard, className = '' }) {
     return <span className={`market-app-icon ${className}`} style={{ '--app-color': appearance.color, '--app-background': appearance.background }}><Icon /></span>;
 }
 
-export default function ModuleStoreCatalog({ modules = [], onOpenDetails, onOpenChangelog, busy = false }) {
+export default function ModuleStoreCatalog({ modules = [], onOpenDetails, onOpenChangelog, onOpenTestData, canManageTestData = false, busy = false }) {
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('all');
     const [status, setStatus] = useState('all');
@@ -81,6 +87,8 @@ export default function ModuleStoreCatalog({ modules = [], onOpenDetails, onOpen
     const active = modules.filter((item) => item.status === 'enabled');
     const featured = modules.find((item) => item.key === 'retail-pos') ?? modules[0];
     const featuredIsRetail = featured?.key === 'retail-pos';
+    const secondaryFeatured = modules.find((item) => item.key === 'fnb-pos' && item.key !== featured?.key)
+        ?? modules.find((item) => item.key !== featured?.key);
     const filters = [
         { key: 'all', name: 'Tất cả' }, { key: 'installed', name: 'Đã cài đặt' },
         { key: 'available', name: 'Chưa cài đặt' }, { key: 'updates', name: 'Cần cập nhật' },
@@ -119,46 +127,18 @@ export default function ModuleStoreCatalog({ modules = [], onOpenDetails, onOpen
     return (
         <div className="app-marketplace">
             <header className="market-page-heading">
-                <div>
-                    <span className="market-eyebrow">AIO APP STORE</span>
-                    <h1>Không gian ứng dụng</h1>
-                    <p>Công cụ cho từng nhu cầu. Kết nối trong một hệ thống.</p>
+                <div className="market-brand">
+                    <span className="market-brand-icon"><AppstoreOutlined /></span>
+                    <div><h1>App Store</h1><p>Ứng dụng cho mọi hoạt động của doanh nghiệp.</p></div>
                 </div>
-                <div className="market-library-summary"><span><CheckCircleFilled /> {active.length} app đang hoạt động</span><span>{modules.length} ứng dụng trong thư viện</span></div>
+                <Input aria-label="Tìm ứng dụng" prefix={<SearchOutlined />} placeholder="Tìm ứng dụng, tính năng…" allowClear value={query} onChange={(event) => setQuery(event.target.value)} className="market-search" />
+                {canManageTestData ? <Button className="market-test-data-shortcut" icon={<ExperimentOutlined />} aria-label="Quản lý toàn bộ data demo" title="Quản lý toàn bộ data demo" disabled={busy} onClick={() => onOpenTestData(null)}>Data demo</Button> : null}
+                <Button className="market-library-shortcut" icon={<DownloadOutlined />} onClick={showInstalled}>Ứng dụng của tôi <span>{installed.length}</span></Button>
             </header>
 
-            <section className="market-spotlight-grid" aria-label="Ứng dụng nổi bật">
-                {featured ? <div className="market-featured">
-                    <div className="market-featured-copy">
-                        <span className="market-featured-label">KHÁM PHÁ GIẢI PHÁP AIO</span>
-                        <h2>{featuredIsRetail ? <>Quản lý bán lẻ,<br />kết nối toàn chuỗi.</> : featured.name}</h2>
-                        <p>{featuredIsRetail ? 'Bán hàng, quản lý tồn kho và điều hành nhiều chi nhánh ngay trên AIO.' : toAppTerminology(featured.description)}</p>
-                        <Button className="market-featured-cta" disabled={busy} onClick={() => onOpenDetails(featured)}>Khám phá ứng dụng <ArrowRightOutlined /></Button>
-                        <span className="market-featured-app-name">{featured.name} <span>· v{featured.latest_version}</span></span>
-                    </div>
-                    <div className="market-featured-art" aria-hidden="true">
-                        <div className="market-art-orbit market-art-orbit--one" /><div className="market-art-orbit market-art-orbit--two" />
-                        <AppIcon moduleCard={featured} className="market-featured-icon" />
-                        <span className="market-art-tile market-art-tile--stock"><DatabaseOutlined /><span>{featuredIsRetail ? 'Tồn kho' : 'Dữ liệu'}</span></span>
-                        <span className="market-art-tile market-art-tile--branch"><ShopOutlined /><span>{featuredIsRetail ? 'Chi nhánh' : 'Kết nối'}</span></span>
-                        <span className="market-art-connection market-art-connection--one" /><span className="market-art-connection market-art-connection--two" />
-                    </div>
-                </div> : null}
-                <div className="market-library-card">
-                    <div className="market-library-card-heading"><span className="market-eyebrow">KHÔNG GIAN CỦA BẠN</span><span className="market-live-dot" /></div>
-                    <h2>Ứng dụng của bạn</h2>
-                    <p>{installed.length ? `${installed.length} ứng dụng đã được cài đặt trên hệ thống.` : 'Bắt đầu bằng ứng dụng phù hợp với doanh nghiệp của bạn.'}</p>
-                    <div className="market-library-apps">
-                        {active.slice(0, 3).map((item) => <button key={item.key} className="market-library-app" disabled={busy} onClick={() => onOpenDetails(item)}><AppIcon moduleCard={item} /><span>{item.name}</span><ArrowRightOutlined /></button>)}
-                        {!active.length ? <div className="market-library-placeholder"><AppstoreOutlined /><span>Các ứng dụng đang bật sẽ xuất hiện tại đây.</span></div> : null}
-                    </div>
-                    <button className="market-library-link" onClick={showInstalled}>Xem ứng dụng đã cài <ArrowRightOutlined /></button>
-                </div>
-            </section>
-
-            <section className="market-catalog" ref={catalogRef} aria-label="Danh mục ứng dụng">
+            <section className="market-catalog" aria-label="Danh mục ứng dụng">
                 <aside className="market-sidebar">
-                    <span className="market-sidebar-label">DANH MỤC</span>
+                    <span className="market-sidebar-label">KHÁM PHÁ</span>
                     <nav aria-label="Nhóm ứng dụng">
                         {visibleCategories.map((item) => {
                             const Icon = item.icon;
@@ -166,29 +146,59 @@ export default function ModuleStoreCatalog({ modules = [], onOpenDetails, onOpen
                             return <button key={item.key} className={`market-category ${category === item.key ? 'is-active' : ''}`} aria-pressed={category === item.key} onClick={() => setCategory(item.key)}><Icon /><span>{item.name}</span><small>{count}</small></button>;
                         })}
                     </nav>
-                    <div className="market-sidebar-note"><LinkOutlined /><strong>Kết nối để làm được nhiều hơn</strong><p>Xem các app cần thiết và cài đặt ngay trong phần chi tiết ứng dụng.</p></div>
+                    <div className="market-sidebar-library">
+                        <span className="market-sidebar-label">THƯ VIỆN CỦA BẠN</span>
+                        <button onClick={showInstalled}><DownloadOutlined /><span>Đã cài đặt</span><strong>{installed.length}</strong></button>
+                        <div><CheckCircleFilled /><span>Đang hoạt động</span><strong>{active.length}</strong></div>
+                    </div>
+                    <div className="market-sidebar-note"><LinkOutlined /><strong>Một hệ thống, nhiều khả năng</strong><p>Các ứng dụng kết nối và dùng chung dữ liệu trên nền tảng AIO.</p></div>
                 </aside>
                 <div className="market-catalog-content">
-                    <div className="market-search-row">
-                        <Input aria-label="Tìm ứng dụng" prefix={<SearchOutlined />} placeholder="Tìm ứng dụng, tính năng…" allowClear value={query} onChange={(event) => setQuery(event.target.value)} className="market-search" />
-                        <Select aria-label="Sắp xếp ứng dụng" value={sort} onChange={setSort} options={[{ value: 'recommended', label: 'Đề xuất' }, { value: 'name', label: 'Tên A–Z' }]} className="market-sort" />
+                    {!query.trim() && category === 'all' && status === 'all' && featured ? <section className={`market-spotlight-grid${!secondaryFeatured ? ' market-spotlight-grid--single' : ''}`} aria-label="Ứng dụng nổi bật">
+                        <div className="market-featured">
+                            <div className="market-featured-copy">
+                                <span className="market-featured-label">TIÊU ĐIỂM ỨNG DỤNG</span>
+                                <h2>{featuredIsRetail ? <>Bán lẻ liền mạch.<br />Quản lý toàn chuỗi.</> : featured.name}</h2>
+                                <p>{featuredIsRetail ? 'Bán hàng, tồn kho và nhiều chi nhánh trong một ứng dụng.' : toAppTerminology(featured.description)}</p>
+                                <Button className="market-featured-cta" disabled={busy} onClick={() => onOpenDetails(featured)}>Khám phá ngay <ArrowRightOutlined /></Button>
+                            </div>
+                            <div className="market-featured-art" aria-hidden="true">
+                                <span className="market-art-orbit" /><AppIcon moduleCard={featured} className="market-featured-icon" />
+                                <span className="market-art-tile"><DatabaseOutlined /><ShopOutlined /></span>
+                            </div>
+                        </div>
+                        {secondaryFeatured ? <div className="market-secondary-feature">
+                            <div><AppIcon moduleCard={secondaryFeatured} /><span className="market-featured-label">GIẢI PHÁP NỔI BẬT</span></div>
+                            <h2>{secondaryFeatured.name}</h2>
+                            <p>{toAppTerminology(secondaryFeatured.description)}</p>
+                            <button disabled={busy} onClick={() => onOpenDetails(secondaryFeatured)}>Tìm hiểu ứng dụng <ArrowRightOutlined /></button>
+                        </div> : null}
+                    </section> : null}
+                    <div className="market-results-heading" ref={catalogRef}>
+                        <div><h2>{categories.find((item) => item.key === category)?.name}</h2><span role="status" aria-live="polite">{filteredModules.length} ứng dụng{query.trim() ? ` cho “${query.trim()}”` : ' trong thư viện'}</span></div>
+                        <div className="market-results-controls">
+                            <div className="market-filter-tabs" role="group" aria-label="Lọc trạng thái cài đặt">
+                                {filters.map((item) => <button key={item.key} className={status === item.key ? 'is-active' : ''} aria-pressed={status === item.key} onClick={() => setStatus(item.key)}>{item.name}<span>{counts[item.key]}</span></button>)}
+                            </div>
+                            <Select aria-label="Sắp xếp ứng dụng" value={sort} onChange={setSort} options={[{ value: 'recommended', label: 'Đề xuất' }, { value: 'name', label: 'Tên A–Z' }]} className="market-sort" />
+                        </div>
                     </div>
-                    <div className="market-filter-tabs" role="group" aria-label="Lọc trạng thái cài đặt">
-                        {filters.map((item) => <button key={item.key} className={status === item.key ? 'is-active' : ''} aria-pressed={status === item.key} onClick={() => setStatus(item.key)}>{item.name}<span>{counts[item.key]}</span></button>)}
-                    </div>
-                    <div className="market-results-heading"><h2>{categories.find((item) => item.key === category)?.name}</h2><span role="status" aria-live="polite">{filteredModules.length} ứng dụng</span></div>
                     {filteredModules.length ? <div className="market-app-grid">
                         {filteredModules.map((item) => {
                             const appearance = presentationFor(item);
                             const categoryName = categories.find((entry) => entry.key === appearance.category)?.name;
                             const state = statusFor(item);
                             return <article key={item.key} className="market-app-card">
-                                <div className="market-app-card-heading"><AppIcon moduleCard={item} /><span className={`market-app-state market-app-state--${state.tone}`}><i />{state.label}</span></div>
-                                <span className="market-app-category">{categoryName}</span>
-                                <h3><button disabled={busy} onClick={() => onOpenDetails(item)}>{item.name}</button></h3>
+                                <div className="market-app-card-heading">
+                                    <button className="market-app-icon-button" disabled={busy} onClick={() => onOpenDetails(item)} aria-label={`Xem chi tiết ${item.name}`}><AppIcon moduleCard={item} /></button>
+                                    <div><h3><button disabled={busy} onClick={() => onOpenDetails(item)}>{item.name}</button></h3><span className="market-app-category">{categoryName}</span></div>
+                                </div>
                                 <p className="market-app-description">{toAppTerminology(item.description) || 'Mở rộng tính năng quản trị trên nền tảng AIO.'}</p>
-                                <div className="market-app-meta"><span>v{item.installed_version ?? item.latest_version}</span>{item.dependencies?.length ? <span><LinkOutlined /> {item.dependencies.length} app cần thiết</span> : <span>Ứng dụng độc lập</span>}</div>
-                                <div className="market-app-card-footer"><button className="market-changelog-link" disabled={busy} onClick={() => onOpenChangelog(item)}>Nhật ký thay đổi</button><Button disabled={busy} onClick={() => onOpenDetails(item)}>{item.is_installed ? 'Quản lý' : 'Xem chi tiết'}<ArrowRightOutlined /></Button></div>
+                                <div className="market-app-meta"><button className="market-changelog-link" disabled={busy} onClick={() => onOpenChangelog(item)} aria-label={`Nhật ký thay đổi của ${item.name}`} title="Xem nhật ký thay đổi"><HistoryOutlined /> v{item.installed_version ?? item.latest_version}</button>{item.dependencies?.length ? <span><LinkOutlined /> {item.dependencies.length} app cần thiết</span> : null}</div>
+                                <div className="market-app-card-footer"><span className={`market-app-state market-app-state--${state.tone}`}><i />{state.label}</span><div className="market-app-card-actions">
+                                    {canManageTestData && item.status === 'enabled' ? <Tooltip title={!item.test_data?.supported ? 'App chưa hỗ trợ dữ liệu demo' : !item.test_data?.storage_ready ? 'Cần cập nhật cấu trúc dữ liệu' : 'Tạo và quản lý dữ liệu demo theo đợt'}><Button icon={<ExperimentOutlined />} aria-label={`Tạo data demo cho ${item.name}`} disabled={busy || !item.test_data?.supported || !item.test_data?.storage_ready} onClick={() => onOpenTestData(item)}>Tạo data demo</Button></Tooltip> : null}
+                                    <Button disabled={busy} onClick={() => onOpenDetails(item)}>{item.is_installed ? 'Quản lý' : 'Chi tiết'}<ArrowRightOutlined /></Button>
+                                </div></div>
                             </article>;
                         })}
                     </div> : <div className="market-empty"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không tìm thấy ứng dụng phù hợp" /><p>Thử từ khóa khác hoặc thay đổi bộ lọc.</p><Button onClick={resetFilters}>Xóa bộ lọc</Button></div>}
