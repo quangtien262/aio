@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Core\Themes\ThemeDemoContentGenerator;
 use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
+use App\Models\CmsMedia;
 use App\Models\CmsPost;
 use App\Models\CmsService;
 use App\Models\ContactInquiry;
 use App\Models\LandingPage;
 use App\Models\SiteProfile;
+use App\Models\ThemeDemoRecord;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -21,6 +23,7 @@ class Dn350ThemeTest extends TestCase
 
     public function test_seeded_article_images_resolve_to_existing_public_assets(): void
     {
+        config(['filesystems.disks.public.url' => '/files']);
         $generator = app(ThemeDemoContentGenerator::class);
         $generator->generate('DN350', 'dn350-cleaning');
         $generator->generate('DN350', 'dn350-cleaning');
@@ -35,12 +38,49 @@ class Dn350ThemeTest extends TestCase
             $this->assertStringStartsWith('/theme-demo/dn350/', $media->file_url);
             $this->assertFileExists(public_path($media->file_url));
             $this->assertNotFalse(getimagesize(public_path($media->file_url)));
-            $home->assertSee($media->file_url, false);
-            $listing->assertSee($media->file_url, false);
+            $home->assertSee('src="'.$media->file_url.'"', false);
+            $listing->assertSee('src="'.$media->file_url.'"', false);
             $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))
-                ->assertOk()->assertSee($media->file_url, false);
+                ->assertOk()->assertSee('src="'.$media->file_url.'"', false);
         }
         $home->assertDontSee('/storage/theme-demo/dn350/', false);
+    }
+
+    public function test_media_repair_preserves_articles_and_manual_uploads_across_websites(): void
+    {
+        config(['filesystems.disks.public.url' => '/files']);
+        app(ThemeDemoContentGenerator::class)->generate('DN350', 'dn350-cleaning');
+        $posts = CmsPost::with('featuredMedia')->get();
+        $identities = $posts->map(fn ($post) => [$post->id, $post->slug, $post->body, $post->featured_media_id])->all();
+        foreach ($posts as $post) {
+            $post->featuredMedia->update(['file_path' => ltrim($post->featuredMedia->file_url, '/'), 'file_url' => '/storage'.$post->featuredMedia->file_url]);
+        }
+        $manual = CmsMedia::create(['title' => 'Manual upload', 'file_path' => 'uploads/my-cover.webp', 'file_url' => '/files/uploads/my-cover.webp']);
+        ThemeDemoRecord::create(['theme_key' => 'DN350', 'preset_key' => 'dn350-cleaning', 'model_type' => CmsMedia::class, 'model_id' => $manual->id]);
+        $unmarked = CmsMedia::create(['title' => 'Unmarked media', 'file_path' => 'theme-demo/dn350/gallery-team.webp', 'file_url' => '/files/theme-demo/dn350/gallery-team.webp']);
+        $otherWebsite = CmsMedia::create(['website_key' => 'other-website', 'title' => 'Other DN350 demo', 'file_path' => 'theme-demo/dn350/gallery-team.webp', 'file_url' => '/files/theme-demo/dn350/gallery-team.webp']);
+        ThemeDemoRecord::create(['website_key' => 'other-website', 'theme_key' => 'DN350', 'preset_key' => 'dn350-cleaning', 'model_type' => CmsMedia::class, 'model_id' => $otherWebsite->id]);
+        $otherTheme = CmsMedia::create(['website_key' => 'other-website', 'title' => 'Other theme demo', 'file_path' => 'theme-demo/dn350/gallery-team.webp', 'file_url' => '/files/theme-demo/dn350/gallery-team.webp']);
+        ThemeDemoRecord::create(['website_key' => 'other-website', 'theme_key' => 'DN351', 'preset_key' => 'dn351-meatlers-market', 'model_type' => CmsMedia::class, 'model_id' => $otherTheme->id]);
+        $migration = require database_path('migrations/2026_10_10_000002_repair_dn350_demo_news_media_urls.php');
+        $migration->up();
+        $migration->up();
+        $this->assertSame($identities, CmsPost::all()->map(fn ($post) => [$post->id, $post->slug, $post->body, $post->featured_media_id])->all());
+        $home = $this->get('/vi')->assertOk();
+        $listing = $this->get(route('site.blog.index', ['locale' => 'vi']))->assertOk();
+        foreach ($posts as $post) {
+            $media = $post->featuredMedia->fresh();
+            $this->assertSame('', $media->getRawOriginal('file_path'));
+            $this->assertStringStartsWith('/theme-demo/dn350/', $media->file_url);
+            $home->assertSee('src="'.$media->file_url.'"', false);
+            $listing->assertSee('src="'.$media->file_url.'"', false);
+            $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))->assertOk()->assertSee('src="'.$media->file_url.'"', false);
+        }
+        $this->assertSame('uploads/my-cover.webp', $manual->fresh()->getRawOriginal('file_path'));
+        $this->assertSame('theme-demo/dn350/gallery-team.webp', $unmarked->fresh()->getRawOriginal('file_path'));
+        $this->assertSame('', $otherWebsite->fresh()->getRawOriginal('file_path'));
+        $this->assertSame('/theme-demo/dn350/gallery-team.webp', $otherWebsite->fresh()->file_url);
+        $this->assertSame('theme-demo/dn350/gallery-team.webp', $otherTheme->fresh()->getRawOriginal('file_path'));
     }
 
     public function test_quote_modal_validates_and_saves_requests_to_database(): void

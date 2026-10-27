@@ -1,0 +1,87 @@
+{
+    "business_service_grid": [
+        {
+            "title": "Trang điểm cô dâu",
+            "summary": "Phong cách trang điểm trong trẻo, tôn nét riêng và bền đẹp suốt ngày cưới.",
+            "image": "/theme-previews/SER103/service-makeup.webp",
+            "url": "/s"
+        },
+        {
+            "title": "Chụp ảnh cưới",
+            "summary": "Kể câu chuyện tình yêu bằng những khung hình tự nhiên, tinh tế và giàu cảm xúc.",
+            "image": "/theme-previews/SER103/service-photo.webp",
+            "url": "/s"
+        },
+        {
+            "title": "Quay phóng sự cưới",
+            "summary": "Lưu giữ những khoảnh khắc chân thật nhất bằng ngôn ngữ điện ảnh hiện đại.",
+            "image": "/theme-previews/SER103/service-video.webp",
+            "url": "/s"
+        },
+        {
+            "title": "Thuê xe cưới",
+            "summary": "Bộ sưu tập xe cưới thanh lịch, trang trí đồng điệu với phong cách buổi lễ.",
+            "image": "/theme-previews/SER103/service-car.webp",
+            "url": "/s"
+        },
+        {
+            "title": "Trang trí & bàn ghế",
+            "summary": "Không gian tiệc cưới chỉn chu từ hoa, ánh sáng đến từng chi tiết bàn tiệc.",
+            "image": "/theme-previews/SER103/service-banquet.webp",
+            "url": "/s"
+        }
+    ],
+    "latest_posts": [
+        {
+            "title": "Xu hướng các mẫu váy cưới đẹp nhất 2026",
+            "summary": "Những phom dáng hiện đại giúp cô dâu tỏa sáng theo cách riêng trong ngày trọng đại.",
+            "image": "/theme-previews/SER103/news-minimal.webp",
+            "date": "18/11/2025",
+            "views": 94,
+            "url": "/c"
+        },
+        {
+            "title": "Các mẫu váy cưới dẫn đầu xu hướng 2026",
+            "summary": "Từ chất liệu ánh ngọc đến đường cắt couture, đây là những lựa chọn đáng mong chờ.",
+            "image": "/theme-previews/SER103/news-couture.webp",
+            "date": "18/11/2025",
+            "views": 65,
+            "url": "/c"
+        },
+        {
+            "title": "Những kiểu váy cưới hot năm 2026",
+            "summary": "Vẻ đẹp tối giản và phom dáng thanh lịch tiếp tục chinh phục các cô dâu hiện đại.",
+            "image": "/theme-previews/SER103/news-garden.webp",
+            "date": "18/11/2025",
+            "views": 38,
+            "url": "/c"
+        }
+    ],
+    "collection_gallery": [
+        {
+            "title": "Lễ cưới truyền thống",
+            "image": "/theme-previews/SER103/gallery-aodai.webp",
+            "url": "#"
+        },
+        {
+            "title": "Khoảnh khắc bên nhau",
+            "image": "/theme-previews/SER103/service-photo.webp",
+            "url": "#"
+        },
+        {
+            "title": "Tình yêu giữa thiên nhiên",
+            "image": "/theme-previews/SER103/gallery-mountain.webp",
+            "url": "#"
+        },
+        {
+            "title": "Ngày cưới thanh lịch",
+            "image": "/theme-previews/SER103/about-fashion.webp",
+            "url": "#"
+        },
+        {
+            "title": "Hoàng hôn hạnh phúc",
+            "image": "/theme-previews/SER103/gallery-lake.webp",
+            "url": "#"
+        }
+    ]
+}

@@ -1963,7 +1963,8 @@ class LandingPageBuilder
         /** @var Builder $query */
         $query = CmsService::query()
             ->with('images')
-            ->where('status', 'published');
+            ->where('status', 'published')
+            ->where(fn (Builder $query) => $query->whereNull('publish_at')->orWhere('publish_at', '<=', now()));
         if (($settings['order'] ?? '') === 'latest') {
             $query->latest('created_at')->latest('id');
         } else {
@@ -5026,30 +5027,13 @@ class LandingPageBuilder
         $withItems = fn (array $data, array $items): array => array_merge($data, ['content' => ['items' => $items]]);
         $sourceSchema = fn (string $source, int $limit): array => [
             'source' => ['type' => 'select', 'label' => 'Nguồn dữ liệu', 'options' => [
-                ['value' => $source, 'label' => $source === 'cms_posts' ? 'Tin tức CMS' : 'Dịch vụ CMS'],
+                ['value' => 'cms_services', 'label' => 'Dịch vụ CMS'],
+                ['value' => 'cms_posts', 'label' => 'Tin tức CMS'],
+                ['value' => 'cms_products', 'label' => 'Sản phẩm CMS'],
                 ['value' => 'custom', 'label' => 'Nhập thủ công'],
             ]],
             'limit' => ['type' => 'number', 'label' => 'Số mục hiển thị', 'default' => $limit],
             'featured_only' => ['type' => 'boolean', 'label' => 'Chỉ lấy nội dung nổi bật'],
-        ];
-        $services = [
-            ['title' => 'Trang điểm cô dâu', 'summary' => 'Phong cách trang điểm trong trẻo, tôn nét riêng và bền đẹp suốt ngày cưới.', 'image' => $preview('service-makeup.webp'), 'url' => route('site.services.index')],
-            ['title' => 'Chụp ảnh cưới', 'summary' => 'Kể câu chuyện tình yêu bằng những khung hình tự nhiên, tinh tế và giàu cảm xúc.', 'image' => $preview('service-photo.webp'), 'url' => route('site.services.index')],
-            ['title' => 'Quay phóng sự cưới', 'summary' => 'Lưu giữ những khoảnh khắc chân thật nhất bằng ngôn ngữ điện ảnh hiện đại.', 'image' => $preview('service-video.webp'), 'url' => route('site.services.index')],
-            ['title' => 'Thuê xe cưới', 'summary' => 'Bộ sưu tập xe cưới thanh lịch, trang trí đồng điệu với phong cách buổi lễ.', 'image' => $preview('service-car.webp'), 'url' => route('site.services.index')],
-            ['title' => 'Trang trí & bàn ghế', 'summary' => 'Không gian tiệc cưới chỉn chu từ hoa, ánh sáng đến từng chi tiết bàn tiệc.', 'image' => $preview('service-banquet.webp'), 'url' => route('site.services.index')],
-        ];
-        $posts = [
-            ['title' => 'Xu hướng các mẫu váy cưới đẹp nhất 2026', 'summary' => 'Những phom dáng hiện đại giúp cô dâu tỏa sáng theo cách riêng trong ngày trọng đại.', 'image' => $preview('news-minimal.webp'), 'date' => '18/11/2025', 'views' => 94, 'url' => route('site.blog.index')],
-            ['title' => 'Các mẫu váy cưới dẫn đầu xu hướng 2026', 'summary' => 'Từ chất liệu ánh ngọc đến đường cắt couture, đây là những lựa chọn đáng mong chờ.', 'image' => $preview('news-couture.webp'), 'date' => '18/11/2025', 'views' => 65, 'url' => route('site.blog.index')],
-            ['title' => 'Những kiểu váy cưới hot năm 2026', 'summary' => 'Vẻ đẹp tối giản và phom dáng thanh lịch tiếp tục chinh phục các cô dâu hiện đại.', 'image' => $preview('news-garden.webp'), 'date' => '18/11/2025', 'views' => 38, 'url' => route('site.blog.index')],
-        ];
-        $gallery = [
-            ['title' => 'Lễ cưới truyền thống', 'image' => $preview('gallery-aodai.webp'), 'url' => '#'],
-            ['title' => 'Khoảnh khắc bên nhau', 'image' => $preview('service-photo.webp'), 'url' => '#'],
-            ['title' => 'Tình yêu giữa thiên nhiên', 'image' => $preview('gallery-mountain.webp'), 'url' => '#'],
-            ['title' => 'Ngày cưới thanh lịch', 'image' => $preview('about-fashion.webp'), 'url' => '#'],
-            ['title' => 'Hoàng hôn hạnh phúc', 'image' => $preview('gallery-lake.webp'), 'url' => '#'],
         ];
 
         return [
@@ -5087,11 +5071,11 @@ class LandingPageBuilder
             ],
             [
                 'block_type' => 'business_service_grid', 'label' => 'Dịch vụ cưới',
-                'description' => 'Năm dịch vụ cưới dạng lưới, có thể lấy từ CMS Services.',
+                'description' => 'Dịch vụ cưới lấy trực tiếp từ CMS với liên kết chi tiết tương ứng.',
                 'preview_image' => $preview('service-photo.webp'), 'anchor_id' => 'dich-vu', 'dynamic' => true,
-                'settings' => ['source' => 'custom', 'limit' => 5], 'settings_schema' => $sourceSchema('cms_services', 5),
+                'settings' => ['source' => 'cms_services', 'limit' => 6, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_services', 6),
                 'data' => [
-                    'vi' => $withItems($heading('Chúng tôi có thể làm gì', 'Dịch vụ của chúng tôi', 'Một hệ sinh thái dịch vụ được kết nối để ngày cưới của bạn diễn ra thật nhẹ nhàng.'), $services),
+                    'vi' => $withItems($heading('Chúng tôi có thể làm gì', 'Dịch vụ của chúng tôi', 'Một hệ sinh thái dịch vụ được kết nối để ngày cưới của bạn diễn ra thật nhẹ nhàng.'), []),
                     'en' => $heading('What we can do for you', 'Our services', 'A connected wedding service ecosystem for an effortless celebration.'),
                 ],
             ],
@@ -5099,9 +5083,9 @@ class LandingPageBuilder
                 'block_type' => 'latest_posts', 'label' => 'Tin tức cưới',
                 'description' => 'Ba bài viết mới nhất, có thể lấy từ CMS Posts.',
                 'preview_image' => $preview('news-couture.webp'), 'anchor_id' => 'tin-tuc', 'dynamic' => true,
-                'settings' => ['source' => 'custom', 'limit' => 3], 'settings_schema' => $sourceSchema('cms_posts', 3),
+                'settings' => ['source' => 'cms_posts', 'limit' => 3, 'featured_only' => false], 'settings_schema' => $sourceSchema('cms_posts', 3),
                 'data' => [
-                    'vi' => $withItems($heading('Tin tức - Sự kiện mới nhất', 'Tin tức mới', 'Cảm hứng váy cưới, trang trí và những câu chuyện phía sau ngày trọng đại.'), $posts),
+                    'vi' => $withItems($heading('Tin tức - Sự kiện mới nhất', 'Tin tức mới', 'Cảm hứng váy cưới, trang trí và những câu chuyện phía sau ngày trọng đại.'), []),
                     'en' => $heading('Latest news and events', 'New stories', 'Wedding fashion, decor and inspiration for your celebration.'),
                 ],
             ],
@@ -5119,9 +5103,11 @@ class LandingPageBuilder
                 'block_type' => 'collection_gallery', 'label' => 'Thư viện ảnh cưới',
                 'description' => 'Dải năm ảnh cưới toàn chiều rộng.',
                 'preview_image' => $preview('gallery-mountain.webp'), 'anchor_id' => 'thu-vien',
-                'settings' => ['source' => 'custom', 'limit' => 5],
+                'dynamic' => true,
+                'settings' => ['source' => 'cms_services', 'limit' => 5, 'featured_only' => false],
+                'settings_schema' => $sourceSchema('cms_services', 5),
                 'data' => [
-                    'vi' => $withItems($heading('Thư viện ảnh cưới'), $gallery),
+                    'vi' => $withItems($heading('Thư viện ảnh cưới'), []),
                     'en' => $heading('Wedding gallery'),
                 ],
             ],
@@ -7675,16 +7661,19 @@ class LandingPageBuilder
         $products = $foot->get('featured_products');
         $products['label'] = 'Sản phẩm logistics';
         $products['anchor_id'] = 'san-pham';
+        $products['settings'] = ['source' => 'cms_products', 'limit' => 12, 'featured_only' => true];
         $products['data']['vi']['title'] = 'Sản phẩm hỗ trợ logistics';
         $products['data']['vi']['subtitle'] = 'Vật tư đóng gói';
 
         $testimonials = $industrial->get('team_members');
         $testimonials['block_type'] = 'testimonials';
         $testimonials['label'] = 'Phản hồi khách hàng';
+        $testimonials['settings'] = ['source' => 'cms_testimonials', 'limit' => 8, 'featured_only' => true];
         $testimonials['data']['vi'] = ['title' => 'Khách hàng nói gì về XD321 Cargo', 'subtitle' => 'Phản hồi từ đối tác', 'description' => '', 'button_label' => '', 'content' => ['items' => []]];
 
         $partners = $industrial->get('partner_logos');
         $partners['label'] = 'Mạng lưới đối tác';
+        $partners['settings'] = ['source' => 'cms_partners', 'limit' => 9, 'featured_only' => true];
         $news = $foot->get('bizmax_latest_posts');
         $news['label'] = 'Tin tức logistics';
         $news['anchor_id'] = 'tin-tuc';

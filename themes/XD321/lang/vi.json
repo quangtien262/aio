@@ -1,4 +1,11 @@
 {
+    "xd321.carousel.previous": "Xem mục trước",
+    "xd321.carousel.next": "Xem mục tiếp theo",
+    "xd321.carousel.pause": "Tạm dừng tự chạy",
+    "xd321.carousel.play": "Tiếp tục tự chạy",
+    "xd321.carousel.details": "Xem chi tiết",
+    "xd321.products.contact": "Liên hệ",
+    "xd321.products.empty": "Đang cập nhật sản phẩm.",
     "xd321.brand.tagline": "Giải pháp công nghiệp bền vững",
     "xd321.header.login": "Đăng nhập",
     "xd321.header.register": "Đăng ký",

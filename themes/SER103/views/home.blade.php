@@ -10,6 +10,9 @@
     $findBlock = fn (string $type) => $blocks->firstWhere('block_type', $type) ?? [];
     $items = function (array $block): array {
         $dynamic = collect($block['dynamic_items'] ?? [])->filter()->values();
+        if (in_array(data_get($block, 'settings.source'), ['cms_services', 'cms_posts', 'cms_products'], true)) {
+            return $dynamic->all();
+        }
         return $dynamic->isNotEmpty()
             ? $dynamic->all()
             : collect(data_get($block, 'data.content.items', data_get($block, 'data.content.slides', [])))->filter()->values()->all();
@@ -96,7 +99,7 @@
                         @foreach(array_slice($entryItems, 0, 3) as $item)
                             <article>
                                 <a href="{{ data_get($item, 'url', route('site.blog.index')) }}"><img src="{{ data_get($item, 'image', '/theme-previews/SER103/news-minimal.webp') }}" alt="{{ data_get($item, 'title') }}"></a>
-                                <div class="ser103-news__meta"><span><i class="fa-regular fa-calendar"></i> {{ data_get($item, 'date', '18/11/2025') }}</span><span><i class="fa-regular fa-eye"></i> {{ data_get($item, 'views', 68) }}</span></div>
+                                <div class="ser103-news__meta">@if(filled(data_get($item, 'date')))<span><i class="fa-regular fa-calendar"></i> {{ data_get($item, 'date') }}</span>@endif @if(data_get($item, 'views') !== null)<span><i class="fa-regular fa-eye"></i> {{ data_get($item, 'views') }}</span>@endif</div>
                                 <h3><a href="{{ data_get($item, 'url', route('site.blog.index')) }}">{{ data_get($item, 'title') }}</a></h3>
                                 <p>{{ data_get($item, 'summary') }}</p>
                                 <a class="ser103-more" href="{{ data_get($item, 'url', route('site.blog.index')) }}">Xem thêm <i class="fa-solid fa-arrow-right-long"></i></a>

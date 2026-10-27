@@ -148,10 +148,11 @@ class Dn351DemoContentProvider implements ThemeDemoContentProvider
                 $filePath = 'theme-demo/dn351/'.$image;
                 $media = CmsMedia::query()->create([
                     'title' => $title,
-                    'file_path' => $filePath,
-                    'file_url' => '/storage/'.$filePath,
+                    // Bundled demo images live in public, outside the upload storage disk.
+                    'file_path' => '',
+                    'file_url' => '/'.$filePath,
                     'mime_type' => 'image/jpeg',
-                    'size' => 0,
+                    'size' => filesize(public_path($filePath)),
                     'alt_text' => $title,
                 ]);
                 $this->record($media);

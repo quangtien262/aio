@@ -6,11 +6,9 @@
         ->bladeText('SER103', app()->getLocale(), $key);
     $fallbackMenu = [
         ['label' => $themeText('SER103.nav.home'), 'href' => route('site.home')],
-        ['label' => $themeText('SER103.nav.services'), 'href' => '#dich-vu'],
-        ['label' => $themeText('SER103.nav.pricing'), 'href' => '#bang-gia'],
-        ['label' => $themeText('SER103.nav.products'), 'href' => '#san-pham'],
-        ['label' => $themeText('SER103.nav.news'), 'href' => '#tin-tuc'],
-        ['label' => $themeText('SER103.nav.contact'), 'href' => '#lien-he'],
+        ['label' => $themeText('SER103.nav.services'), 'href' => route('site.services.index')],
+        ['label' => $themeText('SER103.nav.news'), 'href' => route('site.blog.index')],
+        ['label' => $themeText('SER103.nav.contact'), 'href' => route('site.contact')],
     ];
     $menuItems = collect(data_get($menus ?? [], 'primary-navigation') ?? data_get($menus ?? [], 'primary') ?? $landingMenuItems ?? $fallbackMenu)
         ->map(fn ($item) => is_array($item) ? $item : [])
