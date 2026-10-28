@@ -23,7 +23,7 @@ class ManufacturingFreshInstallTest extends TestCase
             $this->assertTrue($result['optional_schema_absent']);
             $this->assertSame(2, $result['commands']);
             $this->assertSame(1, $result['factories']);
-            $this->assertSame('0.4.0', $result['module_versions']['inventory']);
+            $this->assertSame('0.5.0', $result['module_versions']['inventory']);
             $this->assertSame('0.1.0-dev.1', $result['module_versions']['manufacturing']);
         } finally {
             foreach ([$database, $database.'-wal', $database.'-shm'] as $path) {

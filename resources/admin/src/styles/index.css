@@ -614,8 +614,35 @@ a {
 }
 
 .admin-mobile-section-menu.ant-menu,
+.admin-mobile-app-menu.ant-menu,
 .admin-mobile-side-menu.ant-menu {
     border-inline-end: 0;
+}
+
+.admin-mobile-app-menu.ant-menu-inline .ant-menu-item {
+    display: flex;
+    align-items: center;
+    height: auto;
+    min-height: 64px;
+    padding-block: 10px;
+    border-radius: 12px;
+    line-height: 1.4;
+}
+
+.admin-mobile-app-menu .ant-menu-item .ant-menu-item-icon {
+    flex-shrink: 0;
+}
+
+.admin-mobile-app-menu .ant-menu-item .ant-menu-title-content {
+    flex: 1;
+    min-width: 0;
+    white-space: normal;
+}
+
+.admin-mobile-app-menu .admin-app-switcher-item {
+    min-width: 0;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
 }
 
 .admin-mobile-section-menu.ant-menu .ant-menu-item,

@@ -27,6 +27,7 @@ const resource = (path) => {
 const cmsPages = resource('/cms/pages');
 
 export const ADMIN_API_ROUTES = Object.freeze({
+    pharmacy: Object.freeze({ printJobs: resource('pharmacy/print-jobs') }),
     cms: Object.freeze({
         pages: Object.freeze({
             ...cmsPages,

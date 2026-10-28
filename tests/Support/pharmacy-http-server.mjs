@@ -1,0 +1,10 @@
+import { readFile } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+const manifestPath = process.env.PHARMACY_HTTP_FIXTURE;
+if (!manifestPath?.startsWith('/private/tmp/aio-pharmacy-http-') || !manifestPath.endsWith('/fixture.json')) throw new Error('A dedicated Pharmacy HTTP fixture manifest is required.');
+const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+if (manifest.environment.APP_ENV !== 'testing' || manifest.environment.DB_CONNECTION !== 'sqlite' || !manifest.environment.DB_DATABASE.startsWith(`${manifest.directory}/`)) throw new Error('Only the generated scratch fixture may be served.');
+const child = spawn('php', ['-S', '127.0.0.1:8131', '-t', 'public', 'tests/Support/pharmacy-http-router.php'], { cwd: new URL('../../', import.meta.url).pathname, env: { ...process.env, ...manifest.environment }, stdio: 'inherit' });
+process.on('SIGTERM', () => child.kill('SIGTERM'));
+process.on('SIGINT', () => child.kill('SIGINT'));
+child.on('exit', (code) => process.exit(code ?? 1));

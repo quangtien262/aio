@@ -3,7 +3,7 @@
   "key": "inventory",
   "test_data_provider": "Modules\\Inventory\\Services\\InventoryTestDataProvider",
   "lifecycle_state_provider": "Modules\\Inventory\\Services\\InventoryRuntimeState",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Quản lý nhiều kho, vị trí, hàng hóa, tồn kho, lô/serial và giao dịch nhập, xuất, chuyển kho.",
   "website_type": [
     "backoffice",
@@ -56,6 +56,18 @@
     },
     "inventory.production.post.v1": {
       "introduced_version": "0.4.0"
+    },
+    "inventory.managed_stock.v1": {
+      "introduced_version": "0.5.0"
+    },
+    "inventory.managed.holds.v1": {
+      "introduced_version": "0.5.0"
+    },
+    "inventory.managed.dispositions.v1": {
+      "introduced_version": "0.5.0"
+    },
+    "inventory.managed.trace.v1": {
+      "introduced_version": "0.5.0"
     }
   },
   "permissions": [
@@ -168,6 +180,13 @@
     }
   ],
   "changelog": [
+    {
+      "version": "0.5.0",
+      "date": "2026-10-22",
+      "notes": [
+        "Add managed-owner stock policy, multi-reason holds, generic batch disposition and restricted withdrawal, preserving existing consumers."
+      ]
+    },
     {
       "version": "0.4.0",
       "date": "2026-10-21",

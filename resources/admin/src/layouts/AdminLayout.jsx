@@ -52,6 +52,7 @@ import TwoFactorModal from '../shared/components/TwoFactorModal';
 import { currentWorkspaceNavigationItem, findWorkspaceMenuItem, moduleWorkspaceNavigation } from '../shared/utils/workspaceNavigation';
 import { buildManufacturingNavigation } from '../modules/manufacturing/utils/manufacturingNavigation';
 import { buildRetailNavigation } from '../modules/retail-pos/utils/retailNavigation';
+import { buildPharmacyNavigation } from '../modules/pharmacy/utils/pharmacyNavigation';
 import ManufacturingSiblingNavigation from '../modules/manufacturing/components/ManufacturingSiblingNavigation';
 
 const ModuleRoutePage = lazy(() => import('../pages/modules/ModuleRoutePage'));
@@ -111,6 +112,7 @@ const moduleLabelFallbackMap = new Map([
     ['catalog', 'Catalog'],
     ['inventory', 'Kho hàng'],
     ['manufacturing', 'Quản lý xưởng may'],
+    ['pharmacy', 'Nhà thuốc'],
     ['project', 'Dự án'],
     ['real-estate', 'Bất động sản'],
 ]);
@@ -128,6 +130,9 @@ function buildWorkspaceMenuItems(items, resolveIcon) {
     }
     if (items.length && items.every((item) => item.moduleKey === 'retail-pos')) {
         return buildRetailNavigation(items, resolveIcon);
+    }
+    if (items.length && items.every((item) => item.moduleKey === 'pharmacy')) {
+        return buildPharmacyNavigation(items, resolveIcon);
     }
     const contentItems = cmsContentMenuOrder
         .map(({ key, label }) => {
@@ -215,6 +220,8 @@ export default function AdminLayout() {
     const location = useLocation();
     const navigate = useNavigate();
     const manufacturingWorkspace = /^\/modules\/manufacturing(?:\/|$)/.test(location.pathname);
+    const pharmacyWorkspace = /^\/modules\/pharmacy(?:\/|$)/.test(location.pathname);
+    const nativeWorkspaceKey = manufacturingWorkspace ? 'manufacturing' : pharmacyWorkspace ? 'pharmacy' : null;
     const shellGeneration = useRef(0);
     const isMobile = !screens.lg;
     const frontendLocaleRecords = currentAdmin?.frontend_localization?.locales ?? [];
@@ -230,8 +237,8 @@ export default function AdminLayout() {
     }, [currentAdmin?.must_change_password]);
 
     const callAdminApi = useCallback(async (url, options = {}) => {
-        if (manufacturingWorkspace && (url === adminApi('me/password') || url.startsWith(adminApi('me/two-factor')))) {
-            url = adminApi(`manufacturing/${url.slice(adminApi().length + 1)}`);
+        if (nativeWorkspaceKey && (url === adminApi('me/password') || url.startsWith(adminApi('me/two-factor')))) {
+            url = adminApi(`${nativeWorkspaceKey}/${url.slice(adminApi().length + 1)}`);
         }
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         const isFormData = options.body instanceof FormData;
@@ -242,7 +249,7 @@ export default function AdminLayout() {
             headers: {
                 'X-CSRF-TOKEN': token ?? '',
                 Accept: 'application/json',
-                ...(manufacturingWorkspace ? {} : { 'X-Website-Key': selectedAdminWebsiteKey }),
+                ...(nativeWorkspaceKey ? {} : { 'X-Website-Key': selectedAdminWebsiteKey }),
                 ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
                 ...optionHeaders,
             },
@@ -285,7 +292,7 @@ export default function AdminLayout() {
         }
 
         return response.json();
-    }, [selectedAdminWebsiteKey, manufacturingWorkspace]);
+    }, [selectedAdminWebsiteKey, nativeWorkspaceKey]);
 
     const hasPermission = useCallback((permission) => (currentAdmin?.permissions ?? []).includes(permission), [currentAdmin]);
 
@@ -294,10 +301,10 @@ export default function AdminLayout() {
         try {
             setLoadError(null);
 
-            const mePayload = await callAdminApi(adminApi(manufacturingWorkspace ? 'manufacturing/bootstrap' : 'me'));
+            const mePayload = await callAdminApi(adminApi(nativeWorkspaceKey ? `${nativeWorkspaceKey}/bootstrap` : 'me'));
             if (ticket !== shellGeneration.current) return null;
             const identity = mePayload.data ?? null;
-            const nextCurrentAdmin = manufacturingWorkspace && identity
+            const nextCurrentAdmin = nativeWorkspaceKey && identity
                 ? { ...identity, permissions: identity.navigation_permissions ?? identity.permissions }
                 : identity;
             const resolvedWebsiteKey = nextCurrentAdmin?.current_website?.website_key;
@@ -310,7 +317,7 @@ export default function AdminLayout() {
                 setSelectedAdminWebsiteKey(resolvedWebsiteKey);
             }
 
-            if (!manufacturingWorkspace && !nextCurrentAdmin?.must_change_password && (nextCurrentAdmin?.permissions ?? []).includes('store.module.view')) {
+            if (!nativeWorkspaceKey && !nextCurrentAdmin?.must_change_password && (nextCurrentAdmin?.permissions ?? []).includes('store.module.view')) {
                 try {
                     const modulePayload = await callAdminApi(adminApi('modules'));
                     if (ticket === shellGeneration.current) setModules(modulePayload.data ?? []);
@@ -328,7 +335,7 @@ export default function AdminLayout() {
             setShellReady(true);
             return null;
         }
-    }, [callAdminApi, manufacturingWorkspace, selectedAdminWebsiteKey]);
+    }, [callAdminApi, nativeWorkspaceKey, selectedAdminWebsiteKey]);
 
     useEffect(() => {
         loadShellData();
@@ -422,7 +429,7 @@ export default function AdminLayout() {
 
     const navigationItems = useMemo(() => {
         return [
-            ...adminNavigation,
+            ...(nativeWorkspaceKey ? [] : adminNavigation),
             ...((currentAdmin?.module_navigation ?? []).map((item) => ({
                 ...item,
                 label: item.key === 'cms-posts' ? 'Tin tức' : item.label,
@@ -443,7 +450,7 @@ export default function AdminLayout() {
             })
             .filter((item) => !item.permission || hasPermission(item.permission))
             .filter((item) => !Object.hasOwn(item, 'permissions_any') || (Array.isArray(item.permissions_any) && item.permissions_any.some((permission) => typeof permission === 'string' && hasPermission(permission))));
-    }, [currentAdmin, hasPermission]);
+    }, [currentAdmin, hasPermission, nativeWorkspaceKey]);
 
     const defaultRoute = normalizeRoute(navigationItems[0]?.route ?? '/dashboard');
 
@@ -537,8 +544,9 @@ export default function AdminLayout() {
     );
 
     const currentNavigationItem = useMemo(() => {
-        return currentWorkspaceNavigationItem(navigationMenuItems, location.pathname);
-    }, [location.pathname, navigationMenuItems]);
+        return currentWorkspaceNavigationItem(navigationMenuItems, location.pathname)
+            ?? (nativeWorkspaceKey ? navigationMenuItems.find((item) => item.moduleKey === nativeWorkspaceKey) : null);
+    }, [location.pathname, navigationMenuItems, nativeWorkspaceKey]);
 
     const moduleSwitcherItems = useMemo(() => {
         const itemsByModule = new Map();
@@ -659,21 +667,21 @@ export default function AdminLayout() {
         return activeWorkspaceNavigation?.selectedKey ?? currentNavigationItem?.key ?? null;
     }, [currentNavigationItem, activeWorkspaceNavigation]);
 
-    const manufacturingMenuGroup = useMemo(() => manufacturingWorkspace
+    const workspaceMenuGroup = useMemo(() => (manufacturingWorkspace || pharmacyWorkspace)
         ? sideMenuItems.find((item) => item.children && findWorkspaceMenuItem(item.children, selectedMenuKey)) ?? null
-        : null, [manufacturingWorkspace, sideMenuItems, selectedMenuKey]);
+        : null, [manufacturingWorkspace, pharmacyWorkspace, sideMenuItems, selectedMenuKey]);
 
     const breadcrumbItems = useMemo(() => {
         if (inModule) {
             const selected = findWorkspaceMenuItem(activeWorkspaceNavigation?.items ?? [], selectedMenuKey);
-            const group = manufacturingMenuGroup;
+            const group = workspaceMenuGroup;
             return [{ title: activeModuleSwitcherItem?.label ?? currentNavigationItem.label }, ...(group ? [{ title: group.label }] : []), { title: selected?.label ?? currentNavigationItem.label }];
         }
         return [
             activeTopSection ? { title: activeTopSection.label } : null,
             currentNavigationItem ? { title: currentNavigationItem.label } : null,
         ].filter(Boolean);
-    }, [activeTopSection, currentNavigationItem, inModule, activeWorkspaceNavigation, selectedMenuKey, activeModuleSwitcherItem, manufacturingMenuGroup]);
+    }, [activeTopSection, currentNavigationItem, inModule, activeWorkspaceNavigation, selectedMenuKey, activeModuleSwitcherItem, workspaceMenuGroup]);
 
     const shouldShowBreadcrumb = useMemo(() => {
         const appStoreParent = currentNavigationItem?.route === normalizeRoute('/modules') && location.pathname.startsWith(`${normalizeRoute('/modules')}/`);
@@ -755,7 +763,7 @@ export default function AdminLayout() {
     const handleAdminLogout = async () => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-        await fetch(manufacturingWorkspace ? adminApi('manufacturing/logout') : adminPath('logout'), {
+        await fetch(nativeWorkspaceKey ? adminApi(`${nativeWorkspaceKey}/logout`) : adminPath('logout'), {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': token ?? '',
@@ -764,7 +772,7 @@ export default function AdminLayout() {
             credentials: 'same-origin',
         });
 
-        window.location.href = manufacturingWorkspace ? adminPath('manufacturing/login') : STOREFRONT_ROUTES.home;
+        window.location.href = nativeWorkspaceKey ? adminPath(`${nativeWorkspaceKey}/login`) : STOREFRONT_ROUTES.home;
     };
 
     const adminActionItems = [
@@ -781,7 +789,7 @@ export default function AdminLayout() {
             label: 'Đăng xuất',
             danger: true,
         },
-    ].filter((item) => !manufacturingWorkspace || item.key === 'logout');
+    ].filter((item) => !nativeWorkspaceKey || item.key === 'logout');
 
     const handleAdminActionClick = async ({ key }) => {
         if (key === 'website') {
@@ -802,7 +810,7 @@ export default function AdminLayout() {
     const desktopWorkspaceMenuItems = sideMenuItems.map(toAntMenuItem);
 
     return (
-        <Layout className="admin-shell">
+        <Layout className={pharmacyWorkspace ? 'admin-shell admin-pharmacy-shell' : 'admin-shell'}>
             <Header className="admin-top-header">
                 <div className="admin-top-header-main">
                     {isMobile ? (
@@ -815,7 +823,7 @@ export default function AdminLayout() {
                         />
                     ) : null}
 
-                    <a className="admin-header-brand" href={adminPath()} aria-label="Trang chủ Admin">
+                    <a className="admin-header-brand" href={nativeWorkspaceKey ? adminPath(`modules/${nativeWorkspaceKey}`) : adminPath()} aria-label="Trang chủ Admin">
                         <img
                             className="sidebar-brand-logo admin-header-brand-logo"
                             src={headerLogoUrl}
@@ -837,7 +845,7 @@ export default function AdminLayout() {
                         </Dropdown>
                     ) : (
                         <Space size={10} className="admin-header-actions-desktop">
-                            {!manufacturingWorkspace && <Select
+                            {!nativeWorkspaceKey && <Select
                                 value={selectedAdminWebsiteKey}
                                 style={{ minWidth: 220 }}
                                 popupMatchSelectWidth={false}
@@ -929,7 +937,7 @@ export default function AdminLayout() {
                                     <span className="admin-section-dropdown-caret" aria-hidden="true" />
                                 </Button>
                             </Dropdown> : null}
-                            {!manufacturingWorkspace && <Button
+                            {!nativeWorkspaceKey && <Button
                                 type={location.pathname === adminPath('setup') ? 'primary' : 'default'}
                                 className="admin-header-utility-button admin-header-settings-button"
                                 icon={<SettingOutlined />}
@@ -937,7 +945,7 @@ export default function AdminLayout() {
                                 aria-label="Cài đặt website"
                                 title="Cài đặt website"
                             />}
-                            {!manufacturingWorkspace && <Button href={STOREFRONT_ROUTES.home} target="_blank" rel="noopener noreferrer" className="admin-header-utility-button" icon={<HomeOutlined />} aria-label="Website">Website</Button>}
+                            {!nativeWorkspaceKey && <Button href={STOREFRONT_ROUTES.home} target="_blank" rel="noopener noreferrer" className="admin-header-utility-button" icon={<HomeOutlined />} aria-label="Website">Website</Button>}
 
                             <Dropdown
                                 menu={{
@@ -1004,7 +1012,7 @@ export default function AdminLayout() {
                 </Header>
             ) : null}
 
-            {manufacturingMenuGroup ? <ManufacturingSiblingNavigation group={manufacturingMenuGroup} selectedKey={selectedMenuKey} /> : null}
+            {manufacturingWorkspace && workspaceMenuGroup ? <ManufacturingSiblingNavigation group={workspaceMenuGroup} selectedKey={selectedMenuKey} /> : null}
 
             <Drawer
                 title={inModule ? activeModuleSwitcherItem?.label ?? 'Điều hướng ứng dụng' : 'Điều hướng admin'}
@@ -1039,7 +1047,7 @@ export default function AdminLayout() {
                         className="admin-side-menu admin-mobile-side-menu"
                         selectedKeys={selectedMenuKey ? [selectedMenuKey] : []}
                         defaultOpenKeys={sideMenuItems.filter((item) => item.children && findWorkspaceMenuItem(item.children, selectedMenuKey)).map((item) => item.key)}
-                        items={sideMenuItems}
+                        items={desktopWorkspaceMenuItems}
                         onClick={({ key }) => navigateToMenuItem(key)}
                     />
                 </Space>
@@ -1065,11 +1073,12 @@ export default function AdminLayout() {
                                         <Route path="access" element={hasPermission('rbac.role.view') ? renderLazyRouteElement(AccessRoutePage, { canAccess: true, canManageRoles: hasPermission('rbac.role.manage'), callAdminApi, runAdminAction }, 'Access Control') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="admins" element={hasPermission('admin.account.view') ? renderLazyRouteElement(AdminAccountsRoutePage, { canAccess: true, currentAdmin, permissions: { manage: hasPermission('admin.account.manage'), resetPassword: hasPermission('admin.account.reset_password'), lock: hasPermission('admin.account.lock') }, callAdminApi, runAdminAction }, 'Admin Accounts') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="audit-logs" element={hasPermission('admin.audit.view') ? renderLazyRouteElement(AuditLogsRoutePage, { canAccess: true, callAdminApi }, 'Nhật ký bảo mật') : <Navigate to={defaultRoute} replace />} />
-                                        <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall'), demoData: hasPermission('store.module.upgrade') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'App Store') : <Navigate to={defaultRoute} replace />} />
+                                        <Route path="modules" element={hasPermission('store.module.view') ? renderLazyRouteElement(ModulesRoutePage, { canAccess: true, canViewWebsiteLibrary: hasPermission('theme.view'), permissions: { install: hasPermission('store.module.install'), enable: hasPermission('store.module.enable'), disable: hasPermission('store.module.disable'), upgrade: hasPermission('store.module.upgrade'), uninstall: hasPermission('store.module.uninstall'), demoData: hasPermission('store.module.upgrade') }, callAdminApi, runAdminAction, refreshShell: loadShellData }, 'App Store') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="themes" element={hasPermission('theme.view') ? renderLazyRouteElement(ThemesRoutePage, { canAccess: true, canActivate: hasPermission('theme.activate'), canGenerateDemoData: hasPermission('theme.customize'), callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }, 'Themes') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="site-mappings" element={hasPermission('theme.view') ? renderLazyRouteElement(SiteMappingsRoutePage, { canAccess: true, canManage: hasPermission('theme.customize'), callAdminApi, runAdminAction }, 'Cấu hình domain') : <Navigate to={defaultRoute} replace />} />
                                         <Route path="setup" element={hasPermission('setup.view') ? renderLazyRouteElement(SetupRoutePage, { canAccess: true, canComplete: hasPermission('setup.complete'), canViewThemeManager: hasPermission('theme.view'), canManageThemeActions: hasPermission('theme.customize'), callAdminApi, runAdminAction, frontendLocale, defaultFrontendLocale }, 'Setup') : <Navigate to={defaultRoute} replace />} />
                                         {renderModuleRoutes()}
+                                        {pharmacyWorkspace && <Route path="modules/pharmacy/*" element={renderLazyRouteElement(ModuleRoutePage, { modulePayload: { key: 'pharmacy', name: 'Nhà thuốc' }, callAdminApi, runAdminAction, currentAdmin, currentPermissions: currentAdmin?.permissions ?? [] }, 'Nhà thuốc')} />}
                                         <Route path="*" element={<Navigate to={defaultRoute} replace />} />
                                     </Routes>
                                 </div>

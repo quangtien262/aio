@@ -1,0 +1,111 @@
+{
+  "kind": "local_pharmacy_service_microbenchmark",
+  "status": "passed",
+  "workload": {
+    "points": 10,
+    "workers": 4,
+    "sales_per_point": 2,
+    "expected_sales": 20,
+    "one_line_per_sale": true,
+    "units_per_sale": 1,
+    "price_minor": 1000,
+    "shared_chain_and_sku": true,
+    "distinct_actor_counter_shift_warehouse_per_point": true
+  },
+  "cleanup_verified": true,
+  "setup_seconds": 13.367,
+  "environment": {
+    "hardware": {
+      "os": "Darwin",
+      "kernel": "27.0.0",
+      "architecture": "arm64",
+      "php_version": "8.5.5",
+      "php_memory_limit": "512M",
+      "cpu": "Apple M1 Pro",
+      "physical_cores": "10",
+      "logical_cores": "10",
+      "memory_bytes": "34359738368"
+    },
+    "database": {
+      "version": "8.0.44",
+      "transaction_isolation": "REPEATABLE-READ",
+      "innodb_buffer_pool_bytes": 134217728,
+      "max_connections": 151
+    },
+    "module_versions": {
+      "inventory": "0.5.0",
+      "merchandise": "0.2.2",
+      "pharmacy": "0.1.0-dev.1"
+    }
+  },
+  "measurement": {
+    "elapsed_seconds_including_worker_boot_and_barrier": 4.46852,
+    "active_service_window_seconds": 2.459298,
+    "completed_sales": 20,
+    "sales_per_second_including_worker_boot_and_barrier": 4.476,
+    "sales_per_second_active_window": 8.132,
+    "latency": {
+      "sale": {
+        "samples": 20,
+        "p50_ms": 417.621,
+        "p95_ms": 505.761,
+        "max_ms": 516.648
+      },
+      "dispensing.create": {
+        "samples": 20,
+        "p50_ms": 32.637,
+        "p95_ms": 71.084,
+        "max_ms": 76.043
+      },
+      "dispensing.prepare": {
+        "samples": 20,
+        "p50_ms": 70.943,
+        "p95_ms": 115.362,
+        "max_ms": 140.679
+      },
+      "dispensing.review": {
+        "samples": 20,
+        "p50_ms": 74.753,
+        "p95_ms": 105.334,
+        "max_ms": 123.819
+      },
+      "dispensing.finalize": {
+        "samples": 20,
+        "p50_ms": 123.212,
+        "p95_ms": 179.132,
+        "max_ms": 200.423
+      },
+      "dispensing.handover": {
+        "samples": 20,
+        "p50_ms": 87.033,
+        "p95_ms": 146.149,
+        "max_ms": 150.212
+      }
+    },
+    "worker_peak_memory_bytes": [
+      37748736,
+      37748736,
+      37748736,
+      37748736
+    ]
+  },
+  "correctness": {
+    "assertions": 68,
+    "expected_sales": 20,
+    "actual_sales": 20,
+    "total_minor": 20000,
+    "remaining_units_per_point": 5,
+    "reserved_units": 0,
+    "all_exact_lots": true,
+    "all_handed_over": true,
+    "all_shifts_reconciled": true
+  },
+  "limitations": [
+    "Service calls only; no HTTP, browser, WAN, human think time, provider integrations, or queue consumer throughput.",
+    "One independent warehouse/actor/counter/shift per point; no competing tills at the same warehouse or same actor. Same-warehouse hotspots require a separate workload.",
+    "One shared SKU across all points can expose existing cross-warehouse item locks. Existing production locks are unchanged.",
+    "Synthetic one-line OTC sales with ample stock; no Rx/partial fills, returns/refunds, holds, expiry/recall/cold chain or mixed baskets.",
+    "Latency uses nearest-rank p50/p95 and includes five service commands from create through handover; no warmup. Small samples do not estimate production tail latency.",
+    "Setup/migrations/receipts and post-run shift close correctness checks are excluded from measured sale latency. No claim about 100-point production capacity."
+  ]
+}

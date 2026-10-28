@@ -44,6 +44,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request): string {
+            if ($request->is('admin/modules/pharmacy', 'admin/modules/pharmacy/*')) {
+                return route('admin.pharmacy.login');
+            }
             if ($request->is('admin/modules/manufacturing', 'admin/modules/manufacturing/*')) {
                 return route('admin.manufacturing.login');
             }

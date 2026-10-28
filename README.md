@@ -112,6 +112,7 @@ Smoke MySQL cần quyền tạo database, tự tạo database tên ngẫu nhiên
 - [Contract runtime Customers](docs/api/customers-runtime-contract.md) — API, consumer gateway, retry/version, migration/cutover và giới hạn thực tế; cần đọc lưu ý storage export trước production.
 - [Quản lý xưởng may — trạng thái triển khai](docs/architecture/manufacturing-implementation-status.md) — app FOB online, bằng chứng kiểm thử và gate pilot còn mở.
 - [Contract runtime Quản lý xưởng may](docs/api/manufacturing-runtime-contract.md) — native enterprise context, API, vật tư, sản xuất, giá thành và cài đặt qua lifecycle.
+- [App Nhà thuốc — trạng thái triển khai](docs/architecture/pharmacy-implementation-status.md), [runtime contract](docs/api/pharmacy-runtime-contract.md) và [kế hoạch](docs/architecture/pharmacy-implementation-plan.md) — `pharmacy 0.1.0-dev.1` có bản nội bộ đầu đến cuối, native chain/pharmacy, dùng Inventory `0.5.0` và Purchasing `0.2.2`. Chưa cài vào DB nghiệp vụ hoặc nghiệm thu pilot/capacity 10–100 điểm; các gói nâng cao và provider bên ngoài còn gate riêng.
 - `docs/theme-authoring-guide.md`
 - `docs/landing-page-builder.md`
 

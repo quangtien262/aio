@@ -97,6 +97,19 @@ class ModuleTestDataTest extends TestCase
         $this->assertDatabaseCount('module_test_data_records', 3);
     }
 
+    public function test_old_batch_uses_current_provider_reference_contract_even_when_module_is_disabled(): void
+    {
+        [$batch, $root] = $this->batch();
+        DB::table('module_test_data_batches')->where('id', $batch['id'])->update(['soft_references' => '[]']);
+        DB::table('module_installations')->where('key', 'fixture')->update(['status' => 'disabled']);
+        $reference = DB::table('fixture_soft_references')->insertGetId(['payload' => json_encode(['items' => [['root' => $root]]])]);
+        $this->assertBlocked(fn () => app(ModuleTestDataService::class)->remove('website-main', $this->actor, 'fixture', $batch['id']));
+        $this->assertDatabaseCount('fixture_roots', 1);
+        $this->assertDatabaseCount('module_test_data_records', 3);
+        DB::table('fixture_soft_references')->where('id', $reference)->delete();
+        $this->assertSame(['batch_count' => 1, 'record_count' => 3], app(ModuleTestDataService::class)->remove('website-main', $this->actor, 'fixture', $batch['id']));
+    }
+
     public function test_cleanup_is_scoped_to_the_selected_website(): void
     {
         $service = app(ModuleTestDataService::class);

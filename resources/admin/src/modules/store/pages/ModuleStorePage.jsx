@@ -10,7 +10,12 @@ const ModuleLifecycleActionPanel = lazy(() => import('../components/ModuleLifecy
 const ModuleUpgradeChangelogModal = lazy(() => import('../components/ModuleUpgradeChangelogModal'));
 const ModuleTestDataManager = lazy(() => import('../components/ModuleTestDataManager'));
 
-export default function ModuleStorePage({ modules, onAction, permissions, callAdminApi }) {
+export default function ModuleStorePage({ modules, onAction, permissions, callAdminApi, canViewWebsiteLibrary = false, onOpenWebsiteLibrary }) {
+    const catalogApps = useMemo(() => canViewWebsiteLibrary ? [{
+        key: 'website-library', name: 'Kho website',
+        description: 'Khám phá các mẫu website theo ngành nghề, xem trước giao diện và chọn mẫu phù hợp cho website của bạn.',
+        built_in: true, is_installed: true, status: 'enabled',
+    }, ...modules] : modules, [modules, canViewWebsiteLibrary]);
     const [pendingAction, setPendingAction] = useState(null);
     const actionLock = useRef(false);
     const handleAction = async (...args) => {
@@ -55,9 +60,9 @@ export default function ModuleStorePage({ modules, onAction, permissions, callAd
         <div className="module-store-page">
             <Suspense fallback={<Card loading title="App Store" />}>
                 <ModuleStoreCatalog
-                    modules={modules}
+                    modules={catalogApps}
                     busy={Boolean(pendingAction)}
-                    onOpenDetails={(moduleCard) => { if (!actionLock.current) setModulePath([moduleCard.key]); }}
+                    onOpenDetails={(moduleCard) => { if (actionLock.current) return; if (moduleCard.built_in) onOpenWebsiteLibrary?.(); else setModulePath([moduleCard.key]); }}
                     onOpenChangelog={(moduleCard) => { if (!actionLock.current) setChangelogModuleKey(moduleCard.key); }}
                     canManageTestData={permissions?.demoData ?? false}
                     onOpenTestData={(moduleCard) => { if (!actionLock.current) setTestDataTarget(moduleCard?.key ?? '__all__'); }}

@@ -146,6 +146,15 @@ final class ModuleTestDataService
                 $owned[$record->table_name][] = ['key' => $key, 'row' => (array) $row];
             }
             $soft = $batches->flatMap(fn ($batch) => json_decode($batch->soft_references, true, flags: JSON_THROW_ON_ERROR))->all();
+            // New consumers can reference an older fixture batch after its creation.
+            // Keep the original edges AND the current package contract, even while disabled.
+            foreach ($batches->pluck('module_key')->unique() as $key) {
+                $module = $this->registry->find($key);
+                $provider = $module ? $this->provider($module) : null;
+                if ($provider && method_exists($provider, 'references')) {
+                    $soft = array_merge($soft, $provider->references());
+                }
+            }
             $this->assertNoExternalReferences($owned, $soft);
             $removed = 0;
             foreach ($records->reverse() as $record) {

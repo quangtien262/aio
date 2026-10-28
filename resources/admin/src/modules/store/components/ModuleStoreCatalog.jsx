@@ -8,6 +8,7 @@ import DatabaseOutlined from '@ant-design/icons/DatabaseOutlined';
 import DownloadOutlined from '@ant-design/icons/DownloadOutlined';
 import ExperimentOutlined from '@ant-design/icons/ExperimentOutlined';
 import FileTextOutlined from '@ant-design/icons/FileTextOutlined';
+import GlobalOutlined from '@ant-design/icons/GlobalOutlined';
 import HomeOutlined from '@ant-design/icons/HomeOutlined';
 import HistoryOutlined from '@ant-design/icons/HistoryOutlined';
 import InboxOutlined from '@ant-design/icons/InboxOutlined';
@@ -38,6 +39,7 @@ const categories = [
 ];
 
 const presentations = {
+    'website-library': { category: 'website', icon: GlobalOutlined, color: '#167d88', background: '#e6f5f5', rank: 0 },
     'retail-pos': { category: 'sales', icon: ShoppingCartOutlined, color: '#0b806a', background: '#e5f5ed', rank: 1 },
     'fnb-pos': { category: 'sales', icon: ShopOutlined, color: '#b66b22', background: '#fff0dc', rank: 2 },
     cms: { category: 'website', icon: FileTextOutlined, color: '#6455bb', background: '#eeebfc', rank: 3 },
@@ -64,6 +66,7 @@ function normalizeSearch(value) {
 }
 
 function statusFor(moduleCard) {
+    if (moduleCard.built_in) return { label: 'Có sẵn', tone: 'enabled' };
     if (moduleCard.upgrade_available) return { label: 'Có bản cập nhật', tone: 'update' };
     if (!moduleCard.is_installed) return { label: 'Chưa cài đặt', tone: 'available' };
     if (moduleCard.status === 'enabled') return { label: 'Đang hoạt động', tone: 'enabled' };
@@ -194,10 +197,10 @@ export default function ModuleStoreCatalog({ modules = [], onOpenDetails, onOpen
                                     <div><h3><button disabled={busy} onClick={() => onOpenDetails(item)}>{item.name}</button></h3><span className="market-app-category">{categoryName}</span></div>
                                 </div>
                                 <p className="market-app-description">{toAppTerminology(item.description) || 'Mở rộng tính năng quản trị trên nền tảng AIO.'}</p>
-                                <div className="market-app-meta"><button className="market-changelog-link" disabled={busy} onClick={() => onOpenChangelog(item)} aria-label={`Nhật ký thay đổi của ${item.name}`} title="Xem nhật ký thay đổi"><HistoryOutlined /> v{item.installed_version ?? item.latest_version}</button>{item.dependencies?.length ? <span><LinkOutlined /> {item.dependencies.length} app cần thiết</span> : null}</div>
+                                <div className="market-app-meta">{item.built_in ? <span><GlobalOutlined /> Thư viện mẫu website</span> : <button className="market-changelog-link" disabled={busy} onClick={() => onOpenChangelog(item)} aria-label={`Nhật ký thay đổi của ${item.name}`} title="Xem nhật ký thay đổi"><HistoryOutlined /> v{item.installed_version ?? item.latest_version}</button>}{item.dependencies?.length ? <span><LinkOutlined /> {item.dependencies.length} app cần thiết</span> : null}</div>
                                 <div className="market-app-card-footer"><span className={`market-app-state market-app-state--${state.tone}`}><i />{state.label}</span><div className="market-app-card-actions">
-                                    {canManageTestData && item.status === 'enabled' ? <Tooltip title={!item.test_data?.supported ? 'App chưa hỗ trợ dữ liệu demo' : !item.test_data?.storage_ready ? 'Cần cập nhật cấu trúc dữ liệu' : 'Tạo và quản lý dữ liệu demo theo đợt'}><Button icon={<ExperimentOutlined />} aria-label={`Tạo data demo cho ${item.name}`} disabled={busy || !item.test_data?.supported || !item.test_data?.storage_ready} onClick={() => onOpenTestData(item)}>Tạo data demo</Button></Tooltip> : null}
-                                    <Button disabled={busy} onClick={() => onOpenDetails(item)}>{item.is_installed ? 'Quản lý' : 'Chi tiết'}<ArrowRightOutlined /></Button>
+                                    {!item.built_in && canManageTestData && item.status === 'enabled' ? <Tooltip title={!item.test_data?.supported ? 'App chưa hỗ trợ dữ liệu demo' : !item.test_data?.storage_ready ? 'Cần cập nhật cấu trúc dữ liệu' : 'Tạo và quản lý dữ liệu demo theo đợt'}><Button icon={<ExperimentOutlined />} aria-label={`Tạo data demo cho ${item.name}`} disabled={busy || !item.test_data?.supported || !item.test_data?.storage_ready} onClick={() => onOpenTestData(item)}>Tạo data demo</Button></Tooltip> : null}
+                                    <Button disabled={busy} onClick={() => onOpenDetails(item)}>{item.built_in ? 'Khám phá' : item.is_installed ? 'Quản lý' : 'Chi tiết'}<ArrowRightOutlined /></Button>
                                 </div></div>
                             </article>;
                         })}

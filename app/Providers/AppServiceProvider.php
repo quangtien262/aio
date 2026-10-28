@@ -174,6 +174,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        foreach ([\App\Models\InvWarehouse::class, \App\Models\InvLocation::class, \App\Models\InvBatch::class] as $inventoryModel) {
+            $inventoryModel::observe(\Modules\Inventory\Observers\ManagedInventoryModelObserver::class);
+        }
         foreach (['eloquent.saved: *', 'eloquent.deleted: *', 'eloquent.restored: *'] as $event) {
             \Illuminate\Support\Facades\Event::listen($event, function (string $name, array $payload): void {
                 $model = $payload[0] ?? null;

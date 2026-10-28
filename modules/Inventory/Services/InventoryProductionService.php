@@ -554,7 +554,8 @@ class InventoryProductionService
             // Warehouse locks serialize first-insert and physical effects; a unique command
             // key additionally prevents two different scopes from sharing one identity.
             if (isset($input['warehouse_id'])) {
-                DB::table('inv_warehouses')->where('id', $input['warehouse_id'])->lockForUpdate()->first();
+                $warehouse = DB::table('inv_warehouses')->where('id', $input['warehouse_id'])->lockForUpdate()->first();
+                abort_if(! empty($warehouse->managed_owner_module), 409, 'Kho có managed owner không được ghi bằng production contract.');
             }
             $old = DB::table('inv_production_commands')->where('command_key', $key)->lockForUpdate()->first();
             if ($old) {
@@ -573,6 +574,7 @@ class InventoryProductionService
     {
         $w = DB::table('inv_warehouses')->where('id', $id)->where('is_active', true)->where('production_managed', true)->lockForUpdate()->first();
         abort_unless($w && $w->legal_entity_ref && $w->catalog_id, 422, 'Kho chưa bật production contract.');
+        abort_if(! empty($w->managed_owner_module), 409, 'Kho có managed owner không được ghi bằng production contract.');
         abort_if(! $allowCounting && DB::table('inv_stocktakes')->where('warehouse_id', $id)->where('status', 'counting')->exists(), 409, 'Kho đang kiểm kê.');
 
         return $w;

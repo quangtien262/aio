@@ -14,7 +14,12 @@ final class AccountingTaxTestDataProvider implements ModuleTestDataProvider
 
     public function references(): array
     {
-        $references = [];
+        $references = [
+            ['table' => 'ph_accounting_mappings', 'column' => 'organization_id', 'foreign_table' => 'acct_organizations', 'foreign_column' => 'id'],
+            ['table' => 'ph_accounting_source_links', 'column' => 'organization_id', 'foreign_table' => 'acct_organizations', 'foreign_column' => 'id'],
+            ['table' => 'ph_accounting_mappings', 'column' => 'item_mappings->*', 'foreign_table' => 'acct_items', 'foreign_column' => 'id'],
+            ['table' => 'ph_accounting_source_links', 'column' => 'document_id', 'foreign_table' => 'acct_documents', 'foreign_column' => 'id'],
+        ];
         foreach (['retail_legal_accounting_links', 'retail_accounting_mappings', 'retail_integration_links'] as $table) {
             $references[] = ['table' => $table, 'column' => 'organization_id', 'foreign_table' => 'acct_organizations', 'foreign_column' => 'id'];
         }

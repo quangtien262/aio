@@ -30,7 +30,7 @@ class EnsureAdminAccountIsActive
         if (
             $admin->must_change_password
             && $request->is('admin/api/*')
-            && ! $request->routeIs('admin.api.me', 'admin.api.me.password.update', 'admin.api.manufacturing.bootstrap', 'admin.api.manufacturing.me.password.update', 'admin.api.manufacturing.logout')
+            && ! $request->routeIs('admin.api.me', 'admin.api.me.password.update', 'admin.api.manufacturing.bootstrap', 'admin.api.manufacturing.me.password.update', 'admin.api.manufacturing.logout', 'admin.api.pharmacy.bootstrap', 'admin.api.pharmacy.me.password.update', 'admin.api.pharmacy.logout')
         ) {
             return response()->json([
                 'message' => 'Bạn phải đổi mật khẩu trước khi tiếp tục.',

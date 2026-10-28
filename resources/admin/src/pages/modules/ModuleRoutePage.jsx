@@ -24,6 +24,7 @@ const MinvoiceManagerPage = lazy(() => import('../../modules/accounting-tax/page
 const FnbPosManagerPage = lazy(() => import('../../modules/fnb-pos/pages/FnbPosManagerPage'));
 const RetailPosManagerPage = lazy(() => import('../../modules/retail-pos/pages/RetailPosManagerPage'));
 const CustomersManagerPage = lazy(() => import('../../modules/customers/pages/CustomersManagerPage'));
+const PharmacyManagerPage = lazy(() => import('../../modules/pharmacy/pages/PharmacyManagerPage'));
 const ManufacturingManagerPage = lazy(() => import('../../modules/manufacturing/pages/ManufacturingManagerPage'));
 
 export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminApi, runAdminAction, currentAdmin, currentPermissions, onWorkspaceNavigationChange }) {
@@ -208,6 +209,10 @@ export default function ModuleRoutePage({ moduleMenu, modulePayload, callAdminAp
                 <RetailPosManagerPage moduleMenu={moduleMenu} modulePayload={modulePayload} callAdminApi={callAdminApi} runAdminAction={runAdminAction} currentAdmin={currentAdmin} currentPermissions={currentPermissions} />
             </Suspense>
         );
+    }
+
+    if (modulePayload.key === 'pharmacy') {
+        return <Suspense fallback={<Card loading title="Nhà thuốc" />}><PharmacyManagerPage callAdminApi={callAdminApi} currentAdmin={currentAdmin} currentPermissions={currentPermissions} /></Suspense>;
     }
 
     if (modulePayload.key === 'manufacturing') {

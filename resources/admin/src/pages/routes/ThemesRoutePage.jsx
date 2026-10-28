@@ -14,6 +14,7 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const returnTo = searchParams.get('returnTo');
+    const catalogOnly = searchParams.get('catalog') === 'website';
     const focusStep = searchParams.get('focusStep');
     const { data, loading, error, reload } = useAdminRouteResource({
         enabled: canAccess,
@@ -45,6 +46,7 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
 
     return (
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
+            {catalogOnly ? <div className="website-library-heading"><div><Typography.Title level={2}>Kho website</Typography.Title><Paragraph>Khám phá và lựa chọn giao diện phù hợp cho website của bạn.</Paragraph></div><Button onClick={() => navigate('../modules')}>Quay lại App Store</Button></div> : null}
             {returnTo ? (
                 <Card>
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
@@ -58,6 +60,7 @@ export default function ThemesRoutePage({ canAccess, canActivate, canGenerateDem
             ) : null}
 
             <ThemeManagerPage
+                catalogOnly={catalogOnly}
                 themes={themes}
                 themesMeta={data?.meta ?? {}}
                 activeTheme={activeTheme}

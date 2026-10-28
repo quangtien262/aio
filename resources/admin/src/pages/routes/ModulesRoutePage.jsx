@@ -10,7 +10,7 @@ import useAdminRouteResource from '../../shared/hooks/useAdminRouteResource';
 
 const { Paragraph, Text } = Typography;
 
-export default function ModulesRoutePage({ canAccess, permissions, callAdminApi, runAdminAction, refreshShell }) {
+export default function ModulesRoutePage({ canAccess, permissions, callAdminApi, runAdminAction, refreshShell, canViewWebsiteLibrary = false }) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const returnTo = searchParams.get('returnTo');
@@ -84,7 +84,7 @@ export default function ModulesRoutePage({ canAccess, permissions, callAdminApi,
                 </Card>
             ) : null}
 
-            <ModuleStorePage modules={data} onAction={onAction} permissions={permissions} callAdminApi={callAdminApi} />
+            <ModuleStorePage canViewWebsiteLibrary={canViewWebsiteLibrary} onOpenWebsiteLibrary={() => navigate('../themes?catalog=website')} modules={data} onAction={onAction} permissions={permissions} callAdminApi={callAdminApi} />
         </Space>
     );
 }

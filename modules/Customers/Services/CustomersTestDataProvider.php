@@ -15,7 +15,10 @@ final class CustomersTestDataProvider implements ModuleTestDataProvider
 
     public function references(): array
     {
-        $references = [];
+        $references = [
+            ['table' => 'ph_customer_mappings', 'column' => 'book_id', 'foreign_table' => 'cust_books', 'foreign_column' => 'id'],
+            ['table' => 'ph_patient_customer_links', 'column' => 'customer_id', 'foreign_table' => 'cust_profiles', 'foreign_column' => 'id'],
+        ];
         foreach (['retail_sales', 'fnb_checks', 'fnb_service_sessions', 'fnb_shared_customer_extensions'] as $table) {
             $references[] = ['table' => $table, 'column' => 'shared_customer_id', 'foreign_table' => 'cust_profiles', 'foreign_column' => 'public_id'];
         }

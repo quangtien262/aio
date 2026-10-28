@@ -79,6 +79,14 @@ return [
             'report' => true,
         ],
 
+        'pharmacy_private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/pharmacy-private'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => true,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

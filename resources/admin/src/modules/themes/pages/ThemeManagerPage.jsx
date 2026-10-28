@@ -28,7 +28,7 @@ function positiveInteger(value, fallback) {
     return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
+export default function ThemeManagerPage({ catalogOnly = false, themes, themesMeta = {}, activeTheme = null, siteProfile = null, onActivate, onGenerateDemoData, onDeleteDemoData, onSaveThemePalette, canActivate, canGenerateDemoData, callAdminApi, runAdminAction, frontendLocale = 'vi', defaultFrontendLocale = 'vi' }) {
     const [selectedThemeKey, setSelectedThemeKey] = useState(null);
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -188,7 +188,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
 
     return (
         <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-            <aside style={{ width: 280 }}>
+            {!catalogOnly && <aside style={{ width: 280 }}>
                 <ThemeActionMenuCard
                     theme={selectedTheme}
                     canViewThemeManager
@@ -207,17 +207,17 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                     onOpenDelete={themeActionController.openDelete}
                     isThemeManagerActive
                 />
-            </aside>
+            </aside>}
             <div style={{ flex: 1, minWidth: 0 }}>
-                <Card title="Quản lý các mẫu giao diện website" bordered={false} style={{ marginBottom: 16 }}>
-            <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
+                <Card className={catalogOnly ? "website-library-card" : undefined} title={catalogOnly ? "Mẫu website" : "Quản lý các mẫu giao diện website"} bordered={false} style={{ marginBottom: 16 }}>
+            {!catalogOnly && <Space direction="vertical" size={4} style={{ marginBottom: 16 }}>
                 <Text className="card-label" strong>Theme Activation</Text>
                 <Paragraph style={{ marginBottom: 0 }}>
                     Danh sách theme và preview được tách riêng để chỉ mở chi tiết khi cần. Bấm vào tiêu đề theme để xem preview trong drawer và thao tác kích hoạt nhanh.
                 </Paragraph>
-            </Space>
+            </Space>}
 
-            {activeThemeFromList ? (
+            {!catalogOnly && activeThemeFromList ? (
                 <div style={{ marginBottom: 16 }}>
                     <Card size="small" bordered style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                         <div className="theme-thumbnail" style={{ width: 260, maxWidth: '100%', height: 150, flex: '0 0 260px', borderRadius: 12, overflow: 'hidden', background: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
@@ -251,8 +251,8 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                         <Input.Search
                             allowClear
                             value={themeKeyword}
-                            placeholder="Tìm kiếm theo tên theme..."
-                            aria-label="Tìm kiếm theo tên theme"
+                            placeholder={catalogOnly ? "Tìm mẫu website..." : "Tìm kiếm theo tên theme..."}
+                            aria-label={catalogOnly ? "Tìm mẫu website" : "Tìm kiếm theo tên theme"}
                             style={{ width: 360, maxWidth: '100%' }}
                             onChange={(event) => updateThemeListParams({
                                 q: event.target.value || null,
@@ -261,8 +261,8 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                         />
                         <Text type="secondary">
                             {themeKeyword.trim()
-                                ? `Tìm thấy ${filteredThemes.length} theme`
-                                : `Tổng cộng ${filteredThemes.length} theme`}
+                                ? `Tìm thấy ${filteredThemes.length} ${catalogOnly ? 'mẫu website' : 'theme'}`
+                                : `Tổng cộng ${filteredThemes.length} ${catalogOnly ? 'mẫu website' : 'theme'}`}
                         </Text>
                     </Space>
 
@@ -274,7 +274,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                             onOpenPreview={handleOpenPreview}
                         />
                     ) : (
-                        <Empty description="Không tìm thấy theme phù hợp" />
+                        <Empty description={catalogOnly ? "Không tìm thấy mẫu website phù hợp" : "Không tìm thấy theme phù hợp"} />
                     )}
 
                     {filteredThemes.length > DEFAULT_THEME_PAGE_SIZE ? (
@@ -285,7 +285,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
                                 total={filteredThemes.length}
                                 showSizeChanger={false}
                                 pageSizeOptions={THEME_PAGE_SIZES}
-                                showTotal={(total, range) => `${range[0]}-${range[1]} / ${total} theme`}
+                                showTotal={(total, range) => `${range[0]}-${range[1]} / ${total} ${catalogOnly ? 'mẫu website' : 'theme'}`}
                                 onChange={(page, pageSize) => updateThemeListParams({
                                     page: page > 1 ? page : null,
                                     per_page: pageSize !== DEFAULT_THEME_PAGE_SIZE ? pageSize : null,
@@ -297,7 +297,7 @@ export default function ThemeManagerPage({ themes, themesMeta = {}, activeTheme 
             </Suspense>
 
             <Drawer
-                title={previewTheme ? `Theme Preview: ${previewTheme.name}` : 'Theme Preview'}
+                title={previewTheme ? `${catalogOnly ? 'Xem trước' : 'Theme Preview'}: ${previewTheme.name}` : 'Xem trước'}
                 open={Boolean(previewTheme)}
                 width="min(1000px, 100vw)"
                 onClose={() => setPreviewThemeKey(null)}

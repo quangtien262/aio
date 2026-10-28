@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Tests\Feature\PharmacyAdministrationTest" file="./tests/Feature/PharmacyAdministrationTest.php" tests="9" assertions="98" errors="0" failures="0" skipped="0" time="4.105918">
+    <testcase name="test_import_preview_conflicts_and_atomic_commit_with_replay" file="./tests/Feature/PharmacyAdministrationTest.php" line="51" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="11" time="2.233785"/>
+    <testcase name="test_multi_pharmacy_price_publish_rolls_back_if_one_version_is_stale" file="./tests/Feature/PharmacyAdministrationTest.php" line="75" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="5" time="0.208570"/>
+    <testcase name="test_gs1_parser_and_catalog_scan_never_auto_confirm_allocation" file="./tests/Feature/PharmacyAdministrationTest.php" line="90" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="11" time="0.194408"/>
+    <testcase name="test_saved_filter_strips_sensitive_search_and_uses_optimistic_version" file="./tests/Feature/PharmacyAdministrationTest.php" line="111" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="2" time="0.205188"/>
+    <testcase name="test_packaging_scan_returns_the_active_pack_price_and_conversion_without_guessing_base_price" file="./tests/Feature/PharmacyAdministrationTest.php" line="118" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="8" time="0.203160"/>
+    <testcase name="test_pos_rounding_bounds_and_allocation_preserve_total" file="./tests/Feature/PharmacyAdministrationTest.php" line="138" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="43" time="0.188075"/>
+    <testcase name="test_chain_report_and_navigation_only_project_native_permissions" file="./tests/Feature/PharmacyAdministrationTest.php" line="148" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="4" time="0.253414"/>
+    <testcase name="test_optional_integration_options_preserve_native_book_and_organization_authority" file="./tests/Feature/PharmacyAdministrationTest.php" line="168" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="10" time="0.341634"/>
+    <testcase name="test_native_reader_uses_local_day_boundaries_once_for_delegated_and_generic_lists" file="./tests/Feature/PharmacyAdministrationTest.php" line="200" class="Tests\Feature\PharmacyAdministrationTest" classname="Tests.Feature.PharmacyAdministrationTest" assertions="4" time="0.277684"/>
+  </testsuite>
+</testsuites>

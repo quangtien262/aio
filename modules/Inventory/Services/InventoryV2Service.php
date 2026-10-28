@@ -79,7 +79,7 @@ final class InventoryV2Service
             $unitCost = $this->number($input['unit_cost'] ?? '0');
             abort_if($unitCost->isNegative(), 422, 'Giá vốn không được âm.');
             $batch = $this->batch($input, $item);
-            $disposition = $input['disposition'] ?? 'saleable';
+            $disposition = $input['disposition'] ?? (! empty($warehouse->managed_owner_module) ? 'quarantine' : 'saleable');
             abort_unless(in_array($disposition, ['saleable', 'quarantine', 'damaged'], true), 422, 'Tình trạng nhận hàng không hợp lệ.');
             $location = null;
             if ($disposition !== 'saleable') {
@@ -216,13 +216,19 @@ final class InventoryV2Service
                 abort_if($this->number($balance->quantity_on_hand)->isLessThan($quantity) || $this->number($balance->quantity_reserved)->isLessThan($quantity), 409, 'Tồn giữ không còn nhất quán.');
                 $batch = $balance->batch_id ? DB::table('inv_batches')->find($balance->batch_id) : null;
                 abort_if($batch && (! $batch->is_active || ($batch->expires_at && substr($batch->expires_at, 0, 10) < now($warehouse->timezone)->toDateString())), 409, 'Lô đã hết hạn hoặc bị khóa.');
+                if (! empty($warehouse->managed_owner_module)) {
+                    app(InventoryManagedStockService::class)->assertEligible($warehouse->id, $reservation->item_id, $balance->batch_id, $actor);
+                    $location = $balance->location_id ? DB::table('inv_locations')->find($balance->location_id) : null;
+                    abort_if($location && (! $location->is_active || in_array($location->type, ['quarantine', 'damaged', 'rejected'], true)), 409, 'Vị trí/lô không còn được phép xuất.');
+                }
                 $cost = $this->consumeCost($warehouse->id, $reservation->item_id, $balance->batch_id, $quantity, $balance->location_id, $operation);
                 $totalCost = $totalCost->plus($cost);
                 $unitCost = $cost->dividedBy($quantity, 6, RoundingMode::HalfUp);
                 $after = $this->number($balance->quantity_on_hand)->minus($quantity);
                 DB::table('inv_stock_balances')->where('id', $balance->id)->update(['quantity_on_hand' => (string) $after, 'quantity_reserved' => (string) $this->number($balance->quantity_reserved)->minus($quantity), 'last_movement_at' => now(), 'updated_at' => now()]);
                 $line = $this->line($document, $reservation->item_id, $balance->batch_id, $quantity, $unitCost);
-                $this->movement($document, $line, $warehouse->id, $reservation->item_id, $balance->batch_id, $quantity->negated(), $after, $unitCost, $actor, 'issue', $operation);
+                $movementId = $this->movement($document, $line, $warehouse->id, $reservation->item_id, $balance->batch_id, $quantity->negated(), $after, $unitCost, $actor, 'issue', $operation);
+                DB::table('inv_stock_movements')->where('id', $movementId)->update(['location_id' => $balance->location_id]);
             }
             DB::table('inv_reservations')->where('id', $reservation->id)->update(['status' => 'committed', 'updated_at' => now()]);
 
@@ -247,10 +253,11 @@ final class InventoryV2Service
         });
     }
 
-    public function protectReservation(string $reservationId, bool $protected): void
+    public function protectReservation(string $reservationId, bool $protected, ?int $actor = null): void
     {
-        DB::transaction(function () use ($reservationId, $protected): void {
+        DB::transaction(function () use ($reservationId, $protected, $actor): void {
             $this->runtime(lock: true);
+            app(InventoryManagedStockService::class)->authorizeCommand('reservation.protect', compact('reservationId'), $actor ?? (app(InventoryManagedStockService::class)->context()['actor'] ?? 0));
             DB::table('inv_reservations')->where('public_id', $reservationId)->where('status', 'active')->update(['protected_payment' => $protected, 'updated_at' => now()]);
         }, 3);
     }
@@ -261,6 +268,10 @@ final class InventoryV2Service
         $query = DB::table('inv_reservations')->where('status', 'active')->where('protected_payment', false)->where('expires_at', '<', now());
         if (Schema::hasColumn('inv_reservations', 'purpose')) {
             $query->where('purpose', '!=', 'production');
+        }
+        if (Schema::hasColumn('inv_warehouses', 'managed_owner_module')) {
+            // Native owners recover their own commands/claims before expiring physical holds.
+            $query->whereNotIn('warehouse_id', DB::table('inv_warehouses')->whereNotNull('managed_owner_module')->select('id'));
         }
         foreach ($query->limit(min(1000, max(1, $limit)))->get() as $reservation) {
             $this->releaseReservation($reservation->public_id, 'expire:'.$reservation->public_id, $reservation->actor_id);
@@ -301,13 +312,14 @@ final class InventoryV2Service
             abort_unless(in_array($transfer->status, ['dispatched', 'partially_received'], true), 409, 'Phiếu chuyển đã kết thúc.');
             abort_unless((int) ($input['expected_version'] ?? 0) === $transfer->version, 409, 'Phiên bản phiếu chuyển đã thay đổi.');
             abort_if($transfer->actor_id === $actor, 403, 'Người giao không tự xác nhận nhận hàng.');
+            $destinationManaged = Schema::hasColumn('inv_warehouses', 'managed_owner_module') ? DB::table('inv_warehouses')->where('id', $transfer->destination_warehouse_id)->value('managed_owner_module') : null;
             foreach ($input['lines'] ?? [] as $index => $received) {
                 $line = DB::table('inv_transfer_lines')->where('transfer_id', $transfer->id)->where('id', $received['line_id'])->lockForUpdate()->first();
                 abort_unless($line, 404);
                 $quantity = $this->positive($received['quantity']);
                 $after = $this->number($line->received_quantity)->plus($quantity);
                 abort_if($after->isGreaterThan((string) $line->quantity), 422, 'Số nhận vượt số đang vận chuyển.');
-                $this->receive(['warehouse_id' => $transfer->destination_warehouse_id, 'item_id' => $line->item_id, 'batch_id' => $line->batch_id, 'quantity' => (string) $quantity, 'unit_cost' => $line->base_unit_cost ?? $line->unit_cost, 'disposition' => $received['disposition'] ?? 'saleable', 'source_id' => 'transfer:'.$transfer->public_id.':'.$line->id], $key.':line:'.$index, $actor);
+                $this->receive(['warehouse_id' => $transfer->destination_warehouse_id, 'item_id' => $line->item_id, 'batch_id' => $line->batch_id, 'quantity' => (string) $quantity, 'unit_cost' => $line->base_unit_cost ?? $line->unit_cost, 'disposition' => $received['disposition'] ?? ($destinationManaged ? 'quarantine' : 'saleable'), 'source_id' => 'transfer:'.$transfer->public_id.':'.$line->id], $key.':line:'.$index, $actor);
                 DB::table('inv_transfer_lines')->where('id', $line->id)->update(['received_quantity' => (string) $after]);
             }
             $complete = true;
@@ -440,12 +452,110 @@ final class InventoryV2Service
         });
     }
 
+    /** Move an entire unreserved batch between dispositions without rewriting cost provenance. */
+    public function changeDisposition(array $input, string $key, int $actor): array
+    {
+        $v = validator($input, ['warehouse_id' => 'required|integer', 'item_id' => 'required|integer', 'batch_id' => 'required|integer', 'disposition' => 'required|in:saleable,quarantine,damaged,rejected', 'reason' => 'required|string|max:1000'])->validate();
+
+        return $this->command('managed.disposition', $key, $actor, $v, function (string $operation) use ($v, $actor): array {
+            $warehouse = $this->warehouse((int) $v['warehouse_id']);
+            abort_unless(! empty($warehouse->managed_owner_module), 422, 'Disposition contract cần kho managed.');
+            $item = $this->item((int) $v['item_id'], $warehouse);
+            $this->notCounting($warehouse->id);
+            abort_unless(DB::table('inv_batches')->where('id', $v['batch_id'])->where('item_id', $item->id)->exists(), 404);
+            if ($v['disposition'] === 'saleable') {
+                app(InventoryManagedStockService::class)->assertEligible($warehouse->id, $item->id, (int) $v['batch_id'], $actor);
+            }
+            $balances = DB::table('inv_stock_balances')->where('warehouse_id', $warehouse->id)->where('item_id', $item->id)->where('batch_id', $v['batch_id'])->orderBy('id')->lockForUpdate()->get();
+            abort_if($balances->contains(fn ($b) => $this->number($b->quantity_reserved)->isPositive()), 409, 'Đối soát giữ hàng trước khi đổi disposition.');
+            $location = null;
+            if ($v['disposition'] !== 'saleable') {
+                $code = '__'.strtoupper($v['disposition']);
+                DB::table('inv_locations')->insertOrIgnore(['warehouse_id' => $warehouse->id, 'code' => $code, 'name' => $v['disposition'], 'type' => $v['disposition'], 'is_default' => false, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
+                $location = DB::table('inv_locations')->where('warehouse_id', $warehouse->id)->where('code', $code)->value('id');
+            }
+            $target = $this->balance($warehouse->id, $item->id, (int) $v['batch_id'], $location);
+            $moved = BigDecimal::zero();
+            foreach ($balances as $balance) {
+                if ((int) $balance->id === (int) $target->id || ! $this->number($balance->quantity_on_hand)->isPositive()) {
+                    continue;
+                }
+                $qty = $this->number($balance->quantity_on_hand);
+                $moved = $moved->plus($qty);
+                DB::table('inv_stock_balances')->where('id', $balance->id)->update(['quantity_on_hand' => '0', 'updated_at' => now()]);
+                // Retain layer IDs, exact valuation components, receipt identity and FIFO age.
+                DB::table('inv_cost_layers')->where('warehouse_id', $warehouse->id)->where('item_id', $item->id)->where('batch_id', $v['batch_id'])->where('location_id', $balance->location_id)->where('quantity_remaining', '>', 0)->update(['location_id' => $location, 'updated_at' => now()]);
+            }
+            DB::table('inv_stock_balances')->where('id', $target->id)->update(['quantity_on_hand' => (string) $this->number($target->quantity_on_hand)->plus($moved), 'updated_at' => now()]);
+            $public = (string) Str::uuid();
+            DB::table('inv_disposition_events')->insert(['public_id' => $public, 'warehouse_id' => $warehouse->id, 'item_id' => $item->id, 'batch_id' => $v['batch_id'], 'disposition' => $v['disposition'], 'quantity' => (string) $moved->toScale(6), 'reason' => $v['reason'], 'actor_id' => $actor, 'operation_id' => $operation, 'created_at' => now(), 'updated_at' => now()]);
+
+            return ['public_id' => $public, 'operation_id' => $operation, 'batch_id' => $v['batch_id'], 'disposition' => $v['disposition'], 'quantity' => (string) $moved->toScale(6)];
+        });
+    }
+
+    /** Explicit, native-authorized return/destruction; never marks restricted goods saleable. */
+    public function withdrawRestricted(array $input, string $key, int $actor): array
+    {
+        $v = validator($input, ['warehouse_id' => 'required|integer', 'item_id' => 'required|integer', 'batch_id' => 'required|integer', 'quantity' => 'required', 'purpose' => 'required|in:supplier_return,destruction', 'reason' => 'required|string|max:1000', 'source_movement_id' => 'nullable|integer'])->validate();
+
+        return $this->command('managed.withdraw', $key, $actor, $v, function (string $operation) use ($v, $actor): array {
+            $warehouse = $this->warehouse((int) $v['warehouse_id']);
+            abort_unless(! empty($warehouse->managed_owner_module), 422, 'Restricted withdrawal cần kho managed.');
+            $item = $this->item((int) $v['item_id'], $warehouse);
+            $this->notCounting($warehouse->id);
+            abort_unless(DB::table('inv_batches')->where('id', $v['batch_id'])->where('item_id', $item->id)->exists(), 404);
+            $qty = $remaining = $this->positive($v['quantity']);
+            $originLine = null;
+            if ($v['purpose'] === 'supplier_return' || ! empty($v['source_movement_id'])) {
+                $origin = DB::table('inv_stock_movements')->where('id', $v['source_movement_id'] ?? 0)->where('warehouse_id', $warehouse->id)->where('item_id', $item->id)->where('batch_id', $v['batch_id'])->where('type', 'receipt')->lockForUpdate()->first();
+                abort_unless($origin && $this->number($origin->quantity_delta)->isPositive(), 422, 'Trả NCC cần receipt movement gốc cùng hàng/lô/kho.');
+                $originLine = $origin->document_line_id;
+                $returned = DB::table('inv_restricted_withdrawals')->where('source_movement_id', $origin->id)->sum('quantity');
+                abort_if($qty->plus((string) $returned)->isGreaterThan((string) $origin->quantity_delta), 409, 'Trả vượt receipt gốc.');
+            }
+            $document = $this->document('issue', $warehouse->id, null, $actor, $operation);
+            $total = BigDecimal::zero();
+            $allocations = [];
+            foreach (DB::table('inv_stock_balances')->where('warehouse_id', $warehouse->id)->where('item_id', $item->id)->where('batch_id', $v['batch_id'])->orderBy('id')->lockForUpdate()->get() as $balance) {
+                $available = $this->number($balance->quantity_on_hand)->minus((string) $balance->quantity_reserved);
+                if ($originLine !== null) {
+                    $originAvailable = DB::table('inv_cost_layers')->where('warehouse_id', $warehouse->id)->where('item_id', $item->id)->where('batch_id', $v['batch_id'])->where('location_id', $balance->location_id)->where('document_line_id', $originLine)->sum('quantity_remaining');
+                    $available = BigDecimal::min($available, $this->number($originAvailable));
+                }
+                $take = BigDecimal::min($available, $remaining);
+                if (! $take->isPositive()) {
+                    continue;
+                }
+                $cost = $this->consumeCost($warehouse->id, $item->id, $balance->batch_id, $take, $balance->location_id, $operation, $originLine);
+                $after = $this->number($balance->quantity_on_hand)->minus($take);
+                $unit = $cost->dividedBy($take, 6, RoundingMode::HalfUp);
+                DB::table('inv_stock_balances')->where('id', $balance->id)->update(['quantity_on_hand' => (string) $after, 'updated_at' => now()]);
+                $line = $this->line($document, $item->id, $balance->batch_id, $take, $unit);
+                $movement = $this->movement($document, $line, $warehouse->id, $item->id, $balance->batch_id, $take->negated(), $after, $unit, $actor, 'issue', $operation);
+                DB::table('inv_stock_movements')->where('id', $movement)->update(['location_id' => $balance->location_id]);
+                $allocations[] = ['movement_id' => $movement, 'batch_id' => $balance->batch_id, 'quantity' => (string) $take, 'location_id' => $balance->location_id];
+                $total = $total->plus($cost);
+                $remaining = $remaining->minus($take);
+                if ($remaining->isZero()) {
+                    break;
+                }
+            }
+            abort_unless($remaining->isZero(), 409, 'Không đủ lượng chưa giữ từ nguồn gốc được phép.');
+            $public = (string) Str::uuid();
+            DB::table('inv_restricted_withdrawals')->insert(['public_id' => $public, 'warehouse_id' => $warehouse->id, 'item_id' => $item->id, 'batch_id' => $v['batch_id'], 'source_movement_id' => $v['source_movement_id'] ?? null, 'quantity' => (string) $qty, 'purpose' => $v['purpose'], 'reason' => $v['reason'], 'actor_id' => $actor, 'operation_id' => $operation, 'created_at' => now(), 'updated_at' => now()]);
+
+            return ['public_id' => $public, 'operation_id' => $operation, 'document_id' => $document, 'quantity' => (string) $qty, 'total_cost' => (string) $total->toScale(6), 'allocations' => $allocations];
+        });
+    }
+
     private function command(string $kind, string $key, int $actor, array $input, callable $effect): array
     {
         abort_unless($key !== '' && strlen($key) <= 191, 422, 'Thiếu mã chống giao dịch trùng.');
 
         return DB::transaction(function () use ($kind, $key, $actor, $input, $effect): array {
             $this->runtime(lock: true);
+            app(InventoryManagedStockService::class)->authorizeCommand($kind, $input, $actor);
             $fingerprint = hash('sha256', json_encode([$kind, $actor, $this->canonical($input)], JSON_THROW_ON_ERROR));
             DB::table('inv_v2_operations')->insertOrIgnore(['public_id' => (string) Str::uuid(), 'idempotency_key' => $key, 'fingerprint' => $fingerprint, 'kind' => $kind, 'actor_id' => $actor, 'source_id' => $input['source_id'] ?? null, 'created_at' => now(), 'updated_at' => now()]);
             $operation = DB::table('inv_v2_operations')->where('idempotency_key', $key)->lockForUpdate()->first();
@@ -536,11 +646,13 @@ final class InventoryV2Service
     {
         $today = now(DB::table('inv_warehouses')->where('id', $warehouse)->value('timezone') ?: 'UTC')->toDateString();
 
-        return DB::table('inv_stock_balances')->leftJoin('inv_batches', 'inv_batches.id', '=', 'inv_stock_balances.batch_id')->leftJoin('inv_locations', 'inv_locations.id', '=', 'inv_stock_balances.location_id')
+        $query = DB::table('inv_stock_balances')->leftJoin('inv_batches', 'inv_batches.id', '=', 'inv_stock_balances.batch_id')->leftJoin('inv_locations', 'inv_locations.id', '=', 'inv_stock_balances.location_id')
             ->where('inv_stock_balances.warehouse_id', $warehouse)->where('inv_stock_balances.item_id', $item)
             ->where(fn (Builder $q) => $q->whereNull('inv_stock_balances.location_id')->orWhereNotIn('inv_locations.type', ['quarantine', 'damaged']))
             ->where(fn (Builder $q) => $q->whereNull('inv_stock_balances.batch_id')->orWhere(fn (Builder $b) => $b->where('inv_batches.is_active', true)->where(fn (Builder $d) => $d->whereNull('inv_batches.expires_at')->orWhereDate('inv_batches.expires_at', '>=', $today))))
             ->select('inv_stock_balances.*')->orderByRaw('inv_batches.expires_at IS NULL')->orderBy('inv_batches.expires_at')->orderBy('inv_stock_balances.id');
+
+        return app(InventoryManagedStockService::class)->applyEligibility($query, $warehouse, $item);
     }
 
     private function lockedReservation(string $publicId): object
@@ -566,11 +678,11 @@ final class InventoryV2Service
         return (array) DB::table('inv_stocktakes')->find($id) + ['lines' => DB::table('inv_stocktake_lines')->where('stocktake_id', $id)->get()->map(fn ($l) => (array) $l)->all()];
     }
 
-    private function consumeCost(int $warehouse, int $item, ?int $batch, BigDecimal $quantity, ?int $location = null, string $operation = 'inventory.consume'): BigDecimal
+    private function consumeCost(int $warehouse, int $item, ?int $batch, BigDecimal $quantity, ?int $location = null, string $operation = 'inventory.consume', ?int $originDocumentLine = null): BigDecimal
     {
         $remaining = $quantity;
         $cost = BigDecimal::zero();
-        foreach (DB::table('inv_cost_layers')->where('warehouse_id', $warehouse)->where('item_id', $item)->where('batch_id', $batch)->where('location_id', $location)->where('quantity_remaining', '>', 0)->orderBy('received_at')->orderBy('id')->lockForUpdate()->get() as $layer) {
+        foreach (DB::table('inv_cost_layers')->where('warehouse_id', $warehouse)->where('item_id', $item)->where('batch_id', $batch)->where('location_id', $location)->where('quantity_remaining', '>', 0)->when($originDocumentLine !== null, fn ($q) => $q->where('document_line_id', $originDocumentLine))->orderBy('received_at')->orderBy('id')->lockForUpdate()->get() as $layer) {
             $available = $this->number($layer->quantity_remaining);
             $take = $available->isLessThan($remaining) ? $available : $remaining;
             DB::table('inv_cost_layers')->where('id', $layer->id)->update(['quantity_remaining' => (string) $available->minus($take), 'updated_at' => now()]);
@@ -599,7 +711,10 @@ final class InventoryV2Service
 
     private function movement(int $document, int $line, int $warehouse, int $item, ?int $batch, BigDecimal $quantity, BigDecimal $after, BigDecimal $cost, int $actor, string $type, string $reference): int
     {
-        return DB::table('inv_stock_movements')->insertGetId(['document_id' => $document, 'document_line_id' => $line, 'warehouse_id' => $warehouse, 'item_id' => $item, 'batch_id' => $batch, 'quantity_delta' => (string) $quantity, 'balance_after' => (string) $after, 'unit_cost' => (string) $cost, 'type' => $type, 'reference' => $reference, 'created_by_admin_id' => $actor, 'created_at' => now(), 'updated_at' => now()]);
+        $id = DB::table('inv_stock_movements')->insertGetId(['document_id' => $document, 'document_line_id' => $line, 'warehouse_id' => $warehouse, 'item_id' => $item, 'batch_id' => $batch, 'quantity_delta' => (string) $quantity, 'balance_after' => (string) $after, 'unit_cost' => (string) $cost, 'type' => $type, 'reference' => $reference, 'created_by_admin_id' => $actor, 'created_at' => now(), 'updated_at' => now()]);
+        app(InventoryManagedStockService::class)->recordMovement($id, $warehouse, $item, $batch);
+
+        return $id;
     }
 
     private function number(mixed $value): BigDecimal

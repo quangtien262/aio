@@ -2,7 +2,7 @@
   "name": "Mua hàng và nhà cung cấp",
   "key": "purchasing",
   "test_data_provider": "Modules\\Purchasing\\Services\\PurchasingTestDataProvider",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Đơn mua, nhận hàng nhiều lần, trả nhà cung cấp và công nợ vận hành dùng chung.",
   "website_type": [
     "backoffice",
@@ -31,6 +31,9 @@
     },
     "purchasing.receipt_lines.identity.v1": {
       "introduced_version": "0.2.1"
+    },
+    "purchasing.managed_returns.v1": {
+      "introduced_version": "0.2.2"
     }
   },
   "permissions": [
@@ -60,6 +63,13 @@
     "uninstall": false
   },
   "changelog": [
+    {
+      "version": "0.2.2",
+      "date": "2026-10-22",
+      "notes": [
+        "Add managed restricted supplier returns through original receipt provenance and the existing Purchasing return ledger."
+      ]
+    },
     {
       "version": "0.2.1",
       "date": "2026-10-21",

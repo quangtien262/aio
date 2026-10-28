@@ -1,0 +1,223 @@
+{
+  "name": "Nhà thuốc",
+  "key": "pharmacy",
+  "version": "0.1.0-dev.1",
+  "description": "Bán và cấp thuốc, lô/hạn dùng, kiểm nhận và vận hành chuỗi nhà thuốc theo phạm vi được cấp quyền.",
+  "website_type": [
+    "backoffice",
+    "corporate",
+    "ecommerce"
+  ],
+  "dependencies": [
+    "merchandise",
+    "inventory"
+  ],
+  "optional_dependencies": [
+    "purchasing",
+    "customers",
+    "hrm",
+    "payroll",
+    "accounting-tax",
+    "minvoice-connector",
+    "cms",
+    "catalog"
+  ],
+  "provides": {
+    "pharmacy.workspace.v1": {
+      "introduced_version": "0.1.0-dev.1"
+    }
+  },
+  "permissions": [
+    "pharmacy.view",
+    "pharmacy.settings",
+    "pharmacy.professional.manage",
+    "pharmacy.product.manage",
+    "pharmacy.price.manage",
+    "pharmacy.patient.view",
+    "pharmacy.patient.manage",
+    "pharmacy.patient.sensitive",
+    "pharmacy.prescription.view",
+    "pharmacy.prescription.manage",
+    "pharmacy.prescription.transfer",
+    "pharmacy.dispensing.view",
+    "pharmacy.dispensing.manage",
+    "pharmacy.dispensing.review",
+    "pharmacy.dispensing.handover",
+    "pharmacy.sale.create",
+    "pharmacy.sale.view",
+    "pharmacy.payment.collect",
+    "pharmacy.shift.manage",
+    "pharmacy.return.manage",
+    "pharmacy.inventory.view",
+    "pharmacy.inventory.manage",
+    "pharmacy.receipt.manage",
+    "pharmacy.purchasing.manage",
+    "pharmacy.quality.manage",
+    "pharmacy.recall.manage",
+    "pharmacy.transfer.manage",
+    "pharmacy.stocktake.manage",
+    "pharmacy.report.view",
+    "pharmacy.cost.view",
+    "pharmacy.integrations.manage",
+    "pharmacy.documents.manage",
+    "pharmacy.export",
+    "pharmacy.controlled.manage",
+    "pharmacy.online.manage",
+    "pharmacy.knowledge.manage"
+  ],
+  "hooks": [
+    "Modules\\Pharmacy\\Hooks\\PharmacyLifecycleHook"
+  ],
+  "lifecycle_state_provider": "Modules\\Pharmacy\\Services\\Runtime\\PharmacyRuntimeState",
+  "test_data_provider": "Modules\\Pharmacy\\Services\\PharmacyTestDataProvider",
+  "menus": [
+    {
+      "key": "pharmacy-work",
+      "label": "Công việc",
+      "icon": "profile",
+      "route": "/admin/modules/pharmacy/work",
+      "permission": "pharmacy.dispensing.view"
+    },
+    {
+      "key": "pharmacy-pos",
+      "label": "Quầy thuốc",
+      "icon": "shopping-cart",
+      "route": "/admin/modules/pharmacy/pos",
+      "permission": "pharmacy.sale.create"
+    },
+    {
+      "key": "pharmacy-prescriptions",
+      "label": "Đơn thuốc",
+      "icon": "file-text",
+      "route": "/admin/modules/pharmacy/prescriptions",
+      "permission": "pharmacy.prescription.view"
+    },
+    {
+      "key": "pharmacy-products",
+      "label": "Thuốc và sản phẩm",
+      "icon": "medicine-box",
+      "route": "/admin/modules/pharmacy/products",
+      "permission": "pharmacy.view"
+    },
+    {
+      "key": "pharmacy-inventory",
+      "label": "Kho và lô thuốc",
+      "icon": "database",
+      "route": "/admin/modules/pharmacy/inventory",
+      "permission": "pharmacy.inventory.view"
+    },
+    {
+      "key": "pharmacy-quality",
+      "label": "Chất lượng và thu hồi",
+      "icon": "safety",
+      "route": "/admin/modules/pharmacy/quality",
+      "permission": "pharmacy.view"
+    },
+    {
+      "key": "pharmacy-purchasing",
+      "label": "Mua hàng",
+      "icon": "shopping",
+      "route": "/admin/modules/pharmacy/purchasing",
+      "permission": "pharmacy.purchasing.manage"
+    },
+    {
+      "key": "pharmacy-customers",
+      "label": "Người mua và người bệnh",
+      "icon": "team",
+      "route": "/admin/modules/pharmacy/customers",
+      "permission": "pharmacy.patient.view"
+    },
+    {
+      "key": "pharmacy-shifts",
+      "label": "Ca và giao dịch",
+      "icon": "wallet",
+      "route": "/admin/modules/pharmacy/shifts",
+      "permission": "pharmacy.shift.manage"
+    },
+    {
+      "key": "pharmacy-reports",
+      "label": "Báo cáo",
+      "icon": "bar-chart",
+      "route": "/admin/modules/pharmacy/reports",
+      "permission": "pharmacy.report.view"
+    },
+    {
+      "key": "pharmacy-integrations",
+      "label": "Kết nối",
+      "icon": "api",
+      "route": "/admin/modules/pharmacy/integrations",
+      "permission": "pharmacy.integrations.manage"
+    },
+    {
+      "key": "pharmacy-settings",
+      "label": "Thiết lập",
+      "icon": "setting",
+      "route": "/admin/modules/pharmacy/settings",
+      "permission": "pharmacy.settings"
+    },
+    {
+      "key": "pharmacy-sales",
+      "label": "Giao dịch bán",
+      "icon": "wallet",
+      "route": "/admin/modules/pharmacy/sales",
+      "permission": "pharmacy.sale.view"
+    },
+    {
+      "key": "pharmacy-prices",
+      "label": "Giá niêm yết",
+      "icon": "tag",
+      "route": "/admin/modules/pharmacy/prices",
+      "permission": "pharmacy.price.manage"
+    },
+    {
+      "key": "pharmacy-receipts",
+      "label": "Kiểm nhận",
+      "icon": "inbox",
+      "route": "/admin/modules/pharmacy/receipts",
+      "permission": "pharmacy.receipt.manage"
+    },
+    {
+      "key": "pharmacy-transfers",
+      "label": "Điều chuyển",
+      "icon": "swap",
+      "route": "/admin/modules/pharmacy/transfers",
+      "permission": "pharmacy.transfer.manage"
+    },
+    {
+      "key": "pharmacy-stocktakes",
+      "label": "Kiểm kê",
+      "icon": "audit",
+      "route": "/admin/modules/pharmacy/stocktakes",
+      "permission": "pharmacy.stocktake.manage"
+    },
+    {
+      "key": "pharmacy-operations",
+      "label": "Vận hành",
+      "icon": "dashboard",
+      "route": "/admin/modules/pharmacy/operations",
+      "permission": "pharmacy.report.view"
+    }
+  ],
+  "package": {
+    "migrations": [
+      "database/migrations"
+    ]
+  },
+  "lifecycle": {
+    "install": true,
+    "enable": true,
+    "disable": true,
+    "upgrade": true,
+    "uninstall": false
+  },
+  "changelog": [
+    {
+      "version": "0.1.0-dev.1",
+      "date": "2026-10-22",
+      "notes": [
+        "Nhà thuốc độc lập website; luồng online và kết nối có kiểm soát, không tự bật provider production."
+      ]
+    }
+  ],
+  "security_provider": "Modules\\Pharmacy\\Security\\PharmacyVersionedSecurity"
+}

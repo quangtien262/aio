@@ -1,5 +1,6 @@
 <?php
 
+use App\Core\Modules\ModuleCapabilityChecker;
 use App\Jobs\AccountingTax\DispatchPendingEinvoiceTransmissions;
 use App\Jobs\AccountingTax\PruneExpiredAccountingExports;
 use App\Jobs\AccountingTax\ScheduleMsmiInboundSyncs;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use Modules\Customers\Services\CustomerOutboxService;
 use Modules\Manufacturing\Services\Commands\ManufacturingOutboxService;
+use Modules\Pharmacy\Jobs\DispatchPharmacyWork;
+use Modules\Pharmacy\Services\Documents\PharmacyDocumentService;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -63,3 +66,11 @@ Artisan::command('mfg:dispatch-events {--limit=100}', function () {
     $this->line(json_encode(app(ManufacturingOutboxService::class)->dispatch((int) $this->option('limit')), JSON_THROW_ON_ERROR));
 })->purpose('Deliver production outbox to configured internal handlers with inbox deduplication');
 Schedule::command('mfg:dispatch-events --limit=100')->everyMinute()->withoutOverlapping(5);
+
+Schedule::job(new DispatchPharmacyWork)
+    ->everyMinute()->withoutOverlapping(5)
+    ->when(fn () => app(ModuleCapabilityChecker::class)->enabled('pharmacy'));
+Artisan::command('pharmacy:prune-documents {--limit=100}', function () {
+    $this->line((string) app(PharmacyDocumentService::class)->pruneExpired((int) $this->option('limit')));
+})->purpose('Prune expired private Pharmacy exports and print jobs; retain clinical originals');
+Schedule::command('pharmacy:prune-documents --limit=100')->hourly()->withoutOverlapping(10);

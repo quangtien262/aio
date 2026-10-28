@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "verification_date": "2026-10-22",
+  "project": "aio/pharmacy",
+  "source_state": "Uncommitted working tree; evidence records separate verification snapshots, not a production deployment.",
+  "counting_rule": "Runs overlap. Do not sum tests/assertions across snapshots or add the entire Administration rerun to the release-filtered suite. The latest 9-test Administration suite replaces its earlier 8-test snapshot; only one test was added.",
+  "backend": {
+    "historical_full_suite": {
+      "status": "completed_with_failures",
+      "tests": 1252,
+      "assertions": 34190,
+      "passed": 1170,
+      "failures": 52,
+      "errors": 30,
+      "pharmacy_subset": {
+        "tests": 41,
+        "assertions": 326,
+        "failures": 0,
+        "errors": 0
+      },
+      "note": "Historical snapshot predates later workflow additions and final fixes; no later full-green run is claimed."
+    },
+    "baseline_comparison": {
+      "commit": "f4a9333b0ebb968d2259d087ff5eef8801084fc2",
+      "method": "Isolated git archive; copied Composer bootstrap metadata, shared dependency package directories; SQLite test databases, no checkout/reset of working tree.",
+      "current_failed_cases": 82,
+      "reproduced_on_head": 80,
+      "reproduced_failures": 50,
+      "reproduced_errors": 30,
+      "uncompared_cases": 0,
+      "selected_baseline_cases_executed": 102,
+      "new_deltas": 2,
+      "delta_resolutions": [
+        {
+          "test": "ManufacturingFreshInstallTest::test_fresh_production_core_then_manufacturing_lifecycle_without_optional_modules",
+          "original_failure": "Hard-coded Inventory 0.4.0 expectation after intentional source upgrade to 0.5.0.",
+          "resolution": "Expected version updated; passed in release-filtered JUnit."
+        },
+        {
+          "test": "RouteCentralizationTest::test_react_admin_api_urls_are_kept_in_the_shared_route_config",
+          "original_failure": "Inline admin API URL in PharmacyManagerPage.jsx.",
+          "resolution": "Uses shared route configuration; both route tests passed in release-filtered JUnit."
+        }
+      ],
+      "artifact": "baseline-comparison-f4a9333b.json",
+      "note": "80 reproduced cases are baseline failures, not 82. The two new deltas were fixed separately; the historical full snapshot remains recorded with failures."
+    },
+    "focused_broad": {
+      "status": "passed",
+      "tests": 215,
+      "assertions": 5830,
+      "provenance": "Coordinator-reported broader focused run before final targeted fixes."
+    },
+    "owned_transaction_workspace_workflow_recall_subset": {
+      "status": "passed",
+      "tests": 36,
+      "assertions": 305,
+      "breakdown": {
+        "Transaction": 17,
+        "Workspace": 12,
+        "Workflow": 4,
+        "Recall": 3
+      },
+      "provenance": "Extracted subset of release-final.junit.xml; not additional tests."
+    },
+    "release_filtered": {
+      "status": "passed",
+      "tests": 75,
+      "assertions": 568,
+      "artifact": "release-final.junit.xml",
+      "filter": "Pharmacy|InventoryManagedStock|ManufacturingFreshInstall|RouteCentralization",
+      "sequence": "Before final Administration timezone/GTIN boundary fixes. Contains the previous Administration 8 tests / 92 assertions."
+    },
+    "administration_after_final_fixes": {
+      "status": "passed",
+      "tests": 9,
+      "assertions": 98,
+      "artifact": "administration-final.junit.xml",
+      "sequence": "Latest affected-suite rerun after timezone normalization and GTIN zero-padding-only alias fixes. Replaces earlier Administration 8/92 and interim 9/96 snapshots; not additive.",
+      "additional_test_count": 1
+    }
+  },
+  "frontend": {
+    "javascript_tests": {
+      "status": "passed",
+      "tests": 34
+    },
+    "synthetic_browser_tests": {
+      "status": "passed",
+      "tests": 6,
+      "note": "Synthetic browser fixtures are separate from the actual PHP HTTP test."
+    },
+    "route_centralization_tests": {
+      "status": "passed",
+      "tests": 2,
+      "artifact": "release-final.junit.xml",
+      "note": "Already included in backend release-filtered count."
+    },
+    "production_build": {
+      "status": "passed"
+    },
+    "actual_php_http_browser": {
+      "status": "passed",
+      "tests": 1,
+      "reported_duration_seconds": 19.4,
+      "note": "Separate browser run against actual local PHP HTTP server."
+    },
+    "provenance": "Coordinator-reported final FE results; route JUnit additionally verified here.",
+    "screenshots": [
+      "pharmacy-native-desktop.png",
+      "pharmacy-native-mobile.png"
+    ]
+  },
+  "mysql": {
+    "native_pharmacy": {
+      "status": "passed",
+      "race_gates": 3,
+      "assertions": 13,
+      "runner": "tests/Support/pharmacy-mysql.php"
+    },
+    "shared_inventory": {
+      "status": "passed",
+      "gates": 5,
+      "assertions": 8,
+      "runner": "tests/Support/inventory-managed-mysql.php"
+    },
+    "provenance": "Previously reported isolated local MySQL gate runs; scratch databases removed and cleanup verified. These are correctness gates, not capacity measurements."
+  },
+  "service_profiles": {
+    "runner": "tests/Support/pharmacy-load.php",
+    "points": [
+      10,
+      50,
+      100
+    ],
+    "workers_each": 4,
+    "sales_per_point": 2,
+    "status": "all_passed",
+    "cleanup_verified_each": true,
+    "artifacts": [
+      "pharmacy-load-10x2-w4.json",
+      "pharmacy-load-50x2-w4.json",
+      "pharmacy-load-100x2-w4.json"
+    ],
+    "interpretation": "Sequential local service profiles with four streams across independent point warehouses, shared chain/SKU, synthetic one-line OTC sales. Not 50/100 simultaneous streams; not HTTP/WAN or production capacity certification. Short FE build overlap may have occurred; background activity was not independently monitored."
+  },
+  "static_checks": {
+    "pint": {
+      "status": "passed",
+      "files": 68
+    },
+    "php_lint": {
+      "status": "passed",
+      "files": 83
+    },
+    "git_diff_check": {
+      "status": "passed"
+    },
+    "provenance": "Coordinator-reported final source checks."
+  },
+  "safety_and_release_limits": [
+    "No environment files, credentials, tokens, patient data or connection secrets are retained in these artifacts.",
+    "Business database was not migrated or seeded by these verification runs; MySQL/load runners used guarded random local scratch databases.",
+    "External provider production transports, controlled/cold-chain/online release gates and real deployment remain separate acceptance work."
+  ]
+}

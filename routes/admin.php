@@ -132,10 +132,16 @@ use App\Http\Controllers\Site\SitemapController;
 use Illuminate\Support\Facades\Route;
 use Modules\Manufacturing\Http\ManufacturingLoginController;
 use Modules\Manufacturing\Http\ManufacturingShellController;
+use Modules\Pharmacy\Http\PharmacyLoginController;
+use Modules\Pharmacy\Http\PharmacyShellController;
 
 Route::prefix('admin')
     ->name('admin.')
     ->group(function (): void {
+        Route::get('/pharmacy/login', [PharmacyLoginController::class, 'show'])
+            ->middleware(['module.enabled:pharmacy', 'throttle:60,1'])->name('pharmacy.login');
+        Route::post('/pharmacy/login', [PharmacyLoginController::class, 'store'])
+            ->middleware(['module.enabled:pharmacy', 'throttle:login'])->name('pharmacy.login.store');
         Route::get('/manufacturing/login', [ManufacturingLoginController::class, 'show'])
             ->middleware(['module.enabled:manufacturing', 'throttle:60,1'])->name('manufacturing.login');
         Route::post('/manufacturing/login', [ManufacturingLoginController::class, 'store'])
@@ -143,6 +149,18 @@ Route::prefix('admin')
         Route::get('/modules/manufacturing/{any?}', ManufacturingShellController::class)
             ->where('any', '.*')->middleware(['auth:admin', 'admin.active', 'module.enabled:manufacturing'])
             ->name('manufacturing.shell');
+        Route::get('/modules/pharmacy/{any?}', PharmacyShellController::class)
+            ->where('any', '.*')->middleware(['auth:admin', 'admin.active', 'module.enabled:pharmacy'])->name('pharmacy.shell');
+        Route::prefix('api/pharmacy')->name('api.pharmacy.')
+            ->middleware(['auth:admin', 'admin.active', 'module.enabled:pharmacy'])
+            ->group(function (): void {
+                Route::put('/me/password', [AdminAccountController::class, 'changeOwnPassword'])->name('me.password.update');
+                Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+                Route::post('/me/two-factor/setup', [AdminTwoFactorController::class, 'setup'])->name('me.two-factor.setup');
+                Route::post('/me/two-factor/confirm', [AdminTwoFactorController::class, 'confirm'])->name('me.two-factor.confirm');
+                Route::delete('/me/two-factor', [AdminTwoFactorController::class, 'disable'])->name('me.two-factor.disable');
+                require base_path('modules/Pharmacy/routes.php');
+            });
         // Enterprise production context is authorized natively, never by a website header.
         Route::prefix('api/manufacturing')->name('api.manufacturing.')
             ->middleware(['auth:admin', 'admin.active', 'module.enabled:manufacturing'])
