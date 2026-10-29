@@ -36,11 +36,11 @@ class XdCompleteDemoContentTest extends TestCase
         $generator = app(ThemeDemoContentGenerator::class);
         foreach ([1, 2] as $run) {
             $result = $generator->generate($key, $preset);
-            $this->assertSame(4, $result['counts']['services']);
-            $this->assertSame(count(XdCompleteDemoContentProvider::definitions()[$key]['products']), CatalogProduct::count());
+            $this->assertSame($key === 'XD321' ? 6 : 4, $result['counts']['services']);
+            $this->assertSame(count(XdCompleteDemoContentProvider::definitions()[$key]['products']) + ($key === 'XD321' ? 4 : 0), CatalogProduct::count());
             $this->assertSame(3, CmsPost::count());
             $this->assertSame(3, CmsProject::count());
-            $this->assertSame(5, CmsService::count());
+            $this->assertSame($key === 'XD321' ? 7 : 5, CmsService::count());
         }
         foreach (CatalogProduct::all() as $product) {
             $this->assertFileExists(public_path($product->image_url));

@@ -186,25 +186,27 @@
 
 @push('head')
     <style>
-        .xd-page-main{padding:76px 0 90px}
-        .xd-cms-hero{display:grid;grid-template-columns:minmax(0,.75fr) minmax(340px,.45fr);gap:48px;align-items:end;margin-bottom:54px;padding:56px;border:1px solid var(--line);background:#fff;box-shadow:0 20px 55px rgba(28,45,60,.08)}
-        .xd-kicker{position:relative;display:inline-block;margin:0 0 14px 18px;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
-        .xd-kicker:before{content:"";position:absolute;left:-18px;top:-12px;width:34px;height:34px;border:5px solid var(--lime)}
-        .xd-cms-hero h1{margin:0;color:var(--ink);font-size:clamp(42px,5vw,72px);line-height:1.08;letter-spacing:-.055em}
-        .xd-cms-hero p{margin:18px 0 0;color:var(--muted);font-size:20px;font-weight:550}
-        .xd-cms-stats{display:grid;gap:12px;color:#fff;background:var(--ink);padding:26px 30px}
-        .xd-cms-stats strong{font-size:46px;line-height:1}
-        .xd-cms-stats span{color:rgba(255,255,255,.75);font-weight:800;text-transform:uppercase}
-        .xd-services-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px}
-        .xd-service-card{background:#fff;box-shadow:0 5px 20px rgba(16,29,40,.08);transition:.25s}
-        .xd-service-card:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
+        .xd-page-main{padding:36px 0 64px;--muted:#64748b;--line:#dfe6ef}
+        .xd-page-main>.xd-container{width:min(1240px,calc(100% - 40px));margin-inline:auto}
+        .xd-cms-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;margin-bottom:28px;padding:0 0 24px;border-bottom:1px solid var(--line)}
+        .xd-kicker{display:inline-block;margin:0 0 8px;color:var(--r);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+        .xd-cms-hero h1{margin:0;color:var(--b);font-size:clamp(30px,3vw,42px);line-height:1.2;letter-spacing:-.025em}
+        .xd-cms-hero p{margin:10px 0 0;color:var(--muted);font-size:15px;line-height:1.6}
+        .xd-cms-stats{display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:#f6f8fc}
+        .xd-cms-stats strong{color:var(--b);font-size:24px;line-height:1}
+        .xd-cms-stats span{max-width:120px;color:var(--muted);font-size:13px;line-height:1.4}
+        .xd-services-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+        .xd-service-card{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 4px 16px rgba(16,29,40,.04);transition:transform .25s,box-shadow .25s}
+        .xd-service-card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(16,29,40,.08)}
         .xd-service-image{display:block;height:300px;overflow:hidden;background:#eef2ef}
         .xd-service-image img{width:100%;height:100%;object-fit:cover;transition:.4s}
         .xd-service-card:hover img{transform:scale(1.05)}
-        .xd-service-body{padding:36px 38px 40px}
-        .xd-service-card h2,.xd-service-card h3{margin:0 0 14px;font-size:22px;line-height:1.32;letter-spacing:.015em;text-transform:uppercase}
-        .xd-service-card p{margin:0 0 26px;color:var(--muted);font-size:17px}
-        .xd-text-link{color:var(--lime-dark);font-weight:900;text-transform:uppercase}
+        .xd-service-body{padding:24px}
+        .xd-service-card h2,.xd-service-card h3{margin:0 0 12px;color:var(--b);font-size:22px;line-height:1.32}
+        .xd-service-card a,.xd-service-card a:hover,.xd-service-card a:focus-visible{color:inherit;text-decoration:none}
+        .xd-service-card h2 a:hover{color:var(--r)}
+        .xd-service-card a:focus-visible{outline:2px solid var(--r);outline-offset:3px}
+        .xd-service-card p{margin:0;color:var(--muted);font-size:16px;line-height:1.65}
         .xd-detail{display:grid;grid-template-columns:minmax(0,.85fr) minmax(300px,.35fr);gap:44px}
         .xd-detail-card,.xd-side-card{background:#fff;border:1px solid var(--line);box-shadow:0 18px 48px rgba(16,29,40,.06)}
         .xd-detail-card{overflow:hidden}
@@ -248,8 +250,10 @@
         .xd-contact-alert{margin:0 0 18px;padding:14px 16px;border:1px solid rgba(143,169,0,.25);background:#f7fae5;color:var(--lime-dark);font-weight:850}
         .xd-contact-errors{margin:0 0 18px;padding:14px 16px;border:1px solid rgba(180,35,24,.22);background:#fff4f2;color:#b42318;font-weight:800}
         .xd-contact-errors ul{margin:6px 0 0;padding-left:18px}
-        @media (max-width:1180px){.xd-cms-hero,.xd-detail,.xd-contact-page{grid-template-columns:1fr}}
+        @media (max-width:900px){.xd-services-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media (max-width:640px){.xd-cart-link{width:42px;height:42px;border-radius:999px}.xd-cart-link svg{width:19px;height:19px}.xd-page-main{padding:38px 0 56px}.xd-cms-hero{padding:30px 22px;margin-bottom:26px}.xd-cms-hero h1{font-size:36px}.xd-cms-hero p{font-size:16px}.xd-service-card{border-radius:18px;overflow:hidden}.xd-service-image{height:215px}.xd-service-body{padding:26px 22px}.xd-service-card h2,.xd-service-card h3{font-size:19px}.xd-detail-body{padding:28px 22px}.xd-detail-body h1{font-size:34px}.xd-detail-summary,.xd-rich-content{font-size:16px}.xd-contact-panel,.xd-contact-form-card{padding:28px 22px}.xd-contact-panel h2,.xd-contact-form-card h2{font-size:28px}.xd-contact-method{grid-template-columns:44px minmax(0,1fr);padding:14px}.xd-contact-icon{width:44px;height:44px;font-size:18px}.xd-contact-method a,.xd-contact-method span{font-size:15px}.xd-contact-submit{width:100%}}
+        @media (max-width:640px){.xd-page-main{padding:24px 0 48px}.xd-page-main>.xd-container{width:calc(100% - 30px)}.xd-cms-hero{grid-template-columns:1fr;gap:14px;padding:0 0 20px;margin-bottom:22px}.xd-cms-hero h1{font-size:30px}.xd-cms-hero p{font-size:14px}.xd-cms-stats{justify-self:start;gap:8px;padding:8px 12px;border-radius:8px}.xd-cms-stats strong{font-size:20px}.xd-cms-stats span{max-width:none;font-size:12px}.xd-services-list{grid-template-columns:1fr;gap:20px}.xd-service-body{padding:22px}}
+        @media (prefers-reduced-motion:reduce){.xd-service-card,.xd-service-image img{transition:none}.xd-service-card:hover{transform:none}}
     </style>
 @endpush
 
@@ -263,7 +267,7 @@
                             <p>{{ $pageDescription ?? (app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.9d21accc9c7ed220', 'Danh sách dịch vụ thiết kế và thi công nổi bật.')) }}</p>
                         </div>
                         <div class="xd-cms-stats">
-                            <strong>{{ collect($listingItems ?? [])->count() }}</strong>
+                            <strong>{{ count($listingItems ?? []) }}</strong>
                             <span>{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.fcb6000d2218c980', 'Dịch vụ đang hiển thị') }}</span>
                         </div>
                     </section>
@@ -284,7 +288,6 @@
                                 <div class="xd-service-body">
                                     <h2><a href="{{ $serviceUrl }}">{{ $service->title }}</a></h2>
                                     <p>{{ $service->summary ?: \Illuminate\Support\Str::limit(strip_tags($service->content ?? ''), 150) }}</p>
-                                    <a class="xd-text-link" href="{{ $serviceUrl }}">{{ app(\App\Core\Themes\ThemeTranslationService::class)->bladeText('XD321', app()->getLocale(), 'legacy_inline.13a531395b8188fb', 'Tìm hiểu ngay') }}</a>
                                 </div>
                             </article>
                         @empty

@@ -1,10 +1,10 @@
 @extends('theme-ser103::layout')
 
 @php
-    $item = $product ?? $entry ?? null;
+    $item = $productModel ?? $product ?? $entry ?? null;
     $title = data_get($item, 'name') ?? data_get($item, 'title') ?? 'Chi tiết sản phẩm';
     $summary = data_get($item, 'short_description') ?? data_get($item, 'summary') ?? '';
-    $body = data_get($item, 'description') ?? data_get($item, 'body') ?? $summary;
+    $body = data_get($item, 'detail_content') ?? data_get($item, 'description') ?? data_get($item, 'body') ?? $summary;
     $image = data_get($item, 'image_url') ?? data_get($item, 'image') ?? 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1200&q=85';
     $price = data_get($item, 'price');
 @endphp

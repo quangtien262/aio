@@ -7,9 +7,11 @@ use App\Core\Themes\ThemeRegistry;
 use App\Models\Admin;
 use App\Models\CatalogCategory;
 use App\Models\CatalogProduct;
+use App\Models\CmsMedia;
 use App\Models\CmsPost;
 use App\Models\LandingPage;
 use App\Models\SiteProfile;
+use App\Models\ThemeDemoRecord;
 use App\Support\LandingPages\LandingPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -162,7 +164,60 @@ class Dn351ThemeTest extends TestCase
         $this->assertStringContainsString('data-dn351-reveal', file_get_contents(base_path('themes/DN351/views/home.blade.php')));
         $this->assertStringContainsString("\$branding['logo_url']", $header);
         $this->assertFileExists(public_path('theme-demo/dn351/hero-market.jpg'));
-        $this->assertFileExists(public_path('theme-previews/DN351/preview-dn351.png'));
-        $this->assertFileExists(storage_path('app/public/theme-demo/dn351/blog-fish-soup.jpg'));
+        $this->assertFileExists(public_path('theme-previews/DN351/dn351-optimized.webp'));
+        foreach (['blog-fish-soup.jpg', 'blog-squid-grilled.jpg', 'blog-stuffed-calamari.jpg'] as $image) {
+            $this->assertFileExists(public_path('theme-demo/dn351/'.$image));
+            $this->assertNotFalse(getimagesize(public_path('theme-demo/dn351/'.$image)));
+        }
+    }
+
+    public function test_every_demo_news_cover_uses_a_bundled_public_image_across_storefront_pages(): void
+    {
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('DN351')->generate('dn351-meatlers-market');
+        config(['filesystems.disks.public.url' => '/files']);
+        $home = $this->get(route('site.home', ['locale' => 'vi']))->assertOk();
+        $listing = $this->get(route('site.blog.index', ['locale' => 'vi']))->assertOk();
+        $posts = CmsPost::with('featuredMedia')->get();
+        $this->assertCount(3, $posts);
+        foreach ($posts as $post) {
+            $media = $post->featuredMedia;
+            $this->assertSame('', $media->getRawOriginal('file_path'));
+            $this->assertStringStartsWith('/theme-demo/dn351/blog-', $media->file_url);
+            $this->assertNotFalse(getimagesize(public_path($media->file_url)));
+            $home->assertSee('src="'.$media->file_url.'"', false);
+            $listing->assertSee('src="'.$media->file_url.'"', false);
+            $this->get(route('site.blog.show', ['locale' => 'vi', 'slug' => $post->slug]))
+                ->assertOk()->assertSee('src="'.$media->file_url.'"', false);
+        }
+    }
+
+    public function test_media_repair_preserves_post_identity_and_manual_uploads_and_is_repeatable(): void
+    {
+        app(ThemeDemoContentProviderRegistry::class)->forTheme('DN351')->generate('dn351-meatlers-market');
+        $posts = CmsPost::with('featuredMedia')->get();
+        $identities = $posts->map(fn ($post) => [$post->id, $post->slug, $post->body, $post->featured_media_id])->all();
+        foreach ($posts as $post) {
+            $post->featuredMedia->update(['file_path' => ltrim($post->featuredMedia->file_url, '/'), 'file_url' => '/storage'.$post->featuredMedia->file_url]);
+        }
+        $manual = CmsMedia::create(['title' => 'Manual upload', 'file_path' => 'uploads/my-cover.jpg', 'file_url' => '/storage/uploads/my-cover.jpg']);
+        ThemeDemoRecord::create(['theme_key' => 'DN351', 'preset_key' => 'dn351-meatlers-market', 'model_type' => CmsMedia::class, 'model_id' => $manual->id]);
+        $unmarked = CmsMedia::create(['title' => 'Unmarked media', 'file_path' => 'theme-demo/dn351/blog-fish-soup.jpg', 'file_url' => '/storage/theme-demo/dn351/blog-fish-soup.jpg']);
+        $otherWebsite = CmsMedia::create(['website_key' => 'other-website', 'title' => 'Other DN351 demo', 'file_path' => 'theme-demo/dn351/blog-fish-soup.jpg', 'file_url' => '/files/theme-demo/dn351/blog-fish-soup.jpg']);
+        ThemeDemoRecord::create(['website_key' => 'other-website', 'theme_key' => 'DN351', 'preset_key' => 'dn351-meatlers-market', 'model_type' => CmsMedia::class, 'model_id' => $otherWebsite->id]);
+        $otherTheme = CmsMedia::create(['website_key' => 'other-website', 'title' => 'Other theme demo', 'file_path' => 'theme-demo/dn351/blog-fish-soup.jpg', 'file_url' => '/files/theme-demo/dn351/blog-fish-soup.jpg']);
+        ThemeDemoRecord::create(['website_key' => 'other-website', 'theme_key' => 'DN350', 'preset_key' => 'dn350-demo', 'model_type' => CmsMedia::class, 'model_id' => $otherTheme->id]);
+        $migration = require database_path('migrations/2026_10_10_000001_repair_dn351_demo_news_media_urls.php');
+        $migration->up();
+        $migration->up();
+        $this->assertSame($identities, CmsPost::all()->map(fn ($post) => [$post->id, $post->slug, $post->body, $post->featured_media_id])->all());
+        foreach ($posts as $post) {
+            $this->assertSame('', $post->featuredMedia->fresh()->getRawOriginal('file_path'));
+            $this->assertStringStartsWith('/theme-demo/dn351/', $post->featuredMedia->fresh()->file_url);
+        }
+        $this->assertSame('uploads/my-cover.jpg', $manual->fresh()->getRawOriginal('file_path'));
+        $this->assertSame('theme-demo/dn351/blog-fish-soup.jpg', $unmarked->fresh()->getRawOriginal('file_path'));
+        $this->assertSame('', $otherWebsite->fresh()->getRawOriginal('file_path'));
+        $this->assertSame('/theme-demo/dn351/blog-fish-soup.jpg', $otherWebsite->fresh()->file_url);
+        $this->assertSame('theme-demo/dn351/blog-fish-soup.jpg', $otherTheme->fresh()->getRawOriginal('file_path'));
     }
 }

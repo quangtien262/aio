@@ -83,11 +83,19 @@ class ThemeDemoContentGenerator
         if ($provider = $this->providerRegistry->forTheme($themeKey)) {
             return DB::transaction(function () use ($provider, $themeKey, $presetKey): array {
                 $this->websiteFinalizer->purge($themeKey);
+                $result = $provider->generate($presetKey);
+
+                if (strtoupper($themeKey) === 'XD321') {
+                    $additions = app(\Database\Seeders\Xd321HomepageShowcaseSeeder::class)->seedForWebsite(app(\App\Support\SiteContext::class)->websiteKey());
+                    foreach ($additions as $resource => $count) {
+                        $result['counts'][$resource] = (int) data_get($result, 'counts.'.$resource, 0) + $count;
+                    }
+                }
 
                 return $this->websiteFinalizer->finalize(
                     $themeKey,
                     $presetKey,
-                    $provider->generate($presetKey),
+                    $result,
                 );
             });
         }

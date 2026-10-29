@@ -5,7 +5,7 @@
     $title = data_get($item, 'title') ?? data_get($item, 'name') ?? 'Chi tiết dịch vụ';
     $summary = data_get($item, 'summary') ?? '';
     $body = data_get($item, 'body') ?? data_get($item, 'description') ?? $summary;
-    $image = data_get($item, 'image_url') ?? data_get($item, 'image') ?? 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=85';
+    $image = data_get($item, 'featuredImage.image_url') ?? data_get($item, 'image_url') ?? data_get($item, 'image') ?? 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=85';
 @endphp
 
 @section('title', $title)

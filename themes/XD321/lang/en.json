@@ -1,4 +1,11 @@
 {
+    "xd321.carousel.previous": "Previous items",
+    "xd321.carousel.next": "Next items",
+    "xd321.carousel.pause": "Pause automatic scrolling",
+    "xd321.carousel.play": "Resume automatic scrolling",
+    "xd321.carousel.details": "View details",
+    "xd321.products.contact": "Contact us",
+    "xd321.products.empty": "Products are being updated.",
     "xd321.brand.tagline": "Sustainable industrial solutions",
     "xd321.header.login": "Sign in",
     "xd321.header.register": "Register",

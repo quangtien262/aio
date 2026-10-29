@@ -6,9 +6,15 @@
     $hotline = trim((string) ($branding['support_hotline'] ?? ''));
     $email = trim((string) ($branding['support_email'] ?? ''));
     $address = trim((string) ($branding['support_location'] ?? ''));
+    $socialLinks = collect([
+        ['key' => 'facebook_url', 'label' => 'Facebook', 'icon' => 'fa-facebook-f'],
+        ['key' => 'x_url', 'label' => 'X', 'icon' => 'fa-x-twitter'],
+        ['key' => 'youtube_url', 'label' => 'YouTube', 'icon' => 'fa-youtube'],
+    ])->map(fn ($social) => array_merge($social, ['url' => trim((string) ($branding[$social['key']] ?? ''))]))
+        ->filter(fn ($social) => filter_var($social['url'], FILTER_VALIDATE_URL) && in_array(strtolower((string) parse_url($social['url'], PHP_URL_SCHEME)), ['http', 'https'], true));
 @endphp
 <footer id="footer" class="foot-footer">
-    <div class="foot-container foot-footer__top">
+    <div class="foot-container foot-footer__top {{ $socialLinks->isEmpty() ? 'foot-footer__top--without-social' : '' }}">
         <section class="foot-footer__newsletter">
             <p class="foot-footer__eyebrow">@themeT('xd321.footer.newsletter_label')</p>
             <form action="{{ route('site.newsletter.subscribe') }}" method="post">
@@ -27,10 +33,16 @@
             <strong>{{ $companyName }}</strong>
             <small>@themeT('xd321.brand.tagline')</small>
         </section>
+        @if($socialLinks->isNotEmpty())
         <section class="foot-footer__social">
             <p class="foot-footer__eyebrow">@themeT('xd321.footer.follow')</p>
-            <div aria-label="@themeT('xd321.footer.social')"><a href="#footer">f</a><a href="#footer">i</a><a href="#footer">t</a><a href="#footer">y</a></div>
+            <div aria-label="@themeT('xd321.footer.social')">
+                @foreach($socialLinks as $social)
+                    <a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $social['label'] }}"><i class="fa-brands {{ $social['icon'] }}" aria-hidden="true"></i></a>
+                @endforeach
+            </div>
         </section>
+        @endif
     </div>
     <div class="foot-footer__divider"></div>
     <div class="foot-container foot-footer__grid">

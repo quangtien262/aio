@@ -29,9 +29,7 @@ class Ser103DemoContentProvider implements ThemeDemoContentProvider
 
     private const PRESET_KEY = 'ser103-bohu-wedding';
 
-    public function __construct(private readonly LandingPageBuilder $landingPageBuilder)
-    {
-    }
+    public function __construct(private readonly LandingPageBuilder $landingPageBuilder) {}
 
     public function themeKey(): string
     {
@@ -49,6 +47,19 @@ class Ser103DemoContentProvider implements ThemeDemoContentProvider
             'key' => self::PRESET_KEY,
             'label' => 'SER103 Bøhu Wedding',
             'description' => 'Dữ liệu mẫu dịch vụ cưới gồm dịch vụ, tin tức, banner, menu và landing page SER103.',
+        ];
+    }
+
+    /** Shared service catalog for full demos and the additive services seeder. */
+    public static function demoServices(): array
+    {
+        return [
+            ['Trang điểm cô dâu', 'Phong cách trang điểm tinh tế, tôn nét đẹp riêng của cô dâu.', 'service-makeup.webp', 'fa-solid fa-wand-magic-sparkles'],
+            ['Chụp ảnh cưới', 'Lưu giữ câu chuyện tình yêu bằng những khung hình giàu cảm xúc.', 'service-photo.webp', 'fa-solid fa-camera'],
+            ['Quay phóng sự cưới', 'Ghi lại trọn vẹn những khoảnh khắc tự nhiên trong ngày trọng đại.', 'service-video.webp', 'fa-solid fa-video'],
+            ['Thuê xe cưới', 'Đội xe cưới sang trọng, đúng giờ và được trang trí chỉn chu.', 'service-car.webp', 'fa-solid fa-car-side'],
+            ['Cho thuê bàn ghế', 'Không gian tiệc cưới đồng bộ với bàn ghế và phụ kiện thanh lịch.', 'service-banquet.webp', 'fa-solid fa-champagne-glasses'],
+            ['Lập kế hoạch cưới', 'Tư vấn ý tưởng, ngân sách và lịch trình để ngày cưới diễn ra nhẹ nhàng, trọn vẹn.', 'service-planning.webp', 'fa-solid fa-calendar-check'],
         ];
     }
 
@@ -71,13 +82,7 @@ class Ser103DemoContentProvider implements ThemeDemoContentProvider
             ]);
             $this->record($serviceCategory);
 
-            $services = [
-                ['Trang điểm cô dâu', 'Phong cách trang điểm tinh tế, tôn nét đẹp riêng của cô dâu.', 'service-makeup.webp', 'fa-solid fa-wand-magic-sparkles'],
-                ['Chụp ảnh cưới', 'Lưu giữ câu chuyện tình yêu bằng những khung hình giàu cảm xúc.', 'service-photo.webp', 'fa-solid fa-camera'],
-                ['Quay phóng sự cưới', 'Ghi lại trọn vẹn những khoảnh khắc tự nhiên trong ngày trọng đại.', 'service-video.webp', 'fa-solid fa-video'],
-                ['Thuê xe cưới', 'Đội xe cưới sang trọng, đúng giờ và được trang trí chỉn chu.', 'service-car.webp', 'fa-solid fa-car-side'],
-                ['Cho thuê bàn ghế', 'Không gian tiệc cưới đồng bộ với bàn ghế và phụ kiện thanh lịch.', 'service-banquet.webp', 'fa-solid fa-champagne-glasses'],
-            ];
+            $services = self::demoServices();
             foreach ($services as $index => [$title, $summary, $image, $icon]) {
                 $service = CmsService::query()->create([
                     'cms_service_category_id' => $serviceCategory->id,
@@ -120,10 +125,11 @@ class Ser103DemoContentProvider implements ThemeDemoContentProvider
             foreach ($posts as $index => [$title, $excerpt, $image]) {
                 $media = CmsMedia::query()->create([
                     'title' => $title,
-                    'file_path' => 'theme-demo/ser103/'.$image,
+                    // Bundled demo images live in public, outside the upload storage disk.
+                    'file_path' => '',
                     'file_url' => '/theme-demo/ser103/'.$image,
                     'mime_type' => 'image/webp',
-                    'size' => 0,
+                    'size' => filesize(public_path('theme-demo/ser103/'.$image)),
                     'alt_text' => $title,
                 ]);
                 $this->record($media);
@@ -196,6 +202,7 @@ class Ser103DemoContentProvider implements ThemeDemoContentProvider
             if ($page && $existingPage === null) {
                 $this->record($page);
             }
+            app(Ser103HomepageDataRepair::class)->repairForWebsite($websiteKey);
 
             return [
                 'preset' => $this->preset(),

@@ -2392,6 +2392,12 @@ class CmsSiteController
                 ),
             ],
             'latest_posts' => $this->resolveLatestPostHighlights($websiteKey),
+            'footer_services' => $themeKey === 'SER103'
+                ? $this->resolveLatestServices($siteProfile, null, 4)->map(fn (CmsService $service): array => [
+                    'title' => $service->title,
+                    'url' => route('site.services.show', ['slug' => $service->slug]),
+                ])->all()
+                : [],
             'preset_switcher' => $this->resolvePresetSwitcher($siteProfile, $activeTheme),
             'fashion_banner_slides' => $this->resolveFashionBannerSlides($websiteKey, $themeKey),
             'side_banners' => $this->resolveSidePromos($websiteKey, $themeKey),
