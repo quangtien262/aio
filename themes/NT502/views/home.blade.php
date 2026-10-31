@@ -1,8 +1,23 @@
 @extends('theme-nt502::layout')
 @section('title',data_get($landingPage??[],'meta_title',data_get($siteProfile??[],'site_name','NT502')))
 @section('content')
-@php $blocks=collect($landingBlocks??[])->values();$canEditLanding=auth('admin')->check()&&request('mod')==='admin'&&is_array($landingPage??null);$editorLocales=collect(\App\Support\FrontendLocalization::supportedLocales())->map(fn($l)=>['code'=>$l,'label'=>strtoupper($l)])->all();$get=fn(string $type):array=>(array)($blocks->firstWhere('block_type',$type)??[]);$items=fn(array $block)=>collect($block['dynamic_items']??[])->filter()->values()->whenEmpty(fn($list)=>$list->push(...collect(data_get($block,'data.content.items',[]))->filter()->values()->all()));$image=fn($item,$fallback)=>data_get($item,'image',data_get($item,'image_url',$fallback));$hero=$get('hero_slider');$categories=$get('nt502_categories');$about=$get('nt502_about');$promo=$get('nt502_promotion');$living=$get('nt502_living_room');$bedroom=$get('nt502_bedroom');$reviews=$get('testimonials');$news=$get('nt502_latest_news');$slides=collect($hero['dynamic_items']??[])->filter()->values();if($slides->isEmpty())$slides=collect(data_get($hero,'data.content.slides',[]))->filter()->values(); @endphp
-<main class="n502-main"><section class="n502-hero xd-landing-block" data-landing-block-id="{{ data_get($hero,'id') }}" data-block-type="hero_slider" data-n502-slider data-autoplay="{{ data_get($hero,'settings.autoplay_ms',6000) }}">@foreach($slides as $index=>$slide)<article class="n502-hero-slide {{ $index===0?'is-active':'' }}" data-n502-slide><img src="{{ $image($slide,'/theme-demo/ec915/room-living-room.webp') }}" alt=""><div class="n502-container"><div class="n502-hero-copy"><h1>{{ data_get($slide,'title',data_get($hero,'data.title')) }}</h1><p>{{ data_get($slide,'summary',data_get($hero,'data.description')) }}</p><a href="{{ data_get($slide,'link_url','#phong-khach') }}">{{ data_get($slide,'button_label',data_get($hero,'data.button_label')) }}</a></div></div></article>@endforeach</section>
+@php
+    $blocks = collect($landingBlocks ?? [])->values();
+    $get = fn (string $type): array => (array) ($blocks->firstWhere('block_type', $type) ?? []);
+    $items = fn (array $block) => collect($block['dynamic_items'] ?? [])->filter()->values()
+        ->whenEmpty(fn ($list) => $list->push(...collect(data_get($block, 'data.content.items', []))->filter()->values()->all()));
+    $image = fn ($item, $fallback) => data_get($item, 'image', data_get($item, 'image_url', $fallback));
+    $hero = $get('hero_slider');
+    $categories = $get('nt502_categories');
+    $about = $get('nt502_about');
+    $promo = $get('nt502_promotion');
+    $living = $get('nt502_living_room');
+    $bedroom = $get('nt502_bedroom');
+    $reviews = $get('testimonials');
+    $news = $get('nt502_latest_news');
+@endphp
+<main class="n502-main">
+@include('theme-nt502::partials.hero')
 @include('theme-nt502::partials.category-strip')
 <section id="{{ data_get($about,'anchor_id','gioi-thieu') }}" class="n502-about xd-landing-block" data-landing-block-id="{{ data_get($about,'id') }}" data-block-type="nt502_about"><div class="n502-about-copy"><div><p>{{ data_get($about,'data.subtitle') }}</p><h2>{{ data_get($about,'data.title') }}</h2><span>{{ data_get($about,'data.description') }}</span><div class="n502-benefits">@foreach($items($about) as $item)<article><i class="{{ data_get($item,'icon','fa-solid fa-check') }}"></i><h3>{{ data_get($item,'title') }}</h3><small>{{ data_get($item,'summary') }}</small></article>@endforeach</div></div></div><img src="{{ data_get($about,'settings.image','/theme-demo/ec915/room-dining-room.webp') }}" alt=""></section>
 <section id="{{ data_get($promo,'anchor_id','khuyen-mai') }}" class="n502-promo xd-landing-block" data-landing-block-id="{{ data_get($promo,'id') }}" data-block-type="nt502_promotion" style="--promo:url('{{ data_get($promo,'settings.background_image') }}')"><div class="n502-container n502-promo-grid"><div class="n502-products n502-products-3">@foreach($items($promo) as $item)@include('theme-nt502::partials.product-card',['item'=>$item])@endforeach</div><div class="n502-promo-copy"><h2>{{ data_get($promo,'data.title') }}</h2><p>{{ data_get($promo,'data.description') }}</p><a href="{{ route('site.catalog.search') }}">{{ data_get($promo,'data.button_label') }}</a></div></div></section>

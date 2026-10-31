@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin\Api;
 use App\Enums\TranslationStatus;
 use App\Models\LandingPage;
 use App\Models\LandingPageBlock;
-use App\Models\LandingPageBlockData;
 use App\Support\FrontendLocalization;
 use App\Support\LandingPages\LandingPageBuilder;
 use App\Support\Localization\LandingPageLocalization;
@@ -96,7 +95,7 @@ class LandingPageBlockController
                 $translation = $this->localization->saveBlockDraft(
                     $block,
                     $locale,
-                    $validated['data'],
+                    $this->syncNt502HeroHeading($block, $locale, $validated['data']),
                     (bool) ($validated['is_machine_translated'] ?? false),
                 );
 
@@ -125,6 +124,28 @@ class LandingPageBlockController
                 true,
             ),
         ]);
+    }
+
+    private function syncNt502HeroHeading(LandingPageBlock $block, string $locale, array $payload): array
+    {
+        if ($block->theme_key !== 'NT502' || $block->block_type !== 'hero_slider' || ! is_array(data_get($payload, 'content.slides.0'))) {
+            return $payload;
+        }
+
+        $previous = $block->data()->where('locale', $locale)->first();
+        $previousContent = json_decode($previous?->content ?? '[]', true);
+        foreach (['title' => 'title', 'description' => 'summary', 'subtitle' => 'kicker'] as $headingField => $slideField) {
+            // An explicit item edit wins. Otherwise, apply edits in the block heading to slide one.
+            $headingChanged = array_key_exists($headingField, $payload)
+                && (string) $payload[$headingField] !== (string) $previous?->{$headingField};
+            $slideChanged = (string) data_get($payload, 'content.slides.0.'.$slideField, '')
+                !== (string) data_get($previousContent, 'slides.0.'.$slideField, '');
+            if ($headingChanged && ! $slideChanged) {
+                $payload['content']['slides'][0][$slideField] = $payload[$headingField];
+            }
+        }
+
+        return $payload;
     }
 
     public function sourcePreview(LandingPageBlock $block, Request $request, LandingPageBuilder $builder): JsonResponse
