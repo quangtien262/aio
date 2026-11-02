@@ -17,6 +17,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
         @include('theme-ec902::partials.styles')
+        @include('theme-ec902::partials.catalog-header-styles')
 </x-storefront-head>
 <body>
 @php
